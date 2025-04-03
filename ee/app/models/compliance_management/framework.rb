@@ -17,6 +17,11 @@ module ComplianceManagement
     has_many :compliance_framework_security_policies,
       class_name: 'ComplianceManagement::ComplianceFramework::SecurityPolicy'
 
+    has_many :security_policies,
+      class_name: 'Security::Policy',
+      through: :compliance_framework_security_policies,
+      source: :security_policy
+
     has_many :security_orchestration_policy_configurations,
       -> { distinct },
       class_name: 'Security::OrchestrationPolicyConfiguration',

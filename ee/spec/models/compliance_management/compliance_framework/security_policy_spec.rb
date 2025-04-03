@@ -4,21 +4,48 @@ require 'spec_helper'
 
 RSpec.describe ComplianceManagement::ComplianceFramework::SecurityPolicy, feature_category: :security_policy_management do
   describe 'Associations' do
-    subject { create(:compliance_framework_security_policy) }
+    subject { build(:compliance_framework_security_policy) }
 
-    it 'belongs to compliance framework and security_orchestration_policy_configuration' do
-      expect(subject).to belong_to(:framework)
-      expect(subject).to belong_to(:policy_configuration)
-    end
-
+    it { is_expected.to belong_to(:framework) }
+    it { is_expected.to belong_to(:policy_configuration) }
+    it { is_expected.to belong_to(:security_policy) }
     it { is_expected.to have_many(:security_policy_requirements) }
+
     it { is_expected.to have_many(:compliance_requirements).through(:security_policy_requirements) }
   end
 
   describe 'validations' do
-    subject { create(:compliance_framework_security_policy) }
+    context 'when security_policy is not present' do
+      let_it_be(:compliance_framework_security_policy) do
+        create(:compliance_framework_security_policy, security_policy: nil)
+      end
 
-    it { is_expected.to validate_uniqueness_of(:framework).scoped_to([:policy_configuration_id, :policy_index]) }
+      it 'validates uniqueness of framework scoped to policy_configuration_id and policy_index' do
+        expect(
+          build(:compliance_framework_security_policy,
+            framework: compliance_framework_security_policy.framework,
+            policy_configuration: compliance_framework_security_policy.policy_configuration,
+            policy_index: compliance_framework_security_policy.policy_index
+          )
+        ).to be_invalid
+      end
+    end
+
+    context 'when security_policy is present' do
+      let_it_be(:security_policy) { create(:security_policy) }
+      let_it_be(:compliance_framework_security_policy) do
+        create(:compliance_framework_security_policy, security_policy: security_policy)
+      end
+
+      it 'validates uniqueness of framework scoped to security_policy_id' do
+        expect(
+          build(:compliance_framework_security_policy,
+            framework: compliance_framework_security_policy.framework,
+            security_policy: security_policy
+          )
+        ).to be_invalid
+      end
+    end
   end
 
   describe '.for_framework' do
