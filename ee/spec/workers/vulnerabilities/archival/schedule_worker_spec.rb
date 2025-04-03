@@ -3,17 +3,17 @@
 require 'spec_helper'
 
 RSpec.describe Vulnerabilities::Archival::ScheduleWorker, feature_category: :vulnerability_management do
-  describe '#perform' do
+  describe '#perform', :aggregate_failures, :clean_gitlab_redis_shared_state do
     let(:worker) { described_class.new }
 
     let_it_be(:group_1) { create(:group) }
     let_it_be(:group_2) { create(:group) }
     let_it_be(:group_3) { create(:group) }
     let_it_be(:group_4) { create(:group) }
-    let_it_be(:project_with_vulnerabilities_1) { create(:project, group: group_1) }
-    let_it_be(:project_with_vulnerabilities_2) { create(:project, group: group_2) }
-    let_it_be(:project_with_vulnerabilities_3) { create(:project, group: group_3) }
-    let_it_be(:project_without_vulnerabilities) { create(:project, group: group_4) }
+    let_it_be_with_refind(:project_with_vulnerabilities_1) { create(:project, group: group_1) }
+    let_it_be_with_refind(:project_with_vulnerabilities_2) { create(:project, group: group_2) }
+    let_it_be_with_refind(:project_with_vulnerabilities_3) { create(:project, group: group_3) }
+    let_it_be_with_refind(:project_without_vulnerabilities) { create(:project, group: group_4) }
 
     subject(:schedule) { worker.perform }
 
@@ -33,7 +33,7 @@ RSpec.describe Vulnerabilities::Archival::ScheduleWorker, feature_category: :vul
       allow(Vulnerabilities::Archival::ArchiveWorker).to receive(:bulk_perform_in)
     end
 
-    it 'schedules the archival only for the feature enabled projects with vulnerabilities', :aggregate_failures do
+    it 'schedules the archival only for the feature enabled projects with vulnerabilities' do
       schedule
 
       expect(Vulnerabilities::Archival::ArchiveWorker).to have_received(:bulk_perform_in).twice
@@ -43,6 +43,84 @@ RSpec.describe Vulnerabilities::Archival::ScheduleWorker, feature_category: :vul
 
       expect(Vulnerabilities::Archival::ArchiveWorker)
         .to have_received(:bulk_perform_in).with(60, [[project_with_vulnerabilities_3.id, '2023-01-01']])
+    end
+
+    describe 'progressive working' do
+      describe 'running from the previous checkpoint' do
+        before do
+          latest_iteration_information = { project_id: project_with_vulnerabilities_2.id, index: 2 }
+
+          Gitlab::Redis::SharedState.with do |redis|
+            redis.hset(described_class::REDIS_CURSOR_KEY, latest_iteration_information)
+          end
+        end
+
+        it 'schedules jobs for only the remaining projects' do
+          schedule
+
+          expect(Vulnerabilities::Archival::ArchiveWorker).to have_received(:bulk_perform_in).once
+
+          expect(Vulnerabilities::Archival::ArchiveWorker)
+            .to have_received(:bulk_perform_in).with(60, [[project_with_vulnerabilities_3.id, '2023-01-01']])
+        end
+      end
+
+      describe 'storing the latest iteration information on redis' do
+        def data_on_redis
+          Gitlab::Redis::SharedState.with { |redis| redis.hgetall(described_class::REDIS_CURSOR_KEY) }.except('ex')
+        end
+
+        context 'when there was a scheduling of a job' do
+          it 'stores the information on redis' do
+            schedule
+
+            expect(Vulnerabilities::Archival::ArchiveWorker).to have_received(:bulk_perform_in).twice
+            expect(data_on_redis).to match({ 'project_id' => project_with_vulnerabilities_3.id.to_s, 'index' => '3' })
+          end
+        end
+
+        context 'when there was no groups for the projects in the last batch' do
+          let_it_be(:project_without_group) { create(:project) }
+
+          before do
+            project_without_group.project_setting.update!(has_vulnerabilities: true)
+
+            latest_iteration_information = { project_id: project_with_vulnerabilities_3.id.to_s, index: '3' }
+
+            Gitlab::Redis::SharedState.with do |redis|
+              redis.hset(described_class::REDIS_CURSOR_KEY, latest_iteration_information)
+            end
+          end
+
+          it 'stores the information on redis' do
+            schedule
+
+            expect(Vulnerabilities::Archival::ArchiveWorker).not_to have_received(:bulk_perform_in)
+            expect(data_on_redis).to match({ 'project_id' => project_without_group.id.to_s, 'index' => '3' })
+          end
+        end
+
+        context 'when the feature was not enabled for any of the projects in the last batch' do
+          let_it_be(:last_project_with_group) { create(:project, :in_group) }
+
+          before do
+            last_project_with_group.project_setting.update!(has_vulnerabilities: true)
+
+            latest_iteration_information = { project_id: project_with_vulnerabilities_3.id, index: 3 }
+
+            Gitlab::Redis::SharedState.with do |redis|
+              redis.hset(described_class::REDIS_CURSOR_KEY, latest_iteration_information)
+            end
+          end
+
+          it 'stores the information on redis' do
+            schedule
+
+            expect(Vulnerabilities::Archival::ArchiveWorker).not_to have_received(:bulk_perform_in)
+            expect(data_on_redis).to match({ 'project_id' => last_project_with_group.id.to_s, 'index' => '3' })
+          end
+        end
+      end
     end
   end
 end
