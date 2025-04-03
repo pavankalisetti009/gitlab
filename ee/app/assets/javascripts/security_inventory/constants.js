@@ -1,4 +1,4 @@
-import { s__ } from '~/locale';
+import { __, s__ } from '~/locale';
 import { CRITICAL, HIGH, MEDIUM, LOW, INFO, UNKNOWN } from 'ee/vulnerabilities/constants';
 
 const SAST_LABEL = s__('SecurityInventory|SAST');
@@ -12,26 +12,32 @@ export const SCANNERS = [
   {
     scanner: 'DEPENDENCY_SCANNING',
     label: DEPENDENCY_SCANNING_LABEL,
+    name: __('Dependency scanning'),
   },
   {
     scanner: 'SAST',
     label: SAST_LABEL,
+    name: __('Static application security testing (SAST)'),
   },
   {
     scanner: 'SECRET_DETECTION',
     label: SECRET_DETECTION_LABEL,
+    name: __('Secret detection'),
   },
   {
     scanner: 'CONTAINER_SCANNING',
     label: CONTAINER_SCANNING_LABEL,
+    name: __('Container scanning'),
   },
   {
     scanner: 'DAST',
     label: DAST_LABEL,
+    name: __('Dynamic application security testing (DAST)'),
   },
   {
     scanner: 'SAST_IAC',
     label: SAST_IAC_LABEL,
+    name: __('Infrastructure as code scanning (IaC)'),
   },
 ];
 
