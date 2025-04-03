@@ -1,6 +1,7 @@
 ---
 description: Tracks the number of tokens used for embedding operations in AI-assisted features
 action: tokens_per_embedding
+classification: duo
 identifiers:
 - user
 product_group: ai_framework

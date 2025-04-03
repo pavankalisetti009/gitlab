@@ -1,6 +1,7 @@
 ---
 description: This event represents a successful submission of a GitLab Duo question by a user.
 action: submit_gitlab_duo_question
+classification: duo
 internal_events: true
 identifiers:
 - project

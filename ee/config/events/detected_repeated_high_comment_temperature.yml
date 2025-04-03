@@ -2,6 +2,7 @@
 description: Comment Temperature was not fixed after an update
 internal_events: true
 action: detected_repeated_high_comment_temperature
+classification: duo
 identifiers:
 - project
 - namespace

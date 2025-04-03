@@ -2,6 +2,7 @@
 description: Comment Temperature is high
 internal_events: true
 action: detected_high_comment_temperature
+classification: duo
 identifiers:
 - project
 - namespace

@@ -1,6 +1,7 @@
 ---
 description: Tracks the number of tokens in a response from an LLM
 action: tokens_per_user_request_response
+classification: duo
 identifiers:
 - user
 product_group: ai_framework
