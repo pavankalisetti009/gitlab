@@ -4,7 +4,6 @@ import { shallowMount } from '@vue/test-utils';
 import { GlSprintf } from '@gitlab/ui';
 import MRWidgetAutoMergeEnabled from '~/vue_merge_request_widget/components/states/mr_widget_auto_merge_enabled.vue';
 import {
-  MWPS_MERGE_STRATEGY,
   MWCP_MERGE_STRATEGY,
   MT_MERGE_STRATEGY,
   MTWCP_MERGE_STRATEGY,
@@ -111,19 +110,6 @@ describe('MRWidgetAutoMergeEnabled', () => {
   });
 
   describe('status', () => {
-    it('should return "to be merged automatically..." if MWPS is selected', async () => {
-      createComponent({
-        mergeRequest: {
-          autoMergeStrategy: MWPS_MERGE_STRATEGY,
-        },
-        mergeTrainsCount: 1,
-      });
-
-      await waitForPromises();
-
-      expect(getStatusText()).toContain('to be merged automatically when the pipeline succeeds');
-    });
-
     it('should return "to be merged automatically..." if MWCP is selected', async () => {
       createComponent({
         mergeRequest: {
@@ -180,25 +166,6 @@ describe('MRWidgetAutoMergeEnabled', () => {
         expect.arrayContaining([
           expect.objectContaining({
             text: 'Remove from merge train',
-            testId: 'cancelAutomaticMergeButton',
-          }),
-        ]),
-      );
-    });
-
-    it('should return "Cancel" if MWPS is selected', async () => {
-      createComponent({
-        mergeRequest: {
-          autoMergeStrategy: MWPS_MERGE_STRATEGY,
-        },
-      });
-
-      await waitForPromises();
-
-      expect(wrapper.findComponent(StateContainer).props('actions')).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            text: 'Cancel auto-merge',
             testId: 'cancelAutomaticMergeButton',
           }),
         ]),
