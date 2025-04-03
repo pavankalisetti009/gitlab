@@ -171,6 +171,107 @@ RSpec.describe MergeRequests::ApprovalService, feature_category: :code_review_wo
           end
         end
       end
+
+      context 'for LDAP users' do
+        include LdapHelpers
+
+        let(:provider) { 'ldapmain' }
+
+        let(:uid) { 'john-ldap' }
+        let(:dn) { user_dn(uid) }
+        let(:password) { 'password' }
+
+        let(:user) { create(:omniauth_user, :ldap, username: gitlab_username, extern_uid: dn) }
+
+        let(:params) do
+          { approval_password: password }
+        end
+
+        let(:adapter) { instance_double(OmniAuth::LDAP::Adaptor) }
+
+        before do
+          stub_ldap_setting(enabled: true)
+          allow(Devise).to receive(:omniauth_providers).and_return([provider.to_sym])
+
+          allow_next_instance_of(Gitlab::Auth::Ldap::Authentication) do |instance|
+            allow(instance).to receive(:adapter).and_return(adapter)
+          end
+
+          project.add_developer(user) # rubocop:disable RSpec/BeforeAllRoleAssignment -- we don't user let_it_be
+        end
+
+        context 'when LDAP UID matches GitLab username' do
+          let(:gitlab_username) { uid }
+
+          it 'approves the merge request', :aggregate_failures do
+            stub_ldap_person_find_by_dn(ldap_user_entry(uid), provider)
+
+            expect(adapter).to receive(:bind_as).with(
+              filter: Net::LDAP::Filter.equals(Gitlab::Auth::Ldap::Config.new(provider).uid, uid),
+              size: 1,
+              password: password
+            ).and_return(ldap_user_entry(uid))
+
+            service_with_params = described_class.new(project: project, current_user: user, params: params)
+
+            expect { service_with_params.execute(merge_request) }.to change { merge_request.approvals.size }
+          end
+
+          context 'when allow_ldap_users_to_authenticate_with_gitlab_username FF is disabled' do
+            before do
+              stub_feature_flags(allow_ldap_users_to_authenticate_with_gitlab_username: false)
+            end
+
+            it 'approves the merge request', :aggregate_failures do
+              expect(adapter).to receive(:bind_as).with(
+                filter: Net::LDAP::Filter.equals(Gitlab::Auth::Ldap::Config.new(provider).uid, gitlab_username),
+                size: 1,
+                password: password
+              ).and_return(ldap_user_entry(gitlab_username))
+
+              service_with_params = described_class.new(project: project, current_user: user, params: params)
+
+              expect { service_with_params.execute(merge_request) }.to change { merge_request.approvals.size }
+            end
+          end
+        end
+
+        context 'when LDAP UID does not match GitLab username' do
+          let(:gitlab_username) { 'john-gitlab' }
+
+          it 'approves the merge request', :aggregate_failures do
+            stub_ldap_person_find_by_dn(ldap_user_entry(uid), provider)
+
+            expect(adapter).to receive(:bind_as).with(
+              filter: Net::LDAP::Filter.equals(Gitlab::Auth::Ldap::Config.new(provider).uid, uid),
+              size: 1,
+              password: password
+            ).and_return(ldap_user_entry(uid))
+
+            service_with_params = described_class.new(project: project, current_user: user, params: params)
+
+            expect { service_with_params.execute(merge_request) }.to change { merge_request.approvals.size }
+          end
+
+          context 'when allow_ldap_users_to_authenticate_with_gitlab_username FF is disabled' do
+            before do
+              stub_feature_flags(allow_ldap_users_to_authenticate_with_gitlab_username: false)
+            end
+
+            it 'does not update the approvals' do
+              expect(adapter).to receive(:bind_as).with(
+                filter: Net::LDAP::Filter.equals(Gitlab::Auth::Ldap::Config.new(provider).uid, gitlab_username),
+                size: 1,
+                password: password
+              )
+
+              service_with_params = described_class.new(project: project, current_user: user, params: params)
+
+              expect { service_with_params.execute(merge_request) }.not_to change { merge_request.approvals.size }
+            end
+          end
+        end
+      end
     end
 
     context 'with MR approval policy that sets `require_password_to_approve`' do
