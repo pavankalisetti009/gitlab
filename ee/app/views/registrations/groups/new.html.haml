@@ -67,7 +67,7 @@
                 = submit_tag nil, class: 'gl-hidden'
 
               .js-import-project-buttons
-                = render 'projects/import_project_pane', destination_namespace_id: @namespace&.id
+                = render 'projects/import_project_pane', destination_namespace_id: @group&.id
             - else
               .nothing-here-block
                 %h4= s_('ProjectsNew|No import options available')
