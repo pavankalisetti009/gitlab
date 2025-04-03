@@ -97,6 +97,45 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
       it_behaves_like 'internal event not tracked'
     end
 
+    context 'and value exceed allowed limits (10k characters)' do
+      let(:params) do
+        {
+          project_path: project.full_path,
+          name: 'TEST_SECRET_1234',
+          description: 'test description',
+          value: "x" * 10001,
+          branch: 'main',
+          environment: 'prod'
+        }
+      end
+
+      it 'fails', :aggregate_failures do
+        post_mutation
+
+        msg = 'Length of project secret value exceeds allowed limits (10k bytes).'
+        expect(mutation_response['errors']).to include(msg)
+      end
+    end
+
+    context 'and name does not conform' do
+      let(:params) do
+        {
+          project_path: project.full_path,
+          name: '../../OTHER_SECRET',
+          description: 'test description',
+          value: 'Secret123',
+          branch: 'main',
+          environment: 'prod'
+        }
+      end
+
+      it 'fails', :aggregate_failures do
+        post_mutation
+
+        expect(mutation_response['errors']).to include("Name can contain only letters, digits and '_'.")
+      end
+    end
+
     context 'and secrets_manager feature flag is disabled' do
       it 'returns an error' do
         stub_feature_flags(secrets_manager: false)

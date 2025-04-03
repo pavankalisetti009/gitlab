@@ -14,7 +14,12 @@ module SecretsManagement
     attribute :environment, :string
 
     validates :project, presence: true
-    validates :name, presence: true
+    validates :name,
+      presence: true,
+      length: { maximum: 255 },
+      format: { with: /\A[a-zA-Z0-9_]+\z/,
+                message: "can contain only letters, digits and '_'." }
+
     validates :branch, presence: true
     validates :environment, presence: true
     validate :ensure_active_secrets_manager

@@ -5,6 +5,10 @@ module SecretsManagement
     include Gitlab::Utils::StrongMemoize
     include SecretsManagerClientHelpers
 
+    # MAX_SECRET_SIZE sets the maximum size of a secret value; see note
+    # below before removing.
+    MAX_SECRET_SIZE = 10000
+
     def execute(name:, value:, environment:, branch:, description: nil)
       project_secret = ProjectSecret.new(
         name: name,
@@ -23,6 +27,14 @@ module SecretsManagement
 
     def store_secret(project_secret, value)
       return error_response(project_secret) unless project_secret.valid?
+
+      # Before removing value from the above and sending value directly
+      # to OpenBao, ensure it has been updated with request parameter
+      # size limiting quotas.
+      if value.bytesize > MAX_SECRET_SIZE
+        project_secret.errors.add(:base, "Length of project secret value exceeds allowed limits (10k bytes).")
+        return error_response(project_secret)
+      end
 
       # The follow API calls are ordered such that they fail closed: first we
       # create the secret and its metadata and then attach policy to it. If we

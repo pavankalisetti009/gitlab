@@ -104,6 +104,21 @@ RSpec.describe 'Delete project secret', :gitlab_secrets_manager, feature_categor
       end
     end
 
+    context 'and name does not conform' do
+      let(:params) do
+        {
+          project_path: project.full_path,
+          name: '../../OTHER_SECRET'
+        }
+      end
+
+      it 'fails', :aggregate_failures do
+        post_mutation
+
+        expect(mutation_response['errors']).to include("Name can contain only letters, digits and '_'.")
+      end
+    end
+
     context 'and secrets_manager feature flag is disabled' do
       it 'returns an error' do
         stub_feature_flags(secrets_manager: false)

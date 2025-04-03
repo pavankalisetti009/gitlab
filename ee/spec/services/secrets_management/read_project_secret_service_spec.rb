@@ -55,6 +55,15 @@ RSpec.describe SecretsManagement::ReadProjectSecretService, :gitlab_secrets_mana
           expect(result.reason).to eq(:not_found)
         end
       end
+
+      context 'when the secret name does not conform' do
+        let(:name) { '../../OTHER_SECRET' }
+
+        it 'returns an error' do
+          expect(result).to be_error
+          expect(result.message).to eq("Name can contain only letters, digits and '_'.")
+        end
+      end
     end
 
     context 'when secrets manager is not active' do
