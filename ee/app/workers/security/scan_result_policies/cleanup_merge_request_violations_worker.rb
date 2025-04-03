@@ -13,7 +13,6 @@ module Security
       def handle_event(event)
         merge_request = MergeRequest.find_by_id(event.data[:merge_request_id]) || return
         project = merge_request.project
-        return if ::Feature.disabled?(:cleanup_stale_policy_violations, project)
         return unless project.licensed_feature_available?(:security_orchestration_policies)
 
         log_running_violations_after_merge(merge_request) if event.is_a?(::MergeRequests::MergedEvent)

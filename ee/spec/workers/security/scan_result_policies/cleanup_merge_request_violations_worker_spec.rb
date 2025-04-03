@@ -32,18 +32,6 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
           merge_request_merged_event.data.deep_stringify_keys)
         ::Gitlab::EventStore.publish(event)
       end
-
-      context 'when feature flag "cleanup_stale_policy_violations" is disabled' do
-        before do
-          stub_feature_flags(cleanup_stale_policy_violations: false)
-        end
-
-        it 'does not receive the event' do
-          expect(described_class).not_to receive(:perform_async)
-
-          ::Gitlab::EventStore.publish(event)
-        end
-      end
     end
 
     it_behaves_like 'subscribes to event' do
@@ -54,18 +42,6 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
           merge_request_closed_event.data.deep_stringify_keys)
         ::Gitlab::EventStore.publish(event)
       end
-
-      context 'when feature flag "cleanup_stale_policy_violations" is disabled' do
-        before do
-          stub_feature_flags(cleanup_stale_policy_violations: false)
-        end
-
-        it 'does not receive the event' do
-          expect(described_class).not_to receive(:perform_async)
-
-          ::Gitlab::EventStore.publish(event)
-        end
-      end
     end
   end
 
@@ -74,14 +50,6 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
       expect { perform }.to change { Security::ScanResultPolicyViolation.count }.from(2).to(1)
 
       expect(merge_request.scan_result_policy_violations).to be_empty
-    end
-
-    context 'when feature flag "cleanup_stale_policy_violations" is disabled' do
-      before do
-        stub_feature_flags(cleanup_stale_policy_violations: false)
-      end
-
-      it_behaves_like 'does not delete scan result policy violations'
     end
   end
 

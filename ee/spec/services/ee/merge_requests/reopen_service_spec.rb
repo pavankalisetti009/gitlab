@@ -97,22 +97,6 @@ RSpec.describe MergeRequests::ReopenService, feature_category: :code_review_work
         subject(:execute) { merge_request_reopen_service }
       end
 
-      context 'when feature flag "cleanup_stale_policy_violations" is disabled' do
-        before do
-          stub_feature_flags(cleanup_stale_policy_violations: false)
-        end
-
-        it 'does not update the violations' do
-          expect { merge_request_reopen_service }.not_to change { merge_request.scan_result_policy_violations.count }
-        end
-
-        it 'does not trigger the synchronization' do
-          expect(merge_request).not_to receive(:schedule_policy_synchronization)
-
-          merge_request_reopen_service
-        end
-      end
-
       context 'when feature is not licensed' do
         let(:feature_licensed) { false }
 
