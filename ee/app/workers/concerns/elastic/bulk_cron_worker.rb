@@ -19,6 +19,8 @@ module Elastic
     def perform(shard_number = nil)
       return false unless Gitlab::CurrentSettings.elasticsearch_indexing?
 
+      return false if ::Gitlab::CurrentSettings.elasticsearch_pause_indexing?
+
       return if legacy_lock_exists? # skip execution if legacy lease is still obtained
 
       unless Search::ClusterHealthCheck::Elastic.healthy?
