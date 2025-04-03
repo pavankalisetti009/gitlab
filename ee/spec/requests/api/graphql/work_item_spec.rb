@@ -1029,16 +1029,20 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
       end
 
       describe 'hierarchy widget' do
-        let_it_be_with_reload(:other_group) { create(:group, :public) }
-        let_it_be(:ancestor1) { create(:work_item, :epic, namespace: other_group) }
-        let_it_be(:ancestor2) { create(:work_item, :epic, namespace: group) }
-        let_it_be(:parent_epic) { create(:work_item, :epic, project: project) }
-        let_it_be(:epic) { create(:work_item, :epic, project: project) }
-        let_it_be(:child_issue1) { create(:work_item, :issue, project: project) }
-        let_it_be(:child_issue2) { create(:work_item, :issue, project: project) }
+        let_it_be(:other_group) { create(:group, :private) }
+        let_it_be(:other_project) { create(:project, group: other_group) }
+
+        let_it_be(:ancestor3) { create(:work_item, :epic, namespace: group) }
+        let_it_be(:private_ancestor) { create(:work_item, :epic, namespace: other_group, work_item_parent: ancestor3) }
+        let_it_be(:ancestor2) { create(:work_item, :epic, namespace: group, work_item_parent: private_ancestor) }
+        let_it_be(:ancestor1) { create(:work_item, :epic, namespace: group, work_item_parent: ancestor2) }
+        let_it_be(:parent_epic) { create(:work_item, :epic, project: project, work_item_parent: ancestor1) }
+        let_it_be(:work_item) { create(:work_item, :epic, project: project, work_item_parent: parent_epic) }
+        let_it_be(:child_issue) { create(:work_item, :issue, project: project, work_item_parent: work_item) }
+        let_it_be(:child_epic) { create(:work_item, :epic, project: project, work_item_parent: work_item) }
+        let_it_be(:private_child) { create(:work_item, :issue, project: other_project, work_item_parent: work_item) }
 
         let(:current_user) { developer }
-        let(:global_id) { epic.to_gid.to_s }
         let(:work_item_fields) do
           <<~GRAPHQL
             id
@@ -1065,18 +1069,14 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         end
 
         before do
-          create(:parent_link, work_item_parent: ancestor2, work_item: ancestor1)
-          create(:parent_link, work_item_parent: ancestor1, work_item: parent_epic)
-          create(:parent_link, work_item_parent: parent_epic, work_item: epic)
-          create(:parent_link, work_item_parent: epic, work_item: child_issue1)
-          create(:parent_link, work_item_parent: epic, work_item: child_issue2)
+          stub_licensed_features(epics: true, subepics: true)
         end
 
-        it 'returns widget information' do
+        it 'returns authorized widget information' do
           post_graphql(query, current_user: current_user)
 
           expect(work_item_data).to include(
-            'id' => epic.to_gid.to_s,
+            'id' => work_item.to_gid.to_s,
             'widgets' => include(
               hash_including(
                 'parent' => {
@@ -1086,15 +1086,16 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                 'children' => { 'nodes' => match_array(
                   [
                     hash_including(
-                      'id' => child_issue1.to_gid.to_s,
-                      'webUrl' => "#{Gitlab.config.gitlab.url}/#{project.full_path}/-/issues/#{child_issue1.iid}"
+                      'id' => child_issue.to_gid.to_s,
+                      'webUrl' => "#{Gitlab.config.gitlab.url}/#{project.full_path}/-/issues/#{child_issue.iid}"
                     ),
                     hash_including(
-                      'id' => child_issue2.to_gid.to_s,
-                      'webUrl' => "#{Gitlab.config.gitlab.url}/#{project.full_path}/-/issues/#{child_issue2.iid}"
+                      'id' => child_epic.to_gid.to_s,
+                      'webUrl' => "#{Gitlab.config.gitlab.url}/#{project.full_path}/-/work_items/#{child_epic.iid}"
                     )
                   ]) },
                 'ancestors' => { 'nodes' => match_array(
+                  # truncates ancestors up to the last visible one
                   [
                     hash_including('id' => ancestor2.to_gid.to_s),
                     hash_including('id' => ancestor1.to_gid.to_s),
@@ -1107,6 +1108,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         end
 
         it 'avoids N+1 queries', :use_sql_query_cache do
+          # Grant access to the top ancestor
+          other_group.add_guest(current_user)
           post_graphql(query, current_user: current_user) # warm-up
 
           control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
@@ -1114,61 +1117,27 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           end
           expect_graphql_errors_to_be_empty
 
-          ancestor3 = create(:work_item, :epic, namespace: create(:group))
-          ancestor4 = create(:work_item, :epic, project: create(:project))
-          create(:parent_link, work_item_parent: ancestor4, work_item: ancestor3)
-          create(:parent_link, work_item_parent: ancestor3, work_item: ancestor2)
+          # Use a different group hierarchy to test preloaders properly
+          other_group2 = create(:group, :private, guests: current_user)
+          other_group3 = create(:group, :private, guests: current_user)
+          other_project2 = create(:project, :private, guests: current_user)
+
+          create(:work_item, :epic, namespace: other_group2).tap do |new_ancestor|
+            ancestor3.update!(work_item_parent: new_ancestor)
+          end
+
+          create(:work_item, :issue, project: other_project2, work_item_parent: work_item)
+          create(:work_item, :epic, namespace: other_group3, work_item_parent: work_item)
 
           expect { post_graphql(query, current_user: current_user) }.not_to exceed_all_query_limit(control)
         end
 
-        context 'when user does not have access to an ancestor' do
-          let(:work_item_fields) do
-            <<~GRAPHQL
-              widgets {
-                ... on WorkItemWidgetHierarchy {
-                  ancestors {
-                    nodes {
-                      id
-                    }
-                  }
-                }
-              }
-            GRAPHQL
-          end
-
-          before do
-            other_group.update!(visibility_level: Gitlab::VisibilityLevel::PRIVATE)
-          end
-
-          it 'truncates ancestors up to the last visible one' do
-            post_graphql(query, current_user: current_user)
-
-            expect(work_item_data).to include(
-              'widgets' => include(
-                hash_including(
-                  'ancestors' => { 'nodes' => match_array(
-                    [
-                      hash_including('id' => parent_epic.to_gid.to_s)
-                    ]
-                  ) }
-                )
-              )
-            )
-          end
-        end
-
         context 'when work item belongs to a user namespace project' do
           let_it_be(:user_namespace_project) { create(:project, namespace: developer.namespace) }
-          let_it_be(:user_project_work_item) { create(:work_item, project: user_namespace_project) }
           let_it_be(:ancestor) { create(:work_item, :epic, project: user_namespace_project) }
+          let_it_be(:work_item) { create(:work_item, project: user_namespace_project, work_item_parent: ancestor) }
 
-          let(:work_item) { user_project_work_item }
-          let(:global_id) { user_project_work_item.to_gid.to_s }
-
-          before do
-            create(:parent_link, work_item_parent: ancestor, work_item: user_project_work_item)
-          end
+          let(:global_id) { work_item.to_gid.to_s }
 
           it 'returns ancestor information' do
             post_graphql(query, current_user: current_user)
@@ -1187,10 +1156,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           end
 
           context 'when user does not have access' do
-            let(:current_user) { guest }
-
             it 'does not return anything' do
-              post_graphql(query, current_user: current_user)
+              post_graphql(query, current_user: guest)
 
               expect(work_item_data).to be_nil
             end
@@ -1231,10 +1198,6 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             end
 
             context 'when partial ancestors are accessible' do
-              before do
-                other_group.update!(visibility_level: Gitlab::VisibilityLevel::PRIVATE)
-              end
-
               it 'truncates ancestors up to the last visible one' do
                 post_graphql(query, current_user: current_user)
 
@@ -1243,6 +1206,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                     hash_including(
                       'ancestors' => { 'nodes' => match_array(
                         [
+                          hash_including('id' => ancestor2.to_gid.to_s),
+                          hash_including('id' => ancestor1.to_gid.to_s),
                           hash_including('id' => parent_epic.to_gid.to_s)
                         ]
                       ) }
@@ -1253,6 +1218,10 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             end
 
             context 'when all ancestors are accessible' do
+              before do
+                other_group.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+              end
+
               it 'shows all ancestors' do
                 post_graphql(query, current_user: current_user)
 
@@ -1261,6 +1230,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                     hash_including(
                       'ancestors' => { 'nodes' => match_array(
                         [
+                          hash_including('id' => ancestor3.to_gid.to_s),
+                          hash_including('id' => private_ancestor.to_gid.to_s),
                           hash_including('id' => ancestor2.to_gid.to_s),
                           hash_including('id' => ancestor1.to_gid.to_s),
                           hash_including('id' => parent_epic.to_gid.to_s)
