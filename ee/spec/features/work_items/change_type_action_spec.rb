@@ -31,7 +31,7 @@ RSpec.describe 'Change type action', :js, feature_category: :portfolio_managemen
         wait_for_all_requests
       end
 
-      it_behaves_like 'work items change type', 'Key Result', '[data-testid="issue-type-keyresult-icon"]'
+      it_behaves_like 'work items change type', 'Key result', '[data-testid="issue-type-keyresult-icon"]'
       it_behaves_like 'work items change type', 'Issue', '[data-testid="issue-type-issue-icon"]'
       it_behaves_like 'work items change type', 'Task', '[data-testid="issue-type-task-icon"]'
 
