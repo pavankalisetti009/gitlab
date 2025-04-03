@@ -36,7 +36,9 @@ function initDescriptionModal() {
         class: 'gl-mb-5',
         on: {
           contentGenerated(description) {
-            const textArea = document.querySelector('#issue_description');
+            const textArea =
+              document.querySelector('#issue_description') ||
+              document.querySelector('#work-item-description');
             textArea.value = '';
 
             updateText({
