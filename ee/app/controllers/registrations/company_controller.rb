@@ -15,6 +15,7 @@ module Registrations
     before_action :verify_in_onboarding_flow!
 
     feature_category :onboarding
+    urgency :low, [:create]
 
     helper_method :onboarding_status_presenter
 
