@@ -8,6 +8,7 @@ export const SELF_HOSTED_DUO_TABS = {
 export const RELEASE_STATES = {
   GA: 'GA',
   BETA: 'BETA',
+  EXPERIMENT: 'EXPERIMENT',
 };
 
 export const DUO_MAIN_FEATURES = {

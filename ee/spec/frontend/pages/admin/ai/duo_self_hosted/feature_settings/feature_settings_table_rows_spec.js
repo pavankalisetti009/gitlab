@@ -30,6 +30,7 @@ describe('FeatureSettingsTableRows', () => {
   const findFeatureSettingsTableRows = () => wrapper.findComponent(FeatureSettingsTableRows);
   const findLoaders = () => wrapper.findAllComponents(GlSkeletonLoader);
   const findBetaBadges = () => wrapper.findAllByTestId('feature-beta-badge');
+  const findExperimentBadges = () => wrapper.findAllByTestId('feature-experiment-badge');
 
   it('renders the component', () => {
     createComponent();
@@ -69,6 +70,21 @@ describe('FeatureSettingsTableRows', () => {
         createComponent();
 
         expect(findBetaBadges().length).toBe(0);
+      });
+    });
+
+    describe('experiment features', () => {
+      it('renders the experiment badge for experiment features', () => {
+        const experimentFeature = mockAiFeatureSettings[4];
+        createComponent({ aiFeatureSettings: [experimentFeature] });
+
+        expect(findExperimentBadges().length).toBe(1);
+      });
+
+      it('does not render the experiment badge for non-experiment features', () => {
+        createComponent();
+
+        expect(findExperimentBadges().length).toBe(0);
       });
     });
 

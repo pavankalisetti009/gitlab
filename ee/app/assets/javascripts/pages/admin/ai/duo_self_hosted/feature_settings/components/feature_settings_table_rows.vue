@@ -69,6 +69,9 @@ export default {
     isBetaFeature(releaseState) {
       return releaseState === RELEASE_STATES.BETA;
     },
+    isExperimentFeature(releaseState) {
+      return releaseState === RELEASE_STATES.EXPERIMENT;
+    },
   },
 };
 </script>
@@ -91,6 +94,12 @@ export default {
           class="gl-ml-0 gl-mr-3"
           data-testid="feature-beta-badge"
           type="beta"
+        />
+        <gl-experiment-badge
+          v-if="isExperimentFeature(item.releaseState)"
+          class="gl-ml-0 gl-mr-3"
+          data-testid="feature-experiment-badge"
+          type="experiment"
         />
         <span>{{ item.title }}</span>
       </div>
