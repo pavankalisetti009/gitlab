@@ -16,10 +16,22 @@ module EE
           )
         end
 
-        super(licensed: License.feature_available?(:adjourned_deletion_for_projects_and_groups))
+        result = super(licensed: License.feature_available?(:adjourned_deletion_for_projects_and_groups))
+
+        send_project_deletion_notification if result[:status] == :success
+
+        result
       end
 
       private
+
+      def send_project_deletion_notification
+        return unless ::Feature.enabled?(:project_deletion_notification_email, project) &&
+          project.adjourned_deletion? &&
+          project.marked_for_deletion?
+
+        ::NotificationService.new.project_scheduled_for_deletion(project)
+      end
 
       override :log_event
       def log_event

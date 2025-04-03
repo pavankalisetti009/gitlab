@@ -123,7 +123,30 @@ module EE
       end
     end
 
+    def project_scheduled_for_deletion(project)
+      return if project.emails_disabled?
+
+      recipients = owners_without_invites(project)
+
+      recipients.each do |recipient|
+        mailer.project_scheduled_for_deletion(
+          recipient.id,
+          project.id
+        ).deliver_later
+      end
+    end
+
     private
+
+    def owners_without_invites(project)
+      recipients = project.members.active_without_invites_and_requests.owners
+
+      if recipients.empty? && project.group
+        recipients = project.group.members.active_without_invites_and_requests.owners
+      end
+
+      recipients.map(&:user)
+    end
 
     def oncall_user_removed_recipients(rotation, removed_user)
       incident_management_owners(rotation.project)

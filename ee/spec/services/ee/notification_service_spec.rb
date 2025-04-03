@@ -955,10 +955,10 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
       end
 
       context 'with a group' do
-        let(:group) { create(:group) }
-        let(:project) { create(:project, group: group) }
-        let(:owner) { create(:user) }
-        let(:blocked_owner) { create(:user, :blocked) }
+        let_it_be(:group) { create(:group) }
+        let_it_be(:project) { create(:project, group: group) }
+        let_it_be(:owner) { create(:user) }
+        let_it_be(:blocked_owner) { create(:user, :blocked) }
 
         before do
           group.add_owner(owner)
@@ -1099,6 +1099,76 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
           expect(Notify).to receive(:group_scheduled_for_deletion).with(another_user.id, group.id).and_call_original
 
           subject.group_scheduled_for_deletion(group)
+        end
+      end
+    end
+  end
+
+  describe 'project scheduled for deletion' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:project) { create(:project) }
+
+    context 'when project emails are disabled' do
+      before do
+        allow(project).to receive(:emails_disabled?).and_return(true)
+      end
+
+      it 'does not send any emails' do
+        expect(Notify).not_to receive(:project_scheduled_for_deletion)
+
+        subject.project_scheduled_for_deletion(project)
+      end
+    end
+
+    context 'when project emails are enabled' do
+      before do
+        allow(project).to receive(:emails_disabled?).and_return(false)
+      end
+
+      context 'when user is owner' do
+        it 'sends email' do
+          expect(Notify).to receive(:project_scheduled_for_deletion).with(project.first_owner.id, project.id).and_call_original
+
+          subject.project_scheduled_for_deletion(project)
+        end
+
+        context 'when owner is blocked' do
+          it 'does not send email' do
+            project.owner.block!
+
+            expect(Notify).not_to receive(:project_scheduled_for_deletion)
+
+            subject.project_scheduled_for_deletion(project)
+          end
+        end
+      end
+
+      context 'when project has multiple owners' do
+        it 'sends email to all owners' do
+          project.add_owner(user)
+
+          expect(Notify).to receive(:project_scheduled_for_deletion).with(project.first_owner.id, project.id).and_call_original
+          expect(Notify).to receive(:project_scheduled_for_deletion).with(user.id, project.id).and_call_original
+
+          subject.project_scheduled_for_deletion(project)
+        end
+      end
+
+      context 'when project has no direct owners but belongs to a group with owners' do
+        let_it_be(:group) { create(:group) }
+        let_it_be(:project) { create(:project, group: group) }
+        let_it_be(:group_owner) { create(:user) }
+
+        before do
+          group.add_owner(group_owner)
+          # Ensure project has no direct owners
+          project.members.owners.delete_all if project.members.owners.any?
+        end
+
+        it 'sends email to group owners' do
+          expect(Notify).to receive(:project_scheduled_for_deletion).with(group_owner.id, project.id).and_call_original
+
+          subject.project_scheduled_for_deletion(project)
         end
       end
     end

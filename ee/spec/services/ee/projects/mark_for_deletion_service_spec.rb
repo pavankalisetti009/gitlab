@@ -10,6 +10,11 @@ RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_p
 
   subject(:result) { described_class.new(project, user).execute }
 
+  def execute_send_project_deletion_notification
+    service = described_class.new(project, user)
+    service.send(:send_project_deletion_notification)
+  end
+
   context 'when the delayed delete feature is licensed' do
     before do
       stub_licensed_features(
@@ -74,6 +79,14 @@ RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_p
         expect { result }.not_to change { project.marked_for_deletion? }.from(false)
       end
 
+      it 'does not send notification email' do
+        stub_feature_flags(project_deletion_notification_email: true)
+
+        expect(NotificationService).not_to receive(:new)
+
+        result
+      end
+
       context 'without licensed feature' do
         before do
           stub_licensed_features(
@@ -104,6 +117,14 @@ RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_p
         expect { result }.to change { AuditEvent.count }.by(3)
       end
     end
+
+    it 'calls send_project_deletion_notification method when successful' do
+      service = described_class.new(project, user)
+
+      expect(service).to receive(:send_project_deletion_notification)
+
+      service.execute
+    end
   end
 
   context 'when delayed deletion is not licensed' do
@@ -114,6 +135,77 @@ RSpec.describe Projects::MarkForDeletionService, feature_category: :groups_and_p
 
     it 'returns an error' do
       expect(result).to eq({ status: :error, message: 'Cannot mark project for deletion: feature not supported' })
+    end
+  end
+
+  describe '#send_project_deletion_notification' do
+    context 'when all conditions are met' do
+      before do
+        stub_feature_flags(project_deletion_notification_email: true)
+        allow(project).to receive_messages(adjourned_deletion?: true, marked_for_deletion?: true)
+      end
+
+      it 'sends a notification email' do
+        expect_next_instance_of(NotificationService) do |service|
+          expect(service).to receive(:project_scheduled_for_deletion).with(project)
+        end
+
+        execute_send_project_deletion_notification
+      end
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(project_deletion_notification_email: false)
+        allow(project).to receive_messages(adjourned_deletion?: true, marked_for_deletion?: true)
+      end
+
+      it 'does not send a notification email' do
+        expect(NotificationService).not_to receive(:new)
+
+        execute_send_project_deletion_notification
+      end
+    end
+
+    context 'when feature flag is enabled for specific project' do
+      before do
+        stub_feature_flags(project_deletion_notification_email: project)
+        allow(project).to receive_messages(adjourned_deletion?: true, marked_for_deletion?: true)
+      end
+
+      it 'sends a notification email' do
+        expect_next_instance_of(NotificationService) do |service|
+          expect(service).to receive(:project_scheduled_for_deletion).with(project)
+        end
+
+        execute_send_project_deletion_notification
+      end
+    end
+
+    context 'when adjourned deletion is disabled' do
+      before do
+        stub_feature_flags(project_deletion_notification_email: true)
+        allow(project).to receive_messages(adjourned_deletion?: false, marked_for_deletion?: true)
+      end
+
+      it 'does not send a notification email' do
+        expect(NotificationService).not_to receive(:new)
+
+        execute_send_project_deletion_notification
+      end
+    end
+
+    context 'when project is not marked for deletion' do
+      before do
+        stub_feature_flags(project_deletion_notification_email: true)
+        allow(project).to receive_messages(adjourned_deletion?: true, marked_for_deletion?: false)
+      end
+
+      it 'does not send a notification email' do
+        expect(NotificationService).not_to receive(:new)
+
+        execute_send_project_deletion_notification
+      end
     end
   end
 end
