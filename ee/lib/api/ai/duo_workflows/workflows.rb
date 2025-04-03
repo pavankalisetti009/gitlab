@@ -100,7 +100,7 @@ module API
               end
 
               post do
-                not_found! unless Feature.enabled?('duo_workflow', current_user)
+                not_found! unless Feature.enabled?(:duo_workflow, current_user)
 
                 check_rate_limit!(:duo_workflow_direct_access, scope: current_user) do
                   render_api_error!(_('This endpoint has been requested too many times. Try again later.'), 429)

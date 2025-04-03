@@ -30,7 +30,7 @@ module Issuables
     end
 
     def execute
-      return Issuables::CustomField.none unless Feature.enabled?('custom_fields_feature', @group)
+      return Issuables::CustomField.none unless Feature.enabled?(:custom_fields_feature, @group)
       return Issuables::CustomField.none unless @group&.licensed_feature_available?(:custom_fields)
 
       return Issuables::CustomField.none unless @skip_permissions_check ||
