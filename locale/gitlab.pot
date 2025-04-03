@@ -640,12 +640,21 @@ msgstr ""
 msgid "%{board_target} not found"
 msgstr ""
 
+msgid "%{boldStart}Created by:%{boldEnd} %{value}"
+msgstr ""
+
 msgid "%{boldStart}Merge blocked:%{boldEnd} %{count} check failed"
 msgid_plural "%{boldStart}Merge blocked:%{boldEnd} %{count} checks failed"
 msgstr[0] ""
 msgstr[1] ""
 
 msgid "%{boldStart}Merge with caution%{boldEnd}: Override added"
+msgstr ""
+
+msgid "%{boldStart}Pipeline:%{boldEnd} %{value}"
+msgstr ""
+
+msgid "%{boldStart}Project:%{boldEnd} %{value}"
 msgstr ""
 
 msgid "%{boldStart}Ready to be merged with caution%{boldEnd}: Override added"
@@ -655,6 +664,9 @@ msgid "%{boldStart}Ready to merge by members who can write to the target branch.
 msgstr ""
 
 msgid "%{boldStart}Ready to merge!%{boldEnd}"
+msgstr ""
+
+msgid "%{boldStart}Status:%{boldEnd} %{value}"
 msgstr ""
 
 msgid "%{bold_start}%{count}%{bold_end} issue"
@@ -17901,9 +17913,6 @@ msgid "Created at"
 msgstr ""
 
 msgid "Created branch '%{branch_name}' and a merge request to resolve this issue."
-msgstr ""
-
-msgid "Created by %{job}"
 msgstr ""
 
 msgid "Created by me"
