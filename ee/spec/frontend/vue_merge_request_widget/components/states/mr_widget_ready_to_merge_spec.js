@@ -7,7 +7,6 @@ import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_help
 import { stubComponent } from 'helpers/stub_component';
 import ReadyToMerge from '~/vue_merge_request_widget/components/states/ready_to_merge.vue';
 import {
-  MWPS_MERGE_STRATEGY,
   MWCP_MERGE_STRATEGY,
   MT_MERGE_STRATEGY,
   MTWCP_MERGE_STRATEGY,
@@ -46,7 +45,7 @@ describe('ReadyToMerge', () => {
     canRemoveSourceBranch: false,
     canMerge: true,
     targetBranch: 'main',
-    availableAutoMergeStrategies: [MWPS_MERGE_STRATEGY],
+    availableAutoMergeStrategies: [MWCP_MERGE_STRATEGY],
     mergeImmediatelyDocsPath: 'path/to/merge/immediately/docs',
     mergeTrainsCount: 0,
     userPermissions: { canMerge: true },
@@ -190,7 +189,6 @@ describe('ReadyToMerge', () => {
       mergeStrategy          | isPipelineFailed | isVisible
       ${MT_MERGE_STRATEGY}   | ${true}          | ${true}
       ${MT_MERGE_STRATEGY}   | ${false}         | ${false}
-      ${MWPS_MERGE_STRATEGY} | ${true}          | ${false}
       ${MWCP_MERGE_STRATEGY} | ${true}          | ${false}
     `(
       'with merge stragtegy $mergeStrategy and pipeline failed status of $isPipelineFailed we should show the modal: $isVisible',
@@ -339,7 +337,6 @@ describe('ReadyToMerge', () => {
     it.each`
       availableAutoMergeStrategies | mergeTrainsCount | expectedText
       ${[]}                        | ${0}             | ${'Merge'}
-      ${[MWPS_MERGE_STRATEGY]}     | ${0}             | ${'Set to auto-merge'}
       ${[MWCP_MERGE_STRATEGY]}     | ${0}             | ${'Set to auto-merge'}
       ${[MT_MERGE_STRATEGY]}       | ${0}             | ${'Merge'}
       ${[MT_MERGE_STRATEGY]}       | ${1}             | ${'Merge'}

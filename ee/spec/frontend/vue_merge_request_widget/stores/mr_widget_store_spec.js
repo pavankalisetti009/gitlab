@@ -4,11 +4,7 @@ import mockData from 'ee_jest/vue_merge_request_widget/mock_data';
 
 import { convertToCamelCase } from '~/lib/utils/text_utility';
 import { stateKey } from '~/vue_merge_request_widget/stores/state_maps';
-import {
-  MWPS_MERGE_STRATEGY,
-  MWCP_MERGE_STRATEGY,
-  DETAILED_MERGE_STATUS,
-} from '~/vue_merge_request_widget/constants';
+import { MWCP_MERGE_STRATEGY, DETAILED_MERGE_STATUS } from '~/vue_merge_request_widget/constants';
 
 describe('MergeRequestStore', () => {
   let store;
@@ -127,17 +123,6 @@ describe('MergeRequestStore', () => {
     });
 
     it('is true when MR is not approved', () => {
-      store.setApprovals({ approved: false });
-
-      expect(store.preventMerge).toBe(true);
-    });
-
-    it('is true when MR is not approved and preferredAutoMergeStrategy is MWPS', () => {
-      store.setData({
-        ...mockData,
-        available_auto_merge_strategies: [MWPS_MERGE_STRATEGY],
-      });
-
       store.setApprovals({ approved: false });
 
       expect(store.preventMerge).toBe(true);
