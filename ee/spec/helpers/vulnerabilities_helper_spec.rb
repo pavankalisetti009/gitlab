@@ -125,6 +125,29 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
 
     subject(:vulnerability_details) { helper.vulnerability_details(vulnerability, pipeline) }
 
+    describe '[:archival_information]' do
+      let(:expected_archival_date) { Time.zone.now.beginning_of_month }
+
+      subject { vulnerability_details[:archival_information] }
+
+      before do
+        allow(vulnerability).to receive(:about_to_be_archived?).and_return(about_to_be_archived?)
+        allow(vulnerability).to receive(:expected_to_be_archived_on).and_return(expected_archival_date)
+      end
+
+      context 'when the vulnerability is about to be archived' do
+        let(:about_to_be_archived?) { true }
+
+        it { is_expected.to match(about_to_be_archived: true, expected_to_be_archived_on: expected_archival_date) }
+      end
+
+      context 'when the vulnerability is not about to be archived' do
+        let(:about_to_be_archived?) { false }
+
+        it { is_expected.to match(about_to_be_archived: false, expected_to_be_archived_on: expected_archival_date) }
+      end
+    end
+
     describe '[:can_modify_related_issues]' do
       context 'with security dashboard feature enabled' do
         before do

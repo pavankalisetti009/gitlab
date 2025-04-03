@@ -40,10 +40,18 @@ module VulnerabilitiesHelper
       permissions_help_path: help_page_path('user/permissions.md', anchor: 'project-members-permissions'),
       dismissal_descriptions: dismissal_descriptions,
       representation_information: format_vulnerability_representation_information(vulnerability.representation_information),
-      severity_override: severity_override_data(vulnerability)
+      severity_override: severity_override_data(vulnerability),
+      archival_information: archival_information(vulnerability)
     }
 
     result.merge(vulnerability_data(vulnerability), vulnerability_finding_data(vulnerability))
+  end
+
+  def archival_information(vulnerability)
+    {
+      about_to_be_archived: vulnerability.about_to_be_archived?,
+      expected_to_be_archived_on: vulnerability.expected_to_be_archived_on
+    }
   end
 
   def dismissal_descriptions
