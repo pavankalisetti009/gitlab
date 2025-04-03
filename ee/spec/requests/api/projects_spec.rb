@@ -2031,6 +2031,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
 
     before do
       group.add_member(user, Gitlab::Access::OWNER)
+      stub_feature_flags(downtier_delayed_deletion: false)
     end
 
     shared_examples 'deletes project immediately' do
