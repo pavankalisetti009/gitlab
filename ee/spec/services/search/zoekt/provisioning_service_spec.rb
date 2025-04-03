@@ -128,7 +128,8 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         index = enabled_namespace2.replicas.second.indices.find_by_zoekt_node_id(nodes.fourth)
         metadata8 = index.metadata
         expect(metadata8).to eq({ 'project_namespace_id_from' => 4 })
-        expect(index.reserved_storage_bytes).to eq 1.gigabyte
+        expect(index.reserved_storage_bytes).to eq(1.gigabyte)
+        expect(result[:success].size).to eq(4)
       end
     end
 
@@ -137,22 +138,28 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         nodes.second.update!(used_bytes: 99.gigabytes) # Simulate node being near full
       end
 
-      it 'logs an error and does not provision indices on that node' do
+      it 'accumulates the error and does not provision indices on that node' do
         result = provisioning_result
-
-        expect(result[:errors]).to include(a_hash_including(message: :node_capacity_exceeded))
+        expect(result[:errors]).to include(
+          a_hash_including(
+            message: 'node_capacity_exceeded',
+            failed_namespace_id: namespace.id,
+            node_id: nodes.second.id
+          )
+        )
       end
     end
 
     context 'when there is an error initializing a replica' do
-      it 'logs an error and does not creates anything' do
+      it 'accumulates the error and does not creates anything' do
         allow(::Search::Zoekt::Replica).to receive(:new).and_raise(StandardError, 'Replica initialization failed')
 
         result = provisioning_result
 
-        expect(result[:errors]).to include(a_hash_including(details: 'Replica initialization failed'))
+        expect(result[:errors]).to include(a_hash_including(message: 'Replica initialization failed'))
         expect(Search::Zoekt::Replica.count).to be_zero
         expect(Search::Zoekt::Index.count).to be_zero
+        expect(result[:success]).to be_empty
       end
     end
 
@@ -246,11 +253,15 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         }
       end
 
-      it 'is atomic, does not creates any index or replica' do
+      it 'is atomic, per namespace' do
         result = provisioning_result
-        expect(result[:errors]).to include(a_hash_including(details: /Couldn't find Search::Zoekt::Node with/))
-        expect(Search::Zoekt::Replica.count).to be_zero
-        expect(Search::Zoekt::Index.count).to be_zero
+        expect(result[:errors]).to include(a_hash_including(message: /Couldn't find Search::Zoekt::Node with/))
+        expect(result[:success]).to include(a_hash_including(namespace_id: namespace2.id))
+        expect(enabled_namespace.replicas).to be_empty
+        expect(enabled_namespace2.replicas).not_to be_empty
+        expect(enabled_namespace.indices).to be_empty
+        expect(enabled_namespace2.indices).not_to be_empty
+        expect(result[:success].size).to eq(2)
       end
     end
 
@@ -296,7 +307,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
                 }
               ],
               errors: [],
-              namespace_required_storage_bytes: 10.gigabytes
+              namespace_required_storage_bytes: 16.gigabytes
             },
             {
               namespace_id: namespace2.id,
@@ -344,11 +355,21 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         }
       end
 
-      it 'does not creates any index or replica' do
+      it 'skips the namespace for which index can not be created and continue with other namespaces' do
         result = provisioning_result
-        expect(result[:errors]).to include(a_hash_including(details: /unclaimed storage bytes and cannot fit/))
-        expect(Search::Zoekt::Replica.count).to be_zero
-        expect(Search::Zoekt::Index.count).to be_zero
+        expect(result[:errors]).to include(
+          a_hash_including(
+            message: 'node_capacity_exceeded',
+            failed_namespace_id: namespace.id,
+            node_id: nodes.first.id
+          )
+        )
+        expect(result[:success]).to include(a_hash_including(namespace_id: namespace2.id))
+        expect(enabled_namespace.replicas).to be_empty
+        expect(enabled_namespace2.replicas).not_to be_empty
+        expect(enabled_namespace.indices).to be_empty
+        expect(enabled_namespace2.indices).not_to be_empty
+        expect(result[:success].size).to eq(2)
       end
     end
 
@@ -437,7 +458,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
               namespace_required_storage_bytes: 6.gigabytes
             }
           ],
-          total_required_storage_bytes: 8.gigabytes
+          total_required_storage_bytes: 16.gigabytes
         }
       end
 
@@ -457,6 +478,119 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         expect(metadata3).to eq({ 'project_namespace_id_to' => 3, 'project_namespace_id_from' => 1 })
         metadata4 = enabled_namespace2.replicas.second.indices.find_by_zoekt_node_id(nodes.fourth).metadata
         expect(metadata4).to eq({ 'project_namespace_id_from' => 4 })
+        expect(result[:success].size).to eq(2)
+      end
+    end
+
+    context 'when namespace is not found' do
+      let(:plan) do
+        {
+          namespaces: [
+            {
+              namespace_id: non_existing_record_id,
+              enabled_namespace_id: enabled_namespace.id,
+              replicas: [
+                {
+                  indices: [
+                    {
+                      node_id: nodes.first.id,
+                      required_storage_bytes: 3.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 5 }
+                    }
+                  ]
+                }
+              ],
+              errors: [],
+              namespace_required_storage_bytes: 3.gigabytes
+            },
+            {
+              namespace_id: namespace2.id,
+              enabled_namespace_id: enabled_namespace2.id,
+              replicas: [
+                {
+                  indices: [
+                    {
+                      node_id: nodes.first.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 3 }
+                    }
+                  ]
+                }
+              ],
+              errors: [],
+              namespace_required_storage_bytes: 2.gigabytes
+            }
+          ],
+          total_required_storage_bytes: 5.gigabytes,
+          failures: []
+        }
+      end
+
+      it 'skips that non existing enabled_namespace and continues with the rest' do
+        result = provisioning_result
+        expect(result[:errors]).to include(
+          a_hash_including(
+            message: :missing_enabled_namespace, failed_namespace_id: non_existing_record_id
+          )
+        )
+        expect(result[:success]).to include(a_hash_including(namespace_id: namespace2.id))
+      end
+    end
+
+    context 'when index is already present for a namespace' do
+      let(:plan) do
+        {
+          namespaces: [
+            {
+              namespace_id: namespace.id,
+              enabled_namespace_id: enabled_namespace.id,
+              replicas: [
+                {
+                  indices: [
+                    {
+                      node_id: nodes.first.id,
+                      required_storage_bytes: 3.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 5 }
+                    }
+                  ]
+                }
+              ],
+              errors: [],
+              namespace_required_storage_bytes: 3.gigabytes
+            },
+            {
+              namespace_id: namespace2.id,
+              enabled_namespace_id: enabled_namespace2.id,
+              replicas: [
+                {
+                  indices: [
+                    {
+                      node_id: nodes.first.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 3 }
+                    }
+                  ]
+                }
+              ],
+              errors: [],
+              namespace_required_storage_bytes: 2.gigabytes
+            }
+          ],
+          total_required_storage_bytes: 5.gigabytes,
+          failures: []
+        }
+      end
+
+      let_it_be(:index) { create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace) }
+
+      it 'skips that non existing enabled_namespace and continues with the rest' do
+        result = provisioning_result
+        expect(result[:errors]).to include(a_hash_including(message: :index_already_exists))
+        expect(result[:success]).to include(a_hash_including(namespace_id: namespace2.id))
       end
     end
   end
