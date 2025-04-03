@@ -60043,8 +60043,6 @@ definitions:
         type: string
       body:
         type: string
-      attachment:
-        type: string
       author:
         "$ref": "#/definitions/API_Entities_UserBasic"
       created_at:
