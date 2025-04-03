@@ -29,8 +29,8 @@ describe('Health Check List Probe', () => {
   describe('template', () => {
     describe.each`
       description        | probe                 | icon                                            | css
-      ${'success probe'} | ${MOCK_SUCCESS_PROBE} | ${{ name: 'check-circle', variant: 'success' }} | ${'gl-text-green-900 gl-bg-green-50'}
-      ${'error probe'}   | ${MOCK_ERROR_PROBE}   | ${{ name: 'error', variant: 'danger' }}         | ${'gl-text-red-900 gl-bg-red-50'}
+      ${'success probe'} | ${MOCK_SUCCESS_PROBE} | ${{ name: 'check-circle', variant: 'success' }} | ${'gl-text-feedback-success gl-bg-feedback-success'}
+      ${'error probe'}   | ${MOCK_ERROR_PROBE}   | ${{ name: 'error', variant: 'danger' }}         | ${'gl-text-feedback-danger gl-bg-feedback-danger'}
     `('$description', ({ probe, icon, css }) => {
       beforeEach(() => {
         createComponent({ props: { probe } });

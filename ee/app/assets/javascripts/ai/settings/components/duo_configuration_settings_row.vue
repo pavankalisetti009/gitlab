@@ -24,7 +24,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-border-b gl-w-full gl-text-gray-500">
+  <div class="gl-border-b gl-w-full gl-text-subtle">
     <div class="gl-my-3 gl-flex gl-flex-row gl-justify-between">
       <span data-testid="duo-configuration-row-title">{{
         duoConfigurationSettingsRowTypeTitle
