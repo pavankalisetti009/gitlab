@@ -119,6 +119,13 @@ export default {
     usageValue() {
       return this.addOnPurchase?.assignedQuantity ?? 0;
     },
+    duoTier() {
+      return this.addOnPurchase?.name || DUO_PRO;
+    },
+    isDuoTierAmazonQ() {
+      // Currently, AmazonQ is available for self-managed customers only, so let's add an extra isSaaS check
+      return !this.isSaaS && this.duoTier === DUO_AMAZON_Q;
+    },
     hasCodeSuggestions() {
       return this.totalValue > 0 && this.usageValue >= 0;
     },
@@ -127,9 +134,6 @@ export default {
         this.$apollo.queries.addOnPurchase.loading ||
         this.$apollo.queries.currentSubscription.loading
       );
-    },
-    duoTier() {
-      return this.addOnPurchase?.name || DUO_PRO;
     },
     shouldForceHideTitle() {
       if (isBoolean(this.forceHideTitle)) {
@@ -295,7 +299,10 @@ export default {
         <slot name="health-check"></slot>
       </template>
 
-      <section v-if="hasCodeSuggestions">
+      <section v-if="isDuoTierAmazonQ" data-testid="duo-amazon-q-info-card">
+        <!-- This section is a placeholder, it'll be replaced by a `duo-amazon-q-info-card` component, see issue: https://gitlab.com/gitlab-org/gitlab/-/issues/532330 -->
+      </section>
+      <section v-else-if="hasCodeSuggestions">
         <slot name="duo-card" v-bind="{ totalValue, usageValue, duoTier }">
           <template v-if="isSaaS && !isStandalonePage && duoPagePath">
             <gl-alert
