@@ -17,6 +17,7 @@ import { useBatchComments } from '~/batch_comments/store';
 jest.mock('~/lib/utils/url_utility', () => ({
   visitUrl: jest.fn(),
   setUrlParams: jest.requireActual('~/lib/utils/url_utility').setUrlParams,
+  getParameterValues: jest.requireActual('~/lib/utils/url_utility').getParameterValues,
   joinPaths: jest.fn(),
   doesHashExistInUrl: jest.fn(),
 }));

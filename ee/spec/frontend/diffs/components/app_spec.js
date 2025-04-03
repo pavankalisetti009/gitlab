@@ -2,15 +2,20 @@ import { shallowMount } from '@vue/test-utils';
 
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import { PiniaVuePlugin } from 'pinia';
+import { createTestingPinia } from '@pinia/testing';
+// eslint-disable-next-line no-restricted-imports
+import Vuex from 'vuex';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import getMRCodequalityAndSecurityReports from 'ee_else_ce/diffs/components/graphql/get_mr_codequality_and_security_reports.query.graphql';
 import { TEST_HOST } from 'spec/test_constants';
 import App, { FINDINGS_POLL_INTERVAL } from '~/diffs/components/app.vue';
 import DiffFile from '~/diffs/components/diff_file.vue';
-import store from '~/mr_notes/stores';
-import { pinia } from '~/pinia/instance';
+import vuexStore from 'helpers/mocks/mr_notes/stores';
 
+import { globalAccessorPlugin } from '~/pinia/plugins';
+import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
 import {
   codeQualityNewErrorsHandler,
   SASTParsedHandler,
@@ -23,57 +28,34 @@ import {
 
 const TEST_ENDPOINT = `${TEST_HOST}/diff/endpoint`;
 
-jest.mock('~/mr_notes/stores', () => jest.requireActual('helpers/mocks/mr_notes/stores'));
+Vue.use(Vuex);
 Vue.use(VueApollo);
+Vue.use(PiniaVuePlugin);
 
 describe('diffs/components/app', () => {
   let fakeApollo;
   let wrapper;
+  let pinia;
+  let store;
 
-  const createComponent = ({
-    props = {},
-    baseConfig = {},
-    queryHandler = codeQualityNewErrorsHandler,
-    extendStore = () => {},
-  } = {}) => {
-    store.reset();
-    store.getters.isNotesFetched = false;
-    store.getters.getNoteableData = {
+  const createComponent = ({ props = {}, queryHandler = codeQualityNewErrorsHandler } = {}) => {
+    vuexStore.reset();
+    vuexStore.getters.isNotesFetched = false;
+    vuexStore.getters.getNoteableData = {
       current_user: {
         can_create_note: true,
       },
     };
-    store.getters['findingsDrawer/activeDrawer'] = {};
-    store.getters['diffs/diffFiles'] = [];
-    store.getters['diffs/flatBlobsList'] = [];
-    store.getters['diffs/isBatchLoading'] = false;
-    store.getters['diffs/isBatchLoadingError'] = false;
-    store.getters['diffs/whichCollapsedTypes'] = { any: false };
+    vuexStore.getters['findingsDrawer/activeDrawer'] = {};
 
-    store.state.diffs.isLoading = false;
-    store.state.findingsDrawer = { activeDrawer: false };
-
-    store.state.diffs.isTreeLoaded = true;
-
-    store.dispatch('diffs/setBaseConfig', {
-      endpoint: TEST_ENDPOINT,
-      endpointMetadata: `${TEST_HOST}/diff/endpointMetadata`,
-      endpointBatch: `${TEST_HOST}/diff/endpointBatch`,
-      endpointDiffForPath: TEST_ENDPOINT,
-      projectPath: 'namespace/project',
-      dismissEndpoint: '',
-      showSuggestPopover: true,
-      mrReviews: {},
-      ...baseConfig,
-    });
-
-    extendStore(store);
+    vuexStore.state.findingsDrawer = { activeDrawer: false };
 
     fakeApollo = createMockApollo([[getMRCodequalityAndSecurityReports, queryHandler]]);
 
     wrapper = shallowMount(App, {
       apolloProvider: fakeApollo,
       propsData: {
+        shouldShow: true,
         endpointCoverage: `${TEST_HOST}/diff/endpointCoverage`,
         endpointCodequality: '',
         sastReportAvailable: false,
@@ -82,17 +64,40 @@ describe('diffs/components/app', () => {
         ...props,
       },
       mocks: {
-        $store: store,
-        // DiffFile,
+        $store: vuexStore,
       },
       pinia,
     });
   };
 
+  beforeEach(() => {
+    pinia = createTestingPinia({ plugins: [globalAccessorPlugin] });
+
+    store = useLegacyDiffs();
+
+    store.isLoading = false;
+    store.isTreeLoaded = true;
+
+    store.setBaseConfig({
+      endpoint: TEST_ENDPOINT,
+      endpointMetadata: `${TEST_HOST}/diff/endpointMetadata`,
+      endpointBatch: `${TEST_HOST}/diff/endpointBatch`,
+      endpointDiffForPath: TEST_ENDPOINT,
+      projectPath: 'namespace/project',
+      dismissEndpoint: '',
+      showSuggestPopover: true,
+      mrReviews: {},
+    });
+
+    store.fetchDiffFilesMeta.mockResolvedValue({ real_size: '20' });
+    store.fetchDiffFilesBatch.mockResolvedValue();
+    store.assignDiscussionsToDiff.mockResolvedValue();
+  });
+
   describe('EE codequality diff', () => {
     it('polls Code Quality data via GraphQL and not via REST when codequalityReportAvailable is true', async () => {
       createComponent({
-        props: { shouldShow: true, codequalityReportAvailable: true },
+        props: { codequalityReportAvailable: true },
         queryHandler: codeQualityErrorAndParsed,
       });
       await waitForPromises();
@@ -103,13 +108,13 @@ describe('diffs/components/app', () => {
     });
 
     it('does not poll Code Quality data via GraphQL when codequalityReportAvailable is false', async () => {
-      createComponent({ props: { shouldShow: true, codequalityReportAvailable: false } });
+      createComponent({ props: { codequalityReportAvailable: false } });
       await waitForPromises();
       expect(codeQualityNewErrorsHandler).toHaveBeenCalledTimes(0);
     });
 
     it('stops polling when newErrors in response are defined', async () => {
-      createComponent({ props: { shouldShow: true, codequalityReportAvailable: true } });
+      createComponent({ props: { codequalityReportAvailable: true } });
 
       await waitForPromises();
 
@@ -128,7 +133,7 @@ describe('diffs/components/app', () => {
   describe('EE SAST diff', () => {
     it('polls SAST data when sastReportAvailable is true', async () => {
       createComponent({
-        props: { shouldShow: true, sastReportAvailable: true },
+        props: { sastReportAvailable: true },
         queryHandler: SASTParsingAndParsedHandler,
       });
       await waitForPromises();
@@ -141,7 +146,7 @@ describe('diffs/components/app', () => {
 
     it('stops polling when sastReport status is PARSED', async () => {
       createComponent({
-        props: { shouldShow: true, sastReportAvailable: true },
+        props: { sastReportAvailable: true },
         queryHandler: SASTParsedHandler,
       });
 
@@ -155,7 +160,7 @@ describe('diffs/components/app', () => {
 
     it('stops polling on request error', async () => {
       createComponent({
-        props: { shouldShow: true, sastReportAvailable: true },
+        props: { sastReportAvailable: true },
         queryHandler: requestError,
       });
       await waitForPromises();
@@ -168,7 +173,7 @@ describe('diffs/components/app', () => {
 
     it('stops polling on response status error', async () => {
       createComponent({
-        props: { shouldShow: true, sastReportAvailable: true },
+        props: { sastReportAvailable: true },
         queryHandler: SASTErrorHandler,
       });
       await waitForPromises();
@@ -185,22 +190,15 @@ describe('diffs/components/app', () => {
     });
 
     it('passes the SAST report-data to the diff component', async () => {
+      store.viewDiffsFileByFile = true;
+      store.diffFiles = [{ file_hash: '123' }];
+      store.treeEntries = { 123: { type: 'blob', id: 123, file_hash: '123' } };
+      store.virtualScrollerDisabled = true;
       createComponent({
         props: {
-          shouldShow: true,
           sastReportAvailable: true,
         },
-        baseConfig: {
-          viewDiffsFileByFile: true,
-        },
         queryHandler: SASTParsedHandler,
-        extendStore: (notesStore) => {
-          Object.assign(notesStore.getters, {
-            'diffs/flatBlobsList': [{ type: 'blob', fileHash: '123' }],
-            'diffs/isVirtualScrollingEnabled': false,
-            'diffs/diffFiles': [{ file_hash: '123' }],
-          });
-        },
       });
 
       await waitForPromises();
