@@ -24,7 +24,7 @@ module QA
           end
 
           def empty_state?
-            has_element?('gl-empty-state-content')
+            has_element?('gl-duo-chat-empty-state')
           end
 
           def latest_response
