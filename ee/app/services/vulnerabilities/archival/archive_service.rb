@@ -17,7 +17,7 @@ module Vulnerabilities
 
       def execute
         loop do
-          batch = vulnerabilities.with_mrs_and_issues.limit(BATCH_SIZE)
+          batch = vulnerabilities.with_mrs_and_issues.with_triaging_users.limit(BATCH_SIZE)
 
           break unless batch.exists?
 

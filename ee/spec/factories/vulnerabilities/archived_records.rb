@@ -36,5 +36,12 @@ FactoryBot.define do
         dismissal_reason: 'false_positive'
       }.deep_stringify_keys
     end
+
+    trait :dismissed do
+      after(:build) do |archived_record|
+        archived_record.data[:dismissed_at] = '2025-01-30 19:02:08 UTC'
+        archived_record.data[:dismissed_by] = 'user'
+      end
+    end
   end
 end

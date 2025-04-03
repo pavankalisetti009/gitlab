@@ -50,6 +50,33 @@ module Vulnerabilities
           full_path: vulnerability.full_path,
           cvss: vulnerability.cvss,
           dismissal_reason: vulnerability_read.dismissal_reason
+        }.merge!(dismissal_information, confirm_information, resolve_information)
+      end
+
+      def dismissal_information
+        return {} unless vulnerability.dismissed?
+
+        {
+          dismissed_at: vulnerability.dismissed_at.to_s,
+          dismissed_by: vulnerability.dismissed_by&.username
+        }
+      end
+
+      def confirm_information
+        return {} unless vulnerability.confirmed?
+
+        {
+          confirmed_at: vulnerability.confirmed_at.to_s,
+          confirmed_by: vulnerability.confirmed_by&.username
+        }
+      end
+
+      def resolve_information
+        return {} unless vulnerability.resolved?
+
+        {
+          resolved_at: vulnerability.resolved_at.to_s,
+          resolved_by: vulnerability.resolved_by&.username
         }
       end
     end
