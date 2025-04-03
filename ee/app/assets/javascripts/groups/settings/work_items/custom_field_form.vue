@@ -294,6 +294,8 @@ export default {
       :modal-id="isEditing ? 'edit-work-item-custom-field' : 'new-work-item-custom-field'"
       :visible="visible"
       :title="modalTitle"
+      size="sm"
+      scrollable
       @shown="focusNameInput"
       @hide="visible = false"
     >
