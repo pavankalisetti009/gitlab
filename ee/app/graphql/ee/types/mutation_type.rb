@@ -289,6 +289,7 @@ module EE
           experiment: { milestone: '17.9' }
         mount_mutation ::Mutations::Ai::DuoSettings::Update, experiment: { milestone: '17.9' }
         mount_mutation ::Mutations::Ai::DeleteConversationThread, experiment: { milestone: '17.9' }
+        mount_mutation ::Mutations::Authz::LdapAdminRoleLinks::Create, experiment: { milestone: '17.11' }
 
         prepend(Types::DeprecatedMutations)
       end
