@@ -20,18 +20,15 @@ module Search
           interval = watch_interval.to_f
           return yield if interval <= 0
 
-          trap('INT') do
-            puts "\nInterrupted. Exiting gracefully..."
-            exit
-          end
-
           loop do
             clear_screen
-            stdout_logger.info "Every #{interval}s: #{name} (Updated: #{Time.now.utc.iso8601})"
 
+            stdout_logger.info "Every #{interval}s: #{name} (Updated: #{Time.now.utc.iso8601})"
             yield
             sleep interval
           end
+        rescue Interrupt
+          puts "\nInterrupted. Exiting gracefully..."
         end
 
         def clear_screen
