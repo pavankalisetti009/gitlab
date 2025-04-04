@@ -75,7 +75,6 @@ describe('WorkItemNotes component', () => {
         workItemId,
         workItemIid,
         workItemType: 'task',
-        reportAbusePath: '/report/abuse/path',
         isModal,
       },
       stubs: {
