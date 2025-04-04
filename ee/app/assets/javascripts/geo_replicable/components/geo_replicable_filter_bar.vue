@@ -1,58 +1,26 @@
 <script>
-import {
-  GlSearchBoxByType,
-  GlCollapsibleListbox,
-  GlButton,
-  GlModal,
-  GlSprintf,
-  GlModalDirective,
-} from '@gitlab/ui';
+import { GlSearchBoxByType, GlCollapsibleListbox, GlModalDirective } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
-import { s__, sprintf } from '~/locale';
-import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
-import {
-  DEFAULT_SEARCH_DELAY,
-  ACTION_TYPES,
-  FILTER_STATES,
-  GEO_BULK_ACTION_MODAL_ID,
-  FILTER_OPTIONS,
-} from '../constants';
+import { s__ } from '~/locale';
+import { DEFAULT_SEARCH_DELAY, FILTER_STATES, FILTER_OPTIONS } from '../constants';
+import GeoReplicableBulkActions from './geo_replicable_bulk_actions.vue';
 
 export default {
   name: 'GeoReplicableFilterBar',
   i18n: {
-    resyncAll: s__('Geo|Resync all'),
-    reverifyAll: s__('Geo|Reverify all'),
-    modalTitle: s__('Geo|%{action} %{replicableType}'),
     searchPlaceholder: s__('Geo|Filter by name'),
-    modalBody: s__(
-      'Geo|This will %{action} %{replicableType}. It may take some time to complete. Are you sure you want to continue?',
-    ),
   },
   components: {
     GlSearchBoxByType,
     GlCollapsibleListbox,
-    GlButton,
-    GlModal,
-    GlSprintf,
+    GeoReplicableBulkActions,
   },
   directives: {
     GlModalDirective,
   },
-  data() {
-    return {
-      modalAction: null,
-    };
-  },
   computed: {
-    ...mapState([
-      'statusFilter',
-      'searchFilter',
-      'replicableItems',
-      'verificationEnabled',
-      'titlePlural',
-    ]),
+    ...mapState(['statusFilter', 'searchFilter', 'replicableItems', 'titlePlural']),
     search: {
       get() {
         return this.searchFilter;
@@ -81,34 +49,15 @@ export default {
       // To be implemented via https://gitlab.com/gitlab-org/gitlab/-/issues/411982
       return false;
     },
-    modalTitle() {
-      return sprintf(this.$options.i18n.modalTitle, {
-        action: this.readableModalAction && capitalizeFirstCharacter(this.readableModalAction),
-        replicableType: this.titlePlural,
-      });
-    },
-    readableModalAction() {
-      return this.modalAction?.replace('_', ' ');
-    },
   },
   methods: {
-    ...mapActions([
-      'setStatusFilter',
-      'setSearch',
-      'fetchReplicableItems',
-      'initiateAllReplicableAction',
-    ]),
+    ...mapActions(['setStatusFilter', 'setSearch', 'fetchReplicableItems']),
     filterChange(filter) {
       this.setStatusFilter(filter);
       this.fetchReplicableItems();
     },
-    setModalData(action) {
-      this.modalAction = action;
-    },
   },
-  actionTypes: ACTION_TYPES,
   debounce: DEFAULT_SEARCH_DELAY,
-  GEO_BULK_ACTION_MODAL_ID,
 };
 </script>
 
@@ -131,32 +80,7 @@ export default {
           :placeholder="$options.i18n.searchPlaceholder"
         />
       </div>
-      <div v-if="showBulkActions" class="gl-ml-auto">
-        <gl-button
-          v-gl-modal-directive="$options.GEO_BULK_ACTION_MODAL_ID"
-          data-testid="geo-resync-all"
-          @click="setModalData($options.actionTypes.RESYNC_ALL)"
-          >{{ $options.i18n.resyncAll }}</gl-button
-        >
-        <gl-button
-          v-if="verificationEnabled"
-          v-gl-modal-directive="$options.GEO_BULK_ACTION_MODAL_ID"
-          data-testid="geo-reverify-all"
-          @click="setModalData($options.actionTypes.REVERIFY_ALL)"
-          >{{ $options.i18n.reverifyAll }}</gl-button
-        >
-      </div>
+      <geo-replicable-bulk-actions v-if="showBulkActions" class="gl-ml-auto" />
     </div>
-    <gl-modal
-      :modal-id="$options.GEO_BULK_ACTION_MODAL_ID"
-      :title="modalTitle"
-      size="sm"
-      @primary="initiateAllReplicableAction({ action: modalAction })"
-    >
-      <gl-sprintf :message="$options.i18n.modalBody">
-        <template #action>{{ readableModalAction }}</template>
-        <template #replicableType>{{ titlePlural }}</template>
-      </gl-sprintf>
-    </gl-modal>
   </nav>
 </template>

@@ -15,6 +15,7 @@ import GeoReplicable from './geo_replicable.vue';
 import GeoReplicableEmptyState from './geo_replicable_empty_state.vue';
 import GeoReplicableFilterBar from './geo_replicable_filter_bar.vue';
 import GeoReplicableFilteredSearchBar from './geo_replicable_filtered_search_bar.vue';
+import GeoReplicableBulkActions from './geo_replicable_bulk_actions.vue';
 
 export default {
   name: 'GeoReplicableApp',
@@ -24,6 +25,7 @@ export default {
     GeoReplicableFilteredSearchBar,
     GeoReplicable,
     GeoReplicableEmptyState,
+    GeoReplicableBulkActions,
   },
   mixins: [glFeatureFlagsMixin()],
   props: {
@@ -77,7 +79,13 @@ export default {
 <template>
   <article class="geo-replicable-container">
     <geo-replicable-filter-bar v-if="!glFeatures.geoReplicablesFilteredListView" />
-    <geo-replicable-filtered-search-bar v-else :active-filters="activeFilters" @search="onSearch" />
+    <template v-else>
+      <geo-replicable-filtered-search-bar :active-filters="activeFilters" @search="onSearch" />
+      <geo-replicable-bulk-actions
+        v-if="hasReplicableItems"
+        class="gl-my-5 gl-flex gl-justify-end"
+      />
+    </template>
 
     <gl-loading-icon v-if="isLoading" size="xl" />
     <template v-else>
