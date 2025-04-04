@@ -89,13 +89,11 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
             it_behaves_like 'skips the push check'
           end
 
-          context 'when the spp_scan_diffs flag is disabled' do
-            before do
-              stub_feature_flags(spp_scan_diffs: false)
-            end
-
-            it_behaves_like 'entire file scan passed'
-            it_behaves_like 'scan detected secrets'
+          context 'when scanning diffs' do
+            it_behaves_like 'diff scan passed'
+            it_behaves_like 'scan detected secrets in diffs'
+            it_behaves_like 'detects secrets with special characters in diffs'
+            it_behaves_like 'processes hunk headers'
             it_behaves_like 'scan detected secrets but some errors occured'
             it_behaves_like 'scan timed out'
             it_behaves_like 'scan failed to initialize'
@@ -104,14 +102,6 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
             it_behaves_like 'scan skipped when a commit has special bypass flag'
             it_behaves_like 'scan skipped when secret_push_protection.skip_all push option is passed'
             it_behaves_like 'scan discarded secrets because they match exclusions'
-            it_behaves_like 'detects secrets with special characters in full files'
-          end
-
-          context 'when the spp_scan_diffs flag is enabled' do
-            it_behaves_like 'diff scan passed'
-            it_behaves_like 'scan detected secrets in diffs'
-            it_behaves_like 'detects secrets with special characters in diffs'
-            it_behaves_like 'processes hunk headers'
 
             it 'tracks and recovers errors when getting diff' do
               expect(repository).to receive(:diff_blobs).and_raise(::GRPC::InvalidArgument)
@@ -127,9 +117,9 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
             context 'when the protocol is web' do
               subject(:secrets_check) { described_class.new(changes_access_web) }
 
-              context 'when the secret_checks_for_web_requests feature flag is disabled' do
+              context 'when secret_checks_enabled_for_web_requests ff is disabled' do
                 before do
-                  stub_feature_flags(secret_checks_for_web_requests: false)
+                  stub_feature_flags(secret_checks_enabled_for_web_requests: false)
                 end
 
                 it_behaves_like 'entire file scan passed'
@@ -145,14 +135,13 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
                 it_behaves_like 'detects secrets with special characters in full files'
               end
 
-              context 'when the secret_checks_for_web_requests feature flag is enabled' do
+              context 'when secret_checks_enabled_for_web_requests ff is enabled' do
                 context 'when changes_access.gitaly_context enable_secrets_check is false' do
                   it_behaves_like 'entire file scan passed'
                   it_behaves_like 'scan detected secrets'
                   it_behaves_like 'detects secrets with special characters in full files'
                 end
 
-                # TODO: Remove this block when `spp_scan_diffs` is removed and cleaned up.
                 context 'when changes_access.gitaly_context enable_secrets_check is true' do
                   subject(:secrets_check) { described_class.new(changes_access_web_secrets_check_enabled) }
 
