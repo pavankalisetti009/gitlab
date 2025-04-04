@@ -116,4 +116,49 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       let(:user) { ci_build.user }
     end
   end
+
+  describe 'policy name generation' do
+    let_it_be(:project) { create(:project) }
+
+    subject(:test_subject) do
+      described_class.new.send(:generate_policy_name, project_id: project.id, principal_type: principal_type,
+        principal_id: principal_id)
+    end
+
+    context 'for User principal type' do
+      let(:principal_type) { 'User' }
+      let(:principal_id) { 123 }
+
+      it 'generates the correct policy name' do
+        expect(test_subject).to eq("project_#{project.id}/users/direct/user_123")
+      end
+    end
+
+    context 'for Role principal type' do
+      let(:principal_type) { 'Role' }
+      let(:principal_id) { 3 }
+
+      it 'generates the correct policy name with role ID' do
+        expect(test_subject).to eq("project_#{project.id}/users/roles/3")
+      end
+    end
+
+    context 'for MemberRole principal type' do
+      let(:principal_type) { 'MemberRole' }
+      let(:principal_id) { 3 }
+
+      it 'generates the correct policy name with member role ID' do
+        expect(test_subject).to eq("project_#{project.id}/users/direct/member_role_3")
+      end
+    end
+
+    context 'for Group principal type' do
+      let(:principal_type) { 'Group' }
+      let(:principal_id) { 3 }
+
+      it 'generates the correct policy name with group ID' do
+        expect(test_subject).to eq("project_#{project.id}/users/direct/group_3")
+      end
+    end
+  end
 end

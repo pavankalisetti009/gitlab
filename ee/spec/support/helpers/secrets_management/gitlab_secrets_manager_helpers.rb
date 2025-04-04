@@ -97,5 +97,22 @@ module SecretsManagement
 
       project_secret
     end
+
+    def update_secret_permission(user:, project:, principal:, permissions:, expired_at: nil)
+      result = SecretsManagement::Permissions::UpdateService.new(project, user).execute(
+        principal_id: principal[:id],
+        principal_type: principal[:type],
+        permissions: permissions,
+        expired_at: expired_at
+      )
+
+      secret_permission = result.payload[:secret_permission]
+
+      if secret_permission.errors.any?
+        raise "secret permission creation failed with errors: #{secret_permission.errors.full_messages.to_sentence}"
+      end
+
+      secret_permission
+    end
   end
 end

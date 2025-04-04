@@ -246,7 +246,8 @@ module SecretsManagement
     def ci_policy_template_combined_environment_glob_branch(env_literal, branch_glob)
       # See note in ci_policy_template_glob_environment.
       branch_glob_b64 = Base64.urlsafe_encode64(branch_glob, padding: false)
-      "(eq \"branch\" .ref_type) " \
+      "{{ if and " \
+        "(eq \"branch\" .ref_type) " \
         "(ne \"\" .ref) " \
         "(ne \"\" .environment) " \
         "(eq \"#{branch_glob_b64}\" (.ref | base64)) }}" \
@@ -266,6 +267,47 @@ module SecretsManagement
         "(eq \"#{branch_glob_b64}\" (.ref | base64)) }}" \
         "#{ci_policy_name_combined(env_glob, branch_glob)}" \
         "{{ end }}"
+    end
+
+    def user_path(project_id)
+      [
+        "project_#{project_id}",
+        "users",
+        "direct"
+      ].compact.join('/')
+    end
+
+    def role_path(project_id)
+      [
+        "project_#{project_id}",
+        "users",
+        "roles"
+      ].compact.join('/')
+    end
+
+    def generate_policy_name(project_id:, principal_type:, principal_id:)
+      case principal_type
+      when 'User'
+        [
+          user_path(project_id),
+          "user_#{principal_id}"
+        ].compact.join('/')
+      when 'Role'
+        [
+          role_path(project_id),
+          principal_id
+        ].compact.join('/')
+      when 'MemberRole'
+        [
+          user_path(project_id),
+          "member_role_#{principal_id}"
+        ].compact.join('/')
+      when 'Group'
+        [
+          user_path(project_id),
+          "group_#{principal_id}"
+        ].compact.join('/')
+      end
     end
 
     private
