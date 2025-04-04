@@ -62,7 +62,7 @@ export default {
         this.pageInfo = data?.namespace.componentVersions.pageInfo || {};
       },
       skip() {
-        return this.noSelectedComponent || this.multipleSelectedComponents;
+        return this.viewOnly;
       },
       error() {
         this.showError();
@@ -79,6 +79,17 @@ export default {
         // more information: https://gitlab.com/gitlab-org/gitlab-ui/-/issues/2381
         data: this.active ? '' : this.selectedVersionIds,
       };
+    },
+    tokenConfig() {
+      // When viewOnly is true, we want to show a placeholder in #suggestions.
+      // This is not possible with the multiple operators config, so we pass only the first operator in that case.
+      if (this.viewOnly) {
+        return {
+          ...this.config,
+          operators: [this.config.operators[0]],
+        };
+      }
+      return this.config;
     },
     queryVariables() {
       return {
