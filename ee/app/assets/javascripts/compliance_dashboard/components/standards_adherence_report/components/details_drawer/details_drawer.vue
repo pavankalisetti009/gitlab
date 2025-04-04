@@ -27,11 +27,8 @@ export default {
     title() {
       return this.status?.complianceRequirement.name || '';
     },
-  },
-  methods: {
-    getContentWrapperHeight,
-
-    filterStatuses(statuses) {
+    relevantStatuses() {
+      const statuses = this.status.project.complianceControlStatus.nodes;
       const knownControls = new Set(
         this.status.complianceRequirement.complianceRequirementsControls.nodes.map((n) => n.id),
       );
@@ -39,6 +36,9 @@ export default {
         knownControls.has(status.complianceRequirementsControl.id),
       );
     },
+  },
+  methods: {
+    getContentWrapperHeight,
   },
   DRAWER_Z_INDEX,
 };
@@ -88,9 +88,7 @@ export default {
           </span>
         </div>
       </div>
-      <statuses-list
-        :control-statuses="filterStatuses(status.project.complianceControlStatus.nodes)"
-      />
+      <statuses-list :control-statuses="relevantStatuses" />
     </template>
   </gl-drawer>
 </template>

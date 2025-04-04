@@ -28,7 +28,8 @@ export default {
   <div class="gl-flex gl-flex-col gl-gap-3">
     <div v-for="(item, index) in items" :key="index">
       <div
-        class="gl-flex gl-cursor-pointer gl-flex-row gl-items-center gl-bg-strong gl-px-5 gl-py-3"
+        role="button"
+        class="gl-flex gl-cursor-pointer gl-select-none gl-flex-row gl-items-center gl-bg-strong gl-px-5 gl-py-3"
         @click="toggleDetails(item)"
       >
         <div>
