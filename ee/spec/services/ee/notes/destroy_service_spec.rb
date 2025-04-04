@@ -44,5 +44,26 @@ RSpec.describe Notes::DestroyService, feature_category: :team_planning do
         service.execute(note)
       end
     end
+
+    context 'for group wiki page note' do
+      let_it_be(:group) { create(:group) }
+      let(:wiki_page_meta) { create(:wiki_page_meta, :for_wiki_page, container: group) }
+      let(:note) do
+        create(:note, project: nil, namespace: group, noteable: wiki_page_meta, author: user, note: "Old note")
+      end
+
+      before do
+        stub_licensed_features(group_wikis: true)
+      end
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'delete_wiki_page_note' }
+        let(:category) { described_class.name }
+        let(:namespace) { group }
+        let(:project) { nil }
+
+        subject(:track_event) { described_class.new(nil, user).execute(note) }
+      end
+    end
   end
 end
