@@ -462,6 +462,36 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
     end
 
+    describe '.namespace_settings_with_duo_nano_features_enabled' do
+      subject { described_class.namespace_settings_with_duo_nano_features_enabled }
+
+      let_it_be_with_reload(:group) { create(:group) }
+
+      before do
+        group.namespace_settings.update!(
+          duo_nano_features_enabled: duo_nano_features_enabled
+        )
+      end
+
+      context 'when duo_nano_features_enabled is true' do
+        let(:duo_nano_features_enabled) { true }
+
+        it { is_expected.to contain_exactly(group) }
+      end
+
+      context 'when duo_nano_features_enabled is false' do
+        let(:duo_nano_features_enabled) { false }
+
+        it { is_expected.to be_empty }
+      end
+
+      context 'when duo_nano_features_enabled is null' do
+        let(:duo_nano_features_enabled) { nil }
+
+        it { is_expected.to be_empty }
+      end
+    end
+
     describe '.with_ai_supported_plan', :saas do
       subject { described_class.with_ai_supported_plan }
 
@@ -2433,6 +2463,63 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
 
       it { is_expected.to eq(legacy_app) }
+    end
+  end
+
+  describe '#duo_nano_features_enabled?' do
+    let(:group) { create(:group) }
+    let(:sub_group) { create(:group, parent: group) }
+
+    subject(:result) { group.duo_nano_features_enabled? }
+
+    it { is_expected.to eq(false) }
+
+    context 'when namespace_settings has duo_nano_features enabled' do
+      before do
+        group.namespace_settings.update!(
+          duo_nano_features_enabled: true
+        )
+      end
+
+      it { is_expected.to eq(true) }
+
+      context 'with sub-group' do
+        it 'checks the namespace_settings of root_namespace' do
+          expect(sub_group.duo_nano_features_enabled?).to eq(true)
+        end
+      end
+    end
+
+    context 'when namespace_settings has duo_nano_features disabled' do
+      before do
+        group.namespace_settings.update!(
+          duo_nano_features_enabled: false
+        )
+      end
+
+      it { is_expected.to eq(false) }
+
+      context 'with sub-group' do
+        it 'checks the namespace_settings of root_namespace' do
+          expect(sub_group.duo_nano_features_enabled?).to eq(false)
+        end
+      end
+    end
+
+    context 'when namespace_settings has duo_nano_features as null' do
+      before do
+        group.namespace_settings.update!(
+          duo_nano_features_enabled: nil
+        )
+      end
+
+      it { is_expected.to eq(false) }
+
+      context 'with sub-group' do
+        it 'checks the namespace_settings of root_namespace' do
+          expect(sub_group.duo_nano_features_enabled?).to eq(false)
+        end
+      end
     end
   end
 

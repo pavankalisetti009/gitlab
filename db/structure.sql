@@ -18025,6 +18025,7 @@ CREATE TABLE namespace_settings (
     require_dpop_for_manage_api_endpoints boolean DEFAULT true NOT NULL,
     job_token_policies_enabled boolean DEFAULT false NOT NULL,
     security_policies jsonb DEFAULT '{}'::jsonb NOT NULL,
+    duo_nano_features_enabled boolean,
     CONSTRAINT check_0ba93c78c7 CHECK ((char_length(default_branch_name) <= 255)),
     CONSTRAINT check_namespace_settings_security_policies_is_hash CHECK ((jsonb_typeof(security_policies) = 'object'::text)),
     CONSTRAINT namespace_settings_unique_project_download_limit_alertlist_size CHECK ((cardinality(unique_project_download_limit_alertlist) <= 100)),
