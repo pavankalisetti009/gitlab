@@ -41,7 +41,6 @@ module Gitlab
       }.freeze
 
       PAYLOAD_BYTES_LIMIT = 1.megabyte # https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/secret_detection/#target-types
-      SPECIAL_COMMIT_FLAG = /\[skip secret push protection\]/i
       EXCLUSION_TYPE_MAP = {
         rule: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RULE,
         path: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_PATH,
@@ -60,31 +59,13 @@ module Gitlab
 
       # rubocop:disable Metrics/AbcSize -- This will be refactored in this epic (https://gitlab.com/groups/gitlab-org/-/epics/16376)
       def validate!
-        # Return early and do not perform the check:
-        #   1. unless license is ultimate
-        #   2. unless application setting is enabled
-        #   3. unless project setting is enabled
-        #   4. if it is a delete branch/tag operation, as it would require scanning the entire revision history
-        #   5. if options are passed for us to skip the check
+        eligibility_checker = Gitlab::Checks::SecretPushProtection::EligibilityChecker.new(
+          project: project,
+          changes_access: changes_access,
+          audit_logger: audit_logger
+        )
 
-        return unless project.licensed_feature_available?(:secret_push_protection)
-
-        return unless run_secret_push_protection?
-
-        return if includes_full_revision_history?
-
-        # Skip if any commit has the special bypass flag `[skip secret push protection]`
-        if skip_secret_detection_commit_message?
-          audit_logger.log_skip_secret_push_protection(_("commit message")) # String and not constant for I18N
-          audit_logger.track_spp_skipped("commit message")
-          return
-        end
-
-        if skip_secret_detection_push_option?
-          audit_logger.log_skip_secret_push_protection(_("push option")) # Keep this a string and not constant for I18N
-          audit_logger.track_spp_skipped("push option")
-          return
-        end
+        return unless eligibility_checker.should_scan?
 
         if use_secret_detection_service?
           sds_host = ::Gitlab::CurrentSettings.current_application_settings.secret_detection_service_url
@@ -174,11 +155,6 @@ module Gitlab
       ##############################
       # Project Eligibility Checks
 
-      def run_secret_push_protection?
-        ::Gitlab::CurrentSettings.current_application_settings.secret_push_protection_available &&
-          project.security_setting&.secret_push_protection_enabled
-      end
-
       def use_secret_detection_service?
         return @should_use_sds unless @should_use_sds.nil?
 
@@ -212,18 +188,6 @@ module Gitlab
         return false if changes_access.gitaly_context.nil?
 
         changes_access.gitaly_context['enable_secrets_check'] == true
-      end
-
-      def includes_full_revision_history?
-        ::Gitlab::Git.blank_ref?(changes_access.changes.first[:newrev])
-      end
-
-      def skip_secret_detection_commit_message?
-        changes_access.commits.any? { |commit| commit.safe_message =~ SPECIAL_COMMIT_FLAG }
-      end
-
-      def skip_secret_detection_push_option?
-        changes_access.push_options&.get(:secret_push_protection, :skip_all)
       end
 
       ############################
