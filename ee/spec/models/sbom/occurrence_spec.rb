@@ -605,6 +605,51 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     end
   end
 
+  describe '.filter_by_reachability' do
+    let(:filter_values) { [:in_use] }
+
+    subject(:filter_by_reachability) { described_class.filter_by_reachability(filter_values) }
+
+    it { is_expected.to be_empty }
+
+    context 'with existing records' do
+      let_it_be(:occurrence_in_use) { create(:sbom_occurrence, reachability: :in_use) }
+      let_it_be(:occurrence_unknown) { create(:sbom_occurrence, reachability: :unknown) }
+      let_it_be(:occurrence_not_found) { create(:sbom_occurrence, reachability: :not_found) }
+
+      it { is_expected.to match_array(occurrence_in_use) }
+
+      context 'with multiple filter values' do
+        let(:filter_values) { [:in_use, :not_found] }
+
+        it { is_expected.to match_array([occurrence_in_use, occurrence_not_found]) }
+      end
+    end
+  end
+
+  describe '.filter_by_vulnerability_id' do
+    let(:filter_values) { [vulnerability_1.id] }
+    let_it_be(:vulnerability_1) { create(:vulnerability) }
+    let_it_be(:occurrence_1) { create(:sbom_occurrence) }
+    let_it_be(:occ_vuln_1) do
+      create(:sbom_occurrences_vulnerability, vulnerability: vulnerability_1, occurrence: occurrence_1)
+    end
+
+    subject(:filter_by_vulnerability_id) { described_class.filter_by_vulnerability_id(filter_values) }
+
+    it { is_expected.to match_array([occurrence_1]) }
+
+    context 'with unrelated records' do
+      let_it_be(:vulnerability_2) { create(:vulnerability) }
+      let_it_be(:occurrence_2) { create(:sbom_occurrence) }
+      let_it_be(:occ_vuln_2) do
+        create(:sbom_occurrences_vulnerability, vulnerability: vulnerability_2, occurrence: occurrence_2)
+      end
+
+      it { is_expected.to match_array([occurrence_1]) }
+    end
+  end
+
   describe 'group related scopes' do
     let_it_be(:parent_group) { create(:group) }
     let_it_be(:child_group_1) { create(:group, parent: parent_group) }
