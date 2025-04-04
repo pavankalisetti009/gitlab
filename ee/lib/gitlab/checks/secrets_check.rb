@@ -204,7 +204,7 @@ module Gitlab
       end
 
       def use_diff_scan?
-        Feature.enabled?(:spp_scan_diffs, project) && (http_or_ssh_protocol? || secrets_check_enabled_for_web_requests?)
+        http_or_ssh_protocol? || secrets_check_enabled_for_web_requests?
       end
 
       def secrets_check_enabled_for_web_requests?
@@ -243,9 +243,9 @@ module Gitlab
       #######################
       # Load Payloads
 
-      # The `standardize_payloads` method gets payloads containing either git diffs or entire file contents
-      # and converts them into a standardized format. Each payload is processed to include its `id`, `data`,
-      # and `offset` (used to calculate the line number that a secret is on).
+      # The `standardize_payloads` method gets payloads containing git diffs
+      # and converts them into a standardized format. Each payload is processed to include
+      # its `id`, `data`, and `offset` (used to calculate the line number that a secret is on).
       # This ensures consistency between different payload types (e.g., git diffs and full files) for scanning.
       # For a more thorough explanation of the diff parsing logic, see the comment above the `parse_diffs` method.
 

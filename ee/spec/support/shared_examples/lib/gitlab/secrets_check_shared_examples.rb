@@ -393,53 +393,6 @@ RSpec.shared_examples 'scan detected secrets' do
     }
   end
 
-  context 'with quarantine directory' do
-    include_context 'quarantine directory exists'
-
-    it 'lists all blobs of a repository' do
-      expect(repository).to receive(:list_all_blobs)
-        .with(
-          bytes_limit: ::Gitlab::Checks::SecretsCheck::PAYLOAD_BYTES_LIMIT + 1,
-          dynamic_timeout: kind_of(Float),
-          ignore_alternate_object_directories: true
-        )
-        .once
-        .and_return([existing_blob, new_blob])
-        .and_call_original
-
-      expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
-
-      expect(logged_messages[:info]).to include(
-        hash_including(
-          "message" => log_messages[:found_secrets],
-          "class" => "Gitlab::Checks::SecretsCheck"
-        )
-      )
-    end
-
-    it 'filters existing blobs out' do
-      expect_next_instance_of(::Gitlab::Checks::ChangedBlobs) do |instance|
-        # old blob is expected to be filtered out
-        expect(instance).to receive(:filter_existing!)
-          .with(
-            array_including(existing_blob, new_blob)
-          )
-          .once
-          .and_return(new_blob)
-          .and_call_original
-      end
-
-      expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
-
-      expect(logged_messages[:info]).to include(
-        hash_including(
-          "message" => log_messages[:found_secrets],
-          "class" => "Gitlab::Checks::SecretsCheck"
-        )
-      )
-    end
-  end
-
   context 'with no quarantine directory' do
     it 'list new blobs' do
       expect(repository).to receive(:list_blobs)
@@ -1562,108 +1515,26 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
     }
   end
 
-  context 'when the spp_scan_diffs flag is disabled' do
-    before do
-      stub_feature_flags(spp_scan_diffs: false)
-    end
-
-    context 'with quarantine directory' do
-      include_context 'quarantine directory exists'
-
-      it 'lists all blobs of a repository' do
-        expect(repository).to receive(:list_all_blobs)
+  context 'with no quarantine directory' do
+    it 'list new blobs' do
+      expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |instance|
+        expect(instance).to receive(:secrets_scan)
           .with(
-            bytes_limit: ::Gitlab::Checks::SecretsCheck::PAYLOAD_BYTES_LIMIT + 1,
-            dynamic_timeout: kind_of(Float),
-            ignore_alternate_object_directories: true
+            array_including(new_payload, timed_out_payload, failed_to_scan_payload),
+            timeout: kind_of(Float),
+            exclusions: kind_of(Hash)
           )
-          .once
-          .and_return([existing_blob, new_blob, timed_out_blob, failed_to_scan_blob])
-          .and_call_original
-
-        expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |instance|
-          expect(instance).to receive(:secrets_scan)
-            .with(
-              array_including(new_payload, timed_out_payload, failed_to_scan_payload),
-              timeout: kind_of(Float),
-              exclusions: kind_of(Hash)
-            )
-            .and_return(successful_scan_with_errors_response)
-        end
-
-        expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
-
-        expect(logged_messages[:info]).to include(
-          hash_including(
-            "message" => log_messages[:found_secrets_with_errors],
-            "class" => "Gitlab::Checks::SecretsCheck"
-          )
-        )
+          .and_return(successful_scan_with_errors_response)
       end
 
-      it 'filters existing blobs out' do
-        expect_next_instance_of(::Gitlab::Checks::ChangedBlobs) do |instance|
-          expect(instance).to receive(:filter_existing!)
-            .with(
-              array_including(existing_blob, new_blob, timed_out_blob, failed_to_scan_blob)
-            )
-            .once
-            .and_return([new_blob, timed_out_blob, failed_to_scan_blob])
-        end
+      expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
 
-        expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |instance|
-          expect(instance).to receive(:secrets_scan)
-            .with(
-              array_including(new_payload, timed_out_payload, failed_to_scan_payload),
-              timeout: kind_of(Float),
-              exclusions: kind_of(Hash)
-            )
-            .and_return(successful_scan_with_errors_response)
-        end
-
-        expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
-
-        expect(logged_messages[:info]).to include(
-          hash_including(
-            "message" => log_messages[:found_secrets_with_errors],
-            "class" => "Gitlab::Checks::SecretsCheck"
-          )
+      expect(logged_messages[:info]).to include(
+        hash_including(
+          "message" => log_messages[:found_secrets_with_errors],
+          "class" => "Gitlab::Checks::SecretsCheck"
         )
-      end
-    end
-
-    context 'with no quarantine directory' do
-      it 'list new blobs' do
-        expect(repository).to receive(:list_blobs)
-          .with(
-            ['--not', '--all', '--not'] + changes.pluck(:newrev),
-            bytes_limit: ::Gitlab::Checks::SecretsCheck::PAYLOAD_BYTES_LIMIT + 1,
-            with_paths: false,
-            dynamic_timeout: kind_of(Float)
-          )
-          .once
-          .and_return([new_blob, timed_out_blob, failed_to_scan_blob])
-          .and_call_original
-
-        expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |instance|
-          expect(instance).to receive(:secrets_scan)
-            .with(
-              array_including(new_payload, timed_out_payload, failed_to_scan_payload),
-              timeout: kind_of(Float),
-              exclusions: kind_of(Hash)
-            )
-            .and_return(successful_scan_with_errors_response)
-        end
-
-        expect { subject.validate! }.to raise_error(::Gitlab::GitAccess::ForbiddenError)
-
-        expect(logged_messages[:info]).to include(
-          hash_including(
-            "message" => log_messages[:found_secrets_with_errors],
-            "class" => "Gitlab::Checks::SecretsCheck"
-          )
-        )
-      end
+      )
     end
   end
 
@@ -2382,10 +2253,6 @@ end
 RSpec.shared_examples 'detects secrets with special characters in full files' do
   include_context 'secrets check context'
   include_context 'special characters table'
-
-  before do
-    stub_feature_flags(spp_scan_diffs: false)
-  end
 
   with_them do
     let(:secret_with_special_char) { "SECRET=glpat-JUST20LETTERSANDNUMB #{special_character}" } # gitleaks:allow
