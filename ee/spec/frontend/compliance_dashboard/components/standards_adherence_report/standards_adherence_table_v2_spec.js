@@ -6,6 +6,7 @@ import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
 import StandardsAdherenceTableV2 from 'ee/compliance_dashboard/components/standards_adherence_report/standards_adherence_table_v2.vue';
 import DetailsDrawer from 'ee/compliance_dashboard/components/standards_adherence_report/components/details_drawer/details_drawer.vue';
 import GroupedTable from 'ee/compliance_dashboard/components/standards_adherence_report/components/grouped_table/grouped_table.vue';
+import FiltersBar from 'ee/compliance_dashboard/components/standards_adherence_report/components/filters_bar/filters_bar.vue';
 import { GroupedLoader } from 'ee/compliance_dashboard/components/standards_adherence_report/services/grouped_loader';
 import { GRAPHQL_FIELD_MISSING_ERROR_MESSAGE } from 'ee/compliance_dashboard/constants';
 import { isGraphqlFieldMissingError } from 'ee/compliance_dashboard/utils';
@@ -37,10 +38,10 @@ describe('StandardsAdherenceTableV2', () => {
     data: [
       {
         group: null,
-        children: {
-          category1: [{ id: '1', name: 'Requirement 1' }],
-          category2: [{ id: '2', name: 'Requirement 2' }],
-        },
+        children: [
+          { id: '1', name: 'Requirement 1' },
+          { id: '2', name: 'Requirement 2' },
+        ],
       },
     ],
     pageInfo: { hasNextPage: false },
@@ -177,7 +178,7 @@ describe('StandardsAdherenceTableV2', () => {
       GroupedLoader.mockImplementation(function mockGroupedLoader() {
         this.loadPage = jest.fn().mockResolvedValue(mockItems);
         this.loadNextPage = jest.fn().mockResolvedValue({
-          data: [{ group: null, children: { category3: [{ id: '3', name: 'Requirement 3' }] } }],
+          data: [{ group: null, children: [{ id: '3', name: 'Requirement 3' }] }],
           pageInfo: { hasNextPage: false, hasPreviousPage: true },
         });
         this.loadPrevPage = jest.fn().mockResolvedValue(mockItems);
@@ -203,7 +204,7 @@ describe('StandardsAdherenceTableV2', () => {
       await waitForNextPageLoad();
 
       expect(findGroupedTable().props('items')).toEqual([
-        { group: null, children: { category3: [{ id: '3', name: 'Requirement 3' }] } },
+        { group: null, children: [{ id: '3', name: 'Requirement 3' }] },
       ]);
     });
 
@@ -226,6 +227,35 @@ describe('StandardsAdherenceTableV2', () => {
 
       await waitForNextPageLoad();
       expect(wrapper.findComponent(PageSizeSelector).props('value')).toBe(newPageSize);
+    });
+  });
+
+  describe('filters', () => {
+    let mockLoader;
+
+    beforeEach(() => {
+      mockLoader = {
+        loadPage: jest.fn().mockResolvedValue(mockItems),
+        setFilters: jest.fn(),
+        setPageSize: jest.fn(),
+      };
+
+      GroupedLoader.mockImplementation(() => mockLoader);
+
+      createComponent();
+      return nextTick();
+    });
+
+    it('passes the filters to the GroupedLoader when they change', async () => {
+      const newFilters = { projectId: 123 };
+
+      // Find the filters bar component and emit the updated filters
+      const filtersBar = wrapper.findComponent(FiltersBar);
+      filtersBar.vm.$emit('update:filters', newFilters);
+      await nextTick();
+
+      expect(mockLoader.setFilters).toHaveBeenCalledWith(newFilters);
+      expect(mockLoader.loadPage).toHaveBeenCalled();
     });
   });
 });

@@ -9,6 +9,7 @@ import { isGraphqlFieldMissingError } from '../../utils';
 
 import DetailsDrawer from './components/details_drawer/details_drawer.vue';
 import GroupedTable from './components/grouped_table/grouped_table.vue';
+import FiltersBar from './components/filters_bar/filters_bar.vue';
 import { GroupedLoader } from './services/grouped_loader';
 
 export default {
@@ -18,6 +19,7 @@ export default {
     GlLoadingIcon,
     GlKeysetPagination,
 
+    FiltersBar,
     DetailsDrawer,
     PageSizeSelector,
     GroupedTable,
@@ -39,9 +41,22 @@ export default {
       isInitiallyLoading: true,
       isLoading: true,
       perPage: GRAPHQL_PAGE_SIZE,
+      filters: {},
+      groupBy: null,
 
       errorMessage: null,
     };
+  },
+  computed: {
+    hasItems() {
+      return this.items.data.some((item) => item.children.length > 0);
+    },
+  },
+  watch: {
+    filters(newFilters) {
+      this.groupedLoader.setFilters(newFilters);
+      this.loadFirstPage();
+    },
   },
   mounted() {
     this.groupedLoader = new GroupedLoader({
@@ -107,12 +122,19 @@ export default {
     <gl-alert v-if="errorMessage" variant="warning" class="gl-mt-3" :dismissible="false">
       {{ errorMessage }}
     </gl-alert>
+    <filters-bar
+      :group-path="groupPath"
+      :filters.sync="filters"
+      :group-by.sync="groupBy"
+      with-projects
+      @load="isInitiallyLoading = false"
+    />
     <template v-if="isInitiallyLoading">
       <gl-loading-icon size="lg" class="gl-mt-5" />
     </template>
     <div v-else>
       <gl-loading-icon v-if="isLoading" size="md" class="gl-m-5" />
-      <template v-else-if="items.data.length">
+      <template v-else-if="hasItems">
         <grouped-table :items="items.data" @row-selected="onRowSelected" />
         <div v-if="items.pageInfo" class="gl-justify-between md:gl-flex">
           <div class="gl-hidden gl-grow gl-basis-0 md:gl-flex"></div>

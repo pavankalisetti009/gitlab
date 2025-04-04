@@ -15470,6 +15470,12 @@ msgstr ""
 msgid "ComplianceFramework|No compliance frameworks are set up yet"
 msgstr ""
 
+msgid "ComplianceManagement|Framework"
+msgstr ""
+
+msgid "ComplianceManagement|Requirement"
+msgstr ""
+
 msgid "ComplianceReport|Apply frameworks to selected projects"
 msgstr ""
 
@@ -15661,6 +15667,9 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Framework"
 msgstr ""
 
+msgid "ComplianceStandardsAdherence|Frameworks"
+msgstr ""
+
 msgid "ComplianceStandardsAdherence|Group by"
 msgstr ""
 
@@ -15740,6 +15749,9 @@ msgid "ComplianceStandardsAdherence|Raw text search is not currently supported. 
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Requirement"
+msgstr ""
+
+msgid "ComplianceStandardsAdherence|Requirements"
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|SAST scan"
