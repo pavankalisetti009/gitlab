@@ -28271,6 +28271,9 @@ msgstr ""
 msgid "Go to the milestone list"
 msgstr ""
 
+msgid "Go to the pipeline editor"
+msgstr ""
+
 msgid "Go to the project's activity feed"
 msgstr ""
 
@@ -44743,6 +44746,9 @@ msgid "Please follow the %{link_start}Let's Encrypt troubleshooting instructions
 msgstr ""
 
 msgid "Please follow the Let's Encrypt troubleshooting instructions to re-obtain your Let's Encrypt certificate: %{docs_url}."
+msgstr ""
+
+msgid "Please match the requested format."
 msgstr ""
 
 msgid "Please provide a name"
