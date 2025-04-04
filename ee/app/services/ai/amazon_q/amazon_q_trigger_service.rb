@@ -68,7 +68,7 @@ module Ai
       def handle_response(response)
         return if response.success?
 
-        update_failure_note
+        update_failure_note(response.parsed_response)
       end
 
       def payload
@@ -142,18 +142,18 @@ module Ai
         ).execute
       end
 
-      def update_failure_note
+      def update_failure_note(error_string = nil)
         if @progress_note.nil?
           @progress_note = Notes::CreateService.new(
             source.project,
             amazon_q_service_account,
             author: amazon_q_service_account,
             noteable: source,
-            note: failure_message,
+            note: failure_message(error_string),
             discussion_id: note&.discussion_id
           ).execute
         else
-          update_note_params = { note: failure_message }
+          update_note_params = { note: failure_message(error_string) }
 
           Notes::UpdateService.new(
             source.project,
@@ -163,10 +163,19 @@ module Ai
         end
       end
 
-      def failure_message
-        msg = s_("AmazonQ|Sorry, I'm not able to complete the request at this moment. Please try again later.")
+      def failure_message(error_string = nil)
         request_id = Labkit::Correlation::CorrelationId.current_id
-        msg + format("\n\nRequest ID: %{request_id}", request_id: request_id)
+        base_message = s_("AmazonQ|Sorry, I'm not able to complete the request at this moment. Please try again later.")
+        request_id_message = format(s_("AmazonQ|Request ID: %{request_id}"), request_id: request_id)
+
+        message_parts = ["> [!warning]", ">", "> #{base_message}", ">", "> #{request_id_message}"]
+
+        if error_string.present?
+          error_message = format(_('Error: %{error_message}'), error_message: error_string)
+          message_parts.concat([">", "> #{error_message}"])
+        end
+
+        message_parts.join("\n")
       end
 
       def amazon_q_service_account

@@ -6511,6 +6511,9 @@ msgstr ""
 msgid "AmazonQ|Remove IAM role's ARN"
 msgstr ""
 
+msgid "AmazonQ|Request ID: %{request_id}"
+msgstr ""
+
 msgid "AmazonQ|Review merge request for code quality and security issues"
 msgstr ""
 
