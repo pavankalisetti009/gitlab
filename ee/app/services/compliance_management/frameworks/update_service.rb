@@ -11,6 +11,7 @@ module ComplianceManagement
         @framework = framework
         @current_user = current_user
         @params = params
+        @project_errors = []
       end
 
       def execute
@@ -21,14 +22,17 @@ module ComplianceManagement
           return error
         end
 
-        return error unless framework.update(params.except(:default))
+        return error unless framework.update(params.except(:default, :projects))
 
         after_execute
+
+        apply_projects unless params[:projects].blank?
+
         success
       end
 
       def success
-        ServiceResponse.success(payload: { framework: framework })
+        ServiceResponse.success(message: @project_errors.join(', '), payload: { framework: framework })
       end
 
       def error
@@ -76,6 +80,28 @@ module ComplianceManagement
       def after_execute
         audit_changes
         update_default_framework
+      end
+
+      def apply_projects
+        params[:projects][:add_projects]&.each do |project_id|
+          result = ComplianceManagement::ComplianceFramework::ProjectSetting::AddFrameworkService.new(
+            project_id: project_id,
+            current_user: current_user,
+            framework: framework
+          ).execute
+
+          @project_errors << result.message if result.error?
+        end
+
+        params[:projects][:remove_projects]&.each do |project_id|
+          result = ComplianceManagement::ComplianceFramework::ProjectSetting::RemoveFrameworkService.new(
+            project_id: project_id,
+            current_user: current_user,
+            framework: framework
+          ).execute
+
+          @project_errors << result.message if result.error?
+        end
       end
     end
   end
