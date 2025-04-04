@@ -30,6 +30,108 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
         expect(described_class::APPROVAL_VULNERABILITY_STATES).to include(*expected_states.keys)
       end
     end
+
+    context 'name uniqueness' do
+      let_it_be(:project) { create(:project) }
+
+      context 'when not from scan result policy' do
+        it 'validates uniqueness of name scoped to project_id and rule_type' do
+          create(:approval_project_rule, project: project, name: 'Test Rule')
+          duplicate_rule = build(:approval_project_rule, project: project, name: 'Test Rule')
+
+          expect(duplicate_rule).to be_invalid
+          expect(duplicate_rule.errors[:name]).to include('has already been taken')
+        end
+      end
+
+      context 'when from scan result policy' do
+        let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration) }
+        let_it_be(:policy_idx) { 1 }
+        let_it_be(:action_idx) { 0 }
+
+        it 'validates uniqueness of name scoped to project_id, rule_type, policy_configuration_id, policy_idx, and action_idx' do
+          create(:approval_project_rule, :any_merge_request,
+            project: project,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx
+          )
+
+          duplicate_rule = build(:approval_project_rule, :any_merge_request,
+            project: project,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx
+          )
+
+          expect(duplicate_rule).to be_invalid
+          expect(duplicate_rule.errors[:name]).to include('has already been taken')
+        end
+
+        it 'allows same name with different policy configuration' do
+          policy_configuration2 = create(:security_orchestration_policy_configuration)
+          create(:approval_project_rule, :any_merge_request,
+            project: project,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx
+          )
+
+          rule2 = build(:approval_project_rule, :any_merge_request,
+            project: project,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration2,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx
+          )
+
+          expect(rule2).to be_valid
+        end
+
+        it 'allows same name with different policy index' do
+          create(:approval_project_rule, :any_merge_request,
+            project: project,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx
+          )
+
+          rule2 = build(:approval_project_rule, :any_merge_request,
+            project: project,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx + 1,
+            approval_policy_action_idx: action_idx
+          )
+
+          expect(rule2).to be_valid
+        end
+
+        it 'allows same name with different action index' do
+          create(:approval_project_rule, :any_merge_request,
+            project: project,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx
+          )
+
+          rule2 = build(:approval_project_rule, :any_merge_request,
+            project: project,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx + 1
+          )
+
+          expect(rule2).to be_valid
+        end
+      end
+    end
   end
 
   describe 'default values' do

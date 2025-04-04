@@ -18,11 +18,23 @@ RSpec.describe Approvals::WrappedRuleSet do
       it { is_expected.to be_instance_of(Approvals::ScanFindingWrappedRuleSet) }
     end
 
+    context "with report_type set to #{Security::ScanResultPolicy::LICENSE_SCANNING}" do
+      let(:report_type) { Security::ScanResultPolicy::LICENSE_SCANNING }
+
+      it { is_expected.to be_instance_of(Approvals::ScanFindingWrappedRuleSet) }
+    end
+
+    context "with report_type set to #{Security::ScanResultPolicy::ANY_MERGE_REQUEST}" do
+      let(:report_type) { Security::ScanResultPolicy::ANY_MERGE_REQUEST }
+
+      it { is_expected.to be_instance_of(Approvals::ScanFindingWrappedRuleSet) }
+    end
+
     context 'with any other report_type' do
       it { is_expected.to be_instance_of(described_class) }
     end
 
-    context 'with scan_finding and license_scanning together' do
+    context 'with multiple report types' do
       let(:report_type) { Security::ScanResultPolicy::SCAN_FINDING }
 
       let(:license_scanning_rule) do
@@ -32,9 +44,30 @@ RSpec.describe Approvals::WrappedRuleSet do
         )
       end
 
-      let(:approval_rules) { [approval_merge_request_rule, license_scanning_rule] }
+      let(:any_mr_rule) do
+        build(:approval_merge_request_rule,
+          merge_request: merge_request,
+          report_type: Security::ScanResultPolicy::ANY_MERGE_REQUEST
+        )
+      end
 
-      it { is_expected.to be_instance_of(Approvals::ScanFindingWrappedRuleSet) }
+      context 'with scan_finding and license_scanning' do
+        let(:approval_rules) { [approval_merge_request_rule, license_scanning_rule] }
+
+        it { is_expected.to be_instance_of(Approvals::ScanFindingWrappedRuleSet) }
+      end
+
+      context 'with scan_finding and any_merge_request' do
+        let(:approval_rules) { [approval_merge_request_rule, any_mr_rule] }
+
+        it { is_expected.to be_instance_of(Approvals::ScanFindingWrappedRuleSet) }
+      end
+
+      context 'with all three report types' do
+        let(:approval_rules) { [approval_merge_request_rule, license_scanning_rule, any_mr_rule] }
+
+        it { is_expected.to be_instance_of(Approvals::ScanFindingWrappedRuleSet) }
+      end
     end
   end
 

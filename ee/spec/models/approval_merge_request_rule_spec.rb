@@ -67,6 +67,106 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
       end
     end
 
+    context 'name uniqueness' do
+      context 'when not from scan result policy' do
+        it 'validates uniqueness of name scoped to merge_request_id and rule_type' do
+          create(:approval_merge_request_rule, merge_request: merge_request, name: 'Test Rule')
+          duplicate_rule = build(:approval_merge_request_rule, merge_request: merge_request, name: 'Test Rule')
+
+          expect(duplicate_rule).to be_invalid
+          expect(duplicate_rule.errors[:name]).to include('has already been taken')
+        end
+      end
+
+      context 'when from scan result policy' do
+        let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration) }
+        let_it_be(:policy_idx) { 1 }
+        let_it_be(:action_idx) { 0 }
+
+        it 'validates uniqueness of name scoped to merge_request_id, rule_type, policy_configuration_id, policy_idx, and action_idx' do
+          create(:approval_merge_request_rule, :any_merge_request,
+            merge_request: merge_request,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx
+          )
+
+          duplicate_rule = build(:approval_merge_request_rule, :any_merge_request,
+            merge_request: merge_request,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx
+          )
+
+          expect(duplicate_rule).to be_invalid
+          expect(duplicate_rule.errors[:name]).to include('has already been taken')
+        end
+
+        it 'allows same name with different policy configuration' do
+          policy_configuration2 = create(:security_orchestration_policy_configuration, :namespace)
+          create(:approval_merge_request_rule, :any_merge_request,
+            merge_request: merge_request,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx
+          )
+
+          rule2 = build(:approval_merge_request_rule, :any_merge_request,
+            merge_request: merge_request,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration2,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx
+          )
+
+          expect(rule2).to be_valid
+        end
+
+        it 'allows same name with different policy index' do
+          create(:approval_merge_request_rule, :any_merge_request,
+            merge_request: merge_request,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx
+          )
+
+          rule2 = build(:approval_merge_request_rule, :any_merge_request,
+            merge_request: merge_request,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx + 1,
+            approval_policy_action_idx: action_idx
+          )
+
+          expect(rule2).to be_valid
+        end
+
+        it 'allows same name with different action index' do
+          create(:approval_merge_request_rule, :any_merge_request,
+            merge_request: merge_request,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx
+          )
+
+          rule2 = build(:approval_merge_request_rule, :any_merge_request,
+            merge_request: merge_request,
+            name: 'Test Rule',
+            security_orchestration_policy_configuration: policy_configuration,
+            orchestration_policy_idx: policy_idx,
+            approval_policy_action_idx: action_idx + 1
+          )
+
+          expect(rule2).to be_valid
+        end
+      end
+    end
+
     context 'approval_project_rule is set' do
       let(:approval_project_rule) { build(:approval_project_rule, project: build(:project)) }
       let(:merge_request_rule) { build(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: approval_project_rule) }
