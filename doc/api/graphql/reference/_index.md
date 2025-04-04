@@ -4123,7 +4123,7 @@ Input type: `CreateContainerProtectionRepositoryRuleInput`
 
 ### `Mutation.createContainerProtectionTagRule`
 
-Creates a protection rule to control which user roles can modify container image tags matching a specified pattern. Available only when feature flag `container_registry_protected_tags` is enabled.
+Creates a protection rule to control which user roles can modify container image tags matching a specified pattern.
 
 {{< details >}}
 **Introduced** in GitLab 17.8.
@@ -5044,7 +5044,7 @@ Input type: `DeleteContainerProtectionRepositoryRuleInput`
 
 ### `Mutation.deleteContainerProtectionTagRule`
 
-Deletes a protection rule that controls which user roles can modify container image tags matching a specified pattern. Available only when feature flag `container_registry_protected_tags` is enabled.
+Deletes a protection rule that controls which user roles can modify container image tags matching a specified pattern.
 
 {{< details >}}
 **Introduced** in GitLab 17.8.
@@ -11316,7 +11316,7 @@ Input type: `UpdateContainerProtectionRepositoryRuleInput`
 
 ### `Mutation.updateContainerProtectionTagRule`
 
-Updates a protection rule that controls which user roles can modify container image tags matching a specified pattern. Available only when feature flag `container_registry_protected_tags` is enabled.
+Updates a protection rule that controls which user roles can modify container image tags matching a specified pattern.
 
 {{< details >}}
 **Introduced** in GitLab 17.8.
@@ -34315,7 +34315,7 @@ Project-level settings for product analytics provider.
 | <a id="projectcomponentusages"></a>`componentUsages` | [`CiCatalogResourceComponentUsageConnection`](#cicatalogresourcecomponentusageconnection) | Component(s) used by the project. (see [Connections](#connections)) |
 | <a id="projectcontainerexpirationpolicy"></a>`containerExpirationPolicy` {{< icon name="warning-solid" >}} | [`ContainerExpirationPolicy`](#containerexpirationpolicy) | **Deprecated** in GitLab 17.5. Use `container_tags_expiration_policy`. |
 | <a id="projectcontainerprotectionrepositoryrules"></a>`containerProtectionRepositoryRules` {{< icon name="warning-solid" >}} | [`ContainerProtectionRepositoryRuleConnection`](#containerprotectionrepositoryruleconnection) | **Introduced** in GitLab 16.10. **Status**: Experiment. Container protection rules for the project. |
-| <a id="projectcontainerprotectiontagrules"></a>`containerProtectionTagRules` {{< icon name="warning-solid" >}} | [`ContainerProtectionTagRuleConnection`](#containerprotectiontagruleconnection) | **Introduced** in GitLab 17.8. **Status**: Experiment. Container repository tag protection rules for the project. Returns an empty array if the `container_registry_protected_tags` feature flag is disabled. |
+| <a id="projectcontainerprotectiontagrules"></a>`containerProtectionTagRules` {{< icon name="warning-solid" >}} | [`ContainerProtectionTagRuleConnection`](#containerprotectiontagruleconnection) | **Introduced** in GitLab 17.8. **Status**: Experiment. Container repository tag protection rules for the project. |
 | <a id="projectcontainerregistryenabled"></a>`containerRegistryEnabled` | [`Boolean`](#boolean) | Indicates if Container registry is enabled for the current user. |
 | <a id="projectcontainerrepositoriescount"></a>`containerRepositoriesCount` | [`Int!`](#int) | Number of container repositories in the project. |
 | <a id="projectcontainertagsexpirationpolicy"></a>`containerTagsExpirationPolicy` | [`ContainerTagsExpirationPolicy`](#containertagsexpirationpolicy) | Container tags expiration policy of the project. |
