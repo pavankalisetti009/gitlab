@@ -111,9 +111,9 @@ export default {
               v-model="autoReviewEnabled"
               name="amazon_q_auto_review_enabled"
               :disabled="isAutoReviewDisabled"
-              class="gl-ml-6 gl-mt-3"
+              class="gl-mb-3 gl-ml-6 gl-mt-2"
             >
-              {{ s__('AmazonQ|Enable automatic code reviews') }}
+              {{ s__('AmazonQ|Have Amazon Q review code in merge requests automatically') }}
             </gl-form-checkbox>
           </template>
         </duo-availability>
