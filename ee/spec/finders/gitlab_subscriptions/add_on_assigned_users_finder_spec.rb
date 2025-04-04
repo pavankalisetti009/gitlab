@@ -86,6 +86,17 @@ RSpec.describe GitlabSubscriptions::AddOnAssignedUsersFinder, feature_category: 
               .to match_array([member_with_duo_pro, another_subgroup_member_with_duo_pro, project_member_with_duo_pro])
           end
         end
+
+        context 'with instance level add_on_purchase' do
+          let_it_be(:add_on_purchase) do
+            create(:gitlab_subscription_add_on_purchase, :active, :self_managed, add_on: add_on)
+          end
+
+          it 'returns all assigned users of given group' do
+            expect(assigned_users).to match_array([member_with_duo_pro, another_subgroup_member_with_duo_pro,
+              subgroup_member_with_duo_pro])
+          end
+        end
       end
     end
   end
