@@ -20464,6 +20464,9 @@ msgstr ""
 msgid "Dependencies|Location"
 msgstr ""
 
+msgid "Dependencies|Locations of dependencies. The locations of transitive dependencies (child dependencies of other dependencies) are shown as the complete set of all paths that import the dependency."
+msgstr ""
+
 msgid "Dependencies|No components found."
 msgstr ""
 
@@ -20492,9 +20495,6 @@ msgid "Dependencies|The dependency list was successfully exported for %{exportab
 msgstr ""
 
 msgid "Dependencies|The dependency list was successfully exported."
-msgstr ""
-
-msgid "Dependencies|The location includes the lock file. For transitive dependencies a list of its direct dependents is shown."
 msgstr ""
 
 msgid "Dependencies|There was a problem fetching the licenses for this group."

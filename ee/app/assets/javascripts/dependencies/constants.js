@@ -18,7 +18,7 @@ export const DEPENDENCIES_TABLE_I18N = {
   projects: s__('Dependencies|Projects'),
   vulnerabilities: s__('Dependencies|Vulnerabilities'),
   tooltipText: s__(
-    'Dependencies|The location includes the lock file. For transitive dependencies a list of its direct dependents is shown.',
+    'Dependencies|Locations of dependencies. The locations of transitive dependencies (child dependencies of other dependencies) are shown as the complete set of all paths that import the dependency.',
   ),
   tooltipMoreText: s__('Dependencies|Learn more about direct dependents'),
   locationDependencyTitle: s__('Dependencies|List of direct dependents'),
