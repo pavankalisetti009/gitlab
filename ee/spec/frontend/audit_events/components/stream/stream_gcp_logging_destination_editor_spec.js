@@ -60,7 +60,7 @@ describe('StreamGcpLoggingDestinationEditor', () => {
   const findWarningMessage = () => wrapper.findByTestId('data-warning');
   const findAlertErrors = () => wrapper.findAllByTestId('alert-errors');
   const findDestinationForm = () => wrapper.findComponent(GlForm);
-  const findAddStreamBtn = () => wrapper.findByTestId('stream-destination-add-button');
+  const findSubmitStreamBtn = () => wrapper.findByTestId('stream-destination-submit-button');
   const findCancelStreamBtn = () => wrapper.findByTestId('stream-destination-cancel-button');
   const findDeleteBtn = () => wrapper.findByTestId('stream-destination-delete-button');
   const findDeleteModal = () => wrapper.findComponent(StreamDeleteModal);
@@ -157,12 +157,14 @@ describe('StreamGcpLoggingDestinationEditor', () => {
       });
 
       it('renders the add button text', () => {
-        expect(findAddStreamBtn().attributes('name')).toBe(ADD_STREAM_EDITOR_I18N.ADD_BUTTON_NAME);
-        expect(findAddStreamBtn().text()).toBe(ADD_STREAM_EDITOR_I18N.ADD_BUTTON_TEXT);
+        expect(findSubmitStreamBtn().attributes('name')).toBe(
+          ADD_STREAM_EDITOR_I18N.ADD_BUTTON_NAME,
+        );
+        expect(findSubmitStreamBtn().text()).toBe(ADD_STREAM_EDITOR_I18N.ADD_BUTTON_TEXT);
       });
 
       it('disables the add button at first', () => {
-        expect(findAddStreamBtn().props('disabled')).toBe(true);
+        expect(findSubmitStreamBtn().props('disabled')).toBe(true);
       });
     });
 
@@ -176,7 +178,7 @@ describe('StreamGcpLoggingDestinationEditor', () => {
         await findLogId().setValue(mockGcpLoggingDestinations[0].logIdName);
         await findPrivateKey().setValue(mockGcpLoggingDestinations[0].privateKey);
 
-        expect(findAddStreamBtn().props('disabled')).toBe(false);
+        expect(findSubmitStreamBtn().props('disabled')).toBe(false);
 
         await findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
         await waitForPromises();
@@ -273,14 +275,14 @@ describe('StreamGcpLoggingDestinationEditor', () => {
         });
 
         it('renders the save button text', () => {
-          expect(findAddStreamBtn().attributes('name')).toBe(
+          expect(findSubmitStreamBtn().attributes('name')).toBe(
             ADD_STREAM_EDITOR_I18N.SAVE_BUTTON_NAME,
           );
-          expect(findAddStreamBtn().text()).toBe(ADD_STREAM_EDITOR_I18N.SAVE_BUTTON_TEXT);
+          expect(findSubmitStreamBtn().text()).toBe(ADD_STREAM_EDITOR_I18N.SAVE_BUTTON_TEXT);
         });
 
         it('disables the save button at first', () => {
-          expect(findAddStreamBtn().props('disabled')).toBe(true);
+          expect(findSubmitStreamBtn().props('disabled')).toBe(true);
         });
 
         it('displays the private key field when adding', async () => {
@@ -311,11 +313,11 @@ describe('StreamGcpLoggingDestinationEditor', () => {
       `('enable the save button when $name is edited', async ({ findInputFn }) => {
         createComponent({ props: { item: mockGcpLoggingDestinations[0] } });
 
-        expect(findAddStreamBtn().props('disabled')).toBe(true);
+        expect(findSubmitStreamBtn().props('disabled')).toBe(true);
 
         await findInputFn().setValue('test');
 
-        expect(findAddStreamBtn().props('disabled')).toBe(false);
+        expect(findSubmitStreamBtn().props('disabled')).toBe(false);
       });
 
       it('should emit updated event after destination updated', async () => {
@@ -525,12 +527,14 @@ describe('StreamGcpLoggingDestinationEditor', () => {
       });
 
       it('renders the add button text', () => {
-        expect(findAddStreamBtn().attributes('name')).toBe(ADD_STREAM_EDITOR_I18N.ADD_BUTTON_NAME);
-        expect(findAddStreamBtn().text()).toBe(ADD_STREAM_EDITOR_I18N.ADD_BUTTON_TEXT);
+        expect(findSubmitStreamBtn().attributes('name')).toBe(
+          ADD_STREAM_EDITOR_I18N.ADD_BUTTON_NAME,
+        );
+        expect(findSubmitStreamBtn().text()).toBe(ADD_STREAM_EDITOR_I18N.ADD_BUTTON_TEXT);
       });
 
       it('disables the add button at first', () => {
-        expect(findAddStreamBtn().props('disabled')).toBe(true);
+        expect(findSubmitStreamBtn().props('disabled')).toBe(true);
       });
     });
 
@@ -551,7 +555,7 @@ describe('StreamGcpLoggingDestinationEditor', () => {
         await findLogId().setValue(mockInstanceGcpLoggingDestinations[0].logIdName);
         await findPrivateKey().setValue(mockInstanceGcpLoggingDestinations[0].privateKey);
 
-        expect(findAddStreamBtn().props('disabled')).toBe(false);
+        expect(findSubmitStreamBtn().props('disabled')).toBe(false);
 
         await findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
         await waitForPromises();
@@ -659,14 +663,14 @@ describe('StreamGcpLoggingDestinationEditor', () => {
         });
 
         it('renders the save button text', () => {
-          expect(findAddStreamBtn().attributes('name')).toBe(
+          expect(findSubmitStreamBtn().attributes('name')).toBe(
             ADD_STREAM_EDITOR_I18N.SAVE_BUTTON_NAME,
           );
-          expect(findAddStreamBtn().text()).toBe(ADD_STREAM_EDITOR_I18N.SAVE_BUTTON_TEXT);
+          expect(findSubmitStreamBtn().text()).toBe(ADD_STREAM_EDITOR_I18N.SAVE_BUTTON_TEXT);
         });
 
         it('disables the save button at first', () => {
-          expect(findAddStreamBtn().props('disabled')).toBe(true);
+          expect(findSubmitStreamBtn().props('disabled')).toBe(true);
         });
 
         it('displays the private key field when adding', async () => {
@@ -697,11 +701,11 @@ describe('StreamGcpLoggingDestinationEditor', () => {
       `('enable the save button when $name is edited', async ({ findInputFn }) => {
         createComponent({ props: { item: mockInstanceGcpLoggingDestinations[0] } });
 
-        expect(findAddStreamBtn().props('disabled')).toBe(true);
+        expect(findSubmitStreamBtn().props('disabled')).toBe(true);
 
         await findInputFn().setValue('test');
 
-        expect(findAddStreamBtn().props('disabled')).toBe(false);
+        expect(findSubmitStreamBtn().props('disabled')).toBe(false);
       });
 
       it('should emit updated event after destination updated', async () => {

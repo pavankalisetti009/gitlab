@@ -122,7 +122,7 @@ describe('StreamHttpDestinationEditor', () => {
   const findNoHeaderCreatedText = () => wrapper.findByTestId('no-header-created');
   const findMaximumHeadersText = () => wrapper.findByTestId('maximum-headers');
   const findAddHeaderBtn = () => wrapper.findByTestId('add-header-row-button');
-  const findAddStreamBtn = () => wrapper.findByTestId('stream-destination-add-button');
+  const findSubmitStreamBtn = () => wrapper.findByTestId('stream-destination-submit-button');
   const findCancelStreamBtn = () => wrapper.findByTestId('stream-destination-cancel-button');
   const findDeleteBtn = () => wrapper.findByTestId('stream-destination-delete-button');
   const findDeleteModal = () => wrapper.findComponent(StreamDeleteModal);
@@ -512,7 +512,7 @@ describe('StreamHttpDestinationEditor', () => {
           await findAddHeaderBtn().trigger('click');
           await setHeadersRowData(0, { name, value });
 
-          expect(findAddStreamBtn().props('disabled')).toBe(disabled);
+          expect(findSubmitStreamBtn().props('disabled')).toBe(disabled);
         },
       );
 
@@ -524,7 +524,7 @@ describe('StreamHttpDestinationEditor', () => {
 
         await findAddHeaderBtn().trigger('click');
         await setHeadersRowData(1, { name: 'a', value: 'c' });
-        expect(findAddStreamBtn().props('disabled')).toBe(true);
+        expect(findSubmitStreamBtn().props('disabled')).toBe(true);
       });
 
       it('should delete a row when the delete button is clicked', async () => {
@@ -557,7 +557,7 @@ describe('StreamHttpDestinationEditor', () => {
 
         await findHeaderDeleteBtn(0).trigger('click');
 
-        expect(findAddStreamBtn().props('disabled')).toBe(false);
+        expect(findSubmitStreamBtn().props('disabled')).toBe(false);
       });
 
       it('keeps add button disabled when invalid header with the same name is deleted', async () => {
@@ -575,7 +575,7 @@ describe('StreamHttpDestinationEditor', () => {
 
         await findHeaderDeleteBtn(1).trigger('click');
 
-        expect(findAddStreamBtn().props('disabled')).toBe(true);
+        expect(findSubmitStreamBtn().props('disabled')).toBe(true);
       });
 
       it('should show the maximum number of rows message only when the maximum is reached', async () => {
@@ -629,14 +629,14 @@ describe('StreamHttpDestinationEditor', () => {
         });
 
         it('changes the save button text', () => {
-          expect(findAddStreamBtn().attributes('name')).toBe(
+          expect(findSubmitStreamBtn().attributes('name')).toBe(
             ADD_STREAM_EDITOR_I18N.SAVE_BUTTON_NAME,
           );
-          expect(findAddStreamBtn().text()).toBe(ADD_STREAM_EDITOR_I18N.SAVE_BUTTON_TEXT);
+          expect(findSubmitStreamBtn().text()).toBe(ADD_STREAM_EDITOR_I18N.SAVE_BUTTON_TEXT);
         });
 
         it('disables the save button text at first', () => {
-          expect(findAddStreamBtn().props('disabled')).toBe(true);
+          expect(findSubmitStreamBtn().props('disabled')).toBe(true);
         });
 
         it('renders the delete button', () => {
@@ -901,7 +901,7 @@ describe('StreamHttpDestinationEditor', () => {
 
           await findFilters().vm.$emit('input', mockRemoveFilterSelect);
 
-          expect(findAddStreamBtn().props('disabled')).toBe(false);
+          expect(findSubmitStreamBtn().props('disabled')).toBe(false);
 
           findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
           await waitForPromises();
@@ -936,7 +936,7 @@ describe('StreamHttpDestinationEditor', () => {
 
           await findFilters().vm.$emit('input', mockAddFilterSelect);
 
-          expect(findAddStreamBtn().props('disabled')).toBe(false);
+          expect(findSubmitStreamBtn().props('disabled')).toBe(false);
 
           findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
           await waitForPromises();
@@ -1024,7 +1024,7 @@ describe('StreamHttpDestinationEditor', () => {
 
           await findNamespaceFilters().vm.$emit('input', mockRemoveNamespaceFilters);
 
-          expect(findAddStreamBtn().props('disabled')).toBe(false);
+          expect(findSubmitStreamBtn().props('disabled')).toBe(false);
 
           findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
           await waitForPromises();
@@ -1058,7 +1058,7 @@ describe('StreamHttpDestinationEditor', () => {
 
           await findNamespaceFilters().vm.$emit('input', mockAddNamespaceFilters);
 
-          expect(findAddStreamBtn().props('disabled')).toBe(false);
+          expect(findSubmitStreamBtn().props('disabled')).toBe(false);
 
           findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
           await waitForPromises();
@@ -1357,7 +1357,7 @@ describe('StreamHttpDestinationEditor', () => {
           await findAddHeaderBtn().trigger('click');
           await setHeadersRowData(0, { name, value });
 
-          expect(findAddStreamBtn().props('disabled')).toBe(disabled);
+          expect(findSubmitStreamBtn().props('disabled')).toBe(disabled);
         },
       );
 
@@ -1369,7 +1369,7 @@ describe('StreamHttpDestinationEditor', () => {
 
         await findAddHeaderBtn().trigger('click');
         await setHeadersRowData(1, { name: 'a', value: 'c' });
-        expect(findAddStreamBtn().props('disabled')).toBe(true);
+        expect(findSubmitStreamBtn().props('disabled')).toBe(true);
       });
 
       it('should delete a row when the delete button is clicked', async () => {
@@ -1444,14 +1444,14 @@ describe('StreamHttpDestinationEditor', () => {
         });
 
         it('changes the save button text', () => {
-          expect(findAddStreamBtn().attributes('name')).toBe(
+          expect(findSubmitStreamBtn().attributes('name')).toBe(
             ADD_STREAM_EDITOR_I18N.SAVE_BUTTON_NAME,
           );
-          expect(findAddStreamBtn().text()).toBe(ADD_STREAM_EDITOR_I18N.SAVE_BUTTON_TEXT);
+          expect(findSubmitStreamBtn().text()).toBe(ADD_STREAM_EDITOR_I18N.SAVE_BUTTON_TEXT);
         });
 
         it('disables the save button text at first', () => {
-          expect(findAddStreamBtn().props('disabled')).toBe(true);
+          expect(findSubmitStreamBtn().props('disabled')).toBe(true);
         });
 
         it('renders the delete button', () => {
@@ -1679,7 +1679,7 @@ describe('StreamHttpDestinationEditor', () => {
 
           await findFilters().vm.$emit('input', mockRemoveFilterSelect);
 
-          expect(findAddStreamBtn().props('disabled')).toBe(false);
+          expect(findSubmitStreamBtn().props('disabled')).toBe(false);
 
           findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
           await waitForPromises();
@@ -1714,7 +1714,7 @@ describe('StreamHttpDestinationEditor', () => {
 
           await findFilters().vm.$emit('input', mockAddFilterSelect);
 
-          expect(findAddStreamBtn().props('disabled')).toBe(false);
+          expect(findSubmitStreamBtn().props('disabled')).toBe(false);
 
           findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
           await waitForPromises();

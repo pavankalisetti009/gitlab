@@ -19,7 +19,7 @@ module QA
             view 'ee/app/assets/javascripts/audit_events/components/stream/stream_http_destination_editor.vue' do
               element 'destination-name'
               element 'destination-url'
-              element 'stream-destination-add-button'
+              element 'stream-destination-submit-button'
             end
 
             view 'ee/app/assets/javascripts/audit_events/components/stream/stream_empty_state.vue' do
@@ -36,7 +36,7 @@ module QA
               click_element('add-http-destination')
               fill_element('destination-name', name)
               fill_element('destination-url', url)
-              click_element('stream-destination-add-button')
+              click_element('stream-destination-submit-button')
             end
 
             def click_streams_tab

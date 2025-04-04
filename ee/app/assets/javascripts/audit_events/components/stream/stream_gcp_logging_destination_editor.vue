@@ -369,7 +369,7 @@ export default {
           class="gl-mr-3"
           variant="confirm"
           type="submit"
-          data-testid="stream-destination-add-button"
+          data-testid="stream-destination-submit-button"
           >{{ addButtonText }}</gl-button
         >
         <gl-button

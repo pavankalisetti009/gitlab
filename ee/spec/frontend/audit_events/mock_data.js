@@ -28,7 +28,7 @@ const populateEvent = (user, hasAuthorUrl = true, hasObjectUrl = true) => {
   };
 };
 
-const verification = [
+export const verification = [
   'id5hzCbERzSkQ82tAs16tH5Y',
   'JsSQtg86au6buRtX9j98sYa8',
   'Cr28SHnrJtgpSXUEGfictGMS',
@@ -89,6 +89,14 @@ export const makeNamespaceFilter = () => ({
     __typename: `Namespace`,
   },
 });
+
+export const newStreamDestination = {
+  name: '',
+  config: {},
+  category: 'http',
+  namespaceFilters: [],
+  eventTypeFilters: [],
+};
 
 export const mockConsolidatedAPIExternalDestinations = [
   {

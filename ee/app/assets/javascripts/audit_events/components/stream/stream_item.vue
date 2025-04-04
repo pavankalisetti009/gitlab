@@ -10,6 +10,7 @@ import {
   GlButton,
   GlTooltipDirective as GlTooltip,
 } from '@gitlab/ui';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   STREAM_ITEMS_I18N,
   DESTINATION_TYPE_HTTP,
@@ -17,6 +18,7 @@ import {
   DESTINATION_TYPE_AMAZON_S3,
   UPDATE_STREAM_MESSAGE,
 } from '../../constants';
+import StreamDestinationEditor from './stream_destination_editor.vue';
 import StreamHttpDestinationEditor from './stream_http_destination_editor.vue';
 import StreamGcpLoggingDestinationEditor from './stream_gcp_logging_destination_editor.vue';
 import StreamAmazonS3DestinationEditor from './stream_amazon_s3_destination_editor.vue';
@@ -31,6 +33,7 @@ export default {
     GlCollapse,
     GlButton,
     GlIcon,
+    StreamDestinationEditor,
     StreamHttpDestinationEditor,
     StreamGcpLoggingDestinationEditor,
     StreamAmazonS3DestinationEditor,
@@ -38,6 +41,7 @@ export default {
   directives: {
     GlTooltip,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: ['groupPath'],
   props: {
     item: {
@@ -150,8 +154,16 @@ export default {
       >
         {{ successMessage }}
       </gl-alert>
+      <stream-destination-editor
+        v-if="glFeatures.useConsolidatedAuditEventStreamDestApi"
+        :item="item"
+        @updated="onUpdated"
+        @deleted="onDelete"
+        @error="onEditorError"
+        @cancel="toggleEditMode"
+      />
       <stream-http-destination-editor
-        v-if="type == $options.DESTINATION_TYPE_HTTP"
+        v-else-if="type == $options.DESTINATION_TYPE_HTTP"
         :item="item"
         class="gl-pb-5 gl-pl-6 gl-pr-0"
         @updated="onUpdated"
