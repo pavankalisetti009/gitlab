@@ -67,7 +67,7 @@ describe('StatisticsSeatsCard', () => {
   const findSeatsUsedBlock = () => wrapper.findByTestId('seats-used');
   const findSeatsOwedBlock = () => wrapper.findByTestId('seats-owed');
   const findPurchaseButton = () => wrapper.findByTestId('purchase-button');
-  const findExplorePaidPlansButton = () => wrapper.findByTestId('explore-paid-plans');
+  const findExplorePlansButton = () => wrapper.findByTestId('explore-plans');
   const findLimitedAccessModal = () => wrapper.findComponent(LimitedAccessModal);
 
   describe('when `isLoading` computed value is `true`', () => {
@@ -251,8 +251,8 @@ describe('StatisticsSeatsCard', () => {
           expect(findLimitedAccessModal().exists()).toBe(false);
         });
 
-        it('renders the `Explore paid plans` button', () => {
-          expect(findExplorePaidPlansButton().exists()).toBe(true);
+        it('renders the `Explore plans` button', () => {
+          expect(findExplorePlansButton().exists()).toBe(true);
         });
       });
 
@@ -271,8 +271,8 @@ describe('StatisticsSeatsCard', () => {
           expect(findLimitedAccessModal().exists()).toBe(false);
         });
 
-        it('does not render the `Explore paid plans` button', () => {
-          expect(findExplorePaidPlansButton().exists()).toBe(false);
+        it('does not render the `Explore plans` button', () => {
+          expect(findExplorePlansButton().exists()).toBe(false);
         });
       });
     });
@@ -305,8 +305,8 @@ describe('StatisticsSeatsCard', () => {
         expect(findLimitedAccessModal().exists()).toBe(false);
       });
 
-      it('renders the `Explore paid plans` button', () => {
-        expect(findExplorePaidPlansButton().exists()).toBe(true);
+      it('renders the `Explore plans` button', () => {
+        expect(findExplorePlansButton().exists()).toBe(true);
       });
 
       describe('when it is a community plan', () => {
@@ -327,8 +327,8 @@ describe('StatisticsSeatsCard', () => {
           return waitForPromises();
         });
 
-        it('does not show the `Explore paid plans` button', () => {
-          expect(findExplorePaidPlansButton().exists()).toBe(false);
+        it('does not show the `Explore plans` button', () => {
+          expect(findExplorePlansButton().exists()).toBe(false);
         });
       });
     });
@@ -410,8 +410,8 @@ describe('StatisticsSeatsCard', () => {
             expect(visitUrl).not.toHaveBeenCalled();
           });
 
-          it('does not show the `Explore paid plans` button', () => {
-            expect(findExplorePaidPlansButton().exists()).toBe(false);
+          it('does not show the `Explore plans` button', () => {
+            expect(findExplorePlansButton().exists()).toBe(false);
           });
         },
       );
@@ -450,8 +450,8 @@ describe('StatisticsSeatsCard', () => {
             expect(visitUrl).toHaveBeenCalledWith(purchaseButtonLink);
           });
 
-          it('does not show the `Explore paid plans` button', () => {
-            expect(findExplorePaidPlansButton().exists()).toBe(false);
+          it('does not show the `Explore plans` button', () => {
+            expect(findExplorePlansButton().exists()).toBe(false);
           });
         },
       );

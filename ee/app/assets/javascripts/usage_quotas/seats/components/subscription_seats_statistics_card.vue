@@ -1,7 +1,7 @@
 <script>
 import { GlLink, GlTooltipDirective, GlSkeletonLoader } from '@gitlab/ui';
 import { PROMO_URL } from '~/constants';
-import { __, s__, sprintf } from '~/locale';
+import { __, s__, n__, sprintf } from '~/locale';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
@@ -78,8 +78,8 @@ export default {
       if (this.hasLimitedFreePlan) return s__('Billings|Seats in use / Seats available');
       return s__('Billings|Seats in use / Seats in subscription');
     },
-    shouldDisplayUnlimitedSeatText() {
-      return this.hasFreePlan && !this.hasLimitedFreePlan;
+    shouldDisplayLimitedSeatText() {
+      return this.hasFreePlan || this.hasLimitedFreePlan || this.activeTrial;
     },
     totalSeatsUsed() {
       if (this.hasNoSubscription) {
@@ -108,13 +108,24 @@ export default {
         );
       return this.freeNamespaceSeatsLimitText;
     },
+    additionalInfo() {
+      if (this.maxFreeNamespaceSeats && (this.hasLimitedFreePlan || this.activeTrial)) {
+        return n__(
+          'Billings|Groups in the Free tier are limited to %d seat',
+          'Billings|Groups in the Free tier are limited to %d seats',
+          this.maxFreeNamespaceSeats,
+        );
+      }
+
+      return s__('Billings|You have unlimited seat count.');
+    },
   },
 };
 </script>
 
 <template>
   <div
-    class="gl-border gl-rounded-base gl-border-section gl-bg-section gl-p-5"
+    class="gl-border gl-rounded-base gl-border-section gl-bg-section gl-p-6"
     data-testid="container"
   >
     <div v-if="$apollo.loading">
@@ -145,8 +156,8 @@ export default {
               <help-icon />
             </gl-link>
           </p>
-          <p v-if="shouldDisplayUnlimitedSeatText" class="border-top pt-3 gl-mt-5">
-            {{ s__('Billings|You have unlimited seat count.') }}
+          <p v-if="shouldDisplayLimitedSeatText" class="border-top pt-3 gl-mt-5">
+            {{ additionalInfo }}
           </p>
         </template>
       </usage-statistics>

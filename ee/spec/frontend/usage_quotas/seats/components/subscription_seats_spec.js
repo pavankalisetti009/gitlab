@@ -157,7 +157,6 @@ describe('SubscriptionSeats', () => {
         expect(upgradeInfoCard.exists()).toBe(true);
         expect(upgradeInfoCard.props()).toMatchObject({
           explorePlansPath: providedFields.explorePlansPath,
-          activeTrial: false,
         });
       });
     });

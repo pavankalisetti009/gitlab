@@ -9753,6 +9753,11 @@ msgstr ""
 msgid "Billings|Free tier and trial groups can invite a maximum of 20 members per day."
 msgstr ""
 
+msgid "Billings|Groups in the Free tier are limited to %d seat"
+msgid_plural "Billings|Groups in the Free tier are limited to %d seats"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "Billings|In a seat"
 msgstr ""
 
@@ -9791,6 +9796,9 @@ msgid "Billing|%{value} user selected"
 msgid_plural "Billing|%{value} users selected"
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "Billing|Add additional seats"
+msgstr ""
 
 msgid "Billing|Add seats"
 msgstr ""
@@ -9867,16 +9875,14 @@ msgstr ""
 msgid "Billing|Explore paid plans"
 msgstr ""
 
+msgid "Billing|Explore plans"
+msgstr ""
+
 msgid "Billing|Export list"
 msgstr ""
 
 msgid "Billing|Group invite"
 msgstr ""
-
-msgid "Billing|Groups in the Free tier are limited to %d seat"
-msgid_plural "Billing|Groups in the Free tier are limited to %d seats"
-msgstr[0] ""
-msgstr[1] ""
 
 msgid "Billing|Invited group"
 msgstr ""
@@ -9920,6 +9926,9 @@ msgstr ""
 msgid "Billing|Something went wrong when un-assigning the add-on to this member. If the problem persists, please %{supportLinkStart}contact support%{supportLinkEnd}."
 msgstr ""
 
+msgid "Billing|Start a free 60-day trial or upgrade to a paid tier to get an unlimited number of seats."
+msgstr ""
+
 msgid "Billing|There are not enough seats to assign the GitLab Duo add-on to all selected members."
 msgstr ""
 
@@ -9936,16 +9945,10 @@ msgstr[1] ""
 msgid "Billing|This user is scheduled for removal."
 msgstr ""
 
-msgid "Billing|To ensure all members can access the group when your trial ends, you can upgrade to a paid tier."
-msgstr ""
-
 msgid "Billing|Toggle seat details"
 msgstr ""
 
 msgid "Billing|Type %{username} to confirm"
-msgstr ""
-
-msgid "Billing|Unlimited members during your trial"
 msgstr ""
 
 msgid "Billing|User successfully scheduled for removal. This process might take some time. Refresh the page to see the changes."
