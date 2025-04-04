@@ -31,7 +31,6 @@ module EE
       end
 
       def resync_policies(merge_request)
-        return if ::Feature.disabled?(:cleanup_stale_policy_violations, project)
         return unless project.licensed_feature_available?(:security_orchestration_policies)
 
         # Ensure that we re-create violations and require approvals if they were previously set as optional

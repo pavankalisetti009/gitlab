@@ -100,17 +100,9 @@ module EE
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchCreatedEvent
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchDestroyedEvent
           store.subscribe ::Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker,
-            to: ::MergeRequests::ClosedEvent,
-            if: ->(event) {
-              actor = ::Project.actor_from_id(event.data[:project_id])
-              ::Feature.enabled?(:cleanup_stale_policy_violations, actor)
-            }
+            to: ::MergeRequests::ClosedEvent
           store.subscribe ::Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker,
-            to: ::MergeRequests::MergedEvent,
-            if: ->(event) {
-              actor = ::Project.actor_from_id(event.data[:project_id])
-              ::Feature.enabled?(:cleanup_stale_policy_violations, actor)
-            }
+            to: ::MergeRequests::MergedEvent
         end
 
         def register_threat_insights_subscribers(store)
