@@ -485,6 +485,34 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     end
   end
 
+  describe '#list_project_policies' do
+    let(:project_id) { 123 }
+
+    context 'when no policies exist' do
+      it 'returns an empty array' do
+        result = client.list_project_policies(project_id: project_id)
+
+        expect(result).to eq([])
+      end
+    end
+
+    context 'when policies exist' do
+      before do
+        client.set_policy(SecretsManagement::AclPolicy.new("project_123/users/direct/user_123"))
+        client.set_policy(SecretsManagement::AclPolicy.new("project_123/users/direct/user_124"))
+      end
+
+      it 'returns an array of policy data' do
+        result = client.list_project_policies(project_id: project_id)
+
+        expect(result).to be_an(Array)
+        expect(result.size).to eq(2)
+        expect(result[0]['key']).to eq('project_123/users/direct/user_123')
+        expect(result[1]['key']).to eq('project_123/users/direct/user_124')
+      end
+    end
+  end
+
   describe '#get_policy' do
     include_context 'with policy management'
 

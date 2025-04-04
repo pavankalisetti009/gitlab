@@ -280,6 +280,12 @@ module EE
           description: 'View a specific project secret.',
           resolver: ::Resolvers::SecretsManagement::ProjectSecretViewResolver
 
+        field :secret_permissions, ::Types::SecretsManagement::Permissions::SecretPermissionType.connection_type,
+          null: true,
+          experiment: { milestone: '17.10' },
+          description: 'List secret permissions.',
+          resolver: ::Resolvers::SecretsManagement::Permissions::SecretPermissionsResolver
+
         field :ai_feature_settings,
           ::Types::Ai::FeatureSettings::FeatureSettingType.connection_type,
           null: true,

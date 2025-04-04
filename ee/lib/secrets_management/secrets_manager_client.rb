@@ -74,6 +74,24 @@ module SecretsManagement
       end
     end
 
+    def list_project_policies(project_id: nil)
+      result = make_request(:list, "sys/policies/acl/project_#{project_id}/users", {}, optional: true)
+      return [] unless result
+
+      result["data"]["keys"].filter_map do |key|
+        metadata = get_policy(key)
+        next unless metadata
+
+        policy_data = { "key" => key, "metadata" => metadata }
+
+        if block_given?
+          yield(policy_data)
+        else
+          policy_data
+        end
+      end
+    end
+
     def read_secret_metadata(mount_path, secret_path)
       result = make_request(:get, "#{mount_path}/metadata/#{secret_path}", {}, optional: true)
       return unless result
