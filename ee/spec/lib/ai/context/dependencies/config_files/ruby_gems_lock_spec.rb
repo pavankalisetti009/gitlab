@@ -52,11 +52,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::RubyGemsLock, feature_cat
         CONTENT
       end
 
-      let(:expected_error) do
-        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::DataSerializationException.new(
-          'Your gem lockfile contains merge conflicts.'
-        )
-      end
+      let(:expected_error_class_name) { 'ParsingErrors::DeserializationException' }
+      let(:expected_error_message) { 'Your gem lockfile contains merge conflicts.' }
     end
   end
 

@@ -50,7 +50,7 @@ RSpec.describe Ai::Context::Dependencies::ConfigFileParser, feature_category: :c
           {
             lang: 'java',
             valid: false,
-            error_message: 'Error(s) while parsing file `dir1/pom.xml`: file empty',
+            error_message: 'Error while parsing file `dir1/pom.xml`: file empty',
             payload: nil
           },
           {

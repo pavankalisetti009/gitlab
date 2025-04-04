@@ -200,7 +200,7 @@ RSpec.describe Ai::RepositoryXray::ScanDependenciesService, feature_category: :c
         expect(execute.payload).to match({
           success_messages: [],
           error_messages: [
-            'Error(s) while parsing file `go.mod`: unexpected format or dependencies not present (GoModules)'
+            'Error while parsing file `go.mod`: unexpected format or dependencies not present (GoModules)'
           ],
           max_dependency_count: 0
         })
@@ -222,7 +222,7 @@ RSpec.describe Ai::RepositoryXray::ScanDependenciesService, feature_category: :c
           success_messages: contain_exactly(
             'Found 1 dependencies in `Gemfile.lock` (RubyGemsLock)',
             'Found 2 dependencies in `dir1/dir2/go.mod` (GoModules)'),
-          error_messages: ['Error(s) while parsing file `dir1/pom.xml`: file empty (JavaMaven)'],
+          error_messages: ['Error while parsing file `dir1/pom.xml`: file empty (JavaMaven)'],
           max_dependency_count: 2
         })
       end

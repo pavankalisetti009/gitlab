@@ -6,7 +6,7 @@ module Ai
       module ConfigFiles
         module ParsingErrors
           BaseError = Class.new(StandardError)
-          DataSerializationException = Class.new(BaseError)
+          DeserializationException = Class.new(BaseError)
 
           class FileEmptyError < BaseError
             def initialize
@@ -41,12 +41,6 @@ module Ai
           class UnexpectedNodeError < BaseError
             def initialize
               super('encountered unexpected node')
-            end
-          end
-
-          class InvalidSerializationFormatError < BaseError
-            def initialize(format)
-              super("content is not valid #{format}")
             end
           end
         end

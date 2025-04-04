@@ -28,7 +28,7 @@ module Ai
           #
           def extract_libs
             doc = Nokogiri::XML(content) # Always returns a Nokogiri::XML::Document object even with invalid content
-            raise ParsingErrors::InvalidSerializationFormatError, 'XML' if doc.errors.any?
+            raise ParsingErrors::DeserializationException, 'content is not valid XML' if doc.errors.any?
 
             Array.wrap(dig_in(doc.to_hash, 'project', 'dependencies', 'dependency')).map do |dep|
               name = dig_in(dep, 'artifactId', '__content__')

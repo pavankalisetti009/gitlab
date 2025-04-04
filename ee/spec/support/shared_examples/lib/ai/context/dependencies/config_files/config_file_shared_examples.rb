@@ -28,32 +28,33 @@ end
 ### Optionally, the context can contain:
 #  - invalid_config_file_content: Content of an invalid dependency config file
 #  - config_file_class: The config file class to use instead of `described_class`
-#  - expected_error: The error object
+#  - expected_error_class_name: The error class name (string)
+#  - expected_error_message: The error message
 #
 RSpec.shared_examples 'parsing an invalid dependency config file' do
   let(:config_file_content) { try(:invalid_config_file_content) || 'invalid' }
   let(:project) { instance_double('Project', id: 123) }
   let(:blob) { double(path: 'path/to/file', data: config_file_content) } # rubocop: disable RSpec/VerifiedDoubles -- Inherits from both Gitlab::Git::Blob and Blob
   let(:config_file) { (try(:config_file_class) || described_class).new(blob, project) }
-  let(:default_error) do
-    ::Ai::Context::Dependencies::ConfigFiles::ParsingErrors::UnexpectedFormatOrDependenciesNotPresentError.new
-  end
+  let(:default_error_class_name) { 'ParsingErrors::UnexpectedFormatOrDependenciesNotPresentError' }
+  let(:default_error_message) { 'unexpected format or dependencies not present' }
 
   it 'returns an error message' do
     expect(::Gitlab::AppJsonLogger)
-      .to receive(:info).once.ordered
+      .to receive(:info)
       .with(
         class: config_file.class.name,
-        error_class: (try(:expected_error) || default_error).class.name,
-        message: "#{config_file.class.name}: #{(try(:expected_error) || default_error).message}",
+        error_class: 'Ai::Context::Dependencies::ConfigFiles::' \
+          "#{try(:expected_error_class_name) || default_error_class_name}",
+        message: "#{config_file.class.name}: #{try(:expected_error_message) || default_error_message}",
         project_id: project.id
-      ).and_call_original
+      ).once.and_call_original
 
     config_file.parse!
 
     expect(config_file).not_to be_valid
     expect(config_file.error_message).to eq(
-      "Error(s) while parsing file `#{blob.path}`: #{(try(:expected_error) || default_error).message}")
+      "Error while parsing file `#{blob.path}`: #{try(:expected_error_message) || default_error_message}")
     expect(config_file.payload).to be_nil
   end
 end

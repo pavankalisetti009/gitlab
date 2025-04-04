@@ -23,7 +23,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
           libs = dig_in(parsed, 'parent_node', 'child_node')
           libs.try(:map) { |hash| self.class::Lib.new(**hash) }
         rescue JSON::ParserError
-          raise Ai::Context::Dependencies::ConfigFiles::ParsingErrors::InvalidSerializationFormatError, 'JSON'
+          raise Ai::Context::Dependencies::ConfigFiles::ParsingErrors::DeserializationException,
+            'content is not valid JSON'
         end
       end
     )
@@ -81,17 +82,15 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
   end
 
   it_behaves_like 'parsing an invalid dependency config file' do
-    let(:expected_error) do
-      Ai::Context::Dependencies::ConfigFiles::ParsingErrors::InvalidSerializationFormatError.new('JSON')
-    end
+    let(:expected_error_class_name) { 'ParsingErrors::DeserializationException' }
+    let(:expected_error_message) { 'content is not valid JSON' }
   end
 
   context 'when no dependencies are extracted' do
     it_behaves_like 'parsing an invalid dependency config file' do
       let(:invalid_config_file_content) { '{}' }
-      let(:expected_error) do
-        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::UnexpectedFormatOrDependenciesNotPresentError.new
-      end
+      let(:expected_error_class_name) { 'ParsingErrors::UnexpectedFormatOrDependenciesNotPresentError' }
+      let(:expected_error_message) { 'unexpected format or dependencies not present' }
     end
   end
 
@@ -108,9 +107,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
     with_them do
       it_behaves_like 'parsing an invalid dependency config file' do
         let(:invalid_config_file_content) { Gitlab::Json.dump(content) }
-        let(:expected_error) do
-          Ai::Context::Dependencies::ConfigFiles::ParsingErrors::UnexpectedNodeError.new
-        end
+        let(:expected_error_class_name) { 'ParsingErrors::UnexpectedNodeError' }
+        let(:expected_error_message) { 'encountered unexpected node' }
       end
     end
   end
@@ -118,24 +116,19 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
   context 'when the content is empty' do
     it_behaves_like 'parsing an invalid dependency config file' do
       let(:invalid_config_file_content) { '' }
-      let(:expected_error) do
-        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::FileEmptyError.new
-      end
+      let(:expected_error_class_name) { 'ParsingErrors::FileEmptyError' }
+      let(:expected_error_message) { 'file empty' }
     end
   end
 
   context 'when a dependency name is an unexpected type or blank' do
-    where(:lib_name, :expected_error) do
-      ['lib1']   |
-        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::UnexpectedDependencyNameTypeError.new('Array')
-      { k: 'v' } |
-        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::UnexpectedDependencyNameTypeError.new('Hash')
-      true       |
-        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::UnexpectedDependencyNameTypeError.new('TrueClass')
-      nil        |
-        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::UnexpectedDependencyNameTypeError.new('NilClass')
-      ''         | Ai::Context::Dependencies::ConfigFiles::ParsingErrors::BlankDependencyNameError.new
-      ' '        | Ai::Context::Dependencies::ConfigFiles::ParsingErrors::BlankDependencyNameError.new
+    where(:lib_name, :expected_error_class_name, :expected_error_message) do
+      ['lib1']   | 'ParsingErrors::UnexpectedDependencyNameTypeError' | 'unexpected dependency name type `Array`'
+      { k: 'v' } | 'ParsingErrors::UnexpectedDependencyNameTypeError' | 'unexpected dependency name type `Hash`'
+      true       | 'ParsingErrors::UnexpectedDependencyNameTypeError' | 'unexpected dependency name type `TrueClass`'
+      nil        | 'ParsingErrors::UnexpectedDependencyNameTypeError' | 'unexpected dependency name type `NilClass`'
+      ''         | 'ParsingErrors::BlankDependencyNameError'          | 'dependency name is blank'
+      ' '        | 'ParsingErrors::BlankDependencyNameError'          | 'dependency name is blank'
     end
 
     with_them do
@@ -153,13 +146,11 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
   end
 
   context 'when a dependency version is an unexpected type' do
-    where(:lib_version, :expected_error) do
-      ['lib1']   |
-        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::UnexpectedDependencyVersionTypeError.new('Array')
-      { k: 'v' } |
-        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::UnexpectedDependencyVersionTypeError.new('Hash')
-      true       |
-        Ai::Context::Dependencies::ConfigFiles::ParsingErrors::UnexpectedDependencyVersionTypeError.new('TrueClass')
+    where(:lib_version, :expected_error_class_name, :expected_error_message) do
+      ['lib1']   | 'ParsingErrors::UnexpectedDependencyVersionTypeError' | 'unexpected dependency version type `Array`'
+      { k: 'v' } | 'ParsingErrors::UnexpectedDependencyVersionTypeError' | 'unexpected dependency version type `Hash`'
+      true       | 'ParsingErrors::UnexpectedDependencyVersionTypeError' |
+        'unexpected dependency version type `TrueClass`'
     end
 
     with_them do
@@ -221,11 +212,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
             })
           end
 
-          let(:expected_error) do
-            Ai::Context::Dependencies::ConfigFiles::Base::StringValidationError.new(
-              "dependency name `#{lib_name}` contains invalid characters"
-            )
-          end
+          let(:expected_error_class_name) { 'Base::StringValidationError' }
+          let(:expected_error_message) { "dependency name `#{lib_name}` contains invalid characters" }
         end
       end
     end
@@ -244,11 +232,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
           })
         end
 
-        let(:expected_error) do
-          Ai::Context::Dependencies::ConfigFiles::Base::StringValidationError.new(
-            'dependency name `long-...` exceeds 4 characters'
-          )
-        end
+        let(:expected_error_class_name) { 'Base::StringValidationError' }
+        let(:expected_error_message) { 'dependency name `long-...` exceeds 4 characters' }
       end
     end
 
@@ -265,11 +250,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
             })
           end
 
-          let(:expected_error) do
-            Ai::Context::Dependencies::ConfigFiles::Base::StringValidationError.new(
-              "dependency version `#{lib_version}` contains invalid characters"
-            )
-          end
+          let(:expected_error_class_name) { 'Base::StringValidationError' }
+          let(:expected_error_message) { "dependency version `#{lib_version}` contains invalid characters" }
         end
       end
     end
@@ -288,11 +270,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
           })
         end
 
-        let(:expected_error) do
-          Ai::Context::Dependencies::ConfigFiles::Base::StringValidationError.new(
-            'dependency version `12345...` exceeds 4 characters'
-          )
-        end
+        let(:expected_error_class_name) { 'Base::StringValidationError' }
+        let(:expected_error_message) { 'dependency version `12345...` exceeds 4 characters' }
       end
     end
   end

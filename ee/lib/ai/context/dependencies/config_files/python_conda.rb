@@ -33,9 +33,9 @@ module Ai
               Lib.new(name: name, version: version)
             end
           rescue Psych::SyntaxError
-            raise ParsingErrors::InvalidSerializationFormatError, 'YAML'
+            raise ParsingErrors::DeserializationException, 'content is not valid YAML'
           rescue Psych::Exception => e
-            raise ParsingErrors::DataSerializationException, "YAML exception - #{e.message}"
+            raise ParsingErrors::DeserializationException, "YAML exception - #{e.message}"
           end
         end
       end
