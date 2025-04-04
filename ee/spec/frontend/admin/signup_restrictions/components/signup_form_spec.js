@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlButton, GlModal } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import waitForPromises from 'helpers/wait_for_promises';
 import { SEAT_CONTROL } from 'ee/pages/admin/application_settings/general/constants';
 import SeatControlSection from 'ee_component/pages/admin/application_settings/general/components/seat_control_section.vue';
@@ -7,6 +7,7 @@ import { stubComponent } from 'helpers/stub_component';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { mockData } from 'jest/admin/signup_restrictions/mock_data';
 import SignupForm from '~/pages/admin/application_settings/general/components/signup_form.vue';
+import BeforeSubmitApproveUsersModal from '~/pages/admin/application_settings/general/components/before_submit_approve_users_modal.vue';
 
 describe('SignUpRestrictionsApp', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -14,7 +15,7 @@ describe('SignUpRestrictionsApp', () => {
   let formSubmitSpy;
 
   const findForm = () => wrapper.findByTestId('form');
-  const findModal = () => wrapper.findComponent(GlModal);
+  const findModal = () => wrapper.findComponent(BeforeSubmitApproveUsersModal);
   const findSeatControlSection = () => wrapper.findComponent(SeatControlSection);
   const findAutoApprovePendingUsersField = () =>
     wrapper.find('[name="application_setting[auto_approve_pending_users]"]');
@@ -79,62 +80,63 @@ describe('SignUpRestrictionsApp', () => {
     );
   });
 
-  describe('form submit button confirmation modal for side-effect of adding possibly unwanted new users', () => {
-    describe('modal actions', () => {
+  describe('with the approve users modal', () => {
+    beforeEach(() => {
+      const INITIAL_USER_CAP = 5;
+      const INITIAL_SEAT_CONTROL = SEAT_CONTROL.USER_CAP;
+
+      mountComponent({
+        provide: {
+          newUserSignupsCap: INITIAL_USER_CAP,
+          seatControl: INITIAL_SEAT_CONTROL,
+          pendingUserCount: 5,
+        },
+        stubs: {
+          GlButton,
+          BeforeSubmitApproveUsersModal: stubComponent(BeforeSubmitApproveUsersModal),
+        },
+      });
+
+      findSeatControlSection().vm.$emit('checkUsersAutoApproval', true);
+
+      findFormSubmitButton().trigger('click');
+
+      return nextTick();
+    });
+
+    describe('when clicking approve users button', () => {
       beforeEach(() => {
-        const INITIAL_USER_CAP = 5;
-        const INITIAL_SEAT_CONTROL = SEAT_CONTROL.USER_CAP;
+        formSubmitSpy = jest.spyOn(HTMLFormElement.prototype, 'submit').mockImplementation();
 
-        mountComponent({
-          provide: {
-            newUserSignupsCap: INITIAL_USER_CAP,
-            seatControl: INITIAL_SEAT_CONTROL,
-            pendingUserCount: 5,
-          },
-          stubs: { GlButton, GlModal: stubComponent(GlModal) },
-        });
-
-        findSeatControlSection().vm.$emit('checkUsersAutoApproval', true);
-
-        findFormSubmitButton().trigger('click');
+        findModal().vm.$emit('primary');
 
         return nextTick();
       });
 
-      describe('clicking approve users button', () => {
-        beforeEach(() => {
-          formSubmitSpy = jest.spyOn(HTMLFormElement.prototype, 'submit').mockImplementation();
-
-          findModal().vm.$emit('primary');
-
-          return nextTick();
-        });
-
-        it('submits the form', () => {
-          expect(formSubmitSpy).toHaveBeenCalled();
-        });
-
-        it('submits the form with the correct value', () => {
-          expect(findAutoApprovePendingUsersField().attributes('value')).toBe('true');
-        });
+      it('submits the form', () => {
+        expect(formSubmitSpy).toHaveBeenCalled();
       });
 
-      describe('clicking proceed without approve button', () => {
-        beforeEach(() => {
-          formSubmitSpy = jest.spyOn(HTMLFormElement.prototype, 'submit').mockImplementation();
+      it('submits the form with the correct value', () => {
+        expect(findAutoApprovePendingUsersField().attributes('value')).toBe('true');
+      });
+    });
 
-          findModal().vm.$emit('secondary');
+    describe('when clicking proceed without approve button', () => {
+      beforeEach(() => {
+        formSubmitSpy = jest.spyOn(HTMLFormElement.prototype, 'submit').mockImplementation();
 
-          return nextTick();
-        });
+        findModal().vm.$emit('secondary');
 
-        it('submits the form', () => {
-          expect(formSubmitSpy).toHaveBeenCalled();
-        });
+        return nextTick();
+      });
 
-        it('submits the form with the correct value', () => {
-          expect(findAutoApprovePendingUsersField().attributes('value')).toBe('false');
-        });
+      it('submits the form', () => {
+        expect(formSubmitSpy).toHaveBeenCalled();
+      });
+
+      it('submits the form with the correct value', () => {
+        expect(findAutoApprovePendingUsersField().attributes('value')).toBe('false');
       });
     });
   });
