@@ -15,7 +15,6 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
   let_it_be(:admin) { create(:admin, organizations: [current_organization]) }
 
   before do
-    stub_feature_flags(downtier_delayed_deletion: false)
     group.add_owner(user)
     group.ldap_group_links.create! cn: 'ldap-group', group_access: Gitlab::Access::MAINTAINER, provider: 'ldap'
     group.saml_group_links.create! saml_group_name: 'saml-group', access_level: Gitlab::Access::GUEST
@@ -1519,6 +1518,10 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
     let(:params) { {} }
 
     subject { delete api("/groups/#{group.id}", user), params: params }
+
+    before do
+      stub_feature_flags(downtier_delayed_deletion: false)
+    end
 
     shared_examples_for 'immediately enqueues the job to delete the group' do
       it 'immediately enqueues the job to delete the group', :clean_gitlab_redis_queues do
