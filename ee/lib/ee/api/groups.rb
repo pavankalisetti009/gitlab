@@ -115,42 +115,10 @@ module EE
             ::Groups::UsersFinder::ALLOWED_FILTERS.any? { |param| params[param].presence }
           end
 
-          def immediately_delete_subgroup_error(group)
-            if !group.subgroup?
-              '`permanently_remove` option is only available for subgroups.'
-            elsif !group.marked_for_deletion?
-              'Group must be marked for deletion first.'
-            elsif group.full_path != params[:full_path]
-              '`full_path` is incorrect. You must enter the complete path for the subgroup.'
-            end
-          end
-
           def check_ssh_certificate_available_to_group(group)
             not_found!('Group') unless group
             not_found! unless group.licensed_feature_available?(:ssh_certificates)
             forbidden!('Group') if group.has_parent?
-          end
-
-          override :delete_group
-          def delete_group(group)
-            return super unless group.adjourned_deletion?
-
-            if ::Gitlab::Utils.to_boolean(params[:permanently_remove])
-              error = immediately_delete_subgroup_error(group)
-              return super if error.nil?
-
-              render_api_error!(error, 400)
-            end
-
-            result = destroy_conditionally!(group) do |group|
-              ::Groups::MarkForDeletionService.new(group, current_user).execute
-            end
-
-            if result[:status] == :success
-              accepted!
-            else
-              render_api_error!(result[:message], 400)
-            end
           end
         end
 
