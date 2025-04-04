@@ -41,6 +41,12 @@ module Security
       (calculate_next_run_at(time_now) - time_now).to_i
     end
 
+    def snoozed?
+      return false unless snoozed_until
+
+      snoozed_until.future?
+    end
+
     private
 
     def timezone

@@ -17,6 +17,7 @@ module Security
         schedule = Security::PipelineExecutionProjectSchedule.find_by_id(schedule_id) || return
 
         return if Feature.disabled?(:scheduled_pipeline_execution_policies, schedule.project)
+        return if schedule.snoozed?
 
         result = execute(schedule)
 

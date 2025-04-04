@@ -15,8 +15,7 @@ RSpec.describe(
       content: {
         content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
         schedules: [schedule]
-      }
-    )
+      })
   end
 
   let(:schedule) do
@@ -126,6 +125,69 @@ RSpec.describe(
     end
   end
 
+  context 'with snooze' do
+    it_behaves_like 'creating a security policy project schedule with correct attributes' do
+      let(:schedule) do
+        {
+          type: 'monthly',
+          days_of_month: [29, 31],
+          start_time: "23:00",
+          time_window: {
+            value: 8.hours.to_i,
+            distribution: 'random'
+          },
+          snooze: {
+            until: '2025-06-26T16:27:00+00:00'
+          }
+        }
+      end
+
+      let(:expected_attributes) do
+        {
+          cron: "0 23 29,31 * *",
+          cron_timezone: "UTC",
+          time_window_seconds: 28800,
+          next_run_at: Time.zone.parse("2025-01-29 23:00:00"), # Wed, Jan 29th
+          project_id: project.id,
+          security_policy_id: policy.id,
+          snoozed_until: Time.zone.parse("2025-06-26 16:27:00")
+        }
+      end
+    end
+  end
+
+  context 'with snooze and time_zone' do
+    it_behaves_like 'creating a security policy project schedule with correct attributes' do
+      let(:schedule) do
+        {
+          type: 'weekly',
+          days: %w[Monday Tuesday],
+          start_time: "12:00",
+          time_window: {
+            value: 4.hours.to_i,
+            distribution: 'random'
+          },
+          timezone: "Europe/Berlin", # 1 hour ahead of UTC
+          snooze: {
+            until: '2025-06-26T16:27:00+01:00'
+          }
+        }
+      end
+
+      let(:expected_attributes) do
+        {
+          cron: "0 12 * * 1,2",
+          cron_timezone: "Europe/Berlin", # 1 hour ahead of UTC
+          time_window_seconds: 14400,
+          next_run_at: Time.zone.parse("2025-01-06 11:00:00"), # Mon, Jan 6th
+          project_id: project.id,
+          security_policy_id: policy.id,
+          snoozed_until: Time.zone.parse("2025-06-26 15:27:00")
+        }
+      end
+    end
+  end
+
   it 'succeeds' do
     expect(execute[:status]).to be(:success)
   end
@@ -134,7 +196,7 @@ RSpec.describe(
     let(:intervals) { Gitlab::Security::Orchestration::PipelineExecutionPolicies::Intervals }
 
     let(:invalid_interval) do
-      intervals::Interval.new(cron: "* * * * *", time_window: 0, time_zone: "UTC")
+      intervals::Interval.new(cron: "* * * * *", time_window: 0, time_zone: "UTC", snoozed_until: nil)
     end
 
     let(:exception_message) do

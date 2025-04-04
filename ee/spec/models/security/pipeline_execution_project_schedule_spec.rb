@@ -256,4 +256,26 @@ RSpec.describe Security::PipelineExecutionProjectSchedule, feature_category: :se
       end
     end
   end
+
+  describe '#snoozed?' do
+    subject(:snoozed?) { schedule.snoozed? }
+
+    context 'when snoozed_until is nil' do
+      let(:schedule) { build(:security_pipeline_execution_project_schedule, snoozed_until: nil) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when snoozed_until is in the future' do
+      let(:schedule) { build(:security_pipeline_execution_project_schedule, snoozed_until: 1.day.from_now) }
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when snoozed_until is in the past' do
+      let(:schedule) { build(:security_pipeline_execution_project_schedule, snoozed_until: 1.day.ago) }
+
+      it { is_expected.to be(false) }
+    end
+  end
 end
