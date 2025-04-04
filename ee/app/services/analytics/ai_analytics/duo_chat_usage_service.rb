@@ -22,7 +22,7 @@ module Analytics
 
       DUO_CHAT_CONTRIBUTORS_COUNT_QUERY = <<~SQL
         SELECT COUNT(DISTINCT user_id)
-          FROM duo_chat_daily_events
+          FROM duo_chat_events_daily
           WHERE user_id IN (SELECT author_id FROM contributors)
           AND date >= {from:Date}
           AND date <= {to:Date}
