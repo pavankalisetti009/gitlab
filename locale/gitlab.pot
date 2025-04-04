@@ -24070,6 +24070,9 @@ msgstr ""
 msgid "Error tracking"
 msgstr ""
 
+msgid "Error tracking service responded with an error."
+msgstr ""
+
 msgid "Error updating %{issuableType}"
 msgstr ""
 
@@ -25134,6 +25137,9 @@ msgid "Failed to load projects"
 msgstr ""
 
 msgid "Failed to load related branches"
+msgstr ""
+
+msgid "Failed to load stack trace."
 msgstr ""
 
 msgid "Failed to load stacktrace."
@@ -55244,6 +55250,9 @@ msgid "Sentry API URL"
 msgstr ""
 
 msgid "Sentry event"
+msgstr ""
+
+msgid "Sentry issue not found."
 msgstr ""
 
 msgid "Sep"
