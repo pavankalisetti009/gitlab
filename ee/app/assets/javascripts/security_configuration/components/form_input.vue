@@ -3,6 +3,7 @@ import { GlFormGroup, GlFormInput, GlLink, GlSprintf } from '@gitlab/ui';
 import { CUSTOM_VALUE_MESSAGE, SCHEMA_TO_PROP_SIZE_MAP, LARGE } from '../constants';
 
 export default {
+  name: 'FormInput',
   components: {
     GlFormGroup,
     GlFormInput,
