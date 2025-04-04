@@ -30,6 +30,11 @@ module Types
         required: false,
         description: 'Full path of the compliance pipeline configuration stored in a project repository, such as `.gitlab/.compliance-gitlab-ci.yml@compliance/hipaa`. Ultimate only.',
         deprecated: { reason: 'Use pipeline execution policies instead', milestone: '17.4' }
+
+      argument :projects,
+        Types::ComplianceManagement::ProjectInputType,
+        required: false,
+        description: 'Projects to add or remove from the compliance framework.'
     end
   end
 end

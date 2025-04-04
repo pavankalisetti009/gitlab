@@ -94,8 +94,10 @@ describe('CreateForm', () => {
         params: {
           name,
           description,
+          default: undefined,
           pipelineConfigurationFullPath,
           color,
+          projects: null,
         },
       },
     };

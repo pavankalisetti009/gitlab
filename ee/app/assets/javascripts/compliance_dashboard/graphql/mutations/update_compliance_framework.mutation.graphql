@@ -8,6 +8,21 @@ mutation updateComplianceFramework($input: UpdateComplianceFrameworkInput!) {
       description
       color
       pipelineConfigurationFullPath
+      projects {
+        nodes {
+          id
+          name
+          webUrl
+          visibility
+          description
+          namespace {
+            id
+            name
+            webUrl
+            fullName
+          }
+        }
+      }
     }
   }
 }

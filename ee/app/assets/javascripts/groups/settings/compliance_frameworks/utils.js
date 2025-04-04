@@ -16,6 +16,7 @@ export const initialiseFormData = () => ({
   description: null,
   pipelineConfigurationFullPath: null,
   color: null,
+  projects: null,
 });
 
 export const getSubmissionParams = (formData, pipelineConfigurationFullPathEnabled) => {
@@ -24,6 +25,7 @@ export const getSubmissionParams = (formData, pipelineConfigurationFullPathEnabl
     description: formData.description,
     color: formData.color,
     default: formData.default,
+    projects: formData.projects,
   };
 
   if (

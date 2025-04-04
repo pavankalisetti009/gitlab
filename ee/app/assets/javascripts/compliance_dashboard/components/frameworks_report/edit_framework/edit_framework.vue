@@ -607,6 +607,12 @@ export default {
     onDelete() {
       this.$refs.deleteModal.show();
     },
+    updateProjects({ addProjects, removeProjects }) {
+      this.formData.projects = {
+        addProjects,
+        removeProjects,
+      };
+    },
   },
   modalId: 'warn-when-using-pipeline-modal',
   i18n,
@@ -674,7 +680,11 @@ export default {
           :graphql-id="graphqlId"
         />
 
-        <projects-section v-if="!isNewFramework" :compliance-framework="formData" />
+        <projects-section
+          :compliance-framework="formData"
+          :namespace-path="groupPath"
+          @update:projects="updateProjects"
+        />
 
         <div class="gl-flex gl-gap-3 gl-px-5 gl-pt-6">
           <gl-button
