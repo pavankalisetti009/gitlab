@@ -1055,6 +1055,9 @@ msgstr ""
 msgid "%{labelStart}Project:%{labelEnd} %{project}"
 msgstr ""
 
+msgid "%{labelStart}Reachable:%{labelEnd} %{reachability}"
+msgstr ""
+
 msgid "%{labelStart}Report type:%{labelEnd} %{reportType}"
 msgstr ""
 
@@ -48689,6 +48692,15 @@ msgstr ""
 msgid "Re-request review"
 msgstr ""
 
+msgid "Reachability|Not available"
+msgstr ""
+
+msgid "Reachability|Not found"
+msgstr ""
+
+msgid "Reachability|Yes"
+msgstr ""
+
 msgid "Read documentation"
 msgstr ""
 
@@ -65985,6 +65997,9 @@ msgstr ""
 msgid "Vulnerability|Stacktrace snippet:"
 msgstr ""
 
+msgid "Vulnerability|Static reachability is a factor of dependencies (and the relevant CVEs) which indicates that there is a high probability that the package is in use, and therefore the risk of it is higher."
+msgstr ""
+
 msgid "Vulnerability|Status"
 msgstr ""
 
@@ -66049,6 +66064,9 @@ msgid "Vulnerability|What is CVSS?"
 msgstr ""
 
 msgid "Vulnerability|What is EPSS?"
+msgstr ""
+
+msgid "Vulnerability|What is Reachability?"
 msgstr ""
 
 msgid "Vulnerability|What is code flow?"
