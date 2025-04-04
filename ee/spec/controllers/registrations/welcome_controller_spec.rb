@@ -227,6 +227,12 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             )
           end
 
+          it 'logs more info about the user update' do
+            expect(Gitlab::AppLogger).to receive(:info).twice.and_call_original
+
+            patch_update
+          end
+
           context 'when joining_project is "true"' do
             let(:joining_project) { 'true' }
 
