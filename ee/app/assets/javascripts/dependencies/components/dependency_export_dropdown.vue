@@ -7,7 +7,6 @@ import {
 } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { s__ } from '~/locale';
 import {
   EXPORT_FORMAT_CSV,
@@ -46,7 +45,7 @@ const exportFormats = [
     type: EXPORT_FORMAT_CYCLONEDX_1_6_JSON,
     buttonText: s__('Dependencies|Export as CycloneDX (JSON)'),
     testid: 'cyclonedx-1-6-item',
-    available: (component) => Boolean(component.glFeatures.cyclonedxDependencyListExport),
+    available: availableForContainers([NAMESPACE_PROJECT]),
   },
 ];
 
@@ -60,7 +59,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     // Used in availability check.
     // eslint-disable-next-line vue/no-unused-properties
