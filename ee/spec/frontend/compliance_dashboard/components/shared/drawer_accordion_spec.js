@@ -64,4 +64,10 @@ describe('DrawerAccordion', () => {
 
     expect(findCollapses().at(0).props('visible')).toBe(false);
   });
+
+  it('renders empty component when items are empty', () => {
+    createComponent({ items: [] });
+    expect(wrapper.text()).toBe('');
+    expect(findCollapses()).toHaveLength(0);
+  });
 });

@@ -68,7 +68,7 @@ export default {
         <h3 class="gl-heading-3">{{ __('Description') }}</h3>
         {{ status.complianceRequirement.description }}
       </div>
-      <div v-if="status.complianceRequirement.description" class="gl-p-5">
+      <div class="gl-p-5">
         <h3 class="gl-heading-3">{{ s__('ComplianceStandardsAdherence|Status') }}</h3>
         <div class="gl-flex gl-flex-row gl-gap-3">
           <span v-if="status.failCount" class="gl-text-status-danger">
