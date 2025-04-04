@@ -43747,6 +43747,8 @@ Values for sorting projects.
 | <a id="namespaceprojectsortlfs_objects_size_desc"></a>`LFS_OBJECTS_SIZE_DESC` | Sort by total LFS object size, descending order. |
 | <a id="namespaceprojectsortpackages_size_asc"></a>`PACKAGES_SIZE_ASC` | Sort by total package size, ascending order. |
 | <a id="namespaceprojectsortpackages_size_desc"></a>`PACKAGES_SIZE_DESC` | Sort by total package size, descending order. |
+| <a id="namespaceprojectsortpath_asc"></a>`PATH_ASC` | Sort by path, ascending order. |
+| <a id="namespaceprojectsortpath_desc"></a>`PATH_DESC` | Sort by path, descending order. |
 | <a id="namespaceprojectsortrepository_size_asc"></a>`REPOSITORY_SIZE_ASC` | Sort by total repository size, ascending order. |
 | <a id="namespaceprojectsortrepository_size_desc"></a>`REPOSITORY_SIZE_DESC` | Sort by total repository size, descending order. |
 | <a id="namespaceprojectsortsimilarity"></a>`SIMILARITY` | Most similar to the search query. |
