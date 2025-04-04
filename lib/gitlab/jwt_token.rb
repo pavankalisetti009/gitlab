@@ -29,7 +29,7 @@ module Gitlab
       def secret
         OpenSSL::HMAC.hexdigest(
           HMAC_ALGORITHM,
-          ::Gitlab::Database::Encryption::KeyProviderService.new(:db_key_base).encryption_key.secret,
+          ::Gitlab::Encryption::KeyProvider[:db_key_base].encryption_key.secret,
           HMAC_KEY
         )
       end

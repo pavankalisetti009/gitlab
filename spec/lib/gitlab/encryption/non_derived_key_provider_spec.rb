@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Database::Encryption::NonDerivedKeyProvider, feature_category: :database do
+RSpec.describe Gitlab::Encryption::NonDerivedKeyProvider, feature_category: :shared do
   describe 'inheritance' do
     it 'inherits from ActiveRecord::Encryption::KeyProvider' do
       expect(described_class.superclass).to be(ActiveRecord::Encryption::KeyProvider)

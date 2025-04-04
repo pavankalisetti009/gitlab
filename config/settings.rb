@@ -132,7 +132,7 @@ Settings = GitlabSettings.load(file, Rails.env) do
     File.expand_path(path, Rails.root)
   end
 
-  # FIXME: Deprecated in favor of Gitlab::Database::Encryption::KeyProviderService
+  # FIXME: Deprecated in favor of Gitlab::Encryption::KeyProvider
   def attr_encrypted_db_key_base_truncated
     db_key_base_keys_truncated.first
   end
@@ -144,7 +144,7 @@ Settings = GitlabSettings.load(file, Rails.env) do
     end
   end
 
-  # FIXME: Deprecated in favor of Gitlab::Database::Encryption::KeyProviderService
+  # FIXME: Deprecated in favor of Gitlab::Encryption::KeyProvider
   def attr_encrypted_db_key_base_32
     db_key_base_keys_32_bytes.first
   end
@@ -162,7 +162,7 @@ Settings = GitlabSettings.load(file, Rails.env) do
     end
   end
 
-  # FIXME: Deprecated in favor of Gitlab::Database::Encryption::KeyProviderService
+  # FIXME: Deprecated in favor of Gitlab::Encryption::KeyProvider
   def attr_encrypted_db_key_base
     db_key_base_keys.first
   end

@@ -9,12 +9,12 @@ module Gitlab
     }.freeze
 
     def sha256(value)
-      salt = ::Gitlab::Database::Encryption::KeyProviderService.new(:db_key_base_truncated).encryption_key.secret
+      salt = Gitlab::Encryption::KeyProvider[:db_key_base_truncated].encryption_key.secret
       ::Digest::SHA256.base64digest("#{value}#{salt}")
     end
 
     def encryption_key
-      @encryption_key ||= ::Gitlab::Database::Encryption::KeyProviderService.new(:db_key_base_32).encryption_key
+      @encryption_key ||= Gitlab::Encryption::KeyProvider[:db_key_base_32].encryption_key
     end
 
     def aes256_gcm_encrypt(value, nonce: nil)
@@ -32,7 +32,7 @@ module Gitlab
       return unless value
 
       encrypted_token = Base64.decode64(value)
-      keys = Gitlab::Database::Encryption::KeyProviderService.new(:db_key_base_32).decryption_keys
+      keys = Gitlab::Encryption::KeyProvider[:db_key_base_32].decryption_keys
 
       # Try to decrypt with all keys, from oldest to newest
       keys.each_with_index do |key, index|

@@ -472,30 +472,6 @@ module AttrEncrypted
         prefix = '_'
         salt.slice(0).eql?(prefix) ? salt.slice(1..-1).unpack(encoding).first : salt
       end
-
-      def db_key_base(attribute)
-        dynamic_encryption_key(:db_key_base, attribute)
-      end
-
-      def db_key_base_32(attribute)
-        dynamic_encryption_key(:db_key_base_32, attribute)
-      end
-
-      def db_key_base_truncated(attribute)
-        dynamic_encryption_key(:db_key_base_truncated, attribute)
-      end
-
-      def dynamic_encryption_key(key_type, attribute)
-        dynamic_encryption_key_for_operation(key_type, attr_encrypted_attributes[attribute][:operation])
-      end
-
-      def dynamic_encryption_key_for_operation(key_type, operation)
-        if operation == :encrypting
-          Gitlab::Database::Encryption::KeyProviderService.new(key_type).encryption_key.secret
-        else
-          Gitlab::Database::Encryption::KeyProviderService.new(key_type).decryption_keys.map(&:secret)
-        end
-      end
   end
 
   protected

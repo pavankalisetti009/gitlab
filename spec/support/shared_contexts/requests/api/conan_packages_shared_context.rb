@@ -29,7 +29,7 @@ RSpec.shared_context 'with conan api setup' do
   let(:jwt_secret) do
     OpenSSL::HMAC.hexdigest(
       OpenSSL::Digest.new('SHA256'),
-      ::Gitlab::Database::Encryption::KeyProviderService.new(:db_key_base).encryption_key.secret,
+      ::Gitlab::Encryption::KeyProvider[:db_key_base].encryption_key.secret,
       Gitlab::ConanToken::HMAC_KEY
     )
   end

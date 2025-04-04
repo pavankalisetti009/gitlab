@@ -116,11 +116,11 @@ module Gitlab
         when DeployKey, Key
           actor.fingerprint_sha256.first(16) +
             # Since fingerprint is based on the public key, let's take more bytes from db_key_base
-            ::Gitlab::Database::Encryption::KeyProviderService.new(:db_key_base_32).encryption_key.secret
+            ::Gitlab::Encryption::KeyProvider[:db_key_base_32].encryption_key.secret
         when User
           # Take the last 16 characters as they're more unique than the first 16
           actor.id.to_s + actor.encrypted_password.last(16) +
-            ::Gitlab::Database::Encryption::KeyProviderService.new(:db_key_base).encryption_key.secret.first(16)
+            ::Gitlab::Encryption::KeyProvider[:db_key_base].encryption_key.secret.first(16)
         end
       end
     end

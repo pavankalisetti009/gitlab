@@ -29,7 +29,7 @@ module Auth
         strong_memoize(:secret) do
           OpenSSL::HMAC.hexdigest(
             'sha256',
-            ::Gitlab::Database::Encryption::KeyProviderService.new(:db_key_base).encryption_key.secret,
+            ::Gitlab::Encryption::KeyProvider[:db_key_base].encryption_key.secret,
             HMAC_KEY
           )
         end
