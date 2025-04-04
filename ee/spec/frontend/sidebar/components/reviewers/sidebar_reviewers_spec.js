@@ -3,6 +3,8 @@ import axios from 'axios';
 import AxiosMockAdapter from 'axios-mock-adapter';
 import VueApollo from 'vue-apollo';
 import { createMockSubscription as createMockApolloSubscription } from 'mock-apollo-client';
+import { PiniaVuePlugin } from 'pinia';
+import { createTestingPinia } from '@pinia/testing';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import stubChildren from 'helpers/stub_children';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
@@ -12,11 +14,16 @@ import getMergeRequestReviewersQuery from '~/sidebar/queries/get_merge_request_r
 import mergeRequestReviewersUpdatedSubscription from '~/sidebar/queries/merge_request_reviewers.subscription.graphql';
 import SidebarReviewers from '~/sidebar/components/reviewers/sidebar_reviewers.vue';
 import SidebarMediator from '~/sidebar/sidebar_mediator';
+import { globalAccessorPlugin } from '~/pinia/plugins';
+import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
+import { useNotes } from '~/notes/store/legacy_notes';
+import { useBatchComments } from '~/batch_comments/store';
 import { mockGetMergeRequestReviewers } from '../../mock_data';
 
 const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
 Vue.use(VueApollo);
+Vue.use(PiniaVuePlugin);
 
 describe('sidebar reviewers', () => {
   const mockGQLQueries = [
@@ -29,6 +36,7 @@ describe('sidebar reviewers', () => {
   let wrapper;
   let mediator;
   let axiosMock;
+  let pinia;
 
   apolloMock.defaultClient.setRequestHandler(
     mergeRequestReviewersUpdatedSubscription,
@@ -40,6 +48,7 @@ describe('sidebar reviewers', () => {
   const createComponent = ({ props = {} } = {}) => {
     wrapper = mountExtended(SidebarReviewers, {
       apolloProvider: apolloMock,
+      pinia,
       propsData: {
         issuableIid: '1',
         issuableId: 1,
@@ -67,6 +76,10 @@ describe('sidebar reviewers', () => {
   };
 
   beforeEach(() => {
+    pinia = createTestingPinia({ plugins: [globalAccessorPlugin] });
+    useLegacyDiffs();
+    useNotes();
+    useBatchComments();
     axiosMock = new AxiosMockAdapter(axios);
     mediator = new SidebarMediator({ currentUser: {} });
   });
