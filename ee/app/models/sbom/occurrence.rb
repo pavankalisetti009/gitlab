@@ -176,6 +176,13 @@ module Sbom
         )
       ]))
     end
+    scope :filter_by_reachability, ->(reachability) do
+      where(reachability: reachability)
+    end
+    scope :filter_by_vulnerability_id, ->(vulnerability_id) do
+      joins(:occurrences_vulnerabilities)
+      .where(occurrences_vulnerabilities: { vulnerability_id: vulnerability_id })
+    end
 
     def self.arel_grouping_by_traversal_ids_and_id
       arel_table.grouping([arel_table['traversal_ids'], arel_table['id']])
