@@ -6113,7 +6113,7 @@ The description displays with [the prefilled variable name when running a pipeli
 
 **Supported values**:
 
-- A string.
+- A string. You can use Markdown.
 
 **Example of `variables:description`**:
 
