@@ -3,18 +3,14 @@
 module EE
   module API
     module ProjectsRelationBuilder
-      extend ActiveSupport::Concern
+      extend ::Gitlab::Utils::Override
 
-      class_methods do
-        extend ::Gitlab::Utils::Override
-
-        override :preload_member_roles
-        def preload_member_roles(projects, user)
-          ::Preloaders::UserMemberRolesInProjectsPreloader.new(
-            projects: projects,
-            user: user
-          ).execute
-        end
+      override :preload_member_roles
+      def preload_member_roles(projects_relation, user)
+        ::Preloaders::UserMemberRolesInProjectsPreloader.new(
+          projects: projects_relation,
+          user: user
+        ).execute
       end
     end
   end

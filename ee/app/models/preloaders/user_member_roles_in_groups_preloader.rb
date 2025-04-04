@@ -54,7 +54,7 @@ module Preloaders
         h['namespace_id']
       end
 
-      log_statistics
+      log_statistics(group_ids)
 
       grouped_by_group.transform_values do |values|
         group_permissions = values.map do |value|
@@ -122,11 +122,11 @@ module Preloaders
       end
     end
 
-    def log_statistics
+    def log_statistics(group_ids)
       ::Gitlab::AppLogger.info(
         class: self.class.name,
         user_id: user.id,
-        groups_count: groups.count
+        groups_count: group_ids.length
       )
     end
   end

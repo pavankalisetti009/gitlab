@@ -123,6 +123,28 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         end
       end
     end
+
+    context 'when custom roles are enabled' do
+      let_it_be(:admin) { create(:admin) }
+
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
+      it 'avoids N+1 queries', :use_sql_query_cache do
+        create(:project, :public, namespace: create(:group))
+
+        control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+          get api('/projects', admin)
+        end
+
+        create_list(:project, 2, :public, namespace: create(:group))
+
+        expect do
+          get api('/projects', admin)
+        end.not_to exceed_all_query_limit(control)
+      end
+    end
   end
 
   describe 'GET /projects/:id' do
