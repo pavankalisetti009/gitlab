@@ -25,7 +25,7 @@ describe('SubscriptionUpgradeInfoCard', () => {
   const findDescription = () => wrapper.find('[data-testid="description"]');
   const findExplorePlansLink = () => wrapper.findComponent(GlButton);
 
-  describe('when not in an active trial', () => {
+  describe('default content', () => {
     beforeEach(() => {
       createComponent({ activeTrial: false });
       trackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
@@ -35,13 +35,13 @@ describe('SubscriptionUpgradeInfoCard', () => {
       expect(findExplorePlansLink().attributes('href')).toBe(defaultProps.explorePlansPath);
     });
 
-    it('renders title message with max number of seats', () => {
-      expect(findTitle().text()).toContain('limited to 5 seats');
+    it('renders the title message', () => {
+      expect(findTitle().text()).toContain('Add additional seats');
     });
 
     it('renders description message with max number of seats', () => {
       expect(findDescription().text()).toContain(
-        'To ensure all members can access the group when your trial ends, you can upgrade to a paid tier.',
+        'Start a free 60-day trial or upgrade to a paid tier to get an unlimited number of seats.',
       );
     });
 
@@ -53,16 +53,6 @@ describe('SubscriptionUpgradeInfoCard', () => {
       expect(trackingSpy).toHaveBeenCalledWith(undefined, 'click_button', {
         label: EXPLORE_PAID_PLANS_CLICKED,
       });
-    });
-  });
-
-  describe('when in an active trial', () => {
-    beforeEach(() => {
-      createComponent({ activeTrial: true });
-    });
-
-    it('renders title message with "during your trial"', () => {
-      expect(findTitle().text()).toBe('Unlimited members during your trial');
     });
   });
 });

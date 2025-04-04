@@ -56,6 +56,8 @@ describe('SubscriptionSeatsStatisticsCard', () => {
   const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findUsageStatistics = () => wrapper.findComponent(UsageStatistics);
   const findUnlimitedSeatCountText = () => wrapper.findByText('You have unlimited seat count.');
+  const findLimitedSeatCountText = () =>
+    wrapper.findByText('Groups in the Free tier are limited to 5 seats');
   const findSeatsInfo = () => wrapper.findByTestId('seats-info');
 
   describe('when GraphQL data is loading', () => {
@@ -83,6 +85,7 @@ describe('SubscriptionSeatsStatisticsCard', () => {
 
     it('shows correct billing info', () => {
       expect(findUnlimitedSeatCountText().exists()).toBe(true);
+      expect(findLimitedSeatCountText().exists()).toBe(false);
     });
 
     it('shows correct seat info', () => {
@@ -116,8 +119,9 @@ describe('SubscriptionSeatsStatisticsCard', () => {
       });
     });
 
-    it('has no billing info', () => {
+    it('shows correct billing info', () => {
       expect(findUnlimitedSeatCountText().exists()).toBe(false);
+      expect(findLimitedSeatCountText().exists()).toBe(true);
     });
 
     it('shows correct seat info', () => {
@@ -150,8 +154,9 @@ describe('SubscriptionSeatsStatisticsCard', () => {
       });
     });
 
-    it('has no billing info', () => {
+    it('shows correct billing info', () => {
       expect(findUnlimitedSeatCountText().exists()).toBe(false);
+      expect(findLimitedSeatCountText().exists()).toBe(true);
     });
 
     it('shows correct seat info', () => {
@@ -189,6 +194,7 @@ describe('SubscriptionSeatsStatisticsCard', () => {
 
     it('shows correct billing info', () => {
       expect(findUnlimitedSeatCountText().exists()).toBe(false);
+      expect(findLimitedSeatCountText().exists()).toBe(false);
     });
 
     it('shows correct seat info', () => {
@@ -220,8 +226,9 @@ describe('SubscriptionSeatsStatisticsCard', () => {
       });
     });
 
-    it('has no billing info', () => {
+    it('shows correct billing info', () => {
       expect(findUnlimitedSeatCountText().exists()).toBe(false);
+      expect(findLimitedSeatCountText().exists()).toBe(false);
     });
 
     it('shows correct seat info', () => {

@@ -292,7 +292,7 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
     context 'when on a free plan' do
       it 'has correct seats in use and plans link' do
         expect(page).to have_content("4 / 5 Seats in use / Seats available")
-        expect(page).to have_link("Explore paid plans")
+        expect(page).to have_link("Explore plans")
       end
     end
 

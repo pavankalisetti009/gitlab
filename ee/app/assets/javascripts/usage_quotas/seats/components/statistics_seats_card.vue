@@ -35,7 +35,7 @@ export default {
     seatsOwedText,
     seatsOwedHelpText,
     addSeatsText,
-    explorePlansText: s__('Billing|Explore paid plans'),
+    explorePlansText: s__('Billing|Explore plans'),
   },
   mixins: [Tracking.mixin()],
   inject: ['explorePlansPath', 'namespaceId'],
@@ -102,7 +102,7 @@ export default {
       }
       return this.canAddSeats || this.hasLimitedAccess;
     },
-    shouldShowExplorePaidPlansButton() {
+    shouldShowExplorePlansButton() {
       if (this.isLoading) {
         return false;
       }
@@ -206,13 +206,13 @@ export default {
       {{ $options.i18n.addSeatsText }}
     </gl-button>
     <gl-button
-      v-if="shouldShowExplorePaidPlansButton"
+      v-if="shouldShowExplorePlansButton"
       :href="explorePlansPath"
       category="primary"
       target="_blank"
       variant="confirm"
       class="gl-ml-3 gl-self-start"
-      data-testid="explore-paid-plans"
+      data-testid="explore-plans"
       @click="trackExplorePlans"
     >
       {{ $options.i18n.explorePlansText }}
