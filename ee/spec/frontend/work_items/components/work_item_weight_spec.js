@@ -8,9 +8,9 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { TRACKING_CATEGORY_SHOW } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
-import { updateWorkItemMutationResponse } from 'jest/work_items/mock_data';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 import { ENTER_KEY, ESC_KEY } from '~/lib/utils/keys';
+import { updateWorkItemMutationResponse } from '../mock_data';
 
 describe('WorkItemWeight component', () => {
   Vue.use(VueApollo);

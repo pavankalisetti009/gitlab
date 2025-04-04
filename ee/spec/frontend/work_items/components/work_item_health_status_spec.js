@@ -17,10 +17,7 @@ import {
   healthStatusTextMap,
 } from 'ee/sidebar/constants';
 
-import {
-  updateWorkItemMutationResponse,
-  workItemByIidResponseFactory,
-} from 'jest/work_items/mock_data';
+import { updateWorkItemMutationResponse, workItemByIidResponseFactory } from '../mock_data';
 
 describe('WorkItemHealthStatus component', () => {
   Vue.use(VueApollo);

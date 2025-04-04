@@ -12,11 +12,10 @@ import {
   groupIterationsResponse,
   groupIterationsResponseWithNoIterations,
   mockIterationWidgetResponse,
-  updateWorkItemMutationErrorResponse,
-  updateWorkItemMutationResponse,
 } from 'jest/work_items/mock_data';
 import { TRACKING_CATEGORY_SHOW } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
+import { updateWorkItemMutationResponse, updateWorkItemMutationErrorResponse } from '../mock_data';
 
 describe('WorkItemIteration component', () => {
   Vue.use(VueApollo);

@@ -9,7 +9,6 @@ import workItemDevelopmentUpdatedSubscription from '~/work_items/graphql/work_it
 import waitForPromises from 'helpers/wait_for_promises';
 
 import {
-  workItemByIidResponseFactory,
   workItemDevelopmentResponse,
   workItemDevelopmentFragmentResponse,
   workItemDevelopmentMRNodes,
@@ -19,6 +18,7 @@ import {
 
 import WorkItemDevelopment from '~/work_items/components/work_item_development/work_item_development.vue';
 import WorkItemDevelopmentRelationshipList from '~/work_items/components/work_item_development/work_item_development_relationship_list.vue';
+import { workItemByIidResponseFactory } from '../../mock_data';
 
 /**
  * MR list is available for CE and EE
