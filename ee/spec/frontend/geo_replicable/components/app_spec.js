@@ -8,6 +8,7 @@ import GeoReplicable from 'ee/geo_replicable/components/geo_replicable.vue';
 import GeoReplicableEmptyState from 'ee/geo_replicable/components/geo_replicable_empty_state.vue';
 import GeoReplicableFilterBar from 'ee/geo_replicable/components/geo_replicable_filter_bar.vue';
 import GeoReplicableFilteredSearchBar from 'ee/geo_replicable/components/geo_replicable_filtered_search_bar.vue';
+import GeoReplicableBulkActions from 'ee/geo_replicable/components/geo_replicable_bulk_actions.vue';
 import initStore from 'ee/geo_replicable/store';
 import { processFilters } from 'ee/geo_replicable/filters';
 import { TEST_HOST } from 'spec/test_constants';
@@ -70,6 +71,8 @@ describe('GeoReplicableApp', () => {
     findGeoReplicableContainer().findComponent(GeoReplicableFilterBar);
   const findGeoReplicableFilteredSearchBar = () =>
     findGeoReplicableContainer().findComponent(GeoReplicableFilteredSearchBar);
+  const findGeoReplicableBulkActions = () =>
+    findGeoReplicableContainer().findComponent(GeoReplicableBulkActions);
 
   describe.each`
     isLoading | graphqlFieldName         | replicableItems            | showReplicableItems | showEmptyState | showLoader
@@ -194,6 +197,47 @@ describe('GeoReplicableApp', () => {
             MOCK_REPLICABLE_TYPE_FILTER,
             MOCK_REPLICATION_STATUS_FILTER,
           ]);
+        });
+      });
+    });
+  });
+
+  describe('bulk actions', () => {
+    describe('when feature geoReplicablesFilteredListView is disabled', () => {
+      beforeEach(() => {
+        createStore();
+        createComponent({ featureFlags: { geoReplicablesFilteredListView: false } });
+        store.state.replicableItems = MOCK_BASIC_GRAPHQL_DATA;
+      });
+
+      it('does not render bulk actions', () => {
+        expect(findGeoReplicableBulkActions().exists()).toBe(false);
+      });
+    });
+
+    describe('when feature geoReplicablesFilteredListView is enabled', () => {
+      beforeEach(() => {
+        createStore();
+        createComponent({ featureFlags: { geoReplicablesFilteredListView: true } });
+      });
+
+      describe('with no replicable items', () => {
+        beforeEach(() => {
+          store.state.replicableItems = [];
+        });
+
+        it('does not render bulk actions', () => {
+          expect(findGeoReplicableBulkActions().exists()).toBe(false);
+        });
+      });
+
+      describe('with replicable items', () => {
+        beforeEach(() => {
+          store.state.replicableItems = MOCK_BASIC_GRAPHQL_DATA;
+        });
+
+        it('does render bulk actions', () => {
+          expect(findGeoReplicableBulkActions().exists()).toBe(true);
         });
       });
     });
