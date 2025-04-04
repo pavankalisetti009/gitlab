@@ -23,9 +23,6 @@ export default {
   [types.SET_PREDEFINED_DATE_RANGE](state, predefinedDateRange) {
     state.predefinedDateRange = predefinedDateRange;
   },
-  [types.SET_STAGE_EVENTS](state, data = []) {
-    state.formEvents = data.map((ev) => convertObjectPropsToCamelCase(ev, { deep: true }));
-  },
   [types.REQUEST_VALUE_STREAM_DATA](state) {
     state.isLoading = true;
   },
@@ -81,15 +78,15 @@ export default {
     state.stageCounts = {};
   },
   [types.REQUEST_GROUP_STAGES](state) {
-    state.isFetchingGroupStagesAndEvents = true;
+    state.isFetchingGroupStages = true;
     state.stages = [];
   },
   [types.RECEIVE_GROUP_STAGES_ERROR](state) {
-    state.isFetchingGroupStagesAndEvents = false;
+    state.isFetchingGroupStages = false;
     state.stages = [];
   },
   [types.RECEIVE_GROUP_STAGES_SUCCESS](state, stages) {
-    state.isFetchingGroupStagesAndEvents = false;
+    state.isFetchingGroupStages = false;
     state.stages = transformRawStages(stages);
   },
   [types.INITIALIZE_VSA](

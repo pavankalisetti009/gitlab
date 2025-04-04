@@ -130,8 +130,7 @@ describe('Value Stream Analytics actions', () => {
         requestCycleAnalyticsData:
           overrides.requestCycleAnalyticsData || jest.fn().mockResolvedValue(),
         fetchStageMedianValues: overrides.fetchStageMedianValues || jest.fn().mockResolvedValue(),
-        fetchGroupStagesAndEvents:
-          overrides.fetchGroupStagesAndEvents || jest.fn().mockResolvedValue(),
+        fetchGroupStages: overrides.fetchGroupStages || jest.fn().mockResolvedValue(),
         receiveCycleAnalyticsDataSuccess:
           overrides.receiveCycleAnalyticsDataSuccess || jest.fn().mockResolvedValue(),
       };
@@ -142,7 +141,7 @@ describe('Value Stream Analytics actions', () => {
         mockDispatchContext: jest
           .fn()
           .mockImplementationOnce(mocks.requestCycleAnalyticsData)
-          .mockImplementationOnce(mocks.fetchGroupStagesAndEvents)
+          .mockImplementationOnce(mocks.fetchGroupStages)
           .mockImplementationOnce(mocks.fetchStageMedianValues)
           .mockImplementationOnce(mocks.receiveCycleAnalyticsDataSuccess),
       };
@@ -193,9 +192,9 @@ describe('Value Stream Analytics actions', () => {
         });
     });
 
-    it(`displays an error if fetchGroupStagesAndEvents fails`, () => {
+    it(`displays an error if fetchGroupStages fails`, () => {
       const { mockDispatchContext } = mockFetchCycleAnalyticsAction({
-        fetchGroupStagesAndEvents: actions.fetchGroupStagesAndEvents({
+        fetchGroupStages: actions.fetchGroupStages({
           dispatch: jest
             .fn()
             .mockResolvedValueOnce()

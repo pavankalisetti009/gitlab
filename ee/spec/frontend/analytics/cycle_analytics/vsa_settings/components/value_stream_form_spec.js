@@ -27,7 +27,7 @@ describe('ValueStreamForm', () => {
       state: {
         defaultStageConfig,
         isLoading: false,
-        isFetchingGroupStagesAndEvents: false,
+        isFetchingGroupStages: false,
         ...state,
       },
     });
@@ -89,20 +89,17 @@ describe('ValueStreamForm', () => {
     });
   });
 
-  describe.each(['isLoading', 'isFetchingGroupStagesAndEvents'])(
-    'when %s',
-    (isFetchingResource) => {
-      beforeEach(() => {
-        createComponent({ state: { [isFetchingResource]: true } });
-      });
+  describe.each(['isLoading', 'isFetchingGroupStages'])('when %s', (isFetchingResource) => {
+    beforeEach(() => {
+      createComponent({ state: { [isFetchingResource]: true } });
+    });
 
-      it('renders loading icon', () => {
-        expect(findLoadingIcon().exists()).toBe(true);
-      });
+    it('renders loading icon', () => {
+      expect(findLoadingIcon().exists()).toBe(true);
+    });
 
-      it('does not render form content component', () => {
-        expect(findFormContent().exists()).toBe(false);
-      });
-    },
-  );
+    it('does not render form content component', () => {
+      expect(findFormContent().exists()).toBe(false);
+    });
+  });
 });

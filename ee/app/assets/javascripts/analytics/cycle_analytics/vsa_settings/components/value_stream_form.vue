@@ -23,11 +23,11 @@ export default {
       'selectedValueStream',
       'stages',
       'defaultStageConfig',
-      'isFetchingGroupStagesAndEvents',
+      'isFetchingGroupStages',
       'isLoading',
     ]),
     isLoadingOrFetching() {
-      return this.isLoading || this.isFetchingGroupStagesAndEvents;
+      return this.isLoading || this.isFetchingGroupStages;
     },
     initialData() {
       return this.isEditing

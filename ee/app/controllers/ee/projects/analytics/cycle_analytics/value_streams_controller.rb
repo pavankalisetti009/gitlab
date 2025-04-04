@@ -9,7 +9,6 @@ module EE
           extend ::Gitlab::Utils::Override
 
           prepended do
-            before_action :load_stage_events, only: %i[new edit]
             before_action :value_stream, only: %i[edit]
           end
         end

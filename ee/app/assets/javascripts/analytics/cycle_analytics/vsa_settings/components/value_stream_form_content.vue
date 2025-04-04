@@ -63,7 +63,7 @@ export default {
     ValueStreamFormContentActions,
   },
   mixins: [Tracking.mixin()],
-  inject: ['vsaPath'],
+  inject: ['vsaPath', 'stageEvents'],
   props: {
     initialData: {
       type: Object,
@@ -101,7 +101,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(['formEvents', 'selectedValueStream']),
+    ...mapState(['selectedValueStream']),
     ...mapGetters(['namespaceRestApiRequestPath']),
     selectedValueStreamId() {
       return this.selectedValueStream?.id || -1;
@@ -203,7 +203,7 @@ export default {
         validateStage({
           currentStage: stage,
           allStageNames: this.currentValueStreamStageNames,
-          labelEvents: getLabelEventsIdentifiers(this.formEvents),
+          labelEvents: getLabelEventsIdentifiers(this.stageEvents),
         }),
       );
     },
@@ -380,7 +380,6 @@ export default {
                 v-if="stage.custom"
                 :stage-label="stageGroupLabel(activeStageIndex)"
                 :stage="stage"
-                :stage-events="formEvents"
                 :index="activeStageIndex"
                 :total-stages="stages.length"
                 :errors="fieldErrors(activeStageIndex)"
@@ -392,7 +391,6 @@ export default {
                 v-else
                 :stage-label="stageGroupLabel(activeStageIndex)"
                 :stage="stage"
-                :stage-events="formEvents"
                 :index="activeStageIndex"
                 :total-stages="stages.length"
                 :errors="fieldErrors(activeStageIndex)"

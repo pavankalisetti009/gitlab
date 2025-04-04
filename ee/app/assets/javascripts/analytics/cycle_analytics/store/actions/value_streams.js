@@ -16,7 +16,7 @@ export const deleteValueStream = ({ commit, dispatch, getters }, valueStreamId) 
 
 export const fetchValueStreamData = ({ dispatch }) =>
   Promise.resolve()
-    .then(() => dispatch('fetchGroupStagesAndEvents'))
+    .then(() => dispatch('fetchGroupStages'))
     .then(() => dispatch('fetchStageMedianValues'));
 
 export const setSelectedValueStream = ({ commit, dispatch }, valueStream) => {
@@ -31,7 +31,7 @@ export const receiveValueStreamsSuccess = (
   commit(types.RECEIVE_VALUE_STREAMS_SUCCESS, data);
 
   if (!selectedValueStream && !data.length) {
-    return dispatch('fetchGroupStagesAndEvents');
+    return dispatch('fetchGroupStages');
   }
 
   if (!selectedValueStream && data.length) {

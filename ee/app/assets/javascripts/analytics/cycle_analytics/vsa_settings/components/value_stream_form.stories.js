@@ -1,7 +1,7 @@
 import { withVuexStore } from 'storybook_addons/vuex_store';
 import {
   defaultStageConfig,
-  formEvents,
+  stageEvents,
   selectedValueStream,
   selectedValueStreamStages,
 } from './stories_constants';
@@ -18,13 +18,13 @@ const createStoryWithState = ({ state = {} } = {}) => {
     components: { ValueStreamForm },
     provide: {
       vsaPath: '',
+      stageEvents,
     },
     props: Object.keys(argTypes),
     template: '<value-stream-form v-bind="$props" />',
     store: createVuexStore({
       state: {
         defaultStageConfig,
-        formEvents,
         isLoading: false,
         ...state,
       },
