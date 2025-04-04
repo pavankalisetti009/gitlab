@@ -15,5 +15,5 @@ RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: UNMAPP
   include_context "with filter argument"
   include_context "for a Query.namespace.remote_development_cluster_agents query"
 
-  it_behaves_like "multiple agents query"
+  it_behaves_like "multiple agents in namespace query"
 end
