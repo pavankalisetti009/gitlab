@@ -16,7 +16,7 @@ RSpec.describe GitlabSubscriptions::API::Internal::Namespaces::Provision, :aggre
   let(:params) do
     {
       provision: {
-        main_plan: {
+        base_product: {
           plan_code: 'ultimate',
           seats: 30,
           start_date: start_date,
@@ -177,7 +177,7 @@ RSpec.describe GitlabSubscriptions::API::Internal::Namespaces::Provision, :aggre
 
       context 'when the provision params are invalid' do
         before do
-          params[:provision][:main_plan][:seats] = nil
+          params[:provision][:base_product][:seats] = nil
         end
 
         it 'returns unprocessable_entity status, but provisions other resources with correct attributes' do

@@ -19,10 +19,10 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, :aggregate_
       expect(result).to be_success
     end
 
-    context 'when syncing main plan' do
+    context 'when syncing base product' do
       let(:params) do
         {
-          main_plan: {
+          base_product: {
             plan_code: 'ultimate',
             seats: 30,
             start_date: start_date,
@@ -81,7 +81,7 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, :aggregate_
       end
 
       context 'when invalid record params are sent' do
-        let(:params) { { main_plan: { seats: nil } } }
+        let(:params) { { base_product: { seats: nil } } }
 
         it 'returns error response' do
           expect(result).to be_error
@@ -232,7 +232,7 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, :aggregate_
     context 'when all provision params are provided' do
       let(:params) do
         {
-          main_plan: {
+          base_product: {
             plan_code: 'ultimate',
             seats: 30,
             start_date: start_date,
@@ -276,9 +276,9 @@ RSpec.describe GitlabSubscriptions::Provision::SyncNamespaceService, :aggregate_
       end
 
       context 'when any provisioning fails' do
-        context 'when main plan provisioning fails' do
+        context 'when base product provisioning fails' do
           before do
-            params[:main_plan][:seats] = nil
+            params[:base_product][:seats] = nil
           end
 
           it 'continues with provisioning the rest with valid attributes' do
