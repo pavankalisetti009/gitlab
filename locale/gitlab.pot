@@ -11444,6 +11444,9 @@ msgstr ""
 msgid "CICDAnalytics|What is instance runner duration?"
 msgstr ""
 
+msgid "CICD| Incremental logging configuration"
+msgstr ""
+
 msgid "CICD|%{policy} to %{resource}"
 msgstr ""
 
@@ -11525,6 +11528,9 @@ msgstr ""
 msgid "CICD|CI/CD job token can be used to authenticate a Git push to this repository, using the permissions of the user that started the job."
 msgstr ""
 
+msgid "CICD|Configure CI job log settings for all projects."
+msgstr ""
+
 msgid "CICD|Configure CI/CD job token settings for all projects."
 msgstr ""
 
@@ -11568,6 +11574,9 @@ msgid "CICD|Group or project"
 msgstr ""
 
 msgid "CICD|Groups and projects on the allowlist are authorized to use a CI/CD job token to authenticate requests to this project. Entries added from the authentication log can be removed later if needed."
+msgstr ""
+
+msgid "CICD|Job logs"
 msgstr ""
 
 msgid "CICD|Job token permissions"
@@ -11651,6 +11660,9 @@ msgstr ""
 msgid "CICD|This action removes all groups and projects that were auto-added from the authentication log."
 msgstr ""
 
+msgid "CICD|Turn on incremental logging"
+msgstr ""
+
 msgid "CICD|Unprotected branches will not have access to the cache from protected branches."
 msgstr ""
 
@@ -11660,6 +11672,9 @@ msgstr ""
 msgid "CICD|When enabled, all projects must use their allowlist to control CI/CD job token access between projects. The option to allow access from all groups and projects is hidden. %{link_start}Learn More.%{link_end}"
 msgstr ""
 
+msgid "CICD|When turned on, archived job logs are incrementally uploaded to object storage. %{link_start}Learn more.%{link_end}"
+msgstr ""
+
 msgid "CICD|You're about to add all entries from the authentication log to the allowlist for %{projectName}. This will also update the Job Token setting to %{codeStart}This project and any groups and projects in the allowlist%{codeEnd}, if not already set. Duplicate entries will be ignored."
 msgstr ""
 
@@ -11667,9 +11682,6 @@ msgid "CICD|group enabled"
 msgstr ""
 
 msgid "CICD|instance enabled"
-msgstr ""
-
-msgid "CID|Job token permissions"
 msgstr ""
 
 msgid "CODEOWNERS rule violation"
