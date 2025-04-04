@@ -1,7 +1,7 @@
 import { GlLink, GlIcon, GlIntersperse, GlPopover } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import DependencyLocation from 'ee/dependencies/components/dependency_location.vue';
-import DependencyPathViewer from 'ee/dependencies/components/dependency_path_viewer.vue';
+import DirectDescendantViewer from 'ee/dependencies/components/direct_descendant_viewer.vue';
 import { DEPENDENCIES_TABLE_I18N } from 'ee/dependencies/constants';
 import { trimText } from 'helpers/text_helper';
 import * as Paths from './mock_data';
@@ -12,7 +12,7 @@ describe('Dependency Location component', () => {
   const createComponent = ({ propsData, ...options } = {}) => {
     wrapper = shallowMount(DependencyLocation, {
       propsData: { ...propsData },
-      stubs: { GlLink, DependencyPathViewer, GlIntersperse },
+      stubs: { GlLink, DirectDescendantViewer, GlIntersperse },
       ...options,
     });
   };
@@ -77,7 +77,7 @@ describe('Dependency Location component', () => {
     });
 
     it('should not render dependency path', () => {
-      const pathViewer = wrapper.findComponent(DependencyPathViewer);
+      const pathViewer = wrapper.findComponent(DirectDescendantViewer);
       expect(pathViewer.exists()).toBe(false);
     });
 
