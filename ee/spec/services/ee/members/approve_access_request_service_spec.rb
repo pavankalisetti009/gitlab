@@ -188,4 +188,106 @@ RSpec.describe Members::ApproveAccessRequestService, feature_category: :groups_a
       end
     end
   end
+
+  context 'when billable promotion is restricted' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:access_requester_user) { create(:user) }
+    let(:access_requester) { group.requesters.find_by!(user_id: access_requester_user.id) }
+    let(:params) { { access_level: Gitlab::Access::DEVELOPER } }
+
+    before do
+      group.add_owner(current_user)
+      group.request_access(access_requester_user)
+
+      allow_next_instance_of(described_class) do |service|
+        allow(service).to receive_messages(member_promotion_management_enabled?: true,
+          promotion_management_required_for_role?: true)
+      end
+    end
+
+    subject(:approve_access_request) do
+      described_class.new(current_user, params).execute(access_requester)
+    end
+
+    context 'when user is non-billable and being promoted to billable role' do
+      before do
+        allow(User).to receive(:non_billable_users_for_billable_management)
+                         .with([access_requester_user.id])
+                         .and_return([access_requester_user])
+      end
+
+      it 'limits access level to Guest' do
+        approve_access_request
+
+        expect(access_requester.reload.access_level).to eq(Gitlab::Access::GUEST)
+      end
+    end
+
+    context 'when user is billable' do
+      before do
+        allow(User).to receive(:non_billable_users_for_billable_management)
+                         .with([access_requester_user.id])
+                         .and_return([])
+      end
+
+      it 'does not limit access level' do
+        approve_access_request
+
+        expect(access_requester.reload.access_level).to eq(Gitlab::Access::DEVELOPER)
+      end
+    end
+
+    context 'when current user is admin', :enable_admin_mode do
+      let_it_be(:current_user) { create(:admin) }
+
+      before do
+        allow(User).to receive(:non_billable_users_for_billable_management)
+                         .with([access_requester_user.id])
+                         .and_return([access_requester_user])
+      end
+
+      it 'does not limit access level' do
+        approve_access_request
+
+        expect(access_requester.reload.access_level).to eq(Gitlab::Access::DEVELOPER)
+      end
+    end
+
+    context 'when promotion management is not enabled' do
+      before do
+        allow_next_instance_of(described_class) do |service|
+          allow(service).to receive(:member_promotion_management_enabled?).and_return(false)
+        end
+
+        allow(User).to receive(:non_billable_users_for_billable_management)
+                         .with([access_requester_user.id])
+                         .and_return([access_requester_user])
+      end
+
+      it 'does not limit access level' do
+        approve_access_request
+
+        expect(access_requester.reload.access_level).to eq(Gitlab::Access::DEVELOPER)
+      end
+    end
+
+    context 'when role does not require promotion management' do
+      before do
+        allow_next_instance_of(described_class) do |service|
+          allow(service).to receive(:promotion_management_required_for_role?).and_return(false)
+        end
+
+        allow(User).to receive(:non_billable_users_for_billable_management)
+                         .with([access_requester_user.id])
+                         .and_return([access_requester_user])
+      end
+
+      it 'does not limit access level' do
+        approve_access_request
+
+        expect(access_requester.reload.access_level).to eq(Gitlab::Access::DEVELOPER)
+      end
+    end
+  end
 end
