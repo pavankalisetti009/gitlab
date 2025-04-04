@@ -31399,9 +31399,6 @@ msgstr ""
 msgid "Includes LFS objects. It can be overridden per group, or per project. Set to 0 for no limit."
 msgstr ""
 
-msgid "Includes all merge requests you are assigned to and a reviewer has approved."
-msgstr ""
-
 msgid "Includes an MVC structure to help you get started"
 msgstr ""
 
@@ -36854,6 +36851,9 @@ msgid "Merge requests are a place to propose changes you've made to a project an
 msgstr ""
 
 msgid "Merge requests can't be merged if the status checks did not succeed or are still running."
+msgstr ""
+
+msgid "Merge requests you authored or are assigned to, without reviewers."
 msgstr ""
 
 msgid "Merge train pipelines continue without the merged changes."
@@ -66078,6 +66078,9 @@ msgstr ""
 msgid "Waiting for assignee"
 msgstr ""
 
+msgid "Waiting for author or assignee"
+msgstr ""
+
 msgid "Waiting for merge (open and assigned)"
 msgstr ""
 
@@ -69310,9 +69313,6 @@ msgstr ""
 msgid "Your applications"
 msgstr ""
 
-msgid "Your assigned merge requests that are waiting for approvals, and reviews you have requested changes for."
-msgstr ""
-
 msgid "Your authorized applications"
 msgstr ""
 
@@ -69411,7 +69411,16 @@ msgstr ""
 msgid "Your membership will expire in %{days_to_expire} days"
 msgstr ""
 
+msgid "Your merge requests"
+msgstr ""
+
 msgid "Your merge requests have a new homepage!"
+msgstr ""
+
+msgid "Your merge requests that are waiting for approvals."
+msgstr ""
+
+msgid "Your merge requests with approvals by all assigned reviewers."
 msgstr ""
 
 msgid "Your name"
@@ -69484,6 +69493,9 @@ msgid "Your resource access tokens will expire in %{days_to_expire} or less"
 msgstr ""
 
 msgid "Your review"
+msgstr ""
+
+msgid "Your reviews you've requested changes for or commented on."
 msgstr ""
 
 msgid "Your search didn't match any commits. Try a different query."
