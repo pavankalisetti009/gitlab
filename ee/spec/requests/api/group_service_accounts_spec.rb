@@ -195,21 +195,6 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
           end
         end
 
-        context 'when the group_service_account_custom_email feature flag is disabled' do
-          before do
-            stub_feature_flags(group_service_account_custom_email: false)
-          end
-
-          it 'creates a service account without the custom email' do
-            perform_request
-
-            expect(response).to have_gitlab_http_status(:created)
-            expect(json_response['username']).to eq(params[:username])
-            expect(json_response['name']).to eq(params[:name])
-            expect(json_response['email']).to start_with("service_account_group_#{group_id}")
-          end
-        end
-
         context 'when the group does not exist' do
           let(:group_id) { non_existing_record_id }
 
