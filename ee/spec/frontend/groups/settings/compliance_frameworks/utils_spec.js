@@ -42,6 +42,7 @@ describe('Utils', () => {
         description: null,
         pipelineConfigurationFullPath: null,
         color: null,
+        projects: null,
       });
     });
   });
@@ -52,6 +53,7 @@ describe('Utils', () => {
       description: 'b',
       color: '#000',
       default: false,
+      projects: undefined,
     };
 
     it.each([true, false])(

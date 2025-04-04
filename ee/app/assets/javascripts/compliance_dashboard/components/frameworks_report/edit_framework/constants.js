@@ -144,4 +144,5 @@ continue to take precedence over the new pipeline execution policy.`),
   requirementDeleteError: s__(
     'ComplianceFrameworks|An error occurred while deleting the requirement.',
   ),
+  fetchProjectsError: s__('ComplianceFrameworks|Error loading projects.'),
 };

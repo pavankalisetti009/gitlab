@@ -762,6 +762,24 @@ describe('FrameworksTable component', () => {
               description: 'Test Description',
               color: '#FF0000',
               pipelineConfigurationFullPath: '/path/to/pipeline',
+              projects: {
+                nodes: [
+                  {
+                    id: 'gid://gitlab/Project/1',
+                    name: 'Test Project',
+                    fullPath: 'test-project',
+                    visibility: 'public',
+                    webUrl: 'https://gitlab.com/test-project',
+                    description: 'Test Description',
+                    namespace: {
+                      id: 'gid://gitlab/Group/1',
+                      name: 'Test Group',
+                      fullName: 'Test Group',
+                      webUrl: 'https://gitlab.com/test-group',
+                    },
+                  },
+                ],
+              },
             },
           },
         },

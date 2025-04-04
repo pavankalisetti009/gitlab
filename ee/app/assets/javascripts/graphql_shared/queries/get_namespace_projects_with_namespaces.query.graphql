@@ -1,0 +1,20 @@
+query getNamespaceProjectsWithNamespaces($fullPath: ID!, $search: String) {
+  group(fullPath: $fullPath) {
+    id
+    projects(includeSubgroups: true, search: $search) {
+      nodes {
+        id
+        name
+        webUrl
+        visibility
+        description
+        namespace {
+          id
+          name
+          webUrl
+          fullName
+        }
+      }
+    }
+  }
+}

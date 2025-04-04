@@ -1311,13 +1311,13 @@ describe('Edit Framework Form', () => {
   });
 
   describe('Projects section', () => {
-    it('does not render projects section if creating new framework', async () => {
+    it('renders projects section when creating new framework', async () => {
       wrapper = createComponent(shallowMountExtended, { routeParams: {} });
       await waitForPromises();
-      expect(wrapper.findComponent(ProjectsSection).exists()).toBe(false);
+      expect(wrapper.findComponent(ProjectsSection).exists()).toBe(true);
     });
 
-    it('render projects section if editing framework', async () => {
+    it('render projects section when editing framework', async () => {
       wrapper = createComponent(shallowMountExtended);
       await waitForPromises();
       expect(wrapper.findComponent(ProjectsSection).exists()).toBe(true);

@@ -184,6 +184,10 @@ export const complianceFramework = {
   description: 'General Data Protection Regulation',
   name: 'GDPR',
   pipelineConfigurationFullPath: null,
+  projects: {
+    nodes: [],
+    __typename: 'ProjectConnection',
+  },
   __typename: 'ComplianceFramework',
 };
 
@@ -201,7 +205,7 @@ export const createComplianceFrameworkMutationResponse = (
   },
 });
 
-const createProject = ({ id, groupPath } = {}) => ({
+export const createProject = ({ id, groupPath } = {}) => ({
   id: `gid://gitlab/Project/${id}`,
   name: `Project ${id}`,
   description: `Project description ${id}`,
@@ -211,6 +215,8 @@ const createProject = ({ id, groupPath } = {}) => ({
   namespace: {
     webUrl: `${groupPath}`,
     fullName: `Project ${id} group`,
+    id: `gid://gitlab/Group/${id}`,
+    name: `Group ${id}`,
   },
   complianceFrameworks: {
     nodes: [
