@@ -1603,6 +1603,9 @@ msgstr ""
 msgid "%{user} user’s menu"
 msgstr ""
 
+msgid "%{value} /day"
+msgstr ""
+
 msgid "%{value} is a reserved name"
 msgstr ""
 

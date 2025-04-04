@@ -1,4 +1,4 @@
-import { getDayDifference } from '~/lib/utils/datetime_utility';
+import { getDayDifference, localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import { __, sprintf } from '~/locale';
 import {
   BUCKETING_INTERVAL_ALL,
@@ -24,10 +24,10 @@ import { buildNullSeries } from 'ee/analytics/shared/utils';
 import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filters/utils';
 import {
   startOfTomorrow,
-  averageSeriesOptions,
-  medianSeriesOptions,
+  lineChartAdditionalSeriesOptions,
 } from 'ee/dora/components/static_data/shared';
 import { seriesToMedianSeries, seriesToAverageSeries } from 'ee/dora/components/util';
+import { DEFAULT_NULL_SERIES_OPTIONS, NULL_SERIES_ID } from 'ee/analytics/shared/constants';
 import { defaultClient } from '../graphql/client';
 
 const asValue = ({ metrics, targetMetric, units }) => {
@@ -39,17 +39,14 @@ const asValue = ({ metrics, targetMetric, units }) => {
 
 const calculateAdditionalSeries = ({ targetMetric, rawData, daysCount }) => {
   const seriesName = DORA_METRICS_SECONDARY_SERIES_NAME[targetMetric];
-
-  if (targetMetric === DORA_METRICS.DEPLOYMENT_FREQUENCY) {
-    return {
-      ...averageSeriesOptions,
-      ...seriesToAverageSeries(rawData, sprintf(seriesName, { days: daysCount })),
-    };
-  }
+  const formatSeries =
+    targetMetric === DORA_METRICS.DEPLOYMENT_FREQUENCY
+      ? seriesToAverageSeries
+      : seriesToMedianSeries;
 
   return {
-    ...medianSeriesOptions,
-    ...seriesToMedianSeries(rawData, sprintf(seriesName, { days: daysCount })),
+    ...lineChartAdditionalSeriesOptions,
+    ...formatSeries(rawData, sprintf(seriesName, { days: daysCount })),
   };
 };
 
@@ -57,13 +54,18 @@ const asTimeSeries = ({ metrics, targetMetric, daysCount, nullSeriesTitle = __('
   // Extracts a date + value, returns an array of arrays [[date, value],[date, value]]
   // Calculates a "null" series and returns all the series in the correct order for rendering
   const rawData = metrics.map(({ date, ...rest }) => {
-    return [date, rest[targetMetric]];
+    const formattedDate = newDate(date);
+    return [formattedDate, rest[targetMetric]];
   });
 
   if (!rawData.some(([, value]) => Boolean(value))) return [];
 
   const data = { name: VALUE_STREAM_METRIC_TILE_METADATA[targetMetric].label, data: rawData };
-  const [nullSeries, primarySeries] = buildNullSeries({ seriesData: [data], nullSeriesTitle });
+  const [nullSeries, primarySeries] = buildNullSeries({
+    seriesData: [data],
+    nullSeriesTitle,
+    nullSeriesOptions: { ...DEFAULT_NULL_SERIES_OPTIONS, id: NULL_SERIES_ID },
+  });
   const additionalSeries = calculateAdditionalSeries({ targetMetric, rawData, daysCount });
 
   return [primarySeries, additionalSeries, nullSeries].map(
@@ -136,7 +138,10 @@ export default async function fetch({
     setVisualizationOverrides({ visualizationOptionOverrides });
   } else {
     setVisualizationOverrides({
-      visualizationOptionOverrides: DORA_METRICS_CHARTS_ADDITIONAL_OPTS[metric],
+      visualizationOptionOverrides: {
+        ...DORA_METRICS_CHARTS_ADDITIONAL_OPTS[metric],
+        chartTooltip: { titleFormatter: localeDateFormat.asDate.format },
+      },
     });
   }
 

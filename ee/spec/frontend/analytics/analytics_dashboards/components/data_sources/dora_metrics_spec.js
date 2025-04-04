@@ -10,6 +10,7 @@ import {
   BUCKETING_INTERVAL_DAILY,
   BUCKETING_INTERVAL_MONTHLY,
 } from '~/analytics/shared/graphql/constants';
+import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
 import { dataSeries, medianSeries, nullSeries } from '../../mock_data';
 
 describe('Dora Metrics Data Source', () => {
@@ -195,7 +196,10 @@ describe('Dora Metrics Data Source', () => {
 
       it('calls setVisualizationOverrides', () => {
         expect(mockSetVisualizationOverrides).toHaveBeenCalledWith({
-          visualizationOptionOverrides: DORA_METRICS_CHARTS_ADDITIONAL_OPTS[query.metric],
+          visualizationOptionOverrides: {
+            ...DORA_METRICS_CHARTS_ADDITIONAL_OPTS[query.metric],
+            chartTooltip: { titleFormatter: localeDateFormat.asDate.format },
+          },
         });
       });
 

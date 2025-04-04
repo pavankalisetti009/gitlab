@@ -55,7 +55,7 @@ export const averageSeriesOptions = {
   },
 };
 
-export const medianSeriesOptions = {
+export const lineChartAdditionalSeriesOptions = {
   areaStyle: {
     opacity: 0,
   },

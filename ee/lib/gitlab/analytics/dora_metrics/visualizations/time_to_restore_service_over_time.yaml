@@ -15,3 +15,5 @@ options:
     name: "Days for an open incident"
     type: value
   includeLegendAvgMax: false
+  chartTooltip:
+    valueUnit: TIME_INTERVAL
