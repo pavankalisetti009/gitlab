@@ -18,6 +18,11 @@ module Ai
       end
 
       def workflow_goal
+        Gitlab::AppLogger.info(
+          workflow_gid: event.workflow.to_gid,
+          checkpoint_ts: event.thread_ts,
+          message: 'Serialising checkpoint'
+        )
         event.workflow.goal
       end
 

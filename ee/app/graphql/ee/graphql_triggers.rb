@@ -50,6 +50,11 @@ module EE
       end
 
       def self.workflow_events_updated(checkpoint)
+        ::Gitlab::AppLogger.info(
+          workflow_gid: checkpoint.workflow.to_gid,
+          checkpoint_ts: checkpoint.thread_ts,
+          message: 'Triggering channel update'
+        )
         ::GitlabSchema.subscriptions.trigger(:workflow_events_updated, { workflow_id: checkpoint.workflow.to_gid },
           checkpoint)
       end
