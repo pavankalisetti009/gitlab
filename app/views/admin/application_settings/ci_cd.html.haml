@@ -54,7 +54,7 @@
   - c.with_body do
     = render 'runner_registrars_form'
 
-= render ::Layouts::SettingsBlockComponent.new(s_('CID|Job token permissions'),
+= render ::Layouts::SettingsBlockComponent.new(s_('CICD|Job token permissions'),
   id: 'js-job-token-permissions-settings',
   testid: 'job-token-permissions-settings',
   expanded: expanded_by_default?) do |c|
@@ -62,3 +62,12 @@
     = s_('CICD|Configure CI/CD job token settings for all projects.')
   - c.with_body do
     = render 'job_token_permissions_form'
+
+= render ::Layouts::SettingsBlockComponent.new(s_('CICD|Job logs'),
+  id: 'js-job-logs-settings',
+  testid: 'job-logs-settings',
+  expanded: expanded_by_default?) do |c|
+  - c.with_description do
+    = s_('CICD|Configure CI job log settings for all projects.')
+  - c.with_body do
+    = render 'job_logs_form'
