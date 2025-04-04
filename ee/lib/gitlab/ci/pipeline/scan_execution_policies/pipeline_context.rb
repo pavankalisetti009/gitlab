@@ -21,7 +21,7 @@ module Gitlab
           end
 
           def active_scan_execution_actions
-            policies.flat_map(&:actions).compact.uniq
+            policies.flat_map { |policy| limited_actions(policy.actions, project) }.compact.uniq
           end
           strong_memoize_attr :active_scan_execution_actions
 
@@ -42,6 +42,12 @@ module Gitlab
           private
 
           attr_reader :project, :ref, :current_user, :source
+
+          def limited_actions(actions, project)
+            return actions if Feature.disabled?(:scan_execution_policy_action_limit, project)
+
+            actions.first(Gitlab::CurrentSettings.scan_execution_policies_action_limit)
+          end
 
           def apply_scan_execution_policies?
             return false unless project&.feature_available?(:security_orchestration_policies)
