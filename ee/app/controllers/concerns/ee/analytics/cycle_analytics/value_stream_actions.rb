@@ -102,7 +102,11 @@ module EE
           @data_attributes = ::Gitlab::Analytics::CycleAnalytics::RequestParams.new(request_params)
             .to_data_attributes
             .slice(*slice_attrs)
-            .merge(vsa_path: vsa_path, is_edit_page: is_edit_page.to_s)
+            .merge(
+              vsa_path: vsa_path,
+              is_edit_page: is_edit_page.to_s,
+              stage_events: stage_events.to_json
+            )
           # rubocop:enable Gitlab/ModuleWithInstanceVariables
         end
 
@@ -167,11 +171,9 @@ module EE
           @value_stream ||= namespace.value_streams.find(params[:id])
         end
 
-        def load_stage_events
-          @stage_events ||= begin
-            selectable_events = ::Gitlab::Analytics::CycleAnalytics::StageEvents.selectable_events
-            ::Analytics::CycleAnalytics::EventEntity.represent(selectable_events)
-          end
+        def stage_events
+          selectable_events = ::Gitlab::Analytics::CycleAnalytics::StageEvents.selectable_events
+          ::Analytics::CycleAnalytics::EventEntity.represent(selectable_events)
         end
       end
     end

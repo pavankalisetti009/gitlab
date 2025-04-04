@@ -29,10 +29,10 @@ describe('CustomStageFields', () => {
 
   const createComponent = ({ stage = emptyState, errors = {}, stubs = {}, props = {} } = {}) => {
     wrapper = shallowMountExtended(CustomStageFields, {
+      provide: { stageEvents },
       propsData: {
         stage,
         errors,
-        stageEvents,
         index: 0,
         totalStages: 3,
         stageLabel: 'Stage 1',

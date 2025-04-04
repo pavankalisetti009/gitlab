@@ -390,8 +390,8 @@ describe('Value Stream Analytics actions / stages', () => {
     });
   });
 
-  describe('fetchGroupStagesAndEvents', () => {
-    const { stages: groupStages, events } = customizableStagesAndEvents;
+  describe('fetchGroupStages', () => {
+    const { stages: groupStages } = customizableStagesAndEvents;
 
     beforeEach(() => {
       state = { ...state, ...mockGetters };
@@ -401,15 +401,8 @@ describe('Value Stream Analytics actions / stages', () => {
 
     it(`commits ${types.RECEIVE_STAGE_DATA_SUCCESS} with received data and headers on success`, () => {
       return testAction({
-        action: actions.fetchGroupStagesAndEvents,
+        action: actions.fetchGroupStages,
         state,
-        expectedMutations: [
-          { type: types.SET_STAGE_EVENTS, payload: [] },
-          {
-            type: types.SET_STAGE_EVENTS,
-            payload: events,
-          },
-        ],
         expectedActions: [
           { type: 'requestGroupStages' },
           { type: 'receiveGroupStagesSuccess', payload: groupStages },
@@ -425,9 +418,8 @@ describe('Value Stream Analytics actions / stages', () => {
 
       it('dispatches receiveGroupStagesError on error', () => {
         return testAction({
-          action: actions.fetchGroupStagesAndEvents,
+          action: actions.fetchGroupStages,
           state,
-          expectedMutations: [{ type: types.SET_STAGE_EVENTS, payload: [] }],
           expectedActions: [
             { type: 'requestGroupStages' },
             {

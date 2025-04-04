@@ -30,7 +30,8 @@ RSpec.describe Analytics::CycleAnalytics::ValueStreamActions, feature_category: 
         :default_stages,
         :namespace,
         :vsa_path,
-        :is_edit_page
+        :is_edit_page,
+        :stage_events
       )
     end
 
@@ -45,7 +46,8 @@ RSpec.describe Analytics::CycleAnalytics::ValueStreamActions, feature_category: 
         :namespace,
         :vsa_path,
         :is_edit_page,
-        :value_stream
+        :value_stream,
+        :stage_events
       )
     end
   end

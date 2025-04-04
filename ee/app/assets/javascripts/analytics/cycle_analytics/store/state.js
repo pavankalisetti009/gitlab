@@ -26,12 +26,11 @@ export default () => ({
 
   isLoadingValueStreams: false,
   isDeletingValueStream: false,
-  isFetchingGroupStagesAndEvents: false,
+  isFetchingGroupStages: false,
 
   deleteValueStreamError: null,
 
   stages: [],
-  formEvents: [],
   selectedStageError: '',
   summary: [],
   medians: {},

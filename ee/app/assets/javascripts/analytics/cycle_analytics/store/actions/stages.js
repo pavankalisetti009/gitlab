@@ -146,7 +146,7 @@ export const receiveGroupStagesError = ({ commit }, error) => {
 export const receiveGroupStagesSuccess = ({ commit }, stages) =>
   commit(types.RECEIVE_GROUP_STAGES_SUCCESS, stages);
 
-export const fetchGroupStagesAndEvents = ({ dispatch, commit, getters }) => {
+export const fetchGroupStages = ({ dispatch, getters }) => {
   const {
     currentValueStreamId: valueStreamId,
     namespaceRestApiRequestPath,
@@ -154,7 +154,6 @@ export const fetchGroupStagesAndEvents = ({ dispatch, commit, getters }) => {
   } = getters;
 
   dispatch('requestGroupStages');
-  commit(types.SET_STAGE_EVENTS, []);
 
   return getStagesAndEvents({
     namespacePath: namespaceRestApiRequestPath,
@@ -164,9 +163,8 @@ export const fetchGroupStagesAndEvents = ({ dispatch, commit, getters }) => {
       project_ids,
     },
   })
-    .then(({ data: { stages = [], events = [] } }) => {
+    .then(({ data: { stages = [] } }) => {
       dispatch('receiveGroupStagesSuccess', stages);
-      commit(types.SET_STAGE_EVENTS, events);
     })
     .catch((error) => {
       throwIfUserForbidden(error);

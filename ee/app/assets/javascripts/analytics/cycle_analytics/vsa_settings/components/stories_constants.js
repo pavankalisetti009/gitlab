@@ -24,7 +24,7 @@ export const defaultStageConfig = [
   },
 ];
 
-export const formEvents = [
+export const stageEvents = [
   {
     name: 'Issue closed',
     identifier: 'issue_closed',

@@ -20,6 +20,7 @@ export default {
     StageFieldMove,
     StageFieldActions,
   },
+  inject: ['stageEvents'],
   props: {
     index: {
       type: Number,
@@ -42,18 +43,16 @@ export default {
       required: false,
       default: () => ({}),
     },
-    stageEvents: {
-      type: Array,
-      required: true,
-    },
   },
   data() {
     return {
-      labelEvents: getLabelEventsIdentifiers(this.stageEvents),
       formError: '',
     };
   },
   computed: {
+    labelEvents() {
+      return getLabelEventsIdentifiers(this.stageEvents);
+    },
     startEvents() {
       return startEventOptions(this.stageEvents);
     },

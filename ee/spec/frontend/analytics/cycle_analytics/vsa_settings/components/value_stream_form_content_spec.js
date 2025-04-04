@@ -23,7 +23,7 @@ import {
 } from '~/lib/utils/common_utils';
 import ValueStreamFormContentActions from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form_content_actions.vue';
 import {
-  customStageEvents as formEvents,
+  customStageEvents as stageEvents,
   defaultStageConfig,
   rawCustomStage,
   endpoints,
@@ -62,7 +62,6 @@ describe('ValueStreamFormContent', () => {
   const fakeStore = ({ state: stateOverrides }) =>
     new Vuex.Store({
       state: {
-        formEvents,
         selectedValueStream: undefined,
         ...stateOverrides,
       },
@@ -74,7 +73,7 @@ describe('ValueStreamFormContent', () => {
   const createComponent = ({ props = {}, state = {} } = {}) =>
     shallowMountExtended(ValueStreamFormContent, {
       store: fakeStore({ state }),
-      provide: { vsaPath: '/mockPath' },
+      provide: { vsaPath: '/mockPath', stageEvents },
       propsData: {
         defaultStageConfig,
         ...props,

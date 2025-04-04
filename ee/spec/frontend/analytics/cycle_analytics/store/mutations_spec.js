@@ -19,8 +19,6 @@ import {
   reviewStage,
   customizableStagesAndEvents,
   valueStreams,
-  rawCustomStageEvents,
-  camelCasedStageEvents,
 } from '../mock_data';
 
 let state = null;
@@ -61,7 +59,6 @@ describe('Value Stream Analytics mutations', () => {
     ${types.INITIALIZE_VALUE_STREAM_SUCCESS}     | ${'isLoading'}              | ${false}
     ${types.REQUEST_STAGE_COUNTS}                | ${'stageCounts'}            | ${{}}
     ${types.RECEIVE_STAGE_COUNTS_ERROR}          | ${'stageCounts'}            | ${{}}
-    ${types.SET_STAGE_EVENTS}                    | ${'formEvents'}             | ${[]}
   `('$mutation will set $stateKey=$value', ({ mutation, stateKey, value }) => {
     mutations[mutation](state);
 
@@ -81,7 +78,6 @@ describe('Value Stream Analytics mutations', () => {
     ${types.SET_SELECTED_VALUE_STREAM}         | ${valueStreams[1].id}                                    | ${{ selectedValueStream: {} }}
     ${types.SET_PAGINATION}                    | ${pagination}                                            | ${{ pagination: { ...pagination, sort: PAGINATION_SORT_FIELD_DURATION, direction: PAGINATION_SORT_DIRECTION_DESC } }}
     ${types.SET_PAGINATION}                    | ${{ ...pagination, sort: 'duration', direction: 'asc' }} | ${{ pagination: { ...pagination, sort: 'duration', direction: 'asc' } }}
-    ${types.SET_STAGE_EVENTS}                  | ${rawCustomStageEvents}                                  | ${{ formEvents: camelCasedStageEvents }}
   `(
     '$mutation with payload $payload will update state with $expectedState',
     ({ mutation, payload, expectedState }) => {

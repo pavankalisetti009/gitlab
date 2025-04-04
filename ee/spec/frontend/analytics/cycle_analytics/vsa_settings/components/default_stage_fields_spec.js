@@ -22,12 +22,12 @@ const defaultStage = {
 describe('DefaultStageFields', () => {
   function createComponent({ stage = defaultStage, errors = {} } = {}) {
     return shallowMount(DefaultStageFields, {
+      provide: { stageEvents },
       propsData: {
         index: defaultStageIndex,
         totalStages,
         stage,
         errors,
-        stageEvents,
         stageLabel: 'Stage 1',
       },
       stubs: {

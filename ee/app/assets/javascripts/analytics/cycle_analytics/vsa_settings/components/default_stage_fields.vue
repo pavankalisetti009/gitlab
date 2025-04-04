@@ -22,6 +22,7 @@ export default {
     GlFormGroup,
     GlFormInput,
   },
+  inject: ['stageEvents'],
   props: {
     index: {
       type: Number,
@@ -43,10 +44,6 @@ export default {
       type: Object,
       required: false,
       default: () => ({}),
-    },
-    stageEvents: {
-      type: Array,
-      required: true,
     },
   },
   methods: {
