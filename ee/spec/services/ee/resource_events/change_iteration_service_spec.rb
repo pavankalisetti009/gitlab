@@ -43,4 +43,26 @@ RSpec.describe ResourceEvents::ChangeIterationService, feature_category: :team_p
       end
     end
   end
+
+  describe '#create_event' do
+    let_it_be(:user) { create(:user) }
+    let(:resource) { create(:work_item, iteration: timebox) }
+    let(:ancestor) { create(:work_item) }
+
+    subject(:changed_service_instance) do
+      described_class.new(resource, user, old_iteration_id: nil, automated: true, triggered_by_work_item: ancestor)
+    end
+
+    it 'updates the automated column' do
+      changed_service_instance.execute
+
+      expect(ResourceIterationEvent.last.automated).to be(true)
+    end
+
+    it 'updates the triggered_by_id column' do
+      changed_service_instance.execute
+
+      expect(ResourceIterationEvent.last.triggered_by_id).to be(ancestor.id)
+    end
+  end
 end

@@ -3,6 +3,8 @@
 module WorkItems
   module Callbacks
     class Iteration < Base
+      BATCH_SIZE = 100
+
       def before_create
         handle_iteration_change
       end
@@ -11,6 +13,15 @@ module WorkItems
         params[:iteration] = nil if excluded_in_new_type?
 
         handle_iteration_change
+      end
+
+      def after_update_commit
+        return unless Feature.enabled?(:work_item_children_iteration_change, work_item.namespace.root_ancestor)
+        return unless work_item.sprint_id_previously_changed?
+
+        previous_iteration_id = work_item.sprint_id_before_last_save
+
+        handle_children_iteration_change(previous_iteration_id)
       end
 
       private
@@ -34,6 +45,35 @@ module WorkItems
         group_ids = (work_item.project&.group || work_item.namespace).self_and_ancestors.select(:id)
 
         ::Iteration.of_groups(group_ids).id_in(iteration.id).exists?
+      end
+
+      def handle_children_iteration_change(previous_iteration_id)
+        return unless work_item.get_widget(:iteration)
+
+        descendant_ids = work_item.descendants.opened.select(:id)
+        WorkItem
+          .id_in(descendant_ids)
+          .with_enabled_widget_definition(:iteration)
+          .in_iterations(previous_iteration_id)
+          .each_batch(of: BATCH_SIZE) do |children_batch|
+          resource_iteration_event_attributes = children_batch.map do |child|
+            previous_iteration_id = child.sprint_id
+            child.iteration = work_item.iteration
+            ::ResourceEvents::ChangeIterationService
+              .new(
+                child,
+                current_user,
+                old_iteration_id: previous_iteration_id,
+                automated: true,
+                triggered_by_work_item: work_item
+              )
+              .build_resource_args
+          end
+
+          children_batch.update_all(sprint_id: work_item.sprint_id)
+
+          ResourceIterationEvent.insert_all(resource_iteration_event_attributes)
+        end
       end
     end
   end

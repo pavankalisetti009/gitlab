@@ -2,15 +2,28 @@
 
 module ResourceEvents
   class ChangeIterationService < ::ResourceEvents::BaseChangeTimeboxService
-    attr_reader :iteration, :old_iteration_id
+    attr_reader :iteration, :old_iteration_id, :automated, :triggered_by_work_item
 
-    def initialize(resource, user, old_iteration_id:)
+    def initialize(resource, user, old_iteration_id:, automated: false, triggered_by_work_item: nil)
       super(resource, user)
 
       @resource = resource
       @user = user
       @iteration = resource&.iteration
       @old_iteration_id = old_iteration_id
+      @automated = automated
+      @triggered_by_work_item = triggered_by_work_item
+    end
+
+    def build_resource_args
+      action = iteration.blank? ? :remove : :add
+
+      super.merge({
+        action: ResourceTimeboxEvent.actions[action],
+        iteration_id: iteration.blank? ? old_iteration_id : iteration.id,
+        automated: automated,
+        triggered_by_id: triggered_by_work_item&.id
+      })
     end
 
     private
@@ -23,15 +36,6 @@ module ResourceEvents
 
     def create_event
       ResourceIterationEvent.create(build_resource_args)
-    end
-
-    def build_resource_args
-      action = iteration.blank? ? :remove : :add
-
-      super.merge({
-        action: ResourceTimeboxEvent.actions[action],
-        iteration_id: iteration.blank? ? old_iteration_id : iteration&.id
-      })
     end
   end
 end

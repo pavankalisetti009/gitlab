@@ -64,4 +64,103 @@ RSpec.describe WorkItems::Callbacks::Iteration, feature_category: :team_planning
       end
     end
   end
+
+  describe '#after_update_commit' do
+    let_it_be(:old_iteration) { create(:iteration, group: group) }
+    let_it_be(:new_iteration) { create(:iteration, group: group) }
+    let_it_be(:child_work_item) do
+      create(:work_item, :task, project: project, sprint_id: old_iteration.id).tap do |child|
+        create(:parent_link, work_item_parent: work_item, work_item: child)
+      end
+    end
+
+    let(:params) { {} }
+
+    subject(:after_update_commit) { callback.after_update_commit }
+
+    before_all do
+      work_item.update!(iteration: old_iteration)
+    end
+
+    RSpec.shared_examples "does not update children" do
+      it 'does not update child work items' do
+        expect { after_update_commit }.to not_change { child_work_item.iteration }
+          .and not_change { ResourceIterationEvent.count }
+      end
+    end
+
+    context 'when iteration has not changed' do
+      it_behaves_like "does not update children"
+    end
+
+    context 'when iteration has changed' do
+      before do
+        work_item.update!(iteration: new_iteration)
+      end
+
+      context "when work_item does not have the iteration widget" do
+        before do
+          allow(work_item).to receive(:get_widget).with(:iteration).and_return(false)
+        end
+
+        it_behaves_like "does not update children"
+      end
+
+      context 'when work item has the iteration widget' do
+        it 'updates iteration for child work items' do
+          expect { after_update_commit }.to change { child_work_item.reload.iteration }
+            .from(old_iteration).to(new_iteration)
+            .and change { ResourceIterationEvent.count }.by(1)
+        end
+
+        context 'when child work item is closed' do
+          before do
+            child_work_item.update!(state: :closed)
+          end
+
+          it_behaves_like "does not update children"
+        end
+
+        context "when the feature flag is disable" do
+          before do
+            stub_feature_flags(work_item_children_iteration_change: false)
+          end
+
+          it_behaves_like "does not update children"
+        end
+
+        context 'when child work item is not in the previous iteration' do
+          before do
+            child_work_item.update!(iteration: create(:iteration, group: group))
+          end
+
+          it_behaves_like "does not update children"
+        end
+
+        context "when children do not have the iteration widget" do
+          before do
+            WorkItems::WidgetDefinition.where(widget_type: "iteration",
+              work_item_type: child_work_item.work_item_type).delete_all
+          end
+
+          it_behaves_like "does not update children"
+        end
+
+        context 'when there are multiple child work items' do
+          let_it_be(:child_work_item2) do
+            create(:work_item, :task, project: project, sprint_id: old_iteration.id).tap do |child|
+              create(:parent_link, work_item_parent: work_item, work_item: child)
+            end
+          end
+
+          it 'updates all child work items' do
+            expect { after_update_commit }.to change { child_work_item.reload.iteration }
+              .from(old_iteration).to(new_iteration)
+              .and change { child_work_item2.reload.iteration }.from(old_iteration).to(new_iteration)
+              .and change { ResourceIterationEvent.count }.by(2)
+          end
+        end
+      end
+    end
+  end
 end
