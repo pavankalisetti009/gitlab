@@ -72,7 +72,8 @@ export const mapItemHeadersToFormData = (item) => {
     return Object.keys(item.config.headers).map((headerKey) => ({
       ...createBlankHeader(),
       name: headerKey,
-      ...item.config.headers[headerKey],
+      value: item.config.headers[headerKey].value,
+      active: item.config.headers[headerKey].active,
     }));
   }
 
@@ -105,4 +106,22 @@ export const mapAllMutationErrors = (mutations, name) => {
       .reduce((r, errors) => r.concat(errors), [])
       .filter(Boolean);
   });
+};
+
+export const getFormattedFormItem = (item) => {
+  const formattedFormItem = {
+    ...item,
+  };
+
+  if (item.namespaceFilters) {
+    // TODO - in the cleanup we need to update StreamNamespaceFilters to
+    // read the original data structure
+    // https://gitlab.com/gitlab-org/gitlab/-/issues/523881
+    formattedFormItem.namespaceFilter = {
+      ...item.namespaceFilters.at(0),
+      namespace: item.namespaceFilters.at(0)?.namespace?.fullPath,
+    };
+  }
+
+  return formattedFormItem;
 };

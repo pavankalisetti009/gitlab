@@ -5,6 +5,7 @@ import {
   createAuditEventSearchQuery,
   mapAllMutationErrors,
   mapItemHeadersToFormData,
+  getFormattedFormItem,
 } from 'ee/audit_events/utils';
 import {
   destinationDeleteMutationPopulator,
@@ -207,6 +208,20 @@ describe('Audit Event Utils', () => {
       await expect(
         mapAllMutationErrors(mutations, 'externalAuditEventDestinationDestroy'),
       ).resolves.toStrictEqual(errors);
+    });
+  });
+
+  describe('getFormattedFormItem', () => {
+    it('returns the formItem in the format that the form components expect', () => {
+      expect(getFormattedFormItem(mockConsolidatedAPIExternalDestinations[0])).toEqual(
+        expect.objectContaining({
+          namespaceFilter: {
+            __typename: 'GroupAuditEventNamespaceFilter',
+            id: 'gid://gitlab/AuditEvents::Group::NamespaceFilter/1',
+            namespace: 'myGroup/project1',
+          },
+        }),
+      );
     });
   });
 });
