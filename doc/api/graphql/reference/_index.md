@@ -390,6 +390,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="querycicatalogresourcesscope"></a>`scope` | [`CiCatalogResourceScope`](#cicatalogresourcescope) | Scope of the returned catalog resources. |
 | <a id="querycicatalogresourcessearch"></a>`search` | [`String`](#string) | Search term to filter the catalog resources by name or description. |
 | <a id="querycicatalogresourcessort"></a>`sort` | [`CiCatalogResourceSort`](#cicatalogresourcesort) | Sort catalog resources by given criteria. |
+| <a id="querycicatalogresourcestopics"></a>`topics` | [`[String!]`](#string) | Filter catalog resources by project topic names. |
 | <a id="querycicatalogresourcesverificationlevel"></a>`verificationLevel` | [`CiCatalogResourceVerificationLevel`](#cicatalogresourceverificationlevel) | Filter catalog resources by verification level. |
 
 ### `Query.ciConfig`
