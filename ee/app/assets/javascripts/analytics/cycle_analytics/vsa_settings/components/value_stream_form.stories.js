@@ -2,8 +2,8 @@ import { withVuexStore } from 'storybook_addons/vuex_store';
 import {
   defaultStageConfig,
   stageEvents,
-  selectedValueStream,
-  selectedValueStreamStages,
+  valueStream,
+  valueStreamStages,
 } from './stories_constants';
 import ValueStreamForm from './value_stream_form.vue';
 
@@ -39,36 +39,36 @@ export const Default = {
 export const EditValueStream = {
   render: createStoryWithState({
     state: {
-      selectedValueStream,
-      stages: selectedValueStreamStages(),
+      stages: valueStreamStages(),
     },
   }),
   args: {
     isEditing: true,
+    valueStream,
   },
 };
 
 export const EditValueStreamWithCustomStages = {
   render: createStoryWithState({
     state: {
-      selectedValueStream,
-      stages: selectedValueStreamStages({ addCustomStage: true }),
+      stages: valueStreamStages({ addCustomStage: true }),
     },
   }),
   args: {
     isEditing: true,
+    valueStream,
   },
 };
 
 export const EditValueStreamWithHiddenStages = {
   render: createStoryWithState({
     state: {
-      selectedValueStream,
-      stages: selectedValueStreamStages({ addCustomStage: true, hideStages: true }),
+      stages: valueStreamStages({ addCustomStage: true, hideStages: true }),
     },
   }),
   args: {
     isEditing: true,
+    valueStream,
   },
 };
 

@@ -14,7 +14,7 @@ import {
 
 Vue.use(Vuex);
 
-const [selectedValueStream] = valueStreams;
+const [valueStream] = valueStreams;
 const camelCustomStage = convertObjectPropsToCamelCase(rawCustomStage);
 const stages = [camelCustomStage];
 const initialData = { name: '', stages: [] };
@@ -32,9 +32,13 @@ describe('ValueStreamForm', () => {
       },
     });
 
-  const createComponent = ({ props = {}, state = {} } = {}) => {
+  const createComponent = ({ props = {}, state = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(ValueStreamForm, {
       store: fakeStore({ state }),
+      provide: {
+        valueStream: undefined,
+        ...provide,
+      },
       propsData: {
         defaultStageConfig,
         ...props,
@@ -67,14 +71,15 @@ describe('ValueStreamForm', () => {
     beforeEach(() => {
       createComponent({
         props: { isEditing: true },
-        state: { selectedValueStream, stages },
+        provide: { valueStream },
+        state: { stages },
       });
     });
 
     it('renders form content component correctly', () => {
       const populatedInitialData = {
-        id: selectedValueStream.id,
-        name: selectedValueStream.name,
+        id: valueStream.id,
+        name: valueStream.name,
         stages: [
           camelCustomStage,
           ...defaultStageConfig.map(({ custom, name }) => ({ custom, name, hidden: true })),

@@ -11,6 +11,7 @@ export default {
     ValueStreamFormContent,
     GlLoadingIcon,
   },
+  inject: ['valueStream'],
   props: {
     isEditing: {
       type: Boolean,
@@ -19,20 +20,14 @@ export default {
     },
   },
   computed: {
-    ...mapState([
-      'selectedValueStream',
-      'stages',
-      'defaultStageConfig',
-      'isFetchingGroupStages',
-      'isLoading',
-    ]),
+    ...mapState(['stages', 'defaultStageConfig', 'isFetchingGroupStages', 'isLoading']),
     isLoadingOrFetching() {
       return this.isLoading || this.isFetchingGroupStages;
     },
     initialData() {
       return this.isEditing
         ? {
-            ...this.selectedValueStream,
+            ...this.valueStream,
             stages: generateInitialStageData(this.defaultStageConfig, this.stages),
           }
         : {

@@ -1,8 +1,6 @@
 <script>
 import { GlAlert, GlButton, GlForm, GlFormInput, GlFormGroup, GlFormRadioGroup } from '@gitlab/ui';
 import { cloneDeep, uniqueId } from 'lodash';
-// eslint-disable-next-line no-restricted-imports
-import { mapState } from 'vuex';
 import { filterStagesByHiddenStatus } from '~/analytics/cycle_analytics/utils';
 import { swapArrayItems } from '~/lib/utils/array_utility';
 import { sprintf } from '~/locale';
@@ -101,10 +99,6 @@ export default {
     };
   },
   computed: {
-    ...mapState(['selectedValueStream']),
-    selectedValueStreamId() {
-      return this.selectedValueStream?.id || -1;
-    },
     isValueStreamNameValid() {
       return !this.nameErrors?.length;
     },
@@ -435,7 +429,6 @@ export default {
         class="gl-mt-6"
         :is-editing="isEditing"
         :is-loading="isSubmitting"
-        :value-stream-id="selectedValueStreamId"
         @clickPrimaryAction="onSubmit"
         @clickAddStageAction="onAddStage"
       />
