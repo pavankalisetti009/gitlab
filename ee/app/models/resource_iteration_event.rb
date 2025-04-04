@@ -4,6 +4,8 @@ class ResourceIterationEvent < ResourceTimeboxEvent
   include EachBatch
 
   belongs_to :iteration
+  belongs_to :triggered_by_work_item, class_name: 'WorkItem', foreign_key: 'triggered_by_id', optional: true,
+    inverse_of: :resource_iteration_events
 
   scope :with_api_entity_associations, -> { preload(:iteration, :user) }
   scope :by_user, ->(user) { where(user_id: user) }

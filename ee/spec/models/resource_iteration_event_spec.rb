@@ -51,5 +51,6 @@ RSpec.describe ResourceIterationEvent, :snowplow, feature_category: :team_planni
 
   describe 'associations' do
     it { is_expected.to belong_to(:iteration) }
+    it { is_expected.to belong_to(:triggered_by_work_item) }
   end
 end
