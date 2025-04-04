@@ -33733,6 +33733,9 @@ msgstr ""
 msgid "JobToken|Packages"
 msgstr ""
 
+msgid "JobToken|Pipelines"
+msgstr ""
+
 msgid "JobToken|Read"
 msgstr ""
 
