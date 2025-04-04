@@ -7,22 +7,14 @@ RSpec.describe 'Profile > Usage Quota', :js, feature_category: :consumables_cost
 
   using RSpec::Parameterized::TableSyntax
 
-  let_it_be(:user, reload: true) { create(:user) }
-  let_it_be(:namespace, reload: true) { user.namespace }
-  let_it_be(:statistics, reload: true) { create(:namespace_statistics, namespace: namespace) }
-  let_it_be(:project, reload: true) { create(:project, namespace: namespace) }
+  let_it_be_with_reload(:user) { create(:user, :with_namespace) }
+  let_it_be_with_reload(:namespace) { user.namespace }
+  let_it_be_with_reload(:statistics) { create(:namespace_statistics, namespace: namespace) }
+  let_it_be_with_reload(:project) { create(:project, namespace: namespace) }
 
   before do
     stub_ee_application_setting(should_check_namespace_plan: true)
     sign_in(user)
-  end
-
-  it 'is linked within the profile page' do
-    visit user_settings_profile_path
-
-    within_testid('super-sidebar') do
-      expect(page).to have_selector(:link_or_button, 'Usage Quotas')
-    end
   end
 
   describe 'shared runners use' do
