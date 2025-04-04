@@ -18,8 +18,7 @@ module ComplianceManagement
       return unless framework
 
       internal_controls = internal_controls_for(framework)
-      projects = ::Project.id_in(project_ids)
-
+      projects = ::Project.id_in(project_ids & framework.project_ids)
       evaluation_results = []
 
       projects.each do |project|

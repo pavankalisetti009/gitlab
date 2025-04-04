@@ -19,6 +19,10 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
   let_it_be(:project) { create(:project) }
   let_it_be(:project2) { create(:project) }
 
+  before do
+    framework.projects << [project, project2]
+  end
+
   describe '#perform' do
     subject(:perform) { worker.perform(framework.id, [project.id, project2.id]) }
 
@@ -61,6 +65,24 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
 
       it 'returns early without processing' do
         expect(ComplianceManagement::Framework).not_to receive(:find_by_id)
+
+        perform
+      end
+    end
+
+    context 'when framework is not assigned to project anymore' do
+      before do
+        project2.compliance_management_frameworks.destroy framework
+      end
+
+      it 'only evaluates for projects where the framework is assigned' do
+        expect(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
+          .to receive(:new).with(control, project).once
+
+        expect(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
+          .not_to receive(:new).with(control, project2)
+
+        expect(evaluator).to receive(:evaluate).once
 
         perform
       end
