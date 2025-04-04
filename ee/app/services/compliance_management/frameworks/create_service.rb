@@ -12,6 +12,7 @@ module ComplianceManagement
         @params = params
         @current_user = current_user
         @framework = ComplianceManagement::Framework.new
+        @project_errors = []
       end
 
       def execute
@@ -29,6 +30,9 @@ module ComplianceManagement
         return error unless framework.save
 
         after_execute
+
+        apply_projects unless params[:projects].blank?
+
         success
       end
 
@@ -39,7 +43,7 @@ module ComplianceManagement
       end
 
       def success
-        ServiceResponse.success(payload: { framework: framework })
+        ServiceResponse.success(message: @project_errors.join(', '), payload: { framework: framework })
       end
 
       def audit_create
@@ -71,6 +75,14 @@ module ComplianceManagement
       def after_execute
         audit_create
         set_default_framework
+      end
+
+      def apply_projects
+        params[:projects][:add_projects].each do |project_id|
+          result = ComplianceManagement::ComplianceFramework::ProjectSetting::AddFrameworkService.new(project_id: project_id, current_user: current_user,
+            framework: framework).execute
+          @project_errors << result.message if result.error?
+        end
       end
     end
   end

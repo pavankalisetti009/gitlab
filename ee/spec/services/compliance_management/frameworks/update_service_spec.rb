@@ -125,6 +125,34 @@ RSpec.describe ComplianceManagement::Frameworks::UpdateService, feature_category
           end
         end
       end
+
+      context 'when projects param is included' do
+        let(:project) { create :project, namespace: namespace }
+        let(:project_two) { create :project, namespace: namespace }
+        let_it_be(:existing_project) { create :compliance_framework_project_setting, compliance_management_framework: framework }
+
+        before do
+          params[:projects] = {
+            add_projects: [project.id, project_two.id],
+            remove_projects: [existing_project.project_id]
+          }
+        end
+
+        it 'applies the framework to the selected projects' do
+          framework = subject.execute.payload[:framework]
+          project_ids = ComplianceManagement::ComplianceFramework::ProjectSettings.where(framework_id: framework.id).pluck(:project_id)
+          expect(project_ids).to include(project.id)
+          expect(project_ids).to include(project_two.id)
+        end
+
+        it 'removes the framework from the unselected projects' do
+          project_ids = ComplianceManagement::ComplianceFramework::ProjectSettings.where(framework_id: framework.id).pluck(:project_id)
+          expect(project_ids).to include(existing_project.project_id)
+          framework = subject.execute.payload[:framework]
+          project_ids = ComplianceManagement::ComplianceFramework::ProjectSettings.where(framework_id: framework.id).pluck(:project_id)
+          expect(project_ids).not_to include(existing_project.project_id)
+        end
+      end
     end
   end
 end

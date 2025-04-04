@@ -24986,6 +24986,9 @@ msgstr ""
 msgid "Failed to assign a user because no user was found."
 msgstr ""
 
+msgid "Failed to assign the framework to project %{project_name}"
+msgstr ""
+
 msgid "Failed to assign the framework to the project"
 msgstr ""
 
@@ -25209,6 +25212,9 @@ msgid "Failed to remove emoji. Please try again"
 msgstr ""
 
 msgid "Failed to remove mirror."
+msgstr ""
+
+msgid "Failed to remove the framework from project %{project_name}"
 msgstr ""
 
 msgid "Failed to remove the pipeline schedule"

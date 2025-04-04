@@ -164,6 +164,27 @@ RSpec.describe ComplianceManagement::Frameworks::CreateService, feature_category
           end
         end
       end
+
+      context 'when projects param is included' do
+        let(:project) { create :project, namespace: namespace }
+        let(:project_two) { create :project, namespace: namespace }
+
+        before do
+          params[:projects] = {
+            add_projects: [project.id, project_two.id]
+          }
+        end
+
+        it 'applies the framework to the selected projects' do
+          framework = subject.execute.payload[:framework]
+          project_ids = ComplianceManagement::ComplianceFramework::ProjectSettings
+            .where(framework_id: framework.id)
+            .pluck(:project_id)
+
+          expect(project_ids).to include(project.id)
+          expect(project_ids).to include(project_two.id)
+        end
+      end
     end
   end
 end
