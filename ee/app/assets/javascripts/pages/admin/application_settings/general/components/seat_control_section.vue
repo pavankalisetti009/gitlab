@@ -68,7 +68,6 @@ export default {
     },
     shouldVerifyUsersAutoApproval() {
       if (this.isBlockOveragesEnabled) return false;
-
       return this.hasUserCapBeenIncreased;
     },
   },
