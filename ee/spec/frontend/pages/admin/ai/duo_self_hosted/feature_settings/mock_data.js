@@ -36,7 +36,7 @@ export const mockSelfHostedModels = [
   },
 ];
 
-export const mockAiFeatureSettings = [
+export const mockCodeSuggestionsFeatureSettings = [
   {
     feature: 'code_generations',
     title: 'Code Generation',
@@ -55,6 +55,9 @@ export const mockAiFeatureSettings = [
     selfHostedModel: null,
     validModels: { nodes: mockSelfHostedModels },
   },
+];
+
+export const mockDuoChatFeatureSettings = [
   {
     feature: 'duo_chat',
     title: 'General Chat',
@@ -79,6 +82,9 @@ export const mockAiFeatureSettings = [
     },
     validModels: { nodes: mockSelfHostedModels },
   },
+];
+
+export const mockOtherDuoFeaturesSettings = [
   {
     feature: 'summarize_review',
     title: 'Summarize Review',
@@ -88,4 +94,22 @@ export const mockAiFeatureSettings = [
     selfHostedModel: null,
     validModels: { nodes: mockSelfHostedModels },
   },
+  {
+    feature: 'generate_commit_message',
+    title: 'Generate Commit Message',
+    mainFeature: 'Other GitLab Duo features',
+    releaseState: 'BETA',
+    provider: 'self_hosted',
+    selfHostedModel: {
+      id: 1,
+      releaseState: 'GA',
+    },
+    validModels: { nodes: mockSelfHostedModels },
+  },
+];
+
+export const mockAiFeatureSettings = [
+  ...mockCodeSuggestionsFeatureSettings,
+  ...mockDuoChatFeatureSettings,
+  ...mockOtherDuoFeaturesSettings,
 ];
