@@ -65952,6 +65952,9 @@ msgstr ""
 msgid "Vulnerability|Request/Response"
 msgstr ""
 
+msgid "Vulnerability|Resolve the vulnerability in these dependencies to see additional paths. GitLab shows a maximum of 20 dependency paths per vulnerability."
+msgstr ""
+
 msgid "Vulnerability|Scanner:"
 msgstr ""
 
