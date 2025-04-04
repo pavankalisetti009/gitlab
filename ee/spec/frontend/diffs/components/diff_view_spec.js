@@ -1,65 +1,57 @@
 import { mount } from '@vue/test-utils';
 import Vue from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
+import { createTestingPinia } from '@pinia/testing';
+import { PiniaVuePlugin } from 'pinia';
 import { getDiffFileMock } from 'jest/diffs/mock_data/diff_file';
 import DiffViewComponent from '~/diffs/components/diff_view.vue';
-import createDiffsStore from '~/diffs/store/modules';
+import { globalAccessorPlugin } from '~/pinia/plugins';
+import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
 
-function createComponent({ withCodequality = true, provide = {} }) {
-  const diffFile = getDiffFileMock();
-
-  Vue.use(Vuex);
-
-  const store = new Vuex.Store({
-    modules: {
-      diffs: createDiffsStore(),
-    },
-  });
-
-  store.state.diffs.diffFiles = [diffFile];
-
-  let codequalityData = null;
-
-  if (withCodequality) {
-    codequalityData = {
-      files: {
-        [diffFile.file_path]: [
-          { line: 1, description: 'Unexpected alert.', severity: 'minor' },
-          {
-            line: 3,
-            description: 'Arrow function has too many statements (52). Maximum allowed is 30.',
-            severity: 'minor',
-          },
-        ],
-      },
-    };
-  }
-
-  const wrapper = mount(DiffViewComponent, {
-    store,
-    propsData: {
-      diffFile,
-      diffLines: [],
-      codequalityData,
-    },
-    provide,
-  });
-
-  return {
-    wrapper,
-    store,
-  };
-}
+Vue.use(PiniaVuePlugin);
 
 describe('EE DiffView', () => {
   let wrapper;
+  let pinia;
+
+  function createComponent({ withCodequality = true, provide = {} }) {
+    let codequalityData = null;
+
+    if (withCodequality) {
+      codequalityData = {
+        files: {
+          [useLegacyDiffs().diffFiles[0].file_path]: [
+            { line: 1, description: 'Unexpected alert.', severity: 'minor' },
+            {
+              line: 3,
+              description: 'Arrow function has too many statements (52). Maximum allowed is 30.',
+              severity: 'minor',
+            },
+          ],
+        },
+      };
+    }
+
+    wrapper = mount(DiffViewComponent, {
+      pinia,
+      propsData: {
+        diffFile: useLegacyDiffs().diffFiles[0],
+        diffLines: [],
+        codequalityData,
+      },
+      provide,
+    });
+  }
+
+  beforeEach(() => {
+    pinia = createTestingPinia({ plugins: [globalAccessorPlugin] });
+    useLegacyDiffs().diffFiles = [getDiffFileMock()];
+  });
 
   describe('when there is diff data for the file', () => {
     beforeEach(() => {
-      ({ wrapper } = createComponent({
+      createComponent({
         withCodequality: true,
-      }));
+      });
     });
 
     it('has the with-inline-findings class', () => {
@@ -69,7 +61,7 @@ describe('EE DiffView', () => {
 
   describe('when there is no diff data for the file', () => {
     beforeEach(() => {
-      ({ wrapper } = createComponent({ withCodequality: false }));
+      createComponent({ withCodequality: false });
     });
 
     it('does not have the with-inline-findings class', () => {
