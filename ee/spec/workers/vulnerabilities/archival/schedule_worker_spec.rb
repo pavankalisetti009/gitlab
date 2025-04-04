@@ -45,6 +45,21 @@ RSpec.describe Vulnerabilities::Archival::ScheduleWorker, feature_category: :vul
         .to have_received(:bulk_perform_in).with(60, [[project_with_vulnerabilities_3.id, '2023-01-01']])
     end
 
+    context 'when there is a project that is not under a group' do
+      before do
+        project = create(:project)
+        project.project_setting.update!(has_vulnerabilities: true)
+
+        stub_const("#{described_class}::BATCH_SIZE", 100)
+      end
+
+      it 'schedules the archival correctly' do
+        schedule
+
+        expect(Vulnerabilities::Archival::ArchiveWorker).to have_received(:bulk_perform_in).once
+      end
+    end
+
     describe 'progressive working' do
       describe 'running from the previous checkpoint' do
         before do
