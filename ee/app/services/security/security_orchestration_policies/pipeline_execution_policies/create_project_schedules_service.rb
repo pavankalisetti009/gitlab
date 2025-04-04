@@ -44,7 +44,8 @@ module Security
               project_id: project.id,
               cron: interval.cron,
               cron_timezone: interval.time_zone,
-              time_window_seconds: interval.time_window
+              time_window_seconds: interval.time_window,
+              snoozed_until: interval.snoozed_until
             }
           end
         end

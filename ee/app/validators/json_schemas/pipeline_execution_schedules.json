@@ -47,6 +47,24 @@
             "type": "string",
             "description": "IANA timezone identifier",
             "default": "UTC"
+          },
+          "snooze": {
+            "type": "object",
+            "description": "Stop this schedule until a certain time.",
+            "properties": {
+              "until": {
+                "type": "string",
+                "description": "Time until the execution should be paused. Format: 2025-6-13T20:20:00+00:00.",
+                "format": "date-time"
+              },
+              "reason": {
+                "type": "string",
+                "description": "Document a reason for snoozing the schedule."
+              }
+            },
+            "required": [
+              "until"
+            ]
           }
         },
         "required": [
@@ -113,6 +131,24 @@
             "type": "string",
             "description": "IANA timezone identifier",
             "default": "UTC"
+          },
+          "snooze": {
+            "type": "object",
+            "description": "Stop this schedule until a certain time.",
+            "properties": {
+              "until": {
+                "type": "string",
+                "description": "Time until the execution should be paused. Format: 2025-6-13T20:20:00+00:00.",
+                "format": "date-time"
+              },
+              "reason": {
+                "type": "string",
+                "description": "Document a reason for snoozing the schedule."
+              }
+            },
+            "required": [
+              "until"
+            ]
           }
         },
         "required": [
@@ -173,6 +209,24 @@
             "type": "string",
             "description": "IANA timezone identifier",
             "default": "UTC"
+          },
+          "snooze": {
+            "type": "object",
+            "description": "Stop this schedule until a certain time.",
+            "properties": {
+              "until": {
+                "type": "string",
+                "description": "Time until the execution should be paused. Format: 2025-6-13T20:20:00+00:00.",
+                "format": "date-time"
+              },
+              "reason": {
+                "type": "string",
+                "description": "Document a reason for snoozing the schedule."
+              }
+            },
+            "required": [
+              "until"
+            ]
           }
         },
         "required": [

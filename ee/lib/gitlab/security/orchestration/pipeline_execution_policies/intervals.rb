@@ -7,7 +7,7 @@ module Gitlab
         module Intervals
           UnsupportedScheduleTypeError = Class.new(StandardError)
 
-          Interval = Data.define(:cron, :time_window, :time_zone)
+          Interval = Data.define(:cron, :time_window, :time_zone, :snoozed_until)
 
           DEFAULT_TIMEZONE = "UTC"
           CRON_DAY_MAP = {
@@ -24,10 +24,15 @@ module Gitlab
 
           def from_schedules(schedules)
             schedules.map do |schedule|
+              snooze_value = schedule.dig("snooze", "until")
+              snoozed_until = Time.zone.parse(snooze_value) if snooze_value
+
               Interval.new(
                 cron: crontab(schedule),
                 time_window: schedule.dig("time_window", "value"),
-                time_zone: schedule.fetch("timezone", DEFAULT_TIMEZONE))
+                time_zone: schedule.fetch("timezone", DEFAULT_TIMEZONE),
+                snoozed_until: snoozed_until
+              )
             end
           end
 

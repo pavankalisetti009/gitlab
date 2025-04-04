@@ -113,6 +113,21 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, feature_cate
 
         it_behaves_like 'schedules'
       end
+
+      context 'when snoozed' do
+        let(:cron) { '0 9 * * *' }
+
+        before do
+          schedule.update!(snoozed_until: Time.zone.now + 1.day)
+        end
+
+        it 'does not enqueue the run worker but still set next_run_at' do
+          expect(Security::PipelineExecutionPolicies::RunScheduleWorker)
+            .not_to receive(:perform_in)
+
+          expect { perform }.to change { schedule.reload.next_run_at }
+        end
+      end
     end
 
     context 'if cron is invalid' do

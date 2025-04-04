@@ -46,6 +46,8 @@ module Security
       private
 
       def enqueue_within_time_window(schedule)
+        return if schedule.snoozed?
+
         time_window = [schedule.time_window_seconds, schedule.next_run_in].min
 
         delay = Random.rand(time_window)

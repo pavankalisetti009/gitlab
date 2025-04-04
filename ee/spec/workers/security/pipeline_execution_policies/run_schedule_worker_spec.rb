@@ -165,6 +165,16 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, '#perform
         expect { perform }.not_to change { project.all_pipelines.count }.from(0)
       end
     end
+
+    context 'when schedule is snoozed' do
+      let_it_be(:schedule) do
+        create(:security_pipeline_execution_project_schedule, project: project, snoozed_until: Time.zone.now + 1.day)
+      end
+
+      it 'does not create a pipeline' do
+        expect { perform }.not_to change { project.all_pipelines.count }.from(0)
+      end
+    end
   end
 
   context 'when schedule does not exist' do
