@@ -10,7 +10,7 @@ module Members
 
       after_execute(member: access_requester, skip_log_audit_event: skip_log_audit_event)
 
-      access_requester
+      success({ member: access_requester })
     end
 
     private
