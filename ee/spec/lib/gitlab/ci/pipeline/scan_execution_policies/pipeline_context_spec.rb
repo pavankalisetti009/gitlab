@@ -107,8 +107,38 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
   end
 
   describe '#active_scan_execution_actions' do
-    it 'returns the active scan execution actions' do
-      expect(context.active_scan_execution_actions).to match_array(policy[:actions])
+    subject(:actions) { context.active_scan_execution_actions }
+
+    it { is_expected.to match_array(policy[:actions]) }
+
+    describe 'action limits' do
+      let(:policies) { [policy, other_policy] }
+      let(:other_policy) do
+        build(:scan_execution_policy, actions: [
+          { scan: 'sast' },
+          { scan: 'sast_iac' },
+          { scan: 'container_scanning' }
+        ])
+      end
+
+      let(:action_limit) { 2 }
+
+      let(:all_actions) { policy[:actions] + other_policy[:actions] }
+      let(:limited_actions) { policy[:actions].first(action_limit) + other_policy[:actions].first(action_limit) }
+
+      before do
+        allow(Gitlab::CurrentSettings).to receive(:scan_execution_policies_action_limit).and_return(action_limit)
+      end
+
+      it { is_expected.to match_array(limited_actions) }
+
+      context 'when feature flag "scan_execution_policy_action_limit" is disabled' do
+        before do
+          stub_feature_flags(scan_execution_policy_action_limit: false)
+        end
+
+        it { is_expected.to match_array(all_actions) }
+      end
     end
   end
 
