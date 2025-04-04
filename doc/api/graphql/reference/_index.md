@@ -19736,6 +19736,7 @@ The connection type for [`WorkItemClosingMergeRequest`](#workitemclosingmergereq
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="workitemclosingmergerequestconnectioncount"></a>`count` | [`Int`](#int) | Number of merge requests that close the work item on merge. |
 | <a id="workitemclosingmergerequestconnectionedges"></a>`edges` | [`[WorkItemClosingMergeRequestEdge]`](#workitemclosingmergerequestedge) | A list of edges. |
 | <a id="workitemclosingmergerequestconnectionnodes"></a>`nodes` | [`[WorkItemClosingMergeRequest]`](#workitemclosingmergerequest) | A list of nodes. |
 | <a id="workitemclosingmergerequestconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
