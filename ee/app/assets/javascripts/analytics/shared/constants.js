@@ -51,6 +51,8 @@ export const DEFAULT_NULL_SERIES_OPTIONS = {
   },
 };
 
+export const NULL_SERIES_ID = 'nullSeries';
+
 export const AREA_CHART_SERIES_OPTIONS = {
   areaStyle: { opacity: defaultAreaOpacity },
   type: 'line',

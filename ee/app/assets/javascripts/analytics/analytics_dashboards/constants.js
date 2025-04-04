@@ -2,7 +2,6 @@ import { humanizeTimeInterval } from '~/lib/utils/datetime_utility';
 import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { DORA_METRICS } from '~/analytics/shared/constants';
-import { secondsToDays } from '~/analytics/shared/utils';
 import { DASHBOARD_SCHEMA_VERSION } from '~/vue_shared/components/customizable_dashboard/constants';
 import { formatAsPercentage } from 'ee/dora/components/util';
 
@@ -166,7 +165,7 @@ export const DORA_METRICS_CHARTS_ADDITIONAL_OPTS = {
       minInterval: 1,
       axisLabel: {
         formatter(seconds) {
-          return secondsToDays(seconds);
+          return humanizeTimeInterval(seconds, { abbreviated: true });
         },
       },
     },

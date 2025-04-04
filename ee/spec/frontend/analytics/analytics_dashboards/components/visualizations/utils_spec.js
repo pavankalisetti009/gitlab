@@ -3,7 +3,11 @@ import {
   formatVisualizationValue,
   humanizeDisplayUnit,
   calculateDecimalPlaces,
+  humanizeChartTooltipValue,
+  removeNullSeries,
 } from 'ee/analytics/analytics_dashboards/components/visualizations/utils';
+import { NULL_SERIES_ID } from 'ee/analytics/shared/constants';
+import { UNITS } from '~/analytics/shared/constants';
 
 describe('visualization utils', () => {
   describe('formatVisualizationValue', () => {
@@ -78,6 +82,38 @@ describe('visualization utils', () => {
         expect(formatVisualizationTooltipTitle(title, params)).toEqual(title);
       });
     });
+
+    describe('when a formatter is supplied', () => {
+      it('applies the formatter as expected', () => {
+        const value = 50;
+        const title = `${value} (AxisName)`;
+        const params = {
+          seriesData: [
+            {
+              value: [value],
+            },
+          ],
+        };
+        const formatter = (num) => num.toFixed(2);
+
+        expect(formatVisualizationTooltipTitle(title, params, formatter)).toBe('50.00');
+      });
+    });
+
+    it('does not apply formatter when value is nullish', () => {
+      const params = {
+        seriesData: [
+          {
+            value: [null],
+          },
+        ],
+      };
+      const formatter = jest.fn();
+
+      formatVisualizationTooltipTitle('', params, formatter);
+
+      expect(formatter).not.toHaveBeenCalled();
+    });
   });
 
   describe('humanizeDisplayUnit', () => {
@@ -90,6 +126,22 @@ describe('visualization utils', () => {
       ${'per_second'} | ${1}   | ${'per_second'}
     `('returns $result when data=$data and unit=$unit', ({ unit, data, result }) => {
       expect(humanizeDisplayUnit({ data, unit })).toBe(result);
+    });
+  });
+
+  describe('humanizeChartTooltipValue', () => {
+    it.each`
+      unit                   | value        | result
+      ${UNITS.DAYS}          | ${3}         | ${'3 days'}
+      ${UNITS.DAYS}          | ${1}         | ${'1 day'}
+      ${UNITS.PER_DAY}       | ${10}        | ${'10 /day'}
+      ${UNITS.PERCENT}       | ${0.8}       | ${'80.0%'}
+      ${UNITS.TIME_INTERVAL} | ${5328}      | ${'1.5 hours'}
+      ${undefined}           | ${'hello'}   | ${'hello'}
+      ${undefined}           | ${undefined} | ${'No data'}
+      ${undefined}           | ${null}      | ${'No data'}
+    `('returns $result when value=$value and unit=$unit', ({ unit, value, result }) => {
+      expect(humanizeChartTooltipValue({ unit, value })).toBe(result);
     });
   });
 
@@ -108,5 +160,30 @@ describe('visualization utils', () => {
         expect(calculateDecimalPlaces({ data, decimalPlaces })).toBe(result);
       },
     );
+  });
+});
+
+describe('removeNullSeries', () => {
+  it('returns series data without null series', () => {
+    const seriesData = [
+      {
+        seriesId: 'deployment_frequency',
+        seriesName: 'Deployment Frequency',
+        values: ['2025-03-28', 1000],
+      },
+      {
+        seriesId: NULL_SERIES_ID,
+        seriesName: 'No deployments during this period',
+        values: ['2025-03-28', null],
+      },
+    ];
+
+    expect(removeNullSeries(seriesData)).toEqual([
+      {
+        seriesId: 'deployment_frequency',
+        seriesName: 'Deployment Frequency',
+        values: ['2025-03-28', 1000],
+      },
+    ]);
   });
 });

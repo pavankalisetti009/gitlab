@@ -10,8 +10,10 @@ data:
 options:
   xAxis:
     name: Date
-    type: category
+    type: time
   yAxis:
     name: "Number of deployments"
     type: value
   includeLegendAvgMax: false
+  chartTooltip:
+    valueUnit: PER_DAY

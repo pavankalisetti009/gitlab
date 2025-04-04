@@ -15,6 +15,7 @@ import MilestoneToken from '~/vue_shared/components/filtered_search_bar/tokens/m
 import LabelToken from '~/vue_shared/components/filtered_search_bar/tokens/label_token.vue';
 import UserToken from '~/vue_shared/components/filtered_search_bar/tokens/user_token.vue';
 import { FILTERED_SEARCH_MAX_LABELS } from 'ee/analytics/analytics_dashboards/components/filters/constants';
+import { NULL_SERIES_ID } from 'ee/analytics/shared/constants';
 
 export const TEST_TRACKING_KEY = 'gid://gitlab/Project/2';
 
@@ -1350,4 +1351,5 @@ export const nullSeries = {
   },
   name: 'No merge requests were deployed during this period',
   showSymbol: false,
+  id: NULL_SERIES_ID,
 };

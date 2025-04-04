@@ -95,6 +95,9 @@
         "yAxis": {
           "$ref": "#/definitions/YAxis"
         },
+        "chartTooltip": {
+          "$ref": "#/definitions/ChartTooltip"
+        },
         "links": {
           "type": "array",
           "items": {
@@ -194,6 +197,23 @@
         "href"
       ],
       "title": "Link"
+    },
+    "ChartTooltip": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "valueUnit": {
+          "type": {
+            "enum": [
+              "DAYS",
+              "PER_DAY",
+              "PERCENT",
+              "TIME_INTERVAL"
+            ]
+          }
+        }
+      },
+      "title": "ChartTooltip"
     }
   }
 }
