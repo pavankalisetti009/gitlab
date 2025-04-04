@@ -131,45 +131,49 @@ export default {
       :ai-feature-settings="duoChatFeatures"
       :is-loading="isLoading"
     />
-    <div class="gl-p-5 gl-pt-0 md:gl-p-5">
-      <h2 class="gl-heading-2 gl-mb-2">
-        {{ s__('AdminAIPoweredFeatures|Other GitLab Duo features') }}
-      </h2>
-      <p class="gl-mb-0 gl-text-subtle">
-        <gl-sprintf
-          :message="
-            s__(
-              'AdminAIPoweredFeatures|An AI assistant that provides real-time guidance helping users accomplish tasks like generate commit messages and merge request descriptions, without Chat. %{linkStart}Learn more.%{linkEnd}',
-            )
-          "
-        >
-          <template #link="{ content }">
-            <gl-link :href="$options.otherGitLabDuoHelpPage" target="_blank">{{ content }}</gl-link>
-          </template>
-        </gl-sprintf>
-      </p>
-    </div>
-    <div v-if="!betaModelsEnabled" class="gl-pb-4 gl-pt-2">
-      <gl-alert variant="info" :dismissible="false">
-        <gl-sprintf
-          :message="
-            s__(
-              'AdminSelfHostedModels|More features are available in beta. You can %{linkStart}turn on AI-powered beta features%{linkEnd}.',
-            )
-          "
-        >
-          <template #link="{ content }">
-            <gl-link data-testid="duo-configuration-link" :href="duoConfigurationSettingsPath">
-              {{ content }}
-            </gl-link>
-          </template>
-        </gl-sprintf>
-      </gl-alert>
-    </div>
-    <feature-settings-table-rows
-      data-testid="duo-chat-table-rows"
-      :ai-feature-settings="otherGitLabDuoFeatures"
-      :is-loading="isLoading"
-    />
+    <template v-if="otherGitLabDuoFeatures.length">
+      <div class="gl-p-5 gl-pt-0 md:gl-p-5">
+        <h2 class="gl-heading-2 gl-mb-2">
+          {{ s__('AdminAIPoweredFeatures|Other GitLab Duo features') }}
+        </h2>
+        <p class="gl-mb-0 gl-text-subtle">
+          <gl-sprintf
+            :message="
+              s__(
+                'AdminAIPoweredFeatures|An AI assistant that provides real-time guidance helping users accomplish tasks like generate commit messages and merge request descriptions, without Chat. %{linkStart}Learn more.%{linkEnd}',
+              )
+            "
+          >
+            <template #link="{ content }">
+              <gl-link :href="$options.otherGitLabDuoHelpPage" target="_blank">{{
+                content
+              }}</gl-link>
+            </template>
+          </gl-sprintf>
+        </p>
+      </div>
+      <div v-if="!betaModelsEnabled" class="gl-pb-4 gl-pt-2">
+        <gl-alert variant="info" :dismissible="false">
+          <gl-sprintf
+            :message="
+              s__(
+                'AdminSelfHostedModels|More features are available in beta. You can %{linkStart}turn on AI-powered beta features%{linkEnd}.',
+              )
+            "
+          >
+            <template #link="{ content }">
+              <gl-link data-testid="duo-configuration-link" :href="duoConfigurationSettingsPath">
+                {{ content }}
+              </gl-link>
+            </template>
+          </gl-sprintf>
+        </gl-alert>
+      </div>
+      <feature-settings-table-rows
+        data-testid="other-duo-features-table-rows"
+        :ai-feature-settings="otherGitLabDuoFeatures"
+        :is-loading="isLoading"
+      />
+    </template>
   </div>
 </template>

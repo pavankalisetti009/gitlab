@@ -8,7 +8,11 @@ import getAiFeatureSettingsQuery from 'ee/pages/admin/ai/duo_self_hosted/feature
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
 import { DUO_MAIN_FEATURES } from 'ee/pages/admin/ai/duo_self_hosted/constants';
-import { mockAiFeatureSettings } from './mock_data';
+import {
+  mockAiFeatureSettings,
+  mockDuoChatFeatureSettings,
+  mockCodeSuggestionsFeatureSettings,
+} from './mock_data';
 
 Vue.use(VueApollo);
 
@@ -48,6 +52,7 @@ describe('ExpandedChatFeatureSettingsTable', () => {
   const findFeatureSettingsTable = () => wrapper.findComponent(ExpandedChatFeatureSettingsTable);
   const findDuoChatTableRows = () => wrapper.findByTestId('duo-chat-table-rows');
   const findCodeSuggestionsTableRows = () => wrapper.findByTestId('code-suggestions-table-rows');
+  const findOtherDuoFeaturesTableRows = () => wrapper.findByTestId('other-duo-features-table-rows');
   const findSectionHeaders = () => wrapper.findAll('h2');
   const findSectionDescriptions = () => wrapper.findAllComponents(GlSprintf);
   const findDuoConfigurationLink = () => wrapper.findByTestId('duo-configuration-link');
@@ -77,6 +82,42 @@ describe('ExpandedChatFeatureSettingsTable', () => {
       'An AI assistant that provides real-time guidance',
     );
     expect(findDuoChatTableRows().exists()).toBe(true);
+  });
+
+  describe('Other GitLab Duo features section', () => {
+    it('renders section when there are feature settings to show', async () => {
+      createComponent();
+      await waitForPromises();
+
+      expect(findSectionHeaders()).toHaveLength(3);
+      expect(findSectionHeaders().at(2).text()).toBe('Other GitLab Duo features');
+      expect(findOtherDuoFeaturesTableRows().exists()).toBe(true);
+    });
+
+    it('does not render section when there are no feature settings to show', async () => {
+      const featureSettingsExcludingOtherDuo = [
+        ...mockDuoChatFeatureSettings,
+        ...mockCodeSuggestionsFeatureSettings,
+      ];
+      const getFeatureSettingsExcludingOtherDuoSuccessHandler = jest.fn().mockResolvedValue({
+        data: {
+          aiFeatureSettings: {
+            nodes: featureSettingsExcludingOtherDuo,
+            errors: [],
+          },
+        },
+      });
+
+      createComponent({
+        apolloHandlers: [
+          [getAiFeatureSettingsQuery, getFeatureSettingsExcludingOtherDuoSuccessHandler],
+        ],
+      });
+      await waitForPromises();
+
+      expect(findSectionHeaders()).toHaveLength(2);
+      expect(findOtherDuoFeaturesTableRows().exists()).toBe(false);
+    });
   });
 
   describe('when feature settings data is loading', () => {
