@@ -4,6 +4,7 @@ import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 
 export const maxNameLength = 255;
 export const maxControlsNumber = 5;
+export const maxRequirementsNumber = 50;
 export const requirementsDocsUrl = `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard.html`;
 
 export const requirementEvents = Object.freeze({

@@ -1,4 +1,10 @@
-import { GlTable, GlDisclosureDropdown, GlDisclosureDropdownItem, GlBadge } from '@gitlab/ui';
+import {
+  GlTable,
+  GlDisclosureDropdown,
+  GlDisclosureDropdownItem,
+  GlBadge,
+  GlTooltip,
+} from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import RequirementsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/requirements_section.vue';
@@ -18,6 +24,7 @@ import { createAlert } from '~/alert';
 import {
   requirementEvents,
   emptyRequirement,
+  maxRequirementsNumber,
 } from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/constants';
 
 jest.mock('~/alert');
@@ -42,12 +49,13 @@ describe('Requirements section', () => {
   const createComponent = async ({
     controlsQueryHandlerMockResponse = controlsQueryHandler,
     isNewFramework = true,
+    requirements = mockRequirements,
   } = {}) => {
     const mockApollo = createMockApollo([[controlsQuery, controlsQueryHandlerMockResponse]]);
 
     wrapper = mountExtended(RequirementsSection, {
       propsData: {
-        requirements: mockRequirements,
+        requirements,
         isNewFramework,
       },
       apolloProvider: mockApollo,
@@ -143,11 +151,66 @@ describe('Requirements section', () => {
 
     describe('Create requirement button', () => {
       beforeEach(() => {
-        createComponent();
+        controlsQueryHandler = jest.fn().mockResolvedValue({
+          data: {
+            complianceRequirementControls: {
+              controlExpressions: mockGitLabStandardControls,
+            },
+          },
+        });
       });
 
       it('renders create requirement', () => {
         expect(findNewRequirementButton().text()).toBe('New requirement');
+      });
+
+      it('disables the add requirement button when maximum requirements limit is reached', async () => {
+        const requirements = Array(maxRequirementsNumber).fill(mockRequirements[0]);
+        await createComponent({
+          controlsQueryHandlerMockResponse: controlsQueryHandler,
+          isNewFramework: true,
+          requirements,
+        });
+
+        expect(wrapper.vm.addingRequirementsDisabled).toBe(true);
+        expect(findNewRequirementButton().props('disabled')).toBe(true);
+      });
+
+      it('shows a tooltip with max limit message when button is disabled', async () => {
+        const requirements = Array(maxRequirementsNumber).fill(mockRequirements[0]);
+        await createComponent({
+          controlsQueryHandlerMockResponse: controlsQueryHandler,
+          isNewFramework: true,
+          requirements,
+        });
+
+        const tooltip = wrapper.findComponent(GlTooltip);
+        expect(tooltip.exists()).toBe(true);
+        expect(tooltip.attributes('title')).toBe(
+          `You can create a maximum of ${maxRequirementsNumber} requirements`,
+        );
+      });
+
+      it('enables the add requirement button when below maximum requirements limit', async () => {
+        const requirements = Array(maxRequirementsNumber - 1).fill(mockRequirements[0]);
+        await createComponent({
+          controlsQueryHandlerMockResponse: controlsQueryHandler,
+          isNewFramework: true,
+          requirements,
+        });
+
+        expect(wrapper.vm.addingRequirementsDisabled).toBe(false);
+        expect(findNewRequirementButton().props('disabled')).toBe(false);
+      });
+
+      it('does not show the tooltip when button is enabled', async () => {
+        await createComponent({
+          requirements: Array(maxRequirementsNumber - 1).fill(mockRequirements[0]),
+          isNewFramework: true,
+        });
+
+        const tooltip = wrapper.findComponent(GlTooltip);
+        expect(tooltip.exists()).toBe(false);
       });
     });
   });

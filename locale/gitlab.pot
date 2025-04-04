@@ -15434,6 +15434,9 @@ msgstr ""
 msgid "ComplianceFrameworks|You can create a maximum of %{maxControlsNumber} controls"
 msgstr ""
 
+msgid "ComplianceFrameworks|You can create a maximum of %{maxRequirementsNumber} requirements"
+msgstr ""
+
 msgid "ComplianceFrameworks|You must create compliance frameworks in top-level group %{linkStart}namespace%{linkEnd}"
 msgstr ""
 
