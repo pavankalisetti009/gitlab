@@ -48870,9 +48870,6 @@ msgstr ""
 msgid "Protected Tag"
 msgstr ""
 
-msgid "Protected Tags"
-msgstr ""
-
 msgid "Protected branches"
 msgstr ""
 
@@ -49259,9 +49256,6 @@ msgid "ProtectedTag|Protected tags"
 msgstr ""
 
 msgid "ProtectedTag|What are protected tags?"
-msgstr ""
-
-msgid "ProtectedTag|default"
 msgstr ""
 
 msgid "Provide Feedback"
