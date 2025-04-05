@@ -16,7 +16,8 @@ module Sbom
 
     def perform
       Dependencies::DependencyListExport.expired.each_batch do |batch|
-        batch.delete_all
+        batch.tap { |exports| Upload.destroy_for_associations!(exports) }
+             .delete_all
       end
     end
   end
