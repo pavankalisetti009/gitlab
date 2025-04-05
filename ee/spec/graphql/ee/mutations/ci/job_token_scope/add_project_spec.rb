@@ -16,7 +16,7 @@ RSpec.describe Mutations::Ci::JobTokenScope::AddProject, feature_category: :cont
     let_it_be(:target_project) { create(:project) }
     let_it_be(:target_project_path) { target_project.full_path }
 
-    let_it_be(:policies) { %w[read_containers read_packages] }
+    let_it_be(:policies) { %w[read_deployments read_packages] }
 
     let_it_be(:current_user) { create(:user, maintainer_of: project, guest_of: target_project) }
 
