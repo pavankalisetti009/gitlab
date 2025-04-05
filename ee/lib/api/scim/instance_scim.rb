@@ -251,7 +251,7 @@ module API
             requires :schemas, type: Array, desc: 'SCIM schemas'
             requires :Operations, type: Array, desc: 'Operations to perform' do
               requires :op, type: String,
-                values: { value: ->(v) { %w[add].include?(v.to_s.downcase) } },
+                values: { value: ->(v) { %w[add remove].include?(v.to_s.downcase) } },
                 desc: 'Operation type'
               optional :path, type: String, desc: 'Path to modify'
               optional :value, types: [Array, String, Hash], desc: 'Value for the operation'
@@ -261,10 +261,10 @@ module API
             check_access!
 
             saml_group_links = SamlGroupLink.by_scim_group_uid(params[:id])
-            scim_not_found!(message: "Group #{params[:id]} not found") if saml_group_links.empty?
+            scim_not_found!(message: "Group #{params[:id]} not found") unless saml_group_links.exists?
 
             ::EE::Gitlab::Scim::GroupSyncPatchService.new(
-              group_links: saml_group_links,
+              scim_group_uid: params[:id],
               operations: params[:Operations]
             ).execute
 

@@ -7,16 +7,23 @@ module EE
       # currently lives under ee/ and making it compliant requires a larger
       # refactor to be addressed by https://gitlab.com/gitlab-org/gitlab/-/issues/520129.
       class GroupSyncPatchService
-        attr_reader :group_links, :operations
+        attr_reader :scim_group_uid, :operations
 
-        def initialize(group_links:, operations:)
-          @group_links = group_links
+        def initialize(scim_group_uid:, operations:)
+          @scim_group_uid = scim_group_uid
           @operations = operations
         end
 
         def execute
           operations.each do |operation|
-            process_operation(operation)
+            operation_type = operation[:op].to_s.downcase
+
+            case operation_type
+            when 'add'
+              process_add_operation(operation)
+            when 'remove'
+              process_remove_operation(operation)
+            end
           end
 
           ServiceResponse.success
@@ -24,7 +31,7 @@ module EE
 
         private
 
-        def process_operation(operation)
+        def process_add_operation(operation)
           case operation[:path].to_s.downcase
           when 'externalid'
             # NO-OP
@@ -33,36 +40,41 @@ module EE
             # In some IdPs (e.g. Microsoft Entra), this is part of the group
             # sync provisioning cycle.
           when 'members'
-            process_members(operation[:value])
+            process_add_members(operation[:value])
           end
         end
 
-        def process_members(members)
+        def process_remove_operation(operation)
+          case operation[:path].to_s.downcase
+          when 'members'
+            process_remove_members(operation[:value])
+          end
+        end
+
+        def process_add_members(members)
           return unless members.is_a?(Array)
 
-          members.each do |member|
-            member_id = member[:value]
-            next unless member_id
+          user_ids = collect_user_ids_from_members(members)
+          return if user_ids.empty?
 
-            user = find_user_identity(member_id)&.user
-            next unless user
-
-            add_user_to_groups(user)
-          end
+          ::Authn::SyncScimGroupMembersWorker.perform_async(scim_group_uid, user_ids, 'add')
         end
 
-        def add_user_to_groups(user)
-          group_links.each do |saml_group_link|
-            next unless saml_group_link.group
+        def process_remove_members(members)
+          return unless members.is_a?(Array)
 
-            unless saml_group_link.group.users.include?(user)
-              saml_group_link.group.add_member(user, saml_group_link.access_level)
-            end
-          end
+          user_ids = collect_user_ids_from_members(members)
+          return if user_ids.empty?
+
+          ::Authn::SyncScimGroupMembersWorker.perform_async(scim_group_uid, user_ids, 'remove')
         end
 
-        def find_user_identity(extern_uid)
-          ScimIdentity.for_instance.with_extern_uid(extern_uid).first
+        def collect_user_ids_from_members(members)
+          extern_uids = members.filter_map { |member| member[:value] }
+          return [] if extern_uids.empty?
+
+          identities = ScimIdentity.for_instance.with_extern_uid(extern_uids)
+          identities.filter_map(&:user_id)
         end
       end
       # rubocop:enable Gitlab/EeOnlyClass
