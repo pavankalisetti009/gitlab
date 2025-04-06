@@ -55,6 +55,16 @@ FactoryBot.define do
       end
     end
 
+    trait :sast_observability do
+      file_format { :raw }
+      file_type { :sast }
+
+      after(:stub, :build) do |artifact, _|
+        artifact.file = fixture_file_upload(
+          Rails.root.join('ee/spec/fixtures/security_reports/master/gl-sast-report-observability.json'), 'application/json')
+      end
+    end
+
     trait :semgrep_web_vulnerabilities do
       file_type { :sast }
       file_format { :raw }

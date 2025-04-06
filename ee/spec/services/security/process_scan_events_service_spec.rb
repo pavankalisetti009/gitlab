@@ -3,40 +3,41 @@
 require 'spec_helper'
 
 RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerability_management do
-  let_it_be_with_refind(:artifact) { create(:ee_ci_job_artifact, :dast_observability) }
-
-  let(:pipeline) { artifact.job.pipeline }
-  let(:internal_event_name) { 'dummy_event_for_testing_abcdefg' }
-  let(:internal_event_definition) do
-    Gitlab::Tracking::EventDefinition.new(
-      "config/events/#{internal_event_name}",
-      {
-        action: internal_event_name,
-        internal_events: true,
-        identifiers: %w[project user],
-        additional_properties: {
-          label: { description: 'desc' },
-          property: { description: 'desc' },
-          value: { description: 'desc' },
-          content_type: { description: 'desc' },
-          operations: { description: 'desc' },
-          overrides_command: { description: 'desc' },
-          per_request_script: { description: 'desc' },
-          status: { description: 'desc' },
-          version: { description: 'desc' },
-          version_major: { description: 'desc' }
-        }
-      }
-    )
-  end
-
-  before do
-    artifact.job.update!(status: :success)
-    allow(Gitlab::Tracking::EventDefinition).to receive_messages(
-      find: internal_event_definition, internal_event_exists?: true)
-  end
-
   describe '#execute' do
+    let_it_be_with_refind(:artifact) { create(:ee_ci_job_artifact, :dast_observability) }
+
+    let(:pipeline) { artifact.job.pipeline }
+
+    let(:internal_event_name) { 'dummy_event_for_testing_abcdefg' }
+    let(:internal_event_definition) do
+      Gitlab::Tracking::EventDefinition.new(
+        "config/events/#{internal_event_name}",
+        {
+          action: internal_event_name,
+          internal_events: true,
+          identifiers: %w[project user],
+          additional_properties: {
+            label: { description: 'desc' },
+            property: { description: 'desc' },
+            value: { description: 'desc' },
+            content_type: { description: 'desc' },
+            operations: { description: 'desc' },
+            overrides_command: { description: 'desc' },
+            per_request_script: { description: 'desc' },
+            status: { description: 'desc' },
+            version: { description: 'desc' },
+            version_major: { description: 'desc' }
+          }
+        }
+      )
+    end
+
+    before do
+      artifact.job.update!(status: :success)
+      allow(Gitlab::Tracking::EventDefinition).to receive_messages(
+        find: internal_event_definition, internal_event_exists?: true)
+    end
+
     shared_examples 'process security report' do
       context 'with security report' do
         let!(:service_object) { described_class.new(pipeline) }
@@ -116,6 +117,37 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
         )
 
         expect { service_object.execute }.not_to trigger_internal_events(internal_event_name)
+      end
+    end
+  end
+
+  describe 'report events' do
+    context 'with SAST scan event' do
+      let(:sast_artifact) { create(:ee_ci_job_artifact, :sast_observability) }
+      let(:sast_pipeline) { sast_artifact.job.pipeline }
+      let(:sast_service_object) { described_class.new(sast_pipeline) }
+      let(:sast_scan_event_name) { 'collect_sast_scan_metrics_from_pipeline' }
+
+      before do
+        sast_artifact.job.update!(status: :success)
+      end
+
+      it "triggers event data from 'collect_sast_scan_metrics_from_pipeline'" do
+        expect { sast_service_object.execute }.to trigger_internal_events(sast_scan_event_name).with(
+          project: sast_pipeline.project,
+          additional_properties: {
+            label: "semgrep",
+            property: "294f623d-b2ce-4568-8008-6fd4a5fb3330",
+            value: 1,
+            version: "1.1.1",
+            exit_code: 2,
+            override_count: 3,
+            passthrough_count: 4,
+            custom_exclude_path_count: 5,
+            time_s: 100,
+            file_count: 1000
+          }
+        )
       end
     end
   end
