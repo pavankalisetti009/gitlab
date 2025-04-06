@@ -42,8 +42,10 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::Process, feature_category: :
       end
     end
 
-    context 'when there are invalid code owners present' do
+    context 'when project is present and file has no errors' do
       let(:non_member) { create(:user) }
+      let(:reporter) { create(:user, reporter_of: container) }
+
       let(:inaccessible_name_1) { '@not_a_user' }
       let(:inaccessible_name_2) { "@#{non_member.username}" }
       let(:inaccessible_name_3) { "@#{create(:group).full_path}" }
@@ -51,12 +53,8 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::Process, feature_category: :
       let(:inaccessible_email_2) { non_member.email }
       let(:inaccessible_email_3) { non_member.private_commit_email }
       let(:inaccessible_email_4) { create(:email, :confirmed, :skip_validate, user: non_member).email }
-
-      let(:inaccessible_owner_errors) do
-        [1, 2, 5, 6, 9, 10, 13, 16].map do |line_number|
-          Gitlab::CodeOwners::Error.new(:inaccessible_owner, line_number)
-        end
-      end
+      let(:owner_without_permission_name) { "@#{reporter.username}" }
+      let(:owner_without_permission_email) { reporter.email }
 
       let(:file_content) do
         <<~CODEOWNERS
@@ -76,6 +74,10 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::Process, feature_category: :
 
           [Section 4][2] #{inaccessible_email_4}
           path/eight.rb
+
+          [Section 5]
+          path/nine.rb #{owner_without_permission_name}
+          path/ten.rb #{owner_without_permission_email}
         CODEOWNERS
       end
 
@@ -83,8 +85,14 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::Process, feature_category: :
         execute
       end
 
-      it 'adds an error to the file for each inaccessible owner' do
-        expect(file.errors).to match_array(inaccessible_owner_errors)
+      it 'adds an error to the file for each error' do
+        inaccessible_owner_errors = [1, 2, 5, 6, 9, 10, 13, 16].map do |line_number|
+          Gitlab::CodeOwners::Error.new(:inaccessible_owner, line_number)
+        end
+        owner_without_permission_errors = [19, 20].map do |line_number|
+          Gitlab::CodeOwners::Error.new(:owner_without_permission, line_number)
+        end
+        expect(file.errors).to match_array(inaccessible_owner_errors + owner_without_permission_errors)
       end
     end
   end
