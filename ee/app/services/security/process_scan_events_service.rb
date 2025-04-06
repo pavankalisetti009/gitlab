@@ -6,7 +6,7 @@ module Security
 
     ScanEventNotInAllowListError = Class.new(StandardError)
 
-    EVENT_NAME_ALLOW_LIST = %w[].freeze
+    EVENT_NAME_ALLOW_LIST = %w[collect_sast_scan_metrics_from_pipeline].freeze
 
     def initialize(pipeline)
       @pipeline = pipeline
