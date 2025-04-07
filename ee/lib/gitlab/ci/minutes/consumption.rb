@@ -3,6 +3,11 @@
 module Gitlab
   module Ci
     module Minutes
+      # This class handles instance runner consumption
+      # instance runner consumption applies to:
+      #   - .com gitlab hosted runners
+      #   - self-managed gitlab instances with self hosted runners
+      #
       # Calculate the consumption of compute minutes based on a cost factor
       # assigned to the involved Runner.
       # The amount returned is a float so that internally we could track
