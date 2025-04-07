@@ -44,7 +44,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     let(:auditor_permissions) do
       %i[
-        download_code download_wiki_code read_project read_issue_board read_issue_board_list
+        download_code download_wiki_code read_project read_project_metadata read_issue_board read_issue_board_list
         read_project_for_iids read_issue_iid read_merge_request_iid read_wiki
         read_issue read_label read_issue_link read_milestone
         read_snippet read_project_member read_note read_cycle_analytics
@@ -3282,6 +3282,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       context 'for an admin member role with read_admin_dashboard true' do
         let(:member_role_abilities) { [:read_admin_dashboard] }
         let(:allowed_abilities) { %i[read_member_access_request] }
+
+        it_behaves_like 'admin custom roles abilities'
+      end
+
+      context 'for an admin member role with read_admin_cicd true' do
+        let(:member_role_abilities) { [:read_admin_cicd] }
+        let(:allowed_abilities) { %i[read_project_metadata] }
 
         it_behaves_like 'admin custom roles abilities'
       end

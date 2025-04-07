@@ -113,6 +113,14 @@ module Registrations
     end
 
     def update_success_path
+      Gitlab::AppLogger.info(
+        message: 'Welcome update success path',
+        username: current_user.username,
+        onboarding_in_progress: current_user.onboarding_in_progress,
+        onboarding_status: current_user.onboarding_status.to_json,
+        user_id: current_user.id
+      )
+
       if onboarding_status_presenter.continue_full_onboarding? # trials/regular registration on .com
         signup_onboarding_path
       elsif onboarding_status_presenter.single_invite? # invites w/o tasks due to order

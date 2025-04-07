@@ -6,7 +6,6 @@ exports[`License Report MR Widget report section report body should render corre
   length="2"
   remain="20"
   rtag="div"
-  size="26"
   wclass="report-block-list my-1"
   wtag="ul"
 >
