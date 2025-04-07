@@ -25,7 +25,7 @@ module Gitlab
           entries.each do |entry|
             references = Gitlab::CodeOwners::ReferenceExtractor.new(entry.owner_line)
 
-            filters.each do |filter|
+            funnel.each do |filter|
               bubble_errors_for(entry.line_number, references, filter)
             end
           end
@@ -56,10 +56,13 @@ module Gitlab
         # Once we've collected all of these owners we apply all of the errors
         # in one loop so we aren't iterating over all of the entries for each
         # validator.
-        def filters
-          [accessible_owners_filter]
+        def funnel
+          [
+            accessible_owners_filter,
+            eligible_approvers_filter
+          ]
         end
-        strong_memoize_attr :filters
+        strong_memoize_attr :funnel
 
         def accessible_owners_filter
           owners = entries.map(&:owner_line)
@@ -70,6 +73,17 @@ module Gitlab
           AccessibleOwnersFilter.new(project, names: names, emails: emails)
         end
         strong_memoize_attr :accessible_owners_filter
+
+        def eligible_approvers_filter
+          upstream = accessible_owners_filter
+          EligibleApproversFilter.new(
+            project,
+            users: upstream.output_users,
+            usernames: upstream.valid_usernames,
+            emails: upstream.valid_emails
+          )
+        end
+        strong_memoize_attr :eligible_approvers_filter
 
         def bubble_errors_for(line_number, references, filter)
           return if filter.valid_entry?(references)
