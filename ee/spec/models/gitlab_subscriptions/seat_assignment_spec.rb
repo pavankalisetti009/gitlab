@@ -16,6 +16,14 @@ RSpec.describe GitlabSubscriptions::SeatAssignment, feature_category: :seat_cost
 
   describe 'validations' do
     it { is_expected.to validate_uniqueness_of(:namespace_id).scoped_to(:user_id) }
+
+    context 'when on GitLab.com', :saas do
+      it { is_expected.to validate_presence_of(:namespace_id) }
+    end
+
+    context 'when not on GitLab.com' do
+      it { is_expected.not_to validate_presence_of(:namespace_id) }
+    end
   end
 
   describe 'scopes' do
