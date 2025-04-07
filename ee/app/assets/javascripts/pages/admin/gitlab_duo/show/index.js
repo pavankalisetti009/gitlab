@@ -25,6 +25,9 @@ export function mountGitlabDuoHomeApp() {
     areExperimentSettingsAllowed,
     duoAddOnStartDate,
     duoAddOnEndDate,
+    amazonQReady,
+    amazonQAutoReviewEnabled,
+    amazonQConfigurationPath,
   } = el.dataset;
 
   return new Vue({
@@ -47,6 +50,9 @@ export function mountGitlabDuoHomeApp() {
       areExperimentSettingsAllowed: parseBoolean(areExperimentSettingsAllowed),
       duoAddOnStartDate,
       duoAddOnEndDate,
+      amazonQReady: parseBoolean(amazonQReady),
+      amazonQAutoReviewEnabled: parseBoolean(amazonQAutoReviewEnabled),
+      amazonQConfigurationPath,
     },
     render: (h) => h(GitlabDuoHome),
   });

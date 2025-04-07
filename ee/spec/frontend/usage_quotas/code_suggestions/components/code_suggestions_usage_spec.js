@@ -12,6 +12,7 @@ import SelfManagedAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/c
 import CodeSuggestionsUsage from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage.vue';
 import { useFakeDate } from 'helpers/fake_date';
 import CodeSuggestionsUsageLoader from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage_loader.vue';
+import DuoAmazonQInfoCard from 'ee/ai/settings/components/duo_amazon_q_info_card.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q } from 'ee/usage_quotas/code_suggestions/constants';
@@ -77,7 +78,7 @@ describe('GitLab Duo Usage', () => {
   const findCodeSuggestionsStatistics = () => wrapper.findComponent(CodeSuggestionsStatisticsCard);
   const findCodeSuggestionsSubtitle = () => wrapper.findByTestId('code-suggestions-subtitle');
   const findCodeSuggestionsTitle = () => wrapper.findByTestId('code-suggestions-title');
-  const findAmazonQInfoCard = () => wrapper.findByTestId('duo-amazon-q-info-card');
+  const findAmazonQInfoCard = () => wrapper.findComponent(DuoAmazonQInfoCard);
   const findSaasAddOnEligibleUserList = () => wrapper.findComponent(SaasAddOnEligibleUserList);
   const findCodeSuggestionsUsageLoader = () => wrapper.findComponent(CodeSuggestionsUsageLoader);
   const findSelfManagedAddOnEligibleUserList = () =>
