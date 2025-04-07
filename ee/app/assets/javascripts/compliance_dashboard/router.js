@@ -10,6 +10,7 @@ import {
   ROUTE_NEW_FRAMEWORK,
   ROUTE_EDIT_FRAMEWORK,
   ROUTE_NEW_FRAMEWORK_SUCCESS,
+  ROUTE_BLANK_FRAMEWORK,
   ROUTE_EXPORT_FRAMEWORK,
 } from './constants';
 
@@ -19,6 +20,7 @@ import ViolationsReport from './components/violations_report/report.vue';
 import FrameworksReport from './components/frameworks_report/report.vue';
 import EditFramework from './components/frameworks_report/edit_framework/edit_framework.vue';
 import ProjectsReport from './components/projects_report/report.vue';
+import NewFramework from './components/frameworks_report/new_framework/new_framework.vue';
 import StandardsReport from './components/standards_adherence_report/report.vue';
 import NewFrameworkSuccess from './components/frameworks_report/edit_framework/new_framework_success.vue';
 
@@ -98,6 +100,11 @@ export function createRouter(basePath, props) {
     {
       path: `/${ROUTE_FRAMEWORKS}/new`,
       name: ROUTE_NEW_FRAMEWORK,
+      component: NewFramework,
+    },
+    {
+      path: '/frameworks/blank',
+      name: ROUTE_BLANK_FRAMEWORK,
       component: EditFramework,
     },
     {
