@@ -44169,6 +44169,9 @@ msgstr ""
 msgid "Pipelines|No trigger tokens have been created yet. Add one using the form above."
 msgstr ""
 
+msgid "Pipelines|Number of Pipelines"
+msgstr ""
+
 msgid "Pipelines|Owner"
 msgstr ""
 
@@ -44185,9 +44188,6 @@ msgid "Pipelines|Pipeline inputs now available!"
 msgstr ""
 
 msgid "Pipelines|Pipeline syntax is correct. %{linkStart}Learn more%{linkEnd}"
-msgstr ""
-
-msgid "Pipelines|Pipelines count"
 msgstr ""
 
 msgid "Pipelines|Project cache successfully reset."
@@ -44505,6 +44505,9 @@ msgstr ""
 msgid "Pipeline|Merged results pipeline runs on the contents of the merge request combined with the contents of the target branch."
 msgstr ""
 
+msgid "Pipeline|Minutes"
+msgstr ""
+
 msgid "Pipeline|New pipeline"
 msgstr ""
 
@@ -44545,9 +44548,6 @@ msgid "Pipeline|Run pipeline"
 msgstr ""
 
 msgid "Pipeline|Running"
-msgstr ""
-
-msgid "Pipeline|Seconds"
 msgstr ""
 
 msgid "Pipeline|Skipped"
