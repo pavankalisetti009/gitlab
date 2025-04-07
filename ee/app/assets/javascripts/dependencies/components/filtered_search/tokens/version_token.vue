@@ -162,7 +162,7 @@ export default {
 
 <template>
   <gl-filtered-search-token
-    :config="config"
+    :config="tokenConfig"
     v-bind="{ ...$props, ...$attrs }"
     :multi-select-values="selectedVersionIds"
     :value="tokenValue"

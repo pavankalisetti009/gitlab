@@ -13,6 +13,7 @@ import { stubComponent } from 'helpers/stub_component';
 import getProjectComponentVersions from 'ee/dependencies/graphql/project_component_versions.query.graphql';
 import VersionToken from 'ee/dependencies/components/filtered_search/tokens/version_token.vue';
 import createStore from 'ee/dependencies/store';
+import { OPERATORS_IS_NOT } from '~/vue_shared/components/filtered_search_bar/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -39,6 +40,10 @@ const DEFAULT_PAGE_INFO = {
   endCursor: null,
 };
 const FULL_PATH = 'gitlab-org/project-1';
+const TEST_CONFIG = {
+  multiSelect: true,
+  operators: OPERATORS_IS_NOT,
+};
 
 describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', () => {
   let wrapper;
@@ -78,9 +83,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
         projectFullPath: FULL_PATH,
       },
       propsData: {
-        config: {
-          multiSelect: true,
-        },
+        config: TEST_CONFIG,
         value: {},
         active: false,
       },
@@ -128,6 +131,10 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
       expect(findFilteredSearchToken().props('viewOnly')).toBe(true);
     });
 
+    it('sets only 1 operator in config', () => {
+      expect(findFilteredSearchToken().props('config').operators).toHaveLength(1);
+    });
+
     it('does not fetch versions', () => {
       expect(requestHandlers.projectHandler).not.toHaveBeenCalled();
     });
@@ -148,6 +155,10 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
       expect(findFilteredSearchToken().props('viewOnly')).toBe(true);
     });
 
+    it('sets only 1 operator in config', () => {
+      expect(findFilteredSearchToken().props('config').operators).toHaveLength(1);
+    });
+
     it('does not fetch versions', () => {
       expect(requestHandlers.projectHandler).not.toHaveBeenCalled();
     });
@@ -165,6 +176,10 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
 
     it('sets viewOnly prop to false', () => {
       expect(findFilteredSearchToken().props('viewOnly')).toBe(false);
+    });
+
+    it('passes config correctly through', () => {
+      expect(findFilteredSearchToken().props('config')).toEqual(TEST_CONFIG);
     });
 
     it('shows a loading indicator while fetching the list of versions', () => {
