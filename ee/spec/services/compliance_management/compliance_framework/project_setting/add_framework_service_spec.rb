@@ -38,6 +38,15 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSetting::AddFra
       it 'creates an audit event' do
         expect { service.execute }.to change { AuditEvent.count }.by(1)
       end
+
+      it 'enqueues the ProjectComplianceEvaluatorWorker' do
+        expect(ComplianceManagement::ProjectComplianceEvaluatorWorker).to receive(:perform_in).with(
+          ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+          framework.id, [project.id]
+        ).once.and_call_original
+
+        service.execute
+      end
     end
 
     context 'when the project setting already exists' do
@@ -64,6 +73,12 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSetting::AddFra
       it 'does not create an audit event' do
         expect { service.execute }.not_to change { AuditEvent.count }
       end
+
+      it 'does not enqueue the ProjectComplianceEvaluatorWorker' do
+        expect(ComplianceManagement::ProjectComplianceEvaluatorWorker).not_to receive(:perform_in)
+
+        service.execute
+      end
     end
 
     context 'when the project setting cannot be created' do
@@ -86,6 +101,12 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSetting::AddFra
 
       it 'does not create an audit event' do
         expect { service.execute }.not_to change { AuditEvent.count }
+      end
+
+      it 'does not enqueue the ProjectComplianceEvaluatorWorker' do
+        expect(ComplianceManagement::ProjectComplianceEvaluatorWorker).not_to receive(:perform_in)
+
+        service.execute
       end
     end
 

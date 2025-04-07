@@ -343,4 +343,16 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
       end
     end
   end
+
+  describe '.schedule_compliance_evaluation' do
+    subject(:schedule) { described_class.schedule_compliance_evaluation(framework.id, [project.id, project2.id]) }
+
+    it 'schedules the job with the appropriate delay' do
+      expect(described_class).to receive(:perform_in)
+        .with(ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+          framework.id, [project.id, project2.id]).and_call_original
+
+      schedule
+    end
+  end
 end
