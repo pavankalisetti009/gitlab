@@ -771,116 +771,149 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
     end
 
     context 'epic command' do
-      let_it_be_with_reload(:epic) { create(:epic, group: group) }
-      let_it_be_with_reload(:private_epic) { create(:epic, group: create(:group, :private)) }
-      let(:content) { "/epic #{epic.to_reference(project)}" }
+      context 'on an issue' do
+        let_it_be_with_reload(:epic) { create(:epic, group: group) }
+        let_it_be_with_reload(:private_epic) { create(:epic, group: create(:group, :private)) }
+        let(:content) { "/epic #{epic.to_reference(project)}" }
 
-      context 'when epics are enabled' do
-        before do
-          stub_licensed_features(epics: true)
-        end
-
-        context 'when epic exists' do
-          it 'assigns an issue to an epic' do
-            _, updates, message = service.execute(content, issue)
-
-            expect(updates).to eq(epic: epic)
-            expect(message).to eq('Added an issue to an epic.')
+        context 'when epics are enabled' do
+          before do
+            stub_licensed_features(epics: true)
           end
 
-          context 'when it is confidential' do
-            before do
-              epic.update!(confidential: true)
-              group.add_developer(current_user)
-            end
-
-            it 'shows an error' do
+          context 'when epic exists' do
+            it 'assigns an issue to an epic' do
               _, updates, message = service.execute(content, issue)
 
-              expect(updates).to be_empty
-              expect(message).to eq('Cannot assign a confidential epic to a non-confidential issue. Make the issue confidential and try again')
+              expect(updates).to eq(epic: epic)
+              expect(message).to eq('Added an issue to an epic.')
+            end
+
+            context 'when it is confidential' do
+              before do
+                epic.update!(confidential: true)
+                epic.sync_object.update!(confidential: true)
+                group.add_developer(current_user)
+              end
+
+              it 'shows an error' do
+                _, updates, message = service.execute(content, issue)
+
+                expect(updates).to be_empty
+                expect(message).to eq('Cannot assign a confidential parent to a non-confidential Issue. Make the Issue confidential and try again')
+              end
+            end
+
+            context 'when an issue belongs to a project without group' do
+              let_it_be(:user_project) { create(:project) }
+              let(:issue)              { create(:issue, project: user_project) }
+
+              before do
+                user_project.add_guest(user)
+              end
+
+              it 'does not assign an issue to an epic' do
+                _, updates = service.execute(content, issue)
+
+                expect(updates).to be_empty
+              end
+            end
+
+            context 'when issue is already added to epic' do
+              it 'returns error message' do
+                issue = create(:issue, project: project, epic: epic)
+                WorkItem.find(issue.id).update!(work_item_parent: epic.sync_object)
+
+                _, updates, message = service.execute(content, issue)
+
+                expect(updates).to be_empty
+                expect(message).to eq("Issue #{issue.to_reference} has already been added to parent #{epic.sync_object.to_reference}.")
+              end
+            end
+
+            context 'when issuable does not support epics' do
+              it 'does not assign an incident to an epic' do
+                incident = create(:incident, project: project)
+
+                _, updates = service.execute(content, incident)
+
+                expect(updates).to be_empty
+              end
             end
           end
 
-          context 'when an issue belongs to a project without group' do
-            let(:user_project) { create(:project) }
-            let(:issue)        { create(:issue, project: user_project) }
-
-            before do
-              user_project.add_guest(user)
-            end
+          context 'when epic does not exist' do
+            let(:content) { "/epic none" }
 
             it 'does not assign an issue to an epic' do
-              _, updates = service.execute(content, issue)
-
-              expect(updates).to be_empty
-            end
-          end
-
-          context 'when issue is already added to epic' do
-            it 'returns error message' do
-              issue = create(:issue, project: project, epic: epic)
-
               _, updates, message = service.execute(content, issue)
 
               expect(updates).to be_empty
-              expect(message).to eq("Issue #{issue.to_reference} has already been added to epic #{epic.to_reference}.")
+              expect(message).to eq("This parent does not exist or you don't have sufficient permission.")
             end
           end
 
-          context 'when issuable does not support epics' do
-            it 'does not assign an incident to an epic' do
-              incident = create(:incident, project: project)
+          context 'when user has no permissions to read epic' do
+            let(:content) { "/epic #{private_epic.to_reference(project)}" }
 
-              _, updates = service.execute(content, incident)
+            it 'does not assign an issue to an epic' do
+              _, updates, message = service.execute(content, issue)
 
               expect(updates).to be_empty
+              expect(message).to eq("This parent does not exist or you don't have sufficient permission.")
+            end
+          end
+
+          context 'when user has no access to the issue' do
+            before do
+              allow(current_user).to receive(:can?).and_call_original
+              allow(current_user).to receive(:can?).with(:admin_issue_relation, issue).and_return(false)
+            end
+
+            it 'returns error' do
+              _, updates, message = service.execute(content, issue)
+
+              expect(updates).to be_empty
+              expect(message).to eq('Could not apply set_parent command.')
             end
           end
         end
 
-        context 'when epic does not exist' do
-          let(:content) { "/epic none" }
-
-          it 'does not assign an issue to an epic' do
-            _, updates, message = service.execute(content, issue)
+        context 'when epics are disabled' do
+          it 'does not recognize /epic' do
+            _, updates = service.execute(content, issue)
 
             expect(updates).to be_empty
-            expect(message).to eq("This epic does not exist or you don't have sufficient permission.")
-          end
-        end
-
-        context 'when user has no permissions to read epic' do
-          let(:content) { "/epic #{private_epic.to_reference(project)}" }
-
-          it 'does not assign an issue to an epic' do
-            _, updates, message = service.execute(content, issue)
-
-            expect(updates).to be_empty
-            expect(message).to eq("This epic does not exist or you don't have sufficient permission.")
-          end
-        end
-
-        context 'when user has no access to the issue' do
-          before do
-            allow(current_user).to receive(:can?).and_call_original
-            allow(current_user).to receive(:can?).with(:admin_issue_relation, issue).and_return(false)
-          end
-
-          it 'returns error' do
-            _, updates, message = service.execute(content, issue)
-
-            expect(updates).to be_empty
-            expect(message).to eq('Could not apply set_parent command.')
           end
         end
       end
 
-      context 'when epics are disabled' do
-        it 'does not recognize /epic' do
-          _, updates = service.execute(content, issue)
+      context 'on a work item' do
+        let_it_be(:work_item_issue) { create(:work_item, :issue, project: project) }
+        let_it_be(:epic) { create(:epic, :with_synced_work_item, group: group) }
+        let(:content) { "/epic #{epic.to_reference}" }
 
-          expect(updates).to be_empty
+        context 'when epics are enabled' do
+          before do
+            stub_licensed_features(epics: true)
+          end
+
+          context 'when epic exists' do
+            it 'assigns an issue to an epic' do
+              _, updates, message = service.execute(content, work_item_issue)
+
+              expect(updates).to eq(set_parent: epic.sync_object)
+              expect(message).to eq('Parent item set successfully.')
+            end
+          end
+        end
+
+        context 'when epics are disabled' do
+          it 'does not recognize /epic' do
+            _, updates = service.execute(content, work_item_issue)
+
+            expect(updates).to be_empty
+          end
         end
       end
     end
