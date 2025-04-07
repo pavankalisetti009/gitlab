@@ -40,7 +40,7 @@ To configure your GitLab instance to access the available self-hosted models in 
 
 1. On the left sidebar, at the bottom, select **Admin**.
 1. Select **GitLab Duo**.
-1. In the **GitLab Duo** section, select **Change configuration**.
+1. Select **Change configuration**.
 1. Under **Local AI Gateway URL**, enter your AI Gateway URL.
 1. Select **Save changes**.
 
@@ -99,7 +99,7 @@ To enable self-hosted [beta](../../policy/development_stages_support.md#beta) mo
 
 1. On the left sidebar, at the bottom, select **Admin**.
 1. Select **GitLab Duo**.
-1. In the **GitLab Duo** section, select **Change configuration**.
+1. Select **Change configuration**.
 1. Under **Self-hosted beta models and features**, select the **Use beta models and features in GitLab Duo Self-Hosted** checkbox.
 1. Select **Save changes**.
 
