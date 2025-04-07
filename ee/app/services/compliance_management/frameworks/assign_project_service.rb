@@ -37,6 +37,10 @@ module ComplianceManagement
         framework_setting = ComplianceManagement::ComplianceFramework::ProjectSettings
           .find_or_create_by_project(project, framework)
 
+        ComplianceManagement::ProjectComplianceEvaluatorWorker.schedule_compliance_evaluation(
+          framework.id, [project.id]
+        )
+
         publish_event(::Projects::ComplianceFrameworkChangedEvent::EVENT_TYPES[:added])
         ::ComplianceManagement::ComplianceFrameworkChangesAuditor.new(current_user, framework_setting, project).execute
 

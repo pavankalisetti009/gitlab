@@ -11,6 +11,13 @@ module ComplianceManagement
     idempotent!
     urgency :low
 
+    def self.schedule_compliance_evaluation(framework_id, project_ids)
+      perform_in(
+        ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+        framework_id, project_ids
+      )
+    end
+
     def perform(framework_id, project_ids)
       return unless Feature.enabled?(:evaluate_compliance_controls, :instance)
 

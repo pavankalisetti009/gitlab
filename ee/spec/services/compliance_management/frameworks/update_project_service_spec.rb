@@ -45,6 +45,19 @@ RSpec.describe ComplianceManagement::Frameworks::UpdateProjectService, feature_c
 
             update_framework
           end
+
+          it 'enqueues the ProjectComplianceEvaluatorWorker' do
+            expect(ComplianceManagement::ProjectComplianceEvaluatorWorker).to receive(:perform_in).with(
+              ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+              framework1.id, [project.id]
+            ).and_call_original
+            expect(ComplianceManagement::ProjectComplianceEvaluatorWorker).to receive(:perform_in).with(
+              ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+              framework2.id, [project.id]
+            ).and_call_original
+
+            update_framework
+          end
         end
 
         context 'when project already has some frameworks associated with it' do
@@ -78,10 +91,21 @@ RSpec.describe ComplianceManagement::Frameworks::UpdateProjectService, feature_c
 
             update_framework
           end
+
+          it 'enqueues the ProjectComplianceEvaluatorWorker' do
+            expect(ComplianceManagement::ProjectComplianceEvaluatorWorker).to receive(:perform_in).with(
+              ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+              framework1.id, [project.id]
+            ).once.and_call_original
+
+            update_framework
+          end
         end
 
         context 'when there is an error while saving framework project setting' do
-          it 'returns error' do
+          it 'returns error', :aggregate_failures do
+            expect(ComplianceManagement::ProjectComplianceEvaluatorWorker).not_to receive(:perform_in)
+
             save_error_message = 'Not able to save project settings for compliance framework'
             error_message = "Error while adding framework #{frameworks.first.name}. Errors: #{save_error_message}"
 
