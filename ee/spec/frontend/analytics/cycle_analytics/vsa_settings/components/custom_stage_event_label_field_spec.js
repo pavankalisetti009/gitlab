@@ -9,7 +9,6 @@ import { HTTP_STATUS_NOT_FOUND, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import waitForPromises from 'helpers/wait_for_promises';
 import { i18n, ERRORS } from 'ee/analytics/cycle_analytics/vsa_settings/constants';
 import CustomStageEventLabelField from 'ee/analytics/cycle_analytics/vsa_settings/components/custom_stage_event_label_field.vue';
-import createStore from 'ee/analytics/cycle_analytics/store';
 import { groupLabels } from '../../mock_data';
 
 Vue.use(Vuex);
@@ -33,7 +32,7 @@ describe('CustomStageEventLabelField', () => {
 
   function createComponent({ props = {} } = {}) {
     return shallowMountExtended(CustomStageEventLabelField, {
-      store: createStore(),
+      provide: { namespaceFullPath: '/groups/test' },
       propsData: {
         ...defaultProps,
         ...props,

@@ -73,7 +73,7 @@ describe('ValueStreamFormContent', () => {
   const createComponent = ({ props = {}, state = {} } = {}) =>
     shallowMountExtended(ValueStreamFormContent, {
       store: fakeStore({ state }),
-      provide: { vsaPath: '/mockPath', stageEvents },
+      provide: { vsaPath: '/mockPath', namespaceFullPath: namespacePath, stageEvents },
       propsData: {
         defaultStageConfig,
         ...props,
