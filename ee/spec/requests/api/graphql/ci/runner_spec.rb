@@ -343,6 +343,102 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
     end
   end
 
+  describe 'ownerProject' do
+    let(:query) do
+      project_path = query_graphql_path(%i[ownerProject], all_graphql_fields_for('ProjectInterface'))
+
+      wrap_fields(query_graphql_path(query_path, project_path))
+    end
+
+    let(:query_path) do
+      [
+        [:runner, { id: runner.to_global_id.to_s }]
+      ]
+    end
+
+    context 'when current user is an admin',
+      :enable_admin_mode, feature_category: :permissions do
+      let_it_be(:current_user) { admin }
+      let_it_be(:project) { create(:project, :private, description: 'd') }
+      let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
+
+      let(:field_names) do
+        ::Types::Projects::ProjectInterface.fields.keys.map(&:underscore)
+      end
+
+      let(:project_data) do
+        fields = field_names.excluding('id') # a_graphql_entity_for already sets id
+        a_graphql_entity_for(project, *fields).to_hash
+      end
+
+      before do
+        post_graphql(query, current_user: current_user)
+      end
+
+      it 'retrieves expected field values' do
+        runner_data = graphql_data_at(:runner)
+
+        expect(runner_data).not_to be_nil
+        expect(graphql_dig_at(runner_data, :ownerProject)).to match project_data
+      end
+    end
+
+    context 'when current user is not an admin but has read_admin_cicd custom admin role',
+      :enable_admin_mode, feature_category: :permissions do
+      let_it_be(:role) { create(:admin_member_role, :read_admin_cicd) }
+      let_it_be(:current_user) { role.user }
+      let_it_be(:project) { create(:project, :private, :with_avatar, description: 'd') }
+      let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
+
+      let(:exposed_field_names) do
+        %w[avatar_url description name name_with_namespace]
+      end
+
+      let(:unexposed_field_names) do
+        ::Types::Projects::ProjectInterface.fields.keys.map(&:underscore) - exposed_field_names
+      end
+
+      let(:project_exposed_data) do
+        {
+          avatar_url: project.avatar_url(only_path: false),
+          description: project.description,
+          name: project.name,
+          name_with_namespace: project.name_with_namespace
+        }
+      end
+
+      let(:project_data) do
+        nil_fields = unexposed_field_names.index_with { |_f| nil }
+
+        a_graphql_entity_for(
+          project,
+          **project_exposed_data.merge(nil_fields)
+        ).to_hash.tap do |h|
+          # a_graphql_entity_for sets id but we expect it to be nil
+          h["id"] = nil
+        end
+      end
+
+      before do
+        stub_licensed_features(custom_roles: true)
+
+        post_graphql(query, current_user: current_user)
+      end
+
+      it 'retrieves expected field values' do
+        expect(exposed_field_names).to match_array(
+          ::Types::Projects::ProjectMinimalAccessType.own_fields.keys.map(&:underscore)
+        )
+        expect(exposed_field_names.map(&:to_sym)).to match_array(project_exposed_data.keys)
+
+        runner_data = graphql_data_at(:runner)
+
+        expect(runner_data).not_to be_nil
+        expect(graphql_dig_at(runner_data, :ownerProject)).to match project_data
+      end
+    end
+  end
+
   describe 'groups' do
     let_it_be(:group) { create(:group, :private, :with_avatar) }
     let_it_be(:runner) { create(:ci_runner, :group, groups: [group]) }
