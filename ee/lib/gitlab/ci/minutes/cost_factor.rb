@@ -4,6 +4,8 @@ module Gitlab
   module Ci
     module Minutes
       class CostFactor
+        # Gets the cost factor as it applies to instance runners
+        # (.com hosted runners which are the only instance runners on .com and self-managed instance runners)
         DISABLED = 0.0
         PUBLIC_OPEN_SOURCE_PLAN = 0.5
         OPEN_SOURCE_CONTRIBUTION = 0.008
@@ -36,11 +38,7 @@ module Gitlab
         private
 
         def cost_factor_for_runner(project)
-          if project.public?
-            @runner_matcher.public_projects_minutes_cost_factor
-          else
-            @runner_matcher.private_projects_minutes_cost_factor
-          end
+          Gitlab::Ci::Minutes::RunnerCostFactor.new(@runner_matcher, project).value
         end
 
         # Exceptions to the cost per runner are designed
