@@ -1705,6 +1705,15 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       described_class.by_project_confidentiality(query_hash: query_hash, options: options)
     end
 
+    shared_examples 'confidential filters to query_hash' do
+      it 'adds the correct confidential/non-confidential filters to query_hash' do
+        expect(by_project_confidentiality.dig(:query, :bool, :filter)).to match(expected_filter)
+        expect(by_project_confidentiality.dig(:query, :bool, :must)).to be_empty
+        expect(by_project_confidentiality.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_project_confidentiality.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
     context 'when options[:confidential] is not passed or not true/false' do
       let(:base_options) { { current_user: user } }
       let(:options) { base_options }
@@ -1719,15 +1728,8 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
       context 'when user is authorized for all projects which the query is scoped to' do
         let(:options) { base_options.merge(project_ids: [authorized_project.id]) }
-
-        it_behaves_like 'does not modify the query_hash'
-      end
-
-      context 'when user is not authorized for all projects which the query is scoped to' do
-        let(:options) { base_options.merge(project_ids: [authorized_project.id, private_project.id]) }
-
-        it 'adds the confidential and non-confidential filters to query_hash' do
-          expected_filter = [
+        let(:expected_filter) do
+          [
             { bool: { should: [
               { term: { confidential: { _name: 'filters:non_confidential', value: false } } },
               { bool: { must: [
@@ -1745,25 +1747,42 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               ] } }
             ] } }
           ]
-
-          expect(by_project_confidentiality.dig(:query, :bool, :filter)).to match(expected_filter)
-          expect(by_project_confidentiality.dig(:query, :bool, :must)).to be_empty
-          expect(by_project_confidentiality.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_project_confidentiality.dig(:query, :bool, :should)).to be_empty
         end
+
+        it_behaves_like 'confidential filters to query_hash'
+      end
+
+      context 'when user is not authorized for all projects which the query is scoped to' do
+        let(:options) { base_options.merge(project_ids: [authorized_project.id, private_project.id]) }
+        let(:expected_filter) do
+          [
+            { bool: { should: [
+              { term: { confidential: { _name: 'filters:non_confidential', value: false } } },
+              { bool: { must: [
+                { term: { confidential: { _name: 'filters:confidential', value: true } } },
+                {
+                  bool: {
+                    should: [
+                      { term: { author_id: { _name: 'filters:confidential:as_author', value: user.id } } },
+                      { term: { assignee_id: { _name: 'filters:confidential:as_assignee', value: user.id } } },
+                      { terms: { _name: 'filters:confidential:project:membership:id',
+                                 project_id: [authorized_project.id] } }
+                    ]
+                  }
+                }
+              ] } }
+            ] } }
+          ]
+        end
+
+        it_behaves_like 'confidential filters to query_hash'
       end
 
       context 'when options[:current_user] is empty' do
         let(:options) { { project_ids: [authorized_project.id, private_project.id] } }
+        let(:expected_filter) { [{ term: { confidential: { _name: 'filters:non_confidential', value: false } } }] }
 
-        it 'adds the non-confidential filters to query_hash' do
-          expected_filter = [{ term: { confidential: { _name: 'filters:non_confidential', value: false } } }]
-
-          expect(by_project_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_project_confidentiality.dig(:query, :bool, :must)).to be_empty
-          expect(by_project_confidentiality.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_project_confidentiality.dig(:query, :bool, :should)).to be_empty
-        end
+        it_behaves_like 'confidential filters to query_hash'
       end
     end
 
@@ -1772,38 +1791,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       let(:options) { base_options }
 
       context 'when user.can_read_all_resources? is true' do
+        let(:expected_filter) { [{ term: { confidential: true } }] }
+
         before do
           allow(user).to receive(:can_read_all_resources?).and_return(true)
         end
 
-        it 'adds the requested confidential filter to the query hash' do
-          expected_filter = [{ term: { confidential: true } }]
-
-          expect(by_project_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_project_confidentiality.dig(:query, :bool, :must)).to be_empty
-          expect(by_project_confidentiality.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_project_confidentiality.dig(:query, :bool, :should)).to be_empty
-        end
+        it_behaves_like 'confidential filters to query_hash'
       end
 
       context 'when user is authorized for all projects which the query is scoped to' do
         let(:options) { base_options.merge(project_ids: [authorized_project.id]) }
-
-        it 'adds the requested confidential filter to the query hash' do
-          expected_filter = [{ term: { confidential: true } }]
-
-          expect(by_project_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_project_confidentiality.dig(:query, :bool, :must)).to be_empty
-          expect(by_project_confidentiality.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_project_confidentiality.dig(:query, :bool, :should)).to be_empty
-        end
-      end
-
-      context 'when user is not authorized for all projects which the query is scoped to' do
-        let(:options) { base_options.merge(project_ids: [authorized_project.id, private_project.id]) }
-
-        it 'adds the confidential and non-confidential filters to query_hash' do
-          expected_filter = [
+        let(:expected_filter) do
+          [
             { term: { confidential: true } },
             { bool: { should: [
               { term: { confidential: { _name: 'filters:non_confidential', value: false } } },
@@ -1822,25 +1822,43 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               ] } }
             ] } }
           ]
-
-          expect(by_project_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_project_confidentiality.dig(:query, :bool, :must)).to be_empty
-          expect(by_project_confidentiality.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_project_confidentiality.dig(:query, :bool, :should)).to be_empty
         end
+
+        it_behaves_like 'confidential filters to query_hash'
+      end
+
+      context 'when user is not authorized for all projects which the query is scoped to' do
+        let(:options) { base_options.merge(project_ids: [authorized_project.id, private_project.id]) }
+        let(:expected_filter) do
+          [
+            { term: { confidential: true } },
+            { bool: { should: [
+              { term: { confidential: { _name: 'filters:non_confidential', value: false } } },
+              { bool: { must: [
+                { term: { confidential: { _name: 'filters:confidential', value: true } } },
+                {
+                  bool: {
+                    should: [
+                      { term: { author_id: { _name: 'filters:confidential:as_author', value: user.id } } },
+                      { term: { assignee_id: { _name: 'filters:confidential:as_assignee', value: user.id } } },
+                      { terms: { _name: 'filters:confidential:project:membership:id',
+                                 project_id: [authorized_project.id] } }
+                    ]
+                  }
+                }
+              ] } }
+            ] } }
+          ]
+        end
+
+        it_behaves_like 'confidential filters to query_hash'
       end
 
       context 'when options[:current_user] is empty' do
         let(:options) { { project_ids: [authorized_project.id, private_project.id] } }
+        let(:expected_filter) { [{ term: { confidential: { _name: 'filters:non_confidential', value: false } } }] }
 
-        it 'adds the non-confidential filters to query_hash' do
-          expected_filter = [{ term: { confidential: { _name: 'filters:non_confidential', value: false } } }]
-
-          expect(by_project_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_project_confidentiality.dig(:query, :bool, :must)).to be_empty
-          expect(by_project_confidentiality.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_project_confidentiality.dig(:query, :bool, :should)).to be_empty
-        end
+        it_behaves_like 'confidential filters to query_hash'
       end
     end
   end

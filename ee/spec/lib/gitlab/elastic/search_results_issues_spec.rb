@@ -223,8 +223,7 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'issues', feature_category: :glob
     end
 
     let_it_be(:security_issue_2) do
-      create(:issue, :confidential, title: 'Security issue 2',
-        project: project_1, assignees: [assignee], iid: 3)
+      create(:issue, :confidential, title: 'Security issue 2', project: project_1, assignees: [assignee], iid: 3)
     end
 
     let_it_be(:security_issue_3) do
@@ -248,8 +247,17 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'issues', feature_category: :glob
     context 'when searching by term' do
       let(:query) { 'issue' }
 
-      it 'does not list confidential issues for guests' do
-        results = described_class.new(nil, query, limit_project_ids)
+      it 'does not list confidential issues for anonymous users' do
+        results = described_class.new(nil, query, [])
+        issues = results.objects('issues')
+
+        expect(issues).to contain_exactly(issue)
+        expect(results.issues_count).to eq 1
+      end
+
+      it 'does not list confidential issues for guest users' do
+        results = described_class.new(member, query, [project_1.id])
+        project_1.add_guest(member)
         issues = results.objects('issues')
 
         expect(issues).to contain_exactly(issue)
@@ -257,7 +265,7 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'issues', feature_category: :glob
       end
 
       it 'does not list confidential issues for non project members' do
-        results = described_class.new(non_member, query, limit_project_ids)
+        results = described_class.new(non_member, query, [])
         issues = results.objects('issues')
 
         expect(issues).to contain_exactly(issue)
@@ -280,11 +288,11 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'issues', feature_category: :glob
         expect(results.issues_count).to eq 3
       end
 
-      it 'lists confidential issues for project members' do
+      it 'lists confidential issues from projects for which the user is member' do
         project_1.add_developer(member)
         project_2.add_developer(member)
 
-        results = described_class.new(member, query, limit_project_ids)
+        results = described_class.new(member, query, [project_1.id, project_2.id])
         issues = results.objects('issues')
 
         expect(issues).to contain_exactly(issue, security_issue_1, security_issue_2, security_issue_3)
@@ -311,6 +319,20 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'issues', feature_category: :glob
             expect(issues).to contain_exactly(issue)
             expect(results.issues_count).to eq 1
           end
+        end
+      end
+
+      context 'for user who is the member of only project which does not have any confidential issues' do
+        let_it_be(:other_project) { create(:project) }
+        let_it_be(:other_project_member_user) { create(:user) }
+        let(:limit_project_ids) { [other_project.id] }
+
+        it 'does not list any confidential issues' do
+          other_project.add_developer(other_project_member_user)
+          results = described_class.new(other_project_member_user, query, limit_project_ids)
+          issues = results.objects('issues')
+
+          expect(issues).to contain_exactly(issue)
         end
       end
     end
