@@ -145,9 +145,11 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
     let(:expires_at) { Date.current + 1.year }
     let(:license) { build(:gitlab_license, starts_at: starts_at, expires_at: expires_at) }
     let(:subscription_name) { 'Test Subscription Name' }
+    let(:amazon_q_available) { false }
 
     before do
       allow(License).to receive(:current).and_return(license)
+      allow(::Ai::AmazonQ).to receive(:feature_available?).and_return(amazon_q_available)
       allow(license).to receive_messages(
         subscription_name: subscription_name,
         subscription_start_date: starts_at,
@@ -219,6 +221,30 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
       it 'returns the correct value' do
         expect(helper.admin_duo_home_app_data[:direct_code_suggestions_enabled]).to eq 'false'
+      end
+    end
+
+    context 'when Amazon Q is available' do
+      let(:amazon_q_available) { true }
+
+      where(:auto_review_enabled, :amazon_q_ready) do
+        false | true
+        true  | false
+      end
+
+      with_them do
+        let(:integration) { build_stubbed(:amazon_q_integration, auto_review_enabled: auto_review_enabled) }
+
+        it 'includes the related data' do
+          allow(::Integrations::AmazonQ).to receive(:for_instance).and_return([integration])
+          ::Ai::Setting.instance.update!(amazon_q_ready: amazon_q_ready)
+
+          expect(helper.admin_duo_home_app_data).to include(
+            amazon_q_ready: amazon_q_ready.to_s,
+            amazon_q_auto_review_enabled: auto_review_enabled.to_s,
+            amazon_q_configuration_path: '/admin/application_settings/integrations/amazon_q/edit'
+          )
+        end
       end
     end
   end

@@ -28,7 +28,7 @@ module Admin
         experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
         beta_self_hosted_models_enabled: ::Ai::TestingTermsAcceptance.has_accepted?.to_s,
         are_experiment_settings_allowed: experiments_settings_allowed?.to_s
-      }.merge(duo_add_on_data)
+      }.merge(duo_add_on_data, duo_amazon_q_add_on_data)
     end
 
     def duo_add_on_data
@@ -53,6 +53,19 @@ module Admin
         on_general_settings_page: 'false',
         redirect_path: admin_gitlab_duo_path
       }.merge(ai_settings_helper_data)
+    end
+
+    def duo_amazon_q_add_on_data
+      return {} unless ::Ai::AmazonQ.feature_available?
+
+      ai_settings = ::Ai::Setting.instance
+      integration = ::Integrations::AmazonQ.for_instance.first
+
+      {
+        amazon_q_ready: ai_settings.amazon_q_ready.to_s,
+        amazon_q_auto_review_enabled: integration&.auto_review_enabled.present?.to_s,
+        amazon_q_configuration_path: edit_admin_application_settings_integration_path(:amazon_q)
+      }
     end
 
     def ai_settings_helper_data
