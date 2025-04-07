@@ -17317,6 +17317,9 @@ msgstr ""
 msgid "Contributor analytics"
 msgstr ""
 
+msgid "Control '%{name}': %{error}"
+msgstr ""
+
 msgid "Control + M"
 msgstr ""
 
