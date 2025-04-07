@@ -14404,10 +14404,10 @@ msgstr ""
 msgid "CodeSuggestions|Enterprise"
 msgstr ""
 
-msgid "CodeSuggestions|Get started with GitLab Duo Pro today to boost your efficiency and effectiveness by reducing the time required to write and understand code."
+msgid "CodeSuggestions|Get started with GitLab Duo Pro today by %{duo_ide_setup_page_link_start}setting up your IDE for success%{duo_ide_setup_page_link_end}."
 msgstr ""
 
-msgid "CodeSuggestions|Get started with these Duo Pro features:"
+msgid "CodeSuggestions|Get started with GitLab Duo Pro today."
 msgstr ""
 
 msgid "CodeSuggestions|GitLab Duo Enterprise"
@@ -14452,6 +14452,9 @@ msgstr ""
 msgid "CodeSuggestions|Seats used"
 msgstr ""
 
+msgid "CodeSuggestions|See Duo Pro in action in a Code Suggestions %{code_suggestions_demo_link_start}click-through demo%{code_suggestions_demo_link_end}."
+msgstr ""
+
 msgid "CodeSuggestions|Subscription"
 msgstr ""
 
@@ -14485,13 +14488,16 @@ msgstr ""
 msgid "CodeSuggestions|Welcome to GitLab Duo Pro!"
 msgstr ""
 
+msgid "CodeSuggestions|You have been assigned a GitLab Duo Pro seat"
+msgstr ""
+
 msgid "CodeSuggestions|You have successfully added a license that activates on %{date}."
 msgstr ""
 
-msgid "CodeSuggestions|You now have access to GitLab Duo Pro, which features %{code_suggestions_link_start}Code Suggestions%{code_suggestions_link_end} and %{chat_link_start}Chat%{chat_link_end}."
+msgid "CodeSuggestions|You now have access to GitLab Duo Pro, which features %{code_suggestions_link_start}Code Suggestions%{code_suggestions_link_end} and %{chat_link_start}Chat%{chat_link_end}, which boost your efficiency and effectiveness by reducing the time required to write and understand code."
 msgstr ""
 
-msgid "CodeSuggestions|You now have access to GitLab Duo Pro, which features Code Suggestions and Chat."
+msgid "CodeSuggestions|You now have access to GitLab Duo Pro, which features Code Suggestions and Chat, which boost your efficiency and effectiveness by reducing the time required to write and understand code."
 msgstr ""
 
 msgid "CodeSuggestions|Your GitLab Duo Pro trial has expired"
@@ -22574,28 +22580,25 @@ msgstr ""
 msgid "DuoEnterprise|AI-assisted root cause analysis"
 msgstr ""
 
-msgid "DuoEnterprise|AI-powered vulnerability remediation"
+msgid "DuoEnterprise|Automate your repetitive tasks and catch bugs early"
 msgstr ""
 
-msgid "DuoEnterprise|Collaboration and summarization tools"
+msgid "DuoEnterprise|Automatically generate new lines of code, including full functions, from single and multi-line comments as well as comment blocks"
 msgstr ""
 
-msgid "DuoEnterprise|Easily get up to speed on issue discussions with concise overviews of proposed code changes"
+msgid "DuoEnterprise|Code Suggestions"
 msgstr ""
 
-msgid "DuoEnterprise|Get started with these Duo Enterprise features:"
-msgstr ""
-
-msgid "DuoEnterprise|Need help enabling features? Check to make sure an administrator has %{link_start}configured GitLab Duo on your instance%{link_end}."
+msgid "DuoEnterprise|Explore all of the Duo Enterprise features in this %{demo_link_start}click-through demo%{demo_link_end}"
 msgstr ""
 
 msgid "DuoEnterprise|Quickly resolve CI/CD pipeline issues so developers can focus on critical tasks"
 msgstr ""
 
-msgid "DuoEnterprise|To get started using GitLab Duo Enterprise features, %{link_start}set up your IDE for success.%{link_end}."
+msgid "DuoEnterprise|Test Generation"
 msgstr ""
 
-msgid "DuoEnterprise|Understand and remediate vulnerabilities more efficiently to mitigate security risks"
+msgid "DuoEnterprise|To get started using GitLab Duo Enterprise features, %{link_start}set up your IDE for success%{link_end}."
 msgstr ""
 
 msgid "DuoEnterprise|Welcome to GitLab Duo Enterprise!"
@@ -22607,10 +22610,10 @@ msgstr ""
 msgid "DuoEnterprise|You have been assigned a GitLab Duo Enterprise seat!"
 msgstr ""
 
-msgid "DuoEnterprise|You now have access to %{link_start}GitLab Duo Enterprise%{link_end}, the only AI solution that supports developers at every stage of the software development lifecycle."
+msgid "DuoEnterprise|You now have access to %{link_start}GitLab Duo Enterprise%{link_end}, which boosts your efficiency and effectiveness by reducing the time required to write and understand code."
 msgstr ""
 
-msgid "DuoEnterprise|You now have access to GitLab Duo Enterprise, the only AI solution that supports developers at every stage of the software development lifecycle."
+msgid "DuoEnterprise|You now have access to GitLab Duo Enterprise, which boosts your efficiency and effectiveness by reducing the time required to write and understand code."
 msgstr ""
 
 msgid "DuoProDiscover|A single platform integrates the best AI model for each use case across the entire development workflow."
@@ -27280,6 +27283,9 @@ msgid "GitLab Support Bot"
 msgstr ""
 
 msgid "GitLab Team"
+msgstr ""
+
+msgid "GitLab University"
 msgstr ""
 
 msgid "GitLab User"
@@ -34282,6 +34288,9 @@ msgid "Key (PEM)"
 msgstr ""
 
 msgid "Key details"
+msgstr ""
+
+msgid "Key features"
 msgstr ""
 
 msgid "Key:"
@@ -48812,6 +48821,9 @@ msgstr ""
 msgid "Quick help"
 msgstr ""
 
+msgid "Quick start guide"
+msgstr ""
+
 msgid "README"
 msgstr ""
 
@@ -50321,6 +50333,9 @@ msgid "Resolved by %{name}"
 msgstr ""
 
 msgid "Resource link added"
+msgstr ""
+
+msgid "Resources"
 msgstr ""
 
 msgid "Response"
