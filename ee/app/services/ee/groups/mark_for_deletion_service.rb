@@ -12,14 +12,6 @@ module EE
 
       private
 
-      override :send_group_deletion_notification
-      def send_group_deletion_notification
-        return unless ::Feature.enabled?(:group_deletion_notification_email, group) &&
-          group.adjourned_deletion?
-
-        ::NotificationService.new.group_scheduled_for_deletion(group)
-      end
-
       override :log_event
       def log_event
         log_audit_event
