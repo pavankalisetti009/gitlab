@@ -131,26 +131,17 @@ module EE
         # Gitlab::QuickActions::Dsl implementation
         override :handle_set_epic
         def handle_set_epic(parent_param)
-          epic = extract_epic(parent_param) || extract_references(parent_param, :work_item).first&.sync_object
-          issue = quick_action_target
+          parent = extract_epic(parent_param)&.work_item || extract_references(parent_param, :work_item)&.first
+          child = quick_action_target
 
-          message =
-            if epic && current_user.can?(:read_epic, epic)
-              if issue&.epic == epic
-                format(_('Issue %{issue_reference} has already been added to epic %{epic_reference}.'),
-                  issue_reference: issue.to_reference, epic_reference: epic.to_reference)
-              elsif epic.confidential? && !issue.confidential?
-                _("Cannot assign a confidential epic to a non-confidential issue. Make the issue confidential and " \
-                  "try again")
-              else
-                @updates[:epic] = epic
-                _('Added an issue to an epic.')
-              end
-            else
-              _("This epic does not exist or you don't have sufficient permission.")
-            end
+          error = set_parent_validation_message(parent, child)
 
-          @execution_message[:set_parent] = message
+          @execution_message[:set_parent] = if error.nil?
+                                              @updates[:epic] = parent.sync_object
+                                              _('Added an issue to an epic.')
+                                            else
+                                              error
+                                            end
         end
         # rubocop:enable Gitlab/ModuleWithInstanceVariables
 

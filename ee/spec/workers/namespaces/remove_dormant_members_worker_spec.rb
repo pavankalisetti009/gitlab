@@ -22,11 +22,11 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
 
       context 'with dormant members', :enable_admin_mode do
         let_it_be(:active_assignment) do
-          create_seat_assignment(namespace: group, last_active: Time.zone.today)
+          create(:gitlab_subscription_seat_assignment, namespace: group, last_activity_on: Time.zone.today)
         end
 
         let_it_be(:dormant_assignment) do
-          create_seat_assignment(namespace: group, last_active: 91.days.ago)
+          create(:gitlab_subscription_seat_assignment, namespace: group, last_activity_on: 91.days.ago)
         end
 
         it_behaves_like 'an idempotent worker' do
@@ -83,9 +83,11 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
           let_it_be(:dormant_regular_user) { create(:user) }
 
           before do
-            create_seat_assignment(namespace: group, user: dormant_enterprise_user, last_active: 91.days.ago)
-            create_seat_assignment(namespace: group, user: other_group_enterprise_user, last_active: 91.days.ago)
-            create_seat_assignment(user: dormant_regular_user, last_active: 91.days.ago)
+            create(:gitlab_subscription_seat_assignment, namespace: group, user: dormant_enterprise_user,
+              last_activity_on: 91.days.ago)
+            create(:gitlab_subscription_seat_assignment, namespace: group, user: other_group_enterprise_user,
+              last_activity_on: 91.days.ago)
+            create(:gitlab_subscription_seat_assignment, user: dormant_regular_user, last_activity_on: 91.days.ago)
           end
 
           it_behaves_like 'an idempotent worker' do
@@ -176,18 +178,5 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
 
       it { is_expected.to eq(0) }
     end
-  end
-
-  def create_seat_assignment(namespace: nil, user: nil, last_active: nil)
-    assignment = build(:gitlab_subscription_seat_assignment)
-
-    assignment.tap do |record|
-      record.namespace = namespace if namespace
-      record.user = user if user
-      record.last_activity_on = last_active if last_active
-    end
-
-    assignment.save!
-    assignment
   end
 end
