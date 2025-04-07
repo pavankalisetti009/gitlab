@@ -126,33 +126,6 @@ module EE
       can?(current_user, :read_security_orchestration_policies, project)
     end
 
-    override :delete_immediately_message
-    def delete_immediately_message(project)
-      return super unless project.adjourned_deletion?
-
-      date = permanent_deletion_date_formatted(Date.current)
-
-      message = _('This project is scheduled for deletion on %{strongOpen}%{date}%{strongClose}. ' \
-        'This action will permanently delete this project, ' \
-        'including all its resources, %{strongOpen}immediately%{strongClose}. This action cannot be undone.')
-
-      ERB::Util.html_escape(message) % delete_message_data(project).merge(date: date)
-    end
-
-    def delete_delayed_message(project)
-      date = permanent_deletion_date_formatted(Date.current)
-
-      if project.feature_available?(:adjourned_deletion_for_projects_and_groups)
-        message = _("This action will place this project, including all its resources, in a pending deletion state " \
-          "for %{deletion_adjourned_period} days, and delete it permanently on %{strongOpen}%{date}%{strongClose}.")
-        ERB::Util.html_escape(message) % delete_message_data(project).merge(date: date,
-          deletion_adjourned_period: deletion_adjourned_period)
-      else
-        # This is a free project, it will use delayed deletion but can only be restored by an admin.
-        _('This action will permanently delete this project, including all its resources.')
-      end
-    end
-
     # Given the current GitLab configuration, check whether the GitLab URL
     # for Kerberos is going to be different than the HTTP URL
     def alternative_kerberos_url?
@@ -401,15 +374,6 @@ module EE
         is_project_marked_for_deletion: project.marked_for_deletion?.to_s,
         **compliance_framework_data_attributes(project)
       )
-    end
-
-    def project_delete_delayed_button_data(project, button_text = nil, is_security_policy_project: false)
-      project_delete_button_shared_data(project, button_text).merge({
-        is_security_policy_project: is_security_policy_project.to_s,
-        restore_help_path: help_page_path('user/project/working_with_projects.md', anchor: 'restore-a-project'),
-        delayed_deletion_date: permanent_deletion_date_formatted(Date.current),
-        form_path: project_path(project)
-      })
     end
 
     def pages_deployments_usage_quota_data(project)

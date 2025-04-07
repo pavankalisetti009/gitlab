@@ -12,7 +12,7 @@
     = form_tag(group, method: :delete, id: remove_form_id) do
       - if linked_configurations.empty?
         %p
-          = html_escape(_("This action will place this group, including its subgroups and projects, in a pending deletion state for %{deletion_delayed_period} days, and delete it permanently on %{date}.")) % { date: tag.strong(date), deletion_delayed_period: deletion_adjourned_period }
+          = html_escape(_("This action will place this group, including its subgroups and projects, in a pending deletion state for %{deletion_delayed_period} days, and delete it permanently on %{date}.")) % { date: tag.strong(date), deletion_delayed_period: group.deletion_adjourned_period }
 
         = render 'groups/settings/remove_button', group: group, remove_form_id: remove_form_id
       - else
