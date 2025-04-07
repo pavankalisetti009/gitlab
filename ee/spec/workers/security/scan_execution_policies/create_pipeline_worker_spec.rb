@@ -82,6 +82,28 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
         it_behaves_like 'tracks scheduled_scan_execution metrics', 1, 'project', 1
       end
 
+      context 'with feature enabled' do
+        let(:action_limit) { 2 }
+        let(:actions) { [{ scan: 'sast' }, { scan: 'dast' }, { scan: 'secret_detection' }] }
+        let(:policy) { build(:scan_execution_policy, enabled: true, actions: actions) }
+        let(:expected_params) { { actions: actions.first(action_limit), branch: branch } }
+
+        before do
+          stub_feature_flags(scan_execution_policy_action_limit: true)
+
+          allow(Gitlab::CurrentSettings).to receive(:scan_execution_policies_action_limit).and_return(action_limit)
+        end
+
+        it 'limits the number of actions' do
+          expect(::Security::SecurityOrchestrationPolicies::CreatePipelineService).to(
+            receive(:new)
+              .with(project: project, current_user: current_user, params: expected_params)
+              .and_call_original)
+
+          run_worker
+        end
+      end
+
       context 'when create pipeline service returns errors' do
         before do
           allow_next_instance_of(::Security::SecurityOrchestrationPolicies::CreatePipelineService) do |service|
