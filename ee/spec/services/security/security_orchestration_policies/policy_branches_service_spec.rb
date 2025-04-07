@@ -164,4 +164,136 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyBranchesService, f
       end
     end
   end
+
+  describe '#scan_execution_branches' do
+    let_it_be(:service) { described_class.new(project: project) }
+
+    subject(:scan_execution_branches) { service.scan_execution_branches(rules, source_branch) }
+
+    context 'when target_default rule is provided in rules' do
+      let(:rules) { [{ branch_type: 'target_default' }] }
+
+      context 'when source_branch is nil' do
+        let(:source_branch) { nil }
+
+        it { is_expected.to be_empty }
+      end
+
+      context 'when source_branch is provided' do
+        let(:source_branch) { unprotected_branch }
+
+        context 'with open merge request created from that branch targetting default branch' do
+          before do
+            create(:merge_request, :opened, source_project: project, source_branch: source_branch,
+              target_project: project, target_branch: default_branch)
+          end
+
+          it { is_expected.to match_array([source_branch]) }
+        end
+
+        context 'with open merge request created from that branch targetting default branch in different project' do
+          let_it_be(:other_project) { create(:project, :empty_repo) }
+
+          before do
+            create(:merge_request, :opened, source_project: other_project, source_branch: source_branch,
+              target_project: other_project, target_branch: default_branch)
+          end
+
+          it { is_expected.to be_empty }
+        end
+
+        context 'with open merge request created from that branch targetting other protected branch' do
+          before do
+            create(:merge_request, :opened, source_project: project, source_branch: source_branch,
+              target_project: project, target_branch: protected_branch)
+          end
+
+          it { is_expected.to be_empty }
+        end
+
+        context 'with closed merge request created from that branch' do
+          before do
+            create(:merge_request, :closed, source_project: project, source_branch: source_branch,
+              target_project: project, target_branch: default_branch)
+          end
+
+          it { is_expected.to be_empty }
+        end
+
+        context 'with no merge request created from that branch' do
+          it { is_expected.to be_empty }
+        end
+      end
+    end
+
+    context 'when target_protected rule is provided in rules' do
+      let(:rules) { [{ branch_type: 'target_protected' }] }
+
+      context 'when source_branch is nil' do
+        let(:source_branch) { nil }
+
+        it { is_expected.to be_empty }
+      end
+
+      context 'when source_branch is provided' do
+        let(:source_branch) { unprotected_branch }
+
+        context 'with open merge request created from that branch targetting default branch' do
+          before do
+            create(:merge_request, :opened, source_project: project, source_branch: source_branch,
+              target_project: project, target_branch: default_branch)
+          end
+
+          it { is_expected.to match_array([source_branch]) }
+        end
+
+        context 'with open merge request created from that branch targetting other protected branch' do
+          before do
+            create(:merge_request, :opened, source_project: project, source_branch: source_branch,
+              target_project: project, target_branch: protected_branch)
+          end
+
+          it { is_expected.to match_array([source_branch]) }
+        end
+
+        context 'with 2 open merge requests created from that branch targetting different protected branches' do
+          let_it_be(:protected_branch_2) { "protected-2" }
+
+          before do
+            create(:merge_request, :opened, source_project: project, source_branch: source_branch,
+              target_project: project, target_branch: protected_branch)
+
+            create(:merge_request, :opened, source_project: project, source_branch: source_branch,
+              target_project: project, target_branch: protected_branch_2)
+          end
+
+          it { is_expected.to match_array([source_branch]) }
+        end
+
+        context 'with open merge request created from that branch targetting same branch in other project' do
+          let_it_be(:other_project) { create(:project, :empty_repo) }
+
+          before do
+            create(:merge_request, :opened, source_project: other_project, source_branch: source_branch,
+              target_project: other_project, target_branch: protected_branch)
+          end
+
+          it { is_expected.to be_empty }
+        end
+
+        context 'with closed merge request created from that branch' do
+          before do
+            create(:merge_request, :closed, source_project: project, source_branch: source_branch,
+              target_project: project, target_branch: default_branch)
+          end
+
+          it { is_expected.to be_empty }
+        end
+
+        context 'when there is no merge request created from that branch' do
+          it { is_expected.to be_empty }
+        end
+      end
+    end
+  end
 end

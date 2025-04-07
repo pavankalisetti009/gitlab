@@ -110,6 +110,37 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
     it 'returns the active scan execution actions' do
       expect(context.active_scan_execution_actions).to match_array(policy[:actions])
     end
+
+    context 'when source is defined in the policy' do
+      let(:policies) { [policy] }
+      let(:policy) do
+        build(:scan_execution_policy,
+          actions: [
+            { scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile' },
+            { scan: 'secret_detection' },
+            { scan: 'dependency_scanning' }
+          ],
+          rules: [
+            { type: 'pipeline', branches: %w[master], pipeline_sources: { including: [policy_pipeline_source] } }
+          ])
+      end
+
+      context 'when matches pipeline source' do
+        let(:policy_pipeline_source) { source }
+
+        it 'returns the active scan execution actions' do
+          expect(context.active_scan_execution_actions).to match_array(policy[:actions])
+        end
+      end
+
+      context 'when does not match pipeline source' do
+        let(:policy_pipeline_source) { 'api' }
+
+        it 'returns empty array' do
+          expect(context.active_scan_execution_actions).to be_empty
+        end
+      end
+    end
   end
 
   describe '#skip_ci_allowed?' do

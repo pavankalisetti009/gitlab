@@ -57,7 +57,7 @@ module Gitlab
 
             policies = valid_security_orchestration_policy_configurations
               .flat_map do |configuration|
-              configuration.active_pipeline_policies_for_project(ref, project)
+              configuration.active_pipeline_policies_for_project(ref, project, source)
             end.compact
 
             policies.map do |policy|
