@@ -78,6 +78,13 @@ module ComplianceManagement
 
     def filename = "compliance-framework-#{name.parameterize}-#{id}"
 
+    def approval_settings_from_security_policies(projects)
+      ::Security::ScanResultPolicyRead
+        .for_project(projects)
+        .for_policy_configuration(security_orchestration_policy_configurations)
+        .map(&:project_approval_settings)
+    end
+
     private
 
     def namespace_is_root_level_group

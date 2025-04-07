@@ -19,6 +19,38 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
   let_it_be(:project) { create(:project) }
   let_it_be(:project2) { create(:project) }
 
+  let_it_be(:policy_config) { create(:security_orchestration_policy_configuration) }
+
+  let_it_be(:compliance_framework_security_policy) do
+    create(:compliance_framework_security_policy,
+      framework: framework,
+      policy_configuration: policy_config,
+      policy_index: 0)
+  end
+
+  let_it_be(:policy_read1) do
+    create(:scan_result_policy_read,
+      :prevent_approval_by_author,
+      :blocking_protected_branches,
+      :remove_approvals_with_new_commit,
+      :prevent_approval_by_commit_author,
+      project: project,
+      security_orchestration_policy_configuration: policy_config)
+  end
+
+  let_it_be(:policy_read2) do
+    create(:scan_result_policy_read,
+      :prevent_approval_by_author,
+      :blocking_protected_branches,
+      :remove_approvals_with_new_commit,
+      :prevent_approval_by_commit_author,
+      project: project2,
+      security_orchestration_policy_configuration: policy_config)
+  end
+
+  let(:approval_settings_project1) { [policy_read1.project_approval_settings] }
+  let(:approval_settings_project2) { [policy_read2.project_approval_settings] }
+
   before do
     framework.projects << [project, project2]
   end
@@ -31,11 +63,11 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
 
       allow(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
         .to receive(:new)
-              .with(control, project)
+              .with(control, project, approval_settings_project1)
               .and_return(evaluator)
       allow(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
         .to receive(:new)
-              .with(control, project2)
+              .with(control, project2, approval_settings_project2)
               .and_return(evaluator)
       allow(evaluator).to receive(:evaluate).and_return(true)
 
@@ -77,10 +109,10 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
 
       it 'only evaluates for projects where the framework is assigned' do
         expect(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
-          .to receive(:new).with(control, project).once
+          .to receive(:new).with(control, project, approval_settings_project1).once
 
         expect(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
-          .not_to receive(:new).with(control, project2)
+          .not_to receive(:new).with(control, project2, approval_settings_project2)
 
         expect(evaluator).to receive(:evaluate).once
 
@@ -92,12 +124,12 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
       it 'evaluates each control for each project' do
         expect(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
           .to receive(:new)
-                .with(control, project)
+                .with(control, project, approval_settings_project1)
                 .once
 
         expect(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
           .to receive(:new)
-                .with(control, project2)
+                .with(control, project2, approval_settings_project2)
                 .once
 
         expect(evaluator).to receive(:evaluate).twice
@@ -285,18 +317,16 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
       let(:evaluation_error) { StandardError.new("Evaluation error") }
 
       before do
-        allow(evaluator).to receive(:evaluate).with(no_args).and_return(true, StandardError.new("Evaluation error"))
-
         first_evaluator = instance_double(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
         second_evaluator = instance_double(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
 
         allow(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
           .to receive(:new)
-                .with(control, project)
+                .with(control, project, approval_settings_project1)
                 .and_return(first_evaluator)
         allow(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
           .to receive(:new)
-                .with(control, project2)
+                .with(control, project2, approval_settings_project2)
                 .and_return(second_evaluator)
 
         allow(first_evaluator).to receive(:evaluate).and_return(true)
