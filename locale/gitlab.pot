@@ -25899,6 +25899,9 @@ msgstr ""
 msgid "File upload error."
 msgstr ""
 
+msgid "FileUpload|Drop your file here or %{linkStart}click to upload%{linkEnd}."
+msgstr ""
+
 msgid "Filename"
 msgstr ""
 
@@ -35864,6 +35867,18 @@ msgid "Manifest import"
 msgstr ""
 
 msgid "ManifestImport|Import manifest files cannot exceed %{size} MB"
+msgstr ""
+
+msgid "ManifestImport|Manifest file import"
+msgstr ""
+
+msgid "ManifestImport|Please upload a manifest file."
+msgstr ""
+
+msgid "ManifestImport|Unable to upload the file. Please upload a valid XML file."
+msgstr ""
+
+msgid "ManifestImport|You don't have enough permissions to import projects in the selected group"
 msgstr ""
 
 msgid "Manual"
