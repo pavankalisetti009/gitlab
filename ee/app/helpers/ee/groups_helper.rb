@@ -31,11 +31,7 @@ module EE
       date = permanent_deletion_date_formatted(Date.current)
 
       _("The contents of this group, its subgroups and projects will be permanently deleted after %{deletion_adjourned_period} days on %{date}. After this point, your data cannot be recovered.") %
-        { date: date, deletion_adjourned_period: deletion_adjourned_period }
-    end
-
-    def deletion_adjourned_period
-      ::Gitlab::CurrentSettings.deletion_adjourned_period
+        { date: date, deletion_adjourned_period: group.deletion_adjourned_period }
     end
 
     def show_discover_group_security?(group)
