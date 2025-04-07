@@ -24,7 +24,7 @@ module Projects
       def show
         push_frontend_ability(ability: :explain_vulnerability_with_ai, resource: vulnerability, user: current_user)
         push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: vulnerability, user: current_user)
-        push_frontend_feature_flag(:dependency_paths, project.group)
+        push_frontend_feature_flag(:dependency_paths, project)
 
         pipeline = vulnerability.finding.first_finding_pipeline
         @pipeline = pipeline if can?(current_user, :read_pipeline, pipeline)
