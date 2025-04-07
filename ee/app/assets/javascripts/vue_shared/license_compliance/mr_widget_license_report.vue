@@ -78,7 +78,6 @@ export default {
       required: true,
     },
   },
-  typicalReportItemHeight: 26,
   maxShownReportItems: 20,
   computed: {
     ...mapState(LICENSE_MANAGEMENT, ['loadLicenseReportError']),
@@ -164,7 +163,6 @@ export default {
       <template #body>
         <smart-virtual-list
           ref="reportSectionBody"
-          :size="$options.typicalReportItemHeight"
           :length="licenseReport.length"
           :remain="$options.maxShownReportItems"
           class="report-block-container"
