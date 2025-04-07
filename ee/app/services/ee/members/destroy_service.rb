@@ -91,8 +91,8 @@ module EE
         ::IncidentManagement::EscalationRules::DestroyService.new(escalation_rules: rules, user: member.user).execute
       end
 
-      override :enqueue_cleanup_jobs_once_per_heirarchy
-      def enqueue_cleanup_jobs_once_per_heirarchy(member, unassign_issuables)
+      override :enqueue_cleanup_jobs_once_per_hierarchy
+      def enqueue_cleanup_jobs_once_per_hierarchy(member, unassign_issuables)
         super
 
         enqueue_cleanup_add_on_seat_assignments(member)
