@@ -149,6 +149,7 @@ export default {
     role="button"
     tabindex="0"
     fluid-width
+    class="gl-text-left"
     @select="handleSelect"
     @hidden="updateFrameworks"
     @search="frameworkSearchQuery = $event"

@@ -78,7 +78,7 @@ export const i18n = {
   descriptionInputLabel: s__('ComplianceFrameworks|Description'),
   descriptionInputInvalid: s__('ComplianceFrameworks|Description is required'),
   pipelineConfigurationInputLabel: s__(
-    'ComplianceFrameworks|Compliance pipeline configuration (optional)',
+    'ComplianceFrameworks|Compliance pipeline configuration (deprecated)',
   ),
   pipelineConfigurationInputDescription: s__(
     'ComplianceFrameworks|Required format: %{codeStart}path/file.y[a]ml@group-name/project-name%{codeEnd}. %{linkStart}See some examples%{linkEnd}.',

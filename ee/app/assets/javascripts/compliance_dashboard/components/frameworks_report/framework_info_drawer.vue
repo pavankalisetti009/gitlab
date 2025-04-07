@@ -1,8 +1,6 @@
 <script>
 import {
   GlAlert,
-  GlAccordion,
-  GlAccordionItem,
   GlBadge,
   GlDrawer,
   GlButton,
@@ -21,6 +19,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { isTopLevelGroup, getControls } from '../../utils';
 import { POLICY_SCOPES_DOCS_URL, EXTERNAL_CONTROL_LABEL, i18n as mainI18n } from '../../constants';
+import DrawerAccordion from '../shared/drawer_accordion.vue';
 import complianceRequirementControlsQuery from '../../graphql/compliance_requirement_controls.query.graphql';
 import projectsInNamespaceWithFrameworkQuery from './graphql/projects_in_namespace_with_framework.query.graphql';
 
@@ -28,8 +27,6 @@ export default {
   name: 'FrameworkInfoDrawer',
   components: {
     GlAlert,
-    GlAccordion,
-    GlAccordionItem,
     GlBadge,
     GlDrawer,
     GlButton,
@@ -39,6 +36,7 @@ export default {
     GlSprintf,
     GlPopover,
     HelpIcon,
+    DrawerAccordion,
   },
   inject: [
     'groupSecurityPoliciesPath',
@@ -154,6 +152,11 @@ export default {
     normalisedFrameworkId() {
       return getIdFromGraphQLId(this.framework.id);
     },
+    controlsForRequirement() {
+      return (requirementControls) => {
+        return this.getControls(requirementControls, this.controls);
+      };
+    },
   },
   methods: {
     getPolicyEditUrl(policy) {
@@ -181,10 +184,15 @@ export default {
     getControls(expression) {
       return getControls(expression, this.controls);
     },
+
+    isExternalControl(control) {
+      return control.controlType === this.$options.CONTROL_TYPE_EXTERNAL;
+    },
   },
   DRAWER_Z_INDEX,
   POLICY_SCOPES_DOCS_URL,
   EXTERNAL_CONTROL_LABEL,
+  CONTROL_TYPE_EXTERNAL: 'external',
   i18n: {
     defaultFramework: s__('ComplianceFrameworksReport|Default'),
     editFramework: s__('ComplianceFrameworksReport|Edit framework'),
@@ -312,9 +320,9 @@ export default {
         </div>
         <div v-if="adherenceV2Enabled" data-testid="requirements">
           <gl-alert v-if="error" variant="danger" @dismiss="error = null"> {{ error }} </gl-alert>
-          <div class="gl-border-t gl-px-5">
+          <div class="gl-border-t gl-mb-5">
             <div class="gl-flex gl-items-center gl-gap-1">
-              <h3 data-testid="sidebar-requirements-title" class="gl-heading-3 gl-mt-5">
+              <h3 data-testid="sidebar-requirements-title" class="gl-heading-3 gl-mt-5 gl-px-5">
                 {{ $options.i18n.complianceRequirements }}
               </h3>
               <gl-badge class="gl-ml-2" variant="muted" data-testid="requirements-count-badge">
@@ -324,44 +332,27 @@ export default {
                 <template v-else>{{ framework.complianceRequirements.nodes.length }}</template>
               </gl-badge>
             </div>
-            <gl-accordion
-              v-if="framework.complianceRequirements.nodes.length"
-              class="-gl-mx-5 gl-mb-5"
-              :header-level="3"
-            >
-              <gl-accordion-item
-                v-for="requirement in framework.complianceRequirements.nodes"
-                :key="requirement.id"
-                header-class="gl-bg-strong gl-py-5 gl-pl-3"
-                class="gl-mb-2 gl-bg-subtle"
-                :title="requirement.name"
-              >
-                <div class="gl-pb-5">
-                  <p>{{ requirement.description }}</p>
-                  <template
-                    v-if="
-                      getControls(requirement.complianceRequirementsControls.nodes, controls).length
-                    "
+            <drawer-accordion :items="framework.complianceRequirements.nodes" class="!gl-p-0">
+              <template #header="{ item: requirement }">
+                <h4 class="gl-heading-4 gl-mb-3">{{ requirement.name }}</h4>
+              </template>
+              <template #default="{ item: requirement }">
+                <h4 class="gl-text-base gl-font-bold">{{ $options.i18n.controls }}:</h4>
+                <ul class="-gl-mx-6">
+                  <li
+                    v-for="control in controlsForRequirement(
+                      requirement.complianceRequirementsControls.nodes,
+                    )"
+                    :key="control.id"
                   >
-                    <h4 class="gl-text-base gl-font-bold">{{ $options.i18n.controls }}:</h4>
-                    <ul class="-gl-mx-6">
-                      <li
-                        v-for="control in getControls(
-                          requirement.complianceRequirementsControls.nodes,
-                          controls,
-                        )"
-                        :key="control.id"
-                      >
-                        {{ control.displayValue }}
-                        <gl-badge v-if="control.controlType === 'external'">
-                          {{ $options.EXTERNAL_CONTROL_LABEL }}
-                        </gl-badge>
-                      </li>
-                    </ul>
-                  </template>
-                </div>
-              </gl-accordion-item>
-            </gl-accordion>
+                    {{ control.displayValue }}
+                    <gl-badge v-if="isExternalControl(control)">
+                      {{ $options.EXTERNAL_CONTROL_LABEL }}
+                    </gl-badge>
+                  </li>
+                </ul>
+              </template>
+            </drawer-accordion>
           </div>
         </div>
         <div v-if="framework.projects" class="gl-border-t gl-px-5" data-testid="sidebar-projects">

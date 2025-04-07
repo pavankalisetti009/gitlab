@@ -39,7 +39,7 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
 
         expect(page).to have_content("This project is pending deletion, and will be deleted on #{deletion_date}. Repository and other project resources are read-only.")
 
-        visit removed_dashboard_projects_path
+        visit inactive_dashboard_projects_path
 
         expect(page).to have_content(project_to_delete.name_with_namespace)
       end

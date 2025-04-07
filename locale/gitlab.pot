@@ -15245,6 +15245,9 @@ msgstr ""
 msgid "ComplianceFrameworks|Compliance frameworks that have a scoped policy can't be deleted"
 msgstr ""
 
+msgid "ComplianceFrameworks|Compliance pipeline configuration (deprecated)"
+msgstr ""
+
 msgid "ComplianceFrameworks|Compliance pipeline configuration (optional)"
 msgstr ""
 
@@ -46475,12 +46478,6 @@ msgstr ""
 msgid "ProjectImport|Project URL"
 msgstr ""
 
-msgid "ProjectList|Starred"
-msgstr ""
-
-msgid "ProjectList|Yours"
-msgstr ""
-
 msgid "ProjectMaintenance|Afterwards, run housekeeping manually to remove old versions of the file from Git history."
 msgstr ""
 
@@ -49603,12 +49600,6 @@ msgid "Removed time estimate."
 msgstr ""
 
 msgid "Removed upload with id %{id}"
-msgstr ""
-
-msgid "RemovedProjects|No projects pending deletion found"
-msgstr ""
-
-msgid "RemovedProjects|Projects that are pending deletion that you have access to are listed here."
 msgstr ""
 
 msgid "Removes %{assignee_text} %{assignee_references}."
@@ -57653,12 +57644,6 @@ msgid "Starred Projects' Activity"
 msgstr ""
 
 msgid "Starred projects"
-msgstr ""
-
-msgid "StarredProjectsEmptyState|Visit a project page and press on a star icon. Then, you can find the project on this page."
-msgstr ""
-
-msgid "StarredProjectsEmptyState|You don't have starred projects yet."
 msgstr ""
 
 msgid "Starrers"

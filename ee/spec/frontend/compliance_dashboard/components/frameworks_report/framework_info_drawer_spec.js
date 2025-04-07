@@ -6,8 +6,6 @@ import {
   GlPopover,
   GlSprintf,
   GlLoadingIcon,
-  GlAccordion,
-  GlAccordionItem,
 } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
@@ -25,6 +23,7 @@ import {
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import DrawerAccordion from 'ee/compliance_dashboard/components/shared/drawer_accordion.vue';
 
 Vue.use(VueApollo);
 
@@ -89,9 +88,7 @@ describe('FrameworkInfoDrawer component', () => {
   const findRequirementsSection = () => wrapper.findByTestId('requirements');
   const findRequirementsTitle = () => wrapper.findByTestId('sidebar-requirements-title');
   const findRequirementsCount = () => wrapper.findByTestId('requirements-count-badge');
-  const findRequirementsAccordion = () => findRequirementsSection().findComponent(GlAccordion);
-  const findAllRequirementsAccordionItems = () =>
-    findRequirementsSection().findAllComponents(GlAccordionItem);
+  const findRequirementsAccordion = () => findRequirementsSection().findComponent(DrawerAccordion);
   const findExternalControlBadges = () =>
     wrapper.findAllComponents(GlBadge).filter((badge) => badge.text() === 'External');
 
@@ -136,8 +133,7 @@ describe('FrameworkInfoDrawer component', () => {
         GlSprintf,
         GlButton,
         BButton: false,
-        GlAccordion,
-        GlAccordionItem,
+        DrawerAccordion,
       },
       provide: {
         groupSecurityPoliciesPath: '/group-policies',
@@ -378,12 +374,9 @@ describe('FrameworkInfoDrawer component', () => {
       expect(accordion.exists()).toBe(true);
     });
 
-    it('displays requirement description correctly', () => {
-      expect(findAllRequirementsAccordionItems().at(0).text()).toContain('Controls for SOC2');
-      expect(findAllRequirementsAccordionItems().at(1).text()).toContain('Controls used by GitLab');
-      expect(findAllRequirementsAccordionItems().at(2).text()).toContain(
-        'Requirement with external control',
-      );
+    it('displays requirement descriptions correctly', () => {
+      const accordion = findRequirementsAccordion();
+      expect(accordion.props('items')).toEqual(mockRequirements);
     });
 
     it('does not show requirements section when adherenceV2Enabled is false', () => {
@@ -459,7 +452,7 @@ describe('FrameworkInfoDrawer component', () => {
   });
 
   describe('framework without requirements', () => {
-    it('shows the requirements section with empty state when no requirements exist', async () => {
+    beforeEach(async () => {
       const frameworkWithoutRequirements = {
         ...defaultFramework,
         complianceRequirements: { nodes: [] },
@@ -477,10 +470,17 @@ describe('FrameworkInfoDrawer component', () => {
       });
 
       await waitForPromises();
+    });
 
+    it('shows the requirements section with count of zero', () => {
       expect(findRequirementsSection().exists()).toBe(true);
       expect(findRequirementsCount().text()).toBe('0');
-      expect(findRequirementsAccordion().exists()).toBe(false);
+    });
+
+    it('should render an empty requirements accordion', () => {
+      const accordion = findRequirementsAccordion();
+      expect(accordion.exists()).toBe(true);
+      expect(accordion.props('items')).toEqual([]);
     });
   });
 
