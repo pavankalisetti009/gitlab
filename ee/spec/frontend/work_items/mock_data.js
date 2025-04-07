@@ -373,6 +373,11 @@ export const namespaceWorkItemsWithoutEpicSupport = {
                 rollUp: false,
                 __typename: 'WorkItemWidgetDefinitionWeight',
               },
+              {
+                type: 'CUSTOM_FIELDS',
+                customFieldValues: [],
+                __typename: 'WorkItemWidgetDefinitionCustomFields',
+              },
             ],
             __typename: 'WorkItemType',
           },
