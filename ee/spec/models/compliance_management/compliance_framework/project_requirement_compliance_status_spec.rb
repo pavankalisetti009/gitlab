@@ -737,4 +737,66 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementComp
       end
     end
   end
+
+  describe '#control_status_values' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project) { create(:project, namespace: namespace) }
+    let_it_be(:compliance_framework) { create(:compliance_framework, namespace: namespace) }
+    let_it_be(:requirement) { create(:compliance_requirement, framework: compliance_framework) }
+
+    let_it_be(:requirement_status) do
+      create(:project_requirement_compliance_status,
+        project: project,
+        compliance_requirement: requirement,
+        compliance_framework: compliance_framework,
+        namespace: namespace
+      )
+    end
+
+    let_it_be(:control1) { create(:compliance_requirements_control, compliance_requirement: requirement) }
+    let_it_be(:control2) { create(:compliance_requirements_control, :external, compliance_requirement: requirement) }
+    let_it_be(:control3) do
+      create(:compliance_requirements_control, :project_visibility_not_internal, compliance_requirement: requirement)
+    end
+
+    context 'when there are no control statuses' do
+      it 'returns an empty array' do
+        expect(requirement_status.control_status_values).to be_empty
+      end
+    end
+
+    context 'when there are control statuses' do
+      before do
+        create(:project_control_compliance_status, status: 'pass',
+          compliance_requirements_control: control1, compliance_requirement: requirement, project: project)
+        create(:project_control_compliance_status, status: 'fail',
+          compliance_requirements_control: control2, compliance_requirement: requirement, project: project)
+        create(:project_control_compliance_status, status: 'pending',
+          compliance_requirements_control: control3, compliance_requirement: requirement, project: project)
+      end
+
+      it 'returns all status values' do
+        expect(requirement_status.control_status_values).to contain_exactly('pass', 'fail', 'pending')
+      end
+    end
+
+    context 'when control statuses have duplicate status values' do
+      before do
+        create(:project_control_compliance_status, status: 'pass',
+          compliance_requirements_control: control1, compliance_requirement: requirement, project: project)
+        create(:project_control_compliance_status, status: 'pass',
+          compliance_requirements_control: control2, compliance_requirement: requirement, project: project)
+        create(:project_control_compliance_status, status: 'fail',
+          compliance_requirements_control: control3, compliance_requirement: requirement, project: project)
+      end
+
+      it 'includes duplicate values' do
+        statuses = requirement_status.control_status_values
+
+        expect(statuses.count).to eq(3)
+        expect(statuses.count('pass')).to eq(2)
+        expect(statuses.count('fail')).to eq(1)
+      end
+    end
+  end
 end

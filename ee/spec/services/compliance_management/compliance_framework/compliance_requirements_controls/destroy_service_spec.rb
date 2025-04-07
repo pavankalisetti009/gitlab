@@ -5,8 +5,9 @@ require 'spec_helper'
 RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirementsControls::DestroyService,
   feature_category: :compliance_management do
   let_it_be_with_refind(:namespace) { create(:group) }
-  let_it_be(:requirement) do
-    create(:compliance_requirement, framework: create(:compliance_framework, namespace: namespace))
+  let_it_be(:framework) { create(:compliance_framework, namespace: namespace) }
+  let_it_be_with_reload(:requirement) do
+    create(:compliance_requirement, framework: framework)
   end
 
   let_it_be(:control) { create(:compliance_requirements_control, compliance_requirement: requirement) }
@@ -86,6 +87,30 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         )
       end
 
+      context 'when the compliance requirement has compliance statuses' do
+        let_it_be(:project1) { create(:project, namespace: namespace) }
+        let_it_be(:project2) { create(:project, namespace: namespace) }
+
+        let!(:requirement_status1) do
+          create(:project_requirement_compliance_status, compliance_requirement: requirement, project: project1)
+        end
+
+        let!(:requirement_status2) do
+          create(:project_requirement_compliance_status, compliance_requirement: requirement, project: project2)
+        end
+
+        it 'calls to refresh the compliance requirement statuses of the control' do
+          expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::RefreshStatusService)
+            .to receive(:new).with(requirement_status1).and_call_original
+          expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::RefreshStatusService)
+            .to receive(:new).with(requirement_status2).and_call_original
+
+          result = service.execute
+
+          expect(result.success?).to be true
+        end
+      end
+
       context 'when destruction fails' do
         before do
           allow(control).to receive(:destroy).and_return(false)
@@ -96,6 +121,13 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
           expect(result.success?).to be false
           expect(result.message).to eq _('Failed to destroy compliance requirement control')
+        end
+
+        it 'does not refresh the compliance requirement statuses' do
+          expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::RefreshStatusService)
+            .not_to receive(:new)
+
+          service.execute
         end
       end
     end
