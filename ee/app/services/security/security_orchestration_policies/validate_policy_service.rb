@@ -93,6 +93,7 @@ module Security
       end
 
       def exceeds_action_limit?
+        return false if removing_policy?
         return false unless scan_execution_policy?
 
         limit_enforced = if project_container?
@@ -107,6 +108,7 @@ module Security
       end
 
       def exceeds_schedule_limit?
+        return false if removing_policy?
         return false if !scan_execution_policy? || scan_execution_policies_schedule_limit == 0
 
         (schedule_rules&.size || 0) > scan_execution_policies_schedule_limit
@@ -157,7 +159,7 @@ module Security
       end
 
       def multiple_approvals_failed_action_indices
-        return [] unless validate_approvals_required?
+        return [] if removing_policy?
         return [] unless scan_result_policy?
         return [] if approval_requiring_actions.blank?
 
@@ -223,8 +225,8 @@ module Security
         @policy ||= params[:policy]
       end
 
-      def validate_approvals_required?
-        params[:validate_approvals_required]
+      def removing_policy?
+        params[:operation] == :remove
       end
 
       def branches_for_project

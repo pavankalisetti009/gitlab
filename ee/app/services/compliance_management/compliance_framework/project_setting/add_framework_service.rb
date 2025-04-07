@@ -15,6 +15,7 @@ module ComplianceManagement
 
           return error unless framework.projects.push project
 
+          enqueue_project_framework_evaluation
           publish_event
           audit_event
 
@@ -70,6 +71,12 @@ module ComplianceManagement
             project_name: project.name)
 
           ServiceResponse.error(message:)
+        end
+
+        def enqueue_project_framework_evaluation
+          ComplianceManagement::ProjectComplianceEvaluatorWorker.schedule_compliance_evaluation(
+            framework.id, [project.id]
+          )
         end
       end
     end

@@ -33,6 +33,12 @@ RSpec.describe ComplianceManagement::Frameworks::AssignProjectService, feature_c
         expect { update_framework }
           .not_to change { AuditEvent.where("details LIKE ?", "%compliance_framework_id_updated%").count }
       end
+
+      it 'does not enqueue the ProjectComplianceEvaluatorWorker' do
+        expect(ComplianceManagement::ProjectComplianceEvaluatorWorker).not_to receive(:perform_in)
+
+        update_framework
+      end
     end
 
     shared_examples 'framework update' do
@@ -51,6 +57,15 @@ RSpec.describe ComplianceManagement::Frameworks::AssignProjectService, feature_c
       it 'logs audit event' do
         expect { update_framework }
           .to change { AuditEvent.where("details LIKE ?", "%compliance_framework_id_updated%").count }.by(1)
+      end
+
+      it 'enqueues the ProjectComplianceEvaluatorWorker' do
+        expect(ComplianceManagement::ProjectComplianceEvaluatorWorker).to receive(:perform_in).with(
+          ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+          framework.id, [project.id]
+        ).once.and_call_original
+
+        update_framework
       end
     end
 

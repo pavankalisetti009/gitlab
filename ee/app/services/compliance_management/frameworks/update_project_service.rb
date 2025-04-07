@@ -47,6 +47,10 @@ module ComplianceManagement
           return error(error_message)
         end
 
+        ComplianceManagement::ProjectComplianceEvaluatorWorker.schedule_compliance_evaluation(
+          framework.id, [project.id]
+        )
+
         track_event(::Projects::ComplianceFrameworkChangedEvent::EVENT_TYPES[:added], framework)
       end
 

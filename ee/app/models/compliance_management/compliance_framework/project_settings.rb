@@ -6,6 +6,7 @@ module ComplianceManagement
       self.table_name = 'project_compliance_framework_settings'
 
       MAX_COMPLIANCE_FRAMEWORKS_PER_PROJECT_COUNT = 20
+      PROJECT_EVALUATOR_WORKER_DELAY = 5.minutes
 
       belongs_to :project
       belongs_to :compliance_management_framework, class_name: "ComplianceManagement::Framework", foreign_key: :framework_id
