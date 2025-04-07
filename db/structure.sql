@@ -38219,6 +38219,8 @@ CREATE INDEX tmp_index_pats_on_notification_columns_and_expires_at ON personal_a
 
 CREATE INDEX tmp_index_project_statistics_cont_registry_size ON project_statistics USING btree (project_id) WHERE (container_registry_size = 0);
 
+CREATE INDEX tmp_index_users_on_external_where_external_is_null ON users USING btree (external) WHERE (external IS NULL);
+
 CREATE UNIQUE INDEX u_compliance_requirements_for_framework ON compliance_requirements USING btree (framework_id, name);
 
 CREATE UNIQUE INDEX u_project_compliance_standards_adherence_for_reporting ON project_compliance_standards_adherence USING btree (project_id, check_name, standard);
