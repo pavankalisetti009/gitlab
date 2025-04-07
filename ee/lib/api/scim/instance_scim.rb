@@ -188,14 +188,14 @@ module API
           end
           params do
             requires :displayName, type: String, desc: 'Name of the group as configured in GitLab'
-            requires :externalId, type: String, desc: 'SCIM group ID'
+            optional :externalId, type: String, desc: 'SCIM group ID'
           end
           post do
             check_access!
 
             result = ::EE::Gitlab::Scim::GroupSyncProvisioningService.new(
               saml_group_name: params[:displayName],
-              scim_group_uid: params[:externalId]
+              scim_group_uid: params[:externalId] || SecureRandom.uuid
             ).execute
 
             case result.status
