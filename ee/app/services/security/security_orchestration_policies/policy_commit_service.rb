@@ -25,18 +25,14 @@ module Security
       private
 
       def validate_policy_yaml
-        params = {
+        validation_params = {
           policy: policy,
-          validate_approvals_required: validate_approvals_required?
+          operation: params[:operation]
         }
 
         Security::SecurityOrchestrationPolicies::ValidatePolicyService
-          .new(container: container, current_user: current_user, params: params)
+          .new(container: container, current_user: current_user, params: validation_params)
           .execute
-      end
-
-      def validate_approvals_required?
-        params[:operation] != :remove
       end
 
       def process_policy
