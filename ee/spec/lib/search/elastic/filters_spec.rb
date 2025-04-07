@@ -3,14 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
+  include_context 'with filters shared context'
   let_it_be_with_reload(:user) { create(:user) }
-  let(:query_hash) { { query: { bool: { filter: [], must_not: [], must: [], should: [] } } } }
-
-  shared_examples 'does not modify the query_hash' do
-    it 'does not add the filter to query_hash' do
-      expect(subject).to eq(query_hash)
-    end
-  end
 
   describe '.by_source_branch' do
     subject(:by_source_branch) { described_class.by_source_branch(query_hash: query_hash, options: options) }
