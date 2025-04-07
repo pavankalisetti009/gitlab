@@ -687,6 +687,9 @@ msgstr[1] ""
 msgid "%{chartTitle} no data series"
 msgstr ""
 
+msgid "%{child_type} %{child_reference} has already been added to parent %{parent_reference}."
+msgstr ""
+
 msgid "%{codeStart}$%{codeEnd} will be treated as the start of a reference to another variable."
 msgstr ""
 
@@ -11894,13 +11897,13 @@ msgstr ""
 msgid "Cancelling Preview"
 msgstr ""
 
+msgid "Cannot assign a child %{child_type} to a %{parent_type}"
+msgstr ""
+
 msgid "Cannot assign a confidential epic to a non-confidential issue. Make the issue confidential and try again"
 msgstr ""
 
-msgid "Cannot assign a confidential parent to a non-confidential work item. Make the work item confidential and try again"
-msgstr ""
-
-msgid "Cannot assign this work item type to parent type"
+msgid "Cannot assign a confidential parent to a non-confidential %{child_type}. Make the %{child_type} confidential and try again"
 msgstr ""
 
 msgid "Cannot be merged automatically"
@@ -32725,9 +32728,6 @@ msgid "Issuable|milestone"
 msgstr ""
 
 msgid "Issue"
-msgstr ""
-
-msgid "Issue %{issue_reference} has already been added to epic %{epic_reference}."
 msgstr ""
 
 msgid "Issue Analytics"
@@ -60816,9 +60816,6 @@ msgstr ""
 msgid "This epic cannot be added. One or more epics would exceed the maximum depth (%{max_depth}) from its most distant ancestor."
 msgstr ""
 
-msgid "This epic does not exist or you don't have sufficient permission."
-msgstr ""
-
 msgid "This feature requires local storage to be enabled"
 msgstr ""
 
@@ -67316,9 +67313,6 @@ msgid "Work in progress limit"
 msgstr ""
 
 msgid "Work in progress limit: %{wipLimit} items"
-msgstr ""
-
-msgid "Work item %{work_item_reference} has already been added to parent %{parent_reference}."
 msgstr ""
 
 msgid "Work item not supported"
