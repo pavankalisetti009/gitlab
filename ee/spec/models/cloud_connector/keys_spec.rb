@@ -193,4 +193,53 @@ RSpec.describe CloudConnector::Keys, :models, feature_category: :cloud_connector
       it { is_expected.to be_nil }
     end
   end
+
+  describe '#public_key' do
+    let(:key) { build(:cloud_connector_keys) }
+
+    subject(:public_key) { key.public_key }
+
+    it 'returns the public key' do
+      expect(public_key).to be_instance_of(OpenSSL::PKey::RSA)
+      expect(public_key.private?).to be(false)
+    end
+
+    context 'when the stored key is null' do
+      before do
+        key.secret_key = nil
+      end
+
+      it { is_expected.to be_nil }
+    end
+  end
+
+  describe '#decode_token' do
+    let(:key) { build(:cloud_connector_keys) }
+    let(:claims) do
+      {
+        issuer: 'test',
+        audience: ['audience'],
+        subject: 'subject',
+        realm: 'realm',
+        scopes: ['scope'],
+        ttl: 3600
+      }
+    end
+
+    let(:token) do
+      Gitlab::CloudConnector::JsonWebToken.new(**claims).encode(key.to_jwk)
+    end
+
+    subject(:decoded_token) { key.decode_token(token) }
+
+    it 'decodes the token' do
+      payload, header = decoded_token
+
+      # We don't need to verify all components again here, this is tested in the Cloud Connector
+      # gem itself. We only want to verify we can decode it successfully and obtain both
+      # the payload and header.
+      expect(header).to include('typ' => 'JWT', 'alg' => 'RS256', 'kid' => key.to_jwk.kid)
+      expect(payload).to include('iss' => 'test')
+    end
+  end
 end
