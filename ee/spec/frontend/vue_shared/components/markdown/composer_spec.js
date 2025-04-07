@@ -7,6 +7,7 @@ import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completio
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import ComposerComponent from 'ee/vue_shared/components/markdown/composer.vue';
 import { updateText } from '~/lib/utils/text_markdown';
+import eventHub from '~/vue_shared/components/markdown/eventhub';
 
 jest.mock('~/lib/utils/text_markdown');
 
@@ -22,7 +23,7 @@ describe('Markdown composer component', () => {
     id: 1,
     requestId: 1,
     content: 'AI generated content',
-    contentHtml: 'AI generate content',
+    contentHtml: 'AI generated content',
     errors: [],
     role: '',
     timestamp: '',
@@ -33,7 +34,6 @@ describe('Markdown composer component', () => {
     },
     threadId: null,
   };
-  const findDropdownItems = () => wrapper.findAllByTestId('disclosure-dropdown-item');
   const findPromptInput = () => wrapper.findByTestId('composer-user-prompt');
   const findComposerSubmitButton = () => wrapper.findByTestId('composer-submit');
   const findComposerInsertButton = () => wrapper.findByTestId('composer-insert');
@@ -74,7 +74,7 @@ describe('Markdown composer component', () => {
 
       expect(findPromptInput().exists()).toBe(false);
 
-      findDropdownItems().at(1).find('button').trigger('click');
+      eventHub.$emit('SHOW_COMPOSER');
 
       await nextTick();
 
@@ -84,7 +84,7 @@ describe('Markdown composer component', () => {
     it('calls AI mutation when clicking composer item', async () => {
       createComponent();
 
-      findDropdownItems().at(1).find('button').trigger('click');
+      eventHub.$emit('SHOW_COMPOSER');
 
       await nextTick();
 
@@ -111,7 +111,7 @@ describe('Markdown composer component', () => {
     it('renders preview from AI response', async () => {
       createComponent();
 
-      findDropdownItems().at(1).find('button').trigger('click');
+      eventHub.$emit('SHOW_COMPOSER');
 
       await nextTick();
 
@@ -123,13 +123,13 @@ describe('Markdown composer component', () => {
 
       await nextTick();
 
-      expect(wrapper.text()).toContain('AI generate content');
+      expect(wrapper.text()).toContain('AI generated content');
     });
 
     it('inserts AI generated content into textarea when clicking insert button', async () => {
       createComponent();
 
-      findDropdownItems().at(1).find('button').trigger('click');
+      eventHub.$emit('SHOW_COMPOSER');
 
       await nextTick();
 
