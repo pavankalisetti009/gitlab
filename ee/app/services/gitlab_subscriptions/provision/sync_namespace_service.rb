@@ -4,7 +4,7 @@
 # @param namespace [Group] the namespace to sync
 # @param params [Hash] provision params containing:
 #   - event_type [String] must be "sync"
-#   - main_plan [Hash] plan parameters
+#   - base_product [Hash] plan parameters
 #   - storage [Hash] storage parameters
 #   - compute_minutes [Hash] compute minutes parameters
 module GitlabSubscriptions
@@ -19,7 +19,7 @@ module GitlabSubscriptions
       end
 
       def execute
-        sync_main_plan
+        sync_base_product
         sync_storage
         sync_compute_minutes
         sync_add_on_purchases
@@ -33,8 +33,8 @@ module GitlabSubscriptions
 
       attr_reader :errors
 
-      def main_plan_params
-        params[:main_plan]
+      def base_product_params
+        params[:base_product]
       end
 
       def compute_minutes_params
@@ -49,10 +49,10 @@ module GitlabSubscriptions
         params[:add_on_purchases]
       end
 
-      def sync_main_plan
-        return if main_plan_params.blank?
+      def sync_base_product
+        return if base_product_params.blank?
 
-        return if namespace.update(gitlab_subscription_attributes: main_plan_params)
+        return if namespace.update(gitlab_subscription_attributes: base_product_params)
 
         errors << namespace.errors.full_messages
       end

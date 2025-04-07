@@ -19,7 +19,7 @@ module GitlabSubscriptions
                 end
 
                 helpers do
-                  params :main_plan do
+                  params :base_product do
                     optional :plan_code, type: String, desc: 'The plan code for subscription'
                     optional :start_date, type: Date, desc: 'Start date of subscription'
                     optional :end_date, type: Date, desc: 'End date of subscription'
@@ -52,7 +52,7 @@ module GitlabSubscriptions
                 end
 
                 desc 'Provision a namespace' do
-                  detail 'Complete provisioning of a namespace with main plan, add-on purchases,' \
+                  detail 'Complete provisioning of a namespace with base product, add-on purchases,' \
                     'compute minutes, and storage'
                   success Entities::Internal::Namespace
                   failure [
@@ -64,8 +64,8 @@ module GitlabSubscriptions
                 end
                 params do
                   requires :provision, type: Hash do
-                    optional :main_plan, type: Hash do
-                      use :main_plan
+                    optional :base_product, type: Hash do
+                      use :base_product
                     end
                     optional :compute_minutes, type: Hash do
                       use :compute_minutes
