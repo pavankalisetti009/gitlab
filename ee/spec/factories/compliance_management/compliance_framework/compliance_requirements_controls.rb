@@ -8,11 +8,11 @@ FactoryBot.define do
     control_type { 'internal' }
 
     # Default to scanner_sast_running
-    name { :scanner_sast_running }
-    expression { { field: 'scanner_sast_running', operator: '=', value: true }.to_json }
+    name { 'scanner_sast_running' }
+    expression { { operator: '=', field: 'scanner_sast_running', value: true }.to_json }
 
     trait :minimum_approvals_required_2 do
-      name { :minimum_approvals_required_2 }
+      name { 'minimum_approvals_required_2' }
       expression do
         {
           operator: "=",
@@ -20,11 +20,6 @@ FactoryBot.define do
           value: 2
         }.to_json
       end
-    end
-
-    trait :scanner_sast_running do
-      name { :scanner_sast_running }
-      expression { { field: 'scanner_sast_running', operator: '=', value: true }.to_json }
     end
 
     trait :project_visibility_not_internal do
@@ -38,18 +33,19 @@ FactoryBot.define do
       end
     end
 
-    trait :scanner_sast_running do
-      name { 'scanner_sast_running' }
+    trait :default_branch_protected do
+      name { 'default_branch_protected' }
       expression do
         {
           operator: "=",
-          field: "scanner_sast_running",
+          field: "default_branch_protected",
           value: true
         }.to_json
       end
     end
 
-    trait "external" do
+    trait :external do
+      name { 'external_control' }
       external_url { FFaker::Internet.unique.http_url }
       control_type { 'external' }
       secret_token { 'token' }

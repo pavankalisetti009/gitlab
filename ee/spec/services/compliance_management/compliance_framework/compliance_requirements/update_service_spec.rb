@@ -146,7 +146,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
           service.execute
 
-          expect(::Gitlab::Audit::Auditor).to have_received(:audit).exactly(2).times
+          expect(::Gitlab::Audit::Auditor).to have_received(:audit).exactly(5).times
 
           old_values.each do |attribute, old_value|
             expect(::Gitlab::Audit::Auditor).to have_received(:audit).with(
@@ -181,17 +181,17 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           end
         end
 
-        context 'with non-empty controls array param' do
+        context 'with controls that need update, delete, and add operations' do
           let(:controls) do
             [
               {
-                name: 'minimum_approvals_required_2',
-                expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
+                name: 'scanner_sast_running',
+                expression: { operator: "=", field: "scanner_sast_running", value: false }.to_json,
                 control_type: 'internal'
               },
               {
-                name: 'scanner_sast_running',
-                expression: { operator: "=", field: "scanner_sast_running", value: true }.to_json,
+                name: 'project_visibility_not_internal',
+                expression: { operator: "=", field: "project_visibility", value: "private" }.to_json,
                 control_type: 'internal'
               },
               {
@@ -200,34 +200,81 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
                 control_type: 'internal'
               },
               {
-                name: 'external_control',
-                control_type: 'external',
-                external_url: "https://external.test",
-                secret_token: 'token123'
+                name: 'auth_sso_enabled',
+                expression: { operator: "=", field: "auth_sso_enabled", value: true }.to_json,
+                control_type: 'internal'
               }
             ]
           end
 
           it_behaves_like 'updates requirement'
 
-          it 'updates the controls of the requirement' do
-            expect { service.execute }.to change { requirement.compliance_requirements_controls.count }.from(3).to(4)
-          end
+          it 'correctly handles mixed update operations' do
+            expect(requirement.compliance_requirements_controls.count).to eq(3)
 
-          it 'adds new controls to the requirement' do
             service.execute
 
-            requirement_controls = requirement.compliance_requirements_controls.order(id: :asc)
+            requirement_controls = requirement.compliance_requirements_controls.reload
+            expect(requirement_controls.count).to eq(4)
 
-            requirement_controls.each_with_index do |control, i|
-              expect(control).to have_attributes(
-                name: controls[i][:name],
-                expression: controls[i][:expression],
-                control_type: controls[i][:control_type],
-                external_url: controls[i][:external_url],
-                secret_token: controls[i][:secret_token]
+            controls.each do |control_params|
+              matching_control = requirement_controls.find { |control| control.name == control_params[:name] }
+
+              expect(matching_control).to be_present
+              expect(matching_control).to have_attributes(
+                name: control_params[:name],
+                expression: control_params[:expression],
+                control_type: control_params[:control_type],
+                external_url: control_params[:external_url],
+                secret_token: control_params[:secret_token]
               )
             end
+
+            expect(requirement_controls.where(control_type: 'external').count).to eq(0)
+          end
+        end
+
+        context 'with external control matching by URL' do
+          let(:external_url) { "http://external.test" }
+          let(:controls) do
+            [
+              {
+                name: 'external_control',
+                control_type: 'external',
+                external_url: external_url,
+                secret_token: 'updated_token'
+              }
+            ]
+          end
+
+          before do
+            external_control = requirement.compliance_requirements_controls.find_by(control_type: 'external')
+            external_control.update!(external_url: external_url)
+          end
+
+          it 'matches and updates external control by URL' do
+            expect { service.execute }.to change { requirement.compliance_requirements_controls.count }.from(3).to(1)
+
+            updated_control = requirement.compliance_requirements_controls.reload.find_by(external_url: external_url)
+            expect(updated_control.secret_token).to eq('updated_token')
+          end
+        end
+
+        context 'when destroy service fails' do
+          let(:controls) { [] }
+
+          it 'returns an error response when destroy service fails' do
+            service_class = ComplianceManagement::ComplianceFramework::ComplianceRequirementsControls::DestroyService
+            allow_next_instance_of(service_class) do |service|
+              allow(service).to receive(:execute).and_return(
+                ServiceResponse.error(message: 'Destroy failed')
+              )
+            end
+
+            result = service.execute
+
+            expect(result).not_to be_success
+            expect(result.message).to include("Destroy failed")
           end
         end
       end
@@ -319,9 +366,9 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
               ]
             end
 
-            it_behaves_like 'invalid controls', "Failed to add compliance requirement " \
-              "control project_visibility_not_internal: Validation failed: " \
-              "Expression property '/value' is not one of: [\"private\", \"internal\", \"public\"]"
+            it_behaves_like 'invalid controls', "Control 'project_visibility_not_internal': " \
+              "Failed to update compliance requirement control. " \
+              "Error: Expression property '/value' is not one of: [\"private\", \"internal\", \"public\"]"
           end
 
           context 'when a new control has invalid name' do
@@ -357,8 +404,9 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
               ]
             end
 
-            it_behaves_like 'invalid controls', "Failed to add compliance requirement control " \
-              "project_visibility_not_internal: 'invalid' is not a valid control_type"
+            it_behaves_like 'invalid controls', "Control 'project_visibility_not_internal': " \
+              "Failed to update compliance requirement control. " \
+              "Error: 'invalid' is not a valid control_type"
           end
         end
       end
