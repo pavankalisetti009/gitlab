@@ -6,8 +6,9 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ExpressionEvaluator
   feature_category: :compliance_management do
   let_it_be(:project) { create(:project) }
   let_it_be(:control) { create(:compliance_requirements_control) }
+  let(:approval_settings) { [] }
 
-  subject(:evaluator) { described_class.new(control, project) }
+  subject(:evaluator) { described_class.new(control, project, approval_settings) }
 
   describe '#evaluate' do
     let(:expression) { { operator: '=', field: 'project_visibility', value: 'private' } }
@@ -35,6 +36,14 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ExpressionEvaluator
         expect(ComplianceManagement::ComplianceRequirements::ComparisonOperator)
           .to receive(:compare)
                 .with(project.visibility, 'private', '=')
+
+        evaluator.evaluate
+      end
+
+      it 'passes approval settings to ProjectFields.map_field' do
+        expect(ComplianceManagement::ComplianceRequirements::ProjectFields)
+          .to receive(:map_field)
+                .with(project, 'project_visibility', { approval_settings: approval_settings })
 
         evaluator.evaluate
       end

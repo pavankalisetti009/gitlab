@@ -5,9 +5,10 @@ module ComplianceManagement
     class ExpressionEvaluator
       include Gitlab::Utils::StrongMemoize
 
-      def initialize(control, project)
+      def initialize(control, project, approval_settings = [])
         @control = control
         @project = project
+        @approval_settings = approval_settings
       end
 
       def evaluate
@@ -22,7 +23,7 @@ module ComplianceManagement
 
       private
 
-      attr_reader :control, :project
+      attr_reader :control, :project, :approval_settings
 
       def parsed_expression
         control.expression_as_hash(symbolize_names: true)
@@ -30,7 +31,9 @@ module ComplianceManagement
       strong_memoize_attr :parsed_expression
 
       def fetch_field_value
-        ProjectFields.map_field(project, parsed_expression[:field])
+        ProjectFields.map_field(project,
+          parsed_expression[:field],
+          { approval_settings: approval_settings })
       end
     end
   end

@@ -87,18 +87,196 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
     end
 
     describe 'merge_request_prevent_author_approval' do
-      it 'calls merge_requests_author_approval? on project' do
-        expect(project).to receive(:merge_requests_author_approval?)
+      context 'without approval settings' do
+        it 'calls merge_requests_author_approval? on project' do
+          expect(project).to receive(:merge_requests_author_approval?)
 
-        described_class.map_field(project, 'merge_request_prevent_author_approval')
+          described_class.map_field(project, 'merge_request_prevent_author_approval')
+        end
+
+        it 'returns true when project has author approval disabled' do
+          allow(project).to receive(:merge_requests_author_approval?).and_return(false)
+
+          result = described_class.map_field(project, 'merge_request_prevent_author_approval')
+
+          expect(result).to be true
+        end
+
+        it 'returns false when project has author approval enabled' do
+          allow(project).to receive(:merge_requests_author_approval?).and_return(true)
+
+          result = described_class.map_field(project, 'merge_request_prevent_author_approval')
+
+          expect(result).to be false
+        end
+      end
+
+      context 'with approval settings' do
+        context 'when approval settings is empty' do
+          let(:approval_settings) { [] }
+
+          it 'returns based on project setting only' do
+            allow(project).to receive(:merge_requests_author_approval?).and_return(false)
+            expect(described_class.map_field(project, 'merge_request_prevent_author_approval',
+              { approval_settings: approval_settings })).to be true
+
+            allow(project).to receive(:merge_requests_author_approval?).and_return(true)
+            expect(described_class.map_field(project, 'merge_request_prevent_author_approval',
+              { approval_settings: approval_settings })).to be false
+          end
+        end
+
+        context 'when settings include prevent_approval_by_author set to false' do
+          let(:approval_settings) do
+            [{ "prevent_approval_by_author" => false }]
+          end
+
+          it 'returns based on project setting only' do
+            allow(project).to receive(:merge_requests_author_approval?).and_return(false)
+            expect(described_class.map_field(project, 'merge_request_prevent_author_approval',
+              { approval_settings: approval_settings })).to be true
+
+            allow(project).to receive(:merge_requests_author_approval?).and_return(true)
+            expect(described_class.map_field(project, 'merge_request_prevent_author_approval',
+              { approval_settings: approval_settings })).to be false
+          end
+        end
+
+        context 'when settings include preventing author approval' do
+          let(:approval_settings) do
+            [{ "prevent_approval_by_author" => true }]
+          end
+
+          it 'returns true regardless of project setting' do
+            allow(project).to receive(:merge_requests_author_approval?).and_return(true)
+
+            result = described_class.map_field(project, 'merge_request_prevent_author_approval',
+              { approval_settings: approval_settings })
+
+            expect(result).to be true
+          end
+        end
+
+        context 'when settings do not include preventing author approval' do
+          let(:approval_settings) do
+            [{ "some_other_setting" => true }]
+          end
+
+          it 'returns true if project prevents author approval' do
+            allow(project).to receive(:merge_requests_author_approval?).and_return(false)
+
+            result = described_class.map_field(project, 'merge_request_prevent_author_approval',
+              { approval_settings: approval_settings })
+
+            expect(result).to be true
+          end
+
+          it 'returns false if project allows author approval' do
+            allow(project).to receive(:merge_requests_author_approval?).and_return(true)
+
+            result = described_class.map_field(project, 'merge_request_prevent_author_approval',
+              { approval_settings: approval_settings })
+
+            expect(result).to be false
+          end
+        end
       end
     end
 
     describe 'merge_request_prevent_committers_approval' do
-      it 'calls merge_requests_disable_committers_approval? on project' do
-        expect(project).to receive(:merge_requests_disable_committers_approval?)
+      context 'without approval settings' do
+        it 'calls merge_requests_disable_committers_approval? on project' do
+          expect(project).to receive(:merge_requests_disable_committers_approval?)
 
-        described_class.map_field(project, 'merge_request_prevent_committers_approval')
+          described_class.map_field(project, 'merge_request_prevent_committers_approval')
+        end
+
+        it 'returns true when project prevents committer approval' do
+          allow(project).to receive(:merge_requests_disable_committers_approval?).and_return(true)
+
+          result = described_class.map_field(project, 'merge_request_prevent_committers_approval')
+
+          expect(result).to be true
+        end
+
+        it 'returns false when project allows committer approval' do
+          allow(project).to receive(:merge_requests_disable_committers_approval?).and_return(false)
+
+          result = described_class.map_field(project, 'merge_request_prevent_committers_approval')
+
+          expect(result).to be false
+        end
+      end
+
+      context 'with approval settings' do
+        context 'when approval settings is empty' do
+          let(:approval_settings) { [] }
+
+          it 'returns based on project setting only' do
+            allow(project).to receive(:merge_requests_disable_committers_approval?).and_return(true)
+            expect(described_class.map_field(project, 'merge_request_prevent_committers_approval',
+              { approval_settings: approval_settings })).to be true
+
+            allow(project).to receive(:merge_requests_disable_committers_approval?).and_return(false)
+            expect(described_class.map_field(project, 'merge_request_prevent_committers_approval',
+              { approval_settings: approval_settings })).to be false
+          end
+        end
+
+        context 'when settings include prevent_approval_by_commit_author set to false' do
+          let(:approval_settings) do
+            [{ "prevent_approval_by_commit_author" => false }]
+          end
+
+          it 'returns based on project setting only' do
+            allow(project).to receive(:merge_requests_disable_committers_approval?).and_return(true)
+            expect(described_class.map_field(project, 'merge_request_prevent_committers_approval',
+              { approval_settings: approval_settings })).to be true
+
+            allow(project).to receive(:merge_requests_disable_committers_approval?).and_return(false)
+            expect(described_class.map_field(project, 'merge_request_prevent_committers_approval',
+              { approval_settings: approval_settings })).to be false
+          end
+        end
+
+        context 'when settings include preventing committer approval' do
+          let(:approval_settings) do
+            [{ "prevent_approval_by_commit_author" => true }]
+          end
+
+          it 'returns true regardless of project setting' do
+            allow(project).to receive(:merge_requests_disable_committers_approval?).and_return(false)
+
+            result = described_class.map_field(project, 'merge_request_prevent_committers_approval',
+              { approval_settings: approval_settings })
+
+            expect(result).to be true
+          end
+        end
+
+        context 'when settings do not include preventing committer approval' do
+          let(:approval_settings) do
+            [{ "some_other_setting" => true }]
+          end
+
+          it 'returns true if project prevents committer approval' do
+            allow(project).to receive(:merge_requests_disable_committers_approval?).and_return(true)
+
+            result = described_class.map_field(project, 'merge_request_prevent_committers_approval',
+              { approval_settings: approval_settings })
+
+            expect(result).to be true
+          end
+
+          it 'returns false if project allows committer approval' do
+            allow(project).to receive(:merge_requests_disable_committers_approval?).and_return(false)
+
+            result = described_class.map_field(project, 'merge_request_prevent_committers_approval',
+              { approval_settings: approval_settings })
+
+            expect(result).to be false
+          end
+        end
       end
     end
 
@@ -170,7 +348,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
     describe 'scanner_sast_running' do
       it 'calls security_scanner_running? with scanner type sast' do
-        expect(described_class).to receive(:security_scanner_running?).with(:sast, project)
+        expect(described_class).to receive(:security_scanner_running?).with(:sast, project, {})
 
         described_class.map_field(project, 'scanner_sast_running')
       end
@@ -178,7 +356,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
     describe 'scanner_secret_detection_running' do
       it 'calls security_scanner_running? with scanner type secret_detection' do
-        expect(described_class).to receive(:security_scanner_running?).with(:secret_detection, project)
+        expect(described_class).to receive(:security_scanner_running?).with(:secret_detection, project, {})
 
         described_class.map_field(project, 'scanner_secret_detection_running')
       end
@@ -186,7 +364,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
     describe 'scanner_dep_scanning_running' do
       it 'calls security_scanner_running? with scanner type dependency_scanning' do
-        expect(described_class).to receive(:security_scanner_running?).with(:dependency_scanning, project)
+        expect(described_class).to receive(:security_scanner_running?).with(:dependency_scanning, project, {})
 
         described_class.map_field(project, 'scanner_dep_scanning_running')
       end
@@ -194,7 +372,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
     describe 'scanner_container_scanning_running' do
       it 'calls security_scanner_running? with scanner type container_scanning' do
-        expect(described_class).to receive(:security_scanner_running?).with(:container_scanning, project)
+        expect(described_class).to receive(:security_scanner_running?).with(:container_scanning, project, {})
 
         described_class.map_field(project, 'scanner_container_scanning_running')
       end
@@ -202,7 +380,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
     describe 'scanner_license_compliance_running' do
       it 'calls security_scanner_running? with scanner type license_compliance' do
-        expect(described_class).to receive(:security_scanner_running?).with(:license_compliance, project)
+        expect(described_class).to receive(:security_scanner_running?).with(:license_compliance, project, {})
 
         described_class.map_field(project, 'scanner_license_compliance_running')
       end
@@ -210,7 +388,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
     describe 'scanner_dast_running' do
       it 'calls security_scanner_running? with scanner type dast' do
-        expect(described_class).to receive(:security_scanner_running?).with(:dast, project)
+        expect(described_class).to receive(:security_scanner_running?).with(:dast, project, {})
 
         described_class.map_field(project, 'scanner_dast_running')
       end
@@ -218,7 +396,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
     describe 'scanner_api_security_running' do
       it 'calls security_scanner_running? with scanner type api_fuzzing' do
-        expect(described_class).to receive(:security_scanner_running?).with(:api_fuzzing, project)
+        expect(described_class).to receive(:security_scanner_running?).with(:api_fuzzing, project, {})
 
         described_class.map_field(project, 'scanner_api_security_running')
       end
@@ -226,7 +404,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
     describe 'scanner_fuzz_testing_running' do
       it 'calls security_scanner_running? with scanner type fuzz_testing' do
-        expect(described_class).to receive(:security_scanner_running?).with(:fuzz_testing, project)
+        expect(described_class).to receive(:security_scanner_running?).with(:fuzz_testing, project, {})
 
         described_class.map_field(project, 'scanner_fuzz_testing_running')
       end
@@ -234,7 +412,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
     describe 'scanner_code_quality_running' do
       it 'calls security_scanner_running? with scanner type code_quality' do
-        expect(described_class).to receive(:security_scanner_running?).with(:code_quality, project)
+        expect(described_class).to receive(:security_scanner_running?).with(:code_quality, project, {})
 
         described_class.map_field(project, 'scanner_code_quality_running')
       end
@@ -242,7 +420,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
 
     describe 'scanner_iac_running' do
       it 'calls security_scanner_running? with scanner type iac' do
-        expect(described_class).to receive(:security_scanner_running?).with(:iac, project)
+        expect(described_class).to receive(:security_scanner_running?).with(:iac, project, {})
 
         described_class.map_field(project, 'scanner_iac_running')
       end
@@ -295,7 +473,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
     describe '#code_changes_requires_code_owners?' do
       it 'delegates to ProtectedBranch.branch_requires_code_owner_approval?' do
         expect(ProtectedBranch).to receive(:branch_requires_code_owner_approval?)
-          .with(project, nil)
+                                     .with(project, nil)
 
         described_class.map_field(project, 'code_changes_requires_code_owners')
       end
@@ -372,7 +550,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
     describe '#force_push_disabled?' do
       it 'delegates to ProtectedBranch.allow_force_push?' do
         expect(ProtectedBranch).to receive(:allow_force_push?)
-          .with(project, nil)
+                                     .with(project, nil)
 
         described_class.map_field(project, 'force_push_disabled')
       end

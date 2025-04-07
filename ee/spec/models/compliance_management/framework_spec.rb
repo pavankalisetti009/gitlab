@@ -135,6 +135,73 @@ RSpec.describe ComplianceManagement::Framework, :models, feature_category: :comp
     end
   end
 
+  describe '#approval_settings_from_security_policies' do
+    let_it_be(:framework) { create(:compliance_framework) }
+    let_it_be(:policy_configuration1) { create(:security_orchestration_policy_configuration) }
+    let_it_be(:policy_configuration2) { create(:security_orchestration_policy_configuration) }
+    let_it_be(:project1) { create(:project) }
+    let_it_be(:project2) { create(:project) }
+
+    let_it_be(:policy1) do
+      create(:compliance_framework_security_policy,
+        framework: framework,
+        policy_configuration: policy_configuration1,
+        policy_index: 0)
+    end
+
+    let_it_be(:policy2) do
+      create(:compliance_framework_security_policy,
+        framework: framework,
+        policy_configuration: policy_configuration2,
+        policy_index: 0)
+    end
+
+    let_it_be(:scan_policy_read1) do
+      create(:scan_result_policy_read, :prevent_approval_by_author,
+        security_orchestration_policy_configuration: policy_configuration1,
+        project: project1)
+    end
+
+    let_it_be(:scan_policy_read2) do
+      create(:scan_result_policy_read, :prevent_approval_by_commit_author,
+        security_orchestration_policy_configuration: policy_configuration1,
+        project: project2)
+    end
+
+    let_it_be(:scan_policy_read3) do
+      create(:scan_result_policy_read, :blocking_protected_branches,
+        security_orchestration_policy_configuration: policy_configuration2,
+        project: project1)
+    end
+
+    context 'when framework has multiple policy configurations with scan result policy reads' do
+      it 'returns all associated project approval settings for a single project' do
+        approval_settings = framework.approval_settings_from_security_policies(project1)
+
+        expect(approval_settings).to contain_exactly(
+          { "prevent_approval_by_author" => true },
+          { "block_branch_modification" => true }
+        )
+      end
+
+      it 'returns all associated project approval settings for multiple projects' do
+        approval_settings = framework.approval_settings_from_security_policies([project1, project2])
+
+        expect(approval_settings).to contain_exactly(
+          { "prevent_approval_by_author" => true },
+          { "prevent_approval_by_commit_author" => true },
+          { "block_branch_modification" => true }
+        )
+      end
+
+      it 'returns empty array for a project with no policy reads' do
+        project3 = create(:project)
+
+        expect(framework.approval_settings_from_security_policies(project3)).to eq([])
+      end
+    end
+  end
+
   describe 'scopes' do
     let_it_be(:project) { create(:project) }
     let_it_be(:namespace) { create(:group) }
