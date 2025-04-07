@@ -419,17 +419,11 @@ module Search
               end
             end
 
+            # There might be an option to not add confidentiality filter for project level search
             next query_hash if user&.can_read_all_resources?
 
             scoped_project_ids = scoped_project_ids(user, project_ids)
             authorized_project_ids = authorized_project_ids(user, scoped_project_ids)
-
-            # we can shortcut the filter if the user is authorized to see
-            # all the projects for which this query is scoped on
-            if !(scoped_project_ids == :any || scoped_project_ids.empty?) &&
-                (authorized_project_ids.to_set == scoped_project_ids.to_set)
-              next query_hash
-            end
 
             non_confidential_filter = {
               term: { confidential: { _name: context.name(:non_confidential), value: false } }
