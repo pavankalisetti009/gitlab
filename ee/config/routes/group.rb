@@ -196,6 +196,11 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
       resource :dashboard, only: [:show], controller: :dashboard
       resource :inventory, only: [:show], controller: :inventory
       resources :vulnerabilities, only: [:index]
+      resources :compliance_frameworks do
+        collection do
+          post :import, to: 'compliance_dashboard/compliance_frameworks_import#create'
+        end
+      end
       namespace :compliance_dashboard do
         resources :frameworks, only: [:show], constraints: ->(req) {
           req.format == :json && req.path_parameters[:id].match?(/\d+/)

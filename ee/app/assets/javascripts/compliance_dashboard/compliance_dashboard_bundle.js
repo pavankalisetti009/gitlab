@@ -19,6 +19,7 @@ export default () => {
   const {
     basePath,
     canAdminComplianceFrameworks,
+    frameworkImportUrl,
     mergeCommitsCsvExportPath,
     violationsCsvExportPath,
     projectFrameworksCsvExportPath,
@@ -105,6 +106,7 @@ export default () => {
       pipelineExecutionPolicyPath,
       migratePipelineToPolicyPath,
       groupSecurityPoliciesPath,
+      frameworkImportUrl,
       featureSecurityPoliciesEnabled: parseBoolean(featureSecurityPoliciesEnabled),
       adherenceV2Enabled: parseBoolean(adherenceV2Enabled),
       policyDisplayLimit: Number(policyDisplayLimit),

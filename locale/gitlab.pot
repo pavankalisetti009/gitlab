@@ -15491,13 +15491,40 @@ msgstr ""
 msgid "ComplianceFramework|After a framework is added to %{linkStart}%{groupName}%{linkEnd}, it will appear here."
 msgstr ""
 
+msgid "ComplianceFramework|Create a new compliance framework from scratch to define your compliance requirements."
+msgstr ""
+
+msgid "ComplianceFramework|Create blank framework"
+msgstr ""
+
+msgid "ComplianceFramework|Create new framework"
+msgstr ""
+
 msgid "ComplianceFramework|Edit compliance framework"
+msgstr ""
+
+msgid "ComplianceFramework|Failed to import framework file."
+msgstr ""
+
+msgid "ComplianceFramework|Framework imported successfully."
+msgstr ""
+
+msgid "ComplianceFramework|Import an existing compliance framework from a JSON file."
+msgstr ""
+
+msgid "ComplianceFramework|Import framework"
+msgstr ""
+
+msgid "ComplianceFramework|Looking for a template? Need an example JSON schema? Look through our %{linkStart}examples here.%{linkEnd}"
 msgstr ""
 
 msgid "ComplianceFramework|New compliance framework"
 msgstr ""
 
 msgid "ComplianceFramework|No compliance frameworks are set up yet"
+msgstr ""
+
+msgid "ComplianceFramework|Unable to determine the correct upload URL. Please try again."
 msgstr ""
 
 msgid "ComplianceManagement|Framework"

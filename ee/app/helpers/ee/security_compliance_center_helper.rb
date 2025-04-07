@@ -17,6 +17,7 @@ module EE
         {
           feature_frameworks_report_enabled: true.to_s,
           feature_security_policies_enabled: can?(current_user, :read_security_orchestration_policies, group).to_s,
+          framework_import_url: import_group_security_compliance_frameworks_path(group),
           violations_csv_export_path: violations_report && group_security_compliance_violation_reports_path(
             group, format: :csv),
           project_frameworks_csv_export_path: group_security_compliance_project_framework_reports_path(group,
