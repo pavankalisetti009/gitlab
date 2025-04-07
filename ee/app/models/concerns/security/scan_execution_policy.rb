@@ -53,23 +53,24 @@ module Security
       policy_by_type(:scan_execution_policy)
     end
 
-    def active_policies_for_project(ref, project)
+    def active_policies_for_project(ref, project, pipeline_source = nil)
       branch_service = Security::SecurityOrchestrationPolicies::PolicyBranchesService.new(project: project)
       scope_checker = Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: project)
 
       active_scan_execution_policies
         .select { |policy| scope_checker.policy_applicable?(policy) }
         .select { |policy| applicable_for_ref?(block_given? ? yield(policy[:rules]) : policy[:rules], ref, branch_service) }
+        .select { |policy| applicable_for_pipeline_source?(block_given? ? yield(policy[:rules]) : policy[:rules], pipeline_source) }
     end
 
-    def active_pipeline_policies_for_project(ref, project)
-      active_policies_for_project(ref, project) do |policy_rules|
+    def active_pipeline_policies_for_project(ref, project, pipeline_source = nil)
+      active_policies_for_project(ref, project, pipeline_source) do |policy_rules|
         policy_rules.select { |rule| rule[:type] == RULE_TYPES[:pipeline] }
       end
     end
 
-    def active_policies_scan_actions_for_project(ref, project)
-      active_policies_for_project(ref, project).flat_map { |policy| policy[:actions] }
+    def active_policies_scan_actions_for_project(ref, project, pipeline_source = nil)
+      active_policies_for_project(ref, project, pipeline_source).flat_map { |policy| policy[:actions] }
     end
 
     private
@@ -95,9 +96,18 @@ module Security
       return false unless Gitlab::Git.branch_ref?(ref)
 
       ref_name = Gitlab::Git.ref_name(ref)
-      applicable_branches = service.scan_execution_branches(policy_rules)
+      applicable_branches = service.scan_execution_branches(policy_rules, ref_name)
 
       ref_name.in?(applicable_branches)
+    end
+
+    def applicable_for_pipeline_source?(policy_rules, pipeline_source)
+      return true if pipeline_source.blank?
+
+      policy_rules.any? do |rule|
+        rule_pipeline_sources = rule.dig(:pipeline_sources, :including)
+        rule_pipeline_sources.blank? || rule_pipeline_sources.include?(pipeline_source.to_s)
+      end
     end
   end
 end

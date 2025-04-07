@@ -48,13 +48,17 @@ module EE
               ::Gitlab::Security::Orchestration::ProjectPolicyConfigurations
                 .new(project)
                 .all
-                .flat_map { |config| config.active_policies_scan_actions_for_project(pipeline.jobs_git_ref, project) }
+                .flat_map { |config| fetch_active_actions(config) }
                 .compact
                 .uniq
             end
 
             def ci_context
               ::Gitlab::Ci::Config::External::Context.new(project: project)
+            end
+
+            def fetch_active_actions(config)
+              config.active_policies_scan_actions_for_project(pipeline.jobs_git_ref, project, pipeline.source)
             end
           end
         end
