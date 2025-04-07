@@ -14,8 +14,6 @@ export const mockScanExecutionActionManifest = `scan_execution_policy:
       - scan: secret_detection
     skip_ci:
       allowed: true
-      allowlist:
-        users: []
 `;
 
 export const mockScanExecutionActionProjectManifest = `scan_execution_policy:
@@ -30,8 +28,6 @@ export const mockScanExecutionActionProjectManifest = `scan_execution_policy:
       - scan: secret_detection
     skip_ci:
       allowed: true
-      allowlist:
-        users: []
     policy_scope:
       compliance_frameworks:
         - id: 1
@@ -46,6 +42,8 @@ export const mockPipelineExecutionActionManifest = `pipeline_execution_policy:
     content:
       include:
         - project: ''
+    skip_ci:
+      allowed: false
     policy_scope:
       compliance_frameworks:
         - id: 1
@@ -123,8 +121,6 @@ export const EXCLUDING_PROJECTS_MOCKS = {
       - scan: secret_detection
     skip_ci:
       allowed: true
-      allowlist:
-        users: []
 `,
   PIPELINE_EXECUTION: `name: ''
 description: ''
@@ -182,8 +178,6 @@ export const EXCLUDING_PROJECTS_PROJECTS_LEVEL_MOCKS = {
       - scan: secret_detection
     skip_ci:
       allowed: true
-      allowlist:
-        users: []
     policy_scope:
       projects:
         excluding:
@@ -198,6 +192,8 @@ export const EXCLUDING_PROJECTS_PROJECTS_LEVEL_MOCKS = {
     content:
       include:
         - project: ''
+    skip_ci:
+      allowed: false
     policy_scope:
       projects:
         excluding:
@@ -266,8 +262,6 @@ export const INCLUDING_GROUPS_WITH_EXCEPTIONS_MOCKS = {
       - scan: secret_detection
     skip_ci:
       allowed: true
-      allowlist:
-        users: []
 `,
   PIPELINE_EXECUTION: `pipeline_execution_policy:
   - name: ''
@@ -277,6 +271,8 @@ export const INCLUDING_GROUPS_WITH_EXCEPTIONS_MOCKS = {
     content:
       include:
         - project: ''
+    skip_ci:
+      allowed: false
     policy_scope:
       groups:
         including:
@@ -336,8 +332,6 @@ export const INCLUDING_GROUPS_MOCKS = {
       - scan: secret_detection
     skip_ci:
       allowed: true
-      allowlist:
-        users: []
 `,
   PIPELINE_EXECUTION: `pipeline_execution_policy:
   - name: ''
@@ -347,6 +341,8 @@ export const INCLUDING_GROUPS_MOCKS = {
     content:
       include:
         - project: ''
+    skip_ci:
+      allowed: false
     policy_scope:
       groups:
         including:
@@ -394,6 +390,8 @@ export const EXCLUDING_PROJECTS_ON_PROJECT_LEVEL = `pipeline_execution_policy:
     content:
       include:
         - project: ''
+    skip_ci:
+      allowed: false
     policy_scope:
       projects:
         excluding:

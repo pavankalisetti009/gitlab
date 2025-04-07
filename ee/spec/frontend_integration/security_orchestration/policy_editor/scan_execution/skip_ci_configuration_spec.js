@@ -44,7 +44,6 @@ describe('Skip ci for scan execution policy', () => {
 
       expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual({
         allowed: true,
-        allowlist: { users: [] },
       });
 
       await findSkipCiSelectorToggle().vm.$emit('change', true);

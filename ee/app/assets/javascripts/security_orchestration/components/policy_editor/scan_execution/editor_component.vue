@@ -11,7 +11,6 @@ import {
   extractPolicyContent,
 } from 'ee/security_orchestration/components/utils';
 import OverloadWarningModal from 'ee/security_orchestration/components/overload_warning_modal.vue';
-import { DEFAULT_SKIP_SI_CONFIGURATION } from 'ee/security_orchestration/components/constants';
 import {
   policyBodyToYaml,
   policyToYaml,
@@ -146,11 +145,6 @@ export default {
       : getPolicyYaml({ isGroup: isGroup(this.namespaceType) });
 
     const { policy, parsingError } = createPolicyObject(yamlEditorValue);
-
-    const hasSkipCi = 'skip_ci' in policy;
-    if (!hasSkipCi) {
-      policy.skip_ci = DEFAULT_SKIP_SI_CONFIGURATION;
-    }
 
     return {
       parsingError,

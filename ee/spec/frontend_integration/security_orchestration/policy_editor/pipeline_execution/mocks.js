@@ -9,6 +9,8 @@ export const mockPipelineExecutionActionManifest = `pipeline_execution_policy:
     content:
       include:
         - project: ''
+    skip_ci:
+      allowed: false
 `;
 
 export const mockPipelineExecutionOverrideActionManifest = `pipeline_execution_policy:
@@ -19,6 +21,8 @@ export const mockPipelineExecutionOverrideActionManifest = `pipeline_execution_p
     content:
       include:
         - project: ''
+    skip_ci:
+      allowed: false
 `;
 
 export const mockPipelineExecutionSkipCiManifest = `pipeline_execution_policy:

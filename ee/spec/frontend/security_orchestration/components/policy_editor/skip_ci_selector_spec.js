@@ -15,11 +15,20 @@ describe('SkipCiSelector', () => {
   const findAllowSkipCiSelector = () => wrapper.findComponent(GlToggle);
   const findUserSelect = () => wrapper.findComponent(UserSelect);
 
-  it('renders allow skip ci option by default', () => {
+  it('renders not allow skip ci option by default', () => {
     createComponent();
     expect(findUserSelect().exists('resetOnEmpty')).toBe(true);
     expect(findUserSelect().exists()).toBe(true);
     expect(findAllowSkipCiSelector().exists()).toBe(true);
+
+    expect(findAllowSkipCiSelector().props('value')).toBe(false);
+    expect(findUserSelect().props('disabled')).toBe(true);
+  });
+
+  it('renders allow skip ci option by default for reversed option', () => {
+    createComponent({
+      isReversed: true,
+    });
 
     expect(findAllowSkipCiSelector().props('value')).toBe(true);
     expect(findUserSelect().props('disabled')).toBe(false);

@@ -11,6 +11,8 @@ export const mockScanExecutionManifest = `scan_execution_policy:
         - '*'
     actions:
       - scan: secret_detection
+    skip_ci:
+      allowed: true
 `;
 
 const mockScanExecutionManifestParsed = `scan_execution_policy:
@@ -25,8 +27,6 @@ const mockScanExecutionManifestParsed = `scan_execution_policy:
       - scan: secret_detection
     skip_ci:
       allowed: true
-      allowlist:
-        users: []
 `;
 
 export const mockDastActionScanExecutionManifest = `scan_execution_policy:
@@ -43,8 +43,6 @@ export const mockDastActionScanExecutionManifest = `scan_execution_policy:
         scanner_profile: ''
     skip_ci:
       allowed: true
-      allowlist:
-        users: []
 `;
 
 export const mockGroupDastActionScanExecutionManifest = `scan_execution_policy:
@@ -64,8 +62,6 @@ export const mockGroupDastActionScanExecutionManifest = `scan_execution_policy:
         scanner_profile: ''
     skip_ci:
       allowed: true
-      allowlist:
-        users: []
 `;
 
 export const mockActionsVariablesScanExecutionManifest = `scan_execution_policy:
@@ -82,8 +78,6 @@ export const mockActionsVariablesScanExecutionManifest = `scan_execution_policy:
           '': ''
     skip_ci:
       allowed: true
-      allowlist:
-        users: []
 `;
 
 export const createScanActionScanExecutionManifest = (scanType, parsed = false) => {
@@ -103,8 +97,6 @@ export const mockScheduleScanExecutionManifest = `scan_execution_policy:
       - scan: secret_detection
     skip_ci:
       allowed: true
-      allowlist:
-        users: []
 `;
 
 export const mockSkipCiScanExecutionManifest = `scan_execution_policy:

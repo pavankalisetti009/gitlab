@@ -276,7 +276,11 @@ export default {
           <h4>{{ $options.i18n.configurationTitle }}</h4>
         </template>
 
-        <skip-ci-selector :skip-ci-configuration="policy.skip_ci" @changed="handleUpdateProperty" />
+        <skip-ci-selector
+          is-reversed
+          :skip-ci-configuration="policy.skip_ci"
+          @changed="handleUpdateProperty"
+        />
       </disabled-section>
     </template>
   </editor-layout>

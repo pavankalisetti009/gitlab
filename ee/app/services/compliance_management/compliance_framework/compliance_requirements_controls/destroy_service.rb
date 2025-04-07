@@ -14,7 +14,11 @@ module ComplianceManagement
         def execute
           return ServiceResponse.error(message: _('Not permitted to destroy requirement control')) unless permitted?
 
-          control.destroy ? success : error
+          return error unless control.destroy
+
+          refresh_requirement_statuses
+
+          success
         end
 
         private
@@ -43,6 +47,16 @@ module ComplianceManagement
 
         def error
           ServiceResponse.error(message: _('Failed to destroy compliance requirement control'), payload: control.errors)
+        end
+
+        def refresh_requirement_statuses
+          requirement_statuses = control.compliance_requirement.project_requirement_compliance_statuses
+
+          requirement_statuses.each do |requirement_status|
+            ComplianceManagement::ComplianceFramework::ComplianceRequirements::RefreshStatusService.new(
+              requirement_status
+            ).execute
+          end
         end
       end
     end
