@@ -1112,9 +1112,38 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         end
 
         context "with branch_type" do
-          let(:rule) { { type: "pipeline", branch_type: "protected" } }
+          context 'when defined as protected' do
+            let(:rule) { { type: "pipeline", branch_type: "protected" } }
 
-          specify { expect(errors).to be_empty }
+            specify { expect(errors).to be_empty }
+          end
+
+          context 'when defined as default' do
+            let(:rule) { { type: "pipeline", branch_type: "default" } }
+
+            specify { expect(errors).to be_empty }
+          end
+
+          context 'when defined as target_default' do
+            let(:rule) { { type: "pipeline", branch_type: "target_default" } }
+
+            specify { expect(errors).to be_empty }
+          end
+
+          context 'when defined as target_protected' do
+            let(:rule) { { type: "pipeline", branch_type: "target_protected" } }
+
+            specify { expect(errors).to be_empty }
+          end
+
+          context 'when defined as unsupported' do
+            let(:rule) { { type: "pipeline", branch_type: "unsupported" } }
+
+            specify do
+              expect(errors.count).to be(1)
+              expect(errors.first).to match("property '/scan_execution_policy/0/rules/0/branch_type' is not one of: [\"default\", \"protected\", \"all\", \"target_default\", \"target_protected\"]")
+            end
+          end
         end
 
         context "with branch_exceptions" do
@@ -3244,26 +3273,82 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
   describe '#active_policies_for_project' do
     include_context 'for policies with pipeline and scheduled rules'
 
-    subject(:active_policies) { security_orchestration_policy_configuration.active_policies_for_project('refs/heads/master', project) }
+    context 'when pipeline source is not provided' do
+      subject(:active_policies) { security_orchestration_policy_configuration.active_policies_for_project('refs/heads/master', project) }
 
-    it 'includes pipeline and scheduled policies' do
-      expect(active_policies).to contain_exactly(dast_policy, sast_policy_with_schedule, container_scanning_policy)
+      it 'includes pipeline and scheduled policies' do
+        expect(active_policies).to contain_exactly(dast_policy, sast_policy_with_schedule, container_scanning_policy)
+      end
+    end
+
+    context 'when pipeline source is provided' do
+      subject(:active_policies) { security_orchestration_policy_configuration.active_policies_for_project('refs/heads/master', project, pipeline_source) }
+
+      context 'with scan policies without specifying pipeline source' do
+        let(:pipeline_source) { 'push' }
+
+        it 'includes pipeline and scheduled policies' do
+          expect(active_policies).to contain_exactly(dast_policy, sast_policy_with_schedule, container_scanning_policy)
+        end
+      end
+
+      context 'with scan policies targetting specific pipeline source' do
+        let(:container_scanning_policy) do
+          build(
+            :scan_execution_policy,
+            actions: [{ scan: 'container_scanning' }],
+            rules: [{ type: 'pipeline', branches: [default_branch], pipeline_sources: { including: ['api'] } }]
+          )
+        end
+
+        context 'when pipeline source matches source defined in the policy' do
+          let(:pipeline_source) { 'api' }
+
+          it 'includes policies without specified pipeline source and matching one' do
+            expect(active_policies).to contain_exactly(dast_policy, sast_policy_with_schedule, container_scanning_policy)
+          end
+        end
+
+        context 'when pipeline source does not match source defined in the policy' do
+          let(:pipeline_source) { 'web' }
+
+          it 'includes only pipelines without defined sources' do
+            expect(active_policies).to contain_exactly(dast_policy, sast_policy_with_schedule)
+          end
+        end
+      end
     end
   end
 
   describe 'active_pipeline_policies_for_project' do
     include_context 'for policies with pipeline and scheduled rules'
 
-    subject(:active_scan_policies) { security_orchestration_policy_configuration.active_pipeline_policies_for_project('refs/heads/master', project) }
+    context 'without pipeline source provided' do
+      subject(:active_scan_policies) { security_orchestration_policy_configuration.active_pipeline_policies_for_project('refs/heads/master', project) }
 
-    it 'invokes active_policies_scan_actions_for_project' do
-      expect(security_orchestration_policy_configuration).to receive(:active_policies_for_project).and_call_original
+      it 'invokes active_policies_scan_actions_for_project' do
+        expect(security_orchestration_policy_configuration).to receive(:active_policies_for_project).with('refs/heads/master', project, nil).and_call_original
 
-      active_scan_policies
+        active_scan_policies
+      end
+
+      it 'excludes the scheduled policies' do
+        expect(active_scan_policies).to contain_exactly(dast_policy, container_scanning_policy)
+      end
     end
 
-    it 'excludes the scheduled policies' do
-      expect(active_scan_policies).to contain_exactly(dast_policy, container_scanning_policy)
+    context 'with pipeline source provided' do
+      subject(:active_scan_policies) { security_orchestration_policy_configuration.active_pipeline_policies_for_project('refs/heads/master', project, 'push') }
+
+      it 'invokes active_policies_scan_actions_for_project' do
+        expect(security_orchestration_policy_configuration).to receive(:active_policies_for_project).with('refs/heads/master', project, 'push').and_call_original
+
+        active_scan_policies
+      end
+
+      it 'excludes the scheduled policies' do
+        expect(active_scan_policies).to contain_exactly(dast_policy, container_scanning_policy)
+      end
     end
   end
 

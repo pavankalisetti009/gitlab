@@ -700,7 +700,9 @@
                   "enum": [
                     "default",
                     "protected",
-                    "all"
+                    "all",
+                    "target_default",
+                    "target_protected"
                   ]
                 },
                 "branch_exceptions": {
@@ -785,6 +787,32 @@
                             "type": "string"
                           }
                         }
+                      }
+                    }
+                  }
+                },
+                "pipeline_sources": {
+                  "type": "object",
+                  "description": "Specifies which pipeline sources this policy should be applied to (only for pipeline type).",
+                  "properties": {
+                    "including": {
+                      "type": "array",
+                      "description": "Which pipeline source to apply scan to (only for pipeline type).",
+                      "items": {
+                        "type": "string",
+                        "emum": [
+                          "unknown",
+                          "push",
+                          "web",
+                          "trigger",
+                          "schedule",
+                          "api",
+                          "external",
+                          "pipeline",
+                          "chat",
+                          "merge_request_event",
+                          "external_pull_request_event"
+                        ]
                       }
                     }
                   }

@@ -5,8 +5,8 @@ module Security
     class PolicyBranchesService < BaseProjectService
       include Gitlab::Utils::StrongMemoize
 
-      def scan_execution_branches(rules)
-        execute(:scan_execution, rules)
+      def scan_execution_branches(rules, source_branch = nil)
+        execute(:scan_execution, rules, source_branch)
       end
 
       def scan_result_branches(rules)
@@ -15,14 +15,16 @@ module Security
 
       private
 
-      def execute(policy_type, rules)
-        included_branches(policy_type, rules) - excluded_branches(rules)
+      delegate :default_branch, to: :project
+
+      def execute(policy_type, rules, source_branch = nil)
+        included_branches(policy_type, rules, source_branch) - excluded_branches(rules)
       end
 
-      def included_branches(policy_type, rules)
+      def included_branches(policy_type, rules, source_branch)
         return Set.new if rules.empty? || project.empty_repo?
 
-        all_matched_branches = matched_branches(policy_type, rules)
+        all_matched_branches = matched_branches(policy_type, rules, source_branch)
 
         return all_matched_branches if policy_type == :scan_execution
 
@@ -51,24 +53,26 @@ module Security
         all_branches_matched_by(exceptions_for_project)
       end
 
-      def matched_branches(policy_type, rules)
+      def matched_branches(policy_type, rules, source_branch)
         rules.reduce(Set.new) do |set, rule|
-          set.merge(match_rule(policy_type, rule))
+          set.merge(match_rule(policy_type, rule, source_branch))
         end
       end
 
-      def match_rule(policy_type, rule)
-        return match_branch_types(rule[:branch_type]) if rule.key?(:branch_type)
+      def match_rule(policy_type, rule, source_branch)
+        return match_branch_types(rule[:branch_type], source_branch) if rule.key?(:branch_type)
         return match_branches(rule[:branches], policy_type) if rule.key?(:branches)
 
         []
       end
 
-      def match_branch_types(branch_types)
+      def match_branch_types(branch_types, source_branch)
         case branch_types
         when "all" then all_project_branch_names
         when "protected" then matched_protected_branches
-        when "default" then [project.default_branch].compact
+        when "default" then [default_branch].compact
+        when "target_default" then source_branches_from_open_merge_requests(source_branch, [default_branch].compact)
+        when "target_protected" then source_branches_from_open_merge_requests(source_branch, matched_protected_branches)
         else []
         end
       end
@@ -87,6 +91,17 @@ module Security
         patterns.flat_map do |pattern|
           RefMatcher.new(pattern).matching(all_branch_names)
         end
+      end
+
+      def source_branches_from_open_merge_requests(source_branch, target_branches)
+        return [] if source_branch.blank? || target_branches.blank?
+
+        project
+          .merge_requests
+          .opened
+          .from_source_branches(source_branch)
+          .by_target_branch(target_branches)
+          .distinct_source_branches
       end
 
       # all_project_branch_names does not include group level protected_branches.
