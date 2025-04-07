@@ -501,6 +501,63 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
           group_values
         ]
       end
+
+      describe 'Query limits' do
+        let_it_be(:args) do
+          { current_user: current_user,
+            token: { personal_access_token: create(:personal_access_token, user: current_user) } }
+        end
+
+        let(:one_group_runner_query) { group_runners_query(runner) }
+
+        let(:runner_fragment) do
+          <<~QUERY
+            groups {
+              nodes {
+                name
+              }
+            }
+          QUERY
+        end
+
+        it 'avoids N+1 queries', :use_sql_query_cache do
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+            post_graphql(one_group_runner_query, **args)
+          end
+
+          additional_runners = setup_additional_runners
+
+          expect do
+            post_graphql(group_runners_query(additional_runners), **args)
+
+            raise StandardError, flattened_errors if graphql_errors # Ensure any error in query causes test to fail
+          end.not_to exceed_query_limit(control)
+        end
+
+        def group_runners_query(runners)
+          <<~QUERY
+            {
+              #{Array.wrap(runners).each_with_index.map { |r, i| runner_query(r, 1 + i) }.join("\n")}
+            }
+          QUERY
+        end
+
+        def runner_query(runner, runner_number)
+          <<~QUERY
+            runner#{runner_number}: runner(id: "#{runner.to_global_id}") {
+              #{runner_fragment}
+            }
+          QUERY
+        end
+
+        def setup_additional_runners
+          runner2 = create(:ci_runner, :group, groups: [create(:group)])
+          runner3 = create(:ci_runner, :group, groups: [create(:group)])
+          runner4 = create(:ci_runner, :group, groups: [create(:group)])
+
+          [runner2, runner3, runner4]
+        end
+      end
     end
   end
 end
