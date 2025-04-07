@@ -3,6 +3,10 @@ import { GlSprintf, GlLink, GlToggle } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import UserSelect from 'ee/security_orchestration/components/shared/user_select.vue';
+import {
+  DEFAULT_REVERSED_SKIP_SI_CONFIGURATION,
+  DEFAULT_SKIP_SI_CONFIGURATION,
+} from 'ee/security_orchestration/components/constants';
 
 export default {
   SKIP_CI_PATH: helpPagePath('ci/pipelines/_index.md', { anchor: 'skip-a-pipeline' }),
@@ -24,15 +28,28 @@ export default {
     skipCiConfiguration: {
       type: Object,
       required: false,
-      default: () => ({}),
+      default: undefined,
+    },
+    isReversed: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   computed: {
+    configuration() {
+      return this.skipCiConfiguration || this.fallbackValue;
+    },
+    fallbackValue() {
+      return this.isReversed
+        ? DEFAULT_REVERSED_SKIP_SI_CONFIGURATION
+        : DEFAULT_SKIP_SI_CONFIGURATION;
+    },
     enabled() {
-      return Boolean(this.skipCiConfiguration?.allowed);
+      return Boolean(this.configuration?.allowed);
     },
     selectedUsers() {
-      const { allowlist: { users = [] } = {} } = this.skipCiConfiguration || {};
+      const { allowlist: { users = [] } = {} } = this.configuration || {};
       return users.map(({ id }) => id) || [];
     },
   },
@@ -44,7 +61,7 @@ export default {
     },
     updateUsers({ user_approvers_ids: users = [] }) {
       this.$emit('changed', 'skip_ci', {
-        ...this.skipCiConfiguration,
+        ...this.configuration,
         allowed: false,
         allowlist: { users: users?.map((id) => ({ id })) },
       });

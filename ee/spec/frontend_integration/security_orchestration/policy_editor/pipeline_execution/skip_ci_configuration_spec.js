@@ -50,7 +50,9 @@ describe('Skip ci for pipeline execution policy', () => {
         expect(findSkipCiSelector().exists()).toBe(true);
       };
 
-      expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual({});
+      expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual({
+        allowed: false,
+      });
 
       await findSkipCiSelectorToggle().vm.$emit('change', false);
 

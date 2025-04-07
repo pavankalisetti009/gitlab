@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlEmptyState } from '@gitlab/ui';
+import { GlEmptyState, GlToggle } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import EditorComponent from 'ee/security_orchestration/components/policy_editor/scan_execution/editor_component.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/rule_section.vue';
@@ -101,6 +101,9 @@ describe('EditorComponent', () => {
         namespaceType: NAMESPACE_TYPES.GROUP,
         scanPolicyDocumentationPath,
         ...provide,
+      },
+      stubs: {
+        SkipCiSelector,
       },
     });
   };
@@ -249,6 +252,10 @@ enabled: true`;
         );
         await findPolicyEditorLayout().vm.$emit('remove-property', 'policy_scope');
         expect(findPolicyEditorLayout().props('policy').policy_scope).toBe(undefined);
+
+        expect(findSkipCiSelector().findComponent(GlToggle).props('value')).toBe(
+          !DEFAULT_SKIP_SI_CONFIGURATION.allowed,
+        );
       });
     });
   });
@@ -705,6 +712,13 @@ enabled: true`;
   });
 
   describe('skip ci configuration', () => {
+    const skipCi = {
+      allowed: false,
+      allowlist: {
+        users: [{ id: 1 }, { id: 2 }],
+      },
+    };
+
     it('renders skip ci configuration', () => {
       factory();
 
@@ -715,13 +729,6 @@ enabled: true`;
     });
 
     it('renders existing skip ci configuration', () => {
-      const skipCi = {
-        allowed: false,
-        allowlist: {
-          users: [{ id: 1 }, { id: 2 }],
-        },
-      };
-
       factoryWithExistingPolicy({
         policy: {
           skip_ci: skipCi,
@@ -729,6 +736,21 @@ enabled: true`;
       });
 
       expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual(skipCi);
+    });
+
+    it('renders existing default skip ci configuration when it is removed from yaml', async () => {
+      factoryWithExistingPolicy({
+        policy: {
+          skip_ci: skipCi,
+        },
+      });
+
+      expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual(skipCi);
+      await findPolicyEditorLayout().vm.$emit('update-yaml', mockDastScanExecutionManifest);
+
+      expect(findSkipCiSelector().findComponent(GlToggle).props('value')).toBe(
+        !DEFAULT_SKIP_SI_CONFIGURATION.allowed,
+      );
     });
   });
 
@@ -763,6 +785,8 @@ rules:
       - '*'
 actions:
   - scan: secret_detection
+skip_ci:
+  allowed: true
 type: scan_execution_policy
 `,
           },

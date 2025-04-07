@@ -9,6 +9,8 @@ export const DEFAULT_PIPELINE_EXECUTION_POLICY = `pipeline_execution_policy:
     content:
       include:
         - project: ''
+    skip_ci:
+      allowed: false
 `;
 
 export const INJECT_CI_PIPELINE_EXECUTION_POLICY = `pipeline_execution_policy:
@@ -19,6 +21,8 @@ export const INJECT_CI_PIPELINE_EXECUTION_POLICY = `pipeline_execution_policy:
     content:
       include:
         - project: ''
+    skip_ci:
+      allowed: false
 `;
 
 export const PIPELINE_EXECUTION_POLICY_INVALID_STRATEGY = `type: pipeline_execution_policy
@@ -29,6 +33,8 @@ pipeline_config_strategy: invalid
 content:
   include:
     - project: ''
+skip_ci:
+  allowed: false
 `;
 
 export const PIPELINE_EXECUTION_POLICY_INVALID_CONTENT = `type: pipeline_execution_policy
@@ -39,6 +45,8 @@ pipeline_config_strategy: invalid
 content:
   include_invalid:
     - project: ''
+skip_ci:
+  allowed: false
 `;
 
 export const DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT = `pipeline_execution_policy:
@@ -49,6 +57,8 @@ export const DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT = `pipeline_execution_
   content:
     include:
       - project: ''
+  skip_ci:
+    allowed: false
 `;
 
 export const DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX = `type: pipeline_execution_policy
@@ -60,6 +70,8 @@ suffix: on_conflict
 content:
   include:
     - project: ''
+skip_ci:
+  allowed: false
 `;
 
 export const HOUR_IN_SECONDS = 3600;

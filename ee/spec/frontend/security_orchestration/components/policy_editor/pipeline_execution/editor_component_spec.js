@@ -1,4 +1,4 @@
-import { GlEmptyState } from '@gitlab/ui';
+import { GlEmptyState, GlToggle } from '@gitlab/ui';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
@@ -30,7 +30,10 @@ import {
   customYamlUrlParams,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
-import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import {
+  DEFAULT_REVERSED_SKIP_SI_CONFIGURATION,
+  POLICY_TYPE_COMPONENT_OPTIONS,
+} from 'ee/security_orchestration/components/constants';
 import { goToYamlMode } from '../policy_editor_helper';
 
 jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
@@ -71,6 +74,9 @@ describe('EditorComponent', () => {
         policyEditorEmptyStateSvgPath,
         scanPolicyDocumentationPath,
         ...provide,
+      },
+      stubs: {
+        SkipCiSelector,
       },
     });
   };
@@ -379,7 +385,12 @@ describe('EditorComponent', () => {
       factory();
 
       expect(findSkipCiSelector().exists()).toBe(true);
-      expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual({});
+      expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual({
+        allowed: false,
+      });
+      expect(findSkipCiSelector().findComponent(GlToggle).props('value')).toBe(
+        !DEFAULT_REVERSED_SKIP_SI_CONFIGURATION.allowed,
+      );
     });
   });
 
@@ -410,6 +421,8 @@ pipeline_config_strategy: inject_policy
 content:
   include:
     - project: ''
+skip_ci:
+  allowed: false
 type: pipeline_execution_policy
 `,
           },
