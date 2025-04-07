@@ -15,7 +15,7 @@ export const i18n = {
   notificationDescriptions: {
     participating: __('You will only receive notifications for items you have participated in'),
     mention: __('You will receive notifications only for comments in which you were @mentioned'),
-    watch: __('You will receive notifications for any activity'),
+    watch: __('You will receive notifications for most activity'),
     disabled: __('You will not get any notifications via email'),
     global: __('Use your global notification setting'),
     custom: __(
