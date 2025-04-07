@@ -12,6 +12,14 @@ RSpec.describe 'groups/group_members/index', feature_category: :groups_and_proje
     assign(:group, group)
   end
 
+  context 'for the unlimited members trial alert' do
+    it 'sets content_for :hide_invite_members_button to true' do
+      render
+
+      expect(view.content_for(:hide_invite_members_button).to_s).to eq('true')
+    end
+  end
+
   context 'when managing members text is present' do
     before do
       allow(view).to receive(:can_admin_group_member?).with(group).and_return(true)

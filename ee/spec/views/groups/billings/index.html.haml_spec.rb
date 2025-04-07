@@ -18,7 +18,31 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
     assign(:plans_data, plans_data)
   end
 
+  context 'when the group is a subgroup' do
+    let(:top_level_group) { build(:group) }
+
+    before do
+      assign(:top_level_group, top_level_group)
+    end
+
+    context 'for the unlimited members trial alert' do
+      it 'does not set content_for :hide_explore_paid_plans_button' do
+        render
+
+        expect(view.content_for(:hide_explore_paid_plans_button).to_s).not_to eq('true')
+      end
+    end
+  end
+
   context 'when the group is the top level' do
+    context 'for the unlimited members trial alert' do
+      it 'sets content_for :hide_explore_paid_plans_button to true' do
+        render
+
+        expect(view.content_for(:hide_explore_paid_plans_button).to_s).to eq('true')
+      end
+    end
+
     shared_examples 'without duo enterprise trial alert' do
       it 'does not render the component' do
         render

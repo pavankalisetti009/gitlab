@@ -10,14 +10,9 @@ RSpec.describe Namespaces::FreeUserCap::UnlimitedMembersDuringTrialAlertComponen
   let(:owner_access?) { true }
   let(:dashboard_limit_enabled?) { true }
   let(:trial?) { true }
+  let(:params) { { namespace: namespace, user: user, wrapper_class: wrapper_class } }
 
-  subject(:component) do
-    described_class.new(
-      namespace: namespace,
-      user: user,
-      wrapper_class: wrapper_class
-    )
-  end
+  subject(:component) { described_class.new(**params) }
 
   before do
     build(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: namespace, trial: trial?)
@@ -81,57 +76,33 @@ RSpec.describe Namespaces::FreeUserCap::UnlimitedMembersDuringTrialAlertComponen
       end
     end
 
-    context 'when on members pages' do
-      where(:current_path_method) { %w[groups/group_members#index projects/project_members#index] }
+    context 'when hiding the invite members button' do
+      let(:params) { super().merge(hide_invite_members_button: true) }
 
-      with_them do
-        before do
-          allow(component).to receive(:current_path?).and_call_original
-          allow(component).to receive(:current_path?).with(current_path_method).and_return(true)
-        end
+      it 'only renders the "Explore paid plans" button' do
+        render_inline(component)
 
-        it 'renders the "Explore paid plans" button' do
-          render_inline(component)
-
-          expect(page).to have_link('Explore paid plans', href: group_billings_path(namespace))
-          expect(page).not_to have_css('.js-invite-members-trigger')
-        end
+        expect(page).to have_link('Explore paid plans', href: group_billings_path(namespace), class: 'btn-confirm')
+        expect(page).not_to have_css('.js-invite-members-trigger')
       end
     end
 
-    context 'when not on members page' do
+    context 'when not hiding the invite members button' do
       it 'renders the "Invite more members" trigger and "Explore paid plans" button' do
         render_inline(component)
 
         expect(page).to have_css('.js-invite-members-trigger')
-        expect(page).to have_link('Explore paid plans', href: group_billings_path(namespace))
+        expect(page).to have_link('Explore paid plans', href: group_billings_path(namespace), class: 'btn-default')
       end
     end
 
     context 'when on billing page' do
-      before do
-        allow(component).to receive(:current_page?).with(group_billings_path(namespace)).and_return(true)
-      end
+      let(:params) { super().merge(hide_explore_paid_plans_button: true) }
 
       it 'does not render the secondary CTA' do
         render_inline(component)
 
-        expect(page)
-          .not_to have_link('Explore paid plans', href: group_billings_path(namespace), class: 'gl-button-default')
-      end
-    end
-
-    context 'when on the group members invite page' do
-      before do
-        allow(component).to receive(:current_page?).with(group_billings_path(namespace)).and_return(false)
-        allow(component).to receive(:current_page?).with(group_group_members_path(namespace)).and_return(true)
-      end
-
-      it 'does not render the secondary CTA' do
-        render_inline(component)
-
-        expect(page)
-          .not_to have_link('Explore paid plans', href: group_billings_path(namespace), class: 'gl-button-default')
+        expect(page).not_to have_link('Explore paid plans', href: group_billings_path(namespace), class: 'btn-default')
       end
     end
   end
