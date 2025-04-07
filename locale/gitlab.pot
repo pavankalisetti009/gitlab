@@ -15245,6 +15245,9 @@ msgstr ""
 msgid "ComplianceFrameworks|Compliance frameworks that have a scoped policy can't be deleted"
 msgstr ""
 
+msgid "ComplianceFrameworks|Compliance pipeline configuration (deprecated)"
+msgstr ""
+
 msgid "ComplianceFrameworks|Compliance pipeline configuration (optional)"
 msgstr ""
 
