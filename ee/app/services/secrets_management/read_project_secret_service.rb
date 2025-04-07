@@ -6,6 +6,7 @@ module SecretsManagement
 
     def execute(name)
       return inactive_response unless project.secrets_manager&.active?
+      return invalid_name_response unless /\A[a-zA-Z0-9_]+\z/.match?(name)
 
       secret_metadata = secrets_manager_client.read_secret_metadata(
         project.secrets_manager.ci_secrets_mount_path,
@@ -39,6 +40,10 @@ module SecretsManagement
 
     def not_found_response
       ServiceResponse.error(message: 'Project secret does not exist.', reason: :not_found)
+    end
+
+    def invalid_name_response
+      ServiceResponse.error(message: "Name can contain only letters, digits and '_'.")
     end
   end
 end

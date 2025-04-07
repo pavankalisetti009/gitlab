@@ -1,9 +1,0 @@
----
-name: security_policy_bot_worker
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180760
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/518011
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/517389
-milestone: '17.9'
-type: gitlab_com_derisk
-group: group::security policies
-default_enabled: false

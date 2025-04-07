@@ -29,8 +29,11 @@ module ComplianceManagement
       evaluation_results = []
 
       projects.each do |project|
+        approval_settings = framework.approval_settings_from_security_policies(project)
+
         internal_controls.each do |control|
-          status = ::ComplianceManagement::ComplianceRequirements::ExpressionEvaluator.new(control, project).evaluate
+          status = ::ComplianceManagement::ComplianceRequirements::ExpressionEvaluator.new(control,
+            project, approval_settings).evaluate
           evaluation_results << {
             project: project,
             control: control,

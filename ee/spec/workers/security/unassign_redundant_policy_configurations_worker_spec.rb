@@ -50,36 +50,6 @@ RSpec.describe Security::UnassignRedundantPolicyConfigurationsWorker, :sidekiq_i
       create(:project_member, user: security_policy_bot, project: project)
     end
 
-    context 'when the `security_policy_bot_worker` feature flag is disabled' do
-      before do
-        stub_feature_flags(security_policy_bot_worker: false)
-      end
-
-      it 'does not unassign top-level group' do
-        expect { execute }.not_to change {
-          Security::OrchestrationPolicyConfiguration.exists?(policy_configuration_a.id)
-        }.from(true)
-      end
-
-      it 'unassigns projects and groups with redundant policy projects' do
-        execute
-
-        [policy_configuration_b, policy_configuration_c].each do |config|
-          expect(Security::OrchestrationPolicyConfiguration.exists?(config.id)).to be(false)
-        end
-      end
-
-      it 'does not unassign unrelated projects' do
-        expect { execute }.not_to change {
-          Security::OrchestrationPolicyConfiguration.exists?(other_policy_configuration.id)
-        }.from(true)
-      end
-
-      it 'keeps bot users' do
-        expect { execute }.not_to change { project.security_policy_bot }.from(security_policy_bot)
-      end
-    end
-
     it 'delegates the unassign to Security::Orchestration::UnassignService' do
       [subgroup_b, project].each do |container|
         expect_next_instance_of(::Security::Orchestration::UnassignService,

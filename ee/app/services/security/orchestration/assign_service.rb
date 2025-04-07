@@ -115,17 +115,7 @@ module Security
         if container.is_a?(Project)
           Security::OrchestrationConfigurationCreateBotWorker.perform_async(container.id, current_user.id)
         else
-          create_bot_for_namespace
-        end
-      end
-
-      def create_bot_for_namespace
-        if Feature.enabled?(:security_policy_bot_worker, container)
           Security::OrchestrationConfigurationCreateBotForNamespaceWorker.perform_async(container.id, current_user.id)
-        else
-          container.security_orchestration_policy_configuration.all_project_ids.each do |project_id|
-            Security::OrchestrationConfigurationCreateBotWorker.perform_async(project_id, current_user.id)
-          end
         end
       end
 

@@ -250,8 +250,15 @@ RSpec.describe Security::Orchestration::AssignService, feature_category: :securi
       end
     end
 
-    shared_examples 'triggers bot user create worker' do
+    context 'for project' do
+      let(:container) { project }
+      let(:another_container) { another_project }
+
+      it_behaves_like 'executes assign service'
+
       context 'with owner access' do
+        let!(:expected_projects) { [container] }
+
         before do
           container.add_owner(current_user)
         end
@@ -266,43 +273,21 @@ RSpec.describe Security::Orchestration::AssignService, feature_category: :securi
       end
     end
 
-    context 'for project' do
-      let(:container) { project }
-      let(:another_container) { another_project }
-
-      it_behaves_like 'executes assign service'
-      it_behaves_like 'triggers bot user create worker' do
-        let!(:expected_projects) { [container] }
-      end
-    end
-
     context 'for namespace' do
       let(:container) { namespace }
       let(:another_container) { another_namespace }
 
       it_behaves_like 'executes assign service'
 
-      context 'when the `security_policy_bot_worker` feature flag is disabled' do
+      context 'with owner access' do
         before do
-          stub_feature_flags(security_policy_bot_worker: false)
+          container.add_owner(current_user)
         end
 
-        it_behaves_like 'triggers bot user create worker' do
-          let!(:expected_projects) { create_list(:project, 2, group: container) }
-        end
-      end
+        it 'triggers the project bot user create for namespace worker' do
+          expect(Security::OrchestrationConfigurationCreateBotForNamespaceWorker).to receive(:perform_async).with(container.id, current_user.id)
 
-      context 'when the `security_policy_bot_worker` feature flag is enabled' do
-        context 'with owner access' do
-          before do
-            container.add_owner(current_user)
-          end
-
-          it 'triggers the project bot user create for namespace worker' do
-            expect(Security::OrchestrationConfigurationCreateBotForNamespaceWorker).to receive(:perform_async).with(container.id, current_user.id)
-
-            expect(service).to be_success
-          end
+          expect(service).to be_success
         end
       end
 
