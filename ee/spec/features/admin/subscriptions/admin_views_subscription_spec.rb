@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Admin views Subscription', :js, feature_category: :subscription_management do
+RSpec.describe 'Admin views Subscription', :js, feature_category: :plan_provisioning do
   include Spec::Support::Helpers::ModalHelpers
 
   let_it_be(:admin) { create(:admin) }
