@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-
-RSpec.describe Analytics::CodeSuggestionsUsageBackfillWorker, feature_category: :value_stream_management do
+RSpec.shared_examples 'common ai usage backfill worker' do |model|
   subject(:worker) { described_class.new }
 
   let(:event) { Analytics::ClickHouseForAnalyticsEnabledEvent.new(data: { enabled_at: 1.day.ago.iso8601 }) }
@@ -10,6 +8,8 @@ RSpec.describe Analytics::CodeSuggestionsUsageBackfillWorker, feature_category: 
   def perform
     worker.perform(event.class.name, event.data)
   end
+
+  it_behaves_like 'an idempotent worker'
 
   context 'when clickhouse is not configured' do
     it 'records disabled status' do
@@ -19,7 +19,7 @@ RSpec.describe Analytics::CodeSuggestionsUsageBackfillWorker, feature_category: 
     end
   end
 
-  describe '#perform', :click_house do
+  describe '#perform', :click_house, :freeze_time do
     context 'when clickhouse for analytics is not enabled' do
       before do
         stub_application_setting(use_clickhouse_for_analytics: false)
@@ -32,38 +32,13 @@ RSpec.describe Analytics::CodeSuggestionsUsageBackfillWorker, feature_category: 
       end
     end
 
-    context 'when clickhouse for analytics is enabled', :freeze_time do
-      let_it_be(:organization) { create(:organization, :default) }
-
-      let!(:pg_events) do
-        [
-          create(:ai_code_suggestion_event, timestamp: 1.day.ago),
-          create(:ai_code_suggestion_event, timestamp: 2.days.ago),
-          create(:ai_code_suggestion_event, timestamp: 3.days.ago)
-        ]
-      end
-
-      let(:expected_ch_events) do
-        pg_events.map do |e|
-          {
-            user_id: e[:user_id],
-            timestamp: e[:timestamp],
-            event: Ai::CodeSuggestionEvent.events['code_suggestion_shown_in_ide'],
-            language: 'ruby',
-            suggestion_size: 1,
-            unique_tracking_id: e[:payload] && e[:payload]['unique_tracking_id'],
-            branch_name: 'main',
-            namespace_path: '0/'
-          }.stringify_keys
-        end
+    context 'when clickhouse for analytics is enabled' do
+      before do
+        stub_application_setting(use_clickhouse_for_analytics: true)
       end
 
       let(:ch_records) do
-        ClickHouse::Client.select('SELECT * FROM code_suggestion_usages FINAL ORDER BY timestamp', :main)
-      end
-
-      before do
-        stub_application_setting(use_clickhouse_for_analytics: true)
+        ClickHouse::Client.select("SELECT * FROM #{model.clickhouse_table_name} FINAL ORDER BY timestamp", :main)
       end
 
       it 'inserts all records to ClickHouse' do
@@ -79,14 +54,12 @@ RSpec.describe Analytics::CodeSuggestionsUsageBackfillWorker, feature_category: 
       end
 
       it "doesn't create duplicates when data already exists in CH" do
-        clickhouse_fixture(:code_suggestion_usages, [
-          { user_id: pg_events.first.user.id, event: 2, timestamp: pg_events.first.timestamp }, # duplicate
-          { user_id: pg_events.first.user.id, event: 2, timestamp: pg_events.first.timestamp - 10.days }
-        ])
+        existing_ch_records
 
         perform
 
-        expect(ch_records.size).to eq(4)
+        # assumes that existing_ch_records has only 1 non-duplicate
+        expect(ch_records.size).to eq(pg_events.size + 1)
       end
 
       context 'when time limit is reached' do

@@ -50,9 +50,6 @@ export default {
     };
   },
   computed: {
-    loadingStyle() {
-      return { height: `${this.$options.zuoraFormHeight}px` };
-    },
     isSubmitButtonDisabled() {
       return (
         this.disableSubmitButton ||

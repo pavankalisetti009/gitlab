@@ -1323,8 +1323,8 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
-- :name: analytics_code_suggestions_usage_backfill
-  :worker_name: Analytics::CodeSuggestionsUsageBackfillWorker
+- :name: analytics_code_suggestions_events_backfill
+  :worker_name: Analytics::CodeSuggestionsEventsBackfillWorker
   :feature_category: :value_stream_management
   :has_external_dependencies: false
   :urgency: :low
@@ -1336,6 +1336,16 @@
 - :name: analytics_devops_adoption_create_snapshot
   :worker_name: Analytics::DevopsAdoption::CreateSnapshotWorker
   :feature_category: :devops_reports
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: analytics_duo_chat_events_backfill
+  :worker_name: Analytics::DuoChatEventsBackfillWorker
+  :feature_category: :value_stream_management
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown
