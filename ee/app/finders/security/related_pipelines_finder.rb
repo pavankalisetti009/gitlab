@@ -26,10 +26,10 @@ module Security
     def execute
       pipelines = all_pipelines.no_tag
       pipelines = pipelines.for_branch(params[:ref]) if params[:ref].present?
-      pipelines = latest_completed_pipelines_matching_sha(pipelines)
       pipelines = pipelines.with_pipeline_source(params[:sources]) if params[:sources].present?
+      pipelines = latest_completed_pipelines_matching_sha(pipelines)
 
-      # Using map here as `pluck` would not work due to usage of `SELECT max(id)`
+      # Using map here as `pluck` would not work due to usage of `SELECT DISTINCT ON`
       pipeline_ids = pipelines.map(&:id)
 
       # rubocop:disable CodeReuse/ActiveRecord -- number of pipelines is limited by source
@@ -50,7 +50,11 @@ module Security
     def latest_completed_pipelines_matching_sha(pipelines)
       # merged_result_pipeline should include itself and the pipelines with source_sha
       sha = pipeline.merged_result_pipeline? ? [pipeline.source_sha, pipeline.sha] : pipeline.sha
-      pipelines.latest_completed_or_manual_pipeline_ids_per_source(sha)
+      if Feature.enabled?(:approval_policies_pipelines_limit, project)
+        Ci::Pipeline.latest_limited_pipeline_ids_per_source(pipelines, sha)
+      else
+        pipelines.latest_completed_or_manual_pipeline_ids_per_source(sha)
+      end
     end
   end
 end

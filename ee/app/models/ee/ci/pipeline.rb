@@ -33,6 +33,7 @@ module EE
         end
 
         SBOM_REPORT_INGESTION_ERRORS_TTL = 15.days.to_i.freeze
+        LATEST_PIPELINES_LIMIT = 1000
 
         # This structure describes feature levels
         # to access the file types for given reports
@@ -55,6 +56,14 @@ module EE
           api_fuzzing: %i[api_fuzzing],
           cyclonedx: %i[dependency_scanning container_scanning]
         }.freeze
+
+        def self.latest_limited_pipeline_ids_per_source(pipelines, sha)
+          pipelines_for_sha = pipelines.complete_or_manual.for_sha(sha).order(id: :desc).limit(LATEST_PIPELINES_LIMIT)
+
+          from("(#{pipelines_for_sha.to_sql}) as recent_pipelines")
+            .select('DISTINCT ON (source) id')
+            .order('source, id DESC')
+        end
 
         state_machine :status do
           before_transition any => ::Ci::Pipeline.completed_with_manual_statuses do |pipeline|

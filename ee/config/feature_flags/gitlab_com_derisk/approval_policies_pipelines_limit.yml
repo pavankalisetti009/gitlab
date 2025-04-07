@@ -1,0 +1,9 @@
+---
+name: approval_policies_pipelines_limit
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/517512
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/183553
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/534308
+milestone: '17.11'
+group: group::security policies
+type: gitlab_com_derisk
+default_enabled: false

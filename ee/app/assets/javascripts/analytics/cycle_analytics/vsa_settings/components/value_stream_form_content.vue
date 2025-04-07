@@ -2,7 +2,7 @@
 import { GlAlert, GlButton, GlForm, GlFormInput, GlFormGroup, GlFormRadioGroup } from '@gitlab/ui';
 import { cloneDeep, uniqueId } from 'lodash';
 // eslint-disable-next-line no-restricted-imports
-import { mapState, mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import { filterStagesByHiddenStatus } from '~/analytics/cycle_analytics/utils';
 import { swapArrayItems } from '~/lib/utils/array_utility';
 import { sprintf } from '~/locale';
@@ -63,7 +63,7 @@ export default {
     ValueStreamFormContentActions,
   },
   mixins: [Tracking.mixin()],
-  inject: ['vsaPath', 'stageEvents'],
+  inject: ['vsaPath', 'namespaceFullPath', 'stageEvents'],
   props: {
     initialData: {
       type: Object,
@@ -102,7 +102,6 @@ export default {
   },
   computed: {
     ...mapState(['selectedValueStream']),
-    ...mapGetters(['namespaceRestApiRequestPath']),
     selectedValueStreamId() {
       return this.selectedValueStream?.id || -1;
     },
@@ -180,14 +179,14 @@ export default {
         });
     },
     submitRequest() {
-      const { isEditing, namespaceRestApiRequestPath, initialData, submitParams } = this;
+      const { isEditing, namespaceFullPath, initialData, submitParams } = this;
       return isEditing
         ? updateValueStream({
-            namespacePath: namespaceRestApiRequestPath,
+            namespacePath: namespaceFullPath,
             valueStreamId: initialData.id,
             data: submitParams,
           })
-        : createValueStream(namespaceRestApiRequestPath, submitParams);
+        : createValueStream(namespaceFullPath, submitParams);
     },
     stageGroupLabel(index) {
       return sprintf(this.$options.i18n.STAGE_INDEX, { index: index + 1 });

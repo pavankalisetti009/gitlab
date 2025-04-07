@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'Vulnerabilities through GroupQuery', feature_category: :vulnerability_management do
   include GraphqlHelpers
 
-  describe 'Querying vulnerabilities with `aboutToBeArchived` field' do
+  describe 'Querying vulnerabilities with `archivalInformation` field' do
     let_it_be(:current_user) { create(:user) }
     let_it_be(:top_level_group) { create(:group) }
     let_it_be(:sub_group_1) { create(:group, parent: top_level_group) }
@@ -15,9 +15,9 @@ RSpec.describe 'Vulnerabilities through GroupQuery', feature_category: :vulnerab
     let_it_be(:project_2) { create(:project, :public, group: sub_group_1) }
     let_it_be(:project_3) { create(:project, :public, group: sub_group_2) }
 
-    let_it_be(:vulnerability_1) { create(:vulnerability, :with_read, project: project_1) }
-    let_it_be(:vulnerability_2) { create(:vulnerability, :with_read, project: project_2, updated_at: 14.months.ago) }
-    let_it_be(:vulnerability_3) { create(:vulnerability, :with_read, project: project_3) }
+    let!(:vulnerability_1) { create(:vulnerability, :with_read, project: project_1) }
+    let!(:vulnerability_2) { create(:vulnerability, :with_read, project: project_2, updated_at: 14.months.ago) }
+    let!(:vulnerability_3) { create(:vulnerability, :with_read, project: project_3) }
 
     let(:vulnerabilities_returned) { graphql_data.dig('group', 'vulnerabilities', 'nodes') }
 
@@ -25,7 +25,10 @@ RSpec.describe 'Vulnerabilities through GroupQuery', feature_category: :vulnerab
       <<~QUERY
         nodes {
           id
-          aboutToBeArchived
+          archivalInformation {
+            aboutToBeArchived
+            expectedToBeArchivedOn
+          }
         }
       QUERY
     end
@@ -61,13 +64,26 @@ RSpec.describe 'Vulnerabilities through GroupQuery', feature_category: :vulnerab
         top_level_group.add_maintainer(current_user)
       end
 
+      around do |example|
+        travel_to('2025-04-02') { example.run }
+      end
+
       it 'returns the `aboutToBeArchived` information' do
         execute_graphql_query
 
         expect(vulnerabilities_returned).to match_array([
-          { 'id' => vulnerability_1.to_global_id.to_s, 'aboutToBeArchived' => false },
-          { 'id' => vulnerability_2.to_global_id.to_s, 'aboutToBeArchived' => true },
-          { 'id' => vulnerability_3.to_global_id.to_s, 'aboutToBeArchived' => false }
+          {
+            'id' => vulnerability_1.to_global_id.to_s,
+            'archivalInformation' => { 'aboutToBeArchived' => false, 'expectedToBeArchivedOn' => '2026-05-01' }
+          },
+          {
+            'id' => vulnerability_2.to_global_id.to_s,
+            'archivalInformation' => { 'aboutToBeArchived' => true, 'expectedToBeArchivedOn' => '2025-03-01' }
+          },
+          {
+            'id' => vulnerability_3.to_global_id.to_s,
+            'archivalInformation' => { 'aboutToBeArchived' => false, 'expectedToBeArchivedOn' => '2026-05-01' }
+          }
         ])
       end
 
