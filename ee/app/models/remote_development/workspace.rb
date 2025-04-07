@@ -12,7 +12,6 @@ module RemoteDevelopment
     columns_changing_default :desired_config_generator_version
 
     ignore_column :devfile_ref, remove_with: "17.8", remove_after: "2025-01-08"
-    ignore_column :max_hours_before_termination, remove_with: "17.11", remove_after: "2025-03-20"
 
     belongs_to :user, inverse_of: :workspaces
     belongs_to :project, inverse_of: :workspaces

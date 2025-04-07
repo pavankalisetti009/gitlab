@@ -107,6 +107,40 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::EligibleApproversFilter, fea
     end
   end
 
+  describe '#valid_entry?(references)' do
+    let(:references) { instance_double(Gitlab::CodeOwners::ReferenceExtractor, names: names, emails: emails) }
+    let(:names) { ['bar'] }
+    let(:invalid_usernames) { ['foo'] }
+    let(:emails) { ['bar@mail.com'] }
+    let(:invalid_emails) { ['foo@mail.com'] }
+
+    before do
+      allow(filter).to receive_messages(invalid_usernames: invalid_usernames, invalid_emails: invalid_emails)
+    end
+
+    context 'when references contains no invalid references' do
+      it 'returns true' do
+        expect(filter.valid_entry?(references)).to be(true)
+      end
+    end
+
+    context 'when references.names includes invalid_usernames' do
+      let(:names) { %w[foo bar] }
+
+      it 'returns false' do
+        expect(filter.valid_entry?(references)).to be(false)
+      end
+    end
+
+    context 'when references.emails includes invalid_emails' do
+      let(:emails) { %w[foo@mail.com bar@mail.com] }
+
+      it 'returns false' do
+        expect(filter.valid_entry?(references)).to be(false)
+      end
+    end
+  end
+
   it 'does not perform N+1 queries', :request_store, :use_sql_query_cache do
     project_id = project.id
     project = Project.find(project_id)

@@ -7,9 +7,6 @@ module RemoteDevelopment
 
     include Sortable
 
-    ignore_column :max_hours_before_termination_limit, remove_with: '17.11', remove_after: '2025-03-20'
-    ignore_column :default_max_hours_before_termination, remove_with: '17.11', remove_after: '2025-03-20'
-
     UNLIMITED_QUOTA = -1
     MIN_HOURS_BEFORE_TERMINATION = 1
 

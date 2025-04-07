@@ -47,9 +47,18 @@ module Gitlab
         end
         strong_memoize_attr :valid_emails
 
+        def valid_entry?(references)
+          valid_references?(references.names, invalid_usernames) &&
+            valid_references?(references.emails, invalid_emails)
+        end
+
         private
 
         attr_reader :project, :input_users, :input_usernames, :input_emails
+
+        def valid_references?(references, invalid_references)
+          !references.intersect?(invalid_references)
+        end
       end
     end
   end
