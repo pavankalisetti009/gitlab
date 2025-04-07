@@ -6,8 +6,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
   using RSpec::Parameterized::TableSyntax
 
   describe '#execute' do
-    let(:service) { described_class.new(container: container, params: { policy: policy, validate_approvals_required: validate_approvals_required }) }
-    let(:validate_approvals_required) { true }
+    let(:service) { described_class.new(container: container, params: { policy: policy, operation: operation }) }
+    let(:operation) { :append }
     let(:enabled) { true }
     let(:policy_type) { 'scan_execution_policy' }
     let(:name) { 'New policy' }
@@ -278,8 +278,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             end
           end
 
-          context 'with validation disabled' do
-            let(:validate_approvals_required) { false }
+          context 'when removing policy' do
+            let(:operation) { :remove }
 
             let(:action) do
               {
@@ -655,6 +655,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
           it { expect(result[:status]).to eq(:success) }
         end
 
+        context 'when removing policy' do
+          let(:operation) { :remove }
+
+          it { expect(result[:status]).to eq(:success) }
+        end
+
         context 'with feature disabled' do
           before do
             stub_feature_flags(
@@ -691,6 +697,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it { expect(result[:status]).to eq(:error) }
 
         it_behaves_like 'sets validation errors', message: "Policy exceeds the maximum of 2 rule schedules"
+
+        context 'when removing policy' do
+          let(:operation) { :remove }
+
+          it { expect(result[:status]).to eq(:success) }
+        end
       end
 
       context 'when limit is zero' do
