@@ -27,6 +27,9 @@ export const mockPipelineExecutionObject = {
   enabled: true,
   name: '',
   pipeline_config_strategy: 'inject_policy',
+  skip_ci: {
+    allowed: false,
+  },
   type: 'pipeline_execution_policy',
 };
 
@@ -36,6 +39,9 @@ export const mockWithInjectCiPipelineExecutionObject = {
   enabled: true,
   name: '',
   pipeline_config_strategy: 'inject_ci',
+  skip_ci: {
+    allowed: false,
+  },
   type: 'pipeline_execution_policy',
 };
 

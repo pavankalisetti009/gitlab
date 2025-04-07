@@ -316,6 +316,9 @@ describe('checkForPerformanceRisk', () => {
       enabled: true,
       name: '',
       rules: [{ branches: ['*'], type: 'pipeline' }],
+      skip_ci: {
+        allowed: true,
+      },
     };
 
     it.each`

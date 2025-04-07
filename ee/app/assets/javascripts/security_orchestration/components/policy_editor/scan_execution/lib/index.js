@@ -14,6 +14,8 @@ export const DEFAULT_SCAN_EXECUTION_POLICY = `scan_execution_policy:
         - '*'
     actions:
       - scan: secret_detection
+    skip_ci:
+      allowed: true
 `;
 
 export const DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE = `scan_execution_policy:
@@ -29,6 +31,8 @@ export const DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE = `scan_execution_policy:
           - '*'
     actions:
       - scan: secret_detection
+    skip_ci:
+      allowed: true
 `;
 
 export const getPolicyYaml = ({ isGroup }) =>
