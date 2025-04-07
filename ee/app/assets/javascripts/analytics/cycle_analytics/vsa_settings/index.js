@@ -10,7 +10,7 @@ export default () => {
   const el = document.getElementById('js-vsa-settings-app');
   if (!el) return false;
 
-  const { isEditPage, vsaPath, stageEvents: rawStageEvents } = el.dataset;
+  const { isEditPage, vsaPath, namespaceFullPath, stageEvents: rawStageEvents } = el.dataset;
   const initialData = buildCycleAnalyticsInitialData(el.dataset);
   const store = createStore();
 
@@ -33,6 +33,7 @@ export default () => {
     store,
     provide: {
       vsaPath,
+      namespaceFullPath,
       stageEvents,
     },
     render: (createElement) =>

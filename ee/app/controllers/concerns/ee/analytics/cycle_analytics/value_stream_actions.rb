@@ -105,7 +105,8 @@ module EE
             .merge(
               vsa_path: vsa_path,
               is_edit_page: is_edit_page.to_s,
-              stage_events: stage_events.to_json
+              stage_events: stage_events.to_json,
+              namespace_full_path: project? ? namespace.full_path : "groups/#{namespace.full_path}"
             )
           # rubocop:enable Gitlab/ModuleWithInstanceVariables
         end

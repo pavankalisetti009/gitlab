@@ -1,8 +1,6 @@
 <script>
 import { GlButton, GlIcon, GlFormGroup, GlCollapsibleListbox } from '@gitlab/ui';
 import { debounce } from 'lodash';
-// eslint-disable-next-line no-restricted-imports
-import { mapGetters } from 'vuex';
 import { __ } from '~/locale';
 import { getGroupLabels } from 'ee/api/analytics_api';
 import { DATA_REFETCH_DELAY } from '../../../shared/constants';
@@ -15,6 +13,7 @@ export default {
     GlFormGroup,
     GlCollapsibleListbox,
   },
+  inject: ['namespaceFullPath'],
   props: {
     index: {
       type: Number,
@@ -87,10 +86,9 @@ export default {
     this.loading = false;
   },
   methods: {
-    ...mapGetters(['namespaceRestApiRequestPath']),
     async fetchLabels() {
       try {
-        const { data } = await getGroupLabels(this.namespaceRestApiRequestPath, {
+        const { data } = await getGroupLabels(this.namespaceFullPath, {
           search: this.searchTerm,
           only_group_labels: true,
         });
