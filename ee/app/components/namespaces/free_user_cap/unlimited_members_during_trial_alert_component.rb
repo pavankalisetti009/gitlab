@@ -5,15 +5,19 @@ module Namespaces
     class UnlimitedMembersDuringTrialAlertComponent < ViewComponent::Base
       include SafeFormatHelper
 
-      def initialize(namespace:, user:, wrapper_class:)
+      def initialize(
+        namespace:, user:, wrapper_class:, hide_invite_members_button: false, hide_explore_paid_plans_button: false
+      )
         @namespace = namespace
         @user = user
         @wrapper_class = wrapper_class
+        @hide_invite_members_button = hide_invite_members_button
+        @hide_explore_paid_plans_button = hide_explore_paid_plans_button
       end
 
       private
 
-      attr_reader :namespace, :user, :wrapper_class
+      attr_reader :namespace, :user, :wrapper_class, :hide_invite_members_button, :hide_explore_paid_plans_button
 
       use_helpers :current_path?
 
@@ -69,7 +73,7 @@ module Namespaces
       end
 
       def primary_cta
-        if members_page?
+        if hide_invite_members_button
           render Pajamas::ButtonComponent.new(href: group_billings_path(namespace), variant: :confirm) do
             s_('UnlimitedMembersDuringTrialAlert|Explore paid plans')
           end
@@ -79,7 +83,7 @@ module Namespaces
       end
 
       def secondary_cta
-        return if current_page?(group_billings_path(namespace)) || current_page?(group_group_members_path(namespace))
+        return unless render_secondary_cta?
 
         render Pajamas::ButtonComponent.new(href: group_billings_path(namespace)) do
           s_('UnlimitedMembersDuringTrialAlert|Explore paid plans')
@@ -95,9 +99,8 @@ module Namespaces
         })
       end
 
-      def members_page?
-        current_path?('groups/group_members#index') ||
-          current_path?('projects/project_members#index')
+      def render_secondary_cta?
+        !hide_explore_paid_plans_button && !hide_invite_members_button
       end
 
       def dismissed_for_namespace

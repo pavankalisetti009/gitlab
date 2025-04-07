@@ -12,6 +12,7 @@
     current_plan: current_plan,
     top_level_group: @top_level_group
 - else
+  - content_for :hide_explore_paid_plans_button, true
   - current_plan = subscription_plan_info(@plans_data, @group.actual_plan_name)
 
   - if @group.paid? && !@group.trial?

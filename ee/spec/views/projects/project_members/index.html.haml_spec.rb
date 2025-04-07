@@ -14,6 +14,14 @@ RSpec.describe 'projects/project_members/index', :aggregate_failures, feature_ca
     assign(:project, project)
   end
 
+  context 'for the unlimited members trial alert' do
+    it 'sets content_for :hide_invite_members_button to true' do
+      render
+
+      expect(view.content_for(:hide_invite_members_button).to_s).to eq('true')
+    end
+  end
+
   context 'when user can invite members for the project' do
     before do
       project.add_maintainer(user)
