@@ -188,12 +188,12 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
         sign_in(user)
       end
 
-      context 'delayed deletion feature is available' do
+      context 'when delayed deletion feature is available' do
         before do
           stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
         end
 
-        context 'success' do
+        context 'when the restore succeeds' do
           it 'restores the group' do
             expect { subject }.to change { group.reload.marked_for_deletion? }.from(true).to(false)
           end
@@ -206,7 +206,7 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
           end
         end
 
-        context 'failure' do
+        context 'when the restore fails' do
           before do
             allow(::Groups::RestoreService).to receive_message_chain(:new, :execute).and_return({ status: :error, message: 'error' })
           end
@@ -224,7 +224,7 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
         end
       end
 
-      context 'delayed deletion feature is not available' do
+      context 'when delayed deletion feature is not available' do
         before do
           stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
         end

@@ -262,8 +262,6 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
 
     resource :roadmap, only: [:show], controller: 'roadmap'
 
-    post '/restore' => '/groups#restore', as: :restore
-
     resources :work_items, only: [], param: :iid do
       member do
         get '/descriptions/:version_id/diff', action: :description_diff, as: :description_diff
