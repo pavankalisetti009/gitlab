@@ -37,7 +37,7 @@ compile-production-assets:
     - .production
     - .frontend:rules:compile-production-assets
   tags:
-    - $GITLAB_LARGE_RUNNER_OPTIONAL
+    - $GLCI_PRODUCTION_ASSETS_RUNNER_OPTIONAL
   variables:
     GLCI_BUILD_ASSETS_IMAGE: "true"
     ARCH: linux/amd64,linux/arm64
