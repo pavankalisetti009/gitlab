@@ -143,6 +143,7 @@ module VulnerabilitiesHelper
     data[:belongs_to_public_project] = vulnerability.project.public?
     data[:cve_enrichment] = cve_enrichment(finding)
     data[:cvss] = cvss(finding)
+    data[:finding_token_status] = finding.finding_token_status if Feature.enabled?(:validity_checks, finding.project)
     data
   end
 
