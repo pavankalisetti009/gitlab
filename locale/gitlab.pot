@@ -67875,6 +67875,9 @@ msgstr ""
 msgid "WorkItem|Link items together to show that they're related or that one is blocking others."
 msgstr ""
 
+msgid "WorkItem|Link items together to show that they're related."
+msgstr ""
+
 msgid "WorkItem|Linked item removed"
 msgstr ""
 
