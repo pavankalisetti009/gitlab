@@ -6,7 +6,7 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository, :public) }
   let_it_be(:pipeline) { create(:ci_pipeline, :success, project: project) }
-  let_it_be_with_refind(:finding) { create(:vulnerabilities_finding, :with_pipeline, :with_cve, project: project, severity: :high) }
+  let_it_be_with_refind(:finding) { create(:vulnerabilities_finding, :with_pipeline, :with_cve, :with_token_status, token_status: :active, project: project, severity: :high) }
   let_it_be(:advisory) { create(:pm_advisory, cve: finding.cve_value) }
   let_it_be(:cve_enrichment_object) { create(:pm_cve_enrichment, cve: finding.cve_value) }
 
@@ -478,7 +478,8 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
         cvss: [{
           overall_score: advisory.cvss_v3.overall_score,
           version: advisory.cvss_v3.version
-        }]
+        }],
+        finding_token_status: finding.finding_token_status
       )
 
       expect(subject[:location]['blob_path']).to match(kind_of(String))
@@ -560,6 +561,16 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
 
           expect(subject[:description_html]).to eq(rendered_markdown)
         end
+      end
+    end
+
+    context 'when validity_checks feature flag is disabled' do
+      before do
+        stub_feature_flags(validity_checks: false)
+      end
+
+      it 'does not include finding_token_status in the result' do
+        expect(subject).not_to include(:finding_token_status)
       end
     end
   end

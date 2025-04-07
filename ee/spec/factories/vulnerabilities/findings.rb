@@ -682,6 +682,19 @@ FactoryBot.define do
       end
     end
 
+    trait :with_token_status do
+      transient do
+        token_status { :unknown } # Default to unknown, but can be overridden
+      end
+
+      after(:create) do |finding, evaluator|
+        create(:finding_token_status,
+          finding: finding,
+          status: evaluator.token_status
+        )
+      end
+    end
+
     trait :with_cluster_image_scanning_scanning_metadata do
       transient do
         location_image { "alpine:3.7" }
