@@ -15140,6 +15140,9 @@ msgstr ""
 msgid "Compliance requirement control successfully deleted"
 msgstr ""
 
+msgid "Compliance requirement status successfully refreshed."
+msgstr ""
+
 msgid "Compliance requirement successfully deleted"
 msgstr ""
 
@@ -25461,6 +25464,9 @@ msgid "Failed to publish issue on status page."
 msgstr ""
 
 msgid "Failed to rebase. Please try again."
+msgstr ""
+
+msgid "Failed to refresh compliance requirement status. Error: %{error_message}"
 msgstr ""
 
 msgid "Failed to regenerate unique domain"
@@ -39974,6 +39980,9 @@ msgstr ""
 msgid "Not permitted to destroy requirement control"
 msgstr ""
 
+msgid "Not permitted to refresh compliance requirement status"
+msgstr ""
+
 msgid "Not permitted to reset user feed token"
 msgstr ""
 
@@ -50300,6 +50309,9 @@ msgid "Requirement %{reference} has been reopened"
 msgstr ""
 
 msgid "Requirement %{reference} has been updated"
+msgstr ""
+
+msgid "Requirement status is nil."
 msgstr ""
 
 msgid "Requirements"

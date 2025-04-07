@@ -87,6 +87,15 @@ module ComplianceManagement
         end
       end
 
+      def control_status_values
+        compliance_requirement
+          .project_control_compliance_statuses
+          .for_projects(project_id)
+          .limit(ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl::
+              MAX_COMPLIANCE_CONTROLS_PER_REQUIREMENT_COUNT)
+          .pluck(:status)
+      end
+
       private
 
       def validate_associations
