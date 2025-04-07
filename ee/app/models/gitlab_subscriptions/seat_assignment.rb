@@ -6,7 +6,7 @@ module GitlabSubscriptions
     belongs_to :user, optional: false
     belongs_to :organization, class_name: 'Organizations::Organization'
 
-    validates :namespace_id, uniqueness: { scope: :user_id }
+    validates :namespace_id, uniqueness: { scope: :user_id }, presence: { if: :gitlab_com_subscription? }
 
     scope :by_namespace, ->(namespace) { where(namespace: namespace) }
     scope :by_user, ->(user) { where(user: user) }
@@ -25,6 +25,12 @@ module GitlabSubscriptions
 
     def self.find_by_namespace_and_user(namespace, user)
       by_namespace(namespace).by_user(user).first
+    end
+
+    private
+
+    def gitlab_com_subscription?
+      ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
     end
   end
 end
