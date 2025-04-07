@@ -13,9 +13,9 @@ module Search
       SEARCHEABLE_STATES = %i[ready].freeze
       SHOULD_BE_DELETED_STATES = %i[orphaned pending_deletion].freeze
       STORAGE_IDEAL_PERCENT_USED = 0.6
-      STORAGE_LOW_WATERMARK = 0.75
-      STORAGE_HIGH_WATERMARK = 0.85
-      STORAGE_CRITICAL_WATERMARK = 0.95
+      STORAGE_LOW_WATERMARK = 0.70
+      STORAGE_HIGH_WATERMARK = 0.75
+      STORAGE_CRITICAL_WATERMARK = 0.80
 
       belongs_to :zoekt_enabled_namespace, inverse_of: :indices, class_name: '::Search::Zoekt::EnabledNamespace'
       belongs_to :node, foreign_key: :zoekt_node_id, inverse_of: :indices, class_name: '::Search::Zoekt::Node'
@@ -140,12 +140,6 @@ module Search
         end
       end
 
-      private
-
-      def storage_percent_used
-        used_storage_bytes / reserved_storage_bytes.to_f
-      end
-
       def appropriate_watermark_level
         case storage_percent_used
         when 0...STORAGE_IDEAL_PERCENT_USED then :overprovisioned
@@ -155,6 +149,12 @@ module Search
         else
           :critical_watermark_exceeded
         end
+      end
+
+      private
+
+      def storage_percent_used
+        used_storage_bytes / reserved_storage_bytes.to_f
       end
 
       def refresh_used_storage_bytes
