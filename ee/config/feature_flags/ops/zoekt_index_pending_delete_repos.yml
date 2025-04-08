@@ -1,9 +1,0 @@
----
-name: zoekt_index_pending_delete_repos
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/522964
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/183046
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/521938
-milestone: '17.10'
-group: group::global search
-type: ops
-default_enabled: true

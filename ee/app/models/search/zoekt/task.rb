@@ -128,10 +128,6 @@ module Search
 
         return :skipped if task.zoekt_repository.failed?
 
-        if Feature.disabled?(:zoekt_index_pending_delete_repos, Feature.current_request) && project.pending_delete
-          return :skipped
-        end
-
         # Mark tasks as done since we have nothing to index
         return :done unless project.repo_exists?
 
