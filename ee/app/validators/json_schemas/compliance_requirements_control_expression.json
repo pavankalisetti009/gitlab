@@ -43,7 +43,13 @@
         "ensure_2_admins_per_repo",
         "strict_permissions_for_repo",
         "secure_webhooks",
-        "restricted_build_access"
+        "restricted_build_access",
+        "gitlab_license_level_ultimate",
+        "status_page_configured",
+        "has_valid_ci_config",
+        "error_tracking_enabled",
+        "default_branch_users_can_push",
+        "default_branch_protected_from_direct_push"
       ]
     },
     "operator": {
@@ -112,7 +118,13 @@
               "ensure_2_admins_per_repo",
               "strict_permissions_for_repo",
               "secure_webhooks",
-              "restricted_build_access"
+              "restricted_build_access",
+              "gitlab_license_level_ultimate",
+              "status_page_configured",
+              "has_valid_ci_config",
+              "error_tracking_enabled",
+              "default_branch_users_can_push",
+              "default_branch_protected_from_direct_push"
             ]
           }
         }
