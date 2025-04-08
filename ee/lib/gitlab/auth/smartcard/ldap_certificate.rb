@@ -4,6 +4,8 @@ module Gitlab
   module Auth
     module Smartcard
       class LdapCertificate < Gitlab::Auth::Smartcard::Base
+        include Gitlab::Utils::StrongMemoize
+
         def initialize(provider, certificate)
           super(certificate)
 
@@ -12,6 +14,13 @@ module Gitlab
 
         def auth_method
           'smartcard_ldap'
+        end
+
+        def find_or_create_user
+          # if passed certificate is invalid, @certificate may be nil
+          return unless @certificate.present? && ldap_user.present?
+
+          super
         end
 
         private
@@ -62,17 +71,18 @@ module Gitlab
             ::Gitlab::Auth::Ldap::Person.find_by_certificate_issuer_and_serial(issuer_dn, serial, adapter)
           end
         end
+        strong_memoize_attr :ldap_user
 
         def issuer_dn
-          @issuer ||= @certificate.issuer.to_s(OpenSSL::X509::Name::RFC2253)
+          @certificate.issuer.to_s(OpenSSL::X509::Name::RFC2253)
         end
+        strong_memoize_attr :issuer_dn
 
         def reverse_issuer_dn
-          @reverse_issuer_dn ||= begin
-            reverse_issuer = @certificate.issuer.to_a.reverse
-            OpenSSL::X509::Name.new(reverse_issuer).to_s(OpenSSL::X509::Name::RFC2253)
-          end
+          reverse_issuer = @certificate.issuer.to_a.reverse
+          OpenSSL::X509::Name.new(reverse_issuer).to_s(OpenSSL::X509::Name::RFC2253)
         end
+        strong_memoize_attr :reverse_issuer_dn
 
         def serial
           @serial ||= @certificate.serial.to_s
@@ -131,6 +141,8 @@ module Gitlab
         end
 
         def username
+          return unless ldap_user.present?
+
           ::Namespace.clean_path(ldap_user.username)
         end
       end

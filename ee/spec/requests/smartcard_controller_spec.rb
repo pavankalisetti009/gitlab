@@ -382,7 +382,7 @@ RSpec.describe SmartcardController, type: :request, feature_category: :system_ac
         expect(ldap_connection).to(
           receive(:search).with(ldap_search_params).and_return([ldap_entry]))
 
-        subject
+        verify_smartcard
       end
 
       context 'when ldap is an active directory server' do
@@ -418,7 +418,7 @@ RSpec.describe SmartcardController, type: :request, feature_category: :system_ac
                               extern_uid: subject_ldap_dn,
                               user: user })
 
-          expect { subject }.not_to change { User.count }
+          expect { verify_smartcard }.not_to change { User.count }
 
           expect(request.env['warden']).to be_authenticated
         end
@@ -433,14 +433,26 @@ RSpec.describe SmartcardController, type: :request, feature_category: :system_ac
           end
 
           it "doesn't login a user" do
-            subject
+            verify_smartcard
 
             expect(request.env['warden']).not_to be_authenticated
           end
 
           it "doesn't create a new user entry either" do
-            expect { subject }.not_to change { User.count }
+            expect { verify_smartcard }.not_to change { User.count }
           end
+        end
+      end
+
+      context 'when user is not found on LDAP server' do
+        before do
+          allow(ldap_connection).to(
+            receive(:search).with(ldap_search_params).and_return([])
+          )
+        end
+
+        it 'does not create new user' do
+          expect { verify_smartcard }.not_to change { User.count }
         end
       end
     end
