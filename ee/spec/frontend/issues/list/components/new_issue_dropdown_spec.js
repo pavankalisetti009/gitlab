@@ -47,7 +47,7 @@ describe('NewIssueDropdown component', () => {
   it('renders findCreateWorkItemModal as dropdown item for objectives', () => {
     expect(findCreateWorkItemModal().props()).toMatchObject({
       asDropdownItem: true,
-      workItemTypeName: WORK_ITEM_TYPE_ENUM_OBJECTIVE,
+      preselectedWorkItemType: WORK_ITEM_TYPE_ENUM_OBJECTIVE,
     });
   });
 });

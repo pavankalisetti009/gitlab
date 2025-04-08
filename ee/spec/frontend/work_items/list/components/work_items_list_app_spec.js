@@ -154,7 +154,7 @@ describeSkipVue3(skipReason, () => {
       expect(findCreateWorkItemModal().exists()).toBe(true);
       expect(findCreateWorkItemModal().props()).toMatchObject({
         isGroup: true,
-        workItemTypeName: WORK_ITEM_TYPE_ENUM_EPIC,
+        preselectedWorkItemType: WORK_ITEM_TYPE_ENUM_EPIC,
       });
     });
 
@@ -171,7 +171,7 @@ describeSkipVue3(skipReason, () => {
         isGroup: false,
         alwaysShowWorkItemTypeSelect: true,
         allowedWorkItemTypes: BASE_ALLOWED_CREATE_TYPES,
-        workItemTypeName: WORK_ITEM_TYPE_ENUM_ISSUE,
+        preselectedWorkItemType: WORK_ITEM_TYPE_ENUM_ISSUE,
       });
     });
 
@@ -188,7 +188,7 @@ describeSkipVue3(skipReason, () => {
         isGroup: true,
         allowedWorkItemTypes: [],
         alwaysShowWorkItemTypeSelect: false,
-        workItemTypeName: WORK_ITEM_TYPE_ENUM_EPIC,
+        preselectedWorkItemType: WORK_ITEM_TYPE_ENUM_EPIC,
       });
     });
 
