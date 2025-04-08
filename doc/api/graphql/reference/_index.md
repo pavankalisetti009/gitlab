@@ -40897,6 +40897,7 @@ Represents the emoji reactions widget.
 | ---- | ---- | ----------- |
 | <a id="workitemwidgetawardemojiawardemoji"></a>`awardEmoji` | [`AwardEmojiConnection`](#awardemojiconnection) | Emoji reactions on the work item. (see [Connections](#connections)) |
 | <a id="workitemwidgetawardemojidownvotes"></a>`downvotes` | [`Int!`](#int) | Number of downvotes the work item has received. |
+| <a id="workitemwidgetawardemojinewcustomemojipath"></a>`newCustomEmojiPath` | [`String`](#string) | Path to create a new custom emoji. |
 | <a id="workitemwidgetawardemojitype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
 | <a id="workitemwidgetawardemojiupvotes"></a>`upvotes` | [`Int!`](#int) | Number of upvotes the work item has received. |
 
