@@ -22,3 +22,13 @@
       = _('Manage secret detection behavior for all projects in your GitLab instance')
     - c.with_body do
       = render 'secret_push_protection'
+
+- if License.feature_available?(:security_orchestration_policies)
+  = render ::Layouts::SettingsBlockComponent.new(_('Security policies'),
+    id: 'js-security-policies-settings',
+    testid: 'admin-security-policies-settings',
+    expanded: expanded_by_default?) do |c|
+    - c.with_description do
+      = _('Manage security policy settings in your GitLab instance')
+    - c.with_body do
+      = render 'security_policies'

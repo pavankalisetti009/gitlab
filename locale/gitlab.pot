@@ -35869,6 +35869,9 @@ msgstr ""
 msgid "Manage secret detection behavior for all projects in your GitLab instance"
 msgstr ""
 
+msgid "Manage security policy settings in your GitLab instance"
+msgstr ""
+
 msgid "Manage templates..."
 msgstr ""
 
@@ -36289,6 +36292,9 @@ msgstr ""
 msgid "Maximum number of Helm packages that can be listed per channel. Must be at least 1."
 msgstr ""
 
+msgid "Maximum number of actions per scan execution policy"
+msgstr ""
+
 msgid "Maximum number of changes (branches or tags) in a single push above which a bulk push event is created (default is 3). Setting to 0 does not disable throttling."
 msgstr ""
 
@@ -36299,6 +36305,9 @@ msgid "Maximum number of comments exceeded"
 msgstr ""
 
 msgid "Maximum number of mirrors that can be synchronizing at the same time."
+msgstr ""
+
+msgid "Maximum number of pipeline execution policies allowed per security policy configuration"
 msgstr ""
 
 msgid "Maximum number of possible retries for Elasticsearch search requests."
@@ -53239,6 +53248,9 @@ msgstr ""
 msgid "Security inventory"
 msgstr ""
 
+msgid "Security policies"
+msgstr ""
+
 msgid "Security policy"
 msgstr ""
 
@@ -60008,6 +60020,9 @@ msgid "The maximum file size in megabytes for individual job artifacts."
 msgstr ""
 
 msgid "The maximum file size is %{size}."
+msgstr ""
+
+msgid "The maximum number of pipeline execution policies allowed per security policy configuration can exceed the limit for the instance. Set to 0 to use instance limit."
 msgstr ""
 
 msgid "The maximum number of tags that a single worker accepts for cleanup. If the number of tags goes above this limit, the list of tags to delete is truncated to this number. To remove this limit, set it to 0."

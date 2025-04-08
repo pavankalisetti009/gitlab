@@ -174,7 +174,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           max_active_scan_result_policies_reached: 'false',
           max_scan_result_policies_allowed: Gitlab::CurrentSettings.security_approval_policies_limit,
           max_scan_execution_policies_allowed: 5,
-          max_pipeline_execution_policies_allowed: 5,
+          max_pipeline_execution_policies_allowed:
+            Gitlab::CurrentSettings.pipeline_execution_policies_per_configuration_limit,
           max_ci_component_publishing_policies_allowed: 5,
           max_ci_component_publishing_policies_reached: 'false',
           max_vulnerability_management_policies_allowed: 5,
@@ -262,7 +263,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           max_active_scan_result_policies_reached: 'false',
           max_scan_result_policies_allowed: Gitlab::CurrentSettings.security_approval_policies_limit,
           max_scan_execution_policies_allowed: 5,
-          max_pipeline_execution_policies_allowed: 5,
+          max_pipeline_execution_policies_allowed:
+            Gitlab::CurrentSettings.pipeline_execution_policies_per_configuration_limit,
           max_ci_component_publishing_policies_allowed: 5,
           max_ci_component_publishing_policies_reached: 'false',
           max_vulnerability_management_policies_allowed: 5,
@@ -514,7 +516,9 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
 
     context 'when a source reached the limit of active pipeline execution policies' do
       before do
-        stub_const('::Security::PipelineExecutionPolicy::POLICY_LIMIT', 1)
+        allow_next_instance_of(Security::SecurityOrchestrationPolicies::LimitService) do |service|
+          allow(service).to receive(:pipeline_execution_policies_per_configuration_limit).and_return(1)
+        end
       end
 
       it_behaves_like 'when source has active scan policies', limit_reached: true

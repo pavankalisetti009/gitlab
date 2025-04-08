@@ -2270,7 +2270,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
 
         context 'when policies are at the limit' do
           let(:pipeline_execution_policies) do
-            build_list(:pipeline_execution_policy, ::Security::PipelineExecutionPolicy::POLICY_LIMIT)
+            build_list(:pipeline_execution_policy, 5)
           end
 
           it { expect(errors).to be_empty }
