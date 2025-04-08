@@ -184,6 +184,11 @@ export default {
       required: false,
       default: false,
     },
+    namespaceFullName: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   data() {
     return {
@@ -846,6 +851,7 @@ export default {
             v-model="selectedProjectFullPath"
             :full-path="fullPath"
             :is-group="isGroup"
+            :current-project-name="namespaceFullName"
           />
         </gl-form-group>
 
