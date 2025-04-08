@@ -30,6 +30,8 @@ module Geo
         verification_state_object.save!
       end
 
+      after_save :save_verification_details
+
       def in_verifiables?
         # This query could be simpler, but this way it always uses the best index: the primary key index.
         cte = Gitlab::SQL::CTE.new(:verifiables, self.class.primary_key_in(self))

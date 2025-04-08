@@ -24,8 +24,6 @@ module EE
         has_one :ci_secure_file_state, autosave: false, inverse_of: :ci_secure_file,
           class_name: 'Geo::CiSecureFileState', foreign_key: :ci_secure_file_id
 
-        after_save :save_verification_details
-
         scope :with_verification_state, ->(state) {
                                           joins(:ci_secure_file_state).where(
                                             ci_secure_file_states: {

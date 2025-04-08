@@ -58,7 +58,6 @@ module EE
       before_save :set_next_execution_timestamp_to_now, if: ->(project) { project.mirror? && project.mirror_changed? && project.import_state }
 
       after_create :create_security_setting, unless: :security_setting
-      after_save :save_verification_details
 
       belongs_to :mirror_user, class_name: 'User'
 

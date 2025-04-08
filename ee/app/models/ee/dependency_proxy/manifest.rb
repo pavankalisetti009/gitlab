@@ -19,8 +19,6 @@ module EE
           class_name: 'Geo::DependencyProxyManifestState',
           foreign_key: :dependency_proxy_manifest_id
 
-        after_save :save_verification_details
-
         scope :with_verification_state, ->(state) do
           joins(:dependency_proxy_manifest_state)
             .where(dependency_proxy_manifest_states: { verification_state: verification_state_value(state) })

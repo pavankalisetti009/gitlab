@@ -1694,6 +1694,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_292097dea85c() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "terraform_state_versions"
+  WHERE "terraform_state_versions"."id" = NEW."terraform_state_version_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_2a994bb5629f() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -23638,6 +23654,29 @@ CREATE SEQUENCE term_agreements_id_seq
 
 ALTER SEQUENCE term_agreements_id_seq OWNED BY term_agreements.id;
 
+CREATE TABLE terraform_state_version_states (
+    id bigint NOT NULL,
+    verification_started_at timestamp with time zone,
+    verification_retry_at timestamp with time zone,
+    verified_at timestamp with time zone,
+    terraform_state_version_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    verification_state smallint DEFAULT 0 NOT NULL,
+    verification_retry_count smallint DEFAULT 0 NOT NULL,
+    verification_checksum bytea,
+    verification_failure text,
+    CONSTRAINT check_dc0c9c9162 CHECK ((char_length(verification_failure) <= 255))
+);
+
+CREATE SEQUENCE terraform_state_version_states_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE terraform_state_version_states_id_seq OWNED BY terraform_state_version_states.id;
+
 CREATE TABLE terraform_state_versions (
     id bigint NOT NULL,
     terraform_state_id bigint NOT NULL,
@@ -27725,6 +27764,8 @@ ALTER TABLE ONLY targeted_messages ALTER COLUMN id SET DEFAULT nextval('targeted
 
 ALTER TABLE ONLY term_agreements ALTER COLUMN id SET DEFAULT nextval('term_agreements_id_seq'::regclass);
 
+ALTER TABLE ONLY terraform_state_version_states ALTER COLUMN id SET DEFAULT nextval('terraform_state_version_states_id_seq'::regclass);
+
 ALTER TABLE ONLY terraform_state_versions ALTER COLUMN id SET DEFAULT nextval('terraform_state_versions_id_seq'::regclass);
 
 ALTER TABLE ONLY terraform_states ALTER COLUMN id SET DEFAULT nextval('terraform_states_id_seq'::regclass);
@@ -30785,6 +30826,9 @@ ALTER TABLE ONLY targeted_messages
 
 ALTER TABLE ONLY term_agreements
     ADD CONSTRAINT term_agreements_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY terraform_state_version_states
+    ADD CONSTRAINT terraform_state_version_states_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY terraform_state_versions
     ADD CONSTRAINT terraform_state_versions_pkey PRIMARY KEY (id);
@@ -37249,6 +37293,20 @@ CREATE INDEX index_term_agreements_on_term_id ON term_agreements USING btree (te
 
 CREATE INDEX index_term_agreements_on_user_id ON term_agreements USING btree (user_id);
 
+CREATE INDEX index_terraform_state_version_states_failed_verification ON terraform_state_version_states USING btree (verification_retry_at NULLS FIRST) WHERE (verification_state = 3);
+
+CREATE INDEX index_terraform_state_version_states_needs_verification_tsv_id ON terraform_state_version_states USING btree (terraform_state_version_id) WHERE ((verification_state = 0) OR (verification_state = 3));
+
+CREATE INDEX index_terraform_state_version_states_on_project_id ON terraform_state_version_states USING btree (project_id);
+
+CREATE INDEX index_terraform_state_version_states_on_verification_started ON terraform_state_version_states USING btree (terraform_state_version_id, verification_started_at) WHERE (verification_state = 1);
+
+CREATE INDEX index_terraform_state_version_states_on_verification_state ON terraform_state_version_states USING btree (verification_state);
+
+CREATE INDEX index_terraform_state_version_states_pending_verification ON terraform_state_version_states USING btree (verified_at NULLS FIRST) WHERE (verification_state = 0);
+
+CREATE UNIQUE INDEX index_terraform_state_version_states_state_version_id ON terraform_state_version_states USING btree (terraform_state_version_id);
+
 CREATE INDEX index_terraform_state_versions_failed_verification ON terraform_state_versions USING btree (verification_retry_at NULLS FIRST) WHERE (verification_state = 3);
 
 CREATE INDEX index_terraform_state_versions_needs_verification ON terraform_state_versions USING btree (verification_state) WHERE ((verification_state = 0) OR (verification_state = 3));
@@ -41007,6 +41065,8 @@ CREATE TRIGGER table_sync_trigger_bc3e7b56bd AFTER INSERT OR DELETE OR UPDATE ON
 
 CREATE TRIGGER tags_loose_fk_trigger AFTER DELETE ON tags REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
 
+CREATE TRIGGER terraform_state_versions_loose_fk_trigger AFTER DELETE ON terraform_state_versions REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
+
 CREATE TRIGGER trigger_01b3fc052119 BEFORE INSERT OR UPDATE ON approval_merge_request_rules FOR EACH ROW EXECUTE FUNCTION trigger_01b3fc052119();
 
 CREATE TRIGGER trigger_02450faab875 BEFORE INSERT OR UPDATE ON vulnerability_occurrence_identifiers FOR EACH ROW EXECUTE FUNCTION trigger_02450faab875();
@@ -41084,6 +41144,8 @@ CREATE TRIGGER trigger_25d35f02ab55 BEFORE INSERT OR UPDATE ON ml_candidate_meta
 CREATE TRIGGER trigger_25fe4f7da510 BEFORE INSERT OR UPDATE ON vulnerability_issue_links FOR EACH ROW EXECUTE FUNCTION trigger_25fe4f7da510();
 
 CREATE TRIGGER trigger_29128c51c7c6 BEFORE INSERT OR UPDATE ON dast_pre_scan_verification_steps FOR EACH ROW EXECUTE FUNCTION trigger_29128c51c7c6();
+
+CREATE TRIGGER trigger_292097dea85c BEFORE INSERT OR UPDATE ON terraform_state_version_states FOR EACH ROW EXECUTE FUNCTION trigger_292097dea85c();
 
 CREATE TRIGGER trigger_2a994bb5629f BEFORE INSERT OR UPDATE ON incident_management_pending_alert_escalations FOR EACH ROW EXECUTE FUNCTION trigger_2a994bb5629f();
 
