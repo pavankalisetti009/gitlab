@@ -23215,7 +23215,7 @@ CREATE TABLE subscription_seat_assignments (
     last_activity_on timestamp with time zone,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    organization_id bigint DEFAULT 1 NOT NULL,
+    organization_id bigint NOT NULL,
     seat_type smallint
 );
 
