@@ -5,6 +5,10 @@ RSpec.shared_examples 'common ai usage backfill worker' do |model|
 
   let(:event) { Analytics::ClickHouseForAnalyticsEnabledEvent.new(data: { enabled_at: 1.day.ago.iso8601 }) }
 
+  before do
+    create(:application_setting)
+  end
+
   def perform
     worker.perform(event.class.name, event.data)
   end

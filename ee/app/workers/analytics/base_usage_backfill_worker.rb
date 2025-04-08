@@ -20,6 +20,7 @@ module Analytics
 
     def projections
       @projections ||= [
+        :id,
         "EXTRACT(epoch FROM timestamp) AS casted_timestamp",
         :user_id,
         "event as raw_event",
@@ -38,11 +39,11 @@ module Analytics
     end
 
     def transform_row(row)
-      row.attributes.merge(row['payload']).symbolize_keys.slice(*csv_mapping.values)
+      row.attributes.merge(row['payload'] || {}).symbolize_keys.slice(*csv_mapping.values)
     end
 
     def enabled?
-      super && Gitlab::ClickHouse.globally_enabled_for_analytics?
+      super && ApplicationSetting.current_without_cache.use_clickhouse_for_analytics?
     end
 
     def insert_query
