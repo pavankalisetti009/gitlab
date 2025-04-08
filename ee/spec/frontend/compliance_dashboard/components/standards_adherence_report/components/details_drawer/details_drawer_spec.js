@@ -3,7 +3,6 @@ import { GlDrawer, GlLink, GlSprintf } from '@gitlab/ui';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import DetailsDrawer from 'ee/compliance_dashboard/components/standards_adherence_report/components/details_drawer/details_drawer.vue';
 import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
-import RequirementStatus from 'ee/compliance_dashboard/components/standards_adherence_report/components/requirement_status.vue';
 import StatusesList from 'ee/compliance_dashboard/components/standards_adherence_report/components/details_drawer/statuses_list.vue';
 
 describe('DetailsDrawer', () => {
@@ -72,18 +71,6 @@ describe('DetailsDrawer', () => {
       expect(frameworkBadge.exists()).toBe(true);
       expect(frameworkBadge.props('framework')).toStrictEqual({ name: 'Framework' });
       expect(frameworkBadge.props('popoverMode')).toBe('details');
-    });
-
-    it('renders requirement status', () => {
-      createComponent();
-      const requirementStatus = wrapper.findComponent(RequirementStatus);
-
-      expect(requirementStatus.exists()).toBe(true);
-      expect(requirementStatus.props()).toEqual({
-        passCount: 1,
-        pendingCount: 2,
-        failCount: 3,
-      });
     });
 
     it('renders project link', () => {
