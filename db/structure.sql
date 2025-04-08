@@ -28871,6 +28871,9 @@ ALTER TABLE description_versions
 ALTER TABLE ONLY group_type_ci_runners
     ADD CONSTRAINT check_81b90172a6 UNIQUE (id);
 
+ALTER TABLE packages_npm_metadata
+    ADD CONSTRAINT check_8d2e047947 CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE sprints
     ADD CONSTRAINT check_ccd8a1eae0 CHECK ((start_date IS NOT NULL)) NOT VALID;
 
