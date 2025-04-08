@@ -2,7 +2,7 @@
 import { GlIntersperse } from '@gitlab/ui';
 
 export default {
-  name: 'DependencyPathViewer',
+  name: 'DirectDescendantViewer',
   components: {
     GlIntersperse,
   },
