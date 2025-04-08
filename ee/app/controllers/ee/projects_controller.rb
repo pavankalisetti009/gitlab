@@ -20,54 +20,6 @@ module EE
       before_action do
         push_licensed_feature(:remote_development)
       end
-
-      feature_category :groups_and_projects, [:restore]
-    end
-
-    def restore
-      return access_denied! unless can?(current_user, :remove_project, project)
-
-      result = ::Projects::RestoreService.new(project, current_user, {}).execute
-
-      if result[:status] == :success
-        flash[:notice] = format(_("Project '%{project_name}' has been successfully restored."), project_name: project.full_name)
-
-        redirect_to(edit_project_path(project))
-      else
-        flash.now[:alert] = result[:message]
-
-        render_edit
-      end
-    end
-
-    override :destroy
-    def destroy
-      return super unless License.feature_available?(:adjourned_deletion_for_projects_and_groups)
-      return super unless project.adjourned_deletion_configured?
-      return super if project.marked_for_deletion_at? && params[:permanently_delete].present?
-
-      return access_denied! unless can?(current_user, :remove_project, project)
-
-      result = ::Projects::MarkForDeletionService.new(project, current_user, {}).execute
-
-      if result[:status] == :success
-        if project.licensed_feature_available?(:adjourned_deletion_for_projects_and_groups)
-          redirect_to project_path(project), status: :found
-        else
-          # This is a free project, it will use delayed deletion but can only be restored by an admin.
-          flash[:toast] = format(
-            _("Deleting project '%{project_name}'. All data will be removed on %{date}."),
-            project_name: project.full_name,
-            # FIXME: Replace `project.marked_for_deletion_at` with `project` after https://gitlab.com/gitlab-org/gitlab/-/work_items/527085
-            date: helpers.permanent_deletion_date_formatted(project.marked_for_deletion_at)
-          )
-          redirect_to dashboard_projects_path, status: :found
-        end
-      else
-        flash.now[:alert] = result[:message]
-
-        render_edit
-      end
     end
 
     override :project_feature_attributes

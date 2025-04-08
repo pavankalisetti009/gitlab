@@ -29,7 +29,7 @@ RSpec.describe 'User with remove_project custom role', feature_category: :permis
       it 'user has access via a custom role' do
         delete project_path(project)
 
-        expect(project.reload).to be_pending_delete
+        expect(project.reload).to be_marked_for_deletion
         expect(response).to have_gitlab_http_status(:found)
       end
     end
