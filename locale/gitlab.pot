@@ -15161,6 +15161,9 @@ msgstr ""
 msgid "ComplianceFrameworksReport|Compliance framework ID"
 msgstr ""
 
+msgid "ComplianceFrameworksReport|Control ID copied to clipboard."
+msgstr ""
+
 msgid "ComplianceFrameworksReport|Controls"
 msgstr ""
 

@@ -157,6 +157,16 @@ export default {
         return this.getControls(requirementControls, this.controls);
       };
     },
+    orderedRequirements() {
+      const requirements = [...(this.framework.complianceRequirements?.nodes || [])];
+      return (
+        requirements.sort((a, b) => {
+          const idA = getIdFromGraphQLId(a.id);
+          const idB = getIdFromGraphQLId(b.id);
+          return Number(idA) - Number(idB);
+        }) || []
+      );
+    },
   },
   methods: {
     getPolicyEditUrl(policy) {
@@ -176,9 +186,14 @@ export default {
       this.after = this.projects.pageInfo.endCursor;
     },
 
-    copyIdToClipboard() {
+    copyFrameworkIdToClipboard() {
       navigator?.clipboard?.writeText(this.normalisedFrameworkId);
-      this.$toast.show(this.$options.i18n.copyIdToastText);
+      this.$toast.show(this.$options.i18n.copyFrameworkIdToastText);
+    },
+
+    copyControlIdToClipboard(control) {
+      navigator?.clipboard?.writeText(getIdFromGraphQLId(control.id));
+      this.$toast.show(this.$options.i18n.copyControlIdToastText);
     },
 
     getControls(expression) {
@@ -205,8 +220,9 @@ export default {
     frameworkIdPopoverText: s__(
       'ComplianceFrameworksReport|Use the compliance framework ID in configuration or API requests. %{linkStart}Learn more.%{linkEnd}',
     ),
-    frameworkIdButtonText: s__('ComplianceFrameworksReport|Copy ID'),
-    copyIdToastText: s__('ComplianceFrameworksReport|Framework ID copied to clipboard.'),
+    copyIdButtonText: s__('ComplianceFrameworksReport|Copy ID'),
+    copyFrameworkIdToastText: s__('ComplianceFrameworksReport|Framework ID copied to clipboard.'),
+    copyControlIdToastText: s__('ComplianceFrameworksReport|Control ID copied to clipboard.'),
     frameworkDescription: s__('ComplianceFrameworksReport|Description'),
     associatedProjects: s__('ComplianceFrameworksReport|Associated Projects'),
     policies: s__('ComplianceFrameworksReport|Policies'),
@@ -304,9 +320,9 @@ export default {
             <gl-button
               class="gl-ml-3"
               variant="link"
-              data-testid="copy-id-button"
-              @click="copyIdToClipboard"
-              >{{ $options.i18n.frameworkIdButtonText }}</gl-button
+              data-testid="copy-framework-id-button"
+              @click="copyFrameworkIdToClipboard"
+              >{{ $options.i18n.copyIdButtonText }}</gl-button
             >
           </div>
         </div>
@@ -332,7 +348,7 @@ export default {
                 <template v-else>{{ framework.complianceRequirements.nodes.length }}</template>
               </gl-badge>
             </div>
-            <drawer-accordion :items="framework.complianceRequirements.nodes" class="!gl-p-0">
+            <drawer-accordion :items="orderedRequirements" class="!gl-p-0">
               <template #header="{ item: requirement }">
                 <h4 class="gl-heading-4 gl-mb-3">{{ requirement.name }}</h4>
               </template>
@@ -349,6 +365,15 @@ export default {
                     <gl-badge v-if="isExternalControl(control)">
                       {{ $options.EXTERNAL_CONTROL_LABEL }}
                     </gl-badge>
+                    <gl-button
+                      v-if="isExternalControl(control)"
+                      class="gl-ml-3"
+                      variant="link"
+                      data-testid="copy-control-id-button"
+                      @click="copyControlIdToClipboard(control)"
+                    >
+                      {{ $options.i18n.copyIdButtonText }}
+                    </gl-button>
                   </li>
                 </ul>
               </template>

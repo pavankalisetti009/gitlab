@@ -79,7 +79,7 @@ describe('FrameworkInfoDrawer component', () => {
   const findIdSection = () => wrapper.findByTestId('sidebar-id');
   const findIdSectionTitle = () => wrapper.findByTestId('sidebar-id-title');
   const findFrameworkId = () => wrapper.findByTestId('framework-id');
-  const findCopyIdButton = () => findIdSection().findComponent(GlButton);
+  const findFrameworkCopyIdButton = () => findIdSection().findComponent(GlButton);
   const findIdPopover = () => findIdSection().findComponent(GlPopover);
 
   const findDescriptionTitle = () => wrapper.findByTestId('sidebar-description-title');
@@ -91,7 +91,7 @@ describe('FrameworkInfoDrawer component', () => {
   const findRequirementsAccordion = () => findRequirementsSection().findComponent(DrawerAccordion);
   const findExternalControlBadges = () =>
     wrapper.findAllComponents(GlBadge).filter((badge) => badge.text() === 'External');
-
+  const findCopyControlIdButton = () => wrapper.findAllByTestId('copy-control-id-button');
   const findProjectsTitle = () => wrapper.findByTestId('sidebar-projects-title');
   const findProjectsLinks = () =>
     wrapper.findByTestId('sidebar-projects').findAllComponents(GlLink);
@@ -193,12 +193,12 @@ describe('FrameworkInfoDrawer component', () => {
       });
 
       it('renders the copy ID button', () => {
-        expect(findCopyIdButton().text()).toBe('Copy ID');
+        expect(findFrameworkCopyIdButton().text()).toBe('Copy ID');
       });
 
-      it('calls copyIdToClipboard method when copy button is clicked', async () => {
+      it('calls copyFrameworkIdToClipboard method when copy button is clicked', async () => {
         jest.spyOn(navigator.clipboard, 'writeText');
-        await findCopyIdButton().vm.$emit('click');
+        await findFrameworkCopyIdButton().vm.$emit('click');
         expect(navigator.clipboard.writeText).toHaveBeenCalledWith(1);
         expect($toast.show).toHaveBeenCalledWith('Framework ID copied to clipboard.');
       });
@@ -428,8 +428,22 @@ describe('FrameworkInfoDrawer component', () => {
       expect(badges.length).toBeGreaterThan(0);
     });
 
+    it('displays copy control ID button for external controls', () => {
+      const copyControlIdButton = findCopyControlIdButton();
+      expect(copyControlIdButton.exists()).toBe(true);
+      expect(copyControlIdButton.at(0).text()).toBe('Copy ID');
+    });
+
+    it('calls copyControlIdToClipboard method when copy button is clicked', async () => {
+      jest.spyOn(navigator.clipboard, 'writeText');
+      await findCopyControlIdButton().at(0).vm.$emit('click');
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(3);
+      expect($toast.show).toHaveBeenCalledWith('Control ID copied to clipboard.');
+    });
+
     it('displays internal controls correctly', () => {
       expect(findExternalControlBadges().length).toBe(1);
+      expect(findCopyControlIdButton().length).toBe(1);
     });
   });
 
@@ -561,5 +575,69 @@ describe('FrameworkInfoDrawer component', () => {
     });
 
     expect(findProjectsTitle().exists()).toBe(false);
+  });
+
+  describe('orderedRequirements computed property', () => {
+    it('sorts requirements by numeric ID', () => {
+      const unsortedRequirements = [
+        {
+          id: 'gid://gitlab/ComplianceManagement::Requirement/3',
+          name: 'Requirement 3',
+          description: 'Description 3',
+          __typename: 'ComplianceManagement::Requirement',
+          complianceRequirementsControls: { nodes: [] },
+        },
+        {
+          id: 'gid://gitlab/ComplianceManagement::Requirement/1',
+          name: 'Requirement 1',
+          description: 'Description 1',
+          __typename: 'ComplianceManagement::Requirement',
+          complianceRequirementsControls: { nodes: [] },
+        },
+        {
+          id: 'gid://gitlab/ComplianceManagement::Requirement/2',
+          name: 'Requirement 2',
+          description: 'Description 2',
+          __typename: 'ComplianceManagement::Requirement',
+          complianceRequirementsControls: { nodes: [] },
+        },
+      ];
+
+      createComponent({
+        props: {
+          groupPath: GROUP_PATH,
+          rootAncestor: {
+            path: GROUP_PATH,
+          },
+          framework: {
+            ...defaultFramework,
+            complianceRequirements: { nodes: unsortedRequirements },
+          },
+        },
+      });
+
+      const sortedRequirements = wrapper.vm.orderedRequirements;
+
+      expect(sortedRequirements[0].name).toBe('Requirement 1');
+      expect(sortedRequirements[1].name).toBe('Requirement 2');
+      expect(sortedRequirements[2].name).toBe('Requirement 3');
+    });
+
+    it('returns empty array when requirements are not provided', () => {
+      createComponent({
+        props: {
+          groupPath: GROUP_PATH,
+          rootAncestor: {
+            path: GROUP_PATH,
+          },
+          framework: {
+            ...defaultFramework,
+            complianceRequirements: { nodes: null },
+          },
+        },
+      });
+
+      expect(wrapper.vm.orderedRequirements).toEqual([]);
+    });
   });
 });
