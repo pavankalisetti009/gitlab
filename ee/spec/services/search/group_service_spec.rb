@@ -710,4 +710,10 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       end
     end
   end
+
+  describe '#search_level' do
+    it 'returns group' do
+      expect(described_class.new(user, group, scope: 'epics').search_level).to eq :group
+    end
+  end
 end

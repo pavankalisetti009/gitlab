@@ -24,15 +24,16 @@ module EE
         ::Feature.enabled?(:zoekt_cross_namespace_search, current_user)
       end
 
-      override :root_ancestor
-      def root_ancestor
-        nil
+      override :search_level
+      def search_level
+        :global
       end
 
+      override :root_ancestor
+      def root_ancestor; end
+
       override :zoekt_node_id
-      def zoekt_node_id
-        nil
-      end
+      def zoekt_node_id; end
 
       # This method isn't compatible with multi-node search, so we override it
       # to always return true.
@@ -57,28 +58,26 @@ module EE
         # additionally take care of public projects. This behaves differently
         # to the searching Postgres case in which this list of projects is
         # intended to be all projects that should appear in the results.
-        strong_memoize(:elastic_projects) do
-          if current_user&.can_read_all_resources?
-            :any
-          elsif current_user
-            current_user.authorized_projects.pluck_primary_key
-          else
-            []
-          end
+        if current_user&.can_read_all_resources?
+          :any
+        elsif current_user
+          current_user.authorized_projects.pluck_primary_key
+        else
+          []
         end
       end
+      strong_memoize_attr :elastic_projects
 
       override :allowed_scopes
       def allowed_scopes
-        strong_memoize(:ee_allowed_scopes) do
-          scopes = super
+        scopes = super
 
-          scopes += %w[blobs commits epics notes wiki_blobs] if use_elasticsearch?
-          scopes += %w[blobs] if use_zoekt?
+        scopes += %w[blobs commits epics notes wiki_blobs] if use_elasticsearch?
+        scopes += %w[blobs] if use_zoekt?
 
-          scopes.uniq
-        end
+        scopes.uniq
       end
+      strong_memoize_attr :allowed_scopes
     end
   end
 end

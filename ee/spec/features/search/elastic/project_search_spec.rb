@@ -157,7 +157,10 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
 
     let_it_be(:zoekt_node) { create(:zoekt_node) }
 
-    let(:results) { Search::Zoekt::SearchResults.new(user, query, ::Project.id_in(project.id), node_id: zoekt_node.id) }
+    let(:results) do
+      Search::Zoekt::SearchResults.new(user, query, ::Project.id_in(project.id), search_level: :project,
+        node_id: zoekt_node.id)
+    end
 
     before do
       sign_in(user)
@@ -166,9 +169,7 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
       stub_feature_flags(zoekt_multimatch_frontend: false)
 
       allow_next_instance_of(SearchService) do |service|
-        allow(service).to receive(:search_service).and_return(search_service)
-        allow(service).to receive(:show_epics?).and_return(false)
-        allow(service).to receive(:search_results).and_return(results)
+        allow(service).to receive_messages(search_service: search_service, show_epics?: false, search_results: results)
       end
 
       allow(::Gitlab::Search::Zoekt::Client.instance).to receive(:search)

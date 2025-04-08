@@ -5,6 +5,7 @@ module Search
     class SearchResults
       include ActionView::Helpers::NumberHelper
       include Gitlab::Utils::StrongMemoize
+      include Gitlab::Loggable
 
       ZOEKT_COUNT_LIMIT = 5_000
       DEFAULT_PER_PAGE = Gitlab::SearchResults::DEFAULT_PER_PAGE
@@ -13,14 +14,15 @@ module Search
       attr_accessor :file_count
 
       attr_reader :current_user, :query, :public_and_internal_projects, :order_by, :sort, :filters, :modes,
-        :projects, :node_id, :multi_match
+        :search_level, :projects, :node_id, :multi_match
 
       # rubocop: disable Metrics/ParameterLists -- Might consider to refactor later
       def initialize(
-        current_user, query, projects, node_id: nil, order_by: nil, sort: nil, multi_match_enabled: false,
-        chunk_count: nil, filters: {}, modes: {})
+        current_user, query, projects, search_level:, node_id: nil, order_by: nil, sort: nil,
+        multi_match_enabled: false, chunk_count: nil, filters: {}, modes: {})
         @current_user = current_user
         @query = query
+        @search_level = search_level
         @filters = filters
         @projects = filtered_projects(projects)
         @node_id = node_id
@@ -108,11 +110,11 @@ module Search
       end
 
       def memoize_key(scope, page:, per_page:, count_only:)
-        count_only ? "#{scope}_results_count".to_sym : "#{scope}_#{page}_#{per_page}"
+        count_only ? :"#{scope}_results_count" : :"#{scope}_#{page}_#{per_page}"
       end
 
       def blobs_and_file_count(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)
-        return Kaminari.paginate_array([]), 0 if query.blank? || limit_project_ids.empty?
+        return Kaminari.paginate_array([]), 0 if empty_results_preflight_check?
 
         strong_memoize(memoize_key(:blobs_and_file_count, page: page, per_page: per_page, count_only: count_only)) do
           search_as_found_blob(query, Repository, page: (page || 1).to_i, per_page: per_page,
@@ -305,6 +307,23 @@ module Search
         Rails.cache.fetch(cache_key, expires_in: ZOEKT_TARGETS_CACHE_EXPIRES_IN) do
           ::Search::Zoekt::RoutingService.execute(projects)
         end
+      end
+
+      def empty_results_preflight_check?
+        return true if query.blank? || limit_project_ids.empty?
+
+        if node_id.nil? && search_level == :project
+          logger.info(build_structured_payload(message: 'zoekt repository is not found for this search',
+            project_id: limit_project_ids.first, query: query
+          ))
+          return true
+        end
+
+        false
+      end
+
+      def logger
+        @logger ||= ::Search::Zoekt::Logger.build
       end
     end
   end
