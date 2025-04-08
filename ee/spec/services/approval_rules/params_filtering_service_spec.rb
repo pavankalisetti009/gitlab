@@ -204,6 +204,52 @@ RSpec.describe ApprovalRules::ParamsFilteringService do
           end
         end
       end
+
+      context 'with v2_approval_rules_attributes' do
+        let(:params) do
+          {
+            title: 'Awesome merge_request',
+            description: 'please fix',
+            source_branch: 'feature',
+            target_branch: 'master',
+            v2_approval_rules_attributes: [{ name: 'Test Rule', approvals_required: 2 }]
+          }
+        end
+
+        before do
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability)
+            .to receive(:allowed?)
+                  .with(user, :update_approvers, merge_request)
+                  .and_return(can_update_approvers?)
+        end
+
+        context 'when user can update approvers' do
+          let(:can_update_approvers?) { true }
+
+          it 'keeps v2_approval_rules_attributes' do
+            expect(service.execute).to include(:v2_approval_rules_attributes)
+          end
+
+          context 'when v2_approval_rules feature flag is disabled' do
+            before do
+              stub_feature_flags(v2_approval_rules: false)
+            end
+
+            it 'removes v2_approval_rules_attributes' do
+              expect(service.execute).not_to include(:v2_approval_rules_attributes)
+            end
+          end
+        end
+
+        context 'when user cannot update approvers' do
+          let(:can_update_approvers?) { false }
+
+          it 'removes v2_approval_rules_attributes' do
+            expect(service.execute).not_to include(:v2_approval_rules_attributes)
+          end
+        end
+      end
     end
 
     context 'update' do
