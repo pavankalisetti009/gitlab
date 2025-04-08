@@ -50,15 +50,17 @@ module RemoteDevelopment
               annotations: common_annotations
             )
 
-            append_inventory_config_map(
-              desired_config: desired_config,
-              name: secrets_inventory_name,
-              namespace: workspace.namespace,
-              labels: labels,
-              annotations: common_annotations
-            )
+            if workspace.desired_state == TERMINATED
+              append_inventory_config_map(
+                desired_config: desired_config,
+                name: secrets_inventory_name,
+                namespace: workspace.namespace,
+                labels: labels,
+                annotations: common_annotations
+              )
 
-            return desired_config if workspace.desired_state == TERMINATED
+              return desired_config
+            end
 
             resources_from_devfile_parser = DevfileParser.get_all(
               processed_devfile: workspace.processed_devfile,
@@ -104,6 +106,14 @@ module RemoteDevelopment
             #       https://gitlab.com/gitlab-org/gitlab/-/merge_requests/182392
 
             return desired_config unless include_all_resources
+
+            append_inventory_config_map(
+              desired_config: desired_config,
+              name: secrets_inventory_name,
+              namespace: workspace.namespace,
+              labels: labels,
+              annotations: common_annotations
+            )
 
             append_resource_quota(
               desired_config: desired_config,

@@ -480,9 +480,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
     resources = []
     resources << workspace_inventory_config_map if include_inventory
-    resources << secrets_inventory_config_map if include_inventory
 
-    return resources if desired_state_is_terminated
+    if desired_state_is_terminated
+      resources << secrets_inventory_config_map if include_inventory
+      return resources
+    end
 
     resources << workspace_deployment
     resources << workspace_service
@@ -493,6 +495,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
       resources << workspace_network_policy if include_network_policy
 
       if include_all_resources
+        resources << secrets_inventory_config_map if include_inventory
         resources << workspace_resource_quota unless max_resources_per_workspace.blank?
         resources << secret_environment
         resources << secret_file
