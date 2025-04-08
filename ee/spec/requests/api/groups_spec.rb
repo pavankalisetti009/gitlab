@@ -1742,21 +1742,23 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
   end
 
   describe "POST /groups/:id/restore" do
-    let(:group) do
-      create(:group_with_deletion_schedule,
-        marked_for_deletion_on: 1.day.ago,
-        deleting_user: user)
+    let_it_be(:group) do
+      create(:group_with_deletion_schedule, marked_for_deletion_on: 1.day.ago, deleting_user: user)
     end
 
     subject { post api("/groups/#{group.id}/restore", user) }
 
-    context 'feature is available' do
+    before do
+      stub_feature_flags(downtier_delayed_deletion: false)
+    end
+
+    context 'when the feature is available' do
       before do
         stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
       end
 
-      context 'authenticated as owner' do
-        context 'restoring is successful' do
+      context 'when authenticated as owner' do
+        context 'when restoring is successful' do
           it 'restores the group to original state' do
             subject
 
@@ -1765,7 +1767,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
           end
         end
 
-        context 'restoring fails' do
+        context 'when restoring fails' do
           before do
             allow(::Groups::RestoreService).to receive_message_chain(:new, :execute).and_return({ status: :error, message: 'error' })
           end
@@ -1779,7 +1781,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         end
       end
 
-      context 'authenticated as user without access to the group' do
+      context 'when authenticated as user without access to the group' do
         subject { post api("/groups/#{group.id}/restore", another_user) }
 
         it 'returns 403' do

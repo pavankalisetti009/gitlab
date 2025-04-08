@@ -215,21 +215,6 @@ module EE
             end
           end
 
-          desc 'Restore a group.'
-          post ':id/restore', feature_category: :groups_and_projects do
-            authorize! :remove_group, user_group
-            break not_found! unless user_group.licensed_feature_available?(:adjourned_deletion_for_projects_and_groups)
-
-            result = ::Groups::RestoreService.new(user_group, current_user).execute
-            user_group.preload_shared_group_links
-
-            if result[:status] == :success
-              present user_group, with: ::API::Entities::GroupDetail, current_user: current_user
-            else
-              render_api_error!(result[:message], 400)
-            end
-          end
-
           desc 'Get a list of users provisioned by the group' do
             success ::API::Entities::UserPublic
           end
