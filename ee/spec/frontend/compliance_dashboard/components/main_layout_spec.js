@@ -170,7 +170,7 @@ describe('ComplianceReportsApp component', () => {
     it('passes the expected values to the header', () => {
       expect(findHeader().props('heading')).toBe('Compliance center');
       expect(findHeader().text()).toContain(
-        'Report and manage standards adherence, violations, and compliance frameworks for the group. Learn more.',
+        'Report and manage compliance status, violations, and compliance frameworks for the group. Learn more.',
       );
       expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
         helpPagePath('user/compliance/compliance_center/_index.md'),
@@ -212,7 +212,7 @@ describe('ComplianceReportsApp component', () => {
     it('passes the expected values to the header', () => {
       expect(findHeader().props('heading')).toBe('Compliance center');
       expect(findHeader().text()).toContain(
-        'Report and manage standards adherence, violations, and compliance frameworks for the group. Learn more.',
+        'Report and manage compliance status, violations, and compliance frameworks for the group. Learn more.',
       );
       expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
         helpPagePath('user/compliance/compliance_center/_index.md'),

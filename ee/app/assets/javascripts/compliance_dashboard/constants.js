@@ -70,12 +70,12 @@ export const i18n = {
   ),
   heading: __('Compliance center'),
   subheading: s__(
-    'Compliance Center|Report and manage standards adherence, violations, and compliance frameworks for the group. %{linkStart}Learn more%{linkEnd}.',
+    'Compliance Center|Report and manage compliance status, violations, and compliance frameworks for the group. %{linkStart}Learn more%{linkEnd}.',
   ),
   frameworksTab: s__('Compliance Center|Frameworks'),
   projectsTab: __('Projects'),
   projectTab: __('Project'),
-  standardsAdherenceTab: s__('Compliance Center|Standards Adherence'),
+  standardsAdherenceTab: s__('Compliance Center|Compliance status'),
   violationsTab: s__('Compliance Center|Violations'),
 };
 
@@ -83,7 +83,7 @@ export const POLICY_SCOPES_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/application_se
 
 export const CREATE_FRAMEWORKS_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/group/compliance_frameworks.html#prerequisites`;
 
-export const STANDARDS_ADHERENCE_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_standards_adherence_dashboard/`;
+export const STANDARDS_ADHERENCE_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/compliance/compliance_center/compliance_status_report/`;
 
 export const FEEDBACK_ISSUE_URL = 'https://gitlab.com/gitlab-org/gitlab/-/issues/481586';
 
