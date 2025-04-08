@@ -129,10 +129,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
           using RSpec::Parameterized::TableSyntax
 
           where(:policy_type, :branches, :branch_type, :status, :details, :field) do
-            'scan_result_policy'        | nil | nil | :success | nil                                                     | nil
-            'approval_policy'           | nil | nil | :success | nil                                                     | nil
-            'pipeline_execution_policy' | nil | nil | :success | nil                                                     | nil
-            'scan_execution_policy'     | nil | nil | :error   | ['Policy cannot be enabled without branch information'] | :branches
+            'scan_result_policy'                 | nil | nil | :success | nil                                                     | nil
+            'approval_policy'                    | nil | nil | :success | nil                                                     | nil
+            'pipeline_execution_policy'          | nil | nil | :success | nil                                                     | nil
+            'pipeline_execution_schedule_policy' | nil | nil | :success | nil                                                     | nil
+            'vulnerability_management_policy'    | nil | nil | :success | nil                                                     | nil
+            'scan_execution_policy'              | nil | nil | :error   | ['Policy cannot be enabled without branch information'] | :branches
           end
 
           with_them do
