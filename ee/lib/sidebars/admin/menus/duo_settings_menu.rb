@@ -3,7 +3,7 @@
 module Sidebars
   module Admin
     module Menus
-      class CodeSuggestionsMenu < ::Sidebars::Admin::BaseMenu
+      class DuoSettingsMenu < ::Sidebars::Admin::BaseMenu
         override :link
         def link
           admin_gitlab_duo_path
