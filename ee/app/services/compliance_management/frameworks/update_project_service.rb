@@ -64,7 +64,16 @@ module ComplianceManagement
           return error(error_message)
         end
 
+        enqueue_project_compliance_status_removal(framework)
+
         track_event(::Projects::ComplianceFrameworkChangedEvent::EVENT_TYPES[:removed], framework)
+      end
+
+      def enqueue_project_compliance_status_removal(framework)
+        ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker.perform_in(
+          ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+          project.id, framework.id
+        )
       end
 
       def permitted?

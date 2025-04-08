@@ -101,6 +101,13 @@ RSpec.describe ComplianceManagement::Frameworks::AssignProjectService, feature_c
             let(:old_framework) { [] }
 
             it_behaves_like 'framework update'
+
+            it 'does not enqueue the ProjectComplianceStatusesRemovalWorker' do
+              expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
+                .not_to receive(:perform_in)
+
+              update_framework
+            end
           end
 
           context 'when a framework is assigned' do
@@ -162,6 +169,16 @@ RSpec.describe ComplianceManagement::Frameworks::AssignProjectService, feature_c
             it 'logs audit event' do
               expect { update_framework }
                 .to change { AuditEvent.where("details LIKE ?", "%compliance_framework_deleted%").count }.by(1)
+            end
+
+            it 'enqueues the ProjectComplianceStatusesRemovalWorker' do
+              expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
+                .to receive(:perform_in)
+                .with(ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+                  project.id, framework.id
+                ).once.and_call_original
+
+              update_framework
             end
           end
 

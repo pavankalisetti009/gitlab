@@ -100,6 +100,21 @@ RSpec.describe ComplianceManagement::Frameworks::UpdateProjectService, feature_c
 
             update_framework
           end
+
+          it 'enqueues the ProjectComplianceStatusesRemovalWorker' do
+            expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
+              .to receive(:perform_in).with(
+                ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+                project.id, framework3.id
+              ).once.ordered.and_call_original
+            expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
+              .to receive(:perform_in).with(
+                ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+                project.id, framework4.id
+              ).once.ordered.and_call_original
+
+            update_framework
+          end
         end
 
         context 'when there is an error while saving framework project setting' do
