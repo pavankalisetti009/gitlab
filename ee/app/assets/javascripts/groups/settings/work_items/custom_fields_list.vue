@@ -57,6 +57,15 @@ export default {
     archiveButtonIcon() {
       return this.showActive ? 'archive' : 'redo';
     },
+    emptyStateText() {
+      return this.showActive
+        ? s__(
+            'WorkItem|This group has no active custom fields. Create a custom field to track data that matters to your team.',
+          )
+        : s__(
+            'WorkItem|No custom fields have been archived. Archive custom fields to remove them from active work items while preserving their data.',
+          );
+    },
   },
   apollo: {
     customFields: {
@@ -285,9 +294,15 @@ export default {
         </gl-badge>
       </template>
 
-      <custom-field-form class="gl-ml-auto" @created="$apollo.queries.customFields.refetch()" />
+      <custom-field-form
+        v-if="showActive"
+        class="gl-ml-auto"
+        @created="$apollo.queries.customFields.refetch()"
+      />
     </div>
     <gl-table
+      show-empty
+      :empty-text="emptyStateText"
       :items="customFieldsForList"
       :fields="$options.fields"
       :busy="isLoading"
