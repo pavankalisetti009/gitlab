@@ -5,5 +5,5 @@ introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/183311
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/522917
 milestone: '17.10'
 group: group::code review
-type: experiment
-default_enabled: false
+type: beta
+default_enabled: true
