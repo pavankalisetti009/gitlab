@@ -24676,7 +24676,8 @@ CREATE TABLE vulnerability_external_issue_links (
     external_issue_key text NOT NULL,
     project_id bigint,
     CONSTRAINT check_3200604f5e CHECK ((char_length(external_issue_key) <= 255)),
-    CONSTRAINT check_68cffd19b0 CHECK ((char_length(external_project_key) <= 255))
+    CONSTRAINT check_68cffd19b0 CHECK ((char_length(external_project_key) <= 255)),
+    CONSTRAINT check_9bbcf5afdd CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE vulnerability_external_issue_links_id_seq
