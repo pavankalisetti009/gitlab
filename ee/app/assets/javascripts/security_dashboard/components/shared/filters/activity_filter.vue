@@ -3,7 +3,6 @@ import { GlBadge, GlCollapsibleListbox, GlIcon, GlTooltipDirective } from '@gitl
 import { without } from 'lodash';
 import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import QuerystringSync from './querystring_sync.vue';
 import { ALL_ID } from './constants';
 
@@ -88,7 +87,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagsMixin()],
   data: () => ({
     selected: DEFAULT_VALUES,
   }),

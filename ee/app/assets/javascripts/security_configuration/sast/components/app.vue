@@ -2,7 +2,6 @@
 import { GlAlert, GlLink, GlLoadingIcon, GlSprintf } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import DismissibleFeedbackAlert from '~/vue_shared/components/dismissible_feedback_alert.vue';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import ConfigurationPageLayout from '../../components/configuration_page_layout.vue';
 import sastCiConfigurationQuery from '../graphql/sast_ci_configuration.query.graphql';
@@ -36,7 +35,6 @@ export default {
     GlSprintf,
   },
   directives: { SafeHtml },
-  mixins: [glFeatureFlagsMixin()],
   inject: {
     sastDocumentationPath: {
       from: 'sastDocumentationPath',

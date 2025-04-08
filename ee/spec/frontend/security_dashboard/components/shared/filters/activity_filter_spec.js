@@ -28,16 +28,11 @@ describe('Activity Filter component', () => {
 
   const unselectDefaultValue = () => clickItem(DEFAULT_VALUE);
 
-  const createWrapper = ({ glFeatures = {} } = {}) => {
+  const createWrapper = () => {
     wrapper = mountExtended(ActivityFilter, {
       stubs: { QuerystringSync: true, GlBadge: true },
       directives: {
         GlTooltip: createMockDirective('gl-tooltip'),
-      },
-      provide: {
-        glFeatures: {
-          ...glFeatures,
-        },
       },
     });
   };
