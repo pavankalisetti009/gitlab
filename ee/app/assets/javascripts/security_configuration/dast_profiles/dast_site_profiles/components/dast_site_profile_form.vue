@@ -14,7 +14,6 @@ import { initFormField } from 'ee/security_configuration/utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { serializeFormObject } from '~/lib/utils/forms';
 import { __, s__, n__, sprintf } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import BaseDastProfileForm from '../../components/base_dast_profile_form.vue';
 import dastProfileFormMixin from '../../dast_profile_form_mixin';
 import TooltipIcon from '../../dast_scanner_profiles/components/tooltip_icon.vue';
@@ -91,7 +90,7 @@ export default {
     GlIcon,
     GlPopover,
   },
-  mixins: [dastProfileFormMixin(), glFeatureFlagsMixin()],
+  mixins: [dastProfileFormMixin()],
   data() {
     const {
       name = '',
