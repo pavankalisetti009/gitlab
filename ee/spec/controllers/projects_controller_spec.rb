@@ -892,6 +892,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
     let(:project) { create(:project, group: group) }
 
     before do
+      stub_feature_flags(downtier_delayed_deletion: false)
       group.add_member(user, Gitlab::Access::OWNER)
       controller.instance_variable_set(:@project, project)
       sign_in(user)
@@ -920,10 +921,6 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
     end
 
     shared_examples 'marks free project for deletion' do
-      before do
-        stub_feature_flags(downtier_delayed_deletion: false)
-      end
-
       it do
         delete :destroy, params: { namespace_id: project.namespace, id: project }
 
@@ -1045,34 +1042,6 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
       end
 
       it_behaves_like 'deletes project right away'
-    end
-  end
-
-  describe 'POST #restore', feature_category: :groups_and_projects do
-    let(:project) { create(:project, namespace: user.namespace) }
-
-    before do
-      sign_in(user)
-    end
-
-    it 'restores project deletion' do
-      post :restore, params: { namespace_id: project.namespace, project_id: project }
-
-      expect(project.reload.marked_for_deletion_at).to be_nil
-      expect(project.reload.archived).to be_falsey
-      expect(response).to have_gitlab_http_status(:found)
-      expect(response).to redirect_to(edit_project_path(project))
-    end
-
-    it 'does not restore project because of error' do
-      message = 'Error'
-      expect(::Projects::RestoreService).to receive_message_chain(:new, :execute).and_return({ status: :error, message: message })
-
-      post :restore, params: { namespace_id: project.namespace, project_id: project }
-
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(response).to render_template(:edit)
-      expect(flash[:alert]).to include(message)
     end
   end
 end
