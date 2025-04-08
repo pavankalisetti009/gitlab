@@ -22,7 +22,7 @@ RSpec.shared_examples 'common ai_usage_event' do
     it 'returns 3 required fields' do
       expect(event.to_clickhouse_csv_row).to include(
         user_id: user.id,
-        timestamp: '2021-01-01'.to_datetime.to_f,
+        timestamp: '2021-01-01'.to_datetime.to_f.round(3),
         event: described_class.events.each_value.first,
         namespace_path: '1/2'
       )

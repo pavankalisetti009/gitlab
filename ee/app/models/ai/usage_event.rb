@@ -26,7 +26,10 @@ module Ai
     def to_clickhouse_csv_row
       {
         event: self.class.events[event],
-        timestamp: timestamp.to_f,
+        # we round to 3 digits here to avoid floating number inconsistencies.
+        # until https://gitlab.com/gitlab-org/gitlab/-/issues/527129
+        # is resolved
+        timestamp: Time.zone.parse(timestamp.as_json).to_f.round(3),
         user_id: user&.id,
         namespace_path: namespace_path
       }
