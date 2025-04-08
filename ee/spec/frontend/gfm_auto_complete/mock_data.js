@@ -48,4 +48,8 @@ export const iterationsMock = [
   },
 ];
 
-export { crmContactsMock } from '../../../../spec/frontend/gfm_auto_complete/mock_data';
+export {
+  crmContactsMock,
+  mockIssues,
+  mockAssignees,
+} from '../../../../spec/frontend/gfm_auto_complete/mock_data';
