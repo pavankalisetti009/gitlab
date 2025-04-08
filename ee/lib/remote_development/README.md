@@ -1413,7 +1413,7 @@ Guidelines for these domain-specific standards:
 
 Existing standards:
 
-1. Prefer double-quotes over single-quotes for delimiting String literals, even non-interpolated ones. [team decision](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/124398#note_1444988985), [wider dicussion](https://gitlab.com/gitlab-org/gitlab/-/issues/198046)
+1. Prefer double-quotes over single-quotes for delimiting String literals, even non-interpolated ones. For more context see: [Workspaces team decision](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/124398#note_1444988985), [GitLab development Ruby style guide](https://docs.gitlab.com/development/backend/ruby_style_guide/#quoting-string-literals), [historical GitLab team member discussions](https://gitlab.com/gitlab-org/gitlab/-/issues/198046)
 
 ## FAQ
 
