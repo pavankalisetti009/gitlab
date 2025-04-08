@@ -15,6 +15,12 @@
       "minimum": 0,
       "maximum": 20,
       "description": "Maximum number of schedule rules per scan execution policy"
+    },
+    "pipeline_execution_policies_per_configuration_limit": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20,
+      "description": "Maximum number of pipeline execution policies allowed per security policy configuration"
     }
   }
 }

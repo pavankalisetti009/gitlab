@@ -17,7 +17,7 @@ module CloudConnector
       end
 
       def execute
-        probe_results = probes.map(&:execute)
+        probe_results = probes.flat_map(&:execute)
         success = probe_results.all?(&:success?)
         payload = { probe_results: probe_results }
 
@@ -33,6 +33,8 @@ module CloudConnector
           ::Gitlab::Ai::SelfHosted::AiGateway.probes(@user)
         elsif ::Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
           development_probes
+        elsif ::Ai::AmazonQ.connected?
+          default_probes + amazon_q_probes
         else
           default_probes
         end
@@ -54,6 +56,12 @@ module CloudConnector
         [
           CloudConnector::StatusChecks::Probes::HostProbe.new(::Gitlab::AiGateway.self_hosted_url),
           CloudConnector::StatusChecks::Probes::EndToEndProbe.new(@user)
+        ]
+      end
+
+      def amazon_q_probes
+        [
+          CloudConnector::StatusChecks::Probes::AmazonQ::EndToEndProbe.new(@user)
         ]
       end
     end

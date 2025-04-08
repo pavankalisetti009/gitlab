@@ -24,6 +24,7 @@ module EE
         super + [
           :repository_size_limit,
           :shared_runners_minutes_limit,
+          :pipeline_execution_policies_per_configuration_limit,
           { gitlab_subscription_attributes: [:hosted_plan_id] }
         ]
       end

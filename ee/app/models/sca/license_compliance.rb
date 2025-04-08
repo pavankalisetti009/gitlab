@@ -4,8 +4,6 @@ module SCA
   class LicenseCompliance
     include ::Gitlab::Utils::StrongMemoize
 
-    attr_reader :project
-
     SORT_DIRECTION = {
       asc: ->(items) { items },
       desc: ->(items) { items.reverse }
@@ -44,11 +42,9 @@ module SCA
       other_report = other.license_scanning_report
       denied_policies_from_other_report = denied_license_policies_from_report(other_report)
 
-      diff_project = project || other.project
-
       license_scanning_report.diff_with(other_report).transform_values do |reported_licenses|
         reported_licenses.map do |reported_license|
-          build_policy_with_denied_licenses(denied_policies_from_other_report, reported_license, diff_project)
+          build_policy_with_denied_licenses(denied_policies_from_other_report, reported_license)
         end
       end
     end
@@ -61,7 +57,7 @@ module SCA
 
     private
 
-    attr_reader :pipeline, :scanner
+    attr_reader :project, :pipeline, :scanner
 
     def license_policies
       strong_memoize(:license_policies) do
@@ -122,25 +118,13 @@ module SCA
       end.compact.to_h
     end
 
-    def build_policy_with_denied_licenses(denied_policies, reported_license, diff_project)
+    def build_policy_with_denied_licenses(denied_policies, reported_license)
       direct_license_policy = policy_from_licenses(direct_license_policies, reported_license)
       return build_policy(reported_license, direct_license_policy, nil) if direct_license_policy
 
       denied_license_policy = policy_from_licenses(denied_policies, reported_license)
-      approval_status = denied_license_policy || deny_licenses_for_empty_reports?(diff_project) ? 'denied' : nil
+      approval_status = denied_license_policy ? 'denied' : nil
       build_policy(reported_license, denied_license_policy, approval_status)
-    end
-
-    def deny_licenses_for_empty_reports?(diff_project)
-      base_pipeline_without_report? && license_approval_policies_configured_for_project?(diff_project)
-    end
-
-    def base_pipeline_without_report?
-      pipeline.blank? || license_scanning_report.blank?
-    end
-
-    def license_approval_policies_configured_for_project?(diff_project)
-      diff_project.software_license_policies.with_scan_result_policy_read.any?
     end
 
     # When the license found in the report doesn't match any license

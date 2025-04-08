@@ -162,6 +162,10 @@ module EE
           group_ip_restriction: :globally_allowed_ips,
           service_accounts: [:service_access_tokens_expiration_enforced,
             :allow_top_level_group_owners_to_create_service_accounts],
+          security_orchestration_policies: [
+            :scan_execution_policies_action_limit,
+            :pipeline_execution_policies_per_configuration_limit
+          ],
           disable_personal_access_tokens: :disable_personal_access_tokens,
           integrations_allow_list: :allowed_integrations_raw,
           packages_virtual_registry: :virtual_registries_endpoints_api_limit

@@ -33,6 +33,24 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
       end
     end
 
+    shared_examples_for 'invokes the SCA::LicenseCompliance using the pipeline\'s project' do
+      it 'invokes the SCA::LicenseCompliance using the pipeline\'s project' do
+        expect(::SCA::LicenseCompliance).to receive(:new).with(base_pipeline.project, base_pipeline).and_call_original
+        expect(::SCA::LicenseCompliance).to receive(:new).with(head_pipeline.project, head_pipeline).and_call_original
+
+        service.execute(base_pipeline, head_pipeline)
+      end
+    end
+
+    shared_examples_for 'fallback to the service class project instance variable to invoke the SCA::LicenseCompliance' do
+      it 'fallback to the service class project instance variable to invoke the SCA::LicenseCompliance' do
+        expect(::SCA::LicenseCompliance).to receive(:new).with(project, base_pipeline).and_call_original
+        expect(::SCA::LicenseCompliance).to receive(:new).with(head_pipeline.project, head_pipeline).and_call_original
+
+        service.execute(base_pipeline, head_pipeline)
+      end
+    end
+
     context 'when head pipeline has test reports' do
       context 'with incorrect report type' do
         let!(:base_pipeline) { nil }
@@ -44,6 +62,8 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
           expect(subject[:data]['existing_licenses']).to be_empty
           expect(subject[:data]['removed_licenses']).to be_empty
         end
+
+        it_behaves_like 'fallback to the service class project instance variable to invoke the SCA::LicenseCompliance'
       end
 
       context 'with cyclonedx report' do
@@ -64,6 +84,8 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
         it 'reports new licenses statuses' do
           expect(subject[:data]['new_licenses'][0]['classification']['approval_status']).to eq('unclassified')
         end
+
+        it_behaves_like 'fallback to the service class project instance variable to invoke the SCA::LicenseCompliance'
       end
     end
 
@@ -99,6 +121,7 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
         let(:base_pipeline) { nil }
 
         it_behaves_like 'reports new licenses'
+        it_behaves_like 'fallback to the service class project instance variable to invoke the SCA::LicenseCompliance'
       end
 
       context 'when base pipeline has not run and head pipeline is for a forked project' do
@@ -107,12 +130,14 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
         let(:head_pipeline_project) { forked_project }
 
         it_behaves_like 'reports new licenses'
+        it_behaves_like 'fallback to the service class project instance variable to invoke the SCA::LicenseCompliance'
       end
 
       context 'when base pipeline does not have a license scanning report' do
         let(:base_pipeline) { create(:ee_ci_pipeline, project: project) }
 
         it_behaves_like 'reports new licenses'
+        it_behaves_like 'invokes the SCA::LicenseCompliance using the pipeline\'s project'
       end
     end
 
@@ -130,6 +155,8 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
           expect(subject[:data]['existing_licenses']).to be_empty
           expect(subject[:data]['removed_licenses']).to be_empty
         end
+
+        it_behaves_like 'invokes the SCA::LicenseCompliance using the pipeline\'s project'
       end
 
       context 'with cyclonedx reports' do
@@ -169,6 +196,8 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
         it 'reports removed licenses' do
           expect(subject[:data]['removed_licenses']).to match([a_hash_including('name' => 'MIT')])
         end
+
+        it_behaves_like 'invokes the SCA::LicenseCompliance using the pipeline\'s project'
       end
     end
 
@@ -189,6 +218,8 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
           expect(subject[:status]).to eq(:parsed)
         end
       end
+
+      it_behaves_like 'invokes the SCA::LicenseCompliance using the pipeline\'s project'
     end
   end
 end

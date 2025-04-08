@@ -4,8 +4,6 @@ module Gitlab
   module Security
     module Orchestration
       class ProjectPipelineExecutionPolicies
-        POLICY_LIMIT_PER_PIPELINE = 5
-
         def initialize(project)
           @project = project
         end
@@ -21,7 +19,7 @@ module Gitlab
         #   Result: [policy5, policy4, policy3, policy2, policy1]
         def configs
           applicable_execution_policies_by_hierarchy
-            .first(POLICY_LIMIT_PER_PIPELINE)
+            .first(policy_limit)
             .reverse # reverse the order to apply the policy highest in the hierarchy as last
             .map do |(policy, policy_project_id, index)|
               ::Security::PipelineExecutionPolicy::Config.new(
@@ -50,6 +48,12 @@ module Gitlab
           configs = ::Gitlab::Security::Orchestration::ProjectPolicyConfigurations.new(@project)
                                                                                   .all.index_by(&:namespace_id)
           [nil, *@project.group&.self_and_ancestor_ids].filter_map { |id| configs[id] }.reverse
+        end
+
+        def policy_limit
+          ::Security::SecurityOrchestrationPolicies::LimitService
+            .new(container: @project)
+            .pipeline_execution_policies_per_pipeline_limit
         end
       end
     end
