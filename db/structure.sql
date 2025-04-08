@@ -15732,7 +15732,8 @@ CREATE TABLE incident_management_timeline_event_tag_links (
     timeline_event_id bigint NOT NULL,
     timeline_event_tag_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_e693cb4516 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE incident_management_timeline_event_tag_links_id_seq
