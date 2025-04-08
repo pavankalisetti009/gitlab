@@ -5,6 +5,8 @@ require 'spec_helper'
 RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feature_category: :compliance_management do
   let_it_be(:namespace) { create(:group) }
   let_it_be(:project) { create(:project, namespace: namespace) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:group_project) { create(:project, namespace: group) }
 
   describe '.map_field' do
     before do
@@ -26,7 +28,13 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
           'scanner_fuzz_testing_running' => :scanner_fuzz_testing_running?,
           'scanner_code_quality_running' => :scanner_code_quality_running?,
           'scanner_iac_running' => :scanner_iac_running?,
-          'terraform_enabled' => :terraform_enabled?
+          'terraform_enabled' => :terraform_enabled?,
+          'gitlab_license_level_ultimate' => :gitlab_license_level_ultimate?,
+          'status_page_configured' => :status_page_configured?,
+          'has_valid_ci_config' => :has_valid_ci_config?,
+          'error_tracking_enabled' => :error_tracking_enabled?,
+          'default_branch_users_can_push' => :default_branch_users_can_push?,
+          'default_branch_protected_from_direct_push' => :default_branch_protected_from_direct_push?
         )
 
       allow(project).to receive(:default_branch).and_return('main')
@@ -71,7 +79,13 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         'ensure_2_admins_per_repo',
         'strict_permissions_for_repo',
         'secure_webhooks',
-        'restricted_build_access'
+        'restricted_build_access',
+        'gitlab_license_level_ultimate',
+        'status_page_configured',
+        'has_valid_ci_config',
+        'error_tracking_enabled',
+        'default_branch_users_can_push',
+        'default_branch_protected_from_direct_push'
       )
     end
 
@@ -824,6 +838,287 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
           project1.team.add_planner(create(:user))
 
           expect(described_class.map_field(project1, 'restricted_build_access')).to be false
+        end
+      end
+    end
+
+    describe 'gitlab_license_level_ultimate' do
+      let(:license) { instance_double(License) }
+      let(:ultimate_features) { [:feature1, :feature2] }
+
+      before do
+        allow(License).to receive(:current).and_return(license)
+        stub_const('GitlabSubscriptions::Features::ULTIMATE_FEATURES', ultimate_features)
+      end
+
+      it 'returns true when license is ultimate and project has ultimate features' do
+        allow(license).to receive(:ultimate?).and_return(true)
+        allow(project).to receive(:licensed_features).and_return([:feature1])
+
+        expect(described_class.map_field(project, 'gitlab_license_level_ultimate')).to be true
+      end
+
+      it 'returns false when license is ultimate but project has no ultimate features' do
+        allow(license).to receive(:ultimate?).and_return(true)
+        allow(project).to receive(:licensed_features).and_return([:other_feature])
+
+        expect(described_class.map_field(project, 'gitlab_license_level_ultimate')).to be false
+      end
+
+      it 'returns false when license is not ultimate' do
+        allow(license).to receive(:ultimate?).and_return(false)
+        allow(project).to receive(:licensed_features).and_return([:feature1])
+
+        expect(described_class.map_field(project, 'gitlab_license_level_ultimate')).to be false
+      end
+    end
+
+    describe 'status_page_configured' do
+      it 'returns true when status_page feature is available' do
+        allow(project).to receive(:feature_available?).with(:status_page).and_return(true)
+
+        expect(described_class.map_field(project, 'status_page_configured')).to be true
+      end
+
+      it 'returns true when licensed_feature_available returns true for status_page' do
+        allow(project).to receive(:feature_available?).with(:status_page).and_return(false)
+        allow(project).to receive(:licensed_feature_available?).with(:status_page).and_return(true)
+
+        expect(described_class.map_field(project, 'status_page_configured')).to be true
+      end
+
+      it 'returns false when status_page is not available' do
+        allow(project).to receive(:feature_available?).with(:status_page).and_return(false)
+        allow(project).to receive(:licensed_feature_available?).with(:status_page).and_return(false)
+
+        expect(described_class.map_field(project, 'status_page_configured')).to be false
+      end
+    end
+
+    describe 'has_valid_ci_config' do
+      before do
+        allow(project).to receive_messages(has_ci?: true, builds_enabled?: true)
+      end
+
+      it 'returns true when project has valid CI config' do
+        yml_dump = '{ image: "ruby:3.0" }'
+        config = instance_double(Gitlab::Ci::Config, valid?: true)
+
+        allow(project).to receive(:ci_config_for).with(project.default_branch).and_return(yml_dump)
+        allow(Gitlab::Ci::Config).to receive(:new).with(yml_dump, project: project).and_return(config)
+
+        expect(described_class.map_field(project, 'has_valid_ci_config')).to be true
+      end
+
+      it 'returns false when project has invalid CI config' do
+        yml_dump = '{ invalid: config }'
+        config = instance_double(Gitlab::Ci::Config, valid?: false)
+
+        allow(project).to receive(:ci_config_for).with(project.default_branch).and_return(yml_dump)
+        allow(Gitlab::Ci::Config).to receive(:new).with(yml_dump, project: project).and_return(config)
+
+        expect(described_class.map_field(project, 'has_valid_ci_config')).to be false
+      end
+
+      it 'returns false when project raises ConfigError' do
+        allow(project).to receive(:ci_config_for).with(project.default_branch).and_return('invalid')
+        allow(Gitlab::Ci::Config).to receive(:new).and_raise(Gitlab::Ci::Config::ConfigError)
+
+        expect(described_class.map_field(project, 'has_valid_ci_config')).to be false
+      end
+
+      it 'returns false when project has no CI' do
+        allow(project).to receive(:has_ci?).and_return(false)
+
+        expect(described_class.map_field(project, 'has_valid_ci_config')).to be false
+      end
+
+      it 'returns false when builds are not enabled' do
+        allow(project).to receive(:builds_enabled?).and_return(false)
+
+        expect(described_class.map_field(project, 'has_valid_ci_config')).to be false
+      end
+    end
+
+    describe 'error_tracking_enabled' do
+      context 'with error tracking enabled' do
+        let_it_be(:project_with_error_tracking) { create(:project) }
+
+        before do
+          create(:project_error_tracking_setting, project: project_with_error_tracking)
+        end
+
+        it 'returns true' do
+          expect(described_class.map_field(project_with_error_tracking, 'error_tracking_enabled')).to be true
+        end
+      end
+
+      context 'with error tracking disabled' do
+        let_it_be(:project_with_disabled_error_tracking) { create(:project) }
+
+        before do
+          create(:project_error_tracking_setting, :disabled, project: project_with_disabled_error_tracking)
+        end
+
+        it 'returns false' do
+          expect(described_class.map_field(project_with_disabled_error_tracking, 'error_tracking_enabled')).to be false
+        end
+      end
+
+      context 'with no error tracking setting' do
+        it 'returns false' do
+          expect(described_class.map_field(project, 'error_tracking_enabled')).to be false
+        end
+      end
+    end
+
+    describe 'default_branch_users_can_push' do
+      let_it_be(:project_with_repo) { create(:project, :repository) }
+      let(:protected_branch) { instance_double(ProtectedBranch) }
+      let(:push_access_level) { instance_double(ProtectedBranch::PushAccessLevel) }
+
+      before do
+        allow(ProtectedBranch).to receive(:protected?).with(project_with_repo,
+          project_with_repo.default_branch).and_return(true)
+        allow(project_with_repo).to receive(:empty_repo?).and_return(false)
+        allow(project_with_repo.protected_branches).to receive(:find_by)
+          .with(name: project_with_repo.default_branch)
+          .and_return(protected_branch)
+        allow(protected_branch).to receive(:push_access_levels).and_return([push_access_level])
+        allow(push_access_level).to receive(:respond_to?).with(:role?).and_return(true)
+        allow(push_access_level).to receive(:role?).and_return(true)
+      end
+
+      it 'returns true for maintainer when access level is sufficient' do
+        allow(push_access_level).to receive(:access_level).and_return(Gitlab::Access::MAINTAINER)
+
+        expect(described_class.map_field(project_with_repo, 'default_branch_users_can_push')).to be true
+      end
+
+      it 'returns false for maintainer when access level is insufficient' do
+        allow(push_access_level).to receive(:access_level).and_return(Gitlab::Access::DEVELOPER)
+
+        expect(described_class.map_field(project_with_repo, 'default_branch_users_can_push')).to be false
+      end
+
+      it 'returns false for non-protected branch' do
+        allow(ProtectedBranch).to receive(:protected?).with(project_with_repo,
+          project_with_repo.default_branch).and_return(false)
+
+        expect(described_class.map_field(project_with_repo, 'default_branch_users_can_push')).to be false
+      end
+
+      it 'returns false for empty repo' do
+        allow(project_with_repo).to receive(:empty_repo?).and_return(true)
+
+        expect(described_class.map_field(project_with_repo, 'default_branch_users_can_push')).to be false
+      end
+
+      it 'returns false when no protected branch found' do
+        allow(project_with_repo.protected_branches)
+          .to receive(:find_by)
+          .with(name: project_with_repo.default_branch)
+          .and_return(nil)
+
+        expect(described_class.map_field(project_with_repo, 'default_branch_users_can_push')).to be false
+      end
+
+      it 'returns false when no push access levels' do
+        allow(protected_branch).to receive(:push_access_levels).and_return([])
+
+        expect(described_class.map_field(project_with_repo, 'default_branch_users_can_push')).to be false
+      end
+    end
+
+    describe 'default_branch_protected_from_direct_push' do
+      context 'with nil default branch' do
+        let_it_be(:project_without_default_branch) { create(:project) }
+
+        before do
+          allow(project_without_default_branch).to receive(:default_branch).and_return(nil)
+        end
+
+        it 'returns false' do
+          expect(described_class.map_field(project_without_default_branch,
+            'default_branch_protected_from_direct_push')).to be false
+        end
+      end
+
+      context 'with default branch not protected' do
+        before do
+          allow(ProtectedBranch).to receive(:protected?).with(project, project.default_branch).and_return(false)
+        end
+
+        it 'returns false' do
+          expect(described_class.map_field(project, 'default_branch_protected_from_direct_push')).to be false
+        end
+      end
+
+      context 'with empty repository' do
+        let_it_be(:empty_project) { create(:project) }
+
+        before do
+          allow(empty_project).to receive(:empty_repo?).and_return(true)
+          allow(ProtectedBranch).to receive(:protected?).with(empty_project,
+            empty_project.default_branch).and_return(true)
+        end
+
+        it 'returns false' do
+          expect(described_class.map_field(empty_project, 'default_branch_protected_from_direct_push')).to be false
+        end
+      end
+
+      context 'with protected default branch' do
+        let_it_be(:project_with_repo) { create(:project, :repository) }
+
+        before do
+          allow(ProtectedBranch).to receive(:protected?).with(project_with_repo,
+            project_with_repo.default_branch).and_return(true)
+          allow(project_with_repo).to receive(:empty_repo?).and_return(false)
+        end
+
+        it 'returns true when no roles can push' do
+          allow(described_class).to receive(:default_branch_users_can_push?).with(project_with_repo,
+            role: :developer).and_return(false)
+          allow(described_class).to receive(:default_branch_users_can_push?).with(project_with_repo,
+            role: :maintainer).and_return(false)
+          allow(described_class).to receive(:default_branch_users_can_push?).with(project_with_repo,
+            role: :owner).and_return(false)
+
+          expect(described_class.map_field(project_with_repo, 'default_branch_protected_from_direct_push')).to be true
+        end
+
+        it 'returns false when developer can push' do
+          allow(described_class).to receive(:default_branch_users_can_push?).with(project_with_repo,
+            role: :developer).and_return(true)
+          allow(described_class).to receive(:default_branch_users_can_push?).with(project_with_repo,
+            role: :maintainer).and_return(false)
+          allow(described_class).to receive(:default_branch_users_can_push?).with(project_with_repo,
+            role: :owner).and_return(false)
+
+          expect(described_class.map_field(project_with_repo, 'default_branch_protected_from_direct_push')).to be false
+        end
+
+        it 'returns false when maintainer can push' do
+          allow(described_class).to receive(:default_branch_users_can_push?).with(project_with_repo,
+            role: :developer).and_return(false)
+          allow(described_class).to receive(:default_branch_users_can_push?).with(project_with_repo,
+            role: :maintainer).and_return(true)
+          allow(described_class).to receive(:default_branch_users_can_push?).with(project_with_repo,
+            role: :owner).and_return(false)
+
+          expect(described_class.map_field(project_with_repo, 'default_branch_protected_from_direct_push')).to be false
+        end
+
+        it 'returns false when owner can push' do
+          allow(described_class).to receive(:default_branch_users_can_push?).with(project_with_repo,
+            role: :developer).and_return(false)
+          allow(described_class).to receive(:default_branch_users_can_push?).with(project_with_repo,
+            role: :maintainer).and_return(false)
+          allow(described_class).to receive(:default_branch_users_can_push?).with(project_with_repo,
+            role: :owner).and_return(true)
+
+          expect(described_class.map_field(project_with_repo, 'default_branch_protected_from_direct_push')).to be false
         end
       end
     end
