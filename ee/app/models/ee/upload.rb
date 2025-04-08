@@ -30,8 +30,6 @@ module EE
         inverse_of: :upload,
         class_name: '::Geo::UploadState'
 
-      after_save :save_verification_details
-
       around_save :ignore_save_verification_details_in_transaction, prepend: true
 
       def ignore_save_verification_details_in_transaction(&blk)

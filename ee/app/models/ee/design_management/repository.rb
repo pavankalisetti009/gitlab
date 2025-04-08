@@ -19,8 +19,6 @@ module EE
           class_name: 'Geo::DesignManagementRepositoryState',
           foreign_key: 'design_management_repository_id'
 
-        after_save :save_verification_details
-
         scope :available_verifiables, -> { joins(:design_management_repository_state) }
 
         scope :checksummed, -> {
