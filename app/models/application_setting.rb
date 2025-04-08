@@ -28,6 +28,8 @@ class ApplicationSetting < ApplicationRecord
     lock_pypi_package_requests_forwarding
   ], remove_with: '18.1', remove_after: '2025-05-20'
 
+  ignore_column :duo_nano_features_enabled, remove_with: '18.1', remove_after: '2025-06-19'
+
   KROKI_URL_ERROR_MESSAGE = 'Please check your Kroki URL setting in ' \
     'Admin area > Settings > General > Kroki'
 
