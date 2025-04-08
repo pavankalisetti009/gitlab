@@ -7,13 +7,13 @@ module EE
 
       override :set_default_attributes!
       def set_default_attributes!
+        add_v2_approval_rules_attributes if dual_write_v2_approval_rules?
         return if params[:approval_rules_attributes].present?
 
         # Pick only regular or any_approver to match frontend behavior:
         # See https://gitlab.com/gitlab-org/gitlab/blob/ea40bc69a9309e0c8691588a920383394ebc649c/ee/app/assets/javascripts/approvals/mappers.js#L80-88
         # See issue: https://gitlab.com/gitlab-org/gitlab/-/issues/408380
         approval_rules_attrs = project.approval_rules.regular_or_any_approver.map(&:to_nested_attributes)
-
         params[:approval_rules_attributes] = approval_rules_attrs if approval_rules_attrs.present?
       end
 
@@ -49,6 +49,26 @@ module EE
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
+
+      def dual_write_v2_approval_rules?
+        ::Feature.enabled?(:v2_approval_rules, project)
+      end
+
+      def add_v2_approval_rules_attributes
+        return unless params[:approval_rules_attributes]
+
+        params[:v2_approval_rules_attributes] = params[:approval_rules_attributes].map do |rule|
+          v2_rule = rule.dup.to_h
+          v2_rule[:approver_user_ids] = rule[:user_ids]
+          v2_rule[:approver_group_ids] = rule[:group_ids]
+          v2_rule[:origin] = :merge_request
+          v2_rule[:project_id] = project.id
+
+          ActionController::Parameters.new(v2_rule).permit(
+            :name, :approvals_required, :origin, :project_id, approver_user_ids: [], approver_group_ids: []
+          )
+        end
       end
     end
   end

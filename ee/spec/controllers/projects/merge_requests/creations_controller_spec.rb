@@ -146,6 +146,69 @@ RSpec.describe Projects::MergeRequests::CreationsController, feature_category: :
       end
     end
 
+    shared_examples 'creates v2 approval rules' do
+      it 'creates v2 approval rules correctly' do
+        create_merge_request(approval_rules_attributes)
+        v2_approval_rules = created_merge_request.v2_approval_rules
+
+        expect(v2_approval_rules.count).to eq(2)
+        expect(v2_approval_rules.first.name).to eq('Rule 1')
+        expect(v2_approval_rules.first.approver_users).to eq([new_approver])
+        expect(v2_approval_rules.first.approvals_required).to eq(1)
+      end
+    end
+
+    shared_examples 'does not create v2 approval rules' do
+      it 'does not create any v2 approval rules' do
+        create_merge_request(approval_rules_attributes)
+        expect(created_merge_request.v2_approval_rules).to eq([])
+      end
+    end
+
+    context 'creating v2 approval rules' do
+      let(:new_approver) { create(:user) }
+      let(:approval_rules_attributes) do
+        { approval_rules_attributes: [
+          {
+            name: 'Rule 1',
+            user_ids: [new_approver.id],
+            approvals_required: 1
+          },
+          {
+            name: 'Rule 2',
+            user_ids: [new_approver.id],
+            approvals_required: 1
+          }
+        ] }
+      end
+
+      it_behaves_like 'creates v2 approval rules'
+
+      context 'when v2_approval_rules feature flag is disabled' do
+        before do
+          stub_feature_flags(v2_approval_rules: false)
+        end
+
+        it_behaves_like 'does not create v2 approval rules'
+      end
+
+      context 'when editing approval rules in merge requests is enabled' do
+        before do
+          project.update!(disable_overriding_approvers_per_merge_request: false)
+        end
+
+        it_behaves_like 'creates v2 approval rules'
+      end
+
+      context 'when editing approval rules in merge requests is disabled' do
+        before do
+          project.update!(disable_overriding_approvers_per_merge_request: true)
+        end
+
+        it_behaves_like 'does not create v2 approval rules'
+      end
+    end
+
     context 'overriding approvers per MR' do
       let(:new_approver) { create(:user) }
 
