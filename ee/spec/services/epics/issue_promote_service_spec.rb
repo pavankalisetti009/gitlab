@@ -74,18 +74,6 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
               .to publish_event(WorkItems::WorkItemCreatedEvent)
                     .with({ id: an_instance_of(Integer), namespace_id: group.id })
           end
-
-          context 'when work_item_epics_ssot feature flag is disabled' do
-            before do
-              stub_feature_flags(work_item_epics_ssot: false)
-            end
-
-            it 'publishes an EpicCreatedEvent' do
-              expect { subject.execute(issue) }
-                .to publish_event(Epics::EpicCreatedEvent)
-                      .with({ id: an_instance_of(Integer), group_id: group.id })
-            end
-          end
         end
 
         it 'counts a usage ping event' do
@@ -389,24 +377,10 @@ RSpec.describe Epics::IssuePromoteService, :aggregate_failures, feature_category
                 .and change { Note.where(noteable_type: 'Issue').count }.by(3)
                 .and change { Note.where(noteable_type: 'Epic').count }.by(1)
             end
-
-            context 'when work_item_epics_ssot feature flag is disabled' do
-              before do
-                stub_feature_flags(work_item_epics_ssot: false)
-              end
-
-              it_behaves_like 'syncs all data from an epic to a work item', notes_on_work_item: true do
-                let(:epic) { Epic.last }
-              end
-            end
           end
         end
 
-        context 'with work_item_epics_ssot feature flag enabled' do
-          before do
-            stub_feature_flags(work_item_epics_ssot: true)
-          end
-
+        context 'for milestones' do
           let_it_be(:project_milestone) { create(:milestone, project: project) }
 
           it 'successfully retains the group level Milestone on the new epic' do

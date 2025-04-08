@@ -16,6 +16,14 @@ module Users
         model: model,
         event_type: 'user_profile_visiblity_updated'
       )
+
+      audit_changes(
+        :private_profile,
+        as: 'user_profile_visibility',
+        entity: @current_user,
+        model: model,
+        event_type: 'user_profile_visibility_updated'
+      )
     end
 
     private
