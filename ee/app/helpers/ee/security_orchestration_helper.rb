@@ -51,7 +51,7 @@ module EE::SecurityOrchestrationHelper
       max_ci_component_publishing_policies_reached: max_active_ci_component_publishing_policies_reached?(container)
                                                       .to_s,
       max_active_pipeline_execution_policies_reached: max_active_pipeline_execution_policies_reached?(container).to_s,
-      max_pipeline_execution_policies_allowed: Security::PipelineExecutionPolicy::POLICY_LIMIT,
+      max_pipeline_execution_policies_allowed: pipeline_execution_policies_per_configuration_limit(container),
       max_active_vulnerability_management_policies_reached:
         max_active_vulnerability_management_policies_reached?(container).to_s,
       max_vulnerability_management_policies_allowed: Security::VulnerabilityManagementPolicy::POLICY_LIMIT,
@@ -72,12 +72,18 @@ module EE::SecurityOrchestrationHelper
     container.is_a?(::Project) ? project_security_policies_path(container) : group_security_policies_path(container)
   end
 
+  def pipeline_execution_policies_per_configuration_limit(container)
+    Security::SecurityOrchestrationPolicies::LimitService
+      .new(container: container)
+      .pipeline_execution_policies_per_configuration_limit
+  end
+
   def max_active_scan_execution_policies_reached?(container)
     active_scan_execution_policy_count(container) >= Security::ScanExecutionPolicy::POLICY_LIMIT
   end
 
   def max_active_pipeline_execution_policies_reached?(container)
-    active_pipeline_execution_policy_count(container) >= Security::PipelineExecutionPolicy::POLICY_LIMIT
+    active_pipeline_execution_policy_count(container) >= pipeline_execution_policies_per_configuration_limit(container)
   end
 
   def active_pipeline_execution_policy_count(container)

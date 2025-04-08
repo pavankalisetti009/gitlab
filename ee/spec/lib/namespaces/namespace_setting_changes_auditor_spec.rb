@@ -125,7 +125,7 @@ RSpec.describe Namespaces::NamespaceSettingChangesAuditor, feature_category: :gr
         resource_access_token_notify_inherited lock_resource_access_token_notify_inherited
         pipeline_variables_default_role extended_grat_expiry_webhooks_execute force_pages_access_control
         jwt_ci_cd_job_token_enabled jwt_ci_cd_job_token_opted_out require_dpop_for_manage_api_endpoints
-        job_token_policies_enabled]
+        job_token_policies_enabled security_policies]
 
       columns_to_audit = Namespaces::NamespaceSettingChangesAuditor::EVENT_NAME_PER_COLUMN.keys.map(&:to_s)
 

@@ -54,6 +54,15 @@ module EE
       enum enterprise_users_extensions_marketplace_opt_in_status:
         ::Enums::WebIde::ExtensionsMarketplaceOptInStatus.statuses, _prefix: :enterprise_users_extensions_marketplace
 
+      attribute :security_policies, default: -> { {} }
+      validates :security_policies, json_schema: { filename: "application_setting_security_policies" }
+      validates :pipeline_execution_policies_per_configuration_limit,
+        numericality: {
+          only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 20, allow_nil: true
+        }
+
+      jsonb_accessor :security_policies, pipeline_execution_policies_per_configuration_limit: [:integer, { default: 0 }]
+
       before_save :clear_new_user_signups_cap, unless: -> { seat_control_user_cap? }
       before_save :set_prevent_sharing_groups_outside_hierarchy
       after_save :disable_project_sharing!, if: -> { user_cap_enabled? || seat_control_block_overages? }

@@ -160,6 +160,9 @@ module EE
         to: :namespace_limit, allow_nil: true
       delegate :duo_features_enabled, :lock_duo_features_enabled, :duo_availability, to: :namespace_settings,
         allow_nil: true
+      delegate :pipeline_execution_policies_per_configuration_limit,
+        :pipeline_execution_policies_per_configuration_limit=,
+        to: :namespace_settings, allow_nil: true
 
       # `eligible_additional_purchased_storage_size` uses a FF to start checking `additional_purchased_storage_ends_on`
       # if the FF is enabled before returning `additional_purchased_storage_size`
