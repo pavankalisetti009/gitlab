@@ -35,6 +35,7 @@ export default {
   data() {
     return {
       projectList: [],
+      associatedProjects: this.complianceFramework?.projects?.nodes || [],
       projectIdsToAdd: new Set(),
       projectIdsToRemove: new Set(),
       initialProjectIds: new Set(),
@@ -46,9 +47,6 @@ export default {
     };
   },
   computed: {
-    associatedProjects() {
-      return this.complianceFramework?.projects?.nodes || [];
-    },
     pageAllSelected() {
       return (
         this.projectList.length > 0 &&

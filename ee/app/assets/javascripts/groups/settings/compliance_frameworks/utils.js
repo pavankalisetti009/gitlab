@@ -25,7 +25,12 @@ export const getSubmissionParams = (formData, pipelineConfigurationFullPathEnabl
     description: formData.description,
     color: formData.color,
     default: formData.default,
-    projects: formData.projects,
+    projects: formData.projects
+      ? {
+          addProjects: formData.projects.addProjects || [],
+          removeProjects: formData.projects.removeProjects || [],
+        }
+      : { addProjects: [], removeProjects: [] },
   };
 
   if (

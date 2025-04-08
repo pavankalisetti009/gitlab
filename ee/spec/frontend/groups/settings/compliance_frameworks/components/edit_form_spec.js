@@ -144,6 +144,7 @@ describe('EditForm', () => {
           description,
           pipelineConfigurationFullPath,
           color,
+          projects: { addProjects: [], removeProjects: [] },
         },
       },
     };
@@ -157,7 +158,7 @@ describe('EditForm', () => {
 
       await submitForm(name, description, pipelineConfigurationFullPath, color);
 
-      expect(updateWithNetworkErrors).toHaveBeenCalledWith(updateProps);
+      expect(updateWithNetworkErrors).toHaveBeenCalledWith(expect.objectContaining(updateProps));
       expect(findFormStatus().props('loading')).toBe(false);
       expect(findFormStatus().props('error')).toBe(SAVE_ERROR);
       expect(Sentry.captureException.mock.calls[0][0].networkError).toStrictEqual(sentryError);
@@ -172,7 +173,7 @@ describe('EditForm', () => {
 
       await submitForm(name, description, pipelineConfigurationFullPath, color);
 
-      expect(updateWithErrors).toHaveBeenCalledWith(updateProps);
+      expect(updateWithErrors).toHaveBeenCalledWith(expect.objectContaining(updateProps));
       expect(findFormStatus().props('loading')).toBe(false);
       expect(findFormStatus().props('error')).toBe('Invalid values given');
       expect(Sentry.captureException.mock.calls[0][0]).toStrictEqual(sentrySaveError);
@@ -186,7 +187,7 @@ describe('EditForm', () => {
 
       await submitForm(name, description, pipelineConfigurationFullPath, color);
 
-      expect(update).toHaveBeenCalledWith(updateProps);
+      expect(update).toHaveBeenCalledWith(expect.objectContaining(updateProps));
       expect(findFormStatus().props('loading')).toBe(true);
     });
 

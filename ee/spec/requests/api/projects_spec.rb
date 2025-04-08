@@ -6,7 +6,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
   include ExternalAuthorizationServiceHelpers
   include StubRequests
 
-  let(:user) { create(:user) }
+  let_it_be(:user) { create(:user) }
   let_it_be(:another_user) { create(:user) }
 
   let(:project) { create(:project, namespace: user.namespace) }
@@ -2006,9 +2006,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
   end
 
   describe 'POST /projects/:id/restore' do
+    let_it_be(:group) { create(:group, owners: user) }
+    let_it_be_with_reload(:project) { create(:project, group: group) }
+
     context 'feature is available' do
       before do
         stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
+        stub_feature_flags(downtier_delayed_deletion: false)
       end
 
       it 'restores project' do
@@ -2036,6 +2040,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     context 'feature is not available' do
       before do
         stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
+        stub_feature_flags(downtier_delayed_deletion: false)
       end
 
       it 'returns error' do

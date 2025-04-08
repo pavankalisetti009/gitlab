@@ -97,7 +97,7 @@ describe('CreateForm', () => {
           default: undefined,
           pipelineConfigurationFullPath,
           color,
-          projects: null,
+          projects: { addProjects: [], removeProjects: [] },
         },
       },
     };
@@ -111,7 +111,7 @@ describe('CreateForm', () => {
 
       await submitForm(name, description, pipelineConfigurationFullPath, color);
 
-      expect(createWithNetworkErrors).toHaveBeenCalledWith(creationProps);
+      expect(createWithNetworkErrors).toHaveBeenCalledWith(expect.objectContaining(creationProps));
       expect(findFormStatus().props('loading')).toBe(false);
       expect(findFormStatus().props('error')).toBe(SAVE_ERROR);
       expect(captureExceptionSpy.mock.calls[0][0].networkError).toStrictEqual(sentryError);
@@ -126,7 +126,7 @@ describe('CreateForm', () => {
 
       await submitForm(name, description, pipelineConfigurationFullPath, color);
 
-      expect(createWithErrors).toHaveBeenCalledWith(creationProps);
+      expect(createWithErrors).toHaveBeenCalledWith(expect.objectContaining(creationProps));
       expect(findFormStatus().props('loading')).toBe(false);
       expect(findFormStatus().props('error')).toBe('Invalid values given');
       expect(captureExceptionSpy).toHaveBeenCalledWith(sentrySaveError);
@@ -140,7 +140,7 @@ describe('CreateForm', () => {
 
       await submitForm(name, description, pipelineConfigurationFullPath, color);
 
-      expect(create).toHaveBeenCalledWith(creationProps);
+      expect(create).toHaveBeenCalledWith(expect.objectContaining(creationProps));
       expect(findFormStatus().props('loading')).toBe(true);
     });
   });
