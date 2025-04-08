@@ -101,7 +101,8 @@ module Security
         return if ci_config.blank?
 
         service = Ci::CreatePipelineService.new(project, current_user, ref: params[:branch])
-        service.execute(:security_orchestration_policy, content: ci_config.to_yaml, variables_attributes: [])
+        service.execute(:security_orchestration_policy,
+          content: ci_config.to_yaml, variables_attributes: [], ignore_skip_ci: true)
       end
 
       def execute_on_demand_scans(ci_config)

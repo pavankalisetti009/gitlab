@@ -125,6 +125,16 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
         it "sets the pipeline source" do
           expect(pipeline_scan_pipeline.source).to eq("security_orchestration_policy")
         end
+
+        it 'invokes Ci::CreatePipelineService with ignore_skip_ci option' do
+          expect_next_instance_of(Ci::CreatePipelineService, project, current_user, ref: branch) do |pipeline_service|
+            expect(pipeline_service).to receive(:execute)
+              .with(:security_orchestration_policy, content: anything, variables_attributes: [], ignore_skip_ci: true)
+              .and_call_original
+          end
+
+          execute
+        end
       end
 
       context "with on-demand action" do
@@ -402,7 +412,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
                 expect(pipeline_service).to receive(:execute)
                                               .with(:security_orchestration_policy,
                                                 content: a_string_including(expected_content),
-                                                variables_attributes: []).and_call_original
+                                                variables_attributes: [], ignore_skip_ci: true).and_call_original
               end
 
               expect(status).to be(:error)
