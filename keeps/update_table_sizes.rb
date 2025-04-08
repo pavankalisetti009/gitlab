@@ -151,7 +151,7 @@ module Keeps
       [
         'database',
         'backend',
-        'group::database',
+        'group::database frameworks',
         'devops::data stores',
         'section::core platform',
         'maintenance::workflow',
