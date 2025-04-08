@@ -847,28 +847,124 @@ describe('Dependencies actions', () => {
         graphQLClient.query.mockResolvedValue(mockGraphQLDependenciesResponse);
       });
 
-      it('dispatches the correct actions and commits the transformed data', async () => {
-        await testAction(
-          actions.fetchDependenciesViaGraphQL,
-          undefined,
-          state,
-          [
-            {
-              type: types.RECEIVE_DEPENDENCIES_SUCCESS,
-              payload: {
-                dependencies: expectedDependencies,
-                pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+      describe('pagination', () => {
+        it('uses "first" query-parameter when no cursor is provided (initial page)', async () => {
+          await testAction(
+            actions.fetchDependenciesViaGraphQL,
+            undefined,
+            state,
+            [
+              {
+                type: types.RECEIVE_DEPENDENCIES_SUCCESS,
+                payload: {
+                  dependencies: expectedDependencies,
+                  pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                },
               },
-            },
-          ],
-          [{ type: 'requestDependencies' }],
-        );
+            ],
+            [{ type: 'requestDependencies' }],
+          );
 
-        expect(graphQLClient.query).toHaveBeenCalledWith({
-          query: projectDependencies,
-          variables: {
-            fullPath: state.fullPath,
-          },
+          expect(graphQLClient.query).toHaveBeenCalledWith({
+            query: projectDependencies,
+            variables: {
+              first: 20,
+              fullPath: state.fullPath,
+            },
+          });
+        });
+
+        it('uses "after" query-parameter for forward navigation', async () => {
+          const forwardCursor = 'eyJpZCI6IjQzIiwiX2tkIjoibiJ9';
+
+          await testAction(
+            actions.fetchDependenciesViaGraphQL,
+            { cursor: forwardCursor },
+            state,
+            [
+              {
+                type: types.RECEIVE_DEPENDENCIES_SUCCESS,
+                payload: {
+                  dependencies: expectedDependencies,
+                  pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                },
+              },
+            ],
+            [{ type: 'requestDependencies' }],
+          );
+
+          expect(graphQLClient.query).toHaveBeenCalledWith({
+            query: projectDependencies,
+            variables: {
+              first: 20,
+              after: forwardCursor,
+              fullPath: state.fullPath,
+            },
+          });
+        });
+
+        it('uses "before" query-parameter for backward navigation', async () => {
+          const backwardCursor = 'eyJpZCI6IjQyIiwiX2tkIjoicCJ9';
+
+          state.pageInfo = {
+            startCursor: backwardCursor,
+            endCursor: 'eyJpZCI6IjYyIiwiX2tkIjoibiJ9',
+            hasNextPage: true,
+            hasPreviousPage: true,
+          };
+
+          await testAction(
+            actions.fetchDependenciesViaGraphQL,
+            { cursor: backwardCursor },
+            state,
+            [
+              {
+                type: types.RECEIVE_DEPENDENCIES_SUCCESS,
+                payload: {
+                  dependencies: expectedDependencies,
+                  pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                },
+              },
+            ],
+            [{ type: 'requestDependencies' }],
+          );
+
+          expect(graphQLClient.query).toHaveBeenCalledWith({
+            query: projectDependencies,
+            variables: {
+              last: 20,
+              before: backwardCursor,
+              fullPath: state.fullPath,
+            },
+          });
+        });
+
+        it('uses "first" query-parameter with custom page size when provided', async () => {
+          const customPageSize = 50;
+
+          await testAction(
+            actions.fetchDependenciesViaGraphQL,
+            { pageSize: customPageSize },
+            state,
+            [
+              {
+                type: types.RECEIVE_DEPENDENCIES_SUCCESS,
+                payload: {
+                  dependencies: expectedDependencies,
+                  pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                },
+              },
+            ],
+            [{ type: 'requestDependencies' }],
+          );
+
+          expect(graphQLClient.query).toHaveBeenCalledWith({
+            query: projectDependencies,
+            variables: {
+              first: customPageSize,
+              fullPath: state.fullPath,
+            },
+          });
         });
       });
     });

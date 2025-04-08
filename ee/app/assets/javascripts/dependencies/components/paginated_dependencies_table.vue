@@ -3,7 +3,7 @@
 import { mapActions, mapState } from 'vuex';
 import { GlKeysetPagination } from '@gitlab/ui';
 import TablePagination from '~/vue_shared/components/pagination/table_pagination.vue';
-import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import DependenciesTable from './dependencies_table.vue';
 
 export default {
@@ -13,6 +13,7 @@ export default {
     GlKeysetPagination,
     TablePagination,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: ['vulnerabilitiesEndpoint'],
   computed: {
     ...mapState({
@@ -42,7 +43,10 @@ export default {
         return dispatch('fetchDependencies', { page });
       },
       fetchCursorPage(dispatch, cursor) {
-        updateHistory({ url: setUrlParams({ cursor }) });
+        if (this.glFeatures.projectDependenciesGraphql) {
+          return dispatch('fetchDependenciesViaGraphQL', { cursor });
+        }
+
         return dispatch('fetchDependencies', { cursor });
       },
       fetchVulnerabilities(dispatch, item) {

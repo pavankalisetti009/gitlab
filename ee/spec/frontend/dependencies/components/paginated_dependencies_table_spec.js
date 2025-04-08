@@ -5,7 +5,6 @@ import DependenciesTable from 'ee/dependencies/components/dependencies_table.vue
 import PaginatedDependenciesTable from 'ee/dependencies/components/paginated_dependencies_table.vue';
 import createStore from 'ee/dependencies/store';
 import TablePagination from '~/vue_shared/components/pagination/table_pagination.vue';
-import * as urlUtility from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'helpers/test_constants';
 import mockDependenciesResponse from '../store/mock_dependencies.json';
 
@@ -14,17 +13,21 @@ describe('PaginatedDependenciesTable component', () => {
   let wrapper;
   let originalDispatch;
 
-  const factory = (props = {}) => {
+  const factory = ({ props = {}, glFeatures = { projectDependenciesGraphql: true } } = {}) => {
     store = createStore();
 
     wrapper = shallowMount(PaginatedDependenciesTable, {
       store,
-      propsData: { ...props },
-      provide: { vulnerabilitiesEndpoint: TEST_HOST },
+      propsData: props,
+      provide: {
+        vulnerabilitiesEndpoint: TEST_HOST,
+        glFeatures,
+      },
     });
   };
 
   const findTablePagination = () => wrapper.findComponent(TablePagination);
+  const findKeysetPagination = () => wrapper.findComponent(GlKeysetPagination);
 
   const expectComponentWithProps = (Component, props = {}) => {
     const componentWrapper = wrapper.findComponent(Component);
@@ -37,7 +40,6 @@ describe('PaginatedDependenciesTable component', () => {
 
     originalDispatch = store.dispatch;
     jest.spyOn(store, 'dispatch').mockImplementation();
-    jest.spyOn(urlUtility, 'updateHistory');
 
     await nextTick();
   });
@@ -76,17 +78,6 @@ describe('PaginatedDependenciesTable component', () => {
     expect(store.dispatch).toHaveBeenCalledWith('fetchDependencies', { page });
   });
 
-  it('fetchCursorPage dispatches the correct action', () => {
-    const cursor = 'eyJpZCI6IjQyIiwiX2tkIjoibiJ9';
-    wrapper.vm.fetchCursorPage(cursor);
-    expect(store.dispatch).toHaveBeenCalledTimes(1);
-    expect(store.dispatch).toHaveBeenCalledWith('fetchDependencies', { cursor });
-    expect(urlUtility.updateHistory).toHaveBeenCalledTimes(1);
-    expect(urlUtility.updateHistory).toHaveBeenCalledWith({
-      url: `${TEST_HOST}/?cursor=${cursor}`,
-    });
-  });
-
   it('dispatches fetch vulnerabilities', async () => {
     const item = {};
     const table = wrapper.findComponent(DependenciesTable);
@@ -121,7 +112,7 @@ describe('PaginatedDependenciesTable component', () => {
     });
 
     it('does not render keyset pagination', () => {
-      expect(wrapper.findComponent(GlKeysetPagination).exists()).toBe(false);
+      expect(findKeysetPagination().exists()).toBe(false);
     });
   });
 
@@ -148,7 +139,7 @@ describe('PaginatedDependenciesTable component', () => {
     });
 
     it('does not render keyset pagination', () => {
-      expect(wrapper.findComponent(GlKeysetPagination).exists()).toBe(false);
+      expect(findKeysetPagination().exists()).toBe(false);
     });
   });
 
@@ -197,7 +188,77 @@ describe('PaginatedDependenciesTable component', () => {
     });
 
     it('renders keyset pagination', () => {
-      expect(wrapper.findComponent(GlKeysetPagination).exists()).toBe(true);
+      expect(findKeysetPagination().exists()).toBe(true);
+    });
+  });
+
+  describe('keyset pagination', () => {
+    const nextCursor = 'eyJpZCI6IjQyIiwiX2tkIjoibiJ9';
+    const prevCursor = 'eyJpZCI6IjQwIiwiX2tkIjoicCJ9';
+
+    beforeEach(async () => {
+      factory();
+
+      store.state.pageInfo = {
+        hasNextPage: true,
+        hasPreviousPage: true,
+        startCursor: prevCursor,
+        endCursor: nextCursor,
+      };
+
+      jest.spyOn(store, 'dispatch').mockImplementation();
+
+      await nextTick();
+    });
+
+    it('dispatches fetchDependenciesViaGraphQL when clicking next', async () => {
+      await findKeysetPagination().vm.$emit('next', nextCursor);
+
+      expect(store.dispatch).toHaveBeenCalledWith('fetchDependenciesViaGraphQL', {
+        cursor: nextCursor,
+      });
+    });
+
+    it('dispatches fetchDependenciesViaGraphQL when clicking previous', async () => {
+      await findKeysetPagination().vm.$emit('prev', prevCursor);
+
+      expect(store.dispatch).toHaveBeenCalledWith('fetchDependenciesViaGraphQL', {
+        cursor: prevCursor,
+      });
+    });
+  });
+
+  describe('with GraphQL feature flag disabled', () => {
+    describe('keyset pagination', () => {
+      const nextCursor = 'eyJpZCI6IjQyIiwiX2tkIjoibiJ9';
+      const prevCursor = 'eyJpZCI6IjQwIiwiX2tkIjoicCJ9';
+
+      beforeEach(async () => {
+        factory({ glFeatures: { projectDependenciesGraphql: false } });
+
+        store.state.pageInfo = {
+          hasNextPage: true,
+          hasPreviousPage: true,
+          startCursor: prevCursor,
+          endCursor: nextCursor,
+        };
+
+        jest.spyOn(store, 'dispatch').mockImplementation();
+
+        await nextTick();
+      });
+
+      it('dispatches fetchDependencies when clicking next', () => {
+        findKeysetPagination().vm.$emit('next', nextCursor);
+
+        expect(store.dispatch).toHaveBeenCalledWith('fetchDependencies', { cursor: nextCursor });
+      });
+
+      it('dispatches fetchDependencies when clicking previous', () => {
+        findKeysetPagination().vm.$emit('prev', prevCursor);
+
+        expect(store.dispatch).toHaveBeenCalledWith('fetchDependencies', { cursor: prevCursor });
+      });
     });
   });
 });
