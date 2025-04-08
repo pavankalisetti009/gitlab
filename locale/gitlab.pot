@@ -55264,6 +55264,9 @@ msgstr ""
 msgid "SecurityReports|Vulnerability report"
 msgstr ""
 
+msgid "SecurityReports|Vulnerability will be archived on %{date}"
+msgstr ""
+
 msgid "SecurityReports|Warning parsing security reports"
 msgstr ""
 
