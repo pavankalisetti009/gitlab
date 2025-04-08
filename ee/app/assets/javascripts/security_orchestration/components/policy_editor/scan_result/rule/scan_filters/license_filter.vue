@@ -3,7 +3,6 @@ import { GlCollapsibleListbox } from '@gitlab/ui';
 import { sprintf, __, s__ } from '~/locale';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { MATCH_ON_INCLUSION_LICENSE } from 'ee/security_orchestration/components/policy_editor/constants';
 import { EXCEPT, MATCHING } from '../../lib/rules';
 import { UNKNOWN_LICENSE } from './constants';
@@ -32,7 +31,6 @@ export default {
     SectionLayout,
     GlCollapsibleListbox,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['parsedSoftwareLicenses'],
   props: {
     initRule: {

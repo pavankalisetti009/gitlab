@@ -6,7 +6,6 @@ import {
   BRANCH_EXCEPTIONS_KEY,
   SPECIFIC_BRANCHES,
 } from 'ee/security_orchestration/components/policy_editor/constants';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { SCAN_EXECUTION_RULES_LABELS, SCAN_EXECUTION_RULES_PIPELINE_KEY } from '../constants';
 import BranchExceptionSelector from '../../branch_exception_selector.vue';
 import BranchTypeSelector from './branch_type_selector.vue';
@@ -30,7 +29,6 @@ export default {
     GlCollapsibleListbox,
     GlSprintf,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['namespaceType'],
   props: {
     initRule: {

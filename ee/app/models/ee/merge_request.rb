@@ -112,6 +112,7 @@ module EE
       delegate :wrapped_approval_rules, :invalid_approvers_rules, to: :approval_state
 
       accepts_nested_attributes_for :approval_rules, allow_destroy: true
+      accepts_nested_attributes_for :v2_approval_rules, allow_destroy: true
 
       scope :not_merged, -> { where.not(merge_requests: { state_id: ::MergeRequest.available_states[:merged] }) }
 

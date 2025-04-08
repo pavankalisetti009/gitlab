@@ -3,7 +3,6 @@ import { isEmpty } from 'lodash';
 import { GlCollapsibleListbox, GlSprintf, GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { REPORT_TYPE_DAST } from '~/vue_shared/security_reports/constants';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { isProject, isGroup, isScanningReport } from 'ee/security_orchestration/components/utils';
 import SectionLayout from '../../section_layout.vue';
 import { ACTION_AND_LABEL, RULE_MODE_SCANNERS } from '../../constants';
@@ -42,7 +41,6 @@ export default {
     RunnerTagsFilter,
     TemplateSelector,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['namespacePath', 'namespaceType'],
   props: {
     initAction: {

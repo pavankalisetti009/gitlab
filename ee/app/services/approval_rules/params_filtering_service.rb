@@ -22,6 +22,10 @@ module ApprovalRules
 
     def execute
       params.delete(:approval_rules_attributes) unless current_user.can?(:update_approvers, target)
+
+      params.delete(:v2_approval_rules_attributes) unless current_user.can?(:update_approvers,
+        target) && Feature.enabled?(:v2_approval_rules, project)
+
       params.delete(:reset_approval_rules_to_defaults) unless updating?
 
       return params unless params.key?(:approval_rules_attributes)
