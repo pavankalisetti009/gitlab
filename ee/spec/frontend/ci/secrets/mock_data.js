@@ -229,3 +229,21 @@ export const secretManagerStatusResponse = (status) => {
     },
   };
 };
+
+export const mockDeleteProjectSecretResponse = {
+  data: {
+    projectSecretDelete: {
+      errors: [],
+      __typename: 'ProjectSecretDeletePayload',
+    },
+  },
+};
+
+export const mockDeleteProjectSecretErrorResponse = {
+  data: {
+    projectSecretDelete: {
+      errors: ['This is an API error.'],
+      __typename: 'ProjectSecretDeletePayload',
+    },
+  },
+};

@@ -1,16 +1,12 @@
 <script>
-import { GlAlert, GlButton, GlLoadingIcon } from '@gitlab/ui';
+import { GlAlert, GlButton, GlDisclosureDropdown, GlLoadingIcon } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
-import {
-  DETAILS_ROUTE_NAME,
-  EDIT_ROUTE_NAME,
-  SECRET_STATUS,
-  SCOPED_LABEL_COLOR,
-} from '../../constants';
+import { EDIT_ROUTE_NAME } from '../../constants';
 import getSecretDetailsQuery from '../../graphql/queries/get_secret_details.query.graphql';
+import SecretDeleteModal from '../secret_delete_modal.vue';
 import SecretDetails from './secret_details.vue';
 
 export default {
@@ -18,7 +14,9 @@ export default {
   components: {
     GlAlert,
     GlButton,
+    GlDisclosureDropdown,
     GlLoadingIcon,
+    SecretDeleteModal,
     SecretDetails,
   },
   props: {
@@ -59,12 +57,24 @@ export default {
   data() {
     return {
       secret: null,
+      showDeleteModal: false,
     };
   },
   computed: {
     createdAtText() {
       const date = localeDateFormat.asDate.format(new Date(this.secret.createdAt));
       return sprintf(__('Created on %{date}'), { date });
+    },
+    disclosureDropdownOptions() {
+      return [
+        {
+          text: __('Delete'),
+          variant: 'danger',
+          action: () => {
+            this.showDeleteModal = true;
+          },
+        },
+      ];
     },
     environmentLabelText() {
       const { environment } = this.secret;
@@ -84,14 +94,13 @@ export default {
         this.$router.push({ name });
       }
     },
+    hideModal() {
+      this.showDeleteModal = false;
+    },
   },
   i18n: {
     queryError: s__('Secrets|Failed to load secret. Please try again later.'),
   },
-  DETAILS_ROUTE_NAME,
-  EDIT_ROUTE_NAME,
-  SCOPED_LABEL_COLOR,
-  SECRET_STATUS,
 };
 </script>
 <template>
@@ -101,6 +110,13 @@ export default {
       {{ $options.i18n.queryError }}
     </gl-alert>
     <div v-else>
+      <secret-delete-modal
+        :full-path="fullPath"
+        :secret-name="secret.name"
+        :show-modal="showDeleteModal"
+        @hide="hideModal"
+        v-on="$listeners"
+      />
       <div class="gl-flex gl-items-center gl-justify-between">
         <h1 class="page-title gl-text-size-h-display">{{ secret.name }}</h1>
         <div>
@@ -110,17 +126,12 @@ export default {
             data-testid="secret-edit-button"
             @click="goToEdit"
           />
-          <gl-button
-            :aria-label="__('Revoke')"
-            category="secondary"
-            variant="danger"
-            data-testid="secret-revoke-button"
-          >
-            {{ __('Revoke') }}
-          </gl-button>
-          <gl-button :aria-label="__('Delete')" variant="danger" data-testid="secret-delete-button">
-            {{ __('Delete') }}
-          </gl-button>
+          <gl-disclosure-dropdown
+            category="tertiary"
+            icon="ellipsis_v"
+            no-caret
+            :items="disclosureDropdownOptions"
+          />
         </div>
       </div>
       <secret-details :full-path="fullPath" :secret="secret" />
