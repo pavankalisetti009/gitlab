@@ -27,6 +27,7 @@ import {
   mockWithoutRefPipelineExecutionManifest,
   mockWithoutRefPipelineExecutionObject,
   mockInvalidPipelineExecutionObject,
+  mockScheduledPipelineExecutionObject,
   customYamlUrlParams,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
@@ -381,7 +382,7 @@ describe('EditorComponent', () => {
   });
 
   describe('skip ci configuration', () => {
-    it('renders skip ci configuration', () => {
+    it('renders the skip ci configuration if not a scheduled pipeline policy', () => {
       factory();
 
       expect(findSkipCiSelector().exists()).toBe(true);
@@ -391,6 +392,12 @@ describe('EditorComponent', () => {
       expect(findSkipCiSelector().findComponent(GlToggle).props('value')).toBe(
         !DEFAULT_REVERSED_SKIP_SI_CONFIGURATION.allowed,
       );
+    });
+
+    it('does not render the skip ci configuration if not a scheduled pipeline policy', () => {
+      factory({ propsData: { existingPolicy: { ...mockScheduledPipelineExecutionObject } } });
+
+      expect(findSkipCiSelector().exists()).toBe(false);
     });
   });
 

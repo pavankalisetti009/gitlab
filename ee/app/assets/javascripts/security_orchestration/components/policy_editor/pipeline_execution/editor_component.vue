@@ -111,20 +111,23 @@ export default {
     };
   },
   computed: {
+    content() {
+      return this.policy?.content || {};
+    },
     hasNewSplitView() {
       return this.glFeatures.securityPoliciesSplitView;
+    },
+    isScheduledPolicy() {
+      return this.strategy === SCHEDULE;
     },
     originalName() {
       return this.existingPolicy?.name;
     },
-    strategy() {
-      return this.policy?.pipeline_config_strategy || SCHEDULE;
-    },
-    content() {
-      return this.policy?.content || {};
-    },
     schedules() {
       return this.policy?.schedules;
+    },
+    strategy() {
+      return this.policy?.pipeline_config_strategy || SCHEDULE;
     },
   },
   watch: {
@@ -271,7 +274,7 @@ export default {
     </template>
 
     <template #settings>
-      <disabled-section :disabled="false">
+      <disabled-section v-if="!isScheduledPolicy" :disabled="false">
         <template #title>
           <h4>{{ $options.i18n.configurationTitle }}</h4>
         </template>
