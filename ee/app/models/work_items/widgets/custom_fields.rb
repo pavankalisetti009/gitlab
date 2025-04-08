@@ -3,10 +3,12 @@
 module WorkItems
   module Widgets
     class CustomFields < Base
-      def custom_field_values
+      def custom_field_values(custom_field_ids: nil)
         return [] if ::Feature.disabled?(:custom_fields_feature, work_item.namespace.root_ancestor)
 
         active_fields = ::Issuables::CustomFieldsFinder.active_fields_for_work_item(work_item)
+        active_fields = active_fields.id_in(custom_field_ids) if custom_field_ids.present?
+
         field_values = fetch_field_values(active_fields)
 
         active_fields.map do |field|
