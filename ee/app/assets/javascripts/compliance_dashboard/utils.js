@@ -43,39 +43,45 @@ export const buildDefaultViolationsFilterParams = (queryString) => ({
   ...queryToObject(queryString, { gatherArrays: true }),
 });
 
+export function mapFiltersToGraphQLVariables(filters) {
+  return filters.reduce((result, filter) => {
+    const { type, value } = filter;
+    const updatedResult = { ...result };
+
+    if (type === FRAMEWORKS_FILTER_TYPE_PROJECT) {
+      updatedResult.project = value.data;
+    } else if (type === FRAMEWORKS_FILTER_TYPE_GROUP) {
+      updatedResult.group = value.data;
+    } else if (type === FRAMEWORKS_FILTER_TYPE_FRAMEWORK) {
+      if (value.operator === '!=') {
+        updatedResult.frameworksNot = [...(updatedResult.frameworksNot || []), value.data];
+      } else {
+        updatedResult.frameworks = [...(updatedResult.frameworks || []), value.data];
+      }
+    }
+
+    return updatedResult;
+  }, {});
+}
+
 export function mapFiltersToUrlParams(filters) {
+  const normalizedFilters = mapFiltersToGraphQLVariables(filters);
   const urlParams = {};
 
-  const projectFilter = filters.find((filter) => filter.type === FRAMEWORKS_FILTER_TYPE_PROJECT);
-
-  if (projectFilter) {
-    urlParams.project = projectFilter.value.data;
+  if (normalizedFilters.project) {
+    urlParams.project = normalizedFilters.project;
   }
 
-  const groupFilter = filters.find((filter) => filter.type === FRAMEWORKS_FILTER_TYPE_GROUP);
-
-  if (groupFilter) {
-    urlParams.group = groupFilter.value.data;
+  if (normalizedFilters.group) {
+    urlParams.group = normalizedFilters.group;
   }
 
-  const frameworkFilters = filters.filter(
-    (filter) => filter.type === FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
-  );
-
-  const frameworksInclude = frameworkFilters
-    .filter((filter) => filter.value.operator !== '!=')
-    .map((filter) => filter.value.data);
-
-  const frameworksExclude = frameworkFilters
-    .filter((filter) => filter.value.operator === '!=')
-    .map((filter) => filter.value.data);
-
-  if (frameworksInclude.length > 0) {
-    urlParams['framework[]'] = frameworksInclude;
+  if (normalizedFilters.frameworks?.length > 0) {
+    urlParams['framework[]'] = normalizedFilters.frameworks;
   }
 
-  if (frameworksExclude.length > 0) {
-    urlParams['not[framework][]'] = frameworksExclude;
+  if (normalizedFilters.frameworksNot?.length > 0) {
+    urlParams['not[framework][]'] = normalizedFilters.frameworksNot;
   }
 
   return urlParams;
@@ -122,10 +128,23 @@ export function mapQueryToFilters(queryParams) {
   return filters;
 }
 
-export const checkFilterForChange = ({ currentFilters = {}, newFilters = {} }) => {
-  const filterKeys = ['project', 'framework[]', 'not[framework][]', 'group'];
-
+export const checkFilterForChange = ({
+  currentFilters = {},
+  newFilters = {},
+  filterKeys = ['project', 'framework[]', 'not[framework][]', 'group'],
+}) => {
   return filterKeys.some((key) => !isEqual(currentFilters[key], newFilters[key]));
+};
+
+export const checkGraphQLFilterForChange = ({ currentFilters = {}, newFilters = {} }) => {
+  const filterKeys = [
+    FRAMEWORKS_FILTER_TYPE_PROJECT,
+    'frameworks',
+    'frameworksNot',
+    FRAMEWORKS_FILTER_TYPE_GROUP,
+  ];
+
+  return checkFilterForChange({ currentFilters, newFilters, filterKeys });
 };
 
 export function mapStandardsAdherenceQueryToFilters(filters) {

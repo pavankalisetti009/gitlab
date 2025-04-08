@@ -3,6 +3,7 @@ import VueApollo from 'vue-apollo';
 import { GlTable } from '@gitlab/ui';
 
 import Pagination from 'ee/compliance_dashboard/components/shared/pagination.vue';
+import Filters from 'ee/compliance_dashboard/components/shared/filters.vue';
 
 import ProjectsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/projects_section.vue';
 import VisibilityIconButton from '~/vue_shared/components/visibility_icon_button.vue';
@@ -10,9 +11,12 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 
-import getNamespaceProjectsWithNamespacesQuery from 'ee/graphql_shared/queries/get_namespace_projects_with_namespaces.query.graphql';
+import complianceFrameworksGroupProjects from 'ee/compliance_dashboard/graphql/compliance_frameworks_group_projects.query.graphql';
+import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
+import searchGroupsQuery from '~/boards/graphql/sub_groups.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { i18n } from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/constants';
 import { createFramework, createProject } from '../../../../mock_data';
 
 Vue.use(VueApollo);
@@ -25,7 +29,82 @@ describe('Projects section', () => {
   const projects = framework.projects.nodes;
 
   const createMockApolloProvider = (resolverMock) => {
-    const requestHandlers = [[getNamespaceProjectsWithNamespacesQuery, resolverMock]];
+    // Mock response for compliance frameworks token
+    const frameworksResponse = {
+      data: {
+        namespace: {
+          id: 'gid://gitlab/Group/1',
+          name: 'Gitlab Org',
+          complianceFrameworks: {
+            nodes: [
+              {
+                id: 'gid://gitlab/ComplianceManagement::Framework/1',
+                name: 'Framework 1',
+                default: false,
+                description: 'Description 1',
+                color: '#ff0000',
+                pipelineConfigurationFullPath: null,
+                projects: {
+                  nodes: [],
+                },
+              },
+            ],
+            pageInfo: {
+              hasNextPage: false,
+              hasPreviousPage: false,
+              startCursor: null,
+              endCursor: null,
+              __typename: 'PageInfo',
+            },
+          },
+        },
+      },
+    };
+
+    // Mock response for sub groups query
+    const subGroupsResponse = {
+      data: {
+        group: {
+          id: 'gid://gitlab/Group/1',
+          name: 'Gitlab Org',
+          fullName: 'Gitlab Organization',
+          fullPath: 'gitlab-org',
+          __typename: 'Group',
+          descendantGroups: {
+            nodes: [
+              {
+                id: 'gid://gitlab/Group/2',
+                name: 'Subgroup 1',
+                fullName: 'Gitlab Organization / Subgroup 1',
+                fullPath: 'gitlab-org/subgroup-1',
+                __typename: 'Group',
+              },
+              {
+                id: 'gid://gitlab/Group/3',
+                name: 'Subgroup 2',
+                fullName: 'Gitlab Organization / Subgroup 2',
+                fullPath: 'gitlab-org/subgroup-2',
+                __typename: 'Group',
+              },
+            ],
+            pageInfo: {
+              hasNextPage: false,
+              hasPreviousPage: false,
+              startCursor: null,
+              endCursor: null,
+              __typename: 'PageInfo',
+            },
+            __typename: 'GroupConnection',
+          },
+        },
+      },
+    };
+
+    const requestHandlers = [
+      [complianceFrameworksGroupProjects, resolverMock],
+      [getComplianceFrameworkQuery, jest.fn().mockResolvedValue(frameworksResponse)],
+      [searchGroupsQuery, jest.fn().mockResolvedValue(subGroupsResponse)],
+    ];
     return createMockApollo(requestHandlers);
   };
 
@@ -36,6 +115,7 @@ describe('Projects section', () => {
   const subgroupLinks = () => wrapper.findAllByTestId('subgroup-link');
   const findCheckbox = (idx) => findTableRow(idx).find('input[type="checkbox"]');
   const findSelectAllCheckbox = () => wrapper.findByTestId('select-all-checkbox');
+  const findPagination = () => wrapper.findComponent(Pagination);
 
   const mockProjects = Array.from({ length: 5 }, (_, id) =>
     createProject({ id, groupPath: 'foo' }),
@@ -53,6 +133,7 @@ describe('Projects section', () => {
               hasPreviousPage: false,
               startCursor: null,
               endCursor: null,
+              __typename: 'PageInfo',
             },
             __typename: 'ProjectConnection',
           },
@@ -66,7 +147,7 @@ describe('Projects section', () => {
       apolloProvider,
       propsData: {
         complianceFramework: framework,
-        namespacePath: 'gitlab-org',
+        groupPath: 'gitlab-org',
       },
     });
   };
@@ -274,6 +355,187 @@ describe('Projects section', () => {
         expect(lastEvent.addProjects).not.toContain(projectId);
         expect(lastEvent.removeProjects).toContain(projectId);
       });
+
+      it('preserves selected items when navigating between pages', async () => {
+        const initialResponse = {
+          data: {
+            group: {
+              id: 'gid://gitlab/Group/1',
+              projects: {
+                nodes: mockProjects,
+                pageInfo: {
+                  hasNextPage: true,
+                  hasPreviousPage: false,
+                  startCursor: 'start123',
+                  endCursor: 'end123',
+                  __typename: 'PageInfo',
+                },
+              },
+            },
+          },
+        };
+
+        createComponent({
+          resolverMock: jest.fn().mockResolvedValue(initialResponse),
+        });
+        await waitForPromises();
+        await nextTick();
+
+        const pagination = findPagination();
+        expect(pagination.exists()).toBe(true);
+        expect(pagination.props('pageInfo')).toEqual(initialResponse.data.group.projects.pageInfo);
+
+        await findCheckbox(1).setChecked(true);
+        await nextTick();
+
+        const nextPageResponse = {
+          data: {
+            group: {
+              id: 'gid://gitlab/Group/1',
+              projects: {
+                nodes: Array.from({ length: 5 }, (_, id) =>
+                  createProject({ id: id + 5, groupPath: 'foo' }),
+                ),
+                pageInfo: {
+                  hasNextPage: false,
+                  hasPreviousPage: true,
+                  startCursor: 'start456',
+                  endCursor: 'end456',
+                  __typename: 'PageInfo',
+                },
+              },
+            },
+          },
+        };
+
+        const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
+        fetchMoreSpy.mockImplementation(({ updateQuery }) =>
+          updateQuery({}, { fetchMoreResult: nextPageResponse }),
+        );
+
+        await pagination.vm.$emit('next', 'end123');
+        await waitForPromises();
+        await nextTick();
+
+        const firstPageResponse = {
+          data: {
+            group: {
+              id: 'gid://gitlab/Group/1',
+              projects: {
+                nodes: mockProjects,
+                pageInfo: {
+                  hasNextPage: true,
+                  hasPreviousPage: false,
+                  startCursor: 'start123',
+                  endCursor: 'end123',
+                  __typename: 'PageInfo',
+                },
+              },
+            },
+          },
+        };
+
+        fetchMoreSpy.mockImplementation(({ updateQuery }) =>
+          updateQuery({}, { fetchMoreResult: firstPageResponse }),
+        );
+
+        await pagination.vm.$emit('prev', 'start456');
+        await waitForPromises();
+        await nextTick();
+
+        expect(wrapper.vm.projectSelected(mockProjects[1].id)).toBe(true);
+      });
+
+      describe('selectAllOnPageDisabled', () => {
+        it('returns true when projectList is empty', async () => {
+          createComponent({
+            resolverMock: jest.fn().mockResolvedValue({
+              data: {
+                group: {
+                  id: 'gid://gitlab/Group/1',
+                  projects: {
+                    nodes: [],
+                    pageInfo: {
+                      hasNextPage: false,
+                      hasPreviousPage: false,
+                      startCursor: null,
+                      endCursor: null,
+                      __typename: 'PageInfo',
+                    },
+                  },
+                },
+              },
+            }),
+          });
+          await waitForPromises();
+          await nextTick();
+
+          expect(wrapper.vm.selectAllOnPageDisabled).toBe(true);
+          expect(findSelectAllCheckbox().attributes('disabled')).toBe('disabled');
+        });
+
+        it('returns false when projectList has items', async () => {
+          createComponent();
+          await waitForPromises();
+          await nextTick();
+
+          expect(wrapper.vm.selectAllOnPageDisabled).toBe(false);
+          expect(findSelectAllCheckbox().attributes('disabled')).toBeUndefined();
+        });
+      });
+
+      describe('hasFilters', () => {
+        it('returns true when filters array has items', async () => {
+          createComponent();
+          await waitForPromises();
+          await nextTick();
+
+          wrapper.vm.filters = [
+            { type: 'project', value: { data: 'test-project', operator: 'matches' } },
+            { type: 'framework', value: { data: 'test-framework', operator: '=' } },
+          ];
+          await nextTick();
+
+          expect(wrapper.vm.hasFilters).toBe(true);
+        });
+
+        it('returns false when filters array is empty', async () => {
+          createComponent();
+          await waitForPromises();
+          await nextTick();
+
+          wrapper.vm.filters = [];
+          await nextTick();
+
+          expect(wrapper.vm.hasFilters).toBe(false);
+        });
+      });
+
+      describe('noProjectsText', () => {
+        it('returns noProjectsFoundMatchingFilters when filters are applied', async () => {
+          createComponent();
+          await waitForPromises();
+          await nextTick();
+
+          wrapper.vm.filters = [
+            { type: 'project', value: { data: 'test-project', operator: 'matches' } },
+          ];
+          await nextTick();
+
+          expect(wrapper.vm.noProjectsText).toBe(i18n.noProjectsFoundMatchingFilters);
+        });
+
+        it('returns noProjectsFound when no filters are applied', async () => {
+          createComponent();
+          await waitForPromises();
+          await nextTick();
+
+          wrapper.vm.filters = [];
+          await nextTick();
+
+          expect(wrapper.vm.noProjectsText).toBe(i18n.noProjectsFound);
+        });
+      });
     });
 
     describe('computed properties', () => {
@@ -382,190 +644,335 @@ describe('Projects section', () => {
   });
 
   describe('pagination', () => {
-    const mockPageInfo = {
-      hasNextPage: true,
-      hasPreviousPage: true,
-      startCursor: 'start123',
-      endCursor: 'end123',
-    };
+    describe('when there are projects to paginate', () => {
+      const mockPageInfo = {
+        hasNextPage: true,
+        hasPreviousPage: true,
+        startCursor: 'start123',
+        endCursor: 'end123',
+        __typename: 'PageInfo',
+      };
 
-    const lotsOfProjects = Array.from({ length: 51 }, (_, id) =>
-      createProject({ id, groupPath: 'foo' }),
-    );
+      const lotsOfProjects = Array.from({ length: 51 }, (_, id) =>
+        createProject({ id, groupPath: 'foo' }),
+      );
 
-    beforeEach(() => {
-      createComponent({
-        resolverMock: jest.fn().mockResolvedValue({
-          data: {
-            group: {
-              id: 'gid://gitlab/Group/1',
-              projects: {
-                nodes: lotsOfProjects,
-                pageInfo: mockPageInfo,
-              },
-            },
-          },
-        }),
-      });
-    });
-
-    const findPagination = () => wrapper.findComponent(Pagination);
-
-    it('displays pagination component when pageInfo is available', async () => {
-      await waitForPromises();
-
-      const pagination = findPagination();
-
-      expect(pagination.exists()).toBe(true);
-      expect(pagination.props('pageInfo')).toEqual(mockPageInfo);
-      expect(pagination.props('perPage')).toBe(20);
-      expect(pagination.props('isLoading')).toBe(false);
-    });
-
-    it('calls fetchMore with correct variables when navigating to next page', async () => {
-      const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
-
-      await findPagination().vm.$emit('next', 'end123');
-
-      expect(fetchMoreSpy).toHaveBeenCalledWith({
-        variables: {
-          fullPath: 'gitlab-org',
-          first: 20,
-          after: 'end123',
-          last: null,
-          before: null,
-          search: null,
-        },
-        updateQuery: expect.any(Function),
-      });
-    });
-
-    it('calls fetchMore with correct variables when navigating to previous page', async () => {
-      const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
-
-      await findPagination().vm.$emit('prev', 'start123');
-
-      expect(fetchMoreSpy).toHaveBeenCalledWith({
-        variables: {
-          fullPath: 'gitlab-org',
-          first: null,
-          after: null,
-          last: 20,
-          before: 'start123',
-          search: null,
-        },
-        updateQuery: expect.any(Function),
-      });
-    });
-
-    it('refetches data when page size changes', async () => {
-      const refetchSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'refetch');
-
-      await findPagination().vm.$emit('page-size-change', 50);
-
-      expect(wrapper.vm.perPage).toBe(50);
-      expect(refetchSpy).toHaveBeenCalled();
-    });
-
-    it('does not display pagination when there are no projects', async () => {
-      createComponent({
-        resolverMock: jest.fn().mockResolvedValue({
-          data: {
-            group: {
-              id: 'gid://gitlab/Group/1',
-              projects: {
-                nodes: [],
-                pageInfo: {
-                  hasNextPage: false,
-                  hasPreviousPage: false,
-                  startCursor: null,
-                  endCursor: null,
+      beforeEach(async () => {
+        createComponent({
+          resolverMock: jest.fn().mockResolvedValue({
+            data: {
+              group: {
+                id: 'gid://gitlab/Group/1',
+                projects: {
+                  nodes: lotsOfProjects,
+                  pageInfo: mockPageInfo,
                 },
               },
             },
-          },
-        }),
+          }),
+        });
+
+        await waitForPromises();
+        await nextTick();
       });
 
-      await waitForPromises();
+      it('displays pagination component when pageInfo is available', () => {
+        const pagination = findPagination();
+        expect(pagination.exists()).toBe(true);
+        expect(pagination.props('pageInfo')).toEqual({
+          hasNextPage: true,
+          hasPreviousPage: true,
+          startCursor: 'start123',
+          endCursor: 'end123',
+          __typename: 'PageInfo',
+        });
+        expect(pagination.props('perPage')).toBe(20);
+        expect(pagination.props('isLoading')).toBe(false);
+      });
 
-      expect(findPagination().exists()).toBe(true);
-      expect(findPagination().props('pageInfo').hasNextPage).toBe(false);
-      expect(findPagination().props('pageInfo').hasPreviousPage).toBe(false);
-    });
+      it('calls fetchMore with correct variables when navigating to next page', async () => {
+        const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
 
-    it('shows loading state during pagination navigation', async () => {
-      createComponent();
-      await waitForPromises();
-      const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
-      await nextTick();
-      wrapper.vm.isLoading = true;
-      await nextTick();
+        await findPagination().vm.$emit('next', 'end123');
 
-      await findPagination().vm.$emit('next', 'end123');
+        expect(fetchMoreSpy).toHaveBeenCalledWith({
+          variables: {
+            groupPath: 'gitlab-org',
+            first: 20,
+            after: 'end123',
+            last: null,
+            before: null,
+            frameworks: [],
+            frameworksNot: [],
+          },
+          updateQuery: expect.any(Function),
+        });
+      });
 
-      expect(findPagination().props('isLoading')).toBe(true);
-      expect(fetchMoreSpy).toHaveBeenCalled();
-    });
+      it('calls fetchMore with correct variables when navigating to previous page', async () => {
+        const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
 
-    it('preserves selected items when navigating between pages', async () => {
-      createComponent();
-      await waitForPromises();
+        await findPagination().vm.$emit('prev', 'start123');
 
-      await findCheckbox(1).setChecked(true);
+        expect(fetchMoreSpy).toHaveBeenCalledWith({
+          variables: {
+            groupPath: 'gitlab-org',
+            first: null,
+            after: null,
+            last: 20,
+            before: 'start123',
+            frameworks: [],
+            frameworksNot: [],
+          },
+          updateQuery: expect.any(Function),
+        });
+      });
 
-      const nextPageResponse = {
-        data: {
-          group: {
-            id: 'gid://gitlab/Group/1',
-            projects: {
-              nodes: Array.from({ length: 5 }, (_, id) =>
-                createProject({ id: id + 5, groupPath: 'foo' }),
-              ),
-              pageInfo: {
-                hasNextPage: false,
-                hasPreviousPage: true,
-                startCursor: 'start456',
-                endCursor: 'end456',
+      it('refetches data when page size changes', async () => {
+        const refetchSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'refetch');
+
+        await findPagination().vm.$emit('page-size-change', 50);
+
+        expect(wrapper.vm.perPage).toBe(50);
+        expect(refetchSpy).toHaveBeenCalled();
+      });
+
+      it('shows loading state during pagination navigation', async () => {
+        createComponent({
+          resolverMock: jest.fn().mockResolvedValue({
+            data: {
+              group: {
+                id: 'gid://gitlab/Group/1',
+                projects: {
+                  nodes: mockProjects,
+                  pageInfo: {
+                    hasNextPage: true,
+                    hasPreviousPage: false,
+                    startCursor: 'start123',
+                    endCursor: 'end123',
+                    __typename: 'PageInfo',
+                  },
+                },
               },
             },
-          },
-        },
-      };
+          }),
+        });
+        await waitForPromises();
+        await nextTick();
 
-      const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
-      fetchMoreSpy.mockImplementation(({ updateQuery }) =>
-        updateQuery({}, { fetchMoreResult: nextPageResponse }),
-      );
+        const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
+        wrapper.vm.isLoading = true;
+        await nextTick();
 
-      await findPagination().vm.$emit('next', 'end123');
-      await waitForPromises();
+        await findPagination().vm.$emit('next', 'end123');
 
-      const firstPageResponse = {
-        data: {
-          group: {
-            id: 'gid://gitlab/Group/1',
-            projects: {
-              nodes: mockProjects,
-              pageInfo: {
-                hasNextPage: true,
-                hasPreviousPage: false,
-                startCursor: 'start123',
-                endCursor: 'end123',
+        expect(findPagination().props('isLoading')).toBe(true);
+        expect(fetchMoreSpy).toHaveBeenCalled();
+      });
+    });
+
+    describe('when there are not enough projects to paginate', () => {
+      it('does not display pagination when there are no projects', async () => {
+        createComponent({
+          resolverMock: jest.fn().mockResolvedValue({
+            data: {
+              group: {
+                id: 'gid://gitlab/Group/1',
+                projects: {
+                  nodes: [],
+                  pageInfo: {
+                    hasNextPage: false,
+                    hasPreviousPage: false,
+                    startCursor: null,
+                    endCursor: null,
+                  },
+                },
               },
             },
-          },
-        },
-      };
+          }),
+        });
 
-      fetchMoreSpy.mockImplementation(({ updateQuery }) =>
-        updateQuery({}, { fetchMoreResult: firstPageResponse }),
-      );
+        await waitForPromises();
 
-      await findPagination().vm.$emit('prev', 'start456');
+        expect(findPagination().exists()).toBe(false);
+      });
+
+      it('does not display pagination when there are not enough projects to paginate', async () => {
+        const fewProjects = Array.from({ length: 10 }, (_, id) =>
+          createProject({ id, groupPath: 'foo' }),
+        );
+
+        createComponent({
+          resolverMock: jest.fn().mockResolvedValue({
+            data: {
+              group: {
+                id: 'gid://gitlab/Group/1',
+                projects: {
+                  nodes: fewProjects,
+                  pageInfo: {
+                    hasNextPage: false,
+                    hasPreviousPage: false,
+                    startCursor: null,
+                    endCursor: null,
+                  },
+                },
+              },
+            },
+          }),
+        });
+
+        await waitForPromises();
+
+        expect(findPagination().exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('filters', () => {
+    const findFilters = () => wrapper.findComponent(Filters);
+
+    beforeEach(async () => {
+      createComponent();
       await waitForPromises();
+    });
 
-      expect(wrapper.vm.projectSelected(mockProjects[1].id)).toBe(true);
+    it('renders the filters component', () => {
+      expect(findFilters().exists()).toBe(true);
+    });
+
+    it('passes the correct props to the filters component', () => {
+      const filters = findFilters();
+      expect(filters.props('value')).toEqual([]);
+      expect(filters.props('groupPath')).toBe('gitlab-org');
+      expect(filters.props('error')).toBeUndefined();
+      expect(filters.props('showUpdatePopover')).toBe(false);
+    });
+
+    it('calls refetch when filters are changed', async () => {
+      const refetchSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'refetch');
+      const onFiltersChangedSpy = jest.spyOn(wrapper.vm, 'onFiltersChanged');
+      const newFilters = [
+        {
+          type: 'project',
+          value: { data: 'test-project', operator: 'matches' },
+        },
+      ];
+
+      wrapper.vm.onFiltersChanged(newFilters);
+      await nextTick();
+
+      expect(onFiltersChangedSpy).toHaveBeenCalledWith(newFilters);
+      expect(wrapper.vm.filters).toEqual(newFilters);
+      expect(refetchSpy).toHaveBeenCalled();
+    });
+
+    it('does not call refetch when filters are unchanged', async () => {
+      const refetchSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'refetch');
+      const onFiltersChangedSpy = jest.spyOn(wrapper.vm, 'onFiltersChanged');
+      const newFilters = [];
+
+      wrapper.vm.onFiltersChanged(newFilters);
+      await nextTick();
+
+      expect(onFiltersChangedSpy).toHaveBeenCalledWith(newFilters);
+      expect(wrapper.vm.filters).toEqual(newFilters);
+      expect(refetchSpy).not.toHaveBeenCalled();
+    });
+
+    it('updates query variables when filters change', async () => {
+      const newFilters = [
+        {
+          type: 'project',
+          value: { data: 'test-project', operator: 'matches' },
+        },
+        {
+          type: 'framework',
+          value: { data: 'test-framework', operator: '=' },
+        },
+      ];
+
+      wrapper.vm.onFiltersChanged(newFilters);
+      await nextTick();
+
+      expect(wrapper.vm.queryVariables).toEqual({
+        groupPath: 'gitlab-org',
+        first: 20,
+        frameworks: ['test-framework'],
+        frameworksNot: [],
+        project: 'test-project',
+      });
+    });
+
+    it('handles framework exclusion filters correctly', async () => {
+      const newFilters = [
+        {
+          type: 'framework',
+          value: { data: 'excluded-framework', operator: '!=' },
+        },
+      ];
+
+      wrapper.vm.onFiltersChanged(newFilters);
+      await nextTick();
+
+      expect(wrapper.vm.queryVariables).toEqual({
+        groupPath: 'gitlab-org',
+        first: 20,
+        frameworks: [],
+        frameworksNot: ['excluded-framework'],
+      });
+    });
+
+    it('handles group filters correctly', async () => {
+      const newFilters = [
+        {
+          type: 'group',
+          value: { data: 'test-group', operator: 'matches' },
+        },
+      ];
+
+      wrapper.vm.onFiltersChanged(newFilters);
+      await nextTick();
+
+      expect(wrapper.vm.queryVariables).toEqual({
+        groupPath: 'gitlab-org',
+        first: 20,
+        frameworks: [],
+        frameworksNot: [],
+        group: 'test-group',
+      });
+    });
+
+    it('handles multiple filters of different types', async () => {
+      const newFilters = [
+        {
+          type: 'project',
+          value: { data: 'test-project', operator: 'matches' },
+        },
+        {
+          type: 'framework',
+          value: { data: 'included-framework', operator: '=' },
+        },
+        {
+          type: 'framework',
+          value: { data: 'excluded-framework', operator: '!=' },
+        },
+        {
+          type: 'group',
+          value: { data: 'test-group', operator: 'matches' },
+        },
+      ];
+
+      wrapper.vm.onFiltersChanged(newFilters);
+      await nextTick();
+
+      expect(wrapper.vm.queryVariables).toEqual({
+        groupPath: 'gitlab-org',
+        first: 20,
+        frameworks: ['included-framework'],
+        frameworksNot: ['excluded-framework'],
+        project: 'test-project',
+        group: 'test-group',
+      });
     });
   });
 });
