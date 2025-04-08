@@ -16,7 +16,7 @@ import complianceFrameworksProjectFragment from 'ee/compliance_dashboard/graphql
 import { ROUTE_PROJECTS } from 'ee/compliance_dashboard/constants';
 import ProjectsTable from 'ee/compliance_dashboard/components/projects_report/projects_table.vue';
 import Pagination from 'ee/compliance_dashboard/components/shared/pagination.vue';
-import Filters from 'ee/compliance_dashboard/components/projects_report/filters.vue';
+import Filters from 'ee/compliance_dashboard/components/shared/filters.vue';
 
 Vue.use(VueApollo);
 

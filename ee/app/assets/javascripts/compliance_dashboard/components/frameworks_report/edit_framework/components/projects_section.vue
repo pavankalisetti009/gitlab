@@ -4,9 +4,14 @@ import VisibilityIconButton from '~/vue_shared/components/visibility_icon_button
 import { ROUTE_PROJECTS } from 'ee/compliance_dashboard/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import getNamespaceProjectsWithNamespacesQuery from 'ee/graphql_shared/queries/get_namespace_projects_with_namespaces.query.graphql';
+import {
+  mapFiltersToGraphQLVariables,
+  checkGraphQLFilterForChange,
+} from 'ee/compliance_dashboard/utils';
+import complianceFrameworksGroupProjects from '../../../../graphql/compliance_frameworks_group_projects.query.graphql';
 import { i18n } from '../constants';
 import Pagination from '../../../shared/pagination.vue';
+import Filters from '../../../shared/filters.vue';
 import EditSection from './edit_section.vue';
 
 export default {
@@ -18,13 +23,14 @@ export default {
     VisibilityIconButton,
     GlFormCheckbox,
     Pagination,
+    Filters,
   },
   props: {
     complianceFramework: {
       type: Object,
       required: true,
     },
-    namespacePath: {
+    groupPath: {
       type: String,
       required: true,
       validator(value) {
@@ -44,6 +50,7 @@ export default {
       pageInfo: {},
       perPage: 20,
       isLoading: false,
+      filters: [],
     };
   },
   computed: {
@@ -65,8 +72,11 @@ export default {
     },
     queryVariables() {
       return {
-        fullPath: this.namespacePath,
+        groupPath: this.groupPath,
         first: this.perPage,
+        frameworks: [],
+        frameworksNot: [],
+        ...mapFiltersToGraphQLVariables(this.filters),
       };
     },
     selectedCount() {
@@ -86,6 +96,20 @@ export default {
 
       return count;
     },
+    showPagination() {
+      const { hasPreviousPage, hasNextPage } = this.pageInfo || {};
+
+      return Boolean(hasPreviousPage || hasNextPage);
+    },
+    selectAllOnPageDisabled() {
+      return this.projectList.length === 0;
+    },
+    hasFilters() {
+      return (this.filters || []).length !== 0;
+    },
+    noProjectsText() {
+      return this.hasFilters ? i18n.noProjectsFoundMatchingFilters : i18n.noProjectsFound;
+    },
   },
   watch: {
     associatedProjects: {
@@ -102,7 +126,7 @@ export default {
   },
   apollo: {
     projectList: {
-      query: getNamespaceProjectsWithNamespacesQuery,
+      query: complianceFrameworksGroupProjects,
       variables() {
         return this.queryVariables;
       },
@@ -152,35 +176,46 @@ export default {
         this.projectIdsToAdd.has(projectId)
       );
     },
-    handlePreviousPage(cursor) {
+    loadPage(cursor, direction = 'next') {
+      const isPrevious = direction === 'prev';
+
       this.$apollo.queries.projectList.fetchMore({
         variables: {
-          fullPath: this.namespacePath,
-          first: null,
-          after: null,
-          last: this.perPage,
-          before: cursor,
-          search: null,
+          ...this.queryVariables,
+          first: isPrevious ? null : this.perPage,
+          after: isPrevious ? null : cursor,
+          last: isPrevious ? this.perPage : null,
+          before: isPrevious ? cursor : null,
         },
         updateQuery: (previousResult, { fetchMoreResult }) => fetchMoreResult,
       });
     },
-    handleNextPage(cursor) {
-      this.$apollo.queries.projectList.fetchMore({
-        variables: {
-          fullPath: this.namespacePath,
-          first: this.perPage,
-          after: cursor,
-          last: null,
-          before: null,
-          search: null,
-        },
-        updateQuery: (previousResult, { fetchMoreResult }) => fetchMoreResult,
-      });
+    loadPrevPage(cursor) {
+      this.loadPage(cursor, 'prev');
     },
-    handlePageSizeChange(newSize) {
+    loadNextPage(cursor) {
+      this.loadPage(cursor, 'next');
+    },
+    onPageSizeChange(newSize) {
       this.perPage = newSize;
       this.$apollo.queries.projectList.refetch();
+    },
+    onFiltersChanged(filters) {
+      const normalizedFilters = mapFiltersToGraphQLVariables(filters);
+      const filtersWithDefaults = {
+        ...normalizedFilters,
+        frameworks: normalizedFilters.frameworks || [],
+        frameworksNot: normalizedFilters.frameworksNot || [],
+      };
+      if (
+        checkGraphQLFilterForChange({
+          currentFilters: this.queryVariables,
+          newFilters: filtersWithDefaults,
+        })
+      ) {
+        this.filters = filters;
+        this.$apollo.queries.projectList.refetch();
+      }
     },
   },
   tableFields: [
@@ -226,6 +261,14 @@ export default {
       {{ errorMessage }}
     </div>
     <div v-else>
+      <filters
+        :value="filters"
+        :group-path="groupPath"
+        :error="errorMessage"
+        :show-update-popover="false"
+        @keyup.enter="onFiltersChanged"
+        @submit="onFiltersChanged"
+      />
       <div class="gl-mb-0 gl-ml-6">
         <span class="gl-font-bold" data-testid="selected-count"> {{ selectedCount }}</span>
         {{ $options.i18n.selectedCount }}
@@ -233,8 +276,11 @@ export default {
       <gl-table
         ref="projectsTable"
         class="gl-mb-6"
+        :busy="isLoading"
         :items="projectList"
         :fields="$options.tableFields"
+        no-local-sorting
+        show-empty
         responsive
         stacked="md"
         hover
@@ -247,6 +293,7 @@ export default {
             data-testid="select-all-checkbox"
             :indeterminate="pageAllSelectedIndeterminate"
             :checked="pageAllSelected"
+            :disabled="selectAllOnPageDisabled"
             @change="togglePageProjects"
           />
         </template>
@@ -279,20 +326,20 @@ export default {
         </template>
 
         <template #empty>
-          <div class="gl-p-5">
-            {{ $options.i18n.noProjects }}
+          <div class="gl-my-5 gl-text-center">
+            {{ noProjectsText }}
           </div>
         </template>
       </gl-table>
 
       <pagination
-        v-if="pageInfo"
-        :page-info="pageInfo"
+        v-if="showPagination"
         :is-loading="isLoading"
+        :page-info="pageInfo"
         :per-page="perPage"
-        @prev="handlePreviousPage"
-        @next="handleNextPage"
-        @page-size-change="handlePageSizeChange"
+        @prev="loadPrevPage"
+        @next="loadNextPage"
+        @page-size-change="onPageSizeChange"
       />
     </div>
   </edit-section>

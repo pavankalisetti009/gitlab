@@ -682,7 +682,7 @@ export default {
 
         <projects-section
           :compliance-framework="formData"
-          :namespace-path="groupPath"
+          :group-path="groupPath"
           @update:projects="updateProjects"
         />
 
