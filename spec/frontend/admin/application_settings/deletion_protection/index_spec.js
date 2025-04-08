@@ -1,9 +1,9 @@
 import { createWrapper } from '@vue/test-utils';
-import { initAdminDeletionProtectionSettings } from 'ee/admin/application_settings/deletion_protection';
-import { parseFormProps } from 'ee/admin/application_settings/deletion_protection/utils';
-import FormGroup from 'ee/admin/application_settings/deletion_protection/components/form_group.vue';
+import { initAdminDeletionProtectionSettings } from '~/admin/application_settings/deletion_protection';
+import { parseFormProps } from '~/admin/application_settings/deletion_protection/utils';
+import FormGroup from '~/admin/application_settings/deletion_protection/components/form_group.vue';
 
-jest.mock('ee/admin/application_settings/deletion_protection/utils', () => ({
+jest.mock('~/admin/application_settings/deletion_protection/utils', () => ({
   parseFormProps: jest.fn().mockReturnValue({
     deletionAdjournedPeriod: 7,
     delayedGroupDeletion: false,

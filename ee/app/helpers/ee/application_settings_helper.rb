@@ -231,12 +231,6 @@ module EE
       form_data
     end
 
-    def deletion_protection_data
-      {
-        deletion_adjourned_period: @application_setting[:deletion_adjourned_period]
-      }
-    end
-
     def git_abuse_rate_limit_data
       limit = @application_setting[:max_number_of_repository_downloads].to_i
       interval = @application_setting[:max_number_of_repository_downloads_within_time_period].to_i

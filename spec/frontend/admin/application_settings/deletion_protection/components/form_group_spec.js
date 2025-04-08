@@ -2,12 +2,12 @@ import { GlLink } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import FormGroup from 'ee/admin/application_settings/deletion_protection/components/form_group.vue';
+import FormGroup from '~/admin/application_settings/deletion_protection/components/form_group.vue';
 import {
   I18N_DELETION_PROTECTION,
   DEL_ADJ_PERIOD_MIN_LIMIT_ERROR,
   DEL_ADJ_PERIOD_MAX_LIMIT_ERROR,
-} from 'ee/admin/application_settings/deletion_protection/constants';
+} from '~/admin/application_settings/deletion_protection/constants';
 
 describe('Form group component', () => {
   let wrapper;

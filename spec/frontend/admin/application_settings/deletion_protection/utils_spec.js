@@ -1,4 +1,4 @@
-import { parseFormProps } from 'ee/admin/application_settings/deletion_protection/utils';
+import { parseFormProps } from '~/admin/application_settings/deletion_protection/utils';
 import { parseBoolean } from '~/lib/utils/common_utils';
 
 describe('deletion protection utils', () => {
