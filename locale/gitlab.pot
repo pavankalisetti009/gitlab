@@ -15437,6 +15437,9 @@ msgstr ""
 msgid "ComplianceFrameworks|Select policies to enforce on all projects scoped to this framework."
 msgstr ""
 
+msgid "ComplianceFrameworks|Selected projects"
+msgstr ""
+
 msgid "ComplianceFrameworks|Send via:"
 msgstr ""
 
