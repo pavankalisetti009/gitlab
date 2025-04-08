@@ -103,6 +103,76 @@ RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
     end
   end
 
+  describe '#test_connection' do
+    subject(:test_connection) { described_class.new(user).test_connection(role_arn: role_arn) }
+
+    let(:status) { 200 }
+    let(:body) { {}.to_json }
+    let(:headers) { { 'Content-Type' => "application/json" } }
+
+    before do
+      stub_request(:post, "#{Gitlab::AiGateway.url}/v1/amazon_q/oauth/application/verify")
+        .with(body: {
+          role_arn: role_arn,
+          code: '1234'
+        }.to_json).to_return(body: body, status: status, headers: headers)
+
+      ai_settings.update!(
+        amazon_q_service_account_user_id: service_account.id,
+        amazon_q_oauth_application_id: oauth_app.id
+      )
+    end
+
+    it 'makes expected HTTP post request' do
+      expect(service_data).to receive_messages(
+        name: 'amazon_q_integration',
+        access_token: 'cc_token'
+      )
+      expect(::CloudConnector::AvailableServices).to receive(:find_by_name)
+        .with(:amazon_q_integration).and_return(service_data)
+
+      expect(logger).to receive(:conditional_info)
+        .with(user, a_hash_including(
+          message: "Received successful response from AI Gateway",
+          ai_component: 'abstraction_layer',
+          status: status,
+          event_name: 'response_received'))
+
+      response = test_connection
+      expect(response.code).to eq(200)
+    end
+
+    context 'with failed response' do
+      let(:status) { 500 }
+      let(:body) { { detail: "failed request" }.to_json }
+
+      it 'logs a 500 error' do
+        expect(logger).to receive(:error)
+          .with(a_hash_including(
+            message: "Error response from AI Gateway",
+            ai_component: 'abstraction_layer',
+            status: status,
+            body: "failed request"))
+
+        response = test_connection
+        expect(response.code).to eq(500)
+      end
+    end
+
+    it 'creates an auth grant with the correct scopes', :aggregate_failures do
+      expect(logger).to receive(:conditional_info)
+        .with(user, a_hash_including(
+          message: "Received successful response from AI Gateway",
+          ai_component: 'abstraction_layer',
+          status: status,
+          event_name: 'response_received'))
+
+      expect { test_connection }.to change { OauthAccessGrant.count }.by(1)
+      grant = OauthAccessGrant.find_by(resource_owner: service_account, application: oauth_app)
+      expect(grant.scopes.to_s).to eq("api read_repository write_repository user:#{user.id}")
+    end
+  end
+
   describe '#perform_create_auth_application' do
     subject(:perform_create_auth_application) do
       described_class.new(user)

@@ -58,6 +58,26 @@ module Gitlab
           end
         end
 
+        # This method tests the connection to the Amazon Q service by sending a POST request
+        # to the /v1/amazon_q/oauth/application/verify endpoint.
+        #
+        # The response can either:
+        # - Indicate an error with details, e.g., { "detail" => "error details" }
+        # - Indicate a successful connection with statuses for GitLab reachability and credentials,
+        # { 'GITLAB_INSTANCE_REACHABILITY': {'status': 'PASSED'}, 'GITLAB_CREDENTIAL_VALIDITY': {'status': 'PASSED'} }
+        def test_connection(role_arn: ::Ai::Setting.instance.amazon_q_role_arn)
+          with_response_logger do
+            Gitlab::HTTP.post(
+              url(path: "/v1/amazon_q/oauth/application/verify"),
+              body: {
+                role_arn: role_arn,
+                code: create_auth_grant_new
+              }.to_json,
+              headers: request_headers
+            )
+          end
+        end
+
         private
 
         attr_reader :user
