@@ -353,12 +353,16 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
           end
 
           it_behaves_like 'sends data to configurator' do
+            # rubocop:disable Layout/LineLength -- regex must be on a single line
+            let(:regex) do
+              /gitlab_project_#{other_project_1.id}.*gitlab_project_#{other_project_2.id}|gitlab_project_#{other_project_2.id}.*gitlab_project_#{other_project_1.id}/
+            end
+
+            # rubocop:enable Layout/LineLength
             let(:allow_local_requests) { false }
             let(:url_to_projects_regex) do
               {
-                "http://test:test@anotherhost:4567/funnel-schemas":
-                  /gitlab_project_#{other_project_1.id}.*gitlab_project_#{other_project_2.id}|
-                    gitlab_project_#{other_project_2.id}.*gitlab_project_#{other_project_1.id}/
+                "http://test:test@anotherhost:4567/funnel-schemas": regex
               }
             end
           end
