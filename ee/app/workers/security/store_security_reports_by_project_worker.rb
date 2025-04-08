@@ -33,6 +33,7 @@ module Security
       return unless pipeline
 
       ::Security::Ingestion::IngestReportsService.execute(pipeline)
+      SecretDetection::UpdateTokenStatusWorker.perform_async(pipeline.id)
     end
 
     private
