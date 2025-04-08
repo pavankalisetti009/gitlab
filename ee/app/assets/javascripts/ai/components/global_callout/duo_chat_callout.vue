@@ -85,7 +85,13 @@ export default {
         :target="popoverTarget"
         :show="shouldShowCallout"
         show-close-button
-        :css-classes="['duo-chat-callout-popover', 'gl-max-w-48', 'gl-shadow-lg', 'gl-p-2']"
+        :css-classes="[
+          'js-duo-chat-callout-popover',
+          'duo-chat-callout-popover',
+          'gl-max-w-48',
+          'gl-shadow-lg',
+          'gl-p-2',
+        ]"
         triggers="manual"
         data-testid="duo-chat-promo-callout-popover"
         @close-button-clicked="dismissCallout(dismiss)"

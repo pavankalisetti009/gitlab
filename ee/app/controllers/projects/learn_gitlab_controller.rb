@@ -8,6 +8,8 @@ module Projects
     before_action :authenticate_user! # since it is skipped in inherited controller
     before_action :verify_learn_gitlab_available!
 
+    helper_method :onboarding_progress
+
     feature_category :onboarding
     urgency :low
 
