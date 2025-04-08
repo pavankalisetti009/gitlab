@@ -53,7 +53,10 @@ describe('Utils', () => {
       description: 'b',
       color: '#000',
       default: false,
-      projects: undefined,
+      projects: {
+        addProjects: [],
+        removeProjects: [],
+      },
     };
 
     it.each([true, false])(
@@ -84,6 +87,25 @@ describe('Utils', () => {
         }
       },
     );
+
+    it('should only include addProjects and removeProjects when formData.projects has nodes, addProjects, and removeProjects', () => {
+      const formDataWithNodes = {
+        ...baseFormData,
+        projects: {
+          nodes: [{ id: 1, name: 'Project 1' }],
+          addProjects: [2, 3],
+          removeProjects: [4, 5],
+        },
+      };
+
+      const result = Utils.getSubmissionParams(formDataWithNodes, false);
+
+      expect(result.projects).toStrictEqual({
+        addProjects: [2, 3],
+        removeProjects: [4, 5],
+      });
+      expect(result.projects.nodes).toBeUndefined();
+    });
   });
 
   describe('getPipelineConfigurationPathParts', () => {
