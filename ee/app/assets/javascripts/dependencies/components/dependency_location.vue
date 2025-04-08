@@ -1,6 +1,7 @@
 <script>
-import { GlIcon, GlIntersperse, GlLink, GlPopover, GlTruncate } from '@gitlab/ui';
+import { GlIcon, GlIntersperse, GlLink, GlPopover, GlTruncate, GlButton } from '@gitlab/ui';
 import { n__ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { DEPENDENCIES_TABLE_I18N } from '../constants';
 import DirectDescendantViewer from './direct_descendant_viewer.vue';
 
@@ -16,7 +17,9 @@ export default {
     GlLink,
     GlPopover,
     GlTruncate,
+    GlButton,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     location: {
       type: Object,
@@ -61,6 +64,9 @@ export default {
     hasPaths() {
       return this.location.path && this.location.blobPath;
     },
+    hasDependencyPaths() {
+      return this.location.dependencyPaths?.length > 0;
+    },
   },
   methods: {
     target() {
@@ -80,39 +86,48 @@ export default {
 </script>
 
 <template>
-  <gl-intersperse separator=" / " class="gl-text-subtle">
-    <!-- We need to put an extra span to avoid separator between path & top level label -->
-    <span>
-      <component
-        :is="locationComponent"
-        v-if="hasPaths"
-        class="md:gl-whitespace-nowrap"
-        data-testid="dependency-path"
-        :href="location.blobPath"
-      >
-        <gl-icon v-if="isContainerImageDependency" name="container-image" />
-        <gl-icon v-else name="doc-text" />
-        <gl-truncate
-          class="gl-hidden md:gl-inline-flex"
-          position="start"
-          :text="locationPath"
-          with-tooltip
-        />
-        <span class="md:gl-hidden">{{ locationPath }}</span>
-      </component>
-      <span v-else>{{ $options.i18n.unknown }}</span>
-      <span v-if="isTopLevelDependency">{{ s__('Dependencies|(top level)') }}</span>
-    </span>
+  <div>
+    <gl-intersperse separator=" / " class="gl-text-subtle">
+      <!-- We need to put an extra span to avoid separator between path & top level label -->
+      <span>
+        <component
+          :is="locationComponent"
+          v-if="hasPaths"
+          class="md:gl-whitespace-nowrap"
+          data-testid="dependency-path"
+          :href="location.blobPath"
+        >
+          <gl-icon v-if="isContainerImageDependency" name="container-image" />
+          <gl-icon v-else name="doc-text" />
+          <gl-truncate
+            class="gl-hidden md:gl-inline-flex"
+            position="start"
+            :text="locationPath"
+            with-tooltip
+          />
+          <span class="md:gl-hidden">{{ locationPath }}</span>
+        </component>
+        <span v-else>{{ $options.i18n.unknown }}</span>
+        <span v-if="isTopLevelDependency">{{ s__('Dependencies|(top level)') }}</span>
+      </span>
 
-    <direct-descendant-viewer v-if="hasAncestors" :dependencies="visibleDependencies" />
+      <direct-descendant-viewer v-if="hasAncestors" :dependencies="visibleDependencies" />
 
-    <!-- We need to put an extra span to avoid separator between link & popover -->
-    <span v-if="showMoreLink">
-      <gl-link ref="moreLink" class="gl-whitespace-nowrap">{{ nMoreMessage }}</gl-link>
+      <!-- We need to put an extra span to avoid separator between link & popover -->
+      <span v-if="showMoreLink">
+        <gl-link ref="moreLink" class="gl-whitespace-nowrap">{{ nMoreMessage }}</gl-link>
 
-      <gl-popover :target="target" placement="top" :title="s__('Dependencies|Direct dependents')">
-        <direct-descendant-viewer :dependencies="ancestors" />
-      </gl-popover>
-    </span>
-  </gl-intersperse>
+        <gl-popover :target="target" placement="top" :title="s__('Dependencies|Direct dependents')">
+          <direct-descendant-viewer :dependencies="ancestors" />
+        </gl-popover>
+      </span>
+    </gl-intersperse>
+    <gl-button
+      v-if="glFeatures.dependencyPaths && hasDependencyPaths"
+      class="gl-mt-2 gl-block"
+      size="small"
+      @click="$emit('click-dependency-path')"
+      >{{ $options.i18n.dependencyPathButtonText }}</gl-button
+    >
+  </div>
 </template>

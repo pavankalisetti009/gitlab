@@ -37,9 +37,6 @@ describe('DependenciesTable component', () => {
         DependencyLocationCount: false,
       },
       provide: {
-        glFeatures: {
-          dependencyPaths: true,
-        },
         ...basicAppProps,
         ...provide,
       },
@@ -443,7 +440,6 @@ describe('DependenciesTable component', () => {
 
     describe('for project level when there is location data', () => {
       const dependency = makeDependency({ location: { dependencyPaths: dependencyPathsData } });
-      const { name, version } = dependency;
 
       beforeEach(() => {
         createComponent({
@@ -454,14 +450,10 @@ describe('DependenciesTable component', () => {
         });
       });
 
-      it('displays the correct text for the dependency paths button', () => {
-        expect(findDependencyPathButtons().at(0).text()).toBe('View dependency paths');
-      });
+      it('passes the correct prop to the DependencyPathDrawer component when triggered', async () => {
+        const { name, version } = dependency;
 
-      it('passes the correct prop to the DependencyPathDrawer component when the drawer is shown', async () => {
-        expect(findDependencyPathDrawer().exists()).toBe(false);
-
-        findDependencyPathButtons().at(0).vm.$emit('click');
+        findDependencyLocation().vm.$emit('click-dependency-path');
 
         await nextTick();
 
@@ -469,38 +461,6 @@ describe('DependenciesTable component', () => {
           showDrawer: true,
           component: { name, version },
           dependencyPaths: dependency.location.dependencyPaths,
-        });
-      });
-
-      it('passes the correct prop to the DependencyPathDrawer component when the drawer is closed', async () => {
-        // First click to open drawer
-        findDependencyPathButtons().at(0).vm.$emit('click');
-        await nextTick();
-
-        expect(findDependencyPathDrawer().props('showDrawer')).toBe(true);
-
-        // Next, click to close drawer
-        findDependencyPathButtons().at(0).vm.$emit('click');
-        await nextTick();
-
-        expect(findDependencyPathDrawer().exists()).toBe(false);
-      });
-
-      describe('when the feature flag "dependencyPaths" is disabled', () => {
-        it('does not display the dependency paths button', () => {
-          createComponent({
-            propsData: {
-              dependencies: [dependency],
-              isLoading: false,
-            },
-            provide: {
-              glFeatures: {
-                dependencyPaths: false,
-              },
-            },
-          });
-
-          expect(findDependencyPathButtons()).toHaveLength(0);
         });
       });
     });
