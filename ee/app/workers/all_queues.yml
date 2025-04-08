@@ -3383,6 +3383,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_secret_detection_update_token_status
+  :worker_name: Security::SecretDetection::UpdateTokenStatusWorker
+  :feature_category: :secret_detection
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_sync_linked_pipeline_execution_policy_configs
   :worker_name: Security::SyncLinkedPipelineExecutionPolicyConfigsWorker
   :feature_category: :security_policy_management
