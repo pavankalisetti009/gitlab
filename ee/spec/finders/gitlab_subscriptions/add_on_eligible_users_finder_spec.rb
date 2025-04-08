@@ -192,7 +192,7 @@ RSpec.describe GitlabSubscriptions::AddOnEligibleUsersFinder, feature_category: 
     end
 
     context 'when supplied a filter option' do
-      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro) }
+      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
       let_it_be(:owner) { create(:user, name: 'Owner User') }
       let_it_be(:assigned_user) { create(:user, name: 'Assigned User') }
       let_it_be(:blocked_assigned_user) { create(:user, :blocked, name: 'Blocked Assigned User') }

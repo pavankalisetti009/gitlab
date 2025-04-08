@@ -11,7 +11,7 @@ RSpec.describe 'Groups > Add Ons > Discover Duo Pro > Hand Raise Lead', :js, :sa
   end
 
   let_it_be(:add_on_purchase) do
-    create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: group)
+    create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: group)
   end
 
   before do

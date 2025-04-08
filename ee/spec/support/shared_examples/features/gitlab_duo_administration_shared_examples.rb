@@ -22,7 +22,7 @@ RSpec.shared_examples 'Gitlab Duo administration' do
 
   context 'when bulk assign and unassign duo pro seats' do
     let_it_be(:add_on_purchase, reload: true) do
-      create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, quantity: 10, namespace: group)
+      create(:gitlab_subscription_add_on_purchase, :duo_pro, quantity: 10, namespace: group)
     end
 
     context 'when user is owner' do

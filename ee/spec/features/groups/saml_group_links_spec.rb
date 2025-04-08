@@ -48,7 +48,7 @@ RSpec.describe 'SAML group links', feature_category: :system_access do
         let_it_be(:add_on_purchase) do
           create(
             :gitlab_subscription_add_on_purchase,
-            :gitlab_duo_pro,
+            :duo_pro,
             expires_on: 1.week.from_now.to_date,
             namespace: group
           )

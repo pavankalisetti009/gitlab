@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::AddOnPurchases::ReconcileSeatOverageService, feature_category: :seat_cost_management do
-  let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, created_at: 1.week.ago) }
+  let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, created_at: 1.week.ago) }
 
   subject(:service_response) { described_class.new(add_on_purchase: add_on_purchase).execute }
 

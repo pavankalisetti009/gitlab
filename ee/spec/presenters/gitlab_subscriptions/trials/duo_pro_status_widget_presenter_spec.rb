@@ -6,7 +6,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, 
   let(:user) { build(:user) }
   let(:group) { build(:group) }
   let(:add_on_purchase) do
-    build(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active_trial, namespace: group)
+    build(:gitlab_subscription_add_on_purchase, :duo_pro, :active_trial, namespace: group)
   end
 
   before do

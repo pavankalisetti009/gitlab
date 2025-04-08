@@ -15,7 +15,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoAddOn, feature_category: :subscri
 
       context 'when active add_on' do
         let_it_be(:add_on_purchase_on) do
-          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
         end
 
         it { is_expected.to be(true) }
@@ -23,7 +23,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoAddOn, feature_category: :subscri
 
       context 'when on trial' do
         let_it_be(:add_on_purchase_on) do
-          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: namespace)
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: namespace)
         end
 
         it { is_expected.to be(true) }
@@ -31,7 +31,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoAddOn, feature_category: :subscri
 
       context 'when on expired trial' do
         let_it_be(:add_on_purchase_on) do
-          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired_trial, namespace: namespace)
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, :expired_trial, namespace: namespace)
         end
 
         it { is_expected.to be(true) }
@@ -39,7 +39,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoAddOn, feature_category: :subscri
 
       context 'when on trial expired 11 days ago' do
         let_it_be(:add_on_purchase_on) do
-          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial,
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial,
             namespace: namespace,
             expires_on: 11.days.ago
           )

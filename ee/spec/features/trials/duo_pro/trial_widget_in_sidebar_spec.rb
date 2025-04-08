@@ -10,7 +10,7 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
   let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan, name: 'gitlab', owners: user) }
 
   before_all do
-    create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: group)
+    create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: group)
   end
 
   before do

@@ -13,7 +13,7 @@ RSpec.describe ClickHouse::SyncStrategies::UserAddOnAssignmentSyncStrategy, feat
     end
 
     context 'when ClickHouse is enabled for analytics', :click_house do
-      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro) }
+      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
       # By creating these, papertrail generates UserAddOnAssignmentVersion records
       let!(:user_assignment_1) { create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_purchase) }
       let!(:user_assignment_2) { create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_purchase) }

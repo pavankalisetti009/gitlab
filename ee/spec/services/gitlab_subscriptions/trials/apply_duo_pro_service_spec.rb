@@ -101,7 +101,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoProService, :saas, feature_c
 
       context 'when namespace already has an active duo pro add-on' do
         before do
-          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
         end
 
         it 'returns an error response with errors' do
@@ -111,7 +111,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoProService, :saas, feature_c
 
       context 'when namespace already has an expired duo pro add-on' do
         before do
-          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired, namespace: namespace)
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, :expired, namespace: namespace)
         end
 
         it 'returns an error response with errors' do
@@ -148,7 +148,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoProService, :saas, feature_c
       .to receive(:generate_addon_trial) do
         create(
           :gitlab_subscription_add_on_purchase,
-          :gitlab_duo_pro,
+          :duo_pro,
           :trial,
           expires_on: 60.days.from_now,
           namespace: namespace

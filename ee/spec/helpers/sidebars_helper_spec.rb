@@ -95,7 +95,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       describe 'duo pro trial status', :saas do
         let(:root_group) { namespace }
         let(:add_on_purchase) do
-          build(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: root_group)
+          build(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: root_group)
         end
 
         before do

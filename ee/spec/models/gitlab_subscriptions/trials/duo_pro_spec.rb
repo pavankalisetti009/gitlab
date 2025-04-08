@@ -10,7 +10,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
 
     let_it_be(:user) { create(:user) }
     let_it_be(:add_on_purchase) do
-      create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: namespace)
+      create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: namespace)
     end
 
     before do
@@ -69,7 +69,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
 
     context 'when active add_on' do
       let_it_be(:add_on_purchase_on) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
       end
 
       it { is_expected.to be(true) }
@@ -77,7 +77,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
 
     context 'when on trial' do
       let_it_be(:add_on_purchase_on) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: namespace)
       end
 
       it { is_expected.to be(true) }
@@ -85,7 +85,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
 
     context 'when on expired trial' do
       let_it_be(:add_on_purchase_on) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired_trial, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :expired_trial, namespace: namespace)
       end
 
       it { is_expected.to be(true) }
@@ -93,7 +93,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
 
     context 'when on trial expired 11 days ago' do
       let_it_be(:add_on_purchase_on) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial,
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial,
           namespace: namespace,
           expires_on: 11.days.ago
         )
@@ -114,7 +114,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
 
     context 'when there is an active trial add-on purchase for the namespace' do
       before_all do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active_trial, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :active_trial, namespace: namespace)
       end
 
       it { is_expected.to be(true) }
@@ -122,7 +122,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
 
     context 'when there is an expired trial add-on purchase for the namespace' do
       before_all do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired_trial, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :expired_trial, namespace: namespace)
       end
 
       it { is_expected.to be(false) }
@@ -130,7 +130,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
 
     context 'when there is an active non-trial add-on purchase for the namespace' do
       before_all do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :active, namespace: namespace)
       end
 
       it { is_expected.to be(false) }
@@ -138,7 +138,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
 
     context 'when there is an expired non-trial add-on purchase for the namespace' do
       before_all do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :expired, namespace: namespace)
       end
 
       it { is_expected.to be(false) }
@@ -152,7 +152,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
       subject { described_class.active_add_on_purchase_for_namespace?(namespace.id) }
 
       before_all do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active_trial, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :active_trial, namespace: namespace)
       end
 
       it { is_expected.to be(true) }
@@ -164,7 +164,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
 
     context 'when there is an add_on_purchase' do
       let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: namespace)
       end
 
       it 'returns the add_on_purchase' do
@@ -174,7 +174,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
 
     context 'when there is an add_on_purchase that is not a trial' do
       before_all do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
       end
 
       it 'returns nil' do

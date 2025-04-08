@@ -17,7 +17,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::DestroyUserAddOnAssignmentWo
       let_it_be(:add_on_purchase) do
         create(
           :gitlab_subscription_add_on_purchase,
-          :gitlab_duo_pro,
+          :duo_pro,
           expires_on: expires_on.to_date,
           namespace: namespace
         )
