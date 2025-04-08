@@ -8,7 +8,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupUserAddOnAssignmentWo
     let_it_be(:remove_user) { create(:user) }
 
     let_it_be(:add_on_purchase) do
-      create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+      create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
     end
 
     let(:root_namespace_id) { namespace.id }

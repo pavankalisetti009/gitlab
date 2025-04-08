@@ -10,7 +10,7 @@ RSpec.describe GitlabSubscriptions::DuoPro, feature_category: :subscription_mana
 
     context 'when there is an add_on_purchase' do
       let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
       end
 
       it { is_expected.to eq(add_on_purchase) }
@@ -18,7 +18,7 @@ RSpec.describe GitlabSubscriptions::DuoPro, feature_category: :subscription_mana
 
     context 'when there is an add_on_purchase that is a trial' do
       let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: namespace)
       end
 
       it { is_expected.to eq(add_on_purchase) }
@@ -36,7 +36,7 @@ RSpec.describe GitlabSubscriptions::DuoPro, feature_category: :subscription_mana
 
     context 'when there is an add-on purchase for the namespace' do
       let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
       end
 
       it { is_expected.to eq(add_on_purchase) }
@@ -44,7 +44,7 @@ RSpec.describe GitlabSubscriptions::DuoPro, feature_category: :subscription_mana
 
     context 'when the add-on purchase is expired for the namespace' do
       let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :expired, namespace: namespace)
       end
 
       it { is_expected.to eq(add_on_purchase) }
@@ -59,7 +59,7 @@ RSpec.describe GitlabSubscriptions::DuoPro, feature_category: :subscription_mana
 
       context 'when there is an add-on purchase for the namespace' do
         let_it_be(:add_on_purchase) do
-          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
         end
 
         it { is_expected.to eq(add_on_purchase) }
@@ -78,7 +78,7 @@ RSpec.describe GitlabSubscriptions::DuoPro, feature_category: :subscription_mana
 
     context 'when there is an add-on purchase for the namespace' do
       let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
       end
 
       it { is_expected.to be(false) }
@@ -86,7 +86,7 @@ RSpec.describe GitlabSubscriptions::DuoPro, feature_category: :subscription_mana
 
     context 'when the add-on purchase is expired for the namespace' do
       let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired, namespace: namespace)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :expired, namespace: namespace)
       end
 
       it { is_expected.to be(false) }

@@ -4029,7 +4029,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
     context 'when code suggestions purchase exists' do
       let!(:active_addon) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active, namespace: group)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :active, namespace: group)
       end
 
       it 'returns true' do
@@ -4039,7 +4039,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
     context 'when code suggestions purchase does not exists' do
       let!(:expired_addon) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired, namespace: group)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :expired, namespace: group)
       end
 
       it 'returns false' do

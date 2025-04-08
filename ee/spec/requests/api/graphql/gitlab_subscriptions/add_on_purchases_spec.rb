@@ -62,7 +62,7 @@ RSpec.describe 'Query.addOnPurchases', feature_category: :seat_cost_management d
 
     context 'when active purchases exist' do
       let!(:add_on_purchase_1) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active, namespace_id: namespace_id)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :active, namespace_id: namespace_id)
       end
 
       let!(:add_on_purchase_2) do
@@ -74,7 +74,7 @@ RSpec.describe 'Query.addOnPurchases', feature_category: :seat_cost_management d
 
     context 'when active purchases do not exist' do
       before do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired, namespace_id: namespace_id)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :expired, namespace_id: namespace_id)
       end
 
       it_behaves_like 'an empty response'
@@ -104,7 +104,7 @@ RSpec.describe 'Query.addOnPurchases', feature_category: :seat_cost_management d
 
     context 'when active purchases exist' do
       let!(:add_on_purchase_1) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active, namespace_id: namespace_id)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :active, namespace_id: namespace_id)
       end
 
       let!(:add_on_purchase_2) do
@@ -116,7 +116,7 @@ RSpec.describe 'Query.addOnPurchases', feature_category: :seat_cost_management d
 
     context 'when active purchases do not exist' do
       before do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired, namespace_id: namespace_id)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :expired, namespace_id: namespace_id)
       end
 
       it_behaves_like 'an empty response'

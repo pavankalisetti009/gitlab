@@ -141,7 +141,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
       before do
         create(
           :gitlab_subscription_add_on_purchase,
-          :gitlab_duo_pro,
+          :duo_pro,
           started_at: 1.year.ago.to_date.to_s,
           expires_on: Date.current.to_s,
           namespace: namespace,
@@ -469,7 +469,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
         let!(:add_on_purchase) do
           create(
             :gitlab_subscription_add_on_purchase,
-            :gitlab_duo_pro,
+            :duo_pro,
             started_at: started_at,
             expires_on: expires_on,
             namespace: namespace,

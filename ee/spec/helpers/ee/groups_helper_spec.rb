@@ -509,7 +509,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
 
   describe '#active_duo_add_on_data' do
     context 'when an active duo add on is a trial' do
-      let(:trial_add_on) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: group) }
+      let(:trial_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: group) }
 
       it 'returns the trial start date and end date' do
         trial_add_on
@@ -523,7 +523,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
 
     context 'when an active duo add on is not a trial' do
-      let(:add_on) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: group) }
+      let(:add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: group) }
 
       it 'returns the trial start date and end date' do
         add_on

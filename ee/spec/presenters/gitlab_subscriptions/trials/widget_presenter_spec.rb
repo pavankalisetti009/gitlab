@@ -40,7 +40,7 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
             :active_trial, :free,
             namespace: current_group, trial_starts_on: Time.current, trial_ends_on: 60.days.from_now
           )
-          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: current_group) # rubocop:todo RSpec/FactoryBot/AvoidCreate -- https://gitlab.com/gitlab-org/gitlab/-/issues/467062
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: current_group) # rubocop:todo RSpec/FactoryBot/AvoidCreate -- https://gitlab.com/gitlab-org/gitlab/-/issues/467062
         end
 
         it { is_expected.to match_array(trial_widget_attribute_keys) }
@@ -53,7 +53,7 @@ RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_cate
 
       before do
         build(:gitlab_subscription, :ultimate, namespace: current_group)
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: current_group) # rubocop:todo RSpec/FactoryBot/AvoidCreate -- https://gitlab.com/gitlab-org/gitlab/-/issues/467062
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :trial, namespace: current_group) # rubocop:todo RSpec/FactoryBot/AvoidCreate -- https://gitlab.com/gitlab-org/gitlab/-/issues/467062
       end
 
       it { is_expected.to match_array(duo_pro_trial_widget_attribute_keys) }

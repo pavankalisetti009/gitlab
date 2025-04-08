@@ -99,7 +99,7 @@ RSpec.describe GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder, featu
     end
 
     context 'when supplied a filter option' do
-      let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :self_managed, :gitlab_duo_pro) }
+      let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_pro) }
       let(:assigned_user) { create(:user, name: 'Assigned User') }
       let(:blocked_assigned_user) { create(:user, :blocked, name: 'Blocked Assigned User') }
       let(:non_assigned_user) { create(:user, name: 'Non Assigned User') }

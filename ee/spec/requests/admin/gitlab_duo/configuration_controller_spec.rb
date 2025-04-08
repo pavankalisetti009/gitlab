@@ -28,7 +28,7 @@ RSpec.describe Admin::GitlabDuo::ConfigurationController, :cloud_licenses, featu
     shared_examples 'renders duo settings form' do
       context 'when duo pro addon is purchased' do
         let_it_be(:add_on_purchase) do
-          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :self_managed, :active)
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed, :active)
         end
 
         it 'renders duo settings form' do

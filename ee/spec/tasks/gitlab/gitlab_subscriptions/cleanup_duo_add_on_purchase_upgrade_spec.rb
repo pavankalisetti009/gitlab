@@ -47,7 +47,7 @@ RSpec.describe 'gitlab:cleanup:duo_add_on_purchase_upgrade', :silence_stdout, ty
 
   context 'when there is only the Duo Pro add-on purchases' do
     it 'aborts and prints an error message' do
-      add_on_purchase = create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+      add_on_purchase = create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
 
       expect { run }.to raise_error(ArgumentError).with_message(
         "Expected both Duo add-ons. Duo Pro ID: #{add_on_purchase.id}, Duo Enterprise ID: "
@@ -57,7 +57,7 @@ RSpec.describe 'gitlab:cleanup:duo_add_on_purchase_upgrade', :silence_stdout, ty
 
   context 'when there are a Duo Pro and a Duo Enterprise add-on purchases' do
     let!(:duo_pro_add_on_purchase) do
-      create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+      create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace)
     end
 
     let!(:duo_enterprise_add_on_purchase) do
