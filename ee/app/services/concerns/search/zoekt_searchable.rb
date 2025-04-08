@@ -2,6 +2,8 @@
 
 module Search
   module ZoektSearchable
+    include ::Gitlab::Utils::StrongMemoize
+
     def use_zoekt?
       # TODO: rename to search_code_with_zoekt?
       # https://gitlab.com/gitlab-org/gitlab/-/issues/421619
@@ -13,6 +15,10 @@ module Search
     end
 
     def zoekt_searchable_scope
+      raise NotImplementedError
+    end
+
+    def search_level
       raise NotImplementedError
     end
 
@@ -33,8 +39,9 @@ module Search
     end
 
     def zoekt_node_id
-      @zoekt_node_id ||= zoekt_nodes.first.id
+      zoekt_nodes.first&.id
     end
+    strong_memoize_attr :zoekt_node_id
 
     def zoekt_nodes
       # Note: there will be more zoekt nodes whenever replicas are introduced.
@@ -57,6 +64,7 @@ module Search
         current_user,
         params[:search],
         zoekt_projects,
+        search_level: search_level,
         node_id: zoekt_node_id,
         order_by: params[:order_by],
         sort: params[:sort],

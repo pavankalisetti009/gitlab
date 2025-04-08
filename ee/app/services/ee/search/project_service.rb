@@ -72,6 +72,11 @@ module EE
         project
       end
 
+      override :search_level
+      def search_level
+        :project
+      end
+
       override :zoekt_projects
       def zoekt_projects
         @zoekt_projects ||= ::Project.id_in(project)

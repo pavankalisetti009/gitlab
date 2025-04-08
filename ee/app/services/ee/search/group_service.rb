@@ -3,6 +3,8 @@
 module EE
   module Search
     module GroupService
+      include ::Gitlab::Utils::StrongMemoize
+
       extend ::Gitlab::Utils::Override
       include ::Search::AdvancedAndZoektSearchable
 
@@ -14,6 +16,11 @@ module EE
       override :zoekt_searchable_scope
       def zoekt_searchable_scope
         group
+      end
+
+      override :search_level
+      def search_level
+        :group
       end
 
       override :zoekt_node_id
@@ -49,18 +56,17 @@ module EE
 
       override :allowed_scopes
       def allowed_scopes
-        strong_memoize(:ee_group_allowed_scopes) do
-          scopes = super
+        scopes = super
 
-          if use_elasticsearch?
-            scopes -= %w[epics] unless group.licensed_feature_available?(:epics)
-          else
-            scopes += %w[epics] # In basic search we have epics enabled for groups
-          end
-
-          scopes.uniq
+        if use_elasticsearch?
+          scopes -= %w[epics] unless group.licensed_feature_available?(:epics)
+        else
+          scopes += %w[epics] # In basic search we have epics enabled for groups
         end
+
+        scopes.uniq
       end
+      strong_memoize_attr :allowed_scopes
     end
   end
 end

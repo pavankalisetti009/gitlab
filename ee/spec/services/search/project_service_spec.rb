@@ -629,4 +629,10 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       expect(service.zoekt_nodes).to eq(:result)
     end
   end
+
+  describe '#search_level' do
+    it 'returns project' do
+      expect(described_class.new(user, project, scope: 'notes').search_level).to eq :project
+    end
+  end
 end

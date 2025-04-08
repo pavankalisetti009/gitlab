@@ -529,4 +529,10 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
       it_behaves_like 'search confidential notes shared examples', :note_on_issue
     end
   end
+
+  describe '#search_level' do
+    it 'returns global' do
+      expect(described_class.new(user, {}).search_level).to eq :global
+    end
+  end
 end

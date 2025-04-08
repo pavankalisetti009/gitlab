@@ -13,8 +13,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
   let(:filters) { {} }
   let(:multi_match_enabled) { false }
   let(:results) do
-    described_class.new(user, query, limit_projects,
-      node_id: node_id, filters: filters,
+    described_class.new(user, query, limit_projects, search_level: :group, node_id: node_id, filters: filters,
       multi_match_enabled: multi_match_enabled, modes: { regex: true })
   end
 
@@ -35,8 +34,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
     end
 
     it 'sets file_count on the instance equal to the count of files with matches' do
-      results.objects('blobs')
-
+      objects
       expect(results).to have_attributes(file_count: 2)
     end
 
@@ -146,7 +144,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
             search_mode: search_mode_sent_to_client
           ).and_call_original
 
-          described_class.new(user, query, limit_projects, node_id: node_id,
+          described_class.new(user, query, limit_projects, search_level: :group, node_id: node_id,
             modes: { regex: param_regex_mode }).objects('blobs')
         end
 
@@ -161,7 +159,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
               hash_including(use_proxy: true, search_mode: search_mode_sent_to_client)
             ).and_return(stubbed_response)
 
-            described_class.new(user, query, limit_projects, modes: { regex: param_regex_mode }).objects('blobs')
+            described_class.new(user, query, limit_projects, search_level: :group,
+              modes: { regex: param_regex_mode }).objects('blobs')
           end
 
           context 'when feature flag "zoekt_search_proxy" is disabled' do
@@ -175,7 +174,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
                 hash_including(use_proxy: false, search_mode: search_mode_sent_to_client)
               ).and_return(stubbed_response)
 
-              described_class.new(user, query, limit_projects, modes: { regex: param_regex_mode }).objects('blobs')
+              described_class.new(user, query, limit_projects, search_level: :group,
+                modes: { regex: param_regex_mode }).objects('blobs')
             end
           end
         end
@@ -190,7 +190,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
             node_id: node_id,
             search_mode: :exact
           ).and_call_original
-          described_class.new(user, query, limit_projects, node_id: node_id).objects('blobs')
+          described_class.new(user, query, limit_projects, search_level: :group, node_id: node_id).objects('blobs')
         end
       end
     end
@@ -256,8 +256,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
             examples.each do |search_term, file_content|
               file_name = Digest::SHA256.hexdigest(file_content)
 
-              search_results_instance = described_class.new(user, search_term, limit_projects, node_id: node_id,
-                modes: { regex: true }, multi_match_enabled: multi_match)
+              search_results_instance = described_class.new(user, search_term, limit_projects, search_level: :group,
+                node_id: node_id, modes: { regex: true }, multi_match_enabled: multi_match)
 
               results = search_results_instance.objects('blobs').map(&:path)
               expect(results).to include(file_name)
@@ -296,7 +296,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
       let(:filters) { {} }
 
       subject(:search) do
-        described_class.new(user, query, limit_projects, node_id: node_id, filters: filters).objects('blobs')
+        described_class.new(user, query, limit_projects, search_level: :group, node_id: node_id,
+          filters: filters).objects('blobs')
       end
 
       shared_examples 'a non-filtered search' do
@@ -320,7 +321,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
           collection = ::Project.id_in(projects.map(&:id))
 
           control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-            described_class.new(user, query, collection, node_id: node_id, filters: filters).objects('blobs')
+            described_class.new(user, query, collection, search_level: :group, node_id: node_id,
+              filters: filters).objects('blobs')
           end
 
           projects << create(:project, group: create(:group))
@@ -329,7 +331,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
           collection = ::Project.id_in(projects.map(&:id))
 
           expect do
-            described_class.new(user, query, collection, node_id: node_id, filters: filters).objects('blobs')
+            described_class.new(user, query, collection, search_level: :group, node_id: node_id,
+              filters: filters).objects('blobs')
           end.not_to issue_same_number_of_queries_as(control)
         end
       end
@@ -451,6 +454,24 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
         end
       end
     end
+
+    context 'when search_level is project and node_id is nil' do
+      let(:logger) { instance_double(Search::Zoekt::Logger) }
+      let(:results) { described_class.new(user, query, limit_projects, search_level: :project) }
+
+      before do
+        allow(Search::Zoekt::Logger).to receive(:build).and_return(logger)
+      end
+
+      it 'logs and returns empty results' do
+        expect(logger).to receive(:info).with({
+          'class' => described_class.to_s, 'query' => query, 'project_id' => limit_projects[0].id,
+          'message' => 'zoekt repository is not found for this search'
+        })
+        expect(objects).to eq []
+        expect(results).to have_attributes(file_count: 0)
+      end
+    end
   end
 
   describe '#blobs_count' do
@@ -476,6 +497,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
         described_class.new(user,
           query,
           limit_projects,
+          search_level: :project,
           node_id: node_id,
           multi_match_enabled: multi_match,
           modes: { regex: regex_mode })
@@ -520,7 +542,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
   describe '#failed?' do
     let(:scope) { 'blobs' }
 
-    subject(:results) { described_class.new(user, 'test', limit_projects, node_id: node_id) }
+    subject(:results) { described_class.new(user, 'test', limit_projects, search_level: :group, node_id: node_id) }
 
     context 'when no error raised by client' do
       it 'returns false' do
@@ -545,7 +567,7 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
   describe '#error' do
     let(:scope) { 'blobs' }
 
-    subject(:results) { described_class.new(user, 'test', limit_projects, node_id: node_id) }
+    subject(:results) { described_class.new(user, 'test', limit_projects, search_level: :group, node_id: node_id) }
 
     context 'when no error raised by client' do
       it 'returns nil' do
