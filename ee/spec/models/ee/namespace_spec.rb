@@ -410,7 +410,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       let_it_be(:regular_namespace) { create(:group) }
 
       before_all do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace_with_duo_pro)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace_with_duo_pro)
         create(:gitlab_subscription_add_on_purchase, :product_analytics, namespace: namespace_with_other_addon)
       end
 

@@ -2136,7 +2136,7 @@ RSpec.describe User, feature_category: :system_access do
       end
 
       context 'when user is assigned to a duo pro seat on namespace' do
-        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace) }
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace) }
 
         before do
           create(
@@ -2168,7 +2168,7 @@ RSpec.describe User, feature_category: :system_access do
       end
 
       context 'when user is assigned to a duo pro seat on instance' do
-        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :self_managed) }
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed) }
 
         before do
           create(

@@ -33,9 +33,9 @@ RSpec.describe Ai::AmazonQ, feature_category: :ai_abstraction_layer do
       :product_analytics | true  | 2.days.from_now | true
       :duo_amazon_q      | true  | 2.days.from_now | true
       :duo_amazon_q      | true  | 2.days.ago      | true
-      :gitlab_duo_pro    | true  | 2.days.from_now | false
+      :duo_pro           | true  | 2.days.from_now | false
       :duo_enterprise    | true  | 2.days.from_now | false
-      :gitlab_duo_pro    | true  | 2.days.from_now | false
+      :duo_pro           | true  | 2.days.from_now | false
       nil                | false | 2.days.from_now | false
     end
 

@@ -244,7 +244,7 @@ module EE
             context.group.root? &&
               context.group.licensed_feature_available?(:custom_fields) &&
               can?(context.current_user, :admin_custom_field, context.group) &&
-              ::Feature.enabled?('custom_fields_feature', context.group)
+              ::Feature.enabled?(:custom_fields_feature, context.group)
           end
         end
       end

@@ -57,7 +57,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::DuoSeatsMetric, feature
     context 'when there are active Duo purchases' do
       let_it_be(:user) { create(:user) }
       let_it_be(:duo_pro_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, quantity: 5)
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, quantity: 5)
       end
 
       before_all do

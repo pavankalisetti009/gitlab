@@ -72,7 +72,7 @@ RSpec.describe 'GitLab.com Google Analytics DataLayer', :saas, :js, feature_cate
     include ListboxHelpers
 
     before do
-      create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro)
+      create(:gitlab_subscription_add_on_purchase, :duo_pro)
     end
 
     it 'tracks create group events' do

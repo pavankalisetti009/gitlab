@@ -10,7 +10,7 @@ RSpec.describe Gitlab::Auth::GroupSaml::DuoAddOnAssignmentUpdater, feature_categ
     let_it_be(:group) { create(:group) }
     let(:auth_hash) { build_auth_hash(saml_groups) }
     let(:add_on_purchase) do
-      create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, expires_on: 1.week.from_now, namespace: group)
+      create(:gitlab_subscription_add_on_purchase, :duo_pro, expires_on: 1.week.from_now, namespace: group)
     end
 
     subject(:execute) { described_class.new(user, group, auth_hash).execute }
@@ -116,7 +116,7 @@ RSpec.describe Gitlab::Auth::GroupSaml::DuoAddOnAssignmentUpdater, feature_categ
 
         create(
           :gitlab_subscription_add_on_purchase,
-          :gitlab_duo_pro,
+          :duo_pro,
           expires_on: 1.day.ago,
           namespace: group
         )

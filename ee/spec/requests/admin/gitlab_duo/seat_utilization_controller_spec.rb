@@ -25,7 +25,7 @@ RSpec.describe Admin::GitlabDuo::SeatUtilizationController, :cloud_licenses, fea
       end
 
       context 'when duo pro addon is purchased' do
-        let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active) }
+        let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro, :active) }
 
         it 'renders the activation form' do
           get admin_gitlab_duo_seat_utilization_index_path

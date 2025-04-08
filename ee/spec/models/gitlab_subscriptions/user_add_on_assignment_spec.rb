@@ -76,7 +76,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignment, feature_category: :seat
 
     describe '.for_add_on_purchases' do
       it 'returns assignments associated with add-on purchases' do
-        purchase = create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro)
+        purchase = create(:gitlab_subscription_add_on_purchase, :duo_pro)
         assignment = create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: purchase)
         purchases = ::GitlabSubscriptions::AddOnPurchase.where(id: purchase.id)
 
@@ -87,7 +87,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignment, feature_category: :seat
     describe '.for_active_add_on_purchases' do
       context 'when the assignment is for an active addon purchase' do
         it 'is included in the scope' do
-          purchase = create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro)
+          purchase = create(:gitlab_subscription_add_on_purchase, :duo_pro)
           assignment = create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: purchase)
           purchases = ::GitlabSubscriptions::AddOnPurchase.where(id: purchase.id)
 
@@ -97,7 +97,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignment, feature_category: :seat
 
       context 'when the assignment is for an expired addon purchase' do
         it 'is not included in the scope' do
-          purchase = create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, expires_on: 1.week.ago)
+          purchase = create(:gitlab_subscription_add_on_purchase, :duo_pro, expires_on: 1.week.ago)
           create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: purchase)
           purchases = ::GitlabSubscriptions::AddOnPurchase.where(id: purchase.id)
 
@@ -107,7 +107,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignment, feature_category: :seat
 
       context 'when there are no assignments for an active gitlab duo pro purchase' do
         it 'returns an empty relation' do
-          purchase = create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro)
+          purchase = create(:gitlab_subscription_add_on_purchase, :duo_pro)
           purchases = ::GitlabSubscriptions::AddOnPurchase.where(id: purchase.id)
 
           expect(described_class.for_active_add_on_purchases(purchases)).to be_empty
@@ -157,7 +157,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignment, feature_category: :seat
       it_behaves_like 'filters for active gitlab duo purchase' do
         subject(:scope_result) { described_class.for_active_gitlab_duo_pro_purchase }
 
-        let(:tested_add_on_type) { :gitlab_duo_pro }
+        let(:tested_add_on_type) { :duo_pro }
       end
     end
 
@@ -166,7 +166,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignment, feature_category: :seat
         it_behaves_like 'filters for active gitlab duo purchase' do
           subject(:scope_result) { described_class.for_active_gitlab_duo_purchase }
 
-          let(:tested_add_on_type) { :gitlab_duo_pro }
+          let(:tested_add_on_type) { :duo_pro }
         end
       end
 

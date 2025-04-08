@@ -343,7 +343,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
 
       context 'with other purchases' do
         let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
-        let!(:code_suggestions_add_on) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro) }
+        let!(:code_suggestions_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
 
         it 'returns only duo_enterprise add-ons' do
           expect(duo_enterprise_add_on_purchases).to eq [duo_enterprise_add_on]
@@ -364,7 +364,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
 
       context 'with other purchases' do
         let!(:duo_amazon_q_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
-        let!(:duo_pro_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro) }
+        let!(:duo_pro_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
 
         it 'returns only duo_amazon_q add-ons' do
           expect(duo_amazon_q_add_on_purchases).to eq [duo_amazon_q_add_on_purchase]
@@ -384,14 +384,14 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       end
 
       context 'with duo_pro purchase' do
-        let!(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro) }
+        let!(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
 
         it { expect(duo_pro_or_duo_enterprise_add_on_purchases).to eq [gitlab_duo_pro_add_on] }
       end
 
       context 'with other purchases' do
         let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
-        let!(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro) }
+        let!(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
         let!(:product_analytics_add_on) { create(:gitlab_subscription_add_on_purchase, :product_analytics) }
 
         it 'returns both gitlab_duo_pro and duo_enterprise add-ons' do
@@ -406,7 +406,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       subject(:duo_add_ons_purchases) { described_class.for_duo_add_ons }
 
       let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
-      let!(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro) }
+      let!(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
       let!(:product_analytics_add_on) { create(:gitlab_subscription_add_on_purchase, :product_analytics) }
 
       it 'returns both gitlab_duo_pro and duo_enterprise add-ons' do
@@ -690,7 +690,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         let(:expected_maximum_duo_seat_count) { 10 }
 
         it 'returns the number of seats purchased' do
-          create(:gitlab_subscription_add_on_purchase, :active, :gitlab_duo_pro,
+          create(:gitlab_subscription_add_on_purchase, :active, :duo_pro,
             options.merge(quantity: expected_maximum_duo_seat_count))
 
           expect(seat_count).to eq(expected_maximum_duo_seat_count)
@@ -716,7 +716,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         it 'returns the maximum number of seats purchased for the add-on with the most seats' do
           create(:gitlab_subscription_add_on_purchase, :active, :duo_enterprise, :trial,
             options.merge(quantity: expected_duo_enterprise_seat_count))
-          create(:gitlab_subscription_add_on_purchase, :active, :gitlab_duo_pro,
+          create(:gitlab_subscription_add_on_purchase, :active, :duo_pro,
             options.merge(quantity: expected_duo_pro_seat_count))
           create(:gitlab_subscription_add_on_purchase, :active, :duo_amazon_q,
             options.merge(quantity: expected_duo_amazon_q_seat_count))
@@ -732,7 +732,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         it 'returns the maximum number of seats purchased for the add-on with the most seats' do
           create(:gitlab_subscription_add_on_purchase, :active, :duo_enterprise,
             options.merge(quantity: expected_duo_enterprise_seat_count))
-          create(:gitlab_subscription_add_on_purchase, :active, :gitlab_duo_pro, :trial,
+          create(:gitlab_subscription_add_on_purchase, :active, :duo_pro, :trial,
             options.merge(quantity: expected_duo_pro_seat_count))
 
           expect(seat_count).to eq(expected_duo_pro_seat_count)
@@ -761,7 +761,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         it 'returns the highest seat count of both' do
           create(:gitlab_subscription_add_on_purchase, :active, :duo_enterprise,
             quantity: 20, namespace: group)
-          create(:gitlab_subscription_add_on_purchase, :active, :gitlab_duo_pro,
+          create(:gitlab_subscription_add_on_purchase, :active, :duo_pro,
             quantity: 10, namespace: other_group)
 
           expect(described_class.maximum_duo_seat_count(namespace_ids: [group.id, other_group.id])).to eq(20)
@@ -831,7 +831,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
   end
 
   describe '#delete_ineligible_user_assignments_in_batches!' do
-    let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro) }
+    let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
 
     let_it_be(:eligible_user) { create(:user) }
     let_it_be(:ineligible_user) { create(:user) }

@@ -41,12 +41,16 @@ FactoryBot.define do
       expires_on { 1.year.from_now.to_date }
     end
 
-    trait :gitlab_duo_pro do
-      add_on { association(:gitlab_subscription_add_on, :duo_pro) }
-    end
-
     trait :product_analytics do
       add_on { association(:gitlab_subscription_add_on, :product_analytics) }
+    end
+
+    trait :duo_nano do
+      add_on { association(:gitlab_subscription_add_on, :duo_nano) }
+    end
+
+    trait :duo_pro do
+      add_on { association(:gitlab_subscription_add_on, :duo_pro) }
     end
 
     trait :duo_enterprise do
@@ -55,10 +59,6 @@ FactoryBot.define do
 
     trait :duo_amazon_q do
       add_on { association(:gitlab_subscription_add_on, :duo_amazon_q) }
-    end
-
-    trait :duo_nano do
-      add_on { association(:gitlab_subscription_add_on, :duo_nano) }
     end
 
     trait :self_managed do

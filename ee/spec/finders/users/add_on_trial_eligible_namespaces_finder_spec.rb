@@ -18,7 +18,7 @@ RSpec.describe Users::AddOnTrialEligibleNamespacesFinder, feature_category: :sub
         let_it_be(:namespace_with_ultimate_plan) { create(:group_with_plan, name: 'Gama', plan: :ultimate_plan) }
 
         before_all do
-          create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace_with_duo)
+          create(:gitlab_subscription_add_on_purchase, :duo_pro, namespace: namespace_with_duo)
           create(:gitlab_subscription_add_on_purchase, :product_analytics, namespace: namespace_with_other_addon)
         end
 
