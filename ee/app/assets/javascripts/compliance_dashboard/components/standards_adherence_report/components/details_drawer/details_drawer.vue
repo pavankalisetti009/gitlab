@@ -3,7 +3,6 @@ import { GlDrawer, GlLink, GlSprintf } from '@gitlab/ui';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import FrameworkBadge from '../../../shared/framework_badge.vue';
-import RequirementStatus from '../requirement_status.vue';
 import StatusesList from './statuses_list.vue';
 
 export default {
@@ -13,7 +12,6 @@ export default {
     GlSprintf,
 
     FrameworkBadge,
-    RequirementStatus,
     StatusesList,
   },
   props: {
@@ -55,13 +53,8 @@ export default {
       <h2 class="gl-heading-3 gl-mb-0">{{ title }}</h2>
     </template>
     <template v-if="status">
-      <div class="gl-flex gl-flex-row gl-gap-3 gl-p-5">
+      <div class="gl-flex gl-flex-col gl-gap-3 gl-p-5">
         <framework-badge :framework="status.complianceFramework" popover-mode="details" />
-        <requirement-status
-          :pass-count="status.passCount"
-          :pending-count="status.pendingCount"
-          :fail-count="status.failCount"
-        />
         <gl-link :href="status.project.webUrl">{{ status.project.name }}</gl-link>
       </div>
       <div v-if="status.complianceRequirement.description" class="gl-p-5">

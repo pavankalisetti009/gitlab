@@ -15,7 +15,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirement,
     it { is_expected.to validate_presence_of(:name) }
     it { is_expected.to validate_presence_of(:description) }
     it { is_expected.to validate_length_of(:name).is_at_most(255) }
-    it { is_expected.to validate_length_of(:description).is_at_most(255) }
+    it { is_expected.to validate_length_of(:description).is_at_most(500) }
 
     describe '#requirements_count_per_framework' do
       let_it_be(:compliance_framework_1) { create(:compliance_framework, :sox, namespace: group) }

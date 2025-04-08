@@ -60,6 +60,14 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
       described_class.new(ldap_provider, certificate_header).find_or_create_user
     end
 
+    context 'user not found on ldap server' do
+      before do
+        allow(ldap_connection).to receive(:search).and_return([])
+      end
+
+      it { is_expected.to be_nil }
+    end
+
     context 'user and smartcard ldap certificate already exists' do
       let(:user) { create(:user) }
 

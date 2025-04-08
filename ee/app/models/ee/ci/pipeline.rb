@@ -60,7 +60,7 @@ module EE
         def self.latest_limited_pipeline_ids_per_source(pipelines, sha)
           pipelines_for_sha = pipelines.complete_or_manual.for_sha(sha).order(id: :desc).limit(LATEST_PIPELINES_LIMIT)
 
-          from("(#{pipelines_for_sha.to_sql}) as recent_pipelines")
+          from("(#{pipelines_for_sha.to_sql}) AS recent_pipelines")
             .select('DISTINCT ON (source) id')
             .order('source, id DESC')
         end

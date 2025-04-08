@@ -16,7 +16,8 @@ module ComplianceManagement
       validates_presence_of :framework, :namespace_id, :name, :description
       validates :name, uniqueness: { scope: :framework_id }
       validate :requirements_count_per_framework
-      validates :name, :description, length: { maximum: 255 }
+      validates :name, length: { maximum: 255 }
+      validates :description, length: { maximum: 500 }
       validate :framework_belongs_to_same_namespace
 
       has_many :security_policy_requirements,
