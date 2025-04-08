@@ -5,55 +5,6 @@ require 'spec_helper'
 RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: :onboarding do
   include Features::InviteMembersModalHelpers
 
-  context 'with an active trial' do
-    let_it_be(:group) do
-      create(
-        :group_with_plan, :private,
-        plan: :ultimate_trial_plan,
-        trial: true,
-        trial_starts_on: Date.today,
-        trial_ends_on: 10.days.from_now
-      ) do |g|
-        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :trial, namespace: g)
-        create(:onboarding_progress, namespace: g)
-      end
-    end
-
-    let_it_be(:project) { create(:project, group: group) }
-    let_it_be(:user) { project.creator }
-    let(:alert_selector) { '[data-testid="unlimited-members-during-trial-alert"]' }
-
-    before_all do
-      group.add_owner(user)
-    end
-
-    before do
-      stub_ee_application_setting(dashboard_limit_enabled: true)
-
-      sign_in(user)
-    end
-
-    it 'displays alert with Explore paid plans link, Invite more members button and duo seat assignment' do
-      visit namespace_project_learn_gitlab_path(group, project)
-
-      expect(page).to have_selector(alert_selector)
-      expect(page).to have_link(text: 'Explore paid plans', href: group_billings_path(group))
-
-      expect(page).to(
-        have_link(
-          text: 'Assign a GitLab Duo seat to your colleagues',
-          href: group_settings_gitlab_duo_seat_utilization_index_path(group)
-        )
-      )
-
-      expect(page).to have_button('Invite more members')
-
-      click_button 'Invite more members'
-
-      expect(page).to have_selector(invite_modal_selector)
-    end
-  end
-
   context 'with learn gitlab links' do
     let_it_be(:user) { create(:user) }
     let_it_be(:namespace) { create(:group, owners: user) }
@@ -140,6 +91,138 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
           page.within invite_modal_selector do
             expect(page).to have_content("You're inviting members to the #{project.name} project")
           end
+        end
+      end
+    end
+
+    context 'when broadcast messages exists' do
+      let_it_be(:group) do
+        create(
+          :group_with_plan, :private,
+          plan: :ultimate_trial_plan,
+          trial: true,
+          trial_starts_on: Date.today,
+          trial_ends_on: 10.days.from_now,
+          owners: user
+        ) do |g|
+          create(:onboarding_progress, namespace: g)
+        end
+      end
+
+      let_it_be(:project) { create(:project, namespace: group) }
+      let_it_be(:broadcast_message_1) { create(:broadcast_message, message: 'broadcast message example 1') }
+      let_it_be(:broadcast_message_2) { create(:broadcast_message, message: 'broadcast message example 2') }
+
+      before do
+        sign_in(user)
+
+        visit namespace_project_learn_gitlab_path(group, project)
+      end
+
+      it 'does not show any broadcast message' do
+        expect(page).not_to have_content('broadcast message example 1')
+        expect(page).not_to have_content('broadcast message example 2')
+      end
+    end
+
+    context 'when the duo chat popover exists' do
+      let_it_be(:group) do
+        create(
+          :group_with_plan, :private,
+          plan: :ultimate_trial_plan,
+          trial: true,
+          trial_starts_on: Date.today,
+          trial_ends_on: 10.days.from_now,
+          owners: user
+        ) do |g|
+          create(:onboarding_progress, namespace: g)
+        end
+      end
+
+      let_it_be(:project) { create(:project, namespace: group) }
+
+      include_context 'with duo features enabled and ai chat available for group on SaaS'
+
+      context 'when the cookie `confetti_post_signup` is true' do
+        before do
+          sign_in(user)
+
+          set_cookie('confetti_post_signup', 'true')
+
+          visit namespace_project_learn_gitlab_path(group, project)
+        end
+
+        it 'does not show the duo chat promo popover initially' do
+          expect(page).not_to have_selector('[data-testid="duo-chat-promo-callout-popover"]')
+        end
+
+        it 'shows the duo chat promo popover after a page refresh' do
+          page.refresh
+
+          expect(page).to have_selector('[data-testid="duo-chat-promo-callout-popover"]')
+        end
+      end
+
+      context 'when the cookie `confetti_post_signup` is false' do
+        before do
+          sign_in(user)
+
+          set_cookie('confetti_post_signup', 'false')
+
+          visit namespace_project_learn_gitlab_path(group, project)
+        end
+
+        it 'shows the duo chat promo popover' do
+          expect(page).to have_selector('[data-testid="duo-chat-promo-callout-popover"]')
+        end
+      end
+    end
+
+    context 'with an active trial' do
+      let_it_be(:group) do
+        create(
+          :group_with_plan, :private,
+          plan: :ultimate_trial_plan,
+          trial: true,
+          trial_starts_on: Date.today,
+          trial_ends_on: 10.days.from_now,
+          owners: user
+        ) do |g|
+          create(:onboarding_progress, namespace: g)
+        end
+      end
+
+      let_it_be(:project) { create(:project, namespace: group) }
+
+      before do
+        stub_ee_application_setting(dashboard_limit_enabled: true)
+
+        sign_in(user)
+      end
+
+      context 'when onboarding progress is less than one day' do
+        it 'does not render the unlimited members during trial alert' do
+          visit namespace_project_learn_gitlab_path(group, project)
+
+          expect(page).not_to have_text('Get the most out of your trial with space for more members')
+        end
+      end
+
+      context 'when onboarding progress is more than one day' do
+        before do
+          group.onboarding_progress.update!(created_at: 1.day.ago)
+        end
+
+        it 'does render the unlimited members during trial alert' do
+          visit namespace_project_learn_gitlab_path(group, project)
+
+          expect(page).to have_text('Get the most out of your trial with space for more members')
+          expect(page).to have_link(text: 'Explore paid plans', href: group_billings_path(group))
+          expect(page).to have_button('Invite more members')
+
+          click_button 'Invite more members'
+
+          expect(page).to have_selector(invite_modal_selector)
         end
       end
     end

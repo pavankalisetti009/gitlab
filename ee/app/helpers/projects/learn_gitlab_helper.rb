@@ -20,6 +20,10 @@ module Projects
       }
     end
 
+    def hide_unlimited_members_during_trial_alert?(onboarding_progress)
+      onboarding_progress.created_at > 1.day.ago
+    end
+
     private
 
     def onboarding_actions_data(project)

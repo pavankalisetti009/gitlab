@@ -96,12 +96,18 @@ export default {
   mounted() {
     if (this.getCookieForInviteMembers()) {
       this.openInviteMembersModal('celebrate', ON_CELEBRATION_TRACK_LABEL);
+
+      this.hideDuoChatPromoCalloutPopover();
     }
 
     eventHub.$on('showSuccessfulInvitationsAlert', this.handleShowSuccessfulInvitationsAlert);
   },
   beforeDestroy() {
     eventHub.$off('showSuccessfulInvitationsAlert', this.handleShowSuccessfulInvitationsAlert);
+
+    if (this.observer) {
+      this.observer.disconnect();
+    }
   },
   methods: {
     getCookieForInviteMembers() {
@@ -113,6 +119,23 @@ export default {
     },
     openInviteMembersModal(mode, source) {
       eventHub.$emit('openModal', { mode, source });
+    },
+    hideDuoChatPromoCalloutPopover() {
+      this.observer = new MutationObserver(() => {
+        const popover = document.querySelector('.js-duo-chat-callout-popover');
+        if (popover) {
+          popover.style.display = 'none';
+
+          if (this.observer) {
+            this.observer.disconnect();
+            this.observer = null;
+          }
+        }
+      });
+
+      this.observer.observe(document.body, {
+        childList: true,
+      });
     },
     handleShowSuccessfulInvitationsAlert() {
       this.showSuccessfulInvitationsAlert = true;

@@ -3,15 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
-  let_it_be(:user) { create(:user) }
-
-  before do
-    allow(helper).to receive(:current_user).and_return(user)
-  end
-
   describe '#learn_gitlab_data' do
+    let_it_be(:user) { create(:user) }
     let_it_be(:namespace) { create(:group) }
     let_it_be(:project) { build_stubbed(:project, namespace: namespace) }
+
     let(:onboarding_actions_data) { Gitlab::Json.parse(learn_gitlab_data[:actions]).deep_symbolize_keys }
     let(:onboarding_sections_data) { Gitlab::Json.parse(learn_gitlab_data[:sections], symbolize_names: true) }
     let(:onboarding_project_data) { Gitlab::Json.parse(learn_gitlab_data[:project]).deep_symbolize_keys }
@@ -19,6 +15,7 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
     before do
       ::Onboarding::Progress.onboard(namespace)
       ::Onboarding::Progress.register(namespace, :user_added)
+      allow(helper).to receive(:current_user).and_return(user)
     end
 
     subject(:learn_gitlab_data) { helper.learn_gitlab_data(project) }
@@ -243,6 +240,30 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
           expect(onboarding_actions_data.dig(:duo_seat_assigned, :url)).to eq(expected_url)
         end
       end
+    end
+  end
+
+  describe '#hide_unlimited_members_during_trial_alert' do
+    subject(:hide_unlimited_members_during_trial_alert?) do
+      helper.hide_unlimited_members_during_trial_alert?(onboarding_progress)
+    end
+
+    let(:onboarding_progress) { build(:onboarding_progress) }
+
+    context 'when onboarding_progress was created within a day' do
+      before do
+        onboarding_progress.created_at = 1.hour.ago
+      end
+
+      it { is_expected.to be true }
+    end
+
+    context 'when onboarding_progress was created more than a day ago' do
+      before do
+        onboarding_progress.created_at = 2.days.ago
+      end
+
+      it { is_expected.to be false }
     end
   end
 end
