@@ -337,32 +337,62 @@ describe('CustomFieldsTable', () => {
     });
   });
 
-  it('maintains filter state when refetching after archive', async () => {
-    const customFieldsResponse = jest.fn().mockResolvedValue({
-      data: {
-        group: {
-          id: '123',
-          customFields: {
-            nodes: [],
-            count: 0,
-          },
-        },
-      },
-    });
-
-    createComponent({ customFieldsResponse });
-    await waitForPromises();
+  it('does not show create button in archived view', async () => {
+    createComponent();
 
     findArchivedFilterButton().vm.$emit('click');
-    await waitForPromises();
+    await nextTick();
 
-    wrapper.findComponent(CustomFieldForm).vm.$emit('created');
-    await waitForPromises();
+    expect(wrapper.findComponent(CustomFieldForm).exists()).toBe(false);
+  });
 
-    // Should maintain archived filter state
-    expect(customFieldsResponse).toHaveBeenLastCalledWith({
-      fullPath: 'group/path',
-      active: false,
+  describe('empty state', () => {
+    it('shows empty state message when there are no active fields', async () => {
+      const customFieldsResponse = jest.fn().mockResolvedValue({
+        data: {
+          group: {
+            id: '123',
+            customFields: {
+              nodes: [],
+              count: 0,
+            },
+          },
+        },
+      });
+
+      createComponent({ customFieldsResponse });
+      await waitForPromises();
+
+      expect(findTableItems().at(0).findAll('th')).toHaveLength(0);
+      expect(findTableItems().at(0).text()).toContain(
+        'This group has no active custom fields. Create a custom field to track data that matters to your team.',
+      );
+    });
+
+    it('shows empty state message when there are no archived fields', async () => {
+      const customFieldsResponse = jest.fn().mockResolvedValue({
+        data: {
+          group: {
+            id: '123',
+            customFields: {
+              nodes: [],
+              count: 0,
+            },
+          },
+        },
+      });
+
+      createComponent({ customFieldsResponse });
+      await waitForPromises();
+
+      // Switch to archived view
+      findArchivedFilterButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(findTableItems().at(0).findAll('th')).toHaveLength(0);
+      expect(findTableItems().at(0).text()).toContain(
+        'No custom fields have been archived. Archive custom fields to remove them from active work items while preserving their data.',
+      );
     });
   });
 });
