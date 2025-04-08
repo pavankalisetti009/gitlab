@@ -14,34 +14,51 @@ RSpec.describe Users::UserSettingChangesAuditor, feature_category: :user_profile
     end
 
     context 'when user setting is updated' do
-      where(:column, :change, :event, :change_from, :change_to) do
-        'private_profile' | 'user_profile_visiblity' | 'user_profile_visiblity_updated' | true  | false
-        'private_profile' | 'user_profile_visiblity' | 'user_profile_visiblity_updated' | false | true
+      where(:column, :changes, :events) do
+        'private_profile' | [{ change: 'user_profile_visiblity', event_type: 'user_profile_visiblity_updated' },
+          { change: 'user_profile_visibility', event_type: 'user_profile_visibility_updated' }] |
+          [true, false]
       end
 
       with_them do
         before do
-          user.update!(column.to_sym => change_from)
+          user.update!(column.to_sym => events.first)
         end
 
-        it 'calls auditor' do
-          user.update!(column.to_sym => change_to)
+        it 'calls auditor for both the legacy misspelled event and the new correctly spelled event' do
+          user.update!(column.to_sym => events.last)
 
           expect(Gitlab::Audit::Auditor).to receive(:audit).with(
             {
-              name: event,
+              name: changes.first[:event_type],
               author: user,
               scope: user,
               target: user,
-              message: "Changed #{change} from #{change_from} to #{change_to}",
+              message: "Changed #{changes.first[:change]} from #{events.first} to #{events.last}",
               additional_details: {
-                change: change.to_s,
-                from: change_from,
-                to: change_to
+                change: changes.first[:change].to_s,
+                from: events.first,
+                to: events.last
               },
               target_details: nil
             }
-          ).and_call_original
+          ).ordered.and_call_original
+
+          expect(Gitlab::Audit::Auditor).to receive(:audit).with(
+            {
+              name: changes.last[:event_type],
+              author: user,
+              scope: user,
+              target: user,
+              message: "Changed #{changes.last[:change]} from #{events.first} to #{events.last}",
+              additional_details: {
+                change: changes.last[:change].to_s,
+                from: events.first,
+                to: events.last
+              },
+              target_details: nil
+            }
+          ).ordered.and_call_original
 
           user_setting_changes_auditor.execute
         end
