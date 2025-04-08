@@ -1,9 +1,0 @@
----
-name: code_generation_claude_3_7_sonnet
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/521047
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/182476
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/521067
-milestone: '17.10'
-group: group::code creation
-type: beta
-default_enabled: false

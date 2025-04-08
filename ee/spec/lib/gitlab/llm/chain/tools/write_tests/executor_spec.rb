@@ -39,16 +39,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::WriteTests::Executor, feature_category
     )
   end
 
-  context 'when using claude 3.7 FF' do
-    include_context 'with stubbed LLM authorizer', allowed: true
-
-    it_behaves_like 'uses code_creation_slash_commands_claude_3_7 FF correctly' do
-      let(:prompt_class) { Gitlab::Llm::Chain::Tools::WriteTests::Prompts::Anthropic }
-      let(:unit_primitive) { 'write_tests' }
-      let(:default_unit_primitive) { unit_primitive }
-    end
-  end
-
   describe '#name' do
     it 'returns tool name' do
       expect(described_class::NAME).to eq('WriteTests')
