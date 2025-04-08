@@ -22,8 +22,6 @@ module EE
           inverse_of: :project_wiki_repository,
           autosave: false
 
-        after_save :save_verification_details
-
         scope :available_verifiables, -> { joins(:wiki_repository_state) }
 
         scope :checksummed, -> {

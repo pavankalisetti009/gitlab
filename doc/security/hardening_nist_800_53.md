@@ -100,7 +100,7 @@ identity providers and protocols, including
 
 - [SAML](../integration/saml.md)
 
-- More information on identity providers can be found in [GitLab Docs](../administration/auth/_index.md).
+- For more information about identity providers, see [GitLab authentication and authorization](../administration/auth/_index.md).
 
 #### Native GitLab User Authentication Configurations
 
@@ -485,7 +485,7 @@ appropriate.
 
 **Backups**
 
-GitLab Docs outlines backup strategies for critical components,
+The documentation outlines backup strategies for critical components,
 including:
 
 - [PostgreSQL databases](../administration/backup_restore/backup_gitlab.md#postgresql-databases)

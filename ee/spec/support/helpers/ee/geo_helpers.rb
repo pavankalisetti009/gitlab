@@ -249,8 +249,6 @@ module EE
           inverse_of: :_test_dummy_model_with_separate_state,
           foreign_key: :_test_dummy_model_with_separate_state_id
 
-        after_save :save_verification_details
-
         scope :available_verifiables, -> { joins(:_test_dummy_model_state) }
 
         def verification_state_object

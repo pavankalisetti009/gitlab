@@ -9,6 +9,15 @@ RSpec.describe Terraform::StateVersion, feature_category: :infrastructure_as_cod
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
 
+  describe 'associations' do
+    it do
+      is_expected.to have_one(:terraform_state_version_state)
+                       .class_name('Geo::TerraformStateVersionState')
+                       .with_foreign_key(:terraform_state_version_id)
+                       .inverse_of(:terraform_state_version)
+    end
+  end
+
   describe '.replicables_for_current_secondary' do
     where(:selective_sync_enabled, :object_storage_sync_enabled, :terraform_object_storage_enabled, :synced_states) do
       true  | true  | true  | 5

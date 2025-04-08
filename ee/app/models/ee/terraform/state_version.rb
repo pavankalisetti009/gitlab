@@ -12,6 +12,12 @@ module EE
 
         with_replicator ::Geo::TerraformStateVersionReplicator
 
+        has_one :terraform_state_version_state,
+          class_name: 'Geo::TerraformStateVersionState',
+          foreign_key: :terraform_state_version_id,
+          inverse_of: :terraform_state_version,
+          autosave: false
+
         scope :project_id_in, ->(ids) { joins(:terraform_state).where('terraform_states.project_id': ids) }
       end
 

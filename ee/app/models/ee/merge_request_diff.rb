@@ -17,8 +17,6 @@ module EE
 
       has_one :merge_request_diff_detail, autosave: false, inverse_of: :merge_request_diff
 
-      after_save :save_verification_details
-
       scope :has_external_diffs, -> { with_files.where(stored_externally: true) }
       scope :project_id_in, ->(ids) { where(merge_request_id: ::MergeRequest.where(target_project_id: ids)) }
       scope :available_replicables, -> { has_external_diffs }
