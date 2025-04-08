@@ -687,7 +687,7 @@ msgstr[1] ""
 msgid "%{chartTitle} no data series"
 msgstr ""
 
-msgid "%{child_type} %{child_reference} has already been added to parent %{parent_reference}."
+msgid "%{child_reference} has already been added to parent %{parent_reference}."
 msgstr ""
 
 msgid "%{codeStart}$%{codeEnd} will be treated as the start of a reference to another variable."
@@ -11909,13 +11909,13 @@ msgstr ""
 msgid "Cancelling Preview"
 msgstr ""
 
-msgid "Cannot assign a child %{child_type} to a %{parent_type}"
-msgstr ""
-
 msgid "Cannot assign a confidential epic to a non-confidential issue. Make the issue confidential and try again"
 msgstr ""
 
-msgid "Cannot assign a confidential parent to a non-confidential %{child_type}. Make the %{child_type} confidential and try again"
+msgid "Cannot assign a confidential parent item to a non-confidential child item. Make the child item confidential and try again."
+msgstr ""
+
+msgid "Cannot assign this child type to parent type."
 msgstr ""
 
 msgid "Cannot be merged automatically"
@@ -61167,7 +61167,7 @@ msgstr ""
 msgid "This page is unavailable because you are not allowed to read information across multiple projects."
 msgstr ""
 
-msgid "This parent does not exist or you don't have sufficient permission."
+msgid "This parent item does not exist or you don't have sufficient permission."
 msgstr ""
 
 msgid "This pipeline makes use of a predefined CI/CD configuration enabled by %{strongStart}Auto DevOps.%{strongEnd}"

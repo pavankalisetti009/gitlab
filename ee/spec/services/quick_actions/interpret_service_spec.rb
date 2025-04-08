@@ -800,7 +800,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
                 _, updates, message = service.execute(content, issue)
 
                 expect(updates).to be_empty
-                expect(message).to eq('Cannot assign a confidential parent to a non-confidential Issue. Make the Issue confidential and try again')
+                expect(message).to eq('Cannot assign a confidential parent item to a non-confidential child item. Make the child item confidential and try again.')
               end
             end
 
@@ -827,7 +827,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
                 _, updates, message = service.execute(content, issue)
 
                 expect(updates).to be_empty
-                expect(message).to eq("Issue #{issue.to_reference} has already been added to parent #{epic.sync_object.to_reference}.")
+                expect(message).to eq("#{issue.to_reference} has already been added to parent #{epic.sync_object.to_reference}.")
               end
             end
 
@@ -849,7 +849,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
               _, updates, message = service.execute(content, issue)
 
               expect(updates).to be_empty
-              expect(message).to eq("This parent does not exist or you don't have sufficient permission.")
+              expect(message).to eq("This parent item does not exist or you don't have sufficient permission.")
             end
           end
 
@@ -860,7 +860,7 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
               _, updates, message = service.execute(content, issue)
 
               expect(updates).to be_empty
-              expect(message).to eq("This parent does not exist or you don't have sufficient permission.")
+              expect(message).to eq("This parent item does not exist or you don't have sufficient permission.")
             end
           end
 

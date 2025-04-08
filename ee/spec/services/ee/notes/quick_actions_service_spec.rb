@@ -73,7 +73,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
           content, message  = execute(note, include_message: true)
 
           expect(content).to be_empty
-          expect(message).to eq("This parent does not exist or you don't have sufficient permission.")
+          expect(message).to eq("This parent item does not exist or you don't have sufficient permission.")
           expect(issue.epic).to be_nil
         end
       end
@@ -212,7 +212,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
           result = execute(note, include_message: true)
 
           expect(result[0]).to be_empty
-          expect(result[1]).to eq("This parent does not exist or you don't have sufficient permission.")
+          expect(result[1]).to eq("This parent item does not exist or you don't have sufficient permission.")
           expect(issue.epic).to eq(private_epic)
         end
       end
