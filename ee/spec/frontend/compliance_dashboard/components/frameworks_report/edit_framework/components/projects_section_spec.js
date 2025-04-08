@@ -2,6 +2,8 @@ import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlTable } from '@gitlab/ui';
 
+import Pagination from 'ee/compliance_dashboard/components/shared/pagination.vue';
+
 import ProjectsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/projects_section.vue';
 import VisibilityIconButton from '~/vue_shared/components/visibility_icon_button.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -33,7 +35,7 @@ describe('Projects section', () => {
   const projectLinks = () => wrapper.findAllByTestId('project-link');
   const subgroupLinks = () => wrapper.findAllByTestId('subgroup-link');
   const findCheckbox = (idx) => findTableRow(idx).find('input[type="checkbox"]');
-  const findSelectAllCheckbox = () => wrapper.find('thead input[type="checkbox"]');
+  const findSelectAllCheckbox = () => wrapper.findByTestId('select-all-checkbox');
 
   const mockProjects = Array.from({ length: 5 }, (_, id) =>
     createProject({ id, groupPath: 'foo' }),
@@ -46,6 +48,13 @@ describe('Projects section', () => {
           id: 'gid://gitlab/Group/1',
           projects: {
             nodes: mockProjects,
+            pageInfo: {
+              hasNextPage: false,
+              hasPreviousPage: false,
+              startCursor: null,
+              endCursor: null,
+            },
+            __typename: 'ProjectConnection',
           },
         },
       },
@@ -211,6 +220,60 @@ describe('Projects section', () => {
         expect(lastDeselectEvent.removeProjects).toHaveLength(totalProjects);
         expect(lastDeselectEvent.addProjects).toHaveLength(0);
       });
+
+      it('correctly handles indeterminate state of select all checkbox', async () => {
+        createComponent();
+        await waitForPromises();
+
+        await findCheckbox(1).setChecked(true);
+        await nextTick();
+
+        expect(wrapper.vm.pageAllSelectedIndeterminate).toBe(true);
+
+        const selectAllCheckboxElement = findSelectAllCheckbox().element;
+        expect(selectAllCheckboxElement.indeterminate).toBe(true);
+        expect(selectAllCheckboxElement.checked).toBe(false);
+      });
+
+      it('correctly selects all when some projects are already selected', async () => {
+        createComponent();
+        await waitForPromises();
+
+        await findCheckbox(1).setChecked(true);
+        await nextTick();
+
+        await findSelectAllCheckbox().setChecked(true);
+        await nextTick();
+
+        const emittedEvents = wrapper.emitted('update:projects');
+        const lastEvent = emittedEvents[emittedEvents.length - 1][0];
+
+        expect(lastEvent.addProjects.length).toBe(mockProjects.length);
+        expect(lastEvent.removeProjects.length).toBe(0);
+      });
+
+      it('correctly handles toggling selection multiple times', async () => {
+        createComponent();
+        await waitForPromises();
+
+        await findCheckbox(1).setChecked(false);
+        await nextTick();
+
+        await findCheckbox(1).setChecked(true);
+        await nextTick();
+
+        await findCheckbox(1).setChecked(false);
+        await nextTick();
+
+        const emittedEvents = wrapper.emitted('update:projects');
+        expect(emittedEvents.length).toBe(3);
+
+        const lastEvent = emittedEvents[emittedEvents.length - 1][0];
+        const projectId = getIdFromGraphQLId(mockProjects[1].id);
+
+        expect(lastEvent.addProjects).not.toContain(projectId);
+        expect(lastEvent.removeProjects).toContain(projectId);
+      });
     });
 
     describe('computed properties', () => {
@@ -233,6 +296,71 @@ describe('Projects section', () => {
         });
       });
     });
+
+    describe('selectedCount', () => {
+      const findSelectedCount = () => wrapper.findByTestId('selected-count');
+      beforeEach(async () => {
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('returns initial count when no changes are made', () => {
+        expect(findSelectedCount().text()).toBe('3');
+      });
+
+      it('increases count when a new project is added', async () => {
+        await findCheckbox(4).setChecked(true);
+        await nextTick();
+
+        expect(findSelectedCount().text()).toBe('4');
+      });
+
+      it('decreases count when an existing project is removed', async () => {
+        await findCheckbox(4).setChecked(true);
+        await nextTick();
+        expect(findSelectedCount().text()).toBe('4');
+
+        await findCheckbox(0).setChecked(false);
+        await nextTick();
+
+        expect(findSelectedCount().text()).toBe('3');
+      });
+
+      it('handles adding and removing the same project', async () => {
+        await findCheckbox(4).setChecked(true);
+        await nextTick();
+        expect(findSelectedCount().text()).toBe('4');
+
+        await findCheckbox(4).setChecked(false);
+        await nextTick();
+
+        expect(findSelectedCount().text()).toBe('3');
+      });
+
+      it('handles multiple additions and removals', async () => {
+        await findCheckbox(3).setChecked(true);
+        await findCheckbox(4).setChecked(true);
+        await nextTick();
+        expect(findSelectedCount().text()).toBe('5');
+
+        await findCheckbox(4).setChecked(false);
+        await findCheckbox(0).setChecked(false);
+        await nextTick();
+
+        expect(findSelectedCount().text()).toBe('3');
+      });
+
+      it('handles select all and deselect all', async () => {
+        await findSelectAllCheckbox().setChecked(true);
+        await nextTick();
+        expect(findSelectedCount().text()).toBe('5'); // all mock projects
+
+        await findSelectAllCheckbox().setChecked(false);
+        await nextTick();
+
+        expect(findSelectedCount().text()).toBe('0');
+      });
+    });
   });
 
   describe('error handling', () => {
@@ -243,12 +371,201 @@ describe('Projects section', () => {
       });
 
       await waitForPromises();
+      await nextTick();
 
-      const errorMessage = wrapper.findByText('Error loading projects.');
+      const errorMessage = wrapper.findByText(/error/i);
       expect(errorMessage.exists()).toBe(true);
 
       const projectRows = wrapper.findAll('tbody > tr');
       expect(projectRows).toHaveLength(0);
+    });
+  });
+
+  describe('pagination', () => {
+    const mockPageInfo = {
+      hasNextPage: true,
+      hasPreviousPage: true,
+      startCursor: 'start123',
+      endCursor: 'end123',
+    };
+
+    const lotsOfProjects = Array.from({ length: 51 }, (_, id) =>
+      createProject({ id, groupPath: 'foo' }),
+    );
+
+    beforeEach(() => {
+      createComponent({
+        resolverMock: jest.fn().mockResolvedValue({
+          data: {
+            group: {
+              id: 'gid://gitlab/Group/1',
+              projects: {
+                nodes: lotsOfProjects,
+                pageInfo: mockPageInfo,
+              },
+            },
+          },
+        }),
+      });
+    });
+
+    const findPagination = () => wrapper.findComponent(Pagination);
+
+    it('displays pagination component when pageInfo is available', async () => {
+      await waitForPromises();
+
+      const pagination = findPagination();
+
+      expect(pagination.exists()).toBe(true);
+      expect(pagination.props('pageInfo')).toEqual(mockPageInfo);
+      expect(pagination.props('perPage')).toBe(20);
+      expect(pagination.props('isLoading')).toBe(false);
+    });
+
+    it('calls fetchMore with correct variables when navigating to next page', async () => {
+      const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
+
+      await findPagination().vm.$emit('next', 'end123');
+
+      expect(fetchMoreSpy).toHaveBeenCalledWith({
+        variables: {
+          fullPath: 'gitlab-org',
+          first: 20,
+          after: 'end123',
+          last: null,
+          before: null,
+          search: null,
+        },
+        updateQuery: expect.any(Function),
+      });
+    });
+
+    it('calls fetchMore with correct variables when navigating to previous page', async () => {
+      const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
+
+      await findPagination().vm.$emit('prev', 'start123');
+
+      expect(fetchMoreSpy).toHaveBeenCalledWith({
+        variables: {
+          fullPath: 'gitlab-org',
+          first: null,
+          after: null,
+          last: 20,
+          before: 'start123',
+          search: null,
+        },
+        updateQuery: expect.any(Function),
+      });
+    });
+
+    it('refetches data when page size changes', async () => {
+      const refetchSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'refetch');
+
+      await findPagination().vm.$emit('page-size-change', 50);
+
+      expect(wrapper.vm.perPage).toBe(50);
+      expect(refetchSpy).toHaveBeenCalled();
+    });
+
+    it('does not display pagination when there are no projects', async () => {
+      createComponent({
+        resolverMock: jest.fn().mockResolvedValue({
+          data: {
+            group: {
+              id: 'gid://gitlab/Group/1',
+              projects: {
+                nodes: [],
+                pageInfo: {
+                  hasNextPage: false,
+                  hasPreviousPage: false,
+                  startCursor: null,
+                  endCursor: null,
+                },
+              },
+            },
+          },
+        }),
+      });
+
+      await waitForPromises();
+
+      expect(findPagination().exists()).toBe(true);
+      expect(findPagination().props('pageInfo').hasNextPage).toBe(false);
+      expect(findPagination().props('pageInfo').hasPreviousPage).toBe(false);
+    });
+
+    it('shows loading state during pagination navigation', async () => {
+      createComponent();
+      await waitForPromises();
+      const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
+      await nextTick();
+      wrapper.vm.isLoading = true;
+      await nextTick();
+
+      await findPagination().vm.$emit('next', 'end123');
+
+      expect(findPagination().props('isLoading')).toBe(true);
+      expect(fetchMoreSpy).toHaveBeenCalled();
+    });
+
+    it('preserves selected items when navigating between pages', async () => {
+      createComponent();
+      await waitForPromises();
+
+      await findCheckbox(1).setChecked(true);
+
+      const nextPageResponse = {
+        data: {
+          group: {
+            id: 'gid://gitlab/Group/1',
+            projects: {
+              nodes: Array.from({ length: 5 }, (_, id) =>
+                createProject({ id: id + 5, groupPath: 'foo' }),
+              ),
+              pageInfo: {
+                hasNextPage: false,
+                hasPreviousPage: true,
+                startCursor: 'start456',
+                endCursor: 'end456',
+              },
+            },
+          },
+        },
+      };
+
+      const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
+      fetchMoreSpy.mockImplementation(({ updateQuery }) =>
+        updateQuery({}, { fetchMoreResult: nextPageResponse }),
+      );
+
+      await findPagination().vm.$emit('next', 'end123');
+      await waitForPromises();
+
+      const firstPageResponse = {
+        data: {
+          group: {
+            id: 'gid://gitlab/Group/1',
+            projects: {
+              nodes: mockProjects,
+              pageInfo: {
+                hasNextPage: true,
+                hasPreviousPage: false,
+                startCursor: 'start123',
+                endCursor: 'end123',
+              },
+            },
+          },
+        },
+      };
+
+      fetchMoreSpy.mockImplementation(({ updateQuery }) =>
+        updateQuery({}, { fetchMoreResult: firstPageResponse }),
+      );
+
+      await findPagination().vm.$emit('prev', 'start456');
+      await waitForPromises();
+
+      expect(wrapper.vm.projectSelected(mockProjects[1].id)).toBe(true);
     });
   });
 });

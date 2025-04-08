@@ -138,6 +138,7 @@ continue to take precedence over the new pipeline execution policy.`),
   projectsDescription: s__(
     'ComplianceFrameworks|All selected projects will be covered by the framework’s selected requirements and the policies.',
   ),
+  selectedCount: s__('ComplianceFrameworks|Selected projects'),
   projectsInfoText: s__(
     'ComplianceFrameworks|Go to the %{linkStart}compliance center / project page%{linkEnd} to apply projects for this framework.',
   ),
