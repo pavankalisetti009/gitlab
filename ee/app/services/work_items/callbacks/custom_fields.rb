@@ -44,7 +44,7 @@ module WorkItems
         elsif custom_field.field_type_number?
           update_number_field_value(custom_field, field_params[:number_value])
         elsif custom_field.field_type_select?
-          update_select_field_value(custom_field, field_params[:selected_option_ids].map(&:to_i))
+          update_select_field_value(custom_field, Array(field_params[:selected_option_ids]).map(&:to_i))
         else
           raise_error "Unsupported field type: #{custom_field.field_type}"
         end
