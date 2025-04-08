@@ -30,6 +30,25 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
   describe '#after_save' do
     subject(:after_save_callback) { callback.after_save }
 
+    context "when params have no values" do
+      let(:params) do
+        [
+          { custom_field_id: select_field.id },
+          { custom_field_id: multi_select_field.id },
+          { custom_field_id: text_field.id },
+          { custom_field_id: number_field.id }
+        ]
+      end
+
+      it "does not raise any error" do
+        expect { after_save_callback }.not_to raise_error
+      end
+
+      it "does not creates system notes" do
+        expect { after_save_callback }.not_to change { Note.count }
+      end
+    end
+
     it 'sets the custom field values for the work item' do
       after_save_callback
 
