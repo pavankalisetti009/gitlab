@@ -6364,6 +6364,9 @@ msgstr ""
 msgid "Amazon Q"
 msgstr ""
 
+msgid "Amazon Q connectivity check failed: %{message}"
+msgstr ""
+
 msgid "AmazonQ|Active cloud connector token not found."
 msgstr ""
 
@@ -12348,6 +12351,9 @@ msgid "Checking branch validity…"
 msgstr ""
 
 msgid "Checking group path availability…"
+msgstr ""
+
+msgid "Checking if %{message} failed: %{error}"
 msgstr ""
 
 msgid "Checking if merge request can be merged…"
@@ -27390,6 +27396,9 @@ msgstr ""
 msgid "GitLab container registry API not supported"
 msgstr ""
 
+msgid "GitLab credentials used by Amazon Q are valid"
+msgstr ""
+
 msgid "GitLab detected an attempt to sign in to your %{host} account using an incorrect verification code"
 msgstr ""
 
@@ -27412,6 +27421,9 @@ msgid "GitLab group: %{source_link}"
 msgstr ""
 
 msgid "GitLab informs you if a new version is available. %{link_start}What information does GitLab Inc. collect?%{link_end}"
+msgstr ""
+
+msgid "GitLab instance is reachable by Amazon Q"
 msgstr ""
 
 msgid "GitLab is a complete DevOps platform, delivered as a single application, fundamentally changing the way Development, Security, and Ops teams collaborate"
@@ -63519,6 +63531,9 @@ msgid "Unknown"
 msgstr ""
 
 msgid "Unknown Error"
+msgstr ""
+
+msgid "Unknown error"
 msgstr ""
 
 msgid "Unknown format"

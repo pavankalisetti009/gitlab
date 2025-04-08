@@ -13,17 +13,23 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :c
   describe '#initialize' do
     subject(:service) { described_class.new(user: user) }
 
+    let(:default_probes) do
+      [
+        an_instance_of(CloudConnector::StatusChecks::Probes::LicenseProbe),
+        an_instance_of(CloudConnector::StatusChecks::Probes::HostProbe),
+        an_instance_of(CloudConnector::StatusChecks::Probes::HostProbe),
+        an_instance_of(CloudConnector::StatusChecks::Probes::AccessProbe),
+        an_instance_of(CloudConnector::StatusChecks::Probes::TokenProbe),
+        an_instance_of(CloudConnector::StatusChecks::Probes::EndToEndProbe)
+      ]
+    end
+
     context 'when no probes are passed' do
       it 'creates default probes' do
         service_probes = service.probes
 
         expect(service_probes.count).to eq(6)
-        expect(service_probes[0]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::LicenseProbe)
-        expect(service_probes[1]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::HostProbe)
-        expect(service_probes[2]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::HostProbe)
-        expect(service_probes[3]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::AccessProbe)
-        expect(service_probes[4]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::TokenProbe)
-        expect(service_probes[5]).to be_an_instance_of(CloudConnector::StatusChecks::Probes::EndToEndProbe)
+        expect(service_probes).to match(default_probes)
       end
     end
 
@@ -43,6 +49,20 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :c
         expect(service_probes[2]).to be_an_instance_of(
           CloudConnector::StatusChecks::Probes::SelfHosted::CodeSuggestionsLicenseProbe
         )
+      end
+    end
+
+    context 'when Amazon Q is connected' do
+      before do
+        allow(::Ai::AmazonQ).to receive(:connected?).and_return(true)
+      end
+
+      it 'adds Amazon Q probes to the list of probes' do
+        amazon_q_probes = default_probes + [
+          an_instance_of(CloudConnector::StatusChecks::Probes::AmazonQ::EndToEndProbe)
+        ]
+
+        expect(service.probes).to match(amazon_q_probes)
       end
     end
 
@@ -113,6 +133,25 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :c
         expect(result).to be_a(ServiceResponse)
         expect(result.success?).to be false
         expect(result[:probe_results].size).to eq(2)
+        expect(result.message).to eq('Some probes failed')
+      end
+    end
+
+    context 'when a probe returns multiple results' do
+      let(:probe_with_multiple_results) { succeeded_probe }
+      let(:probes) { [failed_probe, probe_with_multiple_results] }
+
+      it 'executes all probes and returns unsuccessful status result' do
+        allow(probe_with_multiple_results).to receive(:execute).and_return([
+          ::CloudConnector::StatusChecks::Probes::ProbeResult.new('test', true, 'success'),
+          ::CloudConnector::StatusChecks::Probes::ProbeResult.new('test', false, 'failure')
+        ])
+
+        result = service.execute
+
+        expect(result).to be_a(ServiceResponse)
+        expect(result.success?).to be false
+        expect(result[:probe_results].map(&:message)).to contain_exactly('NOK', 'success', 'failure')
         expect(result.message).to eq('Some probes failed')
       end
     end
