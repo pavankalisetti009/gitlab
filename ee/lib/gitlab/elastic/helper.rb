@@ -12,7 +12,8 @@ module Gitlab
         User,
         Wiki,
         Project,
-        WorkItem
+        WorkItem,
+        Vulnerability
       ].freeze
 
       INDEXED_CLASSES = (ES_SEPARATE_CLASSES + [Repository]).freeze
