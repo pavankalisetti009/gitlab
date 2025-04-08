@@ -296,7 +296,7 @@ export default {
           v-if="canCreateEpic && glFeatures.namespaceLevelWorkItems"
           class="gl-grow"
           is-group
-          :work-item-type-name="$options.WORK_ITEM_TYPE_ENUM_EPIC"
+          :preselected-work-item-type="$options.WORK_ITEM_TYPE_ENUM_EPIC"
           @workItemCreated="handleWorkItemCreated"
         />
         <gl-button

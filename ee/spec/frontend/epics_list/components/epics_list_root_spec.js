@@ -355,7 +355,7 @@ describe('EpicsListRoot', () => {
     expect(findCreateWorkItemModal().exists()).toBe(true);
     expect(findCreateWorkItemModal().props()).toMatchObject({
       isGroup: true,
-      workItemTypeName: WORK_ITEM_TYPE_ENUM_EPIC,
+      preselectedWorkItemType: WORK_ITEM_TYPE_ENUM_EPIC,
     });
   });
 

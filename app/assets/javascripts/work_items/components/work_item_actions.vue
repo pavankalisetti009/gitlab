@@ -791,7 +791,7 @@ export default {
       :always-show-work-item-type-select="!isGroup"
       :visible="isCreateWorkItemModalVisible"
       :related-item="relatedItemData"
-      :work-item-type-name="workItemTypeNameEnum"
+      :preselected-work-item-type="workItemTypeNameEnum"
       :show-project-selector="!isEpic"
       :is-group="isGroup"
       hide-button
