@@ -9,7 +9,7 @@ module Gitlab
         include ::Gitlab::Llm::Concerns::Logger
         include Langsmith::RunHelpers
 
-        DEFAULT_TIMEOUT = 30.seconds
+        DEFAULT_TIMEOUT = 60.seconds
 
         ConnectionError = Class.new(StandardError)
 
