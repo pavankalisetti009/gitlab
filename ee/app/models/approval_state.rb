@@ -322,6 +322,8 @@ class ApprovalState
     strong_memoize(:wrapped_rules) do
       rules = if merge_request.merged?
                 merge_request.applicable_post_merge_approval_rules
+              elsif Feature.enabled?(:v2_approval_rules, project)
+                merge_request.v2_approval_rules
               else
                 merge_request.approval_rules.applicable_to_branch(target_branch)
               end

@@ -1903,4 +1903,19 @@ RSpec.describe ApprovalState do
       end
     end
   end
+
+  describe 'v2_approval_rules' do
+    let(:v2_approval_rule) { create(:merge_requests_approval_rule, :from_merge_request, project_id: project.id, merge_request: merge_request) }
+
+    before do
+      stub_feature_flags(v2_approval_rules: true)
+    end
+
+    it 'returns one regular rule in wrapper' do
+      v2_approval_rule
+
+      expect(subject.wrapped_approval_rules.size).to eq(1)
+      expect(subject.wrapped_approval_rules.map(&:approval_rule)).to eq([v2_approval_rule])
+    end
+  end
 end

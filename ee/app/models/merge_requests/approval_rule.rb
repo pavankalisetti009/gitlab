@@ -41,6 +41,18 @@ module MergeRequests
       enum :origin, { group: 0, project: 1, merge_request: 2 }, prefix: :originates_from
     end
 
+    def approvers
+      []
+    end
+
+    def from_scan_result_policy?
+      false
+    end
+
+    def report_type
+      nil
+    end
+
     private
 
     def ensure_single_sharding_key
