@@ -86,6 +86,10 @@ module Elastic
               sha_normalizer: {
                 type: "custom",
                 filter: ["lowercase"]
+              },
+              lower_case_normalizer: {
+                type: "custom",
+                filter: ["lowercase"]
               }
             }
           }
