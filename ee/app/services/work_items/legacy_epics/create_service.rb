@@ -39,20 +39,16 @@ module WorkItems
       private
 
       def create_service
-        if group.work_item_epics_ssot_enabled?
-          epic_work_item_type = ::WorkItems::Type.default_by_type(:epic)
-          transformed_params, widget_params = extract_widget_params(epic_work_item_type)
+        epic_work_item_type = ::WorkItems::Type.default_by_type(:epic)
+        transformed_params, widget_params = extract_widget_params(epic_work_item_type)
 
-          ::WorkItems::CreateService.new(
-            container: group,
-            perform_spam_check: perform_spam_check,
-            current_user: current_user,
-            params: transformed_params,
-            widget_params: widget_params
-          )
-        else
-          ::Epics::CreateService.new(group: group, current_user: current_user, params: params)
-        end
+        ::WorkItems::CreateService.new(
+          container: group,
+          perform_spam_check: perform_spam_check,
+          current_user: current_user,
+          params: transformed_params,
+          widget_params: widget_params
+        )
       end
 
       def extract_widget_params(work_item_type)
@@ -116,10 +112,6 @@ module WorkItems
       end
 
       def transform_result(result)
-        # We check if the result is an epic in case we called the legacy service.
-        # Can be removed when removing the work_item_epics_ssot feature flag check
-        return result if result.is_a?(Epic)
-
         # The legacy service Epics::CreateService returns an epic record instead of a service response
         # so in case of failing to create the work item we create a new epic that includes the service errors
         new_epic = result.payload[:work_item]&.reload&.synced_epic || Epic.new

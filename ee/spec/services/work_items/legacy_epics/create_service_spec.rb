@@ -317,56 +317,5 @@ RSpec.describe WorkItems::LegacyEpics::CreateService, feature_category: :team_pl
         end
       end
     end
-
-    context 'when work_item_epics_ssot feature flag is disabled' do
-      before do
-        stub_feature_flags(work_item_epics_ssot: false)
-      end
-
-      it_behaves_like 'success' do
-        let(:parent_not_found_error) { 'No matching epic found. Make sure that you are adding a valid epic URL.' }
-      end
-
-      it_behaves_like 'when without_rate_limiting argument is present' do
-        let(:delegated_service) { ::Epics::CreateService }
-      end
-
-      it 'calls Epics::CreateService' do
-        allow(Epics::CreateService).to receive(:new).and_call_original
-        expect(Epics::CreateService)
-          .to receive(:new).with(group: group, current_user: user, params: params)
-                           .and_call_original
-
-        execute
-      end
-
-      context 'when response include errors' do
-        context 'with epic validation errors' do
-          let_it_be(:confidential_parent) { create(:epic, :with_synced_work_item, :confidential, group: group) }
-          let(:params) { super().merge(parent: confidential_parent) }
-
-          it 'returns epic with errors' do
-            new_epic = execute
-            expect(new_epic.errors.full_messages)
-              .to include(
-                "##{new_epic.iid} cannot be added: cannot assign a non-confidential epic to a " \
-                  "confidential parent. Make the epic confidential and try again."
-              )
-          end
-        end
-
-        context 'when work item creation returns errors' do
-          before do
-            allow_next_instance_of(WorkItem) do |instance|
-              allow(instance).to receive(:save!).and_raise(StandardError.new('some error'))
-            end
-          end
-
-          it 'does not persist epic or work item' do
-            expect { execute }.to raise_error(StandardError)
-          end
-        end
-      end
-    end
   end
 end
