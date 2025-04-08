@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlTableLite, GlSkeletonLoader, GlEmptyState, GlBreadcrumb, GlPopover } from '@gitlab/ui';
+import { GlTableLite, GlSkeletonLoader, GlBreadcrumb, GlPopover } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -12,6 +12,7 @@ import GroupToolCoverageIndicator from 'ee/security_inventory/components/group_t
 import ProjectToolCoverageIndicator from 'ee/security_inventory/components/project_tool_coverage_indicator.vue';
 import SubgroupsAndProjectsQuery from 'ee/security_inventory/graphql/subgroups_and_projects.query.graphql';
 import projectVulnerabilityCounts from 'ee/security_inventory/components/project_vulnerability_counts.vue';
+import EmptyState from 'ee/security_inventory/components/empty_state.vue';
 import { subgroupsAndProjects } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -49,7 +50,7 @@ describe('InventoryDashboard', () => {
   const createFullComponent = createComponentFactory(mountExtended);
   const findTable = () => wrapper.findComponent(GlTableLite);
   const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
-  const findEmptyState = () => wrapper.findComponent(GlEmptyState);
+  const findEmptyState = () => wrapper.findComponent(EmptyState);
   const findTableRows = () => findTable().findAll('tbody tr');
   const findNthTableRow = (n) => findTableRows().at(n);
   const findBreadcrumb = () => wrapper.findComponent(GlBreadcrumb);
@@ -83,7 +84,7 @@ describe('InventoryDashboard', () => {
   });
 
   describe('Empty state', () => {
-    it('renders the empty state when there are no children', async () => {
+    it('renders the empty component when there are no children', async () => {
       const emptyResolver = jest.fn().mockResolvedValue({
         data: { group: { descendantGroups: { nodes: [] }, projects: { nodes: [] } } },
       });
@@ -91,7 +92,6 @@ describe('InventoryDashboard', () => {
       await waitForPromises();
 
       expect(findEmptyState().exists()).toBe(true);
-      expect(findEmptyState().props('title')).toBe('No projects found');
     });
   });
 

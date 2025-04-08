@@ -4,7 +4,6 @@ import {
   GlIcon,
   GlButton,
   GlSkeletonLoader,
-  GlEmptyState,
   GlTooltipDirective,
   GlBreadcrumb,
   GlLink,
@@ -22,6 +21,7 @@ import VulnerabilityIndicator from './vulnerability_indicator.vue';
 import ProjectVulnerabilityCounts from './project_vulnerability_counts.vue';
 import ProjectToolCoverageIndicator from './project_tool_coverage_indicator.vue';
 import GroupToolCoverageIndicator from './group_tool_coverage_indicator.vue';
+import EmptyState from './empty_state.vue';
 
 export default {
   components: {
@@ -30,7 +30,6 @@ export default {
     ProjectAvatar,
     GlButton,
     GlSkeletonLoader,
-    GlEmptyState,
     GlBreadcrumb,
     GlLink,
     VulnerabilityIndicator,
@@ -38,16 +37,13 @@ export default {
     ProjectVulnerabilityCounts,
     GroupToolCoverageIndicator,
     ProjectToolCoverageIndicator,
+    EmptyState,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
   inject: ['groupFullPath', 'newProjectPath'],
   i18n: {
-    emptyStateTitle: s__('SecurityInventory|No projects found'),
-    emptyStateDescription: s__(
-      'SecurityInventory|Add projects to this group to start tracking their security posture.',
-    ),
     errorFetchingChildren: s__(
       'SecurityInventory||An error occurred while fetching subgroups and projects. Please try again.',
     ),
@@ -218,16 +214,7 @@ export default {
     <template v-if="isLoading">
       <gl-skeleton-loader />
     </template>
-    <template v-else-if="!hasChildren">
-      <gl-empty-state
-        :title="$options.i18n.emptyStateTitle"
-        :description="$options.i18n.emptyStateDescription"
-        :svg-path="$options.EMPTY_SUBGROUP_SVG"
-        :svg-height="150"
-        :primary-button-text="__('New Project')"
-        :primary-button-link="newProjectPath"
-      />
-    </template>
+    <template v-else-if="!hasChildren"><empty-state /></template>
     <gl-table-lite v-else :items="children" :fields="$options.fields" hover>
       <template #cell(name)="{ item }">
         <component
