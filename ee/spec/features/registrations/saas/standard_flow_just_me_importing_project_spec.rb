@@ -11,7 +11,7 @@ RSpec.describe 'Standard flow for user picking just me and importing a project',
   end
 
   with_them do
-    it 'registers the user and starts to import a project' do
+    it 'registers the user and starts to import a GitHub project' do
       sign_up_method.call
 
       expect_to_see_welcome_form
@@ -30,6 +30,30 @@ RSpec.describe 'Standard flow for user picking just me and importing a project',
 
       expect_to_be_in_import_process
     end
+  end
+
+  it 'registers the user and starts to import a GitLab project' do
+    regular_sign_up
+
+    expect_to_see_welcome_form
+
+    fills_in_welcome_form
+    click_on 'Continue'
+
+    expect_to_see_group_and_project_creation_form
+
+    click_on 'Import'
+
+    expect_to_see_import_form
+
+    fills_in_import_form
+    click_on 'GitLab export'
+
+    expect_to_be_in_gitlab_import_process
+  end
+
+  def expect_to_be_in_gitlab_import_process
+    expect(page).to have_content('Import an exported GitLab project')
   end
 
   def fills_in_welcome_form

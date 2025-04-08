@@ -16,7 +16,12 @@ const importButtonsSubmit = () => {
 
   const clickHandler = (e) => {
     e.preventDefault();
-    importUrlField.value = e.currentTarget.getAttribute('href');
+
+    // GitLab import link is on the data-ref and not on href directly
+    importUrlField.value = e.currentTarget.classList.contains('js-import-gitlab-project-btn')
+      ? e.currentTarget.dataset.href
+      : e.currentTarget.getAttribute('href');
+
     submit.click();
   };
 
