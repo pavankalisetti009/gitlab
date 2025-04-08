@@ -19,8 +19,6 @@ module Dependencies
     attr_reader :author, :exportable, :params
 
     def execute
-      return cyclonedx_ff_error unless cyclonedx_export_available?
-
       if dependency_list_export.persisted?
         Dependencies::ExportWorker.perform_async(dependency_list_export.id)
 
@@ -60,16 +58,6 @@ module Dependencies
           property: exportable.class.name
         }
       )
-    end
-
-    def cyclonedx_ff_error
-      ServiceResponse.error(message: 'cyclonedx_dependency_list_export feature flag is not enabled')
-    end
-
-    def cyclonedx_export_available?
-      return true unless params[:export_type] == :cyclonedx_1_6_json
-
-      Feature.enabled?(:cyclonedx_dependency_list_export, exportable)
     end
   end
 end

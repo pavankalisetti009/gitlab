@@ -90,25 +90,11 @@ describe('DependencyExportDropdown component', () => {
     beforeEach(() => {
       factory({
         props: { container: NAMESPACE_PROJECT },
-        provide: { glFeatures: { cyclonedxDependencyListExport: true } },
       });
     });
 
     itHasCorrectLoadingLogic(() => findDisclosure());
     itShowsDisclosureWithItems([dependencyListItem, csvItem, cyclonedxItem]);
-
-    describe('when cyclonedxDependencyListExport feature flag is disabled', () => {
-      beforeEach(() => {
-        factory({
-          props: { container: NAMESPACE_PROJECT },
-          provide: { glFeatures: { cyclonedxDependencyListExport: false } },
-        });
-      });
-
-      it('does not show cyclonedx item', () => {
-        expect(wrapper.findByTestId(cyclonedxItem.testId).exists()).toBe(false);
-      });
-    });
   });
 
   describe('when container is a group', () => {
