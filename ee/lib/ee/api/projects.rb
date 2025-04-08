@@ -7,20 +7,6 @@ module EE
 
       prepended do
         resource :projects do
-          desc 'Restore a project' do
-            success ::API::Entities::Project
-          end
-          post ':id/restore', feature_category: :system_access do
-            authorize!(:remove_project, user_project)
-            break not_found! unless user_project.feature_available?(:adjourned_deletion_for_projects_and_groups)
-
-            result = ::Projects::RestoreService.new(user_project, current_user).execute
-            if result[:status] == :success
-              present user_project, with: ::API::Entities::Project, current_user: current_user
-            else
-              render_api_error!(result[:message], 400)
-            end
-          end
           segment ':id/audit_events', feature_category: :audit_events do
             before do
               authorize! :read_project_audit_events, user_project
