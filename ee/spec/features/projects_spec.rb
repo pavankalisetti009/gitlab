@@ -47,6 +47,7 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
 
     context 'when adjourned_deletion_for_projects_and_groups is enabled at the instance level' do
       before do
+        stub_feature_flags(downtier_delayed_deletion: false)
         stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
       end
 
@@ -73,7 +74,6 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
           before do
             sign_in user
             visit edit_project_path(project)
-            stub_feature_flags(downtier_delayed_deletion: false)
           end
 
           it 'deletes project delayed and is not restorable', :freeze_time do
@@ -106,6 +106,7 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
     context 'when adjourned_deletion_for_projects_and_groups is not enabled at the instance level' do
       before do
         stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
+        stub_feature_flags(downtier_delayed_deletion: false)
         sign_in user
         visit edit_project_path(project)
       end

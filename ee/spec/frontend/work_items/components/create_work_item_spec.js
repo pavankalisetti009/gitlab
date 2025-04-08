@@ -22,6 +22,7 @@ import {
   createWorkItemMutationResponse,
   createWorkItemQueryResponse,
 } from 'jest/work_items/mock_data';
+import { namespaceWorkItemsWithoutEpicSupport } from '../mock_data';
 
 Vue.use(VueApollo);
 
@@ -69,6 +70,7 @@ describe('EE Create work item component', () => {
   const createComponent = ({
     props = {},
     mutationHandler = createWorkItemSuccessHandler,
+    namespaceHandler = namespaceWorkItemTypesHandler,
     workItemTypeName = WORK_ITEM_TYPE_ENUM_EPIC,
     customFieldsFeature = false,
   } = {}) => {
@@ -76,7 +78,7 @@ describe('EE Create work item component', () => {
       [
         [workItemByIidQuery, workItemQuerySuccessHandler],
         [createWorkItemMutation, mutationHandler],
-        [namespaceWorkItemTypesQuery, namespaceWorkItemTypesHandler],
+        [namespaceWorkItemTypesQuery, namespaceHandler],
       ],
       resolvers,
     );
@@ -207,6 +209,49 @@ describe('EE Create work item component', () => {
       expect(createWorkItemSuccessHandler).toHaveBeenCalledWith({
         input: expect.objectContaining({
           vulnerabilityId: 'gid://gitlab/Vulnerability/22',
+        }),
+      });
+    });
+  });
+
+  describe('Creating work item with custom fields passes correct input to mutation', () => {
+    const customFieldsNamespaceWorkItemTypesResponse = {
+      ...namespaceWorkItemsWithoutEpicSupport,
+      widgetDefinitions: [
+        ...namespaceWorkItemsWithoutEpicSupport.data.workspace.workItemTypes.nodes[0]
+          .widgetDefinitions,
+        {
+          type: 'CUSTOM_FIELDS',
+          customFieldValues: [],
+          __typename: 'WorkItemWidgetDefinitionCustomFields',
+        },
+      ],
+      __typename: 'WorkItemType',
+    };
+
+    it('when creating issue with custom field values', async () => {
+      const customNamespaceWorkItemTypesHandler = jest
+        .fn()
+        .mockResolvedValue(customFieldsNamespaceWorkItemTypesResponse);
+
+      createComponent({
+        workItemTypeName: WORK_ITEM_TYPE_ENUM_ISSUE,
+        customFieldsFeature: true,
+        namespaceHandler: customNamespaceWorkItemTypesHandler,
+      });
+      await waitForPromises();
+
+      await updateWorkItemTitle();
+      await submitCreateForm();
+
+      expect(createWorkItemSuccessHandler).toHaveBeenCalledWith({
+        input: expect.objectContaining({
+          customFieldsWidget: [
+            { customFieldId: '1-number', numberValue: 5 },
+            { customFieldId: '1-text', textValue: 'Sample text' },
+            { customFieldId: '1-select', selectedOptionIds: ['select-1'] },
+            { customFieldId: '1-multi-select', selectedOptionIds: ['select-1', 'select-2'] },
+          ],
         }),
       });
     });

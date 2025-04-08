@@ -134,13 +134,15 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
 
             requirement_controls = requirement.compliance_requirements_controls.order(id: :asc)
 
-            requirement_controls.each_with_index do |control, i|
+            expect(requirement_controls.count).to eq(controls.count)
+            controls.each do |expected_control|
+              control = requirement_controls.find { |c| c.name == expected_control[:name] }
               expect(control).to have_attributes(
-                name: controls[i][:name],
-                expression: controls[i][:expression],
-                control_type: controls[i][:control_type],
-                external_url: controls[i][:external_url],
-                secret_token: controls[i][:secret_token]
+                name: expected_control[:name],
+                expression: expected_control[:expression],
+                control_type: expected_control[:control_type],
+                external_url: expected_control[:external_url],
+                secret_token: expected_control[:secret_token]
               )
             end
           end
@@ -211,8 +213,10 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
             mutate
 
             expect(mutation_response['errors'])
-              .to contain_exactly "Failed to add compliance requirement control project_visibility_not_internal: " \
-                "Validation failed: Expression property '/value' is not one of: [\"private\", \"internal\", \"public\"]"
+              .to contain_exactly(
+                "Control 'project_visibility_not_internal': Failed to update compliance requirement control. " \
+                  "Error: Expression property '/value' is not one of: [\"private\", \"internal\", \"public\"]"
+              )
           end
 
           it 'does not update the requirement' do
