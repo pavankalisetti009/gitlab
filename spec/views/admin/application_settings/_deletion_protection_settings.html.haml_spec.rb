@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'admin/application_settings/_deletion_protection_settings' do
+RSpec.describe 'admin/application_settings/_deletion_protection_settings', feature_category: :system_access do
   let_it_be(:application_setting) do
     build(
       :application_setting,
@@ -14,22 +14,8 @@ RSpec.describe 'admin/application_settings/_deletion_protection_settings' do
     assign(:application_setting, application_setting)
   end
 
-  context 'when license feature is available' do
-    before do
-      stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-      stub_feature_flags(downtier_delayed_deletion: false)
-    end
-
-    it 'renders the deletion protection settings app root' do
-      render
-
-      expect(rendered).to have_selector('#js-admin-deletion-protection-settings')
-    end
-  end
-
   context 'when feature flag is enabled' do
     before do
-      stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
       stub_feature_flags(downtier_delayed_deletion: true)
     end
 

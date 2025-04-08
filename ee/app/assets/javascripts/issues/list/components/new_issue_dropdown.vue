@@ -49,7 +49,7 @@ export default {
     >
       <gl-disclosure-dropdown-item :item="newIssueItem" />
       <create-work-item-modal
-        :work-item-type-name="$options.WORK_ITEM_TYPE_ENUM_OBJECTIVE"
+        :preselected-work-item-type="$options.WORK_ITEM_TYPE_ENUM_OBJECTIVE"
         as-dropdown-item
         @workItemCreated="$emit('workItemCreated')"
       />

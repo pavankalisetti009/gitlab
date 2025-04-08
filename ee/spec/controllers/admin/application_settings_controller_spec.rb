@@ -267,13 +267,6 @@ RSpec.describe Admin::ApplicationSettingsController do
       it_behaves_like 'settings for registration features'
     end
 
-    context 'with deletion adjourned period' do
-      let(:settings) { { deletion_adjourned_period: 6 } }
-      let(:license_feature) { :adjourned_deletion_for_projects_and_groups }
-
-      it_behaves_like 'settings for licensed features'
-    end
-
     context 'with additional email footer' do
       let(:settings) { { email_additional_text: 'scary legal footer' } }
       let(:license_feature) { :email_additional_text }

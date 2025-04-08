@@ -187,20 +187,6 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     end
   end
 
-  describe '.deletion_protection_data' do
-    let_it_be(:application_setting) { build(:application_setting) }
-
-    before do
-      application_setting.deletion_adjourned_period = 1
-
-      helper.instance_variable_set(:@application_setting, application_setting)
-    end
-
-    subject { helper.deletion_protection_data }
-
-    it { is_expected.to eq({ deletion_adjourned_period: 1 }) }
-  end
-
   describe '.git_abuse_rate_limit_data', feature_category: :insider_threat do
     let_it_be(:application_setting) { build(:application_setting) }
 

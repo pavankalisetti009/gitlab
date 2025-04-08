@@ -173,7 +173,7 @@ export default {
         <create-work-item-modal
           :is-group="isGroup"
           class="gl-grow"
-          :work-item-type-name="workItemTypeName"
+          :preselected-work-item-type="workItemTypeName"
           :always-show-work-item-type-select="showNewIssueLink && !isEpic"
           :allowed-work-item-types="allowedWorkItemTypes"
           @workItemCreated="incrementUpdateCount"
@@ -190,7 +190,7 @@ export default {
           <create-work-item-modal
             class="gl-grow"
             :is-group="isGroup"
-            :work-item-type-name="workItemTypeName"
+            :preselected-work-item-type="workItemTypeName"
             @workItemCreated="incrementUpdateCount"
           />
         </template>
@@ -212,7 +212,7 @@ export default {
           <create-work-item-modal
             class="gl-grow"
             :is-group="isGroup"
-            :work-item-type-name="$options.WORK_ITEM_TYPE_ENUM_EPIC"
+            :preselected-work-item-type="$options.WORK_ITEM_TYPE_ENUM_EPIC"
             @workItemCreated="incrementUpdateCount"
           />
         </template>
