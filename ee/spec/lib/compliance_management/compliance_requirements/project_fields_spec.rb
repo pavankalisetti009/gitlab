@@ -50,7 +50,10 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         'scanner_fuzz_testing_running',
         'scanner_code_quality_running',
         'scanner_iac_running',
+        'version_control_enabled',
+        'issue_tracking_enabled',
         'code_changes_requires_code_owners',
+        'stale_branch_cleanup_enabled',
         'reset_approvals_on_push',
         'status_checks_required',
         'require_branch_up_to_date',
@@ -58,7 +61,17 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         'require_linear_history',
         'restrict_push_merge_access',
         'force_push_disabled',
-        'terraform_enabled'
+        'terraform_enabled',
+        'branch_deletion_disabled',
+        'review_and_archive_stale_repos',
+        'review_and_remove_inactive_users',
+        'minimum_number_of_admins',
+        'require_mfa_for_contributors',
+        'require_mfa_at_org_level',
+        'ensure_2_admins_per_repo',
+        'strict_permissions_for_repo',
+        'secure_webhooks',
+        'restricted_build_access'
       )
     end
 
@@ -470,12 +483,61 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       end
     end
 
+    describe '#version_control_enabled?' do
+      it 'delegates to project#repository_exists?' do
+        expect(project.repository).to receive(:exists?)
+
+        described_class.map_field(project, 'version_control_enabled')
+      end
+    end
+
+    describe '#issue_tracking_enabled' do
+      it 'returns true if all of the merged MRs have related issues' do
+        allow(Project).to receive(:owners).and_return([create(:user)])
+        issue = create(:issue, project: project)
+        create(:merge_request, description: "Fix #{issue.to_reference}")
+
+        expect(described_class.map_field(project, 'issue_tracking_enabled')).to be true
+      end
+
+      it 'returns false if any of the merged MRs do not have a related issue' do
+        allow(Project).to receive(:owners).and_return([create(:user)])
+        create(:merge_request, :merged, source_project: project, target_project: project)
+
+        expect(described_class.map_field(project, 'issue_tracking_enabled')).to be false
+      end
+    end
+
     describe '#code_changes_requires_code_owners?' do
       it 'delegates to ProtectedBranch.branch_requires_code_owner_approval?' do
         expect(ProtectedBranch).to receive(:branch_requires_code_owner_approval?)
                                      .with(project, nil)
 
         described_class.map_field(project, 'code_changes_requires_code_owners')
+      end
+    end
+
+    describe '#stale_branch_cleanup_enabled?' do
+      let(:project) { instance_double(Project, repository: repository) }
+      let(:repository) { instance_double(Repository) }
+      let(:branches_finder) { instance_double(BranchesFinder) }
+
+      before do
+        allow(BranchesFinder).to receive(:new)
+          .with(repository, { per_page: 1, sort: 'updated_asc' })
+          .and_return(branches_finder)
+        allow(branches_finder).to receive(:execute)
+          .with(gitaly_pagination: true)
+          .and_return([])
+      end
+
+      it 'delegates to BranchesFinder' do
+        described_class.map_field(project, 'stale_branch_cleanup_enabled')
+
+        expect(BranchesFinder).to have_received(:new)
+          .with(repository, { per_page: 1, sort: 'updated_asc' })
+        expect(branches_finder).to have_received(:execute)
+          .with(gitaly_pagination: true)
       end
     end
 
@@ -568,6 +630,200 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       context 'when terraform states do not exist' do
         it 'returns false' do
           expect(described_class.map_field(project, 'terraform_enabled')).to be false
+        end
+      end
+    end
+
+    describe '#branch_deletion_disabled?' do
+      it 'returns true if any protected branches exist' do
+        create(:protected_branch, project: project)
+
+        expect(described_class.map_field(project.reload, 'branch_deletion_disabled')).to be true
+      end
+
+      it 'returns false if no protected branches exist' do
+        expect(described_class.map_field(project.reload, 'branch_deletion_disabled')).to be false
+      end
+    end
+
+    describe '#review_and_archive_stale_repos?' do
+      it 'returns true if the project is archived' do
+        project = build(:project, :archived)
+        expect(described_class.map_field(project, 'review_and_archive_stale_repos')).to be true
+      end
+
+      it 'returns true if the project has been active in 6 months' do
+        project = build(:project, last_activity_at: 5.months.ago)
+        expect(described_class.map_field(project, 'review_and_archive_stale_repos')).to be true
+      end
+
+      it 'returns false if the project has been inactive for 6 months and is not archived' do
+        project = build(:project, last_activity_at: 7.months.ago)
+        expect(described_class.map_field(project, 'review_and_archive_stale_repos')).to be false
+      end
+    end
+
+    describe '#review_and_remove_inactive_users?' do
+      let(:project1) { build(:project) }
+
+      before do
+        project1.owner.update!(last_activity_on: Time.zone.now)
+      end
+
+      it 'returns true if all of the project members have been active in the last 90 days' do
+        expect(described_class.map_field(project1, 'review_and_remove_inactive_users')).to be true
+      end
+
+      it 'returns false if any of the project members have nil activity values' do
+        user = create(:user, last_activity_on: nil)
+        project1.team.add_developer(user)
+
+        expect(described_class.map_field(project1, 'review_and_remove_inactive_users')).to be false
+      end
+
+      it 'returns false if any of the project members have been inactive for 90 days' do
+        user1 = create(:user, last_activity_on: 91.days.ago)
+        project1.team.add_developer(user1)
+
+        expect(described_class.map_field(project1, 'review_and_remove_inactive_users')).to be false
+      end
+    end
+
+    describe '#minimum_number_of_admins?' do
+      let(:project1) { build(:project) }
+
+      it 'returns true if the project has only one admin (owner/maintainer)' do
+        project1.team.add_maintainer(create(:user))
+        expect(described_class.map_field(project1, 'minimum_number_of_admins')).to be true
+      end
+
+      it 'returns true if the project has more users of developers or below role than admins (owners/maintainers)' do
+        project1.team.add_maintainer(create(:user))
+        project1.team.add_developer(create(:user))
+        project1.team.add_reporter(create(:user))
+
+        expect(described_class.map_field(project1, 'minimum_number_of_admins')).to be true
+      end
+
+      it 'returns false if the project has only admins (owners/maintainers)' do
+        project1.team.add_owner(create(:user))
+        project1.team.add_maintainer(create(:user))
+
+        expect(described_class.map_field(project1, 'minimum_number_of_admins')).to be false
+      end
+    end
+
+    describe '#require_mfa_for_contributors?' do
+      it 'delegates to namespace#require_two_factor_authentication' do
+        expect(project.namespace).to receive(:require_two_factor_authentication)
+
+        described_class.map_field(project, 'require_mfa_for_contributors')
+      end
+    end
+
+    describe '#require_mfa_at_org_level?' do
+      it 'returns true if the namespace requires MFA' do
+        expect(project.namespace).to receive(:require_two_factor_authentication).and_return(true)
+        expect(described_class.map_field(project, 'require_mfa_at_org_level')).to be true
+      end
+
+      it 'returns true if the namespace has a two factor grace period' do
+        expect(project.namespace).to receive(:require_two_factor_authentication).and_return(false)
+        expect(project.namespace).to receive(:two_factor_grace_period).and_return(1)
+        expect(described_class.map_field(project, 'require_mfa_at_org_level')).to be true
+      end
+
+      it 'returns false if the namespace does not require MFA or have a two factor grace period' do
+        expect(project.namespace).to receive(:require_two_factor_authentication).and_return(false)
+        expect(project.namespace).to receive(:two_factor_grace_period).and_return(0)
+        expect(described_class.map_field(project, 'require_mfa_at_org_level')).to be false
+      end
+    end
+
+    describe '#ensure_2_admins_per_repo?' do
+      it 'returns true if the project has at least 2 owners' do
+        project1 = build(:project)
+        project1.team.add_owner(create(:user))
+
+        expect(described_class.map_field(project1, 'ensure_2_admins_per_repo')).to be true
+      end
+
+      it 'returns false if the project has less than 2 owners' do
+        project1 = build(:project)
+
+        expect(described_class.map_field(project1, 'ensure_2_admins_per_repo')).to be false
+      end
+    end
+
+    describe '#strict_permissions_for_repo?' do
+      let(:project1) { build(:project) }
+
+      it 'returns true if the project has only one member' do
+        project1.team.add_maintainer(create(:user))
+        expect(described_class.map_field(project1, 'strict_permissions_for_repo')).to be true
+      end
+
+      it 'returns true if the project has more owners/maintainers than admins' do
+        project1.team.add_maintainer(create(:user))
+        project1.team.add_developer(create(:user))
+        project1.team.add_developer(create(:user))
+
+        expect(described_class.map_field(project1, 'strict_permissions_for_repo')).to be true
+      end
+
+      it 'returns false if the project has only owners/maintainers' do
+        project1.team.add_owner(create(:user))
+        project1.team.add_maintainer(create(:user))
+
+        expect(described_class.map_field(project1, 'strict_permissions_for_repo')).to be false
+      end
+    end
+
+    describe '#secure_webhooks?' do
+      it 'returns true if all webhooks use https' do
+        create(:project_hook, project: project, url: 'https://example.com')
+        create(:project_hook, project: project, url: 'https://example2.com')
+
+        expect(described_class.map_field(project.reload, 'secure_webhooks')).to be true
+      end
+
+      it 'returns false if any webhooks use http' do
+        create(:project_hook, project: project, url: 'https://example.com')
+        create(:project_hook, project: project, url: 'http://example2.com')
+
+        expect(described_class.map_field(project.reload, 'secure_webhooks')).to be false
+      end
+    end
+
+    describe '#restricted_build_access?' do
+      let(:project1) { build(:project) }
+
+      it 'returns true if there are fewer than 3 members with access levels of reporter and above' do
+        expect(described_class.map_field(project1, 'restricted_build_access')).to be true
+      end
+
+      context 'with 3 members with access levels of reporter and above' do
+        before do
+          project1.team.add_developer(create(:user))
+          project1.team.add_developer(create(:user))
+        end
+
+        it 'returns true if the percentage of members with access levels of reporter and above is less than 40%' do
+          project1.team.add_planner(create(:user))
+          project1.team.add_planner(create(:user))
+          project1.team.add_planner(create(:user))
+          project1.team.add_planner(create(:user))
+          project1.team.add_planner(create(:user))
+          project1.team.add_planner(create(:user))
+
+          expect(described_class.map_field(project1, 'restricted_build_access')).to be true
+        end
+
+        it 'returns false if the percentage of members with access levels of reporter and above is 40% or more' do
+          project1.team.add_planner(create(:user))
+          project1.team.add_planner(create(:user))
+
+          expect(described_class.map_field(project1, 'restricted_build_access')).to be false
         end
       end
     end
