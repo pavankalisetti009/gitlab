@@ -24,7 +24,7 @@ RSpec.describe Gitlab::UsageDataCounters::MergeRequestActivityUniqueCounter, :cl
       it 'returns one' do
         3.times { described_class.track_invalid_approvers(merge_request: merge_request) }
 
-        expect(unique_event_count).to be(1)
+        expect(unique_event_count).to eq(1)
       end
     end
 
@@ -35,7 +35,7 @@ RSpec.describe Gitlab::UsageDataCounters::MergeRequestActivityUniqueCounter, :cl
         described_class.track_invalid_approvers(merge_request: merge_request)
         described_class.track_invalid_approvers(merge_request: merge_request_other)
 
-        expect(unique_event_count).to be(2)
+        expect(unique_event_count).to eq(2)
       end
     end
   end

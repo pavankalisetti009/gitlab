@@ -3,6 +3,14 @@ fragment ComplianceFrameworksProjectFragment on Project {
   name
   fullPath
   webUrl
+  visibility
+  description
+  namespace {
+    id
+    name
+    webUrl
+    fullName
+  }
   complianceFrameworks {
     nodes {
       id

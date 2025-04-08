@@ -257,6 +257,73 @@ describe('compliance report utils', () => {
     });
   });
 
+  describe('checkGraphQLFilterForChange', () => {
+    it('returns false when both filters are empty', () => {
+      expect(utils.checkGraphQLFilterForChange({ currentFilters: {}, newFilters: {} })).toBe(false);
+    });
+
+    it('returns true when current filters are empty', () => {
+      const currentFilters = {};
+      const newFilters = { project: 'new-project' };
+      expect(utils.checkGraphQLFilterForChange({ currentFilters, newFilters })).toBe(true);
+    });
+
+    it('returns true when new filters are empty', () => {
+      const currentFilters = { project: 'old-project' };
+      const newFilters = {};
+      expect(utils.checkGraphQLFilterForChange({ currentFilters, newFilters })).toBe(true);
+    });
+
+    it('returns true when project filter has changed', () => {
+      const currentFilters = { project: 'old-project' };
+      const newFilters = { project: 'new-project' };
+      expect(utils.checkGraphQLFilterForChange({ currentFilters, newFilters })).toBe(true);
+    });
+
+    it('returns true when frameworks filter has changed', () => {
+      const currentFilters = { frameworks: ['old-framework'] };
+      const newFilters = { frameworks: ['new-framework'] };
+      expect(utils.checkGraphQLFilterForChange({ currentFilters, newFilters })).toBe(true);
+    });
+
+    it('returns true when frameworksNot filter has changed', () => {
+      const currentFilters = { frameworksNot: ['old-framework'] };
+      const newFilters = { frameworksNot: ['new-framework'] };
+      expect(utils.checkGraphQLFilterForChange({ currentFilters, newFilters })).toBe(true);
+    });
+
+    it('returns true when group filter has changed', () => {
+      const currentFilters = { group: 'old-group' };
+      const newFilters = { group: 'new-group' };
+      expect(utils.checkGraphQLFilterForChange({ currentFilters, newFilters })).toBe(true);
+    });
+
+    it('returns false when filters have not changed', () => {
+      const currentFilters = {
+        project: 'same-project',
+        frameworks: ['same-framework'],
+        frameworksNot: ['same-framework-not'],
+        group: 'same-group',
+      };
+      const newFilters = { ...currentFilters };
+      expect(utils.checkGraphQLFilterForChange({ currentFilters, newFilters })).toBe(false);
+    });
+
+    it('returns false when non-relevant filters have changed', () => {
+      const currentFilters = {
+        project: 'same-project',
+        frameworks: ['same-framework'],
+        otherFilter: 'old-value',
+      };
+      const newFilters = {
+        project: 'same-project',
+        frameworks: ['same-framework'],
+        otherFilter: 'new-value',
+      };
+      expect(utils.checkGraphQLFilterForChange({ currentFilters, newFilters })).toBe(false);
+    });
+  });
+
   describe('isGraphqlFieldMissingError', () => {
     const graphqlError = new ApolloError({
       graphQLErrors: [
@@ -359,6 +426,118 @@ describe('compliance report utils', () => {
       expect(result[0].displayValue).toBe(internalControlName);
       expect(result[1].displayValue).toBe(`Send via: ${externalUrl}`);
       expect(result[2].displayValue).toBe('Unknown');
+    });
+  });
+
+  describe('mapFiltersToGraphQLVariables', () => {
+    it('returns an empty object when no filters are provided', () => {
+      expect(utils.mapFiltersToGraphQLVariables([])).toStrictEqual({});
+    });
+
+    it('correctly processes project filter', () => {
+      const filters = [
+        {
+          type: FRAMEWORKS_FILTER_TYPE_PROJECT,
+          value: { data: 'project-1' },
+        },
+      ];
+
+      expect(utils.mapFiltersToGraphQLVariables(filters)).toStrictEqual({
+        project: 'project-1',
+      });
+    });
+
+    it('correctly processes group filter', () => {
+      const filters = [
+        {
+          type: FRAMEWORKS_FILTER_TYPE_GROUP,
+          value: { data: 'group-1' },
+        },
+      ];
+
+      expect(utils.mapFiltersToGraphQLVariables(filters)).toStrictEqual({
+        group: 'group-1',
+      });
+    });
+
+    it('correctly processes framework include filters', () => {
+      const filters = [
+        {
+          type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+          value: { data: 'framework-1', operator: '=' },
+        },
+        {
+          type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+          value: { data: 'framework-2', operator: '=' },
+        },
+      ];
+
+      expect(utils.mapFiltersToGraphQLVariables(filters)).toStrictEqual({
+        frameworks: ['framework-1', 'framework-2'],
+      });
+    });
+
+    it('correctly processes framework exclude filters', () => {
+      const filters = [
+        {
+          type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+          value: { data: 'framework-1', operator: '!=' },
+        },
+        {
+          type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+          value: { data: 'framework-2', operator: '!=' },
+        },
+      ];
+
+      expect(utils.mapFiltersToGraphQLVariables(filters)).toStrictEqual({
+        frameworksNot: ['framework-1', 'framework-2'],
+      });
+    });
+
+    it('correctly processes mixed framework filters', () => {
+      const filters = [
+        {
+          type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+          value: { data: 'framework-1', operator: '=' },
+        },
+        {
+          type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+          value: { data: 'framework-2', operator: '!=' },
+        },
+      ];
+
+      expect(utils.mapFiltersToGraphQLVariables(filters)).toStrictEqual({
+        frameworks: ['framework-1'],
+        frameworksNot: ['framework-2'],
+      });
+    });
+
+    it('correctly processes all filter types together', () => {
+      const filters = [
+        {
+          type: FRAMEWORKS_FILTER_TYPE_PROJECT,
+          value: { data: 'project-1' },
+        },
+        {
+          type: FRAMEWORKS_FILTER_TYPE_GROUP,
+          value: { data: 'group-1' },
+        },
+        {
+          type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+          value: { data: 'framework-1', operator: '=' },
+        },
+        {
+          type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+          value: { data: 'framework-2', operator: '!=' },
+        },
+      ];
+
+      expect(utils.mapFiltersToGraphQLVariables(filters)).toStrictEqual({
+        project: 'project-1',
+        group: 'group-1',
+        frameworks: ['framework-1'],
+        frameworksNot: ['framework-2'],
+      });
     });
   });
 });
