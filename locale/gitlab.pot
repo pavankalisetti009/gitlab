@@ -8126,6 +8126,9 @@ msgstr ""
 msgid "Approved"
 msgstr ""
 
+msgid "Approved by"
+msgstr ""
+
 msgid "Approved by others"
 msgstr ""
 
@@ -8143,9 +8146,6 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "Approved the current merge request."
-msgstr ""
-
-msgid "Approved-By"
 msgstr ""
 
 msgid "Approver"
@@ -21028,13 +21028,13 @@ msgstr ""
 msgid "DeployTokens|Your new project deploy token has been created."
 msgstr ""
 
+msgid "Deployed after"
+msgstr ""
+
+msgid "Deployed before"
+msgstr ""
+
 msgid "Deployed to"
-msgstr ""
-
-msgid "Deployed-after"
-msgstr ""
-
-msgid "Deployed-before"
 msgstr ""
 
 msgid "Deploying to"
@@ -37472,9 +37472,6 @@ msgid "Merged recently"
 msgstr ""
 
 msgid "Merged this merge request."
-msgstr ""
-
-msgid "Merged-By"
 msgstr ""
 
 msgid "Merged: %{merged}"
