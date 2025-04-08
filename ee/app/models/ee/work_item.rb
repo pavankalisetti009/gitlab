@@ -56,6 +56,10 @@ module EE
 
         preloaded_data
       end
+
+      scope :glql_from_es_results, ->(results) do
+        id_in(results.map(&:id)).order(id: :desc)
+      end
     end
 
     class_methods do
