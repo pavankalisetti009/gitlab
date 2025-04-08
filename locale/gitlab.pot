@@ -50957,9 +50957,6 @@ msgstr ""
 msgid "Runners|Before you begin"
 msgstr ""
 
-msgid "Runners|Can run untagged jobs"
-msgstr ""
-
 msgid "Runners|Capacity of 1 enables warm HA through Auto Scaling group re-spawn. Capacity of 2 enables hot HA because the service is available even when a node is lost. Capacity of 3 or more enables hot HA and manual scaling of runner fleet."
 msgstr ""
 
@@ -51226,9 +51223,6 @@ msgstr ""
 msgid "Runners|Learn more in the %{linkStart}Google Cloud documentation%{linkEnd}."
 msgstr ""
 
-msgid "Runners|Locked to this project"
-msgstr ""
-
 msgid "Runners|Machine type"
 msgstr ""
 
@@ -51428,9 +51422,6 @@ msgstr ""
 msgid "Runners|Project › CI/CD Settings › Runners"
 msgstr ""
 
-msgid "Runners|Property Name"
-msgstr ""
-
 msgid "Runners|Protected"
 msgstr ""
 
@@ -51491,16 +51482,10 @@ msgstr ""
 msgid "Runners|Resume accepting jobs"
 msgstr ""
 
-msgid "Runners|Revision"
-msgstr ""
-
 msgid "Runners|Run the following command to enable the required services and create a service account with the required permissions. Only do this once for each Google Cloud project. You might be prompted to sign in to Google."
 msgstr ""
 
 msgid "Runners|Runner"
-msgstr ""
-
-msgid "Runners|Runner #%{runner_id}"
 msgstr ""
 
 msgid "Runners|Runner %{name} was deleted"
@@ -51822,9 +51807,6 @@ msgstr ""
 msgid "Runners|Use the runner on pipelines for protected branches only."
 msgstr ""
 
-msgid "Runners|Value"
-msgstr ""
-
 msgid "Runners|Version"
 msgstr ""
 
@@ -51886,15 +51868,6 @@ msgid "Runners|Zone is required."
 msgstr ""
 
 msgid "Runners|Zone must have the right format."
-msgstr ""
-
-msgid "Runners|group"
-msgstr ""
-
-msgid "Runners|project"
-msgstr ""
-
-msgid "Runners|shared"
 msgstr ""
 
 msgid "Runner|1 day selected"
