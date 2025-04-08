@@ -111,6 +111,24 @@ module ComplianceManagement
           ProtectedBranch.branch_requires_code_owner_approval?(project, nil)
         end
 
+        def stale_branch_cleanup_enabled?(project, _context = {})
+          !BranchesFinder.new(project.repository,
+            { per_page: 1, sort: 'updated_asc' }).execute(gitaly_pagination: true).any?(&:stale?)
+        end
+
+        def version_control_enabled?(project, _context = {})
+          project.repository.exists?
+        end
+
+        def issue_tracking_enabled?(project, _context = {})
+          owner = Project.owners.first
+          recent_mr_limit = 20
+
+          project.merge_requests.merged.order_merged_at_desc.limit(recent_mr_limit).all? do |mr|
+            mr.related_issues(owner).any?
+          end
+        end
+
         def reset_approvals_on_push?(project, _context = {})
           project.reset_approvals_on_push
         end
@@ -152,6 +170,67 @@ module ComplianceManagement
 
             settings[setting_key] == true
           end
+        end
+
+        def branch_deletion_disabled?(project, _context = {})
+          ProtectedBranch.protected_refs(project).any?
+        end
+
+        def review_and_archive_stale_repos?(project, _context = {})
+          stale_threshold = 6.months.ago
+
+          return true if project.archived?
+
+          project.last_activity_at > stale_threshold
+        end
+
+        def review_and_remove_inactive_users?(project, _context = {})
+          stale_threshold = 90.days.ago
+
+          project.team.users.none? { |user| user.last_activity_on.nil? || user.last_activity_on < stale_threshold }
+        end
+
+        def minimum_number_of_admins?(project, _context = {})
+          team = project.team
+
+          return true if team.members.count == 1
+
+          team.members.count > (team.owners + team.maintainers).count
+        end
+
+        def require_mfa_for_contributors?(project, _context = {})
+          project.namespace.require_two_factor_authentication
+        end
+
+        def require_mfa_at_org_level?(project, _context = {})
+          project.namespace.require_two_factor_authentication || project.namespace.two_factor_grace_period != 0
+        end
+
+        def ensure_2_admins_per_repo?(project, _context = {})
+          project.team.owners.count >= 2
+        end
+
+        def strict_permissions_for_repo?(project, _context = {})
+          team = project.team
+
+          return true if team.members.count == 1
+
+          team.members.count > (team.owners + team.maintainers).count
+        end
+
+        def secure_webhooks?(project, _context = {})
+          project.hooks.all? { |hook| hook.url.start_with?('https') }
+        end
+
+        def restricted_build_access?(project, _context = {})
+          team = project.team
+          reporter_and_above = (team.owners + team.maintainers + team.developers + team.reporters).count.to_f
+          return true if reporter_and_above < 3
+
+          total_members = team.members.count.to_f
+          reporter_and_above_percentage = (reporter_and_above / total_members) * 100
+
+          reporter_and_above_percentage < 40
         end
       end
     end

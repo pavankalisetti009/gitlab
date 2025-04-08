@@ -30,7 +30,20 @@
         "require_linear_history",
         "restrict_push_merge_access",
         "force_push_disabled",
-        "terraform_enabled"
+        "terraform_enabled",
+        "version_control_enabled",
+        "issue_tracking_enabled",
+        "stale_branch_cleanup_enabled",
+        "branch_deletion_disabled",
+        "review_and_archive_stale_repos",
+        "review_and_remove_inactive_users",
+        "minimum_number_of_admins",
+        "require_mfa_for_contributors",
+        "require_mfa_at_org_level",
+        "ensure_2_admins_per_repo",
+        "strict_permissions_for_repo",
+        "secure_webhooks",
+        "restricted_build_access"
       ]
     },
     "operator": {
@@ -86,7 +99,20 @@
               "require_linear_history",
               "restrict_push_merge_access",
               "force_push_disabled",
-              "terraform_enabled"
+              "terraform_enabled",
+              "version_control_enabled",
+              "issue_tracking_enabled",
+              "stale_branch_cleanup_enabled",
+              "branch_deletion_disabled",
+              "review_and_archive_stale_repos",
+              "review_and_remove_inactive_users",
+              "minimum_number_of_admins",
+              "require_mfa_for_contributors",
+              "require_mfa_at_org_level",
+              "ensure_2_admins_per_repo",
+              "strict_permissions_for_repo",
+              "secure_webhooks",
+              "restricted_build_access"
             ]
           }
         }

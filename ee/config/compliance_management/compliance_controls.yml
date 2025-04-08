@@ -217,3 +217,107 @@ controls:
     compliant_operator: "="
     field_method: terraform_enabled?
     enum_value: 24
+
+  version_control_enabled:
+    name: "Version Control Enabled"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: version_control_enabled?
+    enum_value: 25
+
+  issue_tracking_enabled:
+    name: "Issue Tracking Enabled"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: issue_tracking_enabled?
+    enum_value: 26
+
+  stale_branch_cleanup_enabled:
+    name: "Stale Branch Cleanup Enabled"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: stale_branch_cleanup_enabled?
+    enum_value: 27
+
+  branch_deletion_disabled:
+    name: "Branch Deletion Disabled"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: branch_deletion_disabled?
+    enum_value: 28
+
+  review_and_archive_stale_repos:
+    name: "Review and Archive Stale Repositories"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: review_and_archive_stale_repos?
+    enum_value: 29
+
+  review_and_remove_inactive_users:
+    name: "Review and Remove Inactive Users"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: review_and_remove_inactive_users?
+    enum_value: 30
+
+  minimum_number_of_admins:
+    name: "Minimum Number of Admins"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: minimum_number_of_admins?
+    enum_value: 31
+
+  require_mfa_for_contributors:
+    name: "Require MFA for Contributors"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: require_mfa_for_contributors?
+    enum_value: 32
+
+  require_mfa_at_org_level:
+    name: "Require MFA at Org Level"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: require_mfa_at_org_level?
+    enum_value: 33
+
+  ensure_2_admins_per_repo:
+    name: "Ensure 2 Admins per Repository"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: ensure_2_admins_per_repo?
+    enum_value: 34
+
+  strict_permissions_for_repo:
+    name: "Strict Permission for Repository"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: strict_permissions_for_repo?
+    enum_value: 35
+
+  secure_webhooks:
+    name: "Secure Webhooks"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: secure_webhooks?
+    enum_value: 36
+
+  restricted_build_access:
+    name: "Restricted Build Access"
+    type: boolean
+    compliant_value: true
+    compliant_operator: "="
+    field_method: restricted_build_access?
+    enum_value: 37
