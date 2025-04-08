@@ -39,11 +39,6 @@ module CodeSuggestions
           # anthropic + claude_3_5_sonnet_20241022
           prompt_version = '^1.0.0'
 
-          if Feature.enabled?(:code_generation_claude_3_7_sonnet, current_user)
-            # claude_3_7_sonnet_20250219
-            prompt_version = '3.0.2-dev'
-          end
-
           if Feature.enabled?(:incident_fail_over_generation_provider, current_user)
             # vertex + claude_3_5_sonnet_20240620
             prompt_version = '2.0.0'
