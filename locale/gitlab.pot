@@ -9117,9 +9117,6 @@ msgstr ""
 msgid "Available ID"
 msgstr ""
 
-msgid "Available group runners: %{runners}"
-msgstr ""
-
 msgid "Available on demand"
 msgstr ""
 
@@ -50942,9 +50939,6 @@ msgstr ""
 msgid "Runners|Available"
 msgstr ""
 
-msgid "Runners|Available instance runners"
-msgstr ""
-
 msgid "Runners|Available to all projects"
 msgstr ""
 
@@ -51188,6 +51182,9 @@ msgid "Runners|Install the %{gcloudLinkStart}Google Cloud CLI%{gcloudLinkEnd} an
 msgstr ""
 
 msgid "Runners|Instance"
+msgstr ""
+
+msgid "Runners|Instance runners"
 msgstr ""
 
 msgid "Runners|Instance runners are disabled in the group settings."
