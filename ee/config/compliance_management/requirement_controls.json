@@ -223,5 +223,122 @@
       "operator": "=",
       "value": true
     }
+  },
+  {
+    "id": "version_control_enabled",
+    "name": "Version Control Enabled",
+    "expression": {
+      "field": "version_control_enabled",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "issue_tracking_enabled",
+    "name": "Issue Tracking Enabled",
+    "expression": {
+      "field": "issue_tracking_enabled",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "stale_branch_cleanup_enabled",
+    "name": "Stale Branch Cleanup Enabled",
+    "expression": {
+      "field": "stale_branch_cleanup_enabled",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "branch_deletion_disabled",
+    "name": "Branch Deletion Disabled",
+    "expression": {
+      "field": "branch_deletion_disabled",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "review_and_archive_stale_repos",
+    "name": "Review and Archive Stale Repositories",
+    "expression": {
+      "field": "review_and_archive_stale_repos",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "review_and_remove_inactive_users",
+    "name": "Review and Remove Inactive Users",
+    "expression": {
+      "field": "review_and_remove_inactive_users",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "minimum_number_of_admins",
+    "name": "Minimum Number of Admins",
+    "expression": {
+      "field": "minimum_number_of_admins",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "require_mfa_for_contributors",
+    "name": "Require MFA for Contributors",
+    "expression": {
+      "field": "require_mfa_for_contributors",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "require_mfa_at_org_level",
+    "name": "Require MFA at Org Level",
+    "expression": {
+      "field": "require_mfa_at_org_level",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "ensure_2_admins_per_repo",
+    "name": "Ensure 2 Admins per Repository",
+    "expression": {
+      "field": "ensure_2_admins_per_repo",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "strict_permissions_for_repo",
+    "name": "Strict Permission for Repository",
+    "expression": {
+      "field": "strict_permissions_for_repo",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "secure_webhooks",
+    "name": "Secure Webhooks",
+    "expression": {
+      "field": "secure_webhooks",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "restricted_build_access",
+    "name": "Restricted Build Access",
+    "expression": {
+      "field": "restricted_build_access",
+      "operator": "=",
+      "value": true
+    }
   }
 ]
