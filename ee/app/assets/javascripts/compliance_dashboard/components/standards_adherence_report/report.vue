@@ -55,7 +55,7 @@ export default {
   },
   i18n: {
     feedbackTitle: s__(
-      "AdherenceReport|We've updated the adherence report with new features to enhance your compliance workflow.",
+      'AdherenceReport|We are replacing the standards adherence report with the compliance status report, which includes new features to enhance your compliance workflow.',
     ),
     learnMoreDocsText: s__(
       'AdherenceReport|Learn more about the changes in our %{linkStart}documentation%{linkEnd}.',
