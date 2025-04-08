@@ -2,6 +2,10 @@
 
 module GitlabSubscriptions
   class SeatAssignment < ApplicationRecord
+    include SafelyChangeColumnDefault
+
+    columns_changing_default :organization_id
+
     belongs_to :namespace, optional: false
     belongs_to :user, optional: false
     belongs_to :organization, class_name: 'Organizations::Organization'
