@@ -12,18 +12,6 @@ module RemoteDevelopment
         # @param [Hash] context
         # @return [Gitlab::Fp::Result]
         def self.create(context)
-          context => {
-            user: User => user,
-            params: Hash => params,
-          }
-          params => {
-            agent: Clusters::Agent => agent
-          }
-          random_string = SecureRandom.alphanumeric(RANDOM_STRING_LENGTH).downcase
-          # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/409774
-          #       We can come maybe come up with a better/cooler way to get a unique name, for now this works
-          context[:workspace_name] = "workspace-#{agent.id}-#{user.id}-#{random_string}"
-          context[:workspace_namespace] = "#{NAMESPACE_PREFIX}-#{agent.id}-#{user.id}-#{random_string}"
           model_errors = nil
 
           updated_value = ApplicationRecord.transaction do
@@ -31,6 +19,7 @@ module RemoteDevelopment
 
             result =
               initial_result
+                .map(CreatorBootstrapper.method(:bootstrap))
                 .and_then(PersonalAccessTokenCreator.method(:create))
                 .and_then(WorkspaceCreator.method(:create))
                 .and_then(WorkspaceVariablesCreator.method(:create))
