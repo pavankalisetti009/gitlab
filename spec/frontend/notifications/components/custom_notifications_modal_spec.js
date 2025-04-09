@@ -111,6 +111,25 @@ describe('CustomNotificationsModal', () => {
         },
       );
     });
+
+    describe('buildEvents', () => {
+      it('filters out event keys that do not have corresponding translations', () => {
+        const events = {
+          new_issue: true,
+          merge_merge_request: false,
+          merge_when_pipeline_succeeds: true,
+          non_existent_event: true, // This should be filtered out
+        };
+
+        const result = wrapper.vm.buildEvents(events);
+
+        // Verify only valid events are included
+        expect(result.some((event) => event.id === 'non_existent_event')).toBe(false);
+        expect(result.some((event) => event.id === 'new_issue')).toBe(true);
+        expect(result.some((event) => event.id === 'merge_merge_request')).toBe(true);
+        expect(result.some((event) => event.id === 'merge_when_pipeline_succeeds')).toBe(true);
+      });
+    });
   });
 
   describe('API calls', () => {

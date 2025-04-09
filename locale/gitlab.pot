@@ -40773,6 +40773,9 @@ msgstr ""
 msgid "NotificationEvent|Merge request is reopened"
 msgstr ""
 
+msgid "NotificationEvent|Merge request is set to be merged when the pipeline succeeds"
+msgstr ""
+
 msgid "NotificationEvent|Merge request receives a push"
 msgstr ""
 
