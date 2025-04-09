@@ -270,6 +270,12 @@ describe('RequirementModal', () => {
 
     const findAddExternalControlButton = () => wrapper.findByTestId('add-external-control-button');
     const findExternalUrlInput = (index) => wrapper.findByTestId(`external-url-input-${index}`);
+    const findExternalControlEditButton = (index) =>
+      wrapper.findByTestId(`external-control-edit-button-${index}`);
+    const findExternalControlCloseButton = (index) =>
+      wrapper.findByTestId(`external-control-close-button-${index}`);
+    const findExternalControlSummary = (index) =>
+      wrapper.findByTestId(`external-control-summary-${index}`);
     const findExternalSecretInput = (index) =>
       wrapper.findByTestId(`external-secret-input-${index}`);
 
@@ -305,7 +311,7 @@ describe('RequirementModal', () => {
       ]);
     });
 
-    it('loads and displays existing external controls', async () => {
+    it('loads and displays existing external control fields', async () => {
       const existingRequirement = {
         ...mockRequirements[0],
         complianceRequirementsControls: {
@@ -324,8 +330,71 @@ describe('RequirementModal', () => {
       createComponent({ requirement: existingRequirement });
       await nextTick();
 
+      expect(findExternalControlSummary(0).exists()).toBe(true);
+      const editButton = findExternalControlEditButton(0);
+      expect(editButton.exists()).toBe(true);
+
+      await editButton.vm.$emit('click');
+      await nextTick();
+
       expect(findExternalUrlInput(0).attributes('value')).toBe('https://api.example.com');
       expect(findExternalSecretInput(0).exists()).toBe(true);
+
+      const closeButton = findExternalControlCloseButton(0);
+      expect(closeButton.exists()).toBe(true);
+
+      await closeButton.vm.$emit('click');
+      await nextTick();
+
+      const summaryText = findExternalControlSummary(0).text();
+      expect(summaryText).toContain('Send via: https://api.example.com');
+      expect(summaryText).toContain('External');
+    });
+
+    it('does not display the edit or close button when the external control is new', async () => {
+      await findAddExternalControlButton().vm.$emit('click');
+      await nextTick();
+
+      expect(findExternalControlEditButton(0).exists()).toBe(false);
+      expect(findExternalControlCloseButton(0).exists()).toBe(false);
+    });
+
+    it('resets the external url when the close button is clicked', async () => {
+      const existingRequirement = {
+        ...mockRequirements[0],
+        complianceRequirementsControls: {
+          nodes: [
+            {
+              id: '1',
+              name: 'external_control',
+              controlType: 'external',
+              externalUrl: 'https://api.example.com',
+              secretToken: 'secret123',
+            },
+          ],
+        },
+      };
+
+      createComponent({ requirement: existingRequirement });
+      await nextTick();
+
+      expect(findExternalControlSummary(0).exists()).toBe(true);
+      const editButton = findExternalControlEditButton(0);
+      await editButton.vm.$emit('click');
+      await nextTick();
+
+      await findExternalUrlInput(0).vm.$emit('input', 'https://newapi.example.com');
+      await nextTick();
+
+      expect(findExternalUrlInput(0).attributes('value')).toBe('https://newapi.example.com');
+
+      const closeButton = findExternalControlCloseButton(0);
+      await closeButton.vm.$emit('click');
+      await nextTick();
+
+      const summaryText = findExternalControlSummary(0).text();
+      expect(summaryText).toContain('Send via: https://api.example.com');
+      expect(summaryText).toContain('External');
     });
 
     it('allows mixing external and internal controls', async () => {
