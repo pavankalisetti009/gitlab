@@ -252,7 +252,7 @@ export default {
     <p class="gl-mb-0 gl-text-subtle" data-testid="pipelines-description">
       {{
         s__(
-          'UsageQuota|Compute units usage is calculated based on instance runners duration with cost factors applied.',
+          'UsageQuota|Compute minutes usage displays the hosted runner usage against the total available compute minutes.',
         )
       }}
       <help-page-link href="ci/pipelines/compute_minutes" anchor="compute-usage-calculation">{{

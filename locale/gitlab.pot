@@ -64474,7 +64474,7 @@ msgstr ""
 msgid "UsageQuota|Code packages and container images."
 msgstr ""
 
-msgid "UsageQuota|Compute units usage is calculated based on instance runners duration with cost factors applied."
+msgid "UsageQuota|Compute minutes usage displays the hosted runner usage against the total available compute minutes."
 msgstr ""
 
 msgid "UsageQuota|Compute usage"
