@@ -17,7 +17,14 @@ RSpec.describe "Work items", '(JavaScript fixtures)', type: :request, feature_ca
   end
 
   before do
-    stub_licensed_features(epics: true, issue_weights: true, iterations: true, okrs: true, subepics: true)
+    stub_licensed_features(
+      epics: true,
+      issue_weights: true,
+      iterations: true,
+      okrs: true,
+      subepics: true,
+      blocked_work_items: true
+    )
     stub_feature_flags(okrs_mvc: true)
   end
 
@@ -31,7 +38,13 @@ RSpec.describe "Work items", '(JavaScript fixtures)', type: :request, feature_ca
 
   context 'with okrs' do
     before do
-      stub_licensed_features(epics: true, issue_weights: true, iterations: true, okrs: true)
+      stub_licensed_features(
+        epics: true,
+        issue_weights: true,
+        iterations: true,
+        okrs: true,
+        blocked_work_items: true
+      )
       stub_feature_flags(okrs_mvc: true)
     end
 

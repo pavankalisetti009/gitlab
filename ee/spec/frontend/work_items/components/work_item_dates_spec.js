@@ -10,11 +10,8 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { newDate } from '~/lib/utils/datetime/date_calculation_utility';
 import { TRACKING_CATEGORY_SHOW } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
-import {
-  updateWorkItemMutationErrorResponse,
-  updateWorkItemMutationResponse,
-} from 'jest/work_items/mock_data';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
+import { updateWorkItemMutationErrorResponse, updateWorkItemMutationResponse } from '../mock_data';
 
 Vue.use(VueApollo);
 

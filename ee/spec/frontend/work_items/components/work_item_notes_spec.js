@@ -14,13 +14,13 @@ import workItemNoteUpdatedSubscription from '~/work_items/graphql/notes/work_ite
 import workItemNoteDeletedSubscription from '~/work_items/graphql/notes/work_item_note_deleted.subscription.graphql';
 import { WIDGET_TYPE_NOTES } from '~/work_items/constants';
 import {
-  workItemQueryResponse,
   mockWorkItemNotesByIidResponse,
   workItemNotesCreateSubscriptionResponse,
   workItemNotesUpdateSubscriptionResponse,
   workItemNotesDeleteSubscriptionResponse,
   workItemNotesWithSystemNotesWithChangedDescription,
 } from 'jest/work_items/mock_data';
+import { workItemQueryResponse } from '../mock_data';
 
 const mockWorkItemId = workItemQueryResponse.data.workItem.id;
 const mockWorkItemIid = workItemQueryResponse.data.workItem.iid;

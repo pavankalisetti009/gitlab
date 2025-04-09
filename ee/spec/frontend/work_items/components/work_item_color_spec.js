@@ -4,19 +4,19 @@ import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import {
-  epicType,
-  updateWorkItemMutationErrorResponse,
-  updateWorkItemMutationResponseFactory,
-  workItemByIidResponseFactory,
-} from 'jest/work_items/mock_data';
+import { epicType } from 'jest/work_items/mock_data';
 import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
 import SidebarColorView from '~/sidebar/components/sidebar_color_view.vue';
 import SidebarColorPicker from '~/sidebar/components/sidebar_color_picker.vue';
 import { DEFAULT_COLOR } from '~/vue_shared/components/color_select_dropdown/constants';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
-import { workItemColorWidget } from '../mock_data';
+import {
+  workItemColorWidget,
+  updateWorkItemMutationErrorResponse,
+  updateWorkItemMutationResponseFactory,
+  workItemByIidResponseFactory,
+} from '../mock_data';
 
 describe('WorkItemColor component', () => {
   Vue.use(VueApollo);

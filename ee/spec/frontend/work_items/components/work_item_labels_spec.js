@@ -6,7 +6,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import WorkItemLabels from '~/work_items/components/work_item_labels.vue';
-import { workItemByIidResponseFactory } from 'jest/work_items/mock_data';
+import { workItemByIidResponseFactory } from '../mock_data';
 
 Vue.use(VueApollo);
 
