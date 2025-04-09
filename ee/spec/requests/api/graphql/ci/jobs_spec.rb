@@ -5,15 +5,7 @@ require 'spec_helper'
 RSpec.describe 'Query.jobs', feature_category: :continuous_integration do
   include GraphqlHelpers
 
-  let_it_be(:instance_runner) { create(:ci_runner, :instance) }
-
-  let_it_be(:successful_job) { create(:ci_build, :success, name: 'successful_job') }
-  let_it_be(:failed_job) { create(:ci_build, :failed, name: 'failed_job') }
-  let_it_be(:pending_job) { create(:ci_build, :pending, name: 'pending_job') }
-  let_it_be(:system_failure_job) do
-    create(:ci_build, :failed, failure_reason: :runner_system_failure, runner: instance_runner,
-      name: 'system_failure_job')
-  end
+  let(:query_jobs_args) { graphql_args }
 
   let(:query_path) do
     [
@@ -32,6 +24,15 @@ RSpec.describe 'Query.jobs', feature_category: :continuous_integration do
 
   context 'when current user is an admin' do
     let_it_be(:current_user) { create(:admin) }
+    let_it_be(:instance_runner) { create(:ci_runner, :instance) }
+
+    let_it_be(:successful_job) { create(:ci_build, :success, name: 'successful_job') }
+    let_it_be(:failed_job) { create(:ci_build, :failed, name: 'failed_job') }
+    let_it_be(:pending_job) { create(:ci_build, :pending, name: 'pending_job') }
+    let_it_be(:system_failure_job) do
+      create(:ci_build, :failed, failure_reason: :runner_system_failure, runner: instance_runner,
+        name: 'system_failure_job')
+    end
 
     context "with argument `failure_reason`", feature_category: :fleet_visibility do
       let(:query_jobs_args) do
@@ -97,6 +98,62 @@ RSpec.describe 'Query.jobs', feature_category: :continuous_integration do
             end
           end
         end
+      end
+    end
+  end
+
+  describe 'Query.jobs.pipeline' do
+    let_it_be(:pipeline) { create(:ci_pipeline, user: create(:user)) }
+    let_it_be(:job) { create(:ci_build, pipeline: pipeline) }
+
+    let(:query) do
+      pipeline_path = query_graphql_path([:pipeline], all_graphql_fields_for('PipelineInterface'))
+
+      wrap_fields(query_graphql_path(query_path, pipeline_path))
+    end
+
+    context 'when current user is an admin',
+      :enable_admin_mode, feature_category: :permissions do
+      let_it_be(:current_user) { create(:admin) }
+
+      before do
+        post_graphql(query, current_user: current_user)
+      end
+
+      it 'all fields have values' do
+        exposed_field_values = graphql_data_at(:jobs, :nodes, :pipeline)[0].values
+
+        expect(exposed_field_values).to be_all(&:present?)
+      end
+    end
+
+    context 'when current user is not an admin but has read_admin_cicd custom admin role',
+      :enable_admin_mode, feature_category: :permissions do
+      let_it_be(:role) { create(:admin_member_role, :read_admin_cicd) }
+      let_it_be(:current_user) { role.user }
+
+      let(:exposed_field_names) do
+        ::Types::Ci::PipelineMinimalAccessType.own_fields.keys
+      end
+
+      let(:unexposed_field_names) do
+        ::Types::Ci::PipelineInterface.fields.keys - exposed_field_names
+      end
+
+      before do
+        stub_licensed_features(custom_roles: true)
+
+        post_graphql(query, current_user: current_user)
+      end
+
+      it 'only exposed fields have values', :aggregate_failures do
+        pipeline_data = graphql_data_at(:jobs, :nodes, :pipeline, 0)
+
+        exposed_field_values = pipeline_data.slice(*exposed_field_names).values
+        expect(exposed_field_values).to be_all(&:present?)
+
+        unexposed_field_values = pipeline_data.slice(*unexposed_field_names).values
+        expect(unexposed_field_values).to be_all(&:blank?)
       end
     end
   end

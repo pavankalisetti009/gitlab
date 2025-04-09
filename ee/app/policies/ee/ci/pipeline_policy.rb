@@ -18,6 +18,10 @@ module EE
             troubleshoot_job_cloud_connector_authorized &
             troubleshoot_job_with_ai_authorized
         end.enable(:troubleshoot_job_with_ai)
+
+        rule { project.admin_custom_role_enables_read_admin_cicd }.policy do
+          enable :read_pipeline_metadata
+        end
       end
     end
   end

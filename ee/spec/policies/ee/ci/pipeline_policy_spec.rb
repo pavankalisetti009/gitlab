@@ -51,4 +51,23 @@ RSpec.describe Ci::PipelinePolicy, feature_category: :continuous_integration do
       it_behaves_like 'troubleshoot access check', false
     end
   end
+
+  describe 'admin custom roles', :enable_admin_mode do
+    context 'when user does not have read_pipeline ability (no access to the project)' do
+      let_it_be(:project) { create_default(:project) }
+      let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
+
+      it { is_expected.to be_disallowed(:read_pipeline_metadata) }
+
+      context 'when user can read_admin_cicd' do
+        before do
+          stub_licensed_features(custom_roles: true)
+          create(:admin_member_role, :read_admin_cicd, user: user)
+        end
+
+        it { is_expected.to be_disallowed(:read_pipeline) }
+        it { is_expected.to be_allowed(:read_pipeline_metadata) }
+      end
+    end
+  end
 end
