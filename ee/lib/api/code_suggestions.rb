@@ -148,8 +148,6 @@ module API
 
           # we add expanded_ai_logging to header only if current user is internal user,
           Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, current_user)
-          # we add disable_code_gecko_default to gradually roll out code-gecko deprecation
-          Gitlab::AiGateway.push_feature_flag(:disable_code_gecko_default, current_user)
 
           workhorse_headers =
             Gitlab::Workhorse.send_url(
@@ -195,9 +193,6 @@ module API
           unauthorized! if completion_model_details.feature_disabled?
 
           details_hash = completion_model_details.current_model
-
-          # we add disable_code_gecko_default to gradually roll out code-gecko deprecation
-          Gitlab::AiGateway.push_feature_flag(:disable_code_gecko_default, current_user)
 
           access = {
             base_url: ::Gitlab::AiGateway.url,

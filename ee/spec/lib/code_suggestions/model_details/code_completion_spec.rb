@@ -30,7 +30,6 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
       before do
         stub_feature_flags(code_completion_opt_out_fireworks: false)
         stub_feature_flags(use_fireworks_codestral_code_completion: true)
-        stub_feature_flags(disable_code_gecko_default: false)
       end
 
       context 'on GitLab self-managed' do
@@ -47,16 +46,8 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
             stub_feature_flags(code_completion_opt_out_fireworks: true)
           end
 
-          it 'returns the codegecko model' do
-            expect(actual_result).to eq(expected_default_result)
-          end
-
-          context 'when code gecko is disabled' do
-            it 'returns codestral on vertex' do
-              stub_feature_flags(disable_code_gecko_default: true)
-
-              expect(actual_result).to eq(expected_codestral_result)
-            end
+          it 'returns the codestral on vertex' do
+            expect(actual_result).to eq(expected_codestral_result)
           end
         end
       end
@@ -76,80 +67,8 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
             stub_feature_flags(code_completion_opt_out_fireworks: group2)
           end
 
-          it 'returns the code gecko model' do
-            expect(actual_result).to eq(expected_default_result)
-          end
-
-          context 'when code gecko is disabled' do
-            it 'returns codestral on vertex' do
-              stub_feature_flags(disable_code_gecko_default: true)
-
-              expect(actual_result).to eq(expected_codestral_result)
-            end
-          end
-        end
-      end
-    end
-
-    context 'when Fireworks/Qwen beta FF is enabled' do
-      before do
-        stub_feature_flags(fireworks_qwen_code_completion: true)
-        stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: false)
-        stub_feature_flags(disable_code_gecko_default: false)
-      end
-
-      context 'on GitLab self-managed' do
-        before do
-          allow(Gitlab).to receive(:org_or_com?).and_return(false)
-        end
-
-        it 'returns the fireworks/qwen model' do
-          expect(actual_result).to eq(expected_fireworks_result)
-        end
-
-        context 'when opted out of Fireworks/Qwen through the ops FF' do
-          it 'returns the codegecko model' do
-            stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: true)
-
-            expect(actual_result).to eq(expected_default_result)
-          end
-
-          context 'when code gecko is disabled' do
-            it 'returns codestral on vertex' do
-              stub_feature_flags(disable_code_gecko_default: true)
-              stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: true)
-
-              expect(actual_result).to eq(expected_codestral_result)
-            end
-          end
-        end
-      end
-
-      context 'on GitLab saas' do
-        before do
-          allow(Gitlab).to receive(:org_or_com?).and_return(true)
-        end
-
-        it 'returns the fireworks/qwen model' do
-          expect(actual_result).to eq(expected_fireworks_result)
-        end
-
-        context "when one of user's root groups has opted out of Fireworks/Qwen through the ops FF" do
-          before do
-            # opt out for group2
-            stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: group2)
-          end
-
-          it 'returns the code gecko model' do
-            expect(actual_result).to eq(expected_default_result)
-          end
-
-          context 'when code gecko is disabled' do
-            it 'returns codestral on vertex' do
-              stub_feature_flags(disable_code_gecko_default: true)
-
-              expect(actual_result).to eq(expected_codestral_result)
-            end
+          it 'returns the codestral on vertex' do
+            expect(actual_result).to eq(expected_codestral_result)
           end
 
           describe 'executed queries for user_duo_groups' do
@@ -161,27 +80,6 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
               expect { actual_result }.not_to exceed_query_limit(3)
             end
           end
-        end
-      end
-    end
-
-    context 'when Fireworks/Qwen beta FF is disabled' do
-      before do
-        stub_feature_flags(fireworks_qwen_code_completion: false)
-        stub_feature_flags(disable_code_gecko_default: false)
-      end
-
-      it 'returns the default model' do
-        expect(actual_result).to eq(expected_default_result)
-      end
-
-      context "when one of user's root groups is using claude code completion model" do
-        before do
-          stub_feature_flags(use_claude_code_completion: group2)
-        end
-
-        it 'returns the claude model' do
-          expect(actual_result).to eq(expected_claude_result)
         end
       end
     end
@@ -202,13 +100,6 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
   describe '#current_model' do
     it_behaves_like 'selects the correct model' do
       subject(:actual_result) { completions_model_details.current_model }
-
-      let(:expected_fireworks_result) do
-        {
-          model_provider: 'fireworks_ai',
-          model_name: 'qwen2p5-coder-7b'
-        }
-      end
 
       let(:expected_codestral_result) do
         {
@@ -236,10 +127,6 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
     it_behaves_like 'selects the correct model' do
       subject(:actual_result) { completions_model_details.saas_primary_model_class }
 
-      let(:expected_fireworks_result) do
-        CodeSuggestions::Prompts::CodeCompletion::FireworksQwen
-      end
-
       let(:expected_codestral_result) do
         CodeSuggestions::Prompts::CodeCompletion::VertexCodestral
       end
@@ -249,7 +136,7 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
       end
 
       let(:expected_default_result) do
-        CodeSuggestions::Prompts::CodeCompletion::VertexAi
+        CodeSuggestions::Prompts::CodeCompletion::Default
       end
 
       let(:expected_claude_result) do

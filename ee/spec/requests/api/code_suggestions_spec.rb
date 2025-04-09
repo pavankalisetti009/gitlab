@@ -51,9 +51,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       .and_return(enabled_by_namespace_ids)
 
     stub_feature_flags(incident_fail_over_completion_provider: false)
-    stub_feature_flags(fireworks_qwen_code_completion: false)
-    stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: false)
-    stub_feature_flags(disable_code_gecko_default: false)
     stub_feature_flags(use_claude_code_completion: false)
     stub_feature_flags(use_fireworks_codestral_code_completion: false)
     stub_feature_flags(code_completion_opt_out_fireworks: false)
@@ -324,19 +321,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
         end
 
-        context 'when disable code-gecko default FF is enabled' do
-          before do
-            stub_feature_flags(disable_code_gecko_default: true)
-          end
-
-          it 'workhorse includes the FF in the headers' do
-            post_api
-
-            _, params = workhorse_send_data
-            expect(params['Header']["x-gitlab-enabled-feature-flags"][0]).to match("disable_code_gecko_default")
-          end
-        end
-
         context 'when incident_fail_over_completion_provider is enabled' do
           before do
             stub_feature_flags(incident_fail_over_completion_provider: true)
@@ -395,27 +379,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'User-Agent' => ['Super Awesome Browser 43.144.12'],
               "x-gitlab-enabled-feature-flags" => ["expanded_ai_logging"]
             )
-          end
-        end
-
-        context 'when Fireworks/Qwen beta FF is enabled' do
-          before do
-            stub_feature_flags(fireworks_qwen_code_completion: true)
-          end
-
-          let(:fireworks_qwen_model_details) do
-            {
-              'model_provider' => 'fireworks_ai',
-              'model_name' => 'qwen2p5-coder-7b'
-            }
-          end
-
-          it 'sends a code completion request with the fireworks/qwen model details' do
-            post_api
-
-            _command, params = workhorse_send_data
-            code_completion_params = Gitlab::Json.parse(params['Body'])
-            expect(code_completion_params).to include(**fireworks_qwen_model_details)
           end
         end
 
@@ -864,25 +827,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
           it_behaves_like 'an endpoint authenticated with token', :ok
 
-          describe 'Fireworks/Qwen opt out by ops FF' do
-            before do
-              stub_feature_flags(fireworks_qwen_code_completion: true)
-              stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: user_duo_group)
-            end
-
-            let(:user_duo_group) do
-              Group.by_id(current_user.duo_available_namespace_ids).first
-            end
-
-            it 'does not send code completion model details' do
-              post_api
-
-              _command, params = workhorse_send_data
-              code_completion_params = Gitlab::Json.parse(params['Body'])
-              expect(code_completion_params.keys).not_to include('model_provider', 'model_name')
-            end
-          end
-
           describe 'Fireworks/Codestral opt out by ops FF' do
             before do
               stub_feature_flags(use_fireworks_codestral_code_completion: true)
@@ -893,12 +837,13 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               Group.by_id(current_user.duo_available_namespace_ids).first
             end
 
-            it 'does not send code completion model details' do
+            it 'does send code completion model details for vertex codestral' do
               post_api
 
               _command, params = workhorse_send_data
               code_completion_params = Gitlab::Json.parse(params['Body'])
-              expect(code_completion_params.keys).not_to include('model_provider', 'model_name')
+              expect(code_completion_params['model_provider']).to eq('vertex-ai')
+              expect(code_completion_params['model_name']).to eq('codestral-2501')
             end
           end
         end
@@ -1023,21 +968,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(json_response).to match(expected_response)
           end
 
-          context 'when Fireworks/Qwen beta FF is enabled' do
-            before do
-              stub_feature_flags(fireworks_qwen_code_completion: true)
-            end
-
-            it 'includes the fireworks/qwen model metadata in the direct access details' do
-              post_api
-
-              expect(json_response['model_details']).to eq({
-                'model_provider' => 'fireworks_ai',
-                'model_name' => 'qwen2p5-coder-7b'
-              })
-            end
-          end
-
           context 'when Fireworks/Codestral beta FF is enabled' do
             before do
               stub_feature_flags(use_fireworks_codestral_code_completion: true)
@@ -1050,18 +980,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                 'model_provider' => 'fireworks_ai',
                 'model_name' => 'codestral-2501'
               })
-            end
-          end
-
-          context 'when disable code-gecko default FF is enabled' do
-            before do
-              stub_feature_flags(disable_code_gecko_default: true)
-            end
-
-            it 'includes the FF in the direct access headers' do
-              post_api
-
-              expect(json_response['headers']['x-gitlab-enabled-feature-flags']).to match('disable_code_gecko_default')
             end
           end
 
@@ -1164,28 +1082,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
         it_behaves_like 'user request with code suggestions allowed'
 
-        describe 'Fireworks/Qwen opt out by ops FF' do
-          before do
-            allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
-              allow(client).to receive(:direct_access_token)
-                .and_return({ status: :success, token: token, expires_at: expected_expiration })
-            end
-
-            stub_feature_flags(fireworks_qwen_code_completion: true)
-            stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: user_duo_group)
-          end
-
-          let(:user_duo_group) do
-            Group.by_id(current_user.duo_available_namespace_ids).first
-          end
-
-          it 'does not include the model metadata in the direct access details' do
-            post_api
-
-            expect(json_response['model_details']).to be_nil
-          end
-        end
-
         describe 'Fireworks/Codestral opt out by ops FF' do
           before do
             allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
@@ -1204,7 +1100,10 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           it 'does not include the model metadata in the direct access details' do
             post_api
 
-            expect(json_response['model_details']).to be_nil
+            expect(json_response['model_details']).to eq({
+              'model_provider' => 'vertex-ai',
+              'model_name' => 'codestral-2501'
+            })
           end
         end
 

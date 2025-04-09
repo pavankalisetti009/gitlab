@@ -3,7 +3,7 @@
 module CodeSuggestions
   module Prompts
     module CodeCompletion
-      class VertexAi < CodeSuggestions::Prompts::Base
+      class Default < CodeSuggestions::Prompts::Base
         GATEWAY_PROMPT_VERSION = 1
 
         def request_params
