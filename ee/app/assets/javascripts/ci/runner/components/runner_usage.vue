@@ -78,7 +78,7 @@ export default {
         if (runnerUsageByProject.length) {
           return runnerUsageByProject;
         }
-        return [{ project: null, ciMinutesUsed: null }];
+        return [{ project: null, ciDuration: null }];
       },
     },
     topRunners: {
@@ -90,7 +90,7 @@ export default {
         if (runnerUsage.length) {
           return runnerUsage;
         }
-        return [{ runner: null, ciMinutesUsed: null }];
+        return [{ runner: null, ciDuration: null }];
       },
     },
   },
@@ -143,9 +143,9 @@ export default {
         thClass: [...thClass, 'gl-width-full'],
       };
     },
-    ciMinutesUsedField() {
+    ciDurationField() {
       return {
-        key: 'ciMinutesUsed',
+        key: 'ciDuration',
         label: s__('Runners|Usage (min)'),
         thAlignRight: true,
         thClass,
@@ -153,10 +153,10 @@ export default {
       };
     },
     topRunnersFields() {
-      return [this.runnerField, this.ciMinutesUsedField];
+      return [this.runnerField, this.ciDurationField];
     },
     topProjectsFields() {
-      return [this.projectField, this.ciMinutesUsedField];
+      return [this.projectField, this.ciDurationField];
     },
     dateRangeTooltip() {
       return sprintf(s__('Runners|Date range limited to %{dateRange} days'), {
@@ -304,9 +304,7 @@ export default {
           </div>
           <template v-else> {{ s__('Runners|Other projects') }} </template>
         </template>
-        <template #cell(ciMinutesUsed)="{ item }">{{
-          formatBigIntString(item.ciMinutesUsed)
-        }}</template>
+        <template #cell(ciDuration)="{ item }">{{ formatBigIntString(item.ciDuration) }}</template>
       </gl-table-lite>
 
       <gl-table-lite
@@ -329,9 +327,7 @@ export default {
             <template v-else> {{ s__('Runners|Other runners') }} </template>
           </div>
         </template>
-        <template #cell(ciMinutesUsed)="{ item }">{{
-          formatBigIntString(item.ciMinutesUsed)
-        }}</template>
+        <template #cell(ciDuration)="{ item }">{{ formatBigIntString(item.ciDuration) }}</template>
       </gl-table-lite>
     </div>
   </div>

@@ -31,7 +31,7 @@ const mockRunnerUsage = [
       adminUrl: '/admin/runners/1',
       __typename: 'CiRunner',
     },
-    ciMinutesUsed: '111222333444555666777888999', // tests support for BigInt parsing
+    ciDuration: '111222333444555666777888999', // tests support for BigInt parsing
     __typename: 'CiRunnerUsage',
   },
   {
@@ -42,7 +42,7 @@ const mockRunnerUsage = [
       adminUrl: '/admin/runners/2',
       __typename: 'CiRunner',
     },
-    ciMinutesUsed: 2001,
+    ciDuration: 2001,
     __typename: 'CiRunnerUsage',
   },
   {
@@ -53,12 +53,12 @@ const mockRunnerUsage = [
       adminUrl: null,
       __typename: 'CiRunner',
     },
-    ciMinutesUsed: 2002,
+    ciDuration: 2002,
     __typename: 'CiRunnerUsage',
   },
   {
     runner: null,
-    ciMinutesUsed: 2003,
+    ciDuration: 2003,
     __typename: 'CiRunnerUsage',
   },
 ];
@@ -73,7 +73,7 @@ const mockRunnerUsageByProject = [
       webUrl: '/group1/project1',
       __typename: 'Project',
     },
-    ciMinutesUsed: 1002,
+    ciDuration: 1002,
     __typename: 'CiRunnerUsageByProject',
   },
   {
@@ -85,12 +85,12 @@ const mockRunnerUsageByProject = [
       webUrl: '/group1/project2',
       __typename: 'Project',
     },
-    ciMinutesUsed: 1001,
+    ciDuration: 1001,
     __typename: 'CiRunnerUsageByProject',
   },
   {
     project: null,
-    ciMinutesUsed: 1000,
+    ciDuration: 1000,
     __typename: 'CiRunnerUsageByProject',
   },
 ];
@@ -167,12 +167,12 @@ describe('RunnerUsage', () => {
     it('shows table fields', () => {
       expect(findTopProjectsTable().props('fields')).toMatchObject([
         { key: 'project', label: 'Top projects consuming runners' },
-        { key: 'ciMinutesUsed', label: 'Usage (min)' },
+        { key: 'ciDuration', label: 'Usage (min)' },
       ]);
 
       expect(findTopRunnersTable().props('fields')).toMatchObject([
         { key: 'runner', label: 'Most used instance runners' },
-        { key: 'ciMinutesUsed', label: 'Usage (min)' },
+        { key: 'ciDuration', label: 'Usage (min)' },
       ]);
     });
 
@@ -272,12 +272,12 @@ describe('RunnerUsage', () => {
     it('shows table fields', () => {
       expect(findTopProjectsTable().props('fields')).toMatchObject([
         { key: 'project', label: 'Top projects consuming group runners' },
-        { key: 'ciMinutesUsed', label: 'Usage (min)' },
+        { key: 'ciDuration', label: 'Usage (min)' },
       ]);
 
       expect(findTopRunnersTable().props('fields')).toMatchObject([
         { key: 'runner', label: 'Most used group runners' },
-        { key: 'ciMinutesUsed', label: 'Usage (min)' },
+        { key: 'ciDuration', label: 'Usage (min)' },
       ]);
     });
 

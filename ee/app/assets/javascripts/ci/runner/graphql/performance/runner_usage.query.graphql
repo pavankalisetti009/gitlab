@@ -12,6 +12,6 @@ query getRunnerUsage($runnerType: CiRunnerType, $fullPath: ID, $fromDate: Date, 
       description
       adminUrl
     }
-    ciMinutesUsed
+    ciDuration
   }
 }
