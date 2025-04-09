@@ -22,7 +22,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyConfigurationValid
       end
     end
 
-    %i[approval_policy scan_execution_policy pipeline_execution_policy].each do |type|
+    %i[approval_policy scan_execution_policy pipeline_execution_policy pipeline_execution_schedule_policy vulnerability_management_policy].each do |type|
       context "when type is #{type}" do
         let(:type) { type }
 
