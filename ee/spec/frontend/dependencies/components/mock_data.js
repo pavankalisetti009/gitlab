@@ -77,3 +77,17 @@ export const topLevelPath = {
   blobPath: 'test.link',
   path: 'package.json',
 };
+
+export const dependencyPaths = {
+  dependencyPaths: [
+    {
+      path: [
+        { name: 'eslint', version: '9.17.0' },
+        { name: 'optionator', version: '0.9.3' },
+        { name: '@aashutoshrathi/word-wrap', version: '1.2.6' },
+      ],
+      isCyclic: false,
+      maxDepthReached: false,
+    },
+  ],
+};

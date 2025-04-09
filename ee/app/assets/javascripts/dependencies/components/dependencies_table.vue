@@ -11,7 +11,6 @@ import {
 } from '@gitlab/ui';
 import { cloneDeep } from 'lodash';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT, DEPENDENCIES_TABLE_I18N } from '../constants';
 import DependencyLicenseLinks from './dependency_license_links.vue';
 import DependencyLocation from './dependency_location.vue';
@@ -63,7 +62,6 @@ export default {
     GlLink,
     GlLoadingIcon,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: ['namespaceType'],
   props: {
     dependencies: {
@@ -136,9 +134,6 @@ export default {
     rowExpanded(showDetails, item) {
       showDetails();
       this.$emit('row-click', item);
-    },
-    hasDependencyPaths(item) {
-      return item.location.dependencyPaths?.length > 0;
     },
     toggleDrawer(drawerId, drawerItem) {
       if (this.drawerId === drawerId) {
@@ -268,15 +263,10 @@ export default {
           @click-dependency-path="toggleDrawerGroup(item, $event)"
         />
         <template v-else-if="item.location">
-          <dependency-location :location="item.location" />
-          <gl-button
-            v-if="glFeatures.dependencyPaths && hasDependencyPaths(item)"
-            class="gl-mt-2 gl-block"
-            size="small"
-            data-testid="dependency-path-button"
-            @click="toggleDrawerProject(item)"
-            >{{ $options.i18n.dependencyPathButtonText }}</gl-button
-          >
+          <dependency-location
+            :location="item.location"
+            @click-dependency-path="toggleDrawerProject(item)"
+          />
         </template>
       </template>
 
