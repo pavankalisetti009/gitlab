@@ -9,6 +9,11 @@ module EE
 
       prepended do
         authorize! :read_admin_users, only: [:index, :show]
+
+        before_action only: [:new, :edit] do
+          push_frontend_feature_flag(:custom_admin_roles)
+          push_licensed_feature(:custom_roles)
+        end
       end
 
       def identity_verification_exemption
