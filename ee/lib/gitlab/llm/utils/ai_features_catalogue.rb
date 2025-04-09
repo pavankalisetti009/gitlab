@@ -180,6 +180,51 @@ module Gitlab
             maturity: :ga,
             self_managed: true,
             internal: true
+          },
+          ask_build: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :duo_chat,
+            execute_method: nil,
+            maturity: :ga,
+            self_managed: true,
+            internal: true
+          },
+          ask_issue: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :duo_chat,
+            execute_method: nil,
+            maturity: :ga,
+            self_managed: true,
+            internal: true
+          },
+          ask_epic: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :duo_chat,
+            execute_method: nil,
+            maturity: :ga,
+            self_managed: true,
+            internal: true
+          },
+          ask_merge_request: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :duo_chat,
+            execute_method: nil,
+            maturity: :ga,
+            self_managed: true,
+            internal: true
+          },
+          ask_commit: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :duo_chat,
+            execute_method: nil,
+            maturity: :ga,
+            self_managed: true,
+            internal: true
           }
         }.freeze
 
