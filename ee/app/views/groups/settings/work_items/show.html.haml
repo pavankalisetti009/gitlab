@@ -11,6 +11,6 @@
   = s_('WorkItem|Custom fields')
 %p.gl-text-subtle.gl-mb-3
   = s_('WorkItem|Custom fields extend work items to track additional data. Fields will appear in alphanumeric order. All fields apply to all subgroups and projects.')
-  = link_to s_('WorkItem|How do I use custom fields?')
+  = link_to s_('WorkItem|How do I use custom fields?'), help_page_path('user/work_items/custom_fields.md'), target: '_blank', rel: 'noopener noreferrer'
 
 #js-work-items-settings-form{ data: { full_path: @group.full_path } }
