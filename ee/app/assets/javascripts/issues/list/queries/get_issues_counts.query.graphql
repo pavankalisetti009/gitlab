@@ -33,6 +33,7 @@ query getIssuesCountEE(
   $closedAfter: Time
   $closedBefore: Time
   $subscribed: SubscriptionStatus
+  $customField: [WorkItemWidgetCustomFieldFilterInputType!]
 ) {
   group(fullPath: $fullPath) @skip(if: $isProject) {
     id
@@ -70,6 +71,7 @@ query getIssuesCountEE(
       closedAfter: $closedAfter
       closedBefore: $closedBefore
       subscribed: $subscribed
+      customField: $customField
     ) {
       count
     }

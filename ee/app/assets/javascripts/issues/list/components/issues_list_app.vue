@@ -8,6 +8,7 @@ import {
   TOKEN_TYPE_WEIGHT,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import {
+  OPERATORS_IS,
   TOKEN_TITLE_EPIC,
   TOKEN_TITLE_HEALTH,
   TOKEN_TITLE_ITERATION,
@@ -157,6 +158,7 @@ export default {
             field,
             fullPath: this.fullPath,
             token: CustomFieldToken,
+            operators: OPERATORS_IS,
           });
         });
       }

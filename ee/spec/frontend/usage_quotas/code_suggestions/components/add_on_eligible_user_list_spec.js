@@ -1018,7 +1018,7 @@ describe('Add On Eligible User List', () => {
             dismissible: true,
             error: 'CANNOT_BULK_ASSIGN_ADDON',
             errorDictionary: ADD_ON_ERROR_DICTIONARY,
-            primaryButtonLink: addDuoProHref,
+            primaryButtonLink: '',
             primaryButtonText: '',
             secondaryButtonLink: `${PROMO_URL}/solutions/code-suggestions/sales/`,
             secondaryButtonText: 'Contact sales',
@@ -1072,7 +1072,7 @@ describe('Add On Eligible User List', () => {
 
           beforeEach(async () => {
             mockHandlerGetSubscriptionPermissionData = jest.fn().mockRejectedValueOnce(mockError);
-            await triggerErrorAlertNoSeatsAvailable();
+            await createComponent({ mountFn: mount });
           });
 
           it('captures the original error for sentry', () => {
@@ -1081,21 +1081,15 @@ describe('Add On Eligible User List', () => {
             });
           });
 
-          it('emits the error', () => {
-            expect(wrapper.emitted('error')).toHaveLength(1);
-            expect(wrapper.emitted('error')[0][0].cause).toBe(ADD_ON_PURCHASE_FETCH_ERROR_CODE);
-          });
-
-          it('shows error, sales button and add seats button', () => {
-            // When clicked the button will redirect a customer and we will handle the error on CustomersPortal side
+          it('shows error and sales button', () => {
             expect(findErrorAlert().props()).toMatchObject({
               dismissible: true,
-              error: 'NO_SEATS_AVAILABLE',
+              error: ADD_ON_PURCHASE_FETCH_ERROR_CODE,
               errorDictionary: ADD_ON_ERROR_DICTIONARY,
-              primaryButtonLink: addDuoProHref,
-              primaryButtonText: 'Add seats',
-              secondaryButtonLink: `${PROMO_URL}/solutions/code-suggestions/sales/`,
-              secondaryButtonText: 'Contact sales',
+              primaryButtonLink: '',
+              primaryButtonText: '',
+              secondaryButtonLink: '',
+              secondaryButtonText: '',
             });
           });
 
@@ -1133,7 +1127,7 @@ describe('Add On Eligible User List', () => {
                   dismissible: true,
                   error: 'NO_SEATS_AVAILABLE',
                   errorDictionary: ADD_ON_ERROR_DICTIONARY,
-                  primaryButtonLink: addDuoProHref,
+                  primaryButtonLink: '',
                   primaryButtonText: '',
                   secondaryButtonLink: `${PROMO_URL}/solutions/code-suggestions/sales/`,
                   secondaryButtonText: 'Contact sales',

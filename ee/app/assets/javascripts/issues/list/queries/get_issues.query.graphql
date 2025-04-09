@@ -45,6 +45,7 @@ query getIssuesEE(
   $closedAfter: Time
   $closedBefore: Time
   $subscribed: SubscriptionStatus
+  $customField: [WorkItemWidgetCustomFieldFilterInputType!]
 ) {
   group(fullPath: $fullPath) @skip(if: $isProject) @persist {
     id
@@ -87,6 +88,7 @@ query getIssuesEE(
       closedAfter: $closedAfter
       closedBefore: $closedBefore
       subscribed: $subscribed
+      customField: $customField
     ) {
       __persist
       pageInfo {
