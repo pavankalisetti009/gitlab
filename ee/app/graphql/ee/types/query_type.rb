@@ -295,7 +295,12 @@ module EE
 
         field :ai_slash_commands, [::Types::Ai::SlashCommandType], null: true,
           resolver: ::Resolvers::Ai::SlashCommandsResolver,
-          description: 'Get available Duo Chat slash commands for the current user for a specific URL'
+          description: 'Get available GitLab Duo Chat slash commands for the current user for a specific URL'
+
+        field :ai_chat_context_presets, ::Types::Ai::Chat::ContextPresetsType, null: true,
+          resolver: ::Resolvers::Ai::Chat::ContextPresetsResolver,
+          calls_gitaly: true,
+          description: 'Get available GitLab Duo Chat context presets for the current user for a specific URL'
 
         field :compliance_requirement_controls, ::Types::ComplianceManagement::ComplianceRequirementControlType,
           null: true,
