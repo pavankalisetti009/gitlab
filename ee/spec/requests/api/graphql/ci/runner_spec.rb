@@ -391,7 +391,7 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
       let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
 
       let(:exposed_field_names) do
-        %w[avatar_url description name name_with_namespace]
+        %w[avatar_url description full_path name name_with_namespace]
       end
 
       let(:unexposed_field_names) do
@@ -402,6 +402,7 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
         {
           avatar_url: project.avatar_url(only_path: false),
           description: project.description,
+          full_path: project.full_path,
           name: project.name,
           name_with_namespace: project.name_with_namespace
         }
