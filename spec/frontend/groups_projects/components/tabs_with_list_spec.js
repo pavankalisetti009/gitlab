@@ -258,32 +258,19 @@ describe('TabsWithList', () => {
 
         expect(trackEventSpy).toHaveBeenCalledWith(
           'search_on_your_work_projects',
-          { label: 'Contributed' },
+          { label: CONTRIBUTED_TAB.value },
           undefined,
         );
         expect(trackEventSpy).toHaveBeenCalledWith(
           'filter_by_language_on_your_work_projects',
-          { label: 'Contributed', property: 'CSS' },
+          { label: CONTRIBUTED_TAB.value, property: '5' },
           undefined,
         );
         expect(trackEventSpy).toHaveBeenCalledWith(
           'filter_by_role_on_your_work_projects',
-          { label: 'Contributed', property: 'Owner' },
+          { label: CONTRIBUTED_TAB.value, property: '50' },
           undefined,
         );
-      });
-
-      describe('when invalid filter option is used', () => {
-        it('does not track events', async () => {
-          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-          findFilteredSearchAndSort().vm.$emit('filter', {
-            [FILTERED_SEARCH_TOKEN_LANGUAGE]: ['51'],
-          });
-          await waitForPromises();
-
-          expect(trackEventSpy).not.toHaveBeenCalled();
-        });
       });
     });
 
@@ -327,7 +314,10 @@ describe('TabsWithList', () => {
       it('tracks event', () => {
         expect(trackEventSpy).toHaveBeenCalledWith(
           'click_sort_on_your_work_projects',
-          { label: 'Contributed', property: `${SORT_OPTION_UPDATED.value}_${SORT_DIRECTION_DESC}` },
+          {
+            label: CONTRIBUTED_TAB.value,
+            property: `${SORT_OPTION_UPDATED.value}_${SORT_DIRECTION_DESC}`,
+          },
           undefined,
         );
       });
@@ -373,7 +363,10 @@ describe('TabsWithList', () => {
       it('tracks event', () => {
         expect(trackEventSpy).toHaveBeenCalledWith(
           'click_sort_on_your_work_projects',
-          { label: 'Contributed', property: `${SORT_OPTION_CREATED.value}_${SORT_DIRECTION_ASC}` },
+          {
+            label: CONTRIBUTED_TAB.value,
+            property: `${SORT_OPTION_CREATED.value}_${SORT_DIRECTION_ASC}`,
+          },
           undefined,
         );
       });
@@ -520,7 +513,7 @@ describe('TabsWithList', () => {
 
         expect(trackEventSpy).toHaveBeenCalledWith(
           'click_tab_on_your_work_projects',
-          { label: PERSONAL_TAB.text },
+          { label: PERSONAL_TAB.value },
           undefined,
         );
       });
@@ -597,7 +590,7 @@ describe('TabsWithList', () => {
       it('tracks event', () => {
         expect(trackEventSpy).toHaveBeenCalledWith(
           'click_pagination_on_your_work_projects',
-          { label: 'Contributed', property: 'next' },
+          { label: CONTRIBUTED_TAB.value, property: 'next' },
           undefined,
         );
       });
@@ -635,7 +628,7 @@ describe('TabsWithList', () => {
       it('tracks event', () => {
         expect(trackEventSpy).toHaveBeenCalledWith(
           'click_pagination_on_your_work_projects',
-          { label: 'Contributed', property: 'previous' },
+          { label: CONTRIBUTED_TAB.value, property: 'previous' },
           undefined,
         );
       });
