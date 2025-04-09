@@ -22,6 +22,7 @@ import { trimText } from 'helpers/text_helper';
 import { mockPipelineExecutionPoliciesResponse } from '../../mocks/mock_pipeline_execution_policy_data';
 import {
   mockScanExecutionPoliciesResponse,
+  mockScheduledProjectScanExecutionPolicy,
   mockScheduleScanExecutionPoliciesResponse,
 } from '../../mocks/mock_scan_execution_policy_data';
 import { mockScanResultPoliciesResponse } from '../../mocks/mock_scan_result_policy_data';
@@ -58,6 +59,7 @@ describe('List component', () => {
           namespaceType: NAMESPACE_TYPES.PROJECT,
           assignedPolicyProject: defaultAssignedPolicyProject,
           maxScanExecutionPolicyActions: 300,
+          maxScanExecutionPolicySchedules: 5,
           ...provide,
         },
         apolloProvider: createMockApollo([
@@ -261,15 +263,17 @@ describe('List component', () => {
           expectedLink,
           expectedVariant,
           expectedIconName,
+          withLink = true,
         } = {}) => {
           const firstCell = findStatusCells().at(0);
           const icon = firstCell.findAll('svg');
           expect(icon.at(0).props('name')).toBe(expectedIconName);
           expect(icon.at(0).props('variant')).toBe(expectedVariant);
           expect(icon.at(1).props('name')).toBe('error');
-
-          expect(firstCell.findComponent(GlLink).attributes('href')).toBe(expectedLink);
           expect(firstCell.findComponent(GlPopover).text()).toBe(expectedContent);
+          if (withLink) {
+            expect(firstCell.findComponent(GlLink).attributes('href')).toBe(expectedLink);
+          }
         };
 
         it('does not render breaking changes icon when there are no deprecated properties', () => {
@@ -332,6 +336,29 @@ describe('List component', () => {
               '/help/user/application_security/policies/scan_execution_policies#scan-execution-policies-schema',
             expectedVariant: 'success',
             expectedIconName: 'check-circle-filled',
+          });
+        });
+
+        it('renders breaking changes icon when there is exceeding number of scheduled rules', () => {
+          mountWrapper({
+            props: {
+              policiesByType: {
+                [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]: [
+                  mockScheduledProjectScanExecutionPolicy,
+                ],
+              },
+            },
+            provide: {
+              maxScanExecutionPolicySchedules: 1,
+            },
+          });
+
+          expectRenderedBreakingChangesIcon({
+            expectedContent:
+              'A scan execution policy exceeds the limit of 1 scheduled rules per policy. Remove or consolidate rules across policies to reduce the total number of rules.',
+            expectedVariant: 'success',
+            expectedIconName: 'check-circle-filled',
+            withLink: false,
           });
         });
       });

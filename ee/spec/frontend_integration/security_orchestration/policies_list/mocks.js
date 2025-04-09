@@ -11,4 +11,5 @@ export const DEFAULT_PROVIDE = {
   namespaceType: NAMESPACE_TYPES.PROJECT,
   newPolicyPath: '/-/security/policies/new',
   maxScanExecutionPolicyActions: 5,
+  maxScanExecutionPolicySchedules: 11,
 };

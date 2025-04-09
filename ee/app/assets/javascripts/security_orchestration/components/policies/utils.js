@@ -6,6 +6,7 @@ import {
 import { sprintf } from '~/locale';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
+import { SCHEDULE } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 
 /**
  * @param {Object} allowedValues
@@ -82,11 +83,42 @@ export const exceedsActionLimit = ({ policyType, yaml, maxScanExecutionPolicyAct
 };
 
 /**
+ * Return true if number of scan execution policy scheduled rules allowed amount
+ * @param policyType
+ * @param yaml
+ * @param maxScanExecutionPolicySchedules
+ * @returns {boolean}
+ */
+export const exceedsScheduleRulesLimit = ({
+  policyType,
+  yaml,
+  maxScanExecutionPolicySchedules,
+}) => {
+  if (maxScanExecutionPolicySchedules === 0) {
+    return false;
+  }
+
+  if (policyType === POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text) {
+    const policy = fromYaml({
+      manifest: yaml,
+      type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+    });
+
+    const { rules = [] } = policy;
+
+    return rules.filter(({ type }) => type === SCHEDULE).length > maxScanExecutionPolicySchedules;
+  }
+
+  return false;
+};
+
+/**
  * Build violation list based on conditions
  * @param {string} policyType
  * @param {Array} deprecatedProperties
  * @param {string} yaml
  * @param {number} maxScanExecutionPolicyActions
+ * @param {number} maxScanExecutionPolicySchedules
  * @returns {string[]}
  */
 export const buildPolicyViolationList = ({
@@ -94,6 +126,7 @@ export const buildPolicyViolationList = ({
   deprecatedProperties = [],
   yaml = '',
   maxScanExecutionPolicyActions,
+  maxScanExecutionPolicySchedules,
 }) => {
   const violationList = [];
 
@@ -115,6 +148,21 @@ export const buildPolicyViolationList = ({
         maxScanExecutionPolicyActions,
       }),
       link: BREAKING_CHANGES_POPOVER_CONTENTS.exceedingAction.link,
+    });
+  }
+
+  if (
+    exceedsScheduleRulesLimit({
+      policyType,
+      yaml,
+      maxScanExecutionPolicySchedules,
+    })
+  ) {
+    violationList.push({
+      content: sprintf(BREAKING_CHANGES_POPOVER_CONTENTS.exceedingScheduledRules.content, {
+        maxScanExecutionPolicySchedules,
+      }),
+      link: BREAKING_CHANGES_POPOVER_CONTENTS.exceedingScheduledRules.link,
     });
   }
 

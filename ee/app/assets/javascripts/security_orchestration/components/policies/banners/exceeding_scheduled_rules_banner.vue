@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlAlert, GlSprintf } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 import { s__ } from '~/locale';
@@ -8,23 +8,22 @@ export default {
   SCAN_EXECUTION_ACTION_LIMIT_PATH: helpPagePath(
     'user/application_security/policies/scan_execution_policies',
   ),
-  BANNER_STORAGE_KEY: 'security_policies_exceeding_actions_18',
+  BANNER_STORAGE_KEY: 'security_policies_exceeding_scheduled_rules',
   i18n: {
     bannerTitle: s__(
-      'SecurityOrchestration|Maximum action limit for scan execution policies will be enabled in 18.0',
+      'SecurityOrchestration|Maximum security policy project schedule rule count exceeded',
     ),
     bannerDescription: s__(
-      'SecurityOrchestration|Scan execution policies that exceed the maximum of %{maxCount} actions per policy have been detected. Those policies will not work after GitLab 18.0 (May 15, 2025). Before then you must edit these policies to reduce the number of actions.',
+      'SecurityOrchestration|A scan execution policy exceeds the limit of %{maxScanExecutionPolicySchedules} scheduled rules per policy. Remove or consolidate rules across policies to reduce the total number of rules.',
     ),
   },
-  name: 'ExceedingActionsBanner',
+  name: 'ExceedingScheduledRulesBanner',
   components: {
     GlAlert,
-    GlLink,
     GlSprintf,
     LocalStorageSync,
   },
-  inject: ['maxScanExecutionPolicyActions'],
+  inject: ['maxScanExecutionPolicySchedules'],
   data() {
     return {
       alertDismissed: false,
@@ -51,17 +50,13 @@ export default {
       v-if="!alertDismissed"
       :title="$options.i18n.bannerTitle"
       :dismissible="true"
+      variant="danger"
       @dismiss="dismissAlert"
     >
       <p class="gl-mb-0">
         <gl-sprintf :message="$options.i18n.bannerDescription">
-          <template #link="{ content }">
-            <gl-link :href="$options.SCAN_EXECUTION_ACTION_LIMIT_PATH" target="_blank">{{
-              content
-            }}</gl-link>
-          </template>
-          <template #maxCount>
-            {{ maxScanExecutionPolicyActions }}
+          <template #maxScanExecutionPolicySchedules>
+            <strong>{{ maxScanExecutionPolicySchedules }}</strong>
           </template>
         </gl-sprintf>
       </p>

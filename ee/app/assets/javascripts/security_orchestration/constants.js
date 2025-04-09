@@ -16,3 +16,4 @@ export const USER_TYPE = 'user';
 export const EMPTY_TYPE = 'empty';
 
 export const MAX_SCAN_EXECUTION_ACTION_COUNT = 10;
+export const MAX_SCAN_EXECUTION_POLICY_SCHEDULED_RULES_COUNT = 30;

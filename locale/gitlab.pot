@@ -53709,6 +53709,9 @@ msgstr ""
 msgid "SecurityOrchestration|A consultant will show up in the bot comment and developers should ask them for help if needed."
 msgstr ""
 
+msgid "SecurityOrchestration|A scan execution policy exceeds the limit of %{maxScanExecutionPolicySchedules} scheduled rules per policy. Remove or consolidate rules across policies to reduce the total number of rules."
+msgstr ""
+
 msgid "SecurityOrchestration|Actions"
 msgstr ""
 
@@ -54105,6 +54108,9 @@ msgstr ""
 msgid "SecurityOrchestration|Maximum action limit for scan execution policies will be enabled in 18.0"
 msgstr ""
 
+msgid "SecurityOrchestration|Maximum security policy project schedule rule count exceeded"
+msgstr ""
+
 msgid "SecurityOrchestration|Merge request approval"
 msgstr ""
 
@@ -54320,6 +54326,9 @@ msgstr ""
 msgid "SecurityOrchestration|Scan execution policies can only be created by project owners."
 msgstr ""
 
+msgid "SecurityOrchestration|Scan execution policies that exceed the maximum of %{maxCount} actions per policy have been detected. Those policies will not work after GitLab 18.0 (May 15, 2025). Before then you must edit these policies to reduce the number of actions."
+msgstr ""
+
 msgid "SecurityOrchestration|Scan execution policies using `custom` scan action have been detected. Policies using this action will not work after GitLab 18.0 (May 10, 2025). You must edit these policies to remove the deprecated action. Learn more about the %{linkStart}pipeline execution policy%{linkEnd}."
 msgstr ""
 
@@ -54357,9 +54366,6 @@ msgid "SecurityOrchestration|Security policy project will be unlinked soon"
 msgstr ""
 
 msgid "SecurityOrchestration|Security policy projects store your organization's security policies. They are identified when policies are created, or when a project is linked as a security policy project. %{linkStart}Learn more%{linkEnd}."
-msgstr ""
-
-msgid "SecurityOrchestration|SecurityOrchestration|Scan execution policies with more than %{maxCount} actions detected. Those policies will not work after GitLab 18.0 (May 15, 2025). Before then you must edit these policies to reduce the number of actions."
 msgstr ""
 
 msgid "SecurityOrchestration|Select a project to store your security policies in. %{linkStart}More information.%{linkEnd}"

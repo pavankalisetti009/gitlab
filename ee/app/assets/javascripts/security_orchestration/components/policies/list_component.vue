@@ -19,6 +19,7 @@ import getGroupProjectsCount from 'ee/security_orchestration/graphql/queries/get
 import {
   buildPolicyViolationList,
   exceedsActionLimit,
+  exceedsScheduleRulesLimit,
 } from 'ee/security_orchestration/components/policies/utils';
 import { getPolicyType } from '../../utils';
 import { checkForPerformanceRisk, isGroup, isPolicyInherited, policyHasNamespace } from '../utils';
@@ -89,6 +90,7 @@ export default {
     'namespaceType',
     'disableScanPolicyUpdate',
     'maxScanExecutionPolicyActions',
+    'maxScanExecutionPolicySchedules',
   ],
   props: {
     hasPolicyProject: {
@@ -292,7 +294,12 @@ export default {
       return (
         (Boolean(BREAKING_CHANGES_POPOVER_CONTENTS[policyType]) &&
           deprecatedProperties?.length > 0) ||
-        this.exceedsActionLimit(policyType, yaml)
+        this.exceedsActionLimit(policyType, yaml) ||
+        exceedsScheduleRulesLimit({
+          policyType,
+          yaml,
+          maxScanExecutionPolicySchedules: this.maxScanExecutionPolicySchedules,
+        })
       );
     },
     policyListUrlArgs(source) {
@@ -372,6 +379,7 @@ export default {
         deprecatedProperties,
         yaml,
         maxScanExecutionPolicyActions: this.maxScanExecutionPolicyActions,
+        maxScanExecutionPolicySchedules: this.maxScanExecutionPolicySchedules,
       });
     },
   },

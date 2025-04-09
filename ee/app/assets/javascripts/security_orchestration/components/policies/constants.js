@@ -78,4 +78,10 @@ export const BREAKING_CHANGES_POPOVER_CONTENTS = {
       anchor: 'scan-execution-policies-schema',
     }),
   },
+  exceedingScheduledRules: {
+    content: s__(
+      'SecurityOrchestration|A scan execution policy exceeds the limit of %{maxScanExecutionPolicySchedules} scheduled rules per policy. Remove or consolidate rules across policies to reduce the total number of rules.',
+    ),
+    link: helpPagePath('user/application_security/policies/scan_execution_policies'),
+  },
 };
