@@ -59,6 +59,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         Sbom::VulnerabilitiesCreatedEvent,
         Sbom::SbomIngestedEvent,
         Search::Zoekt::AdjustIndicesReservedStorageBytesEvent,
+        Search::Zoekt::ForceUpdateOverprovisionedIndexEvent,
         Search::Zoekt::IndexMarkedAsReadyEvent,
         Search::Zoekt::IndexMarkedAsToDeleteEvent,
         Search::Zoekt::IndexMarkPendingEvictionEvent,

@@ -6,6 +6,10 @@ module Search
       include Gitlab::Loggable
 
       CONFIG = {
+        force_update_overprovisioned_index: {
+          if: -> { Index.overprovisioned.ready.with_latest_used_storage_bytes_updated_at.exists? },
+          dispatch: { event: ForceUpdateOverprovisionedIndexEvent }
+        },
         indices_to_evict_check: {
           if: -> { Index.pending_eviction.exists? },
           dispatch: { event: IndexToEvictEvent }

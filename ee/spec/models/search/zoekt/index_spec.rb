@@ -315,6 +315,22 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
       end
     end
 
+    describe '.with_latest_used_storage_bytes_updated_at' do
+      let_it_be(:time) { Time.zone.now }
+      let_it_be(:idx) { create(:zoekt_index) }
+      let_it_be(:idx_2) { create(:zoekt_index, :stale_used_storage_bytes_updated_at) }
+      let_it_be(:idx_3) do
+        create(:zoekt_index, used_storage_bytes_updated_at: time, last_indexed_at: time - 5.seconds)
+      end
+
+      subject(:results) { described_class.with_latest_used_storage_bytes_updated_at }
+
+      it 'returns all the indices whose used_storage_bytes_updated_at is greater than last_indexed_at' do
+        expect(results).not_to include idx, idx_2
+        expect(results).to include idx_3
+      end
+    end
+
     describe '.pre_ready' do
       let_it_be(:in_progress) { create(:zoekt_index, state: :in_progress) }
       let_it_be(:initializing) { create(:zoekt_index, state: :initializing) }
@@ -501,9 +517,7 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
           it 'sets the used_storage_bytes to default 1 kilobytes', :freeze_time do
             expect { zoekt_index.update_storage_bytes_and_watermark_level! }
               .to change { zoekt_index.used_storage_bytes }.from(0).to(described_class::DEFAULT_USED_STORAGE_BYTES)
-                                                           .and change {
-                                                                  zoekt_index.used_storage_bytes_updated_at
-                                                                }.to(Time.zone.now)
+                .and change { zoekt_index.used_storage_bytes_updated_at }.to(Time.zone.now)
           end
         end
 
@@ -511,9 +525,7 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
           it 'sets the used_storage_bytes to sum of size_bytes', :freeze_time do
             expect { zoekt_index.update_storage_bytes_and_watermark_level! }
               .to change { zoekt_index.used_storage_bytes }.from(0).to(zoekt_index.zoekt_repositories.sum(:size_bytes))
-                                                           .and change {
-                                                                  zoekt_index.used_storage_bytes_updated_at
-                                                                }.to(Time.zone.now)
+                .and change { zoekt_index.used_storage_bytes_updated_at }.to(Time.zone.now)
           end
         end
       end
@@ -633,6 +645,21 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
             expect(zoekt_index.reload.reserved_storage_bytes).to be < initial_reserved_storage_bytes
           end
         end
+      end
+    end
+
+    context 'when skip_used_storage_bytes is true' do
+      let_it_be(:zoekt_index) { create(:zoekt_index, :overprovisioned, :ready) }
+
+      it 'skips to update used_storage_bytes, updates the reserved_storage_bytes and make index healthy if possible' do
+        initial_used_storage_bytes = zoekt_index.used_storage_bytes
+        initial_used_storage_bytes_updated_at = zoekt_index.used_storage_bytes_updated_at
+        initial_reserved_storage_bytes = zoekt_index.reserved_storage_bytes
+        expect { zoekt_index.update_storage_bytes_and_watermark_level!(skip_used_storage_bytes: true) }
+          .to change { zoekt_index.watermark_level }.from('overprovisioned').to('healthy')
+        expect(zoekt_index.reload.reserved_storage_bytes).to be < initial_reserved_storage_bytes
+        expect(zoekt_index.used_storage_bytes).to eq initial_used_storage_bytes
+        expect(zoekt_index.used_storage_bytes_updated_at).to eq initial_used_storage_bytes_updated_at
       end
     end
   end

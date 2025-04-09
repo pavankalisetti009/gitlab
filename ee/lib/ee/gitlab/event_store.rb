@@ -18,7 +18,7 @@ module EE
         # Only EE subscriptions should be declared in this module.
         override :configure!
         def configure!(store)
-          super(store)
+          super
 
           ###
           # Add EE only subscriptions here:
@@ -183,6 +183,9 @@ module EE
         end
 
         def subscribe_to_zoekt_events(store)
+          store.subscribe ::Search::Zoekt::ForceUpdateOverprovisionedIndexEventWorker,
+            to: ::Search::Zoekt::ForceUpdateOverprovisionedIndexEvent
+
           store.subscribe ::Search::Zoekt::IndexMarkAsPendingEvictionEventWorker,
             to: ::Search::Zoekt::IndexMarkPendingEvictionEvent
 

@@ -26,15 +26,15 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
   it_behaves_like 'a panel without placeholders'
   it_behaves_like 'a panel instantiable by the anonymous user'
 
-  shared_examples 'hides code suggestions menu' do
-    it 'does not render code suggestions menu' do
-      expect(menus).not_to include(instance_of(::Sidebars::Admin::Menus::CodeSuggestionsMenu))
+  shared_examples 'hides duo settings menu' do
+    it 'does not render duo settings menu' do
+      expect(menus).not_to include(instance_of(::Sidebars::Admin::Menus::DuoSettingsMenu))
     end
   end
 
-  shared_examples 'shows code suggestions menu' do
-    it 'renders code suggestions menu' do
-      expect(menus).to include(instance_of(::Sidebars::Admin::Menus::CodeSuggestionsMenu))
+  shared_examples 'shows duo settings menu' do
+    it 'renders duo settings menu' do
+      expect(menus).to include(instance_of(::Sidebars::Admin::Menus::DuoSettingsMenu))
     end
   end
 
@@ -65,7 +65,7 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
 
       context 'when instance has a paid license' do
         context 'when instance does not have an ultimate license' do
-          it_behaves_like 'shows code suggestions menu'
+          it_behaves_like 'shows duo settings menu'
           it_behaves_like 'hides self-hosted models menu'
         end
 
@@ -81,7 +81,7 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
               create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- persisted record required
             end
 
-            it_behaves_like 'shows code suggestions menu'
+            it_behaves_like 'shows duo settings menu'
             it_behaves_like 'shows self-hosted models menu'
           end
 
@@ -90,7 +90,7 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
               create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- persisted record required
             end
 
-            it_behaves_like 'shows code suggestions menu'
+            it_behaves_like 'shows duo settings menu'
             it_behaves_like 'hides self-hosted models menu'
           end
         end
@@ -99,7 +99,7 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
       context 'when instance has no paid license' do
         let(:license) { nil }
 
-        it_behaves_like 'hides code suggestions menu'
+        it_behaves_like 'hides duo settings menu'
         it_behaves_like 'hides self-hosted models menu'
       end
     end
@@ -109,7 +109,7 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
         stub_saas_features(gitlab_com_subscriptions: true)
       end
 
-      it_behaves_like 'hides code suggestions menu'
+      it_behaves_like 'hides duo settings menu'
       it_behaves_like 'hides self-hosted models menu'
     end
   end
