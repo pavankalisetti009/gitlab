@@ -150,28 +150,32 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
       let(:source) { merge_request }
 
       let(:expected_payload) do
-        hash_including(
-          'command' => 'test',
-          'source' => 'merge_request',
-          'merge_request_id' => merge_request.id.to_s,
-          'merge_request_iid' => merge_request.iid.to_s,
-          'note_id' => anything,
-          'discussion_id' => diff_note.discussion_id,
-          'source_branch' => merge_request.source_branch,
-          'target_branch' => merge_request.target_branch,
-          'last_commit_id' => merge_request.recent_commits.first.id,
-          'comment_start_line' => diff_note.position.new_line.to_s,
-          'comment_end_line' => diff_note.position.new_line.to_s,
-          'start_sha' => diff_note.position.start_sha,
-          'head_sha' => diff_note.position.head_sha,
-          'file_path' => diff_note.position.new_path,
-          'user_message' => anything
-        )
+        {
+          command: 'test',
+          source: 'merge_request',
+          merge_request_id: merge_request.id.to_s,
+          merge_request_iid: merge_request.iid.to_s,
+          note_id: "",
+          project_id: project.id.to_s,
+          project_path: project.full_path,
+          role_arn: role_arn,
+          discussion_id: diff_note.discussion_id,
+          source_branch: merge_request.source_branch,
+          target_branch: merge_request.target_branch,
+          last_commit_id: merge_request.recent_commits.first.id,
+          comment_start_line: diff_note.position.new_line.to_s,
+          comment_end_line: diff_note.position.new_line.to_s,
+          start_sha: diff_note.position.start_sha,
+          head_sha: diff_note.position.head_sha,
+          file_path: diff_note.position.new_path,
+          user_message: nil
+        }
       end
 
       it 'executes successfully with the right payload' do
         expect { execution }.to change { Note.system.count }.by(1).and change { Note.user.count }.by(1)
         expect(execution.parsed_response).to be_nil
+        expect(service.send(:payload)).to eq(expected_payload)
       end
     end
 
@@ -241,6 +245,27 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
         expect(payload[:project_id]).to eq(project.id.to_s)
         expect(payload[:issue_id]).to eq(issue.id.to_s)
         expect(payload[:issue_iid]).to eq(issue.iid.to_s)
+      end
+
+      context 'when the source is a work item' do
+        let(:noteable) { create(:work_item, :issue, project: project) }
+        let(:note) { create(:note_on_issue, noteable: noteable, project: project) }
+
+        it 'generates the correct payload for an issue' do
+          service.execute
+
+          payload = service.send(:payload)
+
+          expect(payload.keys).to match_array(
+            %i[command source project_path project_id issue_id issue_iid discussion_id note_id role_arn])
+
+          expect(payload[:command]).to eq('dev')
+          expect(payload[:source]).to eq('issue')
+          expect(payload[:project_path]).to eq(project.full_path)
+          expect(payload[:project_id]).to eq(project.id.to_s)
+          expect(payload[:issue_id]).to eq(issue.id.to_s)
+          expect(payload[:issue_iid]).to eq(issue.iid.to_s)
+        end
       end
     end
   end

@@ -7,7 +7,7 @@ module Ai
 
       def initialize(
         command:, note:, source:, service_account_notes:, discussion_id:, input:,
-        line_position_for_comment: nil)
+        line_position_for_comment: {})
         @command = command
         @discussion_id = discussion_id
         @line_position_for_comment = line_position_for_comment
@@ -20,6 +20,7 @@ module Ai
       def payload
         data = base_payload
         data.merge!(note_payload)
+        data.merge!(source_payload)
 
         if source.is_a?(MergeRequest)
           data.merge!(merge_request_payload)
@@ -39,13 +40,28 @@ module Ai
       def base_payload
         {
           command: command,
-          source: source.issuable_type,
           role_arn: ::Ai::Setting.instance.amazon_q_role_arn,
           project_path: source.project.full_path,
-          project_id: source.project.id.to_s,
-          "#{source.issuable_type.underscore}_id": source.id.to_s,
-          "#{source.issuable_type.underscore}_iid": source.iid.to_s
+          project_id: source.project.id.to_s
         }
+      end
+
+      def source_payload
+        # There's Issuable#noteable_target_type_name that could help to deduplicate this code in the future
+        # But let's be explicit when we have only 2 types
+        if source.is_a?(MergeRequest)
+          {
+            source: 'merge_request',
+            merge_request_id: source.id.to_s,
+            merge_request_iid: source.iid.to_s
+          }
+        else
+          {
+            source: 'issue',
+            issue_id: source.id.to_s,
+            issue_iid: source.iid.to_s
+          }
+        end
       end
 
       def merge_request_payload
