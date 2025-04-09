@@ -451,12 +451,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
         context 'when desired_state does not match actual_state' do
           let(:deployment_resource_version_from_agent) { workspace.deployment_resource_version }
+          let(:expected_value_for_desired_state_is_terminated) { false }
 
           let(:expected_config_to_apply_yaml_stream) do
             create_config_to_apply_yaml_stream(
               workspace: workspace,
               started: expected_value_for_started,
-              desired_state_is_terminated: desired_state == RemoteDevelopment::WorkspaceOperations::States::TERMINATED,
+              desired_state_is_terminated: expected_value_for_desired_state_is_terminated,
               egress_ip_rules: egress_ip_rules,
               max_resources_per_workspace: max_resources_per_workspace,
               default_resources_per_workspace_container: default_resources_per_workspace_container,
@@ -507,6 +508,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           context 'when desired_state is Terminated' do
             let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
             let(:expected_value_for_started) { false }
+            let(:expected_value_for_desired_state_is_terminated) { true }
 
             it 'returns proper workspace_rails_info entry with config_to_apply' do
               # verify initial states in db (sanity check of match between factory and fixtures)

@@ -8,6 +8,7 @@ import { NEW_POLICY_BUTTON_TEXT } from '../constants';
 import InvalidPoliciesBanner from './banners/invalid_policies_banner.vue';
 import ExceedingActionsBanner from './banners/exceeding_actions_banner.vue';
 import DeprecatedCustomScanBanner from './banners/deprecated_custom_scan_banner.vue';
+import ExceedingScheduledRulesBanner from './banners/exceeding_scheduled_rules_banner.vue';
 import ProjectModal from './project_modal.vue';
 
 export default {
@@ -15,6 +16,7 @@ export default {
   components: {
     DeprecatedCustomScanBanner,
     ExceedingActionsBanner,
+    ExceedingScheduledRulesBanner,
     GlAlert,
     GlButton,
     GlIcon,
@@ -41,6 +43,10 @@ export default {
       required: true,
     },
     hasExceedingActionLimitPolicies: {
+      type: Boolean,
+      required: true,
+    },
+    hasExceedingScheduledLimitPolicies: {
       type: Boolean,
       required: true,
     },
@@ -174,5 +180,7 @@ export default {
     <invalid-policies-banner v-if="hasInvalidPolicies" />
 
     <exceeding-actions-banner v-if="hasExceedingActionLimitPolicies" class="gl-mb-6" />
+
+    <exceeding-scheduled-rules-banner v-if="hasExceedingScheduledLimitPolicies" class="gl-mb-6" />
   </div>
 </template>

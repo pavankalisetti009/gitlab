@@ -68,6 +68,23 @@ actions:
   - scan: secret_detection
 `);
 
+export const mockMultipleScheduleScanExecutionManifest = defaultMockScanExecutionManifest.concat(`
+rules:
+  - type: schedule
+    cadence: '* * * * *'
+    branches:
+      - main
+  - type: schedule
+    cadence: '* * * * *'
+    branches:
+      - main
+  - type: pipeline
+    branches:
+      - main
+actions:
+  - scan: secret_detection
+`);
+
 export const mockScheduleScanExecutionObject = {
   ...defaultMockScanExecutionObject,
   rules: [
@@ -187,7 +204,7 @@ export const mockProjectScanExecutionWithConfigurationPolicy = {
 
 export const mockScheduledProjectScanExecutionPolicy = {
   ...mockProjectScanExecutionPolicy,
-  yaml: mockScheduleScanExecutionManifest,
+  yaml: mockMultipleScheduleScanExecutionManifest,
 };
 
 export const mockBranchExceptionsProjectScanExecutionPolicy = {

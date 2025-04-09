@@ -3,7 +3,11 @@ import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { convertObjectPropsToCamelCase, parseBoolean } from '~/lib/utils/common_utils';
 import SecurityPoliciesListApp from './components/policies/app.vue';
-import { DEFAULT_ASSIGNED_POLICY_PROJECT, MAX_SCAN_EXECUTION_ACTION_COUNT } from './constants';
+import {
+  DEFAULT_ASSIGNED_POLICY_PROJECT,
+  MAX_SCAN_EXECUTION_ACTION_COUNT,
+  MAX_SCAN_EXECUTION_POLICY_SCHEDULED_RULES_COUNT,
+} from './constants';
 
 Vue.use(VueApollo);
 
@@ -30,6 +34,7 @@ export default (el, namespaceType) => {
     namespacePath,
     rootNamespacePath,
     maxScanExecutionPolicyActions,
+    maxScanExecutionPolicySchedules,
   } = el.dataset;
 
   let parsedAssignedPolicyProject;
@@ -44,6 +49,13 @@ export default (el, namespaceType) => {
   const parsedMaxScanExecutionPolicyActions = Number.isNaN(count)
     ? MAX_SCAN_EXECUTION_ACTION_COUNT
     : count;
+
+  const parsedMaxScanExecutionPolicySchedules = parseInt(maxScanExecutionPolicySchedules, 10);
+  const sanitizedMaxScanExecutionPolicySchedules = Number.isNaN(
+    parsedMaxScanExecutionPolicySchedules,
+  )
+    ? MAX_SCAN_EXECUTION_POLICY_SCHEDULED_RULES_COUNT
+    : parsedMaxScanExecutionPolicySchedules;
 
   return new Vue({
     apolloProvider,
@@ -61,6 +73,7 @@ export default (el, namespaceType) => {
       namespaceType,
       rootNamespacePath,
       maxScanExecutionPolicyActions: parsedMaxScanExecutionPolicyActions,
+      maxScanExecutionPolicySchedules: sanitizedMaxScanExecutionPolicySchedules,
     },
     render(createElement) {
       return createElement(SecurityPoliciesListApp);

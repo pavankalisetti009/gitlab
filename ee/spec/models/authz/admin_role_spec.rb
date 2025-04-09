@@ -3,6 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Authz::AdminRole, feature_category: :permissions do
+  describe 'associations' do
+    it { is_expected.to have_many(:users) }
+    it { is_expected.to have_many(:user_admin_roles) }
+  end
+
   describe 'validation' do
     subject(:admin_role) { build(:admin_role) }
 

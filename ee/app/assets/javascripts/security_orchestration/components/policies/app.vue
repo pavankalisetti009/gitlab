@@ -6,6 +6,7 @@ import { createAlert } from '~/alert';
 import { getParameterByName } from '~/lib/utils/url_utility';
 import {
   exceedsActionLimit,
+  exceedsScheduleRulesLimit,
   extractSourceParameter,
   extractTypeParameter,
 } from 'ee/security_orchestration/components/policies/utils';
@@ -61,6 +62,7 @@ export default {
     'namespacePath',
     'namespaceType',
     'maxScanExecutionPolicyActions',
+    'maxScanExecutionPolicySchedules',
   ],
   apollo: {
     linkedSppItems: {
@@ -107,6 +109,14 @@ export default {
             policyType: POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.text,
             yaml,
             maxScanExecutionPolicyActions: this.maxScanExecutionPolicyActions,
+          }),
+        );
+
+        this.hasExceedingScheduledLimitPolicies = policies.some(({ yaml }) =>
+          exceedsScheduleRulesLimit({
+            policyType: POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.text,
+            yaml,
+            maxScanExecutionPolicySchedules: this.maxScanExecutionPolicySchedules,
           }),
         );
       },
@@ -170,6 +180,7 @@ export default {
 
     return {
       hasExceedingActionLimitPolicies: false,
+      hasExceedingScheduledLimitPolicies: false,
       hasInvalidPolicies: false,
       hasDeprecatedCustomScanPolicies: false,
       hasPolicyProject: Boolean(this.assignedPolicyProject?.id),
@@ -228,6 +239,7 @@ export default {
 <template>
   <div>
     <list-header
+      :has-exceeding-scheduled-limit-policies="hasExceedingScheduledLimitPolicies"
       :has-exceeding-action-limit-policies="hasExceedingActionLimitPolicies"
       :has-invalid-policies="hasInvalidPolicies"
       :has-deprecated-custom-scan-policies="hasDeprecatedCustomScanPolicies"
