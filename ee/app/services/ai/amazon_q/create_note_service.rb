@@ -55,7 +55,6 @@ module Ai
         {
           dev: s_("AmazonQ|I'm revising this merge request based on your feedback. " \
             "I'll update this comment and this merge request when I'm done."),
-          fix: s_("AmazonQ|I'm generating a fix for this review finding. I'll update this comment when I'm done."),
           test: s_("AmazonQ|I'm creating unit tests for this merge request. " \
             "I'll update this comment when I'm done."),
           review: s_("AmazonQ|I'm reviewing this merge request for security vulnerabilities, " \

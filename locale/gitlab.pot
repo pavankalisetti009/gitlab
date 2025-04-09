@@ -6415,9 +6415,6 @@ msgstr ""
 msgid "AmazonQ|Amazon Q will be turned off for all groups, subgroups, and projects, even if they have previously enabled it."
 msgstr ""
 
-msgid "AmazonQ|An error occurred. Please try again later."
-msgstr ""
-
 msgid "AmazonQ|An unexpected error occurred while disconnecting Amazon Q. Please see the browser console log for more details."
 msgstr ""
 
@@ -6428,9 +6425,6 @@ msgid "AmazonQ|Apply changes to this merge request based on the comments"
 msgstr ""
 
 msgid "AmazonQ|Are you sure? Removing the ARN will disconnect Amazon Q from GitLab and all related features will stop working."
-msgstr ""
-
-msgid "AmazonQ|Ask GitLab Duo with Amazon Q to suggest a solution for this issue"
 msgstr ""
 
 msgid "AmazonQ|Audience"
@@ -6458,9 +6452,6 @@ msgid "AmazonQ|Create a merge request to incorporate Amazon Q suggestions"
 msgstr ""
 
 msgid "AmazonQ|Create an identity provider for this GitLab instance within AWS using the following values. %{helpStart}Learn more%{helpEnd}."
-msgstr ""
-
-msgid "AmazonQ|Create fixes for review findings"
 msgstr ""
 
 msgid "AmazonQ|Create unit tests for selected lines of code in Java or Python files"
@@ -6509,9 +6500,6 @@ msgid "AmazonQ|I'm creating unit tests for the selected lines of code. I'll upda
 msgstr ""
 
 msgid "AmazonQ|I'm creating unit tests for this merge request. I'll update this comment when I'm done."
-msgstr ""
-
-msgid "AmazonQ|I'm generating a fix for this review finding. I'll update this comment when I'm done."
 msgstr ""
 
 msgid "AmazonQ|I'm generating code for this issue. I'll update this comment and open a merge request when I'm done."
@@ -6583,9 +6571,6 @@ msgstr ""
 msgid "AmazonQ|Status"
 msgstr ""
 
-msgid "AmazonQ|Suggest a fix"
-msgstr ""
-
 msgid "AmazonQ|This field is required"
 msgstr ""
 
@@ -6623,9 +6608,6 @@ msgid "AmazonQ|Within your AWS account, create an IAM role for Amazon Q and the 
 msgstr ""
 
 msgid "AmazonQ|dev"
-msgstr ""
-
-msgid "AmazonQ|fix"
 msgstr ""
 
 msgid "AmazonQ|review"

@@ -41,10 +41,6 @@ export const Q_MERGE_REQUEST_SUB_COMMANDS = {
     header: s__('AmazonQ|dev'),
     description: s__('AmazonQ|Apply changes to this merge request based on the comments'),
   },
-  fix: {
-    header: s__('AmazonQ|fix'),
-    description: s__('AmazonQ|Create fixes for review findings'),
-  },
   review: {
     header: s__('AmazonQ|review'),
     description: s__('AmazonQ|Review merge request for code quality and security issues'),

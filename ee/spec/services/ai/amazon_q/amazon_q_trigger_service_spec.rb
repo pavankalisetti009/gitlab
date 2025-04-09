@@ -134,46 +134,6 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
       end
     end
 
-    context 'with fix command' do
-      let_it_be(:diff_note) { create(:diff_note_on_merge_request, noteable: merge_request, project: project) }
-      let(:command) { 'fix' }
-      let(:service) do
-        described_class.new(user: user, command: command, source: source, note: diff_note,
-          discussion_id: diff_note.discussion_id)
-      end
-
-      let(:source) { merge_request }
-
-      context 'when executes fix command after validation' do
-        before do
-          allow(service).to receive(:validate_command!)
-        end
-
-        it 'executes successfully' do
-          expect { execution }.to change { Note.system.count }.by(1).and not_change { Note.user.count }
-          expect(execution.parsed_response).to be_nil
-          expect(SystemNoteService).to have_received(:amazon_q_called).with(source, user, command)
-        end
-      end
-
-      context 'when executes fix command with review findings' do
-        let(:command) { 'fix' }
-        let!(:diff_note) do
-          create(:diff_note_on_merge_request, noteable: merge_request, project: project, author: service_account,
-            note: 'We recommend to fix this security finding')
-        end
-
-        let!(:service) do
-          described_class.new(user: user, command: command, source: source, note: diff_note,
-            discussion_id: diff_note.discussion_id)
-        end
-
-        it 'executes successfully' do
-          expect { service.execute }.not_to raise_error
-        end
-      end
-    end
-
     context 'with test command' do
       let_it_be(:diff_note) { build(:diff_note_on_merge_request, noteable: merge_request, project: project) }
       let(:command) { 'test' }
@@ -358,45 +318,6 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
           Ai::AmazonQ::AmazonQTriggerService::CompositeIdentityEnforcedError,
           "Cannot find the service account with composite identity enabled"
         )
-      end
-    end
-  end
-
-  describe '#validate_command!' do
-    let(:note) { create(:note_on_issue, noteable: issue, project: project) }
-    let(:discussion) { create(:discussion_note_on_issue, noteable: issue, project: issue.project).discussion }
-    let(:service) { described_class.new(user: user, command: 'dev', source: issue, note: discussion.notes.first) }
-
-    context 'when not using an existing thread' do
-      it 'returns true' do
-        expect(service.send(:validate_command!)).to be_truthy
-      end
-    end
-
-    context 'when using an existing thread' do
-      let!(:service) { described_class.new(user: user, command: 'fix', source: issue, note: discussion.notes.first) }
-
-      context 'when there are no comments from the service account' do
-        before do
-          allow(service).to receive(:search_comments_by_service_account).and_return(nil)
-        end
-
-        it 'raises a MissingPrerequisiteError' do
-          expect { service.send(:validate_command!) }.to raise_error(
-            Ai::AmazonQ::AmazonQTriggerService::MissingPrerequisiteError,
-            "fix can only be executed as a response to the review command"
-          )
-        end
-      end
-
-      context 'when there are comments from the service account' do
-        before do
-          allow(service).to receive(:search_comments_by_service_account).and_return(note)
-        end
-
-        it 'returns true' do
-          expect(service.send(:validate_command!)).to be_truthy
-        end
       end
     end
   end

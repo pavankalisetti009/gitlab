@@ -154,10 +154,6 @@ describe('GfmAutoCompleteEE', () => {
         description: Q_MERGE_REQUEST_SUB_COMMANDS.dev.description,
       },
       {
-        name: 'fix',
-        description: Q_MERGE_REQUEST_SUB_COMMANDS.fix.description,
-      },
-      {
         name: 'review',
         description: Q_MERGE_REQUEST_SUB_COMMANDS.review.description,
       },
