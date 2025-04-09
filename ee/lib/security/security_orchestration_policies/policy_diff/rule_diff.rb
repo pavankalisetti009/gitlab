@@ -4,7 +4,8 @@ module Security
   module SecurityOrchestrationPolicies
     module PolicyDiff
       class RuleDiff
-        attr_reader :id, :from, :to
+        attr_reader :from, :to
+        attr_accessor :id
 
         def initialize(id:, from:, to:)
           @id = id

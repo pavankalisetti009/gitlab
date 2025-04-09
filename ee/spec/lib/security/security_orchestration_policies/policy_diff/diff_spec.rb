@@ -30,7 +30,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyDiff::Diff, featur
     end
 
     it 'returns true when rules are created' do
-      diff.add_created_rules([{}])
+      diff.add_created_rule({})
 
       expect(diff.needs_refresh?).to be true
     end

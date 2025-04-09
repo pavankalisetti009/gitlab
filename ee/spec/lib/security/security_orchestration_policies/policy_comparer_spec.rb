@@ -76,7 +76,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyComparer, feature_
     it 'returns the correct changes for rules' do
       rules_diff = policy_diffs.rules_diff
 
-      expect(rules_diff.created).to match_array([rule_content_3])
+      expect(rules_diff.created.first).to have_attributes(id: nil, from: nil, to: rule_content_3)
       expect(rules_diff.updated).to be_empty
       expect(rules_diff.deleted).to be_empty
     end
@@ -156,7 +156,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyComparer, feature_
     end
 
     it 'includes the rules_diff from the diff object' do
-      expect(event_payload[:rules_diff]).to eq({ created: [rule_content_3], deleted: [], updated: [] })
+      expect(event_payload[:rules_diff]).to eq({ created: [id: nil, from: nil, to: rule_content_3], deleted: [],
+updated: [] })
     end
 
     context 'when diff is empty' do

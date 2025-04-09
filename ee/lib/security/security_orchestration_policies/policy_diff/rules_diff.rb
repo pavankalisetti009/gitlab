@@ -8,7 +8,7 @@ module Security
 
         def self.from_json(json)
           new.tap do |rules_diff|
-            rules_diff.created = Array.wrap(json[:created])
+            rules_diff.created = construct_rule_diff(json[:created])
             rules_diff.updated = construct_rule_diff(json[:updated])
             rules_diff.deleted = construct_rule_diff(json[:deleted])
           end
@@ -26,8 +26,8 @@ module Security
           @deleted = []
         end
 
-        def add_created_rules(new_rules)
-          created.concat(new_rules)
+        def add_created_rule(new_rule)
+          created << RuleDiff.new(id: nil, from: nil, to: new_rule)
         end
 
         def add_deleted_rule(deleted_rule)

@@ -62,7 +62,7 @@ module Security
           deleted = db_rules.last(db_rules.count - yaml_rules.count)
         end
 
-        diff.add_created_rules(created)
+        created.each { |rule| diff.add_created_rule(rule) }
         deleted.each { |rule| diff.add_deleted_rule(rule) }
 
         common_count = [db_rules.count, yaml_rules.count].min
