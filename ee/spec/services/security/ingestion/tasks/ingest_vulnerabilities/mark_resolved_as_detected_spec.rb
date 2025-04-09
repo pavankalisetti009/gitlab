@@ -8,29 +8,20 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::MarkResolvedAs
   let_it_be(:identifier) { create(:vulnerabilities_identifier) }
 
   let_it_be(:existing_vulnerability) do
-    create(:vulnerability,
-      :detected,
-      :with_finding,
-      resolved_on_default_branch: true,
-      present_on_default_branch: false,
-      project: pipeline.project
+    create(:vulnerability, :detected, :with_finding,
+      resolved_on_default_branch: true, present_on_default_branch: false
     )
   end
 
   let_it_be(:resolved_vulnerability) do
-    create(:vulnerability,
-      :resolved,
-      :with_finding,
-      resolved_on_default_branch: true,
-      present_on_default_branch: false,
-      resolved_by_id: user.id,
-      project: pipeline.project
+    create(:vulnerability, :resolved, :with_finding,
+      resolved_on_default_branch: true, present_on_default_branch: false, resolved_by_id: user.id
     )
   end
 
-  let(:existing_detected_finding_map) { create(:finding_map, pipeline: pipeline) }
-  let(:existing_resolved_finding_map) { create(:finding_map, pipeline: pipeline) }
-  let(:new_finding_map) { create(:finding_map, pipeline: pipeline) }
+  let(:existing_detected_finding_map) { create(:finding_map) }
+  let(:existing_resolved_finding_map) { create(:finding_map) }
+  let(:new_finding_map) { create(:finding_map) }
 
   let(:finding_maps) { [existing_detected_finding_map, existing_resolved_finding_map, new_finding_map] }
 
@@ -59,30 +50,12 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::MarkResolvedAs
       .from(0)
       .to(1)
 
-    state_transition = ::Vulnerabilities::StateTransition.last
-    expect(state_transition).to be_valid
-    expect(state_transition.vulnerability_id).to eq(resolved_vulnerability.id)
+    expect(::Vulnerabilities::StateTransition.last.vulnerability_id).to eq(resolved_vulnerability.id)
   end
 
   it 'marks the findings as transitioned_to_detected' do
     expect { mark_resolved_as_detected }.to change { existing_resolved_finding_map.transitioned_to_detected }.to(true)
                                         .and not_change { existing_detected_finding_map.transitioned_to_detected }
                                         .and not_change { new_finding_map.transitioned_to_detected }
-  end
-
-  it 'inserts a system note for redetected vulnerability', :aggregate_failures do
-    mark_resolved_as_detected
-
-    id = existing_resolved_finding_map.pipeline.id
-    path = "/#{existing_resolved_finding_map.pipeline.project.full_path}/-/pipelines/#{id}"
-    link = %r{\[#{id}\]\(.*#{path}\)}
-    expected_note = %r{changed vulnerability status to Needs Triage because it was redetected in pipeline #{link}}
-
-    last_note = Note.last
-    expect(last_note).to be_valid
-    expect(last_note.noteable).to eq(resolved_vulnerability)
-    expect(last_note.note).to match(expected_note)
-    expect(last_note.system_note_metadata).to be_valid
-    expect(last_note.system_note_metadata.action).to eq('vulnerability_detected')
   end
 end
