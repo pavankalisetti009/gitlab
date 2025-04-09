@@ -17,7 +17,7 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
         name: "minimum_approvals_required_2"
       },
       {
-        expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+        expression: { operator: "=", field: "project_visibility_not_internal", value: true }.to_json,
         name: "project_visibility_not_internal"
       }
     ]

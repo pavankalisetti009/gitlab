@@ -49,10 +49,6 @@ module ComplianceManagement
             project.merge_requests_disable_committers_approval?
         end
 
-        def project_visibility(project, _context = {})
-          project.visibility
-        end
-
         def minimum_approvals_required(project, _context = {})
           project.approval_rules.pick("SUM(approvals_required)") || 0
         end
@@ -287,6 +283,96 @@ module ComplianceManagement
           !default_branch_users_can_push?(project, role: :developer) &&
             !default_branch_users_can_push?(project, role: :maintainer) &&
             !default_branch_users_can_push?(project, role: :owner)
+        end
+
+        def push_protection_enabled?(project, _context = {})
+          project.security_setting&.secret_push_protection_enabled
+        end
+
+        def project_visibility_not_internal?(project, _context = {})
+          !project.internal?
+        end
+
+        def project_archived?(project, _context = {})
+          project.archived?
+        end
+
+        def default_branch_users_can_merge?(project, _context = {})
+          # No default branch means no restrictions - return false as there is no default branch
+          return false unless project.default_branch
+
+          protected_branch = ProtectedBranch.default_branch_for(project)
+
+          return false unless protected_branch # Return false - Unprotected branch means anyone can merge
+
+          # Check if any merge access level allows developers or higher roles to merge
+          protected_branch.merge_access_levels.any? do |access_level|
+            access_level.role? && access_level.access_level >= Gitlab::Access::DEVELOPER
+          end
+        end
+
+        def merge_request_commit_reset_approvals?(project, _context = {})
+          project.reset_approvals_on_push?
+        end
+
+        def project_visibility_not_public?(project, _context = {})
+          !project.public?
+        end
+
+        def package_hunter_no_findings_untriaged?(project, _context = {})
+          return false unless project.licensed_feature_available?(:security_dashboard)
+
+          finder = ::Security::VulnerabilityReadsFinder.new(
+            project,
+            {
+              scanner: %w[packagehunter],
+              state: %w[detected confirmed]
+            }
+          )
+          finder.execute.any?
+        end
+
+        def project_pipelines_not_public?(project, _context = {})
+          # Goes in order of: disabled, private, enabled, public
+
+          project.project_feature.access_level(:builds) < ProjectFeature.access_level_from_str('enabled')
+        end
+
+        def vulnerabilities_slo_days_over_threshold?(project, context = {})
+          threshold = context[:threshold] || 180 # Days
+
+          oldest_vulnerability = project.vulnerabilities
+            .with_states(Vulnerability::ACTIVE_STATES)
+            .order_created_at_desc
+            .with_limit(1)
+            .first
+
+          return false if oldest_vulnerability.nil?
+
+          oldest_vulnerability.created_at < threshold.days.ago
+        end
+
+        def merge_requests_approval_rules_prevent_editing?(project, _context = {})
+          project.disable_overriding_approvers_per_merge_request?
+        end
+
+        def project_user_defined_variables_restricted_to_maintainers?(project, _context = {})
+          return false unless project&.ci_cd_settings
+
+          project.restrict_user_defined_variables? &&
+            %w[maintainer owner].include?(project.ci_pipeline_variables_minimum_override_role)
+        end
+
+        def merge_requests_require_code_owner_approval?(project, _context = {})
+          project.merge_requests_require_code_owner_approval?
+        end
+
+        def cicd_job_token_scope_enabled?(project, _context = {})
+          project.ci_inbound_job_token_scope_enabled?
+        end
+
+        def project_marked_for_deletion?(project, _context = {})
+          project.marked_for_deletion? && !project.marked_for_deletion_at.nil?
         end
       end
     end

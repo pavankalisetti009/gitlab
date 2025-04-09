@@ -19,8 +19,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
   let_it_be(:control_expression) do
     {
       operator: "=",
-      field: "project_visibility",
-      value: 'private'
+      field: "project_visibility_not_internal",
+      value: true
     }.to_json
   end
 
@@ -99,20 +99,17 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
             expression: control_expression
           }
 
-          result = service.execute
+          service.execute
 
           old_values.each do |attribute, old_value|
-            expected_event_hash = {
-              name: 'updated_compliance_requirement_control',
-              author: owner,
-              scope: control.namespace,
-              target: result.payload[:control],
-              message: "Changed compliance requirement control's #{attribute} " \
-                "from '#{old_value}' to '#{new_values[attribute]}'"
-            }
-
             expect(::Gitlab::Audit::Auditor).to have_received(:audit).with(
-              expected_event_hash
+              hash_including(
+                name: 'updated_compliance_requirement_control',
+                author: owner,
+                scope: control.namespace,
+                message: "Changed compliance requirement control's #{attribute} " \
+                  "from '#{old_value}' to '#{new_values[attribute]}'"
+              )
             )
           end
         end

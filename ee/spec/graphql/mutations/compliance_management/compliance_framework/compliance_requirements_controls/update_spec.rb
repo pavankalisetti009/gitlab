@@ -21,8 +21,8 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
   let_it_be(:control_expression) do
     {
       operator: "=",
-      field: "project_visibility",
-      value: 'private'
+      field: "project_visibility_not_internal",
+      value: true
     }.to_json
   end
 

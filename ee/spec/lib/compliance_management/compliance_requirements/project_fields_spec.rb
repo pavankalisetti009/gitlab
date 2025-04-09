@@ -45,7 +45,7 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         'default_branch_protected',
         'merge_request_prevent_author_approval',
         'merge_request_prevent_committers_approval',
-        'project_visibility',
+        'project_visibility_not_internal',
         'minimum_approvals_required',
         'auth_sso_enabled',
         'scanner_sast_running',
@@ -85,7 +85,20 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         'has_valid_ci_config',
         'error_tracking_enabled',
         'default_branch_users_can_push',
-        'default_branch_protected_from_direct_push'
+        'default_branch_protected_from_direct_push',
+        "push_protection_enabled",
+        "project_marked_for_deletion",
+        "project_archived",
+        "default_branch_users_can_merge",
+        "merge_request_commit_reset_approvals",
+        "project_visibility_not_public",
+        "package_hunter_no_findings_untriaged",
+        "project_pipelines_not_public",
+        "vulnerabilities_slo_days_over_threshold",
+        "merge_requests_approval_rules_prevent_editing",
+        "project_user_defined_variables_restricted_to_maintainers",
+        "merge_requests_require_code_owner_approval",
+        "cicd_job_token_scope_enabled"
       )
     end
 
@@ -304,14 +317,6 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
             expect(result).to be false
           end
         end
-      end
-    end
-
-    describe 'project_visibility' do
-      it 'calls visibility on project' do
-        expect(project).to receive(:visibility)
-
-        described_class.map_field(project, 'project_visibility')
       end
     end
 
@@ -1119,6 +1124,260 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
             role: :owner).and_return(true)
 
           expect(described_class.map_field(project_with_repo, 'default_branch_protected_from_direct_push')).to be false
+        end
+      end
+
+      describe 'push_protection_enabled' do
+        before do
+          project.create_security_setting unless project.security_setting
+        end
+
+        it 'returns the value of secret_push_protection_enabled' do
+          expect(project.security_setting).to receive(:secret_push_protection_enabled).and_return(true)
+          expect(described_class.map_field(project, 'push_protection_enabled')).to be true
+
+          expect(project.security_setting).to receive(:secret_push_protection_enabled).and_return(false)
+          expect(described_class.map_field(project, 'push_protection_enabled')).to be false
+        end
+      end
+
+      describe 'project_visibility_not_internal' do
+        it 'returns the opposite of project.internal?' do
+          allow(project).to receive(:internal?).and_return(false)
+          expect(described_class.map_field(project, 'project_visibility_not_internal')).to be true
+
+          allow(project).to receive(:internal?).and_return(true)
+          expect(described_class.map_field(project, 'project_visibility_not_internal')).to be false
+        end
+      end
+
+      describe 'project_archived' do
+        it 'returns the value of project.archived?' do
+          allow(project).to receive(:archived?).and_return(true)
+          expect(described_class.map_field(project, 'project_archived')).to be true
+
+          allow(project).to receive(:archived?).and_return(false)
+          expect(described_class.map_field(project, 'project_archived')).to be false
+        end
+      end
+
+      describe 'default_branch_users_can_merge' do
+        it 'returns false when project has no default branch' do
+          allow(project).to receive(:default_branch).and_return(nil)
+          expect(described_class.map_field(project, 'default_branch_users_can_merge')).to be false
+        end
+
+        it 'returns false when default branch is not protected' do
+          allow(project).to receive(:default_branch).and_return('main')
+          allow(ProtectedBranch).to receive(:default_branch_for).with(project).and_return(nil)
+          expect(described_class.map_field(project, 'default_branch_users_can_merge')).to be false
+        end
+
+        it 'returns true when developers can merge to the default branch' do
+          protected_branch = instance_double(ProtectedBranch)
+          merge_access_level = instance_double(ProtectedBranch::MergeAccessLevel)
+
+          allow(project).to receive(:default_branch).and_return('main')
+          allow(ProtectedBranch).to receive(:default_branch_for).with(project).and_return(protected_branch)
+          allow(protected_branch).to receive(:merge_access_levels).and_return([merge_access_level])
+          allow(merge_access_level).to receive_messages(role?: true, access_level: Gitlab::Access::DEVELOPER)
+
+          expect(described_class.map_field(project, 'default_branch_users_can_merge')).to be true
+        end
+
+        it 'returns false when only maintainers can merge to the default branch' do
+          protected_branch = instance_double(ProtectedBranch)
+          merge_access_level = instance_double(ProtectedBranch::MergeAccessLevel)
+
+          allow(project).to receive(:default_branch).and_return('main')
+          allow(ProtectedBranch).to receive(:default_branch_for).with(project).and_return(protected_branch)
+          allow(protected_branch).to receive(:merge_access_levels).and_return([merge_access_level])
+          allow(merge_access_level).to receive_messages(role?: false, access_level: Gitlab::Access::MAINTAINER)
+
+          expect(described_class.map_field(project, 'default_branch_users_can_merge')).to be false
+        end
+      end
+
+      describe 'merge_request_commit_reset_approvals' do
+        it 'returns the value of reset_approvals_on_push?' do
+          allow(project).to receive(:reset_approvals_on_push?).and_return(true)
+          expect(described_class.map_field(project, 'merge_request_commit_reset_approvals')).to be true
+
+          allow(project).to receive(:reset_approvals_on_push?).and_return(false)
+          expect(described_class.map_field(project, 'merge_request_commit_reset_approvals')).to be false
+        end
+      end
+
+      describe 'project_visibility_not_public' do
+        it 'returns the opposite of project.public?' do
+          allow(project).to receive(:public?).and_return(false)
+          expect(described_class.map_field(project, 'project_visibility_not_public')).to be true
+
+          allow(project).to receive(:public?).and_return(true)
+          expect(described_class.map_field(project, 'project_visibility_not_public')).to be false
+        end
+      end
+
+      describe 'package_hunter_no_findings_untriaged' do
+        let(:finder) { instance_double(Security::VulnerabilityReadsFinder) }
+
+        before do
+          allow(project).to receive(:licensed_feature_available?).with(:security_dashboard).and_return(true)
+          allow(Security::VulnerabilityReadsFinder).to receive(:new)
+            .with(project, { scanner: %w[packagehunter], state: %w[detected confirmed] })
+            .and_return(finder)
+        end
+
+        it 'returns false when security dashboard is not available' do
+          allow(project).to receive(:licensed_feature_available?).with(:security_dashboard).and_return(false)
+          expect(described_class.map_field(project, 'package_hunter_no_findings_untriaged')).to be false
+        end
+
+        it 'returns false when there are no findings' do
+          allow(finder).to receive(:execute).and_return([])
+          expect(described_class.map_field(project, 'package_hunter_no_findings_untriaged')).to be false
+        end
+
+        it 'returns true when there are findings' do
+          allow(finder).to receive(:execute).and_return([double])
+          expect(described_class.map_field(project, 'package_hunter_no_findings_untriaged')).to be true
+        end
+      end
+
+      describe 'project_pipelines_not_public' do
+        it 'returns true when builds access level is less than ENABLED' do
+          allow(project.project_feature).to receive(:access_level).with(:builds).and_return(ProjectFeature::PRIVATE)
+          allow(ProjectFeature).to receive(:access_level_from_str).with('enabled').and_return(ProjectFeature::ENABLED)
+          expect(described_class.map_field(project, 'project_pipelines_not_public')).to be true
+        end
+
+        it 'returns false when builds access level is ENABLED or above' do
+          allow(project.project_feature).to receive(:access_level).with(:builds).and_return(ProjectFeature::ENABLED)
+          allow(ProjectFeature).to receive(:access_level_from_str).with('enabled').and_return(ProjectFeature::ENABLED)
+          expect(described_class.map_field(project, 'project_pipelines_not_public')).to be false
+        end
+      end
+
+      describe 'vulnerabilities_slo_days_over_threshold' do
+        it 'returns false when there are no vulnerabilities' do
+          oldest_vulnerability = nil
+          allow(project.vulnerabilities).to receive_message_chain(:with_states, :order_created_at_desc, :with_limit,
+            :first)
+            .and_return(oldest_vulnerability)
+          expect(described_class.map_field(project, 'vulnerabilities_slo_days_over_threshold')).to be false
+        end
+
+        it 'returns true when there are vulnerabilities older than the threshold' do
+          oldest_vulnerability = instance_double(Vulnerability)
+          allow(oldest_vulnerability).to receive(:created_at).and_return(181.days.ago)
+          allow(project.vulnerabilities).to receive_message_chain(:with_states, :order_created_at_desc, :with_limit,
+            :first)
+            .and_return(oldest_vulnerability)
+          expect(described_class.map_field(project, 'vulnerabilities_slo_days_over_threshold')).to be true
+        end
+
+        it 'returns false when vulnerabilities are newer than the threshold' do
+          oldest_vulnerability = instance_double(Vulnerability)
+          allow(oldest_vulnerability).to receive(:created_at).and_return(179.days.ago)
+          allow(project.vulnerabilities).to receive_message_chain(:with_states, :order_created_at_desc, :with_limit,
+            :first)
+            .and_return(oldest_vulnerability)
+          expect(described_class.map_field(project, 'vulnerabilities_slo_days_over_threshold')).to be false
+        end
+      end
+
+      describe 'merge_requests_approval_rules_prevent_editing' do
+        it 'returns the value of disable_overriding_approvers_per_merge_request?' do
+          allow(project).to receive(:disable_overriding_approvers_per_merge_request?).and_return(true)
+          expect(described_class.map_field(project, 'merge_requests_approval_rules_prevent_editing')).to be true
+
+          allow(project).to receive(:disable_overriding_approvers_per_merge_request?).and_return(false)
+          expect(described_class.map_field(project, 'merge_requests_approval_rules_prevent_editing')).to be false
+        end
+      end
+
+      describe 'project_user_defined_variables_restricted_to_maintainers' do
+        it 'returns false when project has no ci_cd_settings' do
+          allow(project).to receive(:ci_cd_settings).and_return(nil)
+          expect(described_class.map_field(project,
+            'project_user_defined_variables_restricted_to_maintainers')).to be false
+        end
+
+        it 'returns false when user defined variables are not restricted' do
+          allow(project).to receive(:restrict_user_defined_variables?).and_return(false)
+          expect(described_class.map_field(project,
+            'project_user_defined_variables_restricted_to_maintainers')).to be false
+        end
+
+        it 'returns true when variables are restricted to maintainers or owners' do
+          allow(project).to receive_messages(
+            restrict_user_defined_variables?: true,
+            ci_pipeline_variables_minimum_override_role: 'maintainer'
+          )
+          expect(described_class.map_field(project,
+            'project_user_defined_variables_restricted_to_maintainers')).to be true
+
+          allow(project).to receive_messages(
+            restrict_user_defined_variables?: true,
+            ci_pipeline_variables_minimum_override_role: 'owner'
+          )
+          expect(described_class.map_field(project,
+            'project_user_defined_variables_restricted_to_maintainers')).to be true
+        end
+
+        it 'returns false when variables are restricted to developers' do
+          allow(project).to receive_messages(
+            restrict_user_defined_variables?: true,
+            ci_pipeline_variables_minimum_override_role: 'developer'
+          )
+          expect(described_class.map_field(project,
+            'project_user_defined_variables_restricted_to_maintainers')).to be false
+        end
+      end
+
+      describe 'merge_requests_require_code_owner_approval' do
+        it 'returns the value of merge_requests_require_code_owner_approval?' do
+          allow(project).to receive(:merge_requests_require_code_owner_approval?).and_return(true)
+          expect(described_class.map_field(project, 'merge_requests_require_code_owner_approval')).to be true
+
+          allow(project).to receive(:merge_requests_require_code_owner_approval?).and_return(false)
+          expect(described_class.map_field(project, 'merge_requests_require_code_owner_approval')).to be false
+        end
+      end
+
+      describe 'cicd_job_token_scope_enabled' do
+        it 'returns the value of ci_inbound_job_token_scope_enabled?' do
+          allow(project).to receive(:ci_inbound_job_token_scope_enabled?).and_return(true)
+          expect(described_class.map_field(project, 'cicd_job_token_scope_enabled')).to be true
+
+          allow(project).to receive(:ci_inbound_job_token_scope_enabled?).and_return(false)
+          expect(described_class.map_field(project, 'cicd_job_token_scope_enabled')).to be false
+        end
+      end
+
+      describe 'project_marked_for_deletion' do
+        it 'returns true when project is marked for deletion with a date' do
+          allow(project).to receive_messages(
+            marked_for_deletion?: true,
+            marked_for_deletion_at: Time.current
+          )
+          expect(described_class.map_field(project, 'project_marked_for_deletion')).to be true
+        end
+
+        it 'returns false when project is not marked for deletion' do
+          allow(project).to receive_messages(
+            marked_for_deletion?: false,
+            marked_for_deletion_at: nil
+          )
+          expect(described_class.map_field(project, 'project_marked_for_deletion')).to be false
+        end
+
+        it 'returns false when marked_for_deletion? is true but marked_for_deletion_at is nil' do
+          allow(project).to receive_messages(
+            marked_for_deletion?: true,
+            marked_for_deletion_at: nil
+          )
+          expect(described_class.map_field(project, 'project_marked_for_deletion')).to be false
         end
       end
     end

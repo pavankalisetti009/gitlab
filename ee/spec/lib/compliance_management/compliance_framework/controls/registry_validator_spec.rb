@@ -39,8 +39,6 @@ RSpec.describe ComplianceManagement::ComplianceFramework::Controls::RegistryVali
     it 'passes with actual registry data' do
       loaded_controls = registry.controls
       expect(described_class.validate!(loaded_controls, special_controls_from_registry)).to be_truthy
-    rescue StandardError => e
-      skip "Skipping real data validation due to environment issue: #{e.message}"
     end
 
     it 'handles empty controls gracefully' do

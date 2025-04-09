@@ -60,6 +60,8 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
   subject(:mutate) { post_graphql_mutation(mutation, current_user: current_user) }
 
   before do
+    stub_licensed_features(custom_compliance_frameworks: true, evaluate_group_level_compliance_pipeline: true)
+
     create(:compliance_requirements_control, compliance_requirement: requirement)
     create(:compliance_requirements_control, :project_visibility_not_internal, compliance_requirement: requirement)
   end
@@ -111,10 +113,6 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
   end
 
   context 'when feature is licensed' do
-    before do
-      stub_licensed_features(custom_compliance_frameworks: true, evaluate_group_level_compliance_pipeline: true)
-    end
-
     before_all do
       namespace.add_owner(owner)
       namespace.add_maintainer(maintainer)
@@ -199,12 +197,9 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
           let(:controls) do
             [
               {
-                expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
-                name: "minimum_approvals_required_2"
-              },
-              {
-                expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"invalid_value\"}",
-                name: "project_visibility_not_internal"
+                name: "minimum_approvals_required_2",
+                expression: { operator: "=", field: "minimum_approvals_required", value: "invalid_number" }.to_json,
+                control_type: 'internal'
               }
             ]
           end
@@ -214,8 +209,8 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
 
             expect(mutation_response['errors'])
               .to contain_exactly(
-                "Control 'project_visibility_not_internal': Failed to update compliance requirement control. " \
-                  "Error: Expression property '/value' is not one of: [\"private\", \"internal\", \"public\"]"
+                "Failed to add compliance requirement control minimum_approvals_required_2: " \
+                  "Validation failed: Expression property '/value' is not of type: number"
               )
           end
 

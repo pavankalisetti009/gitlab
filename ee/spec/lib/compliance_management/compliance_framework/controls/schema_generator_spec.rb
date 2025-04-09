@@ -52,20 +52,5 @@ RSpec.describe ComplianceManagement::ComplianceFramework::Controls::SchemaGenera
       expect(numeric_condition.dig('then', 'properties', 'operator', 'enum'))
         .to eq(registry::CONTROL_TYPES[:numeric][:valid_operators])
     end
-
-    it 'creates enum validation for visibility field' do
-      visibility_entry = registry.controls.find { |_, data| data[:valid_values]&.include?('internal') }
-      id, data = visibility_entry
-      field_id = (data[:field_id] || id).to_s
-
-      visibility_condition = schema['allOf'].find do |condition|
-        condition.dig('if', 'properties', 'field', 'enum') == [field_id]
-      end
-
-      expect(visibility_condition).to be_present
-      expect(visibility_condition.dig('then', 'properties', 'value', 'enum')).to include('internal')
-      expect(visibility_condition.dig('then', 'properties', 'operator', 'enum'))
-        .to eq(registry::CONTROL_TYPES[:enum][:valid_operators])
-    end
   end
 end

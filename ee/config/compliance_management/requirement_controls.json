@@ -39,9 +39,9 @@
     "id": "project_visibility_not_internal",
     "name": "Internal visibility is forbidden",
     "expression": {
-      "field": "project_visibility",
-      "operator": "!=",
-      "value": "internal"
+      "field": "project_visibility_not_internal",
+      "operator": "=",
+      "value": true
     }
   },
   {
@@ -391,6 +391,123 @@
     "name": "Default Branch Protected From Direct Push",
     "expression": {
       "field": "default_branch_protected_from_direct_push",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "push_protection_enabled",
+    "name": "Push Protection Enabled",
+    "expression": {
+      "field": "push_protection_enabled",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "project_marked_for_deletion",
+    "name": "Project Marked For Deletion",
+    "expression": {
+      "field": "project_marked_for_deletion",
+      "operator": "=",
+      "value": false
+    }
+  },
+  {
+    "id": "project_archived",
+    "name": "Project Archived",
+    "expression": {
+      "field": "project_archived",
+      "operator": "=",
+      "value": false
+    }
+  },
+  {
+    "id": "default_branch_users_can_merge",
+    "name": "Default Branch Users Can Merge",
+    "expression": {
+      "field": "default_branch_users_can_merge",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "merge_request_commit_reset_approvals",
+    "name": "Merge Request Commit Reset Approvals",
+    "expression": {
+      "field": "merge_request_commit_reset_approvals",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "project_visibility_not_public",
+    "name": "Project Visibility Not Public",
+    "expression": {
+      "field": "project_visibility_not_public",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "package_hunter_no_findings_untriaged",
+    "name": "Package Hunter No Findings Untriaged",
+    "expression": {
+      "field": "package_hunter_no_findings_untriaged",
+      "operator": "=",
+      "value": false
+    }
+  },
+  {
+    "id": "project_pipelines_not_public",
+    "name": "Project Pipelines Not Public",
+    "expression": {
+      "field": "project_pipelines_not_public",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "vulnerabilities_slo_days_over_threshold",
+    "name": "Vulnerabilities SLO Days Over Threshold",
+    "expression": {
+      "field": "vulnerabilities_slo_days_over_threshold",
+      "operator": "=",
+      "value": false
+    }
+  },
+  {
+    "id": "merge_requests_approval_rules_prevent_editing",
+    "name": "Merge Requests Approval Rules Prevent Editing",
+    "expression": {
+      "field": "merge_requests_approval_rules_prevent_editing",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "project_user_defined_variables_restricted_to_maintainers",
+    "name": "Project User Defined Variables Restricted To Maintainers",
+    "expression": {
+      "field": "project_user_defined_variables_restricted_to_maintainers",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "merge_requests_require_code_owner_approval",
+    "name": "Merge Requests Require Code Owner Approval",
+    "expression": {
+      "field": "merge_requests_require_code_owner_approval",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "cicd_job_token_scope_enabled",
+    "name": "CICD Job Token Scope Enabled",
+    "expression": {
+      "field": "cicd_job_token_scope_enabled",
       "operator": "=",
       "value": true
     }

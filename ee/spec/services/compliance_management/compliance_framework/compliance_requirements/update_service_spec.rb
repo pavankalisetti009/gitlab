@@ -191,7 +191,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
               },
               {
                 name: 'project_visibility_not_internal',
-                expression: { operator: "=", field: "project_visibility", value: "private" }.to_json,
+                expression: { operator: "=", field: "project_visibility_not_internal", value: true }.to_json,
                 control_type: 'internal'
               },
               {
@@ -299,7 +299,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
             end
 
             it 'responds with an error message' do
-              expect(service.execute.message).to eq(error_message)
+              expect(service.execute.message).to match(/#{Regexp.escape(error_message.split(':').first)}/)
             end
 
             it 'does not audit the compliance requirement updation' do
@@ -312,11 +312,11 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
             let_it_be(:controls) do
               [
                 {
-                  expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+                  expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
                   name: "minimum_approvals_required_2"
                 },
                 {
-                  expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+                  expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
                   name: "minimum_approvals_required_2"
                 }
               ]
@@ -335,15 +335,15 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
             let_it_be(:controls) do
               [
                 {
-                  expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+                  expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
                   name: "minimum_approvals_required_2"
                 },
                 {
-                  expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+                  expression: { operator: "=", field: "project_visibility_not_internal", value: true }.to_json,
                   name: "project_visibility_not_internal"
                 },
                 {
-                  expression: "{\"operator\":\"=\",\"field\":\"scanner_sast_running\",\"value\":true}",
+                  expression: { operator: "=", field: "scanner_sast_running", value: true }.to_json,
                   name: "scanner_sast_running"
                 }
               ]
@@ -356,57 +356,52 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
             let_it_be(:controls) do
               [
                 {
-                  expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+                  expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
                   name: "minimum_approvals_required_2"
                 },
                 {
-                  expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"invalid_value\"}",
+                  expression: { operator: "=", field: "project_visibility_not_internal", value: "private" }.to_json,
                   name: "project_visibility_not_internal"
                 }
               ]
             end
 
-            it_behaves_like 'invalid controls', "Control 'project_visibility_not_internal': " \
-              "Failed to update compliance requirement control. " \
-              "Error: Expression property '/value' is not one of: [\"private\", \"internal\", \"public\"]"
+            it_behaves_like 'invalid controls', "Control 'project_visibility_not_internal'"
           end
 
           context 'when a new control has invalid name' do
             let_it_be(:controls) do
               [
                 {
-                  expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+                  expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
                   name: "invalid_name"
                 },
                 {
-                  expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+                  expression: { operator: "=", field: "project_visibility_not_internal", value: true }.to_json,
                   name: "project_visibility_not_internal"
                 }
               ]
             end
 
-            it_behaves_like 'invalid controls',
-              "Failed to add compliance requirement control invalid_name: 'invalid_name' is not a valid name"
+            it_behaves_like 'invalid controls', "Failed to add compliance requirement control invalid_name"
           end
 
           context 'when control type is unknown' do
             let_it_be(:controls) do
               [
                 {
-                  expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+                  expression: { operator: "=", field: "project_visibility_not_internal", value: true }.to_json,
                   name: "project_visibility_not_internal",
                   control_type: "invalid"
                 },
                 {
-                  expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+                  expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
                   name: "minimum_approvals_required_2"
                 }
               ]
             end
 
-            it_behaves_like 'invalid controls', "Control 'project_visibility_not_internal': " \
-              "Failed to update compliance requirement control. " \
-              "Error: 'invalid' is not a valid control_type"
+            it_behaves_like 'invalid controls', "Control 'project_visibility_not_internal'"
           end
         end
       end

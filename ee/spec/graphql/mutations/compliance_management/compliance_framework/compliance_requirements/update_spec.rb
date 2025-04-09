@@ -24,7 +24,7 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
         name: "minimum_approvals_required_2"
       },
       {
-        expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+        expression: { operator: "=", field: "project_visibility_not_internal", value: true }.to_json,
         name: "project_visibility_not_internal"
       }
     ]
@@ -120,6 +120,26 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
             "Description can't be blank",
             "Failed to update compliance requirement"
           )
+      end
+    end
+
+    context 'when controls are invalid' do
+      let(:current_user) { owner }
+      let_it_be(:controls) do
+        [
+          {
+            expression: { operator: "=", field: "minimum_approvals_required", value: "invalid_number" }.to_json,
+            name: "minimum_approvals_required_2"
+          }
+        ]
+      end
+
+      it 'does not change the requirement attributes' do
+        expect { mutate }.to not_change { requirement.reload.attributes }
+      end
+
+      it 'returns validation errors' do
+        expect(mutate[:errors]).to include(%r{Expression property '/value' is not of type})
       end
     end
   end
