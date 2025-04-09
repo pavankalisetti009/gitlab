@@ -15,7 +15,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   let(:random_string) { 'abcdef' }
   let(:project_ref) { 'master' }
   let(:devfile_path) { '.devfile.yaml' }
-  let(:devfile_fixture_name) { 'example.devfile.yaml' }
+  let(:devfile_fixture_name) { 'example.devfile.yaml.erb' }
   let(:devfile_yaml) { read_devfile_yaml(devfile_fixture_name) }
   let(:expected_processed_devfile) { example_processed_devfile }
   let(:workspace_root) { '/projects' }
@@ -53,7 +53,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   end
 
   let(:tools_injector_image_from_settings) do
-    "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:9.0.0"
+    RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants::WORKSPACE_TOOLS_IMAGE
   end
 
   let(:vscode_extension_marketplace) do
@@ -168,7 +168,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     end
 
     context 'when devfile is not valid', :aggregate_failures do
-      let(:devfile_fixture_name) { 'example.invalid-components-entry-missing-devfile.yaml' }
+      let(:devfile_fixture_name) { 'example.invalid-components-entry-missing-devfile.yaml.erb' }
 
       it 'does not create the workspace and returns error' do
         expect { response }.not_to change { RemoteDevelopment::Workspace.count }

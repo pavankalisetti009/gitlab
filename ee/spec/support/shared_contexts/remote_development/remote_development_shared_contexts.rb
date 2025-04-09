@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 # NOTE: These fixtures act somewhat as a "Golden Master" source of truth, so we do not use the constant values from
-#       RemoteDevelopment::WorkspaceOperations::Create::Constants, but instead hardcode the corresponding values here.
+#       RemoteDevelopment::.*Constants, but instead hardcode the corresponding values here.
+#       However, some values that change frequently, such as WORKSPACE_TOOLS_IMAGE, may directly use the constants.
 RSpec.shared_context 'with remote development shared fixtures' do
+  include RemoteDevelopment::FixtureFileHelpers
+
   # rubocop:todo Metrics/ParameterLists, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
 
   # @param [RemoteDevelopment::Workspace] workspace
@@ -559,6 +562,9 @@ RSpec.shared_context 'with remote development shared fixtures' do
       'runAsUser' => RemoteDevelopment::WorkspaceOperations::Reconcile::ReconcileConstants::RUN_AS_USER
     }
 
+    project_cloner_script_content = RemoteDevelopment::Files::PROJECTS_CLONER_COMPONENT_INSERTER_CONTAINER_ARGS.dup
+    format_project_cloner_script!(project_cloner_script_content)
+
     deployment = {
       apiVersion: "apps/v1",
       kind: "Deployment",
@@ -590,18 +596,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
             runtimeClassName: default_runtime_class,
             containers: [
               {
-                args: [
-                  <<~"SH"
-                    sshd_path=$(which sshd)
-                    if [ -x "$sshd_path" ]; then
-                      echo "Starting sshd on port ${GL_SSH_PORT}"
-                      $sshd_path -D -p "${GL_SSH_PORT}" &
-                    else
-                      echo "'sshd' not found in path. Not starting SSH server."
-                    fi
-                    "${GL_TOOLS_DIR}/init_tools.sh"
-                  SH
-                ],
+                args: [RemoteDevelopment::Files::MAIN_COMPONENT_UPDATER_CONTAINER_ARGS],
                 command: %w[/bin/sh -c],
                 env: [
                   {
@@ -709,33 +704,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
             ],
             initContainers: [
               {
-                args: [
-                  <<~'SHELL'
-                    if [ -f "/projects/.gl_project_cloning_successful" ];
-                    then
-                      echo "Project cloning was already successful";
-                      exit 0;
-                    fi
-                    if [ -d "/projects/test-project" ];
-                    then
-                      echo "Removing unsuccessfully cloned project directory";
-                      rm -rf "/projects/test-project";
-                    fi
-                    echo "Cloning project";
-                    git clone --branch "master" "http://localhost/test-group/test-project.git" "/projects/test-project";
-                    exit_code=$?
-                    if [ "${exit_code}" -eq 0 ];
-                    then
-                      echo "Project cloning successful";
-                      touch "/projects/.gl_project_cloning_successful";
-                      echo "Updated file to indicate successful project cloning";
-                      exit 0;
-                    else
-                      echo "Project cloning failed with exit code: ${exit_code}";
-                      exit "${exit_code}";
-                    fi
-                  SHELL
-                ],
+                args: [project_cloner_script_content],
                 command: %w[/bin/sh -c],
                 env: [
                   {
@@ -794,7 +763,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
                     value: "/projects"
                   }
                 ],
-                image: "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:9.0.0",
+                image: RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants::WORKSPACE_TOOLS_IMAGE,
                 imagePullPolicy: "Always",
                 name: "gl-tools-injector-gl-tools-injector-command-2",
                 resources: {
@@ -1234,12 +1203,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   # @return [String]
   def example_default_devfile_yaml
-    read_devfile_yaml('example.default_devfile.yaml')
+    read_devfile_yaml('example.default_devfile.yaml.erb')
   end
 
   # @return [String]
   def example_devfile_yaml
-    read_devfile_yaml('example.devfile.yaml')
+    read_devfile_yaml('example.devfile.yaml.erb')
   end
 
   # @return [Hash]
@@ -1249,7 +1218,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   # @return [String]
   def example_flattened_devfile_yaml
-    read_devfile_yaml("example.flattened-devfile.yaml")
+    read_devfile_yaml("example.flattened-devfile.yaml.erb")
   end
 
   # @return [Hash]
@@ -1261,7 +1230,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [String] namespace_path
   # @return [String]
   def example_processed_devfile_yaml(project_name: "test-project", namespace_path: "test-group")
-    read_devfile_yaml("example.processed-devfile.yaml", project_name: project_name, namespace_path: namespace_path)
+    read_devfile_yaml(
+      "example.processed-devfile.yaml.erb",
+      project_name: project_name,
+      namespace_path: namespace_path
+    )
   end
 
   # @param [String] project_name
@@ -1271,24 +1244,5 @@ RSpec.shared_context 'with remote development shared fixtures' do
     yaml_safe_load_symbolized(
       example_processed_devfile_yaml(project_name: project_name, namespace_path: namespace_path)
     )
-  end
-
-  # @param [String] filename
-  # @param [String] project_name
-  # @param [String] namespace_path
-  # @return [String]
-  def read_devfile_yaml(filename, project_name: "test-project", namespace_path: "test-group")
-    devfile_contents = File.read(Rails.root.join('ee/spec/fixtures/remote_development', filename).to_s)
-    devfile_contents.gsub!('http://localhost/', root_url)
-    devfile_contents.gsub!('test-project', project_name)
-    devfile_contents.gsub!('test-group', namespace_path)
-    devfile_contents
-  end
-
-  # @return [String]
-  def root_url
-    # NOTE: Default to http://example.com/ if GitLab::Application is not defined. This allows this helper to be used
-    #       from ee/spec/remote_development/fast_spec_helper.rb
-    defined?(Gitlab::Application) ? Gitlab::Routing.url_helpers.root_url : 'https://example.com/'
   end
 end

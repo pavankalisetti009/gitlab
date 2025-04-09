@@ -60,18 +60,18 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   let(:random_string) { "abcdef" }
   let(:project_ref) { "master" }
   let(:devfile_path) { ".devfile.yaml" }
-  let(:devfile_fixture_name) { "example.devfile.yaml" }
+  let(:devfile_fixture_name) { "example.devfile.yaml.erb" }
   let(:devfile_yaml) do
     read_devfile_yaml(
       devfile_fixture_name,
-      namespace_path: "#{common_parent_namespace_name}/#{workspace_project_namespace_name}",
+      namespace_path: workspace_namespace_path,
       project_name: workspace_project_name
     )
   end
 
   let(:expected_processed_devfile_yaml) do
     example_processed_devfile_yaml(
-      namespace_path: "#{common_parent_namespace_name}/#{workspace_project_namespace_name}",
+      namespace_path: workspace_namespace_path,
       project_name: workspace_project_name
     )
   end

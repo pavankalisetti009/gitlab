@@ -40,7 +40,7 @@ module RemoteDevelopment
           project_cloner_image: ["alpine/git:2.45.2", String],
           shared_namespace: ["", String],
           tools_injector_image: [
-            "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:9.0.0", String
+            RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants::WORKSPACE_TOOLS_IMAGE, String
           ],
           use_kubernetes_user_namespaces: [false, :Boolean],
           workspaces_per_user_quota: [-1, Integer],

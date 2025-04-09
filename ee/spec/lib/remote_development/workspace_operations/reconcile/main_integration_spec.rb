@@ -317,7 +317,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
             agent: agent, user: user, force_include_all_resources: false)
         end
 
-        let(:invalid_devfile_yaml) { read_devfile_yaml('example.invalid-extra-field-devfile.yaml') }
+        let(:invalid_devfile_yaml) { read_devfile_yaml('example.invalid-extra-field-devfile.yaml.erb') }
 
         let(:workspace2_agent_info) do
           create_workspace_agent_info_hash(

@@ -25,11 +25,11 @@ FactoryBot.define do
     devfile_path { '.devfile.yaml' }
 
     devfile do
-      File.read(Rails.root.join('ee/spec/fixtures/remote_development/example.devfile.yaml').to_s)
+      RemoteDevelopment::FixtureFileHelpers.read_devfile_yaml('example.devfile.yaml.erb')
     end
 
     processed_devfile do
-      File.read(Rails.root.join('ee/spec/fixtures/remote_development/example.processed-devfile.yaml').to_s)
+      RemoteDevelopment::FixtureFileHelpers.read_devfile_yaml('example.processed-devfile.yaml.erb')
     end
 
     transient do

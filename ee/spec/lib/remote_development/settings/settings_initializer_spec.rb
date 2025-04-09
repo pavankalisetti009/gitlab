@@ -4,6 +4,8 @@ require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
   feature_category: :workspaces do
+  include_context "with remote development shared fixtures"
+
   let(:all_possible_requested_setting_names) { RemoteDevelopment::Settings::DefaultSettings.default_settings.keys }
   let(:requested_setting_names) { all_possible_requested_setting_names }
   let(:context) do
@@ -11,7 +13,7 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
   end
 
   let(:default_devfile_yaml) do
-    File.read(Rails.root.join("ee/spec/fixtures/remote_development/example.default_devfile.yaml").to_s)
+    read_devfile_yaml("example.default_devfile.yaml.erb")
   end
 
   subject(:returned_value) do
@@ -70,7 +72,8 @@ RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
           partial_reconciliation_interval_seconds: 10,
           project_cloner_image: "alpine/git:2.45.2",
           shared_namespace: "",
-          tools_injector_image: "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:9.0.0",
+          tools_injector_image:
+            RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants::WORKSPACE_TOOLS_IMAGE,
           use_kubernetes_user_namespaces: false,
           workspaces_per_user_quota: -1,
           workspaces_quota: -1

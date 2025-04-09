@@ -12,11 +12,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ProjectClonerComp
   end
 
   let(:input_processed_devfile) do
-    yaml_safe_load_symbolized(read_devfile_yaml("example.main-container-updated-devfile.yaml"))
+    yaml_safe_load_symbolized(read_devfile_yaml("example.main-container-updated-devfile.yaml.erb"))
   end
 
-  let(:expected_processed_devfile_name) { "example.project-cloner-inserted-devfile.yaml" }
-  let(:expected_processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml(expected_processed_devfile_name)) }
+  let(:expected_processed_devfile) do
+    yaml_safe_load_symbolized(read_devfile_yaml("example.project-cloner-inserted-devfile.yaml.erb"))
+  end
+
   let(:context) do
     {
       params: {

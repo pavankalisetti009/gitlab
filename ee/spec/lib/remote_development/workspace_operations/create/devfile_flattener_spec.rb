@@ -26,9 +26,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener,
   end
 
   context "when devfile has no elements" do
-    let(:devfile_yaml) { read_devfile_yaml('example.no-elements-devfile.yaml') }
+    let(:devfile_yaml) { read_devfile_yaml('example.no-elements-devfile.yaml.erb') }
     let(:expected_processed_devfile) do
-      yaml_safe_load_symbolized(read_devfile_yaml("example.no-elements-flattened-devfile.yaml"))
+      yaml_safe_load_symbolized(read_devfile_yaml("example.no-elements-flattened-devfile.yaml.erb"))
     end
 
     it "adds empty elements" do
@@ -44,7 +44,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener,
   end
 
   context "when flatten raises a Devfile::CliError" do
-    let(:devfile_yaml) { read_devfile_yaml("example.invalid-extra-field-devfile.yaml") }
+    let(:devfile_yaml) { read_devfile_yaml("example.invalid-extra-field-devfile.yaml.erb") }
 
     it "returns the error message from the CLI" do
       expected_error_message =

@@ -8,7 +8,6 @@ module RemoteDevelopment
         include Files
 
         PROJECT_CLONER_COMPONENT_NAME = "gl-project-cloner"
-        PROJECT_CLONING_SUCCESSFUL_FILENAME = ".gl_project_cloning_successful"
 
         # @param [Hash] context
         # @return [Hash]

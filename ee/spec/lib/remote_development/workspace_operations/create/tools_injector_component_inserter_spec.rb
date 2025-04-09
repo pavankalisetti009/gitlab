@@ -5,11 +5,16 @@ require "fast_spec_helper"
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComponentInserter, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
-  let(:input_processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml("example.flattened-devfile.yaml")) }
-  let(:expected_processed_devfile_name) { "example.tools-injector-inserted-devfile.yaml" }
-  let(:expected_processed_devfile) { yaml_safe_load_symbolized(read_devfile_yaml(expected_processed_devfile_name)) }
+  let(:input_processed_devfile) do
+    yaml_safe_load_symbolized(read_devfile_yaml("example.flattened-devfile.yaml.erb"))
+  end
+
+  let(:expected_processed_devfile) do
+    yaml_safe_load_symbolized(read_devfile_yaml("example.tools-injector-inserted-devfile.yaml.erb"))
+  end
+
   let(:tools_injector_image_from_settings) do
-    "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:9.0.0"
+    RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants::WORKSPACE_TOOLS_IMAGE
   end
 
   let(:settings) do
