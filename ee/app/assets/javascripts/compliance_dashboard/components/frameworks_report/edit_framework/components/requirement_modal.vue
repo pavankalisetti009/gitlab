@@ -82,7 +82,8 @@ export default {
       return this.gitlabStandardControls
         .filter((control) => !this.controls.some((c) => c?.name === control.id))
         .filter((control) => control.name.toLowerCase().includes(this.searchQuery.toLowerCase()))
-        .map(({ id, name }) => ({ value: id, text: name }));
+        .map(({ id, name }) => ({ value: id, text: name }))
+        .sort((a, b) => a.text.localeCompare(b.text));
     },
     isFormValid() {
       return Object.values(this.validation).every(Boolean);
@@ -392,7 +393,6 @@ export default {
     externalControl: s__('ComplianceFrameworks|External control'),
     removeControl: s__('ComplianceFrameworks|Remove control'),
     externalUrlLabel: s__('ComplianceFrameworks|External URL'),
-    externalUrlDescription: s__('ComplianceFrameworks|URL to external system.'),
     secretLabel: s__('ComplianceFrameworks|HMAC shared secret'),
     secretDescription: s__(
       'ComplianceFrameworks|Provide a shared secret to be used when sending a request for an external check to authenticate request using HMAC.',
@@ -479,11 +479,6 @@ export default {
                 class="gl-w-full"
               />
             </gl-form-input-group>
-            <template #description>
-              <div class="gl-text-sm">
-                {{ $options.i18n.externalUrlDescription }}
-              </div>
-            </template>
           </gl-form-group>
 
           <gl-form-group

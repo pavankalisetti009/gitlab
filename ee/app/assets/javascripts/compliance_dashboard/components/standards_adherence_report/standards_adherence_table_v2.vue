@@ -151,7 +151,11 @@ export default {
           </div>
         </div>
       </template>
-      <div v-else class="gl-m-3">{{ $options.i18n.emptyReport }}</div>
+      <template v-else>
+        <div class="gl-my-5 gl-text-center">
+          {{ $options.i18n.emptyReport }}
+        </div>
+      </template>
     </div>
   </section>
 </template>
