@@ -1,4 +1,4 @@
-import { GlLink, GlIcon, GlIntersperse, GlPopover } from '@gitlab/ui';
+import { GlLink, GlIcon, GlIntersperse, GlPopover, GlButton } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import DependencyLocation from 'ee/dependencies/components/dependency_location.vue';
 import DirectDescendantViewer from 'ee/dependencies/components/direct_descendant_viewer.vue';
@@ -13,6 +13,11 @@ describe('Dependency Location component', () => {
     wrapper = shallowMount(DependencyLocation, {
       propsData: { ...propsData },
       stubs: { GlLink, DirectDescendantViewer, GlIntersperse },
+      provide: {
+        glFeatures: {
+          dependencyPaths: true,
+        },
+      },
       ...options,
     });
   };
@@ -21,6 +26,7 @@ describe('Dependency Location component', () => {
   const findPath = () => wrapper.find('[data-testid="dependency-path"]');
   const findPathLink = () => wrapper.findComponent(GlLink);
   const findPopover = () => wrapper.findComponent(GlPopover);
+  const findButton = () => wrapper.findComponent(GlButton);
 
   it.each`
     name                      | location                    | path
@@ -58,6 +64,44 @@ describe('Dependency Location component', () => {
       expect(trimText(findPopover().text())).toBe(
         'swell 1.2 / emmajsq 10.11 / zeb 12.1 / post 2.5 / core 1.0',
       );
+    });
+  });
+
+  describe('with dependency path', () => {
+    beforeEach(() => {
+      createComponent({
+        propsData: {
+          location: Paths.dependencyPaths,
+        },
+      });
+    });
+
+    it('shows the dependency path button with the correct props', () => {
+      expect(findButton().text()).toBe('View dependency paths');
+      expect(findButton().props()).toMatchObject({
+        size: 'small',
+      });
+    });
+
+    it('emits event on click', () => {
+      expect(wrapper.emitted('click-dependency-path')).toBeUndefined();
+      findButton().vm.$emit('click');
+      expect(wrapper.emitted('click-dependency-path').length).toBe(1);
+    });
+
+    it('when the feature flag "dependencyPaths" is disabled', () => {
+      createComponent({
+        propsData: {
+          location: Paths.dependencyPaths,
+        },
+        provide: {
+          glFeatures: {
+            dependencyPaths: false,
+          },
+        },
+      });
+
+      expect(findButton().exists()).toBe(false);
     });
   });
 
