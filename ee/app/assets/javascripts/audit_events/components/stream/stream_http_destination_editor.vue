@@ -42,9 +42,9 @@ import {
   createBlankHeader,
   DESTINATION_TYPE_HTTP,
 } from '../../constants';
+import { removeAuditEventsStreamingDestinationFromCache } from '../../graphql/cache_update_consolidated_api';
 import {
   addAuditEventsStreamingDestination,
-  removeAuditEventsStreamingDestination,
   removeLegacyAuditEventsStreamingDestination,
   addAuditEventStreamingHeader,
   removeAuditEventStreamingHeader,
@@ -413,7 +413,7 @@ export default {
     async deleteCreatedDestination(destinationId) {
       const { groupPath: fullPath, isInstance } = this;
       const removeFn = this.glFeatures.useConsolidatedAuditEventStreamDestApi
-        ? removeAuditEventsStreamingDestination
+        ? removeAuditEventsStreamingDestinationFromCache
         : removeLegacyAuditEventsStreamingDestination;
       return this.$apollo.mutate({
         mutation: this.destinationVariables.destinationDestroyMutation,
@@ -430,6 +430,7 @@ export default {
 
           removeFn({
             store: cache,
+            isInstance,
             fullPath,
             destinationId,
           });

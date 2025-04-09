@@ -1,6 +1,7 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import StreamDestinationEditorGcpFields from 'ee/audit_events/components/stream/stream_destination_editor_gcp_fields.vue';
-import { mockConsolidatedAPIGcpLoggingDestinations, newStreamDestination } from '../../mock_data';
+import { newStreamDestination } from '../../mock_data';
+import { mockGcpTypeDestination } from '../../mock_data/consolidated_api';
 
 describe('StreamDestinationEditorGcpFields', () => {
   let wrapper;
@@ -38,7 +39,7 @@ describe('StreamDestinationEditorGcpFields', () => {
     beforeEach(() => {
       createComponent({
         props: {
-          value: mockConsolidatedAPIGcpLoggingDestinations[0],
+          value: mockGcpTypeDestination[0],
           isEditing: true,
         },
       });

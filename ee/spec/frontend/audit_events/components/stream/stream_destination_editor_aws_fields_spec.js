@@ -1,6 +1,7 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import StreamDestinationEditorAwsFields from 'ee/audit_events/components/stream/stream_destination_editor_aws_fields.vue';
-import { mockConsolidatedAPIAmazonS3Destinations, newStreamDestination } from '../../mock_data';
+import { newStreamDestination } from '../../mock_data';
+import { mockAwsTypeDestination } from '../../mock_data/consolidated_api';
 
 describe('StreamDestinationEditorAwsFields', () => {
   let wrapper;
@@ -40,7 +41,7 @@ describe('StreamDestinationEditorAwsFields', () => {
     beforeEach(() => {
       createComponent({
         props: {
-          value: mockConsolidatedAPIAmazonS3Destinations[0],
+          value: mockAwsTypeDestination[0],
           isEditing: true,
         },
       });

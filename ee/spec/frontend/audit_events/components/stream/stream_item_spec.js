@@ -15,8 +15,8 @@ import {
   mockHttpType,
   mockGcpLoggingType,
   mockAmazonS3Type,
-  mockConsolidatedAPIExternalDestinations,
 } from '../../mock_data';
+import { mockHttpTypeDestination } from '../../mock_data/consolidated_api';
 
 describe('StreamItem', () => {
   let wrapper;
@@ -60,7 +60,7 @@ describe('StreamItem', () => {
   describe('when useConsolidatedAuditEventStreamDestApi is enabled', () => {
     beforeEach(async () => {
       createComponent({
-        props: { item: mockConsolidatedAPIExternalDestinations[0] },
+        props: { item: mockHttpTypeDestination[0] },
         provide: {
           glFeatures: { useConsolidatedAuditEventStreamDestApi: true },
         },
@@ -69,9 +69,7 @@ describe('StreamItem', () => {
     });
 
     it('should pass the item to the editor', () => {
-      expect(findStreamDestinationEditor().props('item')).toStrictEqual(
-        mockConsolidatedAPIExternalDestinations[0],
-      );
+      expect(findStreamDestinationEditor().props('item')).toStrictEqual(mockHttpTypeDestination[0]);
     });
   });
 

@@ -17,13 +17,13 @@ import {
   gcpLoggingDestinationCreateMutationPopulator,
   gcpLoggingDestinationUpdateMutationPopulator,
   groupPath,
-  mockConsolidatedAPIGcpLoggingDestinations,
   mockGcpLoggingDestinations,
   instanceGroupPath,
   mockInstanceGcpLoggingDestinations,
   instanceGcpLoggingDestinationCreateMutationPopulator,
   instanceGcpLoggingDestinationUpdateMutationPopulator,
 } from '../../mock_data';
+import { mockGcpTypeDestination } from '../../mock_data/consolidated_api';
 
 jest.mock('~/alert');
 Vue.use(VueApollo);
@@ -83,7 +83,7 @@ describe('StreamGcpLoggingDestinationEditor', () => {
   });
 
   describe('when useConsolidatedAuditEventStreamDestApi is enabled', () => {
-    const item = mockConsolidatedAPIGcpLoggingDestinations[0];
+    const item = mockGcpTypeDestination[0];
 
     beforeEach(() => {
       createComponent({

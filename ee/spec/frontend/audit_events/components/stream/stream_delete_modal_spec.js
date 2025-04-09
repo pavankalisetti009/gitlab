@@ -15,8 +15,6 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
   groupPath,
-  streamingDestinationDeleteMutationPopulator,
-  mockConsolidatedAPIExternalDestinations,
   destinationDeleteMutationPopulator,
   mockExternalDestinations,
   mockHttpType,
@@ -34,6 +32,10 @@ import {
   mockInstanceAmazonS3Destinations,
   destinationInstanceAmazonS3DeleteMutationPopulator,
 } from '../../mock_data';
+import {
+  mockHttpTypeDestination,
+  streamingDestinationDeleteMutationPopulator,
+} from '../../mock_data/consolidated_api';
 
 Vue.use(VueApollo);
 
@@ -178,7 +180,7 @@ describe('StreamDeleteModal', () => {
     describe('with useConsolidatedAuditEventStreamDestApi feature flag', () => {
       beforeEach(() => {
         deleteExternalDestinationProvide = deleteGroupStreamingDestinationsQuery;
-        [itemProvide] = mockConsolidatedAPIExternalDestinations;
+        [itemProvide] = mockHttpTypeDestination;
       });
 
       it('calls the delete mutation with the destination ID', async () => {
@@ -188,7 +190,7 @@ describe('StreamDeleteModal', () => {
         await waitForPromises();
 
         expect(deleteStreamingSuccess).toHaveBeenCalledWith({
-          id: mockConsolidatedAPIExternalDestinations[0].id,
+          id: mockHttpTypeDestination[0].id,
           isInstance: false,
         });
       });
