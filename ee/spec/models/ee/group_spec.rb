@@ -596,41 +596,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
     end
 
-    context 'with filtering_optimization_for_work_items feature flag' do
-      before do
-        stub_licensed_features(epics: true)
-      end
-
-      let(:expected_groups) { [public_group, internal_subgroup] }
-      let(:action) { :read_work_item }
-
-      context 'when filtering_optimization_for_work_items is false' do
-        before do
-          stub_feature_flags(filtering_optimization_for_work_items: false)
-        end
-
-        it 'does not allow the optimization for the read_work_item permission' do
-          expect(described_class).to receive(:can_use_epics_filtering_optimization?).with(groups, action)
-                                                                                    .and_return(false)
-
-          expect(subject).to match_array(expected_groups)
-        end
-      end
-
-      context 'when filtering_optimization_for_work_items is true' do
-        before do
-          stub_feature_flags(filtering_optimization_for_work_items: true)
-        end
-
-        it 'does not allow the optimization for the read_work_item permission' do
-          expect(described_class).to receive(:can_use_epics_filtering_optimization?).with(groups, action)
-                                                                                    .and_return(true)
-
-          expect(subject).to match_array(expected_groups)
-        end
-      end
-    end
-
     context 'getting group root ancestor' do
       before do
         public_group.add_reporter(user)
