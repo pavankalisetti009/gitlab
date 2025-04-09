@@ -4,8 +4,15 @@ require 'spec_helper'
 
 RSpec.describe BulkImports::ProcessService, feature_category: :importers do
   let_it_be_with_reload(:bulk_import) { create(:bulk_import, source_enterprise: true, source_version: '17.7.0') }
+  let(:source_internal_user_finder) { instance_double(BulkImports::SourceInternalUserFinder) }
 
   subject(:service) { described_class.new(bulk_import) }
+
+  before do
+    allow(BulkImports::SourceInternalUserFinder).to receive(:new)
+      .and_return(source_internal_user_finder)
+    allow(source_internal_user_finder).to receive(:set_ghost_user_id)
+  end
 
   context 'when importing a project' do
     it 'does not skip the vulnerabilities tracker' do
