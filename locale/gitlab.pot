@@ -15491,9 +15491,6 @@ msgstr ""
 msgid "ComplianceFrameworks|To unlink this policy and framework, edit the policy's scope."
 msgstr ""
 
-msgid "ComplianceFrameworks|URL to external system."
-msgstr ""
-
 msgid "ComplianceFrameworks|Unable to save this compliance framework. Please try again"
 msgstr ""
 

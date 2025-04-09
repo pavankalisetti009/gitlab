@@ -226,7 +226,9 @@ export default {
     />
     <div ref="addRequirementBtn" class="gl-inline-block">
       <gl-button
-        variant="link"
+        variant="confirm"
+        category="secondary"
+        size="small"
         class="gl-ml-5"
         data-testid="add-requirement-button"
         :disabled="addingRequirementsDisabled"
