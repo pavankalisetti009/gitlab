@@ -332,7 +332,8 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
           summarize_new_merge_request: 9,
           duo_chat_explain_vulnerability: 10,
           resolve_vulnerability: 11,
-          summarize_review: 12
+          summarize_review: 12,
+          glab_ask_git_command: 13
         }.freeze)
       end
 
