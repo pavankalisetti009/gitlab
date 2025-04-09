@@ -20,6 +20,8 @@ RSpec.describe 'Filter issues by custom fields', :js, feature_category: :team_pl
   end
 
   shared_examples 'custom fields filter visibility' do
+    let(:query) { nil }
+
     context 'when custom fields feature is enabled' do
       before do
         stub_licensed_features(custom_fields: true)
@@ -43,26 +45,34 @@ RSpec.describe 'Filter issues by custom fields', :js, feature_category: :team_pl
     end
 
     context 'when custom fields feature is disabled by license' do
+      let(:query) { { "custom-field[#{select_field.id}]": select_option_2.id } }
+
       before do
         stub_licensed_features(custom_fields: false)
         stub_feature_flags(custom_fields_feature: true)
-
-        visit issues_page_path
       end
 
-      it 'does not show custom field tokens in filtered search' do
+      it 'does not show custom field tokens in filtered search or suggestions' do
+        visit issues_page_path
+
         click_filtered_search_bar
 
         aggregate_failures do
-          expect(page).not_to have_content(select_field.name)
-          expect(page).not_to have_content(multi_select_field.name)
-          expect(page).not_to have_content(text_field.name)
-          expect(page).not_to have_content(number_field.name)
+          within_testid('filtered-search-input') do
+            expect(page).not_to have_content(select_field.name)
+            # even if there is no name the search field might try to tokenize the id
+            expect(page).not_to have_content(select_option_2.id)
+            expect(page).not_to have_content(multi_select_field.name)
+            expect(page).not_to have_content(text_field.name)
+            expect(page).not_to have_content(number_field.name)
+          end
         end
       end
     end
 
     context 'when custom fields feature flag is disabled' do
+      let(:query) { { "custom-field[#{select_field.id}]": select_option_2.id } }
+
       before do
         stub_licensed_features(custom_fields: true)
         stub_feature_flags(custom_fields_feature: false)
@@ -74,29 +84,32 @@ RSpec.describe 'Filter issues by custom fields', :js, feature_category: :team_pl
         click_filtered_search_bar
 
         aggregate_failures do
-          expect(page).not_to have_content(select_field.name)
-          expect(page).not_to have_content(multi_select_field.name)
-          expect(page).not_to have_content(text_field.name)
-          expect(page).not_to have_content(number_field.name)
+          within_testid('filtered-search-input') do
+            expect(page).not_to have_content(select_field.name)
+            expect(page).not_to have_content(select_option_2.id)
+            expect(page).not_to have_content(multi_select_field.name)
+            expect(page).not_to have_content(text_field.name)
+            expect(page).not_to have_content(number_field.name)
+          end
         end
       end
     end
   end
 
   context 'on project issues page' do
-    let(:issues_page_path) { project_issues_path(project) }
+    let(:issues_page_path) { project_issues_path(project, query) }
 
     it_behaves_like 'custom fields filter visibility'
   end
 
   context 'on group issues page' do
-    let(:issues_page_path) { issues_group_path(group) }
+    let(:issues_page_path) { issues_group_path(group, query) }
 
     it_behaves_like 'custom fields filter visibility'
   end
 
   context 'on subgroup issues page' do
-    let(:issues_page_path) { issues_group_path(subgroup) }
+    let(:issues_page_path) { issues_group_path(subgroup, query) }
 
     it_behaves_like 'custom fields filter visibility'
   end
