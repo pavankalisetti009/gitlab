@@ -31508,6 +31508,9 @@ msgstr ""
 msgid "ImportProjects|All organizations"
 msgstr ""
 
+msgid "ImportProjects|Are you sure you want to import the project to a personal namespace?"
+msgstr ""
+
 msgid "ImportProjects|Blocked import URL: %{message}"
 msgstr ""
 
@@ -31523,6 +31526,9 @@ msgstr ""
 msgid "ImportProjects|Collaborated"
 msgstr ""
 
+msgid "ImportProjects|Continue import"
+msgstr ""
+
 msgid "ImportProjects|Error importing repository %{project_safe_import_url} into %{project_full_path} - %{message}"
 msgstr ""
 
@@ -31532,7 +31538,7 @@ msgstr ""
 msgid "ImportProjects|Imported files will be kept. You can import this repository again later."
 msgstr ""
 
-msgid "ImportProjects|Importing a project into a personal namespace results in all contributions being mapped to the same bot user. To map contributions to real users, import projects into a group instead."
+msgid "ImportProjects|Importing a project into a personal namespace results in all contributions being mapped to the same bot user and they cannot be reassigned. To map contributions to actual users, import the project to a group instead."
 msgstr ""
 
 msgid "ImportProjects|Importing the project failed"
