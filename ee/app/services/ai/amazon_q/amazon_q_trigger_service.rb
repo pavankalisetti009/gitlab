@@ -28,7 +28,6 @@ module Ai
         validate_cloud_connector_token!
         validate_service_account!
         validate_source!
-        validate_command!
         validate_code_position! if command == 'test' && note.is_a?(DiffNote)
 
         add_service_account_to_project
@@ -103,11 +102,7 @@ module Ai
       end
 
       def use_existing_thread?
-        %w[dev fix review transform].include?(command)
-      end
-
-      def reply_only?
-        %w[fix].include?(command)
+        %w[dev review transform].include?(command)
       end
 
       def create_note_if_needed
@@ -197,19 +192,6 @@ module Ai
 
       def add_service_account_to_project
         ::Ai::AmazonQ::ServiceAccountMemberAddService.new(source.project).execute
-      end
-
-      def validate_command!
-        # Check the discussions involved in the reply.
-        return true unless reply_only?
-
-        # Filter only notes authored by the Amazon Q service user.
-        # Search for any of the keywords relating to review findings in the note.
-        comments = search_comments_by_service_account(REVIEW_FINDING_KEYWORDS)
-        return true unless comments.blank?
-
-        raise MissingPrerequisiteError,
-          "#{command} can only be executed as a response to the review command"
       end
 
       def search_comments_by_service_account(keywords = nil)

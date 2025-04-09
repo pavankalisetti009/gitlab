@@ -61,11 +61,6 @@ RSpec.describe Ai::AmazonQ::CreateNoteService, feature_category: :ai_agents do
         )
       end
 
-      it 'returns the correct message for fix command' do
-        allow(service).to receive(:command).and_return('fix')
-        expect(service.send(:generate_note_message)).to include("I'm generating a fix for this review finding")
-      end
-
       context 'when note is a DiffNote' do
         let(:note) { build(:diff_note_on_merge_request, project: project) }
 
