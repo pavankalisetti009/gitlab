@@ -10,6 +10,7 @@ RSpec.describe Gitlab::Llm::VertexAi::Embeddings::Text, feature_category: :ai_ab
   let(:success) { true }
   let(:context) { { action: 'embedding' } }
   let(:primitive) { 'documentation_search' }
+  let(:model) { 'embedding-model-v1' }
 
   subject(:execute) do
     described_class.new(text, user: user, tracking_context: context, unit_primitive: primitive).execute
@@ -39,6 +40,27 @@ RSpec.describe Gitlab::Llm::VertexAi::Embeddings::Text, feature_category: :ai_ab
         allow(client).to receive(:text_embeddings).and_return(example_response)
       end
       allow(example_response).to receive(:success?).and_return(success)
+    end
+
+    it 'passes nil as the model to the client' do
+      expect_next_instance_of(Gitlab::Llm::VertexAi::Client) do |client|
+        expect(client).to receive(:text_embeddings)
+          .with(content: Array.wrap(text), model: nil).and_return(example_response)
+      end
+
+      execute
+    end
+
+    context 'when using a custom model' do
+      it 'passes the model to the client' do
+        expect_next_instance_of(Gitlab::Llm::VertexAi::Client) do |client|
+          expect(client).to receive(:text_embeddings)
+            .with(content: Array.wrap(text), model: model).and_return(example_response)
+        end
+
+        described_class.new(text, user: user, tracking_context: context, unit_primitive: primitive, model: model)
+          .execute
+      end
     end
 
     context 'when the text model returns a successful response' do

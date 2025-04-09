@@ -304,6 +304,26 @@ RSpec.describe Gitlab::Llm::VertexAi::Client, feature_category: :ai_abstraction_
     it_behaves_like 'tracks embedding events for AI requests', 2 do
       include_context 'when a failed response is returned from the API'
     end
+
+    describe 'model' do
+      let(:model) { 'some-model' }
+
+      include_context 'when request is successful'
+
+      it 'uses default model when no model is specified' do
+        expect(Gitlab::Llm::VertexAi::ModelConfigurations::TextEmbeddings).to receive(:new)
+          .with(user: user, options: { model: nil })
+
+        client.text_embeddings(content: 'anything')
+      end
+
+      it 'uses specified model when model is provided' do
+        expect(Gitlab::Llm::VertexAi::ModelConfigurations::TextEmbeddings).to receive(:new)
+          .with(user: user, options: { model: model })
+
+        client.text_embeddings(content: 'anything', model: model)
+      end
+    end
   end
 
   describe '#request' do
