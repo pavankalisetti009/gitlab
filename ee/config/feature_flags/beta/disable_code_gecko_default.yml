@@ -1,9 +1,0 @@
----
-name: disable_code_gecko_default
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/519375
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/181852
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/520370
-milestone: '17.9'
-group: group::code creation
-type: beta
-default_enabled: false

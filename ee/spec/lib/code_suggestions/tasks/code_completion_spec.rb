@@ -85,8 +85,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     stub_feature_flags(use_claude_code_completion: false)
     stub_feature_flags(use_fireworks_codestral_code_completion: false)
     stub_feature_flags(code_completion_opt_out_fireworks: false)
-    stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: false)
-    stub_feature_flags(fireworks_qwen_code_completion: false)
   end
 
   describe 'saas failover model' do
@@ -105,7 +103,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
   describe 'saas primary models' do
     before do
       stub_feature_flags(incident_fail_over_completion_provider: false)
-      stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: false)
     end
 
     let(:expected_feature_name) { :code_suggestions }
@@ -155,21 +152,9 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           it_behaves_like 'code suggestion task' do
             before do
               stub_feature_flags(code_completion_opt_out_fireworks: true)
-              stub_feature_flags(disable_code_gecko_default: false)
             end
 
-            let(:expected_body) { request_body_without_model_details }
-          end
-
-          context "when code gecko is disabled" do
-            before do
-              stub_feature_flags(code_completion_opt_out_fireworks: true)
-              stub_feature_flags(disable_code_gecko_default: true)
-            end
-
-            it_behaves_like 'code suggestion task' do
-              let(:expected_body) { request_body_for_vertrex_codestral }
-            end
+            let(:expected_body) { request_body_for_vertrex_codestral }
           end
         end
       end
@@ -199,22 +184,10 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           before do
             # opt out for group2
             stub_feature_flags(code_completion_opt_out_fireworks: group2)
-            stub_feature_flags(disable_code_gecko_default: false)
           end
 
           it_behaves_like 'code suggestion task' do
-            let(:expected_body) { request_body_without_model_details }
-          end
-
-          context "when code gecko is disabled" do
-            before do
-              stub_feature_flags(code_completion_opt_out_fireworks: true)
-              stub_feature_flags(disable_code_gecko_default: true)
-            end
-
-            it_behaves_like 'code suggestion task' do
-              let(:expected_body) { request_body_for_vertrex_codestral }
-            end
+            let(:expected_body) { request_body_for_vertrex_codestral }
           end
         end
 
@@ -223,7 +196,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
 
           before do
             stub_feature_flags(use_claude_code_completion: group2)
-            stub_feature_flags(disable_code_gecko_default: false)
           end
 
           it_behaves_like 'code suggestion task' do
@@ -238,122 +210,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     context 'when Fireworks/Codestral beta FF is disabled' do
       before do
         stub_feature_flags(use_fireworks_codestral_code_completion: false)
-      end
-
-      it_behaves_like 'code suggestion task' do
-        let(:expected_body) { request_body_without_model_details }
-      end
-    end
-
-    context 'when Fireworks/Qwen beta FF is enabled' do
-      before do
-        stub_feature_flags(fireworks_qwen_code_completion: true)
-      end
-
-      let(:request_body_for_fireworks_qwen) do
-        request_body_without_model_details.merge(
-          "model_name" => "qwen2p5-coder-7b",
-          "model_provider" => "fireworks_ai"
-        )
-      end
-
-      context 'on GitLab self-managed' do
-        before do
-          allow(Gitlab).to receive(:org_or_com?).and_return(false)
-        end
-
-        it_behaves_like 'code suggestion task' do
-          let(:expected_body) { request_body_for_fireworks_qwen }
-        end
-
-        context 'when opted out of Fireworks/Qwen through the ops FF' do
-          it_behaves_like 'code suggestion task' do
-            before do
-              stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: true)
-              stub_feature_flags(disable_code_gecko_default: false)
-            end
-
-            let(:expected_body) { request_body_without_model_details }
-          end
-
-          context "when code gecko is disabled" do
-            before do
-              stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: true)
-              stub_feature_flags(disable_code_gecko_default: true)
-            end
-
-            it_behaves_like 'code suggestion task' do
-              let(:expected_body) { request_body_for_vertrex_codestral }
-            end
-          end
-        end
-      end
-
-      context 'on GitLab saas' do
-        before do
-          allow(Gitlab).to receive(:org_or_com?).and_return(true)
-        end
-
-        let_it_be(:group1) do
-          create(:group).tap do |g|
-            setup_addon_purchase_and_seat_assignment(current_user, g, :duo_pro)
-          end
-        end
-
-        let_it_be(:group2) do
-          create(:group).tap do |g|
-            setup_addon_purchase_and_seat_assignment(current_user, g, :duo_enterprise)
-          end
-        end
-
-        it_behaves_like 'code suggestion task' do
-          let(:expected_body) { request_body_for_fireworks_qwen }
-        end
-
-        context "when one of user's root groups has opted out of Fireworks/Qwen through the ops FF" do
-          before do
-            # opt out for group2
-            stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: group2)
-            stub_feature_flags(disable_code_gecko_default: false)
-          end
-
-          it_behaves_like 'code suggestion task' do
-            let(:expected_body) { request_body_without_model_details }
-          end
-
-          context "when code gecko is disabled" do
-            before do
-              stub_feature_flags(disable_code_gecko_default: true)
-            end
-
-            it_behaves_like 'code suggestion task' do
-              let(:expected_body) { request_body_for_vertrex_codestral }
-            end
-          end
-
-          context "when the group uses claude for code completion" do
-            let(:model_engine) { :anthropic }
-
-            before do
-              stub_feature_flags(fireworks_qwen_code_completion: false)
-              stub_feature_flags(code_completion_model_opt_out_from_fireworks_qwen: false)
-              stub_feature_flags(use_claude_code_completion: group2)
-              stub_feature_flags(disable_code_gecko_default: false)
-            end
-
-            it_behaves_like 'code suggestion task' do
-              let(:anthropic_model_name) { 'claude-3-5-haiku-20241022' }
-              let(:expected_body) { anthropic_request_body }
-              let(:expected_feature_name) { :code_suggestions }
-            end
-          end
-        end
-      end
-    end
-
-    context 'when Fireworks/Qwen beta FF is disabled' do
-      before do
-        stub_feature_flags(fireworks_qwen_code_completion: false)
       end
 
       it_behaves_like 'code suggestion task' do
