@@ -7,7 +7,6 @@ FactoryBot.define do
     replica { association(:zoekt_replica, zoekt_enabled_namespace: zoekt_enabled_namespace) }
     namespace_id { zoekt_enabled_namespace.root_namespace_id }
     reserved_storage_bytes { 100 }
-    state { Search::Zoekt::Replica.states.fetch(:pending) }
 
     trait :overprovisioned do
       after(:build) do |index|
@@ -64,5 +63,10 @@ FactoryBot.define do
   trait :stale_used_storage_bytes_updated_at do
     used_storage_bytes_updated_at { 4.minutes.ago }
     last_indexed_at { Time.now }
+  end
+
+  trait :latest_used_storage_bytes do
+    used_storage_bytes_updated_at { Time.now }
+    last_indexed_at { 4.minutes.ago }
   end
 end

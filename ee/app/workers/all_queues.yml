@@ -2923,6 +2923,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: search_zoekt_force_update_overprovisioned_index_event
+  :worker_name: Search::Zoekt::ForceUpdateOverprovisionedIndexEventWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: search_zoekt_index_mark_as_pending_eviction_event
   :worker_name: Search::Zoekt::IndexMarkAsPendingEvictionEventWorker
   :feature_category: :global_search

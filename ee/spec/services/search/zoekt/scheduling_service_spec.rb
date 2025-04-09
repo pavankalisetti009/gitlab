@@ -681,4 +681,40 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       expect { execute_task }.to publish_event(Search::Zoekt::NodeWithNegativeUnclaimedStorageEvent).with(expected)
     end
   end
+
+  describe '#force_update_overprovisioned_index' do
+    let(:task) { :force_update_overprovisioned_index }
+
+    context 'when with_latest_used_storage_bytes_updated_at indices do not exist' do
+      let_it_be(:index) { create(:zoekt_index, :stale_used_storage_bytes_updated_at, :overprovisioned) }
+
+      it 'does not publishes an ForceUpdateOverprovisionedIndexEvent' do
+        expect { execute_task }.not_to publish_event(Search::Zoekt::ForceUpdateOverprovisionedIndexEvent)
+      end
+    end
+
+    context 'when with_latest_used_storage_bytes_updated_at indices exists but they are not overprovisioned' do
+      let_it_be(:index) { create(:zoekt_index, :latest_used_storage_bytes, :ready) }
+
+      it 'does not publishes an ForceUpdateOverprovisionedIndexEvent' do
+        expect { execute_task }.not_to publish_event(Search::Zoekt::ForceUpdateOverprovisionedIndexEvent)
+      end
+    end
+
+    context 'when with_latest_used_storage_bytes_updated_at indices exists but they are not ready' do
+      let_it_be(:index) { create(:zoekt_index, :latest_used_storage_bytes, :overprovisioned) }
+
+      it 'does not publishes an ForceUpdateOverprovisionedIndexEvent' do
+        expect { execute_task }.not_to publish_event(Search::Zoekt::ForceUpdateOverprovisionedIndexEvent)
+      end
+    end
+
+    context 'when with_latest_used_storage_bytes_updated_at indices exists and they are overprovisioned and ready' do
+      let_it_be(:index) { create(:zoekt_index, :latest_used_storage_bytes, :overprovisioned, :ready) }
+
+      it 'publishes an ForceUpdateOverprovisionedIndexEvent' do
+        expect { execute_task }.to publish_event(Search::Zoekt::ForceUpdateOverprovisionedIndexEvent)
+      end
+    end
+  end
 end
