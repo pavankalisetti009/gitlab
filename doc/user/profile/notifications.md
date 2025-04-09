@@ -261,7 +261,8 @@ epics:
 | Epic | New note | Participants, Watchers, Subscribers, and Custom notification level with this event selected. Also anyone mentioned by username in the comment, with notification level "Mention" or higher. |
 | Epic | Reopened | Subscribers and participants. |
 | Issue | Closed | Subscribers and participants. |
-| Issue | Due | Participants and Custom notification level with this event selected. |
+<!-- For issue due timing source, see 'issue_due_scheduler_worker' in https://gitlab.com/gitlab-org/gitlab/-/blob/master/config/initializers/1_settings.rb -->
+| Issue | Due tomorrow. The notification is sent at 00:50 in the server's time zone (for GitLab.com this is UTC) for open issues with a due date of the next calendar day. | Participants and Custom notification level with this event selected. |
 | Issue | Milestone changed | Subscribers and participants. |
 | Issue | Milestone removed | Subscribers and participants. |
 | Issue | New | Anyone mentioned by username in the description, with notification level "Mention" or higher. |

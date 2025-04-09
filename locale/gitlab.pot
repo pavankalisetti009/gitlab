@@ -40150,7 +40150,7 @@ msgstr ""
 msgid "NotificationEvent|Issue is created"
 msgstr ""
 
-msgid "NotificationEvent|Issue is due soon"
+msgid "NotificationEvent|Issue is due tomorrow"
 msgstr ""
 
 msgid "NotificationEvent|Issue is reassigned"

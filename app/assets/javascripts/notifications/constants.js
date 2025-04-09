@@ -42,7 +42,7 @@ export const i18n = {
     close_merge_request: s__('NotificationEvent|Merge request is closed'),
     failed_pipeline: s__('NotificationEvent|Pipeline fails'),
     fixed_pipeline: s__('NotificationEvent|Pipeline is fixed'),
-    issue_due: s__('NotificationEvent|Issue is due soon'),
+    issue_due: s__('NotificationEvent|Issue is due tomorrow'),
     merge_merge_request: s__('NotificationEvent|Merge request is merged'),
     moved_project: s__('NotificationEvent|Project is moved'),
     new_epic: s__('NotificationEvent|Epic is created'),
