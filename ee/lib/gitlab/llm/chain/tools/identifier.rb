@@ -39,17 +39,15 @@ module Gitlab
               # now the resource in context is being referenced in user input.
               context.resource = resource
 
-              resource_content = passed_content(json)
+              content = passed_content(json)
 
               log_conditional_info(context.current_user,
                 message: "Answer received from LLM",
                 event_name: 'response_received',
                 ai_component: 'duo_chat',
-                response_from_llm: resource_content)
+                response_from_llm: content)
 
-              update_chat_storage(resource_content)
-
-              return Answer.new(status: :ok, context: context, content: resource_content, tool: nil)
+              return Answer.new(status: :ok, context: context, content: content, tool: nil)
             rescue JSON::ParserError
               error_message = "\nObservation: JSON has an invalid format. Please retry"
               log_error(message: "Json parsing error",
@@ -72,13 +70,6 @@ module Gitlab
           traceable :perform, run_type: 'tool'
 
           private
-
-          def update_chat_storage(resource_content)
-            return unless resource_content
-
-            chat_storage = ::Gitlab::Llm::ChatStorage.new(context.current_user, context.agent_version&.model_id)
-            chat_storage.update_message_extras(context.request_id, 'resource_content', resource_content.to_json)
-          end
 
           def resource_name
             raise NotImplementedError

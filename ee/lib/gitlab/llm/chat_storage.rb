@@ -5,7 +5,6 @@ module Gitlab
     class ChatStorage
       include Gitlab::Utils::StrongMemoize
 
-      SUPPORTED_EXTRAS = ['resource_content'].freeze
       POSTGRESQL_STORAGE = "postgresql"
 
       delegate :messages, :current_thread, :add, :set_has_feedback, :clear!, to: :postgres_storage
@@ -15,16 +14,6 @@ module Gitlab
         @agent_version_id = agent_version_id
         @thread = thread
         @thread_fallback = thread_fallback
-      end
-
-      def update_message_extras(request_id, key, value)
-        raise ArgumentError, "The key #{key} is not supported" unless key.in?(SUPPORTED_EXTRAS)
-
-        message = messages.find { |m| m.request_id == request_id }
-        return unless message
-
-        message.extras[key] = value
-        postgres_storage.update_message_extras(message)
       end
 
       def messages_by(filters = {})

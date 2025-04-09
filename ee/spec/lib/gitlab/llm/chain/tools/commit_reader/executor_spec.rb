@@ -120,10 +120,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CommitReader::Executor, feature_catego
           let!(:resource) { commit1 }
 
           it_behaves_like 'success response'
-          it_behaves_like 'updating chat storage message extras' do
-            let(:key) { 'resource_content' }
-            let(:expected_message_value) { 'Please use this information about identified commit:' }
-          end
         end
 
         context 'when is commit identified with reference' do

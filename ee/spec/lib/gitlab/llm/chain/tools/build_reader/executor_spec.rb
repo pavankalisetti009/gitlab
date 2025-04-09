@@ -133,10 +133,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::BuildReader::Executor, feature_categor
           let(:resource) { build1 }
 
           it_behaves_like 'success response'
-          it_behaves_like 'updating chat storage message extras' do
-            let(:key) { 'resource_content' }
-            let(:expected_message_value) { 'Please use this information about identified ci build:' }
-          end
         end
 
         context 'when build mistaken with an issue' do

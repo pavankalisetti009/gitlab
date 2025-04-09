@@ -128,10 +128,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::MergeRequestReader::Executor, feature_
           let(:resource) { merge_request1 }
 
           it_behaves_like 'success response'
-          it_behaves_like 'updating chat storage message extras' do
-            let(:key) { 'resource_content' }
-            let(:expected_message_value) { 'Please use this information about identified merge request:' }
-          end
         end
 
         context 'when merge request is identified by iid' do

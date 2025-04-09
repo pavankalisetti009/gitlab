@@ -118,23 +118,6 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
     end
   end
 
-  describe '#update_message_extras' do
-    let(:message) { build(:ai_chat_message, payload) }
-    let(:extras) { { 'resource_content' => 'test content' } }
-
-    before do
-      storage.add(message)
-      message.extras.merge!(extras)
-    end
-
-    it 'updates message extras' do
-      storage.update_message_extras(message)
-
-      updated_message = storage.messages.find { |m| m.id == message.id }
-      expect(updated_message.extras['resource_content']).to eq('test content')
-    end
-  end
-
   describe '#current_thread' do
     subject(:current_thread) { storage.current_thread }
 
