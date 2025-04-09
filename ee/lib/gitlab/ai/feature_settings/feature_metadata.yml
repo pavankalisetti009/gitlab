@@ -99,6 +99,16 @@ duo_chat_explain_vulnerability:
     - claude_3
     - gpt
     - llama3
+duo_chat_summarize_comments:
+  title: Summarize Comments
+  release_state: BETA
+  main_feature: GitLab Duo Chat
+  compatible_llms:
+    - mistral
+    - mixtral
+    - claude_3
+    - gpt
+    - llama3
 generate_commit_message:
   title: Generate Commit Message
   release_state: BETA

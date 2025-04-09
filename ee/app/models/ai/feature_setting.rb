@@ -21,7 +21,8 @@ module Ai
       duo_chat_explain_vulnerability: 10,
       resolve_vulnerability: 11,
       summarize_review: 12,
-      glab_ask_git_command: 13
+      glab_ask_git_command: 13,
+      duo_chat_summarize_comments: 14
     }.freeze
 
     FEATURES = STABLE_FEATURES.merge(FLAGGED_FEATURES)
