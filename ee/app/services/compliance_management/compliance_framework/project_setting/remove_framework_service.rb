@@ -13,6 +13,7 @@ module ComplianceManagement
         def execute
           return error unless framework.projects.destroy(project_id)
 
+          enqueue_project_compliance_status_removal
           publish_event
           audit_event
 
@@ -66,6 +67,13 @@ module ComplianceManagement
         def error
           ServiceResponse.error(message: format(_("Failed to remove the framework from project %{project_name}"),
             project_name: project.name))
+        end
+
+        def enqueue_project_compliance_status_removal
+          ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker.perform_in(
+            ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+            project_id, framework.id
+          )
         end
       end
     end

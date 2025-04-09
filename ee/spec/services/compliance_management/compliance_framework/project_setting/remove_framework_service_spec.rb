@@ -2,7 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSetting::RemoveFrameworkService, feature_category: :compliance_management do
+RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSetting::RemoveFrameworkService,
+  feature_category: :compliance_management do
   let_it_be(:project) { create(:project) }
   let_it_be(:framework) { create(:compliance_framework) }
   let_it_be(:current_user) { create(:user) }
@@ -36,6 +37,16 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSetting::Remove
       it 'creates an audit event' do
         expect { service.execute }.to change { AuditEvent.count }.by(1)
       end
+
+      it 'enqueues the ProjectComplianceStatusesRemovalWorker' do
+        expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
+          .to receive(:perform_in)
+          .with(ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+            project.id, framework.id
+          ).once.and_call_original
+
+        service.execute
+      end
     end
 
     context 'when the project setting does not exist' do
@@ -55,6 +66,13 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSetting::Remove
 
       it 'does not create an audit event' do
         expect { service.execute }.not_to change { AuditEvent.count }
+      end
+
+      it 'does not enqueue the ProjectComplianceStatusesRemovalWorker' do
+        expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
+          .not_to receive(:perform_in)
+
+        service.execute
       end
     end
 
@@ -88,6 +106,13 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSetting::Remove
 
       it 'does not create an audit event' do
         expect { service.execute }.not_to change { AuditEvent.count }
+      end
+
+      it 'does not enqueue the ProjectComplianceStatusesRemovalWorker' do
+        expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
+          .not_to receive(:perform_in)
+
+        service.execute
       end
     end
   end
