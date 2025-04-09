@@ -11,21 +11,55 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ComplianceFrameworks::Sy
   let_it_be(:framework1) { create(:compliance_framework, namespace: namespace, name: 'GDPR') }
   let_it_be(:framework2) { create(:compliance_framework, namespace: namespace, name: 'SOX') }
 
-  let(:framework_ids_and_idx) { [] }
-  let(:all_records) { ComplianceManagement::ComplianceFramework::SecurityPolicy.all }
+  let_it_be(:security_policy) do
+    create(:security_policy, security_orchestration_policy_configuration: policy_configuration)
+  end
 
-  subject(:execute) { described_class.new(policy_configuration).execute }
+  let_it_be(:policy_diff) { nil }
+  let_it_be(:all_records) { ComplianceManagement::ComplianceFramework::SecurityPolicy.all }
+
+  subject(:execute) { described_class.new(security_policy: security_policy, policy_diff: policy_diff).execute }
 
   before do
-    allow(policy_configuration).to receive(:compliance_framework_ids_with_policy_index)
-      .and_return(framework_ids_and_idx)
+    allow(security_policy).to receive(:framework_ids_from_scope)
+      .and_return(framework_ids)
   end
 
   shared_examples 'does not create ComplianceFramework::SecurityPolicy' do
     it { expect { execute }.not_to change { ComplianceManagement::ComplianceFramework::SecurityPolicy.count } }
   end
 
+  shared_examples 'creates ComplianceFramework::SecurityPolicy' do
+    let!(:existing_records) do
+      [
+        create(:compliance_framework_security_policy,
+          security_policy: security_policy,
+          framework: create(:compliance_framework, namespace: namespace, name: 'GDPR 2')
+        ),
+        create(:compliance_framework_security_policy,
+          security_policy: security_policy,
+          framework: create(:compliance_framework, namespace: namespace, name: 'SOX 2')
+        )
+      ]
+    end
+
+    it 'creates ComplianceFramework::SecurityPolicy' do
+      expect { execute }.not_to change { ComplianceManagement::ComplianceFramework::SecurityPolicy.count }
+
+      # Verify old records are deleted
+      expect(
+        ComplianceManagement::ComplianceFramework::SecurityPolicy.where(id: existing_records.map(&:id))
+      ).to be_empty
+
+      # Verify new records are created
+      expect(all_records.count).to eq(2)
+      expect(all_records.map(&:framework_id)).to contain_exactly(framework1.id, framework2.id)
+    end
+  end
+
   context 'when no compliance frameworks are linked' do
+    let_it_be(:framework_ids) { [] }
+
     it_behaves_like 'does not create ComplianceFramework::SecurityPolicy'
   end
 
@@ -35,36 +69,21 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ComplianceFrameworks::Sy
       create(:security_orchestration_policy_configuration, project: project)
     end
 
-    let(:framework_ids_and_idx) do
-      [
-        { framework_ids: [framework1.id, framework2.id], policy_index: 0 }
-      ]
-    end
+    let_it_be(:framework_ids) { [framework1.id, framework2.id] }
 
-    it 'creates ComplianceFramework::SecurityPolicy' do
-      execute
-
-      expect(all_records.count).to eq(2)
-      expect(all_records.map(&:policy_index)).to contain_exactly(0, 0)
-      expect(all_records.map(&:policy_configuration_id)).to contain_exactly(policy_configuration.id,
-        policy_configuration.id)
-      expect(all_records.map(&:framework_id)).to contain_exactly(framework1.id, framework2.id)
-    end
+    it_behaves_like 'creates ComplianceFramework::SecurityPolicy'
   end
 
   context 'when inaccessible compliance framework is linked to policy' do
     let_it_be(:inaccessible_framework) { create(:compliance_framework) }
-    let(:framework_ids_and_idx) do
-      [
-        { framework_ids: [inaccessible_framework.id], policy_index: 0 }
-      ]
-    end
+    let_it_be(:framework_ids) { [inaccessible_framework.id] }
 
     it_behaves_like 'does not create ComplianceFramework::SecurityPolicy'
 
     it 'logs details' do
       expect(::Gitlab::AppJsonLogger).to receive(:info).once.with(
         message: 'inaccessible compliance_framework_ids found in policy',
+        security_policy_id: security_policy.id,
         configuration_id: policy_configuration.id,
         configuration_source_id: policy_configuration.source.id,
         root_namespace_id: namespace.id,
@@ -77,17 +96,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ComplianceFrameworks::Sy
   end
 
   context 'when non existing compliance framework is linked to policy' do
-    let(:framework_ids_and_idx) do
-      [
-        { framework_ids: [non_existing_record_id], policy_index: 0 }
-      ]
-    end
+    let_it_be(:framework_ids) { [non_existing_record_id] }
 
     it_behaves_like 'does not create ComplianceFramework::SecurityPolicy'
 
     it 'logs details' do
       expect(::Gitlab::AppJsonLogger).to receive(:info).once.with(
         message: 'inaccessible compliance_framework_ids found in policy',
+        security_policy_id: security_policy.id,
         configuration_id: policy_configuration.id,
         configuration_source_id: policy_configuration.source.id,
         root_namespace_id: namespace.id,
@@ -99,40 +115,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ComplianceFrameworks::Sy
     end
   end
 
-  context 'when multiple compliance frameworks are linked to policy' do
-    let(:framework_ids_and_idx) do
-      [
-        { framework_ids: [framework1.id, framework2.id], policy_index: 0 }
-      ]
+  context 'when policy scope has changed' do
+    let_it_be(:framework_ids) { [framework1.id, framework2.id] }
+    let_it_be(:policy_diff) do
+      Security::SecurityOrchestrationPolicies::PolicyDiff::Diff.new.tap do |diff|
+        diff.add_policy_field(:policy_scope, nil, { projects: { excluding: [{ id: non_existing_record_id }] } })
+      end
     end
 
-    it 'creates ComplianceFramework::SecurityPolicy' do
-      execute
-
-      expect(all_records.count).to eq(2)
-      expect(all_records.map(&:policy_index)).to contain_exactly(0, 0)
-      expect(all_records.map(&:policy_configuration_id)).to contain_exactly(policy_configuration.id,
-        policy_configuration.id)
-      expect(all_records.map(&:framework_id)).to contain_exactly(framework1.id, framework2.id)
-    end
-  end
-
-  context 'when multiple compliance frameworks are linked to different policies' do
-    let(:framework_ids_and_idx) do
-      [
-        { framework_ids: [framework1.id], policy_index: 0 },
-        { framework_ids: [framework2.id], policy_index: 1 }
-      ]
-    end
-
-    it 'creates ComplianceFramework::SecurityPolicy' do
-      execute
-
-      expect(all_records.count).to eq(2)
-      expect(all_records.map(&:policy_index)).to contain_exactly(0, 1)
-      expect(all_records.map(&:policy_configuration_id)).to contain_exactly(policy_configuration.id,
-        policy_configuration.id)
-      expect(all_records.map(&:framework_id)).to contain_exactly(framework1.id, framework2.id)
-    end
+    it_behaves_like 'creates ComplianceFramework::SecurityPolicy'
   end
 end

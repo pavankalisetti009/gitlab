@@ -1157,4 +1157,57 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       end
     end
   end
+
+  describe '#framework_ids_from_scope' do
+    let_it_be(:policy) { build(:security_policy) }
+
+    subject(:framework_ids) { policy.framework_ids_from_scope }
+
+    context 'when scope is empty' do
+      let_it_be(:policy) { build(:security_policy, scope: {}) }
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when scope has compliance frameworks' do
+      let_it_be(:policy) do
+        build(:security_policy, scope: {
+          compliance_frameworks: [
+            { id: 1 },
+            { id: 2 }
+          ]
+        })
+      end
+
+      it 'returns framework_ids' do
+        expect(framework_ids).to contain_exactly(1, 2)
+      end
+    end
+
+    context 'when scope has duplicatecompliance frameworks' do
+      let_it_be(:policy) do
+        build(:security_policy, scope: {
+          compliance_frameworks: [
+            { id: 1 },
+            { id: 2 },
+            { id: 1 }
+          ]
+        })
+      end
+
+      it 'returns unique framework_ids' do
+        expect(framework_ids).to contain_exactly(1, 2)
+      end
+    end
+
+    context 'when scope has no compliance frameworks' do
+      let_it_be(:policy) do
+        build(:security_policy, scope: {
+          projects: { including: [{ id: 1 }] }
+        })
+      end
+
+      it { is_expected.to be_empty }
+    end
+  end
 end

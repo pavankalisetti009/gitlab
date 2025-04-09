@@ -88,6 +88,16 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       handle_event
     end
 
+    it 'calls ComplianceFrameworks::SyncService' do
+      expect(Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService)
+        .to receive(:new)
+        .with(security_policy: policy, policy_diff: nil)
+        .and_return(instance_double(Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService,
+          execute: true))
+
+      handle_event
+    end
+
     context 'when policy is disabled' do
       before do
         policy.update!(enabled: false)
@@ -197,6 +207,36 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       it 'calls Security::SyncProjectPolicyWorker' do
         expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).with(project.id, policy.id,
           event_payload.deep_stringify_keys)
+
+        handle_event
+      end
+
+      it 'calls ComplianceFrameworks::SyncService with policy_diff' do
+        expect(Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService)
+          .to receive(:new)
+          .with(
+            security_policy: policy,
+            policy_diff: kind_of(Security::SecurityOrchestrationPolicies::PolicyDiff::Diff)
+          )
+          .and_return(instance_double(Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService,
+            execute: true))
+
+        handle_event
+      end
+    end
+
+    context 'when policy_scope does not change' do
+      let(:event_payload) do
+        {
+          security_policy_id: policy.id,
+          diff: { name: { from: 'Old', to: 'new' } },
+          rules_diff: { created: [], updated: [], deleted: [] }
+        }
+      end
+
+      it 'does not call ComplianceFrameworks::SyncService' do
+        expect(Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService)
+          .not_to receive(:new)
 
         handle_event
       end

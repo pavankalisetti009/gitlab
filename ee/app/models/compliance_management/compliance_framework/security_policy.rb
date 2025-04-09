@@ -17,7 +17,7 @@ module ComplianceManagement
       validates :framework, uniqueness: { scope: :security_policy_id }, if: -> { security_policy_id.present? }
 
       scope :for_framework, ->(framework) { where(framework: framework) }
-      scope :for_policy_configuration, ->(policy_configuration) { where(policy_configuration: policy_configuration) }
+      scope :for_security_policy, ->(security_policy) { where(security_policy: security_policy) }
 
       has_many :security_policy_requirements,
         class_name: 'ComplianceManagement::ComplianceFramework::SecurityPolicyRequirement',
@@ -29,17 +29,19 @@ module ComplianceManagement
         inverse_of: :compliance_framework_security_policies
 
       class << self
-        def delete_for_policy_configuration(policy_configuration)
-          for_policy_configuration(policy_configuration).each_batch(order_hint: :updated_at) do |batch|
+        def delete_for_security_policy(security_policy)
+          for_security_policy(security_policy).each_batch(order_hint: :updated_at) do |batch|
             batch.delete_all
           end
         end
 
-        def relink(configuration, framework_policy_attrs)
+        def relink(security_policy, framework_policy_attrs)
           transaction do
-            delete_for_policy_configuration(configuration)
+            delete_for_security_policy(security_policy)
 
-            insert_all(framework_policy_attrs) if framework_policy_attrs.any?
+            if framework_policy_attrs.any?
+              insert_all(framework_policy_attrs, unique_by: [:security_policy_id, :framework_id])
+            end
           end
         end
       end
