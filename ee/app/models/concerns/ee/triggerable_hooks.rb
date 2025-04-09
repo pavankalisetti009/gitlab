@@ -8,7 +8,10 @@ module EE
       private
 
       def available_triggers
-        super.merge({ vulnerability_hooks: :vulnerability_events })
+        super.merge({
+          vulnerability_hooks: :vulnerability_events,
+          member_approval_hooks: :member_approval_events
+        })
       end
     end
   end
