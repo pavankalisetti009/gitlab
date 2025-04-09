@@ -5,9 +5,9 @@ module Ai
     module Dependencies
       module ConfigFiles
         class JavaGradle < Base
-          START_DEPS_SECTION_REGEX = /^dependencies {/ # Identifies the dependencies section
+          START_DEPS_SECTION_REGEX = /^dependencies\s*{\s*/ # Identifies the dependencies section
           END_SECTION_REGEX = /^}$/
-          START_EXT_SECTION_REGEX = /^ext {/ # Identifies the ext section where variables are set
+          START_EXT_SECTION_REGEX = /^ext\s*{\s*/ # Identifies the ext section where variables are set
           PREFIX_REGEX = /^['"]?(implementation|testImplementation)['"]?/ # Appears before each dependency
           LONG_FORM_NAME_REGEX = /name:\s*(?<value>[^,\s]*)/
           LONG_FORM_VERSION_REGEX = /version:\s*(?<value>[^,\s]*)/
@@ -17,8 +17,6 @@ module Ai
           INLINE_COMMENT_REGEX = %r{\s+//.*$}
           STRING_INTERPOLATION_CHAR = '$'
           EXCLUDE_KEYWORD = '('
-
-          attr_reader :versions_to_be_interpolated, :names_to_be_interpolated
 
           def self.file_name_glob
             'build.gradle'
@@ -57,8 +55,8 @@ module Ai
           # }
           #
           def extract_libs
-            @versions_to_be_interpolated = {}
-            @names_to_be_interpolated = {}
+            versions_to_be_interpolated = {}
+            names_to_be_interpolated = {}
             libs = []
             in_deps_section = false
             in_ext_section = false
@@ -68,25 +66,31 @@ module Ai
               line.gsub!(INLINE_COMMENT_REGEX, '')
 
               if in_ext_section
-                if END_SECTION_REGEX.match?(line)
+                if line.rstrip == "}"
                   in_ext_section = false
                   next
                 end
 
-                split = line.delete(' ').split('=')
+                val_split = line.delete(' ').split('=')
+                val_name = val_split[0]
+                val_value = val_split[1]
 
-                if VALID_VERSION_REGEX.match?(split[1])
-                  versions_to_be_interpolated["$#{split[0]}"] = split[1].delete!('"\'')
-                elsif QUOTED_VALUE_REGEX.match?(split[1])
-                  names_to_be_interpolated["$#{split[0]}"] = split[1].delete!('"\'')
+                if VALID_VERSION_REGEX.match?(val_value)
+                  versions_to_be_interpolated["$#{val_name}"] = val_value.delete!('"\'')
+                elsif QUOTED_VALUE_REGEX.match?(val_value)
+                  names_to_be_interpolated["$#{val_name}"] = val_value.delete!('"\'')
                 end
               elsif START_EXT_SECTION_REGEX.match?(line)
                 in_ext_section = true
               end
 
               if in_deps_section
-                libs << parse_lib(line) if PREFIX_REGEX.match?(line)
-                break if END_SECTION_REGEX.match?(line)
+                if PREFIX_REGEX.match?(line)
+                  libs << parse_lib(line, names_to_be_interpolated,
+                    versions_to_be_interpolated)
+                end
+
+                break if line.rstrip == "}"
               elsif START_DEPS_SECTION_REGEX.match?(line)
                 in_deps_section = true
               end
@@ -95,7 +99,7 @@ module Ai
             libs.compact
           end
 
-          def parse_lib(line)
+          def parse_lib(line, names_to_be_interpolated, versions_to_be_interpolated)
             line.gsub!(PREFIX_REGEX, '')
             return if line.include?(EXCLUDE_KEYWORD)
 
@@ -108,19 +112,21 @@ module Ai
               version = version_match[:value].delete('"\'') if version_match
             else
               # Parse short form
-              match = QUOTED_VALUE_REGEX.match(line)
-              _group, name, version = match[:value].split(':') if match
+              depedency_match = QUOTED_VALUE_REGEX.match(line)
+              _group, name, version = depedency_match[:value].split(':') if depedency_match
             end
 
             if name&.include?(STRING_INTERPOLATION_CHAR)
-              name = names_to_be_interpolated.key?(name) ? names_to_be_interpolated[name] : return
+              return unless names_to_be_interpolated.key?(name)
+
+              name = names_to_be_interpolated[name]
             end
 
             if version&.include?(STRING_INTERPOLATION_CHAR)
               version = versions_to_be_interpolated.key?(version) ? versions_to_be_interpolated[version] : nil
             end
 
-            Lib.new(name: name, version: version) if name
+            Lib.new(name: name, version: version)
           end
         end
       end
