@@ -118,7 +118,7 @@ describe('PipelineUsageApp', () => {
       createComponent();
 
       expect(findDescription().text()).toContain(
-        'Compute units usage is calculated based on instance runners duration with cost factors applied.',
+        'Compute minutes usage displays the hosted runner usage against the total available compute minutes.',
       );
 
       expect(findDescription().findComponent(HelpPageLink).attributes()).toMatchObject({
