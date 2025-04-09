@@ -54,9 +54,18 @@ module ComplianceManagement
         deleted_framework_settings.each do |framework_setting|
           ::ComplianceManagement::ComplianceFrameworkChangesAuditor.new(current_user, framework_setting,
             project).execute
+
+          enqueue_project_compliance_status_removal(framework_setting.framework_id)
         end
 
         success
+      end
+
+      def enqueue_project_compliance_status_removal(framework_id)
+        ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker.perform_in(
+          ComplianceManagement::ComplianceFramework::ProjectSettings::PROJECT_EVALUATOR_WORKER_DELAY,
+          project.id, framework_id
+        )
       end
 
       def publish_event(event_type)

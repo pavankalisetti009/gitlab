@@ -39,45 +39,6 @@ RSpec.describe Gitlab::Llm::ChatStorage, feature_category: :duo_chat do
     end
   end
 
-  describe '#update_message_extras' do
-    let(:message) { build(:ai_chat_message, payload) }
-    let(:another_message) { build(:ai_chat_message) }
-    let(:resource_content) { 'message content' }
-    let(:key) { 'resource_content' }
-
-    before do
-      subject.add(message)
-      subject.add(another_message)
-    end
-
-    it 'updates message extras in PostgreSQL storage' do
-      subject.update_message_extras(message.request_id, key, resource_content)
-
-      expect(postgres_storage.messages.find { |m| m.request_id == message.request_id }.extras[key])
-        .to eq(resource_content)
-      expect(postgres_storage.messages.find { |m| m.request_id == another_message.request_id })
-        .to eq(another_message)
-    end
-
-    context 'when the given request_id is not found' do
-      it 'does not update if the message' do
-        expect do
-          subject.update_message_extras('nonexistent_id', key, resource_content)
-        end.not_to change { subject.messages.map(&:extras) }
-      end
-    end
-
-    context 'when the key is not supported' do
-      let(:key) { 'invalid_key' }
-
-      it 'raises an ArgumentError' do
-        expect do
-          subject.update_message_extras(message.request_id, key, resource_content)
-        end.to raise_error(ArgumentError, "The key #{key} is not supported")
-      end
-    end
-  end
-
   describe '#set_has_feedback' do
     it 'updates the feedback flag in PostgreSQL' do
       subject.add(message)

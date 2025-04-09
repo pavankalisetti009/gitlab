@@ -99,15 +99,36 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       let(:another_chunk) { create(:final_answer_chunk, chunk: "wer") }
       let(:first_response_double) { double }
       let(:second_response_double) { double }
+      let(:step_params) do
+        {
+          messages: [
+            {
+              role: "user",
+              content: user_input,
+              context: issue_page_params,
+              current_file: nil,
+              additional_context: context.additional_context
+            },
+            {
+              agent_scratchpad: [{ observation: "observation" }],
+              role: "assistant"
+            }
+          ],
+          model_metadata: nil,
+          unavailable_resources: %w[Pipelines Vulnerabilities]
+        }
+      end
+
+      let(:react_agent_double) { instance_double(Gitlab::Duo::Chat::StepExecutor) }
 
       before do
         event_1 = Gitlab::Duo::Chat::AgentEvents::FinalAnswerDelta.new({ "text" => "Ans" })
         event_2 = Gitlab::Duo::Chat::AgentEvents::FinalAnswerDelta.new({ "text" => "wer" })
 
-        allow_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-          allow(react_agent).to receive(:step).with(step_params)
-            .and_yield(event_1).and_yield(event_2).and_return([event_1, event_2])
-        end
+        allow(Gitlab::Duo::Chat::StepExecutor).to receive(:new).and_return(react_agent_double)
+        allow(react_agent_double).to receive(:agent_steps).and_return([{ observation: 'observation' }])
+        allow(react_agent_double).to receive(:step).with(step_params)
+          .and_yield(event_1).and_yield(event_2).and_return([event_1, event_2])
 
         allow(Gitlab::Llm::Chain::StreamedResponseModifier).to receive(:new).with(event_1.text, { chunk_id: 1 })
                                                                             .and_return(first_response_double)
@@ -118,6 +139,8 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       it "streams final answer" do
         expect(agent).to receive(:log_info).with(
           message: "ReAct turn", react_turn: 0, event_name: 'react_turn', ai_component: 'duo_chat')
+
+        expect(react_agent_double).to receive(:step).with(step_params)
 
         expect(stream_response_service_double).to receive(:execute).with(
           response: first_response_double,
@@ -131,6 +154,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
 
         expect(answer.is_final?).to be_truthy
         expect(answer.content).to include("Answer")
+        expect(answer.extras).to include(agent_scratchpad: [{ observation: "observation" }])
       end
 
       context 'when started_at was too long ago' do
@@ -197,7 +221,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
     end
 
-    context "when tool answer if final" do
+    context "when tool answer is final" do
       let(:tool_answer) { create(:answer, :final, content: 'tool answer') }
 
       before do

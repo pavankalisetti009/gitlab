@@ -57,6 +57,9 @@ module Gitlab
             log_info(message: "ReAct turn", react_turn: i, event_name: 'react_turn', ai_component: 'duo_chat')
 
             record_first_token_error(false)
+
+            answer = save_agent_steps_to_answer(answer)
+
             return answer
           end
 
@@ -262,15 +265,9 @@ module Gitlab
         end
 
         def messages
-          conversation.append(
-            {
-              role: "user",
-              content: user_input,
-              context: current_resource_params,
-              current_file: current_file_params,
-              additional_context: context.additional_context
-            }
-          )
+          conversation_thread = conversation.append(build_user_message)
+          conversation_thread.append(build_assistant_message) if step_executor.agent_steps.present?
+          conversation_thread
         end
 
         def get_tool_class(tool)
@@ -363,6 +360,29 @@ module Gitlab
             labels: SLI_LABEL,
             error: failed
           )
+        end
+
+        def build_user_message
+          {
+            role: "user",
+            content: user_input,
+            context: current_resource_params,
+            current_file: current_file_params,
+            additional_context: context.additional_context
+          }
+        end
+
+        def build_assistant_message
+          {
+            role: "assistant",
+            agent_scratchpad: step_executor.agent_steps
+          }
+        end
+
+        def save_agent_steps_to_answer(answer)
+          extras = answer.extras ||= {}
+          extras[:agent_scratchpad] = step_executor.agent_steps
+          answer
         end
       end
     end

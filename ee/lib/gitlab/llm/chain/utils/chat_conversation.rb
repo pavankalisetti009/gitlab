@@ -37,7 +37,7 @@ module Gitlab
             messages.last(last_n).map do |message, _|
               { role: message.role.to_sym, content: message.content,
                 additional_context: message.extras['additional_context'],
-                resource_content: message.extras['resource_content'] }
+                agent_scratchpad: message.extras['agent_scratchpad'] }
             end
           end
 
