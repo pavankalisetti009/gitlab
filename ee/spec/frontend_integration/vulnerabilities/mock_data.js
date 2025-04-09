@@ -15,4 +15,8 @@ export const mockVulnerability = {
   },
   identifiers: [],
   mergeRequestLinks: [],
+  archivalInformation: {
+    aboutToBeArchived: false,
+    expectedToBeArchivedOn: null,
+  },
 };

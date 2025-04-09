@@ -66231,6 +66231,9 @@ msgstr ""
 msgid "Vulnerability|Additional Info"
 msgstr ""
 
+msgid "Vulnerability|Archive pending"
+msgstr ""
+
 msgid "Vulnerability|Assert:"
 msgstr ""
 
@@ -66442,6 +66445,9 @@ msgid "Vulnerability|View training"
 msgstr ""
 
 msgid "Vulnerability|Vulnerability identifiers"
+msgstr ""
+
+msgid "Vulnerability|Vulnerability will be archived on %{date}. %{linkStart}Why will this vulnerability be archived?%{linkEnd}"
 msgstr ""
 
 msgid "Vulnerability|Vulnerable class:"
