@@ -9093,6 +9093,7 @@ CREATE TABLE application_settings (
     ci_cd_settings jsonb DEFAULT '{}'::jsonb NOT NULL,
     duo_nano_features_enabled boolean,
     database_reindexing jsonb DEFAULT '{}'::jsonb NOT NULL,
+    duo_chat jsonb DEFAULT '{}'::jsonb NOT NULL,
     CONSTRAINT app_settings_container_reg_cleanup_tags_max_list_size_positive CHECK ((container_registry_cleanup_tags_service_max_list_size >= 0)),
     CONSTRAINT app_settings_dep_proxy_ttl_policies_worker_capacity_positive CHECK ((dependency_proxy_ttl_group_policy_worker_capacity >= 0)),
     CONSTRAINT app_settings_ext_pipeline_validation_service_url_text_limit CHECK ((char_length(external_pipeline_validation_service_url) <= 255)),
@@ -9148,6 +9149,7 @@ CREATE TABLE application_settings (
     CONSTRAINT check_application_settings_cluster_agents_is_hash CHECK ((jsonb_typeof(cluster_agents) = 'object'::text)),
     CONSTRAINT check_application_settings_code_creation_is_hash CHECK ((jsonb_typeof(code_creation) = 'object'::text)),
     CONSTRAINT check_application_settings_database_reindexing_is_hash CHECK ((jsonb_typeof(database_reindexing) = 'object'::text)),
+    CONSTRAINT check_application_settings_duo_chat_is_hash CHECK ((jsonb_typeof(duo_chat) = 'object'::text)),
     CONSTRAINT check_application_settings_duo_workflow_is_hash CHECK ((jsonb_typeof(duo_workflow) = 'object'::text)),
     CONSTRAINT check_application_settings_elasticsearch_is_hash CHECK ((jsonb_typeof(elasticsearch) = 'object'::text)),
     CONSTRAINT check_application_settings_importers_is_hash CHECK ((jsonb_typeof(importers) = 'object'::text)),
@@ -33536,6 +33538,8 @@ CREATE INDEX index_ai_conversation_messages_on_message_xid ON ai_conversation_me
 CREATE INDEX index_ai_conversation_messages_on_organization_id ON ai_conversation_messages USING btree (organization_id);
 
 CREATE INDEX index_ai_conversation_messages_on_thread_id_and_created_at ON ai_conversation_messages USING btree (thread_id, created_at);
+
+CREATE INDEX index_ai_conversation_threads_on_created_at ON ai_conversation_threads USING btree (created_at);
 
 CREATE INDEX index_ai_conversation_threads_on_last_updated_at ON ai_conversation_threads USING btree (last_updated_at);
 

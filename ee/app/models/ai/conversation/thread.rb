@@ -5,7 +5,8 @@ module Ai
     class Thread < ApplicationRecord
       include EachBatch
 
-      EXPIRATION_PERIOD = 30.days
+      MAX_EXPIRATION_PERIOD = 30.days
+      EXPIRATION_COLUMNS = %w[last_updated_at created_at].freeze
 
       self.table_name = :ai_conversation_threads
 
@@ -15,7 +16,6 @@ module Ai
 
       validates :conversation_type, :user_id, presence: true
 
-      scope :expired, -> { where(last_updated_at: ...EXPIRATION_PERIOD.ago) }
       scope :for_conversation_type, ->(conversation_type) { where(conversation_type: conversation_type) }
       scope :ordered, -> { order(last_updated_at: :desc) }
 
@@ -27,6 +27,12 @@ module Ai
       }
 
       before_create :populate_organization
+
+      def self.expired(column, days)
+        raise ArgumentError unless EXPIRATION_COLUMNS.include?(column.to_s)
+
+        where(column => ...days.days.ago)
+      end
 
       def to_new_thread!
         self.class.create!(

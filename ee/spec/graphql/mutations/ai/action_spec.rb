@@ -384,7 +384,9 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
         it 'returns error' do
           resource.project.add_developer(user)
 
-          expect { subject }.to raise_error(Gitlab::Graphql::Errors::ArgumentError, "Thread #{thread.id} is not found.")
+          expect { subject }.to raise_error(
+            Gitlab::Graphql::Errors::ArgumentError, "Thread not found. It may have expired."
+          )
         end
       end
     end

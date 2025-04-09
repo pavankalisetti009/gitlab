@@ -42,6 +42,16 @@ module EE
 
       jsonb_accessor :duo_workflow, duo_workflow_oauth_application_id: [:integer]
 
+      jsonb_accessor :duo_chat,
+        duo_chat_expiration_days: [:integer, { default: 30 }],
+        duo_chat_expiration_column: [:string, { default: 'last_updated_at' }]
+
+      validates :duo_chat, json_schema: { filename: "application_setting_duo_chat" }
+      validates :duo_chat_expiration_column, inclusion: {
+        in: Ai::Conversation::Thread::EXPIRATION_COLUMNS,
+        message: "must be one of: #{Ai::Conversation::Thread::EXPIRATION_COLUMNS.join(', ')}"
+      }
+
       jsonb_accessor :integrations,
         allow_all_integrations: [:boolean, { default: true }],
         allowed_integrations: [:string, { array: true, default: [] }]

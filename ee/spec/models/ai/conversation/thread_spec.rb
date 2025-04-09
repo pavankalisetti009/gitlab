@@ -27,14 +27,25 @@ RSpec.describe Ai::Conversation::Thread, type: :model, feature_category: :duo_ch
 
   describe 'scopes' do
     describe '.expired' do
-      subject(:expired_threads) { described_class.expired }
+      let_it_be(:thread_1) { create(:ai_conversation_thread, created_at: 3.days.ago, last_updated_at: 3.days.ago) }
+      let_it_be(:thread_2) { create(:ai_conversation_thread, created_at: 5.days.ago, last_updated_at: 1.day.ago) }
 
-      let_it_be(:old_thread) { create(:ai_conversation_thread, last_updated_at: 31.days.ago) }
-      let_it_be(:recent_thread) { create(:ai_conversation_thread, last_updated_at: 29.days.ago) }
-      let_it_be(:current_thread) { create(:ai_conversation_thread, last_updated_at: Time.current) }
+      context 'when using invalid column' do
+        it 'raises ArgumentError' do
+          expect { described_class.expired(:invalid_column, 1) }.to raise_error(ArgumentError)
+        end
+      end
 
-      it 'returns threads older than 30 days' do
-        expect(expired_threads).to contain_exactly(old_thread)
+      context 'when using created_at column' do
+        it 'returns threads older than specified days' do
+          expect(described_class.expired(:created_at, 4)).to contain_exactly(thread_2)
+        end
+      end
+
+      context 'when using last_updated_at column' do
+        it 'returns threads with last_updated_at older than specified days' do
+          expect(described_class.expired(:last_updated_at, 2)).to contain_exactly(thread_1)
+        end
       end
     end
 

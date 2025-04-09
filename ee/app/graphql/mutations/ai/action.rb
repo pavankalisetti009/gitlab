@@ -134,7 +134,7 @@ module Mutations
 
         current_user.ai_conversation_threads.find(thread_id.model_id)
       rescue ActiveRecord::RecordNotFound
-        raise Gitlab::Graphql::Errors::ArgumentError, "Thread #{thread_id.model_id} is not found."
+        raise Gitlab::Graphql::Errors::ArgumentError, "Thread not found. It may have expired."
       end
 
       def create_thread(conversation_type)

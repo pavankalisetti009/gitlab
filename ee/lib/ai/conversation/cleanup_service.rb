@@ -4,7 +4,12 @@ module Ai
   module Conversation
     class CleanupService
       def execute
-        Ai::Conversation::Thread.expired.each_batch do |relation|
+        setting = ApplicationSetting.current
+
+        Ai::Conversation::Thread.expired(
+          setting.duo_chat_expiration_column,
+          setting.duo_chat_expiration_days
+        ).each_batch do |relation|
           relation.delete_all
         end
       end

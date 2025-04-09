@@ -14,7 +14,7 @@ module Ai
           Gitlab::Redis::SharedState.with do |redis|
             redis.pipelined do |pipeline|
               pipeline.sadd(KEY, value)
-              pipeline.expire(KEY, ::Ai::Conversation::Thread::EXPIRATION_PERIOD.to_i)
+              pipeline.expire(KEY, ::Ai::Conversation::Thread::MAX_EXPIRATION_PERIOD.to_i)
             end
           end
         end
