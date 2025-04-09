@@ -17473,6 +17473,9 @@ msgstr ""
 msgid "Copy commit SHA"
 msgstr ""
 
+msgid "Copy contents"
+msgstr ""
+
 msgid "Copy customize name"
 msgstr ""
 
@@ -17531,6 +17534,9 @@ msgid "Copy reference"
 msgstr ""
 
 msgid "Copy secret"
+msgstr ""
+
+msgid "Copy source"
 msgstr ""
 
 msgid "Copy source branch name"
@@ -26544,6 +26550,9 @@ msgid "GLQL list"
 msgstr ""
 
 msgid "GLQL table"
+msgstr ""
+
+msgid "GLQL view options"
 msgstr ""
 
 msgid "GLQL view timed out. Add more filters to reduce the number of results."
@@ -65740,6 +65749,9 @@ msgid "View report"
 msgstr ""
 
 msgid "View seat usage"
+msgstr ""
+
+msgid "View source"
 msgstr ""
 
 msgid "View the %{code_open}last_activity_at%{code_close} attribute for %{project_link} using the %{projects_api_link}."
