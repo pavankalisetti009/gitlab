@@ -21,17 +21,15 @@ import {
   DELETE_STREAM_MESSAGE,
 } from 'ee/audit_events/constants';
 import AuditEventsStream from 'ee/audit_events/components/audit_events_stream.vue';
+import StreamDestinationEditor from 'ee/audit_events/components/stream/stream_destination_editor.vue';
 import StreamHttpDestinationEditor from 'ee/audit_events/components/stream/stream_http_destination_editor.vue';
 import StreamGcpLoggingDestinationEditor from 'ee/audit_events/components/stream/stream_gcp_logging_destination_editor.vue';
 import StreamAmazonS3DestinationEditor from 'ee/audit_events/components/stream/stream_amazon_s3_destination_editor.vue';
 import StreamItem from 'ee/audit_events/components/stream/stream_item.vue';
 import StreamEmptyState from 'ee/audit_events/components/stream/stream_empty_state.vue';
 import {
-  mockAllConsolidatedAPIDestinations,
   mockExternalDestinations,
   groupPath,
-  streamingDestinationDataPopulator,
-  instanceStreamingDestinationDataPopulator,
   destinationDataPopulator,
   mockInstanceExternalDestinations,
   instanceGroupPath,
@@ -42,6 +40,11 @@ import {
   mockAmazonS3Destinations,
   mockInstanceAmazonS3Destinations,
 } from '../mock_data';
+import {
+  mockAllAPIDestinations,
+  groupStreamingDestinationDataPopulator,
+  instanceStreamingDestinationDataPopulator,
+} from '../mock_data/consolidated_api';
 
 jest.mock('~/alert');
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -53,12 +56,10 @@ describe('AuditEventsStream', () => {
 
   const streamingDestinationsQuerySpy = jest
     .fn()
-    .mockResolvedValue(streamingDestinationDataPopulator(mockAllConsolidatedAPIDestinations));
+    .mockResolvedValue(groupStreamingDestinationDataPopulator(mockAllAPIDestinations));
   const instanceStreamingDestinationsQuerySpy = jest
     .fn()
-    .mockResolvedValue(
-      instanceStreamingDestinationDataPopulator(mockAllConsolidatedAPIDestinations),
-    );
+    .mockResolvedValue(instanceStreamingDestinationDataPopulator(mockAllAPIDestinations));
   const externalDestinationsQuerySpy = jest
     .fn()
     .mockResolvedValue(destinationDataPopulator(mockExternalDestinations));
@@ -84,6 +85,7 @@ describe('AuditEventsStream', () => {
         GlAlert: true,
         GlLoadingIcon: true,
         StreamItem: true,
+        StreamDestinationEditor: true,
         StreamHttpDestinationEditor: true,
         StreamGcpLoggingDestinationEditor: true,
         StreamAmazonS3DestinationEditor: true,
@@ -100,6 +102,7 @@ describe('AuditEventsStream', () => {
   const findGcpLoggingDropdownItem = () => findDisclosureDropdownItem(1);
   const findAmazonS3DropdownItem = () => findDisclosureDropdownItem(2);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const findStreamDestinationEditor = () => wrapper.findComponent(StreamDestinationEditor);
   const findStreamHttpDestinationEditor = () => wrapper.findComponent(StreamHttpDestinationEditor);
   const findStreamGcpLoggingDestinationEditor = () =>
     wrapper.findComponent(StreamGcpLoggingDestinationEditor);
@@ -353,17 +356,17 @@ describe('AuditEventsStream', () => {
         });
 
         it('shows the items', () => {
-          expect(findStreamItems()).toHaveLength(mockAllConsolidatedAPIDestinations.length);
+          expect(findStreamItems()).toHaveLength(mockAllAPIDestinations.length);
 
           findStreamItems().wrappers.forEach((streamItem, index) => {
-            expect(streamItem.props('item').id).toBe(mockAllConsolidatedAPIDestinations[index].id);
+            expect(streamItem.props('item').id).toBe(mockAllAPIDestinations[index].id);
           });
         });
 
         it('captures an error when the destination category is not recognized', async () => {
           const unknownAPIDestination = {
             __typename: 'GroupAuditEventStreamingDestination',
-            id: 'gid://gitlab/AuditEvents::Group::ExternalStreamingDestination/1',
+            id: 'mock-streaming-destination-1',
             name: 'Unknown Destination 1',
             category: 'something_else',
             secretToken: '',
@@ -373,7 +376,7 @@ describe('AuditEventsStream', () => {
           };
           const streamingDestinationsQueryUnknownCategory = jest
             .fn()
-            .mockResolvedValue(streamingDestinationDataPopulator([unknownAPIDestination]));
+            .mockResolvedValue(groupStreamingDestinationDataPopulator([unknownAPIDestination]));
           const apolloProvider = createMockApollo([
             [groupStreamingDestinationsQuery, streamingDestinationsQueryUnknownCategory],
           ]);
@@ -401,6 +404,17 @@ describe('AuditEventsStream', () => {
           await waitForPromises();
           expect(findStreamItems()).toHaveLength(currentLength - 1);
           expect(findSuccessMessage().text()).toBe(DELETE_STREAM_MESSAGE);
+        });
+
+        it('shows destination editor when entering edit mode', async () => {
+          expect(findLoadingIcon().exists()).toBe(false);
+          expect(findStreamDestinationEditor().exists()).toBe(false);
+
+          expect(findAddDestinationButton().props('toggleText')).toBe('Add streaming destination');
+
+          await findHttpDropdownItem().trigger('click');
+
+          expect(findStreamDestinationEditor().exists()).toBe(true);
         });
       });
     });
@@ -662,10 +676,10 @@ describe('AuditEventsStream', () => {
         });
 
         it('shows the items', () => {
-          expect(findStreamItems()).toHaveLength(mockAllConsolidatedAPIDestinations.length);
+          expect(findStreamItems()).toHaveLength(mockAllAPIDestinations.length);
 
           findStreamItems().wrappers.forEach((streamItem, index) => {
-            expect(streamItem.props('item').id).toBe(mockAllConsolidatedAPIDestinations[index].id);
+            expect(streamItem.props('item').id).toBe(mockAllAPIDestinations[index].id);
           });
         });
 

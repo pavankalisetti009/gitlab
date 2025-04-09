@@ -3,7 +3,8 @@ import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_help
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import StreamDestinationEditorHttpFields from 'ee/audit_events/components/stream/stream_destination_editor_http_fields.vue';
 import { MAX_HEADERS } from 'ee/audit_events/constants';
-import { mockConsolidatedAPIExternalDestinations, newStreamDestination } from '../../mock_data';
+import { newStreamDestination } from '../../mock_data';
+import { mockHttpTypeDestination } from '../../mock_data/consolidated_api';
 
 describe('StreamDestinationEditorHttpFields', () => {
   let wrapper;
@@ -60,7 +61,7 @@ describe('StreamDestinationEditorHttpFields', () => {
       createComponent({
         mountFn: mountExtended,
         props: {
-          value: mockConsolidatedAPIExternalDestinations[0],
+          value: mockHttpTypeDestination[0],
           isEditing: true,
         },
       });
@@ -69,8 +70,8 @@ describe('StreamDestinationEditorHttpFields', () => {
     it('renders the fields correctly', () => {
       expect(findDestinationUrl().props('disabled')).toBe(true);
       expect(findDestinationUrl().props('value')).toBe('http://destination1.local');
-      expect(findVerificationToken().props('value')).toBe('id5hzCbERzSkQ82tAs16tH5Y');
-      expect(findClipboardButton().props('text')).toBe('id5hzCbERzSkQ82tAs16tH5Y');
+      expect(findVerificationToken().props('value')).toBe('mockSecretToken');
+      expect(findClipboardButton().props('text')).toBe('mockSecretToken');
       expect(findHeaderNameInput(0).props('value')).toBe('key1');
       expect(findHeaderValueInput(0).props('value')).toBe('test');
       expect(findHeaderActiveInput(0).attributes('value')).toBe('true');
@@ -123,7 +124,7 @@ describe('StreamDestinationEditorHttpFields', () => {
       createComponent({
         mountFn: mountExtended,
         props: {
-          value: mockConsolidatedAPIExternalDestinations[0],
+          value: mockHttpTypeDestination[0],
           isEditing: true,
         },
         provide: {

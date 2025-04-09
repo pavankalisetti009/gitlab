@@ -18,12 +18,12 @@ import {
   amazonS3DestinationUpdateMutationPopulator,
   groupPath,
   instanceGroupPath,
-  mockConsolidatedAPIAmazonS3Destinations,
   mockAmazonS3Destinations,
   mockInstanceAmazonS3Destinations,
   instanceAmazonS3DestinationCreateMutationPopulator,
   instanceAmazonS3DestinationUpdateMutationPopulator,
 } from '../../mock_data';
+import { mockAwsTypeDestination } from '../../mock_data/consolidated_api';
 
 jest.mock('~/alert');
 Vue.use(VueApollo);
@@ -84,7 +84,7 @@ describe('StreamAmazonS3DestinationEditor', () => {
   });
 
   describe('when useConsolidatedAuditEventStreamDestApi is enabled', () => {
-    const item = mockConsolidatedAPIAmazonS3Destinations[0];
+    const item = mockAwsTypeDestination[0];
 
     beforeEach(() => {
       createComponent({
