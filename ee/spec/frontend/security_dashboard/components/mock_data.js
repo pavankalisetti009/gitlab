@@ -254,6 +254,10 @@ export const generateVulnerabilities = () => [
     aiResolutionAvailable: false,
     aiResolutionEnabled: false,
     hasRemediations: true,
+    archivalInformation: {
+      aboutToBeArchived: true,
+      expectedToBeArchivedOn: '2025-03-01',
+    },
     __typename: 'Vulnerability',
   },
   {
@@ -291,6 +295,10 @@ export const generateVulnerabilities = () => [
     aiResolutionAvailable: false,
     aiResolutionEnabled: false,
     hasRemediations: true,
+    archivalInformation: {
+      aboutToBeArchived: false,
+      expectedToBeArchivedOn: '2026-03-01',
+    },
     __typename: 'Vulnerability',
   },
   {
@@ -324,6 +332,10 @@ export const generateVulnerabilities = () => [
     aiResolutionAvailable: false,
     aiResolutionEnabled: false,
     hasRemediations: true,
+    archivalInformation: {
+      aboutToBeArchived: false,
+      expectedToBeArchivedOn: '2026-03-04',
+    },
     __typename: 'Vulnerability',
   },
   {
@@ -353,6 +365,10 @@ export const generateVulnerabilities = () => [
     aiResolutionAvailable: false,
     aiResolutionEnabled: false,
     hasRemediations: true,
+    archivalInformation: {
+      aboutToBeArchived: false,
+      expectedToBeArchivedOn: '2026-03-07',
+    },
     __typename: 'Vulnerability',
   },
   {
@@ -380,6 +396,10 @@ export const generateVulnerabilities = () => [
     aiResolutionAvailable: false,
     aiResolutionEnabled: false,
     hasRemediations: true,
+    archivalInformation: {
+      aboutToBeArchived: false,
+      expectedToBeArchivedOn: '2026-03-10',
+    },
     __typename: 'Vulnerability',
   },
   {
@@ -409,6 +429,10 @@ export const generateVulnerabilities = () => [
     aiResolutionAvailable: false,
     aiResolutionEnabled: false,
     hasRemediations: true,
+    archivalInformation: {
+      aboutToBeArchived: false,
+      expectedToBeArchivedOn: '2026-03-20',
+    },
     __typename: 'Vulnerability',
   },
   {
@@ -439,6 +463,10 @@ export const generateVulnerabilities = () => [
     aiResolutionAvailable: false,
     aiResolutionEnabled: false,
     hasRemediations: true,
+    archivalInformation: {
+      aboutToBeArchived: false,
+      expectedToBeArchivedOn: '2026-03-30',
+    },
     __typename: 'Vulnerability',
   },
 ];

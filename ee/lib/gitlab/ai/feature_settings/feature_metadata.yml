@@ -139,3 +139,13 @@ summarize_review:
     - claude_3
     - gpt
     - llama3
+glab_ask_git_command:
+  title: GitLab Duo for CLI
+  release_state: BETA
+  main_feature: Other GitLab Duo features
+  compatible_llms:
+    - mistral
+    - mixtral
+    - claude_3
+    - gpt
+    - llama3
