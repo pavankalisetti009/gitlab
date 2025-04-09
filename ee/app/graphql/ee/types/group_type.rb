@@ -4,7 +4,6 @@ module EE
   module Types
     module GroupType
       extend ActiveSupport::Concern
-      include ::NamespacesHelper
 
       prepended do
         field :epics_enabled, GraphQL::Types::Boolean,
@@ -304,22 +303,6 @@ module EE
           experiment: { milestone: '16.10' },
           description: 'Indicates if the GitLab Duo features enabled setting is enforced for all subgroups.'
 
-        field :marked_for_deletion_on, ::Types::TimeType,
-          null: true,
-          description: 'Date when group was scheduled to be deleted.',
-          experiment: { milestone: '16.11' }
-
-        field :is_adjourned_deletion_enabled, GraphQL::Types::Boolean,
-          null: false,
-          description: 'Indicates if delayed group deletion is enabled.',
-          method: :adjourned_deletion?,
-          experiment: { milestone: '16.11' }
-
-        field :permanent_deletion_date, GraphQL::Types::String,
-          null: true,
-          description: 'Date when group will be deleted if delayed group deletion is enabled.',
-          experiment: { milestone: '16.11' }
-
         field :pending_member_approvals,
           EE::Types::GitlabSubscriptions::MemberManagement::MemberApprovalType.connection_type,
           null: true,
@@ -376,18 +359,6 @@ module EE
             provider: provider,
             cloud_project_id: cloud_project_id
           }
-        end
-
-        def marked_for_deletion_on
-          return unless group.adjourned_deletion?
-
-          group.marked_for_deletion_on
-        end
-
-        def permanent_deletion_date
-          return unless group.adjourned_deletion?
-
-          permanent_deletion_date_formatted(Date.current)
         end
       end
     end

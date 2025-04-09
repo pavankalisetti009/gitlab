@@ -39,12 +39,9 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:value_stream_analytics) }
   it { expect(described_class).to have_graphql_field(:duo_features_enabled) }
   it { expect(described_class).to have_graphql_field(:lock_duo_features_enabled) }
-  it { expect(described_class).to have_graphql_field(:marked_for_deletion_on) }
   it { expect(described_class).to have_graphql_field(:ai_metrics) }
   it { expect(described_class).to have_graphql_field(:ai_usage_data) }
   it { expect(described_class).to have_graphql_field(:ai_user_metrics) }
-  it { expect(described_class).to have_graphql_field(:is_adjourned_deletion_enabled) }
-  it { expect(described_class).to have_graphql_field(:permanent_deletion_date) }
   it { expect(described_class).to have_graphql_field(:pending_member_approvals) }
   it { expect(described_class).to have_graphql_field(:dependencies) }
   it { expect(described_class).to have_graphql_field(:components) }
@@ -404,89 +401,5 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
     subject { described_class.fields['dora'] }
 
     it { is_expected.to have_graphql_type(Types::Analytics::Dora::GroupDoraType) }
-  end
-
-  describe 'group adjourned deletion fields', feature_category: :groups_and_projects do
-    let_it_be(:user) { create(:user) }
-    let_it_be(:pending_delete_group) { create(:group_with_deletion_schedule, marked_for_deletion_on: Time.current) }
-
-    let_it_be(:query) do
-      %(
-        query {
-          group(fullPath: "#{pending_delete_group.full_path}") {
-            markedForDeletionOn
-            isAdjournedDeletionEnabled
-            permanentDeletionDate
-          }
-        }
-      )
-    end
-
-    before do
-      pending_delete_group.add_developer(user)
-    end
-
-    subject(:group_data) do
-      result = GitlabSchema.execute(query, context: { current_user: user }).as_json
-      {
-        marked_for_deletion_on: result.dig('data', 'group', 'markedForDeletionOn'),
-        is_adjourned_deletion_enabled: result.dig('data', 'group', 'isAdjournedDeletionEnabled'),
-        permanent_deletion_date: result.dig('data', 'group', 'permanentDeletionDate')
-      }
-    end
-
-    context 'with adjourned deletion disabled' do
-      before do
-        allow_next_found_instance_of(Group) do |group|
-          allow(group).to receive(:adjourned_deletion?).and_return(false)
-        end
-      end
-
-      it 'marked_for_deletion_on returns nil' do
-        expect(group_data[:marked_for_deletion_on]).to be_nil
-      end
-
-      it 'is_adjourned_deletion_enabled returns false' do
-        expect(group_data[:is_adjourned_deletion_enabled]).to be false
-      end
-
-      it 'permanent_deletion_date returns nil' do
-        expect(group_data[:permanent_deletion_date]).to be_nil
-      end
-    end
-
-    context 'with adjourned deletion enabled' do
-      before do
-        allow_next_found_instance_of(Group) do |group|
-          allow(group).to receive(:adjourned_deletion?).and_return(true)
-        end
-      end
-
-      it 'marked_for_deletion_on returns correct date' do
-        marked_for_deletion_on_time = Time.zone.parse(group_data[:marked_for_deletion_on])
-
-        expect(marked_for_deletion_on_time).to eq(pending_delete_group.marked_for_deletion_on.iso8601)
-      end
-
-      it 'is_adjourned_deletion_enabled returns true' do
-        expect(group_data[:is_adjourned_deletion_enabled]).to be true
-      end
-
-      it 'permanent_deletion_date returns correct date', :freeze_time do
-        expect(group_data[:permanent_deletion_date])
-          .to eq(::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(Date.current).strftime('%F'))
-      end
-    end
-
-    context 'with adjourned deletion enabled globally' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-      end
-
-      it 'permanent_deletion_date returns correct date', :freeze_time do
-        expect(group_data[:permanent_deletion_date])
-          .to eq(::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(Date.current).strftime('%F'))
-      end
-    end
   end
 end
