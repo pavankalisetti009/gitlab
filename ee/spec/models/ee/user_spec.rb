@@ -62,6 +62,7 @@ RSpec.describe User, feature_category: :system_access do
   describe 'associations' do
     subject { build(:user) }
 
+    it { is_expected.to have_one(:admin_role).class_name('Authz::AdminRole') }
     it { is_expected.to have_many(:vulnerability_feedback) }
     it { is_expected.to have_many(:path_locks).dependent(:destroy) }
     it { is_expected.to have_many(:users_security_dashboard_projects) }

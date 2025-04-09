@@ -23969,6 +23969,14 @@ CREATE SEQUENCE user_achievements_id_seq
 
 ALTER SEQUENCE user_achievements_id_seq OWNED BY user_achievements.id;
 
+CREATE TABLE user_admin_roles (
+    user_id bigint NOT NULL,
+    admin_role_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    ldap boolean DEFAULT false NOT NULL
+);
+
 CREATE TABLE user_agent_details (
     id bigint NOT NULL,
     user_agent character varying NOT NULL,
@@ -30888,6 +30896,9 @@ ALTER TABLE ONLY uploads
 ALTER TABLE ONLY user_achievements
     ADD CONSTRAINT user_achievements_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY user_admin_roles
+    ADD CONSTRAINT user_admin_roles_pkey PRIMARY KEY (user_id);
+
 ALTER TABLE ONLY user_agent_details
     ADD CONSTRAINT user_agent_details_pkey PRIMARY KEY (id);
 
@@ -37494,6 +37505,8 @@ CREATE INDEX index_user_achievements_on_revoked_by_user_id ON user_achievements 
 
 CREATE INDEX index_user_achievements_on_user_id_revoked_by_is_null ON user_achievements USING btree (user_id, ((revoked_by_user_id IS NULL)));
 
+CREATE INDEX index_user_admin_roles_on_admin_role_id ON user_admin_roles USING btree (admin_role_id);
+
 CREATE INDEX index_user_agent_details_on_subject_id_and_subject_type ON user_agent_details USING btree (subject_id, subject_type);
 
 CREATE INDEX index_user_broadcast_message_dismissals_on_broadcast_message_id ON user_broadcast_message_dismissals USING btree (broadcast_message_id);
@@ -42391,6 +42404,9 @@ ALTER TABLE ONLY events
 ALTER TABLE ONLY vulnerability_reads
     ADD CONSTRAINT fk_62736f638f FOREIGN KEY (vulnerability_id) REFERENCES vulnerabilities(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY user_admin_roles
+    ADD CONSTRAINT fk_62ce6c86fd FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY merge_request_diff_details
     ADD CONSTRAINT fk_63097c0adc FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -43326,6 +43342,9 @@ ALTER TABLE ONLY user_group_member_roles
 
 ALTER TABLE ONLY boards_epic_user_preferences
     ADD CONSTRAINT fk_d32c3d693c FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY user_admin_roles
+    ADD CONSTRAINT fk_d3e201cb93 FOREIGN KEY (admin_role_id) REFERENCES admin_roles(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ci_sources_pipelines
     ADD CONSTRAINT fk_d4e29af7d7_p FOREIGN KEY (source_partition_id, source_pipeline_id) REFERENCES p_ci_pipelines(partition_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
