@@ -7,8 +7,7 @@ import WorkItemRolledUpHealthStatus from 'ee/work_items/components/work_item_lin
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
-import { workItemByIidResponseFactory } from 'jest/work_items/mock_data';
-import { mockRolledUpHealthStatus } from '../../mock_data';
+import { workItemByIidResponseFactory, mockRolledUpHealthStatus } from '../../mock_data';
 
 Vue.use(VueApollo);
 

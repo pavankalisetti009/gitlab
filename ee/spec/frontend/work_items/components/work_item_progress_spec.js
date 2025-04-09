@@ -10,8 +10,8 @@ import { ENTER_KEY, ESC_KEY } from '~/lib/utils/keys';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { TRACKING_CATEGORY_SHOW } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
-import { updateWorkItemMutationResponse } from 'jest/work_items/mock_data';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
+import { updateWorkItemMutationResponse } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 

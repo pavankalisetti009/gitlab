@@ -10,7 +10,7 @@ import {
   WIDGET_TYPE_WEIGHT,
   WIDGET_TYPE_CUSTOM_FIELDS,
 } from '~/work_items/constants';
-import { createWorkItemQueryResponse } from 'jest/work_items/mock_data';
+import { createWorkItemQueryResponse } from '../mock_data';
 
 describe('EE work items graphql resolvers', () => {
   describe('updateNewWorkItemCache', () => {

@@ -11,7 +11,6 @@ import WorkItemCustomFields from 'ee/work_items/components/work_item_custom_fiel
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import {
-  workItemResponseFactory,
   epicType,
   mockParticipantWidget,
   allowedParentTypesResponse,
@@ -23,6 +22,7 @@ import workItemParticipantsQuery from '~/work_items/graphql/work_item_participan
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import workItemUpdatedSubscription from '~/work_items/graphql/work_item_updated.subscription.graphql';
 import getAllowedWorkItemParentTypes from '~/work_items/graphql/work_item_allowed_parent_types.query.graphql';
+import { workItemResponseFactory } from '../mock_data';
 
 describe('EE WorkItemAttributesWrapper component', () => {
   let wrapper;

@@ -11,7 +11,7 @@ import WorkItemCommentForm from '~/work_items/components/notes/work_item_comment
 import WorkItemStateToggle from '~/work_items/components/work_item_state_toggle.vue';
 import MarkdownEditor from '~/vue_shared/components/markdown/markdown_editor.vue';
 
-import { workItemByIidResponseFactory } from 'jest/work_items/mock_data';
+import { workItemByIidResponseFactory } from '../../mock_data';
 
 jest.mock('~/lib/utils/autosave');
 

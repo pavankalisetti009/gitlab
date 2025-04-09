@@ -1,50 +1,55 @@
-export const createWorkItemMutationResponse = {
-  data: {
-    workItemCreate: {
-      __typename: 'WorkItemCreatePayload',
-      workItem: {
-        __typename: 'WorkItem',
-        id: 'gid://gitlab/WorkItem/1',
-        iid: '1',
-        title: 'Updated title',
-        state: 'OPEN',
-        description: 'description',
-        confidential: false,
-        createdAt: '2022-08-03T12:41:54Z',
-        closedAt: null,
-        webUrl: 'http://127.0.0.1:3000/groups/gitlab-org/-/work_items/1',
-        project: {
-          __typename: 'Project',
-          id: '1',
-          fullPath: 'test-project-path',
-          archived: false,
-        },
-        workItemType: {
-          __typename: 'WorkItemType',
-          id: 'gid://gitlab/WorkItems::Type/5',
-          name: 'Task',
-          iconName: 'issue-type-task',
-        },
-        userPermissions: {
-          deleteWorkItem: false,
-          updateWorkItem: false,
-          moveWorkItem: false,
-        },
-        widgets: [],
-      },
-      errors: [],
-    },
-  },
-};
+import { cloneDeep } from 'lodash';
+import * as CE from 'jest/work_items/mock_data';
 
-export const createWorkItemMutationErrorResponse = {
-  data: {
-    workItemCreate: {
-      __typename: 'WorkItemCreatePayload',
-      workItem: null,
-      errors: ['Title is too long (maximum is 255 characters)'],
-    },
-  },
+/*
+ * We're disabling the import/export rule here because we want to
+ * re-export the mock data from the CE file while also overriding
+ * anything that's EE-specific.
+ */
+// eslint-disable-next-line import/export
+export * from 'jest/work_items/mock_data';
+
+/**
+ * Adds a blockedWorkItems property to all userPermissions objects that have
+ * __typename set to "WorkItemPermissions" at any level of a nested object.
+ *
+ * @param {Object} obj - The source object to process
+ * @param {*} [blockedWorkItemsValue=false] - The value to set for blockedWorkItems property
+ * @returns {Object} A new object with the blockedWorkItems property added where applicable
+ */
+const applyEEWorkItemPermissions = (obj, blockedWorkItemsValue = false) => {
+  // Return early for null/undefined values or non-objects
+  if (obj === null || obj === undefined || typeof obj !== 'object') {
+    return obj;
+  }
+
+  // Handle arrays by mapping each element
+  if (Array.isArray(obj)) {
+    return obj.map((item) => applyEEWorkItemPermissions(item, blockedWorkItemsValue));
+  }
+
+  // Create a deep clone of the object to avoid mutation
+  const result = cloneDeep(obj);
+
+  // Check if current object is a userPermissions object with __typename === "WorkItemPermissions"
+  if (
+    result.userPermissions &&
+    // eslint-disable-next-line no-underscore-dangle
+    result.userPermissions.__typename === 'WorkItemPermissions' &&
+    !Object.prototype.hasOwnProperty.call(result.userPermissions, 'blockedWorkItems')
+  ) {
+    // Add blockedWorkItems property
+    result.userPermissions.blockedWorkItems = blockedWorkItemsValue;
+  }
+
+  // Process all properties recursively
+  Object.keys(result).forEach((key) => {
+    if (typeof result[key] === 'object' && result[key] !== null) {
+      result[key] = applyEEWorkItemPermissions(result[key], blockedWorkItemsValue);
+    }
+  });
+
+  return result;
 };
 
 export const workItemObjectiveMetadataWidgetsEE = {
@@ -158,61 +163,6 @@ export const workItemParent = {
   data: {
     namespace: {
       id: 'gid://gitlab/Group/1',
-    },
-  },
-};
-
-export const mockRolledUpHealthStatus = [
-  {
-    count: 1,
-    healthStatus: 'onTrack',
-    __typename: 'WorkItemWidgetHealthStatusCount',
-  },
-  {
-    count: 0,
-    healthStatus: 'needsAttention',
-    __typename: 'WorkItemWidgetHealthStatusCount',
-  },
-  {
-    count: 1,
-    healthStatus: 'atRisk',
-    __typename: 'WorkItemWidgetHealthStatusCount',
-  },
-];
-
-export const workItemChangeTypeWidgets = {
-  ITERATION: {
-    type: 'ITERATION',
-    iteration: {
-      id: 'gid://gitlab/Iteration/86312',
-      __typename: 'Iteration',
-    },
-    __typename: 'WorkItemWidgetIteration',
-  },
-  WEIGHT: {
-    type: 'WEIGHT',
-    weight: 1,
-    __typename: 'WorkItemWidgetWeight',
-  },
-  PROGRESS: {
-    type: 'PROGRESS',
-    progress: 33,
-    updatedAt: '2024-12-05T16:24:56Z',
-    __typename: 'WorkItemWidgetProgress',
-  },
-  MILESTONE: {
-    type: 'MILESTONE',
-    __typename: 'WorkItemWidgetMilestone',
-    milestone: {
-      __typename: 'Milestone',
-      id: 'gid://gitlab/Milestone/30',
-      title: 'v4.0',
-      state: 'active',
-      expired: false,
-      startDate: '2022-10-17',
-      dueDate: '2022-10-24',
-      webPath: '123',
-      projectMilestone: true,
     },
   },
 };
@@ -386,3 +336,203 @@ export const namespaceWorkItemsWithoutEpicSupport = {
     },
   },
 };
+
+/*
+ * We're disabling the import/export rule here because we want to
+ * re-export the mock data from the CE file while also overriding
+ * anything that's EE-specific.
+ */
+/* eslint-disable import/export */
+export const workItemResponseFactory = (options) =>
+  applyEEWorkItemPermissions(CE.workItemResponseFactory(options), true);
+
+export const workItemByIidResponseFactory = (options) =>
+  applyEEWorkItemPermissions(CE.workItemByIidResponseFactory(options), true);
+
+export const mockMoveWorkItemMutationResponse = (config) =>
+  applyEEWorkItemPermissions(CE.mockMoveWorkItemMutationResponse(config), true);
+
+export const getIssueDetailsResponse = (config) =>
+  applyEEWorkItemPermissions(CE.getIssueDetailsResponse(config), true);
+
+export const linkedWorkItemResponse = (config, errors = []) =>
+  applyEEWorkItemPermissions(CE.linkedWorkItemResponse(config, errors), true);
+
+export const generateWorkItemsListWithId = (config) =>
+  applyEEWorkItemPermissions(CE.generateWorkItemsListWithId(config), true);
+
+export const updateWorkItemMutationResponseFactory = (config) =>
+  applyEEWorkItemPermissions(CE.updateWorkItemMutationResponseFactory(config), true);
+
+export const workItemQueryResponse = applyEEWorkItemPermissions(CE.workItemQueryResponse, true);
+
+export const createWorkItemMutationResponse = applyEEWorkItemPermissions(
+  CE.createWorkItemMutationResponse,
+  true,
+);
+
+export const createWorkItemQueryResponse = applyEEWorkItemPermissions(
+  CE.createWorkItemQueryResponse,
+  true,
+);
+
+export const changeWorkItemParentMutationResponse = applyEEWorkItemPermissions(
+  CE.changeWorkItemParentMutationResponse,
+  true,
+);
+
+export const childrenWorkItems = applyEEWorkItemPermissions(CE.childrenWorkItems, true);
+
+export const childrenWorkItemsObjectives = applyEEWorkItemPermissions(
+  CE.childrenWorkItemsObjectives,
+  true,
+);
+
+export const updateWorkItemMutationErrorResponse = applyEEWorkItemPermissions(
+  CE.updateWorkItemMutationErrorResponse,
+  true,
+);
+
+export const mockHierarchyWidget = applyEEWorkItemPermissions(CE.mockHierarchyWidget, true);
+
+export const workItemHierarchyTreeResponse = applyEEWorkItemPermissions(
+  CE.workItemHierarchyTreeResponse,
+  true,
+);
+
+export const workItemTask = applyEEWorkItemPermissions(CE.workItemTask, true);
+
+export const workItemObjectiveWithChild = applyEEWorkItemPermissions(
+  CE.workItemObjectiveWithChild,
+  true,
+);
+
+export const workItemObjectiveWithClosedChild = applyEEWorkItemPermissions(
+  CE.workItemObjectiveWithClosedChild,
+  true,
+);
+
+export const workItemEpic = applyEEWorkItemPermissions(CE.workItemEpic, true);
+
+export const workItemHierarchyPaginatedTreeResponse = applyEEWorkItemPermissions(
+  CE.workItemHierarchyPaginatedTreeResponse,
+  true,
+);
+
+export const workItemHierarchyTreeFailureResponse = applyEEWorkItemPermissions(
+  CE.workItemHierarchyTreeFailureResponse,
+  true,
+);
+
+export const workItemHierarchyNoChildrenTreeResponse = applyEEWorkItemPermissions(
+  CE.workItemHierarchyNoChildrenTreeResponse,
+  true,
+);
+
+export const workItemHierarchyTreeSingleClosedItemResponse = applyEEWorkItemPermissions(
+  CE.workItemHierarchyTreeSingleClosedItemResponse,
+  true,
+);
+
+export const workItemWithParentAsChild = applyEEWorkItemPermissions(
+  CE.workItemWithParentAsChild,
+  true,
+);
+
+export const workItemHierarchyTreeEmptyResponse = applyEEWorkItemPermissions(
+  CE.workItemHierarchyTreeEmptyResponse,
+  true,
+);
+
+export const workItemHierarchyNoUpdatePermissionResponse = applyEEWorkItemPermissions(
+  CE.workItemHierarchyNoUpdatePermissionResponse,
+  true,
+);
+export const mockWorkItemCommentNote = applyEEWorkItemPermissions(CE.mockWorkItemCommentNote, true);
+
+export const updateWorkItemMutationResponse = applyEEWorkItemPermissions(
+  CE.updateWorkItemMutationResponse,
+  true,
+);
+
+export const mockBlockedByLinkedItem = applyEEWorkItemPermissions(CE.mockBlockedByLinkedItem, true);
+
+export const workItemBlockedByLinkedItemsResponse = applyEEWorkItemPermissions(
+  CE.workItemBlockedByLinkedItemsResponse,
+  true,
+);
+
+export const workItemNoBlockedByLinkedItemsResponse = applyEEWorkItemPermissions(
+  CE.workItemNoBlockedByLinkedItemsResponse,
+  true,
+);
+
+export const mockOpenChildrenCount = applyEEWorkItemPermissions(CE.mockOpenChildrenCount, true);
+
+export const mockNoOpenChildrenCount = applyEEWorkItemPermissions(CE.mockNoOpenChildrenCount, true);
+
+export const convertWorkItemMutationResponse = applyEEWorkItemPermissions(
+  CE.convertWorkItemMutationResponse,
+  true,
+);
+
+export const updateWorkItemNotificationsMutationResponse = applyEEWorkItemPermissions(
+  CE.updateWorkItemNotificationsMutationResponse,
+  true,
+);
+
+export const mockRolledUpHealthStatus = [
+  {
+    count: 1,
+    healthStatus: 'onTrack',
+    __typename: 'WorkItemWidgetHealthStatusCount',
+  },
+  {
+    count: 0,
+    healthStatus: 'needsAttention',
+    __typename: 'WorkItemWidgetHealthStatusCount',
+  },
+  {
+    count: 1,
+    healthStatus: 'atRisk',
+    __typename: 'WorkItemWidgetHealthStatusCount',
+  },
+];
+
+export const workItemChangeTypeWidgets = {
+  ITERATION: {
+    type: 'ITERATION',
+    iteration: {
+      id: 'gid://gitlab/Iteration/86312',
+      __typename: 'Iteration',
+    },
+    __typename: 'WorkItemWidgetIteration',
+  },
+  WEIGHT: {
+    type: 'WEIGHT',
+    weight: 1,
+    __typename: 'WorkItemWidgetWeight',
+  },
+  PROGRESS: {
+    type: 'PROGRESS',
+    progress: 33,
+    updatedAt: '2024-12-05T16:24:56Z',
+    __typename: 'WorkItemWidgetProgress',
+  },
+  MILESTONE: {
+    type: 'MILESTONE',
+    __typename: 'WorkItemWidgetMilestone',
+    milestone: {
+      __typename: 'Milestone',
+      id: 'gid://gitlab/Milestone/30',
+      title: 'v4.0',
+      state: 'active',
+      expired: false,
+      startDate: '2022-10-17',
+      dueDate: '2022-10-24',
+      webPath: '123',
+      projectMilestone: true,
+    },
+  },
+};
+/* eslint-enable import/export */

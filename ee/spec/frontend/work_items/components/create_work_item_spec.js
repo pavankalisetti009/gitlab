@@ -21,8 +21,8 @@ import { resolvers } from '~/graphql_shared/issuable_client';
 import {
   createWorkItemMutationResponse,
   createWorkItemQueryResponse,
-} from 'jest/work_items/mock_data';
-import { namespaceWorkItemsWithoutEpicSupport } from '../mock_data';
+  namespaceWorkItemsWithoutEpicSupport,
+} from '../mock_data';
 
 Vue.use(VueApollo);
 
