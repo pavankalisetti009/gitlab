@@ -10,11 +10,11 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
   let_it_be(:controls) do
     [
       {
-        expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+        expression: { operator: "=", field: "project_visibility_not_internal", value: true }.to_json,
         name: "project_visibility_not_internal"
       },
       {
-        expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+        expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
         name: "minimum_approvals_required_2"
       },
       {
@@ -72,37 +72,35 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
       context 'when one of the controls is invalid' do
         context 'when the expression is invalid' do
-          let_it_be(:controls) do
+          let(:controls) do
             [
               {
-                expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+                expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
                 name: "minimum_approvals_required_2"
               },
               {
-                expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"invalid_value\"}",
+                expression: { operator: "=", field: "project_visibility_not_internal", value: "invalid_value" }.to_json,
                 name: "project_visibility_not_internal"
               }
             ]
           end
 
-          it 'responds with an error message' do
-            expect(requirement_creator_response.message).to include(
-              "Failed to add compliance requirement control project_visibility_not_internal: Validation failed: " \
-                "Expression property '/value' is not one of: [\"private\", \"internal\", \"public\"]"
-            )
+          it 'responds with an error message matching the field validation pattern' do
+            expect(requirement_creator_response.message)
+              .to match(%r{project_visibility_not_internal.*Expression property '/value'})
           end
         end
 
         context 'when the control type is unknown' do
-          let_it_be(:controls) do
+          let(:controls) do
             [
               {
-                expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+                expression: { operator: "=", field: "project_visibility_not_internal", value: true }.to_json,
                 name: "project_visibility_not_internal",
                 control_type: "invalid"
               },
               {
-                expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+                expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
                 name: "minimum_approvals_required_2"
               }
             ]
@@ -117,14 +115,14 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       end
 
       context 'when two controls have same name' do
-        let_it_be(:controls) do
+        let(:controls) do
           [
             {
-              expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+              expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
               name: "minimum_approvals_required_2"
             },
             {
-              expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+              expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
               name: "minimum_approvals_required_2"
             }
           ]
@@ -144,18 +142,18 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           stub_const(constant_name, 2)
         end
 
-        let_it_be(:controls) do
+        let(:controls) do
           [
             {
-              expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+              expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
               name: "minimum_approvals_required_2"
             },
             {
-              expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+              expression: { operator: "=", field: "project_visibility_not_internal", value: true }.to_json,
               name: "project_visibility_not_internal"
             },
             {
-              expression: "{\"operator\":\"=\",\"field\":\"scanner_sast_running\",\"value\":true}",
+              expression: { operator: "=", field: "scanner_sast_running", value: true }.to_json,
               name: "scanner_sast_running"
             }
           ]
@@ -233,7 +231,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       end
 
       shared_examples 'creates requirement without controls' do |controls_value|
-        let_it_be(:controls) { controls_value }
+        let(:controls) { controls_value }
 
         it 'creates a new compliance requirement' do
           expect { requirement_creator_response }.to change { framework.compliance_requirements.count }.by(1)

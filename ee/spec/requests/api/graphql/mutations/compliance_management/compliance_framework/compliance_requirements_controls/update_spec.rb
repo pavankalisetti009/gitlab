@@ -22,8 +22,8 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
   let_it_be(:control_expression) do
     {
       operator: '=',
-      field: 'project_visibility',
-      value: 'private'
+      field: 'project_visibility_not_internal',
+      value: true
     }.to_json
   end
 

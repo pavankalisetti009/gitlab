@@ -10,7 +10,7 @@
         "minimum_approvals_required",
         "merge_request_prevent_author_approval",
         "merge_request_prevent_committers_approval",
-        "project_visibility",
+        "project_visibility_not_internal",
         "default_branch_protected",
         "auth_sso_enabled",
         "scanner_secret_detection_running",
@@ -49,7 +49,20 @@
         "has_valid_ci_config",
         "error_tracking_enabled",
         "default_branch_users_can_push",
-        "default_branch_protected_from_direct_push"
+        "default_branch_protected_from_direct_push",
+        "push_protection_enabled",
+        "project_marked_for_deletion",
+        "project_archived",
+        "default_branch_users_can_merge",
+        "merge_request_commit_reset_approvals",
+        "project_visibility_not_public",
+        "package_hunter_no_findings_untriaged",
+        "project_pipelines_not_public",
+        "vulnerabilities_slo_days_over_threshold",
+        "merge_requests_approval_rules_prevent_editing",
+        "project_user_defined_variables_restricted_to_maintainers",
+        "merge_requests_require_code_owner_approval",
+        "cicd_job_token_scope_enabled"
       ]
     },
     "operator": {
@@ -86,6 +99,7 @@
               "scanner_sast_running",
               "merge_request_prevent_author_approval",
               "merge_request_prevent_committers_approval",
+              "project_visibility_not_internal",
               "default_branch_protected",
               "auth_sso_enabled",
               "scanner_secret_detection_running",
@@ -124,7 +138,20 @@
               "has_valid_ci_config",
               "error_tracking_enabled",
               "default_branch_users_can_push",
-              "default_branch_protected_from_direct_push"
+              "default_branch_protected_from_direct_push",
+              "push_protection_enabled",
+              "project_marked_for_deletion",
+              "project_archived",
+              "default_branch_users_can_merge",
+              "merge_request_commit_reset_approvals",
+              "project_visibility_not_public",
+              "package_hunter_no_findings_untriaged",
+              "project_pipelines_not_public",
+              "vulnerabilities_slo_days_over_threshold",
+              "merge_requests_approval_rules_prevent_editing",
+              "project_user_defined_variables_restricted_to_maintainers",
+              "merge_requests_require_code_owner_approval",
+              "cicd_job_token_scope_enabled"
             ]
           }
         }
@@ -166,35 +193,6 @@
               "<",
               ">=",
               "<="
-            ]
-          }
-        }
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "field": {
-            "enum": [
-              "project_visibility"
-            ]
-          }
-        }
-      },
-      "then": {
-        "properties": {
-          "value": {
-            "type": "string",
-            "enum": [
-              "private",
-              "internal",
-              "public"
-            ]
-          },
-          "operator": {
-            "enum": [
-              "=",
-              "!="
             ]
           }
         }

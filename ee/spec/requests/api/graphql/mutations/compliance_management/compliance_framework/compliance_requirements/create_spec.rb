@@ -11,7 +11,7 @@ RSpec.describe 'Create a Compliance Requirement', feature_category: :compliance_
   let_it_be(:controls) do
     [
       {
-        expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"private\"}",
+        expression: "{\"operator\":\"=\",\"field\":\"project_visibility_not_internal\",\"value\":true}",
         name: "project_visibility_not_internal",
         control_type: 'internal'
       },
@@ -156,12 +156,10 @@ RSpec.describe 'Create a Compliance Requirement', feature_category: :compliance_
           let(:controls) do
             [
               {
-                expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+                expression:
+                  "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\"," \
+                  "\"value\":\"invalid_number\"}",
                 name: "minimum_approvals_required_2"
-              },
-              {
-                expression: "{\"operator\":\"=\",\"field\":\"project_visibility\",\"value\":\"invalid_value\"}",
-                name: "project_visibility_not_internal"
               }
             ]
           end
@@ -170,8 +168,8 @@ RSpec.describe 'Create a Compliance Requirement', feature_category: :compliance_
             mutate
 
             expect(mutation_response['errors'])
-              .to contain_exactly "Failed to add compliance requirement control project_visibility_not_internal: " \
-                "Validation failed: Expression property '/value' is not one of: [\"private\", \"internal\", \"public\"]"
+              .to contain_exactly "Failed to add compliance requirement control minimum_approvals_required_2: " \
+                "Validation failed: Expression property '/value' is not of type: number"
           end
 
           it 'does not create the requirement' do

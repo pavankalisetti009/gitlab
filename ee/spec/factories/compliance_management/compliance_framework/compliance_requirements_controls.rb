@@ -27,8 +27,8 @@ FactoryBot.define do
       expression do
         {
           operator: "=",
-          field: "project_visibility",
-          value: "private"
+          field: "project_visibility_not_internal",
+          value: true
         }.to_json
       end
     end

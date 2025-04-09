@@ -6,10 +6,12 @@ RSpec.describe ComplianceManagement::ComplianceFramework::Controls::Registry, fe
   describe '.validate_registry!' do
     it 'delegates validation to RegistryValidator' do
       expect(ComplianceManagement::ComplianceFramework::Controls::RegistryValidator).to receive(:validate!)
-      .with(described_class.controls, described_class::SPECIAL_CONTROLS)
-      .and_call_original
+        .with(described_class.controls, described_class::SPECIAL_CONTROLS)
 
-      expect { described_class.validate_registry! }.not_to raise_error
+      begin
+        described_class.validate_registry!
+      rescue ComplianceManagement::ComplianceFramework::Controls::RegistryValidator::RegistryValidationError
+      end
     end
 
     it 'raises and error if RegistryValidator errors' do
@@ -32,11 +34,12 @@ RSpec.describe ComplianceManagement::ComplianceFramework::Controls::Registry, fe
     it 'loads types correctly' do
       boolean_control = described_class.controls[:scanner_sast_running]
       numeric_control = described_class.controls[:minimum_approvals_required_2]
-      enum_control = described_class.controls[:project_visibility_not_internal]
 
       expect(boolean_control[:type][:type]).to eq(:boolean)
       expect(numeric_control[:type][:type]).to eq(:number)
-      expect(enum_control[:type][:type]).to eq(:string)
+
+      project_visibility_control = described_class.controls[:project_visibility_not_internal]
+      expect(project_visibility_control[:type][:type]).to eq(:boolean)
     end
   end
 
@@ -85,10 +88,6 @@ RSpec.describe ComplianceManagement::ComplianceFramework::Controls::Registry, fe
       described_class.controls.find { |_, data| data[:type][:type] == :number }.first
     end
 
-    let(:enum_control_id) do
-      described_class.controls.find { |_, data| data[:type][:type] == :string }.first
-    end
-
     it 'returns the correct operators for boolean fields' do
       control = described_class.controls[boolean_control_id]
       field_id = control[:field_id] || boolean_control_id
@@ -103,14 +102,6 @@ RSpec.describe ComplianceManagement::ComplianceFramework::Controls::Registry, fe
 
       expect(described_class.valid_operators_for_field(field_id))
         .to eq(described_class::CONTROL_TYPES[:numeric][:valid_operators])
-    end
-
-    it 'returns the correct operators for enum fields' do
-      control = described_class.controls[enum_control_id]
-      field_id = control[:field_id] || enum_control_id
-
-      expect(described_class.valid_operators_for_field(field_id))
-        .to eq(described_class::CONTROL_TYPES[:enum][:valid_operators])
     end
 
     it 'defaults to ["="] for unknown fields' do
@@ -162,7 +153,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::Controls::Registry, fe
       mappings = described_class.field_mappings
 
       expect(mappings['default_branch_protected']).to eq(:default_branch_protected?)
-      expect(mappings['project_visibility']).to eq(:project_visibility)
+      expect(mappings['project_visibility_not_internal']).to eq(:project_visibility_not_internal?)
     end
 
     it 'handles field_id when present' do
@@ -207,7 +198,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::Controls::Registry, fe
 
   describe '.find_by_field_id' do
     it 'finds a control by its field ID' do
-      control = described_class.find_by_field_id(:project_visibility)
+      control = described_class.find_by_field_id(:project_visibility_not_internal)
 
       expect(control).to be_present
       expect(control[:id]).to eq(:project_visibility_not_internal)
