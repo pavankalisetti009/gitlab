@@ -10,7 +10,13 @@ export default () => {
   const el = document.getElementById('js-vsa-settings-app');
   if (!el) return false;
 
-  const { isEditPage, vsaPath, namespaceFullPath, stageEvents: rawStageEvents } = el.dataset;
+  const {
+    isEditPage,
+    vsaPath,
+    namespaceFullPath,
+    stageEvents: rawStageEvents,
+    valueStream: rawValueStream,
+  } = el.dataset;
   const initialData = buildCycleAnalyticsInitialData(el.dataset);
   const store = createStore();
 
@@ -28,6 +34,18 @@ export default () => {
     return false;
   }
 
+  let valueStream = {};
+  if (rawValueStream) {
+    try {
+      valueStream = convertObjectPropsToCamelCase(JSON.parse(rawValueStream));
+    } catch (e) {
+      createAlert({
+        message: s__('CycleAnalytics|Failed to parse value stream.'),
+      });
+      return false;
+    }
+  }
+
   return new Vue({
     el,
     store,
@@ -35,6 +53,7 @@ export default () => {
       vsaPath,
       namespaceFullPath,
       stageEvents,
+      valueStream,
     },
     render: (createElement) =>
       createElement(VSASettingsApp, {

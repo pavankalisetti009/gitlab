@@ -19143,6 +19143,9 @@ msgstr ""
 msgid "CycleAnalytics|Failed to parse stage events."
 msgstr ""
 
+msgid "CycleAnalytics|Failed to parse value stream."
+msgstr ""
+
 msgid "CycleAnalytics|If you have recently upgraded your GitLab license from a tier without this feature, it can take up to 30 minutes for data to collect and display."
 msgstr ""
 

@@ -11,17 +11,12 @@ export default {
   components: {
     GlButton,
   },
-  inject: ['vsaPath'],
+  inject: ['vsaPath', 'valueStream'],
   props: {
     isEditing: {
       type: Boolean,
       required: false,
       default: false,
-    },
-    valueStreamId: {
-      type: Number,
-      required: false,
-      default: -1,
     },
     isLoading: {
       type: Boolean,
@@ -42,8 +37,8 @@ export default {
         : this.$options.i18n.newValueStreamAction;
     },
     cancelHref() {
-      return this.isEditing && this.valueStreamId > 0
-        ? mergeUrlParams({ value_stream_id: this.valueStreamId }, this.vsaPath)
+      return this.isEditing && this.valueStream?.id > 0
+        ? mergeUrlParams({ value_stream_id: this.valueStream.id }, this.vsaPath)
         : this.vsaPath;
     },
   },

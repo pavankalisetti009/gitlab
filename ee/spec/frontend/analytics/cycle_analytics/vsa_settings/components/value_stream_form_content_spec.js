@@ -1,7 +1,5 @@
 import { GlAlert } from '@gitlab/ui';
-import Vue, { nextTick } from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
+import { nextTick } from 'vue';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
@@ -34,8 +32,6 @@ jest.mock('~/lib/utils/url_utility', () => ({
   visitUrlWithAlerts: jest.fn(),
 }));
 
-Vue.use(Vuex);
-
 describe('ValueStreamFormContent', () => {
   let mock;
   let wrapper = null;
@@ -59,20 +55,8 @@ describe('ValueStreamFormContent', () => {
     name: 'Editable value stream',
   };
 
-  const fakeStore = ({ state: stateOverrides }) =>
-    new Vuex.Store({
-      state: {
-        selectedValueStream: undefined,
-        ...stateOverrides,
-      },
-      getters: {
-        namespaceRestApiRequestPath: () => namespacePath,
-      },
-    });
-
-  const createComponent = ({ props = {}, state = {} } = {}) =>
+  const createComponent = ({ props = {} } = {}) =>
     shallowMountExtended(ValueStreamFormContent, {
-      store: fakeStore({ state }),
       provide: { vsaPath: '/mockPath', namespaceFullPath: namespacePath, stageEvents },
       propsData: {
         defaultStageConfig,
@@ -127,7 +111,6 @@ describe('ValueStreamFormContent', () => {
       expect(findFormActions().props()).toMatchObject({
         isLoading: false,
         isEditing: false,
-        valueStreamId: -1,
       });
     });
 
@@ -361,9 +344,6 @@ describe('ValueStreamFormContent', () => {
           initialData,
           isEditing: true,
         },
-        state: {
-          selectedValueStream: mockValueStream,
-        },
       });
     });
 
@@ -373,10 +353,6 @@ describe('ValueStreamFormContent', () => {
 
     it('passes isEditing=true to form actions', () => {
       expect(findFormActions().props().isEditing).toBe(true);
-    });
-
-    it('passes value stream ID to form actions', () => {
-      expect(findFormActions().props().valueStreamId).toBe(mockValueStream.id);
     });
 
     it('does not display any hidden stages', () => {
@@ -500,9 +476,6 @@ describe('ValueStreamFormContent', () => {
               initialData,
               isEditing: true,
             },
-            state: {
-              selectedValueStream: mockValueStream,
-            },
           });
 
           clickSubmit();
@@ -553,9 +526,6 @@ describe('ValueStreamFormContent', () => {
             props: {
               initialData,
               isEditing: true,
-            },
-            state: {
-              selectedValueStream: mockValueStream,
             },
           });
 

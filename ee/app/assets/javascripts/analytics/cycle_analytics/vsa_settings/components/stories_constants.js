@@ -121,7 +121,7 @@ export const stageEvents = [
   },
 ];
 
-export const selectedValueStream = { id: 16, name: 'Cool value stream', isCustom: true };
+export const valueStream = { id: 16, name: 'Cool value stream', isCustom: true };
 
 const startEventLabel = {
   id: 1,
@@ -156,7 +156,7 @@ export const customStage = {
   custom: true,
 };
 
-export const selectedValueStreamStages = ({ hideStages = false, addCustomStage = false } = {}) => [
+export const valueStreamStages = ({ hideStages = false, addCustomStage = false } = {}) => [
   ...(addCustomStage ? [customStage] : []),
   ...defaultStageConfig.map(({ custom, name }) => ({ custom, name, hidden: hideStages })),
 ];
