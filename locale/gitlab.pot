@@ -61140,6 +61140,9 @@ msgstr ""
 msgid "This merge request has reached the maximum limit of %{limit} versions and cannot be updated further. Close this merge request and create a new one instead."
 msgstr ""
 
+msgid "This merge request has too many diff commits, and can't be updated. Close this merge request and create a new one."
+msgstr ""
+
 msgid "This merge request is closed. To apply this suggestion, edit this file directly."
 msgstr ""
 
