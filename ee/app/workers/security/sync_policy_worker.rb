@@ -31,6 +31,7 @@ module Security
       return unless policy.enabled
 
       sync_pipeline_execution_policy_metadata(policy)
+      sync_compliance_frameworks(policy)
       all_project_ids(policy).each do |project_id|
         ::Security::SyncProjectPolicyWorker.perform_async(project_id, policy.id, {})
       end
@@ -42,6 +43,8 @@ module Security
       )
 
       sync_pipeline_execution_policy_metadata(policy) if policy_diff.content_changed?
+      sync_compliance_frameworks(policy, policy_diff) if policy_diff.scope_changed?
+
       return unless policy_diff.needs_refresh? || policy_diff.needs_rules_refresh?
 
       all_project_ids(policy).each do |project_id|
@@ -51,6 +54,13 @@ module Security
 
     def all_project_ids(policy)
       policy.security_orchestration_policy_configuration.all_project_ids
+    end
+
+    def sync_compliance_frameworks(policy, policy_diff = nil)
+      Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService.new(
+        security_policy: policy,
+        policy_diff: policy_diff
+      ).execute
     end
 
     def sync_pipeline_execution_policy_metadata(policy)

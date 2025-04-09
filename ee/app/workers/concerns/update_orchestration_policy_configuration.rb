@@ -20,7 +20,6 @@ module UpdateOrchestrationPolicyConfiguration
     end
 
     Security::PersistSecurityPoliciesWorker.perform_async(configuration.id)
-    Security::SecurityOrchestrationPolicies::ComplianceFrameworks::SyncService.new(configuration).execute
 
     configuration.delete_all_schedules
     configuration.active_scan_execution_policies.each_with_index do |policy, policy_index|
