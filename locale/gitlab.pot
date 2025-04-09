@@ -69398,7 +69398,7 @@ msgstr ""
 msgid "You will only receive notifications for items you have participated in and the events you choose"
 msgstr ""
 
-msgid "You will receive notifications for any activity"
+msgid "You will receive notifications for most activity"
 msgstr ""
 
 msgid "You will receive notifications only for comments in which you were @mentioned"
