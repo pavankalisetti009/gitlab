@@ -31,14 +31,53 @@ RSpec.describe Search::Elastic::Types::WorkItem, feature_category: :global_searc
 
     it 'contains platform and version specific mappings' do
       if helper.vectors_supported?(:elasticsearch)
-        expect(mappings.keys).to include(:embedding_0)
-        expect(described_class.mappings.to_hash[:properties][:embedding_0][:dims]).to eq(expected_dimensions)
+        expect(mappings.keys).to include(:embedding_0, :embedding_1)
+
+        mappings = described_class.mappings.to_hash[:properties]
+        expect(mappings[:embedding_0][:dims]).to eq(expected_dimensions)
+        expect(mappings[:embedding_1][:dims]).to eq(expected_dimensions)
       end
 
       if helper.vectors_supported?(:opensearch)
-        expect(mappings.keys).to include(:embedding_0)
-        expect(described_class.mappings.to_hash[:properties][:embedding_0][:dimension]).to eq(expected_dimensions)
+        expect(mappings.keys).to include(:embedding_0, :embedding_1)
+
+        mappings = described_class.mappings.to_hash[:properties]
+        expect(mappings[:embedding_0][:dimension]).to eq(expected_dimensions)
+        expect(mappings[:embedding_1][:dimension]).to eq(expected_dimensions)
       end
+    end
+  end
+
+  describe '#elastic_knn_field' do
+    it 'returns a properly configured dense_vector field' do
+      expected_field = {
+        type: 'dense_vector',
+        dims: described_class::VERTEX_TEXT_EMBEDDING_DIMENSION,
+        similarity: 'cosine',
+        index: true
+      }
+
+      expect(described_class.elastic_knn_field).to eq(expected_field)
+    end
+  end
+
+  describe '#opensearch_knn_field' do
+    it 'returns a properly configured knn_vector field' do
+      expected_field = {
+        type: 'knn_vector',
+        dimension: described_class::VERTEX_TEXT_EMBEDDING_DIMENSION,
+        method: {
+          name: 'hnsw',
+          engine: 'nmslib',
+          space_type: 'cosinesimil',
+          parameters: {
+            ef_construction: described_class::OPENSEARCH_EF_CONSTRUCTION,
+            m: described_class::OPENSEARCH_M
+          }
+        }
+      }
+
+      expect(described_class.opensearch_knn_field).to eq(expected_field)
     end
   end
 

@@ -37,12 +37,8 @@ module Search
             return mappings unless helper.vectors_supported?(:elasticsearch)
 
             mappings.merge({
-              embedding_0: {
-                type: 'dense_vector',
-                dims: VERTEX_TEXT_EMBEDDING_DIMENSION,
-                similarity: 'cosine',
-                index: true
-              }
+              embedding_0: elastic_knn_field,
+              embedding_1: elastic_knn_field
             })
           end
 
@@ -50,20 +46,34 @@ module Search
             return mappings unless helper.vectors_supported?(:opensearch)
 
             mappings.merge({
-              embedding_0: {
-                type: 'knn_vector',
-                dimension: VERTEX_TEXT_EMBEDDING_DIMENSION,
-                method: {
-                  name: 'hnsw',
-                  engine: 'nmslib',
-                  space_type: 'cosinesimil',
-                  parameters: {
-                    ef_construction: OPENSEARCH_EF_CONSTRUCTION,
-                    m: OPENSEARCH_M
-                  }
+              embedding_0: opensearch_knn_field,
+              embedding_1: opensearch_knn_field
+            })
+          end
+
+          def elastic_knn_field
+            {
+              type: 'dense_vector',
+              dims: VERTEX_TEXT_EMBEDDING_DIMENSION,
+              similarity: 'cosine',
+              index: true
+            }
+          end
+
+          def opensearch_knn_field
+            {
+              type: 'knn_vector',
+              dimension: VERTEX_TEXT_EMBEDDING_DIMENSION,
+              method: {
+                name: 'hnsw',
+                engine: 'nmslib',
+                space_type: 'cosinesimil',
+                parameters: {
+                  ef_construction: OPENSEARCH_EF_CONSTRUCTION,
+                  m: OPENSEARCH_M
                 }
               }
-            })
+            }
           end
 
           private
