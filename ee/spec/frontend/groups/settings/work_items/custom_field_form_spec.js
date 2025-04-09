@@ -1,6 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox, GlModal } from '@gitlab/ui';
+import Draggable from 'vuedraggable';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import CustomFieldForm from 'ee/groups/settings/work_items/custom_field_form.vue';
 import createCustomFieldMutation from 'ee/groups/settings/work_items/create_custom_field.mutation.graphql';
@@ -36,6 +37,8 @@ describe('CustomFieldForm', () => {
     wrapper.find('[data-testid="custom-field-options"]');
   const findAddSelectOptionButton = () => wrapper.findByTestId('add-select-option');
   const findAddSelectInputAt = (i) => wrapper.findByTestId(`select-options-${i}`);
+  const findDraggableComponent = () => wrapper.findComponent(Draggable);
+  const findDragHandles = () => wrapper.findAll('.drag-handle');
 
   const findRemoveSelectButtonAt = (i) => wrapper.findByTestId(`remove-select-option-${i}`);
 
@@ -229,6 +232,49 @@ describe('CustomFieldForm', () => {
     });
   });
 
+  describe('drag to reorder select options', () => {
+    beforeEach(async () => {
+      createComponent();
+      await findToggleModalButton().vm.$emit('click');
+      await findFieldTypeSelect().vm.$emit('input', 'SINGLE_SELECT');
+      await nextTick();
+    });
+
+    it('shows drag handles only when there are multiple options', async () => {
+      // Initially there's only one option, so there should be no drag handles
+      expect(findDragHandles().exists()).toBe(false);
+
+      findAddSelectOptionButton().vm.$emit('click');
+      await nextTick();
+
+      // After adding a second option there should be drag handles
+      expect(findDragHandles()).toHaveLength(2);
+    });
+
+    it('reorders options when dragged', async () => {
+      findAddSelectInputAt(0).vm.$emit('input', 'First Option');
+      findAddSelectOptionButton().vm.$emit('click');
+      await nextTick();
+
+      findAddSelectInputAt(1).vm.$emit('input', 'Second Option');
+      await nextTick();
+
+      expect(findAddSelectInputAt(0).attributes('value')).toBe('First Option');
+      expect(findAddSelectInputAt(1).attributes('value')).toBe('Second Option');
+
+      // Simulate a drag and drop reorder
+      const draggable = findDraggableComponent();
+      const currentOptions = [...wrapper.vm.formData.selectOptions];
+      const reorderedOptions = [currentOptions[1], currentOptions[0]];
+
+      draggable.vm.$emit('input', reorderedOptions);
+      await nextTick();
+
+      expect(findAddSelectInputAt(0).attributes('value')).toBe('Second Option');
+      expect(findAddSelectInputAt(1).attributes('value')).toBe('First Option');
+    });
+  });
+
   describe('saveCustomField', () => {
     it('calls create mutation with correct variables when creating', async () => {
       const createFieldHandler = jest.fn().mockResolvedValue(mockCreateFieldResponse);
@@ -277,6 +323,14 @@ describe('CustomFieldForm', () => {
 
       await nextTick();
 
+      // Simulate reordering options via dragging
+      const draggable = findDraggableComponent();
+      const currentOptions = [...wrapper.vm.formData.selectOptions];
+      const reorderedOptions = [currentOptions[1], currentOptions[0]];
+
+      draggable.vm.$emit('input', reorderedOptions);
+      await nextTick();
+
       findUpdateCustomFieldButton().vm.$emit('click');
 
       await waitForPromises();
@@ -287,8 +341,8 @@ describe('CustomFieldForm', () => {
         id: 'gid://gitlab/Issuables::CustomField/13',
         name: 'Updated Field',
         selectOptions: [
-          { id: '1', value: 'Option 1' },
           { id: '2', value: 'Option 2' },
+          { id: '1', value: 'Option 1' },
         ],
         workItemTypeIds: [mockWorkItemTypes[1].id],
       });

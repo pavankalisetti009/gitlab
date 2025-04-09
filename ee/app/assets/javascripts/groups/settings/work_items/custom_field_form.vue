@@ -5,12 +5,15 @@ import {
   GlFormGroup,
   GlFormInput,
   GlFormSelect,
+  GlIcon,
   GlModal,
   GlAlert,
   GlLoadingIcon,
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
+import Draggable from 'vuedraggable';
+import { defaultSortableOptions, DRAG_DELAY } from '~/sortable/constants';
 import { __, s__, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createCustomFieldMutation from './create_custom_field.mutation.graphql';
@@ -27,11 +30,13 @@ export const FIELD_TYPE_OPTIONS = [
 
 export default {
   components: {
+    Draggable,
     GlButton,
     GlCollapsibleListbox,
     GlFormGroup,
     GlFormInput,
     GlFormSelect,
+    GlIcon,
     GlModal,
     GlAlert,
     GlLoadingIcon,
@@ -132,6 +137,14 @@ export default {
         text: type.name,
         name: type.name,
       }));
+    },
+    dragOptions() {
+      return {
+        ...defaultSortableOptions,
+        handle: '.drag-handle',
+        delay: DRAG_DELAY,
+        delayOnTouchOnly: true,
+      };
     },
   },
   methods: {
@@ -356,26 +369,35 @@ export default {
           :state="formState.selectOptions"
           :invalid-feedback="s__('WorkItemCustomField|At least one option is required.')"
         >
-          <div
-            v-for="(selectOption, index) in formData.selectOptions"
-            :key="index"
-            class="gl-mb-3 gl-flex"
-          >
-            <gl-form-input
-              :ref="`selectOptions${index}`"
-              v-model="selectOption.value"
-              width="md"
-              :data-testid="`select-options-${index}`"
-              @input="validateSelectOptions"
-            />
-            <gl-button
-              category="tertiary"
-              icon="remove"
-              :aria-label="s__('WorkItemCustomField|Remove')"
-              :data-testid="`remove-select-option-${index}`"
-              @click="removeSelectOption(index)"
-            />
-          </div>
+          <draggable v-model="formData.selectOptions" v-bind="dragOptions">
+            <div
+              v-for="(selectOption, index) in formData.selectOptions"
+              :key="index"
+              class="gl-mb-3 gl-flex gl-items-center gl-gap-2"
+            >
+              <gl-icon
+                v-if="formData.selectOptions.length > 1"
+                name="grip"
+                class="drag-handle gl-cursor-grab"
+                role="img"
+                aria-hidden="true"
+              />
+              <gl-form-input
+                :ref="`selectOptions${index}`"
+                v-model="selectOption.value"
+                width="md"
+                :data-testid="`select-options-${index}`"
+                @input="validateSelectOptions"
+              />
+              <gl-button
+                category="tertiary"
+                icon="remove"
+                :aria-label="s__('WorkItemCustomField|Remove')"
+                :data-testid="`remove-select-option-${index}`"
+                @click="removeSelectOption(index)"
+              />
+            </div>
+          </draggable>
 
           <gl-button
             data-testid="add-select-option"
@@ -403,3 +425,9 @@ export default {
     </gl-modal>
   </div>
 </template>
+<style>
+.is-ghost {
+  opacity: 0.3;
+  pointer-events: none;
+}
+</style>
