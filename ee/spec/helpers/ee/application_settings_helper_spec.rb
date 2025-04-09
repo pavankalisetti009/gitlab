@@ -251,20 +251,22 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
       application_setting.global_search_commits_enabled = false
       application_setting.global_search_epics_enabled = true
       application_setting.global_search_wiki_enabled = true
+      application_setting.global_search_block_anonymous_searches_enabled = false
       helper.instance_variable_set(:@application_setting, application_setting)
     end
 
     it 'returns correctly checked checkboxes' do
       helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
         result = helper.global_search_settings_checkboxes(form)
-        expect(result[0]).to have_checked_field('Enable issues tab in global search results', with: 1)
-        expect(result[1]).not_to have_checked_field('Enable merge requests tab in global search results', with: 1)
-        expect(result[2]).to have_checked_field('Enable snippet tab in global search results', with: 1)
-        expect(result[3]).not_to have_checked_field('Enable users tab in global search results', with: 1)
-        expect(result[4]).to have_checked_field('Enable code tab in global search results', with: 1)
-        expect(result[5]).not_to have_checked_field('Enable commits tab in global search results', with: 1)
-        expect(result[6]).to have_checked_field('Enable epics tab in global search results', with: 1)
-        expect(result[7]).to have_checked_field('Enable wiki tab in global search results', with: 1)
+        expect(result[0]).not_to have_checked_field('Enable blocking of anonymous global search requests', with: 1)
+        expect(result[1]).to have_checked_field('Enable issues tab in global search results', with: 1)
+        expect(result[2]).not_to have_checked_field('Enable merge requests tab in global search results', with: 1)
+        expect(result[3]).to have_checked_field('Enable snippet tab in global search results', with: 1)
+        expect(result[4]).not_to have_checked_field('Enable users tab in global search results', with: 1)
+        expect(result[5]).to have_checked_field('Enable code tab in global search results', with: 1)
+        expect(result[6]).not_to have_checked_field('Enable commits tab in global search results', with: 1)
+        expect(result[7]).to have_checked_field('Enable epics tab in global search results', with: 1)
+        expect(result[8]).to have_checked_field('Enable wiki tab in global search results', with: 1)
       end
     end
   end

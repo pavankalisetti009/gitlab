@@ -23395,6 +23395,9 @@ msgstr ""
 msgid "Enable automatic repository housekeeping"
 msgstr ""
 
+msgid "Enable blocking of anonymous global search requests"
+msgstr ""
+
 msgid "Enable cleanup policies for projects created earlier than GitLab 12.7."
 msgstr ""
 
@@ -23420,6 +23423,9 @@ msgid "Enable feature to choose access level"
 msgstr ""
 
 msgid "Enable for this project"
+msgstr ""
+
+msgid "Enable global search for limited indexing"
 msgstr ""
 
 msgid "Enable group runners"

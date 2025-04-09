@@ -391,6 +391,11 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
   describe 'GET /search' do
     let(:endpoint) { '/search' }
 
+    before do
+      stub_application_setting(global_search_block_anonymous_searches_enabled: true)
+      stub_ee_application_setting(global_search_limited_indexing_enabled: true)
+    end
+
     context 'with correct params' do
       context 'when elasticsearch is disabled' do
         it_behaves_like 'elasticsearch disabled'
@@ -498,6 +503,8 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
       context 'when elasticsearch is enabled', :elastic_delete_by_query do
         before do
           stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+          stub_application_setting(global_search_block_anonymous_searches_enabled: true)
+          stub_ee_application_setting(global_search_limited_indexing_enabled: true)
         end
 
         context 'when elasticsearch_limit_indexing is on' do

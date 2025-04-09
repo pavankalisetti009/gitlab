@@ -11,7 +11,7 @@ RSpec.describe 'Snippet elastic search', :js, :clean_gitlab_redis_rate_limiting,
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-
+    stub_ee_application_setting(global_search_limited_indexing_enabled: true)
     create_snippets
 
     sign_in(current_user) if current_user
@@ -25,15 +25,20 @@ RSpec.describe 'Snippet elastic search', :js, :clean_gitlab_redis_rate_limiting,
     context 'as anonymous user' do
       let(:current_user) { nil }
 
-      context 'when block_anonymous_global_searches is enabled' do
+      context 'when global_search_block_anonymous_searches_enabled is enabled' do
+        before do
+          stub_application_setting(global_search_block_anonymous_searches_enabled: true)
+        end
+
         it 'redirects to login page' do
-          expect(page).to have_content('You need to sign in or sign up before continuing.')
+          visit(page)
+          expect(page).to have_current_path("/users/sign_in")
         end
       end
 
-      context 'when block_anonymous_global_searches is disabled' do
-        before(:context) do
-          stub_feature_flags(block_anonymous_global_searches: false)
+      context 'when global_search_block_anonymous_searches_enabled is disabled' do
+        before do
+          stub_application_setting(global_search_block_anonymous_searches_enabled: false)
         end
 
         it 'finds only public snippets' do

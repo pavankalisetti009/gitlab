@@ -424,9 +424,9 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
         stub_ee_application_setting(elasticsearch_limit_indexing: true)
       end
 
-      context 'when advanced_global_search_for_limited_indexing feature flag is disabled' do
+      context 'when global_search_limited_indexing_enabled admin setting is disabled' do
         before do
-          stub_feature_flags(advanced_global_search_for_limited_indexing: false)
+          stub_application_setting(global_search_limited_indexing_enabled: false)
         end
 
         it 'does not include ES-specific scopes' do
@@ -434,7 +434,11 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
         end
       end
 
-      context 'when advanced_global_search_for_limited_indexing feature flag is enabled' do
+      context 'when global_search_limited_indexing_enabled admin setting is enabled' do
+        before do
+          stub_application_setting(global_search_limited_indexing_enabled: true)
+        end
+
         it 'includes ES-specific scopes' do
           expect(described_class.new(user, {}).allowed_scopes).to include('commits')
         end
