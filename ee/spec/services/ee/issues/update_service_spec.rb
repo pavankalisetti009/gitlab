@@ -987,14 +987,6 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
         it_behaves_like 'does not call the clone service'
       end
 
-      context 'when work_item_move_and_clone feature flag is disabled' do
-        before do
-          stub_feature_flags(work_item_move_and_clone: false)
-        end
-
-        it_behaves_like 'does not call the clone service'
-      end
-
       context 'clone an epic with notes' do
         it 'calls the move service with the proper issue and group' do
           expect_next_instance_of(clone_service_class) do |service|
@@ -1047,14 +1039,6 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
       context "when licensed feature epics is not available" do
         before do
           stub_licensed_features(epics: false)
-        end
-
-        it_behaves_like 'does not call the move service'
-      end
-
-      context "when work_item_move_and_clone feature flag is disabled" do
-        before do
-          stub_feature_flags(work_item_move_and_clone: false)
         end
 
         it_behaves_like 'does not call the move service'

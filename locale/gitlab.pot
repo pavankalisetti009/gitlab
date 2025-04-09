@@ -13259,15 +13259,6 @@ msgstr ""
 msgid "Clone with SSH"
 msgstr ""
 
-msgid "CloneIssue|Cannot clone issue due to insufficient permissions."
-msgstr ""
-
-msgid "CloneIssue|Cannot clone issue to target project as it is pending deletion."
-msgstr ""
-
-msgid "CloneIssue|Cannot clone issues of '%{issue_type}' type."
-msgstr ""
-
 msgid "CloneWorkItem|Unable to clone. Cloning '%{work_item_type}' is not supported."
 msgstr ""
 
@@ -39264,15 +39255,6 @@ msgid "Move this item to another group or project"
 msgstr ""
 
 msgid "Move up"
-msgstr ""
-
-msgid "MoveIssue|Cannot move issue due to insufficient permissions."
-msgstr ""
-
-msgid "MoveIssue|Cannot move issue to project it originates from."
-msgstr ""
-
-msgid "MoveIssue|Cannot move issues of '%{issue_type}' type."
 msgstr ""
 
 msgid "MoveWorkItem|Unable to move. Moving '%{work_item_type}' is not supported."
