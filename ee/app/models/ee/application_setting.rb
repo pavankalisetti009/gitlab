@@ -495,7 +495,7 @@ module EE
       when Array
         scope.any? { |project| elasticsearch_indexes_project?(project) }
       else
-        ::Feature.enabled?(:advanced_global_search_for_limited_indexing, type: :ops)
+        ::Gitlab::CurrentSettings.global_search_limited_indexing_enabled?
       end
     end
 

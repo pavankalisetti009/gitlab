@@ -151,6 +151,8 @@
           %h3.gl-heading-3= _('Elasticsearch indexing restrictions')
           .form-group
             = f.gitlab_ui_checkbox_component :elasticsearch_limit_indexing, s_("AdminSettings|Limit the amount of namespace and project data to index"), checkbox_options: { class: 'js-limit-checkbox' }
+            = f.gitlab_ui_checkbox_component :global_search_limited_indexing_enabled, s_("Enable global search for limited indexing"),
+          checkbox_options: { checked: @application_setting.global_search_limited_indexing_enabled, multiple: false }
 
           .form-group.js-limit-namespaces{ class: ('hidden' unless @application_setting.elasticsearch_limit_indexing) }
             = f.label :elasticsearch_namespace_ids, _('Namespaces to index'), class: 'label-bold'

@@ -1372,7 +1372,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       indexing: [true, false],
       searching: [true, false],
       limiting: [true, false],
-      advanced_global_search_for_limited_indexing:
+      global_search_limited_indexing_enabled:
       [true, false]
     )
 
@@ -1397,13 +1397,13 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           elasticsearch_limit_indexing: limiting
         )
 
-        stub_feature_flags(advanced_global_search_for_limited_indexing: advanced_global_search_for_limited_indexing)
+        stub_ee_application_setting(global_search_limited_indexing_enabled: global_search_limited_indexing_enabled)
       end
 
       context 'for global scope' do
         let(:scope) { nil }
 
-        it { is_expected.to eq(indexing && searching && (!limiting || advanced_global_search_for_limited_indexing)) }
+        it { is_expected.to eq(indexing && searching && (!limiting || global_search_limited_indexing_enabled)) }
       end
 
       context 'for namespace (in scope)' do
