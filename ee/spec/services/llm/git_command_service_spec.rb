@@ -55,7 +55,8 @@ RSpec.describe Llm::GitCommandService, feature_category: :source_code_management
       allow_next_instance_of(
         ::Gitlab::Llm::AiGateway::Client,
         current_user,
-        service_name: :glab_ask_git_command
+        service_name: :glab_ask_git_command,
+        tracking_context: {}
       ) do |client|
         allow(client).to receive(:complete_prompt).and_return(response)
       end
