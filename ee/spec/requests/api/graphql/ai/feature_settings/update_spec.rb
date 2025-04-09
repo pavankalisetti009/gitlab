@@ -101,6 +101,19 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
               expect(setting.reload.self_hosted_model.to_global_id.to_s).to eq(self_hosted_model_id)
             end
           end
+
+          it 'returns a success response' do
+            request
+
+            result = json_response['data']['aiFeatureSettingUpdate']
+            feature_settings_payload = result['aiFeatureSettings']
+
+            expect(result['errors']).to eq([])
+            expect(feature_settings_payload.length).to eq(2)
+            expect(feature_settings_payload.first['feature']).to eq(feature_setting.feature)
+            expect(feature_settings_payload.first['provider']).to eq(feature_setting.reload.provider)
+            expect(feature_settings_payload.first['selfHostedModel']['id']).to eq(self_hosted_model_id)
+          end
         end
 
         context 'when the feature setting does not exist' do

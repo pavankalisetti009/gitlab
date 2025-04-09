@@ -33,10 +33,13 @@ module Mutations
           end
 
           errors = results.select(&:error?).flat_map(&:errors)
-          payloads = results.reject(&:error?).map(&:payload)
+          feature_settings = results.reject(&:error?).flat_map(&:payload)
+
+          decorated_feature_settings = ::Gitlab::Graphql::Representation::AiFeatureSetting
+            .decorate(feature_settings, with_valid_models: true)
 
           {
-            ai_feature_settings: payloads,
+            ai_feature_settings: decorated_feature_settings,
             errors: errors
           }
         end
