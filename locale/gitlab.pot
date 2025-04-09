@@ -15341,7 +15341,13 @@ msgstr ""
 msgid "ComplianceFrameworks|Description"
 msgstr ""
 
+msgid "ComplianceFrameworks|Description (max %{maxLength} characters)"
+msgstr ""
+
 msgid "ComplianceFrameworks|Description is required"
+msgstr ""
+
+msgid "ComplianceFrameworks|Description is required and must be less than %{maxLength} characters"
 msgstr ""
 
 msgid "ComplianceFrameworks|Edit compliance framework"
@@ -15392,7 +15398,13 @@ msgstr ""
 msgid "ComplianceFrameworks|Name"
 msgstr ""
 
+msgid "ComplianceFrameworks|Name (max %{maxLength} characters)"
+msgstr ""
+
 msgid "ComplianceFrameworks|Name is required"
+msgstr ""
+
+msgid "ComplianceFrameworks|Name is required and must be less than %{maxLength} characters"
 msgstr ""
 
 msgid "ComplianceFrameworks|Name is required, and must be less than 255 characters"

@@ -242,6 +242,42 @@ describe('RequirementModal', () => {
       expect(findDescriptionInputGroup().attributes('state')).toBeUndefined();
     });
 
+    it('validates that name cannot exceed 255 characters', async () => {
+      const longName = 'a'.repeat(256);
+      await fillForm(longName, 'Test Description');
+      submitModalForm();
+      await waitForPromises();
+      expect(findNameInputGroup().attributes('state')).toBeUndefined();
+      expect(wrapper.emitted(requirementEvents.create)).toBeUndefined();
+    });
+
+    it('validates that name with exactly 255 characters is valid', async () => {
+      const validName = 'a'.repeat(255);
+      await fillForm(validName, 'Test Description');
+      submitModalForm();
+      await waitForPromises();
+      expect(findNameInputGroup().attributes('state')).toBe('true');
+      expect(wrapper.emitted(requirementEvents.create)).toBeDefined();
+    });
+
+    it('validates that description cannot exceed 500 characters', async () => {
+      const longDescription = 'a'.repeat(501);
+      await fillForm('Test Name', longDescription);
+      submitModalForm();
+      await waitForPromises();
+      expect(findDescriptionInputGroup().attributes('state')).toBeUndefined();
+      expect(wrapper.emitted(requirementEvents.create)).toBeUndefined();
+    });
+
+    it('validates that description with exactly 500 characters is valid', async () => {
+      const validDescription = 'a'.repeat(500);
+      await fillForm('Test Name', validDescription);
+      submitModalForm();
+      await waitForPromises();
+      expect(findDescriptionInputGroup().attributes('state')).toBe('true');
+      expect(wrapper.emitted(requirementEvents.create)).toBeDefined();
+    });
+
     it('emits save event with requirement data when form is valid', async () => {
       const name = 'Test Name';
       const description = 'Test Description';

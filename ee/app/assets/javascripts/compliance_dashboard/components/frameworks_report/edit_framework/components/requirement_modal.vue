@@ -24,6 +24,9 @@ import {
 } from '../constants';
 import { EXTERNAL_CONTROL_URL_LABEL, EXTERNAL_CONTROL_LABEL } from '../../../../constants';
 
+const MAX_NAME_LENGTH = 255;
+const MAX_DESCRIPTION_LENGTH = 500;
+
 export default {
   name: 'RequirementModal',
   components: {
@@ -223,10 +226,18 @@ export default {
 
       return validation.isValid;
     },
+    validateRequirementName() {
+      const name = this.requirementData.name?.trim();
+      return Boolean(name) && name.length <= MAX_NAME_LENGTH;
+    },
+    validateRequirementDescription() {
+      const description = this.requirementData.description?.trim();
+      return Boolean(description) && description.length <= MAX_DESCRIPTION_LENGTH;
+    },
     validateForm() {
       const requirementValidation = {
-        name: Boolean(this.requirementData.name?.trim()),
-        description: Boolean(this.requirementData.description?.trim()),
+        name: this.validateRequirementName(),
+        description: this.validateRequirementDescription(),
       };
 
       const controlsValidation = this.controls.map((control, index) => {
@@ -418,15 +429,28 @@ export default {
     editText: s__('ComplianceFrameworks|Edit requirement'),
     createButtonText: s__('ComplianceFrameworks|Create requirement'),
     existingFrameworkButtonText: s__('ComplianceFrameworks|Save changes to the framework'),
-    nameInput: s__('ComplianceFrameworks|Name'),
-    descriptionInput: s__('ComplianceFrameworks|Description'),
+    nameInput: sprintf(s__('ComplianceFrameworks|Name (max %{maxLength} characters)'), {
+      maxLength: MAX_NAME_LENGTH,
+    }),
+    descriptionInput: sprintf(
+      s__('ComplianceFrameworks|Description (max %{maxLength} characters)'),
+      { maxLength: MAX_DESCRIPTION_LENGTH },
+    ),
     controlsTitle: s__('ComplianceFrameworks|Controls (optional)'),
     controlsText: s__(
       'ComplianceFrameworks|GitLab controls are pre-defined rules that are configured for GitLab resources. External environmental controls use the API to check the status and details of an external environment.',
     ),
     learnMore: __('Learn more.'),
-    nameInputInvalid: s__('ComplianceFrameworks|Name is required'),
-    descriptionInputInvalid: s__('ComplianceFrameworks|Description is required'),
+    nameInputInvalid: sprintf(
+      s__('ComplianceFrameworks|Name is required and must be less than %{maxLength} characters'),
+      { maxLength: MAX_NAME_LENGTH },
+    ),
+    descriptionInputInvalid: sprintf(
+      s__(
+        'ComplianceFrameworks|Description is required and must be less than %{maxLength} characters',
+      ),
+      { maxLength: MAX_DESCRIPTION_LENGTH },
+    ),
     addControl: s__('ComplianceFrameworks|Add a GitLab control'),
     addExternalControl: s__('ComplianceFrameworks|Add an external control'),
     toggleText: s__('ComplianceFrameworks|Choose a GitLab control'),
