@@ -2,6 +2,8 @@
 
 module Llm
   class GitCommandService < BaseService
+    include Gitlab::Llm::Concerns::AiGatewayClientConcern
+
     TEMPERATURE = 0.4
     INPUT_CONTENT_LIMIT = 300
     MAX_RESPONSE_TOKENS = 300
@@ -17,9 +19,19 @@ module Llm
       :glab_ask_git_command
     end
 
+    def prompt_version
+      '1.0.0'
+    end
+
+    alias_method :service_name, :ai_action
+    alias_method :prompt_name, :ai_action
+
+    def inputs
+      options
+    end
+
     def perform
-      response = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: :glab_ask_git_command)
-        .complete_prompt(base_url: ::Gitlab::AiGateway.url, prompt_name: 'glab_ask_git_command', inputs: options)
+      response = perform_ai_gateway_request!(user: user, tracking_context: {})
 
       response_modifier = ::Gitlab::Llm::AiGateway::ResponseModifiers::GitCommand.new(Gitlab::Json.parse(response.body))
       Gitlab::Tracking::AiTracking.track_user_activity(user)
