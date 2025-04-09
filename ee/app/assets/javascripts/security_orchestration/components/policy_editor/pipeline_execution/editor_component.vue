@@ -1,11 +1,11 @@
 <script>
 import { GlEmptyState } from '@gitlab/ui';
 import { debounce } from 'lodash';
-import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/skip_ci_selector.vue';
 import { setUrlFragment, queryToObject } from '~/lib/utils/url_utility';
 import { s__, __ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
+import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/skip_ci_selector.vue';
 import { extractPolicyContent } from 'ee/security_orchestration/components/utils';
 import {
   ACTION_SECTION_DISABLE_ERROR,
@@ -20,13 +20,8 @@ import EditorLayout from '../editor_layout.vue';
 import DisabledSection from '../disabled_section.vue';
 import ActionSection from './action/action_section.vue';
 import RuleSection from './rule/rule_section.vue';
-import { createPolicyObject, getInitialPolicy } from './utils';
-import {
-  CONDITIONS_LABEL,
-  DEFAULT_SCHEDULE,
-  DEFAULT_PIPELINE_EXECUTION_POLICY,
-  SCHEDULE,
-} from './constants';
+import { createPolicyObject, getInitialPolicy, updatePolicyStrategy } from './utils';
+import { CONDITIONS_LABEL, DEFAULT_PIPELINE_EXECUTION_POLICY, SCHEDULE } from './constants';
 
 export default {
   ACTION: 'actions',
@@ -86,17 +81,20 @@ export default {
   },
   data() {
     let yamlEditorValue;
+    let type;
 
     if (this.existingPolicy) {
-      yamlEditorValue = policyToYaml(this.existingPolicy, this.selectedPolicyType);
+      type = this.existingPolicy.type;
+      yamlEditorValue = policyToYaml(this.existingPolicy, type);
     } else {
+      type = this.selectedPolicyType;
       yamlEditorValue = getInitialPolicy(
         DEFAULT_PIPELINE_EXECUTION_POLICY,
         queryToObject(window.location.search),
       );
     }
 
-    const { policy, parsingError } = createPolicyObject(yamlEditorValue);
+    const { policy, parsingError } = createPolicyObject(yamlEditorValue, type);
 
     return {
       documentationPath: setUrlFragment(
@@ -148,7 +146,7 @@ export default {
   },
   methods: {
     areManifestsEqual(manifest) {
-      const policyManifest = policyToYaml(this.policy, this.selectedPolicyType);
+      const policyManifest = policyToYaml(this.policy, this.policy.type);
       return policyManifest === manifest && this.hasNewSplitView;
     },
     changeEditorMode(mode) {
@@ -160,13 +158,12 @@ export default {
       });
 
       /**
-       * backend only accepts the old format
-       * policy body is extracted
-       * and policy type is added to a policy body
+       * backend only accepts the old format, so we need to extract the
+       * policy body and add the policy type to the policy body
        */
       const policy = extractPolicyContent({
         manifest: this.yamlEditorValue,
-        type: this.selectedPolicyType,
+        type: this.policy.type,
         withType: true,
       });
 
@@ -195,15 +192,8 @@ export default {
       this.policy[property] = value;
       this.updateYamlEditorValue(this.policy);
     },
-    handleUpdateStrategy(value) {
-      if (value === SCHEDULE) {
-        const { pipeline_config_strategy, ...policy } = this.policy;
-        this.policy = { ...policy, schedules: [DEFAULT_SCHEDULE] };
-      } else {
-        const { schedules, ...policy } = this.policy;
-        this.policy = { ...policy, pipeline_config_strategy: value };
-      }
-
+    handleUpdateStrategy(strategy) {
+      this.policy = updatePolicyStrategy({ policy: this.policy, strategy });
       this.updateYamlEditorValue(this.policy);
     },
     handleUpdateYaml(manifest) {
@@ -211,13 +201,18 @@ export default {
         return;
       }
 
+      // Do not pass in the type to 'createPolicyObject' to ensure we extract the
+      // type from the manifest because the type may have changed
       const { policy, parsingError } = createPolicyObject(manifest);
       this.yamlEditorValue = manifest;
       this.parsingError = parsingError;
       this.policy = policy;
     },
     updateYamlEditorValue(policy) {
-      this.yamlEditorValue = policyToYaml(policy, this.selectedPolicyType);
+      // This method is only ever called after from rule mode, so policy.type will be accurate
+      // policy.type would not be accurate if called from yaml mode because you can change
+      // type in yaml mode without triggering an update to this.policy
+      this.yamlEditorValue = policyToYaml(policy, policy.type);
     },
   },
 };

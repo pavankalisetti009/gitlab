@@ -127,3 +127,5 @@ export const SUFFIX_LIST_BOX_ITEMS = Object.keys(SUFFIX_ITEMS).map((key) => ({
   value: key,
   text: SUFFIX_ITEMS[key],
 }));
+
+export const PIPELINE_EXECUTION_SCHEDULE_POLICY = 'pipeline_execution_schedule_policy';
