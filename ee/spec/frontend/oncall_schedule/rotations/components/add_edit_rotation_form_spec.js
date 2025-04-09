@@ -1,4 +1,4 @@
-import { GlDropdownItem, GlTokenSelector, GlFormGroup, GlToggle } from '@gitlab/ui';
+import { GlTokenSelector, GlFormGroup, GlToggle } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import { cloneDeep, merge } from 'lodash';
 import { nextTick } from 'vue';
@@ -48,14 +48,12 @@ describe('AddEditRotationForm', () => {
   const findRotationEndTime = () => wrapper.find('[data-testid="rotation-end-time"]');
   const findUserSelector = () => wrapper.findComponent(GlTokenSelector);
   const findRotationFormGroups = () => wrapper.findAllComponents(GlFormGroup);
-  const findStartsOnTimeOptions = () => findRotationStartTime().findAllComponents(GlDropdownItem);
-  const findEndsOnTimeOptions = () => findRotationEndTime().findAllComponents(GlDropdownItem);
+  const findStartsOnTimeListbox = () => wrapper.find('[data-testid="rotation-start-time"]');
+  const findEndsOnTimeListbox = () => wrapper.find('[data-testid="rotation-end-time"]');
   const findRestrictedToToggle = () => wrapper.find('[data-testid="restricted-to-toggle"]');
   const findRestrictedToContainer = () => wrapper.find('[data-testid="restricted-to-time"]');
-  const findRestrictedFromOptions = () =>
-    wrapper.find('[data-testid="restricted-from"]').findAllComponents(GlDropdownItem);
-  const findRestrictedToOptions = () =>
-    wrapper.find('[data-testid="restricted-to"]').findAllComponents(GlDropdownItem);
+  const findRestrictedFromListbox = () => wrapper.find('[data-testid="restricted-from"]');
+  const findRestrictedToListbox = () => wrapper.find('[data-testid="restricted-to"]');
 
   describe('Rotation form validation', () => {
     beforeEach(() => {
@@ -96,7 +94,7 @@ describe('AddEditRotationForm', () => {
     it('should emit an event with selected value on time selection', () => {
       const option = 3;
       createComponent();
-      findStartsOnTimeOptions().at(option).vm.$emit('click');
+      findRotationStartTime().vm.$emit('select', option);
       const emittedEvent = wrapper.emitted('update-rotation-form');
       expect(emittedEvent).toHaveLength(1);
       expect(emittedEvent[0][0]).toEqual({ type: 'startsAt.time', value: option });
@@ -118,7 +116,7 @@ describe('AddEditRotationForm', () => {
         },
       });
       await nextTick();
-      expect(findStartsOnTimeOptions().at(time).props('isChecked')).toBe(true);
+      expect(findStartsOnTimeListbox().props('selected')).toBe(time);
     });
   });
 
@@ -151,9 +149,9 @@ describe('AddEditRotationForm', () => {
     });
 
     it('should emit an event with selected value on time selection', () => {
-      createComponent({ props: { form: { isEndDateEnabled: true } } });
       const option = 3;
-      findEndsOnTimeOptions().at(option).vm.$emit('click');
+      createComponent({ props: { form: { isEndDateEnabled: true } } });
+      findRotationEndTime().vm.$emit('select', option);
       const emittedEvent = wrapper.emitted('update-rotation-form');
       expect(emittedEvent).toHaveLength(1);
       expect(emittedEvent[0][0]).toEqual({ type: 'endsAt.time', value: option });
@@ -178,9 +176,8 @@ describe('AddEditRotationForm', () => {
           },
         },
       });
-      findEndDateToggle().vm.$emit('change', true);
       await nextTick();
-      expect(findEndsOnTimeOptions().at(time).props('isChecked')).toBe(true);
+      expect(findEndsOnTimeListbox().props('selected')).toBe(time);
     });
   });
 
@@ -216,11 +213,10 @@ describe('AddEditRotationForm', () => {
     describe('when a rotation restriction is selected', () => {
       const timeFrom = 5;
       const timeTo = 22;
-
       it('should emit an event with selected value on restricted FROM time selection', () => {
         createComponent({ props: { form: { ...formEmptyState, isRestrictedToTime: true } } });
-        findRestrictedFromOptions().at(timeFrom).vm.$emit('click');
-        findRestrictedToOptions().at(timeTo).vm.$emit('click');
+        findRestrictedFromListbox().vm.$emit('select', timeFrom);
+        findRestrictedToListbox().vm.$emit('select', timeTo);
         const emittedEvent = wrapper.emitted('update-rotation-form');
         expect(emittedEvent).toHaveLength(2);
         expect(emittedEvent[0][0]).toEqual({ type: 'restrictedTo.startTime', value: timeFrom });
@@ -237,8 +233,8 @@ describe('AddEditRotationForm', () => {
             },
           },
         });
-        expect(findRestrictedFromOptions().at(timeFrom).props('isChecked')).toBe(true);
-        expect(findRestrictedToOptions().at(timeTo).props('isChecked')).toBe(true);
+        expect(findRestrictedFromListbox().props('selected')).toBe(timeFrom);
+        expect(findRestrictedToListbox().props('selected')).toBe(timeTo);
       });
     });
   });

@@ -3,15 +3,15 @@ import {
   GlForm,
   GlFormGroup,
   GlFormInput,
-  GlDropdown,
-  GlDropdownItem,
   GlDatepicker,
   GlTokenSelector,
   GlAvatar,
   GlAvatarLabeled,
   GlToggle,
   GlCard,
+  GlCollapsibleListbox,
 } from '@gitlab/ui';
+import { range } from 'lodash';
 import {
   LENGTH_ENUM,
   HOURS_IN_DAY,
@@ -66,14 +66,13 @@ export default {
     GlForm,
     GlFormGroup,
     GlFormInput,
-    GlDropdown,
-    GlDropdownItem,
     GlDatepicker,
     GlTokenSelector,
     GlAvatar,
     GlAvatarLabeled,
     GlToggle,
     GlCard,
+    GlCollapsibleListbox,
   },
   inject: ['projectPath'],
   props: {
@@ -103,9 +102,40 @@ export default {
     formParticipantsWithTokenStyles() {
       return formatParticipantsForTokenSelector(this.form.participants);
     },
+    timeOptions() {
+      return range(HOURS_IN_DAY).map((hour) => {
+        return {
+          value: hour,
+          text: format24HourTimeStringFromInt(hour),
+        };
+      });
+    },
+    rotationLengthUnitsItems() {
+      return Object.entries(LENGTH_ENUM || {}).map(([text, value]) => ({
+        value,
+        text,
+      }));
+    },
+    rotationLengthUnitsToggleText() {
+      return this.rotationLengthUnitsItems.find(
+        ({ value }) => value === this.form.rotationLength.unit,
+      )?.text;
+    },
   },
   methods: {
     format24HourTimeStringFromInt,
+    handleUnitSelectRotationUnit(selectedUnit) {
+      this.$emit('update-rotation-form', {
+        type: 'rotationLength.unit',
+        value: selectedUnit,
+      });
+    },
+    handleTimeSelect(selectedTime, type) {
+      this.$emit('update-rotation-form', {
+        type,
+        value: selectedTime,
+      });
+    },
   },
 };
 </script>
@@ -175,17 +205,12 @@ export default {
             :value="form.rotationLength.length"
             @input="$emit('update-rotation-form', { type: 'rotationLength.length', value: $event })"
           />
-          <gl-dropdown :text="form.rotationLength.unit.toLowerCase()">
-            <gl-dropdown-item
-              v-for="unit in $options.LENGTH_ENUM"
-              :key="unit"
-              :is-checked="form.rotationLength.unit === unit"
-              is-check-item
-              @click="$emit('update-rotation-form', { type: 'rotationLength.unit', value: unit })"
-            >
-              {{ unit.toLowerCase() }}
-            </gl-dropdown-item>
-          </gl-dropdown>
+          <gl-collapsible-listbox
+            :toggle-text="rotationLengthUnitsToggleText"
+            :selected="form.rotationLength.unit"
+            :items="rotationLengthUnitsItems"
+            @select="handleUnitSelectRotationUnit"
+          />
         </div>
       </gl-form-group>
 
@@ -211,21 +236,16 @@ export default {
             </template>
           </gl-datepicker>
           <span> {{ __('at') }} </span>
-          <gl-dropdown
+
+          <gl-collapsible-listbox
             data-testid="rotation-start-time"
-            :text="format24HourTimeStringFromInt(form.startsAt.time)"
             class="gl-px-3"
-          >
-            <gl-dropdown-item
-              v-for="(_, time) in $options.HOURS_IN_DAY"
-              :key="time"
-              :is-checked="form.startsAt.time === time"
-              is-check-item
-              @click="$emit('update-rotation-form', { type: 'startsAt.time', value: time })"
-            >
-              <span class="gl-whitespace-nowrap"> {{ format24HourTimeStringFromInt(time) }}</span>
-            </gl-dropdown-item>
-          </gl-dropdown>
+            :text="format24HourTimeStringFromInt(form.startsAt.time)"
+            :toggle-text="format24HourTimeStringFromInt(form.startsAt.time)"
+            :selected="form.startsAt.time"
+            :items="timeOptions"
+            @select="handleTimeSelect($event, 'startsAt.time')"
+          />
           <span> {{ schedule.timezone }} </span>
         </div>
       </gl-form-group>
@@ -264,21 +284,14 @@ export default {
               </template>
             </gl-datepicker>
             <span> {{ __('at') }} </span>
-            <gl-dropdown
+            <gl-collapsible-listbox
               data-testid="rotation-end-time"
-              :text="format24HourTimeStringFromInt(form.endsAt.time)"
               class="gl-px-3"
-            >
-              <gl-dropdown-item
-                v-for="(_, time) in $options.HOURS_IN_DAY"
-                :key="time"
-                :is-checked="form.endsAt.time === time"
-                is-check-item
-                @click="$emit('update-rotation-form', { type: 'endsAt.time', value: time })"
-              >
-                <span class="gl-whitespace-nowrap"> {{ format24HourTimeStringFromInt(time) }}</span>
-              </gl-dropdown-item>
-            </gl-dropdown>
+              :toggle-text="format24HourTimeStringFromInt(form.endsAt.time)"
+              :selected="form.endsAt.time"
+              :items="timeOptions"
+              @select="handleTimeSelect($event, 'endsAt.time')"
+            />
             <span>{{ schedule.timezone }}</span>
           </div>
         </gl-form-group>
@@ -307,41 +320,26 @@ export default {
         >
           <div class="gl-flex gl-items-center">
             <span> {{ __('From') }} </span>
-            <gl-dropdown
+            <gl-collapsible-listbox
               data-testid="restricted-from"
               :text="format24HourTimeStringFromInt(form.restrictedTo.startTime)"
               class="gl-px-3"
-            >
-              <gl-dropdown-item
-                v-for="(_, time) in $options.HOURS_IN_DAY"
-                :key="time"
-                :is-checked="form.restrictedTo.startTime === time"
-                is-check-item
-                @click="
-                  $emit('update-rotation-form', { type: 'restrictedTo.startTime', value: time })
-                "
-              >
-                <span class="gl-whitespace-nowrap"> {{ format24HourTimeStringFromInt(time) }}</span>
-              </gl-dropdown-item>
-            </gl-dropdown>
+              :toggle-text="format24HourTimeStringFromInt(form.restrictedTo.startTime)"
+              :items="timeOptions"
+              :selected="form.restrictedTo.startTime"
+              @select="handleTimeSelect($event, 'restrictedTo.startTime')"
+            />
+
             <span> {{ __('To') }} </span>
-            <gl-dropdown
+            <gl-collapsible-listbox
               data-testid="restricted-to"
               :text="format24HourTimeStringFromInt(form.restrictedTo.endTime)"
+              :toggle-text="format24HourTimeStringFromInt(form.restrictedTo.endTime)"
               class="gl-px-3"
-            >
-              <gl-dropdown-item
-                v-for="(_, time) in $options.HOURS_IN_DAY"
-                :key="time"
-                :is-checked="form.restrictedTo.endTime === time"
-                is-check-item
-                @click="
-                  $emit('update-rotation-form', { type: 'restrictedTo.endTime', value: time })
-                "
-              >
-                <span class="gl-whitespace-nowrap"> {{ format24HourTimeStringFromInt(time) }}</span>
-              </gl-dropdown-item>
-            </gl-dropdown>
+              :items="timeOptions"
+              :selected="form.restrictedTo.endTime"
+              @select="handleTimeSelect($event, 'restrictedTo.endTime')"
+            />
             <span>{{ schedule.timezone }} </span>
           </div>
         </gl-form-group>
