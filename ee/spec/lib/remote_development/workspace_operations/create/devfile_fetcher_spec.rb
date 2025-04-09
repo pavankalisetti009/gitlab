@@ -45,7 +45,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
 
     context 'when devfile_path is points to an existing file' do
       let(:devfile_path) { '.devfile.yaml' }
-      let(:devfile_fixture_name) { 'example.devfile.yaml' }
+      let(:devfile_fixture_name) { 'example.devfile.yaml.erb' }
       let(:devfile_yaml) { read_devfile_yaml(devfile_fixture_name) }
 
       before do
