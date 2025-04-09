@@ -75,7 +75,7 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
 
         note = Note.last
 
-        expect(note.note).to start_with('changed title')
+        expect(note.note).to start_with('<div>changed title')
         expect(note.noteable).to eq(epic)
       end
 
