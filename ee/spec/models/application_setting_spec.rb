@@ -44,6 +44,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.unverified_account_group_creation_limit).to eq(2) }
     it { expect(setting.hard_phone_verification_transactions_daily_limit).to eq(20000) }
     it { expect(setting.telesign_intelligence_enabled).to be true }
+    it { expect(setting.duo_chat_expiration_column).to eq('last_updated_at') }
+    it { expect(setting.duo_chat_expiration_days).to eq(30) }
     it { expect(setting.fetch_observability_alerts_from_cloud).to be true }
     it { expect(setting.global_search_code_enabled).to be(true) }
     it { expect(setting.global_search_commits_enabled).to be(true) }
@@ -399,6 +401,23 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.to allow_value("http://test.com").for(:secret_detection_token_revocation_url) }
       it { is_expected.to allow_value("AKVD34#$%56").for(:secret_detection_token_revocation_token) }
       it { is_expected.to allow_value("http://test.com").for(:secret_detection_revocation_token_types_url) }
+    end
+
+    describe 'when validating duo_chat settings' do
+      it 'allows valid duo_chat_expiration_column' do
+        setting.duo_chat_expiration_column = 'last_updated_at'
+        expect(setting).to be_valid
+      end
+
+      it 'disallows invalid duo_chat_expiration_column' do
+        setting.duo_chat_expiration_column = 'invalid_column'
+        expect(setting).not_to be_valid
+        expect(setting.errors.where(:duo_chat_expiration_column, :inclusion).present?).to be(true)
+      end
+
+      it 'uses the default value from jsonb_accessor' do
+        expect(setting.duo_chat_expiration_column).to eq('last_updated_at')
+      end
     end
 
     describe '#duo_availability' do
