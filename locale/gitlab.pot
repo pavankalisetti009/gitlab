@@ -27942,9 +27942,6 @@ msgstr ""
 msgid "GlobalSearch|Command palette"
 msgstr ""
 
-msgid "GlobalSearch|Commands %{superKey} %{link2Start}k%{link2End}"
-msgstr ""
-
 msgid "GlobalSearch|Comments"
 msgstr ""
 
@@ -27972,6 +27969,9 @@ msgstr ""
 msgid "GlobalSearch|Filters"
 msgstr ""
 
+msgid "GlobalSearch|Filters %{superKey} + %{link2Start}k%{link2End}"
+msgstr ""
+
 msgid "GlobalSearch|Forks"
 msgstr ""
 
@@ -27994,9 +27994,6 @@ msgid "GlobalSearch|Groups"
 msgstr ""
 
 msgid "GlobalSearch|Help"
-msgstr ""
-
-msgid "GlobalSearch|I'm looking for"
 msgstr ""
 
 msgid "GlobalSearch|In this project"
@@ -28212,18 +28209,6 @@ msgid "GlobalSearch|Toggle if results have source branch included or excluded"
 msgstr ""
 
 msgid "GlobalSearch|Type %{kbdOpen}/%{kbdClose} to search"
-msgstr ""
-
-msgid "GlobalSearch|Type %{linkStart}&gt;%{linkEnd} to search for pages or actions"
-msgstr ""
-
-msgid "GlobalSearch|Type %{linkStart}:%{linkEnd} to search for projects"
-msgstr ""
-
-msgid "GlobalSearch|Type %{linkStart}@%{linkEnd} to search for users"
-msgstr ""
-
-msgid "GlobalSearch|Type %{linkStart}t%{linkEnd} to search for files"
 msgstr ""
 
 msgid "GlobalSearch|Type for new suggestions to appear below."
