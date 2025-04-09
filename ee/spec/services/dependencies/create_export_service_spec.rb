@@ -61,35 +61,6 @@ RSpec.describe Dependencies::CreateExportService, feature_category: :dependency_
       end
     end
 
-    describe 'when cyclonedx_dependency_list_export feature flag is disabled' do
-      let(:params) { { export_type: export_type } }
-
-      before do
-        stub_feature_flags(cyclonedx_dependency_list_export: false)
-      end
-
-      context 'when requesting cyclonedx export' do
-        let(:export_type) { :cyclonedx_1_6_json }
-
-        it 'returns an error' do
-          expect(result).not_to be_success
-          expect(result.message).to eq('cyclonedx_dependency_list_export feature flag is not enabled')
-        end
-      end
-
-      context 'when requesting other export types' do
-        where(:export_type) { %i[dependency_list sbom json_array csv] }
-
-        with_them do
-          it 'creates export with correct type' do
-            expect(result).to be_success
-
-            expect(result.payload[:dependency_list_export].export_type).to eq(export_type.to_s)
-          end
-        end
-      end
-    end
-
     it 'schedules a Dependencies::ExportWorker job' do
       expect(Dependencies::ExportWorker).to receive(:perform_async)
 

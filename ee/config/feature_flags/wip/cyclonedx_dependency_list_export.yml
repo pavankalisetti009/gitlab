@@ -1,9 +1,0 @@
----
-name: cyclonedx_dependency_list_export
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/524733
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/185517
-rollout_issue_url:
-milestone: '17.11'
-group: group::security insights
-type: wip
-default_enabled: false

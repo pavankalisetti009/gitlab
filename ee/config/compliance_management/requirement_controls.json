@@ -340,5 +340,59 @@
       "operator": "=",
       "value": true
     }
+  },
+  {
+    "id": "gitlab_license_level_ultimate",
+    "name": "Gitlab License Level Ultimate",
+    "expression": {
+      "field": "gitlab_license_level_ultimate",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "status_page_configured",
+    "name": "Status Page Configured",
+    "expression": {
+      "field": "status_page_configured",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "has_valid_ci_config",
+    "name": "Has Valid Ci Config",
+    "expression": {
+      "field": "has_valid_ci_config",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "error_tracking_enabled",
+    "name": "Error Tracking Enabled",
+    "expression": {
+      "field": "error_tracking_enabled",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "default_branch_users_can_push",
+    "name": "Default Branch Users Can Push",
+    "expression": {
+      "field": "default_branch_users_can_push",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "default_branch_protected_from_direct_push",
+    "name": "Default Branch Protected From Direct Push",
+    "expression": {
+      "field": "default_branch_protected_from_direct_push",
+      "operator": "=",
+      "value": true
+    }
   }
 ]

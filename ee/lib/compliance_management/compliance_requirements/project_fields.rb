@@ -18,6 +18,11 @@ module ComplianceManagement
         :iac
       ].freeze
 
+      ROLE_ACCESS_LEVELS = {
+        developer: Gitlab::Access::DEVELOPER,
+        maintainer: Gitlab::Access::MAINTAINER
+      }.freeze
+
       class << self
         def map_field(project, field, context = {})
           method_name = FIELD_MAPPINGS[field]
@@ -231,6 +236,57 @@ module ComplianceManagement
           reporter_and_above_percentage = (reporter_and_above / total_members) * 100
 
           reporter_and_above_percentage < 40
+        end
+
+        def gitlab_license_level_ultimate?(project, _context = {})
+          License.current.ultimate? &&
+            (project.licensed_features & GitlabSubscriptions::Features::ULTIMATE_FEATURES).any?
+        end
+
+        def status_page_configured?(project, _context = {})
+          project&.feature_available?(:status_page) || project&.licensed_feature_available?(:status_page)
+        end
+
+        def has_valid_ci_config?(project, _context = {})
+          return false unless project.has_ci? && project.builds_enabled?
+
+          begin
+            yml_dump = project.ci_config_for(project.default_branch)
+            config = Gitlab::Ci::Config.new(yml_dump, project: project)
+            config.valid?
+          rescue Gitlab::Ci::Config::ConfigError
+            false
+          end
+        end
+
+        def error_tracking_enabled?(project, _context = {})
+          project.error_tracking_setting&.enabled? || false
+        end
+
+        def default_branch_users_can_push?(project, context = {})
+          # Checks if a role can push to the default branch, by default checks against Maintainer role
+          role = context[:role] || :maintainer
+
+          return false if project.empty_repo? || !default_branch_protected?(project)
+
+          role_access_level = ROLE_ACCESS_LEVELS[role.to_sym] || Gitlab::Access::MAINTAINER
+
+          protected_branch = project.protected_branches.find_by(name: project.default_branch) # rubocop:disable CodeReuse/ActiveRecord -- Need to find Branch by string name
+          return false unless protected_branch
+
+          protected_branch.push_access_levels.any? do |access_level|
+            access_level.respond_to?(:role?) &&
+              access_level.role? &&
+              access_level.access_level >= role_access_level
+          end
+        end
+
+        def default_branch_protected_from_direct_push?(project, _context = {})
+          return false if project.default_branch.nil? || project.empty_repo? || !default_branch_protected?(project)
+
+          !default_branch_users_can_push?(project, role: :developer) &&
+            !default_branch_users_can_push?(project, role: :maintainer) &&
+            !default_branch_users_can_push?(project, role: :owner)
         end
       end
     end
