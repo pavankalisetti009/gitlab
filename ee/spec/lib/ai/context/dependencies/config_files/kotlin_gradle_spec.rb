@@ -18,6 +18,8 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::KotlinGradle, feature_cat
         }
 
         val arcgisVersion = "4.5.0"
+        val kotlinVersion = file("../kotlin-dsl/$kotlinVersionSourceFilePath").readLines().extractKotlinVersion()
+        val libName = "test-lib-with-val"
 
         dependencies { // Comment
             implementation("org.codehaus.groovy:groovy:3.+")
@@ -26,8 +28,10 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::KotlinGradle, feature_cat
             implementation(project(":utils"))
             runtimeOnly(files("libs/a.jar", "libs/b.jar"))
 
-            // String interpolation is not currently supported
             implementation("com.esri.arcgisruntime:arcgis-java:$arcgisVersion")
+            implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
+
+            implementation("org.jetbrains.kotlin:$libName:2.0.0")
         }
 
         java {
@@ -40,7 +44,9 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::KotlinGradle, feature_cat
       [
         'groovy (3.+)',
         'guava (29.0.1)',
-        'arcgis-java'
+        'arcgis-java (4.5.0)',
+        'kotlin-reflect',
+        'test-lib-with-val (2.0.0)'
       ]
     end
   end

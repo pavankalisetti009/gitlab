@@ -6,12 +6,14 @@ module Ai
       module ConfigFiles
         class KotlinGradle < Base
           PREFIX_REGEX = /^(implementation|testImplementation)\(/ # Appears before each dependency
-          START_DEPS_SECTION_REGEX = /^dependencies {/ # Identifies the dependencies section
-          END_SECTION_REGEX = /^}$/
+          START_DEPS_SECTION_REGEX = /^dependencies\s*{\s*/ # Identifies the dependencies section
+          # Matches value of digits and periods between double or single quotes
+          VALID_VERSION_REGEX = /(?<quote>["'])(?<value>[\d+(\.)]*)\k<quote>/
           QUOTED_VALUE_REGEX = /(?<quote>["'])(?<value>[^"']+)\k<quote>/ # Matches value between double or single quotes
           INLINE_COMMENT_REGEX = %r{\s+//.*$}
           STRING_INTERPOLATION_CHAR = '$'
           EXCLUDE_KEYWORD = '('
+          VAL_KEYWORD = 'val'
 
           def self.file_name_glob
             'build.gradle.kts'
@@ -25,6 +27,12 @@ module Ai
 
           ### Example format:
           #
+          # // Supported plain string interpolation
+          # val arcgisVersion = "1.0.0"
+          #
+          # // Not supported string interpolation
+          # val kotlinVersion = file("../kotlin-dsl/$kotlinVersionSourceFilePath").readLines().extractKotlinVersion()
+          #
           # dependencies {
           #     // Format <group>:<name>:<version>
           #     implementation("org.codehaus.groovy:groovy:3.+")
@@ -34,12 +42,13 @@ module Ai
           #     implementation(project(":utils"))
           #     runtimeOnly(files("libs/a.jar", "libs/b.jar"))
           #
-          #     // TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/481317
-          #     // String interpolation is not currently supported; below outputs nil as version
+          #     // String interpolation is supported
           #     implementation("com.esri.arcgisruntime:arcgis-java:$arcgisVersion")
           # }
           #
           def extract_libs
+            versions_to_be_interpolated = {}
+            names_to_be_interpolated = {}
             libs = []
             in_deps_section = false
 
@@ -47,9 +56,32 @@ module Ai
               line.strip!
               line.gsub!(INLINE_COMMENT_REGEX, '')
 
+              if line.start_with?("#{VAL_KEYWORD} ")
+                split_val = line.split(VAL_KEYWORD, 2)[1].delete(' ').split('=')
+
+                if split_val.length < 3
+                  val_name = split_val[0]
+                  val_value = split_val[1]
+
+                  if VALID_VERSION_REGEX.match?(val_value)
+                    versions_to_be_interpolated["$#{val_name}"] =
+                      val_value.delete!('"\'')
+                  end
+
+                  if QUOTED_VALUE_REGEX.match?(val_value)
+                    names_to_be_interpolated["$#{val_name}"] =
+                      val_value.delete!('"\'')
+                  end
+                end
+              end
+
               if in_deps_section
-                libs << parse_lib(line) if PREFIX_REGEX.match?(line)
-                break if END_SECTION_REGEX.match?(line)
+                if PREFIX_REGEX.match?(line)
+                  libs << parse_lib(line, names_to_be_interpolated,
+                    versions_to_be_interpolated)
+                end
+
+                break if line.rstrip == "}"
               elsif START_DEPS_SECTION_REGEX.match?(line)
                 in_deps_section = true
               end
@@ -58,17 +90,26 @@ module Ai
             libs.compact
           end
 
-          def parse_lib(line)
+          def parse_lib(line, names_to_be_interpolated, versions_to_be_interpolated)
             line.gsub!(PREFIX_REGEX, '')
             return if line.include?(EXCLUDE_KEYWORD)
 
-            match = QUOTED_VALUE_REGEX.match(line)
-            _group, name, version = match[:value].split(':') if match
+            depedency_match = QUOTED_VALUE_REGEX.match(line)
+            return unless depedency_match
 
-            name = nil if name&.include?(STRING_INTERPOLATION_CHAR)
-            version = nil if version&.include?(STRING_INTERPOLATION_CHAR)
+            _group, name, version = depedency_match[:value].split(':') if depedency_match
 
-            Lib.new(name: name, version: version) if name
+            if name&.include?(STRING_INTERPOLATION_CHAR)
+              return unless names_to_be_interpolated.key?(name)
+
+              name = names_to_be_interpolated[name]
+            end
+
+            if version&.include?(STRING_INTERPOLATION_CHAR)
+              version = versions_to_be_interpolated.key?(version) ? versions_to_be_interpolated[version] : nil
+            end
+
+            Lib.new(name: name, version: version)
           end
         end
       end
