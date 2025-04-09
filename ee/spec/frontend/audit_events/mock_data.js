@@ -98,55 +98,6 @@ export const newStreamDestination = {
   eventTypeFilters: [],
 };
 
-export const mockConsolidatedAPIExternalDestinations = [
-  {
-    __typename: 'GroupAuditEventStreamingDestination',
-    id: 'gid://gitlab/AuditEvents::Group::ExternalStreamingDestination/1',
-    name: 'HTTP Destination 1',
-    category: 'http',
-    config: {
-      url: 'http://destination1.local',
-      headers: {
-        key1: {
-          value: 'test',
-          active: true,
-        },
-      },
-    },
-    secretToken: verification[0],
-    eventTypeFilters: ['user_created'],
-    namespaceFilters: [
-      {
-        __typename: 'GroupAuditEventNamespaceFilter',
-        id: 'gid://gitlab/AuditEvents::Group::NamespaceFilter/1',
-        namespace: {
-          __typename: 'Namespace',
-          id: 'gid://gitlab/Namespaces::ProjectNamespace/107',
-          fullPath: 'myGroup/project1',
-        },
-      },
-    ],
-  },
-  {
-    __typename: 'GroupAuditEventStreamingDestination',
-    id: 'gid://gitlab/AuditEvents::Group::ExternalStreamingDestination/2',
-    name: 'HTTP Destination 2',
-    category: 'http',
-    config: {
-      url: 'http://destination1.local',
-      headers: {
-        key1: {
-          value: 'test',
-          active: false,
-        },
-      },
-    },
-    secretToken: verification[0],
-    eventTypeFilters: ['add_gpg_key', 'user_created'],
-    namespaceFilters: [],
-  },
-];
-
 export const mockExternalDestinations = [
   {
     __typename: 'ExternalAuditEventDestination',
@@ -199,37 +150,6 @@ export const mockInstanceExternalDestinations = [
   },
 ];
 
-export const mockConsolidatedAPIGcpLoggingDestinations = [
-  {
-    __typename: 'GroupAuditEventStreamingDestination',
-    id: 'gid://gitlab/AuditEvents::Group::ExternalStreamingDestination/3',
-    name: 'GCP Destination 1',
-    category: 'gcp',
-    config: {
-      logIdName: 'gcp-log-id-name',
-      clientEmail: 'clientEmail@example.com',
-      googleProjectIdName: 'google-project-id-name',
-    },
-    secretToken: 'PRIVATE_KEY_1',
-    eventTypeFilters: [],
-    namespaceFilters: [],
-  },
-  {
-    __typename: 'GroupAuditEventStreamingDestination',
-    id: 'gid://gitlab/AuditEvents::Group::ExternalStreamingDestination/4',
-    name: 'GCP Destination 2',
-    category: 'gcp',
-    config: {
-      logIdName: 'gcp-log-id-name2',
-      clientEmail: 'clientEmail2@example.com',
-      googleProjectIdName: 'google-project-id-name-2',
-    },
-    secretToken: 'PRIVATE_KEY_2',
-    eventTypeFilters: [],
-    namespaceFilters: [],
-  },
-];
-
 export const mockGcpLoggingDestinations = [
   {
     __typename: 'GoogleCloudLoggingConfigurationType',
@@ -269,37 +189,6 @@ export const mockInstanceGcpLoggingDestinations = [
     googleProjectIdName: 'new-google-project-2',
     logIdName: 'audit-events',
     privateKey: 'PRIVATE_KEY',
-  },
-];
-
-export const mockConsolidatedAPIAmazonS3Destinations = [
-  {
-    __typename: 'GroupAuditEventStreamingDestination',
-    id: 'gid://gitlab/AuditEvents::Group::ExternalStreamingDestination/5',
-    name: 'AWS Destination 1',
-    category: 'aws',
-    config: {
-      awsRegion: 'us-test-1',
-      bucketName: 'bucket-name',
-      accessKeyXid: 'myAwsAccessKey_needs_16_chars_min',
-    },
-    secretToken: 'SECRET_ACCESS_KEY_1',
-    eventTypeFilters: [],
-    namespaceFilters: [],
-  },
-  {
-    __typename: 'GroupAuditEventStreamingDestination',
-    id: 'gid://gitlab/AuditEvents::Group::ExternalStreamingDestination/6',
-    name: 'AWS Destination 2',
-    category: 'aws',
-    config: {
-      awsRegion: 'eu-test-2',
-      bucketName: 'bucket-name-2',
-      accessKeyXid: 'mySecond_AwsAccessKey_needs_16_chars_min',
-    },
-    secretToken: 'SECRET_ACCESS_KEY_2',
-    eventTypeFilters: [],
-    namespaceFilters: [],
   },
 ];
 
@@ -345,29 +234,11 @@ export const mockInstanceAmazonS3Destinations = [
   },
 ];
 
-export const mockAllConsolidatedAPIDestinations = [
-  ...mockConsolidatedAPIExternalDestinations,
-  ...mockConsolidatedAPIGcpLoggingDestinations,
-  ...mockConsolidatedAPIAmazonS3Destinations,
-];
-
 export const groupPath = 'test-group';
 
 export const instanceGroupPath = 'instance';
 
 export const testGroupId = 'test-group-id';
-
-export const streamingDestinationDataPopulator = (nodes) => ({
-  data: {
-    group: { id: testGroupId, externalAuditEventStreamingDestinations: { nodes } },
-  },
-});
-
-export const instanceStreamingDestinationDataPopulator = (nodes) => ({
-  data: {
-    auditEventsInstanceStreamingDestinations: { nodes },
-  },
-});
 
 export const destinationDataPopulator = (nodes) => ({
   data: {
@@ -676,14 +547,6 @@ export const instanceAmazonS3DestinationUpdateMutationPopulator = (errors = []) 
     },
   };
 };
-
-export const streamingDestinationDeleteMutationPopulator = (errors = []) => ({
-  data: {
-    groupAuditEventStreamingDestinationsDelete: {
-      errors,
-    },
-  },
-});
 
 export const destinationDeleteMutationPopulator = (errors = []) => ({
   data: {

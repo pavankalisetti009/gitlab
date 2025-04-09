@@ -6,6 +6,15 @@ module EE
       extend ::Gitlab::Utils::Override
       include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
 
+      NoSeatError = Class.new(StandardError)
+
+      override :execute
+      def execute(access_requester, skip_authorization: false, skip_log_audit_event: false)
+        super
+      rescue NoSeatError => e
+        error(e.message)
+      end
+
       def after_execute(member:, skip_log_audit_event: false)
         super
 
@@ -13,6 +22,23 @@ module EE
       end
 
       private
+
+      override :handle_request_acceptance
+      def handle_request_acceptance(access_requester)
+        raise NoSeatError, _('No seat available') unless seat_available_for?(access_requester)
+
+        super
+      end
+
+      def seat_available_for?(access_requester)
+        root_group = access_requester.source.root_ancestor
+        invites = Array.wrap(access_requester.user_id)
+        access_level = access_requester.access_level
+
+        !::GitlabSubscriptions::MemberManagement::BlockSeatOverages.block_seat_overages?(root_group) ||
+          ::GitlabSubscriptions::MemberManagement::BlockSeatOverages.seats_available_for?(root_group, invites,
+            access_level, nil)
+      end
 
       override :limit_to_guest_if_billable_promotion_restricted
       def limit_to_guest_if_billable_promotion_restricted(access_requester)

@@ -16,8 +16,8 @@ import {
   DESTINATION_TYPE_GCP_LOGGING,
   DESTINATION_TYPE_AMAZON_S3,
 } from '../constants';
+import { removeAuditEventsStreamingDestinationFromCache } from '../graphql/cache_update_consolidated_api';
 import {
-  removeAuditEventsStreamingDestination,
   removeLegacyAuditEventsStreamingDestination,
   removeGcpLoggingAuditEventsStreamingDestination,
   removeAmazonS3AuditEventsStreamingDestination,
@@ -32,6 +32,7 @@ import instanceGcpLoggingDestinationsQuery from '../graphql/queries/get_instance
 import amazonS3DestinationsQuery from '../graphql/queries/get_amazon_s3_destinations.query.graphql';
 import instanceAmazonS3DestinationsQuery from '../graphql/queries/get_instance_amazon_s3_destinations.query.graphql';
 import StreamEmptyState from './stream/stream_empty_state.vue';
+import StreamDestinationEditor from './stream/stream_destination_editor.vue';
 import StreamHttpDestinationEditor from './stream/stream_http_destination_editor.vue';
 import StreamGcpLoggingDestinationEditor from './stream/stream_gcp_logging_destination_editor.vue';
 import StreamAmazonS3DestinationEditor from './stream/stream_amazon_s3_destination_editor.vue';
@@ -43,6 +44,7 @@ export default {
     GlAlert,
     GlLoadingIcon,
     GlDisclosureDropdown,
+    StreamDestinationEditor,
     StreamHttpDestinationEditor,
     StreamGcpLoggingDestinationEditor,
     StreamAmazonS3DestinationEditor,
@@ -122,6 +124,15 @@ export default {
     amazonS3DestinationQuery() {
       return this.isInstance ? instanceAmazonS3DestinationsQuery : amazonS3DestinationsQuery;
     },
+    newDestination() {
+      return {
+        name: '',
+        config: {},
+        category: this.editorType,
+        namespaceFilters: [],
+        eventTypeFilters: [],
+      };
+    },
     destinationOptions() {
       return [
         {
@@ -165,11 +176,12 @@ export default {
     },
     async onDeletedDestination(id) {
       const removeFn = this.glFeatures.useConsolidatedAuditEventStreamDestApi
-        ? removeAuditEventsStreamingDestination
+        ? removeAuditEventsStreamingDestinationFromCache
         : removeLegacyAuditEventsStreamingDestination;
 
       removeFn({
         store: this.$apollo.provider.defaultClient,
+        isInstance: this.isInstance,
         fullPath: this.groupPath,
         destinationId: id,
       });
@@ -379,8 +391,15 @@ export default {
       />
     </div>
     <div v-if="isEditorVisible" class="gl-border gl-mb-4 gl-rounded-base gl-p-4">
+      <stream-destination-editor
+        v-if="glFeatures.useConsolidatedAuditEventStreamDestApi"
+        :item="newDestination"
+        @added="onAddedDestination"
+        @error="clearSuccessMessage"
+        @cancel="hideEditor"
+      />
       <stream-http-destination-editor
-        v-if="editorType === $options.DESTINATION_TYPE_HTTP"
+        v-else-if="editorType === $options.DESTINATION_TYPE_HTTP"
         @added="onAddedDestination"
         @error="clearSuccessMessage"
         @cancel="hideEditor"

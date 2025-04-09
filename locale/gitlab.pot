@@ -39867,6 +39867,9 @@ msgstr ""
 msgid "No runner executable"
 msgstr ""
 
+msgid "No seat available"
+msgstr ""
+
 msgid "No seats left in subscription"
 msgstr ""
 
@@ -45789,6 +45792,15 @@ msgid "ProductAnalytics|Your instance will be created on the provider configured
 msgstr ""
 
 msgid "ProductAnalytics|Your instance will be created on this provider:"
+msgstr ""
+
+msgid "ProductUsageData|Dismiss product usage data collection notice"
+msgstr ""
+
+msgid "ProductUsageData|Review data collection changes coming in GitLab 18.0"
+msgstr ""
+
+msgid "ProductUsageData|Starting with 18.0, GitLab will collect event-level product usage data from Self-Managed and Dedicated instances — while ensuring privacy, transparency, and customer control. GitLab administrators can turn off the data collection toggle before any data is collected in version 18.0. For more information about this change and how you can opt out, see the %{link_start}documentation%{link_end}"
 msgstr ""
 
 msgid "Productivity"

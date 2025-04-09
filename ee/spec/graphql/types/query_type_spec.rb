@@ -11,6 +11,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :add_on_purchases,
       :ai_messages,
       :ai_conversation_threads,
+      :ai_chat_context_presets,
       :blob_search,
       :ci_catalog_resources,
       :ci_catalog_resource,

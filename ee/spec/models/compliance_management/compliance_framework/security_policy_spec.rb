@@ -59,30 +59,62 @@ RSpec.describe ComplianceManagement::ComplianceFramework::SecurityPolicy, featur
     it { is_expected.to eq([policy_1]) }
   end
 
-  describe '.for_policy_configuration' do
-    let_it_be(:policy_configuration_1) { create(:security_orchestration_policy_configuration) }
-    let_it_be(:policy_configuration_2) { create(:security_orchestration_policy_configuration) }
-    let_it_be(:policy_1) { create(:compliance_framework_security_policy, policy_configuration: policy_configuration_1) }
-    let_it_be(:policy_2) { create(:compliance_framework_security_policy, policy_configuration: policy_configuration_2) }
+  describe '.for_security_policy' do
+    let_it_be(:security_policy) { create(:security_policy) }
+    let_it_be(:other_security_policy) { create(:security_policy) }
+    let_it_be(:compliance_framework) { create(:compliance_framework) }
+    let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration) }
 
-    subject { described_class.for_policy_configuration(policy_configuration_1) }
+    let_it_be(:security_policy_link) do
+      create(:compliance_framework_security_policy,
+        security_policy: security_policy,
+        framework: compliance_framework,
+        policy_configuration: policy_configuration
+      )
+    end
 
-    it { is_expected.to eq([policy_1]) }
+    let_it_be(:other_security_policy_link) do
+      create(:compliance_framework_security_policy,
+        security_policy: other_security_policy,
+        framework: compliance_framework,
+        policy_configuration: policy_configuration
+      )
+    end
+
+    it 'returns security policy links for the given security policy' do
+      expect(described_class.for_security_policy(security_policy)).to contain_exactly(security_policy_link)
+    end
+
+    it 'returns empty when no security policy links exist for the given security policy' do
+      expect(described_class.for_security_policy(create(:security_policy))).to be_empty
+    end
   end
 
   describe '.relink' do
     let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration) }
-    let_it_be(:other_policy_configuration) { create(:security_orchestration_policy_configuration) }
+    let_it_be(:security_policy) do
+      create(:security_policy, security_orchestration_policy_configuration: policy_configuration, policy_index: 0)
+    end
+
+    let_it_be(:other_security_policy) do
+      create(:security_policy, security_orchestration_policy_configuration: policy_configuration, policy_index: 1)
+    end
+
     let_it_be(:framework) { create(:compliance_framework) }
     let_it_be(:other_framework) { create(:compliance_framework) }
 
-    let(:attrs) do
+    let(:framework_policy_attrs) do
       [
-        { framework_id: framework.id, policy_configuration_id: policy_configuration.id, policy_index: 1 }
+        {
+          security_policy_id: security_policy.id,
+          framework_id: framework.id,
+          policy_configuration_id: policy_configuration.id,
+          policy_index: security_policy.policy_index
+        }
       ]
     end
 
-    subject(:relink) { described_class.relink(policy_configuration, attrs) }
+    subject(:relink) { described_class.relink(security_policy, framework_policy_attrs) }
 
     context 'when there are no already existing policies' do
       it 'creates new record' do
@@ -91,32 +123,30 @@ RSpec.describe ComplianceManagement::ComplianceFramework::SecurityPolicy, featur
         expect(described_class.count).to eq(1)
         expect(described_class.first).to have_attributes(
           framework: framework,
-          policy_configuration: policy_configuration,
-          policy_index: 1
+          security_policy: security_policy
         )
       end
     end
 
     context 'when there are already existing policies' do
-      let_it_be(:policy) do
+      let_it_be(:policy_link) do
         create(:compliance_framework_security_policy,
           framework: framework,
-          policy_configuration: policy_configuration
+          security_policy: security_policy
         )
       end
 
-      let_it_be(:other_policy) do
+      let_it_be(:other_policy_link) do
         create(:compliance_framework_security_policy,
           framework: other_framework,
-          policy_configuration: other_policy_configuration
+          security_policy: other_security_policy
         )
       end
 
-      it 'deletes and recreates policy with updated policy_index' do
+      it 'deletes and recreates policy with updated attributes' do
         relink
 
-        expect { policy.reload }.to raise_exception(ActiveRecord::RecordNotFound)
-        expect(policy_configuration.compliance_framework_security_policies.first.policy_index).to eq(1)
+        expect { policy_link.reload }.to raise_exception(ActiveRecord::RecordNotFound)
       end
 
       it 'does not update count' do
@@ -124,7 +154,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::SecurityPolicy, featur
       end
 
       it 'does not update other policies' do
-        expect { relink }.not_to change { other_policy.reload.policy_index }
+        expect { relink }.not_to change { other_policy_link.reload }
       end
     end
   end

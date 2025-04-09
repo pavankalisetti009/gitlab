@@ -1,7 +1,5 @@
 import produce from 'immer';
-import groupStreamingDestinationsQuery from './queries/get_group_streaming_destinations.query.graphql';
-import instanceStreamingDestinationsQuery from './queries/get_instance_streaming_destinations.query.graphql';
-// legacy Queries 👇 to be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/523881
+// legacy Queries 👇 this file should be deleted in https://gitlab.com/gitlab-org/gitlab/-/issues/523881
 import getExternalDestinationsQuery from './queries/get_external_destinations.query.graphql';
 import getInstanceExternalDestinationsQuery from './queries/get_instance_external_destinations.query.graphql';
 import gcpLoggingDestinationsQuery from './queries/get_google_cloud_logging_destinations.query.graphql';
@@ -13,36 +11,6 @@ import InstanceExternalAuditEventDestinationFragment from './fragments/instance_
 
 const EXTERNAL_AUDIT_EVENT_DESTINATION_TYPENAME = 'ExternalAuditEventDestination';
 const INSTANCE_EXTERNAL_AUDIT_EVENT_DESTINATION_TYPENAME = 'InstanceExternalAuditEventDestination';
-
-export function removeAuditEventsStreamingDestination({ store, fullPath, destinationId }) {
-  const getDestinationQuery =
-    fullPath === 'instance' ? instanceStreamingDestinationsQuery : groupStreamingDestinationsQuery;
-  const sourceData = store.readQuery({
-    query: getDestinationQuery,
-    variables: { fullPath },
-  });
-
-  if (!sourceData) {
-    return;
-  }
-
-  const data = produce(sourceData, (draftData) => {
-    if (fullPath === 'instance') {
-      draftData.auditEventsInstanceStreamingDestinations.nodes =
-        draftData.auditEventsInstanceStreamingDestinations.nodes.filter(
-          (node) => node.id !== destinationId,
-        );
-    } else {
-      draftData.group.externalAuditEventStreamingDestinations.nodes =
-        draftData.group.externalAuditEventStreamingDestinations.nodes.filter(
-          (node) => node.id !== destinationId,
-        );
-    }
-  });
-  store.writeQuery({ query: getDestinationQuery, variables: { fullPath }, data });
-}
-
-// legacy functions 👇 to be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/523881
 
 function makeDestinationIdRecord(store, id) {
   return {

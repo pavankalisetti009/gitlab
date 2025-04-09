@@ -5,6 +5,15 @@ module Ai
     class MergeRequest < Ai::AiResource::BaseAiResource
       include Ai::AiResource::Concerns::Noteable
 
+      CHAT_QUESTIONS = [
+        "What are the main points from this MR discussion?",
+        "What changes were requested by reviewers?",
+        "What concerns remain unresolved in this MR?",
+        "What changed in this diff?"
+      ].freeze
+
+      CHAT_UNIT_PRIMITIVE = :ask_merge_request
+
       def serialize_for_ai(content_limit:)
         ::MergeRequestSerializer.new(current_user: current_user) # rubocop: disable CodeReuse/Serializer -- existing serializer
                         .represent(resource, {

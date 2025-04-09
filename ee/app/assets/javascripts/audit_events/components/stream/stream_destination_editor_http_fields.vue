@@ -304,7 +304,7 @@ export default {
       </p>
       <gl-button
         v-else
-        :loading="loading"
+        :disabled="loading"
         :name="s__('AuditStreams|Add another custom header')"
         variant="confirm"
         category="secondary"

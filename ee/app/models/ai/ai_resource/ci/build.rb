@@ -6,6 +6,15 @@ module Ai
       class Build < Ai::AiResource::BaseAiResource
         include Ai::AiResource::Concerns::Noteable
 
+        CHAT_QUESTIONS = [
+          "What errors or warnings appeared in this job?",
+          "What caused any slow or failing steps in this job?",
+          "Were all dependencies available in this job?",
+          "What was each stage's final status?"
+        ].freeze
+
+        CHAT_UNIT_PRIMITIVE = :ask_build
+
         def serialize_for_ai(content_limit:)
           ::Ci::JobSerializer # rubocop: disable CodeReuse/Serializer -- existing serializer
             .new(current_user: current_user)

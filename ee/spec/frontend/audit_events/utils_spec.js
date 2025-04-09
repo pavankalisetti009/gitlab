@@ -7,11 +7,8 @@ import {
   mapItemHeadersToFormData,
   getFormattedFormItem,
 } from 'ee/audit_events/utils';
-import {
-  destinationDeleteMutationPopulator,
-  mockExternalDestinationHeader,
-  mockConsolidatedAPIExternalDestinations,
-} from './mock_data';
+import { destinationDeleteMutationPopulator, mockExternalDestinationHeader } from './mock_data';
+import { mockHttpTypeDestination } from './mock_data/consolidated_api';
 
 describe('Audit Event Utils', () => {
   describe('getTypeFromEntityType', () => {
@@ -162,7 +159,7 @@ describe('Audit Event Utils', () => {
     });
 
     it('returns headers when response is from the consolidated api', () => {
-      expect(mapItemHeadersToFormData(mockConsolidatedAPIExternalDestinations[0])).toStrictEqual([
+      expect(mapItemHeadersToFormData(mockHttpTypeDestination[0])).toStrictEqual([
         {
           id: null,
           name: 'key1',
@@ -213,7 +210,7 @@ describe('Audit Event Utils', () => {
 
   describe('getFormattedFormItem', () => {
     it('returns the formItem in the format that the form components expect', () => {
-      expect(getFormattedFormItem(mockConsolidatedAPIExternalDestinations[0])).toEqual(
+      expect(getFormattedFormItem(mockHttpTypeDestination[0])).toEqual(
         expect.objectContaining({
           namespaceFilter: {
             __typename: 'GroupAuditEventNamespaceFilter',

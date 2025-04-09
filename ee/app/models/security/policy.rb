@@ -203,6 +203,12 @@ module Security
         .any? { |framework| framework[:id] == compliance_framework_id }
     end
 
+    def framework_ids_from_scope
+      # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- pluck is used for hash
+      Array.wrap(scope.deep_symbolize_keys[:compliance_frameworks]).pluck(:id).uniq
+      # rubocop:enable Database/AvoidUsingPluckWithoutLimit
+    end
+
     def delete_approval_policy_rules
       delete_approval_rules
       delete_policy_violations

@@ -8,10 +8,8 @@ import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { mountExtended, extendedWrapper } from 'helpers/vue_test_utils_helper';
-import {
-  removeAuditEventsStreamingDestination,
-  removeLegacyAuditEventsStreamingDestination,
-} from 'ee/audit_events/graphql/cache_update';
+import { removeAuditEventsStreamingDestinationFromCache } from 'ee/audit_events/graphql/cache_update_consolidated_api';
+import { removeLegacyAuditEventsStreamingDestination } from 'ee/audit_events/graphql/cache_update';
 import getNamespaceFiltersQuery from 'ee/audit_events/graphql/queries/get_namespace_filters.query.graphql';
 import externalAuditEventDestinationCreate from 'ee/audit_events/graphql/mutations/create_external_destination.mutation.graphql';
 import externalAuditEventDestinationUpdate from 'ee/audit_events/graphql/mutations/update_external_destination.mutation.graphql';
@@ -44,7 +42,6 @@ import {
   destinationHeaderUpdateMutationPopulator,
   destinationHeaderDeleteMutationPopulator,
   groupPath,
-  mockConsolidatedAPIExternalDestinations,
   mockExternalDestinations,
   mockInstanceExternalDestinations,
   mockExternalDestinationHeader,
@@ -72,9 +69,11 @@ import {
   mockRemoveNamespaceFilters,
   getMockNamespaceFilters,
 } from '../../mock_data';
+import { mockHttpTypeDestination } from '../../mock_data/consolidated_api';
 
 jest.mock('~/alert');
 jest.mock('ee/audit_events/graphql/cache_update');
+jest.mock('ee/audit_events/graphql/cache_update_consolidated_api');
 
 Vue.use(VueApollo);
 
@@ -187,7 +186,7 @@ describe('StreamHttpDestinationEditor', () => {
   });
 
   describe('when useConsolidatedAuditEventStreamDestApi is enabled', () => {
-    const item = mockConsolidatedAPIExternalDestinations[0];
+    const item = mockHttpTypeDestination[0];
 
     beforeEach(() => {
       createComponent({
@@ -203,8 +202,8 @@ describe('StreamHttpDestinationEditor', () => {
       expect(findDestinationName().element.value).toBe('HTTP Destination 1');
       expect(findDestinationUrl().element.value).toBe('http://destination1.local');
       expect(findDestinationUrl().attributes('disabled')).toBeDefined();
-      expect(findVerificationToken().props('value')).toBe('id5hzCbERzSkQ82tAs16tH5Y');
-      expect(findClipboardButton().props('text')).toBe('id5hzCbERzSkQ82tAs16tH5Y');
+      expect(findVerificationToken().props('value')).toBe('mockSecretToken');
+      expect(findClipboardButton().props('text')).toBe('mockSecretToken');
       expect(findHeaderNameInput(0).element.value).toBe('key1');
       expect(findHeaderValueInput(0).element.value).toBe('test');
       expect(findHeaderActiveInput(0).element.value).toBe('true');
@@ -218,7 +217,7 @@ describe('StreamHttpDestinationEditor', () => {
     });
 
     describe('when there is an error on adding a destination header', () => {
-      it('should call removeAuditEventsStreamingDestination', async () => {
+      it('should call removeAuditEventsStreamingDestinationFromCache', async () => {
         createComponent({
           apolloHandlers: [
             [
@@ -238,7 +237,7 @@ describe('StreamHttpDestinationEditor', () => {
 
         await submitFormWithHeaders();
 
-        expect(removeAuditEventsStreamingDestination).toHaveBeenCalled();
+        expect(removeAuditEventsStreamingDestinationFromCache).toHaveBeenCalled();
       });
     });
   });
