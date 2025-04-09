@@ -519,10 +519,9 @@ module EE
       def jira_issue_association_required_to_merge_enabled?
         strong_memoize(:jira_issue_association_required_to_merge_enabled) do
           next false unless jira_issues_integration_available?
-          next false unless jira_integration&.active?
           next false unless feature_available?(:jira_issue_association_enforcement)
 
-          true
+          jira_integration&.active?
         end
       end
 
@@ -1245,7 +1244,7 @@ module EE
     end
 
     def prevent_merge_without_jira_issue?
-      jira_issue_association_required_to_merge_enabled? && prevent_merge_without_jira_issue
+      prevent_merge_without_jira_issue && jira_issue_association_required_to_merge_enabled?
     end
 
     def licensed_feature_available?(feature, user = nil)
