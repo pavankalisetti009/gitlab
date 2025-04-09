@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Sidebars::Admin::Menus::CodeSuggestionsMenu, feature_category: :navigation do
+RSpec.describe Sidebars::Admin::Menus::DuoSettingsMenu, feature_category: :navigation do
   it_behaves_like 'Admin menu',
     link: '/admin/gitlab_duo',
     title: _('GitLab Duo'),
