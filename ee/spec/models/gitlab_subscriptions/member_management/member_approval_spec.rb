@@ -369,4 +369,42 @@ RSpec.describe GitlabSubscriptions::MemberManagement::MemberApproval, feature_ca
       expect(approvals.map(&:id)).to eq([group_approval.id, project_approval.id])
     end
   end
+
+  describe '#hook_attrs' do
+    let(:group_member) { build_stubbed(:group_member, :guest, user: user, source: group) }
+
+    let(:member_approval) do
+      build_stubbed(:gitlab_subscription_member_management_member_approval,
+        new_access_level: 30,
+        old_access_level: 10,
+        member: group_member
+      )
+    end
+
+    it 'returns a hash with the correct attributes' do
+      expect(member_approval.hook_attrs).to eq({
+        new_access_level: 30,
+        old_access_level: 10,
+        existing_member_id: group_member.id
+      })
+    end
+
+    context 'when some attributes are nil' do
+      let(:member_approval) do
+        build_stubbed(:gitlab_subscription_member_management_member_approval,
+          new_access_level: 30,
+          old_access_level: nil,
+          member_id: nil
+        )
+      end
+
+      it 'returns a hash with specific nil values' do
+        expect(member_approval.hook_attrs).to eq({
+          new_access_level: 30,
+          old_access_level: nil,
+          existing_member_id: nil
+        })
+      end
+    end
+  end
 end

@@ -60,6 +60,14 @@ module GitlabSubscriptions
         end
       end
 
+      def hook_attrs
+        {
+          new_access_level: new_access_level,
+          old_access_level: old_access_level,
+          existing_member_id: member_id
+        }
+      end
+
       private
 
       def validate_unique_pending_approval
