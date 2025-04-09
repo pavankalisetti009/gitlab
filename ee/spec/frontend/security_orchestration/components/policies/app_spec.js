@@ -8,6 +8,7 @@ import ListComponent from 'ee/security_orchestration/components/policies/list_co
 import App from 'ee/security_orchestration/components/policies/app.vue';
 import {
   MAX_SCAN_EXECUTION_ACTION_COUNT,
+  MAX_SCAN_EXECUTION_POLICY_SCHEDULED_RULES_COUNT,
   NAMESPACE_TYPES,
 } from 'ee/security_orchestration/constants';
 import {
@@ -98,6 +99,7 @@ describe('App', () => {
         namespacePath,
         namespaceType: NAMESPACE_TYPES.PROJECT,
         maxScanExecutionPolicyActions: MAX_SCAN_EXECUTION_ACTION_COUNT,
+        maxScanExecutionPolicySchedules: MAX_SCAN_EXECUTION_POLICY_SCHEDULED_RULES_COUNT,
         ...provide,
       },
       apolloProvider: createMockApollo(

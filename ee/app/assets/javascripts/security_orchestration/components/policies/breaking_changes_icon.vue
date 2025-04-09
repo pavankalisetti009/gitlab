@@ -30,6 +30,14 @@ export default {
       return this.violationList.length > 1;
     },
   },
+  methods: {
+    getViolationData(violation) {
+      return {
+        content: violation?.content || '',
+        link: violation?.link || '',
+      };
+    },
+  },
 };
 </script>
 
@@ -52,9 +60,11 @@ export default {
         </ul>
       </template>
       <template v-else>
-        <gl-sprintf :message="violationList[0].content">
+        <gl-sprintf :message="getViolationData(violationList[0]).content">
           <template #link="{ content: linkContent }">
-            <gl-link :href="violationList[0].link" target="_blank">{{ linkContent }}</gl-link>
+            <gl-link :href="getViolationData(violationList[0]).link" target="_blank">{{
+              linkContent
+            }}</gl-link>
           </template>
         </gl-sprintf>
       </template>

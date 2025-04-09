@@ -4,6 +4,7 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import BreakingChangesBanner from 'ee/security_orchestration/components/policies/banners/breaking_changes_banner.vue';
 import DeprecatedCustomScanBanner from 'ee/security_orchestration/components/policies/banners/deprecated_custom_scan_banner.vue';
 import ExceedingActionsBanner from 'ee/security_orchestration/components/policies/banners/exceeding_actions_banner.vue';
+import ExceedingScheduledRulesBanner from 'ee/security_orchestration/components/policies/banners/exceeding_scheduled_rules_banner.vue';
 import InvalidPoliciesBanner from 'ee/security_orchestration/components/policies/banners/invalid_policies_banner.vue';
 import ListHeader from 'ee/security_orchestration/components/policies/list_header.vue';
 import ProjectModal from 'ee/security_orchestration/components/policies/project_modal.vue';
@@ -30,6 +31,8 @@ describe('List Header Component', () => {
   const findInvalidPoliciesBanner = () => wrapper.findComponent(InvalidPoliciesBanner);
   const findExceedingActionsBanner = () => wrapper.findComponent(ExceedingActionsBanner);
   const findDeprecatedCustomScanBanner = () => wrapper.findComponent(DeprecatedCustomScanBanner);
+  const findExceedingScheduledRulesBanner = () =>
+    wrapper.findComponent(ExceedingScheduledRulesBanner);
 
   const linkSecurityPoliciesProject = async () => {
     findScanNewPolicyModal().vm.$emit('project-updated', {
@@ -42,6 +45,7 @@ describe('List Header Component', () => {
   const createWrapper = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(ListHeader, {
       propsData: {
+        hasExceedingScheduledLimitPolicies: false,
         hasExceedingActionLimitPolicies: false,
         hasDeprecatedCustomScanPolicies: false,
         hasInvalidPolicies: false,
@@ -73,6 +77,7 @@ describe('List Header Component', () => {
       expect(findNewPolicyButton().exists()).toBe(true);
       expect(findNewPolicyButton().text()).toBe(NEW_POLICY_BUTTON_TEXT);
       expect(findNewPolicyButton().attributes('href')).toBe(newPolicyPath);
+      expect(findExceedingScheduledRulesBanner().exists()).toBe(false);
     });
 
     it.each`
@@ -205,6 +210,18 @@ describe('List Header Component', () => {
       });
 
       expect(findExceedingActionsBanner().exists()).toBe(true);
+    });
+  });
+
+  describe('exceeding schedule rules count', () => {
+    it('renders a banner if number of scheduled rules is exceeded', () => {
+      createWrapper({
+        props: {
+          hasExceedingScheduledLimitPolicies: true,
+        },
+      });
+
+      expect(findExceedingScheduledRulesBanner().exists()).toBe(true);
     });
   });
 });

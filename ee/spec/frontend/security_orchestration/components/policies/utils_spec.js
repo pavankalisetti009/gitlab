@@ -5,13 +5,18 @@ import {
   extractSourceParameter,
   buildPolicyViolationList,
   exceedsActionLimit,
+  exceedsScheduleRulesLimit,
 } from 'ee/security_orchestration/components/policies/utils';
 import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
 } from 'ee/security_orchestration/components/policies/constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
-import { mockDastScanExecutionManifest } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
+import {
+  mockDastScanExecutionManifest,
+  mockMultipleScheduleScanExecutionManifest,
+  mockScheduleScanExecutionManifest,
+} from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 
 describe('utils', () => {
   describe('validateSourceFilter', () => {
@@ -115,6 +120,27 @@ describe('utils', () => {
     );
   });
 
+  describe('exceedsScheduleRulesLimit', () => {
+    it.each`
+      policyType                                                    | yaml                                 | output
+      ${POLICY_TYPE_COMPONENT_OPTIONS.approval.text}                | ${''}                                | ${false}
+      ${POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.text}       | ${''}                                | ${false}
+      ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text}           | ${mockScheduleScanExecutionManifest} | ${false}
+      ${POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.text} | ${''}                                | ${false}
+    `(
+      'should validate scheduled rules only for scan execution policy',
+      ({ policyType, yaml, output }) => {
+        expect(
+          exceedsScheduleRulesLimit({
+            policyType,
+            yaml,
+            maxScanExecutionPolicySchedules: 0,
+          }),
+        ).toBe(output);
+      },
+    );
+  });
+
   describe('buildPolicyViolationList', () => {
     const approvalPolicyDeprecatedViolation = [
       {
@@ -159,5 +185,23 @@ describe('utils', () => {
         ).toEqual(output);
       },
     );
+
+    it('renders violation list for policy with type exceeded number of scheduled rules', () => {
+      expect(
+        buildPolicyViolationList({
+          policyType: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text,
+          yaml: mockMultipleScheduleScanExecutionManifest,
+          deprecatedProperties: [],
+          maxScanExecutionPolicyActions: 5,
+          maxScanExecutionPolicySchedules: 1,
+        }),
+      ).toEqual([
+        {
+          content:
+            'A scan execution policy exceeds the limit of 1 scheduled rules per policy. Remove or consolidate rules across policies to reduce the total number of rules.',
+          link: '/help/user/application_security/policies/scan_execution_policies',
+        },
+      ]);
+    });
   });
 });
