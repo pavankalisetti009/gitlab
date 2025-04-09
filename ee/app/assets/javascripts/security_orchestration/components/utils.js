@@ -164,13 +164,6 @@ export const isGroup = (namespaceType) => namespaceType === NAMESPACE_TYPES.GROU
 export const isScanningReport = (scanner) =>
   [REPORT_TYPE_CONTAINER_SCANNING, REPORT_TYPE_DEPENDENCY_SCANNING].includes(scanner);
 
-const isValidPolicyType = (type) => {
-  const validTypes = Object.values(POLICY_TYPE_COMPONENT_OPTIONS).map(
-    ({ urlParameter }) => urlParameter,
-  );
-  return validTypes.includes(type);
-};
-
 /**
  * Policy type, in this case, policy type is a wrapper
  * for a policy content. This method extracts policy content from
@@ -184,10 +177,6 @@ export const extractPolicyContent = ({ manifest, type, withType = false }) => {
   const defaultPayload = {};
 
   try {
-    if (!isValidPolicyType(type)) {
-      return defaultPayload;
-    }
-
     const parsedYaml = safeLoad(manifest, { json: true });
 
     /**
@@ -209,7 +198,7 @@ export const extractPolicyContent = ({ manifest, type, withType = false }) => {
       policy.type = type;
     }
 
-    return policy || {};
+    return policy || defaultPayload;
   } catch {
     return defaultPayload;
   }

@@ -11,6 +11,7 @@ import {
   DEFAULT_PIPELINE_EXECUTION_POLICY,
   DEFAULT_SCHEDULE,
   INJECT,
+  PIPELINE_EXECUTION_SCHEDULE_POLICY,
   SCHEDULE,
   SUFFIX_NEVER,
   SUFFIX_ON_CONFLICT,
@@ -27,7 +28,9 @@ import {
   mockWithoutRefPipelineExecutionManifest,
   mockWithoutRefPipelineExecutionObject,
   mockInvalidPipelineExecutionObject,
-  mockScheduledPipelineExecutionObject,
+  mockSchedulePipelineExecutionManifest,
+  mockDefaultSchedulePipelineExecutionManifest,
+  mockSchedulePipelineExecutionObject,
   customYamlUrlParams,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
@@ -232,21 +235,47 @@ describe('EditorComponent', () => {
       expect(findPolicyEditorLayout().props('policy')).toEqual(
         expect.objectContaining({ schedules: [DEFAULT_SCHEDULE] }),
       );
+      // Verify pipeline_config_strategy is removed
+      expect(findPolicyEditorLayout().props('policy')).not.toHaveProperty(
+        'pipeline_config_strategy',
+      );
     });
 
     it('removes "schedules" property if strategy is updated to "inject_policy" from "schedule"', async () => {
       factory();
+      // First set to SCHEDULE
       await findActionSection().vm.$emit('update-strategy', SCHEDULE);
+      expect(findPolicyEditorLayout().props('policy')).toHaveProperty('schedules');
+      expect(findPolicyEditorLayout().props('policy')).not.toHaveProperty(
+        'pipeline_config_strategy',
+      );
+
+      // Then change to INJECT
       await findActionSection().vm.$emit('update-strategy', INJECT);
       expect(findPolicyEditorLayout().props('policy')).toEqual(
         expect.objectContaining({ pipeline_config_strategy: INJECT }),
       );
       expect(findPolicyEditorLayout().props('policy')).not.toHaveProperty('schedules');
     });
+
+    it('updates the policy type when strategy changes', async () => {
+      factory();
+      // Set to SCHEDULE
+      await findActionSection().vm.$emit('update-strategy', SCHEDULE);
+      expect(findPolicyEditorLayout().props('yamlEditorValue')).toContain(
+        PIPELINE_EXECUTION_SCHEDULE_POLICY,
+      );
+
+      // Change to INJECT
+      await findActionSection().vm.$emit('update-strategy', INJECT);
+      expect(findPolicyEditorLayout().props('yamlEditorValue')).toContain(
+        POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
+      );
+    });
   });
 
   describe('yaml mode', () => {
-    it('updates the policy', async () => {
+    it('updates a non-schedule policy', async () => {
       factory();
       await findPolicyEditorLayout().vm.$emit(
         'update-yaml',
@@ -257,6 +286,15 @@ describe('EditorComponent', () => {
       );
       expect(findPolicyEditorLayout().props('yamlEditorValue')).toBe(
         mockWithoutRefPipelineExecutionManifest,
+      );
+    });
+
+    it('updates a schedule policy', async () => {
+      factory();
+      await findPolicyEditorLayout().vm.$emit('update-yaml', mockSchedulePipelineExecutionManifest);
+      expect(findPolicyEditorLayout().props('policy')).toEqual(mockSchedulePipelineExecutionObject);
+      expect(findPolicyEditorLayout().props('yamlEditorValue')).toBe(
+        mockSchedulePipelineExecutionManifest,
       );
     });
   });
@@ -277,18 +315,38 @@ describe('EditorComponent', () => {
   });
 
   describe('modifying a policy', () => {
-    it.each`
-      status                           | action                            | event              | factoryFn                    | yamlEditorValue
-      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${policyBodyToYaml(fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter, addIds: false }))}
-      ${'updating an existing policy'} | ${undefined}                      | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
-      ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE} | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
-    `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {
-      factoryFn();
-      findPolicyEditorLayout().vm.$emit(event);
-      await waitForPromises();
-      expect(wrapper.emitted('save')).toEqual([
-        [{ action, extraMergeRequestInput: null, policy: yamlEditorValue }],
-      ]);
+    describe('non-schedule policy', () => {
+      it.each`
+        status                                  | action                            | event              | factoryFn                    | yamlEditorValue
+        ${'creating a new non-schedule policy'} | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${policyBodyToYaml(fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter, addIds: false }))}
+        ${'updating an existing policy'}        | ${undefined}                      | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
+        ${'deleting an existing policy'}        | ${SECURITY_POLICY_ACTIONS.REMOVE} | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
+      `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {
+        factoryFn();
+        findPolicyEditorLayout().vm.$emit(event);
+        await waitForPromises();
+        expect(wrapper.emitted('save')).toEqual([
+          [{ action, extraMergeRequestInput: null, policy: yamlEditorValue }],
+        ]);
+      });
+    });
+
+    describe('schedule policy', () => {
+      it('emits "save" when creating a new schedule policy', async () => {
+        factory();
+        await findActionSection().vm.$emit('update-strategy', SCHEDULE);
+        findPolicyEditorLayout().vm.$emit('save-policy');
+        await waitForPromises();
+        expect(wrapper.emitted('save')).toEqual([
+          [
+            {
+              action: undefined,
+              extraMergeRequestInput: null,
+              policy: mockDefaultSchedulePipelineExecutionManifest,
+            },
+          ],
+        ]);
+      });
     });
   });
 
@@ -395,7 +453,7 @@ describe('EditorComponent', () => {
     });
 
     it('does not render the skip ci configuration if not a scheduled pipeline policy', () => {
-      factory({ propsData: { existingPolicy: { ...mockScheduledPipelineExecutionObject } } });
+      factory({ propsData: { existingPolicy: { ...mockSchedulePipelineExecutionObject } } });
 
       expect(findSkipCiSelector().exists()).toBe(false);
     });

@@ -45,18 +45,18 @@ export const mockWithInjectCiPipelineExecutionObject = {
   type: 'pipeline_execution_policy',
 };
 
-export const mockScheduledPipelineExecutionObject = {
+export const mockSchedulePipelineExecutionObject = {
   content: { include: [{ project: '' }] },
-  description: '',
+  description: 'like a pipeline_execution_policy but scheduled',
   enabled: true,
   name: '',
   schedules: [DEFAULT_SCHEDULE],
-  type: 'pipeline_execution_policy',
+  type: 'pipeline_execution_schedule_policy',
 };
 
-export const mockScheduledPipelineExecutionManifest = `pipeline_execution_policy:
+export const mockSchedulePipelineExecutionManifest = `pipeline_execution_schedule_policy:
   - name: ''
-    description: ''
+    description: 'like a pipeline_execution_policy but scheduled'
     enabled: true
     schedules:
       - branch_type: "protected"
@@ -69,6 +69,25 @@ export const mockScheduledPipelineExecutionManifest = `pipeline_execution_policy
     content:
       include:
         - project: ''
+`;
+
+export const mockDefaultSchedulePipelineExecutionManifest = `name: ''
+description: ''
+enabled: true
+content:
+  include:
+    - project: ''
+skip_ci:
+  allowed: false
+schedules:
+  - branch_type: protected
+    type: daily
+    start_time: '00:00'
+    time_window:
+      value: 3600
+      distribution: random
+    timezone: America/New_York
+type: pipeline_execution_schedule_policy
 `;
 
 export const mockWithScopePipelineExecutionObject = {
@@ -124,7 +143,7 @@ export const mockWithoutRefPipelineExecutionObject = fromYaml({
   addIds: false,
 });
 
-export const invalidStrategyManifest = `name: Ci config file
+export const mockInvalidStrategyPipelineExecutionManifest = `name: Ci config file
 description: triggers all protected branches except main
 enabled: true
 pipeline_config_strategy: this_is_wrong
@@ -132,7 +151,17 @@ content:
   include:
     - project: GitLab.org/GitLab
       file: .pipeline-execution.yml
+type: pipeline_execution_policy
 `;
+
+export const mockInvalidStrategyPipelineExecutionObject = {
+  content: { include: [{ file: '.pipeline-execution.yml', project: 'GitLab.org/GitLab' }] },
+  description: 'triggers all protected branches except main',
+  enabled: true,
+  name: 'Ci config file',
+  pipeline_config_strategy: 'this_is_wrong',
+  type: 'pipeline_execution_policy',
+};
 
 export const skipCiConfigurationManifest = `name: Ci config file
 description: triggers all protected branches except main

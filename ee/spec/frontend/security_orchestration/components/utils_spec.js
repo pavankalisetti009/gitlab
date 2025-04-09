@@ -326,9 +326,11 @@ describe('checkForPerformanceRisk', () => {
       ${'scan_execution_policy'} | ${DEFAULT_SCAN_EXECUTION_POLICY} | ${false} | ${extractedPolicyContent}
       ${'scan_execution_policy'} | ${DEFAULT_SCAN_EXECUTION_POLICY} | ${true}  | ${{ ...extractedPolicyContent, type: 'scan_execution_policy' }}
       ${'scan_execution_policy'} | ${''}                            | ${true}  | ${defaultPayload}
-      ${'invalid_type'}          | ${DEFAULT_SCAN_EXECUTION_POLICY} | ${true}  | ${defaultPayload}
-    `('returns output without type wrapper', ({ type, manifest, withType, expectedManifest }) => {
-      expect(extractPolicyContent({ manifest, type, withType })).toEqual(expectedManifest);
-    });
+    `(
+      'returns output without type wrapper for $type and withType $withType',
+      ({ type, manifest, withType, expectedManifest }) => {
+        expect(extractPolicyContent({ manifest, type, withType })).toEqual(expectedManifest);
+      },
+    );
   });
 });
