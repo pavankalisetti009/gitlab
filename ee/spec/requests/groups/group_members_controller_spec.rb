@@ -418,4 +418,24 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
       end
     end
   end
+
+  describe "POST /groups/*group_id/-/group_members/:id/approve_access_request" do
+    context 'when block seat overages is enabled', :saas do
+      let_it_be(:group) { create(:group_with_plan, plan: :premium_plan) }
+      let_it_be(:member) { create(:group_member, :access_request, :developer, group: group) }
+
+      before do
+        group.namespace_settings.update!(seat_control: :block_overages)
+      end
+
+      it 'provides a flash message when not enough seats are available' do
+        group.gitlab_subscription.update!(seats: 1)
+
+        post approve_access_request_group_group_member_path(group_id: group, id: member)
+
+        expect(response).to redirect_to(group_group_members_path)
+        expect(flash[:alert]).to eq('No seat available')
+      end
+    end
+  end
 end

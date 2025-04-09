@@ -39855,6 +39855,9 @@ msgstr ""
 msgid "No runner executable"
 msgstr ""
 
+msgid "No seat available"
+msgstr ""
+
 msgid "No seats left in subscription"
 msgstr ""
 

@@ -290,4 +290,68 @@ RSpec.describe Members::ApproveAccessRequestService, feature_category: :groups_a
       end
     end
   end
+
+  context 'when block seat overages is enabled for the group', :saas do
+    let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan) }
+    let(:access_requester) { group.requesters.find_by!(user_id: access_requester_user.id) }
+
+    before_all do
+      group.add_owner(current_user)
+      group.request_access(access_requester_user)
+      group.namespace_settings.update!(seat_control: :block_overages)
+    end
+
+    it 'does not approve the request when there are not enough seats' do
+      group.gitlab_subscription.update!(seats: 1)
+
+      described_class.new(current_user).execute(access_requester)
+
+      expect(access_requester.reload.requested_at).not_to be_nil
+    end
+
+    it 'approves the request when there are enough seats' do
+      group.gitlab_subscription.update!(seats: 2)
+
+      described_class.new(current_user).execute(access_requester)
+
+      expect(access_requester.reload.requested_at).to be_nil
+    end
+
+    it 'respects a provided access level' do
+      group.gitlab_subscription.update!(seats: 1)
+
+      described_class.new(current_user, { access_level: ::Gitlab::Access::GUEST }).execute(access_requester)
+
+      expect(access_requester.reload.requested_at).to be_nil
+    end
+  end
+
+  context 'when block seat overages is enabled for the instance' do
+    let(:access_requester) { group.requesters.find_by!(user_id: access_requester_user.id) }
+
+    before do
+      stub_application_setting(seat_control: ::EE::ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
+    end
+
+    before_all do
+      group.add_owner(current_user)
+      group.request_access(access_requester_user)
+    end
+
+    it 'does not approve the request when there are not enough seats' do
+      create_current_license(plan: License::ULTIMATE_PLAN, seats: 1)
+
+      described_class.new(current_user).execute(access_requester)
+
+      expect(access_requester.reload.requested_at).not_to be_nil
+    end
+
+    it 'approves the request when there are enough seats' do
+      create_current_license(plan: License::ULTIMATE_PLAN, seats: 3)
+
+      described_class.new(current_user).execute(access_requester)
+
+      expect(access_requester.reload.requested_at).to be_nil
+    end
+  end
 end
