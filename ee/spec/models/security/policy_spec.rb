@@ -1210,4 +1210,41 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       it { is_expected.to be_empty }
     end
   end
+
+  describe '#upsert_rule' do
+    let_it_be(:policy) { create(:security_policy, :approval_policy) }
+    let_it_be(:policy_configuration) { policy.security_orchestration_policy_configuration }
+
+    let_it_be(:rule_index) { 0 }
+    let_it_be(:rule_hash) do
+      {
+        type: 'scan_finding',
+        branches: [],
+        scanners: %w[container_scanning],
+        vulnerabilities_allowed: 0,
+        severity_levels: %w[critical],
+        vulnerability_states: %w[detected]
+      }
+    end
+
+    subject(:upsert!) { policy.upsert_rule(rule_index, rule_hash) }
+
+    context 'when rule does not exist' do
+      it 'creates a new rule' do
+        expect { upsert! }.to change { Security::ApprovalPolicyRule.count }.by(1)
+        expect(upsert!).to have_attributes(security_policy_id: policy.id, rule_index: rule_index, type: 'scan_finding')
+      end
+    end
+
+    context 'when rule exists' do
+      let_it_be(:existing_rule) do
+        create(:approval_policy_rule, :scan_finding, security_policy: policy, rule_index: rule_index)
+      end
+
+      it 'updates the existing rule' do
+        expect { upsert! }.not_to change { Security::ApprovalPolicyRule.count }
+        expect(upsert!).to have_attributes(id: existing_rule.id, security_policy_id: policy.id, rule_index: rule_index)
+      end
+    end
+  end
 end

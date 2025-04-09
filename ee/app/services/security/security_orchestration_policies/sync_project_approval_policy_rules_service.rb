@@ -70,9 +70,7 @@ module Security
       end
 
       def find_changed_rules(policy_diff)
-        # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- created is an array of objects
-        created_rules = find_policy_rules(policy_diff.rules_diff.created.pluck(:id))
-        # rubocop:enable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord
+        created_rules = find_policy_rules(policy_diff.rules_diff.created.map(&:id))
         deleted_rules = find_policy_rules(policy_diff.rules_diff.deleted.map(&:id))
 
         [created_rules, deleted_rules]

@@ -22,7 +22,7 @@ module Security
           @rules_diff = Security::SecurityOrchestrationPolicies::PolicyDiff::RulesDiff.new
         end
 
-        delegate :add_created_rules, :add_updated_rule, :add_deleted_rule, to: :rules_diff
+        delegate :add_created_rule, :add_updated_rule, :add_deleted_rule, to: :rules_diff
 
         def add_policy_field(field, from, to)
           diff[field] = Security::SecurityOrchestrationPolicies::PolicyDiff::FieldDiff.new(from: from, to: to)

@@ -6,7 +6,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyDiff::RulesDiff, f
   describe '.from_json' do
     let(:json_input) do
       {
-        'created' => [{ 'id' => 1 }],
+        'created' => [{ 'id' => 1, 'from' => nil, 'to' => { name: 'New Rule' } }],
         'updated' => [{ 'id' => 2, 'from' => { 'name' => 'Old Rule' }, 'to' => { 'name' => 'Updated Rule' } }],
         'deleted' => [{ 'id' => 3, 'from' => { 'name' => 'Deleted Rule' }, 'to' => nil }]
       }.deep_symbolize_keys
@@ -15,7 +15,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyDiff::RulesDiff, f
     subject(:from_json) { described_class.from_json(json_input) }
 
     it 'sets the created rules correctly' do
-      expect(from_json.created).to match_array([{ id: 1 }])
+      expect(from_json.created.first.id).to eq(1)
+      expect(from_json.created.first.from).to be_nil
+      expect(from_json.created.first.to).to eq({ name: 'New Rule' })
     end
 
     it 'sets the updated rules correctly' do
@@ -105,7 +107,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyDiff::RulesDiff, f
 
     context 'when there are created rules' do
       before do
-        rules_diff.add_created_rules([{ id: 1 }])
+        rules_diff.add_created_rule({ id: 1, from: nil, to: { name: 'New Rule' } })
       end
 
       it 'returns true' do

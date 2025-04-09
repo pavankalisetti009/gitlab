@@ -150,12 +150,15 @@ module Security
     end
 
     def upsert_rule(rule_index, rule_hash)
-      Security::PolicyRule
+      rule = Security::PolicyRule
         .for_policy_type(type.to_sym)
         .find_or_initialize_by(security_policy_id: id, rule_index: rule_index)
-        .update!(
-          self.class.rule_attributes_from_rule_hash(type.to_sym, rule_hash, security_orchestration_policy_configuration)
-        )
+
+      rule.update!(
+        self.class.rule_attributes_from_rule_hash(type.to_sym, rule_hash, security_orchestration_policy_configuration)
+      )
+
+      rule
     end
 
     def to_policy_hash

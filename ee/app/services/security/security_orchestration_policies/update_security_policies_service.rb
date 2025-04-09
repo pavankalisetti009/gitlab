@@ -47,8 +47,10 @@ module Security
 
       def create_new_rules(policy, created_rules)
         new_index = policy.next_rule_index
-        created_rules.each_with_index do |rule_hash, index|
-          policy.upsert_rule(new_index + index, rule_hash)
+        created_rules.each_with_index do |rule_diff, index|
+          rule_hash = rule_diff.to
+          rule = policy.upsert_rule(new_index + index, rule_hash)
+          rule_diff.id = rule.id
         end
       end
 

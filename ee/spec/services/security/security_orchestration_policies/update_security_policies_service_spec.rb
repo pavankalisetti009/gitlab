@@ -88,6 +88,15 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateSecurityPoliciesSe
           .and change { db_policy.description }.to('Updated description')
           .and change { db_policy.rules.count }.from(2).to(3)
       end
+
+      it 'sets the id in rules_diff for created rules' do
+        service.execute
+
+        created_rule = Security::ApprovalPolicyRule.last
+        created_rule_diff = policies_changes.first.diff.rules_diff.created.first
+
+        expect(created_rule_diff.id).to eq(created_rule.id)
+      end
     end
 
     context 'when there are deleted rules' do
