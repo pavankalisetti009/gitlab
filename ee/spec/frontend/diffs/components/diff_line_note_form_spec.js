@@ -16,6 +16,7 @@ import { globalAccessorPlugin } from '~/pinia/plugins';
 import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
 import { useNotes } from '~/notes/store/legacy_notes';
 import { useBatchComments } from '~/batch_comments/store';
+import { useMrNotes } from '~/mr_notes/store/legacy_mr_notes';
 
 Vue.use(Vuex);
 Vue.use(PiniaVuePlugin);
@@ -78,6 +79,7 @@ describe('EE DiffLineNoteForm', () => {
     pinia = createTestingPinia({ plugins: [globalAccessorPlugin] });
     useLegacyDiffs().diffFiles = [getDiffFileMock()];
     useNotes();
+    useMrNotes();
     saveDraft = useBatchComments().saveDraft.mockImplementation(() => Promise.resolve());
   });
 
