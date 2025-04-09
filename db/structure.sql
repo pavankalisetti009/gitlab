@@ -15138,6 +15138,40 @@ CREATE TABLE group_merge_request_approval_settings (
     require_reauthentication_to_approve boolean DEFAULT false NOT NULL
 );
 
+CREATE TABLE group_push_rules (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    group_id bigint NOT NULL,
+    max_file_size integer DEFAULT 0 NOT NULL,
+    member_check boolean DEFAULT false NOT NULL,
+    prevent_secrets boolean DEFAULT false NOT NULL,
+    commit_committer_name_check boolean DEFAULT false NOT NULL,
+    deny_delete_tag boolean,
+    reject_unsigned_commits boolean,
+    commit_committer_check boolean,
+    reject_non_dco_commits boolean,
+    commit_message_regex text,
+    branch_name_regex text,
+    commit_message_negative_regex text,
+    author_email_regex text,
+    file_name_regex text,
+    CONSTRAINT check_0bba2c16da CHECK ((char_length(commit_message_negative_regex) <= 2047)),
+    CONSTRAINT check_41c1a11ab8 CHECK ((char_length(file_name_regex) <= 511)),
+    CONSTRAINT check_6f0da85c6c CHECK ((char_length(commit_message_regex) <= 511)),
+    CONSTRAINT check_710cf4213a CHECK ((char_length(author_email_regex) <= 511)),
+    CONSTRAINT check_b02376d0ad CHECK ((char_length(branch_name_regex) <= 511))
+);
+
+CREATE SEQUENCE group_push_rules_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE group_push_rules_id_seq OWNED BY group_push_rules.id;
+
 CREATE TABLE group_repository_storage_moves (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -27158,6 +27192,8 @@ ALTER TABLE ONLY group_group_links ALTER COLUMN id SET DEFAULT nextval('group_gr
 
 ALTER TABLE ONLY group_import_states ALTER COLUMN group_id SET DEFAULT nextval('group_import_states_group_id_seq'::regclass);
 
+ALTER TABLE ONLY group_push_rules ALTER COLUMN id SET DEFAULT nextval('group_push_rules_id_seq'::regclass);
+
 ALTER TABLE ONLY group_repository_storage_moves ALTER COLUMN id SET DEFAULT nextval('group_repository_storage_moves_id_seq'::regclass);
 
 ALTER TABLE ONLY group_saved_replies ALTER COLUMN id SET DEFAULT nextval('group_saved_replies_id_seq'::regclass);
@@ -29651,6 +29687,9 @@ ALTER TABLE ONLY group_import_states
 
 ALTER TABLE ONLY group_merge_request_approval_settings
     ADD CONSTRAINT group_merge_request_approval_settings_pkey PRIMARY KEY (group_id);
+
+ALTER TABLE ONLY group_push_rules
+    ADD CONSTRAINT group_push_rules_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY group_repository_storage_moves
     ADD CONSTRAINT group_repository_storage_moves_pkey PRIMARY KEY (id);
@@ -35186,6 +35225,8 @@ CREATE INDEX index_group_import_states_on_group_id ON group_import_states USING 
 CREATE INDEX index_group_import_states_on_user_id ON group_import_states USING btree (user_id) WHERE (user_id IS NOT NULL);
 
 CREATE UNIQUE INDEX index_group_microsoft_applications_on_temp_source_id ON system_access_group_microsoft_applications USING btree (temp_source_id);
+
+CREATE INDEX index_group_push_rules_on_group_id ON group_push_rules USING btree (group_id);
 
 CREATE INDEX index_group_repository_storage_moves_on_group_id ON group_repository_storage_moves USING btree (group_id);
 
@@ -44051,6 +44092,9 @@ ALTER TABLE ONLY dast_profiles
 
 ALTER TABLE ONLY group_custom_attributes
     ADD CONSTRAINT fk_rails_246e0db83a FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY group_push_rules
+    ADD CONSTRAINT fk_rails_2515e57aa7 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY incident_management_oncall_rotations
     ADD CONSTRAINT fk_rails_256e0bc604 FOREIGN KEY (oncall_schedule_id) REFERENCES incident_management_oncall_schedules(id) ON DELETE CASCADE;
