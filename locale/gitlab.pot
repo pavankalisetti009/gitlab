@@ -4911,6 +4911,9 @@ msgstr ""
 msgid "AdminUsers|Access the API"
 msgstr ""
 
+msgid "AdminUsers|Access to their groups and projects."
+msgstr ""
+
 msgid "AdminUsers|Activate"
 msgstr ""
 
@@ -5028,6 +5031,9 @@ msgstr ""
 msgid "AdminUsers|Deactivating a user has the following effects:"
 msgstr ""
 
+msgid "AdminUsers|Define user access to groups, projects, resources, and the Admin area."
+msgstr ""
+
 msgid "AdminUsers|Delete User %{username} and contributions?"
 msgstr ""
 
@@ -5065,6 +5071,12 @@ msgid "AdminUsers|Filter list"
 msgstr ""
 
 msgid "AdminUsers|For more information, please refer to the %{link_start}user account deletion documentation.%{link_end}"
+msgstr ""
+
+msgid "AdminUsers|Full access to all groups, projects, users, features, and the Admin area."
+msgstr ""
+
+msgid "AdminUsers|Full access to all groups, projects, users, features, and the Admin area. You cannot remove your own administrator access."
 msgstr ""
 
 msgid "AdminUsers|Group Managed Account"
@@ -5140,6 +5152,9 @@ msgid "AdminUsers|Re-enable spam monitoring for %{username}?"
 msgstr ""
 
 msgid "AdminUsers|Reactivating a user will:"
+msgstr ""
+
+msgid "AdminUsers|Read-only access to all groups and projects. No access to the Admin area by default."
 msgstr ""
 
 msgid "AdminUsers|Regular"
@@ -5254,6 +5269,9 @@ msgid "AdminUsers|Untrust user"
 msgstr ""
 
 msgid "AdminUsers|User administration"
+msgstr ""
+
+msgid "AdminUsers|User type"
 msgstr ""
 
 msgid "AdminUsers|User will not be able to access git repositories"

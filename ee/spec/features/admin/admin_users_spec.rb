@@ -193,7 +193,7 @@ RSpec.describe "Admin::Users", :js, feature_category: :user_management do
         allow_next_instance_of(AuditorUserHelper) do |instance|
           allow(instance).to receive(:license_allows_auditor_user?).and_return(true)
         end
-        choose "user_access_level_auditor"
+        choose "Auditor"
         click_button "Save changes"
       end
 
