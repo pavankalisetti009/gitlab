@@ -6,61 +6,30 @@ Messages = RemoteDevelopment::Messages
 
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, feature_category: :workspaces do
+  let(:context_passed_along_steps) { {} }
   let(:rop_steps) do
     [
+      [RemoteDevelopment::WorkspaceOperations::Create::CreatorBootstrapper, :map],
       [RemoteDevelopment::WorkspaceOperations::Create::PersonalAccessTokenCreator, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreator, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariablesCreator, :and_then]
     ]
   end
 
-  let_it_be(:user) { create(:user) }
-  let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
-  let(:random_string) { 'abcdef' }
-
-  let(:params) do
-    {
-      agent: agent
-    }
-  end
-
-  let(:initial_value) do
-    {
-      params: params,
-      user: user
-    }
-  end
-
-  let(:workspace) { instance_double("RemoteDevelopment::Workspace") } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
-
-  let(:updated_value) do
-    namespace_prefix = RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::NAMESPACE_PREFIX
-    initial_value.merge(
-      {
-        workspace_name: "workspace-#{agent.id}-#{user.id}-#{random_string}",
-        workspace_namespace: "#{namespace_prefix}-#{agent.id}-#{user.id}-#{random_string}"
-      }
-    )
-  end
-
-  before do
-    allow(SecureRandom).to receive(:alphanumeric) { random_string }
-  end
-
   describe "happy path" do
-    let(:expected_response) do
-      Gitlab::Fp::Result.ok(RemoteDevelopment::Messages::WorkspaceCreateSuccessful.new(updated_value))
+    let(:expected_value) do
+      Gitlab::Fp::Result.ok(Messages::WorkspaceCreateSuccessful.new(context_passed_along_steps))
     end
 
     it "returns expected response" do
       # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
       expect do
-        described_class.create(initial_value) # rubocop:disable Rails/SaveBang -- this is not an ActiveRecord call
+        described_class.create(context_passed_along_steps) # rubocop:disable Rails/SaveBang -- this is not an ActiveRecord call
       end
         .to invoke_rop_steps(rop_steps)
               .from_main_class(described_class)
-              .with_context_passed_along_steps(updated_value)
-              .and_return_expected_value(expected_response)
+              .with_context_passed_along_steps(context_passed_along_steps)
+              .and_return_expected_value(expected_value)
     end
   end
 
@@ -72,11 +41,11 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, featur
       it "returns expected response" do
         # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
         expect do
-          described_class.create(initial_value) # rubocop:disable Rails/SaveBang -- this is not an ActiveRecord call
+          described_class.create(context_passed_along_steps) # rubocop:disable Rails/SaveBang -- this is not an ActiveRecord call
         end
           .to invoke_rop_steps(rop_steps)
                 .from_main_class(described_class)
-                .with_context_passed_along_steps(updated_value)
+                .with_context_passed_along_steps(context_passed_along_steps)
                 .with_err_result_for_step(err_result_for_step)
                 .and_return_expected_value(expected_response)
       end
