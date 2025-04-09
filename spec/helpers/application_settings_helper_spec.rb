@@ -51,6 +51,11 @@ RSpec.describe ApplicationSettingsHelper, feature_category: :shared do
         .to include(*%i[snowplow_collector_hostname snowplow_cookie_domain snowplow_enabled snowplow_app_id])
     end
 
+    it 'contains product usage data setting' do
+      expect(helper.visible_attributes)
+        .to include(:gitlab_product_usage_data_enabled)
+    end
+
     it 'contains :resource_usage_limits' do
       expect(helper.visible_attributes).to include(:resource_usage_limits)
     end

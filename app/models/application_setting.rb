@@ -460,6 +460,8 @@ class ApplicationSetting < ApplicationRecord
 
   validate :check_valid_runner_registrars
 
+  validate :snowplow_and_product_usage_data_are_mutually_exclusive
+
   validate :terms_exist, if: :enforce_terms?
 
   validates :external_authorization_service_default_label,
@@ -680,7 +682,8 @@ class ApplicationSetting < ApplicationRecord
   validates :clickhouse, json_schema: { filename: "application_setting_clickhouse" }
 
   jsonb_accessor :service_ping_settings,
-    gitlab_environment_toolkit_instance: [:boolean, { default: false }]
+    gitlab_environment_toolkit_instance: [:boolean, { default: false }],
+    gitlab_product_usage_data_enabled: [:boolean, { default: true }]
 
   jsonb_accessor :rate_limits_unauthenticated_git_http,
     throttle_unauthenticated_git_http_enabled: [:boolean, { default: false }],
@@ -1149,6 +1152,15 @@ class ApplicationSetting < ApplicationRecord
       :kroki_url,
       "is not valid. #{e}"
     )
+  end
+
+  def snowplow_and_product_usage_data_are_mutually_exclusive
+    return unless gitlab_product_usage_data_enabled_changed? || snowplow_enabled_changed?
+    return unless snowplow_enabled && gitlab_product_usage_data_enabled
+
+    message = _('Snowplow tracking and Product event tracking cannot be enabled at the same time. ' \
+      'Please disable one of them.')
+    errors.add(:base, message)
   end
 
   def validate_url(parsed_url, name, error_message)

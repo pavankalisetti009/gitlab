@@ -488,6 +488,7 @@ module ApplicationSettingsHelper
       :snowplow_database_collector_hostname,
       :snowplow_enabled,
       :snowplow_app_id,
+      :gitlab_product_usage_data_enabled,
       :push_event_hooks_limit,
       :push_event_activities_limit,
       :custom_http_clone_url_root,
