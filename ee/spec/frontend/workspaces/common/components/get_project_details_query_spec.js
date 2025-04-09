@@ -58,10 +58,9 @@ describe('workspaces/common/components/get_project_details_query', () => {
     clusterAgentsGraphQLResult,
   ) =>
     clusterAgentsGraphQLResult.data.namespace.remoteDevelopmentClusterAgents.nodes.map(
-      ({ id, name, project, workspacesAgentConfig }) => ({
+      ({ id, name, project }) => ({
         text: `${project.nameWithNamespace} / ${name}`,
         value: id,
-        defaultMaxHoursBeforeTermination: workspacesAgentConfig.defaultMaxHoursBeforeTermination,
       }),
     );
 

@@ -68604,9 +68604,6 @@ msgstr ""
 msgid "Workspaces|When no devfile is provided, the GitLab default devfile will be used."
 msgstr ""
 
-msgid "Workspaces|Workspace automatically terminates after"
-msgstr ""
-
 msgid "Workspaces|Workspaces"
 msgstr ""
 

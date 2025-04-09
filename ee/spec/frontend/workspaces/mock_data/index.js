@@ -19,7 +19,6 @@ export const WORKSPACE = {
   devfilePath: '.devfile.yaml',
   devfileWebUrl: 'http://gdk.test:3000/gitlab-org/gitlab-shell/-/blob/main/.devfile.yaml',
   createdAt: '2023-05-01T18:24:34Z',
-  maxHoursBeforeTermination: 120,
 };
 
 export const PROJECT_ID = 1;
@@ -50,7 +49,6 @@ export const USER_WORKSPACES_LIST_QUERY_RESULT = {
             devfileWebUrl: 'http://gdk.test:3000/gitlab-org/gitlab-shell/-/blob/main/.devfile.yaml',
             projectId: 'gid://gitlab/Project/1',
             createdAt: '2023-04-29T18:24:34Z',
-            maxHoursBeforeTermination: 120,
           },
           {
             __typename: 'Workspace',
@@ -65,7 +63,6 @@ export const USER_WORKSPACES_LIST_QUERY_RESULT = {
             devfileWebUrl: 'http://gdk.test:3000/gitlab-org/gitlab-shell/-/blob/main/.devfile.yaml',
             projectId: 'gid://gitlab/Project/1',
             createdAt: '2023-05-01T18:24:34Z',
-            maxHoursBeforeTermination: 120,
           },
         ],
         pageInfo: {
@@ -98,7 +95,6 @@ export const USER_WORKSPACES_TAB_LIST_QUERY_RESULT = {
             devfileWebUrl: 'http://gdk.test:3000/gitlab-org/gitlab-shell/-/blob/main/.devfile.yaml',
             projectId: 'gid://gitlab/Project/1',
             createdAt: '2023-04-29T18:24:34Z',
-            maxHoursBeforeTermination: 120,
           },
           {
             __typename: 'Workspace',
@@ -113,7 +109,6 @@ export const USER_WORKSPACES_TAB_LIST_QUERY_RESULT = {
             devfileWebUrl: 'http://gdk.test:3000/gitlab-org/gitlab-shell/-/blob/main/.devfile.yaml',
             projectId: 'gid://gitlab/Project/1',
             createdAt: '2023-05-01T18:24:34Z',
-            maxHoursBeforeTermination: 120,
           },
         ],
         pageInfo: {
@@ -138,7 +133,6 @@ export const USER_WORKSPACES_TAB_LIST_QUERY_RESULT = {
             devfileWebUrl: 'http://gdk.test:3000/gitlab-org/gitlab-shell/-/blob/main/.devfile.yaml',
             projectId: 'gid://gitlab/Project/1',
             createdAt: '2023-04-29T18:24:34Z',
-            maxHoursBeforeTermination: 120,
           },
           {
             __typename: 'Workspace',
@@ -153,7 +147,6 @@ export const USER_WORKSPACES_TAB_LIST_QUERY_RESULT = {
             devfileWebUrl: 'http://gdk.test:3000/gitlab-org/gitlab-shell/-/blob/main/.devfile.yaml',
             projectId: 'gid://gitlab/Project/1',
             createdAt: '2023-05-01T18:24:34Z',
-            maxHoursBeforeTermination: 120,
           },
         ],
         pageInfo: {
@@ -242,7 +235,6 @@ export const AGENT_WORKSPACES_LIST_QUERY_RESULT = {
                 'http://gdk.test:3000/gitlab-org/gitlab-shell/-/blob/main/.devfile.yaml',
               projectId: 'gid://gitlab/Project/1',
               createdAt: '2023-04-29T18:24:34Z',
-              maxHoursBeforeTermination: 120,
             },
             {
               __typename: 'Workspace',
@@ -258,7 +250,6 @@ export const AGENT_WORKSPACES_LIST_QUERY_RESULT = {
                 'http://gdk.test:3000/gitlab-org/gitlab-shell/-/blob/main/.devfile.yaml',
               projectId: 'gid://gitlab/Project/1',
               createdAt: '2023-05-01T18:24:34Z',
-              maxHoursBeforeTermination: 120,
             },
           ],
           pageInfo: {
@@ -515,8 +506,6 @@ export const GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS = {
             },
             workspacesAgentConfig: {
               id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
-              defaultMaxHoursBeforeTermination: 99,
-              maxHoursBeforeTerminationLimit: 999,
             },
           },
           {
@@ -528,8 +517,6 @@ export const GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS = {
             },
             workspacesAgentConfig: {
               id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/998',
-              defaultMaxHoursBeforeTermination: 98,
-              maxHoursBeforeTerminationLimit: 998,
             },
           },
         ],
@@ -555,8 +542,6 @@ export const MAPPED_CLUSTER_AGENT = {
   mappingStatus: AGENT_MAPPING_STATUS_MAPPED,
   workspacesAgentConfig: {
     id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
-    defaultMaxHoursBeforeTermination: 99,
-    maxHoursBeforeTerminationLimit: 999,
   },
 };
 
@@ -577,8 +562,6 @@ export const UNMAPPED_CLUSTER_AGENT = {
   mappingStatus: AGENT_MAPPING_STATUS_UNMAPPED,
   workspacesAgentConfig: {
     id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
-    defaultMaxHoursBeforeTermination: 99,
-    maxHoursBeforeTerminationLimit: 999,
   },
 };
 

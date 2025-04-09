@@ -42,19 +42,16 @@ describe('workspaces/user/pages/create.vue', () => {
     fullPath: 'gitlab-org/gitlab',
     nameWithNamespace: 'GitLab Org / GitLab',
   };
-  const clusterAgentOneDefaultMaxHours = 100;
-  const clusterAgentTwoDefaultMaxHours = 200;
+
   const selectedClusterAgentOneIDFixture = 'agents/1';
   const selectedClusterAgentTwoIDFixture = 'agents/2';
   const clusterAgentOne = {
     text: 'Agent',
     value: selectedClusterAgentOneIDFixture,
-    defaultMaxHoursBeforeTermination: clusterAgentOneDefaultMaxHours,
   };
   const clusterAgentTwo = {
     text: 'Agent 2',
     value: selectedClusterAgentTwoIDFixture,
-    defaultMaxHoursBeforeTermination: clusterAgentTwoDefaultMaxHours,
   };
   const clusterAgentsFixture = [clusterAgentOne];
   const twoClusterAgentsFixture = [clusterAgentOne, clusterAgentTwo];
@@ -171,9 +168,6 @@ describe('workspaces/user/pages/create.vue', () => {
   const findDevfileDropDown = () => findDevfileField().findComponent(DevfileListbox);
   const findDevfileHelpDrawer = () => findDevfileField().findComponent(DevfileHelpDrawer);
 
-  const findMaxHoursBeforeTerminationField = () =>
-    wrapper.findByTestId('max-hours-before-termination');
-
   const emitGetProjectDetailsQueryResult = ({
     clusterAgents = [],
     groupPath = GET_PROJECT_DETAILS_QUERY_RESULT.data.project.group.fullPath,
@@ -242,10 +236,6 @@ describe('workspaces/user/pages/create.vue', () => {
 
     it('does not display devfile path field', () => {
       expect(findDevfileField().exists()).toBe(false);
-    });
-
-    it('does not display max hours before termination field', () => {
-      expect(findMaxHoursBeforeTerminationField().exists()).toBe(false);
     });
 
     it('shows a link to the troubleshooting page', () => {
@@ -336,7 +326,6 @@ describe('workspaces/user/pages/create.vue', () => {
 
         expect(workspaceCreateMutationHandler).toHaveBeenCalledWith({
           input: expect.objectContaining({
-            maxHoursBeforeTermination: clusterAgentTwoDefaultMaxHours,
             clusterAgentId: selectedClusterAgentTwoIDFixture,
           }),
         });
@@ -392,7 +381,6 @@ describe('workspaces/user/pages/create.vue', () => {
 
     describe('when clicking Create Workspace button', () => {
       it('submits workspaceCreate mutation', async () => {
-        const maxHoursBeforeTermination = 100;
         const devfileRef = 'mybranch';
         findDevfileRefRefSelector().vm.$emit('input', devfileRef);
         await waitForPromises();
@@ -405,7 +393,6 @@ describe('workspaces/user/pages/create.vue', () => {
             projectId: projectGid,
             desiredState: DEFAULT_DESIRED_STATE,
             devfilePath: null,
-            maxHoursBeforeTermination,
             devfileRef,
             variables: findWorkspaceVariables().props().variables,
           },
