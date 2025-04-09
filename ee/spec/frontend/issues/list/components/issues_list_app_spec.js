@@ -14,6 +14,7 @@ import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_ro
 import IssuesListAppCE from '~/issues/list/components/issues_list_app.vue';
 import { CREATED_DESC } from '~/issues/list/constants';
 import {
+  OPERATORS_IS,
   TOKEN_TYPE_ASSIGNEE,
   TOKEN_TYPE_AUTHOR,
   TOKEN_TYPE_CONFIDENTIAL,
@@ -247,6 +248,7 @@ describe('EE IssuesListApp component', () => {
         field,
         fullPath: 'path/to/project',
         token: expect.any(Function),
+        operators: OPERATORS_IS,
       }));
 
       expect(findIssuesListAppCE().props('eeSearchTokens').length).toBe(5);

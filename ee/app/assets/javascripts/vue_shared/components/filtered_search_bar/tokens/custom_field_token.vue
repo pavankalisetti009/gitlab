@@ -29,6 +29,7 @@ export default {
     return {
       options: [],
       loading: true,
+      hasStartedQuery: false,
     };
   },
   computed: {
@@ -40,14 +41,24 @@ export default {
     getActiveOption(options, data) {
       return options.find((option) => this.getId(option) === data);
     },
-    fetchCustomFieldOptions(searchTerm = '') {
+    async fetchCustomFieldOptions(searchTerm = '') {
       if (!this.fieldId) {
         return;
       }
 
+      let shouldFilter = true;
+
+      // if we have a search term on initial load
+      // then it is an ID, so don't filter search results by it
+      if (searchTerm && !this.hasStartedQuery) {
+        shouldFilter = false;
+      }
+
+      this.hasStartedQuery = true;
+
       this.loading = true;
 
-      this.$apollo
+      await this.$apollo
         .query({
           query: customFieldOptionsQuery,
           variables: {
@@ -56,9 +67,13 @@ export default {
         })
         .then(({ data }) => {
           const { customField } = data;
-          this.options = (customField?.selectOptions || []).filter((option) =>
-            option.value.toLowerCase().includes(searchTerm.toLowerCase()),
-          );
+          this.options = customField?.selectOptions || [];
+
+          if (shouldFilter) {
+            this.options = this.options.filter((option) =>
+              option.value.toLowerCase().includes(searchTerm.toLowerCase()),
+            );
+          }
         })
         .catch((error) => {
           const message = sprintf(
@@ -81,7 +96,7 @@ export default {
         });
     },
     getId(option) {
-      return getIdFromGraphQLId(option.id);
+      return getIdFromGraphQLId(option.id).toString();
     },
     getOptionText(option) {
       return option.value;
