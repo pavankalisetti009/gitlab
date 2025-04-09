@@ -79,6 +79,30 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::QualifiedGroupsFilter, featu
     end
   end
 
+  describe '#valid_entry?(references)' do
+    let(:references) { instance_double(Gitlab::CodeOwners::ReferenceExtractor, names: names) }
+    let(:names) { ['bar'] }
+    let(:invalid_group_names) { ['foo'] }
+
+    before do
+      allow(filter).to receive(:invalid_group_names).and_return(invalid_group_names)
+    end
+
+    context 'when references contains no invalid references' do
+      it 'returns true' do
+        expect(filter.valid_entry?(references)).to be(true)
+      end
+    end
+
+    context 'when references.names includes invalid_group_names' do
+      let(:names) { %w[foo bar] }
+
+      it 'returns false' do
+        expect(filter.valid_entry?(references)).to be(false)
+      end
+    end
+  end
+
   it 'does not perform N+1 queries', :request_store, :use_sql_query_cache do
     project_id = project.id
     # refind the project to ensure the associations aren't loaded

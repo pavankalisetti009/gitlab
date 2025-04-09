@@ -17,10 +17,8 @@ module Gitlab
         end
 
         def output_groups
-          group_traversal_ids = project.group.traversal_ids
-          group_and_ancestors = input_groups.select { |group| group.id.in?(group_traversal_ids) }
-          eligible_invited_groups = project.invited_groups.with_developer_access.by_id(input_groups)
-          group_and_ancestors + eligible_invited_groups
+          project.group_and_ancestors.by_id(input_groups) +
+            project.invited_groups.with_developer_access.by_id(input_groups)
         end
         strong_memoize_attr :output_groups
 
@@ -33,6 +31,10 @@ module Gitlab
           input_group_names - valid_group_names
         end
         strong_memoize_attr :invalid_group_names
+
+        def valid_entry?(references)
+          !references.names.intersect?(invalid_group_names)
+        end
 
         private
 
