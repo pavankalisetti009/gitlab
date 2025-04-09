@@ -194,7 +194,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::MemberApproval, feature_ca
     context 'when uniqness is enforced' do
       let!(:member_approval) do
         create(:gitlab_subscription_member_management_member_approval, user: user, member_namespace: group,
-          status: :pending)
+          status: :pending, member: nil)
       end
 
       context 'with same user, namespace' do

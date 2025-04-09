@@ -9,8 +9,20 @@ FactoryBot.define do
     old_access_level { ::Gitlab::Access::GUEST }
     new_access_level { ::Gitlab::Access::DEVELOPER }
     status { ::GitlabSubscriptions::MemberManagement::MemberApproval.statuses[:pending] }
-    member { association(:project_member, user: user) }
-    member_namespace { association(:namespace) }
+    member_namespace { association(:project_namespace) }
+
+    member do
+      if member_namespace.is_a?(Namespaces::ProjectNamespace)
+        association(:project_member, user: user, project: member_namespace.project)
+      else
+        association(:group_member, user: user, group: member_namespace)
+      end
+    end
+
+    after(:build) do |approval|
+      approval.member_namespace = approval.member&.member_namespace || approval.member_namespace
+    end
+
     member_role_id { nil }
     metadata { { access_level: new_access_level, member_role_id: member_role_id }.compact }
 
@@ -20,13 +32,13 @@ FactoryBot.define do
     end
 
     trait :for_group_member do
-      member { association(:group_member, user: user) }
-      member_namespace { member.member_namespace }
+      member_namespace { association(:group) }
+      member { association(:group_member, user: user, group: member_namespace) }
     end
 
     trait :for_project_member do
-      member { association(:project_member, user: user) }
-      member_namespace { member.member_namespace }
+      member_namespace { association(:project_namespace) }
+      member { association(:project_member, user: user, project: member_namespace.project) }
     end
 
     trait(:guest)     { old_access_level { GroupMember::GUEST } }
