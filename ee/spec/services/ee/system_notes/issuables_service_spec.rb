@@ -76,7 +76,7 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
       let(:value) { 5 }
 
       it 'sets the note text' do
-        note_text = "<div>changed #{custom_field.name} to <strong>5</strong></div>"
+        note_text = "<div>changed #{custom_field.name} to <code class=\"idiff\">5</code></div>"
         expect(subject.note).to eq note_text
       end
     end
@@ -86,7 +86,7 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
       let(:value) { nil }
 
       it 'sets the note text' do
-        note_text = "<div>removed #{custom_field.name}: <strong>2</strong></div>"
+        note_text = "<div>removed #{custom_field.name}: <code class=\"idiff\">2</code></div>"
         expect(subject.note).to eq note_text
       end
     end
@@ -97,7 +97,7 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
         let(:value) { 5.0 }
 
         it 'strips unnecessary zeros' do
-          note_text = "<div>changed #{custom_field.name} to <strong>5</strong></div>"
+          note_text = "<div>changed #{custom_field.name} to <code class=\"idiff\">5</code></div>"
           expect(subject.note).to eq note_text
         end
       end
@@ -107,7 +107,7 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
         let(:value) { 5.5 }
 
         it 'strips unnecessary zeros' do
-          note_text = "<div>changed #{custom_field.name} to <strong>5.5</strong></div>"
+          note_text = "<div>changed #{custom_field.name} to <code class=\"idiff\">5.5</code></div>"
           expect(subject.note).to eq note_text
         end
       end
@@ -130,7 +130,7 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
       let(:value) { "new text" }
 
       it 'sets the note text' do
-        note_text = "<div>changed #{custom_field.name} to <strong>#{value}</strong></div>"
+        note_text = "<div>changed #{custom_field.name} to <code class=\"idiff\">#{value}</code></div>"
         expect(subject.note).to eq note_text
       end
     end
@@ -140,7 +140,7 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
       let(:value) { nil }
 
       it 'sets the note text' do
-        note_text = "<div>removed #{custom_field.name}: <strong>#{previous_value}</strong></div>"
+        note_text = "<div>removed #{custom_field.name}: <code class=\"idiff\">#{previous_value}</code></div>"
         expect(subject.note).to eq note_text
       end
     end
@@ -150,7 +150,7 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
       let(:value) { "text  " }
 
       it 'strips the unnecessary spaces' do
-        note_text = "<div>changed #{custom_field.name} to <strong>text</strong></div>"
+        note_text = "<div>changed #{custom_field.name} to <code class=\"idiff\">text</code></div>"
         expect(subject.note).to eq note_text
       end
     end
@@ -160,7 +160,7 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
       let(:value) { "<b>text</b>" }
 
       it 'escape the html characters' do
-        note_text = "<div>changed #{custom_field.name} to <strong>&lt;b&gt;text&lt;/b&gt;</strong></div>"
+        note_text = "<div>changed #{custom_field.name} to <code class=\"idiff\">&lt;b&gt;text&lt;/b&gt;</code></div>"
         expect(subject.note).to eq note_text
       end
     end
@@ -182,7 +182,7 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
       let(:new_options) { ["red"] }
 
       it 'sets the note text' do
-        note_text = "<div>changed #{custom_field.name} to <strong>red</strong></div>"
+        note_text = "<div>changed #{custom_field.name} to <code class=\"idiff\">red</code></div>"
         expect(subject.note).to eq note_text
       end
     end
@@ -192,7 +192,7 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
       let(:new_options) { %w[red black] }
 
       it 'sets the note text' do
-        note_text = "<div>changed #{custom_field.name} to <strong>red, black</strong></div>"
+        note_text = "<div>changed #{custom_field.name} to <code class=\"idiff\">red, black</code></div>"
         expect(subject.note).to eq note_text
       end
     end
@@ -202,7 +202,7 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
       let(:new_options) { [] }
 
       it 'sets the note text' do
-        note_text = "<div>removed #{custom_field.name}: <strong>red</strong></div>"
+        note_text = "<div>removed #{custom_field.name}: <code class=\"idiff\">red</code></div>"
         expect(subject.note).to eq note_text
       end
     end
@@ -212,7 +212,7 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
       let(:new_options) { [] }
 
       it 'sets the note text' do
-        note_text = "<div>removed #{custom_field.name}: <strong>red, black</strong></div>"
+        note_text = "<div>removed #{custom_field.name}: <code class=\"idiff\">red, black</code></div>"
         expect(subject.note).to eq note_text
       end
     end
