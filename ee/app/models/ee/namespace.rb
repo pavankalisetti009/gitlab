@@ -136,6 +136,11 @@ module EE
           .where(namespace_settings: { experiment_features_enabled: true })
       end
 
+      scope :namespace_settings_with_duo_nano_features_enabled, -> do
+        joins(:namespace_settings)
+          .where(namespace_settings: { duo_nano_features_enabled: true })
+      end
+
       scope :with_ai_supported_plan, ->(feature = :ai_features) do
         plan_names = GitlabSubscriptions::Features.saas_plans_with_feature(feature)
 
@@ -641,6 +646,10 @@ module EE
     def projects_with_repository_size_limit_usage_ratio_greater_than(ratio:)
       projects_subject_to_repository_size_limits
         .with_total_repository_size_greater_than(repository_size_usage_ratio_arel(ratio))
+    end
+
+    def duo_nano_features_enabled?
+      !!root_ancestor.namespace_settings.duo_nano_features_enabled
     end
 
     private
