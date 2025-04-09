@@ -141,5 +141,52 @@ RSpec.describe Gitlab::Llm::Chain::Utils::ChatConversation, feature_category: :d
         expect(history).to contain_exactly("question 1", "answer 1")
       end
     end
+
+    context "with messages containing all fields" do
+      let(:messages) do
+        [
+          build(:ai_chat_message,
+            request_id: "uuid1",
+            content: "Question",
+            extras: { 'additional_context' => additional_context }
+          ),
+          build(:ai_chat_message, :assistant,
+            request_id: "uuid1",
+            content: "Answer",
+            extras: {
+              'additional_context' => [],
+              'agent_scratchpad' => agent_scratchpad
+            }
+          )
+        ]
+      end
+
+      let(:agent_scratchpad) do
+        [{ thought: 'thought', observation: 'Please use this information about identified issue' }]
+      end
+
+      let(:additional_context) do
+        [
+          { category: 'SNIPPET', id: 'hello world', content: 'puts "Hello, world"', metadata: {} }
+        ]
+      end
+
+      it "returns messages with all fields" do
+        expect(conversation).to contain_exactly(
+          {
+            role: :user,
+            content: "Question",
+            additional_context: additional_context,
+            agent_scratchpad: nil
+          },
+          {
+            role: :assistant,
+            content: "Answer",
+            additional_context: [],
+            agent_scratchpad: agent_scratchpad
+          }
+        )
+      end
+    end
   end
 end

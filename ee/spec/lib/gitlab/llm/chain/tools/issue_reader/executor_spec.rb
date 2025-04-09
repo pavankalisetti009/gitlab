@@ -136,10 +136,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_categor
           let(:resource) { issue1 }
 
           it_behaves_like 'success response'
-          it_behaves_like 'updating chat storage message extras' do
-            let(:key) { 'resource_content' }
-            let(:expected_message_value) { 'Please use this information about identified issue:' }
-          end
         end
 
         context 'when issue is identified by iid' do

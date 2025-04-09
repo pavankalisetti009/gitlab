@@ -67,9 +67,10 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
 
         expect(agent.agent_steps).to eq([
           {
-            thought: 'I think I need to use issue_reader',
-            tool: 'issue_reader',
-            tool_input: '#123'
+            action:
+              { thought: 'I think I need to use issue_reader',
+                tool: 'issue_reader',
+                tool_input: '#123' }
           }
         ])
 
@@ -77,9 +78,10 @@ RSpec.describe Gitlab::Duo::Chat::StepExecutor, feature_category: :duo_chat do
 
         expect(agent.agent_steps).to eq([
           {
-            thought: 'I think I need to use issue_reader',
-            tool: 'issue_reader',
-            tool_input: '#123',
+            action:
+              { thought: 'I think I need to use issue_reader',
+                tool: 'issue_reader',
+                tool_input: '#123' },
             observation: 'Issue #123 is about deep learning models.'
           }
         ])

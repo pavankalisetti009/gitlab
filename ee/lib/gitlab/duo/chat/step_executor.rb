@@ -26,8 +26,6 @@ module Gitlab
         def step(params)
           events = []
 
-          params = update_params(params)
-
           perform_agent_request(params) do |event_json|
             event = event_parser.parse(event_json)
 
@@ -44,7 +42,7 @@ module Gitlab
               step[:tool] = event.tool
               step[:tool_input] = event.tool_input
 
-              @agent_steps.append(step)
+              @agent_steps.append(action: step)
             end
 
             events.append(event)
@@ -67,19 +65,6 @@ module Gitlab
         private
 
         attr_reader :user, :event_parser
-
-        def update_params(params)
-          params.deep_merge(
-            {
-              options: {
-                agent_scratchpad: {
-                  agent_type: "react",
-                  steps: @agent_steps
-                }
-              }
-            }
-          )
-        end
 
         def perform_agent_request(params)
           log_conditional_info(user, message: "Request to v2/chat/agent",

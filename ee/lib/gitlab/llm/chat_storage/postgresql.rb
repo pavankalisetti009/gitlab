@@ -64,11 +64,6 @@ module Gitlab
           clear_memoization(:messages)
         end
 
-        def update_message_extras(message)
-          user.ai_conversation_messages.for_id(message.id).update!(extras: message.extras.to_json)
-          clear_memoization(:messages)
-        end
-
         def current_thread
           @current_thread ||= thread
           @current_thread ||= find_default_thread || create_default_thread if @thread_fallback
