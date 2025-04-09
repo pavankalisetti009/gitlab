@@ -76,7 +76,7 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
 
         it_behaves_like 'successful dev execution'
 
-        context 'when server returns a 500 error' do
+        context 'when server returns a 500 error without an error message' do
           let(:response) { instance_double(HTTParty::Response, success?: false, parsed_response: nil) }
 
           before do
@@ -88,6 +88,41 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
             expect(Note.last.note).to include(
               "Sorry, I'm not able to complete the request at this moment. Please try again later")
             expect(Note.last.note).to include("Request ID:")
+          end
+        end
+
+        context 'when server returns a 500 error with an error message' do
+          let_it_be(:error_message) do
+            "An error occurred (AccessDeniedException) when calling the SendEvent operation: Identity Expired"
+          end
+
+          let(:response) do
+            instance_double(
+              HTTParty::Response, success?: false,
+              parsed_response: error_message
+            )
+          end
+
+          before do
+            allow(Gitlab::Llm::QAi::Client).to receive(:new).with(user).and_return(client)
+          end
+
+          it 'updates a new note with an error detail' do
+            expect { execution }.to change { Note.system.count }.by(1).and change { Note.user.count }.by(1)
+            request_id = Labkit::Correlation::CorrelationId.current_id
+            message = s_("AmazonQ|Sorry, I'm not able to complete the request at this moment. Please try again later.")
+            request_id_message = format(s_("AmazonQ|Request ID: %{request_id}"), request_id: request_id)
+            formatted_error_message = format(_('Error: %{error_message}'), error_message: error_message)
+
+            expect(Note.last.note).to eq(<<~ERROR.chomp)
+              > [!warning]
+              >
+              > #{message}
+              >
+              > #{request_id_message}
+              >
+              > #{formatted_error_message}
+            ERROR
           end
         end
       end
