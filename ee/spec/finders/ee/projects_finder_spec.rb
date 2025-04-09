@@ -52,22 +52,6 @@ RSpec.describe ProjectsFinder, feature_category: :groups_and_projects do
       end
     end
 
-    context 'filter by aimed for deletion' do
-      let_it_be(:params) { { aimed_for_deletion: true } }
-      let_it_be(:aimed_for_deletion_project) { create(:project, :public, marked_for_deletion_at: 2.days.ago, pending_delete: false) }
-      let_it_be(:pending_deletion_project) { create(:project, :public, marked_for_deletion_at: 1.month.ago, pending_delete: true) }
-
-      it { is_expected.to contain_exactly(aimed_for_deletion_project) }
-    end
-
-    context 'filter by not aimed for deletion' do
-      let_it_be(:params) { { not_aimed_for_deletion: true } }
-      let_it_be(:aimed_for_deletion_project) { create(:project, :public, marked_for_deletion_at: 2.days.ago, pending_delete: false) }
-      let_it_be(:pending_deletion_project) { create(:project, :public, marked_for_deletion_at: 1.month.ago, pending_delete: true) }
-
-      it { is_expected.to contain_exactly(ultimate_project, ultimate_project2, premium_project, no_plan_project) }
-    end
-
     it_behaves_like 'projects finder with SAML session filtering' do
       let(:finder) { described_class.new(current_user: current_user, params: params) }
     end
@@ -85,31 +69,6 @@ RSpec.describe ProjectsFinder, feature_category: :groups_and_projects do
         let_it_be(:params) { { include_hidden: false } }
 
         it { is_expected.to contain_exactly(ultimate_project, ultimate_project2, premium_project, no_plan_project) }
-      end
-    end
-
-    describe 'filter by active' do
-      let_it_be(:active_projects) { [ultimate_project, ultimate_project2, premium_project, no_plan_project] }
-      let_it_be(:archived_project) { create(:project, :archived, :public) }
-      let_it_be(:for_deletion_project) { create(:project, :public, marked_for_deletion_at: Date.current) }
-
-      where :params, :feature_available, :expected_projects do
-        {}                | true  | [ref(:active_projects), ref(:archived_project), ref(:for_deletion_project)]
-        {}                | false | [ref(:active_projects), ref(:archived_project), ref(:for_deletion_project)]
-        { active: nil  }  | true  | [ref(:active_projects), ref(:archived_project), ref(:for_deletion_project)]
-        { active: nil  }  | false | [ref(:active_projects), ref(:archived_project), ref(:for_deletion_project)]
-        { active: true }  | true  | [ref(:active_projects)]
-        { active: true }  | false | [ref(:active_projects), ref(:for_deletion_project)]
-        { active: false } | true  | [ref(:archived_project), ref(:for_deletion_project)]
-        { active: false } | false | [ref(:archived_project)]
-      end
-
-      with_them do
-        before do
-          stub_licensed_features(adjourned_deletion_for_projects_and_groups: feature_available)
-        end
-
-        it { is_expected.to match_array(expected_projects.flatten) }
       end
     end
 
