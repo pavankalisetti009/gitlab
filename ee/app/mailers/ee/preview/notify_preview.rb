@@ -39,14 +39,6 @@ module EE
           end
         end
 
-        def project_scheduled_for_deletion
-          cleanup do
-            project.update!(marked_for_deletion_at: Time.current)
-
-            ::Notify.project_scheduled_for_deletion(user.id, project.id).message
-          end
-        end
-
         def send_admin_notification
           ::Notify.send_admin_notification(user.id, 'Email subject from admin', 'Email body from admin').message
         end
