@@ -43,6 +43,7 @@ describe('BoardApp', () => {
         boardType: 'group',
         isIssueBoard: true,
         isGroupBoard: true,
+        hasCustomFieldsFeature: true,
         ...provide,
       },
     });

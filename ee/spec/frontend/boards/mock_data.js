@@ -33,6 +33,7 @@ import {
   TOKEN_TITLE_ITERATION,
   TOKEN_TITLE_WEIGHT,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
+import CustomFieldToken from 'ee/vue_shared/components/filtered_search_bar/tokens/custom_field_token.vue';
 import EpicToken from 'ee/vue_shared/components/filtered_search_bar/tokens/epic_token.vue';
 import IterationToken from 'ee/vue_shared/components/filtered_search_bar/tokens/iteration_token.vue';
 import ReleaseToken from '~/vue_shared/components/filtered_search_bar/tokens/release_token.vue';
@@ -804,7 +805,7 @@ export const mockGroupsResponse = (subGroups = [mockGroup1, mockGroup2]) => ({
   },
 });
 
-export const mockTokens = (fetchLabels, fetchIterations) => [
+export const mockTokens = ({ fetchLabels, fetchIterations, hasCustomFieldsFeature }) => [
   {
     icon: 'user',
     title: TOKEN_TITLE_ASSIGNEE,
@@ -925,6 +926,30 @@ export const mockTokens = (fetchLabels, fetchIterations) => [
     token: HealthToken,
     unique: false,
   },
+  ...(hasCustomFieldsFeature
+    ? [
+        {
+          type: 'custom-field[12345]',
+          title: 'A multi select thing',
+          icon: 'multiple-choice',
+          field: {
+            fieldType: 'MULTI_SELECT',
+            id: 'gid://gitlab/CustomField/12345',
+            name: 'A multi select thing',
+            workItemTypes: [
+              {
+                id: 'gid://gitlab/WorkItemTypes/1',
+                name: 'Issue',
+              },
+            ],
+          },
+          fullPath: 'gitlab-org',
+          token: CustomFieldToken,
+          operators: OPERATORS_IS,
+          unique: true,
+        },
+      ]
+    : []),
 ];
 
 export const mockEpicSwimlanesResponse = ({ hasNextPage = false, epics = mockEpics } = {}) => ({
