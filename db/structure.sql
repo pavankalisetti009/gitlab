@@ -12602,6 +12602,7 @@ CREATE TABLE clusters_managed_resources (
     status smallint DEFAULT 0 NOT NULL,
     template_name text,
     tracked_objects jsonb DEFAULT '[]'::jsonb NOT NULL,
+    deletion_strategy smallint DEFAULT 0 NOT NULL,
     CONSTRAINT check_4f81a98847 CHECK ((char_length(template_name) <= 1024))
 );
 
