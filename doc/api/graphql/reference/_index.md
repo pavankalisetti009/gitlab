@@ -10026,6 +10026,32 @@ Input type: `RestorePagesDeploymentInput`
 | <a id="mutationrestorepagesdeploymenterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationrestorepagesdeploymentpagesdeployment"></a>`pagesDeployment` | [`PagesDeployment!`](#pagesdeployment) | Restored Pages Deployment. |
 
+### `Mutation.runnerBulkPause`
+
+{{< details >}}
+**Introduced** in GitLab 17.11.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `RunnerBulkPauseInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationrunnerbulkpauseclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationrunnerbulkpauseids"></a>`ids` | [`[CiRunnerID!]!`](#cirunnerid) | IDs of the runners to pause or unpause. |
+| <a id="mutationrunnerbulkpausepaused"></a>`paused` | [`Boolean!`](#boolean) | Indicates the runner is not allowed to receive jobs. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationrunnerbulkpauseclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationrunnerbulkpauseerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationrunnerbulkpauseupdatedcount"></a>`updatedCount` | [`Int`](#int) | Number of records effectively updated. Only present if operation was performed synchronously. |
+| <a id="mutationrunnerbulkpauseupdatedrunners"></a>`updatedRunners` | [`[CiRunner!]`](#cirunner) | Runners after mutation. |
+
 ### `Mutation.runnerCacheClear`
 
 Input type: `RunnerCacheClearInput`
