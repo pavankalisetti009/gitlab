@@ -17,14 +17,8 @@ export const concatStreamedChunks = (arr) => {
  * @param {question} String - Prompt to send to the chat endpoint
  * @param {resourceId} String - Unique ID to bind the streaming
  * @param {variables} Object - Additional variables to pass to graphql chat mutation
- * @param {fromButton} Boolean - Whether this command was triggered from a button (creates new thread)
  */
-export const sendDuoChatCommand = ({
-  question,
-  resourceId,
-  variables = {},
-  fromButton = false,
-} = {}) => {
+export const sendDuoChatCommand = ({ question, resourceId, variables = {} } = {}) => {
   if (!question || !resourceId) {
     throw new Error('Both arguments `question` and `resourceId` are required');
   }
@@ -32,11 +26,12 @@ export const sendDuoChatCommand = ({
     duoChatGlobalState.isShown = true;
   }
 
-  duoChatGlobalState.commands.push({
-    question,
-    resourceId,
-    variables,
-    fromButton,
+  window.requestIdleCallback(() => {
+    duoChatGlobalState.commands.push({
+      question,
+      resourceId,
+      variables,
+    });
   });
 };
 

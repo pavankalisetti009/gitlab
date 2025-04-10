@@ -211,7 +211,6 @@ describe('AiGenie', () => {
             selectedText: getSelection().toString(),
           },
         },
-        fromButton: true,
       });
     });
   });
