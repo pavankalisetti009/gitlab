@@ -10,42 +10,93 @@ module Gitlab
           DRAFT_NOTES_COUNT_LIMIT = 50
           PRIORITY_THRESHOLD = 3
 
+          class << self
+            def review_queued_msg
+              s_("DuoCodeReview|I've received your Duo Code Review request, and will review your code shortly.")
+            end
+
+            def resource_not_found_msg
+              s_("DuoCodeReview|Can't access the merge request. When SAML single sign-on is enabled " \
+                "on a group or its parent, Duo Code Reviews can't be requested from the API. Request a " \
+                "review from the GitLab UI instead.")
+            end
+
+            def review_starting_msg
+              s_("DuoCodeReview|Hey :wave: I'm reviewing your merge request now. " \
+                "I will let you know when I'm finished.")
+            end
+
+            def nothing_to_review_msg
+              s_("DuoCodeReview|:wave: There's nothing for me to review.")
+            end
+
+            def no_comment_msg
+              s_("DuoCodeReview|I finished my review and found nothing to comment on. Nice work! :tada:")
+            end
+
+            def error_msg
+              s_("DuoCodeReview|I have encountered some problems while I was reviewing. Please try again later.")
+            end
+          end
+
           def execute
+            # Progress note may not exist for existing jobs so we create one if we can
+            @progress_note = find_progress_note || create_progress_note
+
+            unless progress_note.present?
+              Gitlab::ErrorTracking.track_exception(
+                StandardError.new("Unable to perform Duo Code Review: progress_note and resource not found")
+              )
+              return # Cannot proceed without both progress note and resource
+            end
+
+            # Resource can be empty when permission check fails in Llm::Internal::CompletionService.
+            # This would most likely happen when the parent group has SAML SSO enabled and the Duo Code Review is
+            #   triggered via an API call. It's a known limitation of SAML SSO currently.
+            return update_progress_note(self.class.resource_not_found_msg) unless resource.present?
+
             update_review_state('review_started')
 
             if merge_request.ai_reviewable_diff_files.blank?
-              create_no_reviewable_files_note
+              update_progress_note(self.class.nothing_to_review_msg)
             else
-              create_progress_note
+              update_progress_note(self.class.review_starting_msg)
 
-              # Initialize ivar that will be populated as AI review diff hunks
-              @draft_notes_by_priority = []
-              mr_diff_refs = merge_request.diff_refs
-
-              merge_request.ai_reviewable_diff_files.each do |diff_file|
-                # NOTE: perhaps we should fall back to hunk when diff_file is too large?
-                # I'm just ignoring this for now
-                review_prompt = generate_review_prompt(diff_file, {})
-
-                next unless review_prompt.present?
-
-                response = review_response_for(review_prompt)
-
-                build_draft_notes(response, diff_file, mr_diff_refs)
-              end
-
-              publish_draft_notes
+              perform_review
             end
+
           rescue StandardError => error
             Gitlab::ErrorTracking.track_exception(error)
 
-            update_progress_note_with_error
+            update_progress_note(self.class.error_msg) if progress_note.present?
 
           ensure
-            update_review_state('reviewed')
+            update_review_state('reviewed') if merge_request.present?
           end
 
           private
+
+          attr_reader :progress_note
+
+          def perform_review
+            # Initialize ivar that will be populated as AI review diff hunks
+            @draft_notes_by_priority = []
+            mr_diff_refs = merge_request.diff_refs
+
+            merge_request.ai_reviewable_diff_files.each do |diff_file|
+              # NOTE: perhaps we should fall back to hunk when diff_file is too large?
+              # I'm just ignoring this for now
+              review_prompt = generate_review_prompt(diff_file, {})
+
+              next unless review_prompt.present?
+
+              response = review_response_for(review_prompt)
+
+              build_draft_notes(response, diff_file, mr_diff_refs)
+            end
+
+            publish_draft_notes
+          end
 
           def ai_client
             @ai_client ||= ::Gitlab::Llm::Anthropic::Client.new(
@@ -60,7 +111,8 @@ module Gitlab
           end
 
           def merge_request
-            resource
+            # Fallback is needed to handle review state change as much as possible
+            resource || progress_note&.noteable
           end
 
           def generate_review_prompt(diff_file, hunk)
@@ -140,57 +192,37 @@ module Gitlab
               .any? { |pos| pos.to_h >= position }
           end
 
-          def create_no_reviewable_files_note
-            @progress_note = Notes::CreateService.new(
-              merge_request.project,
-              review_bot,
-              noteable: merge_request,
-              note: s_("DuoCodeReview|:wave: There's nothing for me to review.")
-            ).execute
-          end
-
           def create_progress_note
-            @progress_note = Notes::CreateService.new(
+            return unless merge_request.present?
+
+            ::Notes::CreateService.new(
               merge_request.project,
               review_bot,
               noteable: merge_request,
-              note: s_("DuoCodeReview|Hey :wave: I'm starting to review your merge request and " \
-                "I will let you know when I'm finished.")
+              note: self.class.review_queued_msg
             ).execute
           end
 
-          def update_progress_note_with_error
+          def update_progress_note(note)
             Notes::UpdateService.new(
-              merge_request.project,
+              progress_note.project,
               review_bot,
-              note: error_note
-            ).execute(@progress_note)
+              note: note
+            ).execute(progress_note)
           end
 
-          def update_progress_note_with_review_summary(draft_notes)
-            Notes::UpdateService.new(
-              merge_request.project,
-              review_bot,
-              note: summary_note(draft_notes)
-            ).execute(@progress_note)
+          def find_progress_note
+            Note.find_by_id(options[:progress_note_id])
           end
 
           def summary_note(draft_notes)
-            if draft_notes.blank?
-              s_("DuoCodeReview|I finished my review and found nothing to comment on. Nice work! :tada:")
+            response = summary_response_for(draft_notes)
+
+            if response.errors.any? || response.response_body.blank?
+              self.class.error_msg
             else
-              response = summary_response_for(draft_notes)
-
-              if response.errors.any? || response.response_body.blank?
-                error_note
-              else
-                response.response_body
-              end
+              response.response_body
             end
-          end
-
-          def error_note
-            s_("DuoCodeReview|I have encountered some problems while I was reviewing. Please try again later.")
           end
 
           # rubocop: disable CodeReuse/ActiveRecord -- NOT a ActiveRecord object
@@ -205,16 +237,16 @@ module Gitlab
           # rubocop: enable CodeReuse/ActiveRecord
 
           def publish_draft_notes
-            if @draft_notes_by_priority.empty?
-              update_progress_note_with_review_summary([])
-
-              return
-            end
-
             return unless Ability.allowed?(user, :create_note, merge_request)
 
             draft_notes = trimmed_draft_note_params.map do |params|
               DraftNote.new(params)
+            end
+
+            if draft_notes.empty?
+              update_progress_note(self.class.no_comment_msg)
+
+              return
             end
 
             DraftNote.bulk_insert!(draft_notes, batch_size: 20)
@@ -228,7 +260,7 @@ module Gitlab
                 review_bot
               ).execute(executing_user: user)
 
-            update_progress_note_with_review_summary(draft_notes)
+            update_progress_note(summary_note(draft_notes))
           end
 
           def update_review_state_service
