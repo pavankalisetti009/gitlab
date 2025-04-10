@@ -1,43 +1,40 @@
 <script>
 import {
   GlTableLite,
-  GlIcon,
   GlButton,
   GlSkeletonLoader,
   GlTooltipDirective,
   GlBreadcrumb,
-  GlLink,
   GlPopover,
 } from '@gitlab/ui';
 import EMPTY_SUBGROUP_SVG from '@gitlab/svgs/dist/illustrations/empty-state/empty-projects-md.svg?url';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { __, s__, n__, sprintf } from '~/locale';
-import ProjectAvatar from '~/vue_shared/components/project_avatar.vue';
+import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { getLocationHash, PATH_SEPARATOR } from '~/lib/utils/url_utility';
 import { SEVERITY_CLASS_NAME_MAP } from 'ee/vue_shared/security_reports/components/constants';
 import SubgroupsAndProjectsQuery from '../graphql/subgroups_and_projects.query.graphql';
+import { isSubGroup } from '../utils';
 import VulnerabilityIndicator from './vulnerability_indicator.vue';
 import ProjectVulnerabilityCounts from './project_vulnerability_counts.vue';
 import ProjectToolCoverageIndicator from './project_tool_coverage_indicator.vue';
 import GroupToolCoverageIndicator from './group_tool_coverage_indicator.vue';
 import EmptyState from './empty_state.vue';
+import NameCell from './name_cell.vue';
 
 export default {
   components: {
     GlTableLite,
-    GlIcon,
-    ProjectAvatar,
     GlButton,
     GlSkeletonLoader,
     GlBreadcrumb,
-    GlLink,
     VulnerabilityIndicator,
     GlPopover,
     ProjectVulnerabilityCounts,
     GroupToolCoverageIndicator,
     ProjectToolCoverageIndicator,
     EmptyState,
+    NameCell,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -114,6 +111,7 @@ export default {
     window.removeEventListener('hashchange', this.handleLocationHashChange);
   },
   methods: {
+    isSubGroup,
     transformData(data) {
       const groupData = data?.group;
       if (!groupData) return [];
@@ -123,66 +121,59 @@ export default {
         ...this.transformProjects(groupData?.projects?.nodes),
       ];
     },
-    transformGroups(nodes) {
-      return nodes.map(
-        ({
-          id,
-          name,
-          avatarUrl,
-          webUrl,
-          fullPath,
-          descendantGroupsCount,
-          projectsCount,
-          vulnerabilitySeveritiesCount,
-        }) => ({
-          id,
-          type: 'group',
-          name,
-          avatarUrl,
-          webUrl,
-          fullPath,
-          descendantGroupsCount,
-          projectsCount,
-          vulnerabilitySeveritiesCount,
-        }),
-      );
-    },
-    transformProjects(nodes) {
-      return nodes.map(
-        ({
-          id,
-          name,
-          avatarUrl,
-          webUrl,
-          fullPath,
-          vulnerabilitySeveritiesCount,
-          securityScanners,
-        }) => ({
-          id,
-          type: 'project',
-          name,
-          avatarUrl,
-          webUrl,
-          fullPath,
-          vulnerabilitySeveritiesCount,
-          securityScanners,
-        }),
-      );
-    },
-    isSubGroup(item) {
-      return item.type === 'group';
-    },
-    iconName(item) {
-      return this.isSubGroup(item) ? 'subgroup' : 'project';
-    },
-    projectAndSubgroupCountText(item) {
-      const projectsCount = n__('%d project', '%d projects', item.projectsCount);
-      const subGroupsCount = n__('%d subgroup', '%d subgroups', item.descendantGroupsCount);
 
-      return sprintf(__('%{projectsCount}, %{subGroupsCount}'), {
-        projectsCount,
-        subGroupsCount,
-      });
+    transformGroups(nodes) {
+      return (
+        nodes?.map(
+          ({
+            __typename,
+            id,
+            name,
+            avatarUrl,
+            webUrl,
+            fullPath,
+            descendantGroupsCount,
+            projectsCount,
+            vulnerabilitySeveritiesCount,
+          }) => ({
+            __typename,
+            id,
+            name,
+            avatarUrl,
+            webUrl,
+            fullPath,
+            descendantGroupsCount,
+            projectsCount,
+            vulnerabilitySeveritiesCount,
+          }),
+        ) || []
+      );
+    },
+
+    transformProjects(nodes) {
+      return (
+        nodes?.map(
+          ({
+            __typename,
+            id,
+            name,
+            avatarUrl,
+            webUrl,
+            fullPath,
+            vulnerabilitySeveritiesCount,
+            securityScanners,
+          }) => ({
+            __typename,
+            id,
+            name,
+            avatarUrl,
+            webUrl,
+            fullPath,
+            vulnerabilitySeveritiesCount,
+            securityScanners,
+          }),
+        ) || []
+      );
     },
     projectSecurityConfigurationPath(item) {
       return item?.webUrl ? `${item.webUrl}/-/security/configuration` : '#';
@@ -216,26 +207,8 @@ export default {
     </template>
     <template v-else-if="!hasChildren"><empty-state /></template>
     <gl-table-lite v-else :items="children" :fields="$options.fields" hover>
-      <template #cell(name)="{ item }">
-        <component
-          :is="isSubGroup(item) ? 'gl-link' : 'div'"
-          class="gl-flex gl-items-center !gl-text-default hover:gl-no-underline focus:gl-no-underline focus:gl-outline-none"
-          :href="isSubGroup(item) ? `#${item.fullPath}` : undefined"
-        >
-          <gl-icon :name="iconName(item)" variant="subtle" class="gl-mr-4" />
-          <project-avatar
-            class="gl-mr-4"
-            :project-id="item.id"
-            :project-name="item.name"
-            :project-avatar-url="item.avatarUrl"
-          />
-          <div class="gl-flex gl-flex-col">
-            <span class="gl-text-base gl-font-bold"> {{ item.name }} </span>
-            <span v-if="isSubGroup(item)" class="gl-font-normal gl-text-subtle">
-              {{ projectAndSubgroupCountText(item) }}
-            </span>
-          </div>
-        </component>
+      <template #cell(name)="{ item = {} }">
+        <name-cell :item="item" />
       </template>
 
       <template #cell(vulnerabilities)="{ item: { vulnerabilitySeveritiesCount, webUrl }, index }">
