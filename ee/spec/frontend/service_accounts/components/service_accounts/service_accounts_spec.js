@@ -182,6 +182,16 @@ describe('Service Accounts', () => {
         });
       });
     });
+
+    describe('empty', () => {
+      beforeEach(() => {
+        store.serviceAccounts = [];
+      });
+
+      it('shows table with no service accounts', () => {
+        expect(findTable().find('.b-table-empty-row').text()).toBe('No service accounts');
+      });
+    });
   });
 
   describe('header', () => {

@@ -188,6 +188,8 @@ export default {
         <gl-table
           :items="serviceAccounts"
           :fields="$options.fields"
+          :empty-text="s__('ServiceAccounts|No service accounts')"
+          show-empty
           :per-page="perPage"
           :busy="busy"
         >
