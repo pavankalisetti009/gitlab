@@ -31,7 +31,7 @@ RSpec.describe Oauth::GeoAuthController, :geo, feature_category: :geo_replicatio
       expect(response).to redirect_to(root_url)
     end
 
-    shared_examples "a valid redirect to to primary node's oauth endpoint" do
+    shared_examples "a valid redirect to primary node's oauth endpoint" do
       it "redirects to primary node's oauth endpoint" do
         oauth_endpoint = Gitlab::Geo::Oauth::Session.new.authorize_url(redirect_uri: oauth_geo_callback_url, state: login_state)
 
@@ -42,7 +42,7 @@ RSpec.describe Oauth::GeoAuthController, :geo, feature_category: :geo_replicatio
     end
 
     context 'without a tampered header' do
-      it_behaves_like "a valid redirect to to primary node's oauth endpoint"
+      it_behaves_like "a valid redirect to primary node's oauth endpoint"
     end
 
     context 'with a tampered HOST header' do
@@ -50,7 +50,7 @@ RSpec.describe Oauth::GeoAuthController, :geo, feature_category: :geo_replicatio
         request.headers['HOST'] = 'http://this.is.not.my.host'
       end
 
-      it_behaves_like "a valid redirect to to primary node's oauth endpoint"
+      it_behaves_like "a valid redirect to primary node's oauth endpoint"
     end
 
     context 'with a tampered X-Forwarded-Host header' do
@@ -58,7 +58,7 @@ RSpec.describe Oauth::GeoAuthController, :geo, feature_category: :geo_replicatio
         request.headers['X-Forwarded-Host'] = 'http://this.is.not.my.host'
       end
 
-      it_behaves_like "a valid redirect to to primary node's oauth endpoint"
+      it_behaves_like "a valid redirect to primary node's oauth endpoint"
     end
   end
 
