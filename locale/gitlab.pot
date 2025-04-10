@@ -3975,6 +3975,9 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|An error occurred while loading the AI feature settings. Please try again."
 msgstr ""
 
+msgid "AdminAIPoweredFeatures|Apply to all sub-features"
+msgstr ""
+
 msgid "AdminAIPoweredFeatures|Assists developers by providing real-time code completions and recommendations. %{linkStart}Learn more.%{linkEnd}"
 msgstr ""
 
@@ -4269,7 +4272,16 @@ msgstr ""
 msgid "AdminSelfHostedModels|An error occurred while loading the self-hosted model. Please try again."
 msgstr ""
 
+msgid "AdminSelfHostedModels|An error occurred while updating the %{mainFeature} sub-feature settings. Please try again."
+msgstr ""
+
 msgid "AdminSelfHostedModels|An error occurred while updating the self-hosted model, please try again."
+msgstr ""
+
+msgid "AdminSelfHostedModels|Apply to all %{mainFeature} sub-features"
+msgstr ""
+
+msgid "AdminSelfHostedModels|Assign a setting to the %{subFeatureTitle} sub-feature before applying to all"
 msgstr ""
 
 msgid "AdminSelfHostedModels|Create self-hosted model"

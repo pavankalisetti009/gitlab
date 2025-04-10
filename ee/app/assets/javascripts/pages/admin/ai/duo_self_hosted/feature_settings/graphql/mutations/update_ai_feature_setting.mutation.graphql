@@ -1,5 +1,25 @@
 mutation updateAiFeatureSetting($input: AiFeatureSettingUpdateInput!) {
   aiFeatureSettingUpdate(input: $input) {
+    aiFeatureSettings {
+      feature
+      title
+      mainFeature
+      provider
+      releaseState
+      selfHostedModel {
+        id
+        releaseState
+      }
+      validModels {
+        nodes {
+          id
+          name
+          model
+          modelDisplayName
+          releaseState
+        }
+      }
+    }
     errors
   }
 }

@@ -65,13 +65,13 @@ export const mockDuoChatFeatureSettings = [
     releaseState: 'GA',
     provider: 'self_hosted',
     selfHostedModel: {
-      id: 2,
-      releaseState: 'BETA',
+      id: 1,
+      releaseState: 'GA',
     },
     validModels: { nodes: mockSelfHostedModels },
   },
   {
-    feature: 'duo_chat',
+    feature: 'duo_chat_explain_code',
     title: 'Explain Code',
     mainFeature: 'GitLab Duo Chat',
     releaseState: 'BETA',

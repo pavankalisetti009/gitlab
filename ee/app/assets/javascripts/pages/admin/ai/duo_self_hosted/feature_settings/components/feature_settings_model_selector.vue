@@ -6,12 +6,7 @@ import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setti
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from '../../self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
 import ModelSelectDropdown from '../../shared/model_select_dropdown.vue';
-
-const PROVIDERS = {
-  DISABLED: 'disabled',
-  VENDORED: 'vendored',
-  SELF_HOSTED: 'self_hosted',
-};
+import { PROVIDERS } from '../constants';
 
 export default {
   name: 'FeatureSettingsModelSelector',
@@ -21,6 +16,10 @@ export default {
   props: {
     aiFeatureSetting: {
       type: Object,
+      required: true,
+    },
+    batchUpdateIsSaving: {
+      type: Boolean,
       required: true,
     },
   },
@@ -156,7 +155,7 @@ export default {
     :selected-option="selectedOptionItem"
     :items="listItems"
     :dropdown-toggle-text="dropdownToggleText"
-    :is-loading="isSaving"
+    :is-loading="isSaving || batchUpdateIsSaving"
     is-feature-setting-dropdown
     @select="onSelect"
   />

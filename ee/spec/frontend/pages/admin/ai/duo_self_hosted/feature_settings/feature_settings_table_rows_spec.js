@@ -2,6 +2,7 @@ import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import FeatureSettingsTableRows from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/components/feature_settings_table_rows.vue';
 import FeatureSettingsModelSelector from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/components/feature_settings_model_selector.vue';
+import FeatureSettingsBatchAssignmentButton from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/components/feature_settings_batch_assignment_button.vue';
 import { DUO_MAIN_FEATURES } from 'ee/pages/admin/ai/duo_self_hosted/constants';
 import { mockAiFeatureSettings } from './mock_data';
 
@@ -27,6 +28,8 @@ describe('FeatureSettingsTableRows', () => {
   const findRowFeatureNameByIdx = (idx) => findTableRows().at(idx).findAll('td').at(0);
   const findModelSelectorByIdx = (idx) =>
     findTableRows().at(idx).findComponent(FeatureSettingsModelSelector);
+  const findBatchAssignmentButtonByIdx = (idx) =>
+    findTableRows().at(idx).findComponent(FeatureSettingsBatchAssignmentButton);
   const findFeatureSettingsTableRows = () => wrapper.findComponent(FeatureSettingsTableRows);
   const findLoaders = () => wrapper.findAllComponents(GlSkeletonLoader);
   const findBetaBadges = () => wrapper.findAllByTestId('feature-beta-badge');
@@ -97,6 +100,19 @@ describe('FeatureSettingsTableRows', () => {
       expect(findModelSelectorByIdx(1).props('aiFeatureSetting')).toEqual(
         mockCodeSuggestionsFeatureSettings[1],
       );
+    });
+
+    it('renders the batch assignment button and passes the correct props', () => {
+      createComponent();
+
+      expect(findBatchAssignmentButtonByIdx(0).props()).toMatchObject({
+        currentFeatureSetting: mockCodeSuggestionsFeatureSettings[0],
+        aiFeatureSettings: mockCodeSuggestionsFeatureSettings,
+      });
+      expect(findBatchAssignmentButtonByIdx(1).props()).toMatchObject({
+        currentFeatureSetting: mockCodeSuggestionsFeatureSettings[1],
+        aiFeatureSettings: mockCodeSuggestionsFeatureSettings,
+      });
     });
   });
 });
