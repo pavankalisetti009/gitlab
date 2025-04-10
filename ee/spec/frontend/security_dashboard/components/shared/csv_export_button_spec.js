@@ -6,36 +6,16 @@ import CsvExportButton from 'ee/security_dashboard/components/shared/csv_export_
 import { TEST_HOST } from 'helpers/test_constants';
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
-import { formatDate } from '~/lib/utils/datetime_utility';
-import downloader from '~/lib/utils/downloader';
 import {
   HTTP_STATUS_ACCEPTED,
   HTTP_STATUS_NOT_FOUND,
   HTTP_STATUS_OK,
 } from '~/lib/utils/http_status';
-import { DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT } from 'ee/security_dashboard/constants';
 
 jest.mock('~/alert');
 jest.mock('~/lib/utils/downloader');
 
-const mockReportDate = formatDate(new Date(), 'isoDateTime');
 const vulnerabilitiesExportEndpoint = `${TEST_HOST}/vulnerability_findings.csv`;
-
-const groupProps = {
-  entity: 'group',
-  dashboardType: DASHBOARD_TYPE_GROUP,
-  glFeatures: {
-    asynchronousVulnerabilityExportDeliveryForGroups: true,
-  },
-};
-
-const projectProps = {
-  entity: 'project',
-  dashboardType: DASHBOARD_TYPE_PROJECT,
-  glFeatures: {
-    asynchronousVulnerabilityExportDeliveryForProjects: true,
-  },
-};
 
 describe('CsvExportButton', () => {
   let wrapper;
@@ -43,12 +23,10 @@ describe('CsvExportButton', () => {
 
   const findButton = () => wrapper.findComponent(GlButton);
 
-  const createComponent = ({ glFeatures = {}, dashboardType = DASHBOARD_TYPE_PROJECT } = {}) => {
+  const createComponent = () => {
     wrapper = shallowMount(CsvExportButton, {
       provide: {
         vulnerabilitiesExportEndpoint,
-        glFeatures,
-        dashboardType,
       },
     });
   };
@@ -73,70 +51,17 @@ describe('CsvExportButton', () => {
     mock.restore();
   });
 
-  describe('synchronous export (feature flag disabled)', () => {
-    beforeEach(() => {
-      createComponent({ glFeatures: {} });
-    });
-
-    it('renders button with correct text', () => {
-      expect(findButton().text()).toBe('Export');
-    });
-
-    it('downloads CSV on successful export job completion', async () => {
-      const url = 'download/url';
-      mockSyncExportRequest(url);
-
-      findButton().vm.$emit('click');
-      await axios.waitForAll();
-
-      expect(downloader).toHaveBeenCalledWith({
-        fileName: `csv-export-${mockReportDate}.csv`,
-        url,
-      });
-    });
-
-    it('shows error alert on export failure', async () => {
-      mock.onPost(vulnerabilitiesExportEndpoint).reply(HTTP_STATUS_NOT_FOUND);
-
-      findButton().vm.$emit('click');
-      await axios.waitForAll();
-
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'There was an error while generating the report.',
-        variant: 'danger',
-        dismissible: true,
-      });
-    });
-
-    it('shows error alert on failed export status', async () => {
-      mockSyncExportRequest('', 'failed');
-
-      findButton().vm.$emit('click');
-      await axios.waitForAll();
-
-      expect(downloader).not.toHaveBeenCalled();
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'There was an error while generating the report.',
-        variant: 'danger',
-        dismissible: true,
-      });
-    });
-  });
-
-  describe('asynchronous export (feature flag enabled)', () => {
+  describe('asynchronous export', () => {
     describe.each`
-      props
-      ${groupProps}
-      ${projectProps}
-    `('CsvExportButton for $props.entity dashboard', ({ props }) => {
+      entity
+      ${'group'}
+      ${'project'}
+    `('CsvExportButton for $entity dashboard', ({ entity }) => {
       beforeEach(() => {
-        createComponent({
-          glFeatures: props.glFeatures,
-          dashboardType: props.dashboardType,
-        });
+        createComponent();
       });
 
-      it(`sends async export request and shows success alert for ${props.entity}`, async () => {
+      it(`sends async export request and shows success alert for ${entity}`, async () => {
         mockAsyncExportRequest();
 
         findButton().vm.$emit('click');
@@ -150,7 +75,7 @@ describe('CsvExportButton', () => {
         });
       });
 
-      it(`shows error alert when async export fails for ${props.entity}`, async () => {
+      it(`shows error alert when async export fails for ${entity}`, async () => {
         mockAsyncExportRequest(HTTP_STATUS_NOT_FOUND);
 
         findButton().vm.$emit('click');
@@ -167,7 +92,7 @@ describe('CsvExportButton', () => {
 
   describe('button loading state', () => {
     beforeEach(() => {
-      createComponent({ glFeatures: {} });
+      createComponent();
     });
 
     it('toggles loading and icon correctly', async () => {
@@ -192,19 +117,13 @@ describe('CsvExportButton', () => {
   });
 
   describe('tooltip', () => {
-    it('shows "Export as CSV" when async export is disabled', () => {
-      createComponent({ glFeatures: {} });
-
-      expect(findButton().attributes('title')).toBe('Export as CSV');
-    });
-
     describe.each`
-      props
-      ${groupProps}
-      ${projectProps}
-    `('when async export is enabled for $props.entity', ({ props }) => {
-      it(`shows "Send as CSV to email" for ${props.entity}`, () => {
-        createComponent({ glFeatures: props.glFeatures, dashboardType: props.dashboardType });
+      entity
+      ${'group'}
+      ${'project'}
+    `('when async export is enabled for $entity', ({ entity }) => {
+      it(`shows "Send as CSV to email" for ${entity}`, () => {
+        createComponent();
 
         expect(findButton().attributes('title')).toBe('Send as CSV to email');
       });
@@ -222,8 +141,6 @@ describe('CsvExportButton', () => {
       wrapper = shallowMount(CsvExportButton, {
         provide: {
           vulnerabilitiesExportEndpoint: null,
-          glFeatures: {},
-          dashboardType: DASHBOARD_TYPE_PROJECT,
         },
       });
 

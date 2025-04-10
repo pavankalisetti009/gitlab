@@ -103,6 +103,11 @@ module QA
               end
               raise QA::Page::Base::ElementNotFound, "Vulnerability page not loaded" unless vuln_report_page_exists?
             end
+
+            def has_sent_via_email_alert?
+              wait_for_requests
+              page.has_content?("The report is being generated and will be sent to your email.")
+            end
           end
         end
       end
