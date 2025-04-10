@@ -20,7 +20,6 @@ class Groups::GroupMembersController < Groups::ApplicationController
     push_frontend_feature_flag(:importer_user_mapping, current_user)
     push_frontend_feature_flag(:importer_user_mapping_reassignment_csv, current_user)
     push_frontend_feature_flag(:importer_user_mapping_allow_bypass_of_confirmation, @group)
-    push_frontend_feature_flag(:service_accounts_crud, @group)
   end
 
   skip_before_action :check_two_factor_requirement, only: :leave

@@ -51,20 +51,10 @@ RSpec.describe Admin::ApplicationSettings::ServiceAccountsController, :enable_ad
             stub_licensed_features(service_accounts: true)
           end
 
-          context 'when `service_accounts_crud` feature flag is enabled' do
-            it 'returns a 200 status code' do
-              get_method
+          it 'returns a 200 status code' do
+            get_method
 
-              expect(response).to have_gitlab_http_status(:ok)
-            end
-          end
-
-          context 'when `service_accounts_crud` feature flag is disabled' do
-            before do
-              stub_feature_flags(service_accounts_crud: false)
-            end
-
-            it_behaves_like 'not found'
+            expect(response).to have_gitlab_http_status(:ok)
           end
 
           context 'when on SaaS' do

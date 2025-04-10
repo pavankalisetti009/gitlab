@@ -7,15 +7,10 @@ module Groups
 
       feature_category :user_management
 
-      before_action :ensure_service_accounts_available!
       before_action :ensure_root_group!
       before_action :authorize_admin_service_accounts!
 
       private
-
-      def ensure_service_accounts_available!
-        render_404 unless Feature.enabled?(:service_accounts_crud, group.root_ancestor)
-      end
 
       def authorize_admin_service_accounts!
         render_404 unless can?(current_user, :create_service_account, group) &&

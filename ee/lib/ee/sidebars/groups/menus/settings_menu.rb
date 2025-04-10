@@ -71,8 +71,7 @@ module EE
           end
 
           def service_accounts_available?
-            ::Feature.enabled?(:service_accounts_crud, context.group.root_ancestor) &&
-              context.group.root? &&
+            context.group.root? &&
               can?(context.current_user, :create_service_account, context.group) &&
               can?(context.current_user, :delete_service_account, context.group)
           end

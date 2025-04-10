@@ -62,14 +62,6 @@ RSpec.describe Sidebars::Admin::Menus::AdminSettingsMenu, feature_category: :nav
 
         it { is_expected.to be_present }
 
-        context 'when `service_accounts_crud` feature flag disabled' do
-          before do
-            stub_feature_flags(service_accounts_crud: false)
-          end
-
-          it { is_expected.not_to be_present }
-        end
-
         context 'when in SaaS mode', :saas do
           it { is_expected.not_to be_present }
         end
