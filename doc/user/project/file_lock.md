@@ -19,7 +19,7 @@ design files, videos, and other non-text content.
 GitLab supports two different types of file locking:
 
 - [Exclusive file locks](../../topics/git/file_management.md#file-locks): Applied through the
-  command line with Git LFS and [`.gitattributes`](../../user/project/repository/files/git_attributes.md).
+  command line with Git LFS and [`.gitattributes`](repository/files/git_attributes.md).
   These locks prevent modifications to locked files on any branch.
 - [Default branch file and directory locks](#default-branch-file-and-directory-locks): Applied
   through the GitLab UI. These locks prevent modifications to files and directories on the
@@ -28,7 +28,7 @@ GitLab supports two different types of file locking:
 ## Permissions
 
 You must have at least the Developer role for the project to create, view, or manage file locks.
-For more information, see [Roles and permissions](../../user/permissions.md).
+For more information, see [Roles and permissions](../permissions.md).
 
 ## Default branch file and directory locks
 

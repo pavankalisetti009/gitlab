@@ -225,7 +225,7 @@ The following GitLab settings correspond to the Keycloak fields.
    1. Retrieve the certificate fingerprint.
       1. Note the value of the `<ds:X509Certificate>` tag.
       1. Convert the value to [PEM format](https://www.ssl.com/guide/pem-der-crt-and-cer-x-509-encodings-and-conversions/#ftoc-heading-3).
-      1. [Calculate the fingerprint](../../group/saml_sso/troubleshooting.md#calculate-the-fingerprint).
+      1. [Calculate the fingerprint](troubleshooting.md#calculate-the-fingerprint).
 
 ### Configure assertions
 
