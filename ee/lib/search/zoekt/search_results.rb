@@ -313,9 +313,18 @@ module Search
         return true if query.blank? || limit_project_ids.empty?
 
         if node_id.nil? && search_level == :project
-          logger.info(build_structured_payload(message: 'zoekt repository is not found for this search',
-            project_id: limit_project_ids.first, query: query
-          ))
+          project = Project.find_by_id(limit_project_ids.first)
+
+          # Trigger async indexing if repository exists and isn't empty
+          unless project&.empty_repo?
+            logger.info(build_structured_payload(
+              message: 'zoekt repository is not found for this search',
+              project_id: project&.id,
+              query: query
+            ))
+            Search::Zoekt.index_async(project&.id)
+          end
+
           return true
         end
 

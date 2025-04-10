@@ -463,13 +463,30 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
         allow(Search::Zoekt::Logger).to receive(:build).and_return(logger)
       end
 
-      it 'logs and returns empty results' do
-        expect(logger).to receive(:info).with({
-          'class' => described_class.to_s, 'query' => query, 'project_id' => limit_projects[0].id,
-          'message' => 'zoekt repository is not found for this search'
-        })
-        expect(objects).to eq []
-        expect(results).to have_attributes(file_count: 0)
+      context 'when project is empty_repo' do
+        let_it_be(:project_1) { create(:project, :public, :empty_repo) }
+
+        it 'returns empty results, does not log and does not index' do
+          expect(logger).not_to receive(:info).with({
+            'class' => described_class.to_s, 'query' => query, 'project_id' => limit_projects[0].id,
+            'message' => 'zoekt repository is not found for this search'
+          })
+          expect(Search::Zoekt).not_to receive(:index_async).with(limit_projects.first.id)
+          expect(objects).to eq []
+          expect(results).to have_attributes(file_count: 0)
+        end
+      end
+
+      context 'when project is non empty_repo' do
+        it 'returns empty results, logs and index the project' do
+          expect(logger).to receive(:info).with({
+            'class' => described_class.to_s, 'query' => query, 'project_id' => limit_projects[0].id,
+            'message' => 'zoekt repository is not found for this search'
+          })
+          expect(Search::Zoekt).to receive(:index_async).with(limit_projects.first.id)
+          expect(objects).to eq []
+          expect(results).to have_attributes(file_count: 0)
+        end
       end
     end
   end
