@@ -63,7 +63,6 @@ describeSkipVue3(skipReason, () => {
     hasEpicsFeature = true,
     showNewIssueLink = true,
     canBulkEditEpics = true,
-    bulkUpdateMutationEnabled = true,
     isGroup = true,
     workItemType = WORK_ITEM_TYPE_ENUM_EPIC,
     props = {},
@@ -75,9 +74,6 @@ describeSkipVue3(skipReason, () => {
         canBulkEditEpics,
         isGroup,
         workItemType,
-        glFeatures: {
-          bulkUpdateWorkItemsMutation: bulkUpdateMutationEnabled,
-        },
         ...baseProvide,
       },
       stubs: {
@@ -99,7 +95,6 @@ describeSkipVue3(skipReason, () => {
     hasEpicsFeature = true,
     showNewIssueLink = true,
     canBulkEditEpics = true,
-    bulkUpdateMutationEnabled = true,
     workItemType = WORK_ITEM_TYPE_ENUM_EPIC,
   } = {}) => {
     wrapper = mountExtended(EEWorkItemsListApp, {
@@ -114,7 +109,6 @@ describeSkipVue3(skipReason, () => {
         canBulkEditEpics,
         workItemType,
         glFeatures: {
-          bulkUpdateWorkItemsMutation: bulkUpdateMutationEnabled,
           workItemClientsideBoards: false,
         },
         ...baseProvide,
@@ -247,17 +241,6 @@ describeSkipVue3(skipReason, () => {
   describe('when bulk editing', () => {
     it('does not show bulk edit toggle by default', () => {
       mountComponent({ hasEpicsFeature: false, canBulkEditEpics: false });
-
-      expect(findBulkEditStartButton().exists()).toBe(false);
-      expect(findWorkItemsListApp().props('showBulkEditSidebar')).toBe(false);
-    });
-
-    it('does not show bulk edit toggle by if the gql mutation is disabled', () => {
-      mountComponent({
-        hasEpicsFeature: true,
-        canBulkEditEpics: true,
-        bulkUpdateMutationEnabled: false,
-      });
 
       expect(findBulkEditStartButton().exists()).toBe(false);
       expect(findWorkItemsListApp().props('showBulkEditSidebar')).toBe(false);
