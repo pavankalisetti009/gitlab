@@ -65,11 +65,11 @@ describe('DuoSelfHostedApp', () => {
     it('navigates to self-hosted models when tab is clicked', async () => {
       createComponent({ props: { tabId: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS } });
 
-      findTabs().vm.$emit('input', 0);
+      findTabs().vm.$emit('input', 1);
 
       await nextTick();
 
-      expect($router.push).toHaveBeenCalledWith({ name: 'index' });
+      expect($router.push).toHaveBeenCalledWith({ name: 'models' });
     });
   });
 
@@ -83,7 +83,7 @@ describe('DuoSelfHostedApp', () => {
     it('navigates to AI feature settings when tab is clicked', async () => {
       createComponent({ props: { tabId: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS } });
 
-      findTabs().vm.$emit('input', 1);
+      findTabs().vm.$emit('input', 0);
 
       await nextTick();
 

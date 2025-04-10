@@ -38,6 +38,12 @@ export default function createRouter(base) {
         props: () => ({ tabId: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS }),
       },
       {
+        name: 'models',
+        path: '/models',
+        component: DuoSelfHostedApp,
+        props: () => ({ tabId: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS }),
+      },
+      {
         path: '*',
         redirect: '/',
       },
