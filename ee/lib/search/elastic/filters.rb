@@ -921,7 +921,7 @@ module Search
         end
 
         def traversal_ids_ancestry_filter(query_hash, namespace_ancestry, options)
-          return {} unless options[:current_user] || namespace_ancestry.blank?
+          return query_hash if namespace_ancestry.empty?
 
           context.name(:namespace) do
             add_filter(query_hash, :query, :bool, :filter) do
