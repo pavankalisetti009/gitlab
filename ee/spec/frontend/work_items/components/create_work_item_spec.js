@@ -11,6 +11,7 @@ import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
 import WorkItemIteration from 'ee/work_items/components/work_item_iteration.vue';
 import WorkItemWeight from 'ee/work_items/components/work_item_weight.vue';
 import WorkItemDates from 'ee/work_items/components/work_item_dates.vue';
+import WorkItemParent from '~/work_items/components/work_item_parent.vue';
 import WorkItemCustomFields from 'ee/work_items/components/work_item_custom_fields.vue';
 import { WORK_ITEM_TYPE_ENUM_EPIC, WORK_ITEM_TYPE_ENUM_ISSUE } from '~/work_items/constants';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
@@ -55,6 +56,7 @@ describe('EE Create work item component', () => {
   const findColorWidget = () => wrapper.findComponent(WorkItemColor);
   const findDatesWidget = () => wrapper.findComponent(WorkItemDates);
   const findCustomFieldsWidget = () => wrapper.findComponent(WorkItemCustomFields);
+  const findParentWidget = () => wrapper.findComponent(WorkItemParent);
 
   const updateWorkItemTitle = async (title = 'Test title') => {
     findTitleInput().vm.$emit('updateDraft', title);
@@ -134,6 +136,10 @@ describe('EE Create work item component', () => {
       expect(findDatesWidget().exists()).toBe(true);
     });
 
+    it('renders the work item parent widget', () => {
+      expect(findParentWidget().exists()).toBe(true);
+    });
+
     it('renders the work item custom field widget if flag is enabled', async () => {
       createComponent({ workItemTypeName: WORK_ITEM_TYPE_ENUM_EPIC, customFieldsFeature: true });
       await waitForPromises();
@@ -165,6 +171,10 @@ describe('EE Create work item component', () => {
 
     it('renders the work item weight widget', () => {
       expect(findWeightWidget().exists()).toBe(true);
+    });
+
+    it('renders the work item parent widget', () => {
+      expect(findParentWidget().exists()).toBe(true);
     });
 
     it('renders the work item custom field widget if flag is enabled', async () => {
