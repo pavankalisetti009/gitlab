@@ -54,7 +54,7 @@ For all other instance configurations, submit a support ticket according to the
 
 ### Apply configuration changes in Switchboard
 
-You can apply configuration changes made in Switchboard immediately or defer them until your next scheduled weekly [maintenance window](../../dedicated/maintenance.md#maintenance-windows).
+You can apply configuration changes made in Switchboard immediately or defer them until your next scheduled weekly [maintenance window](../maintenance.md#maintenance-windows).
 
 When you apply changes immediately:
 
