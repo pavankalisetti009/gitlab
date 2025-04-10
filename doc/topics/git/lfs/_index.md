@@ -105,6 +105,11 @@ You can add large files to Git LFS. This helps you manage files in Git repositor
 When you track files with Git LFS, they are replaced with text pointers in Git,
 and stored on a remote server. For more information, see [Git LFS](../../git/file_management.md#git-lfs).
 
+When you [configure Git LFS for a project](#configure-git-lfs-for-a-project), ensure you have a
+`.gitattributes` file in the root directory of the project. Without a root-level `.gitattributes` file,
+the UI displays a warning even if you correctly configured LFS in your project subdirectories.
+For more information, see [LFS configuration warning message](troubleshooting.md#warning-possible-lfs-configuration-issue).
+
 ## Clone a repository that uses Git LFS
 
 When you clone a repository that uses Git LFS, Git detects the LFS-tracked files
