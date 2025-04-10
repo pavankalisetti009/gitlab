@@ -265,7 +265,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
       end
     end
 
-    context 'when one index reserved_storage_bytes is not sufficient at the time of indices creation' do
+    context 'when one index reserved_storage_bytes is not sufficient at the time of indices creation', :freeze_time do
       let(:plan) do
         {
           namespaces: [
@@ -355,7 +355,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         }
       end
 
-      it 'skips the namespace for which index can not be created and continue with other namespaces' do
+      it 'skips the namespace, adds metadata for which index can not be created and continue with other namespaces' do
         result = provisioning_result
         expect(result[:errors]).to include(
           a_hash_including(
@@ -364,6 +364,8 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
             node_id: nodes.first.id
           )
         )
+        expect(enabled_namespace.reload.metadata['last_rollout_failed_at']).to eq(Time.current.iso8601)
+        expect(enabled_namespace.metadata['rollout_required_storage_bytes']).to eq(16.gigabytes)
         expect(result[:success]).to include(a_hash_including(namespace_id: namespace2.id))
         expect(enabled_namespace.replicas).to be_empty
         expect(enabled_namespace2.replicas).not_to be_empty

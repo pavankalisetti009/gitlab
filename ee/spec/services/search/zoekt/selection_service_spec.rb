@@ -19,6 +19,10 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
     context 'with enabled namespaces selection' do
       let_it_be(:eligible_namespace) { create(:zoekt_enabled_namespace, namespace: ns_1) }
       let_it_be(:ineligible_namespace) { create(:zoekt_enabled_namespace, namespace: ns_2) }
+      let_it_be(:ns_3) { create(:group) }
+      let_it_be(:ineligible_namespace2) do
+        create(:zoekt_enabled_namespace, namespace: ns_3, metadata: { last_rollout_failed_at: Time.current.iso8601 })
+      end
 
       before do
         # For the eligible namespace, the project count will be low (default).
@@ -41,9 +45,9 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
           .and_return(ineligible_namespace.namespace.root_ancestor)
       end
 
-      it 'includes only namespaces with a project count within the limit' do
+      it 'includes only namespaces which are never tried before, and with a project count within the limit' do
         expect(resource_pool.enabled_namespaces).to include(eligible_namespace)
-        expect(resource_pool.enabled_namespaces).not_to include(ineligible_namespace)
+        expect(resource_pool.enabled_namespaces).not_to include(ineligible_namespace, ineligible_namespace2)
       end
     end
 
