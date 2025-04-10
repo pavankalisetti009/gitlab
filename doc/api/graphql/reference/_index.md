@@ -42216,8 +42216,8 @@ Runner cloud provider.
 
 | Value | Description |
 | ----- | ----------- |
-| <a id="cirunnercreationstatefinished"></a>`FINISHED` | Applies to a runner that has been registered and has polled for CI jobs at least once. |
-| <a id="cirunnercreationstatestarted"></a>`STARTED` | Applies to a runner that has been created, but not is not yet registered and running. |
+| <a id="cirunnercreationstatefinished"></a>`FINISHED` | Applies to a runner that has been registered and has polled for CI/CD jobs at least once. |
+| <a id="cirunnercreationstatestarted"></a>`STARTED` | Applies to a runner that has been created, but is not yet registered and running. |
 
 ### `CiRunnerJobExecutionStatus`
 
