@@ -5,6 +5,10 @@ require 'spec_helper'
 RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_category: :compliance_management do
   let(:worker) { described_class.new }
   let(:evaluator) { instance_double(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator) }
+  let(:external_control_service) do
+    instance_double(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+  end
+
   let(:status_service) do
     instance_double(ComplianceManagement::ComplianceFramework::ComplianceRequirementsControls::UpdateStatusService)
   end
@@ -65,21 +69,25 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
         .to receive(:new)
               .with(control, project, approval_settings_project1)
               .and_return(evaluator)
+      allow(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+        .to receive(:new)
+              .with(project, external_control)
+              .and_return(external_control_service)
       allow(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
         .to receive(:new)
               .with(control, project2, approval_settings_project2)
               .and_return(evaluator)
+      allow(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+        .to receive(:new)
+              .with(project2, external_control)
+              .and_return(external_control_service)
       allow(evaluator).to receive(:evaluate).and_return(true)
+      allow(external_control_service).to receive(:execute).and_return(ServiceResponse.success)
 
       allow(ComplianceManagement::ComplianceFramework::ComplianceRequirementsControls::UpdateStatusService)
         .to receive(:new)
               .and_return(status_service)
       allow(status_service).to receive(:execute)
-
-      allow(ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl)
-        .to receive(:internal_for_framework)
-              .with(framework.id)
-              .and_return([control])
     end
 
     it_behaves_like 'an idempotent worker' do
@@ -111,10 +119,17 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
         expect(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
           .to receive(:new).with(control, project, approval_settings_project1).once
 
+        expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .to receive(:new).with(project, external_control).once
+
         expect(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
           .not_to receive(:new).with(control, project2, approval_settings_project2)
 
+        expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .not_to receive(:new).with(project2, external_control)
+
         expect(evaluator).to receive(:evaluate).once
+        expect(external_control_service).to receive(:execute).once
 
         perform
       end
@@ -127,12 +142,19 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
                 .with(control, project, approval_settings_project1)
                 .once
 
+        expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .to receive(:new).with(project, external_control).once
+
         expect(ComplianceManagement::ComplianceRequirements::ExpressionEvaluator)
           .to receive(:new)
                 .with(control, project2, approval_settings_project2)
                 .once
 
+        expect(ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService)
+          .to receive(:new).with(project2, external_control).once
+
         expect(evaluator).to receive(:evaluate).twice
+        expect(external_control_service).to receive(:execute).twice
 
         perform
       end

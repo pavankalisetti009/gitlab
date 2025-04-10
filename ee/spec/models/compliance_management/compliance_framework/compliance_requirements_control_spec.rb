@@ -31,9 +31,10 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
   end
 
   describe 'scopes' do
-    describe '.internal_for_framework' do
+    describe '.for_framework' do
       let_it_be(:framework_1) { create(:compliance_framework) }
       let_it_be(:framework_2) { create(:compliance_framework) }
+      let_it_be(:framework_3) { create(:compliance_framework) }
 
       let_it_be(:requirement_1) { create(:compliance_requirement, framework: framework_1) }
       let_it_be(:requirement_2) { create(:compliance_requirement, framework: framework_2) }
@@ -45,22 +46,17 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
       let_it_be(:internal_control_2) { create(:compliance_requirements_control, compliance_requirement: requirement_2) }
 
-      it 'returns only internal controls for the specified framework' do
-        expect(described_class.internal_for_framework(framework_1.id)).to contain_exactly(internal_control_1)
-        expect(described_class.internal_for_framework(framework_2.id)).to contain_exactly(internal_control_2)
-      end
-
-      it 'does not return external controls' do
-        expect(described_class.internal_for_framework(framework_1.id)).not_to include(external_control_1)
+      it 'returns all controls for the specified framework' do
+        expect(described_class.for_framework(framework_1.id)).to contain_exactly(internal_control_1, external_control_1)
+        expect(described_class.for_framework(framework_2.id)).to contain_exactly(internal_control_2)
       end
 
       it 'does not return controls from other frameworks' do
-        expect(described_class.internal_for_framework(framework_1.id)).not_to include(internal_control_2)
-        expect(described_class.internal_for_framework(framework_2.id)).not_to include(internal_control_1)
+        expect(described_class.for_framework(framework_1.id)).not_to include(internal_control_2)
       end
 
       it 'returns an empty relation when the framework has no controls' do
-        expect(described_class.internal_for_framework(non_existing_record_id)).to be_empty
+        expect(described_class.for_framework(framework_3.id)).to be_empty
       end
     end
   end

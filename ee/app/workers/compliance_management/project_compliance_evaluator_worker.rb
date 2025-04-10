@@ -24,21 +24,29 @@ module ComplianceManagement
       framework = ::ComplianceManagement::Framework.find_by_id(framework_id)
       return unless framework
 
-      internal_controls = internal_controls_for(framework)
+      controls = controls_for(framework)
+
+      # Intersection with framework.project_ids makes sure that the framework is still associated with the projects
+      # to be processed
       projects = ::Project.id_in(project_ids & framework.project_ids)
       evaluation_results = []
 
       projects.each do |project|
         approval_settings = framework.approval_settings_from_security_policies(project)
 
-        internal_controls.each do |control|
-          status = ::ComplianceManagement::ComplianceRequirements::ExpressionEvaluator.new(control,
-            project, approval_settings).evaluate
-          evaluation_results << {
-            project: project,
-            control: control,
-            status_value: status ? 'pass' : 'fail'
-          }
+        controls.each do |control|
+          if control.external?
+            ::ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService
+              .new(project, control).execute
+          else
+            status = ::ComplianceManagement::ComplianceRequirements::ExpressionEvaluator.new(control,
+              project, approval_settings).evaluate
+            evaluation_results << {
+              project: project,
+              control: control,
+              status_value: status ? 'pass' : 'fail'
+            }
+          end
         rescue StandardError => e
           Gitlab::ErrorTracking.log_exception(
             e,
@@ -54,8 +62,8 @@ module ComplianceManagement
 
     private
 
-    def internal_controls_for(framework)
-      ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl.internal_for_framework(framework.id)
+    def controls_for(framework)
+      ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl.for_framework(framework.id)
     end
 
     def update_all_control_statuses(evaluation_results)
