@@ -11,9 +11,12 @@ describe('CodeSuggestionsUsageStatisticsCard', () => {
   const findCodeSuggestionsDescription = () => wrapper.findByTestId('code-suggestions-description');
   const findCodeSuggestionsInfo = () => wrapper.findByTestId('code-suggestions-info');
   const findUsageStatistics = () => wrapper.findComponent(UsageStatistics);
-  const createComponent = (propsData) => {
+  const createComponent = (props) => {
     wrapper = shallowMountExtended(CodeSuggestionsUsageStatisticsCard, {
-      propsData,
+      propsData: {
+        duoTier: DUO_PRO,
+        ...props,
+      },
       stubs: {
         GlSprintf,
         UsageStatistics: {
