@@ -24,10 +24,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeChecker, feat
         }
       end
 
-      it_behaves_like 'internal event tracking' do
-        let(:category) { described_class.name }
-        let(:event) { 'check_policy_scope_for_security_policy' }
-        let(:label) { 'compliance_framework' }
+      it "triggers an internal event" do
+        expect { policy_applicable }.to trigger_internal_events('check_policy_scope_for_security_policy').with(
+          project: project,
+          additional_properties: { label: 'compliance_framework' }
+        )
       end
 
       context 'when project does not have compliance framework set' do
@@ -98,10 +99,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeChecker, feat
 
           it { is_expected.to eq false }
 
-          it_behaves_like 'internal event tracking' do
-            let(:category) { described_class.name }
-            let(:event) { 'check_policy_scope_for_security_policy' }
-            let(:label) { 'project' }
+          it "triggers an internal event" do
+            expect { policy_applicable }.to trigger_internal_events('check_policy_scope_for_security_policy').with(
+              project: project,
+              additional_properties: { label: 'project' }
+            )
           end
         end
 
@@ -171,10 +173,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeChecker, feat
 
           it { is_expected.to eq false }
 
-          it_behaves_like 'internal event tracking' do
-            let(:category) { described_class.name }
-            let(:event) { 'check_policy_scope_for_security_policy' }
-            let(:label) { 'group' }
+          it "triggers an internal event" do
+            expect { policy_applicable }.to trigger_internal_events('check_policy_scope_for_security_policy').with(
+              project: project,
+              additional_properties: { label: 'group' }
+            )
           end
         end
 

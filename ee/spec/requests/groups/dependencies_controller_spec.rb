@@ -47,19 +47,20 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
             let(:request) { show_dependency_list }
           end
 
-          it_behaves_like 'internal event tracking' do
-            let(:event) { 'visit_dependency_list' }
-            let(:namespace) { group }
-            let(:category) { described_class.name }
-            subject(:service_action) { show_dependency_list }
+          it "triggers an internal event" do
+            expect { show_dependency_list }.to trigger_internal_events('visit_dependency_list').with(
+              user: user,
+              namespace: group
+            )
           end
 
-          it_behaves_like 'internal event tracking' do
-            let(:event) { 'called_dependency_api' }
-            let(:namespace) { group }
-            let(:category) { described_class.name }
-            let(:additional_properties) { { label: 'json' } }
-            subject(:service_action) { get group_dependencies_path(group_id: group.full_path, format: :json) }
+          it "triggers an internal event" do
+            expect { get group_dependencies_path(group_id: group.full_path, format: :json) }
+              .to trigger_internal_events('called_dependency_api').with(
+                user: user,
+                namespace: group,
+                additional_properties: { label: 'json' }
+              )
           end
 
           context 'when the group hierarchy depth is too high' do
