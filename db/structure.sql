@@ -19430,6 +19430,7 @@ CREATE TABLE packages_nuget_metadata (
     description text,
     normalized_version text,
     project_id bigint,
+    CONSTRAINT check_6b272cad10 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_9973c0cc33 CHECK ((char_length(normalized_version) <= 255)),
     CONSTRAINT check_d39a5fe9ee CHECK ((char_length(description) <= 4000)),
     CONSTRAINT check_e2fc129ebd CHECK ((char_length(authors) <= 255)),
