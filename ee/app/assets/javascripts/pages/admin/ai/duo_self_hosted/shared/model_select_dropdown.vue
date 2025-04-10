@@ -69,7 +69,12 @@ export default {
     @select="onSelect"
   >
     <template #toggle>
-      <gl-button :text="dropdownToggleText" :aria-label="dropdownToggleText" block>
+      <gl-button
+        :loading="isLoading"
+        :text="dropdownToggleText"
+        :aria-label="dropdownToggleText"
+        block
+      >
         <template #emoji>
           <div data-testid="dropdown-toggle-text" class="gl-flex gl-w-full gl-justify-between">
             <div class="gl-align-items gl-flex gl-overflow-hidden">

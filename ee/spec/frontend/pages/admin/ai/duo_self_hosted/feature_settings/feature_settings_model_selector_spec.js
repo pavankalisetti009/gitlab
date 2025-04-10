@@ -26,6 +26,7 @@ describe('FeatureSettingsModelSelector', () => {
   const updateFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
     data: {
       aiFeatureSettingUpdate: {
+        aiFeatureSettings: [mockAiFeatureSetting],
         errors: [],
       },
     },
@@ -62,6 +63,7 @@ describe('FeatureSettingsModelSelector', () => {
         apolloProvider: mockApollo,
         propsData: {
           aiFeatureSetting: mockAiFeatureSetting,
+          batchUpdateIsSaving: false,
           ...props,
         },
         mocks: {
@@ -106,6 +108,14 @@ describe('FeatureSettingsModelSelector', () => {
       createComponent();
 
       await findModelSelectDropdown().vm.$emit('select', 'disabled');
+
+      expect(findModelSelectDropdown().props('isLoading')).toBe(true);
+    });
+  });
+
+  describe('when a batch update is saving', () => {
+    it('updates the loading state', () => {
+      createComponent({ props: { batchUpdateIsSaving: true } });
 
       expect(findModelSelectDropdown().props('isLoading')).toBe(true);
     });
@@ -195,7 +205,7 @@ describe('FeatureSettingsModelSelector', () => {
     const updateFeatureSettingsErrorHandler = jest.fn().mockResolvedValue({
       data: {
         aiFeatureSettingUpdate: {
-          aiFeatureSetting: null,
+          aiFeatureSettings: null,
           errors: ['Codegemma is incompatible with the Duo Chat feature'],
         },
       },
