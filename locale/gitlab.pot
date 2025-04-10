@@ -48244,6 +48244,9 @@ msgstr ""
 msgid "ProjectsNew|Choose a group"
 msgstr ""
 
+msgid "ProjectsNew|Choose a group or namespace"
+msgstr ""
+
 msgid "ProjectsNew|Connect your external repository to GitLab CI/CD."
 msgstr ""
 
@@ -48380,6 +48383,12 @@ msgid "ProjectsNew|Please enter a valid token."
 msgstr ""
 
 msgid "ProjectsNew|Please enter a valid username."
+msgstr ""
+
+msgid "ProjectsNew|Please enter project name."
+msgstr ""
+
+msgid "ProjectsNew|Please enter project slug."
 msgstr ""
 
 msgid "ProjectsNew|Please upload a valid GitLab project export file."
