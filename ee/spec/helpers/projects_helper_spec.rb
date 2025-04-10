@@ -734,14 +734,36 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
 
     describe 'Secret Manager settings' do
-      it { is_expected.to include(canManageSecretManager: true) }
+      it { is_expected.to include(canManageSecretManager: false) }
 
-      context 'if returns false for canManageSecretManager when FF secrets_manager is disabled' do
+      context 'when ci_tanukey_ui feature flag is disabled' do
         before do
-          stub_feature_flags(secrets_manager: false)
+          stub_feature_flags(ci_tanukey_ui: false)
         end
 
         it { is_expected.to include(canManageSecretManager: false) }
+      end
+
+      context 'when ci_tanukey_ui feature flag is enabled' do
+        before do
+          stub_feature_flags(ci_tanukey_ui: true)
+        end
+
+        context 'when the user has admin_project_secrets_manager permission' do
+          before do
+            allow(helper).to receive(:can?).with(user, :admin_project_secrets_manager, project).and_return(true)
+          end
+
+          it { is_expected.to include(canManageSecretManager: true) }
+        end
+
+        context 'when the user does not have admin_project_secrets_manager permission' do
+          before do
+            allow(helper).to receive(:can?).with(user, :admin_project_secrets_manager, project).and_return(false)
+          end
+
+          it { is_expected.to include(canManageSecretManager: false) }
+        end
       end
     end
   end
