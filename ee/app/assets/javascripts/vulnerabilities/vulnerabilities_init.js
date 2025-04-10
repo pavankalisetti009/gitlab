@@ -38,6 +38,7 @@ export default (el) => {
       relatedJiraIssuesPath: vulnerability.relatedJiraIssuesPath,
       relatedJiraIssuesHelpPath: vulnerability.relatedJiraIssuesHelpPath,
       jiraIntegrationSettingsPath: vulnerability.jiraIntegrationSettingsPath,
+      archivalInformation: vulnerability.archivalInformation,
       canViewFalsePositive: parseBoolean(canViewFalsePositive),
       customizeJiraIssueEnabled: parseBoolean(customizeJiraIssueEnabled),
       projectFullPath,
