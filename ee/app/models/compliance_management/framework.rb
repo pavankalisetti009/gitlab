@@ -55,9 +55,8 @@ module ComplianceManagement
         )
     }
 
-    scope :with_requirements_and_internal_controls, -> {
+    scope :with_requirements_and_controls, -> {
       joins(compliance_requirements: :compliance_requirements_controls)
-        .where(compliance_requirements_controls: { control_type: :internal })
         .includes(compliance_requirements: :compliance_requirements_controls)
     }
 
@@ -66,8 +65,8 @@ module ComplianceManagement
         .includes(project_settings: :project)
     }
 
-    scope :with_active_internal_controls, -> {
-      with_requirements_and_internal_controls
+    scope :with_active_controls, -> {
+      with_requirements_and_controls
         .with_project_settings
         .distinct
     }

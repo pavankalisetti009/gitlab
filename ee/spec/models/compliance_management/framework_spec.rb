@@ -246,7 +246,7 @@ RSpec.describe ComplianceManagement::Framework, :models, feature_category: :comp
       end
     end
 
-    describe '.with_requirements_and_internal_controls' do
+    describe '.with_requirements_and_controls' do
       let_it_be(:framework) { create(:compliance_framework) }
       let_it_be(:requirement) { create(:compliance_requirement, framework: framework) }
       let_it_be(:internal_control) do
@@ -257,19 +257,18 @@ RSpec.describe ComplianceManagement::Framework, :models, feature_category: :comp
         create(:compliance_requirements_control, :external, compliance_requirement: requirement)
       end
 
-      it 'includes frameworks with internal controls' do
-        expect(described_class.with_requirements_and_internal_controls).to include(framework)
+      it 'includes frameworks with controls' do
+        expect(described_class.with_requirements_and_controls).to include(framework)
       end
 
-      it 'excludes external controls' do
-        controls = described_class.with_requirements_and_internal_controls
+      it 'includes all controls' do
+        controls = described_class.with_requirements_and_controls
                                   .first
                                   .compliance_requirements
                                   .first
                                   .compliance_requirements_controls
 
-        expect(controls).to include(internal_control)
-        expect(controls).not_to include(external_control)
+        expect(controls).to contain_exactly(internal_control, external_control)
       end
     end
 
@@ -293,7 +292,7 @@ RSpec.describe ComplianceManagement::Framework, :models, feature_category: :comp
       end
     end
 
-    describe '.with_active_internal_controls' do
+    describe '.with_active_controls' do
       let_it_be(:framework) { create(:compliance_framework) }
       let_it_be(:requirement) { create(:compliance_requirement, framework: framework) }
       let_it_be(:internal_control) do
@@ -337,16 +336,13 @@ RSpec.describe ComplianceManagement::Framework, :models, feature_category: :comp
         )
       end
 
-      it 'includes frameworks with internal controls and project settings' do
-        result = described_class.with_active_internal_controls
+      it 'includes frameworks with all controls and project settings' do
+        result = described_class.with_active_controls
 
         expect(result).to include(framework)
         expect(result).to include(mixed_framework)
-        expect(result.count).to eq(2)
-      end
-
-      it 'excludes frameworks with only external controls' do
-        expect(described_class.with_active_internal_controls).not_to include(external_only_framework)
+        expect(result).to include(external_only_framework)
+        expect(result.count).to eq(3)
       end
 
       it 'excludes frameworks without project settings' do
@@ -354,11 +350,11 @@ RSpec.describe ComplianceManagement::Framework, :models, feature_category: :comp
         requirement = create(:compliance_requirement, framework: framework_without_settings)
         create(:compliance_requirements_control, compliance_requirement: requirement)
 
-        expect(described_class.with_active_internal_controls).not_to include(framework_without_settings)
+        expect(described_class.with_active_controls).not_to include(framework_without_settings)
       end
 
       it 'returns unique results' do
-        result = described_class.with_active_internal_controls
+        result = described_class.with_active_controls
 
         expect(result.count).to eq(result.distinct.count)
       end

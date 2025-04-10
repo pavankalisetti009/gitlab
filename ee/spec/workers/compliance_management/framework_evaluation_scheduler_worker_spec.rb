@@ -79,7 +79,7 @@ RSpec.describe ComplianceManagement::FrameworkEvaluationSchedulerWorker, feature
       context 'when no frameworks exist' do
         before do
           allow(ComplianceManagement::Framework)
-            .to receive(:with_active_internal_controls)
+            .to receive(:with_active_controls)
                   .and_return(ComplianceManagement::Framework.none)
         end
 

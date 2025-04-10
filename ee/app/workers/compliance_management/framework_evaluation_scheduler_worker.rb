@@ -18,7 +18,7 @@ module ComplianceManagement
     def perform
       return unless Feature.enabled?(:evaluate_compliance_controls, :instance)
 
-      active_internal_control_frameworks.each_batch(of: FRAMEWORK_BATCH_SIZE) do |batch|
+      active_control_frameworks.each_batch(of: FRAMEWORK_BATCH_SIZE) do |batch|
         batch.each do |framework|
           enqueue_framework_evaluation(framework)
         end
@@ -27,8 +27,8 @@ module ComplianceManagement
 
     private
 
-    def active_internal_control_frameworks
-      ComplianceManagement::Framework.with_active_internal_controls
+    def active_control_frameworks
+      ComplianceManagement::Framework.with_active_controls
     end
 
     def enqueue_framework_evaluation(framework)
