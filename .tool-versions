@@ -6,4 +6,4 @@ redis 7.0.14
 ruby 3.3.7 3.2.4
 rust 1.73.0
 yarn 1.22.19
-vale 3.9.3
+vale 3.11.2
