@@ -11,11 +11,11 @@ module Security
     # we cache the last purged tuple so that the next job can start where the prior finished.
     # The TTL for this is in hours so that we'll start from the beginning the following weekend.
     LAST_PURGED_SCAN_TUPLE = 'Security::PurgeScansService::LAST_PURGED_SCAN_TUPLE'
-    LAST_PURGED_SCAN_TUPLE_TTL = 24.hours.to_i
+    LAST_PURGED_SCAN_TUPLE_TTL = 24.hours
 
     class << self
       def purge_stale_records
-        execute(Security::Scan.stale.ordered_by_created_at_and_id, last_purged_tuple)
+        execute(Security::Scan.stale.ordered_by_created_at_and_id, redis_cursor.cursor)
       end
 
       def purge_by_build_ids(build_ids)
@@ -26,14 +26,8 @@ module Security
         new(security_scans, cursor).execute
       end
 
-      private
-
-      # returns {} if no last tuple was set
-      # we exclude `ex` because it's the expiry timer for the tuple used by redis
-      def last_purged_tuple
-        Gitlab::Redis::SharedState.with do |redis|
-          redis.hgetall(LAST_PURGED_SCAN_TUPLE)
-        end.except('ex')
+      def redis_cursor
+        @redis_cursor ||= Gitlab::Redis::CursorStore.new(LAST_PURGED_SCAN_TUPLE, ttl: LAST_PURGED_SCAN_TUPLE_TTL)
       end
     end
 
@@ -65,12 +59,9 @@ module Security
     # Normal to string methods for dates don't include the split seconds that rails usually includes in queries.
     # Without them, it's possible to still match on the last processed record instead of the one after it.
     def store_last_purged_tuple(created_at, id)
-      Gitlab::Redis::SharedState.with do |redis|
-        redis.hset(LAST_PURGED_SCAN_TUPLE, {
-          "created_at" => created_at.strftime("%Y-%m-%d %H:%M:%S.%6N"),
-          "id" => id
-        }, ex: LAST_PURGED_SCAN_TUPLE_TTL)
-      end
+      quoted_time = Security::Scan.connection.quote(created_at)
+
+      self.class.redis_cursor.commit(created_at: quoted_time, id: id)
     end
   end
 end
