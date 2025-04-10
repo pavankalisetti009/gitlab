@@ -23,6 +23,7 @@ module Search
             process_namespace(namespace_plan)
           end
         rescue NodeStorageError => e
+          update_enabled_namespace_metadata!(namespace_plan)
           json = Gitlab::Json.parse(e.message, symbolize_names: true)
           aggregate_error(json[:message], failed_namespace_id: json[:namespace_id], node_id: json[:node_id])
         rescue StandardError => e
@@ -93,6 +94,15 @@ module Search
 
       def aggregate_success(replica)
         @success << { namespace_id: replica.namespace_id, replica_id: replica.id }
+      end
+
+      def update_enabled_namespace_metadata!(namespace_plan)
+        enabled_namespace = EnabledNamespace.for_root_namespace_id(namespace_plan[:namespace_id]).with_limit(1)[0]
+        return unless enabled_namespace
+
+        enabled_namespace.metadata['last_rollout_failed_at'] = Time.current.iso8601
+        enabled_namespace.metadata['rollout_required_storage_bytes'] = namespace_plan[:namespace_required_storage_bytes]
+        enabled_namespace.save!
       end
     end
 
