@@ -303,10 +303,6 @@ module EE
       project_security_compliance_dashboard_path(project, vueroute: "frameworks")
     end
 
-    def scheduled_for_deletion?(project)
-      project.marked_for_deletion_at.present?
-    end
-
     def project_compliance_framework_app_data(project, can_edit)
       group = project.root_ancestor
       {

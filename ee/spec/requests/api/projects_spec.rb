@@ -306,8 +306,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     end
 
     context 'project soft-deletion' do
-      let(:project) do
-        create(:project, :public, archived: true, marked_for_deletion_at: 1.day.ago, deleting_user: user)
+      let_it_be(:group) { create(:group) }
+      let_it_be_with_reload(:project) do
+        create(:project, :public, archived: true, marked_for_deletion_at: 1.day.ago, group: group, deleting_user: user)
+      end
+
+      before do
+        stub_feature_flags(downtier_delayed_deletion: false)
       end
 
       describe 'marked_for_deletion_at attribute' do
@@ -352,8 +357,10 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     context 'when using the marked_for_deletion_on filter' do
       let_it_be(:user) { create(:user) }
       let_it_be(:project) { create(:project, owners: user) }
+      let_it_be(:group) { create(:group, owners: user) }
+      # delayed deletion is not available for personal projects
       let_it_be(:marked_for_deletion_project) do
-        create(:project, marked_for_deletion_at: Date.parse('2024-01-01'), owners: user)
+        create(:project, marked_for_deletion_at: Date.parse('2024-01-01'), group: group)
       end
 
       before do
