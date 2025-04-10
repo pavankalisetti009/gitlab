@@ -27,8 +27,8 @@ module ComplianceManagement
         ComplianceManagement::ComplianceFramework::ProjectRequirementStatuses::BulkDestroyService.new(project_id,
           framework_id).execute
 
-      rescue StandardError => e
-        Gitlab::ErrorTracking.log_exception(e, project_id: project_id, framework_id: framework_id)
+        ComplianceManagement::ComplianceFramework::ProjectControlStatuses::BulkDestroyService.new(project_id,
+          framework_id).execute
       end
     end
   end

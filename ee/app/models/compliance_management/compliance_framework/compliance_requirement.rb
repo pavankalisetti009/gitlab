@@ -34,6 +34,10 @@ module ComplianceManagement
       has_many :project_requirement_compliance_statuses,
         class_name: 'ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus'
 
+      scope :for_framework, ->(framework_id) {
+        where(framework_id: framework_id)
+      }
+
       def delete_compliance_requirements_controls
         ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl
           .where(compliance_requirement: self)

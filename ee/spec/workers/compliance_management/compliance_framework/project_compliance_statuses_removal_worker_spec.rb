@@ -23,6 +23,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectComplianceStatu
       it 'does nothing' do
         expect(ComplianceManagement::ComplianceFramework::ProjectRequirementStatuses::BulkDestroyService)
           .not_to receive(:new)
+        expect(ComplianceManagement::ComplianceFramework::ProjectControlStatuses::BulkDestroyService)
+          .not_to receive(:new)
 
         perform
       end
@@ -49,7 +51,9 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectComplianceStatu
 
           it 'calls BulkDestroyService to remove statuses' do
             expect(ComplianceManagement::ComplianceFramework::ProjectRequirementStatuses::BulkDestroyService)
-              .to receive(:new).with(project.id, framework.id)
+              .to receive(:new).with(project.id, framework.id).and_call_original
+            expect(ComplianceManagement::ComplianceFramework::ProjectControlStatuses::BulkDestroyService)
+              .to receive(:new).with(project.id, framework.id).and_call_original
 
             perform
           end
@@ -59,29 +63,11 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectComplianceStatu
       context 'when framework is not applied to the project' do
         it 'calls BulkDestroyService to remove statuses' do
           expect(ComplianceManagement::ComplianceFramework::ProjectRequirementStatuses::BulkDestroyService)
-            .to receive(:new).with(project.id, framework.id)
+            .to receive(:new).with(project.id, framework.id).and_call_original
+          expect(ComplianceManagement::ComplianceFramework::ProjectControlStatuses::BulkDestroyService)
+            .to receive(:new).with(project.id, framework.id).and_call_original
 
           perform
-        end
-
-        context 'when an error is raised' do
-          let(:error) { StandardError.new('Test error') }
-
-          before do
-            allow(ComplianceManagement::ComplianceFramework::ProjectSettings)
-              .to receive(:by_framework_and_project).and_raise(error)
-            allow(Gitlab::ErrorTracking).to receive(:log_exception)
-          end
-
-          it 'logs the exception' do
-            expect(Gitlab::ErrorTracking).to receive(:log_exception).with(
-              error,
-              framework_id: framework.id,
-              project_id: project.id
-            ).once
-
-            perform
-          end
         end
       end
     end

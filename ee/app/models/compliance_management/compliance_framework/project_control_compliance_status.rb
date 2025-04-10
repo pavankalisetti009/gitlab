@@ -3,6 +3,8 @@
 module ComplianceManagement
   module ComplianceFramework
     class ProjectControlComplianceStatus < ApplicationRecord
+      include EachBatch
+
       belongs_to :compliance_requirements_control
       belongs_to :project
       belongs_to :namespace
