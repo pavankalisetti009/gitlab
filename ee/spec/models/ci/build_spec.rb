@@ -1060,6 +1060,32 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
     end
   end
 
+  describe '#secrets_integration' do
+    context 'when enable_secrets_provider_check_on_pre_assign_runner_checks feature flag is enabled' do
+      it 'instantiates ::Ci::Secrets::Integration only with variables of the build related to secrets integration' do
+        expect(job).not_to receive(:job_jwt_variables)
+        expect(job).not_to receive(:variables)
+        expect(job).to receive(:scoped_variables).and_call_original
+        expect(job).to receive(:job_variables).and_call_original
+
+        expect(job.secrets_integration).to be_a(::Ci::Secrets::Integration)
+      end
+    end
+
+    context 'when enable_secrets_provider_check_on_pre_assign_runner_checks feature flag is disabled' do
+      before do
+        stub_feature_flags(enable_secrets_provider_check_on_pre_assign_runner_checks: false)
+      end
+
+      it 'instantiates ::Ci::Secrets::Integration with all the variables of the build' do
+        expect(job).to receive(:job_jwt_variables).and_call_original
+        expect(job).to receive(:variables).and_call_original
+
+        expect(job.secrets_integration).to be_a(::Ci::Secrets::Integration)
+      end
+    end
+  end
+
   describe '#secrets_provider?' do
     it 'delegates to secrets_integration' do
       expect(job).to delegate_method(:secrets_provider?).to(:secrets_integration)
