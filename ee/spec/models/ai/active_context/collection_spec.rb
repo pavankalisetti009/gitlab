@@ -24,7 +24,58 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
       expect(collection).to be_valid
     end
 
-    it 'is invalid when not empty' do
+    it 'is valid with search_embedding_version as a positive integer' do
+      collection.metadata = { search_embedding_version: 1 }
+      expect(collection).to be_valid
+    end
+
+    it 'is valid with search_embedding_version as zero' do
+      collection.metadata = { search_embedding_version: 0 }
+      expect(collection).to be_valid
+    end
+
+    it 'is valid with search_embedding_version as null' do
+      collection.metadata = { search_embedding_version: nil }
+      expect(collection).to be_valid
+    end
+
+    it 'is invalid with search_embedding_version as a negative number' do
+      collection.metadata = { search_embedding_version: -1 }
+      expect(collection).not_to be_valid
+      expect(collection.errors[:metadata]).to include('must be a valid json schema')
+    end
+
+    it 'is valid with indexing_embedding_versions as an array of integers' do
+      collection.metadata = { indexing_embedding_versions: [0, 1, 2] }
+      expect(collection).to be_valid
+    end
+
+    it 'is valid with indexing_embedding_versions as an empty array' do
+      collection.metadata = { indexing_embedding_versions: [] }
+      expect(collection).to be_valid
+    end
+
+    it 'is invalid with indexing_embedding_versions containing negative numbers' do
+      collection.metadata = { indexing_embedding_versions: [1, -1, 3] }
+      expect(collection).not_to be_valid
+      expect(collection.errors[:metadata]).to include('must be a valid json schema')
+    end
+
+    it 'is invalid when indexing_embedding_versions is not an array' do
+      collection.metadata = { indexing_embedding_versions: 1 }
+      expect(collection).not_to be_valid
+      expect(collection.errors[:metadata]).to include('must be a valid json schema')
+    end
+
+    it 'is valid with both search_embedding_version and indexing_embedding_versions' do
+      collection.metadata = {
+        search_embedding_version: 1,
+        indexing_embedding_versions: [2, 3, 4]
+      }
+      expect(collection).to be_valid
+    end
+
+    it 'is invalid with arbitrary properties' do
       collection.metadata = { key: 'value' }
       expect(collection).not_to be_valid
       expect(collection.errors[:metadata]).to include('must be a valid json schema')
@@ -52,6 +103,67 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
     with_them do
       it 'always returns the same partition for a routing value' do
         expect(collection.partition_for(routing_value)).to eq(partition_number)
+      end
+    end
+  end
+
+  describe '#update_metadata!' do
+    context 'with valid metadata' do
+      it 'updates the metadata with valid values' do
+        expect(collection.metadata).to eq({})
+
+        collection.update_metadata!(search_embedding_version: 2)
+
+        expect(collection.reload.metadata).to eq({ 'search_embedding_version' => 2 })
+      end
+
+      it 'merges with existing metadata' do
+        collection.update_metadata!(search_embedding_version: 3)
+        collection.update_metadata!(search_embedding_version: 4)
+
+        expect(collection.reload.metadata).to eq({ 'search_embedding_version' => 4 })
+      end
+
+      it 'supports updating indexing_embedding_versions' do
+        collection.update_metadata!(indexing_embedding_versions: [1, 2, 3])
+
+        expect(collection.reload.metadata).to eq({ 'indexing_embedding_versions' => [1, 2, 3] })
+      end
+
+      it 'supports updating both search_embedding_version and indexing_embedding_versions' do
+        collection.update_metadata!({
+          search_embedding_version: 5,
+          indexing_embedding_versions: [6, 7, 8]
+        })
+
+        expect(collection.reload.metadata).to eq({
+          'search_embedding_version' => 5,
+          'indexing_embedding_versions' => [6, 7, 8]
+        })
+      end
+
+      it 'upserts and keeps existing metadata' do
+        collection.update_metadata!(search_embedding_version: 5)
+        collection.update_metadata!(indexing_embedding_versions: [6, 7, 8])
+
+        expect(collection.reload.metadata).to eq({
+          'search_embedding_version' => 5,
+          'indexing_embedding_versions' => [6, 7, 8]
+        })
+      end
+    end
+
+    context 'with invalid metadata' do
+      it 'raises an error when validation fails' do
+        expect { collection.update_metadata!(search_embedding_version: -1) }.to raise_error(ActiveRecord::RecordInvalid)
+      end
+
+      it 'does not change the metadata when validation fails' do
+        collection.update_metadata!(search_embedding_version: 5)
+        expect(collection.reload.metadata).to eq({ 'search_embedding_version' => 5 })
+
+        expect { collection.update_metadata!(search_embedding_version: -1) }.to raise_error(ActiveRecord::RecordInvalid)
+        expect(collection.reload.metadata).to eq({ 'search_embedding_version' => 5 })
       end
     end
   end

@@ -16,6 +16,10 @@ module Ai
       def partition_for(routing_value)
         ::ActiveContext::Hash.consistent_hash(number_of_partitions, routing_value)
       end
+
+      def update_metadata!(new_metadata)
+        update!(metadata: metadata.merge(new_metadata))
+      end
     end
   end
 end
