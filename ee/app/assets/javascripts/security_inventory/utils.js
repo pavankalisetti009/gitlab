@@ -15,3 +15,8 @@ export const getVulnerabilityTotal = (vulnerabilitySeveritiesCount = {}) => {
 
   return critical + high + medium + low + info + unknown;
 };
+
+export const isSubGroup = (item) => {
+  // eslint-disable-next-line no-underscore-dangle
+  return item.__typename === 'Group';
+};

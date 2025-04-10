@@ -15,7 +15,7 @@ export const subgroupsAndProjects = {
             projectsCount: 1,
             path: 'test-subgroup',
             fullPath: 'flightjs/test-subgroup',
-            avatarUrl: null,
+            avatarUrl: '/avatar.png',
             webUrl: 'http://gdk.test:3000/groups/flightjs/test-subgroup',
             vulnerabilitySeveritiesCount: {
               critical: 10,

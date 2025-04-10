@@ -13,6 +13,7 @@ import ProjectToolCoverageIndicator from 'ee/security_inventory/components/proje
 import SubgroupsAndProjectsQuery from 'ee/security_inventory/graphql/subgroups_and_projects.query.graphql';
 import projectVulnerabilityCounts from 'ee/security_inventory/components/project_vulnerability_counts.vue';
 import EmptyState from 'ee/security_inventory/components/empty_state.vue';
+import NameCell from 'ee/security_inventory/components/name_cell.vue';
 import { subgroupsAndProjects } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -70,6 +71,7 @@ describe('InventoryDashboard', () => {
 
   it('renders the component', () => {
     expect(wrapper.exists()).toBe(true);
+    expect(findEmptyState().exists()).toBe(false);
   });
 
   describe('Loading state', () => {
@@ -80,6 +82,7 @@ describe('InventoryDashboard', () => {
 
     it('shows a skeleton loader when loading', () => {
       expect(findSkeletonLoader().exists()).toBe(true);
+      expect(findEmptyState().exists()).toBe(false);
     });
   });
 
@@ -115,7 +118,10 @@ describe('InventoryDashboard', () => {
 
     it('renders correct values in table cells for projects and subgroups', () => {
       expect(findTableRows()).toHaveLength(mockChildren.length);
-      expect(findNthTableRow(0).text()).toContain(mockChildren[0].name);
+
+      const nameCell = findNthTableRow(groupIndex).findComponent(NameCell);
+      expect(nameCell.exists()).toBe(true);
+      expect(nameCell.text()).toContain(mockChildren[0].name);
 
       expect(findVulnerabilityDiv().text()).toBe('80');
       expect(findVulnerabilityDiv().attributes('id')).toBe('vulnerabilities-count-0');
