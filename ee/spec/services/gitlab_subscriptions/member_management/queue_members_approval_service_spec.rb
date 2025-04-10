@@ -75,6 +75,26 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueMembersApprovalServic
           end
         end
       end
+
+      context 'and webhook is triggered' do
+        let(:non_billable_users) { create_list(:user, 1) }
+        let(:existing_members) { [] }
+        let(:existing_members_hash) { {} }
+
+        it 'triggers member approval hooks' do
+          # this is to stop the system hook for group created to be raised
+          allow(group).to receive(:post_create_hook).and_return(nil)
+
+          expect_next_instance_of(SystemHooksService) do |hook_service|
+            expect(hook_service).to receive(:execute_hooks) do |payload, _|
+              expect(payload[:action]).to eq('enqueue')
+              expect(payload[:object_kind]).to eq("gitlab_subscription_member_approval")
+            end
+          end
+
+          service.execute
+        end
+      end
     end
 
     context 'when non_billable_users is empty' do

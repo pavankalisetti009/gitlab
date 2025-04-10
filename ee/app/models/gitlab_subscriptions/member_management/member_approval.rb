@@ -5,6 +5,7 @@ module GitlabSubscriptions
     class MemberApproval < ApplicationRecord
       include Presentable
       include EachBatch
+      include AfterCommitQueue
 
       self.table_name = 'member_approvals'
 
