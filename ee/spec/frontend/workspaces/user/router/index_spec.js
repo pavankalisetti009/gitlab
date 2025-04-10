@@ -24,7 +24,6 @@ Vue.use(VueRouter);
 Vue.use(VueApollo);
 
 const SVG_PATH = '/assets/illustrations/empty_states/empty_workspaces.svg';
-const DEFAULT_MAX_HOURS_BEFORE_TERMINATION = 42;
 
 describe('workspaces/router/index.js', () => {
   let router;
@@ -58,7 +57,6 @@ describe('workspaces/router/index.js', () => {
       ]),
       provide: {
         emptyStateSvgPath: SVG_PATH,
-        defaultMaxHoursBeforeTermination: DEFAULT_MAX_HOURS_BEFORE_TERMINATION,
         defaultDevfile: 'mock-devfile-value',
       },
       stubs: {

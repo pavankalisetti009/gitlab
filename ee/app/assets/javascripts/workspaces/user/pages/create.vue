@@ -59,7 +59,6 @@ export const i18n = {
     },
     pathToDevfile: s__('Workspaces|Path to devfile'),
     agentId: s__('Workspaces|Cluster agent'),
-    maxHoursBeforeTermination: s__('Workspaces|Workspace automatically terminates after'),
     maxHoursSuffix: __('hours'),
   },
   invalidProjectAlert: {
@@ -116,7 +115,6 @@ export default {
       clusterAgentsMap: {},
       devfileRef: '',
       projectId: null,
-      maxHoursBeforeTermination: 0,
       workspaceVariables: [],
       showWorkspaceVariableValidations: false,
       projectDetailsLoaded: false,
@@ -158,10 +156,6 @@ export default {
     this.focusFirstElement();
   },
   methods: {
-    onAgentChange(agentId) {
-      this.maxHoursBeforeTermination =
-        this.clusterAgentsMap[agentId].defaultMaxHoursBeforeTermination;
-    },
     onProjectDetailsResult({ fullPath, nameWithNamespace, clusterAgents, id, rootRef }) {
       // This scenario happens when the selected project is specified in the URL as a query param
       if (!this.selectedProject) {
@@ -180,7 +174,6 @@ export default {
       // Select the first agent if there are any
       if (clusterAgents.length > 0) {
         this.selectedAgent = clusterAgents[0].value;
-        this.maxHoursBeforeTermination = clusterAgents[0].defaultMaxHoursBeforeTermination;
       }
     },
     onProjectDetailsError() {
@@ -223,7 +216,6 @@ export default {
               desiredState: DEFAULT_DESIRED_STATE,
               devfileRef: this.devfileRef,
               devfilePath: this.devfilePath,
-              maxHoursBeforeTermination: parseInt(this.maxHoursBeforeTermination, 10),
               variables: this.workspaceVariables.map((v) => omit(v, 'valid')),
             },
           },
@@ -338,7 +330,6 @@ export default {
             class="gl-max-w-full"
             autocomplete="off"
             data-testid="workspace-cluster-agent-id-field"
-            @input="onAgentChange"
           />
         </gl-form-group>
         <template v-if="selectedAgent">

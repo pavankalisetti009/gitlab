@@ -9,6 +9,5 @@ fragment WorkspaceItem on Workspace {
   devfileRef
   devfilePath
   devfileWebUrl
-  maxHoursBeforeTermination
   createdAt
 }

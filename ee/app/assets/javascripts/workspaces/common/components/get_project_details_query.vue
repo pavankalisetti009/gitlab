@@ -90,14 +90,10 @@ export default {
 
         return {
           clusterAgents:
-            data.namespace?.remoteDevelopmentClusterAgents?.nodes.map(
-              ({ id, name, project, workspacesAgentConfig }) => ({
-                value: id,
-                text: `${project.nameWithNamespace} / ${name}`,
-                defaultMaxHoursBeforeTermination:
-                  workspacesAgentConfig.defaultMaxHoursBeforeTermination,
-              }),
-            ) || [],
+            data.namespace?.remoteDevelopmentClusterAgents?.nodes.map(({ id, name, project }) => ({
+              value: id,
+              text: `${project.nameWithNamespace} / ${name}`,
+            })) || [],
         };
       } catch (error) {
         return { errors: [error] };
