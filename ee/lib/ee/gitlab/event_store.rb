@@ -84,6 +84,7 @@ module EE
           subscribe_to_members_added_event(store)
           subscribe_to_users_activity_events(store)
           subscribe_to_merge_events(store)
+          subscribe_to_analytics_events(store)
         end
 
         override :subscribe_to_member_destroyed_events
@@ -285,6 +286,16 @@ module EE
           store.subscribe ::Clusters::Agents::AutoFlow::MergeRequests::ReopenedEventWorker,
             to: ::MergeRequests::ReopenedEvent,
             if: ->(event) { ::Clusters::Agents::AutoFlow.merge_request_events_enabled?(event.data[:merge_request_id]) }
+        end
+
+        def subscribe_to_analytics_events(store)
+          store.subscribe ::Analytics::DuoChatEventsBackfillWorker,
+            to: ::Analytics::ClickHouseForAnalyticsEnabledEvent,
+            if: ->(_) { ::Feature.enabled?(:ai_events_backfill_to_ch, :instance) }
+
+          store.subscribe ::Analytics::CodeSuggestionsEventsBackfillWorker,
+            to: ::Analytics::ClickHouseForAnalyticsEnabledEvent,
+            if: ->(_) { ::Feature.enabled?(:ai_events_backfill_to_ch, :instance) }
         end
       end
     end
