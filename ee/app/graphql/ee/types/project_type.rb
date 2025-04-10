@@ -4,7 +4,6 @@ module EE
   module Types
     module ProjectType
       extend ActiveSupport::Concern
-      include ::NamespacesHelper
 
       prepended do
         field :security_scanners, ::Types::SecurityScanners,
@@ -525,22 +524,6 @@ module EE
           description: 'Aggregated usage counts within the project',
           experiment: { milestone: '17.2' }
 
-        field :marked_for_deletion_on, ::Types::TimeType,
-          null: true,
-          description: 'Date when project was scheduled to be deleted.',
-          experiment: { milestone: '16.10' }
-
-        field :is_adjourned_deletion_enabled, GraphQL::Types::Boolean,
-          null: false,
-          description: 'Indicates if delayed project deletion is enabled.',
-          method: :adjourned_deletion?,
-          experiment: { milestone: '16.11' }
-
-        field :permanent_deletion_date, GraphQL::Types::String,
-          null: true,
-          description: 'Date when project will be deleted if delayed project deletion is enabled.',
-          experiment: { milestone: '16.11' }
-
         field :saved_replies,
           ::Types::Projects::SavedReplyType.connection_type,
           null: true,
@@ -667,20 +650,6 @@ module EE
         return unless ::Gitlab::Saas.feature_available?(:google_cloud_support)
 
         project
-      end
-
-      def marked_for_deletion_on
-        ## marked_for_deletion_at is deprecated in our v5 REST API in favor of marked_for_deletion_on
-        ## https://docs.gitlab.com/ee/api/projects.html#removals-in-api-v5
-        return unless project.adjourned_deletion?
-
-        project.marked_for_deletion_at
-      end
-
-      def permanent_deletion_date
-        if project.adjourned_deletion? || License.feature_available?(:adjourned_deletion_for_projects_and_groups)
-          permanent_deletion_date_formatted(Date.current)
-        end
       end
 
       def duo_workflow_status_check

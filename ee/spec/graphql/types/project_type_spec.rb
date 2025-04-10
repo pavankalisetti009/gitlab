@@ -31,9 +31,8 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
       security_policy_project_linked_projects security_policy_project_linked_namespaces
       dependencies merge_requests_disable_committers_approval has_jira_vulnerability_issue_creation_enabled
       ci_upstream_project_subscriptions ci_downstream_project_subscriptions ci_subscriptions_projects ci_subscribed_projects
-      ai_agents ai_agent ai_xray_reports duo_features_enabled components
-      runner_cloud_provisioning google_cloud_artifact_registry_repository marked_for_deletion_on
-      is_adjourned_deletion_enabled permanent_deletion_date ai_metrics ai_usage_data ai_user_metrics saved_reply
+      ai_agents ai_agent ai_xray_reports duo_features_enabled components runner_cloud_provisioning
+      google_cloud_artifact_registry_repository ai_metrics ai_usage_data ai_user_metrics saved_reply
       merge_trains pending_member_approvals observability_logs_links observability_metrics_links
       observability_traces_links dependencies security_exclusions security_exclusion
       compliance_standards_adherence target_branch_rules duo_workflow_status_check component_usages
@@ -843,89 +842,6 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
     subject { described_class.fields['runnerCloudProvisioning'] }
 
     it { is_expected.to have_graphql_type(::Types::Ci::RunnerCloudProvisioningType) }
-  end
-
-  describe 'project adjourned deletion fields', feature_category: :groups_and_projects do
-    let_it_be(:pending_delete_project) { create(:project, marked_for_deletion_at: Time.current) }
-
-    let_it_be(:query) do
-      %(
-        query {
-          project(fullPath: "#{pending_delete_project.full_path}") {
-            markedForDeletionOn
-            isAdjournedDeletionEnabled
-            permanentDeletionDate
-          }
-        }
-      )
-    end
-
-    before do
-      pending_delete_project.add_developer(user)
-    end
-
-    subject(:project_data) do
-      result = GitlabSchema.execute(query, context: { current_user: user }).as_json
-      {
-        marked_for_deletion_on: result.dig('data', 'project', 'markedForDeletionOn'),
-        is_adjourned_deletion_enabled: result.dig('data', 'project', 'isAdjournedDeletionEnabled'),
-        permanent_deletion_date: result.dig('data', 'project', 'permanentDeletionDate')
-      }
-    end
-
-    context 'with adjourned deletion disabled' do
-      before do
-        allow_next_found_instance_of(Project) do |project|
-          allow(project).to receive(:adjourned_deletion?).and_return(false)
-        end
-      end
-
-      it 'marked_for_deletion_on returns nil' do
-        expect(project_data[:marked_for_deletion_on]).to be_nil
-      end
-
-      it 'is_adjourned_deletion_enabled returns false' do
-        expect(project_data[:is_adjourned_deletion_enabled]).to be false
-      end
-
-      it 'permanent_deletion_date returns nil' do
-        expect(project_data[:permanent_deletion_date]).to be_nil
-      end
-    end
-
-    context 'with adjourned deletion enabled' do
-      before do
-        allow_next_found_instance_of(Project) do |project|
-          allow(project).to receive(:adjourned_deletion?).and_return(true)
-        end
-      end
-
-      it 'marked_for_deletion_on returns correct date' do
-        marked_for_deletion_on_time = Time.zone.parse(project_data[:marked_for_deletion_on])
-
-        expect(marked_for_deletion_on_time).to eq(pending_delete_project.marked_for_deletion_at.iso8601)
-      end
-
-      it 'is_adjourned_deletion_enabled returns true' do
-        expect(project_data[:is_adjourned_deletion_enabled]).to be true
-      end
-
-      it 'permanent_deletion_date returns correct date', :freeze_time do
-        expect(project_data[:permanent_deletion_date])
-          .to eq(::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(Date.current).strftime('%F'))
-      end
-    end
-
-    context 'with adjourned deletion enabled globally' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-      end
-
-      it 'permanent_deletion_date returns correct date', :freeze_time do
-        expect(project_data[:permanent_deletion_date])
-          .to eq(::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(Date.current).strftime('%F'))
-      end
-    end
   end
 
   describe 'component_versions' do
