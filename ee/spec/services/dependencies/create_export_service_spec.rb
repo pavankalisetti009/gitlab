@@ -72,12 +72,16 @@ RSpec.describe Dependencies::CreateExportService, feature_category: :dependency_
       let(:params) { { export_type: export_type } }
 
       with_them do
-        it_behaves_like 'internal event tracking' do
-          let(:event) { 'create_dependency_list_export' }
-          let(:category) { described_class.name }
-          let(:namespace) { group }
-          let(:label) { export_type.to_s }
-          let(:property) { 'Project' }
+        it "triggers an internal event" do
+          expect { result }.to trigger_internal_events('create_dependency_list_export').with(
+            namespace: group,
+            project: project,
+            user: user,
+            additional_properties: {
+              label: export_type.to_s,
+              property: 'Project'
+            }
+          )
         end
       end
     end
@@ -89,13 +93,15 @@ RSpec.describe Dependencies::CreateExportService, feature_category: :dependency_
       subject(:result) { described_class.new(group, user, params).execute }
 
       with_them do
-        it_behaves_like 'internal event tracking' do
-          let(:event) { 'create_dependency_list_export' }
-          let(:category) { described_class.name }
-          let(:project) { nil }
-          let(:namespace) { group }
-          let(:label) { export_type.to_s }
-          let(:property) { 'Group' }
+        it "triggers an internal event" do
+          expect { result }.to trigger_internal_events('create_dependency_list_export').with(
+            namespace: group,
+            user: user,
+            additional_properties: {
+              label: export_type.to_s,
+              property: 'Group'
+            }
+          )
         end
       end
     end
@@ -108,12 +114,16 @@ RSpec.describe Dependencies::CreateExportService, feature_category: :dependency_
 
       subject(:result) { described_class.new(pipeline, user, params).execute }
 
-      it_behaves_like 'internal event tracking' do
-        let(:event) { 'create_dependency_list_export' }
-        let(:category) { described_class.name }
-        let(:namespace) { group }
-        let(:label) { export_type.to_s }
-        let(:property) { 'Ci::Pipeline' }
+      it "triggers an internal event" do
+        expect { result }.to trigger_internal_events('create_dependency_list_export').with(
+          project: project,
+          namespace: group,
+          user: user,
+          additional_properties: {
+            label: export_type.to_s,
+            property: 'Ci::Pipeline'
+          }
+        )
       end
     end
   end

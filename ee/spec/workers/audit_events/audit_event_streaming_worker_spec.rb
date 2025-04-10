@@ -130,21 +130,21 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
       context 'when audit event type is tracked as an internal event' do
         let(:event_name) { AuditEvents::Strategies::ExternalDestinationStrategy::INTERNAL_EVENTS.first }
 
+        before do
+          allow(Gitlab::HTTP).to receive(:post).once
+        end
+
         it 'makes http call' do
           expect(Gitlab::HTTP).to receive(:post).once
 
           subject
         end
 
-        it_behaves_like 'internal event tracking' do
-          let(:event) { 'trigger_audit_event' }
-          let(:label) { event_name }
-          let(:category) { 'AuditEvents::Strategies::GroupExternalDestinationStrategy' }
-          let(:event_attribute_overrides) { { project: nil, namespace: nil } }
-
-          before do
-            allow(Gitlab::HTTP).to receive(:post).once
-          end
+        it "triggers an internal event" do
+          expect { subject }.to trigger_internal_events('trigger_audit_event').with(
+            category: 'AuditEvents::Strategies::GroupExternalDestinationStrategy',
+            additional_properties: { label: event_name }
+          )
         end
       end
 

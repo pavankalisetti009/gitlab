@@ -9,12 +9,19 @@ RSpec.describe Gitlab::UsageDataCounters::QuickActionActivityUniqueCounter, :cle
   let(:project) { build(:project) }
 
   shared_examples_for 'a tracked quick action internal event' do
-    it_behaves_like 'internal event tracking' do
-      let(:event) { action }
+    it "triggers an internal event" do
+      expect { track_event }.to trigger_internal_events(action).with(
+        category: 'InternalEventTracking',
+        project: project,
+        user: user,
+        additional_properties: { label: label }
+      )
     end
   end
 
-  subject { described_class.track_unique_action(quickaction_name, args: args, user: user, project: project) }
+  subject(:track_event) do
+    described_class.track_unique_action(quickaction_name, args: args, user: user, project: project)
+  end
 
   context 'when tracking q', feature_category: :ai_agents do
     using RSpec::Parameterized::TableSyntax

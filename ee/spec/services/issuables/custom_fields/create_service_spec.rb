@@ -23,13 +23,14 @@ RSpec.describe Issuables::CustomFields::CreateService, feature_category: :team_p
       expect(custom_field.created_by_id).to eq(user.id)
     end
 
-    it_behaves_like 'internal event tracking' do
-      let(:event) { 'create_custom_field_in_group_settings' }
-      let(:category) { described_class.name }
-      let(:namespace) { group }
-      let(:label) { params[:field_type] }
-
-      subject(:custom_field) { response.payload[:custom_field] }
+    it "triggers an internal event" do
+      expect do
+        response.payload[:custom_field]
+      end.to trigger_internal_events('create_custom_field_in_group_settings').with(
+        namespace: group,
+        user: user,
+        additional_properties: { label: params[:field_type] }
+      )
     end
 
     context 'when setting select options' do

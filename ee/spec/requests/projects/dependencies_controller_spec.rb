@@ -194,17 +194,20 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
           let(:request) { get project_dependencies_path(project, format: :html) }
         end
 
-        it_behaves_like 'internal event tracking' do
-          let(:event) { 'visit_dependency_list' }
-          let(:category) { described_class.name }
-          subject(:service_action) { show_dependency_list }
+        it 'tracks show_dependency_list action' do
+          expect { show_dependency_list }.to trigger_internal_events('visit_dependency_list').with(
+            user: user,
+            project: project
+          )
         end
 
-        it_behaves_like 'internal event tracking' do
-          let(:event) { 'called_dependency_api' }
-          let(:category) { described_class.name }
-          let(:additional_properties) { { label: 'json' } }
-          subject(:service_action) { get project_dependencies_path(project, format: :json) }
+        it 'tracks project_dependencies_path visits' do
+          expect { get project_dependencies_path(project, format: :json) }
+            .to trigger_internal_events('called_dependency_api').with(
+              user: user,
+              project: project,
+              additional_properties: { label: 'json' }
+            )
         end
       end
 

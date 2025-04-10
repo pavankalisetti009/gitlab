@@ -21,7 +21,7 @@ RSpec.describe Resolvers::Sbom::DependenciesResolver, feature_category: :vulnera
   let_it_be(:occurrence_2) { create(:sbom_occurrence, component: component_2, project: project_1) }
   let_it_be(:occurrence_3) { create(:sbom_occurrence, component: component_2, project: project_2) }
 
-  subject { sync(resolve_dependencies(args: args)) }
+  subject(:sync_resolve) { sync(resolve_dependencies(args: args)) }
 
   shared_examples 'supports filtering by component name' do
     let(:args) { { component_names: [component_1.name] } }
@@ -43,12 +43,12 @@ RSpec.describe Resolvers::Sbom::DependenciesResolver, feature_category: :vulnera
 
       it { is_expected.to match_array([occurrence_1]) }
 
-      it_behaves_like 'internal event tracking' do
-        let(:event) { 'called_dependency_api' }
-        let(:category) { described_class.name }
-        let(:project) { project_1 }
-        let(:additional_properties) { { label: 'graphql' } }
-        subject(:service_action) { sync(resolve_dependencies(args: args)) }
+      it "triggers an internal event" do
+        expect { sync_resolve }.to trigger_internal_events('called_dependency_api').with(
+          user: user,
+          project: project_1,
+          additional_properties: { label: 'graphql' }
+        )
       end
     end
   end
@@ -67,11 +67,12 @@ RSpec.describe Resolvers::Sbom::DependenciesResolver, feature_category: :vulnera
 
       it { is_expected.to match_array([occurrence_2, occurrence_3]) }
 
-      it_behaves_like 'internal event tracking' do
-        let(:event) { 'called_dependency_api' }
-        let(:category) { described_class.name }
-        let(:additional_properties) { { label: 'graphql' } }
-        subject(:service_action) { sync(resolve_dependencies(args: args)) }
+      it "triggers an internal event" do
+        expect { sync_resolve }.to trigger_internal_events('called_dependency_api').with(
+          user: user,
+          namespace: namespace,
+          additional_properties: { label: 'graphql' }
+        )
       end
     end
   end

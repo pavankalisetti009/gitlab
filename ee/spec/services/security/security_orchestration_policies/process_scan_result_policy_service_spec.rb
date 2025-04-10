@@ -335,10 +335,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
               expect { subject }.to change { project.approval_rules.count }.by(1)
             end
 
-            it_behaves_like 'internal event tracking' do
-              let(:category) { described_class.name }
-              let(:event) { 'create_approval_rule_from_merge_request_approval_policy' }
-              let(:label) { 'scan_finding' }
+            it "triggers an internal event" do
+              expect { subject }
+                .to trigger_internal_events('create_approval_rule_from_merge_request_approval_policy').with(
+                  project: project,
+                  additional_properties: { label: 'scan_finding' }
+                )
             end
           end
         end
@@ -640,10 +642,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
       let(:policy) { build(:scan_result_policy, :license_finding) }
 
       shared_examples 'license_finding_rule_type' do
-        it_behaves_like 'internal event tracking' do
-          let(:category) { described_class.name }
-          let(:event) { 'create_approval_rule_from_merge_request_approval_policy' }
-          let(:label) { 'license_finding' }
+        it "triggers an internal event" do
+          expect { subject }
+            .to trigger_internal_events('create_approval_rule_from_merge_request_approval_policy').with(
+              project: project,
+              additional_properties: { label: 'license_finding' }
+            )
         end
 
         it 'creates scan_result_policy_read' do
@@ -722,10 +726,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     context 'with any_merge_request rule_type' do
       let(:policy) { build(:scan_result_policy, :any_merge_request, commits: 'unsigned') }
 
-      it_behaves_like 'internal event tracking' do
-        let(:category) { described_class.name }
-        let(:event) { 'create_approval_rule_from_merge_request_approval_policy' }
-        let(:label) { 'any_merge_request' }
+      it "triggers an internal event" do
+        expect { subject }.to trigger_internal_events('create_approval_rule_from_merge_request_approval_policy').with(
+          project: project,
+          additional_properties: { label: 'any_merge_request' }
+        )
       end
 
       it 'creates new approval rules with provided params' do
