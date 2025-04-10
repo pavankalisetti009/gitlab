@@ -15,8 +15,6 @@ module Search
   end
 
   def self.default_concurrency_limit
-    return if Feature.disabled?(:search_sidekiq_default_concurrency_limit, Feature.current_request)
-
     DEFAULT_CONCURRENCY_LIMIT
   end
 end
