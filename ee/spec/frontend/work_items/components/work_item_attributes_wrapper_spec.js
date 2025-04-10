@@ -8,6 +8,7 @@ import WorkItemWeight from 'ee/work_items/components/work_item_weight.vue';
 import WorkItemIteration from 'ee/work_items/components/work_item_iteration.vue';
 import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
 import WorkItemCustomFields from 'ee/work_items/components/work_item_custom_fields.vue';
+import WorkItemStatus from 'ee/work_items/components/work_item_status.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import {
@@ -21,8 +22,9 @@ import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.grap
 import workItemParticipantsQuery from '~/work_items/graphql/work_item_participants.query.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import workItemUpdatedSubscription from '~/work_items/graphql/work_item_updated.subscription.graphql';
+import workItemStatusQuery from 'ee/work_items/graphql/work_item_status.query.graphql';
 import getAllowedWorkItemParentTypes from '~/work_items/graphql/work_item_allowed_parent_types.query.graphql';
-import { workItemResponseFactory } from '../mock_data';
+import { workItemResponseFactory, mockWorkItemStatusResponse } from '../mock_data';
 
 describe('EE WorkItemAttributesWrapper component', () => {
   let wrapper;
@@ -55,6 +57,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
     .fn()
     .mockResolvedValue({ data: { workItemUpdated: null } });
   const allowedParentTypesHandler = jest.fn().mockResolvedValue(allowedParentTypesResponse);
+  const workItemStatusResponse = jest.fn().mockResolvedValue(mockWorkItemStatusResponse);
 
   const findWorkItemIteration = () => wrapper.findComponent(WorkItemIteration);
   const findWorkItemWeight = () => wrapper.findComponent(WorkItemWeight);
@@ -63,6 +66,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
   const findWorkItemHealthStatus = () => wrapper.findComponent(WorkItemHealthStatus);
   const findWorkItemDates = () => wrapper.findComponent(WorkItemDates);
   const findWorkItemCustomFields = () => wrapper.findComponent(WorkItemCustomFields);
+  const findWorkItemCustomStatus = () => wrapper.findComponent(WorkItemStatus);
 
   const createComponent = ({
     workItem = workItemQueryResponse.data.workItem,
@@ -77,6 +81,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
       apolloProvider: createMockApollo([
         [workItemByIidQuery, handler],
         [workItemUpdatedSubscription, workItemUpdatedSubscriptionHandler],
+        [workItemStatusQuery, workItemStatusResponse],
         [workItemParticipantsQuery, workItemParticipantsQueryHandler],
         [getAllowedWorkItemParentTypes, allowedParentTypesHandler],
         confidentialityMock,
@@ -325,6 +330,26 @@ describe('EE WorkItemAttributesWrapper component', () => {
       await waitForPromises();
 
       expect(findWorkItemCustomFields().exists()).toBe(false);
+    });
+  });
+
+  describe('status widget', () => {
+    it('renders when flag `workItemStatusFeatureFlag` is enabled', async () => {
+      createComponent({
+        featureFlags: { workItemStatusFeatureFlag: true },
+      });
+      await waitForPromises();
+
+      expect(findWorkItemCustomStatus().exists()).toBe(true);
+    });
+
+    it('does not render when flag `workItemStatusFeatureFlag` is disabled', async () => {
+      createComponent({
+        featureFlags: { workItemStatusFeatureFlag: false },
+      });
+      await waitForPromises();
+
+      expect(findWorkItemCustomStatus().exists()).toBe(false);
     });
   });
 });

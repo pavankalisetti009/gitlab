@@ -1,0 +1,7 @@
+fragment WorkItemStatusFragment on WorkItemStatus {
+  id
+  name
+  iconName
+  color
+  position
+}
