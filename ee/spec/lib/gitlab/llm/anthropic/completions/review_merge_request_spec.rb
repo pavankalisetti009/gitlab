@@ -6,20 +6,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
   let(:review_prompt_class) { Gitlab::Llm::Templates::ReviewMergeRequest }
   let(:summary_prompt_class) { Gitlab::Llm::Templates::SummarizeReview }
   let(:tracking_context) { { action: :review_merge_request, request_id: 'uuid' } }
-  let(:options) { {} }
+  let(:options) { { progress_note_id: progress_note.id } }
   let(:create_note_allowed?) { true }
-
-  let(:review_start_note) do
-    s_("DuoCodeReview|Hey :wave: I'm starting to review your merge request and I will let you know when I'm finished.")
-  end
-
-  let(:review_no_comment_note) do
-    s_("DuoCodeReview|I finished my review and found nothing to comment on. Nice work! :tada:")
-  end
-
-  let(:review_error_note) do
-    s_("DuoCodeReview|I have encountered some problems while I was reviewing. Please try again later.")
-  end
 
   let_it_be(:duo_code_review_bot) { create(:user, :duo_code_review_bot) }
   let_it_be(:project) do
@@ -54,6 +42,15 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
   end
 
   let_it_be(:diff_refs) { merge_request.diff_refs }
+  let_it_be(:progress_note) do
+    create(
+      :note,
+      note: 'progress note',
+      project: project,
+      noteable: merge_request,
+      author: Users::Internal.duo_code_review_bot
+    )
+  end
 
   let(:review_prompt_message) do
     build(:ai_message, :review_merge_request, user: user, resource: merge_request, request_id: 'uuid')
@@ -118,25 +115,20 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
     end
 
     context 'when merge request has no reviewable files' do
-      let(:no_reviewable_files_note) do
-        s_("DuoCodeReview|:wave: There's nothing for me to review.")
-      end
-
       before do
         allow(merge_request).to receive(:ai_reviewable_diff_files).and_return([])
       end
 
       it 'creates explanation note' do
-        expect(Notes::CreateService).to receive(:new).with(
+        expect(Notes::UpdateService).to receive(:new).with(
           merge_request.project,
           duo_code_review_bot,
-          noteable: merge_request,
-          note: no_reviewable_files_note
+          note: described_class.nothing_to_review_msg
         ).and_call_original
 
         completion.execute
 
-        expect(merge_request.notes.non_diff_notes.last.note).to eq no_reviewable_files_note
+        expect(merge_request.notes.non_diff_notes.last.note).to eq described_class.nothing_to_review_msg
       end
     end
 
@@ -237,18 +229,80 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         })
       end
 
-      context 'when review note alredy exist on the same position' do
-        it 'does not add more notes to the same position' do
-          expect do
-            described_class.new(review_prompt_message, review_prompt_class, options).execute
-          end.to change { merge_request.notes.diff_notes.count }.by(3)
-            .and change { merge_request.notes.non_diff_notes.count }.by(1) # review summary
+      it 'performs review and update progress note' do
+        expect do
+          completion.execute
+        end.to change { merge_request.notes.diff_notes.count }.by(3)
+          .and not_change { merge_request.notes.non_diff_notes.count } # review summary just gets updated
+        expect(progress_note.reload.note).to eq(summary_answer)
+      end
 
+      context 'when review note alredy exist on the same position' do
+        let(:progress_note2) do
+          create(
+            :note,
+            note: 'progress note 2',
+            project: project,
+            noteable: merge_request,
+            author: Users::Internal.duo_code_review_bot
+          )
+        end
+
+        before do
+          described_class.new(review_prompt_message, review_prompt_class, progress_note_id: progress_note2.id).execute
+        end
+
+        it 'does not add more notes to the same position' do
           expect { completion.execute }
             .to not_change { merge_request.notes.diff_notes.count }
-            .and change { merge_request.notes.non_diff_notes.count }.by(1) # review summary
+            .and not_change { merge_request.notes.non_diff_notes.count } # review summary just gets updated
 
-          expect(merge_request.notes.last.note).to eq(review_no_comment_note)
+          expect(progress_note.reload.note).to eq(described_class.no_comment_msg)
+        end
+      end
+
+      context 'when resource is empty' do
+        let(:review_prompt_message) do
+          build(:ai_message, :review_merge_request, user: user, resource: nil, request_id: 'uuid')
+        end
+
+        it 'updates progress note and return' do
+          expect do
+            described_class.new(review_prompt_message, review_prompt_class, options).execute
+          end.to not_change { merge_request.notes.diff_notes.count }
+            .and not_change { merge_request.notes.non_diff_notes.count }
+
+          expect(progress_note.reload.note).to eq(described_class.resource_not_found_msg)
+        end
+      end
+
+      context 'when progress note is not provided' do
+        let(:options) { {} }
+
+        it 'creates progress note and finish review as expected' do
+          expect do
+            completion.execute
+          end.to change { merge_request.notes.diff_notes.count }.by(3)
+            .and change { merge_request.notes.non_diff_notes.count }.by(1) # review summary gets created
+
+          expect(merge_request.notes.non_diff_notes.last.note).to eq(summary_answer)
+        end
+
+        context 'when resource is empty' do
+          let(:review_prompt_message) do
+            build(:ai_message, :review_merge_request, user: user, resource: nil, request_id: 'uuid')
+          end
+
+          it 'does not execute review and raise exception' do
+            expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+              StandardError.new("Unable to perform Duo Code Review: progress_note and resource not found")
+            )
+
+            expect do
+              described_class.new(review_prompt_message, review_prompt_class, options).execute
+            end.to not_change { merge_request.notes.diff_notes.count }
+              .and not_change { merge_request.notes.non_diff_notes.count }
+          end
         end
       end
 
@@ -339,7 +393,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           completion.execute
 
           expect(merge_request.notes.count).to eq 1
-          expect(merge_request.notes.last.note).to eq(review_no_comment_note)
+          expect(merge_request.notes.last.note).to eq(described_class.no_comment_msg)
         end
       end
 
@@ -351,29 +405,11 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           completion.execute
 
           expect(merge_request.notes.count).to eq 1
-          expect(merge_request.notes.last.note).to eq(review_no_comment_note)
+          expect(merge_request.notes.last.note).to eq(described_class.no_comment_msg)
         end
       end
 
       context 'when there were some comments' do
-        context 'when summary returns a successful response' do
-          let(:summary_answer) { 'Helpful review summary' }
-
-          it 'updates progress note with a review summary' do
-            expect(Notes::CreateService).to receive(:new).with(
-              merge_request.project,
-              duo_code_review_bot,
-              noteable: merge_request,
-              note: review_start_note
-            ).and_call_original
-            allow(Notes::CreateService).to receive(:new).and_call_original
-
-            completion.execute
-
-            expect(merge_request.notes.non_diff_notes.last.note).to eq s_("Helpful review summary")
-          end
-        end
-
         context 'when an error gets raised' do
           before do
             allow(DraftNote).to receive(:new).and_raise('error')
@@ -382,7 +418,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           it 'updates progress note with an error message' do
             completion.execute
 
-            expect(merge_request.notes.non_diff_notes.last.note).to eq(review_error_note)
+            expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.error_msg)
           end
         end
 
@@ -401,7 +437,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
 
             expect(merge_request.notes.count).to eq 4
             expect(merge_request.notes.diff_notes.count).to eq 3
-            expect(merge_request.notes.non_diff_notes.last.note).to eq(review_error_note)
+            expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.error_msg)
           end
         end
 
@@ -413,7 +449,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
 
             expect(merge_request.notes.count).to eq 4
             expect(merge_request.notes.diff_notes.count).to eq 3
-            expect(merge_request.notes.non_diff_notes.last.note).to eq(review_error_note)
+            expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.error_msg)
           end
         end
 
@@ -425,7 +461,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
 
             expect(merge_request.notes.count).to eq 4
             expect(merge_request.notes.diff_notes.count).to eq 3
-            expect(merge_request.notes.non_diff_notes.last.note).to eq(review_error_note)
+            expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.error_msg)
           end
         end
       end
