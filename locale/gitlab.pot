@@ -96,6 +96,11 @@ msgid_plural "%d Approvals"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%d Artifact"
+msgid_plural "%d Artifacts"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%d Module"
 msgid_plural "%d Modules"
 msgstr[0] ""
@@ -65407,6 +65412,9 @@ msgid "VirtualRegistries|Configure Virtual Registries settings."
 msgstr ""
 
 msgid "VirtualRegistries|Virtual Registries"
+msgstr ""
+
+msgid "VirtualRegistry|Maven"
 msgstr ""
 
 msgid "VirtualRegistry|Virtual registries"
