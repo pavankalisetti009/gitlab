@@ -29,17 +29,17 @@ export default {
     tabId: {
       type: String,
       required: false,
-      default: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS,
+      default: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS,
     },
   },
   tabs: [
     {
-      id: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS,
-      title: s__('AdminSelfHostedModels|Self-hosted models'),
-    },
-    {
       id: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS,
       title: s__('AdminAIPoweredFeatures|AI-powered features'),
+    },
+    {
+      id: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS,
+      title: s__('AdminSelfHostedModels|Self-hosted models'),
     },
   ],
   data() {
@@ -68,7 +68,7 @@ export default {
   },
   methods: {
     navigateToSelfHostedModelsTab() {
-      this.$router.push({ name: 'index' });
+      this.$router.push({ name: 'models' });
     },
     navigateToFeaturesTab() {
       this.$router.push({ name: 'features' });
