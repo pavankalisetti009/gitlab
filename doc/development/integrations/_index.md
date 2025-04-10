@@ -185,6 +185,27 @@ attribute :wiki_page_events, default: false
 If an event attribute for an existing integration changes to `true`,
 this requires a data migration to back-fill the attribute value for old records.
 
+### Define metrics
+
+Every new integration should have five [metrics](../internal_analytics/metrics/_index.md):
+
+- Count of active projects with the given integration
+- Count of active projects inheriting the given integration
+- Count of active groups with the given integration
+- Count of active groups inheriting the given integration
+- Count of active instance-level integrations for the given integration
+
+Metrics require the model class of the integration to work. You can add metrics only together with or after the model.
+
+To create metric definitions:
+
+1. Copy the metrics created for an existing active integration.
+1. Replace all occurrences of the previous integration's name with the new integration's name.
+1. Replace `milestone` with the current milestone and `introduced_by_url` with the merge request link.
+1. Verify all other attributes have correct values by checking the [metrics guide](../internal_analytics/metrics/metrics_dictionary.md#metrics-definition-and-validation).
+
+For example, to create metric definitions for the Slack integration, you copy the metrics [1](https://gitlab.com/gitlab-org/gitlab/blob/master/config/metrics/counts_all/20210216180122_projects_slack_active.yml), [2](https://gitlab.com/gitlab-org/gitlab/blob/master/config/metrics/counts_all/20210216180124_groups_slack_active.yml), [3](https://gitlab.com/gitlab-org/gitlab/blob/master/config/metrics/counts_all/20210216180127_instances_slack_active.yml), [4](https://gitlab.com/gitlab-org/gitlab/blob/master/config/metrics/counts_all/20210216180127_instances_slack_active.yml), and [5](https://gitlab.com/gitlab-org/gitlab/blob/master/config/metrics/counts_all/20210216180129_projects_inheriting_slack_active.yml)), then replace `Slack` with the name of the new integration.
+
 ### Security requirements
 
 #### All HTTP calls must use `Gitlab::HTTP`
