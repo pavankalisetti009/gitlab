@@ -23210,7 +23210,7 @@ ALTER SEQUENCE subscription_add_ons_id_seq OWNED BY subscription_add_ons.id;
 
 CREATE TABLE subscription_seat_assignments (
     id bigint NOT NULL,
-    namespace_id bigint NOT NULL,
+    namespace_id bigint,
     user_id bigint NOT NULL,
     last_activity_on timestamp with time zone,
     created_at timestamp with time zone NOT NULL,
@@ -38274,7 +38274,7 @@ CREATE UNIQUE INDEX uniq_idx_streaming_destination_id_and_namespace_id ON audit_
 
 CREATE UNIQUE INDEX uniq_idx_streaming_group_destination_id_and_namespace_id ON audit_events_streaming_group_namespace_filters USING btree (external_streaming_destination_id, namespace_id);
 
-CREATE UNIQUE INDEX uniq_idx_subscription_seat_assignments_on_namespace_and_user ON subscription_seat_assignments USING btree (namespace_id, user_id);
+CREATE UNIQUE INDEX uniq_idx_subscription_seat_assignments_on_namespace_id_and_user ON subscription_seat_assignments USING btree (namespace_id, user_id) WHERE (namespace_id IS NOT NULL);
 
 CREATE UNIQUE INDEX uniq_idx_user_add_on_assignments_on_add_on_purchase_and_user ON subscription_user_add_on_assignments USING btree (add_on_purchase_id, user_id);
 
