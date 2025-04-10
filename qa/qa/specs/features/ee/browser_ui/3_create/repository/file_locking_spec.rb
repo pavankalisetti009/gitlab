@@ -2,12 +2,18 @@
 
 module QA
   RSpec.describe 'Create' do
-    describe 'File Locking', :requires_admin, product_group: :source_code do
+    describe(
+      'File Locking',
+      :requires_admin,
+      product_group: :source_code,
+      feature_flag: { name: :blob_overflow_menu }
+    ) do
       let(:user_one) { create(:user) }
       let(:user_two) { create(:user) }
       let(:project) { create(:project, :with_readme, name: 'file_locking') }
 
       before do
+        Runtime::Feature.enable(:blob_overflow_menu)
         Flow::Login.sign_in
 
         Resource::Repository::ProjectPush.fabricate! do |push|
@@ -32,7 +38,7 @@ module QA
 
         Flow::Login.sign_in(as: user_one, skip_page_validation: true)
         go_to_directory
-        click_lock
+        click_lock_directory
 
         expect_error_on_push for_file: 'directory/file', as_user: user_two
         expect_no_error_on_push for_file: 'directory/file', as_user: user_one
@@ -42,7 +48,7 @@ module QA
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347769' do
         Flow::Login.sign_in(as: user_one, skip_page_validation: true)
         go_to_file
-        click_lock
+        click_lock_file
 
         expect_error_on_push as_user: user_two
         expect_no_error_on_push as_user: user_one
@@ -60,7 +66,7 @@ module QA
 
         Flow::Login.sign_in(as: user_one, skip_page_validation: true)
         go_to_file
-        click_lock
+        click_lock_file
 
         merge_request.visit!
 
@@ -75,7 +81,7 @@ module QA
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347766' do
         Flow::Login.sign_in(as: user_one, skip_page_validation: true)
         go_to_file
-        click_lock
+        click_lock_file
         project.visit!
 
         Page::Project::Menu.perform(&:go_to_repository_locked_files)
@@ -101,8 +107,17 @@ module QA
         end
       end
 
-      def click_lock
+      def click_lock_directory
         Page::File::Show.perform(&:lock)
+      end
+
+      def click_lock_file
+        # We use find here because these are gitlab-ui elements
+        find('[data-testid="blob-overflow-menu"] > button').click
+        # CLick within dropdown
+        click_button('Lock')
+        # Click within confirmation dialog
+        click_button('Lock')
       end
 
       def add_to_project(user:)

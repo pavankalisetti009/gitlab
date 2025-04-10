@@ -64,6 +64,7 @@ export default {
       return {
         text: this.lockButtonTitle,
         extraAttrs: {
+          'data-testid': 'lock-file-dropdown-item',
           disabled: !this.canLock || this.isLoading || this.isUpdating,
         },
       };

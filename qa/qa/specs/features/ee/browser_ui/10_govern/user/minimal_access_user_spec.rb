@@ -2,7 +2,12 @@
 
 module QA
   RSpec.describe 'Govern' do
-    describe 'User with minimal access to group', :requires_admin, product_group: :authentication do
+    describe(
+      'User with minimal access to group',
+      :requires_admin,
+      product_group: :authentication,
+      feature_flag: { name: :blob_overflow_menu }
+    ) do
       let(:admin_api_client) { Runtime::API::Client.as_admin }
 
       let(:user_with_minimal_access) { create(:user, api_client: admin_api_client) }
@@ -19,6 +24,10 @@ module QA
           name: 'project-for-minimal-access',
           group: group,
           api_client: admin_api_client)
+      end
+
+      before do
+        Runtime::Feature.enable(:blob_overflow_menu)
       end
 
       after do
@@ -42,7 +51,7 @@ module QA
 
         Page::File::Show.perform(&:click_edit)
 
-        expect(page).to have_text("You can’t edit files directly in this project.")
+        expect(page).to have_text("You're not allowed to make changes to this project directly.")
       end
     end
   end

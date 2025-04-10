@@ -11,7 +11,6 @@ RSpec.describe 'Path Locks', :js, feature_category: :source_code_management do
   let(:tree_path) { project_tree_path(project, project.repository.root_ref) }
 
   before do
-    stub_feature_flags(blob_overflow_menu: false)
     project.add_maintainer(user)
     project.add_developer(other_user)
     sign_in(user)
@@ -26,10 +25,13 @@ RSpec.describe 'Path Locks', :js, feature_category: :source_code_management do
       click_link "encoding"
     end
 
-    find('.js-path-lock').click
     wait_for_requests
 
-    accept_gl_confirm('Are you sure you want to lock this directory?', button_text: 'Ok')
+    click_button 'Lock'
+
+    within_modal do
+      click_button 'Ok'
+    end
 
     expect(page).to have_button('Unlock')
   end
@@ -41,16 +43,23 @@ RSpec.describe 'Path Locks', :js, feature_category: :source_code_management do
       click_link "VERSION"
     end
 
-    within '.file-actions' do
-      click_button "Lock"
+    within_testid('blob-controls') do
+      click_button 'File actions'
+      click_button 'Lock'
     end
 
-    accept_gl_confirm('Are you sure you want to lock VERSION?', button_text: 'Lock')
+    wait_for_requests
 
+    within_modal do
+      click_button 'Lock'
+    end
+
+    click_button 'File actions'
     expect(page).to have_button('Unlock')
 
     sign_in other_user
     visit project_blob_path(project, File.join('master', 'VERSION'))
+    click_button 'File actions'
     expect(page).to have_button('Unlock', disabled: true)
   end
 
@@ -59,20 +68,27 @@ RSpec.describe 'Path Locks', :js, feature_category: :source_code_management do
       click_link "VERSION"
     end
 
-    within '.file-actions' do
-      click_button "Lock"
+    within_testid('blob-controls') do
+      click_button 'File actions'
+      click_button 'Lock'
     end
 
-    accept_gl_confirm('Are you sure you want to lock VERSION?', button_text: 'Lock')
+    wait_for_requests
 
-    expect(page).to have_button('Unlock')
-
-    within '.file-actions' do
-      click_button "Unlock"
+    within_modal do
+      click_button 'Lock'
     end
 
-    accept_gl_confirm('Are you sure you want to unlock VERSION?', button_text: 'Unlock')
+    within_testid('blob-controls') do
+      click_button 'File actions'
+      click_button 'Unlock'
+    end
 
+    within_modal do
+      click_button 'Unlock'
+    end
+
+    click_button 'File actions'
     expect(page).to have_link('Lock')
   end
 
