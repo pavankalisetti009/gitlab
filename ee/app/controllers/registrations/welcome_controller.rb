@@ -121,6 +121,8 @@ module Registrations
         user_id: current_user.id
       )
 
+      ::Onboarding.cache_onboarding_in_progress(current_user)
+
       if onboarding_status_presenter.continue_full_onboarding? # trials/regular registration on .com
         signup_onboarding_path
       elsif onboarding_status_presenter.single_invite? # invites w/o tasks due to order

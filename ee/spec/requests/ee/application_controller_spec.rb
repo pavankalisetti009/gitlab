@@ -83,12 +83,36 @@ RSpec.describe ApplicationController, type: :request, feature_category: :shared 
             expect(Gitlab::ErrorTracking)
               .to receive(:track_exception).with(
                 instance_of(::Onboarding::StepUrlError),
-                onboarding_status: user.onboarding_status.to_json
+                onboarding_status: user.onboarding_status.to_json,
+                onboarding_in_progress: user.onboarding_in_progress
               )
 
             expect { get root_path }.to change { user.reload.onboarding_in_progress }.to(false)
 
             expect(response).not_to be_redirect
+          end
+
+          context 'when this differs from what is in cache', :use_clean_rails_memory_store_caching do
+            before do
+              Rails.cache.write("user_onboarding_in_progress:#{user.id}", false)
+            end
+
+            it 'does not redirect for a request away from onboarding and tracks the error' do
+              expect(Gitlab::ErrorTracking).to receive(:track_exception) do |exception, metadata|
+                expect(exception).to be_a(::Onboarding::StepUrlError)
+                expect(exception.message).to include('and their onboarding has already been marked')
+
+                result_metadata = {
+                  onboarding_status: user.onboarding_status.to_json,
+                  onboarding_in_progress: user.onboarding_in_progress
+                }
+                expect(metadata).to eq(result_metadata)
+              end
+
+              expect { get root_path }.to change { user.reload.onboarding_in_progress }.to(false)
+
+              expect(response).not_to be_redirect
+            end
           end
 
           context 'when stop_welcome_redirection feature is not enabled' do

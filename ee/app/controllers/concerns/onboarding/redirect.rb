@@ -41,9 +41,19 @@ module Onboarding
       return false unless step_url.present?
 
       if step_url.include?(users_sign_up_welcome_path) && ::Onboarding.completed_welcome_step?(current_user)
+        message = 'User has already completed welcome step'
+
+        # We are trying to figure out if there is an issue with database
+        # freshness here and using redis will help narrow it down.
+        # See https://gitlab.com/gitlab-org/gitlab/-/issues/520090
+        unless ::Onboarding.user_onboarding_in_progress?(current_user, use_cache: true)
+          message += ' and their onboarding has already been marked as completed in redis'
+        end
+
         ::Gitlab::ErrorTracking.track_exception(
-          ::Onboarding::StepUrlError.new('User has already completed welcome step'),
-          onboarding_status: current_user.onboarding_status.to_json
+          ::Onboarding::StepUrlError.new(message),
+          onboarding_status: current_user.onboarding_status.to_json,
+          onboarding_in_progress: current_user.onboarding_in_progress
         )
 
         Onboarding::FinishService.new(current_user).execute

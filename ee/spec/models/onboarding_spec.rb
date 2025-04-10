@@ -8,24 +8,96 @@ RSpec.describe Onboarding, feature_category: :onboarding do
   let(:user) { build_stubbed(:user) }
 
   describe '.user_onboarding_in_progress?' do
-    where(
-      user?: [true, false],
-      user_onboarding?: [true, false],
-      onboarding?: [true, false]
-    )
+    where(:user_present, :onboarding_enabled, :onboarding_in_progress, :use_cache, :cached_value, :expected_result) do
+      # user nil cases
+      false | true  | true  | false | nil   | false
+      false | true  | true  | true  | true  | false
+
+      # onboarding disabled cases
+      true  | false | true  | false | nil   | false
+      true  | false | true  | true  | true  | false
+
+      # use_cache: false cases
+      true  | true  | true  | false | nil   | true
+      true  | true  | false | false | true  | false
+
+      # use_cache: true, user.onboarding_in_progress? false cases
+      true  | true  | false | true  | true  | false
+
+      # use_cache: true, user.onboarding_in_progress? true, cached cases
+      true  | true  | true  | true  | true  | true
+      true  | true  | true  | true  | false | false
+
+      # use_cache: true, user.onboarding_in_progress? true, no cache cases
+      true  | true  | true  | true  | nil   | true
+    end
 
     with_them do
-      let(:local_user) { user? ? user : nil }
-      let(:expected_result) { user_onboarding? && user? && onboarding? }
-
       before do
-        allow(user).to receive(:onboarding_in_progress?).and_return(user_onboarding?)
-        stub_saas_features(onboarding: onboarding?)
+        stub_saas_features(onboarding: onboarding_enabled)
+
+        if user_present
+          user.onboarding_in_progress = onboarding_in_progress
+          allow(described_class).to receive(:fetch_onboarding_in_progress).with(user).and_return(cached_value)
+        end
       end
 
-      subject { described_class.user_onboarding_in_progress?(local_user) }
+      it 'returns the expected result' do
+        actual_user = user_present ? user : nil
+        expect(described_class.user_onboarding_in_progress?(actual_user, use_cache: use_cache)).to eq(expected_result)
+      end
+    end
 
-      it { is_expected.to be expected_result }
+    it 'does not check cache when use_cache is false' do
+      stub_saas_features(onboarding: true)
+      user.onboarding_in_progress = true
+
+      expect(described_class).not_to receive(:fetch_onboarding_in_progress)
+
+      described_class.user_onboarding_in_progress?(user, use_cache: false)
+    end
+
+    it 'does not check cache when user.onboarding_in_progress? is false' do
+      stub_saas_features(onboarding: true)
+      user.onboarding_in_progress = false
+
+      expect(described_class).not_to receive(:fetch_onboarding_in_progress)
+
+      described_class.user_onboarding_in_progress?(user, use_cache: true)
+    end
+  end
+
+  describe '.fetch_onboarding_in_progress', :use_clean_rails_memory_store_caching do
+    let(:cache_key) { "user_onboarding_in_progress:#{user.id}" }
+
+    it 'fetches from Rails cache with the correct key' do
+      Rails.cache.write(cache_key, true)
+
+      expect(described_class.fetch_onboarding_in_progress(user)).to eq(true)
+    end
+
+    it 'returns nil when cache is empty' do
+      expect(described_class.fetch_onboarding_in_progress(user)).to be_nil
+    end
+  end
+
+  describe '.cache_onboarding_in_progress', :use_clean_rails_memory_store_caching do
+    let(:cache_key) { "user_onboarding_in_progress:#{user.id}" }
+
+    it 'caches true when onboarding_in_progress is true' do
+      user.onboarding_in_progress = true
+
+      described_class.cache_onboarding_in_progress(user)
+
+      expect(Rails.cache.fetch(cache_key)).to eq(true)
+    end
+
+    it 'caches false when onboarding_in_progress is false' do
+      user.onboarding_in_progress = false
+
+      described_class.cache_onboarding_in_progress(user)
+
+      expect(Rails.cache.fetch(cache_key)).to eq(false)
     end
   end
 
