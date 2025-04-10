@@ -15664,7 +15664,8 @@ CREATE TABLE incident_management_issuable_escalation_statuses (
     escalations_started_at timestamp with time zone,
     resolved_at timestamp with time zone,
     status smallint DEFAULT 0 NOT NULL,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_ad48232311 CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE incident_management_issuable_escalation_statuses_id_seq
