@@ -54,6 +54,7 @@ describe('BoardTopBar', () => {
         epicFeatureAvailable: true,
         iterationFeatureAvailable: true,
         healthStatusFeatureAvailable: true,
+        hasCustomFieldsFeature: true,
         isIssueBoard: true,
         isEpicBoard: false,
         isGroupBoard: true,

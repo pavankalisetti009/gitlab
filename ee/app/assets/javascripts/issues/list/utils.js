@@ -19,11 +19,10 @@ import {
   WORK_ITEM_TYPE_ENUM_OBJECTIVE,
   WORK_ITEM_TYPE_ENUM_TEST_CASE,
 } from '~/work_items/constants';
-
 import {
   TYPENAME_CUSTOM_FIELD,
   TYPENAME_CUSTOM_FIELD_SELECT_OPTION,
-} from 'ee/graphql_shared/constants';
+} from '~/graphql_shared/constants';
 
 export * from '~/issues/list/utils';
 
