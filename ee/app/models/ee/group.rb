@@ -339,9 +339,6 @@ module EE
 
         return false unless groups.any?
 
-        return false if [:read_work_item, :read_confidential_issues].include?(action) &&
-          !::Feature.enabled?(:filtering_optimization_for_work_items, groups.first.root_ancestor)
-
         groups.first.use_traversal_ids?
       end
 

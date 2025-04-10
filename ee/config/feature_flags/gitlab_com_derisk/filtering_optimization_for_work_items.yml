@@ -1,9 +1,0 @@
----
-name: filtering_optimization_for_work_items
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/513012
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/185034
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/531107
-milestone: '17.11'
-group: group::product planning
-type: gitlab_com_derisk
-default_enabled: false
