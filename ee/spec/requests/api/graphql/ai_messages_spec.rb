@@ -101,7 +101,9 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
           'requestId' => 'uuid1',
           'content' => response_content,
           'contentHtml' => "<p data-sourcepos=\"1:1-1:#{response_content.size}\" dir=\"auto\">response " \
-                           "<a href=\"#{external_issue_url}+\">#{external_issue_url}+</a></p>",
+                           "<a data-sourcepos=\"1:10-1:#{response_content.size}\" " \
+                           "href=\"#{external_issue_url}+\">#{external_issue_url}+" \
+                           "</a></p>",
           'role' => 'ASSISTANT',
           'errors' => [],
           'timestamp' => Time.current.iso8601,

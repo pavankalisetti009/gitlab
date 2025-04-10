@@ -35,7 +35,7 @@ RSpec.describe 'Subscriptions::AiCompletionResponse', feature_category: :duo_cha
   end
 
   let(:content_html) do
-    "<p data-sourcepos=\"1:1-1:#{content.size}\" dir=\"auto\">Some AI response " \
+    "<p dir=\"auto\">Some AI response " \
       "<a href=\"#{external_issue_url}+\">#{external_issue_url}+</a></p>"
   end
 
@@ -95,7 +95,7 @@ RSpec.describe 'Subscriptions::AiCompletionResponse', feature_category: :duo_cha
   shared_examples 'on success' do
     it 'receives data' do
       expect(ai_completion_response['content']).to eq(content)
-      expect(ai_completion_response['contentHtml']).to eq(content_html)
+      expect(ai_completion_response['contentHtml']).to eq_no_sourcepos(content_html)
       expect(ai_completion_response['role']).to eq('ASSISTANT')
       expect(ai_completion_response['requestId']).to eq(request_id)
       expect(ai_completion_response['errors']).to eq([])
