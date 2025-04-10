@@ -73,8 +73,32 @@ To lock a file or directory:
 
 If **Lock** is not enabled, you don't have the required permissions to lock the file.
 
-To see who locked a directory, if it wasn't you, hover over the **Lock**. For a similar function
-for locked files, see [issue 4623](https://gitlab.com/gitlab-org/gitlab/-/issues/4623).
+To view the user who locked a directory (if it was not you), hover over the button. Reinstatement of
+similar functionality for locked files is discussed in
+[issue 376222](https://gitlab.com/gitlab-org/gitlab/-/issues/376222).
+
+### File operations from the Actions menu
+
+{{< history >}}
+
+- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/519325) in GitLab 17.10 [with a flag](../../administration/feature_flags.md) named `blob_overflow_menu`. Disabled by default.
+
+{{< /history >}}
+
+{{< alert type="flag" >}}
+
+The availability of this feature is controlled by a feature flag. For more information, see the history.
+
+{{< /alert >}}
+
+To lock a file:
+
+1. On the left sidebar, select **Search or go to** and find your project.
+1. Go to the file you want to lock.
+1. In the upper-right corner, next to a filename, select **Actions** ({{< icon name="ellipsis_v" >}}) **> Lock**.
+1. On the confirmation dialog, select **OK**.
+
+If you do not have permission to lock the file, the menu item is disabled.
 
 ## View and remove locks
 
