@@ -20,7 +20,7 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
   let_it_be(:controls) do
     [
       {
-        expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+        expression: "{\"operator\":\">=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
         name: "minimum_approvals_required_2"
       },
       {
@@ -128,7 +128,7 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
       let_it_be(:controls) do
         [
           {
-            expression: { operator: "=", field: "minimum_approvals_required", value: "invalid_number" }.to_json,
+            expression: { operator: ">=", field: "minimum_approvals_required", value: "invalid_number" }.to_json,
             name: "minimum_approvals_required_2"
           }
         ]

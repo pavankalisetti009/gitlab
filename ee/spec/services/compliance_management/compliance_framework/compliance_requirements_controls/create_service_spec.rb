@@ -101,7 +101,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
   def control_expression
     {
-      operator: "=",
+      operator: ">=",
       field: "minimum_approvals_required",
       value: 2
     }.to_json

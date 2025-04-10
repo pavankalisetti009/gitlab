@@ -30,7 +30,7 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
   let(:mutation_params) do
     {
       params: {
-        name: 'external_control',
+        name: 'project_visibility_not_internal',
         expression: control_expression
       }
     }
@@ -44,7 +44,7 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
 
   shared_examples 'a mutation that updates a compliance requirement control' do
     it 'updates the requirement control' do
-      expect { mutate }.to change { control.reload.name }.to('external_control')
+      expect { mutate }.to change { control.reload.name }.to('project_visibility_not_internal')
                                                          .and change {
                                                            control.reload.expression
                                                          }.to(control_expression)
@@ -53,7 +53,7 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
     it 'returns the updated requirement control', :aggregate_failures do
       mutate
 
-      expect(mutation_response['requirementsControl']['name']).to eq 'external_control'
+      expect(mutation_response['requirementsControl']['name']).to eq 'project_visibility_not_internal'
       expect(mutation_response['requirementsControl']['expression']).to eq control_expression
     end
 

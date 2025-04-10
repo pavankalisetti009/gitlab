@@ -26,7 +26,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
   let_it_be(:old_control_expression) do
     {
-      operator: "=",
+      operator: ">=",
       field: "minimum_approvals_required",
       value: 2
     }.to_json

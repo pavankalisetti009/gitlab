@@ -24,7 +24,7 @@ RSpec.describe ComplianceManagement::Frameworks::JsonExportService, feature_cate
 
   let_it_be(:expression) do
     {
-      operator: "=",
+      operator: ">=",
       field: "minimum_approvals_required",
       value: 2
     }.to_json
@@ -102,7 +102,7 @@ RSpec.describe ComplianceManagement::Frameworks::JsonExportService, feature_cate
                 "opportunities for unauthorized or unintentional modification or misuse of the organization's assets",
               'controls' => [{
                 "control_type" => "internal",
-                "expression" => { "field" => "minimum_approvals_required", "operator" => "=", "value" => 2 },
+                "expression" => { "field" => "minimum_approvals_required", "operator" => ">=", "value" => 2 },
                 "name" => "minimum_approvals_required_2"
               }]
             }

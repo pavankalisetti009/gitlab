@@ -71293,6 +71293,9 @@ msgstr ""
 msgid "does not match dast_site_validation.project"
 msgstr ""
 
+msgid "does not match the name of the predefined control."
+msgstr ""
+
 msgid "does not support select options."
 msgstr ""
 
@@ -71631,6 +71634,9 @@ msgid "is not one of"
 msgstr ""
 
 msgid "is not part of the given organization"
+msgstr ""
+
+msgid "is not valid."
 msgstr ""
 
 msgid "is not valid. The iteration group has to match the iteration cadence group."

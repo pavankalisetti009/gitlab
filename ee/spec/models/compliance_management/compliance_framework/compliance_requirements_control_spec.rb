@@ -28,6 +28,37 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
     end
 
     it { is_expected.to validate_length_of(:expression).is_at_most(255) }
+
+    describe '#validate_name_with_expression' do
+      let_it_be(:compliance_requirement) { create(:compliance_requirement) }
+
+      let(:control) do
+        build(:compliance_requirements_control,
+          name: control_name,
+          compliance_requirement: compliance_requirement,
+          expression: expression_json)
+      end
+
+      context 'when name matches predefined control but expression does not match' do
+        let(:control_name) { 'minimum_approvals_required_2' }
+        let(:expression_json) { { operator: '=', field: 'merge_request_prevent_author_approval', value: true }.to_json }
+
+        it 'returns error' do
+          expect(control).to be_invalid
+          expect(control.errors.full_messages)
+            .to include("Expression does not match the name of the predefined control.")
+        end
+      end
+
+      context 'when name and expression both match predefined control' do
+        let(:control_name) { 'minimum_approvals_required_2' }
+        let(:expression_json) { { operator: '>=', field: 'minimum_approvals_required', value: 2 }.to_json }
+
+        it 'passes validation' do
+          expect(control.valid?).to be(true)
+        end
+      end
+    end
   end
 
   describe 'scopes' do
@@ -77,20 +108,18 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
     context 'when controls count is one less than max count' do
       before do
-        names = %w[
-          scanner_sast_running
-          merge_request_prevent_author_approval
-          merge_request_prevent_committers_approval
-          project_visibility_not_internal
-        ]
-
-        4.times do |i|
-          create(:compliance_requirements_control, compliance_requirement: compliance_requirement_1, name: names[i])
-        end
+        create(:compliance_requirements_control, :external, compliance_requirement: compliance_requirement_1)
+        create(:compliance_requirements_control, :minimum_approvals_required_2,
+          compliance_requirement: compliance_requirement_1)
+        create(:compliance_requirements_control, :project_visibility_not_internal,
+          compliance_requirement: compliance_requirement_1)
+        create(:compliance_requirements_control, compliance_requirement: compliance_requirement_1)
       end
 
       it 'creates control with no error' do
         new_control.name = :default_branch_protected
+        new_control.expression = { operator: '=', field: 'default_branch_protected', value: true }.to_json
+
         expect(new_control.valid?).to be(true)
         expect(new_control.errors).to be_empty
       end
@@ -98,21 +127,20 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
     context 'when requirements count is equal to max count' do
       before do
-        names = %w[
-          scanner_sast_running
-          merge_request_prevent_author_approval
-          merge_request_prevent_committers_approval
-          project_visibility_not_internal
-          default_branch_protected
-        ]
-
-        5.times do |i|
-          create(:compliance_requirements_control, compliance_requirement: compliance_requirement_1, name: names[i])
-        end
+        create(:compliance_requirements_control, :external, compliance_requirement: compliance_requirement_1)
+        create(:compliance_requirements_control, :minimum_approvals_required_2,
+          compliance_requirement: compliance_requirement_1)
+        create(:compliance_requirements_control, :project_visibility_not_internal,
+          compliance_requirement: compliance_requirement_1)
+        create(:compliance_requirements_control, compliance_requirement: compliance_requirement_1)
+        create(:compliance_requirements_control, :default_branch_protected,
+          compliance_requirement: compliance_requirement_1)
       end
 
       it 'returns error' do
         new_control.name = :auth_sso_enabled
+        new_control.expression = { operator: '=', field: 'auth_sso_enabled', value: true }.to_json
+
         expect(new_control.valid?).to be(false)
         expect(new_control.errors.full_messages)
           .to contain_exactly("Compliance requirement cannot have more than 5 controls")
@@ -123,7 +151,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
   describe '#expression_as_hash' do
     let_it_be(:expression_hash) do
       {
-        'operator' => '=',
+        'operator' => '>=',
         'field' => 'minimum_approvals_required',
         'value' => 2
       }
@@ -141,7 +169,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
     it 'returns parsed hash with symbol keys when symbolize_names is true' do
       expected_hash = {
-        operator: '=',
+        operator: '>=',
         field: 'minimum_approvals_required',
         value: 2
       }
@@ -270,7 +298,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       context 'when control expression is valid' do
         let_it_be(:expression) do
           {
-            operator: "=",
+            operator: ">=",
             field: "minimum_approvals_required",
             value: 2
           }.to_json

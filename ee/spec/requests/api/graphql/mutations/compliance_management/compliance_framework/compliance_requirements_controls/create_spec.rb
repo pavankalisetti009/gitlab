@@ -121,7 +121,7 @@ RSpec.describe 'Create a Compliance Requirement Control', feature_category: :com
 
   def control_expression
     {
-      operator: "=",
+      operator: ">=",
       field: "minimum_approvals_required",
       value: 2
     }.to_json

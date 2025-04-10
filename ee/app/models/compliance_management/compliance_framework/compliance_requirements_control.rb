@@ -35,6 +35,7 @@ module ComplianceManagement
       validates :expression, length: { maximum: 255 }
       validate :validate_internal_expression, if: :internal?
       validate :controls_count_per_requirement
+      validate :validate_name_with_expression, if: :internal?
 
       validates :external_url, presence: true,
         # needs to evaluate .com? at runtime for specs to be able to differentiate - there must be a better way
@@ -85,6 +86,21 @@ module ComplianceManagement
         expression_schema_errors.each do |error|
           errors.add(:expression, JSONSchemer::Errors.pretty(error))
         end
+      end
+
+      def validate_name_with_expression
+        return if expression.blank? || name.blank?
+        return if errors[:expression].any?
+
+        hashed_expression = expression_as_hash(symbolize_names: true)
+        return if errors[:expression].any?
+
+        predefined_control = ComplianceManagement::ControlExpression.find(name.to_s)
+        return errors.add(:name, _("is not valid.")) unless predefined_control
+
+        return if predefined_control.matches_expression?(hashed_expression)
+
+        errors.add(:expression, _("does not match the name of the predefined control."))
       end
     end
   end

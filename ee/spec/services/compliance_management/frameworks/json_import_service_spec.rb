@@ -19,7 +19,7 @@ RSpec.describe ComplianceManagement::Frameworks::JsonImportService, feature_cate
                   "name": "minimum_approvals_required_2",
                   "control_type": "internal",
                   "expression": {
-                    "operator": "=",
+                    "operator": ">=",
                     "field": "minimum_approvals_required",
                     "value": 2
                   }
@@ -148,7 +148,7 @@ RSpec.describe ComplianceManagement::Frameworks::JsonImportService, feature_cate
           "name" => 'minimum_approvals_required_2',
           "control_type" => 'internal',
           "expression" => {
-            "operator" => "=",
+            "operator" => ">=",
             "field" => "minimum_approvals_required",
             "value" => 2
           }.to_json
