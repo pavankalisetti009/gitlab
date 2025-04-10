@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlLink, GlSprintf } from '@gitlab/ui';
-import ProjectDelayedDeleteButton from 'ee/projects/components/project_delayed_delete_button.vue';
+import ProjectDelayedDeleteButton from '~/projects/components/project_delayed_delete_button.vue';
 import SharedDeleteButton from '~/projects/components/shared/delete_button.vue';
 
 jest.mock('lodash/uniqueId', () => () => 'fakeUniqueId');

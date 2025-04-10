@@ -1,7 +1,7 @@
 <script>
 import { GlLink, GlSprintf } from '@gitlab/ui';
 import { __ } from '~/locale';
-import SharedDeleteButton from '~/projects/components/shared/delete_button.vue';
+import SharedDeleteButton from './shared/delete_button.vue';
 
 export default {
   components: {
