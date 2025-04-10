@@ -1,3 +1,5 @@
+#import "./work_item_status.fragment.graphql"
+
 fragment WorkItemTypeFragment on WorkItemType {
   id
   name
@@ -53,6 +55,12 @@ fragment WorkItemTypeFragment on WorkItemType {
             value
           }
         }
+      }
+    }
+
+    ... on WorkItemWidgetDefinitionStatus {
+      allowedStatuses {
+        ...WorkItemStatusFragment
       }
     }
   }

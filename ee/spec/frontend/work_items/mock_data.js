@@ -546,3 +546,194 @@ export const workItemChangeTypeWidgets = {
   },
 };
 /* eslint-enable import/export */
+
+export const mockWorkItemStatusResponse = {
+  data: {
+    workspace: {
+      id: 'gid://gitlab/Namespaces::ProjectNamespace/34',
+      workItem: {
+        id: 'gid://gitlab/WorkItem/1402',
+        widgets: [
+          {
+            type: 'ASSIGNEES',
+            __typename: 'WorkItemWidgetAssignees',
+          },
+          {
+            type: 'AWARD_EMOJI',
+            __typename: 'WorkItemWidgetAwardEmoji',
+          },
+          {
+            type: 'CURRENT_USER_TODOS',
+            __typename: 'WorkItemWidgetCurrentUserTodos',
+          },
+          {
+            type: 'CUSTOM_FIELDS',
+            __typename: 'WorkItemWidgetCustomFields',
+          },
+          {
+            type: 'DESCRIPTION',
+            __typename: 'WorkItemWidgetDescription',
+          },
+          {
+            type: 'DEVELOPMENT',
+            __typename: 'WorkItemWidgetDevelopment',
+          },
+          {
+            type: 'HIERARCHY',
+            __typename: 'WorkItemWidgetHierarchy',
+          },
+          {
+            type: 'ITERATION',
+            __typename: 'WorkItemWidgetIteration',
+          },
+          {
+            type: 'LABELS',
+            __typename: 'WorkItemWidgetLabels',
+          },
+          {
+            type: 'LINKED_ITEMS',
+            __typename: 'WorkItemWidgetLinkedItems',
+          },
+          {
+            type: 'LINKED_RESOURCES',
+            __typename: 'WorkItemWidgetLinkedResources',
+          },
+          {
+            type: 'MILESTONE',
+            __typename: 'WorkItemWidgetMilestone',
+          },
+          {
+            type: 'NOTES',
+            __typename: 'WorkItemWidgetNotes',
+          },
+          {
+            type: 'NOTIFICATIONS',
+            __typename: 'WorkItemWidgetNotifications',
+          },
+          {
+            type: 'PARTICIPANTS',
+            __typename: 'WorkItemWidgetParticipants',
+          },
+          {
+            type: 'START_AND_DUE_DATE',
+            __typename: 'WorkItemWidgetStartAndDueDate',
+          },
+          {
+            type: 'STATUS',
+            status: {
+              id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/2',
+              name: 'In progress',
+              iconName: 'status-running',
+              color: '#1f75cb',
+              position: 0,
+              __typename: 'WorkItemStatus',
+            },
+            __typename: 'WorkItemWidgetStatus',
+          },
+          {
+            type: 'TIME_TRACKING',
+            __typename: 'WorkItemWidgetTimeTracking',
+          },
+          {
+            type: 'WEIGHT',
+            __typename: 'WorkItemWidgetWeight',
+          },
+        ],
+        __typename: 'WorkItem',
+      },
+      __typename: 'Namespace',
+    },
+  },
+};
+
+export const mockWorkItemNoStatusResponse = {
+  data: {
+    workspace: {
+      id: 'gid://gitlab/Namespaces::ProjectNamespace/34',
+      workItem: {
+        id: 'gid://gitlab/WorkItem/1402',
+        widgets: [
+          {
+            type: 'ASSIGNEES',
+            __typename: 'WorkItemWidgetAssignees',
+          },
+          {
+            type: 'AWARD_EMOJI',
+            __typename: 'WorkItemWidgetAwardEmoji',
+          },
+          {
+            type: 'CURRENT_USER_TODOS',
+            __typename: 'WorkItemWidgetCurrentUserTodos',
+          },
+          {
+            type: 'CUSTOM_FIELDS',
+            __typename: 'WorkItemWidgetCustomFields',
+          },
+          {
+            type: 'DESCRIPTION',
+            __typename: 'WorkItemWidgetDescription',
+          },
+          {
+            type: 'DEVELOPMENT',
+            __typename: 'WorkItemWidgetDevelopment',
+          },
+          {
+            type: 'HIERARCHY',
+            __typename: 'WorkItemWidgetHierarchy',
+          },
+          {
+            type: 'ITERATION',
+            __typename: 'WorkItemWidgetIteration',
+          },
+          {
+            type: 'LABELS',
+            __typename: 'WorkItemWidgetLabels',
+          },
+          {
+            type: 'LINKED_ITEMS',
+            __typename: 'WorkItemWidgetLinkedItems',
+          },
+          {
+            type: 'LINKED_RESOURCES',
+            __typename: 'WorkItemWidgetLinkedResources',
+          },
+          {
+            type: 'MILESTONE',
+            __typename: 'WorkItemWidgetMilestone',
+          },
+          {
+            type: 'NOTES',
+            __typename: 'WorkItemWidgetNotes',
+          },
+          {
+            type: 'NOTIFICATIONS',
+            __typename: 'WorkItemWidgetNotifications',
+          },
+          {
+            type: 'PARTICIPANTS',
+            __typename: 'WorkItemWidgetParticipants',
+          },
+          {
+            type: 'START_AND_DUE_DATE',
+            __typename: 'WorkItemWidgetStartAndDueDate',
+          },
+          {
+            type: 'STATUS',
+            status: null,
+            __typename: 'WorkItemWidgetStatus',
+          },
+          {
+            type: 'TIME_TRACKING',
+            __typename: 'WorkItemWidgetTimeTracking',
+          },
+          {
+            type: 'WEIGHT',
+            __typename: 'WorkItemWidgetWeight',
+          },
+        ],
+        __typename: 'WorkItem',
+      },
+      __typename: 'Namespace',
+    },
+  },
+};
