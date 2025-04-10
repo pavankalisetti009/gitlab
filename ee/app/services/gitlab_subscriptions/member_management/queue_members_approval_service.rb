@@ -41,6 +41,8 @@ module GitlabSubscriptions
       def queue_users_for_approval
         non_billable_to_billable_users.each_slice(BATCH_SIZE).flat_map do |user_batch|
           ::GitlabSubscriptions::MemberManagement::MemberApproval.transaction do
+            approvals = []
+
             user_batch.map do |user|
               member = existing_members_hash[user.id]
               attributes = {
@@ -52,10 +54,19 @@ module GitlabSubscriptions
                 metadata: params.slice(:access_level, :expires_at, :member_role_id)
               }
 
-              ::GitlabSubscriptions::MemberManagement::MemberApproval.create_or_update_pending_approval(
+              approval = ::GitlabSubscriptions::MemberManagement::MemberApproval.create_or_update_pending_approval(
                 user, source_namespace, attributes
               )
+
+              approvals << approval
+
+              approval.run_after_commit do
+                payload = Gitlab::DataBuilder::MemberApprovalBuilder.build(event: :queued, approval: approval)
+                SystemHooksService.new.execute_hooks(payload, :member_approval_hooks)
+              end
             end
+
+            approvals
           end
         end
       end
