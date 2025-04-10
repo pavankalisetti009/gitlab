@@ -292,6 +292,28 @@ RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :co
           expect(build_names).to eq(['dependency-scanning'])
         end
 
+        context 'when DS_STATIC_REACHABILITY_ENABLED is set to true' do
+          before do
+            create(:ci_variable, project: project, key: 'DS_STATIC_REACHABILITY_ENABLED', value: 'true')
+          end
+
+          context 'when python files are present' do
+            let(:files) { { 'Pipfile' => '', 'app.py' => '' } }
+
+            it "gitlab-static-reachability job is present" do
+              expect(build_names).to eq(%w[dependency-scanning-with-reachability gitlab-static-reachability])
+            end
+          end
+
+          context 'when python files are missing' do
+            let(:files) { { 'Pipfile' => '' } }
+
+            it "gitlab-static-reachability job is present" do
+              expect(build_names).to eq(%w[dependency-scanning-with-reachability gitlab-static-reachability])
+            end
+          end
+        end
+
         it "the DS analyzer scans all compatible files" do
           build = pipeline.builds.first
           expect(String(build.variables.to_hash['DS_EXCLUDED_PATHS'])).to eql('spec, test, tests, tmp')
