@@ -137,4 +137,29 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirement,
       end
     end
   end
+
+  describe '.for_framework' do
+    let_it_be(:namespace) { create(:group) }
+
+    let_it_be(:framework1) { create(:compliance_framework, namespace: namespace, name: 'framework1') }
+    let_it_be(:framework2) { create(:compliance_framework, namespace: namespace, name: 'framework2') }
+    let_it_be(:framework3) { create(:compliance_framework, namespace: namespace, name: 'framework3') }
+
+    let_it_be(:requirement1) { create(:compliance_requirement, framework: framework1, namespace: namespace) }
+    let_it_be(:requirement2) { create(:compliance_requirement, framework: framework1, namespace: namespace) }
+    let_it_be(:requirement3) { create(:compliance_requirement, framework: framework2, namespace: namespace) }
+
+    context 'when framework has requirements' do
+      it 'only returns compliance requirement ids for that framework' do
+        expect(described_class.for_framework(framework1.id)).to contain_exactly(
+          requirement1, requirement2)
+      end
+    end
+
+    context 'when framework does not have requirements' do
+      it 'returns empty array' do
+        expect(described_class.for_framework(framework3)).to be_empty
+      end
+    end
+  end
 end
