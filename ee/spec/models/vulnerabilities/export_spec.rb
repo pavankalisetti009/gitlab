@@ -282,18 +282,6 @@ RSpec.describe Vulnerabilities::Export, feature_category: :vulnerability_managem
         .to change { export.reload.expires_at }
               .from(nil).to(described_class::EXPIRES_AFTER.from_now)
     end
-
-    context 'when email delivery is disabled' do
-      before do
-        allow(export).to receive(:email_delivery_enabled?).and_return(false)
-      end
-
-      it 'schedules the export deletion' do
-        expect(VulnerabilityExports::ExportDeletionWorker).to receive(:perform_in).with(1.hour, export.id)
-
-        schedule_export_deletion
-      end
-    end
   end
 
   describe '#timed_out?' do
@@ -357,45 +345,6 @@ RSpec.describe Vulnerabilities::Export, feature_category: :vulnerability_managem
     end
   end
 
-  describe '#email_delivery_enabled?' do
-    let_it_be(:group) { create(:group) }
-    let_it_be(:project) { create(:project, group: group) }
-
-    subject(:email_delivery_enabled?) { export.email_delivery_enabled? }
-
-    context 'when exportable is a group' do
-      let(:export) { create(:vulnerability_export, group: group, project: nil) }
-
-      context 'when feature flag is enabled for group' do
-        it { is_expected.to be(true) }
-      end
-
-      context 'when feature flag is disabled for group' do
-        before do
-          stub_feature_flags(asynchronous_vulnerability_export_delivery_for_groups: false)
-        end
-
-        it { is_expected.to be(false) }
-      end
-    end
-
-    context 'when exportable is a project' do
-      let(:export) { create(:vulnerability_export, project: project) }
-
-      context 'when feature flag is enabled for project' do
-        it { is_expected.to be(true) }
-      end
-
-      context 'when feature flag is disabled for project' do
-        before do
-          stub_feature_flags(asynchronous_vulnerability_export_delivery_for_projects: false)
-        end
-
-        it { is_expected.to be(false) }
-      end
-    end
-  end
-
   describe '#send_completion_email!' do
     let_it_be(:export) { build_stubbed(:vulnerability_export) }
 
@@ -404,7 +353,6 @@ RSpec.describe Vulnerabilities::Export, feature_category: :vulnerability_managem
     subject(:send_completion_email!) { export.send_completion_email! }
 
     it 'does not send email' do
-      allow(export).to receive(:email_delivery_enabled?).and_return(false)
       expect(Sbom::ExportMailer).not_to receive(:completion_email)
 
       send_completion_email!
@@ -416,15 +364,6 @@ RSpec.describe Vulnerabilities::Export, feature_category: :vulnerability_managem
       it 'delivers email using Sbom::ExportMailer' do
         expect(Vulnerabilities::ExportMailer).to receive(:completion_email).with(export).and_return(message_delivery)
         expect(message_delivery).to receive(:deliver_now)
-
-        send_completion_email!
-      end
-    end
-
-    context 'when email delivery is disabled' do
-      it 'does not send email' do
-        allow(export).to receive(:email_delivery_enabled?).and_return(false)
-        expect(Vulnerabilities::ExportMailer).not_to receive(:completion_email)
 
         send_completion_email!
       end
