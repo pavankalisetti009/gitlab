@@ -28593,6 +28593,12 @@ msgstr ""
 msgid "GlobalSearch|Search labels"
 msgstr ""
 
+msgid "GlobalSearch|Search or go to… %{kbdStart}/%{kbdEnd}"
+msgstr ""
+
+msgid "GlobalSearch|Search or go to… (or use the / keyboard shortcut)"
+msgstr ""
+
 msgid "GlobalSearch|Search results are loading"
 msgstr ""
 
