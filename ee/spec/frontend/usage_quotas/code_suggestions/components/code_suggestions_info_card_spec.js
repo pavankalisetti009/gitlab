@@ -29,11 +29,9 @@ const defaultProvide = {
   addDuoProHref: 'http://customers.gitlab.com/namespaces/10/duo_pro_seats',
   isSaaS: true,
   subscriptionName: null,
-  subscriptionStartDate: '2023-03-16',
-  subscriptionEndDate: '2024-03-16',
   duoAddOnIsTrial: false,
-  duoAddOnStartDate: null,
-  duoAddOnEndDate: null,
+  duoAddOnStartDate: '2023-03-16',
+  duoAddOnEndDate: '2024-03-16',
 };
 
 describe('CodeSuggestionsInfoCard', () => {
@@ -250,7 +248,7 @@ describe('CodeSuggestionsInfoCard', () => {
         beforeEach(async () => {
           createComponent({
             subscriptionData: { subscription: { endDate: null, startDate: null } },
-            provide: { subscriptionStartDate: null, subscriptionEndDate: null },
+            provide: { duoAddOnStartDate: null, duoAddOnEndDate: null },
           });
 
           await waitForPromises();
