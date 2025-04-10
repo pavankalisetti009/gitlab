@@ -56251,6 +56251,9 @@ msgstr ""
 msgid "ServiceAccounts|Name"
 msgstr ""
 
+msgid "ServiceAccounts|No service accounts"
+msgstr ""
+
 msgid "ServiceAccounts|Service Accounts"
 msgstr ""
 
