@@ -8,7 +8,7 @@ import {
   DORA_METRICS_QUERY_TYPE,
   TIME_TO_RESTORE_SERVICE_SECONDARY_SERIES_NAME,
 } from '~/analytics/shared/constants';
-import CiCdAnalyticsCharts from '~/vue_shared/components/ci_cd_analytics/ci_cd_analytics_charts.vue';
+import CiCdAnalyticsCharts from '~/analytics/ci_cd/components/ci_cd_analytics_charts.vue';
 import { buildNullSeries } from '../../analytics/shared/utils';
 import ChartTooltipText from '../../analytics/shared/components/chart_tooltip_text.vue';
 import DoraChartHeader from './dora_chart_header.vue';

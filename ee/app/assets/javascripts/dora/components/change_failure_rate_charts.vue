@@ -8,7 +8,7 @@ import {
 import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import { createAlert } from '~/alert';
 import { s__, sprintf } from '~/locale';
-import CiCdAnalyticsCharts from '~/vue_shared/components/ci_cd_analytics/ci_cd_analytics_charts.vue';
+import CiCdAnalyticsCharts from '~/analytics/ci_cd/components/ci_cd_analytics_charts.vue';
 import { buildNullSeries } from '../../analytics/shared/utils';
 import ChartTooltipText from '../../analytics/shared/components/chart_tooltip_text.vue';
 import DoraChartHeader from './dora_chart_header.vue';
