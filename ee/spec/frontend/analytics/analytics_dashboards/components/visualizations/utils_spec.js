@@ -5,6 +5,7 @@ import {
   calculateDecimalPlaces,
   humanizeChartTooltipValue,
   removeNullSeries,
+  customFormatVisualizationTooltipTitle,
 } from 'ee/analytics/analytics_dashboards/components/visualizations/utils';
 import { NULL_SERIES_ID } from 'ee/analytics/shared/constants';
 import { UNITS } from '~/analytics/shared/constants';
@@ -82,25 +83,24 @@ describe('visualization utils', () => {
         expect(formatVisualizationTooltipTitle(title, params)).toEqual(title);
       });
     });
+  });
 
-    describe('when a formatter is supplied', () => {
-      it('applies the formatter as expected', () => {
-        const value = 50;
-        const title = `${value} (AxisName)`;
-        const params = {
-          seriesData: [
-            {
-              value: [value],
-            },
-          ],
-        };
-        const formatter = (num) => num.toFixed(2);
+  describe('customFormatVisualizationTooltipTitle', () => {
+    it('applies the formatter as expected', () => {
+      const value = 50;
+      const params = {
+        seriesData: [
+          {
+            value: [value],
+          },
+        ],
+      };
+      const formatter = (num) => num.toFixed(2);
 
-        expect(formatVisualizationTooltipTitle(title, params, formatter)).toBe('50.00');
-      });
+      expect(customFormatVisualizationTooltipTitle(params, formatter)).toBe('50.00');
     });
 
-    it('does not apply formatter when value is nullish', () => {
+    describe('x-axis value is nullish', () => {
       const params = {
         seriesData: [
           {
@@ -110,9 +110,15 @@ describe('visualization utils', () => {
       };
       const formatter = jest.fn();
 
-      formatVisualizationTooltipTitle('', params, formatter);
+      it('does not apply formatter', () => {
+        customFormatVisualizationTooltipTitle(params, formatter);
 
-      expect(formatter).not.toHaveBeenCalled();
+        expect(formatter).not.toHaveBeenCalled();
+      });
+
+      it('returns empty string', () => {
+        expect(customFormatVisualizationTooltipTitle(params, formatter)).toBe('');
+      });
     });
   });
 
