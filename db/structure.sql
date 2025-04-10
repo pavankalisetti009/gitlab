@@ -23898,7 +23898,7 @@ CREATE TABLE topics (
     non_private_projects_count bigint DEFAULT 0 NOT NULL,
     title text,
     slug text,
-    organization_id bigint DEFAULT 1 NOT NULL,
+    organization_id bigint NOT NULL,
     cached_markdown_version integer DEFAULT 0 NOT NULL,
     description_html text,
     CONSTRAINT check_0eda72aeb0 CHECK ((char_length(slug) <= 255)),
