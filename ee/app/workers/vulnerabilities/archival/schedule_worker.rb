@@ -8,7 +8,6 @@ module Vulnerabilities
       include Gitlab::Utils::StrongMemoize
 
       REDIS_CURSOR_KEY = 'vulnerability_archival/last_scheduling_information'
-      REDIS_CURSOR_TTL = 1.hour.to_i
 
       feature_category :vulnerability_management
       data_consistency :sticky
@@ -70,17 +69,16 @@ module Vulnerabilities
       end
 
       def store_state(index, project)
-        Gitlab::Redis::SharedState.with do |redis|
-          redis.hset(REDIS_CURSOR_KEY, { index: index, project_id: project.id }, ex: REDIS_CURSOR_TTL)
-        end
+        redis_cursor.commit(index: index, project_id: project.id)
       end
 
       def last_iteration_information
-        @cursor ||= Gitlab::Redis::SharedState.with do |redis|
-          redis.hgetall(REDIS_CURSOR_KEY)
-        end
+        @last_iteration_information ||= redis_cursor.cursor
       end
-      strong_memoize_attr :last_iteration_information
+
+      def redis_cursor
+        @redis_cursor ||= Gitlab::Redis::CursorStore.new(REDIS_CURSOR_KEY)
+      end
     end
   end
 end

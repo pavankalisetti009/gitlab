@@ -7,7 +7,7 @@ RSpec.describe Security::PurgeScansService, feature_category: :vulnerability_man
     describe '.purge_stale_records', :clean_gitlab_redis_shared_state do
       let!(:stale_scan) { create(:security_scan, created_at: 92.days.ago) }
       let(:stale_scan_tuple_cache) do
-        { "created_at" => stale_scan.created_at.strftime("%Y-%m-%d %H:%M:%S.%6N"), "id" => stale_scan.id.to_s }
+        { "created_at" => Security::Scan.connection.quote(stale_scan.created_at), "id" => stale_scan.id.to_s }
       end
 
       let!(:fresh_scan) { create(:security_scan) }
@@ -38,7 +38,7 @@ RSpec.describe Security::PurgeScansService, feature_category: :vulnerability_man
           before do
             Gitlab::Redis::SharedState.with do |redis|
               redis.hset(described_class::LAST_PURGED_SCAN_TUPLE, stale_scan_tuple_cache,
-                ex: described_class::LAST_PURGED_SCAN_TUPLE_TTL)
+                ex: described_class::LAST_PURGED_SCAN_TUPLE_TTL.to_i)
             end
           end
 
