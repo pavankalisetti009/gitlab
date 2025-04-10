@@ -286,15 +286,6 @@ module EE
           ::Gitlab::Auth::Ldap::Config.available_servers
         end
 
-        override :available_integrations
-        def available_integrations
-          ::Integration.available_integration_names( # rubocop: disable UsageData/LargeTable -- not counting data
-            include_dev: false,
-            include_disabled: true,
-            include_blocked_by_settings: true
-          )
-        end
-
         # rubocop:disable CodeReuse/ActiveRecord
         def merge_requests_with_overridden_project_rules(time_period = nil)
           sql =
