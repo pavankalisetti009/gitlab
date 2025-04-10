@@ -116,6 +116,7 @@ describe('Projects section', () => {
   const findCheckbox = (idx) => findTableRow(idx).find('input[type="checkbox"]');
   const findSelectAllCheckbox = () => wrapper.findByTestId('select-all-checkbox');
   const findPagination = () => wrapper.findComponent(Pagination);
+  const findShowOnlySelectedToggle = () => wrapper.findByTestId('show-only-selected-toggle');
 
   const mockProjects = Array.from({ length: 5 }, (_, id) =>
     createProject({ id, groupPath: 'foo' }),
@@ -512,6 +513,14 @@ describe('Projects section', () => {
       });
 
       describe('noProjectsText', () => {
+        it('returns noProjectsSelected when selected only toggle is active', async () => {
+          createComponent();
+          await waitForPromises();
+          await findShowOnlySelectedToggle().vm.$emit('change', true);
+          await nextTick();
+          expect(wrapper.vm.noProjectsText).toBe(i18n.noProjectsSelected);
+        });
+
         it('returns noProjectsFoundMatchingFilters when filters are applied', async () => {
           createComponent();
           await waitForPromises();
@@ -621,6 +630,82 @@ describe('Projects section', () => {
         await nextTick();
 
         expect(findSelectedCount().text()).toBe('0');
+      });
+    });
+
+    describe('showOnlySelected toggle', () => {
+      const findProjectRows = () => wrapper.findAll('tbody > tr');
+
+      beforeEach(async () => {
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('renders the toggle with correct initial state', () => {
+        const toggle = findShowOnlySelectedToggle();
+        expect(toggle.exists()).toBe(true);
+        expect(toggle.props('value')).toBe(false);
+        expect(toggle.props('label')).toBe(i18n.showOnlySelected);
+        expect(toggle.props('labelPosition')).toBe('left');
+      });
+
+      it('shows all projects when toggle is off', () => {
+        expect(findProjectRows()).toHaveLength(5);
+      });
+
+      it('shows only selected projects when toggle is on', async () => {
+        await findCheckbox(0).setChecked(true);
+        await nextTick();
+
+        await findShowOnlySelectedToggle().vm.$emit('change', true);
+        await nextTick();
+
+        expect(findProjectRows()).toHaveLength(3);
+
+        const projectName = findTableRowData(0).at(1).text();
+        expect(projectName).toContain(mockProjects[0].name);
+      });
+
+      it('updates filtered projects when selection changes', async () => {
+        await findShowOnlySelectedToggle().vm.$emit('change', true);
+        await nextTick();
+
+        expect(findProjectRows()).toHaveLength(3);
+
+        await findCheckbox(2).setChecked(false);
+        await nextTick();
+
+        expect(findProjectRows()).toHaveLength(2);
+
+        const projectName = findTableRowData(1).at(1).text();
+        expect(projectName).toContain(mockProjects[1].name);
+      });
+
+      it('shows correct empty state message when no projects match filter', async () => {
+        wrapper.vm.togglePageProjects(false);
+        await findShowOnlySelectedToggle().vm.$emit('change', true);
+        await nextTick();
+
+        expect(wrapper.findByTestId('no-projects-text').exists()).toBe(true);
+
+        await findShowOnlySelectedToggle().vm.$emit('change', false);
+        await nextTick();
+
+        expect(wrapper.findByTestId('no-projects-text').exists()).toBe(false);
+      });
+
+      it('restores all projects when toggle is turned off', async () => {
+        await findCheckbox(0).setChecked(true);
+        await nextTick();
+        await findShowOnlySelectedToggle().vm.$emit('change', true);
+        await nextTick();
+
+        expect(findProjectRows()).toHaveLength(3);
+
+        await findShowOnlySelectedToggle().vm.$emit('change', false);
+        await nextTick();
+
+        expect(findProjectRows()).toHaveLength(5);
       });
     });
   });

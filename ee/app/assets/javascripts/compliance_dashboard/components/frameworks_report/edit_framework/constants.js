@@ -139,6 +139,7 @@ continue to take precedence over the new pipeline execution policy.`),
     'ComplianceFrameworks|All selected projects will be covered by the framework’s selected requirements and the policies.',
   ),
   selectedCount: s__('ComplianceFrameworks|Selected projects'),
+  showOnlySelected: s__('ComplianceFrameworks|Show only selected'),
   projectsInfoText: s__(
     'ComplianceFrameworks|Go to the %{linkStart}compliance center / project page%{linkEnd} to apply projects for this framework.',
   ),
@@ -149,4 +150,5 @@ continue to take precedence over the new pipeline execution policy.`),
   fetchProjectsError: s__('ComplianceFrameworks|Error loading projects.'),
   noProjectsFound: s__('ComplianceFrameworks|No projects found'),
   noProjectsFoundMatchingFilters: s__('ComplianceFrameworks|No projects found that match filters'),
+  noProjectsSelected: s__('ComplianceFrameworks|No projects selected'),
 };

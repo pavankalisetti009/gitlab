@@ -1,5 +1,5 @@
 <script>
-import { GlLink, GlLoadingIcon, GlTable, GlFormCheckbox } from '@gitlab/ui';
+import { GlLink, GlLoadingIcon, GlTable, GlFormCheckbox, GlToggle } from '@gitlab/ui';
 import VisibilityIconButton from '~/vue_shared/components/visibility_icon_button.vue';
 import { ROUTE_PROJECTS } from 'ee/compliance_dashboard/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -22,6 +22,7 @@ export default {
     GlTable,
     VisibilityIconButton,
     GlFormCheckbox,
+    GlToggle,
     Pagination,
     Filters,
   },
@@ -51,9 +52,16 @@ export default {
       perPage: 20,
       isLoading: false,
       filters: [],
+      showOnlySelected: false,
     };
   },
   computed: {
+    filteredProjects() {
+      if (!this.showOnlySelected) {
+        return this.projectList;
+      }
+      return this.projectList.filter((project) => this.projectSelected(project.id));
+    },
     pageAllSelected() {
       return (
         this.projectList.length > 0 &&
@@ -102,12 +110,15 @@ export default {
       return Boolean(hasPreviousPage || hasNextPage);
     },
     selectAllOnPageDisabled() {
-      return this.projectList.length === 0;
+      return this.filteredProjects.length === 0;
     },
     hasFilters() {
       return (this.filters || []).length !== 0;
     },
     noProjectsText() {
+      if (this.showOnlySelected && this.projectList.length > 0) {
+        return i18n.noProjectsSelected;
+      }
       return this.hasFilters ? i18n.noProjectsFoundMatchingFilters : i18n.noProjectsFound;
     },
   },
@@ -269,15 +280,25 @@ export default {
         @keyup.enter="onFiltersChanged"
         @submit="onFiltersChanged"
       />
-      <div class="gl-mb-0 gl-ml-6">
-        <span class="gl-font-bold" data-testid="selected-count"> {{ selectedCount }}</span>
-        {{ $options.i18n.selectedCount }}
+      <div class="gl-align-items-center gl-mb-0 gl-ml-6 gl-flex gl-flex-wrap">
+        <div>
+          <span class="gl-font-bold" data-testid="selected-count"> {{ selectedCount }}</span>
+          {{ $options.i18n.selectedCount }}
+        </div>
+        <div class="gl-ml-auto gl-mr-6">
+          <gl-toggle
+            v-model="showOnlySelected"
+            data-testid="show-only-selected-toggle"
+            :label="$options.i18n.showOnlySelected"
+            label-position="left"
+          />
+        </div>
       </div>
       <gl-table
         ref="projectsTable"
         class="gl-mb-6"
         :busy="isLoading"
-        :items="projectList"
+        :items="filteredProjects"
         :fields="$options.tableFields"
         no-local-sorting
         show-empty
@@ -326,7 +347,7 @@ export default {
         </template>
 
         <template #empty>
-          <div class="gl-my-5 gl-text-center">
+          <div class="gl-my-5 gl-text-center" data-testid="no-projects-text">
             {{ noProjectsText }}
           </div>
         </template>
