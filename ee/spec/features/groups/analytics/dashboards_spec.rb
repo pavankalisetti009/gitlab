@@ -2,8 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Analytics Dashboard', :js, feature_category: :value_stream_management do
+RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_management do
   include ValueStreamsDashboardHelpers
+  include DoraMetricsDashboardHelpers
 
   let_it_be(:current_user) { create(:user) }
   let_it_be(:user) { current_user }
@@ -91,80 +92,118 @@ RSpec.describe 'Analytics Dashboard', :js, feature_category: :value_stream_manag
         end
       end
 
-      context 'with default configuration' do
-        before do
-          visit_group_value_streams_dashboard(group)
+      context 'for Value Streams Dashboard' do
+        context 'with default configuration' do
+          before do
+            visit_group_value_streams_dashboard(group)
+          end
+
+          it_behaves_like 'VSD renders as an analytics dashboard'
         end
 
-        it_behaves_like 'VSD renders as an analytics dashboard'
+        context 'with usage overview background aggregation enabled' do
+          before do
+            create(:value_stream_dashboard_aggregation, namespace: group, enabled: true)
+
+            visit_group_value_streams_dashboard(group)
+          end
+
+          it_behaves_like 'does not render usage overview background aggregation not enabled alert'
+        end
+
+        context 'with valid custom configuration' do
+          let_it_be(:pointer_project) { create(:project, :repository, group: group) }
+
+          before_all do
+            create(:analytics_dashboards_pointer, namespace: group, target_project: pointer_project)
+            create_custom_yaml_config(user, pointer_project, custom_vsd_fixture_path)
+          end
+
+          before do
+            visit_group_value_streams_dashboard(group, 'Custom VSD')
+          end
+
+          it 'renders custom VSD' do
+            within find_by_testid('dashboard-description') do |panel|
+              expect(panel).to have_content _('VSD from fixture')
+            end
+            within find_by_testid('gridstack-grid') do |panel|
+              expect(panel).to have_content _('Custom Panel 1')
+            end
+            within find_by_testid('vsd-feedback-survey') do |feedback_survey|
+              expect(feedback_survey).to be_visible
+              expect(feedback_survey).to have_content _("To help us improve the Value Stream Management Dashboard, " \
+                "please share feedback about your experience in this survey.")
+            end
+          end
+
+          it 'does not render 404 when refreshing the page' do
+            visit current_path
+
+            within find_by_testid('dashboard-description') do |panel|
+              expect(panel).to have_content _('VSD from fixture')
+            end
+          end
+        end
+
+        context 'with invalid custom configuration' do
+          let_it_be(:pointer_project) { create(:project, :repository, group: group) }
+          let_it_be(:invalid_custom_vsd_fixture_path) do
+            'ee/spec/fixtures/analytics/invalid_value_stream_dashboard_configuration.yaml'
+          end
+
+          before_all do
+            create(:analytics_dashboards_pointer, namespace: group, target_project: pointer_project)
+            create_custom_yaml_config(user, pointer_project, invalid_custom_vsd_fixture_path)
+          end
+
+          before do
+            visit_group_value_streams_dashboard(group, 'Invalid VSD')
+          end
+
+          it 'renders error' do
+            find_by_testid('panel-not-exists').hover
+
+            expect(page).to have_content(_('Something is wrong with your panel visualization configuration.'))
+            expect(page).to have_link(text: 'troubleshooting documentation')
+          end
+        end
       end
 
-      context 'with valid custom configuration' do
-        let_it_be(:pointer_project) { create(:project, :repository, group: group) }
-
-        before_all do
-          create(:analytics_dashboards_pointer, namespace: group, target_project: pointer_project)
-          create_custom_yaml_config(user, pointer_project, custom_vsd_fixture_path)
-        end
-
-        before do
-          visit_group_value_streams_dashboard(group, 'Custom VSD')
-        end
-
-        it 'renders custom VSD' do
-          within find_by_testid('dashboard-description') do |panel|
-            expect(panel).to have_content _('VSD from fixture')
+      context 'for DORA metrics analytics dashboard' do
+        context 'without data available' do
+          before do
+            visit_group_dora_metrics_dashboard(group)
           end
-          within find_by_testid('gridstack-grid') do |panel|
-            expect(panel).to have_content _('Custom Panel 1')
+
+          it_behaves_like 'DORA metrics analytics renders as an analytics dashboard'
+
+          it_behaves_like 'renders DORA metrics stats with zero values'
+
+          it_behaves_like 'renders DORA metrics chart panels with empty states'
+        end
+
+        context 'with data available', time_travel_to: '2025-04-03' do
+          let_it_be(:environment) { create(:environment, :production, project: project) }
+
+          before do
+            create_mock_dora_metrics(environment)
+
+            visit_group_dora_metrics_dashboard(group)
           end
-          within find_by_testid('vsd-feedback-survey') do |feedback_survey|
-            expect(feedback_survey).to be_visible
-            expect(feedback_survey).to have_content _("To help us improve the Value Stream Management Dashboard, " \
-              "please share feedback about your experience in this survey.")
+
+          it_behaves_like 'DORA metrics analytics renders as an analytics dashboard'
+
+          it_behaves_like 'renders DORA metrics analytics stats' do
+            let(:expected_dora_metrics_stats) { ['0.1 /day', '26.1 %', '5.0 days', '3.0 days'] }
+          end
+
+          it_behaves_like 'renders DORA metrics time series charts'
+
+          it_behaves_like 'updates DORA metrics visualizations when filters applied', days_back: 90 do
+            let(:filtered_dora_metrics_stats) { ['0.2 /day', '33.3 %', '4.0 days', '2.0 days'] }
           end
         end
-
-        it 'does not render 404 when refreshing the page' do
-          visit current_path
-
-          within find_by_testid('dashboard-description') do |panel|
-            expect(panel).to have_content _('VSD from fixture')
-          end
-        end
-      end
-
-      context 'with invalid custom configuration' do
-        let_it_be(:pointer_project) { create(:project, :repository, group: group) }
-        let_it_be(:invalid_custom_vsd_fixture_path) do
-          'ee/spec/fixtures/analytics/invalid_value_stream_dashboard_configuration.yaml'
-        end
-
-        before_all do
-          create(:analytics_dashboards_pointer, namespace: group, target_project: pointer_project)
-          create_custom_yaml_config(user, pointer_project, invalid_custom_vsd_fixture_path)
-        end
-
-        before do
-          visit_group_value_streams_dashboard(group, 'Invalid VSD')
-        end
-
-        it 'renders error' do
-          find_by_testid('panel-not-exists').hover
-
-          expect(page).to have_content(_('Something is wrong with your panel visualization configuration.'))
-          expect(page).to have_link(text: 'troubleshooting documentation')
-        end
-      end
-
-      context 'with usage overview background aggregation enabled' do
-        before do
-          create(:value_stream_dashboard_aggregation, namespace: group, enabled: true)
-
-          visit_group_value_streams_dashboard(group)
-        end
-
-        it_behaves_like 'does not render usage overview background aggregation not enabled alert'
       end
     end
   end
