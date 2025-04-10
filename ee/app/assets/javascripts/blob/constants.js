@@ -36,6 +36,10 @@ export const CODEOWNERS_VALIDATION_I18N = {
   errorMessage: ERROR_MESSAGE,
 };
 
+export const GROUP_WITHOUT_ELIGIBLE_APPROVERS = s__(
+  'CodeownersValidation|Group has no members with permission to approve merge requests',
+);
+
 export const INACCESSIBLE_OWNER = s__(
   'CodeownersValidation|Contains owners which are not accessible within the project',
 );
@@ -65,6 +69,7 @@ export const UNQUALIFIED_GROUP = s__(
 );
 
 export const CODE_TO_MESSAGE = {
+  group_without_eligible_approvers: GROUP_WITHOUT_ELIGIBLE_APPROVERS,
   inaccessible_owner: INACCESSIBLE_OWNER,
   invalid_approval_requirement: INVALID_APPROVAL_REQUIREMENT,
   invalid_entry_owner_format: INVALID_ENTRY_OWNER_FORMAT,
