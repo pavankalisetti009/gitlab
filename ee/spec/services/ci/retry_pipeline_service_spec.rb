@@ -4,9 +4,10 @@ require 'spec_helper'
 RSpec.describe Ci::RetryPipelineService, :freeze_time, feature_category: :continuous_integration do
   let_it_be(:runner) { create(:ci_runner, :instance, :online) }
   let_it_be(:user) { create(:user) }
-  let_it_be(:project) { create(:project) }
+  let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:sha) { project.repository.commit.sha }
 
-  let(:pipeline) { create(:ci_pipeline, project: project) }
+  let(:pipeline) { create(:ci_pipeline, sha: sha, project: project) }
   let(:service) { described_class.new(project, user) }
 
   before do
@@ -17,7 +18,7 @@ RSpec.describe Ci::RetryPipelineService, :freeze_time, feature_category: :contin
 
   context 'when the namespace is out of compute minutes' do
     let_it_be(:namespace) { create(:namespace, :with_used_build_minutes_limit) }
-    let_it_be(:project) { create(:project, namespace: namespace) }
+    let_it_be(:project) { create(:project, :repository, namespace: namespace) }
     let_it_be(:private_runner) do
       create(:ci_runner, :project, :online, projects: [project], tag_list: ['ruby'], run_untagged: false)
     end
@@ -39,7 +40,7 @@ RSpec.describe Ci::RetryPipelineService, :freeze_time, feature_category: :contin
 
   context 'when allowed_plans are not matched', :saas do
     let_it_be(:namespace) { create(:namespace_with_plan, plan: :premium_plan) }
-    let_it_be(:project) { create(:project, namespace: namespace) }
+    let_it_be(:project) { create(:project, :repository, namespace: namespace) }
     let_it_be(:ultimate_plan) { create(:ultimate_plan) }
     let_it_be(:restricted_runner) do
       create(:ci_runner, :instance, :online,
@@ -64,7 +65,7 @@ RSpec.describe Ci::RetryPipelineService, :freeze_time, feature_category: :contin
 
   context 'when both compute minutes and allowed plans are violated', :saas do
     let_it_be(:namespace) { create(:namespace_with_plan, :with_used_build_minutes_limit, plan: :premium_plan) }
-    let_it_be(:project) { create(:project, namespace: namespace) }
+    let_it_be(:project) { create(:project, :repository, namespace: namespace) }
     let_it_be(:ultimate_plan) { create(:ultimate_plan) }
     let_it_be(:restricted_runner) do
       create(:ci_runner, :instance, :online,
