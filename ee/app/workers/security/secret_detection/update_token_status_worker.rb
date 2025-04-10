@@ -29,6 +29,8 @@ module Security
 
         return unless Feature.enabled?(:validity_checks, @pipeline.project)
 
+        @token_lookup_service = Security::SecretDetection::TokenLookupService.new
+
         Vulnerabilities::Finding
           .report_type('secret_detection')
           .by_latest_pipeline(pipeline_id)
@@ -46,7 +48,7 @@ module Security
         return if findings.empty?
 
         token_status_attr_by_sha = build_token_status_attributes_by_token_sha(findings)
-        tokens = PersonalAccessToken.with_token_digests(token_status_attr_by_sha.keys)
+        tokens = @token_lookup_service.find('gitlab_personal_access_token', token_status_attr_by_sha.keys) # rubocop:disable Gitlab/NoFindInWorkers -- find is not an active record find
 
         tokens.each do |token|
           token_status_attr_by_sha[token.token_digest].each do |finding_token_status_attr|
