@@ -3,6 +3,7 @@ import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
 import merge from 'lodash/merge';
 
 import {
+  customFormatVisualizationTooltipTitle,
   formatVisualizationTooltipTitle,
   formatVisualizationValue,
   humanizeChartTooltipValue,
@@ -34,13 +35,19 @@ export default {
     fullOptions() {
       return merge({ yAxis: { min: 0 } }, this.options);
     },
-    chartTooltipTitleFormatter() {
-      return this.options?.chartTooltip?.titleFormatter;
-    },
   },
   methods: {
-    formatVisualizationTooltipTitle,
-    formatChartTooltipValue(value) {
+    formatTooltipTitle(title, params) {
+      const { chartTooltip: { titleFormatter } = {} } = this.options;
+
+      if (titleFormatter) {
+        return customFormatVisualizationTooltipTitle(params, titleFormatter);
+      }
+
+      return formatVisualizationTooltipTitle(title, params);
+    },
+    formatTooltipValue(tooltipData) {
+      const [, value] = tooltipData;
       const { chartTooltip: { valueUnit: unit } = {} } = this.options;
 
       if (unit) {
@@ -68,9 +75,7 @@ export default {
     class="gl-overflow-hidden"
     data-testid="dashboard-visualization-line-chart"
   >
-    <template #tooltip-title="{ title, params }">
-      {{ formatVisualizationTooltipTitle(title, params, chartTooltipTitleFormatter) }}</template
-    >
+    <template #tooltip-title="{ title, params }"> {{ formatTooltipTitle(title, params) }}</template>
     <template #tooltip-content="{ params }">
       <div
         v-for="{ seriesId, seriesName, color, value } in tooltipData(params)"
@@ -82,7 +87,7 @@ export default {
           seriesName
         }}</gl-chart-series-label>
         <span class="gl-font-bold" data-testid="chart-tooltip-value">{{
-          formatChartTooltipValue(value[1])
+          formatTooltipValue(value)
         }}</span>
       </div>
     </template>

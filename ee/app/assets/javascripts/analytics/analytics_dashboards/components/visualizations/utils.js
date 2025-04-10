@@ -1,4 +1,4 @@
-import { isNil, isFunction } from 'lodash';
+import { isNil } from 'lodash';
 import { isNumeric } from '~/lib/utils/number_utils';
 import { formatNumber, n__, __, sprintf } from '~/locale';
 import { formatDate, humanizeTimeInterval } from '~/lib/utils/datetime/date_format_utility';
@@ -24,12 +24,8 @@ export function formatVisualizationValue(value) {
   return value;
 }
 
-export function formatVisualizationTooltipTitle(title, params, formatter) {
+export function formatVisualizationTooltipTitle(title, params) {
   const value = params?.seriesData?.at(0)?.value?.at(0);
-
-  if (isFunction(formatter) && !isNil(value)) {
-    return formatter(value);
-  }
 
   if (isIsoDateString(value)) {
     const formattedDate = formatDate(value);
@@ -37,6 +33,14 @@ export function formatVisualizationTooltipTitle(title, params, formatter) {
   }
 
   return title;
+}
+
+export function customFormatVisualizationTooltipTitle(params, formatter) {
+  const xAxisValue = params?.seriesData?.at(0)?.value?.at(0);
+
+  if (isNil(xAxisValue)) return '';
+
+  return formatter(xAxisValue);
 }
 
 export const humanizeDisplayUnit = ({ unit, data = 0 }) => {
