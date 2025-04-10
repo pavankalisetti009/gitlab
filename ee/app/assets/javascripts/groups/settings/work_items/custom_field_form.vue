@@ -12,6 +12,11 @@ import {
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { __, s__, sprintf } from '~/locale';
+import {
+  WORK_ITEM_TYPE_NAME_EPIC,
+  WORK_ITEM_TYPE_NAME_ISSUE,
+  WORK_ITEM_TYPE_NAME_TASK,
+} from '~/work_items/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createCustomFieldMutation from './create_custom_field.mutation.graphql';
 import updateCustomFieldMutation from './update_custom_field.mutation.graphql';
@@ -127,11 +132,19 @@ export default {
         .join(', ');
     },
     workItemTypesForListbox() {
-      return this.workItemTypes.map((type) => ({
-        value: type.id,
-        text: type.name,
-        name: type.name,
-      }));
+      // Only displaying Epic, Issue and Task types for 17.11 as other types are not yet supported
+      return this.workItemTypes
+        ?.filter(
+          (type) =>
+            type.name === WORK_ITEM_TYPE_NAME_EPIC ||
+            type.name === WORK_ITEM_TYPE_NAME_ISSUE ||
+            type.name === WORK_ITEM_TYPE_NAME_TASK,
+        )
+        ?.map((type) => ({
+          value: type.id,
+          text: type.name,
+          name: type.name,
+        }));
     },
   },
   methods: {

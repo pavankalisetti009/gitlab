@@ -30,6 +30,7 @@ describe('CustomFieldForm', () => {
     { id: 'gid://gitlab/WorkItems::Type/1', name: 'Issue' },
     { id: 'gid://gitlab/WorkItems::Type/2', name: 'Incident' },
     { id: 'gid://gitlab/WorkItems::Type/3', name: 'Task' },
+    { id: 'gid://gitlab/WorkItems::Type/8', name: 'Epic' },
   ];
 
   const findCustomFieldOptionsFormGroup = () =>
@@ -188,14 +189,14 @@ describe('CustomFieldForm', () => {
       expect(findWorkItemTypeListbox().props('toggleText')).toBe('Select types');
     });
 
-    it('loads work item types', async () => {
+    it('displays only the currently supported work item types', async () => {
       await waitForPromises();
 
-      mockWorkItemTypes.forEach(({ id, name }) => {
-        expect(findWorkItemTypeListbox().props('items')).toContainEqual(
-          expect.objectContaining({ value: id, text: name, name }),
-        );
-      });
+      expect(findWorkItemTypeListbox().props('items')).toStrictEqual([
+        { value: 'gid://gitlab/WorkItems::Type/1', name: 'Issue', text: 'Issue' },
+        { value: 'gid://gitlab/WorkItems::Type/3', name: 'Task', text: 'Task' },
+        { value: 'gid://gitlab/WorkItems::Type/8', name: 'Epic', text: 'Epic' },
+      ]);
     });
 
     it('displays selected type names when types are selected', async () => {
