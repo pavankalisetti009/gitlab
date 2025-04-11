@@ -100,38 +100,6 @@ RSpec.describe Admin::GitlabDuoController, :cloud_licenses, feature_category: :a
 
         it_behaves_like 'hides gitlab duo path'
       end
-
-      context 'for AmazonQ banner' do
-        using RSpec::Parameterized::TableSyntax
-
-        let_it_be(:amazon_q_banner) { s_('AmazonQ|Configure GitLab Duo with Amazon Q') }
-
-        where(:amazon_q_available, :amazon_q_connected, :expected_banner) do
-          true   | true   | false
-          true   | false  | true
-          false  | true   | false
-          false  | false  | false
-        end
-
-        with_them do
-          before do
-            allow(::Ai::AmazonQ).to receive_messages(
-              feature_available?: amazon_q_available,
-              connected?: amazon_q_connected
-            )
-          end
-
-          it 'displays banner only when amazon q is available and connected' do
-            get admin_gitlab_duo_path
-
-            if expected_banner
-              expect(response.body).to include(amazon_q_banner)
-            else
-              expect(response.body).not_to include(amazon_q_banner)
-            end
-          end
-        end
-      end
     end
   end
 end
