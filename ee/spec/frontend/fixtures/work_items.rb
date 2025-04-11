@@ -23,8 +23,7 @@ RSpec.describe "Work items", '(JavaScript fixtures)', type: :request, feature_ca
       iterations: true,
       okrs: true,
       subepics: true,
-      blocked_work_items: true,
-      work_item_status: true
+      blocked_work_items: true
     )
     stub_feature_flags(okrs_mvc: true)
   end

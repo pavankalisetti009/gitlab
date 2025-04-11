@@ -40386,9 +40386,6 @@ msgstr ""
 msgid "No start date – %{dueDate}"
 msgstr ""
 
-msgid "No status"
-msgstr ""
-
 msgid "No suggestions found"
 msgstr ""
 
@@ -68728,9 +68725,6 @@ msgid "WorkItem|Something went wrong when fetching iterations. Please try again.
 msgstr ""
 
 msgid "WorkItem|Something went wrong when fetching labels. Please try again."
-msgstr ""
-
-msgid "WorkItem|Something went wrong when fetching status. Please try again."
 msgstr ""
 
 msgid "WorkItem|Something went wrong when fetching work item types. Please try again"
