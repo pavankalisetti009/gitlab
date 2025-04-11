@@ -152,8 +152,9 @@ export default {
             <gl-icon
               v-if="config.multiSelect"
               name="check"
-              class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
+              class="gl-mr-3 gl-shrink-0"
               :class="{ 'gl-invisible': !isProjectSelected(project) }"
+              variant="subtle"
             />
             {{ project.name }}
           </div>

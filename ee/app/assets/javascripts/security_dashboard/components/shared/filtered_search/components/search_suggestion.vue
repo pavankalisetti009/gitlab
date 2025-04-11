@@ -37,8 +37,9 @@ export default {
     <div class="gl-flex gl-items-center">
       <gl-icon
         name="check"
-        class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
+        class="gl-mr-3 gl-shrink-0"
         :class="{ 'gl-invisible': !selected }"
+        variant="subtle"
       />
       <gl-truncate v-if="truncate" position="middle" :text="text" />
       <template v-else>{{ text }}</template>

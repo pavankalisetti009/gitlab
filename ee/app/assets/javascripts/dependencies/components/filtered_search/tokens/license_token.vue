@@ -124,10 +124,11 @@ export default {
                     v-if="config.multiSelect"
                     data-testid="check-icon"
                     name="check"
-                    class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
+                    class="gl-mr-3 gl-shrink-0"
                     :class="{
                       'gl-invisible': !selectedLicenseNames.includes(license.name),
                     }"
+                    variant="subtle"
                   />
                   <span>{{ license.name }}</span>
                 </div>
