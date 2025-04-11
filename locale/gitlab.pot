@@ -5010,6 +5010,9 @@ msgstr ""
 msgid "AdminUsers|Cannot unblock LDAP blocked users"
 msgstr ""
 
+msgid "AdminUsers|Change access"
+msgstr ""
+
 msgid "AdminUsers|Cohorts"
 msgstr ""
 
@@ -5022,13 +5025,22 @@ msgstr ""
 msgid "AdminUsers|Confirm user %{username}?"
 msgstr ""
 
+msgid "AdminUsers|Could not load custom admin roles."
+msgstr ""
+
 msgid "AdminUsers|Could not load user group counts. Please refresh the page to try again."
 msgstr ""
 
 msgid "AdminUsers|Create"
 msgstr ""
 
+msgid "AdminUsers|Create admin role to populate this list."
+msgstr ""
+
 msgid "AdminUsers|Create service account"
+msgstr ""
+
+msgid "AdminUsers|Custom admin roles"
 msgstr ""
 
 msgid "AdminUsers|Deactivate"
