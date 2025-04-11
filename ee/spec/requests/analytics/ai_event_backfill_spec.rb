@@ -7,12 +7,18 @@ RSpec.describe 'AI events backfill', :freeze_time, :click_house, :sidekiq_inline
   include ApiHelpers
   include AdminModeHelper
 
-  let_it_be(:default_organization) { create(:organization, :default) }
-  let_it_be(:duo_chat_event1) { create(:ai_duo_chat_event, timestamp: 3.days.ago) }
-  let_it_be(:duo_chat_event2) { create(:ai_duo_chat_event, timestamp: 2.days.ago) }
-  let_it_be(:code_suggestion_event1) { create(:ai_code_suggestion_event, timestamp: 3.days.ago) }
-  let_it_be(:code_suggestion_event2) { create(:ai_code_suggestion_event, timestamp: 2.days.ago) }
-  let_it_be(:current_user) { create(:admin) }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:duo_chat_event1) { create(:ai_duo_chat_event, timestamp: 3.days.ago, organization_id: organization.id) }
+  let_it_be(:duo_chat_event2) { create(:ai_duo_chat_event, timestamp: 2.days.ago, organization_id: organization.id) }
+  let_it_be(:code_suggestion_event1) do
+    create(:ai_code_suggestion_event, timestamp: 3.days.ago, organization_id: organization.id)
+  end
+
+  let_it_be(:code_suggestion_event2) do
+    create(:ai_code_suggestion_event, timestamp: 2.days.ago, organization_id: organization.id)
+  end
+
+  let_it_be(:current_user) { create(:admin, organizations: [organization]) }
 
   def events_in_ch(model)
     ClickHouse::Client.select("SELECT * FROM #{model.clickhouse_table_name} FINAL ORDER BY timestamp ASC", :main)

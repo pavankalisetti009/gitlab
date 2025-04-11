@@ -6,8 +6,8 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   subject(:event) { described_class.new(attributes) }
 
   let(:attributes) { { event: 'code_suggestion_shown_in_ide' } }
-  let_it_be(:user) { create(:user) }
-  let_it_be(:default_organization) { create(:organization, :default) }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:user) { create(:user, organizations: [organization]) }
 
   it { is_expected.to belong_to(:organization) }
   it { is_expected.to belong_to(:user) }
@@ -27,8 +27,6 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
     it { is_expected.to validate_presence_of(:timestamp) }
 
     it 'validates presence of organization_id' do
-      allow(Organizations::Organization).to receive(:default_organization).and_return(nil)
-
       expect(event).not_to allow_value(nil).for(:organization_id)
     end
 
@@ -50,15 +48,7 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   describe '#organization_id' do
     subject { described_class.new(user: user) }
 
-    it { is_expected.to populate_sharding_key(:organization_id).with(default_organization.id) }
-
-    context 'when user belongs to an organization' do
-      let(:user_organization) do
-        create(:organization).tap { |org| create(:organization_user, organization: org, user: user) }
-      end
-
-      it { is_expected.to populate_sharding_key(:organization_id).with(user_organization.id) }
-    end
+    it { is_expected.to populate_sharding_key(:organization_id).with(organization.id) }
   end
 
   describe '#to_clickhouse_csv_row', :freeze_time do
@@ -117,7 +107,7 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
             event: 'code_suggestion_shown_in_ide',
             timestamp: 1.day.ago,
             user_id: user.id,
-            organization_id: default_organization.id,
+            organization_id: organization.id,
             payload: {
               suggestion_size: 3,
               language: 'foo',
