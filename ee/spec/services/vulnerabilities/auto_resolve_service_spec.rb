@@ -115,7 +115,8 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         result = service.execute
 
         expect(result).to be_error
-        expect(result.errors).to eq(['Could not resolve vulnerabilities'])
+        expect(result.message).to eq('Could not resolve vulnerabilities')
+        expect(result.reason).to eq('Bot user does not have permission to create state transitions')
       end
     end
 
@@ -134,7 +135,8 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         result = service.execute
 
         expect(result).to be_error
-        expect(result.errors).to eq(['Could not resolve vulnerabilities'])
+        expect(result.message).to eq('Could not resolve vulnerabilities')
+        expect(result.reason).to eq('Bot user does not have permission to create state transitions')
       end
     end
 
@@ -143,16 +145,13 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         allow(Note).to receive(:insert_all!).and_raise(ActiveRecord::RecordNotUnique)
       end
 
-      it 'does not bubble up the error and tracks the exception' do
-        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(ActiveRecord::RecordNotUnique)
-        expect { service.execute }.not_to raise_error
-      end
-
       it 'returns an appropriate service response' do
         result = service.execute
 
         expect(result).to be_error
-        expect(result.errors).to eq(['Could not resolve vulnerabilities'])
+        expect(result.message).to eq('Could not resolve vulnerabilities')
+        expect(result.reason).to eq('ActiveRecord error')
+        expect(result.payload[:exception]).to be_a(ActiveRecord::RecordNotUnique)
       end
     end
 
