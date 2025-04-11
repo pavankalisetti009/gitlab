@@ -1082,6 +1082,9 @@ msgstr ""
 msgid "%{labelStart}Unmodified response:%{labelEnd} %{headers}"
 msgstr ""
 
+msgid "%{labelStart}Validity check:%{labelEnd} %{validityCheck}"
+msgstr ""
+
 msgid "%{label_for_message} unavailable"
 msgstr ""
 
@@ -66816,6 +66819,9 @@ msgstr ""
 msgid "Vulnerability|GitLab Security Report"
 msgstr ""
 
+msgid "Vulnerability|GitLab checks the validity of the secret with the third party vendor on each pipeline run. If the secret is still active it could be exploited and needs to be revoked and rotated."
+msgstr ""
+
 msgid "Vulnerability|Identifier"
 msgstr ""
 
@@ -66973,6 +66979,9 @@ msgid "Vulnerability|What is EPSS?"
 msgstr ""
 
 msgid "Vulnerability|What is Reachability?"
+msgstr ""
+
+msgid "Vulnerability|What is a validity check?"
 msgstr ""
 
 msgid "Vulnerability|What is code flow?"
