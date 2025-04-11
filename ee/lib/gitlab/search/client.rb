@@ -48,10 +48,11 @@ module Gitlab
       end
 
       def execute_count(query:, options:)
+        filtered_query = query.slice(:query) # count only accepts query field in the body
+
         es_query = routing_options(options).merge(
-          timeout: '1s',
           index: options[:index_name] || options[:klass].index_name,
-          body: query
+          body: filtered_query
         )
 
         yield count(es_query)
