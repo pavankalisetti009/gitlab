@@ -109,6 +109,41 @@ content:
 type: pipeline_execution_schedule_policy
 `;
 
+export const mockInvalidStrategyPipelineExecutionPolicy = `type: pipeline_execution_policy
+name: ''
+description: ''
+enabled: true
+pipeline_config_strategy: invalid
+content:
+  include:
+    - project: ''
+skip_ci:
+  allowed: false
+`;
+
+export const mockInvalidContentPipelineExecutionPolicy = `type: pipeline_execution_policy
+name: ''
+description: ''
+enabled: true
+pipeline_config_strategy: invalid
+content:
+  include_invalid:
+    - project: ''
+skip_ci:
+  allowed: false
+`;
+
+export const mockNoStrategyPipelineExecutionPolicy = `type: pipeline_execution_policy
+name: ''
+description: ''
+enabled: true
+content:
+  include:
+    - project: ''
+skip_ci:
+  allowed: false
+`;
+
 export const mockWithScopePipelineExecutionObject = {
   ...mockPipelineExecutionObject,
   policy_scope: { projects: { excluding: [] } },
