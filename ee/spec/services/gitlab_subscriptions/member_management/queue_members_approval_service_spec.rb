@@ -82,17 +82,16 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueMembersApprovalServic
         let(:existing_members_hash) { {} }
 
         it 'triggers member approval hooks' do
-          # this is to stop the system hook for group created to be raised
-          allow(group).to receive(:post_create_hook).and_return(nil)
-
-          expect_next_instance_of(SystemHooksService) do |hook_service|
-            expect(hook_service).to receive(:execute_hooks) do |payload, _|
-              expect(payload[:action]).to eq('enqueue')
-              expect(payload[:object_kind]).to eq("gitlab_subscription_member_approval")
-            end
-          end
+          hook_service = SystemHooksService.new
+          allow(hook_service).to receive(:execute_hooks).and_call_original
+          allow(SystemHooksService).to receive(:new).and_return(hook_service)
 
           service.execute
+
+          expect(hook_service).to have_received(:execute_hooks).with(
+            a_hash_including(action: 'enqueue', object_kind: 'gitlab_subscription_member_approval'),
+            anything
+          )
         end
       end
     end
