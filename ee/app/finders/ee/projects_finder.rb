@@ -26,9 +26,7 @@ module EE
       collection = by_plans(collection)
       collection = by_feature_available(collection)
       collection = by_hidden(collection)
-      collection = by_marked_for_deletion_on(collection)
-      collection = by_saml_sso_session(collection)
-      by_aimed_for_deletion(collection)
+      by_saml_sso_session(collection)
     end
 
     def by_plans(collection)
@@ -47,41 +45,12 @@ module EE
       end
     end
 
-    def by_marked_for_deletion_on(collection)
-      return collection unless params[:marked_for_deletion_on].present?
-      return collection unless License.feature_available?(:adjourned_deletion_for_projects_and_groups)
-
-      collection.by_marked_for_deletion_on(params[:marked_for_deletion_on])
-    end
-
-    def by_aimed_for_deletion(items)
-      if ::Gitlab::Utils.to_boolean(params[:aimed_for_deletion])
-        items.aimed_for_deletion(Date.current)
-      else
-        items
-      end
-    end
-
     def by_hidden(items)
       params[:include_hidden].present? ? items : items.not_hidden
     end
 
     def by_saml_sso_session(collection)
       filter_by_saml_sso_session(collection, :filter_expired_saml_session_projects)
-    end
-
-    override :active
-    def active(items)
-      return super unless License.feature_available?(:adjourned_deletion_for_projects_and_groups)
-
-      super.not_aimed_for_deletion
-    end
-
-    override :inactive
-    def inactive(items)
-      return super unless License.feature_available?(:adjourned_deletion_for_projects_and_groups)
-
-      super.or(items.aimed_for_deletion(Date.current))
     end
   end
 end
