@@ -5,9 +5,16 @@ require 'spec_helper'
 RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
   let(:user) { create(:user) }
 
+  let(:base_commands) do
+    [
+      { description: "New chat conversation.", name: "/new", should_submit: false },
+      { description: "Learn what Duo Chat can do.", name: "/help", should_submit: true }
+    ]
+  end
+
   shared_examples 'returns only base commands' do
     it 'returns only base commands' do
-      expect(available_commands).to match_array(described_class.commands[:base])
+      expect(available_commands).to eq(base_commands)
     end
   end
 
@@ -70,7 +77,7 @@ RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
         end
 
         it 'returns base commands and issue-specific commands' do
-          expected_commands = described_class.commands[:base] + described_class.commands[:issue]
+          expected_commands = base_commands + described_class.commands[:issue]
           expect(available_commands).to match_array(expected_commands)
         end
       end
@@ -96,7 +103,7 @@ RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
 
         context 'when job is failed' do
           it 'returns base commands and job-specific commands' do
-            expected_commands = described_class.commands[:base] + described_class.commands[:job]
+            expected_commands = base_commands + described_class.commands[:job]
             expect(available_commands).to match_array(expected_commands)
           end
         end
@@ -129,7 +136,7 @@ RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
 
         context 'when vulnerability is SAST' do
           it 'returns base commands and vulnerability-specific commands' do
-            expected_commands = described_class.commands[:base] + described_class.commands[:vulnerability]
+            expected_commands = base_commands + described_class.commands[:vulnerability]
             expect(available_commands).to match_array(expected_commands)
           end
         end
@@ -160,6 +167,17 @@ RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
       let(:url) { nil }
 
       it_behaves_like 'returns only base commands'
+    end
+
+    context 'when duo_chat_multi_thread is disabled' do
+      let(:url) { nil }
+
+      it 'returns deprecated commands' do
+        stub_feature_flags(duo_chat_multi_thread: false)
+
+        expect(available_commands.pluck(:name)).to include('/reset', '/clear')
+        expect(available_commands.pluck(:name)).not_to include('/new')
+      end
     end
   end
 end

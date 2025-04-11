@@ -929,25 +929,6 @@ describeSkipVue3(skipReason, () => {
       await waitForPromises();
     });
 
-    it('filters out reset and clear commands while preserving others and adds new command', async () => {
-      await waitForPromises();
-      const filteredCommands = findDuoChat().props().slashCommands;
-
-      // Verify filtered commands
-      expect(filteredCommands.some((cmd) => cmd.name === '/reset')).toBe(false);
-      expect(filteredCommands.some((cmd) => cmd.name === '/clear')).toBe(false);
-      expect(filteredCommands.some((cmd) => cmd.name === '/help')).toBe(true);
-
-      // Verify new command is added
-      const newCommand = filteredCommands.find((cmd) => cmd.name === '/new');
-      expect(newCommand).toBeDefined();
-      expect(newCommand).toMatchObject({
-        description: 'New chat conversation.',
-        name: '/new',
-        shouldSubmit: true,
-      });
-    });
-
     describe('chat mutation selection and conversation type', () => {
       const mockThreadId = 'thread-123';
       const mockMessagesData = {

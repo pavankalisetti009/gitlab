@@ -5,13 +5,14 @@ module Gitlab
     class ChatMessage < AiMessage
       RESET_MESSAGE = '/reset'
       CLEAR_HISTORY_MESSAGE = '/clear'
+      NEW_MESSAGE = '/new'
 
       attr_writer :active_record
 
       def save!
         storage = ChatStorage.new(user, agent_version_id, thread)
 
-        if content == CLEAR_HISTORY_MESSAGE
+        if clear_history?
           storage.clear!
         else
           @active_record = storage.add(self)
@@ -25,7 +26,7 @@ module Gitlab
       end
 
       def clear_history?
-        content == CLEAR_HISTORY_MESSAGE
+        content == CLEAR_HISTORY_MESSAGE || content == NEW_MESSAGE
       end
 
       def question?
