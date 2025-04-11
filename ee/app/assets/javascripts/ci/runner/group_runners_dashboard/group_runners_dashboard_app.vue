@@ -54,6 +54,9 @@ export default {
   <div>
     <runner-list-header>
       <template #title>{{ s__('Runners|Fleet dashboard') }}</template>
+      <template #description>{{
+        s__('Runners|Use the dashboard to view performance statistics of your runner fleet.')
+      }}</template>
       <template #actions>
         <gl-button variant="link" :href="groupRunnersPath">{{
           s__('Runners|View runners list')
@@ -64,9 +67,6 @@ export default {
       </template>
     </runner-list-header>
 
-    <p>
-      {{ s__('Runners|Use the dashboard to view performance statistics of your runner fleet.') }}
-    </p>
     <div class="gl-justify-between gl-gap-x-4 sm:gl-flex">
       <div class="gl-w-full gl-justify-between gl-gap-x-4 sm:gl-flex">
         <div
