@@ -69977,6 +69977,9 @@ msgstr ""
 msgid "You need permission."
 msgstr ""
 
+msgid "You need the Developer, Maintainer or Owner role in the project or group and in the security policy project."
+msgstr ""
+
 msgid "You need to do this before %{grace_period_deadline}."
 msgstr ""
 

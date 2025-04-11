@@ -3,10 +3,11 @@
 module Projects
   module Security
     class PoliciesController < Projects::ApplicationController
-      include SecurityAndCompliancePermissions
       include GovernUsageProjectTracking
+      include SecurityPoliciesPermissions
 
       before_action :authorize_read_security_orchestration_policies!, except: :edit
+      before_action :ensure_security_policy_project_is_available!, only: :edit
       before_action :authorize_modify_security_policy!, only: :edit
       before_action :validate_policy_configuration, only: :edit
 
@@ -44,8 +45,16 @@ module Projects
 
       private
 
+      def container
+        project
+      end
+
       def policy_params
         params.permit(:type, :id)
+      end
+
+      def ensure_security_policy_project_is_available!
+        render_404 if policy_configuration.blank?
       end
 
       def validate_policy_configuration

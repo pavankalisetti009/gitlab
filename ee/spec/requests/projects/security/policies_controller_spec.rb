@@ -18,19 +18,78 @@ RSpec.describe Projects::Security::PoliciesController, type: :request, feature_c
 
   before do
     project.add_developer(user)
-    policy_management_project.add_developer(user)
     sign_in(user)
     stub_licensed_features(security_orchestration_policies: feature_enabled)
-    allow_next_instance_of(Repository) do |repository|
-      allow(repository).to receive(:blob_data_at).and_return({ scan_execution_policy: [policy] }.to_yaml)
+  end
+
+  shared_context 'when feature is not licensed' do
+    context 'when feature is not licensed' do
+      let_it_be(:feature_enabled) { false }
+
+      it 'returns 404' do
+        request
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+
+      it_behaves_like "doesn't track govern usage event", 'users_visiting_security_policies'
     end
+  end
+
+  shared_examples 'an unauthorized user' do
+    context 'when feature is licensed' do
+      let_it_be(:feature_enabled) { true }
+
+      it 'returns 403' do
+        request
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+
+      it_behaves_like "doesn't track govern usage event", 'users_visiting_security_policies'
+    end
+
+    include_context 'when feature is not licensed'
+  end
+
+  shared_examples 'an anonymous user' do
+    context 'with private project' do
+      let_it_be(:project) { create(:project, :private, namespace: owner.namespace) }
+
+      it 'returns 302 and redirects user to the sign-in page' do
+        request
+
+        expect(response).to have_gitlab_http_status(:found)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context 'with public project' do
+      let_it_be(:project) { create(:project, :public, namespace: owner.namespace) }
+
+      it 'returns 302 and redirects user to the sign-in page' do
+        request
+
+        expect(response).to have_gitlab_http_status(:found)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    it_behaves_like "doesn't track govern usage event", 'users_visiting_security_policies'
   end
 
   describe 'GET #edit' do
     let(:request) { get edit }
 
     context 'with authorized user' do
-      context 'when feature is available' do
+      before do
+        policy_management_project.add_developer(user)
+        allow_next_instance_of(Repository) do |repository|
+          allow(repository).to receive(:blob_data_at).and_return({ scan_execution_policy: [policy] }.to_yaml)
+        end
+      end
+
+      context 'when feature is licensed' do
         it 'renders the edit page' do
           request
 
@@ -144,36 +203,16 @@ RSpec.describe Projects::Security::PoliciesController, type: :request, feature_c
         it_behaves_like 'tracks govern usage event', 'users_visiting_security_policies'
       end
 
-      context 'when feature is not available' do
-        let_it_be(:feature_enabled) { false }
-
-        it 'returns 404' do
-          request
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-
-        it_behaves_like "doesn't track govern usage event", 'users_visiting_security_policies'
-      end
+      include_context 'when feature is not licensed'
     end
 
     context 'with unauthorized user' do
       before do
-        project.add_guest(user)
-        sign_in(user)
+        project.add_developer(user)
+        policy_management_project.add_guest(user)
       end
 
-      context 'when feature is available' do
-        let_it_be(:feature_enabled) { true }
-
-        it 'returns 404' do
-          request
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-
-        it_behaves_like "doesn't track govern usage event", 'users_visiting_security_policies'
-      end
+      it_behaves_like 'an unauthorized user'
     end
 
     context 'with anonymous user' do
@@ -181,108 +220,122 @@ RSpec.describe Projects::Security::PoliciesController, type: :request, feature_c
         sign_out(user)
       end
 
-      it 'returns 302' do
-        request
-
-        expect(response).to have_gitlab_http_status(:found)
-        expect(response).to redirect_to(new_user_session_path)
-      end
-
-      it_behaves_like "doesn't track govern usage event", 'users_visiting_security_policies'
+      it_behaves_like 'an anonymous user'
     end
   end
 
   describe 'GET #new' do
-    using RSpec::Parameterized::TableSyntax
-
-    where(:license, :status) do
-      true | :ok
-      false | :not_found
-    end
-
     subject(:request) { get new, params: { namespace_id: project.namespace, project_id: project } }
 
-    with_them do
+    context 'with authorized user' do
+      context 'when feature is licensed' do
+        it 'renders the new policy page' do
+          request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to render_template(:new)
+        end
+
+        it_behaves_like 'tracks govern usage event', 'users_visiting_security_policies'
+      end
+
+      include_context 'when feature is not licensed'
+    end
+
+    context 'with unauthorized user' do
       before do
-        stub_licensed_features(security_orchestration_policies: license)
+        project.add_guest(user)
       end
 
-      specify do
-        subject
+      it_behaves_like 'an unauthorized user'
+    end
 
-        expect(response).to have_gitlab_http_status(status)
+    context 'with anonymous user' do
+      before do
+        sign_out(user)
       end
 
-      describe 'usage tracking' do
-        context 'with license available' do
-          let(:license) { true }
-
-          it_behaves_like 'tracks govern usage event', 'users_visiting_security_policies'
-        end
-
-        context 'without license available' do
-          let(:license) { false }
-
-          it_behaves_like "doesn't track govern usage event", 'users_visiting_security_policies'
-        end
-      end
+      it_behaves_like 'an anonymous user'
     end
   end
 
   describe 'GET #index' do
-    using RSpec::Parameterized::TableSyntax
-
-    where(:license, :status) do
-      true | :ok
-      false | :not_found
-    end
-
     subject(:request) { get index, params: { namespace_id: project.namespace, project_id: project } }
 
-    with_them do
+    context 'with authorized user' do
+      context 'when feature is licensed' do
+        it 'renders the policies page' do
+          request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to render_template(:index)
+        end
+
+        it_behaves_like 'tracks govern usage event', 'users_visiting_security_policies'
+      end
+
+      include_context 'when feature is not licensed'
+    end
+
+    context 'with unauthorized user' do
       before do
-        stub_licensed_features(security_orchestration_policies: license)
+        project.add_reporter(user)
       end
 
-      specify do
-        subject
+      it_behaves_like 'an unauthorized user'
+    end
 
-        expect(response).to have_gitlab_http_status(status)
+    context 'with anonymous user' do
+      before do
+        sign_out(user)
       end
 
-      describe 'usage tracking' do
-        context 'with license available' do
-          let(:license) { true }
-
-          it_behaves_like 'tracks govern usage event', 'users_visiting_security_policies'
-        end
-
-        context 'without license available' do
-          let(:license) { false }
-
-          it_behaves_like "doesn't track govern usage event", 'users_visiting_security_policies'
-        end
-      end
+      it_behaves_like 'an anonymous user'
     end
   end
 
   describe 'GET #schema' do
-    let(:schema) { schema_project_security_policies_url(project) }
-    let(:expected_json) do
-      Gitlab::Json.parse(
-        File.read(
-          Rails.root.join(
-            Security::OrchestrationPolicyConfiguration::POLICY_SCHEMA_PATH
+    subject(:request) { get schema_project_security_policies_url(project) }
+
+    context 'with authorized user' do
+      context 'when feature is licensed' do
+        let(:expected_json) do
+          Gitlab::Json.parse(
+            File.read(
+              Rails.root.join(
+                Security::OrchestrationPolicyConfiguration::POLICY_SCHEMA_PATH
+              )
+            )
           )
-        )
-      )
+        end
+
+        it 'returns JSON schema' do
+          request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).to eq(expected_json)
+        end
+
+        it_behaves_like "doesn't track govern usage event", 'users_visiting_security_policies'
+      end
+
+      include_context 'when feature is not licensed'
     end
 
-    it 'returns JSON schema' do
-      get schema
+    context 'with unauthorized user' do
+      before do
+        project.add_guest(user)
+      end
 
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(json_response).to eq(expected_json)
+      it_behaves_like 'an unauthorized user'
+    end
+
+    context 'with anonymous user' do
+      before do
+        sign_out(user)
+      end
+
+      it_behaves_like 'an anonymous user'
     end
   end
 end
