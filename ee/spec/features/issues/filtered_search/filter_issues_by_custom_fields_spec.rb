@@ -9,17 +9,21 @@ RSpec.describe 'Filter issues by custom fields', :js, feature_category: :team_pl
   let_it_be(:subgroup) { create(:group, parent: group) }
   let_it_be(:project) { create(:project, group: subgroup) }
   let_it_be(:user) { create(:user) }
-  let_it_be(:issue) { create(:issue, project: project) }
+
+  let_it_be(:issues) { create_list(:issue, 3, project: project) }
 
   before_all do
     project.add_maintainer(user)
+
+    create(:work_item_select_field_value, work_item_id: issues[1].id, custom_field: select_field,
+      custom_field_select_option: select_option_1)
   end
 
   before do
     sign_in(user)
   end
 
-  shared_examples 'custom fields filter visibility' do
+  shared_examples 'filtering by custom fields' do
     let(:query) { nil }
 
     context 'when custom fields feature is enabled' do
@@ -28,19 +32,24 @@ RSpec.describe 'Filter issues by custom fields', :js, feature_category: :team_pl
         stub_feature_flags(custom_fields_feature: true)
       end
 
-      it 'shows custom field tokens in filtered search' do
+      it 'allows filtering by select field', :aggregate_failures do
         visit issues_page_path
 
         click_filtered_search_bar
 
-        aggregate_failures do
-          within_testid('filtered-search-input') do
-            expect(page).to have_content(select_field.name)
-            expect(page).to have_content(multi_select_field.name)
-            expect(page).not_to have_content(text_field.name)
-            expect(page).not_to have_content(number_field.name)
-          end
+        within_testid('filtered-search-input') do
+          expect(page).to have_content(select_field.name)
+          expect(page).to have_content(multi_select_field.name)
+          expect(page).not_to have_content(text_field.name)
+          expect(page).not_to have_content(number_field.name)
+
+          click_on select_field.name
+          click_on select_option_1.value
+          send_keys :enter
         end
+
+        expect(page).to have_selector('.issue', count: 1)
+        expect(page).to have_selector('.issue-title', text: issues[1].title)
       end
     end
 
@@ -99,18 +108,18 @@ RSpec.describe 'Filter issues by custom fields', :js, feature_category: :team_pl
   context 'on project issues page' do
     let(:issues_page_path) { project_issues_path(project, query) }
 
-    it_behaves_like 'custom fields filter visibility'
+    it_behaves_like 'filtering by custom fields'
   end
 
   context 'on group issues page' do
     let(:issues_page_path) { issues_group_path(group, query) }
 
-    it_behaves_like 'custom fields filter visibility'
+    it_behaves_like 'filtering by custom fields'
   end
 
   context 'on subgroup issues page' do
     let(:issues_page_path) { issues_group_path(subgroup, query) }
 
-    it_behaves_like 'custom fields filter visibility'
+    it_behaves_like 'filtering by custom fields'
   end
 end

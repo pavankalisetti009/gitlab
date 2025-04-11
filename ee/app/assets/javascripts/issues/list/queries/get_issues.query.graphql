@@ -149,6 +149,7 @@ query getIssuesEE(
       closedAfter: $closedAfter
       closedBefore: $closedBefore
       subscribed: $subscribed
+      customField: $customField
     ) {
       __persist
       pageInfo {
