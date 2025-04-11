@@ -13,58 +13,6 @@ RSpec.describe Groups::MarkForDeletionService, feature_category: :groups_and_pro
     stub_feature_flags(downtier_delayed_deletion: false)
   end
 
-  describe 'group deletion notification' do
-    context 'when group_deletion_notification_email feature flag is enabled' do
-      context 'when adjourned deletion is enabled' do
-        it 'sends notification email' do
-          expect_next_instance_of(NotificationService) do |service|
-            expect(service).to receive(:group_scheduled_for_deletion).with(group)
-          end
-
-          result
-        end
-      end
-
-      context 'when adjourned deletion is disabled' do
-        before do
-          allow(group).to receive(:adjourned_deletion?).and_return(false)
-        end
-
-        it 'does not send notification email' do
-          expect(NotificationService).not_to receive(:new)
-
-          result
-        end
-      end
-
-      context 'when feature flag is enabled for specific group' do
-        before do
-          stub_feature_flags(group_deletion_notification_email: group)
-        end
-
-        it 'sends notification email' do
-          expect_next_instance_of(NotificationService) do |service|
-            expect(service).to receive(:group_scheduled_for_deletion).with(group)
-          end
-
-          result
-        end
-      end
-    end
-
-    context 'when group_deletion_notification_email feature flag is disabled' do
-      before do
-        stub_feature_flags(group_deletion_notification_email: false)
-      end
-
-      it 'does not send notification email' do
-        expect(NotificationService).not_to receive(:new)
-
-        result
-      end
-    end
-  end
-
   context 'for audit events' do
     it 'logs audit event' do
       allow(::Gitlab::Audit::Auditor).to receive(:audit).and_call_original
