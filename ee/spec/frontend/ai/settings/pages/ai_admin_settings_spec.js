@@ -16,6 +16,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 import updateAiSettingsMutation from 'ee/ai/graphql/update_ai_settings.mutation.graphql';
 import DuoExpandedLoggingForm from 'ee/ai/settings/components/duo_expanded_logging_form.vue';
+import DuoChatHistoryExpirationForm from 'ee/ai/settings/components/duo_chat_history_expiration.vue';
 
 jest.mock('~/rest_api');
 jest.mock('~/lib/utils/url_utility');
@@ -59,6 +60,8 @@ const createComponent = async ({
       enabledExpandedLogging: false,
       toggleBetaModelsPath,
       aiGatewayUrl,
+      duoChatExpirationDays: 30,
+      duoChatExpirationColumn: 'last_updated_at',
       ...provide,
     },
   });
@@ -72,6 +75,7 @@ const findCodeSuggestionsConnectionForm = () =>
 const findAiModelsForm = () => wrapper.findComponent(AiModelsForm);
 const findAiGatewayUrlInputForm = () => wrapper.findComponent(AiGtewayUrlInputForm);
 const findDuoExpandedLoggingForm = () => wrapper.findComponent(DuoExpandedLoggingForm);
+const findDuoChatHistoryExpirationForm = () => wrapper.findComponent(DuoChatHistoryExpirationForm);
 
 describe('AiAdminSettings', () => {
   beforeEach(async () => {
@@ -104,6 +108,8 @@ describe('AiAdminSettings', () => {
         instance_level_ai_beta_features_enabled: false,
         disabled_direct_code_suggestions: false,
         enabled_expanded_logging: false,
+        duo_chat_expiration_days: 30,
+        duo_chat_expiration_column: 'last_updated_at',
       });
     });
 
@@ -273,6 +279,38 @@ describe('AiAdminSettings', () => {
       await findDuoExpandedLoggingForm().vm.$emit('change', true);
 
       expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
+    });
+  });
+
+  describe('onDuoChatHistoryExpirationFormChanged', () => {
+    beforeEach(async () => {
+      await createComponent();
+    });
+
+    it('renders the DuoChatHistoryExpirationForm component', () => {
+      expect(findDuoChatHistoryExpirationForm().exists()).toBe(true);
+    });
+
+    it('updates chatExpirationDays when days value changes', async () => {
+      await findDuoChatHistoryExpirationForm().vm.$emit('change-expiration-days', 15);
+
+      expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
+    });
+
+    it('updates chatExpirationColumn when column value changes', async () => {
+      await findDuoChatHistoryExpirationForm().vm.$emit('change-expiration-column', 'created_at');
+
+      expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(true);
+    });
+
+    it('does not update hasParentFormChanged when the default expiration values are provided', async () => {
+      await findDuoChatHistoryExpirationForm().vm.$emit('change-expiration-days', 30);
+      await findDuoChatHistoryExpirationForm().vm.$emit(
+        'change-expiration-column',
+        'last_updated_at',
+      );
+
+      expect(findAiCommonSettings().props('hasParentFormChanged')).toBe(false);
     });
   });
 });

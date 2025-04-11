@@ -9,6 +9,8 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
   let(:instance_level_ai_beta_features_enabled) { false }
   let(:disabled_direct_code_suggestions) { false }
   let(:enabled_expanded_logging) { true }
+  let(:duo_chat_expiration_column) { 'created_at' }
+  let(:duo_chat_expiration_days) { 25 }
   let(:code_suggestions_service) { instance_double(CloudConnector::AvailableServices) }
 
   before do
@@ -16,6 +18,8 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
     stub_ee_application_setting(instance_level_ai_beta_features_enabled: instance_level_ai_beta_features_enabled)
     stub_ee_application_setting(enabled_expanded_logging: enabled_expanded_logging)
     stub_ee_application_setting(disabled_direct_code_suggestions: disabled_direct_code_suggestions)
+    stub_ee_application_setting(duo_chat_expiration_column: duo_chat_expiration_column)
+    stub_ee_application_setting(duo_chat_expiration_days: duo_chat_expiration_days)
     allow(CloudConnector::AvailableServices)
       .to receive(:find_by_name).with(:code_suggestions).and_return(code_suggestions_service)
   end
@@ -79,7 +83,9 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             toggle_beta_models_path: admin_ai_duo_self_hosted_toggle_beta_models_path,
             duo_pro_visible: expected_duo_pro_visible_value,
             can_manage_self_hosted_models: can_manage_self_hosted_models.to_s,
-            ai_gateway_url: ai_gateway_url
+            ai_gateway_url: ai_gateway_url,
+            duo_chat_expiration_column: duo_chat_expiration_column,
+            duo_chat_expiration_days: duo_chat_expiration_days.to_s
           }
         end
 

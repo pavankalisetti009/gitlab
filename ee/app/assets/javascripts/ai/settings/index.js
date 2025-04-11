@@ -38,6 +38,8 @@ export const initAiSettings = (id, component) => {
     areExperimentSettingsAllowed,
     showRedirectBanner,
     enabledExpandedLogging,
+    duoChatExpirationDays,
+    duoChatExpirationColumn,
   } = el.dataset;
 
   let cascadingSettingsDataParsed;
@@ -71,6 +73,8 @@ export const initAiSettings = (id, component) => {
       configurationSettingsPath,
       areExperimentSettingsAllowed: parseBoolean(areExperimentSettingsAllowed),
       showRedirectBanner: parseBoolean(showRedirectBanner),
+      duoChatExpirationDays: parseInt(duoChatExpirationDays, 10),
+      duoChatExpirationColumn,
     },
     render: (createElement) =>
       createElement(component, {

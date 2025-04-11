@@ -7,6 +7,7 @@ import { __ } from '~/locale';
 import AiCommonSettings from '../components/ai_common_settings.vue';
 import CodeSuggestionsConnectionForm from '../components/code_suggestions_connection_form.vue';
 import DuoExpandedLoggingForm from '../components/duo_expanded_logging_form.vue';
+import DuoChatHistoryExpirationForm from '../components/duo_chat_history_expiration.vue';
 import AiModelsForm from '../components/ai_models_form.vue';
 import AiGatewayUrlInputForm from '../components/ai_gateway_url_input_form.vue';
 import updateAiSettingsMutation from '../../graphql/update_ai_settings.mutation.graphql';
@@ -19,6 +20,7 @@ export default {
     AiModelsForm,
     CodeSuggestionsConnectionForm,
     DuoExpandedLoggingForm,
+    DuoChatHistoryExpirationForm,
   },
   i18n: {
     successMessage: __('Application settings saved successfully.'),
@@ -33,6 +35,8 @@ export default {
     'canManageSelfHostedModels',
     'aiGatewayUrl',
     'enabledExpandedLogging',
+    'duoChatExpirationDays',
+    'duoChatExpirationColumn',
   ],
   props: {
     redirectPath: {
@@ -53,6 +57,8 @@ export default {
       aiModelsEnabled: this.betaSelfHostedModelsEnabled,
       aiGatewayUrlInput: this.aiGatewayUrl,
       expandedLogging: this.enabledExpandedLogging,
+      chatExpirationDays: this.duoChatExpirationDays,
+      chatExpirationColumn: this.duoChatExpirationColumn,
     };
   },
   computed: {
@@ -61,7 +67,9 @@ export default {
         this.disabledConnection !== this.disabledDirectConnectionMethod ||
         this.hasAiModelsFormChanged ||
         this.hasAiGatewayUrlChanged ||
-        this.hasExpandedAiLoggingChanged
+        this.hasExpandedAiLoggingChanged ||
+        this.chatExpirationDays !== this.duoChatExpirationDays ||
+        this.chatExpirationColumn !== this.duoChatExpirationColumn
       );
     },
     hasAiModelsFormChanged() {
@@ -88,6 +96,8 @@ export default {
           instance_level_ai_beta_features_enabled: experimentFeaturesEnabled,
           disabled_direct_code_suggestions: this.disabledConnection,
           enabled_expanded_logging: this.expandedLogging,
+          duo_chat_expiration_days: this.chatExpirationDays,
+          duo_chat_expiration_column: this.chatExpirationColumn,
         });
 
         if (this.hasAiModelsFormChanged) {
@@ -146,6 +156,12 @@ export default {
     onExpandedLoggingChange(value) {
       this.expandedLogging = value;
     },
+    onDuoChatHistoryExpirationDaysChange(value) {
+      this.chatExpirationDays = value;
+    },
+    onDuoChatHistoryExpirationColumnChange(value) {
+      this.chatExpirationColumn = value;
+    },
     onError(error) {
       createAlert({
         message: this.$options.i18n.errorMessage,
@@ -163,6 +179,10 @@ export default {
     @submit="updateSettings"
   >
     <template #ai-common-settings-bottom>
+      <duo-chat-history-expiration-form
+        @change-expiration-days="onDuoChatHistoryExpirationDaysChange"
+        @change-expiration-column="onDuoChatHistoryExpirationColumnChange"
+      />
       <code-suggestions-connection-form v-if="duoProVisible" @change="onConnectionFormChange" />
       <template v-if="canManageSelfHostedModels">
         <ai-models-form @change="onAiModelsFormChange" />
