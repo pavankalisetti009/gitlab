@@ -121,12 +121,14 @@ export default {
         if (
           this.multithreadedView === 'chat' &&
           this.aiConversationThreads.length > 0 &&
-          !isFromButton
+          !isFromButton &&
+          (!this.forceNewChat || this.activeThread)
         ) {
           const activeThreadId =
             this.activeThread || this.selectLatestThread(this.aiConversationThreads).id;
           await this.onThreadSelected({ id: activeThreadId });
         }
+        this.forceNewChat = false;
       },
       error(err) {
         this.onError(err);
@@ -173,6 +175,7 @@ export default {
       activeThread: undefined,
       multithreadedView: DUO_CHAT_VIEWS.CHAT,
       aiConversationThreads: [],
+      forceNewChat: false,
     };
   },
   computed: {
@@ -219,6 +222,20 @@ export default {
             const { question, variables, fromButton } = this.duoChatGlobalState.commands[0];
             this.onSendChatPrompt(question, variables, fromButton);
           });
+        }
+      },
+    },
+    'duoChatGlobalState.isShown': {
+      handler(newVal, oldVal) {
+        if (newVal === true && oldVal === false) {
+          const isFromButton =
+            this.hasCommands && Boolean(this.duoChatGlobalState.commands[0].fromButton);
+
+          if (!isFromButton) {
+            this.forceNewChat = true;
+            this.onNewChat();
+            this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
+          }
         }
       },
     },
