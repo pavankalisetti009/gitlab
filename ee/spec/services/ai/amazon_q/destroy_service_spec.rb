@@ -75,6 +75,12 @@ RSpec.describe Ai::AmazonQ::DestroyService, feature_category: :ai_agents do
       expect { doorkeeper_application.reload }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
+    it 'succeeds when application is already deleted' do
+      doorkeeper_application.destroy!
+
+      expect(instance.execute.success?).to be(true)
+    end
+
     it 'updates application settings' do
       expect { instance.execute }
         .to change {

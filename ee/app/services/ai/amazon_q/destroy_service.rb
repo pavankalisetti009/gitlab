@@ -40,6 +40,8 @@ module Ai
 
         oauth_application = Doorkeeper::Application.find_by_id(ai_settings.amazon_q_oauth_application_id)
         oauth_application&.destroy!
+
+        true
       end
 
       def block_service_account!
