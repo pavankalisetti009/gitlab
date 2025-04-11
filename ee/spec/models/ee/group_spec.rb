@@ -3989,6 +3989,25 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#licensed_duo_nano_features_available?' do
+    subject { group.licensed_duo_nano_features_available? }
+
+    where(:code_suggestions, :ai_chat, :result) do
+      true  | true  | true
+      true  | false | true
+      false | true  | true
+      false | false | false
+    end
+
+    with_them do
+      before do
+        stub_licensed_features(code_suggestions: code_suggestions, ai_chat: ai_chat)
+      end
+
+      it { is_expected.to be(result) }
+    end
+  end
+
   describe '#code_suggestions_purchased?', :with_cloud_connector do
     let(:group) { create(:group) }
 

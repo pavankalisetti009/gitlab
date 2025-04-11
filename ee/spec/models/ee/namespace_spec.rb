@@ -41,6 +41,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to delegate_method(:additional_purchased_storage_ends_on=).to(:namespace_limit).with_arguments(:args) }
   it { is_expected.to delegate_method(:experiment_features_enabled).to(:namespace_settings).allow_nil }
   it { is_expected.to delegate_method(:experiment_features_enabled=).to(:namespace_settings).with_arguments(:args).allow_nil }
+  it { is_expected.to delegate_method(:duo_nano_features_enabled).to(:namespace_settings).allow_nil }
   it { is_expected.to delegate_method(:duo_features_enabled).to(:namespace_settings) }
   it { is_expected.to delegate_method(:lock_duo_features_enabled).to(:namespace_settings) }
   it { is_expected.to delegate_method(:duo_availability).to(:namespace_settings) }

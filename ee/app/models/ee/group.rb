@@ -287,6 +287,10 @@ module EE
       licensed_feature_available?(:ai_features) || licensed_feature_available?(:ai_chat)
     end
 
+    def licensed_duo_nano_features_available?
+      licensed_feature_available?(:code_suggestions) || licensed_feature_available?(:ai_chat)
+    end
+
     override :namespace_work_items_enabled?
     def namespace_work_items_enabled?
       super || work_item_epics_enabled?

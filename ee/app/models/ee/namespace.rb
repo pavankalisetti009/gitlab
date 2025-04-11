@@ -163,8 +163,8 @@ module EE
       delegate :eligible_additional_purchased_storage_size, :additional_purchased_storage_size=,
         :additional_purchased_storage_ends_on, :additional_purchased_storage_ends_on=,
         to: :namespace_limit, allow_nil: true
-      delegate :duo_features_enabled, :lock_duo_features_enabled, :duo_availability, to: :namespace_settings,
-        allow_nil: true
+      delegate :duo_nano_features_enabled, :duo_features_enabled, :lock_duo_features_enabled, :duo_availability,
+        to: :namespace_settings, allow_nil: true
       delegate :pipeline_execution_policies_per_configuration_limit,
         :pipeline_execution_policies_per_configuration_limit=,
         to: :namespace_settings, allow_nil: true
@@ -649,7 +649,7 @@ module EE
     end
 
     def duo_nano_features_enabled?
-      !!root_ancestor.namespace_settings.duo_nano_features_enabled
+      !!root_ancestor.duo_nano_features_enabled
     end
 
     private

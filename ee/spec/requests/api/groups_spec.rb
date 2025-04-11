@@ -281,7 +281,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
   describe 'PUT /groups/:id' do
     let_it_be(:admin_mode) { false }
 
-    subject { put api("/groups/#{group.id}", user, admin_mode: admin_mode), params: params }
+    subject(:update_group_request) { put api("/groups/#{group.id}", user, admin_mode: admin_mode), params: params }
 
     it_behaves_like 'PUT request permissions for admin mode' do
       let(:path) { "/groups/#{group.id}" }
@@ -594,6 +594,79 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response['wiki_access_level']).to eq(access_level)
+        end
+      end
+    end
+
+    context 'duo_nano_features_enabled' do
+      let(:params) { { duo_nano_features_enabled: true } }
+
+      before do
+        stub_licensed_features(ai_features: true)
+      end
+
+      context 'authenticated as group owner' do
+        using RSpec::Parameterized::TableSyntax
+
+        where(:code_suggestions_enabled, :param_value, :result) do
+          false | false | nil
+          false | true  | nil
+          true  | false | false
+          true  | true  | true
+        end
+
+        with_them do
+          let(:params) { { duo_nano_features_enabled: param_value } }
+
+          before do
+            stub_licensed_features(code_suggestions: code_suggestions_enabled)
+          end
+
+          it 'updates the attribute and exposes the field as expected' do
+            update_group_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['duo_nano_features_enabled']).to eq(result)
+          end
+        end
+
+        context 'when the group is not a top-level group namespace' do
+          let(:group) { create(:group, :nested) }
+
+          it 'doest not allow update and returns bad request' do
+            update_group_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response["message"].values.flatten.to_sentence).to match(/can only be set for root group namespace/)
+          end
+        end
+
+        context 'when updating already toggled value to nil' do
+          let(:params) { { duo_nano_features_enabled: nil } }
+
+          before do
+            group.namespace_settings.update!(duo_nano_features_enabled: true)
+          end
+
+          it 'doest not allow update and returns bad request' do
+            update_group_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response["message"].values.flatten.to_sentence).to match(/is not included in the list/)
+          end
+        end
+      end
+
+      context 'when the user does not have correct access level to group' do
+        before do
+          group.members.delete_all
+          group.add_maintainer(user)
+        end
+
+        it 'doest not allow update and returns forbidden status' do
+          update_group_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
         end
       end
     end
