@@ -20,6 +20,7 @@ export default {
     GlCollapsibleListbox,
   },
   mixins: [glFeatureFlagsMixin()],
+  inject: ['enabledExperiments'],
   props: {
     strategy: {
       type: String,
@@ -30,7 +31,10 @@ export default {
   },
   computed: {
     hasScheduledPipelines() {
-      return this.glFeatures.scheduledPipelineExecutionPolicies;
+      return (
+        this.enabledExperiments.includes('pipeline_execution_schedule_policy') ||
+        this.glFeatures.scheduledPipelineExecutionPolicies
+      );
     },
 
     showDeprecatedInjectStrategy() {
