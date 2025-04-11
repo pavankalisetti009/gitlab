@@ -4,8 +4,10 @@ module Groups
   module Security
     class PoliciesController < Groups::ApplicationController
       include GovernUsageGroupTracking
+      include SecurityPoliciesPermissions
 
-      before_action :authorize_group_security_policies!, except: :edit
+      before_action :authorize_read_security_orchestration_policies!, except: :edit
+      before_action :ensure_security_policy_project_is_available!, only: :edit
       before_action :authorize_modify_security_policy!, only: :edit
       before_action :validate_policy_configuration, only: :edit
 
@@ -43,6 +45,10 @@ module Groups
 
       private
 
+      def container
+        group
+      end
+
       def policy_params
         params.permit(:type, :id)
       end
@@ -79,12 +85,8 @@ module Groups
         end
       end
 
-      def group_security_policy_available?
-        can?(current_user, :read_security_orchestration_policies, group)
-      end
-
-      def authorize_group_security_policies!
-        render_404 unless group_security_policy_available?
+      def ensure_security_policy_project_is_available!
+        render_404 if policy_configuration.blank?
       end
 
       def policy
