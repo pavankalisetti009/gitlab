@@ -38,7 +38,7 @@ module EE
           dataset[:has_bso_feature_enabled] = true.to_s
           dataset[:add_seats_href] = help_page_url(
             "subscriptions/self_managed/_index.md",
-            anchor: "add-seats-to-a-subscription"
+            anchor: "buy-seats-for-a-subscription"
           )
         else
           dataset[:add_seats_href] = add_seats_url(source.root_ancestor)

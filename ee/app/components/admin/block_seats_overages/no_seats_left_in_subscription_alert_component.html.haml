@@ -3,5 +3,5 @@
     - c.with_body do
       %p= _('You have used all seats in your subscription, so you cannot add new users.')
     - c.with_actions do
-      = render Pajamas::ButtonComponent.new(variant: :confirm, href: help_page_path('subscriptions/self_managed/_index.md', anchor: 'add-seats-to-a-subscription')) do
+      = render Pajamas::ButtonComponent.new(variant: :confirm, href: help_page_path('subscriptions/self_managed/_index.md', anchor: 'buy-seats-for-a-subscription')) do
         = s_('Purchase more seats')
