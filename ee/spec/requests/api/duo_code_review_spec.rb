@@ -23,13 +23,17 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
     let(:new_path) { 'path.md' }
     let(:diff) { 'Diff' }
     let(:hunk) { 'Hunk' }
+    let(:mr_title) { 'Test MR Title' }
+    let(:mr_description) { 'Test MR Description' }
     let(:headers) { {} }
 
     let(:body) do
       {
         new_path: new_path,
         diff: diff,
-        hunk: hunk
+        hunk: hunk,
+        mr_title: mr_title,
+        mr_description: mr_description
       }
     end
 
@@ -49,10 +53,12 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
 
       allow_next_instance_of(
         ::Gitlab::Llm::Templates::ReviewMergeRequest,
-        new_path,
-        diff,
-        hunk,
-        authorized_user
+        new_path: new_path,
+        raw_diff: diff,
+        hunk: hunk,
+        user: authorized_user,
+        mr_title: mr_title,
+        mr_description: mr_description
       ) do |prompt|
         allow(prompt).to receive(:to_prompt).and_return(review_prompt)
       end
@@ -118,6 +124,32 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
 
         it { expect(response).to have_gitlab_http_status(:forbidden) }
       end
+    end
+
+    context 'when mr_title parameter is missing' do
+      let(:body) do
+        {
+          new_path: new_path,
+          diff: diff,
+          hunk: hunk,
+          mr_description: mr_description
+        }
+      end
+
+      it { expect(response).to have_gitlab_http_status(:bad_request) }
+    end
+
+    context 'when mr_description parameter is missing' do
+      let(:body) do
+        {
+          new_path: new_path,
+          diff: diff,
+          hunk: hunk,
+          mr_title: mr_title
+        }
+      end
+
+      it { expect(response).to have_gitlab_http_status(:bad_request) }
     end
   end
 end

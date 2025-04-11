@@ -75,11 +75,27 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
     end
 
     before do
-      allow_next_instance_of(review_prompt_class, 'UPDATED.md', anything, anything, user) do |first_template|
+      allow_next_instance_of(
+        review_prompt_class,
+        new_path: 'UPDATED.md',
+        raw_diff: anything,
+        hunk: anything,
+        user: user,
+        mr_title: merge_request.title,
+        mr_description: merge_request.description
+      ) do |first_template|
         allow(first_template).to receive(:to_prompt).and_return(first_review_prompt)
       end
 
-      allow_next_instance_of(review_prompt_class, 'NEW.md', anything, anything, user) do |second_template|
+      allow_next_instance_of(
+        review_prompt_class,
+        new_path: 'NEW.md',
+        raw_diff: anything,
+        hunk: anything,
+        user: user,
+        mr_title: merge_request.title,
+        mr_description: merge_request.description
+      ) do |second_template|
         allow(second_template).to receive(:to_prompt).and_return(second_review_prompt)
       end
 

@@ -24,12 +24,32 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
     let(:new_path) { 'NEW.md' }
     let(:hunk) { '-Welcome\n-This is a new file+Welcome!\n+This is a new file.' }
     let(:user) { build(:user) }
-    let(:prompt) { described_class.new(new_path, diff, hunk, user).to_prompt }
+    let(:mr_title) { 'Fix typos in welcome message' }
+    let(:mr_description) { 'Improving readability by fixing typos and adding proper punctuation.' }
+
+    let(:prompt) do
+      described_class.new(
+        new_path: new_path,
+        raw_diff: diff,
+        hunk: hunk,
+        user: user,
+        mr_title: mr_title,
+        mr_description: mr_description
+      ).to_prompt
+    end
 
     subject(:user_prompt) { prompt&.dig(:messages, 0, :content) }
 
     it 'includes new_path' do
       expect(user_prompt).to include(new_path)
+    end
+
+    it 'includes merge request title' do
+      expect(user_prompt).to include('Fix typos in welcome message')
+    end
+
+    it 'includes merge request description' do
+      expect(user_prompt).to include('Improving readability by fixing typos and adding proper punctuation.')
     end
 
     it 'includes diff lines with hunk header' do

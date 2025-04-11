@@ -14,7 +14,17 @@ module Gitlab
         )
         USER_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_user(
           <<~PROMPT.chomp
-            First, you will be given a filename and a structured representation of the git diff for that file. This structured diff contains the changes made in the MR that you need to review.
+            First, you will be given the merge request title and description to understand the purpose of these changes, followed by a filename and a structured representation of the git diff for that file. This structured diff contains the changes made in the MR that you need to review.
+
+            Merge Request Title:
+            <mr_title>
+            %{mr_title}
+            </mr_title>
+
+            Merge Request Description:
+            <mr_description>
+            %{mr_description}
+            </mr_description>
 
             Here is the filename of the git diff:
 
@@ -76,17 +86,21 @@ module Gitlab
                - Wrap your entire response in `<review></review>` tag.
                - Just return `<review></review>` as your entire response, if the change is acceptable
 
+            Pay careful attention to the Merge Request title and description to understand the purpose of the changes. Some changes may involve intentional removals or modifications that align with the MR's stated goals. Note that in some cases, the MR description may not be provided.
+
             Remember to only focus on substantive feedback that will genuinely improve the code or prevent potential issues. Do not nitpick or comment on trivial matters.
 
             Begin your review now.
           PROMPT
         )
 
-        def initialize(new_path, raw_diff, hunk, user)
+        def initialize(new_path:, raw_diff:, hunk:, user:, mr_title:, mr_description:)
           @new_path = new_path
           @raw_diff = raw_diff
           @hunk = hunk
           @user = user
+          @mr_title = mr_title
+          @mr_description = mr_description
         end
 
         def to_prompt
@@ -109,6 +123,8 @@ module Gitlab
 
         def variables
           {
+            mr_title: mr_title,
+            mr_description: mr_description,
             new_path: new_path,
             diff_lines: xml_diff_lines
           }
@@ -143,7 +159,7 @@ module Gitlab
           end
         end
 
-        attr_reader :new_path, :raw_diff, :hunk, :user
+        attr_reader :new_path, :raw_diff, :hunk, :user, :mr_title, :mr_description
       end
     end
   end
