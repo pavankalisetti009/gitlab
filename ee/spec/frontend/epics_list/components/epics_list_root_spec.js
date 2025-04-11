@@ -11,7 +11,12 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { mockAuthor, mockLabels } from 'jest/vue_shared/issuable/list/mock_data';
-import { WORK_ITEM_TYPE_ENUM_EPIC, STATE_OPEN } from '~/work_items/constants';
+import {
+  STATE_OPEN,
+  WORK_ITEM_TYPE_ENUM_EPIC,
+  WORK_ITEM_TYPE_NAME_EPIC,
+  WORK_ITEM_TYPE_NAME_ISSUE,
+} from '~/work_items/constants';
 
 import { createAlert } from '~/alert';
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
@@ -87,31 +92,43 @@ const mockCustomFields = [
     workItemTypes: [
       {
         id: 'gid://gitlab/WorkItemTypes/1',
-        name: WORK_ITEM_TYPE_ENUM_EPIC,
+        name: WORK_ITEM_TYPE_NAME_EPIC,
       },
     ],
     __typename: 'WorkItemCustomField',
   },
   {
     id: '2',
-    name: 'Status',
-    fieldType: 'MULTI_SELECT',
+    name: 'Issue-only',
+    fieldType: 'SINGLE_SELECT',
     workItemTypes: [
       {
-        id: 'gid://gitlab/WorkItemTypes/1',
-        name: WORK_ITEM_TYPE_ENUM_EPIC,
+        id: 'gid://gitlab/WorkItemTypes/2',
+        name: WORK_ITEM_TYPE_NAME_ISSUE,
       },
     ],
     __typename: 'WorkItemCustomField',
   },
   {
     id: '3',
+    name: 'Status',
+    fieldType: 'MULTI_SELECT',
+    workItemTypes: [
+      {
+        id: 'gid://gitlab/WorkItemTypes/1',
+        name: WORK_ITEM_TYPE_NAME_EPIC,
+      },
+    ],
+    __typename: 'WorkItemCustomField',
+  },
+  {
+    id: '4',
     name: 'Text Field',
     fieldType: 'TEXT',
     workItemTypes: [
       {
         id: 'gid://gitlab/WorkItemTypes/1',
-        name: WORK_ITEM_TYPE_ENUM_EPIC,
+        name: WORK_ITEM_TYPE_NAME_EPIC,
       },
     ],
     __typename: 'WorkItemCustomField',
@@ -483,9 +500,9 @@ describe('EpicsListRoot', () => {
 
       const fieldsInTokens = searchTokens.map((t) => t.field);
 
-      // Only SINGLE_SELECT and MULTI_SELECT fields should be included
+      // Only SINGLE_SELECT and MULTI_SELECT fields applicable to Epics should be included
       expect(searchTokens).toHaveLength(2);
-      expect(fieldsInTokens).toEqual([mockCustomFields[0], mockCustomFields[1]]);
+      expect(fieldsInTokens).toEqual([mockCustomFields[0], mockCustomFields[2]]);
     });
 
     it('handles custom fields query error', async () => {

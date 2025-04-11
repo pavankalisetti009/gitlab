@@ -24,8 +24,9 @@ import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.
 import {
   CUSTOM_FIELDS_TYPE_MULTI_SELECT,
   CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
-  WORK_ITEM_TYPE_ENUM_EPIC,
   STATE_CLOSED,
+  WORK_ITEM_TYPE_ENUM_EPIC,
+  WORK_ITEM_TYPE_NAME_EPIC,
 } from '~/work_items/constants';
 import { STATUS_CLOSED } from '~/issues/constants';
 
@@ -157,7 +158,10 @@ export default {
             CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
             CUSTOM_FIELDS_TYPE_MULTI_SELECT,
           ].includes(field.fieldType);
-          return fieldTypeAllowed;
+          const workItemTypeAllowed = field.workItemTypes.some(
+            (workItemType) => workItemType.name === WORK_ITEM_TYPE_NAME_EPIC,
+          );
+          return fieldTypeAllowed && workItemTypeAllowed;
         });
       },
       error(error) {
