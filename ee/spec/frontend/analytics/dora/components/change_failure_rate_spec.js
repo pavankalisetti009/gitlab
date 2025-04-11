@@ -1,12 +1,12 @@
 import { shallowMount } from '@vue/test-utils';
 import MockAdapter from 'axios-mock-adapter';
-import last180DaysData from 'test_fixtures/api/dora/metrics/daily_time_to_restore_service_for_last_180_days.json';
-import lastWeekData from 'test_fixtures/api/dora/metrics/daily_time_to_restore_service_for_last_week.json';
-import lastMonthData from 'test_fixtures/api/dora/metrics/daily_time_to_restore_service_for_last_month.json';
-import last90DaysData from 'test_fixtures/api/dora/metrics/daily_time_to_restore_service_for_last_90_days.json';
+import last180DaysData from 'test_fixtures/api/dora/metrics/daily_change_failure_rate_for_last_180_days.json';
+import lastWeekData from 'test_fixtures/api/dora/metrics/daily_change_failure_rate_for_last_week.json';
+import lastMonthData from 'test_fixtures/api/dora/metrics/daily_change_failure_rate_for_last_month.json';
+import last90DaysData from 'test_fixtures/api/dora/metrics/daily_change_failure_rate_for_last_90_days.json';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { useFixturesFakeDate } from 'helpers/fake_date';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
@@ -14,19 +14,19 @@ import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 
 jest.mock('~/alert');
 
-describe('time_to_restore_service_charts.vue', () => {
+describe('change_failure_rate_charts.vue', () => {
   useFixturesFakeDate();
 
-  let TimeToRestoreServiceCharts;
+  let ChangeFailureRateCharts;
   let DoraChartHeader;
 
   // Import these components _after_ the date has been set using `useFakeDate`, so
   // that any calls to `new Date()` during module initialization use the fake date
   beforeAll(async () => {
-    TimeToRestoreServiceCharts = (
-      await import('ee_component/dora/components/time_to_restore_service_charts.vue')
+    ChangeFailureRateCharts = (
+      await import('ee_component/analytics/dora/components/change_failure_rate_charts.vue')
     ).default;
-    DoraChartHeader = (await import('ee/dora/components/dora_chart_header.vue')).default;
+    DoraChartHeader = (await import('ee/analytics/dora/components/dora_chart_header.vue')).default;
   });
 
   let wrapper;
@@ -40,7 +40,7 @@ describe('time_to_restore_service_charts.vue', () => {
 
   const createComponent = (mountOptions = defaultMountOptions) => {
     wrapper = extendedWrapper(
-      shallowMount(TimeToRestoreServiceCharts, {
+      shallowMount(ChangeFailureRateCharts, {
         stubs: {
           CiCdAnalyticsCharts: {
             template: `<div><slot name="metrics" :selectedChart="1"></slot></div>`,
@@ -51,11 +51,11 @@ describe('time_to_restore_service_charts.vue', () => {
     );
   };
 
-  const setUpMockTimetoRestoreService = ({ start_date, data }) => {
+  const setUpMockChangeFailureRate = ({ start_date, data }) => {
     mock
       .onGet(/projects\/test%2Fproject\/dora\/metrics/, {
         params: {
-          metric: 'time_to_restore_service',
+          metric: 'change_failure_rate',
           interval: 'daily',
           per_page: 100,
           end_date: '2015-07-04T00:00:00+0000',
@@ -75,19 +75,19 @@ describe('time_to_restore_service_charts.vue', () => {
     beforeEach(async () => {
       mock = new MockAdapter(axios);
 
-      setUpMockTimetoRestoreService({
+      setUpMockChangeFailureRate({
         start_date: '2015-06-27T00:00:00+0000',
         data: lastWeekData,
       });
-      setUpMockTimetoRestoreService({
+      setUpMockChangeFailureRate({
         start_date: '2015-06-04T00:00:00+0000',
         data: lastMonthData,
       });
-      setUpMockTimetoRestoreService({
+      setUpMockChangeFailureRate({
         start_date: '2015-04-05T00:00:00+0000',
         data: last90DaysData,
       });
-      setUpMockTimetoRestoreService({
+      setUpMockChangeFailureRate({
         start_date: '2015-01-05T00:00:00+0000',
         data: last180DaysData,
       });
@@ -117,7 +117,8 @@ describe('time_to_restore_service_charts.vue', () => {
       });
 
       it('renders the value stream metrics component', () => {
-        expect(findValueStreamMetrics().exists()).toBe(true);
+        const metricsComponent = findValueStreamMetrics();
+        expect(metricsComponent.exists()).toBe(true);
       });
 
       it('sets the `isLicensed` prop', () => {
@@ -125,7 +126,8 @@ describe('time_to_restore_service_charts.vue', () => {
       });
 
       it('correctly computes the requestParams', () => {
-        expect(findValueStreamMetrics().props('requestParams')).toMatchObject({
+        const metricsComponent = findValueStreamMetrics();
+        expect(metricsComponent.props('requestParams')).toMatchObject({
           startDate: '2015-06-04T00:00:00+0000',
           endDate: '2015-07-04T00:00:00+0000',
         });
@@ -152,7 +154,7 @@ describe('time_to_restore_service_charts.vue', () => {
     it('shows an alert message', () => {
       expect(createAlert).toHaveBeenCalledTimes(1);
       expect(createAlert).toHaveBeenCalledWith({
-        message: 'Something went wrong while getting time to restore service data.',
+        message: 'Something went wrong while getting change failure rate data.',
       });
     });
 
@@ -160,7 +162,7 @@ describe('time_to_restore_service_charts.vue', () => {
       expect(captureExceptionSpy).toHaveBeenCalledTimes(1);
 
       const expectedErrorMessage = [
-        'Something went wrong while getting time to restore service data:',
+        'Something went wrong while getting change failure rate data:',
         'Error: Request failed with status code 404',
         'Error: Request failed with status code 404',
         'Error: Request failed with status code 404',

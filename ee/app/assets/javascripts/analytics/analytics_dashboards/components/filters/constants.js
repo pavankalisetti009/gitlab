@@ -1,6 +1,6 @@
 import { __, sprintf } from '~/locale';
 import { nDaysBefore, getCurrentUtcDate, getDateInPast } from '~/lib/utils/datetime_utility';
-import { startOfTomorrow } from 'ee/dora/components/static_data/shared';
+import { startOfTomorrow } from 'ee/analytics/dora/components/static_data/shared';
 import {
   OPERATORS_IS,
   OPERATORS_IS_NOT,

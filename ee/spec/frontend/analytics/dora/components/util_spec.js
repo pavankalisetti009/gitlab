@@ -10,13 +10,13 @@ import {
   formatAsPercentage,
   forecastDataToSeries,
   extractOverviewMetricsQueryParameters,
-} from 'ee/dora/components/util';
+} from 'ee/analytics/dora/components/util';
 import { forecastDataToChartDate } from './helpers';
 import { mockLastWeekData, mockLastWeekRawForecastData } from './mock_data';
 
 const NO_DATA_MESSAGE = 'No data available';
 
-describe('ee/dora/components/util.js', () => {
+describe('ee/analytics/dora/components/util.js', () => {
   describe('apiDataToChartSeries', () => {
     it('transforms the data from the API into data the chart component can use', () => {
       const apiData = [
