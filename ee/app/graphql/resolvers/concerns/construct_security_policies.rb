@@ -145,6 +145,8 @@ module ConstructSecurityPolicies
 
   def pipeline_execution_policy_content_project(policy)
     content_include = policy.dig(:content, :include, 0)
+    return unless content_include && content_include[:project]
+
     Project.find_by_full_path(content_include[:project])
   end
 end

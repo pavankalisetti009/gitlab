@@ -9,6 +9,7 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
 
   let_it_be(:ref_project) { create(:project, :repository) }
   let(:content) { { project: ref_project.full_path, file: 'pipeline_execution_policy.yml' } }
+  let(:project_full_path) { content[:project] }
   let(:policy) { build(:pipeline_execution_policy, name: 'Run custom pipeline', content: { include: [content] }) }
   let(:policy_yaml) { build(:orchestration_policy_yaml, pipeline_execution_policy: [policy]) }
   let(:expected_resolved) do
@@ -41,7 +42,7 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
   end
 
   before do
-    allow(Project).to receive(:find_by_full_path).with(content[:project]).and_return(ref_project)
+    allow(Project).to receive(:find_by_full_path).with(project_full_path).and_return(ref_project)
   end
 
   subject(:resolve_scan_policies) { resolve(described_class, obj: project, ctx: { current_user: user }) }
@@ -81,6 +82,29 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
         it 'includes warning message' do
           expect(resolve_scan_policies[0][:warnings]).to include(
             'The policy is associated with a non-existing Pipeline configuration file.')
+        end
+      end
+
+      context 'when filtering by inherited policies' do
+        let(:project_full_path) { ref_project.full_path }
+        let(:args) { { relationship: :inherited } }
+
+        subject(:resolve_scan_policies) do
+          resolve(described_class, obj: project, ctx: { current_user: user }, args: args,
+            arg_style: :internal)
+        end
+
+        context 'when policy does not contains content' do
+          let(:content) { nil }
+
+          it 'returns an empty string' do
+            expect(resolve_scan_policies[0][:policy_blob_file_path]).to eq("")
+          end
+
+          it 'includes warning message' do
+            expect(resolve_scan_policies[0][:warnings]).to include(
+              'The policy is associated with a non-existing Pipeline configuration file.')
+          end
         end
       end
     end
