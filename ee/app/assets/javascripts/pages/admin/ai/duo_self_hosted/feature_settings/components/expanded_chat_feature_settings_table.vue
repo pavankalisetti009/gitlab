@@ -46,9 +46,9 @@ export default {
       );
     },
     otherGitLabDuoFeatures() {
-      return this.aiFeatureSettings.filter(
-        (setting) => setting.mainFeature === DUO_MAIN_FEATURES.OTHER_GITLAB_DUO_FEATURES,
-      );
+      return this.aiFeatureSettings
+        .filter((setting) => setting.mainFeature === DUO_MAIN_FEATURES.OTHER_GITLAB_DUO_FEATURES)
+        .sort((a, b) => a.releaseState.localeCompare(b.releaseState)); // sort by releaseState due to mix of experimental & beta features
     },
   },
   apollo: {
