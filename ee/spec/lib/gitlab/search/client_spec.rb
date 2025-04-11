@@ -79,11 +79,11 @@ RSpec.describe Gitlab::Search::Client, feature_category: :global_search do
   describe '.execute_count' do
     let(:adapter) { described_class.search_adapter }
     let(:options) { { klass: Project } }
-    let(:query) { { foo: 'bar' } }
+    let(:query) { { query: {} } }
 
     it 'calls count with the expected query' do
       expect(adapter).to receive(:count)
-                           .with(a_hash_including(timeout: '1s', index: Project.index_name, body: { foo: 'bar' }))
+                           .with(a_hash_including(index: Project.index_name, body: query))
                            .and_return(true)
 
       described_class.execute_count(query: query, options: options) do |response|
