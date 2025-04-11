@@ -37,6 +37,7 @@ complete the following steps.
 To set up GitLab Duo with Amazon Q, you must:
 
 - [Complete the prerequisites](#prerequisites)
+- [Create a profile in the Amazon Q Developer console](#create-a-profile-in-the-amazon-q-developer-console)
 - [Create an identity provider](#create-an-iam-identity-provider)
 - [Create an IAM role](#create-an-iam-role)
 - [Add the policy](#add-the-policy)
@@ -53,11 +54,23 @@ To set up GitLab Duo with Amazon Q, you must:
     - `54.226.244.221`
   - With an HTTPS URL that can be accessed by Amazon Q (the SSL certificate must not be self-signed).
     For more details about SSL, see [Configure SSL for a Linux package installation](https://docs.gitlab.com/omnibus/settings/ssl/).
-  - With an Ultimate subscription that is synchronized with GitLab. (No trial access.)
+  - With an Ultimate subscription that is synchronized with GitLab, and
+    the GitLab Duo with Amazon Q add-on.
+
+### Create a profile in the Amazon Q Developer console
+
+Create an Amazon Q Developer profile.
+
+1. Open the [Amazon Q Developer console](https://us-east-1.console.aws.amazon.com/amazonq/developer/home#/gitlab).
+1. Select **Amazon Q Developer in GitLab**.
+1. Select **Get Started**.
+1. For **Profile name**, enter a unique profile name for your region. For example, `QDevProfile-us-east-1`.
+1. Optional. For **Profile description - optional**, enter a description.
+1. Select **Create**.
 
 ### Create an IAM identity provider
 
-Start by creating an IAM identity provider.
+Next, create an IAM identity provider.
 
 First, you need the some values from GitLab:
 
