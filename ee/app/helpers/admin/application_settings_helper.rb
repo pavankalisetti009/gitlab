@@ -86,7 +86,9 @@ module Admin
         beta_self_hosted_models_enabled: beta_self_hosted_models_enabled.to_s,
         toggle_beta_models_path: admin_ai_duo_self_hosted_toggle_beta_models_path,
         can_manage_self_hosted_models: can_manage_self_hosted_models.to_s,
-        ai_gateway_url: ai_gateway_url
+        ai_gateway_url: ai_gateway_url,
+        duo_chat_expiration_column: current_application_settings.duo_chat_expiration_column,
+        duo_chat_expiration_days: current_application_settings.duo_chat_expiration_days.to_s
       }
     end
 

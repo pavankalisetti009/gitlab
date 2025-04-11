@@ -5673,6 +5673,9 @@ msgstr ""
 msgid "AiPowered|Configure AI-powered GitLab Duo features. %{linkStart}Which features?%{linkEnd}"
 msgstr ""
 
+msgid "AiPowered|Configure how long GitLab Duo Chat conversations persist before they expire:"
+msgstr ""
+
 msgid "AiPowered|Connection method"
 msgstr ""
 
@@ -5700,6 +5703,12 @@ msgstr ""
 msgid "AiPowered|Experiment and beta features"
 msgstr ""
 
+msgid "AiPowered|Expire conversation based on time conversation was created."
+msgstr ""
+
+msgid "AiPowered|Expire conversation based on time conversation was last updated."
+msgstr ""
+
 msgid "AiPowered|Features are available. However, any group, subgroup, or project can turn them off."
 msgstr ""
 
@@ -5707,6 +5716,9 @@ msgid "AiPowered|Features are not available and cannot be turned on for any grou
 msgstr ""
 
 msgid "AiPowered|Features are not available. However, any group, subgroup, or project can turn them on."
+msgstr ""
+
+msgid "AiPowered|GitLab Duo Chat conversation expiration"
 msgstr ""
 
 msgid "AiPowered|GitLab Duo seat assignment is now located in GitLab Duo settings."
