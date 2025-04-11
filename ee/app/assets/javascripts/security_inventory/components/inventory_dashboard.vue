@@ -5,22 +5,19 @@ import {
   GlSkeletonLoader,
   GlTooltipDirective,
   GlBreadcrumb,
-  GlPopover,
 } from '@gitlab/ui';
 import EMPTY_SUBGROUP_SVG from '@gitlab/svgs/dist/illustrations/empty-state/empty-projects-md.svg?url';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { getLocationHash, PATH_SEPARATOR } from '~/lib/utils/url_utility';
-import { SEVERITY_CLASS_NAME_MAP } from 'ee/vue_shared/security_reports/components/constants';
 import SubgroupsAndProjectsQuery from '../graphql/subgroups_and_projects.query.graphql';
 import { isSubGroup } from '../utils';
-import VulnerabilityIndicator from './vulnerability_indicator.vue';
-import ProjectVulnerabilityCounts from './project_vulnerability_counts.vue';
 import ProjectToolCoverageIndicator from './project_tool_coverage_indicator.vue';
 import GroupToolCoverageIndicator from './group_tool_coverage_indicator.vue';
 import EmptyState from './empty_state.vue';
 import NameCell from './name_cell.vue';
+import VulnerabilityCell from './vulnerability_cell.vue';
 
 export default {
   components: {
@@ -28,13 +25,11 @@ export default {
     GlButton,
     GlSkeletonLoader,
     GlBreadcrumb,
-    VulnerabilityIndicator,
-    GlPopover,
-    ProjectVulnerabilityCounts,
     GroupToolCoverageIndicator,
     ProjectToolCoverageIndicator,
     EmptyState,
     NameCell,
+    VulnerabilityCell,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -185,16 +180,6 @@ export default {
       }
       this.activeFullPath = hash;
     },
-    vulnerabilitiesCountsObject(vulnerabilitySeveritiesCount) {
-      return Object.entries(vulnerabilitySeveritiesCount)
-        .filter(([key]) => key !== '__typename')
-        .map(([key, value]) => ({
-          label: key,
-          value,
-          icon: `severity-${key}`,
-          iconColor: SEVERITY_CLASS_NAME_MAP[key],
-        }));
-    },
   },
 };
 </script>
@@ -207,24 +192,12 @@ export default {
     </template>
     <template v-else-if="!hasChildren"><empty-state /></template>
     <gl-table-lite v-else :items="children" :fields="$options.fields" hover>
-      <template #cell(name)="{ item = {} }">
-        <name-cell :item="item" />
+      <template #cell(name)="{ item }">
+        <name-cell v-if="item" :item="item" />
       </template>
 
-      <template #cell(vulnerabilities)="{ item: { vulnerabilitySeveritiesCount, webUrl }, index }">
-        <div :id="`vulnerabilities-count-${index}`" class="gl-cursor-pointer">
-          <vulnerability-indicator :counts="vulnerabilitySeveritiesCount" />
-        </div>
-        <gl-popover
-          :title="$options.i18n.projectVulnerabilitiesTooltipTitle"
-          :target="`vulnerabilities-count-${index}`"
-          show-close-button
-        >
-          <project-vulnerability-counts
-            :severity-items="vulnerabilitiesCountsObject(vulnerabilitySeveritiesCount)"
-            :web-url="webUrl"
-          />
-        </gl-popover>
+      <template #cell(vulnerabilities)="{ item, index }">
+        <vulnerability-cell v-if="item" :item="item" :index="index" />
       </template>
 
       <template #cell(toolCoverage)="{ item }">

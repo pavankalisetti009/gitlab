@@ -54128,6 +54128,9 @@ msgstr ""
 msgid "SecurityInventory|DS"
 msgstr ""
 
+msgid "SecurityInventory|Group vulnerabilities"
+msgstr ""
+
 msgid "SecurityInventory|IaC"
 msgstr ""
 

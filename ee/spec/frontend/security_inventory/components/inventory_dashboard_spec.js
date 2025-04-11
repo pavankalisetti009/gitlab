@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlTableLite, GlSkeletonLoader, GlBreadcrumb, GlPopover } from '@gitlab/ui';
+import { GlTableLite, GlSkeletonLoader, GlBreadcrumb } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -11,9 +11,9 @@ import VulnerabilityIndicator from 'ee/security_inventory/components/vulnerabili
 import GroupToolCoverageIndicator from 'ee/security_inventory/components/group_tool_coverage_indicator.vue';
 import ProjectToolCoverageIndicator from 'ee/security_inventory/components/project_tool_coverage_indicator.vue';
 import SubgroupsAndProjectsQuery from 'ee/security_inventory/graphql/subgroups_and_projects.query.graphql';
-import projectVulnerabilityCounts from 'ee/security_inventory/components/project_vulnerability_counts.vue';
 import EmptyState from 'ee/security_inventory/components/empty_state.vue';
 import NameCell from 'ee/security_inventory/components/name_cell.vue';
+import vulnerabilityCell from 'ee/security_inventory/components/vulnerability_cell.vue';
 import { subgroupsAndProjects } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -55,9 +55,6 @@ describe('InventoryDashboard', () => {
   const findTableRows = () => findTable().findAll('tbody tr');
   const findNthTableRow = (n) => findTableRows().at(n);
   const findBreadcrumb = () => wrapper.findComponent(GlBreadcrumb);
-  const findPopover = () => wrapper.findComponent(GlPopover);
-  const findProjectVulnerabilityCounts = () => wrapper.findComponent(projectVulnerabilityCounts);
-  const findVulnerabilityDiv = () => findNthTableRow(0).findAll('td').at(1).find('div');
 
   /* eslint-disable no-underscore-dangle */
   const getIndexByType = (children, type) => {
@@ -123,20 +120,9 @@ describe('InventoryDashboard', () => {
       expect(nameCell.exists()).toBe(true);
       expect(nameCell.text()).toContain(mockChildren[0].name);
 
-      expect(findVulnerabilityDiv().text()).toBe('80');
-      expect(findVulnerabilityDiv().attributes('id')).toBe('vulnerabilities-count-0');
-      expect(findVulnerabilityDiv().classes()).toContain('gl-cursor-pointer');
-    });
-
-    it('render current values of vulnerabilities popover', () => {
-      expect(findPopover().exists()).toBe(true);
-      expect(findProjectVulnerabilityCounts().exists()).toBe(true);
-      expect(findPopover().props('target')).toBe(findVulnerabilityDiv().attributes('id'));
-
-      expect(findPopover().text()).toContain(
-        'Critical: 10 High: 10 Low: 10 Info: 10 Medium: 20 Unknown: 20',
-      );
-      expect(findPopover().text()).toContain('View vulnerability report');
+      const vulnerabilitycell = findNthTableRow(groupIndex).findComponent(vulnerabilityCell);
+      expect(vulnerabilitycell.exists()).toBe(true);
+      expect(vulnerabilitycell.text()).toContain('80');
     });
 
     it('renders correct elements for projects and subgroups', () => {
