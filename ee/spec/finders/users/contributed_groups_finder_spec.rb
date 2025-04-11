@@ -7,16 +7,34 @@ RSpec.describe Users::ContributedGroupsFinder, feature_category: :user_profile d
   let(:source_user) { create(:user) }
 
   let!(:public_group) { create(:group, :public) }
+  let!(:wiki_only_group) { create(:group, :private) }
   let!(:private_group) { create(:group, :private) }
   let!(:internal_group) { create(:group, :internal) }
 
   before do
     public_group.add_maintainer(source_user)
+    wiki_only_group.add_maintainer(source_user)
     private_group.add_maintainer(source_user)
     private_group.add_developer(current_user) if current_user
 
     [public_group, internal_group, private_group].each do |group|
       create(:event, :epic_create_event, group: group, author: source_user, target: create(:epic, group: group))
+    end
+
+    [public_group, internal_group, private_group, wiki_only_group].each do |group|
+      create(
+        :event,
+        group: group,
+        project: nil,
+        author: source_user,
+        action: :commented,
+        target: create(
+          :note,
+          author: source_user,
+          project: nil,
+          noteable: create(:wiki_page_meta, :for_wiki_page, container: group)
+        )
+      )
     end
   end
 
@@ -36,7 +54,7 @@ RSpec.describe Users::ContributedGroupsFinder, feature_category: :user_profile d
         let(:include_private_contributions) { true }
 
         it 'returns all groups' do
-          expect(groups).to contain_exactly(public_group, internal_group, private_group)
+          expect(groups).to contain_exactly(public_group, internal_group, private_group, wiki_only_group)
         end
       end
     end
