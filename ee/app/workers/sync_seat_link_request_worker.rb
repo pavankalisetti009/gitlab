@@ -43,8 +43,7 @@ class SyncSeatLinkRequestWorker
 
   def perform_cloud_connector_sync
     ::CloudConnector::SyncServiceTokenWorker.perform_async(
-      license_id: License.current.id,
-      force: true
+      license_id: License.current.id
     )
   end
 

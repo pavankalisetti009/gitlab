@@ -288,8 +288,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
 
       it 'performs Cloud Connector access data sync' do
         expect(CloudConnector::SyncServiceTokenWorker).to receive(:perform_async).with(
-          license_id: License.current.id,
-          force: true
+          license_id: License.current.id
         )
 
         sync_seat_link
