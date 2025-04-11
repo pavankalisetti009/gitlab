@@ -30767,6 +30767,9 @@ msgstr ""
 msgid "Hostname used in private commit emails. %{learn_more}"
 msgstr ""
 
+msgid "Hotspot indicator"
+msgstr ""
+
 msgid "Hour"
 msgstr ""
 
@@ -35524,6 +35527,12 @@ msgid "Learn more about Auto DevOps"
 msgstr ""
 
 msgid "Learn more about GitLab"
+msgstr ""
+
+msgid "Learn more about Root Cause Analysis"
+msgstr ""
+
+msgid "Learn more about Root Cause Analysis in new tab"
 msgstr ""
 
 msgid "Learn more about Service Desk"
@@ -49499,6 +49508,9 @@ msgstr ""
 msgid "Quick start guide"
 msgstr ""
 
+msgid "Quickly identify the root cause of an incident using AI-assisted analysis."
+msgstr ""
+
 msgid "README"
 msgstr ""
 
@@ -51244,6 +51256,9 @@ msgid "Roll up totals may reflect child items you don’t have access to."
 msgstr ""
 
 msgid "Rollback"
+msgstr ""
+
+msgid "Root Cause Analysis"
 msgstr ""
 
 msgid "Root Moved Permanently redirection response"
