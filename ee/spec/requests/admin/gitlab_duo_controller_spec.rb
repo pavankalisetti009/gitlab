@@ -98,7 +98,29 @@ RSpec.describe Admin::GitlabDuoController, :cloud_licenses, feature_category: :a
           stub_saas_features(gitlab_com_subscriptions: true)
         end
 
-        it_behaves_like 'hides gitlab duo path'
+        context 'when the license is paid' do
+          before do
+            allow(License).to receive(:current).and_return(build(:license, plan: License::PREMIUM_PLAN))
+          end
+
+          it_behaves_like 'renders the activation form'
+        end
+
+        context 'when the instance has a non-paid license' do
+          before do
+            allow(License).to receive(:current).and_return(build(:license, plan: License::LEGACY_LICENSE_TYPE))
+          end
+
+          it_behaves_like 'hides gitlab duo path'
+        end
+
+        context 'when the instance does not have a license' do
+          before do
+            allow(License).to receive(:current).and_return(nil)
+          end
+
+          it_behaves_like 'hides gitlab duo path'
+        end
       end
     end
   end

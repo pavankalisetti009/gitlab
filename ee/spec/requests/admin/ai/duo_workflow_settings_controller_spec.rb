@@ -36,7 +36,7 @@ RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :enable_admin_mode, fea
 
           post admin_ai_duo_workflow_settings_path
 
-          expect(response).to redirect_to(edit_admin_application_settings_integration_path(:duo_workflow))
+          expect(response).to redirect_to(admin_gitlab_duo_path)
           expect(flash[:notice]).to eq('Duo Workflow Settings have been saved')
         end
 
@@ -47,7 +47,7 @@ RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :enable_admin_mode, fea
 
           post admin_ai_duo_workflow_settings_path
 
-          expect(response).to redirect_to(edit_admin_application_settings_integration_path(:duo_workflow))
+          expect(response).to redirect_to(admin_gitlab_duo_path)
           expect(flash[:alert]).to eq('Failed to unblock')
         end
       end
@@ -67,7 +67,7 @@ RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :enable_admin_mode, fea
 
           post admin_ai_duo_workflow_settings_path
 
-          expect(response).to redirect_to(edit_admin_application_settings_integration_path(:duo_workflow))
+          expect(response).to redirect_to(admin_gitlab_duo_path)
           expect(flash[:notice]).to eq('Duo Workflow Settings have been saved')
         end
 
@@ -77,7 +77,7 @@ RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :enable_admin_mode, fea
 
           post admin_ai_duo_workflow_settings_path
 
-          expect(response).to redirect_to(edit_admin_application_settings_integration_path(:duo_workflow))
+          expect(response).to redirect_to(admin_gitlab_duo_path)
           expect(flash[:alert]).to eq('Onboarding failed')
         end
 
@@ -87,7 +87,7 @@ RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :enable_admin_mode, fea
 
           post admin_ai_duo_workflow_settings_path
 
-          expect(response).to redirect_to(edit_admin_application_settings_integration_path(:duo_workflow))
+          expect(response).to redirect_to(admin_gitlab_duo_path)
           expect(flash[:alert]).to eq('Something went wrong saving Duo Workflow settings')
         end
       end

@@ -42,7 +42,7 @@ module EE
         private
 
         def insert_gitlab_duo_menu
-          return unless !gitlab_com_subscription? && License.current&.paid?
+          return unless License.current&.paid?
 
           insert_menu_after(
             ::Sidebars::Admin::Menus::SubscriptionMenu,

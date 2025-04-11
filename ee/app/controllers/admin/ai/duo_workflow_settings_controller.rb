@@ -25,7 +25,7 @@ module Admin
           end
 
         redirect_to(
-          edit_admin_application_settings_integration_path(:duo_workflow),
+          admin_gitlab_duo_path,
           **message
         )
       end
