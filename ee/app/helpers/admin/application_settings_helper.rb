@@ -27,7 +27,9 @@ module Admin
         direct_code_suggestions_enabled: direct_code_suggestions_enabled?.to_s,
         experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
         beta_self_hosted_models_enabled: ::Ai::TestingTermsAcceptance.has_accepted?.to_s,
-        are_experiment_settings_allowed: experiments_settings_allowed?.to_s
+        are_experiment_settings_allowed: experiments_settings_allowed?.to_s,
+        duo_workflow_enabled: ::Ai::DuoWorkflow.available?.to_s,
+        duo_workflow_service_account: duo_workflow_service_account
       }.merge(duo_add_on_data, duo_amazon_q_add_on_data)
     end
 
@@ -127,6 +129,13 @@ module Admin
 
     def direct_code_suggestions_enabled?
       !::Gitlab::CurrentSettings.disabled_direct_code_suggestions
+    end
+
+    def duo_workflow_service_account
+      service_account = ::Ai::Setting.instance.duo_workflow_service_account_user
+      return unless service_account
+
+      service_account.slice(:id, :username, :name, :avatar_url).to_json
     end
   end
 end

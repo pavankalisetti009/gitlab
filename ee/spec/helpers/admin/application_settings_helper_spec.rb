@@ -58,6 +58,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       let(:service) { double('CodeSuggestionsService') } # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test purchases call
       let(:enterprise_service) { double('EnterpriseService') } # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test purchases call
       let(:ai_gateway_url) { "http://0.0.0.0:5052" }
+      let(:duo_workflow_service_account) { nil }
 
       subject { helper.ai_settings_helper_data }
 
@@ -154,6 +155,8 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
     let(:license) { build(:gitlab_license, starts_at: starts_at, expires_at: expires_at) }
     let(:subscription_name) { 'Test Subscription Name' }
     let(:amazon_q_available) { false }
+    let(:duo_workflow_enabled) { false }
+    let(:duo_workflow_service_account) { nil }
 
     before do
       allow(License).to receive(:current).and_return(license)
@@ -170,13 +173,15 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         duo_pro_bulk_user_assignment_available?: true,
         duo_availability: 'default_off',
         instance_level_ai_beta_features_enabled: true,
-        experiments_settings_allowed?: true
+        experiments_settings_allowed?: true,
+        duo_workflow_service_account: duo_workflow_service_account
       )
 
       allow(helper).to receive(:add_duo_pro_seats_url).with(subscription_name).and_return('https://customers.staging.gitlab.com/gitlab/subscriptions/A-S00613274/duo_pro_seats')
       allow(Gitlab::CurrentSettings).to receive_message_chain(:current,
         :disabled_direct_code_suggestions).and_return(false)
       allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
+      allow(::Ai::DuoWorkflow).to receive(:available?).and_return(duo_workflow_enabled)
     end
 
     it 'returns a hash with all required keys and correct values' do
@@ -193,6 +198,8 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         experiment_features_enabled: 'true',
         beta_self_hosted_models_enabled: 'true',
         are_experiment_settings_allowed: 'true',
+        duo_workflow_enabled: 'false',
+        duo_workflow_service_account: nil,
         duo_add_on_start_date: nil,
         duo_add_on_end_date: nil
       })
@@ -253,6 +260,32 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             amazon_q_configuration_path: '/admin/application_settings/integrations/amazon_q/edit'
           )
         end
+      end
+    end
+
+    context 'when duo workflow service account user exists' do
+      let(:duo_workflow_enabled) { true }
+      let(:service_account) { build_stubbed(:user, id: 123, username: 'duo_service', name: 'Duo Service') }
+      let(:user_data) { { id: 123, username: 'duo_service', name: 'Duo Service', avatar_url: 'avatar.png' } }
+      let(:ai_setting) { instance_double(Ai::Setting) }
+
+      before do
+        allow(helper).to receive(:duo_workflow_service_account).and_call_original
+        allow(license).to receive(:feature_available?).and_return(false)
+
+        allow(Ai::Setting).to receive(:instance).and_return(ai_setting)
+        allow(ai_setting).to receive(:duo_workflow_service_account_user).and_return(service_account)
+
+        allow(service_account).to receive(:slice).with(:id, :username, :name, :avatar_url).and_return(user_data)
+      end
+
+      it 'includes the sliced and JSON-converted service account data' do
+        result = helper.admin_duo_home_app_data
+
+        expect(result[:duo_workflow_enabled]).to eq('true')
+        expect(result[:duo_workflow_service_account]).to eq(
+          '{"id":123,"username":"duo_service","name":"Duo Service","avatar_url":"avatar.png"}'
+        )
       end
     end
   end

@@ -109,8 +109,17 @@ RSpec.describe Sidebars::Admin::Panel, :enable_admin_mode, feature_category: :na
         stub_saas_features(gitlab_com_subscriptions: true)
       end
 
-      it_behaves_like 'hides duo settings menu'
-      it_behaves_like 'hides self-hosted models menu'
+      context 'when instance has a paid license' do
+        it_behaves_like 'shows duo settings menu'
+        it_behaves_like 'hides self-hosted models menu'
+      end
+
+      context 'when instance has no paid license' do
+        let(:license) { nil }
+
+        it_behaves_like 'hides duo settings menu'
+        it_behaves_like 'hides self-hosted models menu'
+      end
     end
   end
 end
