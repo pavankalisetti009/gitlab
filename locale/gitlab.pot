@@ -2117,9 +2117,6 @@ msgstr ""
 msgid "A Let's Encrypt SSL certificate can not be obtained until your domain is verified."
 msgstr ""
 
-msgid "A basic folder structure of Astro Starter Kit, to help you get started."
-msgstr ""
-
 msgid "A basic folder structure of a Laravel application, to help you get started."
 msgstr ""
 
@@ -25248,6 +25245,9 @@ msgstr ""
 msgid "Everyone can contribute"
 msgstr ""
 
+msgid "Everything you need to create a GitLab Pages site using Astro"
+msgstr ""
+
 msgid "Everything you need to create a GitLab Pages site using Bridgetown"
 msgstr ""
 
@@ -48059,9 +48059,6 @@ msgstr ""
 msgid "ProjectTemplates|Android"
 msgstr ""
 
-msgid "ProjectTemplates|Astro Tailwind"
-msgstr ""
-
 msgid "ProjectTemplates|GitLab Cluster Management"
 msgstr ""
 
@@ -48102,6 +48099,9 @@ msgid "ProjectTemplates|Netlify/Plain HTML"
 msgstr ""
 
 msgid "ProjectTemplates|NodeJS Express"
+msgstr ""
+
+msgid "ProjectTemplates|Pages/Astro"
 msgstr ""
 
 msgid "ProjectTemplates|Pages/Bridgetown"
