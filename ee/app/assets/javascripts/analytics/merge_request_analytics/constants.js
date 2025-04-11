@@ -60,3 +60,11 @@ export const UNITS = {
 };
 
 export const MAX_LABEL_SUGGESTIONS = 100;
+
+export const INITIAL_PAGINATION_STATE = {
+  currentPage: 1,
+  prevPageCursor: '',
+  nextPageCursor: '',
+  firstPageSize: PER_PAGE,
+  lastPageSize: null,
+};

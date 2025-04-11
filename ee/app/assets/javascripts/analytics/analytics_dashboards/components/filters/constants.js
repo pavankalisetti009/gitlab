@@ -20,6 +20,7 @@ export const DATE_RANGE_OPTION_LAST_30_DAYS = '30d';
 export const DATE_RANGE_OPTION_LAST_60_DAYS = '60d';
 export const DATE_RANGE_OPTION_LAST_90_DAYS = '90d';
 export const DATE_RANGE_OPTION_LAST_180_DAYS = '180d';
+export const DATE_RANGE_OPTION_LAST_365_DAYS = '365d';
 export const DATE_RANGE_OPTION_CUSTOM = 'custom';
 
 export const DEFAULT_DATE_RANGE_OPTIONS = [
@@ -44,6 +45,12 @@ export const DEFAULT_SELECTED_DATE_RANGE_OPTION = DATE_RANGE_OPTION_LAST_7_DAYS;
  *                       it to set the date.
  */
 export const DATE_RANGE_OPTIONS = {
+  [DATE_RANGE_OPTION_LAST_365_DAYS]: {
+    key: DATE_RANGE_OPTION_LAST_365_DAYS,
+    text: sprintf(__('Last %{days} days'), { days: 365 }),
+    startDate: getDateInPast(TODAY, 365),
+    endDate: TODAY,
+  },
   [DATE_RANGE_OPTION_LAST_180_DAYS]: {
     key: DATE_RANGE_OPTION_LAST_180_DAYS,
     text: sprintf(__('Last %{days} days'), { days: 180 }),
@@ -96,6 +103,7 @@ export const START_DATES = {
   [DATE_RANGE_OPTION_LAST_60_DAYS]: nDaysBefore(startOfTomorrow, 60, { utc: true }),
   [DATE_RANGE_OPTION_LAST_90_DAYS]: nDaysBefore(startOfTomorrow, 90, { utc: true }),
   [DATE_RANGE_OPTION_LAST_180_DAYS]: nDaysBefore(startOfTomorrow, 180, { utc: true }),
+  [DATE_RANGE_OPTION_LAST_365_DAYS]: nDaysBefore(startOfTomorrow, 365, { utc: true }),
 };
 
 export const FILTERED_SEARCH_SUPPORTED_TOKENS = [
