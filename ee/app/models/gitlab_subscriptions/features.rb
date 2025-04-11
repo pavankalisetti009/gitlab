@@ -167,6 +167,7 @@ module GitlabSubscriptions
       ssh_certificates
       swimlanes
       target_branch_rules
+      troubleshoot_job
       type_of_work_analytics
       minimal_access_role
       unprotection_restrictions
@@ -280,7 +281,6 @@ module GitlabSubscriptions
       suggested_reviewers
       subepics
       observability
-      troubleshoot_job
       unique_project_download_limit
       vulnerability_finding_signatures
       container_scanning_for_registry
