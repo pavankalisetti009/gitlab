@@ -8,6 +8,8 @@ module Security
     data_consistency :sticky
     feature_category :security_policy_management
 
+    defer_on_database_health_signal :gitlab_main, [:merge_requests], 1.minute
+
     def perform(merge_request_id, _params = {})
       merge_request = MergeRequest.find_by_id(merge_request_id)
 
