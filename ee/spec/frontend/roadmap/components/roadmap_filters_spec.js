@@ -82,6 +82,7 @@ describe('RoadmapFilters', () => {
       provide: {
         groupFullPath,
         groupMilestonesPath,
+        hasCustomFieldsFeature: false,
       },
       apolloProvider,
     });

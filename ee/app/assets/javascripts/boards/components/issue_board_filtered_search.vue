@@ -13,6 +13,10 @@ import {
 import { TYPENAME_ISSUE } from '~/graphql_shared/constants';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import {
+  CUSTOM_FIELDS_TYPE_MULTI_SELECT,
+  CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
+} from '~/work_items/constants';
+import {
   TOKEN_TYPE_CUSTOM_FIELD,
   TOKEN_TITLE_EPIC,
   TOKEN_TITLE_HEALTH,
@@ -61,7 +65,10 @@ export default {
       },
       update(data) {
         return (data.namespace?.customFields?.nodes || []).filter((field) => {
-          const fieldTypeAllowed = ['SINGLE_SELECT', 'MULTI_SELECT'].includes(field.fieldType);
+          const fieldTypeAllowed = [
+            CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
+            CUSTOM_FIELDS_TYPE_MULTI_SELECT,
+          ].includes(field.fieldType);
           const fieldAllowedOnWorkItem = field.workItemTypes.some(
             (type) => type.name === TYPENAME_ISSUE,
           );

@@ -4,18 +4,29 @@ import axios from '~/lib/utils/axios_utils';
 
 import EpicsFilteredSearchMixin from 'jh_else_ee/roadmap/mixins/filtered_search_mixin';
 import groupEpics from 'jh_else_ee/epics_list/queries/group_epics.query.graphql';
+import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 
 import { createAlert } from '~/alert';
 
 import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_root.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import {
+  TYPENAME_CUSTOM_FIELD,
+  TYPENAME_CUSTOM_FIELD_SELECT_OPTION,
+} from '~/graphql_shared/constants';
 import { issuableListTabs, DEFAULT_PAGE_SIZE } from '~/vue_shared/issuable/list/constants';
 import { humanTimeframe, isInPast, newDate } from '~/lib/utils/datetime_utility';
 import { s__, __ } from '~/locale';
 
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
-import { WORK_ITEM_TYPE_ENUM_EPIC, STATE_CLOSED } from '~/work_items/constants';
+import {
+  CUSTOM_FIELDS_TYPE_MULTI_SELECT,
+  CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
+  WORK_ITEM_TYPE_ENUM_EPIC,
+  STATE_CLOSED,
+} from '~/work_items/constants';
 import { STATUS_CLOSED } from '~/issues/constants';
 
 import { transformFetchEpicFilterParams } from '../../roadmap/utils/epic_utils';
@@ -45,6 +56,7 @@ export default {
   inject: [
     'canCreateEpic',
     'canBulkEditEpics',
+    'hasCustomFieldsFeature',
     'hasScopedLabelsFeature',
     'page',
     'prev',
@@ -95,6 +107,18 @@ export default {
           }
         }
 
+        for (const [key, value] of Object.entries(this.filterParams)) {
+          if (this.hasCustomFieldsFeature && this.isCustomField(key)) {
+            const fieldId = key.replace('custom-field[', '').replace(']', '');
+            queryVariables.customField = [
+              {
+                customFieldId: convertToGraphQLId(TYPENAME_CUSTOM_FIELD, fieldId),
+                selectedOptionIds: [convertToGraphQLId(TYPENAME_CUSTOM_FIELD_SELECT_OPTION, value)],
+              },
+            ];
+          }
+        }
+
         return queryVariables;
       },
       update(data) {
@@ -111,6 +135,34 @@ export default {
       error(error) {
         createAlert({
           message: s__('Epics|Something went wrong while fetching epics list.'),
+          captureError: true,
+          error,
+        });
+      },
+    },
+    customFields: {
+      query: namespaceCustomFieldsQuery,
+      skip() {
+        return !this.hasCustomFieldsFeature || !this.groupFullPath;
+      },
+      variables() {
+        return {
+          fullPath: this.groupFullPath,
+          active: true,
+        };
+      },
+      update(data) {
+        return (data.namespace?.customFields?.nodes || []).filter((field) => {
+          const fieldTypeAllowed = [
+            CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
+            CUSTOM_FIELDS_TYPE_MULTI_SELECT,
+          ].includes(field.fieldType);
+          return fieldTypeAllowed;
+        });
+      },
+      error(error) {
+        createAlert({
+          message: s__('WorkItemCustomFields|Failed to load custom fields.'),
           captureError: true,
           error,
         });
@@ -138,6 +190,7 @@ export default {
         list: [],
         pageInfo: {},
       },
+      customFields: [],
     };
   },
   computed: {
