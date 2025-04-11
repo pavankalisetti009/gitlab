@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module AutoMerge
-  class MergeTrainService < MergeTrains::BaseService
+  class MergeTrainService < AutoMerge::BaseService
     extend Gitlab::Utils::Override
 
     override :execute
@@ -67,20 +67,20 @@ module AutoMerge
     def availability_details(merge_request)
       super do
         unless merge_request.project.merge_trains_enabled?
-          next AvailabilityCheck.new(unavailable_reason: :merge_trains_disabled)
+          next AutoMerge::AvailabilityCheck.error(unavailable_reason: :merge_trains_disabled)
         end
 
         pipeline = merge_request.diff_head_pipeline
-        next AvailabilityCheck.new(unavailable_reason: :missing_diff_head_pipeline) unless pipeline
+        next AutoMerge::AvailabilityCheck.error(unavailable_reason: :missing_diff_head_pipeline) unless pipeline
 
         # When pipelines are not required to succeed, we also allow blocked and
         # canceling pipelines, because otherwise the only merge action would be an immediate merge.
         if pipeline.complete? ||
             (!merge_request.only_allow_merge_if_pipeline_succeeds? && (pipeline.canceling? || pipeline.blocked?))
-          next AvailabilityCheck.new(unavailable_reason: nil)
+          next AutoMerge::AvailabilityCheck.success
         end
 
-        AvailabilityCheck.new(unavailable_reason: :incomplete_diff_head_pipeline)
+        AvailabilityCheck.error(unavailable_reason: :incomplete_diff_head_pipeline)
       end
     end
 

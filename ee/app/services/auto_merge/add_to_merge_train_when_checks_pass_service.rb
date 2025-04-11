@@ -2,7 +2,7 @@
 
 # rubocop:disable Gitlab/BoundedContexts -- TODO refactor to use bounded context
 module AutoMerge
-  class AddToMergeTrainWhenChecksPassService < MergeTrains::BaseService
+  class AddToMergeTrainWhenChecksPassService < AutoMerge::BaseService
     extend Gitlab::Utils::Override
 
     def execute(merge_request)
@@ -26,7 +26,8 @@ module AutoMerge
       merge_train_service = AutoMerge::MergeTrainService.new(project, merge_request.merge_user)
 
       unless merge_train_service.available_for?(merge_request)
-        abort_message = process_abort_message(merge_train_service.availability_details(merge_request))
+        abort_message = merge_train_service.availability_details(merge_request).abort_message
+
         return abort(merge_request, abort_message)
       end
 
@@ -59,15 +60,15 @@ module AutoMerge
     override :availability_details
     def availability_details(merge_request)
       super do
-        default_reason = AvailabilityCheck.new(unavailable_reason: :default)
+        default_reason = AutoMerge::AvailabilityCheck.error(unavailable_reason: :default)
         next default_reason unless merge_request.has_ci_enabled?
         next default_reason if merge_request.mergeable? && !merge_request.diff_head_pipeline_considered_in_progress?
 
         unless merge_request.project.merge_trains_enabled?
-          next AvailabilityCheck.new(unavailable_reason: :merge_trains_disabled)
+          next AutoMerge::AvailabilityCheck.error(unavailable_reason: :merge_trains_disabled)
         end
 
-        AvailabilityCheck.new(unavailable_reason: nil)
+        AutoMerge::AvailabilityCheck.success
       end
     end
   end
