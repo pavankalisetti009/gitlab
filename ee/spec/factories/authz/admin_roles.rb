@@ -5,6 +5,16 @@ FactoryBot.define do
     name { FFaker::Lorem.word }
     description { FFaker::Lorem.sentence }
 
+    transient do
+      without_any_permissions { false }
+    end
+
+    after(:build) do |admin_role, evaluator|
+      next if evaluator.without_any_permissions
+
+      admin_role[:read_admin_dashboard] = true
+    end
+
     Gitlab::CustomRoles::Definition.admin.each_value do |attributes|
       trait attributes[:name].to_sym do
         send(attributes[:name].to_sym) { true }

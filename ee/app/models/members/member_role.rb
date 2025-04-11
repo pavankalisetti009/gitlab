@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
+class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
   include GitlabSubscriptions::SubscriptionHelper
 
   MAX_COUNT_PER_GROUP_HIERARCHY = 10
@@ -30,7 +30,6 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   validate :validate_namespace_locked, on: :update
   validate :base_access_level_locked, on: :update
   validate :validate_requirements
-  validate :ensure_at_least_one_permission_is_enabled
 
   before_save :set_occupies_seat
 
@@ -69,7 +68,6 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   end
 
   before_destroy :prevent_delete_if_member_associated
-  before_destroy :prevent_delete_if_admin_user_associated, if: :admin_related_role?
 
   jsonb_accessor :permissions, Gitlab::CustomRoles::Definition.all.keys.index_with(:boolean)
 
@@ -235,12 +233,6 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
     enabled_for.include?(base_access_level)
   end
 
-  def ensure_at_least_one_permission_is_enabled
-    return if self.class.all_customizable_permissions.keys.any? { |attr| self[attr] }
-
-    errors.add(:base, s_('MemberRole|Cannot create a member role with no enabled permissions'))
-  end
-
   def base_access_level_locked
     return unless changed_attributes.include?('base_access_level')
 
@@ -258,20 +250,6 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
       s_(
         "MemberRole|Role is assigned to one or more group members. " \
         "Remove role from all group members, then delete role."
-      )
-    )
-
-    throw :abort # rubocop:disable Cop/BanCatchThrow
-  end
-
-  def prevent_delete_if_admin_user_associated
-    return unless user_member_roles.present?
-
-    errors.add(
-      :base,
-      s_(
-        "MemberRole|Admin role is assigned to one or more users. " \
-        "Remove role from all users, then delete role."
       )
     )
 
