@@ -7,6 +7,7 @@ import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
 import { getHostname } from '../../utils';
+import { PROJECT_DEFAULT_BRANCH } from '../../constants';
 import {
   CADENCE_OPTIONS,
   DEFAULT_TIME_PER_UNIT,
@@ -71,6 +72,10 @@ export default {
     };
   },
   computed: {
+    defaultBranch() {
+      // TODO remove this after enable dropdown with https://gitlab.com/gitlab-org/gitlab/-/issues/535547
+      return PROJECT_DEFAULT_BRANCH.text;
+    },
     branchInfo() {
       const { branch_type, branches, type } = this.schedule;
       return {
@@ -179,7 +184,9 @@ export default {
     <div class="gl-mb-3 gl-flex gl-flex-wrap gl-items-center gl-gap-3">
       <gl-sprintf :message="$options.i18n.message">
         <template #branchSelector>
+          <template v-if="defaultBranch">{{ defaultBranch }}</template>
           <branch-selection
+            v-else
             :init-rule="branchInfo"
             @changed="updateBranchConfig"
             @set-branch-type="updateBranchConfig"

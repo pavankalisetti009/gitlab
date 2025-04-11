@@ -59,8 +59,7 @@ export const mockSchedulePipelineExecutionManifest = `pipeline_execution_schedul
     description: 'like a pipeline_execution_policy but scheduled'
     enabled: true
     schedules:
-      - branch_type: "protected"
-        start_time: "00:00"
+      - start_time: "00:00"
         time_window:
           distribution: "random"
           value: 3600
@@ -80,8 +79,7 @@ content:
 skip_ci:
   allowed: false
 schedules:
-  - branch_type: protected
-    type: daily
+  - type: daily
     start_time: '00:00'
     time_window:
       value: 3600
@@ -94,8 +92,7 @@ export const mockSchedulePipelineExecutionWithTypeManifest = `name: ''
 description: ''
 enabled: true
 schedules:
-  - branch_type: "protected"
-    start_time: "00:00"
+  - start_time: "00:00"
     time_window:
       distribution: "random"
       value: 3600

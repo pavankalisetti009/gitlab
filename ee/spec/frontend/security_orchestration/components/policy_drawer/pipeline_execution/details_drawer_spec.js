@@ -63,7 +63,7 @@ describe('PipelineExecutionDrawer', () => {
       createComponent({ propsData: { policy: mockSchedulePipelineExecutionPolicy } });
       expect(findSchedule().exists()).toBe(true);
       expect(findSchedule().text()).toBe(
-        'Schedule the following pipeline execution policy to run for all protected branches daily at 00:00 and run for 1 hour in timezone America/New_York.',
+        'Schedule the following pipeline execution policy to run for default branch daily at 00:00 and run for 1 hour in timezone America/New_York.',
       );
     });
   });
