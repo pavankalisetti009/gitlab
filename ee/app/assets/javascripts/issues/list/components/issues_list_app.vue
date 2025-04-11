@@ -159,6 +159,7 @@ export default {
             fullPath: this.fullPath,
             token: CustomFieldToken,
             operators: OPERATORS_IS,
+            unique: true,
           });
         });
       }

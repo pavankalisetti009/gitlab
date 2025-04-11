@@ -3,7 +3,7 @@ import { orderBy } from 'lodash';
 import Api from '~/api';
 import axios from '~/lib/utils/axios_utils';
 import { __ } from '~/locale';
-
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import {
   FILTERED_SEARCH_TERM,
   OPERATORS_IS,
@@ -20,6 +20,7 @@ import {
   TOKEN_TITLE_MY_REACTION,
   TOKEN_TYPE_AUTHOR,
   TOKEN_TYPE_CONFIDENTIAL,
+  TOKEN_TYPE_CUSTOM_FIELD,
   TOKEN_TYPE_EPIC,
   TOKEN_TYPE_GROUP,
   TOKEN_TYPE_LABEL,
@@ -36,9 +37,12 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { TOKEN_TITLE_EPIC } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import EpicToken from 'ee/vue_shared/components/filtered_search_bar/tokens/epic_token.vue';
 
+const CustomFieldToken = () =>
+  import('ee/vue_shared/components/filtered_search_bar/tokens/custom_field_token.vue');
+
 export default {
   mixins: [glFeatureFlagMixin()],
-  inject: ['groupFullPath', 'groupMilestonesPath'],
+  inject: ['groupFullPath', 'groupMilestonesPath', 'hasCustomFieldsFeature'],
   computed: {
     urlParams() {
       const {
@@ -56,9 +60,17 @@ export default {
         'not[labelName]': notLabelName,
         'or[labelName]': orLabelName,
         'or[authorUsername]': orAuthorUsername,
+        ...otherValues
       } = this.filterParams || {};
-      // TODO: refactor to remove potentially undefined properties
-      // https://gitlab.com/gitlab-org/gitlab/-/issues/432995
+
+      const customFields = {};
+
+      for (const [key, value] of Object.entries(otherValues)) {
+        if (this.hasCustomFieldsFeature && this.isCustomField(key)) {
+          customFields[key] = value;
+        }
+      }
+
       return {
         in: searchWithin,
         state: this.currentState || this.epicsState,
@@ -87,10 +99,14 @@ export default {
         show_milestones: 'isShowingMilestones' in this ? this.isShowingMilestones : undefined,
         milestones_type: 'milestonesType' in this ? this.milestonesType : undefined,
         show_labels: 'isShowingLabels' in this ? this.isShowingLabels : undefined,
+        ...customFields,
       };
     },
   },
   methods: {
+    isCustomField(fieldName) {
+      return fieldName.startsWith('custom-field[');
+    },
     getFilteredSearchTokens({ supportsEpic = true } = {}) {
       let preloadedUsers = [];
 
@@ -230,6 +246,21 @@ export default {
         });
       }
 
+      if (this.hasCustomFieldsFeature) {
+        this.customFields.forEach((field) => {
+          tokens.push({
+            type: `${TOKEN_TYPE_CUSTOM_FIELD}[${getIdFromGraphQLId(field.id)}]`,
+            title: field.name,
+            icon: 'multiple-choice',
+            field,
+            fullPath: this.groupFullPath,
+            token: CustomFieldToken,
+            operators: OPERATORS_IS,
+            unique: true,
+          });
+        });
+      }
+
       return orderBy(tokens, ['title']);
     },
     getFilteredSearchValue() {
@@ -248,8 +279,18 @@ export default {
         'not[labelName]': notLabelName,
         'or[labelName]': orLabelName,
         'or[authorUsername]': orAuthorUsername,
+        ...otherValues
       } = this.filterParams || {};
       const filteredSearchValue = [];
+
+      for (const [key, value] of Object.entries(otherValues)) {
+        if (this.hasCustomFieldsFeature && this.isCustomField(key)) {
+          filteredSearchValue.push({
+            type: key,
+            value: { data: value, operator: OPERATOR_IS },
+          });
+        }
+      }
 
       if (authorUsername) {
         filteredSearchValue.push({
@@ -407,6 +448,9 @@ export default {
             }
             break;
           default:
+            if (this.hasCustomFieldsFeature && this.isCustomField(filter.type)) {
+              filterParams[filter.type] = data;
+            }
             break;
         }
       });

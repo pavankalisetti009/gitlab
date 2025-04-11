@@ -4,6 +4,7 @@ import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import EpicsListRoot from 'ee/epics_list/components/epics_list_root.vue';
 import { epicsSortOptions } from 'ee/epics_list/constants';
+import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 import groupEpicsQuery from 'jh_else_ee/epics_list/queries/group_epics.query.graphql';
 import { mockFormattedEpic } from 'ee_jest/roadmap/mock_data';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -12,11 +13,14 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { mockAuthor, mockLabels } from 'jest/vue_shared/issuable/list/mock_data';
 import { WORK_ITEM_TYPE_ENUM_EPIC, STATE_OPEN } from '~/work_items/constants';
 
+import { createAlert } from '~/alert';
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_root.vue';
 import IssuableItem from '~/vue_shared/issuable/list/components/issuable_item.vue';
 import { issuableListTabs } from '~/vue_shared/issuable/list/constants';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
+
+jest.mock('~/alert');
 
 Vue.use(VueApollo);
 
@@ -54,6 +58,7 @@ const mockEpics = new Array(5)
 const mockProvide = {
   canCreateEpic: true,
   canBulkEditEpics: true,
+  hasCustomFieldsFeature: false,
   hasScopedLabelsFeature: true,
   page: 1,
   prev: '',
@@ -73,6 +78,59 @@ const mockPageInfo = {
   startCursor: 'eyJpZCI6IjI1IiwiY3JlYXRlZF9hdCI6IjIwMjAtMDMtMzEgMTM6MzI6MTQgVVRDIn0',
   endCursor: 'eyJpZCI6IjIxIiwiY3JlYXRlZF9hdCI6IjIwMjAtMDMtMzEgMTM6MzE6MTUgVVRDIn0',
 };
+
+const mockCustomFields = [
+  {
+    id: '1',
+    name: 'Priority',
+    fieldType: 'SINGLE_SELECT',
+    workItemTypes: [
+      {
+        id: 'gid://gitlab/WorkItemTypes/1',
+        name: WORK_ITEM_TYPE_ENUM_EPIC,
+      },
+    ],
+    __typename: 'WorkItemCustomField',
+  },
+  {
+    id: '2',
+    name: 'Status',
+    fieldType: 'MULTI_SELECT',
+    workItemTypes: [
+      {
+        id: 'gid://gitlab/WorkItemTypes/1',
+        name: WORK_ITEM_TYPE_ENUM_EPIC,
+      },
+    ],
+    __typename: 'WorkItemCustomField',
+  },
+  {
+    id: '3',
+    name: 'Text Field',
+    fieldType: 'TEXT',
+    workItemTypes: [
+      {
+        id: 'gid://gitlab/WorkItemTypes/1',
+        name: WORK_ITEM_TYPE_ENUM_EPIC,
+      },
+    ],
+    __typename: 'WorkItemCustomField',
+  },
+];
+
+const namespaceCustomFieldsQueryHandler = jest.fn().mockResolvedValue({
+  data: {
+    namespace: {
+      id: '1',
+      customFields: {
+        count: 3,
+        nodes: mockCustomFields,
+        __typename: 'WorkItemCustomFieldConnection',
+      },
+      __typename: 'Namespace',
+    },
+  },
+});
 
 let wrapper;
 let mockApollo;
@@ -104,11 +162,15 @@ const createComponent = ({
   provide = mockProvide,
   initialFilterParams = {},
   handler = groupEpicsQueryHandler(),
+  customFieldsHandler = namespaceCustomFieldsQueryHandler,
 } = {}) => {
   requestHandler = handler;
 
   mockApollo = createMockApollo(
-    [[groupEpicsQuery, handler]],
+    [
+      [groupEpicsQuery, handler],
+      [namespaceCustomFieldsQuery, customFieldsHandler],
+    ],
     {},
     {
       typePolicies: {
@@ -376,5 +438,92 @@ describe('EpicsListRoot', () => {
     await waitForPromises();
 
     expect(requestHandler).toHaveBeenCalledTimes(2);
+  });
+
+  describe('custom fields', () => {
+    it('transforms custom field filter parameters into GraphQL variables', async () => {
+      const fieldId = '1';
+      const fieldValue = '5';
+      const customFieldFilter = { [`custom-field[${fieldId}]`]: fieldValue };
+
+      createComponent({
+        initialFilterParams: customFieldFilter,
+        provide: {
+          ...mockProvide,
+          hasCustomFieldsFeature: true,
+        },
+      });
+
+      await waitForPromises();
+
+      expect(requestHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          customField: [
+            {
+              customFieldId: 'gid://gitlab/Issuables::CustomField/1',
+              selectedOptionIds: ['gid://gitlab/Issuables::CustomFieldSelectOption/5'],
+            },
+          ],
+        }),
+      );
+    });
+
+    it('loads and filters custom fields', async () => {
+      createComponent({
+        provide: {
+          ...mockProvide,
+          hasCustomFieldsFeature: true,
+        },
+      });
+      await waitForPromises();
+
+      const searchTokens = getIssuableList()
+        .props('searchTokens')
+        .filter((t) => t.type.startsWith('custom-field['));
+
+      const fieldsInTokens = searchTokens.map((t) => t.field);
+
+      // Only SINGLE_SELECT and MULTI_SELECT fields should be included
+      expect(searchTokens).toHaveLength(2);
+      expect(fieldsInTokens).toEqual([mockCustomFields[0], mockCustomFields[1]]);
+    });
+
+    it('handles custom fields query error', async () => {
+      const errorHandler = jest.fn().mockRejectedValue(new Error('Custom fields error'));
+
+      createComponent({
+        customFieldsHandler: errorHandler,
+        provide: {
+          ...mockProvide,
+          hasCustomFieldsFeature: true,
+        },
+      });
+
+      await waitForPromises();
+
+      const searchTokens = getIssuableList()
+        .props('searchTokens')
+        .filter((t) => t.type === 'custom-field[2]');
+
+      expect(searchTokens).toHaveLength(0);
+      expect(createAlert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: 'Failed to load custom fields.',
+        }),
+      );
+    });
+
+    it('skips custom fields query when feature is disabled', async () => {
+      createComponent({
+        provide: {
+          ...mockProvide,
+          hasCustomFieldsFeature: false,
+        },
+      });
+
+      await waitForPromises();
+
+      expect(namespaceCustomFieldsQueryHandler).not.toHaveBeenCalled();
+    });
   });
 });
