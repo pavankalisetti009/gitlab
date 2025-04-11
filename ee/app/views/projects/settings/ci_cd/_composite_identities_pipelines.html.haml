@@ -1,3 +1,4 @@
+- return if Feature.disabled?(:forbid_composite_identities_to_run_pipelines, :instance)
 - help_link = link_to(sprite_icon('question-o'), help_page_path('development/ai_features/composite_identity.md'), target: '_blank', rel: 'noopener noreferrer')
 
 .form-group
