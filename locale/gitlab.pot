@@ -11552,6 +11552,9 @@ msgstr ""
 msgid "CICD|Allow Git push requests to the repository"
 msgstr ""
 
+msgid "CICD|Allow composite identities to run pipelines"
+msgstr ""
+
 msgid "CICD|An error occurred while adding the authentication log entries. Please try again."
 msgstr ""
 
@@ -11607,6 +11610,9 @@ msgid "CICD|Continuous deployment to production"
 msgstr ""
 
 msgid "CICD|Continuous deployment to production using timed incremental rollout"
+msgstr ""
+
+msgid "CICD|Controls whether AI agents can automatically run pipelines. When disabled, pipelines triggered by AI agents will require manual review and execution by a human user."
 msgstr ""
 
 msgid "CICD|Default (user membership and role)"

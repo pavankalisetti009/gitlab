@@ -32,6 +32,11 @@ module EE
           super + attrs
         end
 
+        override :permitted_project_ci_cd_settings_params
+        def permitted_project_ci_cd_settings_params
+          super + [:allow_composite_identities_to_run_pipelines]
+        end
+
         private
 
         def define_protected_env_variables

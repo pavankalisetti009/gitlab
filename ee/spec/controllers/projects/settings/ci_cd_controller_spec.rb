@@ -117,6 +117,20 @@ RSpec.describe Projects::Settings::CiCdController, feature_category: :continuous
             }.from(false).to(true)
           end
         end
+
+        context 'when allow_composite_identities_to_run_pipelines is specified' do
+          let(:params) do
+            { ci_cd_settings_attributes: {
+              allow_composite_identities_to_run_pipelines: true
+            } }
+          end
+
+          it 'sets allow_composite_identities_to_run_pipelines' do
+            expect { subject }.to change {
+              project.reload.ci_cd_settings.allow_composite_identities_to_run_pipelines
+            }.from(false).to(true)
+          end
+        end
       end
     end
   end
