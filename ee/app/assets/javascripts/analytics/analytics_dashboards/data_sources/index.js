@@ -43,4 +43,6 @@ export default {
   ai_impact_over_time: () => import('./ai_impact_over_time'),
   contributions: () => import('./contributions'),
   namespace_metadata: () => import('./namespace_metadata'),
+  merge_requests: () => import('./merge_requests'),
+  merge_request_counts: () => import('./merge_request_counts'),
 };
