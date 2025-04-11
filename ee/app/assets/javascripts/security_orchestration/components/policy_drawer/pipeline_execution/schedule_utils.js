@@ -1,0 +1,209 @@
+import { __, s__, n__, sprintf } from '~/locale';
+import { getWeekdayNames, parseSeconds } from '~/lib/utils/datetime/date_format_utility';
+import {
+  DAILY,
+  WEEKLY,
+  MONTHLY,
+} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
+import {
+  ALL_BRANCHES,
+  ALL_PROTECTED_BRANCHES,
+  PROJECT_DEFAULT_BRANCH,
+} from 'ee/security_orchestration/components/policy_editor/constants';
+
+/**
+ * Gets a formatted list of weekdays from the schedule
+ * @param {Object} schedule - The schedule object
+ * @returns {String} Formatted weekdays list
+ */
+export const getWeekdaysList = (days = []) => {
+  // Handle days array, which is the actual property used in the YAML
+  if (days?.length) {
+    const weekdayMap = getWeekdayNames().reduce((acc, curr) => {
+      return { ...acc, [curr.toLowerCase()]: curr };
+    }, {});
+
+    return days.map((day) => weekdayMap[day.toLowerCase()]).join(', ');
+  }
+
+  return '';
+};
+
+/**
+ * Gets the branch information text
+ * @param {String} branchType - The branch type
+ * @returns {String} Formatted branch information
+ */
+export const getBranchInfo = (branchType) => {
+  if (!branchType) {
+    return '';
+  }
+
+  const branchTypes = {
+    [ALL_PROTECTED_BRANCHES.value]: ALL_PROTECTED_BRANCHES.text,
+    [PROJECT_DEFAULT_BRANCH.value]: PROJECT_DEFAULT_BRANCH.text,
+    [ALL_BRANCHES.value]: ALL_BRANCHES.text,
+  };
+
+  return sprintf(s__('SecurityOrchestration|for %{branchType}'), {
+    branchType: branchTypes[branchType] || branchType,
+  });
+};
+
+/**
+ * Gets the schedule time information
+ * @param {String} time - The schedule time
+ * @returns {String} Formatted time information
+ */
+export const getTimeInfo = (time) => {
+  if (!time) {
+    return '';
+  }
+
+  return sprintf(s__('SecurityOrchestration|at %{time}'), { time });
+};
+
+/**
+ * Gets the time window information
+ * @param {Object} timeWindow - The time window object
+ * @returns {String} Formatted time window information
+ */
+export const getTimeWindowInfo = (timeWindow) => {
+  const seconds = timeWindow?.value;
+
+  if (!seconds) {
+    return '';
+  }
+
+  const { hours, minutes } = parseSeconds(seconds, {
+    hoursPerDay: 24,
+    limitToHours: true,
+  });
+
+  const hoursText = n__('%d hour', '%d hours', hours);
+  const minutesText = n__('%d minute', '%d minutes', minutes);
+  const secondsText = n__('%d second', '%d seconds', seconds);
+
+  if (hours > 0) {
+    if (minutes > 0) {
+      return sprintf(s__('SecurityOrchestration|and run for %{hours} and %{minutes}'), {
+        hours: hoursText,
+        minutes: minutesText,
+      });
+    }
+
+    return sprintf(s__('SecurityOrchestration|and run for %{hours}'), {
+      hours: hoursText,
+    });
+  }
+
+  if (minutes > 0) {
+    return sprintf(s__('SecurityOrchestration|and run for %{minutes}'), {
+      minutes: minutesText,
+    });
+  }
+
+  return sprintf(s__('SecurityOrchestration|and run for %{seconds}'), {
+    seconds: secondsText,
+  });
+};
+
+/**
+ * Gets the timezone information
+ * @param {String} timezone - The timezone
+ * @returns {String} Formatted timezone information
+ */
+export const getTimezoneInfo = (timezone) => {
+  if (!timezone) {
+    return '';
+  }
+
+  return sprintf(s__('SecurityOrchestration|in timezone %{timezone}'), {
+    timezone,
+  });
+};
+
+/**
+ * Gets the weekly schedule information
+ * @param {Object} schedule - The schedule object
+ * @returns {String} Formatted weekly schedule information
+ */
+export const getWeeklyScheduleInfo = (days) => {
+  if (!days?.length) {
+    return __('weekly');
+  }
+
+  const daysText = getWeekdaysList(days);
+
+  return sprintf(s__('SecurityOrchestration|starting every %{days}'), {
+    days: daysText,
+  });
+};
+
+/**
+ * Gets the monthly schedule information
+ * @param {Object} schedule - The schedule object
+ * @returns {String} Formatted monthly schedule information
+ */
+export const getMonthlyScheduleInfo = (daysOfMonth = []) => {
+  if (!daysOfMonth?.length) {
+    return __('monthly');
+  }
+
+  const days = daysOfMonth.join(', ');
+  const dayText = n__('day', 'days', daysOfMonth.length);
+
+  return sprintf(s__('SecurityOrchestration|on %{dayText} %{days} of each month'), {
+    dayText,
+    days,
+  });
+};
+
+/**
+ * Gets the schedule type information
+ * @param {Object} schedule - The schedule object
+ * @returns {String} Formatted schedule type information
+ */
+export const getScheduleTypeInfo = (schedule) => {
+  if (schedule.type === DAILY) {
+    return __('daily');
+  }
+
+  if (schedule.type === WEEKLY) {
+    return getWeeklyScheduleInfo(schedule.days);
+  }
+
+  if (schedule.type === MONTHLY) {
+    return getMonthlyScheduleInfo(schedule.days_of_month);
+  }
+
+  return '';
+};
+
+/**
+ * Generates a complete schedule summary for a pipeline execution policy
+ * @param {Object} schedule - The schedule object
+ * @returns {String} The full schedule summary
+ */
+export const generateScheduleSummary = (schedule) => {
+  // Get all the individual parts
+  const branchInfo = getBranchInfo(schedule.branch_type);
+  const scheduleTypeInfo = getScheduleTypeInfo(schedule);
+  const timeInfo = getTimeInfo(schedule.start_time);
+  const timeWindowInfo = getTimeWindowInfo(schedule.time_window);
+  const timezoneInfo = getTimezoneInfo(schedule.timezone);
+
+  // Combine using sprintf
+  return sprintf(
+    s__(
+      'SecurityOrchestration|Schedule the following pipeline execution policy to run %{branchInfo} %{scheduleTypeInfo} %{timeInfo} %{timeWindowInfo} %{timezoneInfo}.',
+    ),
+    {
+      branchInfo,
+      scheduleTypeInfo,
+      timeInfo,
+      timeWindowInfo,
+      timezoneInfo,
+    },
+  );
+};

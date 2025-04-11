@@ -90,6 +90,25 @@ schedules:
 type: pipeline_execution_schedule_policy
 `;
 
+export const mockSchedulePipelineExecutionWithTypeManifest = `name: ''
+description: ''
+enabled: true
+schedules:
+  - branch_type: "protected"
+    start_time: "00:00"
+    time_window:
+      distribution: "random"
+      value: 3600
+    timezone: "America/New_York"
+    type: "daily"
+content:
+   include:
+     - project: gitlab-policies/js6
+       ref: main
+       file: pipeline_execution_jobs.yml
+type: pipeline_execution_schedule_policy
+`;
+
 export const mockWithScopePipelineExecutionObject = {
   ...mockPipelineExecutionObject,
   policy_scope: { projects: { excluding: [] } },
@@ -249,6 +268,12 @@ export const mockGroupPipelineExecutionPolicy = {
       name: 'parent-group-name',
     },
   },
+};
+
+export const mockSchedulePipelineExecutionPolicy = {
+  ...mockProjectPipelineExecutionPolicy,
+  yaml: mockSchedulePipelineExecutionWithTypeManifest,
+  __typename: 'PipelineExecutionSchedulePolicy',
 };
 
 export const mockPipelineExecutionPoliciesResponse = [

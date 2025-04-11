@@ -7,12 +7,14 @@ import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
   mockProjectPipelineExecutionPolicy,
   mockProjectPipelineExecutionWithConfigurationPolicy,
+  mockSchedulePipelineExecutionPolicy,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 
 describe('PipelineExecutionDrawer', () => {
   let wrapper;
 
   const findSummary = () => wrapper.findByTestId('policy-summary');
+  const findSchedule = () => wrapper.findByTestId('schedule-summary');
   const findSummaryHeader = () => wrapper.findByTestId('summary-header');
   const findSummaryFields = () => wrapper.findAllByTestId('summary-fields');
   const findProjectSummary = () => wrapper.findByTestId('project');
@@ -49,6 +51,20 @@ describe('PipelineExecutionDrawer', () => {
 
       expect(findPolicyDrawerLayout().exists()).toBe(true);
       expect(findPolicyDrawerLayout().props('description')).toBe('');
+    });
+  });
+  describe('schedules summary', () => {
+    it('does not render if there are no schedules', () => {
+      createComponent({ propsData: { policy: mockProjectPipelineExecutionPolicy } });
+      expect(findSchedule().exists()).toBe(false);
+    });
+
+    it('does render if there are are schedules', () => {
+      createComponent({ propsData: { policy: mockSchedulePipelineExecutionPolicy } });
+      expect(findSchedule().exists()).toBe(true);
+      expect(findSchedule().text()).toBe(
+        'Schedule the following pipeline execution policy to run for all protected branches daily at 00:00 and run for 1 hour in timezone America/New_York.',
+      );
     });
   });
 

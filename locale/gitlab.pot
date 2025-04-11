@@ -54875,6 +54875,9 @@ msgstr ""
 msgid "SecurityOrchestration|Schedule a new"
 msgstr ""
 
+msgid "SecurityOrchestration|Schedule the following pipeline execution policy to run %{branchInfo} %{scheduleTypeInfo} %{timeInfo} %{timeWindowInfo} %{timezoneInfo}."
+msgstr ""
+
 msgid "SecurityOrchestration|Schedule to run for %{branchSelector}"
 msgstr ""
 
@@ -55214,6 +55217,18 @@ msgstr ""
 msgid "SecurityOrchestration|all projects in this group"
 msgstr ""
 
+msgid "SecurityOrchestration|and run for %{hours}"
+msgstr ""
+
+msgid "SecurityOrchestration|and run for %{hours} and %{minutes}"
+msgstr ""
+
+msgid "SecurityOrchestration|and run for %{minutes}"
+msgstr ""
+
+msgid "SecurityOrchestration|and run for %{seconds}"
+msgstr ""
+
 msgid "SecurityOrchestration|any"
 msgstr ""
 
@@ -55233,6 +55248,9 @@ msgid "SecurityOrchestration|are false positives"
 msgstr ""
 
 msgid "SecurityOrchestration|are not false positives"
+msgstr ""
+
+msgid "SecurityOrchestration|at %{time}"
 msgstr ""
 
 msgid "SecurityOrchestration|at the following times: %{cadenceSelector}, start at %{start}, run for: %{duration}, and timezone is %{timezoneSelector}"
@@ -55265,6 +55283,9 @@ msgstr ""
 msgid "SecurityOrchestration|exceptions: %{exceptions}"
 msgstr ""
 
+msgid "SecurityOrchestration|for %{branchType}"
+msgstr ""
+
 msgid "SecurityOrchestration|group level branch input"
 msgstr ""
 
@@ -55277,10 +55298,16 @@ msgstr ""
 msgid "SecurityOrchestration|have no fix available"
 msgstr ""
 
+msgid "SecurityOrchestration|in timezone %{timezone}"
+msgstr ""
+
 msgid "SecurityOrchestration|latest"
 msgstr ""
 
 msgid "SecurityOrchestration|more than %{allowed}"
+msgstr ""
+
+msgid "SecurityOrchestration|on %{dayText} %{days} of each month"
 msgstr ""
 
 msgid "SecurityOrchestration|on every"
@@ -55296,6 +55323,9 @@ msgid "SecurityOrchestration|scanners find"
 msgstr ""
 
 msgid "SecurityOrchestration|specific projects"
+msgstr ""
+
+msgid "SecurityOrchestration|starting every %{days}"
 msgstr ""
 
 msgid "SecurityOrchestration|targeting %{branchTypeText}"
@@ -71862,6 +71892,9 @@ msgid "milestone should belong either to a project or a group."
 msgstr ""
 
 msgid "missing"
+msgstr ""
+
+msgid "monthly"
 msgstr ""
 
 msgid "months"
