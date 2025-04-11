@@ -1,12 +1,12 @@
 import { GlTableLite } from '@gitlab/ui';
-import { mountExtended } from 'helpers/vue_test_utils_helper';
-import { sprintf } from '~/locale';
-import ProjectList from 'ee/usage_quotas/pipelines/components/project_list.vue';
-import ProjectAvatar from '~/vue_shared/components/project_avatar.vue';
 import {
   LABEL_CI_MINUTES_DISABLED,
   PROJECTS_NO_SHARED_RUNNERS,
-} from 'ee/usage_quotas/pipelines/constants';
+} from 'ee/usage_quotas/pipelines/namespace/constants';
+import ProjectList from 'ee/usage_quotas/pipelines/namespace/components/project_list.vue';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { sprintf } from '~/locale';
+import ProjectAvatar from '~/vue_shared/components/project_avatar.vue';
 import { defaultProvide, defaultProjectListProps } from '../mock_data';
 
 describe('ProjectCIMinutesList', () => {

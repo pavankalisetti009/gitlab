@@ -1,11 +1,11 @@
 import { GlColumnChart } from '@gitlab/ui/dist/charts';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import MinutesUsagePerProjectChart from 'ee/usage_quotas/pipelines/components/minutes_usage_per_project_chart.vue';
-import { groupUsageDataByYearAndMonth } from 'ee/usage_quotas/pipelines/utils';
 import {
   Y_AXIS_PROJECT_LABEL,
   Y_AXIS_SHARED_RUNNER_LABEL,
-} from 'ee/usage_quotas/pipelines/constants';
+} from 'ee/usage_quotas/pipelines/namespace/constants';
+import { groupUsageDataByYearAndMonth } from 'ee/usage_quotas/pipelines/namespace/utils';
+import MinutesUsagePerProjectChart from 'ee/usage_quotas/pipelines/namespace/components/minutes_usage_per_project_chart.vue';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { mockGetProjectsCiMinutesUsage } from '../mock_data';
 
 const {

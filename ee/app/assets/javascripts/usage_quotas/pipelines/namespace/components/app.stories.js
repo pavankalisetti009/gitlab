@@ -1,14 +1,14 @@
 import {
   mockGetNamespaceCiMinutesUsage,
   mockGetProjectsCiMinutesUsage,
-} from 'ee_jest/usage_quotas/pipelines/mock_data';
+} from 'ee_jest/usage_quotas/pipelines/namespace/mock_data';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import getNamespaceCiMinutesUsage from '../graphql/queries/namespace_ci_minutes_usage.query.graphql';
 import getProjectsCiMinutesUsage from '../graphql/queries/projects_ci_minutes_usage.query.graphql';
 import PipelineUsageApp from './app.vue';
 
 const meta = {
-  title: 'ee/usage_quotas/pipelines/app',
+  title: 'ee/usage_quotas/pipelines/namespace/app',
   component: PipelineUsageApp,
 };
 

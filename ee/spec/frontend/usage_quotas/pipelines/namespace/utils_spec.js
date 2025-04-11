@@ -1,7 +1,7 @@
 import {
   groupUsageDataByYear,
   groupUsageDataByYearAndMonth,
-} from 'ee/usage_quotas/pipelines/utils';
+} from 'ee/usage_quotas/pipelines/namespace/utils';
 import { mockGetNamespaceCiMinutesUsage } from './mock_data';
 
 const {

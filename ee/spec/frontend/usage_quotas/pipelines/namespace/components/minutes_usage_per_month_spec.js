@@ -1,8 +1,8 @@
 import { GlLoadingIcon } from '@gitlab/ui';
 import { cloneDeep } from 'lodash';
+import MinutesUsagePerMonth from 'ee/usage_quotas/pipelines/namespace/components/minutes_usage_per_month.vue';
+import NoMinutesAlert from 'ee/usage_quotas/pipelines/namespace/components/no_minutes_alert.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import MinutesUsagePerMonth from 'ee/usage_quotas/pipelines/components/minutes_usage_per_month.vue';
-import NoMinutesAlert from 'ee/usage_quotas/pipelines/components/no_minutes_alert.vue';
 import { mockGetNamespaceCiMinutesUsage } from '../mock_data';
 
 describe('MinutesUsagePerMonth', () => {

@@ -1,4 +1,4 @@
-import AdditionalUnitsUsageSummary from 'ee/usage_quotas/pipelines/components/cards/additional_units_usage_summary.vue';
+import AdditionalUnitsUsageSummary from 'ee/usage_quotas/pipelines/namespace/components/cards/additional_units_usage_summary.vue';
 import StatisticsCard from 'ee/usage_quotas/components/statistics_card.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { defaultProvide } from '../../mock_data';
