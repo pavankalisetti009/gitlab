@@ -4,12 +4,14 @@ require 'spec_helper'
 
 RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_planning do
   let_it_be(:work_item) { create(:work_item, :task) }
+  let_it_be(:custom_status) { create(:work_item_custom_status) }
 
   subject(:current_status) { build_stubbed(:work_item_current_status) }
 
   describe 'associations' do
     it { is_expected.to belong_to(:namespace) }
     it { is_expected.to belong_to(:work_item) }
+    it { is_expected.to belong_to(:custom_status).class_name('WorkItems::Statuses::Custom::Status').optional }
 
     describe 'belongs_to_fixed_items :system_defined_status' do
       # We don't have a matcher to test this in one line yet.
@@ -92,23 +94,16 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
   end
 
   describe 'database check constraint for status associations' do
-    subject(:current_status) { build(:work_item_current_status, work_item: work_item) }
+    subject(:current_status) { build(:work_item_current_status, :system_defined, work_item: work_item) }
 
     context 'when system_defined_status_id is present' do
-      before do
-        current_status.system_defined_status_id = 1
-      end
-
       it 'saves record' do
         expect { current_status.save!(validate: false) }.not_to raise_error
       end
     end
 
     context 'when custom_status_id is present' do
-      before do
-        current_status.system_defined_status_id = nil
-        current_status.custom_status_id = 1 # This is okay for now since we don't have a FK for the column yet
-      end
+      subject(:current_status) { build(:work_item_current_status, :custom, work_item: work_item) }
 
       it 'saves record' do
         expect { current_status.save!(validate: false) }.not_to raise_error
@@ -117,7 +112,7 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
 
     context 'when both system_defined_status_id and custom_status_id are present' do
       before do
-        current_status.custom_status_id = 1 # This is okay for now since we don't have a FK for the column yet
+        current_status.custom_status = custom_status
       end
 
       it 'saves record' do
