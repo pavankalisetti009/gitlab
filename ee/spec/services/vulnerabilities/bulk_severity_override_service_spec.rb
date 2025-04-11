@@ -52,10 +52,11 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
         expect(vulnerability.updated_at).to eq(Time.current)
       end
 
-      it 'updates the severity for each vulnerability finding' do
+      it 'updates the severity for each vulnerability finding', :freeze_time do
         service.execute
 
         expect(vulnerability.finding.reload.severity).to eq(new_severity)
+        expect(vulnerability.finding.reload.updated_at).to eq(Time.current)
       end
 
       it 'inserts a severity override record for each vulnerability' do

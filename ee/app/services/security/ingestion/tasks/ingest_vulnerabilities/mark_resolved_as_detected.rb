@@ -37,7 +37,8 @@ module Security
               .update_all(
                 state: :detected,
                 resolved_at: nil,
-                resolved_by_id: nil
+                resolved_by_id: nil,
+                updated_at: current_time
               )
           end
 
@@ -46,8 +47,6 @@ module Security
           end
 
           def state_transitions
-            current_time = Time.now.utc
-
             redetected_vulnerability_ids.map do |vulnerability_id|
               ::Vulnerabilities::StateTransition.new(
                 vulnerability_id: vulnerability_id,
@@ -70,6 +69,11 @@ module Security
           def vulnerability_ids
             finding_maps.map(&:vulnerability_id)
           end
+
+          def current_time
+            Time.current
+          end
+          strong_memoize_attr :current_time
         end
       end
     end

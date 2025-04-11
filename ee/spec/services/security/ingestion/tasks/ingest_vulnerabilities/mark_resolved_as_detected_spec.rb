@@ -45,6 +45,10 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::MarkResolvedAs
                                               .and change { resolved_vulnerability.reload.resolved_by_id }.to(nil)
   end
 
+  it 'touches the updated_at timestamp', :freeze_time do
+    expect { mark_resolved_as_detected }.to change { resolved_vulnerability.reload.updated_at }.to(Time.current)
+  end
+
   it 'creates state transition entry for each vulnerability' do
     expect { mark_resolved_as_detected }.to change { ::Vulnerabilities::StateTransition.count }
       .from(0)
