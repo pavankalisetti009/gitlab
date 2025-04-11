@@ -11,4 +11,4 @@
 - add_work_items_stylesheet
 - add_page_specific_style 'page_bundles/design_management'
 
-#js-work-items{ data: work_items_data(@group, current_user).merge(work_item_type: 'EPIC') }
+#js-work-items{ data: work_items_data(@group, current_user).merge(work_item_type: ::WorkItems::Type::TYPE_NAMES[:epic]) }

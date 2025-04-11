@@ -7,9 +7,10 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_LABEL } from '~/graphql_shared/constants';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import {
+  BASE_ALLOWED_CREATE_TYPES,
   WORK_ITEM_TYPE_ENUM_EPIC,
   WORK_ITEM_TYPE_ENUM_ISSUE,
-  BASE_ALLOWED_CREATE_TYPES,
+  WORK_ITEM_TYPE_NAME_EPIC,
 } from '~/work_items/constants';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
@@ -76,26 +77,21 @@ export default {
       if (this.isGroup) {
         return [];
       }
-      if (this.workItemTypeName === WORK_ITEM_TYPE_ENUM_ISSUE) {
+
+      if (!this.isEpicsList) {
         return BASE_ALLOWED_CREATE_TYPES;
       }
 
       return [];
     },
     allowEpicBulkEditing() {
-      return (
-        this.hasEpicsFeature &&
-        this.canBulkEditEpics &&
-        this.workItemType === WORK_ITEM_TYPE_ENUM_EPIC
-      );
+      return this.hasEpicsFeature && this.canBulkEditEpics && this.isEpicsList;
     },
-    workItemTypeName() {
-      return this.workItemType === WORK_ITEM_TYPE_ENUM_EPIC
-        ? WORK_ITEM_TYPE_ENUM_EPIC
-        : WORK_ITEM_TYPE_ENUM_ISSUE;
+    preselectedWorkItemType() {
+      return this.isEpicsList ? WORK_ITEM_TYPE_ENUM_EPIC : WORK_ITEM_TYPE_ENUM_ISSUE;
     },
-    isEpic() {
-      return this.workItemType === WORK_ITEM_TYPE_ENUM_EPIC;
+    isEpicsList() {
+      return this.workItemType === WORK_ITEM_TYPE_NAME_EPIC;
     },
   },
   methods: {
@@ -170,8 +166,8 @@ export default {
         <create-work-item-modal
           :is-group="isGroup"
           class="gl-grow"
-          :preselected-work-item-type="workItemTypeName"
-          :always-show-work-item-type-select="showNewIssueLink && !isEpic"
+          :preselected-work-item-type="preselectedWorkItemType"
+          :always-show-work-item-type-select="showNewIssueLink && !isEpicsList"
           :allowed-work-item-types="allowedWorkItemTypes"
           @workItemCreated="incrementUpdateCount"
         />
@@ -180,20 +176,20 @@ export default {
     <template v-if="hasEpicsFeature" #list-empty-state="{ hasSearch, isOpenTab }">
       <empty-state-with-any-issues
         :has-search="hasSearch"
-        :is-epic="isEpic"
+        :is-epic="isEpicsList"
         :is-open-tab="isOpenTab"
       >
         <template v-if="showNewIssueLink" #new-issue-button>
           <create-work-item-modal
             class="gl-grow"
             :is-group="isGroup"
-            :preselected-work-item-type="workItemTypeName"
+            :preselected-work-item-type="preselectedWorkItemType"
             @workItemCreated="incrementUpdateCount"
           />
         </template>
       </empty-state-with-any-issues>
     </template>
-    <template v-if="hasEpicsFeature && isEpic" #page-empty-state>
+    <template v-if="hasEpicsFeature && isEpicsList" #page-empty-state>
       <gl-empty-state
         :description="
           __('Track groups of issues that share a theme, across projects and milestones')
