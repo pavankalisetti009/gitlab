@@ -567,6 +567,41 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       end
     end
 
+    describe "with_desired_state_or_actual_state_not_terminated" do
+      context "when desired_state is terminated but actual_state is not terminated" do
+        let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+        let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATING }
+
+        it "returns workspace" do
+          workspace.save!
+          expect(described_class.with_desired_state_or_actual_state_not_terminated)
+            .to include(workspace)
+        end
+      end
+
+      context "when both actual_state and desired_state are not terminated" do
+        let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+        let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+
+        it "returns workspace" do
+          workspace.save!
+          expect(described_class.with_desired_state_or_actual_state_not_terminated)
+            .to include(workspace)
+        end
+      end
+
+      context "when both actual_state and desired_state are terminated" do
+        let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+        let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+
+        it "does not returns workspace" do
+          workspace.save!
+          expect(described_class.with_desired_state_or_actual_state_not_terminated)
+            .to_not include(workspace)
+        end
+      end
+    end
+
     describe "with_desired_state_terminated_and_actual_state_not_terminated" do
       context "when workspace desired_state is not terminated" do
         let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }

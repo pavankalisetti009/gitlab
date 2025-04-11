@@ -66,6 +66,10 @@ module RemoteDevelopment
       where('actual_state_updated_at > responded_to_agent_at').or(where(responded_to_agent_at: nil))
     end
 
+    scope :with_desired_state_or_actual_state_not_terminated, -> do
+      desired_state_not_terminated.or(actual_state_not_terminated)
+    end
+
     scope :with_desired_state_terminated_and_actual_state_not_terminated, -> do
       where(desired_state: TERMINATED).and(where.not(actual_state: TERMINATED))
     end
