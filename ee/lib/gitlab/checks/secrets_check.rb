@@ -41,12 +41,6 @@ module Gitlab
       }.freeze
 
       PAYLOAD_BYTES_LIMIT = 1.megabyte # https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/secret_detection/#target-types
-      EXCLUSION_TYPE_MAP = {
-        rule: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RULE,
-        path: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_PATH,
-        raw_value: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RAW_VALUE,
-        unknown: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_UNSPECIFIED
-      }.freeze
 
       # HUNK_HEADER_REGEX matches a line starting with @@, followed by - and digits (starting line number
       # and range in the original file, comma and more digits optional), then + and digits (starting line number
@@ -55,7 +49,6 @@ module Gitlab
       HUNK_HEADER_REGEX = /\A@@ -\d+(,\d+)? \+(\d+)(,\d+)? @@.*\Z/
 
       # Maximum depth any path exclusion can have.
-      MAX_PATH_EXCLUSIONS_DEPTH = 20
 
       # rubocop:disable Metrics/AbcSize -- This will be refactored in this epic (https://gitlab.com/groups/gitlab-org/-/epics/16376)
       def validate!
@@ -101,7 +94,7 @@ module Gitlab
               Thread.current.abort_on_exception = false
               Thread.current.report_on_exception = false
 
-              send_request_to_sds(payloads, exclusions: active_exclusions)
+              send_request_to_sds(payloads, exclusions: exclusions_manager.active_exclusions)
             end
           end
 
@@ -111,7 +104,7 @@ module Gitlab
             .secrets_scan(
               payloads,
               timeout: logger.time_left,
-              exclusions: active_exclusions
+              exclusions: exclusions_manager.active_exclusions
             )
 
           # Log audit events for exlusions that were applied.
@@ -253,7 +246,7 @@ module Gitlab
 
         # Reject diff blob objects from paths that are excluded
         # -- TODO: pass changed paths with diff blob objects and move this exclusion process into the gem.
-        paths.reject! { |changed_path| matches_excluded_path?(changed_path.path) }
+        paths.reject! { |changed_path| exclusions_manager.matches_excluded_path?(changed_path.path) }
 
         # Make multiple DiffBlobsRequests with smaller batch sizes to prevent timeout when generating diffs
         paths.each_slice(50) do |paths_slice|
@@ -564,7 +557,7 @@ module Gitlab
             # file paths when calling `GetTreeEntries()` RPC and not earlier. When diff scanning
             # is available, we will likely be able move this check to the gem/secret detection service
             # since paths will be available pre-scanning.
-            if matches_excluded_path?(entry.path)
+            if exclusions_manager.matches_excluded_path?(entry.path)
               response.results.delete_if { |finding| finding.payload_id == entry.id }
 
               findings_by_blobs.delete(entry.id)
@@ -602,33 +595,11 @@ module Gitlab
       ##############
       # Exclusions
 
-      def active_exclusions
-        @active_exclusions ||= project
-          .security_exclusions
-          .by_scanner(:secret_push_protection)
-          .active
-          .select(:type, :value)
-          .group_by { |exclusion| exclusion.type.to_sym }
-      end
-
-      def matches_excluded_path?(path)
-        # Skip paths that are too deep.
-        return false if path.count('/') > MAX_PATH_EXCLUSIONS_DEPTH
-
-        # Check only the maximum amount of path exclusions allowed (i.e. 10 path exclusions).
-        active_exclusions[:path]
-          &.first(::Security::ProjectSecurityExclusion::MAX_PATH_EXCLUSIONS_PER_PROJECT)
-          &.any? do |exclusion|
-          matches = File.fnmatch?(
-            exclusion.value,
-            path,
-            File::FNM_DOTMATCH | File::FNM_EXTGLOB | File::FNM_PATHNAME
-          )
-
-          audit_logger.log_exclusion_audit_event(exclusion) if matches
-
-          matches
-        end
+      def exclusions_manager
+        @exclusions_manager ||= ::Gitlab::Checks::SecretPushProtection::ExclusionsManager.new(
+          project: project,
+          audit_logger: audit_logger
+        )
       end
 
       ##############
@@ -685,7 +656,9 @@ module Gitlab
         # are exclusion types like raw_value or path
         exclusions.each_key do |key|
           exclusions[key].inject(exclusion_ary) do |array, exclusion|
-            type = EXCLUSION_TYPE_MAP.fetch(exclusion.type.to_sym, EXCLUSION_TYPE_MAP[:unknown])
+            type = ::Gitlab::Checks::SecretPushProtection::ExclusionsManager::EXCLUSION_TYPE_MAP.fetch(
+              exclusion.type.to_sym,
+              ::Gitlab::Checks::SecretPushProtection::ExclusionsManager::EXCLUSION_TYPE_MAP[:unknown])
 
             array << ::Gitlab::SecretDetection::GRPC::Exclusion.new(
               exclusion_type: type,
