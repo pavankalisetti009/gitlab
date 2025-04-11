@@ -27,7 +27,10 @@ module Ai
     end
 
     def self.defaults
-      { ai_gateway_url: ENV['AI_GATEWAY_URL'] }
+      {
+        ai_gateway_url: ENV['AI_GATEWAY_URL'],
+        enabled_instance_verbose_ai_logs: Feature.enabled?(:expanded_ai_logging) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- this is an instance level FF
+      }
     end
 
     def self.self_hosted?

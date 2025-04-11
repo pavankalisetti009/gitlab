@@ -27,6 +27,10 @@ module Gitlab
       ::Ai::Setting.instance&.ai_gateway_url || ENV["AI_GATEWAY_URL"]
     end
 
+    def self.enabled_instance_verbose_ai_logs
+      ::Ai::Setting.instance&.enabled_instance_verbose_ai_logs.to_s || ''
+    end
+
     # Exposes the state of a feature flag to the AI Gateway code.
     #
     # name - The name of the feature flag, e.g. `my_feature`.
@@ -95,7 +99,8 @@ module Gitlab
 
       {
         'X-Gitlab-Feature-Enablement-Type' => enablement_type,
-        'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(',')
+        'x-gitlab-enabled-feature-flags' => enabled_feature_flags.uniq.join(','),
+        'x-gitlab-enabled-instance-verbose-ai-logs' => enabled_instance_verbose_ai_logs
       }.merge(::CloudConnector.ai_headers(user, namespace_ids: namespace_ids))
     end
   end

@@ -655,17 +655,11 @@ module EE
     end
 
     def enabled_expanded_logging
-      ::Feature.enabled?(:expanded_ai_logging)
+      ::Ai::Setting.instance.enabled_instance_verbose_ai_logs
     end
 
     def enabled_expanded_logging=(value)
-      return if value == enabled_expanded_logging
-
-      if value
-        ::Feature.enable(:expanded_ai_logging)
-      else
-        ::Feature.disable(:expanded_ai_logging)
-      end
+      ::Ai::Setting.instance.update!(enabled_instance_verbose_ai_logs: value)
     end
 
     def seat_control_user_cap?

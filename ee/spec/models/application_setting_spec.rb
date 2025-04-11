@@ -488,86 +488,12 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
 
     describe '#enabled_expanded_logging' do
-      before do
-        stub_feature_flags(expanded_ai_logging: feature_flag_status)
-      end
+      it "updates ::Ai::Settings.instance.enabled_instance_verbose_ai_logs" do
+        ::Ai::Setting.instance.update!(enabled_instance_verbose_ai_logs: false)
 
-      context 'when feature flag is enabled' do
-        let(:feature_flag_status) { true }
-
-        it 'returns true' do
-          expect(setting.enabled_expanded_logging).to be true
-        end
-      end
-
-      context 'when feature flag is disabled' do
-        let(:feature_flag_status) { false }
-
-        it 'returns false' do
-          expect(setting.enabled_expanded_logging).to be false
-        end
-      end
-    end
-
-    describe 'expanded_ai_logging=' do
-      let(:feature_flag_value) { ::Feature.enabled?(:expanded_ai_logging, nil) }
-
-      before do
-        stub_feature_flags(expanded_ai_logging: feature_flag_status)
-      end
-
-      shared_examples 'nothing changes' do
-        it 'leaves feature flag value unchanged' do
-          expect(::Feature).not_to receive(:enable)
-          expect(::Feature).not_to receive(:disable)
-          setting.enabled_expanded_logging = feature_flag_change
-
-          expect(feature_flag_value).to be feature_flag_status
-        end
-      end
-
-      context 'when the new value matches current state' do
-        context 'when value is true' do
-          let(:feature_flag_status) { true }
-          let(:feature_flag_change) { true }
-
-          it_behaves_like 'nothing changes'
-        end
-
-        context 'when value is false' do
-          let(:feature_flag_status) { false }
-          let(:feature_flag_change) { false }
-
-          it_behaves_like 'nothing changes'
-        end
-      end
-
-      context 'when the feature flag and the change value are different' do
-        before do
-          stub_feature_flags(expanded_ai_logging: feature_flag_status)
-        end
-
-        context 'when the change value is false' do
-          let(:feature_flag_status) { true }
-          let(:feature_flag_change) { false }
-
-          it 'leaves feature flag value unchanged' do
-            expect(::Feature).to receive(:disable).with(:expanded_ai_logging).and_call_original
-
-            setting.enabled_expanded_logging = feature_flag_change
-          end
-        end
-
-        context 'when the change value is true' do
-          let(:feature_flag_status) { false }
-          let(:feature_flag_change) { true }
-
-          it 'leaves feature flag value unchanged' do
-            expect(::Feature).to receive(:enable).with(:expanded_ai_logging).and_call_original
-
-            setting.enabled_expanded_logging = feature_flag_change
-          end
-        end
+        expect { setting.enabled_expanded_logging = true }
+          .to change { ::Ai::Setting.instance.enabled_instance_verbose_ai_logs }
+          .from(false).to(true)
       end
     end
 

@@ -46,6 +46,7 @@ module EE
           end
           expose :duo_features_enabled, if: ->(_instance, _opts) { ::License.ai_features_available? }
           expose :lock_duo_features_enabled, if: ->(_instance, _opts) { ::License.ai_features_available? }
+          expose :enabled_expanded_logging, if: ->(_instance, _opts) { ::License.ai_features_available? }
           expose :disabled_direct_code_suggestions, if: ->(_instance, _opts) { CloudConnector::AvailableServices.find_by_name(:code_suggestions)&.purchased? }
           expose :allow_top_level_group_owners_to_create_service_accounts, if: ->(_instance, _opts) { ::License.feature_available?(:service_accounts) }
         end
