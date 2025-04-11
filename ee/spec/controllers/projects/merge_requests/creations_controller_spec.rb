@@ -182,27 +182,33 @@ RSpec.describe Projects::MergeRequests::CreationsController, feature_category: :
         ] }
       end
 
-      it_behaves_like 'creates v2 approval rules'
+      context 'when v2_approval_rules feature flag is enabled' do
+        before do
+          stub_feature_flags(v2_approval_rules: true)
+        end
+
+        it_behaves_like 'creates v2 approval rules'
+
+        context 'when editing approval rules in merge requests is enabled' do
+          before do
+            project.update!(disable_overriding_approvers_per_merge_request: false)
+          end
+
+          it_behaves_like 'creates v2 approval rules'
+        end
+
+        context 'when editing approval rules in merge requests is disabled' do
+          before do
+            project.update!(disable_overriding_approvers_per_merge_request: true)
+          end
+
+          it_behaves_like 'does not create v2 approval rules'
+        end
+      end
 
       context 'when v2_approval_rules feature flag is disabled' do
         before do
           stub_feature_flags(v2_approval_rules: false)
-        end
-
-        it_behaves_like 'does not create v2 approval rules'
-      end
-
-      context 'when editing approval rules in merge requests is enabled' do
-        before do
-          project.update!(disable_overriding_approvers_per_merge_request: false)
-        end
-
-        it_behaves_like 'creates v2 approval rules'
-      end
-
-      context 'when editing approval rules in merge requests is disabled' do
-        before do
-          project.update!(disable_overriding_approvers_per_merge_request: true)
         end
 
         it_behaves_like 'does not create v2 approval rules'

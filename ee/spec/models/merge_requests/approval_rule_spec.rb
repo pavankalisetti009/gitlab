@@ -63,4 +63,22 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
       expect(approval_rule.approver_users).to include(user)
     end
   end
+
+  describe '#approvers' do
+    it 'returns an empty array' do
+      expect(rule.approvers).to eq([])
+    end
+  end
+
+  describe '#from_scan_result_policy?' do
+    it 'is false' do
+      expect(rule.from_scan_result_policy?).to be false
+    end
+  end
+
+  describe '#report_type' do
+    it 'is nil' do
+      expect(rule.report_type).to be_nil
+    end
+  end
 end

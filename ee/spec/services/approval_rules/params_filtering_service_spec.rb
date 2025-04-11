@@ -227,8 +227,14 @@ RSpec.describe ApprovalRules::ParamsFilteringService do
         context 'when user can update approvers' do
           let(:can_update_approvers?) { true }
 
-          it 'keeps v2_approval_rules_attributes' do
-            expect(service.execute).to include(:v2_approval_rules_attributes)
+          context 'when v2_approval_rules feature flag is enabled' do
+            before do
+              stub_feature_flags(v2_approval_rules: true)
+            end
+
+            it 'keeps v2_approval_rules_attributes' do
+              expect(service.execute).to include(:v2_approval_rules_attributes)
+            end
           end
 
           context 'when v2_approval_rules feature flag is disabled' do
