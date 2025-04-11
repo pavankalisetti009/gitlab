@@ -16,6 +16,7 @@ module Search
       end
 
       def execute
+        plan[:failures].each { |failed_nanespace_plan| update_enabled_namespace_metadata!(failed_nanespace_plan) }
         plan[:namespaces].each do |namespace_plan|
           next if namespace_plan[:errors].present?
 

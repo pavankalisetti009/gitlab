@@ -380,46 +380,6 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         {
           namespaces: [
             {
-              namespace_id: namespace.id,
-              enabled_namespace_id: enabled_namespace.id,
-              replicas: [
-                {
-                  indices: [
-                    {
-                      node_id: nodes.first.id,
-                      required_storage_bytes: 3.gigabytes,
-                      max_storage_bytes: 90.gigabytes,
-                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 5 }
-                    },
-                    {
-                      node_id: nodes.second.id,
-                      required_storage_bytes: 2.gigabytes,
-                      max_storage_bytes: 80.gigabytes,
-                      projects: { project_namespace_id_from: 6, project_namespace_id_to: nil }
-                    }
-                  ]
-                },
-                {
-                  indices: [
-                    {
-                      node_id: nodes.third.id,
-                      required_storage_bytes: 3.gigabytes,
-                      max_storage_bytes: 90.gigabytes,
-                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 5 }
-                    },
-                    {
-                      node_id: nodes.fourth.id,
-                      required_storage_bytes: 2.gigabytes,
-                      max_storage_bytes: 80.gigabytes,
-                      projects: { project_namespace_id_from: 6, project_namespace_id_to: nil }
-                    }
-                  ]
-                }
-              ],
-              errors: [{ namespace_id: namespace.id, replica_idx: nil, type: :error_type, details: 'Detail' }],
-              namespace_required_storage_bytes: 10.gigabytes
-            },
-            {
               namespace_id: namespace2.id,
               enabled_namespace_id: enabled_namespace2.id,
               replicas: [
@@ -460,16 +420,60 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
               namespace_required_storage_bytes: 6.gigabytes
             }
           ],
-          total_required_storage_bytes: 16.gigabytes
+          total_required_storage_bytes: 16.gigabytes,
+          failures: [
+            {
+              namespace_id: namespace.id,
+              enabled_namespace_id: enabled_namespace.id,
+              replicas: [
+                {
+                  indices: [
+                    {
+                      node_id: nodes.first.id,
+                      required_storage_bytes: 3.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 5 }
+                    },
+                    {
+                      node_id: nodes.second.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 80.gigabytes,
+                      projects: { project_namespace_id_from: 6, project_namespace_id_to: nil }
+                    }
+                  ]
+                },
+                {
+                  indices: [
+                    {
+                      node_id: nodes.third.id,
+                      required_storage_bytes: 3.gigabytes,
+                      max_storage_bytes: 90.gigabytes,
+                      projects: { project_namespace_id_from: 1, project_namespace_id_to: 5 }
+                    },
+                    {
+                      node_id: nodes.fourth.id,
+                      required_storage_bytes: 2.gigabytes,
+                      max_storage_bytes: 80.gigabytes,
+                      projects: { project_namespace_id_from: 6, project_namespace_id_to: nil }
+                    }
+                  ]
+                }
+              ],
+              errors: [{ namespace_id: namespace.id, replica_idx: nil, type: :error_type, details: 'Detail' }],
+              namespace_required_storage_bytes: 10.gigabytes
+            }
+          ]
         }
       end
 
-      it 'skips that namespace and continues with the rest' do
+      it 'skips that namespace, set metadata on enabled_namespace and continues with the rest', :freeze_time do
         result = provisioning_result
         # Ensure there are no errors
         expect(result[:errors]).to be_empty
         expect(enabled_namespace.replicas).to be_empty
         expect(enabled_namespace.indices).to be_empty
+        expect(enabled_namespace.reload.metadata['last_rollout_failed_at']).to eq(Time.current.iso8601)
+        expect(enabled_namespace.metadata['rollout_required_storage_bytes']).to eq(10.gigabytes)
         expect(enabled_namespace2.replicas.count).to eq(2)
         expect(enabled_namespace2.indices.count).to eq(4)
         metadata = enabled_namespace2.replicas.first.indices.find_by_zoekt_node_id(nodes.first).metadata
