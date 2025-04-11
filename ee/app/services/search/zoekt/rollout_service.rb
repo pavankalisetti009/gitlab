@@ -39,7 +39,7 @@ module Search
           num_replicas: num_replicas,
           max_indices_per_replica: max_indices_per_replica
         )
-        logger.info(build_structured_payload(**{ plan: ::Gitlab::Json.parse(plan.to_json) }))
+        logger.info(build_structured_payload(**{ zoekt_rollout_plan: ::Gitlab::Json.parse(plan.to_json) }))
         return Result.new('Skipping execution of changes because of dry run', {}) if dry_run
 
         changes = ::Search::Zoekt::ProvisioningService.execute(plan)
