@@ -20,6 +20,9 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
 
     let(:event_name) { 'some_unknown_event' }
 
+    let_it_be(:group) { create(:group, path: 'group') }
+    let_it_be(:project) { create(:project, namespace: group, path: 'project') }
+
     before do
       allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
     end
@@ -30,19 +33,16 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
       it { is_expected.to be_nil }
     end
 
-    shared_examples 'common event tracking for' do |model_class|
+    shared_examples 'basic event tracking for' do |model_class|
       let(:base_event_hash) do
         {
           user: current_user,
           event: event_name,
           namespace_path: nil
-        }.merge(event_payload_hash)
+        }.merge(event_payload_hash).with_indifferent_access
       end
 
       let(:expected_event_hash) { base_event_hash }
-
-      let_it_be(:group) { create(:group, path: 'group') }
-      let_it_be(:project) { create(:project, namespace: group, path: 'project') }
 
       context 'with clickhouse not available' do
         before do
@@ -81,6 +81,27 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
         end
       end
 
+      it 'stores new event' do
+        expect_next_instance_of(model_class, expected_event_hash) do |instance|
+          expect(instance).to receive(:store_to_clickhouse).and_call_original
+        end
+
+        track_event
+      end
+
+      it 'creates an event with correct attributes' do
+        expect(model_class).to receive(:new).with(expected_event_hash)
+        track_event
+      end
+
+      it 'triggers last_duo_activity_on update' do
+        expect(Ai::UserMetrics).to receive(:refresh_last_activity_on).with(current_user).and_call_original
+
+        track_event
+      end
+    end
+
+    shared_examples 'namespace path handling for' do |model_class|
       context 'when building traversal path' do
         context 'when a project ID is provided' do
           let(:event_context) { super().merge(project_id: project.id) }
@@ -142,25 +163,6 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
           end
         end
       end
-
-      it 'stores new event' do
-        expect_next_instance_of(model_class, expected_event_hash) do |instance|
-          expect(instance).to receive(:store_to_clickhouse).and_call_original
-        end
-
-        track_event
-      end
-
-      it 'creates an event with correct attributes' do
-        expect(model_class).to receive(:new).with(expected_event_hash)
-        track_event
-      end
-
-      it 'triggers last_duo_activity_on update' do
-        expect(Ai::UserMetrics).to receive(:refresh_last_activity_on).with(current_user).and_call_original
-
-        track_event
-      end
     end
 
     context 'for code suggestion event' do
@@ -176,7 +178,8 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
         }
       end
 
-      include_examples 'common event tracking for', Ai::CodeSuggestionEvent
+      include_examples 'basic event tracking for', Ai::CodeSuggestionEvent
+      include_examples 'namespace path handling for', Ai::CodeSuggestionEvent
     end
 
     context 'for chat event' do
@@ -187,7 +190,29 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
         }
       end
 
-      include_examples 'common event tracking for', Ai::DuoChatEvent
+      include_examples 'basic event tracking for', Ai::DuoChatEvent
+      include_examples 'namespace path handling for', Ai::DuoChatEvent
+    end
+
+    context 'for troubleshoot job event' do
+      let(:event_name) { 'troubleshoot_job' }
+      let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+      let_it_be(:pipeline) { create(:ci_pipeline, project: project, merge_request: merge_request) }
+      let(:job) { create(:ci_build, pipeline: pipeline, project: project, user_id: current_user.id) }
+
+      let(:event_context) { super().merge(job: job) }
+
+      let(:base_event_hash) { super().merge(namespace_path: project.reload.project_namespace.traversal_path) }
+
+      let(:event_payload_hash) do
+        {
+          job: job,
+          user: current_user,
+          payload: {}
+        }
+      end
+
+      include_examples 'basic event tracking for', Ai::TroubleshootJobEvent
     end
   end
 

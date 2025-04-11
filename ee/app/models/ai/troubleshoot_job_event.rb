@@ -6,6 +6,7 @@ module Ai
     include UsageEvent
 
     self.table_name = "ai_troubleshoot_job_events"
+    self.clickhouse_table_name = "troubleshoot_job_events"
     self.primary_key = :id
 
     partitioned_by :timestamp, strategy: :monthly, retain_for: 3.months
@@ -23,6 +24,11 @@ module Ai
     validate :validate_recent_timestamp, on: :create
 
     before_validation :populate_sharding_key
+    before_validation :fill_payload
+
+    def self.permitted_attributes
+      super + %w[project_id merge_request_id job]
+    end
 
     def store_to_pg
       return false unless valid?
@@ -30,7 +36,22 @@ module Ai
       Ai::UsageEventWriteBuffer.add(self.class.name, attributes.compact)
     end
 
+    def to_clickhouse_csv_row
+      super.merge({
+        user_id: user_id,
+        project_id: project_id,
+        job_id: job_id,
+        pipeline_id: payload['pipeline_id'],
+        merge_request_id: payload['merge_request_id']
+      })
+    end
+
     private
+
+    def fill_payload
+      payload['pipeline_id'] ||= job&.pipeline_id
+      payload['merge_request_id'] ||= job&.pipeline&.merge_request_id
+    end
 
     def populate_sharding_key
       self.project_id ||= job&.project_id

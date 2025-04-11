@@ -8,7 +8,9 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
   let(:perform) { job.perform }
   let_it_be(:personal_namespace) { create(:user_namespace) }
 
-  let(:inserted_records) { Ai::DuoChatEvent.all.map(&:attributes) + Ai::CodeSuggestionEvent.all.map(&:attributes) }
+  let(:inserted_records) do
+    UsageEvents::DumpWriteBufferCronWorker::MODELS.flat_map { |model| model.all.map(&:attributes) }
+  end
 
   it 'does not insert anything' do
     perform

@@ -5,23 +5,24 @@ module Ai
     extend ActiveSupport::Concern
     include ClickHouseModel
 
-    included do
-      class << self
-        def related_event?(event_name)
-          events.key?(event_name)
-        end
-
-        def payload_attributes
-          schema_validator = validators_on(:payload).detect { |v| v.is_a?(JsonSchemaValidator) }
-          schema_validator.schema.value['properties'].keys
-        end
+    class_methods do
+      def related_event?(event_name)
+        events.key?(event_name)
       end
 
-      before_validation :floor_timestamp
+      def payload_attributes
+        schema_validator = validators_on(:payload).detect { |v| v.is_a?(JsonSchemaValidator) }
+        schema_validator.schema.value['properties'].keys
+      end
+
+      def permitted_attributes
+        %w[user user_id organization organization_id personal_namespace_id namespace_path timestamp event].freeze
+      end
     end
 
-    PERMITTED_ATTRIBUTES = %w[user user_id organization organization_id personal_namespace_id namespace_path timestamp
-      event].freeze
+    included do
+      before_validation :floor_timestamp
+    end
 
     def to_clickhouse_csv_row
       {

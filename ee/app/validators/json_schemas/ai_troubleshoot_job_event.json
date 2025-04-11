@@ -7,7 +7,14 @@
       "type": "integer"
     },
     "merge_request_id": {
-      "type": "integer"
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "additionalProperties": false

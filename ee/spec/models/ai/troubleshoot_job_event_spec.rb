@@ -7,6 +7,9 @@ RSpec.describe Ai::TroubleshootJobEvent, feature_category: :duo_chat do
 
   let_it_be(:user) { create(:user) }
   let_it_be(:job) { create(:ci_build) }
+  let_it_be(:project) { create(:project, :private, developers: user) }
+  let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+  let_it_be(:pipeline) { create(:ci_pipeline, project: project, merge_request: merge_request) }
 
   let(:attributes) { { event: 'troubleshoot_job', user: user, job: job } }
 
@@ -88,6 +91,147 @@ RSpec.describe Ai::TroubleshootJobEvent, feature_category: :duo_chat do
           }.with_indifferent_access)
 
         event.store_to_pg
+      end
+    end
+  end
+
+  describe '#to_clickhouse_csv_row', :freeze_time do
+    let_it_be(:job) { create(:ci_build, pipeline: pipeline) }
+
+    context 'with specified payload values' do
+      let(:attributes) do
+        {
+          event: 'troubleshoot_job',
+          user: user,
+          job: job,
+          timestamp: 1.day.ago,
+          project_id: job.project.id,
+          payload: {
+            pipeline_id: 2,
+            merge_request_id: 202
+          }
+        }
+      end
+
+      it 'returns serialized attributes hash with provided payload values' do
+        expect(event.to_clickhouse_csv_row).to include(
+          user_id: user.id,
+          pipeline_id: 2,
+          merge_request_id: 202,
+          timestamp: 1.day.ago.to_f,
+          job_id: job.id
+        )
+      end
+    end
+
+    context 'with values derived from job' do
+      let(:attributes) do
+        {
+          event: 'troubleshoot_job',
+          user: user,
+          job: job,
+          timestamp: 1.day.ago,
+          project_id: project.id,
+          payload: {}
+        }
+      end
+
+      it 'returns serialized attributes hash with values derived from job' do
+        event.validate
+
+        expect(event.to_clickhouse_csv_row).to include(
+          user_id: user.id,
+          pipeline_id: pipeline.id,
+          merge_request_id: pipeline.merge_request_id,
+          timestamp: 1.day.ago.to_f,
+          job_id: job.id
+        )
+      end
+    end
+
+    context 'with nil payload values' do
+      let(:attributes) do
+        {
+          event: 'troubleshoot_job',
+          user: user,
+          job: job,
+          timestamp: 1.day.ago,
+          project_id: job.project.id,
+          payload: { pipeline_id: nil, merge_request_id: nil }
+        }
+      end
+
+      it 'includes nil values in the serialized hash' do
+        expect(event.to_clickhouse_csv_row).to include(
+          pipeline_id: nil,
+          merge_request_id: nil
+        )
+      end
+    end
+  end
+
+  describe '#fill_payload' do
+    let_it_be(:job) { create(:ci_build, pipeline: pipeline) }
+
+    context 'when payload is empty' do
+      let(:attributes) do
+        {
+          event: 'troubleshoot_job',
+          user: user,
+          job: job,
+          payload: {}
+        }
+      end
+
+      it 'fills payload with job attributes during validation' do
+        expect { event.validate }.to change { event.payload }
+          .from({})
+          .to(include(
+            'pipeline_id' => pipeline.id,
+            'merge_request_id' => pipeline.merge_request_id
+          ))
+      end
+    end
+
+    context 'when payload already has values' do
+      let(:attributes) do
+        {
+          event: 'troubleshoot_job',
+          user: user,
+          job: job,
+          payload: {
+            'pipeline_id' => 10,
+            'merge_request_id' => 20
+          }
+        }
+      end
+
+      it 'does not overwrite existing values during validation' do
+        event.validate
+        expect(event.payload).to include(
+          'pipeline_id' => 10,
+          'merge_request_id' => 20
+        )
+      end
+    end
+
+    context 'when job has no merge_request' do
+      let(:attributes) do
+        {
+          event: 'troubleshoot_job',
+          user: user,
+          job: job,
+          payload: {
+            'pipeline_id' => pipeline.id,
+            'merge_request_id' => nil
+          }
+        }
+      end
+
+      it 'sets pipeline_id and merge request based on pipeline data' do
+        event.validate
+        expect(event.payload).to include('pipeline_id' => pipeline.id)
+        expect(event.payload).to include('merge_request_id' => pipeline.merge_request_id)
       end
     end
   end

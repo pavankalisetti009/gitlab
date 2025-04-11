@@ -91,7 +91,7 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
           user: user,
           event: 'troubleshoot_job',
           job: project.builds.sample,
-          timestamp: rand(TIME_PERIOD_DAYS).days.ago).save!
+          timestamp: rand(TIME_PERIOD_DAYS).days.ago).tap(&:save!).tap(&:store_to_clickhouse)
       end
     end
   end
