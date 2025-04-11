@@ -37,6 +37,12 @@ module EE
             group.group_wiki_repository&.shard_name
           end
 
+          expose :duo_nano_features_enabled,
+            if: ->(group, options) {
+              group.licensed_duo_nano_features_available? &&
+                Ability.allowed?(options[:current_user], :admin_group, group)
+            }
+
           expose :duo_features_enabled,
             if: ->(group, options) {
               group.licensed_ai_features_available? &&
