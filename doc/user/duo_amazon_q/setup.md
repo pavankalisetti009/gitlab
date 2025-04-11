@@ -42,7 +42,6 @@ To set up GitLab Duo with Amazon Q, you must:
 - [Add the policy](#add-the-policy)
 - [Allow administrators to use customer managed keys](#allow-administrators-to-use-customer-managed-keys)
 - [Enter the ARN in GitLab and enable Amazon Q](#enter-the-arn-in-gitlab-and-enable-amazon-q)
-- [Add the Amazon Q user to your project](#add-the-amazon-q-user-to-your-project)
 
 ### Prerequisites
 
@@ -263,17 +262,6 @@ To confirm that it was successful:
   [What is Amazon CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html)?
 - In GitLab, a notification that says `Amazon Q settings have been saved` is displayed.
 - In GitLab, on the left sidebar, select **Applications**. The Amazon Q OAuth application is displayed.
-
-## Add the Amazon Q user to your project
-
-Now add the Amazon Q service account user as a member of your project.
-
-1. In GitLab, on the left sidebar, select **Search or go to** and find your project.
-1. Select **Manage > Members**.
-1. In the upper-right corner, select **Invite members**.
-1. For **Username, name, or email address**, select **Amazon Q Service**.
-1. For **Select a role**, select **Developer**.
-1. Select **Invite**.
 
 ## Turn off GitLab Duo with Amazon Q
 
