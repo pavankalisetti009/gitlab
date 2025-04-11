@@ -55,7 +55,7 @@ export default {
 </script>
 <template>
   <div>
-    <runner-list-header>
+    <runner-list-header class="gl-mb-5">
       <template #title>{{ s__('Runners|Fleet dashboard') }}</template>
       <template #description>{{
         s__('Runners|Use the dashboard to view performance statistics of your runner fleet.')
