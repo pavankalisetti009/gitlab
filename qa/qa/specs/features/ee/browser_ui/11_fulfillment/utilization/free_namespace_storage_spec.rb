@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Fulfillment', :runner, :requires_admin,
+  RSpec.describe 'Fulfillment', :requires_admin,
     only: { subdomain: :staging },
     feature_flag: { name: 'namespace_storage_limit', scope: :group },
     product_group: :utilization do

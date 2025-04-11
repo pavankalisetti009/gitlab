@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Govern', :runner, product_group: :security_policies do
+  RSpec.describe 'Govern', product_group: :security_policies do
     describe 'Scan result policy' do
       let!(:project) do
         create(:project,

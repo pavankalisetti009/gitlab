@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Systems', :orchestrated, :runner, :requires_admin, :geo, product_group: :geo do
+  RSpec.describe 'Systems', :orchestrated, :requires_admin, :geo, product_group: :geo do
     describe 'CI job' do
       let(:file_name) { 'geo_artifact.txt' }
       let(:directory_name) { 'geo_artifacts' }

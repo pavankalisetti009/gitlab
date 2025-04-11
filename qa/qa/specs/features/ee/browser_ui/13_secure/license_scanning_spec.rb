@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Secure', :runner, product_group: :composition_analysis,
+  RSpec.describe 'Secure', product_group: :composition_analysis,
     only: { subdomain: %i[staging staging-canary] } do
     describe 'License Scanning' do
       let!(:test_project) do

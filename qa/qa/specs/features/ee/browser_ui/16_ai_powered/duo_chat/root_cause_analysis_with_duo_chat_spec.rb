@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Ai-powered', :runner, :requires_admin, :external_ai_provider, product_group: :pipeline_execution,
+  RSpec.describe 'Ai-powered', :requires_admin, :external_ai_provider, product_group: :pipeline_execution,
     only: { pipeline: %i[staging staging-canary] } do
     describe 'Root Cause Analysis' do
       let(:executor) { "qa-runner-#{SecureRandom.hex(4)}" }

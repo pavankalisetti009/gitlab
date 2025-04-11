@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Secure', :secure_container_reg_cvs, :runner,
+  RSpec.describe 'Secure', :secure_container_reg_cvs,
     product_group: :composition_analysis,
     only: { subdomain: %i[staging staging-canary] },
     feature_flag: { name: 'cvs_for_container_scanning', scope: :project } do
