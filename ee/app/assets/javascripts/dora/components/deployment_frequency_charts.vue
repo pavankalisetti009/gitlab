@@ -3,7 +3,11 @@ import { GlToggle, GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import { GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { BASE_FORECAST_SERIES_OPTIONS } from 'ee/analytics/shared/constants';
-import * as DoraApi from 'ee/api/dora_api';
+import {
+  DEPLOYMENT_FREQUENCY_METRIC_TYPE,
+  getProjectDoraMetrics,
+  getGroupDoraMetrics,
+} from 'ee/dora/api/dora_api';
 import { linearRegression } from 'ee/analytics/shared/utils';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
@@ -174,17 +178,17 @@ export default {
           throw new Error('Both projectPath and groupPath were provided');
         } else if (this.projectPath) {
           apiData = (
-            await DoraApi.getProjectDoraMetrics(
+            await getProjectDoraMetrics(
               this.projectPath,
-              DoraApi.DEPLOYMENT_FREQUENCY_METRIC_TYPE,
+              DEPLOYMENT_FREQUENCY_METRIC_TYPE,
               requestParams,
             )
           ).data;
         } else if (this.groupPath) {
           apiData = (
-            await DoraApi.getGroupDoraMetrics(
+            await getGroupDoraMetrics(
               this.groupPath,
-              DoraApi.DEPLOYMENT_FREQUENCY_METRIC_TYPE,
+              DEPLOYMENT_FREQUENCY_METRIC_TYPE,
               requestParams,
             )
           ).data;
