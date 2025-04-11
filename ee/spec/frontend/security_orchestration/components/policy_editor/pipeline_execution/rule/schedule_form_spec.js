@@ -72,7 +72,15 @@ describe('ScheduleForm', () => {
       expect(findListbox().props('selected')).toBe('weekly');
     });
 
-    it('renders the branch selection component', () => {
+    // TODO remove this test case after enable dropdown with https://gitlab.com/gitlab-org/gitlab/-/issues/535547
+    it('does not render the branch selection component', () => {
+      createComponent();
+      expect(findBranchSelection().exists()).toBe(false);
+    });
+
+    // TODO unskip these test case after enable dropdown with https://gitlab.com/gitlab-org/gitlab/-/issues/535547
+    // eslint-disable-next-line jest/no-disabled-tests
+    it.skip('renders the branch selection component', () => {
       createComponent();
       expect(findBranchSelection().exists()).toBe(true);
       expect(findBranchSelection().props('initRule')).toEqual({
@@ -193,7 +201,9 @@ describe('ScheduleForm', () => {
       createComponent();
     });
 
-    describe('branch selection', () => {
+    // TODO unskip these test case after enable dropdown with https://gitlab.com/gitlab-org/gitlab/-/issues/535547
+    // eslint-disable-next-line jest/no-disabled-tests
+    describe.skip('branch selection', () => {
       it('handles branch type selection changes', async () => {
         const branchTypeData = { branch_type: 'all' };
         await findBranchSelection().vm.$emit('set-branch-type', branchTypeData);

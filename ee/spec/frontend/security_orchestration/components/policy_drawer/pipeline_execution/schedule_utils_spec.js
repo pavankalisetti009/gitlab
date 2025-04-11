@@ -47,7 +47,7 @@ describe('getWeekdaysList', () => {
 
 describe('getBranchInfo', () => {
   it.each([undefined, null, ''])('returns empty string when branch type is $input', (input) => {
-    expect(getBranchInfo(input)).toBe('');
+    expect(getBranchInfo(input)).toContain(PROJECT_DEFAULT_BRANCH.text);
   });
 
   it.each`

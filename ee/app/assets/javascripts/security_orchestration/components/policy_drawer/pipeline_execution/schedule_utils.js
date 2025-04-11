@@ -35,10 +35,6 @@ export const getWeekdaysList = (days = []) => {
  * @returns {String} Formatted branch information
  */
 export const getBranchInfo = (branchType) => {
-  if (!branchType) {
-    return '';
-  }
-
   const branchTypes = {
     [ALL_PROTECTED_BRANCHES.value]: ALL_PROTECTED_BRANCHES.text,
     [PROJECT_DEFAULT_BRANCH.value]: PROJECT_DEFAULT_BRANCH.text,
@@ -46,7 +42,7 @@ export const getBranchInfo = (branchType) => {
   };
 
   return sprintf(s__('SecurityOrchestration|for %{branchType}'), {
-    branchType: branchTypes[branchType] || branchType,
+    branchType: branchTypes[branchType] || branchType || PROJECT_DEFAULT_BRANCH.text,
   });
 };
 

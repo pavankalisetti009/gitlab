@@ -79,7 +79,7 @@ export const DAILY = 'daily';
 export const WEEKLY = 'weekly';
 export const MONTHLY = 'monthly';
 export const DEFAULT_SCHEDULE = {
-  branch_type: 'protected',
+  // branch_type: 'protected', // Enable with https://gitlab.com/gitlab-org/gitlab/-/issues/535547
   type: DAILY,
   start_time: '00:00',
   time_window: {
