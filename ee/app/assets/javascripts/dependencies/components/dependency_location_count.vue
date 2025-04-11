@@ -61,6 +61,9 @@ export default {
     searchEnabled() {
       return this.loading || this.locationCount > SEARCH_MIN_THRESHOLD;
     },
+    hasAnyDependencyPaths() {
+      return this.locations.some((item) => item.location?.dependency_paths?.length > 0);
+    },
   },
   i18n: {
     unknownPath: s__('Dependencies|Unknown path'),
@@ -85,9 +88,6 @@ export default {
     isTopLevelDependency(item) {
       return item.location.top_level;
     },
-    hasDependencyPaths(item) {
-      return item.location.dependency_paths?.length > 0;
-    },
     async fetchData() {
       this.loading = true;
 
@@ -99,12 +99,11 @@ export default {
           component_id: this.componentId,
         },
       });
-
       this.loading = false;
       this.locations = locations.map(mapItemToListboxFormat);
     },
-    onDependencyPathClick(item) {
-      this.$emit('click-dependency-path', item);
+    async onDependencyPathClick() {
+      this.$emit('click-dependency-path', this.locations);
     },
   },
 };
@@ -151,14 +150,22 @@ export default {
           {{ s__('Dependencies|(top level)') }}
         </div>
         <gl-truncate :text="item.project.name" class="gl-mt-2 gl-pl-6 gl-text-subtle" />
+      </div>
+    </template>
+    <template v-if="glFeatures.dependencyPaths && hasAnyDependencyPaths" #footer>
+      <div
+        class="gl-flex gl-flex-col gl-border-t-1 gl-border-t-dropdown-divider !gl-p-2 !gl-pt-0 gl-border-t-solid"
+      >
         <gl-button
-          v-if="glFeatures.dependencyPaths && hasDependencyPaths(item)"
-          class="gl-mt-2"
-          size="small"
+          category="tertiary"
+          block
+          class="!gl-mt-2 !gl-justify-center"
           data-testid="dependency-path-button"
-          @click="onDependencyPathClick(item)"
-          >{{ $options.i18n.dependencyPathButtonText }}</gl-button
+          icon="file-tree"
+          @click="onDependencyPathClick"
         >
+          {{ $options.i18n.dependencyPathButtonText }}
+        </gl-button>
       </div>
     </template>
   </gl-collapsible-listbox>

@@ -1,5 +1,12 @@
 <script>
-import { GlDrawer, GlTruncateText, GlBadge, GlAlert } from '@gitlab/ui';
+import {
+  GlDrawer,
+  GlTruncateText,
+  GlBadge,
+  GlAlert,
+  GlCollapsibleListbox,
+  GlSkeletonLoader,
+} from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
@@ -11,20 +18,18 @@ export default {
     GlTruncateText,
     GlBadge,
     GlAlert,
+    GlCollapsibleListbox,
+    GlSkeletonLoader,
   },
   props: {
     dependencyPaths: {
       type: Array,
-      required: true,
+      required: false,
+      default: () => [],
     },
     component: {
       type: Object,
       required: true,
-    },
-    project: {
-      type: Object,
-      required: false,
-      default: () => {},
     },
     limitExceeded: {
       type: Boolean,
@@ -36,15 +41,68 @@ export default {
       required: false,
       default: false,
     },
+    locations: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
+  },
+  data() {
+    return {
+      selectedProject: null,
+      isLoading: false,
+      loadingTimeout: null,
+    };
   },
   computed: {
-    showProject() {
-      return this.project && this.project.name;
+    showProjectDropdown() {
+      return this.locations?.length > 0;
     },
+    dependencyPathsList() {
+      if (!this.showProjectDropdown) {
+        return this.dependencyPaths;
+      }
+
+      if (this.isLoading) return [];
+      return this.dropdownData.dependencyPathsLookup[this.selectedProject];
+    },
+    dropdownData() {
+      const projectDropdown = [];
+      const dependencyPathsLookup = {};
+
+      this.locations.forEach((item) => {
+        projectDropdown.push({
+          value: item.value,
+          text: item.project.name,
+        });
+
+        dependencyPathsLookup[item.value] = item.location.dependency_paths;
+      });
+
+      return { projectDropdown, dependencyPathsLookup };
+    },
+  },
+  created() {
+    this.selectedProject = this.locations?.[0]?.value ?? null;
+  },
+  beforeDestroy() {
+    if (this.loadingTimeout) {
+      clearTimeout(this.loadingTimeout);
+      this.loadingTimeout = null;
+    }
   },
   methods: {
     formatPath(paths) {
       return paths.map((path) => `${path.name} @${path.version}`).join(' / ');
+    },
+    handleSelect(value) {
+      this.isLoading = true;
+      this.selectedProject = value;
+
+      // Mimic loading time to help with visual feedback
+      this.loadingTimeout = setTimeout(() => {
+        this.isLoading = false;
+      }, 300);
     },
   },
   i18n: {
@@ -84,13 +142,21 @@ export default {
         <span>{{ component.version }}</span>
       </div>
     </template>
-    <div v-if="showProject" data-testid="dependency-path-drawer-project">
-      <strong>{{ $options.i18n.projectTitle }}:</strong>
-      <span>{{ project.name }}</span>
-    </div>
-    <ul class="gl-list-none gl-p-2">
+    <gl-collapsible-listbox
+      v-if="showProjectDropdown"
+      :items="dropdownData.projectDropdown"
+      :selected="selectedProject"
+      block
+      @select="handleSelect"
+    >
+      <template #list-item="{ item }">
+        {{ item.text }}
+      </template>
+    </gl-collapsible-listbox>
+    <gl-skeleton-loader v-if="isLoading" />
+    <ul v-else class="gl-list-none gl-p-2">
       <li
-        v-for="(dependencyPath, index) in dependencyPaths"
+        v-for="(dependencyPath, index) in dependencyPathsList"
         :key="index"
         class="gl-border-b gl-py-5 first:!gl-pt-0"
       >

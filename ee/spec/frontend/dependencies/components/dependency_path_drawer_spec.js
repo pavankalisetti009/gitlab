@@ -1,4 +1,12 @@
-import { GlDrawer, GlTruncateText, GlBadge, GlAlert } from '@gitlab/ui';
+import {
+  GlDrawer,
+  GlTruncateText,
+  GlBadge,
+  GlAlert,
+  GlCollapsibleListbox,
+  GlSkeletonLoader,
+} from '@gitlab/ui';
+import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DependencyPathDrawer from 'ee/dependencies/components/dependency_path_drawer.vue';
 import { RENDER_ALL_SLOTS_TEMPLATE, stubComponent } from 'helpers/stub_component';
@@ -34,7 +42,7 @@ describe('DependencyPathDrawer component', () => {
   const findTitle = () => wrapper.findByTestId('dependency-path-drawer-title');
   const findHeader = () => wrapper.findByTestId('dependency-path-drawer-header');
   const findAlert = () => wrapper.findComponent(GlAlert);
-  const findProject = () => wrapper.findByTestId('dependency-path-drawer-project');
+  const findProjectList = () => wrapper.findComponent(GlCollapsibleListbox);
   const findAllListItem = () => wrapper.findAll('li');
   const getTruncateText = (index) => findAllListItem().at(index).findComponent(GlTruncateText);
   const getBadge = (index) => findAllListItem().at(index).findComponent(GlBadge);
@@ -77,21 +85,71 @@ describe('DependencyPathDrawer component', () => {
     });
   });
 
-  describe('with project section', () => {
-    it('shows project info when project exists', () => {
-      const projectName = 'Project Foo';
+  describe('with project dropdown', () => {
+    const locationOne = {
+      name: 'Project 1',
+      value: 100,
+      dependencyPaths: [{ name: 'one', version: 'v1' }],
+    };
 
-      createComponent({
-        showDrawer: true,
-        project: { name: projectName },
-      });
+    const locationTwo = {
+      name: 'Project 2',
+      value: 200,
+      dependencyPaths: [{ name: 'two', version: 'v2' }],
+    };
 
-      expect(findProject().text()).toContain(`Project: ${projectName}`);
+    const createLocation = ({ name, value, dependencyPaths }) => ({
+      project: { name },
+      value,
+      location: {
+        dependency_paths: dependencyPaths.map((dependency) => ({
+          is_cyclic: true,
+          path: [{ name: dependency.name, version: dependency.version }],
+        })),
+      },
     });
 
-    it('does not show project info when project does not exist', () => {
-      createComponent({ showDrawer: true, project: undefined });
-      expect(findProject().exists()).toBe(false);
+    beforeEach(() => {
+      createComponent({
+        showDrawer: true,
+        locations: [createLocation(locationOne), createLocation(locationTwo)],
+      });
+    });
+
+    it('renders the first selected project and its path', () => {
+      const {
+        value,
+        dependencyPaths: [{ name, version }],
+      } = locationOne;
+
+      expect(findProjectList().props('selected')).toBe(value);
+      expect(wrapper.text()).toContain(`${name} @${version}`);
+      expect(findAllListItem()).toHaveLength(locationOne.dependencyPaths.length);
+    });
+
+    it('displays loading on change', async () => {
+      const { value } = locationOne;
+      expect(wrapper.findComponent(GlSkeletonLoader).exists()).toBe(false);
+
+      findProjectList().vm.$emit('select', value);
+      await nextTick();
+
+      expect(wrapper.findComponent(GlSkeletonLoader).exists()).toBe(true);
+    });
+
+    it('updates the dependency path list', async () => {
+      const {
+        value,
+        dependencyPaths: [{ name, version }],
+      } = locationTwo;
+
+      findProjectList().vm.$emit('select', value);
+      jest.advanceTimersByTime(300);
+      await nextTick();
+
+      expect(findProjectList().props('selected')).toBe(value);
+      expect(wrapper.text()).toContain(`${name} @${version}`);
+      expect(findAllListItem()).toHaveLength(locationOne.dependencyPaths.length);
     });
   });
 
