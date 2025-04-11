@@ -1,12 +1,10 @@
 import {
-  DEFAULT_SCHEDULE,
   DEFAULT_PIPELINE_EXECUTION_POLICY,
   DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT,
   DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX,
+  DEFAULT_SCHEDULE,
   INJECT,
   INJECT_CI_PIPELINE_EXECUTION_POLICY,
-  PIPELINE_EXECUTION_POLICY_INVALID_CONTENT,
-  PIPELINE_EXECUTION_POLICY_INVALID_STRATEGY,
   PIPELINE_EXECUTION_SCHEDULE_POLICY,
   SCHEDULE,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
@@ -30,6 +28,9 @@ import {
   mockWithSuffixPipelineExecutionObject,
   mockSchedulePipelineExecutionObject,
   mockSchedulePipelineExecutionManifest,
+  mockInvalidStrategyPipelineExecutionPolicy,
+  mockInvalidContentPipelineExecutionPolicy,
+  mockNoStrategyPipelineExecutionPolicy,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import {
   policyBodyToYaml,
@@ -122,9 +123,10 @@ describe('validatePolicy', () => {
   it.each`
     title                                                               | input                                                                                                                                     | output
     ${'returns empty object when there are no errors'}                  | ${fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter })}          | ${{}}
-    ${'returns empty object when there are no errors for schedule PEP'} | ${fromYaml({ manifest: mockSchedulePipelineExecutionManifest, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter })}      | ${{}}
-    ${'returns error objects when there are invalid pipeline strategy'} | ${fromYaml({ manifest: PIPELINE_EXECUTION_POLICY_INVALID_STRATEGY, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter })} | ${{ actions: true }}
-    ${'returns error objects when there is invalid content'}            | ${fromYaml({ manifest: PIPELINE_EXECUTION_POLICY_INVALID_CONTENT, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter })}  | ${{ actions: true }}
+    ${'returns empty object when there are no errors for schedule PEP'} | ${fromYaml({ manifest: mockSchedulePipelineExecutionManifest, type: PIPELINE_EXECUTION_SCHEDULE_POLICY })}                                | ${{}}
+    ${'returns error objects when there are invalid pipeline strategy'} | ${fromYaml({ manifest: mockInvalidStrategyPipelineExecutionPolicy, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter })} | ${{ actions: true }}
+    ${'returns error objects when there is invalid content'}            | ${fromYaml({ manifest: mockInvalidContentPipelineExecutionPolicy, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter })}  | ${{ actions: true }}
+    ${'returns error objects when there is no pipeline strategy'}       | ${fromYaml({ manifest: mockNoStrategyPipelineExecutionPolicy, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter })}      | ${{ actions: true }}
   `('$title', ({ input, output }) => {
     expect(validatePolicy(input)).toStrictEqual(output);
   });

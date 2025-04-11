@@ -43,8 +43,12 @@ export const validatePolicy = (policy) => {
 
   const contentKeys = ['include'];
   const pipelineConfigStrategies = ['inject_policy', 'inject_ci', 'override_project_ci'];
-  const hasInvalidPipelineConfigStrategy = (strategy) =>
-    strategy && !pipelineConfigStrategies.includes(strategy);
+  const hasInvalidPipelineConfigStrategy = (strategy) => {
+    if (policy.type === POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter) {
+      return !strategy || !pipelineConfigStrategies.includes(strategy);
+    }
+    return false;
+  };
 
   if (
     hasInvalidKey(policy?.content || {}, contentKeys) ||
