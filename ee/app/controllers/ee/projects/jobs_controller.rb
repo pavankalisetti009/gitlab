@@ -6,6 +6,10 @@ module EE
       extend ActiveSupport::Concern
 
       prepended do
+        before_action only: [:show, :index] do
+          experiment(:root_cause_analysis_hotspot, actor: current_user, group: project.root_ancestor).publish
+        end
+
         before_action only: [:show] do
           push_frontend_ability(
             ability: :troubleshoot_job_with_ai,

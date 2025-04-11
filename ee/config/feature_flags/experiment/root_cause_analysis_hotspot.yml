@@ -1,0 +1,9 @@
+---
+name: root_cause_analysis_hotspot
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/521443
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/183606
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/523952
+milestone: '17.11'
+group: group::acquisition
+type: experiment
+default_enabled: false

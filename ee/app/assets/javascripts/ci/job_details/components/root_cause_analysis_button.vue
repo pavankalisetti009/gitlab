@@ -56,7 +56,7 @@ export default {
   methods: {
     callDuo() {
       this.trackEvent('click_root_cause_analysis');
-
+      this.$emit('duo-called');
       sendDuoChatCommand({
         question: '/troubleshoot',
         resourceId: this.resourceId,
