@@ -16,7 +16,7 @@ RSpec.describe 'Create a Compliance Requirement', feature_category: :compliance_
         control_type: 'internal'
       },
       {
-        expression: "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
+        expression: "{\"operator\":\">=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
         name: "minimum_approvals_required_2",
         control_type: 'internal'
       }
@@ -157,8 +157,7 @@ RSpec.describe 'Create a Compliance Requirement', feature_category: :compliance_
             [
               {
                 expression:
-                  "{\"operator\":\"=\",\"field\":\"minimum_approvals_required\"," \
-                  "\"value\":\"invalid_number\"}",
+                  "{\"operator\":\">=\",\"field\":\"minimum_approvals_required\",\"value\":\"invalid_number\"}",
                 name: "minimum_approvals_required_2"
               }
             ]

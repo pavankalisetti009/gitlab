@@ -15,7 +15,7 @@ FactoryBot.define do
       name { 'minimum_approvals_required_2' }
       expression do
         {
-          operator: "=",
+          operator: ">=",
           field: "minimum_approvals_required",
           value: 2
         }.to_json

@@ -20,7 +20,7 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
     [
       {
         name: 'minimum_approvals_required_2',
-        expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
+        expression: { operator: ">=", field: "minimum_approvals_required", value: 2 }.to_json,
         control_type: 'internal'
       },
       {
@@ -198,7 +198,7 @@ RSpec.describe 'Update a compliance requirement', feature_category: :compliance_
             [
               {
                 name: "minimum_approvals_required_2",
-                expression: { operator: "=", field: "minimum_approvals_required", value: "invalid_number" }.to_json,
+                expression: { operator: "<=", field: "minimum_approvals_required", value: "invalid_number" }.to_json,
                 control_type: 'internal'
               }
             ]

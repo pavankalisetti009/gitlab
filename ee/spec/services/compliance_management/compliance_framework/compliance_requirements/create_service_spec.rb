@@ -14,7 +14,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         name: "project_visibility_not_internal"
       },
       {
-        expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
+        expression: "{\"operator\":\">=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
         name: "minimum_approvals_required_2"
       },
       {
@@ -75,7 +75,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           let(:controls) do
             [
               {
-                expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
+                expression: "{\"operator\":\">=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
                 name: "minimum_approvals_required_2"
               },
               {
@@ -100,7 +100,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
                 control_type: "invalid"
               },
               {
-                expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
+                expression: "{\"operator\":\">=\",\"field\":\"minimum_approvals_required\",\"value\":2}",
                 name: "minimum_approvals_required_2"
               }
             ]
@@ -118,11 +118,11 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         let(:controls) do
           [
             {
-              expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
+              expression: { operator: ">=", field: "minimum_approvals_required", value: 2 }.to_json,
               name: "minimum_approvals_required_2"
             },
             {
-              expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
+              expression: { operator: ">=", field: "minimum_approvals_required", value: 2 }.to_json,
               name: "minimum_approvals_required_2"
             }
           ]
@@ -145,7 +145,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         let(:controls) do
           [
             {
-              expression: { operator: "=", field: "minimum_approvals_required", value: 2 }.to_json,
+              expression: { operator: ">=", field: "minimum_approvals_required", value: 2 }.to_json,
               name: "minimum_approvals_required_2"
             },
             {

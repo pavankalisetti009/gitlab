@@ -91,7 +91,7 @@ RSpec.describe Mutations::ComplianceManagement::ComplianceFramework::ComplianceR
 
   def control_expression
     {
-      operator: "=",
+      operator: ">=",
       field: "minimum_approvals_required",
       value: 2
     }.to_json
