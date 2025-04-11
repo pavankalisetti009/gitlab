@@ -39775,6 +39775,9 @@ msgstr ""
 msgid "New branch unavailable"
 msgstr ""
 
+msgid "New chat conversation."
+msgstr ""
+
 msgid "New code quality findings"
 msgstr ""
 

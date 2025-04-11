@@ -34,6 +34,7 @@ RSpec.describe Gitlab::Llm::ChatMessage, feature_category: :duo_chat do
         ['user', 'foo?', true],
         ['user', '/reset', false],
         ['user', '/clear', false],
+        ['user', '/new', false],
         ['assistant', 'foo?', false]
       ]
     end
@@ -98,6 +99,16 @@ RSpec.describe Gitlab::Llm::ChatMessage, feature_category: :duo_chat do
     end
 
     context 'for slash commands to clear history' do
+      it "removes all messages from chat storage for message '/new'" do
+        message = build(:ai_chat_message, user: user, content: '/new', agent_version_id: 1)
+
+        expect_next_instance_of(Gitlab::Llm::ChatStorage, message.user, message.agent_version_id, nil) do |instance|
+          expect(instance).to receive(:clear!)
+        end
+
+        message.save!
+      end
+
       it "removes all messages from chat storage for message '/clear'" do
         message = build(:ai_chat_message, user: user, content: '/clear', agent_version_id: 1)
 

@@ -11,10 +11,6 @@ module Ai
     def self.commands
       {
         base: [
-          { name: '/reset', description: _('Reset conversation and ignore previous messages.'),
-            should_submit: true },
-          { name: '/clear', description: _('Delete all messages in the current conversation.'),
-            should_submit: true },
           { name: '/help', description: _('Learn what Duo Chat can do.'), should_submit: true }
         ],
         issue: [
@@ -42,10 +38,27 @@ module Ai
     end
 
     def available_commands
-      self.class.commands[:base] + context_commands
+      results = new_thread_commands
+      results.concat(self.class.commands[:base])
+      results.concat(context_commands)
     end
 
     private
+
+    def new_thread_commands
+      if Feature.enabled?(:duo_chat_multi_thread, @user)
+        [
+          { name: '/new', description: _('New chat conversation.'), should_submit: false }
+        ]
+      else
+        [
+          { name: '/reset', description: _('Reset conversation and ignore previous messages.'),
+            should_submit: true },
+          { name: '/clear', description: _('Delete all messages in the current conversation.'),
+            should_submit: true }
+        ]
+      end
+    end
 
     def context_commands
       context = determine_context

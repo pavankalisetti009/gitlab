@@ -144,10 +144,8 @@ export default {
           url: typeof window !== 'undefined' && window.location ? window.location.href : '',
         };
       },
-      result({ data }) {
-        if (data?.aiSlashCommands) {
-          this.aiSlashCommands = this.enhanceSlashCommands(data.aiSlashCommands);
-        }
+      update(data) {
+        return data?.aiSlashCommands || [];
       },
       error(err) {
         this.onError(err);
@@ -485,28 +483,6 @@ export default {
       return threads.reduce((latest, thread) => {
         return !latest || thread.updatedAt > latest.updatedAt ? thread : latest;
       });
-    },
-    enhanceSlashCommands(commands) {
-      if (this.glFeatures.duoChatMultiThread) {
-        const newCommand = {
-          description: this.$options.i18n.newSlashCommandDescription,
-          name: '/new',
-          shouldSubmit: true,
-        };
-
-        // Filter out reset and clear commands in multi-thread mode
-        // add new command to the list
-        // this is a temporary fix hack until: https://gitlab.com/gitlab-org/gitlab/-/issues/523865
-        // is resolved.
-        return [
-          ...commands.filter(
-            (command) =>
-              ![GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE].includes(command.name),
-          ),
-          newCommand,
-        ];
-      }
-      return commands;
     },
   },
 };
