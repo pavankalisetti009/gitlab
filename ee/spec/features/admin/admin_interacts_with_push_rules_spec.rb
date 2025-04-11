@@ -5,6 +5,7 @@ require "spec_helper"
 RSpec.describe "Admin interacts with push rules", feature_category: :source_code_management do
   include StubENV
 
+  let!(:organization) { create(:organization, :default) }
   let_it_be(:user) { create(:admin) }
 
   before do
