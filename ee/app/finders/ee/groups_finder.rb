@@ -10,7 +10,6 @@ module EE
     override :filter_groups
     def filter_groups(groups)
       groups = super(groups)
-      groups = by_marked_for_deletion_on(groups)
       groups = by_saml_sso_session(groups)
       by_repository_storage(groups)
     end
@@ -23,13 +22,6 @@ module EE
       return groups if params[:repository_storage].blank?
 
       groups.by_repository_storage(params[:repository_storage])
-    end
-
-    def by_marked_for_deletion_on(groups)
-      return groups unless params[:marked_for_deletion_on].present?
-      return groups unless License.feature_available?(:adjourned_deletion_for_projects_and_groups)
-
-      groups.by_marked_for_deletion_on(params[:marked_for_deletion_on])
     end
   end
 end
