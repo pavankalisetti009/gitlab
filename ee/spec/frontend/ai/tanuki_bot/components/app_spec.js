@@ -1282,4 +1282,59 @@ describeSkipVue3(skipReason, () => {
       expect(localWrapper.findComponent(DuoChat).props('title')).toBe('Updated Title');
     });
   });
+
+  describe('Global state watchers', () => {
+    describe('duoChatGlobalState.isShown', () => {
+      it('creates a new chat when Duo Chat is opened from a closed state', async () => {
+        duoChatGlobalState.isShown = false;
+        createComponent({
+          glFeatures: { duoChatMultiThread: true },
+        });
+
+        const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
+
+        duoChatGlobalState.isShown = true;
+        await nextTick();
+
+        expect(onNewChatSpy).toHaveBeenCalled();
+        expect(wrapper.vm.multithreadedView).toBe('chat');
+
+        onNewChatSpy.mockRestore();
+      });
+
+      it('does not create a new chat when Duo Chat is closed', async () => {
+        duoChatGlobalState.isShown = true;
+        createComponent({
+          glFeatures: { duoChatMultiThread: true },
+        });
+
+        const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
+
+        duoChatGlobalState.isShown = false;
+        await nextTick();
+
+        expect(onNewChatSpy).not.toHaveBeenCalled();
+
+        onNewChatSpy.mockRestore();
+      });
+
+      it('does not create a new thread when Duo Chat is opened with a command from button', async () => {
+        duoChatGlobalState.isShown = false;
+        duoChatGlobalState.commands = [{ question: 'Button command', fromButton: true }];
+
+        createComponent({
+          glFeatures: { duoChatMultiThread: true },
+        });
+
+        const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
+
+        duoChatGlobalState.isShown = true;
+        await nextTick();
+
+        expect(onNewChatSpy).not.toHaveBeenCalled();
+
+        onNewChatSpy.mockRestore();
+      });
+    });
+  });
 });
