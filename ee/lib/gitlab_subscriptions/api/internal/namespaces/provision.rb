@@ -74,6 +74,9 @@ module GitlabSubscriptions
                       use :storage
                     end
                     optional :add_on_purchases, type: Hash do
+                      optional :duo_nano, type: Array do
+                        use :add_on
+                      end
                       optional :duo_pro, type: Array do
                         use :add_on
                       end

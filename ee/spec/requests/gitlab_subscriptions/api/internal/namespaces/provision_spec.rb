@@ -36,6 +36,13 @@ RSpec.describe GitlabSubscriptions::API::Internal::Namespaces::Provision, :aggre
           shared_runners_minutes_limit: 100
         },
         add_on_purchases: {
+          duo_nano: [{
+            started_on: start_date,
+            expires_on: end_date,
+            purchase_xid: 'A-S00001',
+            quantity: 30,
+            trial: false
+          }],
           duo_pro: [{
             started_on: start_date,
             expires_on: end_date,
@@ -102,7 +109,7 @@ RSpec.describe GitlabSubscriptions::API::Internal::Namespaces::Provision, :aggre
         expect(namespace.shared_runners_minutes_limit).to eq(100)
 
         expect(namespace.subscription_add_on_purchases.uniq_add_on_names)
-          .to match_array(%w[duo_enterprise product_analytics])
+          .to match_array(%w[duo_nano duo_enterprise product_analytics])
         # duo_enterprise gets priority over duo_pro with bulk_sync
         expect(namespace.subscription_add_on_purchases.for_duo_enterprise.last).to have_attributes(
           started_at: Date.parse(start_date),
@@ -114,38 +121,81 @@ RSpec.describe GitlabSubscriptions::API::Internal::Namespaces::Provision, :aggre
       end
 
       context 'when only single resource params is sent' do
-        let(:params) do
-          {
-            provision: {
-              add_on_purchases: {
-                duo_pro: [{
-                  started_on: start_date,
-                  expires_on: end_date,
-                  purchase_xid: 'A-S00001',
-                  quantity: 1,
-                  trial: false
-                }]
+        context 'with Duo Pro' do
+          let(:params) do
+            {
+              provision: {
+                add_on_purchases: {
+                  duo_pro: [{
+                    started_on: start_date,
+                    expires_on: end_date,
+                    purchase_xid: 'A-S00001',
+                    quantity: 1,
+                    trial: false
+                  }]
+                }
               }
             }
-          }
+          end
+
+          it 'provisions only single resource: Duo Pro Add-on purchase' do
+            expect(result).to have_gitlab_http_status(:ok)
+
+            expect(namespace.reload.extra_shared_runners_minutes_limit).to be_nil
+
+            expect(namespace.gitlab_subscription).to be_nil
+            expect(namespace.additional_purchased_storage_size).to eq(0)
+
+            expect(namespace.subscription_add_on_purchases.uniq_add_on_names).to match_array(%w[code_suggestions])
+            expect(namespace.subscription_add_on_purchases.for_gitlab_duo_pro.last).to have_attributes(
+              started_at: Date.parse(start_date),
+              expires_on: Date.parse(end_date),
+              purchase_xid: 'A-S00001',
+              quantity: 1,
+              trial: false
+            )
+          end
         end
 
-        it 'provisions only single resource: Duo Pro Add-on purchase' do
-          expect(result).to have_gitlab_http_status(:ok)
+        context 'with Duo Nano' do
+          let(:params) do
+            {
+              provision: {
+                add_on_purchases: {
+                  duo_nano: [{
+                    started_on: start_date,
+                    expires_on: end_date,
+                    purchase_xid: 'A-S00001',
+                    quantity: 10,
+                    trial: false
+                  }]
+                }
+              }
+            }
+          end
 
-          expect(namespace.reload.extra_shared_runners_minutes_limit).to be_nil
+          it 'provisions only single resource: Duo Nano Add-on purchase' do
+            expect(result).to have_gitlab_http_status(:ok)
 
-          expect(namespace.gitlab_subscription).to be_nil
-          expect(namespace.additional_purchased_storage_size).to eq(0)
+            expect(namespace.reload.extra_shared_runners_minutes_limit).to be_nil
 
-          expect(namespace.subscription_add_on_purchases.uniq_add_on_names).to match_array(%w[code_suggestions])
-          expect(namespace.subscription_add_on_purchases.for_gitlab_duo_pro.last).to have_attributes(
-            started_at: Date.parse(start_date),
-            expires_on: Date.parse(end_date),
-            purchase_xid: 'A-S00001',
-            quantity: 1,
-            trial: false
-          )
+            expect(namespace.gitlab_subscription).to be_nil
+            expect(namespace.additional_purchased_storage_size).to eq(0)
+
+            duo_nano_add_on_id = GitlabSubscriptions::AddOn.duo_nano.pick(:id)
+            duo_nano_add_on_purchase = namespace.subscription_add_on_purchases
+              .where(subscription_add_on_id: duo_nano_add_on_id)
+              .first
+
+            expect(namespace.subscription_add_on_purchases.uniq_add_on_names).to match_array(%w[duo_nano])
+            expect(duo_nano_add_on_purchase).to have_attributes(
+              started_at: Date.parse(start_date),
+              expires_on: Date.parse(end_date),
+              purchase_xid: 'A-S00001',
+              quantity: 10,
+              trial: false
+            )
+          end
         end
       end
 
@@ -193,7 +243,7 @@ RSpec.describe GitlabSubscriptions::API::Internal::Namespaces::Provision, :aggre
           expect(namespace.shared_runners_minutes_limit).to eq(100)
 
           expect(namespace.subscription_add_on_purchases.uniq_add_on_names)
-            .to match_array(%w[duo_enterprise product_analytics])
+            .to match_array(%w[duo_nano duo_enterprise product_analytics])
         end
       end
     end
