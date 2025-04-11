@@ -127,7 +127,22 @@ module GitlabSubscriptions
         end
       end
 
+      def trigger_web_hook(action_status)
+        payload = Gitlab::DataBuilder::MemberApprovalBuilder.build(
+          event: status,
+          reviewed_by: current_user,
+          reviewed_at: Time.current,
+          user: user,
+          status: action_status,
+          failed_approvals: failed_member_approvals
+        )
+
+        SystemHooksService.new.execute_hooks(payload, :member_approval_hooks)
+      end
+
       def success(result = :success)
+        trigger_web_hook(result)
+
         ServiceResponse.success(
           message: "Successfully processed request",
           payload: {
@@ -139,6 +154,8 @@ module GitlabSubscriptions
       end
 
       def error(message)
+        trigger_web_hook(:failed)
+
         ServiceResponse.error(
           message: message,
           payload: {

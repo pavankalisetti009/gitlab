@@ -301,5 +301,77 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
         end
       end
     end
+
+    context 'and triggers webhook', :enable_admin_mode do
+      before do
+        allow(Members::CreateService).to receive(:new).and_call_original
+      end
+
+      let(:params) do
+        params = member_approval.metadata.symbolize_keys
+        params.merge!(
+          user_id: [user.id],
+          source: project,
+          access_level: member_approval.new_access_level,
+          invite_source: "GitlabSubscriptions::MemberManagement::ProcessUserBillablePromotionService",
+          skip_authorization: skip_authorization
+        )
+      end
+
+      let(:another_member_approval) { nil }
+
+      context 'when approved' do
+        it 'triggers webhook when success' do
+          allow_next_instance_of(Members::CreateService, current_user, params) do |instance|
+            allow(instance).to receive(:execute).and_return(status: :success)
+          end
+
+          expect_member_approval_hook(event_name: 'approved', status: :success)
+
+          service.execute
+        end
+
+        it 'triggers webhook when failed' do
+          allow_next_instance_of(Members::CreateService, current_user, params) do |instance|
+            allow(instance).to receive(:execute).and_return(status: :error)
+          end
+
+          expect_member_approval_hook(event_name: 'approved', status: :failed)
+
+          service.execute
+        end
+      end
+
+      context 'when denied' do
+        let(:status) { :denied }
+
+        it 'triggers webhook' do
+          expect_member_approval_hook(event_name: 'denied', status: :success)
+
+          service.execute
+        end
+      end
+    end
+  end
+
+  private
+
+  def expect_member_approval_hook(event_name:, status:)
+    expect_next_instance_of(SystemHooksService) do |hook_service|
+      expect(hook_service).to receive(:execute_hooks) do |payload, _|
+        expect(payload[:action]).to eq(event_to_action_verb(event_name))
+        expect(payload[:object_attributes][:status]).to eq(status)
+        expect(payload[:object_kind]).to eq("gitlab_subscription_member_approvals")
+      end
+    end
+  end
+
+  def event_to_action_verb(event)
+    case event
+    when "approved"
+      "approve"
+    when "denied"
+      "deny"
+    end
   end
 end
