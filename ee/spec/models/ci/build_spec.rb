@@ -1178,6 +1178,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
       true | { pages: { path_prefix: 'foo', expire_in: '1d' } } | { path_prefix: 'foo', expire_in: '1d' }
       true | { pages: { path_prefix: 'foo', expire_in: '1d', publish: '$CUSTOM_FOLDER' } } | { path_prefix: 'foo', expire_in: '1d', publish: 'custom_folder' }
       true | { pages: { path_prefix: 'foo', expire_in: '1d', publish: 'public' } } | { path_prefix: 'foo', expire_in: '1d', publish: 'public' }
+      true | { pages: { path_prefix: 'foo', expire_in: '$DURATION', publish: '$CUSTOM_FOLDER' } } | { path_prefix: 'foo', expire_in: '2d', publish: 'custom_folder' }
       true | { pages: { path_prefix: 'foo', expire_in: 'never' } } | { path_prefix: 'foo', expire_in: 'never' }
     end
 
@@ -1186,6 +1187,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
         allow(job).to receive(:pages_generator?).and_return(pages_generator)
         allow(job).to receive(:options).and_return(options)
         create(:ci_job_variable, key: 'CUSTOM_FOLDER', value: 'custom_folder', job: job)
+        create(:ci_job_variable, key: 'DURATION', value: '2d', job: job)
       end
 
       subject(:pages_options) { job.pages }
