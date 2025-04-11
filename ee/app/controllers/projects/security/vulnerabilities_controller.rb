@@ -13,6 +13,7 @@ module Projects
       before_action do
         push_frontend_feature_flag(:vulnerability_report_type_scanner_filter, project)
         push_frontend_feature_flag(:vulnerability_severity_override, project)
+        push_frontend_feature_flag(:validity_checks, project)
       end
 
       alias_method :vulnerable, :project
