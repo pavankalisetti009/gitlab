@@ -7547,10 +7547,13 @@ msgstr ""
 msgid "Appearance was successfully updated."
 msgstr ""
 
+msgid "AppearanceSettings|Changes must be saved to appear."
+msgstr ""
+
 msgid "AppearanceSettings|Last edit"
 msgstr ""
 
-msgid "AppearanceSettings|Preview last save:"
+msgid "AppearanceSettings|Preview active settings:"
 msgstr ""
 
 msgid "Append the hostname of your GitLab instance to the status check name."
