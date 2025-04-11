@@ -54,7 +54,6 @@ import {
   WIDGET_TYPE_HIERARCHY,
   WORK_ITEM_TYPE_NAME_LOWERCASE_MAP,
   WORK_ITEM_TYPE_NAME_MAP,
-  NAME_TO_ENUM_MAP,
   WORK_ITEM_TYPE_NAME_INCIDENT,
   WORK_ITEM_TYPE_NAME_EPIC,
   WIDGET_TYPE_CUSTOM_FIELDS,
@@ -159,7 +158,7 @@ export default {
       required: false,
       default: '',
     },
-    workItemTypeName: {
+    preselectedWorkItemType: {
       type: String,
       required: false,
       default: null,
@@ -283,7 +282,7 @@ export default {
         }
 
         const selectedWorkItemType = this.workItemTypes?.find(
-          (workItemType) => NAME_TO_ENUM_MAP[workItemType.name] === this.workItemTypeName,
+          (workItemType) => workItemType.name === this.preselectedWorkItemType,
         );
 
         if (selectedWorkItemType) {
@@ -390,12 +389,9 @@ export default {
     selectedWorkItemTypeIconName() {
       return this.selectedWorkItemType?.iconName;
     },
-    selectedWorkItemTypeEnum() {
-      return NAME_TO_ENUM_MAP[this.selectedWorkItemTypeName];
-    },
     formOptions() {
       const options = [...this.workItemTypesForSelect];
-      if (!this.workItemTypeName) {
+      if (!this.preselectedWorkItemType) {
         options.unshift({ value: null, text: s__('WorkItem|Select type') });
       }
       return options;
@@ -620,7 +616,7 @@ export default {
           variables: {
             input: {
               fullPath: this.fullPath,
-              workItemType: this.selectedWorkItemTypeName || this.workItemTypeName,
+              workItemType: this.selectedWorkItemTypeName,
               [type]: value,
             },
           },
@@ -804,8 +800,7 @@ export default {
           numberOfDiscussionsResolved: this.numberOfDiscussionsResolved,
         });
 
-        const workItemTypeName = this.selectedWorkItemTypeName || this.workItemTypeName;
-        const autosaveKey = getNewWorkItemAutoSaveKey(this.fullPath, workItemTypeName);
+        const autosaveKey = getNewWorkItemAutoSaveKey(this.fullPath, this.selectedWorkItemTypeName);
         clearDraft(autosaveKey);
       } catch {
         this.error = this.createErrorText;
@@ -825,8 +820,7 @@ export default {
       }
     },
     handleDiscardDraft() {
-      const workItemTypeName = this.selectedWorkItemTypeName || this.workItemTypeName;
-      const autosaveKey = getNewWorkItemAutoSaveKey(this.fullPath, workItemTypeName);
+      const autosaveKey = getNewWorkItemAutoSaveKey(this.fullPath, this.selectedWorkItemTypeName);
       clearDraft(autosaveKey);
 
       const selectedWorkItemWidgets = this.selectedWorkItemType?.widgetDefinitions || [];
@@ -878,7 +872,7 @@ export default {
             v-model="selectedWorkItemTypeId"
             data-testid="work-item-types-select"
             :options="formOptions"
-            @change="$emit('changeType', selectedWorkItemTypeEnum)"
+            @change="$emit('changeType', selectedWorkItemTypeName)"
           />
         </gl-form-group>
       </div>

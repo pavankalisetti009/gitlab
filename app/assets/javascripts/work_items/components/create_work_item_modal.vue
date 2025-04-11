@@ -94,7 +94,7 @@ export default {
     return {
       isCreateModalVisible: false,
       isConfirmationModalVisible: false,
-      selectedWorkItemTypeName: this.preselectedWorkItemType,
+      selectedWorkItemTypeName: convertTypeEnumToName(this.preselectedWorkItemType),
       shouldDiscardDraft: false,
     };
   },
@@ -113,7 +113,7 @@ export default {
       if (this.selectedWorkItemTypeName && this.useVueRouter) {
         query += previousQueryParam ? '&' : '?';
         // eslint-disable-next-line @gitlab/require-i18n-strings
-        query += `type=${this.selectedWorkItemTypeName}`;
+        query += `type=${NAME_TO_ENUM_MAP[this.selectedWorkItemTypeName]}`;
         previousQueryParam = true;
       }
       if (this.relatedItem) {
@@ -126,14 +126,12 @@ export default {
       return newWorkItemPath({
         fullPath: this.fullPath,
         isGroup: this.isGroup,
-        workItemTypeName: this.selectedWorkItemTypeName,
+        workItemTypeName: NAME_TO_ENUM_MAP[this.selectedWorkItemTypeName],
         query: this.newWorkItemPathQuery,
       });
     },
     selectedWorkItemTypeLowercase() {
-      return WORK_ITEM_TYPE_NAME_LOWERCASE_MAP[
-        convertTypeEnumToName(this.selectedWorkItemTypeName)
-      ];
+      return WORK_ITEM_TYPE_NAME_LOWERCASE_MAP[this.selectedWorkItemTypeName];
     },
     newWorkItemButtonText() {
       return this.alwaysShowWorkItemTypeSelect && this.selectedWorkItemTypeName
@@ -165,7 +163,10 @@ export default {
     hideCreateModal() {
       this.$emit('hideModal');
       this.isCreateModalVisible = false;
-      this.selectedWorkItemTypeName = this.preselectedWorkItemType;
+      this.resetSelectedWorkItemType();
+    },
+    resetSelectedWorkItemType() {
+      this.selectedWorkItemTypeName = convertTypeEnumToName(this.preselectedWorkItemType);
     },
     showCreateModal(event) {
       if (Boolean(event) && isMetaClick(event)) {
@@ -198,7 +199,7 @@ export default {
       this.hideConfirmationModal();
     },
     handleDiscardDraft(modal) {
-      this.selectedWorkItemTypeName = this.preselectedWorkItemType;
+      this.resetSelectedWorkItemType();
 
       if (modal === 'createModal') {
         // This is triggered on the create modal when the user didn't update the form,
@@ -246,7 +247,7 @@ export default {
           name: ROUTES.new,
           query: {
             [RELATED_ITEM_ID_URL_QUERY_PARAM]: this.relatedItem?.id,
-            type: this.selectedWorkItemTypeName,
+            type: NAME_TO_ENUM_MAP[this.selectedWorkItemTypeName],
           },
         });
       } else {
@@ -317,7 +318,7 @@ export default {
         :parent-id="parentId"
         :show-project-selector="showProjectSelector"
         :title="title"
-        :work-item-type-name="selectedWorkItemTypeName"
+        :preselected-work-item-type="selectedWorkItemTypeName"
         :related-item="relatedItem"
         :should-discard-draft="shouldDiscardDraft"
         :is-modal="true"
@@ -329,7 +330,7 @@ export default {
     </gl-modal>
     <create-work-item-cancel-confirmation-modal
       :is-visible="isConfirmationModalVisible"
-      :work-item-type-name="selectedWorkItemTypeLowercase"
+      :work-item-type="selectedWorkItemTypeName"
       @continueEditing="handleContinueEditing"
       @discardDraft="handleDiscardDraft('confirmModal')"
     />

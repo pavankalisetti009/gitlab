@@ -13,7 +13,7 @@ import WorkItemWeight from 'ee/work_items/components/work_item_weight.vue';
 import WorkItemDates from 'ee/work_items/components/work_item_dates.vue';
 import WorkItemParent from '~/work_items/components/work_item_parent.vue';
 import WorkItemCustomFields from 'ee/work_items/components/work_item_custom_fields.vue';
-import { WORK_ITEM_TYPE_ENUM_EPIC, WORK_ITEM_TYPE_ENUM_ISSUE } from '~/work_items/constants';
+import { WORK_ITEM_TYPE_NAME_EPIC, WORK_ITEM_TYPE_NAME_ISSUE } from '~/work_items/constants';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import createWorkItemMutation from '~/work_items/graphql/create_work_item.mutation.graphql';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
@@ -73,7 +73,7 @@ describe('EE Create work item component', () => {
     props = {},
     mutationHandler = createWorkItemSuccessHandler,
     namespaceHandler = namespaceWorkItemTypesHandler,
-    workItemTypeName = WORK_ITEM_TYPE_ENUM_EPIC,
+    preselectedWorkItemType = WORK_ITEM_TYPE_NAME_EPIC,
     customFieldsFeature = false,
   } = {}) => {
     mockApollo = createMockApollo(
@@ -88,7 +88,7 @@ describe('EE Create work item component', () => {
     wrapper = shallowMount(CreateWorkItem, {
       apolloProvider: mockApollo,
       propsData: {
-        workItemTypeName,
+        preselectedWorkItemType,
         ...props,
       },
       provide: {
@@ -120,7 +120,7 @@ describe('EE Create work item component', () => {
 
   describe('Create work item widgets for Epic work item type', () => {
     beforeEach(async () => {
-      createComponent({ workItemTypeName: WORK_ITEM_TYPE_ENUM_EPIC });
+      createComponent({ preselectedWorkItemType: WORK_ITEM_TYPE_NAME_EPIC });
       await waitForPromises();
     });
 
@@ -141,14 +141,17 @@ describe('EE Create work item component', () => {
     });
 
     it('renders the work item custom field widget if flag is enabled', async () => {
-      createComponent({ workItemTypeName: WORK_ITEM_TYPE_ENUM_EPIC, customFieldsFeature: true });
+      createComponent({
+        preselectedWorkItemType: WORK_ITEM_TYPE_NAME_EPIC,
+        customFieldsFeature: true,
+      });
       await waitForPromises();
 
       expect(findCustomFieldsWidget().exists()).toBe(true);
     });
 
     it('does not render the work item custom field widget if flag is disabled', async () => {
-      createComponent({ workItemTypeName: WORK_ITEM_TYPE_ENUM_EPIC });
+      createComponent({ preselectedWorkItemType: WORK_ITEM_TYPE_NAME_EPIC });
       await waitForPromises();
 
       expect(findCustomFieldsWidget().exists()).toBe(false);
@@ -157,7 +160,7 @@ describe('EE Create work item component', () => {
 
   describe('Create work item widgets for Issue work item type', () => {
     beforeEach(async () => {
-      createComponent({ workItemTypeName: WORK_ITEM_TYPE_ENUM_ISSUE });
+      createComponent({ preselectedWorkItemType: WORK_ITEM_TYPE_NAME_ISSUE });
       await waitForPromises();
     });
 
@@ -178,14 +181,17 @@ describe('EE Create work item component', () => {
     });
 
     it('renders the work item custom field widget if flag is enabled', async () => {
-      createComponent({ workItemTypeName: WORK_ITEM_TYPE_ENUM_ISSUE, customFieldsFeature: true });
+      createComponent({
+        preselectedWorkItemType: WORK_ITEM_TYPE_NAME_ISSUE,
+        customFieldsFeature: true,
+      });
       await waitForPromises();
 
       expect(findCustomFieldsWidget().exists()).toBe(true);
     });
 
     it('does not render the work item custom field widget if flag is disabled', async () => {
-      createComponent({ workItemTypeName: WORK_ITEM_TYPE_ENUM_ISSUE });
+      createComponent({ preselectedWorkItemType: WORK_ITEM_TYPE_NAME_ISSUE });
       await waitForPromises();
 
       expect(findCustomFieldsWidget().exists()).toBe(false);
@@ -194,7 +200,7 @@ describe('EE Create work item component', () => {
 
   describe('New work item for a vulnerability', () => {
     it('when not creating a vulnerability, does not pass resolve params to mutation', async () => {
-      createComponent({ workItemTypeName: WORK_ITEM_TYPE_ENUM_ISSUE });
+      createComponent({ preselectedWorkItemType: WORK_ITEM_TYPE_NAME_ISSUE });
       await waitForPromises();
 
       await updateWorkItemTitle();
@@ -210,7 +216,7 @@ describe('EE Create work item component', () => {
     it('when creating issue from a vulnerability', async () => {
       setWindowLocation('?vulnerability_id=22');
 
-      createComponent({ workItemTypeName: WORK_ITEM_TYPE_ENUM_ISSUE });
+      createComponent({ preselectedWorkItemType: WORK_ITEM_TYPE_NAME_ISSUE });
       await waitForPromises();
 
       await updateWorkItemTitle();
@@ -245,7 +251,7 @@ describe('EE Create work item component', () => {
         .mockResolvedValue(customFieldsNamespaceWorkItemTypesResponse);
 
       createComponent({
-        workItemTypeName: WORK_ITEM_TYPE_ENUM_ISSUE,
+        preselectedWorkItemType: WORK_ITEM_TYPE_NAME_ISSUE,
         customFieldsFeature: true,
         namespaceHandler: customNamespaceWorkItemTypesHandler,
       });
