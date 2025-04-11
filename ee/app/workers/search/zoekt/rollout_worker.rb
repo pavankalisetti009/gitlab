@@ -10,7 +10,7 @@ module Search
       prepend ::Geo::SkipSecondary
       include Gitlab::Loggable
 
-      deduplicate :until_executed
+      deduplicate :until_executed, if_deduplicated: :reschedule_once
       data_consistency :sticky
       idempotent!
       urgency :low
