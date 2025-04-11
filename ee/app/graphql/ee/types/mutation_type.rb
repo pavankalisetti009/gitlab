@@ -143,7 +143,8 @@ module EE
         mount_mutation ::Mutations::IncidentManagement::IssuableResourceLink::Create
         mount_mutation ::Mutations::IncidentManagement::IssuableResourceLink::Destroy
         mount_mutation ::Mutations::AppSec::Fuzzing::Coverage::Corpus::Create
-        mount_mutation ::Mutations::Projects::SetComplianceFramework
+        mount_mutation ::Mutations::Projects::SetComplianceFramework,
+          deprecated: { reason: 'Use mutation ProjectUpdateComplianceFrameworks instead of this', milestone: '17.11' }
         mount_mutation ::Mutations::Projects::ProjectSettingsUpdate, experiment: { milestone: '16.9' }
         mount_mutation ::Mutations::Projects::InitializeProductAnalytics
         mount_mutation ::Mutations::Projects::ProductAnalyticsProjectSettingsUpdate
