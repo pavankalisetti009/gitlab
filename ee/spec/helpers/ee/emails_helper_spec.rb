@@ -13,6 +13,7 @@ RSpec.describe EE::EmailsHelper, feature_category: :shared do
       'somedomain.com/aproject/issues/231'           | 'View Issue'
       'somedomain.com/aproject/-/merge_requests/231' | 'View Merge request'
       'somedomain.com/aproject/-/commit/al3f231'     | 'View Commit'
+      'somedomain.com/aproject/-/wikis/foobar'       | 'View Wiki'
     end
 
     with_them do
