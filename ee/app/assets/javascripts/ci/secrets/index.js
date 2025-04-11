@@ -2,7 +2,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
-import createRouter, { initNavigationGuards } from './router';
+import createRouter from './router';
 import SecretsApp from './components/secrets_app.vue';
 import SecretsBreadcrumbs from './components/secrets_breadcrumbs.vue';
 
@@ -14,13 +14,11 @@ const apolloProvider = new VueApollo({
 
 // eslint-disable-next-line max-params
 const initSecretsApp = (el, app, props, basePath) => {
-  const router = createRouter(basePath, props, window.location.href);
+  const router = createRouter(basePath, props);
 
   if (window.location.href.includes(basePath)) {
     injectVueAppBreadcrumbs(router, SecretsBreadcrumbs);
   }
-
-  initNavigationGuards({ router, base: basePath, props, location: window.location.href });
 
   return new Vue({
     el,
@@ -52,12 +50,7 @@ export const initProjectSecretsApp = () => {
     return false;
   }
 
-  const { projectPath, projectSecretsSettingsPath, projectId, basePath } = el.dataset;
+  const { projectPath, projectId, basePath } = el.dataset;
 
-  return initSecretsApp(
-    el,
-    SecretsApp,
-    { projectPath, projectSecretsSettingsPath, projectId },
-    basePath,
-  );
+  return initSecretsApp(el, SecretsApp, { projectPath, projectId }, basePath);
 };

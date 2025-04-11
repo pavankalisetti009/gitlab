@@ -86,14 +86,6 @@ module EE
           })
         end
 
-        if ::Feature.enabled?(:ci_tanukey_ui, project) &&
-            SecretsManagement::ProjectSecretsManager.find_by_project_id(project.id)
-          settings.push({
-            text: _("Secrets"),
-            href: project_settings_ci_cd_path(project, anchor: 'js-secrets-settings')
-          })
-        end
-
         settings
       end
 

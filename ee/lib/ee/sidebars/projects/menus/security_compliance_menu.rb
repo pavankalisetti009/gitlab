@@ -20,6 +20,7 @@ module EE
             add_item(scan_policies_menu_item)
             add_item(audit_events_menu_item)
             add_item(configuration_menu_item)
+            add_item(secrets_manager_menu_item)
 
             true
           end
@@ -154,6 +155,21 @@ module EE
               super_sidebar_parent: ::Sidebars::Projects::SuperSidebarMenus::SecureMenu,
               active_routes: { path: 'projects/dependencies#index' },
               item_id: :dependency_list
+            )
+          end
+
+          def secrets_manager_menu_item
+            unless ::Feature.enabled?(:ci_tanukey_ui, context.project) &&
+                SecretsManagement::ProjectSecretsManager.find_by_project_id(context.project)
+              return ::Sidebars::NilMenuItem.new(item_id: :secrets_manager)
+            end
+
+            ::Sidebars::MenuItem.new(
+              title: _('Secrets manager'),
+              link: project_secrets_path(context.project),
+              super_sidebar_parent: ::Sidebars::Projects::SuperSidebarMenus::SecureMenu,
+              active_routes: { path: 'projects/secrets' },
+              item_id: :secrets_manager
             )
           end
 
