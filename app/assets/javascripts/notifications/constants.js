@@ -45,9 +45,7 @@ export const i18n = {
     fixed_pipeline: s__('NotificationEvent|Pipeline is fixed'),
     issue_due: s__('NotificationEvent|Issue is due tomorrow'),
     merge_merge_request: s__('NotificationEvent|Merge request is merged'),
-    merge_when_pipeline_succeeds: s__(
-      'NotificationEvent|Merge request is set to be merged when the pipeline succeeds',
-    ),
+    merge_when_pipeline_succeeds: s__('NotificationEvent|Merge request is set to auto-merge'),
     moved_project: s__('NotificationEvent|Project is moved'),
     new_epic: s__('NotificationEvent|Epic is created'),
     new_issue: s__('NotificationEvent|Issue is created'),
