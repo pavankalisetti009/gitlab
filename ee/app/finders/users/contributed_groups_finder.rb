@@ -2,6 +2,8 @@
 
 module Users
   class ContributedGroupsFinder
+    include FromUnion
+
     def initialize(contributor)
       @contributor = contributor
     end
@@ -20,13 +22,23 @@ module Users
       # Do not show contributed groups if the user profile is private.
       return Group.none unless Ability.allowed?(current_user, :read_user_profile, @contributor)
 
-      all_epic_groups(current_user, include_private_contributions)
+      epic_groups = all_epic_groups(current_user, include_private_contributions)
+      wiki_groups = all_wiki_groups(current_user, include_private_contributions)
+
+      Group.from_union(epic_groups, wiki_groups)
     end
 
     private
 
     def all_epic_groups(current_user, include_private_contributions)
       groups = @contributor.contributed_epic_groups
+      return groups if include_private_contributions
+
+      groups.public_or_visible_to_user(current_user)
+    end
+
+    def all_wiki_groups(current_user, include_private_contributions)
+      groups = @contributor.contributed_wiki_groups
       return groups if include_private_contributions
 
       groups.public_or_visible_to_user(current_user)

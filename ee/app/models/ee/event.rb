@@ -18,6 +18,11 @@ module EE
 
         where("target_type IN ('Epic') AND action IN (?)", target_contribution_actions)
       end
+
+      scope :group_wiki_note_contributions, -> do
+        where(target_type: 'Note', project_id: nil, action: actions[:commented])
+          .joins("INNER JOIN notes ON notes.id = events.target_id AND notes.noteable_type = 'WikiPage::Meta'")
+      end
     end
 
     EPIC_ACTIONS = [:created, :closed, :reopened].freeze

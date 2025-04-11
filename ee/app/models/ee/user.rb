@@ -710,6 +710,17 @@ module EE
       ::Group.where(id: contributed_group_ids).not_aimed_for_deletion
     end
 
+    def contributed_wiki_groups
+      contributed_group_ids = ::Event.select(:group_id)
+        .group_wiki_note_contributions
+        .where(author_id: self)
+        .created_after(Time.current - 1.year)
+        .distinct
+        .reorder(nil)
+
+      ::Group.where(id: contributed_group_ids).not_aimed_for_deletion
+    end
+
     protected
 
     override :password_required?

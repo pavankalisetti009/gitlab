@@ -3643,6 +3643,57 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
+  describe '#contributed_wiki_groups' do
+    subject { user.contributed_wiki_groups }
+
+    let_it_be(:user) { create(:user) }
+
+    let_it_be(:group_with_events) { create(:group) }
+    let_it_be(:group_without_events) { create(:group) }
+    let_it_be(:group_aimed_for_deletion) do
+      create(:group).tap { |group| create(:group_deletion_schedule, group: group, deleting_user: user) }
+    end
+
+    let_it_be(:wiki_page_meta) { create(:wiki_page_meta, :for_wiki_page, container: group_with_events) }
+    let_it_be(:note) { create(:note, author: user, project: nil, noteable: wiki_page_meta) }
+    let_it_be(:non_wiki_note) { create(:note, author: user, project: nil, noteable: create(:epic, group: group_with_events)) }
+
+    before do
+      [group_with_events, group_without_events, group_aimed_for_deletion].each { |group| group.add_maintainer(user) }
+
+      create(
+        :event,
+        group: group_with_events,
+        project: nil,
+        author: user,
+        target: note,
+        action: :commented
+      )
+
+      create(
+        :event,
+        group: group_aimed_for_deletion,
+        project: nil,
+        author: user,
+        target: note,
+        action: :commented
+      )
+
+      create(
+        :event,
+        group: group_without_events,
+        project: nil,
+        author: user,
+        target: non_wiki_note,
+        action: :commented
+      )
+    end
+
+    it 'returns groups not aimed for deletion where wiki events occured' do
+      expect(subject).to contain_exactly(group_with_events)
+    end
+  end
+
   describe '#ldap_sync_time' do
     let(:user) { build(:user) }
 

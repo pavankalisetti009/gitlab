@@ -25,7 +25,7 @@ module EE
 
       # rubocop: disable CodeReuse/ActiveRecord -- no need to move this to ActiveRecord model
       def group_events_created_between(start_time, end_time)
-        contributed_group_ids = groups.distinct.pluck_primary_key
+        contributed_group_ids = groups.distinct.pluck_primary_key.uniq
 
         contribution_events(start_time, end_time).where(group_id: contributed_group_ids)
       end
