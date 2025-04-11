@@ -8,6 +8,7 @@ import {
   getWeeklyScheduleInfo,
   getMonthlyScheduleInfo,
   getScheduleTypeInfo,
+  getSnoozeInfo,
 } from 'ee/security_orchestration/components/policy_drawer/pipeline_execution/schedule_utils';
 
 import {
@@ -192,6 +193,20 @@ describe('getScheduleTypeInfo', () => {
   });
 });
 
+describe('getSnoozeInfo', () => {
+  it.each([undefined, null])('returns empty string when snooze info is %s', (snooze) => {
+    expect(getSnoozeInfo({ snooze })).toBe('');
+  });
+
+  it.each`
+    snooze                                                                 | expectedText
+    ${{ until: '2025-06-26T16:27:00+00:00', reason: 'under maintenance' }} | ${'The schedule is snoozed until Jun 26, 2025 4:27pm UTC for reason: under maintenance.'}
+    ${{ until: '2025-06-26T16:27:00+00:00' }}                              | ${'The schedule is snoozed until Jun 26, 2025 4:27pm UTC.'}
+  `('formats snooze info correctly for $snooze', ({ snooze, expectedText }) => {
+    expect(getSnoozeInfo({ snooze })).toBe(expectedText);
+  });
+});
+
 describe('generateScheduleSummary', () => {
   it.each`
     schedule | expectedParts
@@ -223,6 +238,26 @@ describe('generateScheduleSummary', () => {
   start_time: '12:00',
 }} | ${['daily', '12:00']}
   `('generates correct summary for $schedule.type schedule', ({ schedule, expectedParts }) => {
+    const result = generateScheduleSummary(schedule);
+
+    expectedParts.forEach((part) => {
+      expect(result).toContain(part);
+    });
+
+    expect(result).not.toContain('undefined');
+  });
+
+  it.each`
+    schedule | expectedParts
+    ${{
+  type: DAILY,
+  start_time: '12:00',
+}} | ${['daily', '12:00']}
+    ${{
+  type: DAILY,
+  start_time: '12:00',
+}} | ${['daily', '12:00']}
+  `('generates correct summary for schedule with snooze info', ({ schedule, expectedParts }) => {
     const result = generateScheduleSummary(schedule);
 
     expectedParts.forEach((part) => {

@@ -1,5 +1,5 @@
 import { __, s__, n__, sprintf } from '~/locale';
-import { getWeekdayNames, parseSeconds } from '~/lib/utils/datetime/date_format_utility';
+import { formatDate, getWeekdayNames, parseSeconds } from '~/lib/utils/datetime_utility';
 import {
   DAILY,
   WEEKLY,
@@ -174,6 +174,33 @@ export const getScheduleTypeInfo = (schedule) => {
   }
 
   return '';
+};
+
+/**
+ * Gets the snooze information
+ * @param {Object} snooze
+ * @returns {String} Formatted snooze information
+ */
+export const getSnoozeInfo = ({ snooze = null }) => {
+  if (!snooze) {
+    return '';
+  }
+
+  const { reason, until } = snooze;
+
+  if (reason) {
+    return sprintf(
+      s__('SecurityOrchestration|The schedule is snoozed until %{until} for reason: %{reason}.'),
+      {
+        reason,
+        until: formatDate(until),
+      },
+    );
+  }
+
+  return sprintf(s__('SecurityOrchestration|The schedule is snoozed until %{until}.'), {
+    until: formatDate(until),
+  });
 };
 
 /**
