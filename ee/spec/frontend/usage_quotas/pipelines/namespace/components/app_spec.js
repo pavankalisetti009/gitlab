@@ -1,18 +1,21 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlButton } from '@gitlab/ui';
-import MinutesUsagePerMonth from 'ee/usage_quotas/pipelines/components/minutes_usage_per_month.vue';
-import MonthlyUnitsUsageSummary from 'ee/usage_quotas/pipelines/components/cards/monthly_units_usage_summary.vue';
-import AdditionalUnitsUsageSummary from 'ee/usage_quotas/pipelines/components/cards/additional_units_usage_summary.vue';
-import getCiMinutesMonthlySummary from 'ee/usage_quotas/pipelines/graphql/queries/namespace_ci_minutes_usage.query.graphql';
-import getCiMinutesMonthSummaryWithProjects from 'ee/usage_quotas/pipelines/graphql/queries/projects_ci_minutes_usage.query.graphql';
+import MinutesUsagePerMonth from 'ee/usage_quotas/pipelines/namespace/components/minutes_usage_per_month.vue';
+import MonthlyUnitsUsageSummary from 'ee/usage_quotas/pipelines/namespace/components/cards/monthly_units_usage_summary.vue';
+import AdditionalUnitsUsageSummary from 'ee/usage_quotas/pipelines/namespace/components/cards/additional_units_usage_summary.vue';
+import getCiMinutesMonthlySummary from 'ee/usage_quotas/pipelines/namespace/graphql/queries/namespace_ci_minutes_usage.query.graphql';
+import getCiMinutesMonthSummaryWithProjects from 'ee/usage_quotas/pipelines/namespace/graphql/queries/projects_ci_minutes_usage.query.graphql';
+import PipelineUsageApp from 'ee/usage_quotas/pipelines/namespace/components/app.vue';
+import ProjectList from 'ee/usage_quotas/pipelines/namespace/components/project_list.vue';
+import {
+  LABEL_BUY_ADDITIONAL_MINUTES,
+  ERROR_MESSAGE,
+} from 'ee/usage_quotas/pipelines/namespace/constants';
 import { pushEECproductAddToCartEvent } from 'ee/google_tag_manager';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createMockClient } from 'helpers/mock_apollo_helper';
-import PipelineUsageApp from 'ee/usage_quotas/pipelines/components/app.vue';
-import ProjectList from 'ee/usage_quotas/pipelines/components/project_list.vue';
-import { LABEL_BUY_ADDITIONAL_MINUTES, ERROR_MESSAGE } from 'ee/usage_quotas/pipelines/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import LimitedAccessModal from 'ee/usage_quotas/components/limited_access_modal.vue';

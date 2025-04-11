@@ -1,7 +1,7 @@
 import { cloneDeep } from 'lodash';
+import MinutesUsagePerProject from 'ee/usage_quotas/pipelines/namespace/components/minutes_usage_per_project.vue';
+import NoMinutesAlert from 'ee/usage_quotas/pipelines/namespace/components/no_minutes_alert.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import MinutesUsagePerProject from 'ee/usage_quotas/pipelines/components/minutes_usage_per_project.vue';
-import NoMinutesAlert from 'ee/usage_quotas/pipelines/components/no_minutes_alert.vue';
 import { mockGetProjectsCiMinutesUsage } from '../mock_data';
 
 describe('MinutesUsagePerProject', () => {
