@@ -70,7 +70,7 @@ export const links = Object.freeze({
   troubleshootingHelpLink: helpPagePath('/administration/license.html', {
     anchor: 'cannot-activate-instance-due-to-connectivity-error',
   }),
-  addSeats: `${DOCS_URL_IN_EE_DIR}/subscriptions/self_managed/#add-seats-to-a-subscription`,
+  addSeats: `${DOCS_URL_IN_EE_DIR}/subscriptions/self_managed/#buy-seats-for-a-subscription`,
   deactivateUser: `${DOCS_URL_IN_EE_DIR}/administration/moderate_users.html#deactivate-a-user`,
   blockUser: `${DOCS_URL_IN_EE_DIR}/administration/moderate_users.html#block-a-user`,
 });
