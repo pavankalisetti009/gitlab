@@ -77,8 +77,44 @@ RSpec.describe Groups::SamlGroupLinksController, feature_category: :system_acces
           expect(AuditEvent.last.details[:custom_message]).to eq("SAML group links created. Group Name - #{saml_group_name}, Access Level - 20")
         end
 
-        it 'creates the group link' do
+        it 'creates the group link without provider' do
           expect { call_action }.to change { group.saml_group_links.count }.by(1)
+          expect(group.saml_group_links.last.provider).to be_nil
+        end
+
+        context 'with provider in the params' do
+          let(:provider) { 'saml2' }
+          let(:params) do
+            route_params.merge(
+              saml_group_link: {
+                access_level: ::Gitlab::Access::REPORTER,
+                saml_group_name: saml_group_name,
+                provider: provider
+              }
+            )
+          end
+
+          it 'creates the group link with provider' do
+            expect { call_action }.to change { group.saml_group_links.count }.by(1)
+            expect(group.saml_group_links.last.provider).to eq(provider)
+          end
+
+          context 'when provider is empty' do
+            let(:params) do
+              route_params.merge(
+                saml_group_link: {
+                  access_level: ::Gitlab::Access::REPORTER,
+                  saml_group_name: saml_group_name,
+                  provider: ''
+                }
+              )
+            end
+
+            it 'stores blank provider as nil' do
+              expect { call_action }.to change { group.saml_group_links.count }.by(1)
+              expect(group.saml_group_links.last.provider).to be_nil
+            end
+          end
         end
 
         context 'when a member_role_id is provided', feature_category: :permissions do

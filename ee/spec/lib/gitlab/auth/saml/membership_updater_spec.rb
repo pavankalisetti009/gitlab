@@ -90,4 +90,42 @@ RSpec.describe Gitlab::Auth::Saml::MembershipUpdater, feature_category: :system_
       membership_updater.execute
     end
   end
+
+  describe '#group_link_ids' do
+    let_it_be(:provider_specific_link) do
+      create(:saml_group_link, saml_group_name: 'Provider Users', group: group, provider: 'saml2')
+    end
+
+    let_it_be(:provider_agnostic_link) { group_link }
+
+    before do
+      stub_saml_group_sync_enabled(true)
+    end
+
+    context 'with provider specified in auth hash' do
+      it 'includes links with matching provider and nil provider' do
+        auth_hash = build_auth_hash(groups: ['Provider Users', group_link.saml_group_name], overage: false)
+        allow(auth_hash).to receive(:provider).and_return('saml2')
+
+        membership_updater = described_class.new(user, auth_hash)
+
+        link_ids = membership_updater.send(:group_link_ids)
+
+        expect(link_ids).to include(provider_specific_link.id)
+        expect(link_ids).to include(provider_agnostic_link.id)
+      end
+
+      it 'excludes links with different providers' do
+        auth_hash = build_auth_hash(groups: ['Provider Users', group_link.saml_group_name], overage: false)
+        allow(auth_hash).to receive(:provider).and_return('different_provider')
+
+        membership_updater = described_class.new(user, auth_hash)
+
+        link_ids = membership_updater.send(:group_link_ids)
+
+        expect(link_ids).not_to include(provider_specific_link.id)
+        expect(link_ids).to include(provider_agnostic_link.id)
+      end
+    end
+  end
 end
