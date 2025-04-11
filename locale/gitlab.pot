@@ -68035,9 +68035,6 @@ msgstr ""
 msgid "Work Item type with id %{id} was not found"
 msgstr ""
 
-msgid "Work Item|Epic"
-msgstr ""
-
 msgid "Work in progress (open and unassigned)"
 msgstr ""
 
