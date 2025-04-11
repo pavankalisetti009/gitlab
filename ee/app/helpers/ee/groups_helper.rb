@@ -21,19 +21,6 @@ module EE
       })
     end
 
-    override :remove_group_message
-    def remove_group_message(group, permanently_remove)
-      return super if permanently_remove
-      return super unless group.licensed_feature_available?(:adjourned_deletion_for_projects_and_groups)
-      return super if group.marked_for_deletion?
-      return super unless group.adjourned_deletion?
-
-      date = permanent_deletion_date_formatted(Date.current)
-
-      _("The contents of this group, its subgroups and projects will be permanently deleted after %{deletion_adjourned_period} days on %{date}. After this point, your data cannot be recovered.") %
-        { date: date, deletion_adjourned_period: group.deletion_adjourned_period }
-    end
-
     def show_discover_group_security?(group)
       !!current_user &&
         ::Gitlab.com? &&
