@@ -106,15 +106,73 @@ RSpec.describe ComplianceManagement::Pipl::DeleteNonCompliantUserService,
       context 'when the user is in the admin_mode' do
         let(:pipl_user) { create(:pipl_user, :deletable) }
 
-        before do
-          deleting_user.update!(admin: true)
-        end
-
         it 'schedules user deletion', :sidekiq_inline, :enable_admin_mode do
           result = execute
 
           expect(result.error?).to be(false)
           expect(pipl_user.user.reload.ghost_user_migration.present?).to be(true)
+        end
+
+        context 'when user has public projects', :enable_admin_mode do
+          let(:user_namespace) { pipl_user.user.reload.namespace }
+          let(:public_user_project_no_repository) { create(:project, namespace: user_namespace) }
+
+          before do
+            public_user_project_no_repository.visibility_level = Gitlab::VisibilityLevel::PUBLIC
+            public_user_project_no_repository.save!
+
+            stub_container_registry_config(enabled: false)
+          end
+
+          context 'when project has no repository associated' do
+            it 'schedules user deletion', :sidekiq_inline do
+              result = execute
+
+              expect(result.error?).to be(false)
+              expect(pipl_user.user.reload.ghost_user_migration.present?).to be(true)
+              expect(pipl_user.user.reload.ghost_user_migration.hard_delete?).to be(false)
+            end
+          end
+
+          context 'when project has commits less than 5' do
+            let(:repository) { instance_double(Repository, root_ref: 'master', empty?: false) }
+
+            before do
+              allow(public_user_project_no_repository).to receive(:repository).and_return(repository)
+            end
+
+            it 'schedules user deletion', :sidekiq_inline do
+              result = execute
+
+              expect(result.error?).to be(false)
+              expect(pipl_user.user.reload.ghost_user_migration.present?).to be(true)
+              expect(pipl_user.user.reload.ghost_user_migration.hard_delete?).to be(false)
+            end
+          end
+
+          context 'when project has commits greater than 5' do
+            let(:public_user_project_with_repository) do
+              create(:project, :repository, namespace: user_namespace)
+            end
+
+            before do
+              public_user_project_with_repository.statistics.refresh!
+
+              public_user_project_with_repository.visibility_level = Gitlab::VisibilityLevel::PUBLIC
+              public_user_project_with_repository.save!
+            end
+
+            it_behaves_like 'does not delete the user'
+
+            it "returns an error with a descriptive message" do
+              result = execute
+
+              expect(result.error?).to be(true)
+              expect(result.message).to include("User has active public projects and cannot be deleted." \
+                "Please unlink the public projects or move the user the paid namespace")
+              expect(pipl_user.state).to eq("deletion_needs_to_be_reviewed")
+            end
+          end
         end
       end
     end
