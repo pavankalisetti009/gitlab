@@ -7638,29 +7638,6 @@ To continue showing these findings, you must configure the `CS_SEVERITY_THRESHOL
 
 <div class="deprecation breaking-change">
 
-### Deprecate CI job implementation of Repository X-Ray
-
-<div class="deprecation-notes">
-
-- Announced in GitLab <span class="milestone">17.6</span>
-- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/500146).
-
-</div>
-{{< alert type="note" >}}
-
-This change has been removed from its original milestone and is being reassessed.
-
-{{< /alert >}}
-
-GitLab 18.0 removes the Repository X-Ray CI job:
-
-- The initial implementation of [Repository X-Ray](https://docs.gitlab.com/user/project/repository/code_suggestions/repository_xray/), using a CI job, is deprecated in GitLab 17.6.
-- This CI job is being replaced by an automated [background job](https://docs.gitlab.com/user/project/repository/code_suggestions/repository_xray/#how-repository-x-ray-works), triggered when a new commit is pushed to your project's default branch.
-
-</div>
-
-<div class="deprecation breaking-change">
-
 ### GitLab.com certificate-based integration with Kubernetes
 
 <div class="deprecation-notes">
