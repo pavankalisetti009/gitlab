@@ -197,7 +197,9 @@ module Search
         total_count = Search::Zoekt::EnabledNamespace.count
         with_missing_indices = Search::Zoekt::EnabledNamespace.with_missing_indices.count
         with_search_disabled = Search::Zoekt::EnabledNamespace.search_disabled.count
+        with_rollout_blocked = Search::Zoekt::EnabledNamespace.with_missing_indices.with_rollout_blocked.count
         log("EnabledNamespace count", value: "#{total_count} (without indices: #{Rainbow(with_missing_indices).red}, " \
+                                        "rollout blocked: #{Rainbow(with_rollout_blocked).red}, " \
                                         "with search disabled: #{Rainbow(with_search_disabled).yellow})")
       end
 
