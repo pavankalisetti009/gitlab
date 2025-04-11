@@ -151,11 +151,13 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
     context 'when displaying indexing status' do
       before do
         allow(Group).to receive_message_chain(:top_level, :count).and_return(10)
-        allow(Search::Zoekt::EnabledNamespace).to receive_messages(
-          count: 0,
-          with_missing_indices: instance_double(ActiveRecord::Relation, count: 0),
-          search_disabled: instance_double(ActiveRecord::Relation, count: 0)
-        )
+
+        # Stub the direct counts that the info service accesses
+        allow(Search::Zoekt::EnabledNamespace).to receive(:count).and_return(0)
+        allow(Search::Zoekt::EnabledNamespace).to receive_message_chain(:with_missing_indices, :count).and_return(0)
+        allow(Search::Zoekt::EnabledNamespace).to receive_message_chain(:search_disabled, :count).and_return(0)
+        allow(Search::Zoekt::EnabledNamespace).to receive_message_chain(:with_missing_indices, :with_rollout_blocked,
+          :count).and_return(0)
 
         # Ensure empty online nodes array for all indexing status tests
         empty_online_relation = instance_double(ActiveRecord::Relation, count: 0, to_a: [])
@@ -191,7 +193,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
           expect(logger).to have_received(:info).with(/Group count:.+10/)
 
           namespace_msg = /EnabledNamespace count:.+0 \(without indices: #{Rainbow('0').red}, /
-          namespace_msg_part2 = /with search disabled: #{Rainbow('0').yellow}\)/
+          namespace_msg_part2 = /rollout blocked: #{Rainbow('0').red}, with search disabled: #{Rainbow('0').yellow}\)/
           expect(logger).to have_received(:info).with(namespace_msg)
           expect(logger).to have_received(:info).with(namespace_msg_part2)
 
@@ -214,6 +216,13 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
             count: { 'update_repository' => 1, 'delete_repository' => 1 })
           pending_tasks_relation = instance_double(ActiveRecord::Relation)
 
+          # Override the default stubs with ones that show actual data
+          allow(Search::Zoekt::EnabledNamespace).to receive(:count).and_return(10)
+          allow(Search::Zoekt::EnabledNamespace).to receive_message_chain(:with_missing_indices, :count).and_return(5)
+          allow(Search::Zoekt::EnabledNamespace).to receive_message_chain(:search_disabled, :count).and_return(2)
+          allow(Search::Zoekt::EnabledNamespace).to receive_message_chain(:with_missing_indices, :with_rollout_blocked,
+            :count).and_return(3)
+
           allow(Search::Zoekt::Replica).to receive(:group).with(:state).and_return(replica_group_relation)
           allow(Search::Zoekt::Index).to receive(:group).with(:state).and_return(index_group_relation)
           allow(Search::Zoekt::Index).to receive(:group).with(:watermark_level)
@@ -229,7 +238,13 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
 
           expect(logger).to have_received(:info).with("\n#{Rainbow('Indexing status').bright.yellow.underline}")
           expect(logger).to have_received(:info).with(/Group count:.+10/)
-          expect(logger).to have_received(:info).with(/EnabledNamespace count:.+0/)
+
+          # Test that the EnabledNamespace count shows rollout blocked namespaces
+          namespace_msg = /EnabledNamespace count:.+10 \(without indices: #{Rainbow('5').red}, /
+          namespace_msg_part2 = /rollout blocked: #{Rainbow('3').red}, with search disabled: #{Rainbow('2').yellow}\)/
+          expect(logger).to have_received(:info).with(namespace_msg)
+          expect(logger).to have_received(:info).with(namespace_msg_part2)
+
           expect(logger).to have_received(:info).with(/Replicas count:.+3/)
         end
       end

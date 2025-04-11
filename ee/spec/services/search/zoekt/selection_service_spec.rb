@@ -49,6 +49,29 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
         expect(resource_pool.enabled_namespaces).to include(eligible_namespace)
         expect(resource_pool.enabled_namespaces).not_to include(ineligible_namespace, ineligible_namespace2)
       end
+
+      it 'excludes namespaces with rollout blocked flag' do
+        # Verify that the with_rollout_allowed scope is being applied
+        expect(Search::Zoekt::EnabledNamespace).to receive(:with_rollout_allowed).and_call_original
+
+        # Verify that the namespace with last_rollout_failed_at is excluded
+        result = described_class.execute
+        expect(result.enabled_namespaces).not_to include(ineligible_namespace2)
+      end
+
+      context 'when testing specific scopes' do
+        it 'with_rollout_blocked scope finds namespaces with last_rollout_failed_at' do
+          namespaces = Search::Zoekt::EnabledNamespace.with_rollout_blocked
+          expect(namespaces).to include(ineligible_namespace2)
+          expect(namespaces).not_to include(eligible_namespace, ineligible_namespace)
+        end
+
+        it 'with_rollout_allowed scope finds namespaces without last_rollout_failed_at' do
+          namespaces = Search::Zoekt::EnabledNamespace.with_rollout_allowed
+          expect(namespaces).to include(eligible_namespace, ineligible_namespace)
+          expect(namespaces).not_to include(ineligible_namespace2)
+        end
+      end
     end
 
     context 'with max batch size enforcement' do

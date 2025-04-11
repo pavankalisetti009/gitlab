@@ -27,6 +27,12 @@ module Search
       scope :search_disabled, -> { where(search: false) }
       scope :with_limit, ->(maximum) { limit(maximum) }
       scope :with_missing_indices, -> { left_joins(:indices).where(zoekt_indices: { zoekt_enabled_namespace_id: nil }) }
+      scope :with_rollout_blocked, -> do
+        where("zoekt_enabled_namespaces.metadata->>'last_rollout_failed_at' IS NOT NULL")
+      end
+      scope :with_rollout_allowed, -> do
+        where("zoekt_enabled_namespaces.metadata->>'last_rollout_failed_at' IS NULL")
+      end
       scope :with_all_ready_indices, -> do
         raw_sql = 'min(zoekt_indices.state) = :state AND max(zoekt_indices.state) = :state'
         joins(:indices).group(:id).having(raw_sql, state: Search::Zoekt::Index.states[:ready])
