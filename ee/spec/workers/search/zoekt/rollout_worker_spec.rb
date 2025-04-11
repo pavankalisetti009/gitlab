@@ -7,8 +7,9 @@ RSpec.describe Search::Zoekt::RolloutWorker, feature_category: :global_search do
 
   let(:batch_size) { Gitlab::CurrentSettings.zoekt_rollout_batch_size }
 
-  it 'has the `until_executed` deduplicate strategy' do
+  it 'has the `until_executed` deduplicate strategy with correct options' do
     expect(described_class.get_deduplicate_strategy).to eq(:until_executed)
+    expect(described_class.get_deduplication_options).to include({ if_deduplicated: :reschedule_once })
   end
 
   it_behaves_like 'worker with data consistency', described_class, data_consistency: :sticky
