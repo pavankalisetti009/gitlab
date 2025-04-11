@@ -1,7 +1,8 @@
 <script>
-import { GlTruncate, GlTooltipDirective } from '@gitlab/ui';
+import { GlTooltipDirective, GlLink } from '@gitlab/ui';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { s__, __, sprintf } from '~/locale';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { formatSelectOptionForCustomField, newWorkItemId } from '~/work_items/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
@@ -16,12 +17,13 @@ import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_i
 
 export default {
   components: {
-    GlTruncate,
     WorkItemSidebarDropdownWidget,
+    GlLink,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  inject: ['issuesListPath'],
   props: {
     workItemId: {
       type: String,
@@ -256,6 +258,13 @@ export default {
           this.isUpdating = false;
         });
     },
+    searchPath(optionId) {
+      const customFieldId = getIdFromGraphQLId(this.customFieldId);
+      const customFieldOptionId = getIdFromGraphQLId(optionId);
+
+      const query = `?custom-field[${customFieldId}]=${customFieldOptionId}`;
+      return `${this.issuesListPath}/${query}`;
+    },
   },
 };
 </script>
@@ -285,12 +294,15 @@ export default {
     </template>
     <template #readonly>
       <p v-for="option in selectedOptions" :key="option.value" class="gl-fit-content gl-mb-2">
-        <gl-truncate
+        <gl-link
           v-gl-tooltip
+          class="gl-truncate"
+          :href="searchPath(option.value)"
           :title="option.text"
-          :text="option.text"
           data-testid="option-text"
-        />
+        >
+          {{ option.text }}
+        </gl-link>
       </p>
     </template>
   </work-item-sidebar-dropdown-widget>

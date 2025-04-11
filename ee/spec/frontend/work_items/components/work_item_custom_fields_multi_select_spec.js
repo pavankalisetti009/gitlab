@@ -1,4 +1,5 @@
 import Vue, { nextTick } from 'vue';
+import { GlLink } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -22,17 +23,17 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
 
   const defaultField = {
     customField: {
-      id: '1-select',
+      id: 'gid://gitlab/Issuables::CustomField/1',
       fieldType: CUSTOM_FIELDS_TYPE_MULTI_SELECT,
       name: 'Multi select custom field label',
     },
     selectedOptions: [
       {
-        id: 'select-1',
+        id: 'gid://gitlab/Issuables::CustomFieldSelectOption/1',
         value: 'Option 1',
       },
       {
-        id: 'select-2',
+        id: 'gid://gitlab/Issuables::CustomFieldSelectOption/2',
         value: 'Option 2',
       },
     ],
@@ -44,17 +45,17 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
         id: '1-select',
         selectOptions: [
           {
-            id: 'select-1',
+            id: 'gid://gitlab/Issuables::CustomFieldSelectOption/1',
             value: 'Option 1',
             __typename: 'CustomFieldSelectOption',
           },
           {
-            id: 'select-2',
+            id: 'gid://gitlab/Issuables::CustomFieldSelectOption/2',
             value: 'Option 2',
             __typename: 'CustomFieldSelectOption',
           },
           {
-            id: 'select-3',
+            id: 'gid://gitlab/Issuables::CustomFieldSelectOption/3',
             value: 'Option 3',
             __typename: 'CustomFieldSelectOption',
           },
@@ -78,7 +79,7 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
 
   const findComponent = () => wrapper.findComponent(WorkItemCustomFieldsMultiSelect);
   const findSidebarDropdownWidget = () => wrapper.findComponent(WorkItemSidebarDropdownWidget);
-  const findSelectValues = () => wrapper.findAll('[data-testid="option-text"]');
+  const findSelectValues = () => wrapper.findAllComponents(GlLink);
 
   const createComponent = ({
     canUpdate = true,
@@ -87,12 +88,16 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
     workItemId = defaultWorkItemId,
     queryHandler = querySuccessHandler,
     mutationHandler = mutationSuccessHandler,
+    issuesListPath = '/flightjs/Flight/-/issues',
   } = {}) => {
     wrapper = shallowMount(WorkItemCustomFieldsMultiSelect, {
       apolloProvider: createMockApollo([
         [customFieldSelectOptionsQuery, queryHandler],
         [updateWorkItemCustomFieldsMutation, mutationHandler],
       ]),
+      provide: {
+        issuesListPath,
+      },
       propsData: {
         canUpdate,
         customField,
@@ -186,8 +191,41 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
     it('shows option selected on render when it is defined', () => {
       createComponent();
 
-      expect(findSelectValues().at(0).props('text')).toBe('Option 1');
-      expect(findSelectValues().at(1).props('text')).toBe('Option 2');
+      expect(findSelectValues().at(0).attributes('title')).toBe('Option 1');
+      expect(findSelectValues().at(1).attributes('title')).toBe('Option 2');
+    });
+
+    it('generates correct search path for project/issues list for each option link when on the project path', () => {
+      createComponent();
+
+      expect(findSelectValues().at(0).attributes('href')).toBe(
+        '/flightjs/Flight/-/issues/?custom-field[1]=1',
+      );
+      expect(findSelectValues().at(1).attributes('href')).toBe(
+        '/flightjs/Flight/-/issues/?custom-field[1]=2',
+      );
+    });
+
+    it('generates correct search path for group/issues list for each option link when it is an issue on the group path', () => {
+      createComponent({ issuesListPath: '/groups/flightjs/-/issues' });
+
+      expect(findSelectValues().at(0).attributes('href')).toBe(
+        '/groups/flightjs/-/issues/?custom-field[1]=1',
+      );
+      expect(findSelectValues().at(1).attributes('href')).toBe(
+        '/groups/flightjs/-/issues/?custom-field[1]=2',
+      );
+    });
+
+    it('generates correct search path for group/epics list for each option link when it is an epic', () => {
+      createComponent({ issuesListPath: '/groups/flightjs/-/epics' });
+
+      expect(findSelectValues().at(0).attributes('href')).toBe(
+        '/groups/flightjs/-/epics/?custom-field[1]=1',
+      );
+      expect(findSelectValues().at(1).attributes('href')).toBe(
+        '/groups/flightjs/-/epics/?custom-field[1]=2',
+      );
     });
   });
 
@@ -212,13 +250,15 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
       expect(findSidebarDropdownWidget().props('listItems')).toEqual([
         {
           options: [
-            { text: 'Option 1', value: 'select-1' },
-            { text: 'Option 2', value: 'select-2' },
+            { text: 'Option 1', value: 'gid://gitlab/Issuables::CustomFieldSelectOption/1' },
+            { text: 'Option 2', value: 'gid://gitlab/Issuables::CustomFieldSelectOption/2' },
           ],
           text: 'Selected',
         },
         {
-          options: [{ text: 'Option 3', value: 'select-3' }],
+          options: [
+            { text: 'Option 3', value: 'gid://gitlab/Issuables::CustomFieldSelectOption/3' },
+          ],
           text: 'All',
           textSrOnly: true,
         },
@@ -242,9 +282,9 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
 
       expect(findSidebarDropdownWidget().props('toggleDropdownText')).toBe('None');
       expect(findSidebarDropdownWidget().props('listItems')).toEqual([
-        { text: 'Option 1', value: 'select-1' },
-        { text: 'Option 2', value: 'select-2' },
-        { text: 'Option 3', value: 'select-3' },
+        { text: 'Option 1', value: 'gid://gitlab/Issuables::CustomFieldSelectOption/1' },
+        { text: 'Option 2', value: 'gid://gitlab/Issuables::CustomFieldSelectOption/2' },
+        { text: 'Option 3', value: 'gid://gitlab/Issuables::CustomFieldSelectOption/3' },
       ]);
     });
 
@@ -269,7 +309,10 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
       createComponent({ workItemId: newWorkItemId(defaultWorkItemType) });
       await nextTick();
 
-      findSidebarDropdownWidget().vm.$emit('updateValue', 'select-2');
+      findSidebarDropdownWidget().vm.$emit(
+        'updateValue',
+        'gid://gitlab/Issuables::CustomFieldSelectOption/2',
+      );
       await nextTick();
 
       expect(mutationSuccessHandler).not.toHaveBeenCalled();
@@ -279,7 +322,10 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
       createComponent();
       await nextTick();
 
-      const newSelectedIds = ['select-1', 'select-2'];
+      const newSelectedIds = [
+        'gid://gitlab/Issuables::CustomFieldSelectOption/1',
+        'gid://gitlab/Issuables::CustomFieldSelectOption/2',
+      ];
       findSidebarDropdownWidget().vm.$emit('updateValue', newSelectedIds);
 
       expect(mutationSuccessHandler).toHaveBeenCalledWith({
@@ -320,7 +366,10 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
       createComponent({ mutationHandler });
       await nextTick();
 
-      findSidebarDropdownWidget().vm.$emit('updateValue', ['select-1', 'select-2']);
+      findSidebarDropdownWidget().vm.$emit('updateValue', [
+        'gid://gitlab/Issuables::CustomFieldSelectOption/1',
+        'gid://gitlab/Issuables::CustomFieldSelectOption/2',
+      ]);
       await nextTick();
 
       expect(findSidebarDropdownWidget().props('updateInProgress')).toBe(true);
@@ -341,7 +390,10 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
       createComponent({ mutationHandler });
       await nextTick();
 
-      findSidebarDropdownWidget().vm.$emit('updateValue', ['select-1', 'select-2']);
+      findSidebarDropdownWidget().vm.$emit('updateValue', [
+        'gid://gitlab/Issuables::CustomFieldSelectOption/1',
+        'gid://gitlab/Issuables::CustomFieldSelectOption/2',
+      ]);
       await waitForPromises();
 
       expect(wrapper.emitted('error')).toEqual([
@@ -358,7 +410,10 @@ describe('WorkItemCustomFieldsMultiSelect', () => {
       createComponent({ mutationHandler: errorHandler });
       await nextTick();
 
-      findSidebarDropdownWidget().vm.$emit('updateValue', ['select-1', 'select-2']);
+      findSidebarDropdownWidget().vm.$emit('updateValue', [
+        'gid://gitlab/Issuables::CustomFieldSelectOption/1',
+        'gid://gitlab/Issuables::CustomFieldSelectOption/2',
+      ]);
       await waitForPromises();
 
       expect(wrapper.emitted('error')).toEqual([

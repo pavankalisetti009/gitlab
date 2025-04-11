@@ -1,7 +1,8 @@
 <script>
-import { GlTruncate, GlTooltipDirective } from '@gitlab/ui';
+import { GlLink, GlTooltipDirective } from '@gitlab/ui';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { s__, __, sprintf } from '~/locale';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { formatSelectOptionForCustomField, newWorkItemId } from '~/work_items/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
@@ -16,12 +17,13 @@ import customFieldSelectOptionsQuery from 'ee/work_items/graphql/work_item_custo
 
 export default {
   components: {
-    GlTruncate,
+    GlLink,
     WorkItemSidebarDropdownWidget,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  inject: ['issuesListPath'],
   props: {
     workItemId: {
       type: String,
@@ -245,6 +247,13 @@ export default {
           this.isUpdating = false;
         });
     },
+    searchPath(optionId) {
+      const customFieldId = getIdFromGraphQLId(this.customFieldId);
+      const customFieldOptionId = getIdFromGraphQLId(optionId);
+
+      const query = `?custom-field[${customFieldId}]=${customFieldOptionId}`;
+      return `${this.issuesListPath}/${query}`;
+    },
   },
 };
 </script>
@@ -271,9 +280,15 @@ export default {
       <span class="gl-break-words">{{ item.text }}</span>
     </template>
     <template #readonly>
-      <span v-gl-tooltip :title="editingValueText">
-        <gl-truncate :text="editingValueText" data-testid="option-text" />
-      </span>
+      <gl-link
+        v-gl-tooltip
+        class="gl-truncate"
+        :href="searchPath(optionValue)"
+        :title="editingValueText"
+        data-testid="option-text"
+      >
+        {{ editingValueText }}
+      </gl-link>
     </template>
   </work-item-sidebar-dropdown-widget>
 </template>
