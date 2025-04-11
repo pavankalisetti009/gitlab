@@ -26,11 +26,20 @@ module API
           requires :new_path, type: String, limit: 255, desc: 'New path of the diff file'
           requires :diff, type: String, desc: 'Diff for context'
           requires :hunk, type: String, desc: 'Hunk to be reviewed'
+          requires :mr_title, type: String, desc: 'Title of the merge request'
+          requires :mr_description, type: String, desc: 'Description of the merge request'
         end
         post do
           prompt = ::Gitlab::Llm::Templates::ReviewMergeRequest
-            .new(declared_params[:new_path], declared_params[:diff], declared_params[:hunk], current_user)
-            .to_prompt
+          .new(
+            new_path: declared_params[:new_path],
+            raw_diff: declared_params[:diff],
+            hunk: declared_params[:hunk],
+            user: current_user,
+            mr_title: declared_params[:mr_title],
+            mr_description: declared_params[:mr_description]
+          )
+          .to_prompt
 
           response = ::Gitlab::Llm::Anthropic::Client.new(
             current_user,

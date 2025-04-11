@@ -116,7 +116,14 @@ module Gitlab
           end
 
           def generate_review_prompt(diff_file, hunk)
-            ai_prompt_class.new(diff_file.new_path, diff_file.raw_diff, hunk[:text], user).to_prompt
+            ai_prompt_class.new(
+              new_path: diff_file.new_path,
+              raw_diff: diff_file.raw_diff,
+              hunk: hunk[:text],
+              user: user,
+              mr_title: merge_request.title,
+              mr_description: merge_request.description
+            ).to_prompt
           end
 
           def review_response_for(prompt)
