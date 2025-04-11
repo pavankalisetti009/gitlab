@@ -131,7 +131,7 @@ class IterationsFinder
     group = case parent
             when Group
               parent
-            when Project
+            when Project, Namespaces::ProjectNamespace
               parent.parent
             else
               raise ArgumentError, 'Invalid parent class. Only Project and Group are supported.'
