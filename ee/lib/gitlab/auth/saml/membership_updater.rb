@@ -50,9 +50,10 @@ module Gitlab
           strong_memoize(:group_link_ids) do
             next [] if group_names_from_saml.empty?
 
-            SamlGroupLink
-              .by_saml_group_name(group_names_from_saml)
-              .pluck(:id)
+            links = SamlGroupLink.by_saml_group_name(group_names_from_saml)
+            links = links.where(provider: [auth_hash.provider, nil]) if auth_hash.provider.present?
+
+            links.pluck(:id)
           end
         end
 

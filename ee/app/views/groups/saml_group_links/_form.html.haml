@@ -9,6 +9,16 @@
           .form-text.gl-text-subtle
             = s_('GroupSAML|The case-sensitive group name that will be sent by the SAML identity provider.')
 
+      - if multiple_saml_providers?
+        .form-group.row
+          .col-sm-2.col-form-label
+            = f.label :provider, s_('GroupSAML|Identity Provider')
+          .col-sm-10
+            - provider_options = [[s_('GroupSAML|Any Provider (Default)'), nil]] + saml_providers_for_dropdown
+            = f.select :provider, provider_options, {}, { class: 'form-control' }
+            .form-text.gl-text-subtle
+              = s_('GroupSAML|When selected, group sync will only occur when both the SAML group name and provider match.')
+
       .form-group.row
         .col-sm-2.col-form-label
           = f.label :access_level, "Access Level"

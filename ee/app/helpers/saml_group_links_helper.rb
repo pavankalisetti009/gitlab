@@ -19,4 +19,12 @@ module SamlGroupLinksHelper
 
     add_on_purchase.active?
   end
+
+  def multiple_saml_providers?
+    saml_providers.count > 1
+  end
+
+  def saml_providers_for_dropdown
+    saml_providers.map { |provider| [Gitlab::Auth::OAuth::Provider.label_for(provider), provider.to_s] }
+  end
 end

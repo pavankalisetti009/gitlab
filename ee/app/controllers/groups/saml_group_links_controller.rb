@@ -41,11 +41,17 @@ module Groups
     end
 
     def saml_group_link_params
-      allowed_params = %i[saml_group_name access_level]
+      allowed_params = %i[saml_group_name access_level provider]
       allowed_params << :member_role_id if group.custom_roles_enabled?
       allowed_params << :assign_duo_seats if helpers.duo_seat_assignment_available?(group)
 
-      params.require(:saml_group_link).permit(allowed_params)
+      params_hash = params.require(:saml_group_link).permit(allowed_params)
+
+      # Ensure blank provider values are stored as NULL in the database.
+      # This maintains consistency with previous records and ensures proper matching in group sync.
+      params_hash[:provider] = nil if params_hash[:provider].blank?
+
+      params_hash
     end
 
     def alert(error_message)
