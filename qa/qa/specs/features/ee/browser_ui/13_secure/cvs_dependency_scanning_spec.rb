@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Secure', :orchestrated, :skip_live_env, :secure_cvs, :runner, product_group: :composition_analysis do
+  RSpec.describe 'Secure', :orchestrated, :skip_live_env, :secure_cvs, product_group: :composition_analysis do
     describe 'Continuous Vulnerability Scanning' do
       context 'when new vulnerabilities are ingested' do
         let!(:test_project) do
