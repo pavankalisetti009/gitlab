@@ -3,6 +3,7 @@ import { GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { joinPaths } from '~/lib/utils/url_utility';
 import { humanizeActions } from 'ee/security_orchestration/components/policy_drawer/pipeline_execution/utils';
+import { generateScheduleSummary } from 'ee/security_orchestration/components/policy_drawer/pipeline_execution/schedule_utils';
 import {
   SUMMARY_TITLE,
   CONFIGURATION_TITLE,
@@ -40,6 +41,9 @@ export default {
     },
   },
   computed: {
+    hasSchedules() {
+      return this.parsedYaml.schedules?.length > 0;
+    },
     humanizedActions() {
       return humanizeActions([this.parsedYaml]);
     },
@@ -70,6 +74,9 @@ export default {
           return '';
       }
     },
+    generateScheduleSummary(schedule) {
+      return generateScheduleSummary(schedule, this.policy);
+    },
   },
 };
 </script>
@@ -86,6 +93,11 @@ export default {
       <info-row data-testid="policy-summary" :label="$options.i18n.summary">
         <template v-if="!humanizedActions.length">{{ $options.i18n.noActionMessage }}</template>
         <div v-else>
+          <div v-if="hasSchedules" data-testid="schedule-summary">
+            <div v-for="(schedule, index) in parsedYaml.schedules" :key="index">
+              <p>{{ generateScheduleSummary(schedule) }}</p>
+            </div>
+          </div>
           <p data-testid="summary-header">{{ $options.i18n.pipelineExecutionActionsHeader }}</p>
 
           <ul

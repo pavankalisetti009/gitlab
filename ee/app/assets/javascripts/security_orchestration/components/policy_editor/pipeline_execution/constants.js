@@ -76,6 +76,8 @@ skip_ci:
 
 export const HOUR_IN_SECONDS = 3600;
 export const DAILY = 'daily';
+export const WEEKLY = 'weekly';
+export const MONTHLY = 'monthly';
 export const DEFAULT_SCHEDULE = {
   branch_type: 'protected',
   type: DAILY,

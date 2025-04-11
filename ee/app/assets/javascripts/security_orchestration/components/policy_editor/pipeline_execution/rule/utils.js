@@ -1,11 +1,9 @@
 import { __ } from '~/locale';
 import { getWeekdayNames } from '~/lib/utils/datetime_utility';
-import { DAILY } from '../constants';
+import { DAILY, WEEKLY, MONTHLY } from '../constants';
 
 const DEFAULT_START_WEEKDAY = 'monday';
 const DEFAULT_START_MONTH_DAY = 1;
-const WEEKLY = 'weekly';
-const MONTHLY = 'monthly';
 
 export const MINIMUM_SECONDS = 600; // 10 minutes, set in ee/app/validators/json_schemas/security_orchestration_policy.json
 export const MINIMUM_SECONDS_IN_MINUTES = MINIMUM_SECONDS / 60;
