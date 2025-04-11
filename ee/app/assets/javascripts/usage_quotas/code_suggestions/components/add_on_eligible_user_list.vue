@@ -151,8 +151,7 @@ export default {
         reason: data.userActionAccess?.limitedAccessReason,
       }),
       error(error) {
-        this.handleError(ADD_ON_PURCHASE_FETCH_ERROR_CODE);
-        Sentry.captureException(error, { tags: { vue_component: this.$options.name } });
+        this.forwardException(Object.assign(error, { cause: ADD_ON_PURCHASE_FETCH_ERROR_CODE }));
       },
     },
   },
@@ -238,20 +237,8 @@ export default {
 
       return this.$options.i18n.addSeatsText;
     },
-    errorAlertPrimaryButtonLink() {
-      return this.errorAlertPrimaryButtonText ? this.addDuoProHref : '';
-    },
     hideAddSeatsButton() {
       return !this.subscriptionPermissions?.canAddDuoProSeats && this.hasLimitedAccess;
-    },
-    errorAlertSecondaryButtonText() {
-      return this.showContactSalesButton ? this.$options.i18n.contactSalesText : '';
-    },
-    errorAlertSecondaryButtonLink() {
-      return this.showContactSalesButton ? this.$options.links.sales : '';
-    },
-    showContactSalesButton() {
-      return this.error !== ADD_ON_PURCHASE_FETCH_ERROR_CODE;
     },
     subscriptionPermissionsVariables() {
       return this.groupId
@@ -429,6 +416,11 @@ export default {
       this.isBulkActionInProgress = false;
       this.isConfirmationModalVisible = false;
     },
+    forwardException(error) {
+      this.$emit('error', error);
+
+      Sentry.captureException(error, { tags: { vue_component: this.$options.name } });
+    },
   },
 };
 </script>
@@ -443,10 +435,10 @@ export default {
       :error="error"
       :error-dictionary="$options.addOnErrorDictionary"
       :dismissible="true"
-      :primary-button-link="errorAlertPrimaryButtonLink"
+      :primary-button-link="addDuoProHref"
       :primary-button-text="errorAlertPrimaryButtonText"
-      :secondary-button-link="errorAlertSecondaryButtonLink"
-      :secondary-button-text="errorAlertSecondaryButtonText"
+      :secondary-button-link="$options.links.sales"
+      :secondary-button-text="$options.i18n.contactSalesText"
       @dismiss="error = undefined"
     />
     <gl-alert
