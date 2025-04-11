@@ -113,7 +113,6 @@ export default {
             selectedText: this.selectedText,
           },
         },
-        fromButton: true,
       });
     },
     setHighlightedLines() {

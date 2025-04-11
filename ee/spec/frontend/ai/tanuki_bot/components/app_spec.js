@@ -265,85 +265,47 @@ describeSkipVue3(skipReason, () => {
   });
 
   describe('when new commands are added to the global state', () => {
-    beforeEach(() => {
+    let originalRequestIdleCallback;
+
+    beforeEach(async () => {
+      originalRequestIdleCallback = window.requestIdleCallback;
+      window.requestIdleCallback = (callback) => callback();
+
       createComponent();
+      duoChatGlobalState.isShown = true;
+      await waitForPromises();
       performance.mark = jest.fn();
     });
 
-    describe('and the chat is not ready', () => {
-      beforeEach(async () => {
-        duoChatGlobalState.isShown = true;
-        await waitForPromises();
-      });
-
-      it('does not send the command to the api', () => {
-        sendDuoChatCommand({ question: '/troubleshoot', resourceId: '1' });
-        expect(chatMutationHandlerMock).not.toHaveBeenCalled();
-      });
+    afterEach(() => {
+      duoChatGlobalState.commands = [];
+      window.requestIdleCallback = originalRequestIdleCallback;
     });
 
-    describe('and the chat is ready', () => {
-      beforeEach(async () => {
-        duoChatGlobalState.isShown = true;
-        await waitForPromises();
-      });
+    it('resets chat', async () => {
+      const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
+      sendDuoChatCommand({ question: '/troubleshoot', resourceId: '1' });
+      await nextTick();
+      expect(onNewChatSpy).toHaveBeenCalled();
+    });
 
-      it('calls the chat mutation', async () => {
-        sendDuoChatCommand({ question: '/troubleshoot', resourceId: '1' });
-        await waitForPromises();
-        expect(chatMutationHandlerMock).toHaveBeenCalledTimes(0);
+    it('calls the chat mutation', async () => {
+      sendDuoChatCommand({ question: '/troubleshoot', resourceId: '1' });
+      await waitForPromises();
+      expect(chatMutationHandlerMock).toHaveBeenCalledTimes(1);
+    });
 
-        await findSubscriptions().vm.$emit('subscription-ready');
-        await waitForPromises();
+    it('uses the command resourceId', async () => {
+      sendDuoChatCommand({ question: '/troubleshoot', resourceId: 'command::1' });
+      await waitForPromises();
 
-        expect(chatMutationHandlerMock).toHaveBeenCalledTimes(1);
-      });
-
-      it('uses the command resourceId', async () => {
-        await findSubscriptions().vm.$emit('subscription-ready');
-        sendDuoChatCommand({ question: '/troubleshoot', resourceId: 'command::1' });
-        await waitForPromises();
-
-        expect(chatMutationHandlerMock).toHaveBeenCalledWith({
-          clientSubscriptionId: '123',
-          question: '/troubleshoot',
-          resourceId: 'command::1',
-          projectId: null,
-          conversationType: null,
-          threadId: null,
-        });
-      });
-
-      it('correctly handles fromButton parameter from global state', async () => {
-        createComponent({
-          glFeatures: { duoChatMultiThread: true },
-        });
-        await waitForPromises();
-
-        const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
-        const onSendChatPromptSpy = jest.spyOn(wrapper.vm, 'onSendChatPrompt');
-
-        duoChatGlobalState.commands = [
-          {
-            question: 'Button triggered question',
-            fromButton: true,
-          },
-        ];
-
-        duoChatGlobalState.isShown = true;
-        await findSubscriptions().vm.$emit('subscription-ready');
-        await nextTick();
-
-        expect(onNewChatSpy).toHaveBeenCalled();
-
-        expect(onSendChatPromptSpy).toHaveBeenCalledWith(
-          'Button triggered question',
-          undefined,
-          true,
-        );
-
-        onNewChatSpy.mockRestore();
-        onSendChatPromptSpy.mockRestore();
+      expect(chatMutationHandlerMock).toHaveBeenCalledWith({
+        clientSubscriptionId: '123',
+        question: '/troubleshoot',
+        resourceId: 'command::1',
+        projectId: null,
+        conversationType: null,
+        threadId: null,
       });
     });
   });
@@ -389,32 +351,6 @@ describeSkipVue3(skipReason, () => {
           expect(chatMutationHandlerMock).not.toHaveBeenCalled();
         },
       );
-
-      describe('from button functionality', () => {
-        it('resets chat state when fromButton is true with multi-thread enabled', () => {
-          createComponent({
-            glFeatures: { duoChatMultiThread: true },
-          });
-
-          const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
-          findDuoChat().vm.$emit('send-chat-prompt', 'Test message', {}, true);
-
-          expect(onNewChatSpy).toHaveBeenCalled();
-          onNewChatSpy.mockRestore();
-        });
-
-        it('does not reset chat state when fromButton is false with multi-thread enabled', () => {
-          createComponent({
-            glFeatures: { duoChatMultiThread: true },
-          });
-
-          const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
-          findDuoChat().vm.$emit('send-chat-prompt', 'Test message');
-
-          expect(onNewChatSpy).not.toHaveBeenCalled();
-          onNewChatSpy.mockRestore();
-        });
-      });
 
       it('does set loading to `true` for a message other than the reset or clear messages', () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
@@ -806,27 +742,6 @@ describeSkipVue3(skipReason, () => {
           successResponse,
         );
       });
-
-      it('clears the commands when streaming is done', () => {
-        const requestId = '123';
-        const firstChunk = MOCK_CHUNK_MESSAGE('first chunk', 1, requestId);
-        const successResponse = GENERATE_MOCK_TANUKI_RES('', requestId);
-
-        expect(duoChatGlobalState.commands).toHaveLength(0);
-        sendDuoChatCommand({ question: '/troubleshoot', resourceId: '1' });
-        expect(duoChatGlobalState.commands).toHaveLength(1);
-
-        createComponent();
-
-        // message chunk streaming in
-        findSubscriptions().vm.$emit('message-stream', firstChunk);
-        // No changes to commands
-        expect(duoChatGlobalState.commands).toHaveLength(1);
-        // full message being sent
-        findSubscriptions().vm.$emit('message', successResponse);
-        // commands have been cleared out
-        expect(duoChatGlobalState.commands).toHaveLength(0);
-      });
     });
   });
 
@@ -1059,6 +974,9 @@ describeSkipVue3(skipReason, () => {
           const duoChat = findDuoChat();
           await waitForPromises();
 
+          conversationThreadsQueryHandlerMock.mockReset();
+          conversationThreadsQueryHandlerMock.mockResolvedValue(MOCK_THREADS_RESPONSE);
+          expect(conversationThreadsQueryHandlerMock).not.toHaveBeenCalled();
           findDuoChat().vm.$emit('back-to-list');
           await nextTick();
           await waitForPromises();
@@ -1066,7 +984,7 @@ describeSkipVue3(skipReason, () => {
           expect(duoChat.props('multiThreadedView')).toBe('list');
           expect(duoChat.props('activeThreadId')).toBe('');
           expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
-          expect(threadQueryHandlerMock).toHaveBeenCalled();
+          expect(conversationThreadsQueryHandlerMock).toHaveBeenCalled();
         });
       });
 
@@ -1113,37 +1031,6 @@ describeSkipVue3(skipReason, () => {
           });
         });
 
-        it('auto-selects the most recent thread when in chat view', async () => {
-          const duoChat = findDuoChat();
-          await waitForPromises();
-          await nextTick();
-
-          expect(duoChat.props('threadList')).toEqual(MOCK_THREADS);
-          expect(duoChat.props('activeThreadId')).toBe(MOCK_THREADS[0].id);
-        });
-
-        it('preserves existing active thread when threads are loaded', async () => {
-          const existingThreadId = 'existing-thread-123';
-
-          createComponent({
-            glFeatures: { duoChatMultiThread: true },
-            data: {
-              activeThread: existingThreadId,
-            },
-          });
-
-          const duoChat = findDuoChat();
-          await waitForPromises();
-          await nextTick();
-
-          expect(duoChat.props('activeThreadId')).toBe(existingThreadId);
-          expect(threadQueryHandlerMock).toHaveBeenCalledWith(
-            expect.objectContaining({
-              threadId: existingThreadId,
-            }),
-          );
-        });
-
         it('does not auto-select thread when in list view', async () => {
           const duoChat = findDuoChat();
 
@@ -1168,6 +1055,7 @@ describeSkipVue3(skipReason, () => {
           createComponent({
             glFeatures: { duoChatMultiThread: true },
           });
+
           const duoChat = findDuoChat();
 
           await nextTick();
@@ -1179,7 +1067,7 @@ describeSkipVue3(skipReason, () => {
         it('does not auto-select thread when command is from button', async () => {
           conversationThreadsQueryHandlerMock.mockResolvedValue(MOCK_THREADS_RESPONSE);
 
-          duoChatGlobalState.commands = [{ question: 'Button command', fromButton: true }];
+          duoChatGlobalState.commands = [{ question: 'Button command' }];
 
           createComponent({
             glFeatures: { duoChatMultiThread: true },
@@ -1266,42 +1154,38 @@ describeSkipVue3(skipReason, () => {
 
   describe('Global state watchers', () => {
     describe('duoChatGlobalState.isShown', () => {
-      it('creates a new chat when Duo Chat is opened from a closed state', async () => {
-        duoChatGlobalState.isShown = false;
+      it('creates a new chat when Duo Chat is closed', async () => {
+        duoChatGlobalState.isShown = true;
         createComponent({
           glFeatures: { duoChatMultiThread: true },
         });
 
         const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
 
-        duoChatGlobalState.isShown = true;
+        duoChatGlobalState.isShown = false;
         await nextTick();
 
         expect(onNewChatSpy).toHaveBeenCalled();
         expect(wrapper.vm.multithreadedView).toBe('chat');
-
-        onNewChatSpy.mockRestore();
       });
 
-      it('does not create a new chat when Duo Chat is closed', async () => {
-        duoChatGlobalState.isShown = true;
+      it('does not create a new chat when Duo Chat is opened', async () => {
+        duoChatGlobalState.isShown = false;
         createComponent({
           glFeatures: { duoChatMultiThread: true },
         });
 
         const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
 
-        duoChatGlobalState.isShown = false;
+        duoChatGlobalState.isShown = true;
         await nextTick();
 
         expect(onNewChatSpy).not.toHaveBeenCalled();
-
-        onNewChatSpy.mockRestore();
       });
 
       it('does not create a new thread when Duo Chat is opened with a command from button', async () => {
         duoChatGlobalState.isShown = false;
-        duoChatGlobalState.commands = [{ question: 'Button command', fromButton: true }];
+        duoChatGlobalState.commands = [{ question: 'Button command' }];
 
         createComponent({
           glFeatures: { duoChatMultiThread: true },
@@ -1315,6 +1199,75 @@ describeSkipVue3(skipReason, () => {
         expect(onNewChatSpy).not.toHaveBeenCalled();
 
         onNewChatSpy.mockRestore();
+      });
+    });
+
+    describe('duoChatGlobalState.commands', () => {
+      beforeEach(() => {
+        duoChatGlobalState.isShown = true;
+        createComponent({
+          glFeatures: { duoChatMultiThread: true },
+        });
+      });
+
+      afterEach(() => {
+        duoChatGlobalState.commands = [];
+      });
+
+      it('calls onNewChat when new commands are added', async () => {
+        const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
+        duoChatGlobalState.commands = [{ question: 'test command' }];
+        await nextTick();
+        expect(onNewChatSpy).toHaveBeenCalled();
+      });
+
+      it('calls onSendChatPrompt with command values when new commands are added', async () => {
+        const onSendChatPromptSpy = jest.spyOn(wrapper.vm, 'onSendChatPrompt');
+        const commandData = {
+          question: 'test command',
+          variables: { foo: 'bar' },
+          resourceId: 'custom-resource-id',
+        };
+
+        duoChatGlobalState.commands = [commandData];
+        await nextTick();
+
+        expect(onSendChatPromptSpy).toHaveBeenCalledWith(
+          commandData.question,
+          commandData.variables,
+          commandData.resourceId,
+        );
+      });
+
+      it('handles commands with only question property', async () => {
+        const onSendChatPromptSpy = jest.spyOn(wrapper.vm, 'onSendChatPrompt');
+        duoChatGlobalState.commands = [{ question: 'simple command' }];
+        await nextTick();
+
+        expect(onSendChatPromptSpy).toHaveBeenCalledWith('simple command', undefined, undefined);
+      });
+
+      it('processes only the first command if multiple commands exist', async () => {
+        const onSendChatPromptSpy = jest.spyOn(wrapper.vm, 'onSendChatPrompt');
+        duoChatGlobalState.commands = [
+          { question: 'first command' },
+          { question: 'second command' },
+        ];
+        await nextTick();
+
+        expect(onSendChatPromptSpy).toHaveBeenCalledTimes(1);
+        expect(onSendChatPromptSpy).toHaveBeenCalledWith('first command', undefined, undefined);
+      });
+
+      it('does nothing if commands array is empty', async () => {
+        const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
+        const onSendChatPromptSpy = jest.spyOn(wrapper.vm, 'onSendChatPrompt');
+
+        duoChatGlobalState.commands = [];
+        await nextTick();
+
+        expect(onNewChatSpy).not.toHaveBeenCalled();
+        expect(onSendChatPromptSpy).not.toHaveBeenCalled();
       });
     });
   });

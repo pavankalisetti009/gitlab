@@ -112,24 +112,6 @@ export default {
       update(data) {
         return data?.aiConversationThreads?.nodes || [];
       },
-      async result() {
-        const isFromButton =
-          this.duoChatGlobalState.commands.length > 0 &&
-          Boolean(this.duoChatGlobalState.commands[0].fromButton);
-
-        // Only auto-select if we don't have an active thread AND we're not in list view AND chat was not opened by an external button
-        if (
-          this.multithreadedView === 'chat' &&
-          this.aiConversationThreads.length > 0 &&
-          !isFromButton &&
-          (!this.forceNewChat || this.activeThread)
-        ) {
-          const activeThreadId =
-            this.activeThread || this.selectLatestThread(this.aiConversationThreads).id;
-          await this.onThreadSelected({ id: activeThreadId });
-        }
-        this.forceNewChat = false;
-      },
       error(err) {
         this.onError(err);
       },
@@ -159,7 +141,6 @@ export default {
       toolName: i18n.GITLAB_DUO,
       error: '',
       isResponseTracked: false,
-      isSubscriptionReady: false,
       cancelledRequestIds: [],
       completedRequestId: null,
       aiSlashCommands: [],
@@ -173,19 +154,10 @@ export default {
       activeThread: undefined,
       multithreadedView: DUO_CHAT_VIEWS.CHAT,
       aiConversationThreads: [],
-      forceNewChat: false,
     };
   },
   computed: {
     ...mapState(['loading', 'messages']),
-    isReadyForCommands() {
-      return (
-        duoChatGlobalState.isShown &&
-        this.hasCommands &&
-        !this.$apollo.loading &&
-        this.isSubscriptionReady
-      );
-    },
     computedResourceId() {
       if (this.hasCommands) {
         return this.duoChatGlobalState.commands[0].resourceId;
@@ -213,26 +185,23 @@ export default {
     },
   },
   watch: {
-    isReadyForCommands: {
-      handler(flag) {
-        if (flag) {
-          this.$nextTick(() => {
-            const { question, variables, fromButton } = this.duoChatGlobalState.commands[0];
-            this.onSendChatPrompt(question, variables, fromButton);
-          });
+    'duoChatGlobalState.isShown': {
+      handler(newVal) {
+        if (!newVal) {
+          // we reset chat when it gets closed, to avoid flickering the previously opened thread
+          // information when it's opened again
+          this.onNewChat();
         }
       },
     },
-    'duoChatGlobalState.isShown': {
-      handler(newVal, oldVal) {
-        if (newVal === true && oldVal === false) {
-          const isFromButton =
-            this.hasCommands && Boolean(this.duoChatGlobalState.commands[0].fromButton);
-
-          if (!isFromButton) {
-            this.forceNewChat = true;
+    'duoChatGlobalState.commands': {
+      handler(newVal) {
+        if (newVal.length) {
+          const { commands } = this.duoChatGlobalState;
+          if (commands.length) {
             this.onNewChat();
-            this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
+            const { question, variables, resourceId } = commands[0];
+            this.onSendChatPrompt(question, variables, resourceId);
           }
         }
       },
@@ -333,18 +302,15 @@ export default {
       performance.clearMeasures();
       this.isResponseTracked = true;
     },
-    onSendChatPrompt(question, variables = {}, fromButton = false) {
+    onSendChatPrompt(question, variables = {}, resourceId = this.computedResourceId) {
       const CHAT_RESET_COMMANDS = [
         GENIE_CHAT_NEW_MESSAGE,
         GENIE_CHAT_RESET_MESSAGE,
         GENIE_CHAT_CLEAR_MESSAGE,
       ];
 
-      // Create a new thread if chat is reset or request comes from button
-      if (
-        this.glFeatures.duoChatMultiThread &&
-        (CHAT_RESET_COMMANDS.includes(question) || fromButton)
-      ) {
+      // Create a new thread if chat is reset
+      if (this.glFeatures.duoChatMultiThread && CHAT_RESET_COMMANDS.includes(question)) {
         this.onNewChat();
 
         if (CHAT_RESET_COMMANDS.includes(question)) {
@@ -361,7 +327,7 @@ export default {
 
       const mutationVariables = {
         question,
-        resourceId: this.computedResourceId,
+        resourceId,
         clientSubscriptionId: this.clientSubscriptionId,
         projectId: this.projectId,
         threadId: this.glFeatures.duoChatMultiThread ? this.activeThread : null,
@@ -479,11 +445,6 @@ export default {
         })
         .catch(this.onError);
     },
-    selectLatestThread(threads) {
-      return threads.reduce((latest, thread) => {
-        return !latest || thread.updatedAt > latest.updatedAt ? thread : latest;
-      });
-    },
   },
 };
 </script>
@@ -501,7 +462,6 @@ export default {
         @message-stream="onMessageStreamReceived"
         @response-received="onResponseReceived"
         @error="onError"
-        @subscription-ready="isSubscriptionReady = true"
       />
 
       <duo-chat
