@@ -1,0 +1,22 @@
+query workItemVulnerabilities($id: WorkItemID!) {
+  workItem(id: $id) {
+    id
+    iid
+    namespace {
+      id
+    }
+    widgets {
+      ... on WorkItemWidgetVulnerabilities {
+        type
+        relatedVulnerabilities {
+          nodes {
+            id
+            state
+            severity
+            name
+          }
+        }
+      }
+    }
+  }
+}

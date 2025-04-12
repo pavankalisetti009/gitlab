@@ -20,6 +20,10 @@ module EE
         push_frontend_feature_flag(:saas_user_caps_auto_approve_pending_users_on_cap_increase, @group)
       end
 
+      before_action only: :issues do
+        push_frontend_feature_flag(:work_item_related_vulnerabilities, @group)
+      end
+
       before_action only: :show do
         @seat_count_data = generate_seat_count_alert_data(@group)
       end
