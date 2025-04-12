@@ -266,9 +266,9 @@ module EE
         value = ERB::Util.html_escape(value)
 
         if action == :removed
-          "<div>removed #{name}: <code class=\"idiff\">#{value}</code></div>"
+          "<p>removed #{name}: <code class=\"idiff\">#{value}</code></p>"
         else
-          "<div>changed #{name} to <code class=\"idiff\">#{value}</code></div>"
+          "<p>changed #{name} to <code class=\"idiff\">#{value}</code></p>"
         end
       end
     end
