@@ -9,6 +9,17 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   include RemoteDevelopment::IntegrationSpecHelpers
   include_context "with remote development shared fixtures"
 
+  let(:token_file_name) { RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOKEN_FILE_NAME }
+  let(:token_file_path) { RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOKEN_FILE_PATH }
+  let(:git_credential_store_script) { RemoteDevelopment::Files::GIT_CREDENTIAL_STORE_SCRIPT }
+  let(:git_credential_store_script_file_name) do
+    RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME
+  end
+
+  let(:git_credential_store_script_file_path) do
+    RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::GIT_CREDENTIAL_STORE_SCRIPT_FILE_PATH
+  end
+
   let(:states) { ::RemoteDevelopment::WorkspaceOperations::States }
   let(:agent_admin_user) { create(:user, name: "Agent Admin User") }
   # Agent setup
@@ -89,13 +100,13 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     # rubocop:disable Layout/LineLength -- keep them on one line for easier readability and editability
     [
       { key: "gl_token", type: :file, value: /glpat-.+/ },
-      { key: "GL_TOKEN_FILE_PATH", type: :environment, value: "/.workspace-data/variables/file/gl_token" },
-      { key: "gl_git_credential_store.sh", type: :file, value: RemoteDevelopment::Files::WORKSPACE_VARIABLES_GIT_CREDENTIAL_STORE_SCRIPT },
+      { key: "GL_TOKEN_FILE_PATH", type: :environment, value: token_file_path },
+      { key: git_credential_store_script_file_name, type: :file, value: git_credential_store_script },
       { key: "GIT_CONFIG_COUNT", type: :environment, value: "3" },
       { key: "GIT_CONFIG_KEY_0", type: :environment, value: "credential.helper" },
       { key: "GIT_CONFIG_KEY_1", type: :environment, value: "user.name" },
       { key: "GIT_CONFIG_KEY_2", type: :environment, value: "user.email" },
-      { key: "GIT_CONFIG_VALUE_0", type: :environment, value: "/.workspace-data/variables/file/gl_git_credential_store.sh" },
+      { key: "GIT_CONFIG_VALUE_0", type: :environment, value: git_credential_store_script_file_path },
       { key: "GIT_CONFIG_VALUE_1", type: :environment, value: "Workspaces User" },
       { key: "GIT_CONFIG_VALUE_2", type: :environment, value: "workspaces-user@example.org" },
       { key: "GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
@@ -103,7 +114,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       { key: "GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },
       { key: "GL_WORKSPACE_DOMAIN_TEMPLATE", type: :environment, value: "${PORT}-workspace-#{agent.id}-#{user.id}-#{random_string}.#{dns_zone}" },
       { key: "GITLAB_WORKFLOW_INSTANCE_URL", type: :environment, value: Gitlab::Routing.url_helpers.root_url },
-      { key: "GITLAB_WORKFLOW_TOKEN_FILE", type: :environment, value: "/.workspace-data/variables/file/gl_token" }
+      { key: "GITLAB_WORKFLOW_TOKEN_FILE", type: :environment, value: token_file_path }
     ]
     # rubocop:enable Layout/LineLength
   end
@@ -260,12 +271,12 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     expect(all_actual_vars.pluck(:key)).to match_array(all_expected_vars.pluck(:key))
 
     # Then check the full attributes for all vars except gl_token, which must be compared as a regex
-    expected_without_regexes = all_expected_vars.reject { |v| v[:key] == "gl_token" }
-    actual_without_regexes = all_actual_vars.reject { |v| v[:key] == "gl_token" }
+    expected_without_regexes = all_expected_vars.reject { |v| v[:key] == token_file_name }
+    actual_without_regexes = all_actual_vars.reject { |v| v[:key] == token_file_name }
     expect(expected_without_regexes).to match(actual_without_regexes)
 
-    expected_gl_token_value = expected_internal_variables.find { |var| var[:key] == "gl_token" }[:value]
-    actual_gl_token_value = all_actual_vars.find { |var| var[:key] == "gl_token" }[:value]
+    expected_gl_token_value = expected_internal_variables.find { |var| var[:key] == token_file_name }[:value]
+    actual_gl_token_value = all_actual_vars.find { |var| var[:key] == token_file_name }[:value]
     expect(actual_gl_token_value).to match(expected_gl_token_value)
 
     workspace
@@ -398,11 +409,17 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       simulate_first_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::CREATION_REQUESTED,
         **additional_args_for_expected_config_to_apply
       )
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO RUNNING ACTUAL_STATE
-      simulate_second_poll(workspace: workspace.reload, agent_token: agent_token)
+      simulate_second_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        actual_state: states::RUNNING,
+        **additional_args_for_expected_config_to_apply
+      )
 
       # UPDATE WORKSPACE DESIRED_STATE TO STOPPED VIA GRAPHQL API
       do_stop_workspace(workspace)
@@ -411,14 +428,25 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       simulate_third_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::RUNNING,
         **additional_args_for_expected_config_to_apply
       )
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO STOPPING ACTUAL_STATE
-      simulate_fourth_poll(workspace: workspace.reload, agent_token: agent_token)
+      simulate_fourth_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        actual_state: states::STOPPING,
+        **additional_args_for_expected_config_to_apply
+      )
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO STOPPED ACTUAL_STATE
-      simulate_fifth_poll(workspace: workspace.reload, agent_token: agent_token)
+      simulate_fifth_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        actual_state: states::STOPPED,
+        **additional_args_for_expected_config_to_apply
+      )
 
       # SIMULATE RECONCILE RESPONSE TO AGENTK FOR PARTIAL RECONCILE TO SHOW NO RAILS_INFOS ARE SENT
       simulate_sixth_poll(agent_token: agent_token)
@@ -427,6 +455,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       simulate_seventh_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::STOPPED,
         **additional_args_for_expected_config_to_apply
       )
 
@@ -437,39 +466,50 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       simulate_eighth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::STOPPED,
         **additional_args_for_expected_config_to_apply
       )
 
-      # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO RUNNING ACTUAL_STATE
+      # SIMULATE TRAVEL FORWARD IN TIME MAX_ACTIVE_HOURS_BEFORE_STOP HOURS
       simulate_ninth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        # TRAVEL FORWARD IN TIME MAX_ACTIVE_HOURS_BEFORE_STOP HOURS
-        time_to_travel_after_poll: workspace.workspaces_agent_config.max_active_hours_before_stop.hours
+        actual_state: states::RUNNING,
+        time_to_travel_after_poll: workspace.workspaces_agent_config&.max_active_hours_before_stop&.hours,
+        **additional_args_for_expected_config_to_apply
       )
 
       # SIMULATE RECONCILE RESPONSE TO AGENTK UPDATING WORKSPACE TO STOPPED DESIRED_STATE
       simulate_tenth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::RUNNING,
         **additional_args_for_expected_config_to_apply
       )
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO STOPPING ACTUAL_STATE
-      simulate_eleventh_poll(workspace: workspace.reload, agent_token: agent_token)
+      simulate_eleventh_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        actual_state: states::STOPPING,
+        **additional_args_for_expected_config_to_apply
+      )
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO STOPPED ACTUAL_STATE
       simulate_twelfth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::STOPPED,
         # TRAVEL FORWARD IN TIME MAX_STOPPED_HOURS_BEFORE_TERMINATION HOURS
-        time_to_travel_after_poll: workspace.workspaces_agent_config.max_stopped_hours_before_termination.hours
+        time_to_travel_after_poll: workspace.workspaces_agent_config&.max_stopped_hours_before_termination&.hours,
+        **additional_args_for_expected_config_to_apply
       )
 
       # SIMULATE RECONCILE RESPONSE TO AGENTK UPDATING WORKSPACE TO TERMINATED DESIRED_STATE
       simulate_thirteenth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::TERMINATED,
         **additional_args_for_expected_config_to_apply
       )
 
@@ -477,11 +517,16 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       simulate_fourteenth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
+        actual_state: states::TERMINATING,
         **additional_args_for_expected_config_to_apply
       )
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO TERMINATED ACTUAL_STATE
-      simulate_fifteenth_poll(workspace: workspace.reload, agent_token: agent_token)
+      simulate_fifteenth_poll(
+        workspace: workspace.reload,
+        agent_token: agent_token,
+        **additional_args_for_expected_config_to_apply
+      )
     end
   end
 

@@ -29,7 +29,7 @@ module RemoteDevelopment
       read_file("workspace_operations/create/project_cloner_component_inserter_container_args.sh")
     MAIN_COMPONENT_UPDATER_CONTAINER_ARGS =
       read_file("workspace_operations/create/main_component_updater_container_args.sh")
-    WORKSPACE_VARIABLES_GIT_CREDENTIAL_STORE_SCRIPT =
+    GIT_CREDENTIAL_STORE_SCRIPT =
       read_file("workspace_operations/create/workspace_variables_git_credential_store_script.sh")
 
     private_class_method :read_file

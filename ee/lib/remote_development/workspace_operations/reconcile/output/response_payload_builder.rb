@@ -81,7 +81,7 @@ module RemoteDevelopment
             return nil, NO_RESOURCES_INCLUDED unless should_include_config_to_apply?(update_type: update_type,
               workspace: workspace)
 
-            include_all_resources = update_type == FULL || workspace.force_include_all_resources
+            include_all_resources = should_include_all_resources?(update_type: update_type, workspace: workspace)
             resources_include_type = include_all_resources ? ALL_RESOURCES_INCLUDED : PARTIAL_RESOURCES_INCLUDED
 
             workspace_resources =
@@ -120,10 +120,24 @@ module RemoteDevelopment
             update_type == FULL ||
               workspace.force_include_all_resources ||
               workspace.desired_state_updated_more_recently_than_last_response_to_agent? ||
+              workspace.actual_state_updated_more_recently_than_last_response_to_agent? ||
               workspace.desired_state_terminated_and_actual_state_not_terminated?
           end
 
-          private_class_method :should_include_config_to_apply?, :generate_config_to_apply
+          # @param [String (frozen)] update_type
+          # @param [RemoteDevelopment::Workspace] workspace
+          # @return [Boolean]
+          def self.should_include_all_resources?(update_type:, workspace:)
+            update_type == FULL ||
+              workspace.force_include_all_resources ||
+              # We include all resources if actual_state_updated_more_recently_than_last_response_to_agent?,
+              # so that the file secret for WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH is always updated when
+              # the actual_state changes
+              workspace.actual_state_updated_more_recently_than_last_response_to_agent?
+          end
+
+          private_class_method :generate_config_to_apply, :should_include_config_to_apply?,
+            :should_include_all_resources?
         end
       end
     end

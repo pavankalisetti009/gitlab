@@ -121,7 +121,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
 
   subject(:resources_from_devfile_parser) do
     described_class.get_all(
-      processed_devfile: processed_devfile_yaml,
+      processed_devfile_yaml: processed_devfile_yaml,
       params: params,
       logger: logger
     )

@@ -14,9 +14,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Boolean] workspace_exists
   # @param [Hash] workspace_variables_environment
   # @param [Hash] workspace_variables_file
+  # @param [Hash] workspace_variables_additional_data
   # @param [String] resource_version
   # @param [String] dns_zone
   # @param [Hash] error_details
+  # @return [Hash]
   def create_workspace_agent_info_hash(
     workspace:,
     # NOTE: previous_actual_state is the actual state of the workspace IMMEDIATELY prior to the current state. We don't
@@ -27,6 +29,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     workspace_exists:,
     workspace_variables_environment: nil,
     workspace_variables_file: nil,
+    workspace_variables_additional_data: nil,
     resource_version: '1',
     dns_zone: 'workspaces.localdev.me',
     error_details: nil
@@ -287,6 +290,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
       workspace: workspace,
       workspace_variables_environment: workspace_variables_environment,
       workspace_variables_file: workspace_variables_file,
+      workspace_variables_additional_data: workspace_variables_additional_data,
       started: started,
       include_inventory: false,
       include_network_policy: false,
@@ -303,7 +307,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     info
   end
 
-  # rubocop:enable Metrics/ParameterLists, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/ParameterLists, Metrics/PerceivedComplexity
 
   # @param [RemoteDevelopment::Workspace] workspace
   # @param [Hash] args
@@ -331,6 +335,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Boolean] desired_state_is_terminated
   # @param [Hash] workspace_variables_environment
   # @param [Hash] workspace_variables_file
+  # @param [Hash] workspace_variables_additional_data
   # @param [Boolean] include_inventory
   # @param [Boolean] include_network_policy
   # @param [Boolean] include_all_resources
@@ -354,6 +359,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     desired_state_is_terminated: false,
     workspace_variables_environment: nil,
     workspace_variables_file: nil,
+    workspace_variables_additional_data: nil,
     include_inventory: true,
     include_network_policy: true,
     include_all_resources: false,
@@ -453,14 +459,17 @@ RSpec.shared_context 'with remote development shared fixtures' do
       )
     )
 
+    workspace_reconciled_actual_state_file_name =
+      RemoteDevelopment::WorkspaceOperations::Reconcile::ReconcileConstants::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME
     secret_file = secret_file(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
       labels: labels,
       annotations: secrets_inventory_annotations,
-      workspace_variables_file: workspace_variables_file || get_workspace_variables_file(
-        workspace_variables: workspace.workspace_variables
-      )
+      workspace_variables_file: workspace_variables_file ||
+        get_workspace_variables_file(workspace_variables: workspace.workspace_variables),
+      additional_data: workspace_variables_additional_data ||
+        { "#{workspace_reconciled_actual_state_file_name}": workspace.actual_state }
     )
 
     if max_resources_per_workspace.present?
@@ -508,7 +517,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     normalize_resources(namespace_path, project_name, resources)
   end
 
-  # rubocop:enable Metrics/ParameterLists, Metrics/AbcSize
+  # rubocop:enable Metrics/ParameterLists, Metrics/CyclomaticComplexity, Metrics/AbcSize
 
   # @param [String] workspace_name
   # @param [String] workspace_namespace
@@ -1108,14 +1117,18 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Hash] labels
   # @param [Hash] annotations
   # @param [Hash] workspace_variables_file
+  # @param [Hash] additional_data
   # @return [Hash]
   def secret_file(
     workspace_name:,
     workspace_namespace:,
     labels:,
     annotations:,
-    workspace_variables_file:
+    workspace_variables_file:,
+    additional_data:
   )
+    data = workspace_variables_file.merge(additional_data)
+
     {
       kind: "Secret",
       apiVersion: "v1",
@@ -1125,7 +1138,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
         labels: labels,
         annotations: annotations
       },
-      data: workspace_variables_file.transform_values { |v| Base64.strict_encode64(v).to_s }
+      data: data.transform_values { |v| Base64.strict_encode64(v).to_s }
     }
   end
 

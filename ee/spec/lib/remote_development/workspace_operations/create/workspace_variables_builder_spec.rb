@@ -38,19 +38,19 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
   let(:expected_variables) do
     [
       {
-        key: "gl_token",
+        key: RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOKEN_FILE_NAME,
         value: "example-pat-value",
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::FILE_TYPE,
         workspace_id: workspace_id
       },
       {
         key: "GL_TOKEN_FILE_PATH",
-        value: "/.workspace-data/variables/file/gl_token",
+        value: RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOKEN_FILE_PATH,
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
         workspace_id: workspace_id
       },
       {
-        key: "gl_git_credential_store.sh",
+        key: RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME,
         value: git_credential_store_script,
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::FILE_TYPE,
         workspace_id: workspace_id
@@ -69,7 +69,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
       },
       {
         key: "GIT_CONFIG_VALUE_0",
-        value: "/.workspace-data/variables/file/gl_git_credential_store.sh",
+        value: RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::GIT_CREDENTIAL_STORE_SCRIPT_FILE_PATH,
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
         workspace_id: workspace_id
       },
@@ -129,7 +129,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
       },
       {
         key: "GITLAB_WORKFLOW_TOKEN_FILE",
-        value: "/.workspace-data/variables/file/gl_token",
+        value: RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOKEN_FILE_PATH,
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
         workspace_id: workspace_id
       },

@@ -13,11 +13,13 @@ module RemoteDevelopment
         include WorkspaceOperationsConstants
 
         # Please keep alphabetized
-        GIT_CREDENTIAL_STORE_SCRIPT_FILE = "#{VARIABLES_FILE_DIR}/gl_git_credential_store.sh".freeze
+        GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME = "gl_git_credential_store.sh"
+        GIT_CREDENTIAL_STORE_SCRIPT_FILE_PATH = "#{VARIABLES_FILE_DIR}/#{GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME}".freeze
         MAIN_COMPONENT_INDICATOR_ATTRIBUTE = "gl/inject-editor"
         NAMESPACE_PREFIX = "gl-rd-ns"
         PROJECT_CLONING_SUCCESSFUL_FILENAME = ".gl_project_cloning_successful"
-        TOKEN_FILE = "#{VARIABLES_FILE_DIR}/gl_token".freeze
+        TOKEN_FILE_NAME = "gl_token"
+        TOKEN_FILE_PATH = "#{VARIABLES_FILE_DIR}/#{TOKEN_FILE_NAME}".freeze
         TOOLS_DIR_NAME = ".gl-tools"
         TOOLS_DIR_ENV_VAR = "GL_TOOLS_DIR"
         TOOLS_INJECTOR_COMPONENT_NAME = "gl-tools-injector"
