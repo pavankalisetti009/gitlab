@@ -201,7 +201,9 @@ export default {
       <div v-if="deploymentsNotShownCount > 0">
         <div class="gl-flex gl-justify-center gl-py-3">
           {{ moreDeploymentsMessage }}
-          <gl-link :href="pagesUrl" class="gl-ml-2">{{ __('View all') }}</gl-link>
+          <gl-link :href="pagesUrl" class="gl-ml-2" data-testid="view-all-link">{{
+            __('View all')
+          }}</gl-link>
         </div>
       </div>
     </div>

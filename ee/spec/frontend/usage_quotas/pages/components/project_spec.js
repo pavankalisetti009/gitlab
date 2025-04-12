@@ -42,6 +42,8 @@ describe('ProjectView', () => {
   const findAllUrls = () => wrapper.findAllByTestId('url');
   const findAllCiBuilds = () => wrapper.findAllByTestId('ci-build');
   const findAvatar = () => wrapper.findComponent(GlAvatar);
+  const findViewAllLink = () => wrapper.findByTestId('view-all-link');
+
   const createComponent = (viewType) => {
     wrapper = mountExtended(ProjectView, {
       propsData: {
@@ -103,7 +105,8 @@ describe('ProjectView', () => {
 
       it('shows "View all" link when there are more deployments', () => {
         expect(wrapper.text()).toContain('+ 98 more deployments');
-        expect(wrapper.text()).toContain('View all');
+        expect(findViewAllLink().text()).toBe('View all');
+        expect(findViewAllLink().props('href')).toBe('/group/test-project/pages');
       });
 
       it('does not show "View all" link when all deployments are displayed', async () => {
@@ -117,7 +120,7 @@ describe('ProjectView', () => {
           },
         });
         expect(wrapper.text()).not.toContain('more deployments');
-        expect(wrapper.text()).not.toContain('View all');
+        expect(findViewAllLink().exists()).toBe(false);
       });
     },
   );
