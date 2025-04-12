@@ -25,7 +25,9 @@ RSpec.describe Emails::MergeRequests, feature_category: :code_review_workflow do
         path = project_merge_request_url(merge_request.target_project, merge_request)
 
         is_expected.to have_referable_subject(merge_request, reply: true)
-        is_expected.to have_body_text("<strong>#{current_user.name}</strong> has added you as an approver.")
+        is_expected.to have_body_text(
+          "<strong>#{current_user.name}</strong> has created a merge request that you can approve."
+        )
         is_expected.to have_link("View it on GitLab", href: path)
       end
     end
