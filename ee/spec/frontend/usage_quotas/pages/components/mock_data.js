@@ -136,6 +136,7 @@ export const getProjectPagesDeploymentsMockData = {
   data: {
     project: {
       id: 'gid://gitlab/Project/19',
+      fullPath: 'my-group/my-project',
       pagesDeployments: {
         count: 3,
         pageInfo: {
@@ -219,6 +220,7 @@ export const getEmptyProjectPagesDeploymentsMockData = {
   data: {
     project: {
       id: 'gid://gitlab/Project/19',
+      fullPath: 'my-group/my-project',
       pagesDeployments: {
         count: 0,
         pageInfo: {
