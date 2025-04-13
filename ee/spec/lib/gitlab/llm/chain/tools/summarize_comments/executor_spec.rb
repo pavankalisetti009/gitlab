@@ -85,9 +85,9 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Executor, feature_c
         let_it_be(:issue1) { create(:issue, project: project) }
         let(:resource) { issue1 }
 
-        it 'returns error answer' do
+        it 'returns a message indicating no comments' do
           expect(tool.execute.content)
-            .to eq(_('This resource has no comments to summarize'))
+            .to eq('There are no comments to summarize.')
         end
       end
 
