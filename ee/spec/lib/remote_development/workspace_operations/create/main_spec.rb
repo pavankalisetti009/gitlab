@@ -6,6 +6,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
   let(:context_passed_along_steps) { {} }
   let(:rop_steps) do
     [
+      [RemoteDevelopment::WorkspaceOperations::Create::AgentValidator, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Create::DevfileValidator, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener, :and_then],
@@ -69,6 +70,19 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
     # rubocop:disable Layout/LineLength -- we want to avoid excessive wrapping for RSpec::Parameterized Nested Array Style so we can have formatting consistency between entries
     where(:case_name, :err_result_for_step, :expected_response) do
       [
+        [
+          "when AgentValidator returns WorkspaceCreateParamsValidationFailed",
+          {
+            step_class: RemoteDevelopment::WorkspaceOperations::Create::AgentValidator,
+            returned_message:
+              lazy { RemoteDevelopment::Messages::WorkspaceCreateParamsValidationFailed.new(err_message_content) }
+          },
+          {
+            status: :error,
+            message: lazy { "Workspace create params validation failed: #{error_details}" },
+            reason: :bad_request
+          },
+        ],
         [
           "when DevfileFetcher returns WorkspaceCreateParamsValidationFailed",
           {

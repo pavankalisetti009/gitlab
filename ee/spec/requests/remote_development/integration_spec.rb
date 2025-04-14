@@ -25,29 +25,6 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   # Agent setup
   let(:jwt_secret) { SecureRandom.random_bytes(Gitlab::Kas::SECRET_LENGTH) }
   let(:agent_token) { create(:cluster_agent_token, agent: agent) }
-  let(:workspaces_agents_config_query) do
-    <<~GRAPHQL
-      query {
-          namespace(fullPath: "#{common_parent_namespace.full_path}") {
-            remoteDevelopmentClusterAgents(filter: AVAILABLE) {
-              nodes {
-                id
-                workspacesAgentConfig {
-                  id
-                  projectId
-                  enabled
-                  gitlabWorkspacesProxyNamespace
-                  networkPolicyEnabled
-                  dnsZone
-                  workspacesPerUserQuota
-                  workspacesQuota
-                }
-              }
-            }
-          }
-        }
-    GRAPHQL
-  end
 
   let(:gitlab_workspaces_proxy_namespace) { "gitlab-workspaces" }
   let(:dns_zone) { "integration-spec-workspaces.localdev.me" }
@@ -57,6 +34,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   let(:current_user) { user }
   let(:common_parent_namespace_name) { "common-parent-group" }
   let(:common_parent_namespace) { create(:group, name: common_parent_namespace_name, owners: agent_admin_user) }
+  let(:common_organization) { common_parent_namespace.organization }
   let(:agent_project_namespace) do
     create(:group, name: "agent-project-group", parent: common_parent_namespace)
   end
@@ -68,7 +46,6 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
   let(:workspace_project_name) { "workspace-project" }
   let(:workspace_namespace_path) { "#{common_parent_namespace_name}/#{workspace_project_namespace_name}" }
-  let(:random_string) { "abcdef" }
   let(:project_ref) { "master" }
   let(:devfile_path) { ".devfile.yaml" }
   let(:devfile_fixture_name) { "example.devfile.yaml.erb" }
@@ -95,27 +72,28 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     ]
   end
 
-  let(:expected_internal_variables) do
-    # rubocop:disable Layout/LineLength -- keep them on one line for easier readability and editability
-    [
-      { key: create_constants_module::TOKEN_FILE_NAME, type: :file, value: /glpat-.+/ },
-      { key: "GL_TOKEN_FILE_PATH", type: :environment, value: token_file_path },
-      { key: git_credential_store_script_file_name, type: :file, value: git_credential_store_script },
-      { key: "GIT_CONFIG_COUNT", type: :environment, value: "3" },
-      { key: "GIT_CONFIG_KEY_0", type: :environment, value: "credential.helper" },
-      { key: "GIT_CONFIG_KEY_1", type: :environment, value: "user.name" },
-      { key: "GIT_CONFIG_KEY_2", type: :environment, value: "user.email" },
-      { key: "GIT_CONFIG_VALUE_0", type: :environment, value: git_credential_store_script_file_path },
-      { key: "GIT_CONFIG_VALUE_1", type: :environment, value: "Workspaces User" },
-      { key: "GIT_CONFIG_VALUE_2", type: :environment, value: "workspaces-user@example.org" },
-      { key: "GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
-      { key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{versionRaw}/{path}" },
-      { key: "GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },
-      { key: "GL_WORKSPACE_DOMAIN_TEMPLATE", type: :environment, value: "${PORT}-workspace-#{agent.id}-#{user.id}-#{random_string}.#{dns_zone}" },
-      { key: "GITLAB_WORKFLOW_INSTANCE_URL", type: :environment, value: Gitlab::Routing.url_helpers.root_url },
-      { key: "GITLAB_WORKFLOW_TOKEN_FILE", type: :environment, value: token_file_path }
-    ]
-    # rubocop:enable Layout/LineLength
+  let(:namespace_agents_config_query) do
+    <<~GRAPHQL
+      query {
+          namespace(fullPath: "#{common_parent_namespace.full_path}") {
+            workspacesClusterAgents(filter: AVAILABLE) {
+              nodes {
+                id
+                workspacesAgentConfig {
+                  id
+                  projectId
+                  enabled
+                  gitlabWorkspacesProxyNamespace
+                  networkPolicyEnabled
+                  dnsZone
+                  workspacesPerUserQuota
+                  workspacesQuota
+                }
+              }
+            }
+          }
+        }
+    GRAPHQL
   end
 
   let(:workspace_project) do
@@ -144,6 +122,31 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
   let(:agent) do
     create(:ee_cluster_agent, project: agent_project, created_by_user: agent_admin_user, project_id: agent_project.id)
+  end
+
+  # @param [String] random_string
+  # @return [Array]
+  def expected_internal_variables(random_string:)
+    # rubocop:disable Layout/LineLength -- keep them on one line for easier readability and editability
+    [
+      { key: create_constants_module::TOKEN_FILE_NAME, type: :file, value: /glpat-.+/ },
+      { key: "GL_TOKEN_FILE_PATH", type: :environment, value: token_file_path },
+      { key: git_credential_store_script_file_name, type: :file, value: git_credential_store_script },
+      { key: "GIT_CONFIG_COUNT", type: :environment, value: "3" },
+      { key: "GIT_CONFIG_KEY_0", type: :environment, value: "credential.helper" },
+      { key: "GIT_CONFIG_KEY_1", type: :environment, value: "user.name" },
+      { key: "GIT_CONFIG_KEY_2", type: :environment, value: "user.email" },
+      { key: "GIT_CONFIG_VALUE_0", type: :environment, value: git_credential_store_script_file_path },
+      { key: "GIT_CONFIG_VALUE_1", type: :environment, value: "Workspaces User" },
+      { key: "GIT_CONFIG_VALUE_2", type: :environment, value: "workspaces-user@example.org" },
+      { key: "GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
+      { key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{versionRaw}/{path}" },
+      { key: "GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },
+      { key: "GL_WORKSPACE_DOMAIN_TEMPLATE", type: :environment, value: "${PORT}-workspace-#{agent.id}-#{user.id}-#{random_string}.#{dns_zone}" },
+      { key: "GITLAB_WORKFLOW_INSTANCE_URL", type: :environment, value: Gitlab::Routing.url_helpers.root_url },
+      { key: "GITLAB_WORKFLOW_TOKEN_FILE", type: :environment, value: token_file_path }
+    ]
+    # rubocop:enable Layout/LineLength
   end
 
   # @return [void]
@@ -176,7 +179,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     workspaces_agent_config = RemoteDevelopment::WorkspacesAgentConfig.find_by_cluster_agent_id(agent.id)
 
     # Get the agent config via the GraphQL API to verify it was created correctly
-    get_graphql(workspaces_agents_config_query, current_user: agent_admin_user)
+    get_graphql(namespace_agents_config_query, current_user: agent_admin_user)
     expected_agent_config =
       {
         "id" => "gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/#{workspaces_agent_config.id}",
@@ -189,14 +192,14 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
         "workspacesQuota" => workspaces_quota
       }
     expect(
-      graphql_data_at(:namespace, :remoteDevelopmentClusterAgents, :nodes, 0, :workspacesAgentConfig)
+      graphql_data_at(:namespace, :workspacesClusterAgents, :nodes, 0, :workspacesAgentConfig)
     ).to eq(expected_agent_config)
 
     nil
   end
 
   # @return [void]
-  def do_create_mapping
+  def do_create_namespace_mapping
     namespace_create_remote_development_cluster_agent_mapping_create_mutation_args =
       {
         namespace_id: common_parent_namespace.to_global_id.to_s,
@@ -211,9 +214,44 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     nil
   end
 
+  # @return [void]
+  def do_delete_namespace_mapping
+    namespace_delete_remote_development_cluster_agent_mapping_delete_mutation_args =
+      {
+        namespace_id: common_parent_namespace.to_global_id.to_s,
+        cluster_agent_id: agent.to_global_id.to_s
+      }
+    do_graphql_mutation_post(
+      name: :namespace_delete_remote_development_cluster_agent_mapping,
+      input: namespace_delete_remote_development_cluster_agent_mapping_delete_mutation_args,
+      user: agent_admin_user
+    )
+
+    nil
+  end
+
+  # @return [void]
+  def do_create_org_mapping
+    organization_create_cluster_agent_mapping_create_mutation_args =
+      {
+        organization_id: common_organization.to_global_id.to_s,
+        cluster_agent_id: agent.to_global_id.to_s
+      }
+    do_graphql_mutation_post(
+      name: :organization_create_cluster_agent_mapping,
+      input: organization_create_cluster_agent_mapping_create_mutation_args,
+      user: create(:user, owner_of: common_organization)
+    )
+
+    nil
+  end
+
   # rubocop:disable Metrics/AbcSize -- We want this to stay a single method
+  # @param [String] random_string
   # @return [RemoteDevelopment::Workspace]
-  def do_create_workspace
+  def do_create_workspace(random_string:)
+    allow(SecureRandom).to receive(:alphanumeric) { random_string }
+
     # FETCH THE AGENT CONFIG VIA THE GRAPHQL API, SO WE CAN USE ITS VALUES WHEN CREATING WORKSPACE
     cluster_agent_gid = "gid://gitlab/Clusters::Agent/#{agent.id}"
 
@@ -250,7 +288,10 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     expect(actual_processed_devfile.fetch(:components)).to eq(expected_processed_devfile.fetch(:components))
     expect(actual_processed_devfile).to eq(expected_processed_devfile)
 
-    all_expected_vars = (expected_internal_variables + user_provided_variables).sort_by { |v| v[:key] }
+    all_expected_vars =
+      (expected_internal_variables(random_string: random_string) + user_provided_variables)
+        .sort_by { |v| v[:key] }
+
     # NOTE: We convert the actual records into hashes and sort them as a hash rather than ordering in
     #       ActiveRecord, to account for platform- or db-specific sorting differences.
     types = RemoteDevelopment::Enums::WorkspaceVariable::WORKSPACE_VARIABLE_TYPES
@@ -275,7 +316,8 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     actual_without_regexes = all_actual_vars.reject { |v| v[:key] == token_file_name }
     expect(expected_without_regexes).to match(actual_without_regexes)
 
-    expected_gl_token_value = expected_internal_variables.find { |var| var[:key] == token_file_name }[:value]
+    expected_gl_token_value =
+      expected_internal_variables(random_string: random_string).find { |var| var[:key] == token_file_name }[:value]
     actual_gl_token_value = all_actual_vars.find { |var| var[:key] == token_file_name }[:value]
     expect(actual_gl_token_value).to match(expected_gl_token_value)
 
@@ -379,7 +421,6 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   shared_examples 'workspace lifecycle' do
     before do
       stub_licensed_features(remote_development: true)
-      allow(SecureRandom).to receive(:alphanumeric) { random_string }
 
       allow(Gitlab::Kas).to receive(:secret).and_return(jwt_secret)
 
@@ -388,13 +429,13 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
     it "successfully exercises the full lifecycle of a workspace", :unlimited_max_formatted_output_length do # rubocop:disable RSpec/NoExpectationExample -- the expectations are in the called methods
       # CREATE THE MAPPING VIA GRAPHQL API, SO WE HAVE PROPER AUTHORIZATION
-      do_create_mapping
+      do_create_namespace_mapping
 
       # CREATE THE WorkspacesAgentConfig VIA GRAPHQL API
       do_create_workspaces_agent_config
 
       # CREATE WORKSPACE VIA GRAPHQL API
-      workspace = do_create_workspace
+      workspace = do_create_workspace(random_string: "abcdef")
 
       additional_args_for_expected_config_to_apply =
         build_additional_args_for_expected_config_to_apply_yaml_stream(
@@ -527,6 +568,13 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
         agent_token: agent_token,
         **additional_args_for_expected_config_to_apply
       )
+
+      # DELETE NAMESPACE AGENT MAPPING, AND CREATE ORGANIZATION MAPPING
+      do_delete_namespace_mapping
+      do_create_org_mapping
+
+      # CREATE A NEW WORKSPACE WITH THE ORGANIZATION MAPPING
+      do_create_workspace(random_string: "ghijkl")
     end
   end
 
