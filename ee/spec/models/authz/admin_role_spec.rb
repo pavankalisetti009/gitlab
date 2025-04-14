@@ -5,6 +5,10 @@ require 'spec_helper'
 RSpec.describe Authz::AdminRole, feature_category: :permissions do
   subject(:admin_role) { build(:admin_role) }
 
+  it "includes the AdminRollable Concern" do
+    expect(described_class.included_modules).to include(Authz::AdminRollable)
+  end
+
   describe 'associations' do
     it { is_expected.to have_many(:users) }
     it { is_expected.to have_many(:user_admin_roles) }
@@ -70,5 +74,17 @@ RSpec.describe Authz::AdminRole, feature_category: :permissions do
     subject(:all_customizable_permissions) { described_class.all_customizable_permissions }
 
     it { is_expected.to eq(Gitlab::CustomRoles::Definition.admin) }
+  end
+
+  describe '#enabled_admin_permissions' do
+    let(:admin_role) { build(:admin_role, *permissions.keys) }
+
+    subject { admin_role.enabled_admin_permissions }
+
+    context 'when some permissions are enabled' do
+      let(:permissions) { Gitlab::CustomRoles::Definition.admin.to_a.sample(3).to_h }
+
+      it { is_expected.to match_array(permissions) }
+    end
   end
 end

@@ -13,8 +13,8 @@ module Authz
     jsonb_accessor :permissions,
       Gitlab::CustomRoles::Definition.admin.keys.index_with(::Gitlab::Database::Type::JsonbBoolean.new)
 
-    def self.all_customizable_permissions
-      Gitlab::CustomRoles::Definition.admin
+    class << self
+      alias_method :all_customizable_permissions, :all_customizable_admin_permissions
     end
 
     def admin_related_role?

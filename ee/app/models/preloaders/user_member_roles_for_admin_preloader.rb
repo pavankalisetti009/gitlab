@@ -22,7 +22,8 @@ module Preloaders
     private
 
     def admin_abilities_for_user
-      user_member_roles = Users::UserMemberRole.where(user_id: user.id).includes(:member_role)
+      user_member_roles = Authz::UserAdminRole.klass(user).where(user_id: user.id).includes(:member_role)
+
       user_abilities = user_member_roles.flat_map do |user_role|
         user_role.member_role.enabled_admin_permissions.keys
       end

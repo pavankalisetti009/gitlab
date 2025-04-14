@@ -10,7 +10,7 @@ FactoryBot.define do
     end
 
     after(:build) do |admin_role, evaluator|
-      next if evaluator.without_any_permissions
+      next if evaluator.without_any_permissions || evaluator.permissions.any?
 
       admin_role[:read_admin_dashboard] = true
     end
