@@ -15,8 +15,8 @@ import { createAlert } from '~/alert';
 import { s__, sprintf } from '~/locale';
 import { spriteIcon } from '~/lib/utils/common_utils';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
-import CiCdAnalyticsCharts from '~/vue_shared/components/ci_cd_analytics/ci_cd_analytics_charts.vue';
-import { DEFAULT_SELECTED_CHART } from '~/vue_shared/components/ci_cd_analytics/constants';
+import CiCdAnalyticsCharts from '~/analytics/ci_cd/components/ci_cd_analytics_charts.vue';
+import { DEFAULT_SELECTED_CHART } from '~/analytics/ci_cd/components/constants';
 import { PROMO_URL } from '~/constants';
 import DoraChartHeader from './dora_chart_header.vue';
 import {
