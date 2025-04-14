@@ -1948,6 +1948,29 @@ Input type: `AddProjectToSecurityDashboardInput`
 | <a id="mutationaddprojecttosecuritydashboarderrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationaddprojecttosecuritydashboardproject"></a>`project` | [`Project`](#project) | Project that was added to the Instance Security Dashboard. |
 
+### `Mutation.adminRolesLdapSync`
+
+{{< details >}}
+**Introduced** in GitLab 18.0.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `AdminRolesLdapSyncInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationadminrolesldapsyncclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationadminrolesldapsyncclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationadminrolesldapsyncerrors"></a>`errors` | [`[String!]`](#string) | Errors encountered during operation. |
+| <a id="mutationadminrolesldapsyncsuccess"></a>`success` | [`Boolean`](#boolean) | Whether the sync was successfully enqueued. |
+
 ### `Mutation.adminSidekiqQueuesDeleteJobs`
 
 Input type: `AdminSidekiqQueuesDeleteJobsInput`
