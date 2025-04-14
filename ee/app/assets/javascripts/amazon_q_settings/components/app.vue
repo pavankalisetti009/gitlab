@@ -8,6 +8,7 @@ import {
   GlForm,
   GlFormRadioGroup,
   GlFormRadio,
+  GlLink,
   GlSprintf,
   GlModalDirective,
   GlFormCheckbox,
@@ -63,6 +64,7 @@ export default {
     GlFormRadioGroup,
     GlFormRadio,
     GlFormCheckbox,
+    GlLink,
     GlSprintf,
     HelpPageLink,
   },
@@ -251,10 +253,15 @@ export default {
     'AmazonQ|Have Amazon Q review code in merge requests automatically',
   ),
   I18N_COPY: s__('AmazonQ|Copy to clipboard'),
+  I18N_CREATE_Q_PROFILE: s__(
+    'AmazonQ|Create an Amazon Q Developer profile in the %{linkStart}Amazon Q Developer console.%{linkEnd}',
+  ),
   INPUT_PLACEHOLDER_ARN: 'arn:aws:iam::account-id:role/role-name',
   HELP_PAGE_IAM_ROLE: helpPagePath('user/duo_amazon_q/setup.md', {
     anchor: 'create-an-iam-role',
   }),
+  AMAZON_Q_CONSOLE_HREF:
+    'https://us-east-1.console.aws.amazon.com/amazonq/developer/home?region=us-east-1#/gitlab',
 };
 </script>
 
@@ -265,6 +272,20 @@ export default {
     </gl-form-group>
     <gl-form-group v-else :label="s__('AmazonQ|Setup')">
       <ol class="gl-mb-0 gl-list-inside gl-pl-0">
+        <li>
+          <gl-sprintf :message="$options.I18N_CREATE_Q_PROFILE">
+            <template #link="{ content }">
+              <gl-link
+                :show-external-icon="true"
+                :href="$options.AMAZON_Q_CONSOLE_HREF"
+                target="_blank"
+                variant="inline"
+              >
+                {{ content }}
+              </gl-link>
+            </template>
+          </gl-sprintf>
+        </li>
         <li>
           <gl-sprintf :message="$options.I18N_STEP_IDENTITY_PROVIDER">
             <template #help="{ content }">

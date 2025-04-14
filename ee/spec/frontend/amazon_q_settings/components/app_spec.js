@@ -10,6 +10,7 @@ import {
   GlFormRadio,
   GlSprintf,
   GlFormCheckbox,
+  GlLink,
 } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -157,12 +158,25 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
       it('renders setup', () => {
         expect(findSetupFormGroup().exists()).toBe(true);
 
-        expect(listItems()).toHaveLength(3);
+        expect(listItems()).toHaveLength(4);
       });
 
-      it('renders step 1', () => {
-        const idpStepText = listItem(0).text();
-        const idpStepHelpPageLink = listItem(0).findComponent(HelpPageLink);
+      it('renders step 1, Create a Q Developer Profile', () => {
+        const createQDevProfileStep1 = listItem(0);
+        expect(createQDevProfileStep1.text()).toMatchInterpolatedText(
+          'Create an Amazon Q Developer profile in the Amazon Q Developer console.',
+        );
+        expect(createQDevProfileStep1.findComponent(GlLink).text()).toBe(
+          'Amazon Q Developer console.',
+        );
+        expect(createQDevProfileStep1.findComponent(GlLink).attributes('href')).toBe(
+          'https://us-east-1.console.aws.amazon.com/amazonq/developer/home?region=us-east-1#/gitlab',
+        );
+      });
+
+      it('renders step 2', () => {
+        const idpStepText = listItem(1).text();
+        const idpStepHelpPageLink = listItem(1).findComponent(HelpPageLink);
 
         expect(idpStepText).toBe(
           'Create an identity provider for this GitLab instance within AWS using the following values. Learn more.',
@@ -175,8 +189,8 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
       });
 
       it('renders identity provider details with clipboard buttons', () => {
-        const idpFormFields = listItem(0).findAllComponents(GlFormInputGroup).wrappers;
-        const idpClipboardButtons = listItem(0).findAllComponents(ClipboardButton).wrappers;
+        const idpFormFields = listItem(1).findAllComponents(GlFormInputGroup).wrappers;
+        const idpClipboardButtons = listItem(1).findAllComponents(ClipboardButton).wrappers;
 
         expect(idpFormFields[0].props('value')).toEqual('instance-uid');
         expect(idpClipboardButtons[0].props('text')).toEqual('instance-uid');
@@ -191,9 +205,9 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
         expect(idpClipboardButtons[3].props('text')).toEqual('audience');
       });
 
-      it('renders step 2', () => {
-        const iamStepText = listItem(1).text();
-        const iamStepHelpPageLink = listItem(1).findComponent(HelpPageLink);
+      it('renders step 3, Create IAM Role', () => {
+        const iamStepText = listItem(2).text();
+        const iamStepHelpPageLink = listItem(2).findComponent(HelpPageLink);
 
         expect(iamStepText).toBe(
           'Within your AWS account, create an IAM role for Amazon Q and the relevant identity provider. Learn how to create an IAM role.',
@@ -205,8 +219,8 @@ describe('ee/amazon_q_settings/components/app.vue', () => {
         expect(iamStepHelpPageLink.text()).toEqual('Learn how to create an IAM role');
       });
 
-      it('renders step 3', () => {
-        const arnStepText = listItem(2).text();
+      it('renders step 4, Enter the arn', () => {
+        const arnStepText = listItem(3).text();
 
         expect(arnStepText).toEqual("Enter the IAM role's ARN.");
       });
