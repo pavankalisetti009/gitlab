@@ -157,6 +157,8 @@ module EE
       has_many :ai_conversation_threads, class_name: 'Ai::Conversation::Thread', foreign_key: :user_id
       has_many :ai_conversation_messages, class_name: 'Ai::Conversation::Message', through: :ai_conversation_threads, source: :messages
 
+      has_many :subscription_seat_assignments, class_name: 'GitlabSubscriptions::SeatAssignment'
+
       scope :auditors, -> { where('auditor IS true') }
       scope :managed_by, ->(group) { where(managing_group: group) }
 

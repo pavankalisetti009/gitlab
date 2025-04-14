@@ -99,6 +99,8 @@ module EE
       has_many :v2_approval_rules_groups, class_name: 'MergeRequests::ApprovalRulesGroup', inverse_of: :group
       has_many :v2_approval_rules, through: :v2_approval_rules_groups, class_name: 'MergeRequests::ApprovalRule', source: :approval_rule
 
+      has_many :subscription_seat_assignments, class_name: 'GitlabSubscriptions::SeatAssignment', foreign_key: :namespace_id
+
       delegate :repository_read_only,
         :default_compliance_framework,
         :default_compliance_framework_id,
