@@ -12353,7 +12353,7 @@ CREATE TABLE cloud_connector_access (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    data jsonb NOT NULL,
+    data jsonb,
     catalog jsonb
 );
 
