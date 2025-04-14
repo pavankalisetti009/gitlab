@@ -134,72 +134,32 @@ RSpec.describe MergeRequests::SquashService, feature_category: :source_code_mana
   end
 
   describe '#execute' do
-    context 'when branch_rule_squash_settings feature is enabled' do
-      let(:merge_request) { merge_request_with_only_new_files }
+    let(:merge_request) { merge_request_with_only_new_files }
 
+    context 'when squashing is forbidden on the project' do
       before do
-        stub_feature_flags(branch_rule_squash_settings: true)
+        allow(merge_request.target_project.project_setting).to receive(:squash_never?).and_return(true)
       end
 
-      context 'when squashing is forbidden on the project' do
-        before do
-          allow(merge_request.target_project.project_setting).to receive(:squash_never?).and_return(true)
-        end
+      it_behaves_like 'the squash is forbidden'
 
-        it_behaves_like 'the squash is forbidden'
-
-        context 'and squashing is allowed for the target branch' do
-          before do
-            protected_branch = create(:protected_branch, name: merge_request.target_branch, project: project)
-            create(:branch_rule_squash_option, :always, project: project, protected_branch: protected_branch)
-          end
-
-          it_behaves_like 'the squash succeeds'
-        end
-      end
-
-      context 'and squashing is forbidden for the target branch' do
+      context 'and squashing is allowed for the target branch' do
         before do
           protected_branch = create(:protected_branch, name: merge_request.target_branch, project: project)
-          create(:branch_rule_squash_option, :never, project: project, protected_branch: protected_branch)
-        end
-
-        it_behaves_like 'the squash is forbidden'
-      end
-    end
-
-    context 'when branch_rule_squash_settings feature is disabled' do
-      let(:merge_request) { merge_request_with_only_new_files }
-
-      before do
-        stub_feature_flags(branch_rule_squash_settings: false)
-      end
-
-      context 'when squashing is forbidden on the project' do
-        before do
-          allow(merge_request.target_project.project_setting).to receive(:squash_never?).and_return(true)
-        end
-
-        it_behaves_like 'the squash is forbidden'
-
-        context 'and squashing is allowed for the target branch' do
-          before do
-            protected_branch = create(:protected_branch, name: merge_request.target_branch, project: project)
-            create(:branch_rule_squash_option, :always, project: project, protected_branch: protected_branch)
-          end
-
-          it_behaves_like 'the squash is forbidden'
-        end
-      end
-
-      context 'and squashing is forbidden for the target branch' do
-        before do
-          protected_branch = create(:protected_branch, name: merge_request.target_branch, project: project)
-          create(:branch_rule_squash_option, :never, project: project, protected_branch: protected_branch)
+          create(:branch_rule_squash_option, :always, project: project, protected_branch: protected_branch)
         end
 
         it_behaves_like 'the squash succeeds'
       end
+    end
+
+    context 'and squashing is forbidden for the target branch' do
+      before do
+        protected_branch = create(:protected_branch, name: merge_request.target_branch, project: project)
+        create(:branch_rule_squash_option, :never, project: project, protected_branch: protected_branch)
+      end
+
+      it_behaves_like 'the squash is forbidden'
     end
   end
 end

@@ -35,16 +35,15 @@ RSpec.describe 'getting squash options for a branch rule', feature_category: :so
     graphql_data_at(:project, :branch_rules, :nodes)
   end
 
+  let(:feature_available) { true }
+
   before do
-    stub_licensed_features(branch_rule_squash_options: true)
+    stub_licensed_features(branch_rule_squash_options: feature_available)
+    post_graphql(query, current_user: current_user, variables: variables)
   end
 
   context 'when user is not authorized' do
     let(:current_user) { guest_user }
-
-    before do
-      post_graphql(query, current_user: current_user, variables: variables)
-    end
 
     it_behaves_like 'a working graphql query'
 
@@ -55,13 +54,9 @@ RSpec.describe 'getting squash options for a branch rule', feature_category: :so
     let(:current_user) { maintainer_user }
 
     context 'and the feature is not available' do
-      before do
-        stub_licensed_features(branch_rule_squash_options: false)
-      end
+      let(:feature_available) { false }
 
       it 'returns squashOption for all branches only' do
-        post_graphql(query, current_user: current_user, variables: variables)
-
         expect(branch_rules_data).to contain_exactly(
           a_hash_including({
             "name" => "All branches",
@@ -79,42 +74,25 @@ RSpec.describe 'getting squash options for a branch rule', feature_category: :so
       end
     end
 
-    context 'and the branch_rule_squash_settings flag is enabled' do
-      before do
-        post_graphql(query, current_user: current_user, variables: variables)
-      end
+    it_behaves_like 'a working graphql query'
 
-      it_behaves_like 'a working graphql query'
+    it 'returns squash option attributes' do
+      expect(branch_rules_data.size).to eq(2)
 
-      it 'returns squash option attributes' do
-        expect(branch_rules_data.size).to eq(2)
-
-        expect(branch_rules_data).to contain_exactly(
-          a_hash_including(
-            "name" => "All branches",
-            "squashOption" =>
-             { "option" => "Allow",
-               "helpText" =>
-               "Checkbox is visible and unselected by default." }),
-          a_hash_including(
-            "name" => protected_branch.name,
-            "squashOption" =>
-              { "option" => "Allow",
-                "helpText" =>
-                "Checkbox is visible and unselected by default." })
-        )
-      end
-    end
-
-    context 'when the branch_rule_squash_settings flag is not enabled' do
-      before do
-        stub_feature_flags(branch_rule_squash_settings: false)
-        post_graphql(query, current_user: current_user, variables: variables)
-      end
-
-      it 'returns nil for squashOption' do
-        expect(branch_rules_data.dig(0, 'squashOption')).to be_nil
-      end
+      expect(branch_rules_data).to contain_exactly(
+        a_hash_including(
+          "name" => "All branches",
+          "squashOption" =>
+           { "option" => "Allow",
+             "helpText" =>
+             "Checkbox is visible and unselected by default." }),
+        a_hash_including(
+          "name" => protected_branch.name,
+          "squashOption" =>
+            { "option" => "Allow",
+              "helpText" =>
+              "Checkbox is visible and unselected by default." })
+      )
     end
   end
 end

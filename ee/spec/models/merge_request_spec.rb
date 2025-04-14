@@ -3263,17 +3263,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     subject { merge_request.squash_option }
 
-    context 'when branch_rule_squash_settings is disabled' do
-      let_it_be(:protected_branch) { create(:protected_branch, name: target_branch, project_id: project.id) }
-      let_it_be(:squash_option) { create(:branch_rule_squash_option, protected_branch: protected_branch, project: project) }
-
-      before do
-        stub_feature_flags(branch_rule_squash_settings: false)
-      end
-
-      it { is_expected.to eq(project_setting) }
-    end
-
     context 'when the target branch matches a wildcard protected branch' do
       let_it_be_with_refind(:protected_branch) { create(:protected_branch, name: '*', project_id: project.id) }
 

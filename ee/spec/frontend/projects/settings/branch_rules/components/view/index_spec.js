@@ -62,7 +62,7 @@ describe('View branch rules in enterprise edition', () => {
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createComponent = async (
-    glFeatures = { editBranchRules: true, branchRuleSquashSettings: true },
+    glFeatures = { editBranchRules: true },
     { showApprovers, showStatusChecks, showCodeOwners } = {},
     mockResponse,
     mutationMockResponse,

@@ -72,89 +72,50 @@ RSpec.describe MergeRequestPollWidgetEntity, feature_category: :merge_trains do
   end
 
   describe 'squash fields' do
-    context 'when branch_rule_squash_settings feature is enabled' do
-      before do
-        stub_feature_flags(branch_rule_squash_settings: true)
+    context 'when branch rule squash option is defined for target branch' do
+      let(:protected_branch) { create(:protected_branch, name: target_branch, project: project) }
+      let(:branch_rule_squash_option) do
+        create(:branch_rule_squash_option, project: project, protected_branch: protected_branch)
       end
 
-      context 'when branch rule squash option is defined for target branch' do
-        let(:protected_branch) { create(:protected_branch, name: target_branch, project: project) }
-        let(:branch_rule_squash_option) do
-          create(:branch_rule_squash_option, project: project, protected_branch: protected_branch)
-        end
-
-        where(:project_squash_option, :squash_option, :value, :default, :readonly) do
-          'default_off' | 'always'      | true  | true  | true
-          'default_on'  | 'never'       | false | false | true
-          'never'       | 'default_on'  | false | true  | false
-          'always'      | 'default_off' | false | false | false
-        end
-
-        with_them do
-          before do
-            project.project_setting.update!(squash_option: project_squash_option)
-            branch_rule_squash_option.update!(squash_option: squash_option)
-          end
-
-          it 'the key reflects the project squash option value' do
-            expect(entity[:squash_on_merge]).to eq(value)
-            expect(entity[:squash_enabled_by_default]).to eq(default)
-            expect(entity[:squash_readonly]).to eq(readonly)
-          end
-        end
+      where(:project_squash_option, :squash_option, :value, :default, :readonly) do
+        'default_off' | 'always'      | true  | true  | true
+        'default_on'  | 'never'       | false | false | true
+        'never'       | 'default_on'  | false | true  | false
+        'always'      | 'default_off' | false | false | false
       end
 
-      context 'when no branch rule squash option exists' do
-        where(:project_squash_option, :value, :default, :readonly) do
-          'always'      | true  | true  | true
-          'never'       | false | false | true
-          'default_on'  | false | true  | false
-          'default_off' | false | false | false
+      with_them do
+        before do
+          project.project_setting.update!(squash_option: project_squash_option)
+          branch_rule_squash_option.update!(squash_option: squash_option)
         end
 
-        with_them do
-          before do
-            project.project_setting.update!(squash_option: project_squash_option)
-          end
-
-          it 'the key reflects the project squash option value' do
-            expect(entity[:squash_on_merge]).to eq(value)
-            expect(entity[:squash_enabled_by_default]).to eq(default)
-            expect(entity[:squash_readonly]).to eq(readonly)
-          end
+        it 'the key reflects the project squash option value' do
+          expect(entity[:squash_on_merge]).to eq(value)
+          expect(entity[:squash_enabled_by_default]).to eq(default)
+          expect(entity[:squash_readonly]).to eq(readonly)
         end
       end
     end
 
-    context 'when branch_rule_squash_settings feature is disabled' do
-      before do
-        stub_feature_flags(branch_rule_squash_settings: false)
+    context 'when no branch rule squash option exists' do
+      where(:project_squash_option, :value, :default, :readonly) do
+        'always'      | true  | true  | true
+        'never'       | false | false | true
+        'default_on'  | false | true  | false
+        'default_off' | false | false | false
       end
 
-      describe 'squash defaults for projects' do
-        let(:protected_branch) { create(:protected_branch, name: target_branch, project: project) }
-        let(:branch_rule_squash_option) do
-          create(:branch_rule_squash_option, project: project, protected_branch: protected_branch)
+      with_them do
+        before do
+          project.project_setting.update!(squash_option: project_squash_option)
         end
 
-        where(:project_squash_option, :squash_option, :value, :default, :readonly) do
-          'always'      | 'default_off' | true  | true  | true
-          'never'       | 'default_on'  | false | false | true
-          'default_on'  | 'never'       | false | true  | false
-          'default_off' | 'always'      | false | false | false
-        end
-
-        with_them do
-          before do
-            project.project_setting.update!(squash_option: project_squash_option)
-            branch_rule_squash_option.update!(squash_option: squash_option)
-          end
-
-          it 'the key reflects the project squash option value' do
-            expect(entity[:squash_on_merge]).to eq(value)
-            expect(entity[:squash_enabled_by_default]).to eq(default)
-            expect(entity[:squash_readonly]).to eq(readonly)
-          end
+        it 'the key reflects the project squash option value' do
+          expect(entity[:squash_on_merge]).to eq(value)
+          expect(entity[:squash_enabled_by_default]).to eq(default)
+          expect(entity[:squash_readonly]).to eq(readonly)
         end
       end
     end

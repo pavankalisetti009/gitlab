@@ -656,17 +656,15 @@ module EE
 
     override :squash_option
     def squash_option
-      if ::Feature.enabled?(:branch_rule_squash_settings, target_project)
-        protected_branch = target_project.protected_branches.then do |protected_branches|
-          if protected_branches.loaded?
-            protected_branches.find { |protected_branch| protected_branch.name == target_branch }
-          else
-            protected_branches.find_by(name: target_branch)
-          end
+      protected_branch = target_project.protected_branches.then do |protected_branches|
+        if protected_branches.loaded?
+          protected_branches.find { |protected_branch| protected_branch.name == target_branch }
+        else
+          protected_branches.find_by(name: target_branch)
         end
-
-        return protected_branch.squash_option if protected_branch&.squash_option
       end
+
+      return protected_branch.squash_option if protected_branch&.squash_option
 
       super
     end
