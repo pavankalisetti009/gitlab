@@ -25,18 +25,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
   end
 
   describe 'AI-Powered features settings for Self-Managed instances' do
-    describe '#admin_ai_general_settings_helper_data' do
-      subject(:admin_ai_general_settings_helper_data) { helper.admin_ai_general_settings_helper_data }
-
-      it 'returns the expected data' do
-        expect(admin_ai_general_settings_helper_data).to include(
-          on_general_settings_page: 'true',
-          configuration_settings_path: '/admin/gitlab_duo',
-          show_redirect_banner: 'true'
-        )
-      end
-    end
-
     describe '#admin_ai_configuration_settings_helper_data' do
       subject(:admin_ai_configuration_settings_helper_data) { helper.admin_ai_configuration_settings_helper_data }
 

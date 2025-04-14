@@ -37,9 +37,7 @@ module EE
 
       def group_ai_general_settings_helper_data
         {
-          on_general_settings_page: 'true',
-          configuration_settings_path: group_settings_gitlab_duo_path(@group),
-          show_redirect_banner: (@group.root? && gitlab_com_subscription?).to_s
+          on_general_settings_page: 'true'
         }.merge(group_ai_settings_helper_data)
       end
 

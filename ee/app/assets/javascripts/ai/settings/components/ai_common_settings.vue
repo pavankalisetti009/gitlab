@@ -1,7 +1,5 @@
 <script>
-import { unescape } from 'lodash';
-import { GlLink, GlSprintf, GlAlert } from '@gitlab/ui';
-import { sanitize } from '~/lib/dompurify';
+import { GlLink, GlSprintf } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { s__, __ } from '~/locale';
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
@@ -13,7 +11,6 @@ export default {
   components: {
     GlLink,
     GlSprintf,
-    GlAlert,
     SettingsBlock,
     AiCommonSettingsForm,
     PageHeading,
@@ -25,28 +22,10 @@ export default {
       'AiPowered|Configure AI-powered GitLab Duo features. %{linkStart}Which features?%{linkEnd}',
     ),
     configurationPageTitle: s__('AiPowered|Configuration'),
-    movedAlertTitle: s__('AiPowered|GitLab Duo settings have moved'),
-    movedAlertDescriptionText: s__(
-      'AiPowered|To make it easier to configure GitLab Duo, the settings have moved to a more visible location. To access them, go to ',
-    ),
-    movedAlertButton: s__('AiPowered|View GitLab Duo settings'),
-    groupSettingsPath: unescape(sanitize(__('Settings &gt; GitLab Duo'), { ALLOWED_TAGS: [] })),
-    globalSettingsPath: unescape(sanitize(__('Admin Area &gt; GitLab Duo'), { ALLOWED_TAGS: [] })),
   },
-  inject: [
-    'duoAvailability',
-    'experimentFeaturesEnabled',
-    'onGeneralSettingsPage',
-    'configurationSettingsPath',
-    'showRedirectBanner',
-  ],
+  inject: ['duoAvailability', 'experimentFeaturesEnabled', 'onGeneralSettingsPage'],
   props: {
     hasParentFormChanged: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    isGroup: {
       type: Boolean,
       required: false,
       default: false,
@@ -57,14 +36,6 @@ export default {
       availability: this.duoAvailability,
       experimentsEnabled: this.experimentFeaturesEnabled,
     };
-  },
-  computed: {
-    movedAlertDescription() {
-      const path = this.isGroup
-        ? this.$options.i18n.groupSettingsPath
-        : this.$options.i18n.globalSettingsPath;
-      return `${this.$options.i18n.movedAlertDescriptionText}%{linkStart}${path}%{linkEnd}.`;
-    },
   },
   methods: {
     submitForm() {
@@ -87,7 +58,7 @@ export default {
   <div>
     <template v-if="onGeneralSettingsPage">
       <settings-block class="gl-mb-5 !gl-pt-5" :title="$options.i18n.settingsBlockTitle">
-        <template v-if="!showRedirectBanner" #description>
+        <template #description>
           <gl-sprintf
             data-testid="general-settings-subtitle"
             :message="
@@ -102,27 +73,7 @@ export default {
           </gl-sprintf>
         </template>
         <template #default>
-          <gl-alert
-            v-if="showRedirectBanner"
-            variant="info"
-            :title="$options.i18n.movedAlertTitle"
-            :dismissible="false"
-            class="gl-mb-5"
-            data-testid="duo-moved-settings-alert"
-          >
-            <gl-sprintf
-              data-testid="duo-moved-settings-alert-description-text"
-              :message="movedAlertDescription"
-            >
-              <template #link="{ content }">
-                <gl-link class="!gl-no-underline" :href="configurationSettingsPath">{{
-                  content
-                }}</gl-link>
-              </template>
-            </gl-sprintf>
-          </gl-alert>
           <ai-common-settings-form
-            v-else
             :duo-availability="duoAvailability"
             :experiment-features-enabled="experimentFeaturesEnabled"
             :has-parent-form-changed="hasParentFormChanged"

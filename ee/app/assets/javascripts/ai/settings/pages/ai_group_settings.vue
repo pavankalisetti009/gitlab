@@ -63,7 +63,7 @@ export default {
 };
 </script>
 <template>
-  <ai-common-settings :is-group="true" @submit="updateSettings">
+  <ai-common-settings @submit="updateSettings">
     <template #ai-common-settings-top>
       <early-access-program-banner v-if="showEarlyAccessBanner" />
     </template>
