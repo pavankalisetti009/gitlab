@@ -475,7 +475,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
         workspace: workspace.reload,
         agent_token: agent_token,
         actual_state: states::RUNNING,
-        time_to_travel_after_poll: workspace.workspaces_agent_config&.max_active_hours_before_stop&.hours,
+        time_to_travel_after_poll: workspace.workspaces_agent_config.max_active_hours_before_stop.hours,
         **additional_args_for_expected_config_to_apply
       )
 
@@ -501,7 +501,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
         agent_token: agent_token,
         actual_state: states::STOPPED,
         # TRAVEL FORWARD IN TIME MAX_STOPPED_HOURS_BEFORE_TERMINATION HOURS
-        time_to_travel_after_poll: workspace.workspaces_agent_config&.max_stopped_hours_before_termination&.hours,
+        time_to_travel_after_poll: workspace.workspaces_agent_config.max_stopped_hours_before_termination.hours,
         **additional_args_for_expected_config_to_apply
       )
 

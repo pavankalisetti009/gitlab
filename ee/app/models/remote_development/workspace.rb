@@ -42,20 +42,20 @@ module RemoteDevelopment
 
     validate :validate_workspaces_agent_config_present, if: -> { agent }
     validate :validate_workspaces_agent_config_version_is_within_range, if: -> do
-      workspaces_agent_config && workspaces_agent_config_version
+      workspaces_agent_config_present? && workspaces_agent_config_version
     end
     validate :validate_agent_config_enabled, if: ->(workspace) do
-      workspace.new_record? && workspaces_agent_config
+      workspace.new_record? && workspaces_agent_config_present?
     end
 
     validate :enforce_permanent_termination
 
     validate :enforce_workspaces_per_user_quota, if: ->(workspace) do
-      workspace.new_record? && workspaces_agent_config
+      workspace.new_record? && workspaces_agent_config_present?
     end
 
     validate :enforce_workspaces_quota, if: ->(workspace) do
-      workspace.new_record? && workspaces_agent_config
+      workspace.new_record? && workspaces_agent_config_present?
     end
 
     scope :with_desired_state_updated_more_recently_than_last_response_to_agent, -> do
@@ -95,20 +95,22 @@ module RemoteDevelopment
       workspace.new_record? || workspace.actual_state_changed?
     end
 
-    # @return [nil, RemoteDevelopment::WorkspacesAgentConfig]
+    # @return [RemoteDevelopment::WorkspacesAgentConfig]
     def workspaces_agent_config
-      # If no agent or workspaces_agent_configs record exists, return nil
-      return unless agent&.unversioned_latest_workspaces_agent_config
+      unless unversioned_workspaces_agent_config_present?
+        raise "#workspaces_agent_config cannot be called until " \
+          "#agent and #agent.unversioned_latest_workspaces_agent_config are set."
+      end
 
-      if workspaces_agent_config_version.nil?
+      unless workspaces_agent_config_version_present?
         raise "#workspaces_agent_config cannot be called until #workspaces_agent_config_version is set. " \
           "Call set_workspaces_agent_config_version first to automatically set it."
       end
 
       actual_workspaces_agent_configs_table_record = agent.unversioned_latest_workspaces_agent_config
 
-      # If the workspaces_agent_config_version is not nil, then we will try to retrieve and reify the version
-      # from the PaperTrail versions table. If we don't find one, that means that the version is out of range
+      # After confirming that the workspaces_agent_config_version is not nil, we will try to retrieve and reify the
+      # version from the PaperTrail versions table. If we don't find one, that means that the version is out of range
       # (for a valid record, this should only ever be the case where the length of the versions array + 1).
       # In this case we should return the latest version of the workspaces_agent_config.
       # The `try()` approach avoids having to do a length check on the versions array, which would result in
@@ -154,6 +156,21 @@ module RemoteDevelopment
     end
 
     private
+
+    # @return [TrueClass, FalseClass]
+    def workspaces_agent_config_present?
+      unversioned_workspaces_agent_config_present? && workspaces_agent_config_version_present?
+    end
+
+    # @return [TrueClass, FalseClass]
+    def unversioned_workspaces_agent_config_present?
+      agent&.unversioned_latest_workspaces_agent_config.present?
+    end
+
+    # @return [TrueClass, FalseClass]
+    def workspaces_agent_config_version_present?
+      workspaces_agent_config_version.present?
+    end
 
     # @return [Integer]
     def workspaces_count_for_current_user_and_agent

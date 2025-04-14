@@ -208,22 +208,6 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
     end
 
     context "on workspaces_agent_config_version" do
-      context "when version is nil" do
-        before do
-          workspace.save!
-          # noinspection RubyMismatchedArgumentType - intentional to test validation
-          workspace.workspaces_agent_config_version = nil
-        end
-
-        it "raises error message as expected" do
-          expect do
-            workspace.valid?
-          end.to raise_error(RuntimeError,
-            "#workspaces_agent_config cannot be called until #workspaces_agent_config_version is set. " \
-              "Call set_workspaces_agent_config_version first to automatically set it.")
-        end
-      end
-
       context "when version is greater than version range" do
         before do
           workspace.save!
@@ -774,6 +758,51 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
         expect(workspace1.send(:workspaces_count_for_current_agent)).to eq(2)
         expect(workspace4.send(:workspaces_count_for_current_agent)).to eq(1)
         expect(workspace5.send(:workspaces_count_for_current_agent)).to eq(1)
+      end
+    end
+
+    describe "#workspaces_agent_config" do
+      context "when agent is nil" do
+        before do
+          workspace.agent = nil
+        end
+
+        it "raises error message as expected" do
+          expect do
+            workspace.workspaces_agent_config
+          end.to raise_error(RuntimeError,
+            "#workspaces_agent_config cannot be called until " \
+              "#agent and #agent.unversioned_latest_workspaces_agent_config are set.")
+        end
+      end
+
+      context "when agent.unversioned_latest_workspaces_agent_config is nil" do
+        before do
+          workspace.save!
+          allow(workspace.agent).to receive(:unversioned_latest_workspaces_agent_config).and_return(nil)
+        end
+
+        it "raises error message as expected" do
+          expect do
+            workspace.workspaces_agent_config
+          end.to raise_error(RuntimeError,
+            "#workspaces_agent_config cannot be called until " \
+              "#agent and #agent.unversioned_latest_workspaces_agent_config are set.")
+        end
+      end
+
+      context "when version is nil" do
+        before do
+          allow(workspace).to receive(:workspaces_agent_config_version).and_return(nil)
+        end
+
+        it "raises error message as expected" do
+          expect do
+            workspace.workspaces_agent_config
+          end.to raise_error(RuntimeError,
+            "#workspaces_agent_config cannot be called until #workspaces_agent_config_version is set. " \
+              "Call set_workspaces_agent_config_version first to automatically set it.")
+        end
       end
     end
   end
