@@ -23,6 +23,14 @@ module EE::SecurityOrchestrationHelper
     }
   end
 
+  def enabled_policy_experiments(container)
+    return [] unless container&.security_orchestration_policy_configuration
+
+    container
+      .security_orchestration_policy_configuration
+      .enabled_experiments
+  end
+
   def orchestration_policy_data(container, policy_type = nil, policy = nil)
     return unless container
 
@@ -56,7 +64,8 @@ module EE::SecurityOrchestrationHelper
         max_active_vulnerability_management_policies_reached?(container).to_s,
       max_vulnerability_management_policies_allowed: Security::VulnerabilityManagementPolicy::POLICY_LIMIT,
       max_scan_execution_policy_actions: max_scan_execution_policy_actions,
-      max_scan_execution_policy_schedules: max_scan_execution_policy_schedules
+      max_scan_execution_policy_schedules: max_scan_execution_policy_schedules,
+      enabled_experiments: enabled_policy_experiments(container)
     }
 
     if container.is_a?(::Project)

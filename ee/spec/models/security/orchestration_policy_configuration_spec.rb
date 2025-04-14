@@ -3352,6 +3352,36 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
   end
 
+  describe '#enabled_experiments' do
+    before do
+      security_orchestration_policy_configuration.experiments = experiments
+    end
+
+    context 'when experiments field is empty' do
+      let(:experiments) { {} }
+
+      it { expect(security_orchestration_policy_configuration.enabled_experiments).to be_empty }
+    end
+
+    context 'when experiments field is nil' do
+      let(:experiments) { nil }
+
+      it { expect(security_orchestration_policy_configuration.enabled_experiments).to be_empty }
+    end
+
+    context 'when feature is disabled' do
+      let(:experiments) { { 'test_feature' => { 'enabled' => false } } }
+
+      it { expect(security_orchestration_policy_configuration.enabled_experiments).to be_empty }
+    end
+
+    context 'when feature is enabled' do
+      let(:experiments) { { 'test_feature' => { 'enabled' => true } } }
+
+      it { expect(security_orchestration_policy_configuration.enabled_experiments).to match_array(['test_feature']) }
+    end
+  end
+
   describe '#experiment_enabled?' do
     let(:name_of_the_feature) { 'test_feature' }
 
