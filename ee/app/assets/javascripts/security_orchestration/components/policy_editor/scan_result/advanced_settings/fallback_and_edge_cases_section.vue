@@ -48,7 +48,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div class="gl-mt-7">
     <h4>{{ $options.i18n.title }}</h4>
 
     <h5>{{ $options.i18n.fallbackBehaviorTitle }}</h5>
