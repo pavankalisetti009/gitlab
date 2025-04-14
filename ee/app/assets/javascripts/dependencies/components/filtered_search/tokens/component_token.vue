@@ -6,8 +6,6 @@ import {
   GlLoadingIcon,
   GlIntersperse,
 } from '@gitlab/ui';
-// eslint-disable-next-line no-restricted-imports
-import { mapActions } from 'vuex';
 import { createAlert } from '~/alert';
 import { s__, sprintf } from '~/locale';
 import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from 'ee/dependencies/constants';
@@ -142,7 +140,6 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['setComponentIds']),
     isComponentSelected(component) {
       return this.selectedComponents.some((c) => c.id === component.id);
     },
@@ -152,8 +149,6 @@ export default {
       } else {
         this.selectedComponents.push(component);
       }
-
-      this.setComponentIds(this.selectedComponents.map((c) => c.id));
     },
     setSearchTerm(token) {
       // the data can be either a string or an array, in which case we don't want to perform the search

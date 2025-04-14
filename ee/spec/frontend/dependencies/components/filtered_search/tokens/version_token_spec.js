@@ -104,6 +104,10 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
     return nextTick();
   };
 
+  const setComponentNames = (componentNames) => {
+    store.state.searchFilterParameters = { component_names: componentNames };
+  };
+
   beforeEach(() => {
     createVuexStore();
     createComponent();
@@ -142,7 +146,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
 
   describe('when multiple components are selected', () => {
     beforeEach(() => {
-      store.state.componentIds = ['component-1', 'component-2'];
+      setComponentNames(['git', 'lodash']);
     });
 
     it('shows the correct guidance message', () => {
@@ -165,9 +169,9 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
   });
 
   describe('when exactly one component is selected', () => {
-    const componentIds = ['component-1'];
+    const componentNames = ['git'];
     beforeEach(() => {
-      store.state.componentIds = componentIds;
+      setComponentNames(componentNames);
     });
 
     it('does not show any guidance messages', () => {
@@ -188,14 +192,14 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
 
     it('fetches the list of versions', () => {
       expect(requestHandlers.projectHandler).toHaveBeenCalledWith(
-        expect.objectContaining({ fullPath: FULL_PATH, componentId: componentIds[0] }),
+        expect.objectContaining({ fullPath: FULL_PATH, componentName: componentNames[0] }),
       );
     });
   });
 
   describe('when the versions have been fetched successfully', () => {
     beforeEach(async () => {
-      store.state.componentIds = ['component-1'];
+      setComponentNames(['git']);
       await waitForPromises();
     });
 
@@ -242,7 +246,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
       createComponent({
         projectHandler: jest.fn().mockRejectedValue(new Error('GraphQL error')),
       });
-      store.state.componentIds = ['component-1'];
+      setComponentNames(['git']);
 
       await waitForPromises();
     });
@@ -258,7 +262,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
   describe('when there is a next page', () => {
     beforeEach(async () => {
       createComponent(mockApolloHandlers([], true));
-      store.state.componentIds = ['component-1'];
+      setComponentNames(['git']);
       await waitForPromises();
     });
 

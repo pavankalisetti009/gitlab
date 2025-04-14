@@ -20,4 +20,24 @@ describe('Dependencies getters', () => {
       expect(getters.totals(state)).toBe(0);
     });
   });
+
+  describe('componentNames', () => {
+    it('should return the component names in searchFilterParameters', () => {
+      const state = {
+        searchFilterParameters: {
+          component_names: ['git', 'lodash'],
+        },
+      };
+
+      expect(getters.componentNames(state)).toEqual(['git', 'lodash']);
+    });
+
+    it('should return an empty array when there are no component names', () => {
+      const state = {
+        searchFilterParameters: {},
+      };
+
+      expect(getters.componentNames(state)).toEqual([]);
+    });
+  });
 });

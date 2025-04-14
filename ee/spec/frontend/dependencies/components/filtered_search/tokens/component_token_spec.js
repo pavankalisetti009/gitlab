@@ -216,16 +216,6 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
           `${TEST_COMPONENTS[0].name}, ${TEST_COMPONENTS[1].name}`,
         );
       });
-
-      it('set the components ids', async () => {
-        await selectComponent(TEST_COMPONENTS[0]);
-        await selectComponent(TEST_COMPONENTS[1], true);
-
-        expect(store.dispatch).toHaveBeenCalledWith('setComponentIds', [
-          TEST_COMPONENTS[0].id,
-          TEST_COMPONENTS[1].id,
-        ]);
-      });
     });
   });
 

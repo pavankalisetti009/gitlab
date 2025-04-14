@@ -151,16 +151,6 @@ describe('Dependencies mutations', () => {
     });
   });
 
-  describe(types.SET_COMPONENT_IDS, () => {
-    const payload = ['gid://gitlab/Sbom::Component/1'];
-
-    it('sets the components', () => {
-      mutations[types.SET_COMPONENT_IDS](state, payload);
-
-      expect(state.componentIds).toStrictEqual(payload);
-    });
-  });
-
   describe(types.SET_FULL_PATH, () => {
     const fullPath = 'group/project';
 

@@ -35,8 +35,6 @@ export const setFullPath = ({ commit }, fullPath) => commit(types.SET_FULL_PATH,
 
 export const requestDependencies = ({ commit }) => commit(types.REQUEST_DEPENDENCIES);
 
-export const setComponentIds = ({ commit }, payload) => commit(types.SET_COMPONENT_IDS, payload);
-
 const parseCursorPagination = (headers) => {
   return {
     type: headers['X-PAGE-TYPE'],
