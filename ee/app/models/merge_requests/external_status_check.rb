@@ -6,11 +6,12 @@ module MergeRequests
 
     include Auditable
     include EachBatch
+    include Gitlab::EncryptedAttribute
 
     attr_encrypted :shared_secret,
       mode: :per_attribute_iv,
       algorithm: 'aes-256-cbc',
-      key: Settings.attr_encrypted_db_key_base_32
+      key: :db_key_base_32
 
     scope :with_api_entity_associations, -> { preload(:protected_branches) }
     scope :applicable_to_branch, ->(branch) do

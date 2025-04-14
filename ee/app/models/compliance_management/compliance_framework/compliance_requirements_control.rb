@@ -3,10 +3,12 @@
 module ComplianceManagement
   module ComplianceFramework
     class ComplianceRequirementsControl < ApplicationRecord
+      include Gitlab::EncryptedAttribute
+
       self.table_name = 'compliance_requirements_controls'
       attr_encrypted :secret_token,
         mode: :per_attribute_iv,
-        key: Settings.attr_encrypted_db_key_base_32,
+        key: :db_key_base_32,
         algorithm: 'aes-256-gcm',
         encode: false,
         encode_iv: false

@@ -4,6 +4,7 @@ module Clusters
   module Agents
     class UrlConfiguration < ApplicationRecord
       include NullifyIfBlank
+      include Gitlab::EncryptedAttribute
 
       self.table_name = 'cluster_agent_url_configurations'
 
@@ -33,7 +34,7 @@ module Clusters
 
       attr_encrypted :private_key,
         mode: :per_attribute_iv,
-        key: Settings.attr_encrypted_db_key_base_32,
+        key: :db_key_base_32,
         algorithm: 'aes-256-gcm',
         encode: false,
         encode_iv: false

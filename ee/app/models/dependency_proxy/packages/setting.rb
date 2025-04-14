@@ -3,31 +3,33 @@
 module DependencyProxy
   module Packages
     class Setting < ApplicationRecord
+      include Gitlab::EncryptedAttribute
+
       self.primary_key = :project_id
 
       belongs_to :project, inverse_of: :dependency_proxy_packages_setting
 
       attr_encrypted :maven_external_registry_username,
         mode: :per_attribute_iv,
-        key: ::Settings.attr_encrypted_db_key_base_32,
+        key: :db_key_base_32,
         algorithm: 'aes-256-gcm',
         encode: false,
         encode_iv: false
       attr_encrypted :maven_external_registry_password,
         mode: :per_attribute_iv,
-        key: ::Settings.attr_encrypted_db_key_base_32,
+        key: :db_key_base_32,
         algorithm: 'aes-256-gcm',
         encode: false,
         encode_iv: false
       attr_encrypted :npm_external_registry_basic_auth,
         mode: :per_attribute_iv,
-        key: ::Settings.attr_encrypted_db_key_base_32,
+        key: :db_key_base_32,
         algorithm: 'aes-256-gcm',
         encode: false,
         encode_iv: false
       attr_encrypted :npm_external_registry_auth_token,
         mode: :per_attribute_iv,
-        key: ::Settings.attr_encrypted_db_key_base_32,
+        key: :db_key_base_32,
         algorithm: 'aes-256-gcm',
         encode: false,
         encode_iv: false
