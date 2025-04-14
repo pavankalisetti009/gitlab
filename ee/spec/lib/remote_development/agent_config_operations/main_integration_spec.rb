@@ -4,16 +4,16 @@ require 'spec_helper'
 
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", feature_category: :workspaces do
+  include_context 'with remote development shared fixtures'
+
   let(:enabled) { true }
   let(:dns_zone) { 'my-awesome-domain.me' }
 
   let(:config) do
-    {
-      remote_development: {
-        enabled: enabled,
-        dns_zone: dns_zone
-      }
-    }
+    yaml = read_fixture_file_yaml("example.agent_config.yaml")
+    yaml.gsub!("dns_zone: workspaces.dev.test", "dns_zone: #{dns_zone}")
+    # NOTE: YAML.safe_load will ensure that all keys are strings, not symbols.
+    YAML.safe_load(yaml)
   end
 
   let(:context) { { agent: agent, config: config } }

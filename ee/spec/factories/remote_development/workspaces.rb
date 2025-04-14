@@ -33,16 +33,23 @@ FactoryBot.define do
     end
 
     transient do
-      without_workspace_variables { false }
       random_string { SecureRandom.alphanumeric(6).downcase }
-      skip_realistic_after_create_timestamp_updates { false }
-      is_after_reconciliation_finish { false }
+      without_workspace_variables { false }
+      without_realistic_after_create_timestamp_updates { false }
+      after_initial_reconciliation { false }
+      unprovisioned { false }
+    end
+
+    trait :without_workspace_variables do
+      transient do
+        without_workspace_variables { true }
+      end
     end
 
     # Use this trait if you want to directly control any timestamp fields when invoking the factory.
     trait :without_realistic_after_create_timestamp_updates do
       transient do
-        skip_realistic_after_create_timestamp_updates { true }
+        without_realistic_after_create_timestamp_updates { true }
       end
     end
 
@@ -50,7 +57,18 @@ FactoryBot.define do
     # agent has already received config to apply from Rails
     trait :after_initial_reconciliation do
       transient do
-        is_after_reconciliation_finish { true }
+        after_initial_reconciliation { true }
+      end
+    end
+
+    trait :unprovisioned do
+      desired_state { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+      actual_state { RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED }
+      responded_to_agent_at { nil }
+      deployment_resource_version { nil }
+
+      transient do
+        unprovisioned { true }
       end
     end
 
@@ -64,10 +82,10 @@ FactoryBot.define do
     end
 
     after(:create) do |workspace, evaluator|
-      if evaluator.skip_realistic_after_create_timestamp_updates
+      if evaluator.without_realistic_after_create_timestamp_updates
         # Set responded_to_agent_at to a non-nil value unless it has already been set
         workspace.update!(responded_to_agent_at: workspace.updated_at) unless workspace.responded_to_agent_at
-      elsif evaluator.is_after_reconciliation_finish
+      elsif evaluator.after_initial_reconciliation
         # The most recent activity was reconciliation where info for the workspace was reported to the agent
         # This DOES NOT necessarily mean that the actual and desired states for the workspace are now the same
         # This is because successful convergence of actual & desired states may span more than 1 reconciliation cycle
@@ -119,18 +137,10 @@ FactoryBot.define do
           responded_to_agent_at: responded_to_agent_at
         )
       end
-    end
 
-    trait :unprovisioned do
-      desired_state { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
-      actual_state { RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED }
-      responded_to_agent_at { nil }
-      deployment_resource_version { nil }
-    end
-
-    trait :without_workspace_variables do
-      transient do
-        without_workspace_variables { true }
+      if evaluator.unprovisioned
+        # if the workspace is unprovisioned, set responded_to_agent_at to nil
+        workspace.update!(responded_to_agent_at: nil)
       end
     end
   end

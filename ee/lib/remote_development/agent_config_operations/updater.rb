@@ -8,7 +8,8 @@ module RemoteDevelopment
       # @param [Hash] context
       # @return [Gitlab::Fp::Result]
       def self.update(context)
-        context => { agent: Clusters::Agent => agent, config: Hash => config }
+        context => { agent: Clusters::Agent => agent, config: Hash => raw_config_from_params }
+        config = raw_config_from_params.deep_symbolize_keys
         config_from_agent_config_file = config[:remote_development]
 
         unless config_from_agent_config_file

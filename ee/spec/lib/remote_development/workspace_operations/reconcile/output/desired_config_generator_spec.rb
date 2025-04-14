@@ -52,15 +52,15 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         desired_state_is_terminated: desired_state_is_terminated,
         include_network_policy: workspace.workspaces_agent_config.network_policy_enabled,
         include_all_resources: include_all_resources,
-        egress_ip_rules: workspace.workspaces_agent_config.network_policy_egress,
+        egress_ip_rules: workspace.workspaces_agent_config.network_policy_egress.map(&:deep_symbolize_keys),
         max_resources_per_workspace: max_resources_per_workspace,
         default_resources_per_workspace_container: default_resources_per_workspace_container,
         allow_privilege_escalation: workspace.workspaces_agent_config.allow_privilege_escalation,
         use_kubernetes_user_namespaces: workspace.workspaces_agent_config.use_kubernetes_user_namespaces,
         default_runtime_class: workspace.workspaces_agent_config.default_runtime_class,
-        agent_labels: workspace.workspaces_agent_config.labels,
-        agent_annotations: workspace.workspaces_agent_config.annotations,
-        image_pull_secrets: image_pull_secrets
+        agent_labels: workspace.workspaces_agent_config.labels.deep_symbolize_keys,
+        agent_annotations: workspace.workspaces_agent_config.annotations.deep_symbolize_keys,
+        image_pull_secrets: image_pull_secrets.map(&:deep_symbolize_keys)
       )
     end
 
@@ -72,7 +72,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
       )
     end
 
-    it "generates the expected config" do
+    it "generates the expected config", :unlimited_max_formatted_output_length do
       expect(workspace_resources).to eq(expected_config)
     end
 

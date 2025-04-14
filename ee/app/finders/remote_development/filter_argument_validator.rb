@@ -5,8 +5,8 @@ module RemoteDevelopment
     #
     # Validate filter arguments against the given types.
     #
-    # @param [Hash<String, Type>] types Types of arguments passed in the filter
-    # @param [Hash] filter_arguments Filter arguments to be validated
+    # @param [Hash<Symbol, Module|Class>] types Types of arguments passed in the filter
+    # @param [Hash<Symbol, Object>] filter_arguments Filter arguments to be validated
     #
     # @return [Boolean] Whether the arguments are valid
     #
@@ -14,7 +14,7 @@ module RemoteDevelopment
       errors = []
 
       filter_arguments.each do |argument_name, argument|
-        type = types[argument_name.to_sym]
+        type = types.fetch(argument_name)
         errors << "'#{argument_name}' must be an Array of '#{type}'" unless argument.is_a?(Array) && argument.all?(type)
       end
 
