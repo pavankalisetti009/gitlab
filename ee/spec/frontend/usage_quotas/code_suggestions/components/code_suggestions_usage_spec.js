@@ -329,7 +329,7 @@ describe('GitLab Duo Usage', () => {
           });
         });
 
-        it('renders addon user list for Duo with Amazon Q', () => {
+        it('renders add-on user list for Duo with Amazon Q', () => {
           expect(findSaasAddOnEligibleUserList().props()).toEqual({
             addOnPurchaseId: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/5',
             duoTier: DUO_AMAZON_Q,
@@ -433,7 +433,7 @@ describe('GitLab Duo Usage', () => {
   });
 
   describe('add on eligible user list', () => {
-    it('renders addon user list for SaaS instance for SaaS', async () => {
+    it('renders add-on user list for SaaS instance for SaaS', async () => {
       createComponent({
         addOnPurchasesHandler: noAssignedAddonDataHandler,
         provideProps: { isSaaS: true, isStandalonePage: true },
@@ -446,7 +446,7 @@ describe('GitLab Duo Usage', () => {
       });
     });
 
-    it('renders addon user list for SM instance for SM', async () => {
+    it('renders add-on user list for SM instance for SM', async () => {
       createComponent({
         addOnPurchasesHandler: noAssignedAddonDataHandler,
         provideProps: { isSaaS: false },

@@ -54,7 +54,7 @@ describe('Add On Eligible User List', () => {
   const addOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/1';
   const addDuoProHref = 'http://customers.gitlab.com/namespaces/0/duo_pro_seats';
 
-  const codeSuggestionsAddOn = { addOnPurchase: { name: DUO_PRO } };
+  const duoProAddOnPurchase = { addOnPurchase: { name: DUO_PRO } };
 
   const addOnPurchase = {
     id: addOnPurchaseId,
@@ -79,7 +79,7 @@ describe('Add On Eligible User List', () => {
         {
           id: eligibleUsers[1].id,
           addOnAssignments: {
-            nodes: codeSuggestionsAddOn,
+            nodes: duoProAddOnPurchase,
             __typename: 'UserAddOnAssignmentConnection',
           },
           __typename: 'AddOnUser',
@@ -87,7 +87,7 @@ describe('Add On Eligible User List', () => {
         {
           id: eligibleUsers[2].id,
           addOnAssignments: {
-            nodes: codeSuggestionsAddOn,
+            nodes: duoProAddOnPurchase,
             __typename: 'UserAddOnAssignmentConnection',
           },
           __typename: 'AddOnUser',
@@ -164,12 +164,12 @@ describe('Add On Eligible User List', () => {
   });
 
   const createMockApolloProvider = (
-    addonAssignmentBulkCreateHandler,
-    addonAssignmentBulkRemoveHandler,
+    addOnAssignmentBulkCreateHandler,
+    addOnAssignmentBulkRemoveHandler,
   ) => {
     const mockClient = createMockClient([
-      [userAddOnAssignmentBulkCreateMutation, addonAssignmentBulkCreateHandler],
-      [userAddOnAssignmentBulkRemoveMutation, addonAssignmentBulkRemoveHandler],
+      [userAddOnAssignmentBulkCreateMutation, addOnAssignmentBulkCreateHandler],
+      [userAddOnAssignmentBulkRemoveMutation, addOnAssignmentBulkRemoveHandler],
     ]);
     const mockClientCustomersDot = createMockClient([
       [getSubscriptionPermissionsData, mockHandlerGetSubscriptionPermissionData],
@@ -195,15 +195,15 @@ describe('Add On Eligible User List', () => {
     enableAddOnUsersFiltering = false,
     enableAddOnUsersPagesizeSelection = false,
     isBulkAddOnAssignmentEnabled = false,
-    addonAssignmentBulkCreateHandler = bulkAssignAddOnHandler,
-    addonAssignmentBulkRemoveHandler = bulkUnassignAddOnHandler,
+    addOnAssignmentBulkCreateHandler = bulkAssignAddOnHandler,
+    addOnAssignmentBulkRemoveHandler = bulkUnassignAddOnHandler,
     mountFn = shallowMount,
     props = {},
     slots = {},
   } = {}) => {
     mockApolloClient = createMockApolloProvider(
-      addonAssignmentBulkCreateHandler,
-      addonAssignmentBulkRemoveHandler,
+      addOnAssignmentBulkCreateHandler,
+      addOnAssignmentBulkRemoveHandler,
     );
 
     wrapper = extendedWrapper(
@@ -333,7 +333,7 @@ describe('Add On Eligible User List', () => {
     await createComponent({
       mountFn: mount,
       isBulkAddOnAssignmentEnabled: true,
-      addonAssignmentBulkCreateHandler: jest.fn().mockResolvedValue({
+      addOnAssignmentBulkCreateHandler: jest.fn().mockResolvedValue({
         data: { userAddOnAssignmentBulkCreate: knownAddOnBulkAssignmentError },
       }),
     });
@@ -396,8 +396,17 @@ describe('Add On Eligible User List', () => {
       ]);
     });
 
-    it('labels add-on column as Duo Pro', () => {
-      expect(findTableLabels()).toContain('GitLab Duo Pro');
+    describe('with Duo Pro add-on enabled', () => {
+      beforeEach(() => {
+        return createComponent({
+          mountFn: mount,
+          props: { duoTier: DUO_PRO },
+        });
+      });
+
+      it('labels add-on column as Duo Enterprise', () => {
+        expect(findTableLabels()).toContain('GitLab Duo Pro');
+      });
     });
 
     describe('with Duo Enterprise add-on enabled', () => {
@@ -568,9 +577,9 @@ describe('Add On Eligible User List', () => {
       });
     });
 
-    describe('code suggestions addon', () => {
+    describe('code suggestions add-on', () => {
       describe('renders', () => {
-        it('shows code suggestions addon field', () => {
+        it('shows code suggestions add-on field', () => {
           const expectedProps = [
             {
               userId: 'gid://gitlab/User/1',
@@ -626,7 +635,7 @@ describe('Add On Eligible User List', () => {
         });
       });
 
-      describe('when there is an error while assigning addon', () => {
+      describe('when there is an error while assigning add-on', () => {
         const error = 'NO_SEATS_AVAILABLE';
 
         beforeEach(async () => {
@@ -915,7 +924,7 @@ describe('Add On Eligible User List', () => {
           await confirmSeatAssignment();
         });
 
-        it('calls bulk addon assignment mutation with appropriate params', () => {
+        it('calls bulk add-on assignment mutation with appropriate params', () => {
           expect(bulkAssignAddOnHandler).toHaveBeenCalledWith({
             addOnPurchaseId,
             userIds: [eligibleUsers[1].id, eligibleUsers[2].id],
@@ -930,10 +939,10 @@ describe('Add On Eligible User List', () => {
           await waitForPromises();
 
           expect(getAddOnAssignmentStatusForUserFromCache(eligibleUsers[1].id)).toEqual(
-            codeSuggestionsAddOn,
+            duoProAddOnPurchase,
           );
           expect(getAddOnAssignmentStatusForUserFromCache(eligibleUsers[2].id)).toEqual(
-            codeSuggestionsAddOn,
+            duoProAddOnPurchase,
           );
         });
 
@@ -977,7 +986,7 @@ describe('Add On Eligible User List', () => {
           await createComponent({
             mountFn: mount,
             isBulkAddOnAssignmentEnabled: true,
-            addonAssignmentBulkCreateHandler: jest.fn().mockRejectedValue(error),
+            addOnAssignmentBulkCreateHandler: jest.fn().mockRejectedValue(error),
           });
 
           await confirmSeatAssignment();
@@ -1193,7 +1202,7 @@ describe('Add On Eligible User List', () => {
           await confirmSeatUnassignment();
         });
 
-        it('calls bulk addon unassignment mutation with appropriate params', () => {
+        it('calls bulk add-on unassignment mutation with appropriate params', () => {
           expect(bulkUnassignAddOnHandler).toHaveBeenCalledWith({
             addOnPurchaseId,
             userIds: [eligibleUsers[0].id, eligibleUsers[1].id],
@@ -1253,7 +1262,7 @@ describe('Add On Eligible User List', () => {
           await createComponent({
             mountFn: mount,
             isBulkAddOnAssignmentEnabled: true,
-            addonAssignmentBulkRemoveHandler: jest.fn().mockRejectedValue(error),
+            addOnAssignmentBulkRemoveHandler: jest.fn().mockRejectedValue(error),
           });
 
           await confirmSeatUnassignment();
@@ -1296,7 +1305,7 @@ describe('Add On Eligible User List', () => {
           await createComponent({
             mountFn: mount,
             isBulkAddOnAssignmentEnabled: true,
-            addonAssignmentBulkRemoveHandler: jest.fn().mockResolvedValue({
+            addOnAssignmentBulkRemoveHandler: jest.fn().mockResolvedValue({
               data: { userAddOnAssignmentBulkRemove: noAssignmentsFoundError },
             }),
           });
@@ -1318,7 +1327,7 @@ describe('Add On Eligible User List', () => {
           await createComponent({
             mountFn: mount,
             isBulkAddOnAssignmentEnabled: true,
-            addonAssignmentBulkRemoveHandler: jest.fn().mockResolvedValue({
+            addOnAssignmentBulkRemoveHandler: jest.fn().mockResolvedValue({
               data: { userAddOnAssignmentBulkRemove: unknownErrorCodeError },
             }),
           });
