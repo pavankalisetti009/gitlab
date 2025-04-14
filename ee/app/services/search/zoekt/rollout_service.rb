@@ -12,7 +12,7 @@ module Search
         batch_size: 128
       }.freeze
 
-      Result = Struct.new(:message, :changes)
+      Result = Data.define(:message, :changes, :re_enqueue)
 
       def self.execute(**kwargs)
         new(**kwargs).execute
@@ -30,8 +30,8 @@ module Search
 
       def execute
         resource_pool = ::Search::Zoekt::SelectionService.execute(max_batch_size: batch_size)
-        return Result.new('No enabled namespaces found', {}) if resource_pool.enabled_namespaces.empty?
-        return Result.new('No available nodes found', {}) if resource_pool.nodes.empty?
+        return Result.new('No enabled namespaces found', {}, false) if resource_pool.enabled_namespaces.empty?
+        return Result.new('No available nodes found', {}, false) if resource_pool.nodes.empty?
 
         plan = ::Search::Zoekt::PlanningService.plan(
           enabled_namespaces: resource_pool.enabled_namespaces,
@@ -40,7 +40,7 @@ module Search
           max_indices_per_replica: max_indices_per_replica
         )
         logger.info(build_structured_payload(**{ zoekt_rollout_plan: ::Gitlab::Json.parse(plan.to_json) }))
-        return Result.new('Skipping execution of changes because of dry run', {}) if dry_run
+        return Result.new('Skipping execution of changes because of dry run', {}, false) if dry_run
 
         changes = ::Search::Zoekt::ProvisioningService.execute(plan)
         result(changes)
@@ -56,17 +56,17 @@ module Search
         success = changes[:success]&.any?
         errors = changes[:errors]&.any?
 
-        message = if success && errors
-                    'Batch is completed with partial success'
-                  elsif errors
-                    'Batch is completed with failure'
-                  elsif success
-                    'Batch is completed with success'
-                  else
-                    'Batch is completed without changes'
-                  end
+        message, re_enqueue = if success && errors
+                                ['Batch is completed with partial success', true]
+                              elsif errors
+                                ['Batch is completed with failure', false]
+                              elsif success
+                                ['Batch is completed with success', true]
+                              else
+                                ['Batch is completed without changes', true]
+                              end
 
-        Result.new(message, changes)
+        Result.new(message, changes, re_enqueue)
       end
     end
   end

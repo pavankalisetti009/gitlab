@@ -34,16 +34,14 @@ module Search
           )
           logger.info(build_structured_payload(**{ message: result.message, changes: result.changes }))
 
-          if result.changes[:success]&.any?
-            self.class.perform_async # Immediately schedule another job
-          elsif result.changes[:errors]&.any?
-            if retry_count < MAX_RETRIES
-              backoff_time = INITIAL_BACKOFF * (2**retry_count)
-              self.class.perform_in(backoff_time, retry_count + 1)
-            else
-              log_data = { message: "RolloutWorker exceeded max back off interval: #{result.message}" }
-              logger.info(build_structured_payload(**log_data))
-            end
+          if result.re_enqueue
+            self.class.perform_async
+          elsif retry_count < MAX_RETRIES
+            backoff_time = INITIAL_BACKOFF * (2**retry_count)
+            self.class.perform_in(backoff_time, retry_count + 1)
+          else
+            log_data = { message: "RolloutWorker exceeded max back off interval: #{result.message}" }
+            logger.info(build_structured_payload(**log_data))
           end
         end
       end
