@@ -17,7 +17,7 @@ module Security
       pipeline = ::Ci::Pipeline.find_by_id(pipeline_id)
       return unless pipeline
 
-      Security::ProcessScanEventsService.execute(pipeline)
+      ::Security::ProcessScanEventsService.execute(pipeline)
     end
   end
 end

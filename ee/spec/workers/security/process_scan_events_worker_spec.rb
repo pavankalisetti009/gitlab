@@ -9,14 +9,22 @@ RSpec.describe Security::ProcessScanEventsWorker, feature_category: :vulnerabili
   describe '#perform' do
     subject(:run_worker) { described_class.new.perform(pipeline.id) }
 
-    before do
-      allow(Security::ProcessScanEventsService).to receive(:execute)
+    it 'calls `::Security::ProcessScanEventsService` with unknown event raising exception' do
+      expect { run_worker }.to raise_error(
+        ::Security::ProcessScanEventsService::ScanEventNotInAllowListError,
+        "Event not in allow list 'dummy_event_for_testing_abcdefg'")
     end
 
-    it 'calls `Security::ProcessScanEventsService`' do
-      run_worker
+    describe 'with mocked `::Security::ProcessScanEventsService' do
+      before do
+        allow(Security::ProcessScanEventsService).to receive(:execute)
+      end
 
-      expect(Security::ProcessScanEventsService).to have_received(:execute)
+      it 'calls `::Security::ProcessScanEventsService`' do
+        run_worker
+
+        expect(Security::ProcessScanEventsService).to have_received(:execute)
+      end
     end
   end
 end
