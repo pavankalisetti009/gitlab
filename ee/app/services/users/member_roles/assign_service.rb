@@ -3,64 +3,92 @@
 module Users
   module MemberRoles
     class AssignService < BaseService
-      attr_accessor :current_user, :params
+      attr_accessor :current_user, :user_to_be_assigned, :admin_role
 
       def initialize(current_user, params = {})
         @current_user = current_user
-        @params = params
+
+        @user_to_be_assigned = params[:user]
+        @admin_role = params[:member_role]
       end
 
       def execute
-        unless current_user.can?(:admin_member_role)
-          return ServiceResponse.error(message: 'Forbidden', reason: :forbidden)
-        end
-
-        unless valid_member_role_param?
-          return ServiceResponse.error(
-            message: 'Only admin custom roles can be assigned directly to a user.',
-            reason: :forbidden
-          )
-        end
+        return error('custom_roles licensed feature must be available') unless License.feature_available?(:custom_roles)
 
         unless Feature.enabled?(:custom_admin_roles, :instance)
-          return ServiceResponse.error(message: 'Not yet available', reason: :forbidden)
+          return error('Feature flag `custom_admin_roles` is not enabled for the instance')
         end
 
-        assign
+        return error('Forbidden') unless current_user.can?(:admin_member_role)
+
+        return error('Only admin custom roles can be assigned directly to a user.') unless admin_related_role?
+
+        assign_or_unassign_admin_role
       end
 
       private
 
-      def valid_member_role_param?
-        return true unless params[:member_role]
+      def admin_related_role?
+        return true if admin_role.blank?
 
-        params[:member_role].admin_related_role?
+        admin_role.admin_related_role?
       end
 
-      def assign
-        user_member_role = if params[:member_role]
-                             handle_assignment
-                           else
-                             existing_user_member_role.destroy! if existing_user_member_role
-
-                             nil
-                           end
-
-        ServiceResponse.success(payload: { user_member_role: user_member_role })
+      def assign_or_unassign_admin_role
+        # if admin role is present -> create or update database record
+        # if admin role is nil -> that means we are unassigning admin role from user,
+        # hence destroy any existing records
+        admin_role ? create_or_update_record : destroy_record
       end
 
-      def handle_assignment
-        if existing_user_member_role
-          existing_user_member_role.tap do |user_role|
-            user_role.update!(member_role: params[:member_role])
-          end
+      def create_or_update_record
+        record = Users::UserMemberRole.create_or_update(user: user_to_be_assigned, member_role: admin_role)
+
+        if record.valid?
+          log_audit_event(
+            action: 'admin_role_assigned_to_user',
+            admin_role: admin_role
+          )
+          success(record)
         else
-          Users::UserMemberRole.create(params)
+          error(record.errors.full_messages.join(', '))
         end
       end
 
-      def existing_user_member_role
-        @existing_user_member_role ||= Users::UserMemberRole.find_by_user_id(params[:user].id)
+      def destroy_record
+        record = Users::UserMemberRole.find_by_user_id(user_to_be_assigned.id)
+
+        return success(nil) unless record
+
+        if record.destroy
+          log_audit_event(
+            action: 'admin_role_unassigned_from_user',
+            admin_role: record.member_role
+          )
+          success(nil)
+        else
+          error(record.errors.full_messages.join(', '))
+        end
+      end
+
+      def log_audit_event(action:, admin_role:)
+        audit_context = {
+          name: action,
+          author: current_user,
+          scope: user_to_be_assigned,
+          target: admin_role,
+          message: action.humanize
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
+
+      def success(record)
+        ::ServiceResponse.success(payload: { user_member_role: record })
+      end
+
+      def error(message)
+        ::ServiceResponse.error(message: message)
       end
     end
   end
