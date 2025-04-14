@@ -49,7 +49,11 @@ RSpec.describe Geo::BlobDownloadService, feature_category: :geo_replication do
       end
 
       it 'logs the result' do
-        expect(Gitlab::Geo::Logger).to receive(:info).with(
+        allow(Gitlab::Geo::Logger).to receive(:warn).with(
+          hash_including(class: "Geo::PackageFileRegistry")
+        )
+
+        expect(Gitlab::Geo::Logger).to receive(:warn).with(
           {
             class: 'Geo::BlobDownloadService',
             message: 'Blob download',
@@ -145,8 +149,7 @@ RSpec.describe Geo::BlobDownloadService, feature_category: :geo_replication do
           end
 
           it 'logs the result' do
-            expect(Gitlab::Geo::Logger).to receive(:info).with(anything)
-            expect(Gitlab::Geo::Logger).to receive(:info).with(
+            expect(Gitlab::Geo::Logger).to receive(:warn).with(
               {
                 class: 'Geo::BlobDownloadService',
                 message: 'Blob download',
