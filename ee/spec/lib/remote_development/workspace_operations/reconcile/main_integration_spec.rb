@@ -8,7 +8,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
   shared_examples 'workspace lifecycle management expectations' do |expected_desired_state:|
     it "sets desired_state to #{expected_desired_state}" do
-      response = subject
       expect(response[:message]).to be_nil
 
       response => {
@@ -31,7 +30,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
   shared_examples 'includes settings in payload' do
     it 'returns expected settings' do
-      response = subject
       settings = response.fetch(:payload).fetch(:settings)
 
       expect(settings[:full_reconciliation_interval_seconds]).to eq full_reconciliation_interval_seconds
@@ -47,6 +45,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
     end
 
     it 'uses versioned config values' do
+      # Verify that the new versioned value is used in the workspace. This is an attempt to avoid an occasional flake
+      # where the tests seem to not detect the existence of the new paper_trail reified version. These assertions
+      # will help narrow down if there is some race condition or caching issue with the versioning logic.
+      expect(workspaces_agent_config.dns_zone).to eq(new_dns_zone)
+      expect(agent.workspaces.first.workspaces_agent_config.dns_zone).to eq(dns_zone)
+
       response => {
         payload: {
           workspace_rails_infos: [
@@ -407,7 +411,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
         context 'when desired_state matches actual_state' do
           # rubocop:todo RSpec/ExpectInHook -- This could be moved to a shared example
           before do
-            # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
             expect(workspace.responded_to_agent_at).to be_after(workspace.desired_state_updated_at)
             expect(workspace.responded_to_agent_at).to be_after(workspace.actual_state_updated_at)
           end
