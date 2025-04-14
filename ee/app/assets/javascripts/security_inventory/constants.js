@@ -54,3 +54,5 @@ export const VULNERABILITY_REPORT_PATHS = {
   PROJECT: '/-/security/vulnerability_report',
   GROUP: '/-/security/vulnerabilities',
 };
+
+export const PROJECT_SECURITY_CONFIGURATION_PATH = '/-/security/configuration';

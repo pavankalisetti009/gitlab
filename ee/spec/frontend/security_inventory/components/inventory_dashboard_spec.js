@@ -14,6 +14,8 @@ import SubgroupsAndProjectsQuery from 'ee/security_inventory/graphql/subgroups_a
 import EmptyState from 'ee/security_inventory/components/empty_state.vue';
 import NameCell from 'ee/security_inventory/components/name_cell.vue';
 import vulnerabilityCell from 'ee/security_inventory/components/vulnerability_cell.vue';
+import ToolCoverageCell from 'ee/security_inventory/components/tool_coverage_cell.vue';
+import ActionCell from 'ee/security_inventory/components/action_cell.vue';
 import { subgroupsAndProjects } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -123,6 +125,12 @@ describe('InventoryDashboard', () => {
       const vulnerabilitycell = findNthTableRow(groupIndex).findComponent(vulnerabilityCell);
       expect(vulnerabilitycell.exists()).toBe(true);
       expect(vulnerabilitycell.text()).toContain('80');
+
+      const toolCoverageCell = findNthTableRow(groupIndex).findComponent(ToolCoverageCell);
+      expect(toolCoverageCell.exists()).toBe(true);
+
+      const actionCell = findNthTableRow(projectIndex).findComponent(ActionCell);
+      expect(actionCell.exists()).toBe(true);
     });
 
     it('renders correct elements for projects and subgroups', () => {
