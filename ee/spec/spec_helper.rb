@@ -83,6 +83,10 @@ RSpec.configure do |config|
       # (which affects tests within that page) but it will eventually be moved to its own page for the MVC.
       # See https://gitlab.com/groups/gitlab-org/-/epics/14243.
       stub_feature_flags(ci_tanukey_ui: false)
+
+      # Model/Table extraction will span multiple MRs and milestones, will remove this when we're
+      # close to finished. See https://gitlab.com/groups/gitlab-org/-/epics/17390 for refactor plan.
+      stub_feature_flags(extract_admin_roles_from_member_roles: false)
     end
   end
 

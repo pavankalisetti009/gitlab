@@ -97,20 +97,12 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
       Gitlab::CustomRoles::Definition.standard
     end
 
-    def all_customizable_admin_permissions
-      Gitlab::CustomRoles::Definition.admin
-    end
-
     def all_customizable_project_permissions
       MemberRole.all_customizable_standard_permissions.select { |_k, v| v[:project_ability] }.keys
     end
 
     def all_customizable_group_permissions
       MemberRole.all_customizable_standard_permissions.select { |_k, v| v[:group_ability] }.keys
-    end
-
-    def all_customizable_admin_permission_keys
-      Gitlab::CustomRoles::Definition.admin.keys
     end
 
     def customizable_permissions_exempt_from_consuming_seat
@@ -122,24 +114,11 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
 
       ::Feature.enabled?("custom_ability_#{permission}", user)
     end
-
-    def admin_permission_enabled?(permission)
-      return false unless ::Feature.enabled?(:custom_admin_roles, :instance)
-      return true unless ::Feature::Definition.get("custom_ability_#{permission}")
-
-      ::Feature.enabled?("custom_ability_#{permission}", :instance)
-    end
   end
 
   def enabled_permissions(user)
     MemberRole.all_customizable_permissions.filter do |permission|
       attributes[permission.to_s] && self.class.permission_enabled?(permission, user)
-    end
-  end
-
-  def enabled_admin_permissions
-    MemberRole.all_customizable_admin_permissions.filter do |permission|
-      attributes[permission.to_s] && self.class.admin_permission_enabled?(permission)
     end
   end
 

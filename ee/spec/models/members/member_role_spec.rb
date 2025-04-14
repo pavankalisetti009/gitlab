@@ -5,6 +5,10 @@ require 'spec_helper'
 RSpec.describe ::MemberRole, feature_category: :system_access do
   using RSpec::Parameterized::TableSyntax
 
+  it "includes the AdminRollable Concern" do
+    expect(described_class.included_modules).to include(Authz::AdminRollable)
+  end
+
   describe 'associations' do
     it { is_expected.to belong_to(:namespace) }
     it { is_expected.to have_many(:members) }
@@ -519,43 +523,6 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
       end
 
       it { is_expected.to eq(expected_result) }
-    end
-  end
-
-  describe '.admin_permission_enabled?' do
-    let(:ability) { :read_admin_dashboard }
-
-    subject(:admin_permission_enabled) { described_class.admin_permission_enabled?(ability) }
-
-    where(:flag_exists, :flag_enabled, :expected_result) do
-      true  | false | false
-      true  | true  | true
-      false | true  | true
-    end
-
-    with_them do
-      before do
-        if flag_exists
-          stub_feature_flag_definition("custom_ability_read_admin_dashboard")
-          stub_feature_flags(custom_ability_read_admin_dashboard: flag_enabled)
-        end
-      end
-
-      context 'when the custom_admin_roles feature flag is disabled' do
-        before do
-          stub_feature_flags(custom_admin_roles: false)
-        end
-
-        it { is_expected.to be false }
-      end
-
-      context 'when the custom_admin_roles feature flag is enabled' do
-        before do
-          stub_feature_flags(custom_admin_roles: true)
-        end
-
-        it { is_expected.to eq(expected_result) }
-      end
     end
   end
 
