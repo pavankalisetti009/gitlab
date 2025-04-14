@@ -9,6 +9,8 @@ module AuditEvents
     STREAMING_TOKEN_HEADER_KEY = "X-Gitlab-Event-Streaming-Token"
 
     included do
+      include Gitlab::EncryptedAttribute
+
       before_validation :assign_default_name
       before_validation :assign_secret_token_for_http
       before_validation :assign_default_log_id, if: :gcp?
@@ -37,7 +39,7 @@ module AuditEvents
 
       attr_encrypted :secret_token,
         mode: :per_attribute_iv,
-        key: Settings.attr_encrypted_db_key_base_32,
+        key: :db_key_base_32,
         algorithm: 'aes-256-gcm',
         encode: false,
         encode_iv: false
