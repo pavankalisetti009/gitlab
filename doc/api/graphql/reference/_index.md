@@ -43985,6 +43985,8 @@ Values for sorting projects.
 | <a id="namespaceprojectsortcontainer_registry_size_asc"></a>`CONTAINER_REGISTRY_SIZE_ASC` | Sort by total container registry size, ascending order. |
 | <a id="namespaceprojectsortcontainer_registry_size_desc"></a>`CONTAINER_REGISTRY_SIZE_DESC` | Sort by total container registry size, descending order. |
 | <a id="namespaceprojectsortexcess_repo_storage_size_desc"></a>`EXCESS_REPO_STORAGE_SIZE_DESC` | Sort by excess repository storage size, descending order. |
+| <a id="namespaceprojectsortfull_path_asc"></a>`FULL_PATH_ASC` | Sort by full path, ascending order. |
+| <a id="namespaceprojectsortfull_path_desc"></a>`FULL_PATH_DESC` | Sort by full path, descending order. |
 | <a id="namespaceprojectsortlfs_objects_size_asc"></a>`LFS_OBJECTS_SIZE_ASC` | Sort by total LFS object size, ascending order. |
 | <a id="namespaceprojectsortlfs_objects_size_desc"></a>`LFS_OBJECTS_SIZE_DESC` | Sort by total LFS object size, descending order. |
 | <a id="namespaceprojectsortpackages_size_asc"></a>`PACKAGES_SIZE_ASC` | Sort by total package size, ascending order. |
