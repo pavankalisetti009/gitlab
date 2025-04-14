@@ -11,8 +11,8 @@ module EE
       include GoogleSyndicationCSP
 
       before_action :gitlab_geo_logout, only: [:destroy]
+      prepend_before_action :check_and_log_cloudflare_exposed_credentials, only: [:create]
       prepend_before_action :complete_identity_verification, only: :create
-      after_action :check_and_log_cloudflare_exposed_credentials, only: [:create]
     end
 
     override :new
@@ -73,7 +73,7 @@ module EE
     end
 
     def complete_identity_verification
-      user = ::User.find_by_login(user_params[:login].to_s)
+      user = find_user
 
       return if !user || !user.valid_password?(user_params[:password]) || user.access_locked?
       return if ::Gitlab::Qa.request?(request.user_agent)
@@ -86,15 +86,18 @@ module EE
     end
 
     def check_and_log_cloudflare_exposed_credentials
-      return unless current_user
+      user = find_user
+
+      return if !user || !user.valid_password?(user_params[:password]) || user.access_locked?
 
       check = ::Gitlab::Auth::CloudflareExposedCredentialChecker.new(request)
 
-      return unless check.result.present?
+      return if check.result.blank?
+      return if check.result == :exact_username
 
       ::Gitlab::AppLogger.info(
         message: "User signed in with CloudFlare-detected leaked credentials (#{check.result})",
-        username: current_user.username,
+        username: user.username,
         ip: request.remote_ip,
         check_result: check.result
       )
