@@ -26349,6 +26349,9 @@ msgstr ""
 msgid "Fetching incoming email"
 msgstr ""
 
+msgid "Field alias must be of type `String`."
+msgstr ""
+
 msgid "File"
 msgstr ""
 
@@ -64316,6 +64319,9 @@ msgid "Unsubscribed from notifications."
 msgstr ""
 
 msgid "Unsubscribes from notifications."
+msgstr ""
+
+msgid "Unsupported node type for alias: %{type}"
 msgstr ""
 
 msgid "Unsupported signature"
