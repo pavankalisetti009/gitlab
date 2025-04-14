@@ -81,6 +81,13 @@ module EE
           null: true,
           description: 'Search for vulnerabilities by identifier.'
 
+        field :vulnerability_namespace_statistic, ::Types::Security::VulnerabilityNamespaceStatisticType,
+          null: true,
+          description: 'Counts for each vulnerability severity in the group and its subgroups.',
+          authorize: :read_vulnerability_statistics,
+          skip_type_authorization: :read_vulnerability_statistics,
+          experiment: { milestone: '18.0' }
+
         field :vulnerability_severities_count, ::Types::VulnerabilitySeveritiesCountType,
           null: true,
           description: 'Counts for each vulnerability severity in the group and its subgroups.',
@@ -359,6 +366,13 @@ module EE
             provider: provider,
             cloud_project_id: cloud_project_id
           }
+        end
+
+        def vulnerability_namespace_statistic
+          return unless ::Feature.enabled?(:security_inventory_dashboard, object)
+          return unless object.licensed_feature_available?(:security_inventory)
+
+          object.vulnerability_namespace_statistic
         end
       end
     end

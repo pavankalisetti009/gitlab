@@ -348,6 +348,7 @@ module EE
         enable :read_runner_usage
         enable :admin_push_rules
         enable :admin_security_testing
+        enable :read_vulnerability_statistics
       end
 
       rule { (admin | maintainer) & group_analytics_dashboards_available & ~has_parent }.policy do
@@ -762,6 +763,7 @@ module EE
 
       rule { can?(:admin_vulnerability) }.policy do
         enable :read_vulnerability
+        enable :read_vulnerability_statistics
       end
 
       rule { can?(:read_dependency) }.policy do

@@ -38,6 +38,13 @@ module EE
           description: 'The historical number of vulnerabilities per day for the project.',
           resolver: ::Resolvers::VulnerabilitiesCountPerDayResolver
 
+        field :vulnerability_statistic, ::Types::Security::VulnerabilityStatisticType,
+          null: true,
+          description: 'Counts for each vulnerability severity in the project.',
+          authorize: :read_vulnerability_statistics,
+          skip_type_authorization: :read_vulnerability_statistics,
+          experiment: { milestone: '18.0' }
+
         field :vulnerability_severities_count, ::Types::VulnerabilitySeveritiesCountType,
           null: true,
           description: 'Counts for each vulnerability severity in the project.',
@@ -654,6 +661,13 @@ module EE
 
       def duo_workflow_status_check
         ::Ai::DuoWorkflows::EnablementCheckService.new(project: object, current_user: current_user).execute
+      end
+
+      def vulnerability_statistic
+        return unless ::Feature.enabled?(:security_inventory_dashboard, object.group)
+        return unless object.licensed_feature_available?(:security_inventory)
+
+        object.vulnerability_statistic
       end
     end
   end

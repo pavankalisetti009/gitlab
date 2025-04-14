@@ -49,6 +49,7 @@ module EE
       # rubocop:enable Cop/ActiveRecordDependent -- legacy usage
       has_one :google_cloud_platform_workload_identity_federation_integration, class_name: 'Integrations::GoogleCloudPlatform::WorkloadIdentityFederation'
       has_one :amazon_q_integration, class_name: 'Integrations::AmazonQ'
+      has_one :vulnerability_namespace_statistic, class_name: 'Vulnerabilities::NamespaceStatistic', foreign_key: :namespace_id, inverse_of: :group
       has_many :external_audit_event_destinations, class_name: "AuditEvents::ExternalAuditEventDestination", foreign_key: 'namespace_id'
       has_many :external_audit_event_streaming_destinations, class_name: "AuditEvents::Group::ExternalStreamingDestination", foreign_key: 'group_id'
       has_many :google_cloud_logging_configurations, class_name: "AuditEvents::GoogleCloudLoggingConfiguration",
@@ -708,6 +709,10 @@ module EE
 
     def vulnerability_historical_statistics
       ::Vulnerabilities::NamespaceHistoricalStatistic.for_namespace_and_descendants(self)
+    end
+
+    def vulnerability_namespace_statistic
+      super || build_vulnerability_namespace_statistic
     end
 
     def max_personal_access_token_lifetime_from_now
