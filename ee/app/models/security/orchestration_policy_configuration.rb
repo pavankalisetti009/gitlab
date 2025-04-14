@@ -217,6 +217,14 @@ module Security
       end
     end
 
+    def enabled_experiments
+      return [] if experiments.blank?
+
+      experiments
+        .select { |_experiment, values| values['enabled'] == true }
+        .keys
+    end
+
     def experiment_enabled?(experimental_feature_name)
       return false if experiments.blank?
 
