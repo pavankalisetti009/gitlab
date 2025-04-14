@@ -67,4 +67,7 @@ export default {
   [types.SET_COMPONENT_IDS](state, item) {
     state.componentIds = item;
   },
+  [types.SET_FULL_PATH](state, fullPath) {
+    state.fullPath = fullPath;
+  },
 };

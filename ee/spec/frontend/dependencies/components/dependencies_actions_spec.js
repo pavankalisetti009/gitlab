@@ -62,20 +62,22 @@ describe('DependenciesActions component', () => {
       expect(findSorting().props('sortDirectionToolTip')).toBe('Sort direction');
     });
 
-    it('dispatches the right setSortField action on clicking each item in the dropdown', () => {
-      Object.keys(SORT_FIELDS).forEach((field) => {
-        emitSortByChange(field);
-      });
+    it.each(Object.keys(SORT_FIELDS))(
+      'dispatches the "%s" sort-order and re-fetches the dependencies',
+      (sortOrder) => {
+        emitSortByChange(sortOrder);
 
-      expect(store.dispatch.mock.calls).toEqual(
-        expect.arrayContaining(Object.keys(SORT_FIELDS).map((field) => ['setSortField', field])),
-      );
-    });
+        expect(store.dispatch.mock.calls).toEqual([
+          ['setSortField', sortOrder],
+          ['fetchDependencies'],
+        ]);
+      },
+    );
 
-    it('dispatches the toggleSortOrder action on clicking the sort order button', () => {
+    it('dispatches the toggleSortOrder action and re-fetches dependencies on clicking the sort order button', () => {
       findSorting().vm.$emit('sortDirectionChange');
 
-      expect(store.dispatch).toHaveBeenCalledWith('toggleSortOrder');
+      expect(store.dispatch.mock.calls).toEqual([['toggleSortOrder'], ['fetchDependencies']]);
       expect(urlUtility.updateHistory).toHaveBeenCalledTimes(1);
       expect(urlUtility.updateHistory).toHaveBeenCalledWith({
         url: `${TEST_HOST}/`,

@@ -160,4 +160,14 @@ describe('Dependencies mutations', () => {
       expect(state.componentIds).toStrictEqual(payload);
     });
   });
+
+  describe(types.SET_FULL_PATH, () => {
+    const fullPath = 'group/project';
+
+    it('sets the full path', () => {
+      mutations[types.SET_FULL_PATH](state, fullPath);
+
+      expect(state.fullPath).toBe(fullPath);
+    });
+  });
 });

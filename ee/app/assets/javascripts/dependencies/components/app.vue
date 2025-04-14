@@ -4,6 +4,7 @@ import { GlEmptyState, GlLoadingIcon, GlSprintf, GlLink, GlTooltipDirective } fr
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { getTimeago } from '~/lib/utils/datetime_utility';
 import { __, s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import { NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT } from '../constants';
 import { SORT_FIELD_SEVERITY } from '../store/constants';
@@ -28,6 +29,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: [
     'hasDependencies',
     'emptyStateSvgPath',
@@ -38,6 +40,7 @@ export default {
     'namespaceType',
     'latestSuccessfulScanPath',
     'scanFinishedAt',
+    'fullPath',
   ],
   props: {
     sbomReportsErrors: {
@@ -48,6 +51,9 @@ export default {
   computed: {
     ...mapGetters(['totals']),
     ...mapState(['pageInfo', 'initialized']),
+    shouldFetchDependenciesViaGraphQL() {
+      return this.namespaceType === NAMESPACE_PROJECT && this.glFeatures.projectDependenciesGraphql;
+    },
     showSbomReportsErrors() {
       return this.sbomReportsErrors.length > 0;
     },
@@ -71,11 +77,13 @@ export default {
     },
   },
   created() {
+    this.setFullPath(this.fullPath);
     this.setDependenciesEndpoint(this.endpoint);
     this.setExportDependenciesEndpoint(this.exportEndpoint);
     this.setNamespaceType(this.namespaceType);
     this.setPageInfo(this.pageInfo);
     this.setSortField(SORT_FIELD_SEVERITY);
+    this.fetchInitialDependencies();
   },
   methods: {
     ...mapActions([
@@ -84,7 +92,17 @@ export default {
       'setNamespaceType',
       'setPageInfo',
       'setSortField',
+      'setFullPath',
+      'fetchDependencies',
+      'fetchDependenciesViaGraphQL',
     ]),
+    fetchInitialDependencies() {
+      if (this.shouldFetchDependenciesViaGraphQL) {
+        this.fetchDependenciesViaGraphQL();
+      } else {
+        this.fetchDependencies({ page: 1 });
+      }
+    },
   },
   i18n: {
     emptyStateTitle: __('View dependency details for your project'),
@@ -141,8 +159,8 @@ export default {
                 v-if="latestSuccessfulScanPath"
                 ref="scanLink"
                 :href="latestSuccessfulScanPath"
-                >{{ content }}</gl-link
-              >
+                >{{ content }}
+              </gl-link>
               <template v-else>{{ content }}</template>
             </template>
           </gl-sprintf>

@@ -2,18 +2,21 @@ import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { sortBy } from 'lodash';
 import * as actions from 'ee/dependencies/store/actions';
+import projectDependencies from 'ee/dependencies/graphql/project_dependencies.query.graphql';
 import {
-  SORT_DESCENDING,
+  EXPORT_STARTED_MESSAGE,
+  FETCH_ERROR_MESSAGE,
   FETCH_EXPORT_ERROR_MESSAGE,
   LICENSES_FETCH_ERROR_MESSAGE,
+  SORT_DESCENDING,
   VULNERABILITIES_FETCH_ERROR_MESSAGE,
-  EXPORT_STARTED_MESSAGE,
 } from 'ee/dependencies/store/constants';
 import * as types from 'ee/dependencies/store/mutation_types';
 import getInitialState from 'ee/dependencies/store/state';
 import { TEST_HOST } from 'helpers/test_constants';
 import testAction from 'helpers/vuex_action_helper';
 import { createAlert, VARIANT_INFO } from '~/alert';
+import { graphQLClient } from 'ee/dependencies/store/utils';
 import download from '~/lib/utils/downloader';
 import {
   HTTP_STATUS_CREATED,
@@ -23,9 +26,19 @@ import {
 } from '~/lib/utils/http_status';
 
 import mockDependenciesResponse from './mock_dependencies.json';
+import mockGraphQLDependenciesResponse from './mock_graphql_dependencies.json';
 
 jest.mock('~/alert');
 jest.mock('~/lib/utils/downloader');
+jest.mock('ee/dependencies/store/utils', () => ({
+  graphQLClient: {
+    query: jest.fn(),
+  },
+  isValidResponse: jest.requireActual('ee/dependencies/store/utils').isValidResponse,
+}));
+jest.mock('~/graphql_shared/utils', () => ({
+  getIdFromGraphQLId: jest.fn(() => 'extracted-from-get-id-from-graphql-id-util'),
+}));
 
 describe('Dependencies actions', () => {
   const pageInfo = {
@@ -515,12 +528,7 @@ describe('Dependencies actions', () => {
             payload: field,
           },
         ],
-        [
-          {
-            type: 'fetchDependencies',
-            payload: { page: 1 },
-          },
-        ],
+        [],
       );
     });
   });
@@ -536,12 +544,7 @@ describe('Dependencies actions', () => {
             type: types.TOGGLE_SORT_ORDER,
           },
         ],
-        [
-          {
-            type: 'fetchDependencies',
-            payload: { page: 1 },
-          },
-        ],
+        [],
       ));
   });
 
@@ -820,6 +823,79 @@ describe('Dependencies actions', () => {
           message: VULNERABILITIES_FETCH_ERROR_MESSAGE,
         });
       });
+    });
+  });
+
+  describe('fetchDependenciesViaGraphQL', () => {
+    let state;
+
+    beforeEach(() => {
+      state = getInitialState();
+      state.fullPath = 'group/project';
+      graphQLClient.query.mockClear();
+      createAlert.mockClear();
+    });
+
+    describe('on success', () => {
+      const expectedDependencies =
+        mockGraphQLDependenciesResponse.data.project.dependencies.nodes.map((dependency) => ({
+          ...dependency,
+          occurrenceId: 'extracted-from-get-id-from-graphql-id-util',
+        }));
+
+      beforeEach(() => {
+        graphQLClient.query.mockResolvedValue(mockGraphQLDependenciesResponse);
+      });
+
+      it('dispatches the correct actions and commits the transformed data', async () => {
+        await testAction(
+          actions.fetchDependenciesViaGraphQL,
+          undefined,
+          state,
+          [
+            {
+              type: types.RECEIVE_DEPENDENCIES_SUCCESS,
+              payload: {
+                dependencies: expectedDependencies,
+                pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+              },
+            },
+          ],
+          [{ type: 'requestDependencies' }],
+        );
+
+        expect(graphQLClient.query).toHaveBeenCalledWith({
+          query: projectDependencies,
+          variables: {
+            fullPath: state.fullPath,
+          },
+        });
+      });
+    });
+
+    describe('on error', () => {
+      it.each(['custom error message', undefined])(
+        'dispatches the receiveDependenciesError action and shows an alert',
+        async (errorMessage) => {
+          const error = new Error(errorMessage);
+          graphQLClient.query.mockRejectedValue(error);
+
+          expect(createAlert).not.toHaveBeenCalled();
+
+          await testAction(
+            actions.fetchDependenciesViaGraphQL,
+            undefined,
+            state,
+            [],
+            [{ type: 'requestDependencies' }, { type: 'receiveDependenciesError', payload: error }],
+          );
+
+          expect(createAlert).toHaveBeenCalledTimes(1);
+          expect(createAlert).toHaveBeenCalledWith({
+            message: errorMessage || FETCH_ERROR_MESSAGE,
+          });
+        },
+      );
     });
   });
 });

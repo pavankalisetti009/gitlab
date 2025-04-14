@@ -1,0 +1,27 @@
+query getDependencies($fullPath: ID!, $first: Int = 30) {
+  project(fullPath: $fullPath) {
+    id
+    dependencies(first: $first) {
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      nodes {
+        id
+        name
+        version
+        packager
+        location {
+          path
+        }
+        licenses {
+          name
+          url
+        }
+        vulnerabilityCount
+      }
+    }
+  }
+}
