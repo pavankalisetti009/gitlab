@@ -8,6 +8,10 @@ module Security
 
     EVENT_NAME_ALLOW_LIST = %w[collect_sast_scan_metrics_from_pipeline].freeze
 
+    def self.execute(pipeline)
+      new(pipeline).execute
+    end
+
     def initialize(pipeline)
       @pipeline = pipeline
     end
