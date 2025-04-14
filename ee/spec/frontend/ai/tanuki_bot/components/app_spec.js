@@ -13,11 +13,7 @@ import {
   GENIE_CHAT_CLEAR_MESSAGE,
   GENIE_CHAT_NEW_MESSAGE,
 } from 'ee/ai/constants';
-import {
-  TANUKI_BOT_TRACKING_EVENT_NAME,
-  WIDTH_OFFSET,
-  PREDEFINED_PROMPTS,
-} from 'ee/ai/tanuki_bot/constants';
+import { TANUKI_BOT_TRACKING_EVENT_NAME, WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.graphql';
 import deleteConversationThreadMutation from 'ee/ai/graphql/delete_conversation_thread.mutation.graphql';
@@ -31,6 +27,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 import getAiSlashCommands from 'ee/ai/graphql/get_ai_slash_commands.query.graphql';
+import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 import {
@@ -45,6 +42,7 @@ import {
   MOCK_TANUKI_MESSAGE,
   MOCK_THREADS,
   MOCK_THREADS_RESPONSE,
+  MOCK_CONTEXT_PRESETS_RESPONSE,
 } from '../mock_data';
 
 Vue.use(Vuex);
@@ -77,6 +75,7 @@ describeSkipVue3(skipReason, () => {
   const threadQueryHandlerMock = jest.fn().mockResolvedValue({});
   const conversationThreadsQueryHandlerMock = jest.fn().mockResolvedValue({});
   const slashCommandsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_SLASH_COMMANDS);
+  const contextPresetsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_CONTEXT_PRESETS_RESPONSE);
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const feedbackData = {
@@ -118,6 +117,7 @@ describeSkipVue3(skipReason, () => {
       [getAiMessagesWithThread, threadQueryHandlerMock],
       [getAiConversationThreads, conversationThreadsQueryHandlerMock],
       [getAiSlashCommands, slashCommandsQueryHandlerMock],
+      [getAiChatContextPresets, contextPresetsQueryHandlerMock],
     ]);
 
     if (duoChatGlobalState.isShown !== false) {
@@ -219,6 +219,15 @@ describeSkipVue3(skipReason, () => {
         });
       });
 
+      it('calls the context presets GraphQL query when component loads', () => {
+        expect(contextPresetsQueryHandlerMock).toHaveBeenCalledWith({
+          resourceId: MOCK_RESOURCE_ID,
+          projectId: null,
+          url: 'http://test.host/',
+          questionCount: 4,
+        });
+      });
+
       it('passes the correct slash commands to the DuoChat component', async () => {
         await waitForPromises();
 
@@ -258,9 +267,28 @@ describeSkipVue3(skipReason, () => {
         expect(slashCommandsQueryHandlerMock).not.toHaveBeenCalled();
       });
 
+      it('does not call the context presets GraphQL query', () => {
+        expect(contextPresetsQueryHandlerMock).not.toHaveBeenCalled();
+      });
+
       it('does not render the DuoChat component', () => {
         expect(findDuoChat().exists()).toBe(false);
       });
+    });
+  });
+
+  describe('contextPresets', () => {
+    beforeEach(() => {
+      duoChatGlobalState.isShown = true;
+      createComponent();
+    });
+
+    it('passes context presets to DuoChat component as predefinedPrompts', async () => {
+      await waitForPromises();
+
+      expect(findDuoChat().props('predefinedPrompts')).toEqual(
+        MOCK_CONTEXT_PRESETS_RESPONSE.data.aiChatContextPresets.questions,
+      );
     });
   });
 
@@ -483,10 +511,13 @@ describeSkipVue3(skipReason, () => {
         const defaultTrackingOption = {
           property: MOCK_TANUKI_BOT_MUTATATION_RES.data.aiAction.requestId,
         };
-        const predefinedPrompts = PREDEFINED_PROMPTS.map((prompt) => prompt.text);
+
+        beforeEach(async () => {
+          createComponent();
+          await waitForPromises();
+        });
 
         it('tracks the submission for prompts by default', async () => {
-          createComponent();
           const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
           findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
 
@@ -498,26 +529,25 @@ describeSkipVue3(skipReason, () => {
           );
         });
 
-        it.each(predefinedPrompts)(
-          'tracks the submission with label for prompts if prompt is predefined',
-          async (question) => {
-            const expectedTrackingOption = {
-              ...defaultTrackingOption,
-              label: PREDEFINED_PROMPTS.find(({ text }) => text === question).eventLabel,
-            };
+        it('tracks context preset prompts with the correct event label', async () => {
+          const question = MOCK_CONTEXT_PRESETS_RESPONSE.data.aiChatContextPresets.questions[0];
 
-            createComponent();
-            const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-            findDuoChat().vm.$emit('send-chat-prompt', question);
+          const expectedEventLabel = 'what_are_the_main_points_from_this_mr_discussion';
+          const expectedTrackingOption = {
+            ...defaultTrackingOption,
+            label: expectedEventLabel,
+          };
 
-            await waitForPromises();
-            expect(trackEventSpy).toHaveBeenCalledWith(
-              expectedAction,
-              expectedTrackingOption,
-              expectedCategory,
-            );
-          },
-        );
+          const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+          findDuoChat().vm.$emit('send-chat-prompt', question);
+
+          await waitForPromises();
+          expect(trackEventSpy).toHaveBeenCalledWith(
+            expectedAction,
+            expectedTrackingOption,
+            expectedCategory,
+          );
+        });
 
         it.each([GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
           'does not track if the sent message is "%s"',
@@ -648,6 +678,16 @@ describeSkipVue3(skipReason, () => {
           }),
         );
       });
+    });
+
+    it('handles errors from the context presets query', async () => {
+      contextPresetsQueryHandlerMock.mockRejectedValue(new Error(errorText));
+      duoChatGlobalState.isShown = true;
+      createComponent();
+      await waitForPromises();
+
+      expect(findDuoChat().exists()).toBe(true);
+      expect(findDuoChat().props('predefinedPrompts')).toEqual([]);
     });
   });
 

@@ -29,23 +29,4 @@ export const TANUKI_BOT_TRACKING_EVENT_NAME = 'ask_gitlab_chat';
 export const TANUKI_BOT_FEEDBACK_ISSUE_URL = 'https://gitlab.com/gitlab-org/gitlab/-/issues/408527';
 
 export const WIDTH_OFFSET = 10;
-
-export const PREDEFINED_PROMPTS = [
-  {
-    text: s__('DuoChat|How do I change my password in GitLab?'),
-    eventLabel: 'how_do_i_change_my_password_in_gitlab',
-  },
-  {
-    text: s__('DuoChat|How do I fork a project?'),
-    eventLabel: 'how_do_i_fork_a_project',
-  },
-  {
-    text: s__('DuoChat|How do I clone a repository?'),
-    eventLabel: 'how_do_i_clone_a_repository',
-  },
-  {
-    text: s__('DuoChat|How do I create a template?'),
-    eventLabel: 'how_do_i_create_a_template',
-  },
-];
 export const MULTI_THREADED_CONVERSATION_TYPE = 'DUO_CHAT';

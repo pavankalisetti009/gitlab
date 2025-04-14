@@ -175,3 +175,16 @@ export const MOCK_THREADS_RESPONSE = {
     },
   },
 };
+
+export const MOCK_CONTEXT_PRESETS_RESPONSE = {
+  data: {
+    aiChatContextPresets: {
+      questions: [
+        'What are the main points from this MR discussion?',
+        'What changes were requested by reviewers?',
+        'What concerns remain unresolved in this MR?',
+        'What changed in this diff?',
+      ],
+    },
+  },
+};

@@ -39,6 +39,26 @@ export const clearDuoChatCommands = () => {
   duoChatGlobalState.commands = [];
 };
 
+/**
+ * Converts a text string into a URL-friendly format for event tracking.
+ *
+ * - Converts to lowercase
+ * - Removes special characters
+ * - Replaces spaces with underscores
+ * - Limits length to 50 characters
+ *
+ * @param {string} text - The text to convert
+ * @returns {string} The formatted event label
+ */
+export const generateEventLabelFromText = (text) => {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '_')
+    .substring(0, 50);
+};
+
 export const utils = {
   concatStreamedChunks,
+  generateEventLabelFromText,
 };
