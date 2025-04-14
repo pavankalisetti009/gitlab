@@ -3257,10 +3257,10 @@ class Project < ApplicationRecord
     ci_cd_settings.restrict_user_defined_variables?
   end
 
-  def override_pipeline_variables_allowed?(access_level)
+  def override_pipeline_variables_allowed?(access_level, user)
     return false unless ci_cd_settings
 
-    ci_cd_settings.override_pipeline_variables_allowed?(access_level)
+    ci_cd_settings.override_pipeline_variables_allowed?(access_level, user)
   end
 
   def ci_push_repository_for_job_token_allowed?
