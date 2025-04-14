@@ -47,7 +47,7 @@ RSpec.describe 'Work Item Custom Fields', :js, feature_category: :team_planning 
     end
   end
 
-  it 'persists custom field values correctly' do
+  it 'persists custom field values correctly', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/526378' do
     visit project_work_item_path(project, work_item)
 
     within_testid('work-item-custom-field') do
