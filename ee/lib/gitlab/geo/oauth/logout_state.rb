@@ -68,7 +68,7 @@ module Gitlab
 
           yield cipher
 
-          cipher.key = Settings.attr_encrypted_db_key_base_truncated
+          cipher.key = ::Gitlab::Encryption::KeyProvider[:db_key_base_truncated].encryption_key.secret
           cipher.iv = @salt ||= cipher.random_iv
           cipher.auth_tag = auth_tag if auth_tag
           cipher.auth_data = return_to.to_s

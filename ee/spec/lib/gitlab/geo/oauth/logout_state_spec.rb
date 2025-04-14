@@ -9,10 +9,7 @@ RSpec.describe Gitlab::Geo::Oauth::LogoutState, feature_category: :geo_replicati
   let(:access_token) { '48622af3df5b5b3e09b9754f2a3e5f3f10a94b4147d155b1029d827c112524d1' }
   let(:encrypted_token) { 't5fPL8_1KcFC5L945n9fcMRr7N-1J60LrOREQ9BAdur_K97tU1IpmWrN5-9P9aqpFvdL3SxzvP_z6CfO92BPsA==' }
 
-  before do
-    allow(Settings).to receive(:attr_encrypted_db_key_base_truncated)
-      .and_return('4587f5984bf8f807ee320ed7b783e0c5')
-  end
+  include_context 'with encryption key', :db_key_base_truncated, '4587f5984bf8f807ee320ed7b783e0c5'
 
   describe '#encode' do
     it 'returns nil when token is nil' do
