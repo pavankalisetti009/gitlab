@@ -79,7 +79,7 @@ module Vulnerabilities
     end
 
     def update_support_tables(vulnerabilities, db_attributes)
-      Vulnerabilities::Finding.by_vulnerability(vulnerabilities).update_all(severity: @new_severity)
+      Vulnerabilities::Finding.by_vulnerability(vulnerabilities).update_all(severity: @new_severity, updated_at: now)
       Vulnerabilities::SeverityOverride.insert_all!(db_attributes[:severity_overrides])
     end
 
