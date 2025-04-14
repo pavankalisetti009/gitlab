@@ -259,10 +259,6 @@ module EE
         @new_license ||= License.new(data: params[:trial_key])
       end
 
-      def sync_cloud_connector_access_data
-        ::CloudConnector::SyncServiceTokenWorker.perform_async
-      end
-
       # rubocop:disable CodeReuse/ActiveRecord, Gitlab/ModuleWithInstanceVariables -- splitting out legacy code
       def find_or_initialize_microsoft_application
         return unless microsoft_group_sync_enabled?
