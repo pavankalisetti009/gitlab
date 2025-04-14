@@ -34,27 +34,15 @@ RSpec.describe 'Deleting a squash option', feature_category: :source_code_manage
       project.add_maintainer(current_user)
     end
 
-    shared_examples_for 'squash options disabled' do
-      it 'raises an error' do
-        mutation_request
-        expect(graphql_errors).to include(a_hash_including('message' => 'Squash options feature disabled'))
-      end
-    end
-
-    context 'and the branch_rule_squash_settings feature flag is disabled' do
-      before do
-        stub_feature_flags(branch_rule_squash_settings: false)
-      end
-
-      it_behaves_like 'squash options disabled'
-    end
-
     context 'and the feature is not available' do
       before do
         stub_licensed_features(branch_rule_squash_options: false)
       end
 
-      it_behaves_like 'squash options disabled'
+      it 'raises an error' do
+        mutation_request
+        expect(graphql_errors).to include(a_hash_including('message' => 'Squash options feature disabled'))
+      end
     end
 
     context 'and there is a squash option' do

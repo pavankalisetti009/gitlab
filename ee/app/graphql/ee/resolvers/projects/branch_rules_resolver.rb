@@ -20,15 +20,9 @@ module EE
 
         def custom_branch_rules(args)
           build_missing = args[:build_missing]
-          if squash_settings_enabled?
-            super.tap do |rules|
-              rules.append(all_protected_branches_rule) if all_protected_branches_rule.persisted? || build_missing
-            end
-          else
-            super.tap do |rules|
-              rules.unshift(all_protected_branches_rule) if all_protected_branches_rule.persisted? || build_missing
-              rules.unshift(all_branches_rule) if all_branches_rule.persisted? || build_missing
-            end
+
+          super.tap do |rules|
+            rules.append(all_protected_branches_rule) if all_protected_branches_rule.persisted? || build_missing
           end
         end
 

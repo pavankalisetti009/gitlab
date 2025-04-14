@@ -33,8 +33,7 @@ module Mutations
           private
 
           def feature_disabled?(project)
-            Feature.disabled?(:branch_rule_squash_settings, project) ||
-              !project.licensed_feature_available?(:branch_rule_squash_options)
+            !project.licensed_feature_available?(:branch_rule_squash_options)
           end
         end
       end
