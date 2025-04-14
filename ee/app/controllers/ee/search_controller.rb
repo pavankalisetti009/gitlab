@@ -54,6 +54,7 @@ module EE
 
       before_action only: :show do
         push_frontend_feature_flag(:zoekt_multimatch_frontend, current_user)
+        push_frontend_feature_flag(:zoekt_cross_namespace_search, current_user)
       end
 
       before_action :sso_enforcement_redirect, only: [:show]
