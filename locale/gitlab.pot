@@ -39887,6 +39887,9 @@ msgstr ""
 msgid "Notifications on"
 msgstr ""
 
+msgid "Notifications temporarily disabled"
+msgstr ""
+
 msgid "Notifications turned off."
 msgstr ""
 
