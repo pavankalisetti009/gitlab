@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe PauseControl::ResumeWorker, feature_category: :global_search do
   subject(:worker) { described_class.new }
 
-  let(:worker_with_pause_control) { Search::Zoekt::NamespaceIndexerWorker }
+  let(:worker_with_pause_control) { Search::Zoekt::ProjectTransferWorker }
 
   describe '#perform' do
     context 'when zoekt workers are paused' do
@@ -15,8 +15,7 @@ RSpec.describe PauseControl::ResumeWorker, feature_category: :global_search do
 
       it 'does not resume processing' do
         expect(Gitlab::SidekiqMiddleware::PauseControl::PauseControlService)
-          .not_to receive(:resume_processing!)
-                    .with(worker_with_pause_control.name)
+          .not_to receive(:resume_processing!).with(worker_with_pause_control.name)
 
         worker.perform
       end
@@ -25,21 +24,14 @@ RSpec.describe PauseControl::ResumeWorker, feature_category: :global_search do
     context 'when zoekt workers are not paused' do
       before do
         stub_ee_application_setting(zoekt_indexing_paused: false)
-        allow(Gitlab::SidekiqMiddleware::PauseControl::PauseControlService)
-          .to receive(:has_jobs_in_waiting_queue?)
+        allow(Gitlab::SidekiqMiddleware::PauseControl::PauseControlService).to receive(:has_jobs_in_waiting_queue?)
       end
 
       it 'pauses inactive strategies and reschedues a job' do
         expect(Gitlab::SidekiqMiddleware::PauseControl::PauseControlService)
-          .to receive(:has_jobs_in_waiting_queue?)
-                .with(worker_with_pause_control.name)
-                .and_return(1)
-
+          .to receive(:has_jobs_in_waiting_queue?).with(worker_with_pause_control.name).and_return(1)
         expect(Gitlab::SidekiqMiddleware::PauseControl::PauseControlService)
-          .to receive(:resume_processing!)
-                .with(worker_with_pause_control.name)
-                .and_return(1)
-
+          .to receive(:resume_processing!).with(worker_with_pause_control.name).and_return(1)
         expect(described_class).to receive(:perform_in).with(described_class::RESCHEDULE_DELAY)
 
         worker.perform
@@ -47,15 +39,9 @@ RSpec.describe PauseControl::ResumeWorker, feature_category: :global_search do
 
       it 'does not reschedules the job' do
         expect(Gitlab::SidekiqMiddleware::PauseControl::PauseControlService)
-          .to receive(:has_jobs_in_waiting_queue?)
-                .with(worker_with_pause_control.name)
-                .and_return(1)
-
+          .to receive(:has_jobs_in_waiting_queue?).with(worker_with_pause_control.name).and_return(1)
         expect(Gitlab::SidekiqMiddleware::PauseControl::PauseControlService)
-          .to receive(:resume_processing!)
-                .with(worker_with_pause_control.name)
-                .and_return(0)
-
+          .to receive(:resume_processing!).with(worker_with_pause_control.name).and_return(0)
         expect(described_class).not_to receive(:perform_in)
 
         worker.perform
