@@ -46,6 +46,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     it { is_expected.to have_one(:index_status).class_name(Elastic::GroupIndexStatus).with_foreign_key(:namespace_id).dependent(:destroy) }
     it { is_expected.to have_many(:security_exclusions).class_name('Security::GroupSecurityExclusion') }
     it { is_expected.to have_many(:enterprise_users).through(:enterprise_user_details).source(:user) }
+    it { is_expected.to have_many(:subscription_seat_assignments).class_name('GitlabSubscriptions::SeatAssignment') }
 
     it do
       is_expected.to have_many(:enterprise_user_details)
