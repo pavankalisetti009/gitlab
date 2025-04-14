@@ -8,7 +8,6 @@ import { createAlert } from '~/alert';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 
 import ProjectQualitySummary from 'ee/project_quality_summary/app.vue';
-import FeedbackBanner from 'ee/project_quality_summary/components/feedback_banner.vue';
 import getProjectQuality from 'ee/project_quality_summary/graphql/queries/get_project_quality.query.graphql';
 import { i18n } from 'ee/project_quality_summary/constants';
 
@@ -25,7 +24,6 @@ describe('Project quality summary app component', () => {
   const findCodeQualityStat = (index) => wrapper.findAllByTestId('code-quality-stat').at(index);
   const findCoverageLink = () => wrapper.findByTestId('coverage-link');
   const findCoverageStat = () => wrapper.findByTestId('coverage-stat');
-  const findBanner = () => wrapper.findComponent(FeedbackBanner);
 
   const coverageChartPath = 'coverage/chart/path';
   const { pipelinePath, coverage } = mockProjectQualityResponse.data.project.pipelines.nodes[0];
@@ -42,7 +40,6 @@ describe('Project quality summary app component', () => {
         coverageChartPath,
         defaultBranch: 'main',
         testRunsEmptyStateImagePath: 'image/path',
-        projectQualitySummaryFeedbackImagePath: 'banner/image/path',
       },
     });
   };
@@ -65,14 +62,6 @@ describe('Project quality summary app component', () => {
 
     it('shows an alert message', () => {
       expect(createAlert).toHaveBeenCalled();
-    });
-  });
-
-  describe('feedback banner', () => {
-    it('is rendered', () => {
-      createComponent();
-
-      expect(findBanner().exists()).toBe(true);
     });
   });
 

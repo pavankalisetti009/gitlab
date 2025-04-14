@@ -47351,9 +47351,6 @@ msgstr ""
 msgid "ProjectQualitySummary|Get insight into the overall percentage of tests in your project that succeed, fail and are skipped."
 msgstr ""
 
-msgid "ProjectQualitySummary|Help us improve this page"
-msgstr ""
-
 msgid "ProjectQualitySummary|Latest pipeline results"
 msgstr ""
 
@@ -47367,9 +47364,6 @@ msgid "ProjectQualitySummary|Learn more about test reports"
 msgstr ""
 
 msgid "ProjectQualitySummary|Measure of how much of your code is covered by tests."
-msgstr ""
-
-msgid "ProjectQualitySummary|Provide feedback"
 msgstr ""
 
 msgid "ProjectQualitySummary|See full report"
@@ -47397,9 +47391,6 @@ msgid "ProjectQualitySummary|Test runs"
 msgstr ""
 
 msgid "ProjectQualitySummary|The percentage of tests that succeed, fail, or are skipped."
-msgstr ""
-
-msgid "ProjectQualitySummary|This page helps you understand the code testing trends for your project. Let us know how we can improve it!"
 msgstr ""
 
 msgid "ProjectQualitySummary|Violations"

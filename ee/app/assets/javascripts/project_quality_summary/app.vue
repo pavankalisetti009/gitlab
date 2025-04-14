@@ -6,7 +6,6 @@ import { percent, percentHundred } from '~/lib/utils/unit_format';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import TestRunsEmptyState from './components/test_runs_empty_state.vue';
-import FeedbackBanner from './components/feedback_banner.vue';
 import getProjectQuality from './graphql/queries/get_project_quality.query.graphql';
 import { formatStat } from './utils';
 import { i18n } from './constants';
@@ -19,7 +18,6 @@ export default {
     GlLink,
     GlPopover,
     GlSingleStat,
-    FeedbackBanner,
     TestRunsEmptyState,
     HelpIcon,
   },
@@ -111,7 +109,6 @@ export default {
 </script>
 <template>
   <div>
-    <feedback-banner />
     <gl-card v-if="$apollo.queries.projectQuality.loading || hasTestRunsData" class="gl-mt-6">
       <template #header>
         <div class="gl-flex gl-items-center gl-justify-between">
