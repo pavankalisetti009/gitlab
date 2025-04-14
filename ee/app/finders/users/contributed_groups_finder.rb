@@ -23,9 +23,9 @@ module Users
       return Group.none unless Ability.allowed?(current_user, :read_user_profile, @contributor)
 
       epic_groups = all_epic_groups(current_user, include_private_contributions)
-      wiki_groups = all_wiki_groups(current_user, include_private_contributions)
+      note_groups = all_note_groups(current_user, include_private_contributions)
 
-      Group.from_union(epic_groups, wiki_groups)
+      Group.from_union(epic_groups, note_groups)
     end
 
     private
@@ -37,8 +37,8 @@ module Users
       groups.public_or_visible_to_user(current_user)
     end
 
-    def all_wiki_groups(current_user, include_private_contributions)
-      groups = @contributor.contributed_wiki_groups
+    def all_note_groups(current_user, include_private_contributions)
+      groups = @contributor.contributed_note_groups
       return groups if include_private_contributions
 
       groups.public_or_visible_to_user(current_user)
