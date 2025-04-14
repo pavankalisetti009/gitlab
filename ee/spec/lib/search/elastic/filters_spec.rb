@@ -404,13 +404,13 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
     context 'when options[:label_name] is provided' do
       let(:label_name) { [label_title] }
-      let(:aggregations) { false }
+      let(:aggregation) { false }
       let(:count_only) { false }
       let(:group_ids) { nil }
       let(:project_ids) { nil }
       let(:options) do
         {
-          label_name: label_name, search_level: search_level, count_only: count_only, aggregations: aggregations,
+          label_name: label_name, search_level: search_level, count_only: count_only, aggregation: aggregation,
           group_ids: group_ids, project_ids: project_ids
         }
       end

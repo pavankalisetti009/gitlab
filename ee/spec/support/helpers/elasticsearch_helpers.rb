@@ -6,7 +6,7 @@ module ElasticsearchHelpers
     without = Array.wrap(without)
 
     query.extend(Hashie::Extensions::DeepFind)
-    names = query.deep_find_all(:_name)
+    names = query.deep_find_all(:_name) || []
 
     expect(names).to include(*with) unless with.empty?
     expect(names).not_to include(*without) unless without.empty?
