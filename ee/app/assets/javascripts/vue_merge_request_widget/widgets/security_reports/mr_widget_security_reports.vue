@@ -8,7 +8,6 @@ import MrWidgetRow from '~/vue_merge_request_widget/components/widget/widget_con
 import axios from '~/lib/utils/axios_utils';
 import { s__ } from '~/locale';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
 import { capitalizeFirstCharacter, convertToCamelCase } from '~/lib/utils/text_utility';
@@ -37,7 +36,7 @@ export default {
     DynamicScroller,
     DynamicScrollerItem,
   },
-  mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
+  mixins: [glAbilitiesMixin()],
   i18n,
   props: {
     mr: {
@@ -381,11 +380,7 @@ export default {
     },
 
     isAiResolvable(vuln) {
-      return (
-        vuln.ai_resolution_enabled &&
-        this.glFeatures.resolveVulnerabilityInMr &&
-        this.glAbilities.resolveVulnerabilityWithAi
-      );
+      return vuln.ai_resolution_enabled && this.glAbilities.resolveVulnerabilityWithAi;
     },
 
     getAiResolvableBadgeId(uuid) {
@@ -458,7 +453,7 @@ export default {
         :branch-ref="branchRef"
         :project-full-path="mr.targetProjectFullPath"
         :source-project-full-path="mr.sourceProjectFullPath"
-        :show-ai-resolution="glFeatures.resolveVulnerabilityInMr"
+        :show-ai-resolution="true"
         :merge-request-id="mr.id"
         data-testid="vulnerability-finding-modal"
         @hidden="clearModalData"

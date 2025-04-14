@@ -9,7 +9,7 @@ import MRSecurityWidget from 'ee/vue_merge_request_widget/widgets/security_repor
 import VulnerabilityFindingModal from 'ee/security_dashboard/components/pipeline/vulnerability_finding_modal.vue';
 import SummaryText from 'ee/vue_merge_request_widget/widgets/security_reports/summary_text.vue';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
-import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { historyPushState } from '~/lib/utils/common_utils';
 import api from '~/api';
 import Widget from '~/vue_merge_request_widget/components/widget/widget.vue';
@@ -21,7 +21,9 @@ import {
   HTTP_STATUS_OK,
 } from '~/lib/utils/http_status';
 
-jest.mock('~/vue_shared/components/user_callout_dismisser.vue', () => ({ render: () => {} }));
+jest.mock('~/vue_shared/components/user_callout_dismisser.vue', () => ({
+  render: () => {},
+}));
 jest.mock('~/lib/utils/common_utils', () => ({
   ...jest.requireActual('~/lib/utils/common_utils'),
   historyPushState: jest.fn(),
@@ -88,11 +90,6 @@ describe('MR Widget Security Reports', () => {
       stubs: {
         MrWidgetRow,
         VulnerabilityFindingModal: stubComponent(VulnerabilityFindingModal),
-      },
-      provide: {
-        glFeatures: {
-          resolveVulnerabilityInMr: true,
-        },
       },
       ...options,
     });
@@ -321,9 +318,6 @@ describe('MR Widget Security Reports', () => {
                 glAbilities: {
                   resolveVulnerabilityWithAi,
                 },
-                glFeatures: {
-                  resolveVulnerabilityInMr: true,
-                },
               },
             }),
           );
@@ -345,9 +339,6 @@ describe('MR Widget Security Reports', () => {
             provide: {
               glAbilities: {
                 resolveVulnerabilityWithAi: true,
-              },
-              glFeatures: {
-                resolveVulnerabilityInMr: true,
               },
             },
           }),
@@ -376,45 +367,6 @@ describe('MR Widget Security Reports', () => {
         });
       });
     });
-
-    it.each`
-      resolveVulnerabilityWithAi | aiResolutionEnabled
-      ${true}                    | ${true}
-      ${false}                   | ${true}
-      ${true}                    | ${false}
-    `(
-      'with the "resolveVulnerabilityInMr" feature flag set to "false" it should never show the AI-Badge',
-      async ({ resolveVulnerabilityWithAi, aiResolutionEnabled }) => {
-        await createComponentAndExpandWidget({
-          mockDataFn: () =>
-            mockWithData({
-              findings: {
-                sast: {
-                  added: [
-                    {
-                      uuid: '1',
-                      severity: 'critical',
-                      name: 'Password leak',
-                      state: 'dismissed',
-                      ai_resolution_enabled: aiResolutionEnabled,
-                    },
-                  ],
-                },
-              },
-            }),
-          provide: {
-            glAbilities: {
-              resolveVulnerabilityWithAi,
-            },
-            glFeatures: {
-              resolveVulnerabilityInMr: false,
-            },
-          },
-        });
-
-        expect(wrapper.findByTestId('ai-resolvable-badge').exists()).toBe(false);
-      },
-    );
 
     it('should mount the widget component', async () => {
       await createComponentWithData();
@@ -847,22 +799,6 @@ describe('MR Widget Security Reports', () => {
 
         expect(historyPushState).toHaveBeenCalledWith(aiCommentUrl);
         expect(window.location.reload).toHaveBeenCalled();
-      });
-    });
-
-    describe('with the "resolveVulnerabilityInMr" feature flag disabled', () => {
-      it('sets the modals "showAiResolution" prop to "false"', async () => {
-        await createComponentExpandWidgetAndOpenModal({
-          provide: {
-            glFeatures: {
-              resolveVulnerabilityInMr: false,
-            },
-          },
-        });
-
-        expect(findStandaloneModal().props()).toMatchObject({
-          showAiResolution: false,
-        });
       });
     });
 
