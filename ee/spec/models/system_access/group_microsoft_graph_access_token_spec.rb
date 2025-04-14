@@ -22,6 +22,10 @@ RSpec.describe SystemAccess::GroupMicrosoftGraphAccessToken, type: :model, featu
     end
   end
 
+  it_behaves_like 'encrypted attribute', :token, :db_key_base_32 do
+    let(:record) { token }
+  end
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:system_access_group_microsoft_application_id) }
     it { is_expected.to validate_presence_of(:expires_in) }
