@@ -50,14 +50,17 @@ export default {
     },
   },
   methods: {
+    ...mapActions(['fetchDependencies']),
     ...mapActions({
       setSortField(dispatch, field) {
         this.clearCursorParam();
         dispatch(`setSortField`, field);
+        this.fetchDependencies();
       },
       toggleSortOrder(dispatch) {
         this.clearCursorParam();
         dispatch(`toggleSortOrder`);
+        this.fetchDependencies();
       },
     }),
     clearCursorParam() {

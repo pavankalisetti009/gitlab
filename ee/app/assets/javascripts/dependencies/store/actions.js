@@ -7,7 +7,9 @@ import {
 } from '~/lib/utils/common_utils';
 import { __, sprintf } from '~/locale';
 import { HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { OPERATOR_NOT } from '~/vue_shared/components/filtered_search_bar/constants';
+import projectDependencies from '../graphql/project_dependencies.query.graphql';
 import {
   FETCH_ERROR_MESSAGE,
   FETCH_ERROR_MESSAGE_WITH_DETAILS,
@@ -17,7 +19,7 @@ import {
   VULNERABILITIES_FETCH_ERROR_MESSAGE,
 } from './constants';
 import * as types from './mutation_types';
-import { isValidResponse } from './utils';
+import { isValidResponse, graphQLClient } from './utils';
 
 export const setDependenciesEndpoint = ({ commit }, endpoint) =>
   commit(types.SET_DEPENDENCIES_ENDPOINT, endpoint);
@@ -28,6 +30,8 @@ export const setExportDependenciesEndpoint = ({ commit }, payload) =>
 export const setNamespaceType = ({ commit }, payload) => commit(types.SET_NAMESPACE_TYPE, payload);
 
 export const setPageInfo = ({ commit }, payload) => commit(types.SET_PAGE_INFO, payload);
+
+export const setFullPath = ({ commit }, fullPath) => commit(types.SET_FULL_PATH, fullPath);
 
 export const requestDependencies = ({ commit }) => commit(types.REQUEST_DEPENDENCIES);
 
@@ -119,14 +123,46 @@ export const fetchDependencies = ({ state, dispatch }, params) => {
     });
 };
 
-export const setSortField = ({ commit, dispatch }, id) => {
-  commit(types.SET_SORT_FIELD, id);
-  dispatch('fetchDependencies', { page: 1 });
+export const fetchDependenciesViaGraphQL = ({ state, dispatch, commit }) => {
+  dispatch('requestDependencies');
+
+  const { fullPath } = state;
+
+  graphQLClient
+    .query({
+      query: projectDependencies,
+      variables: {
+        fullPath,
+      },
+    })
+    .then(({ data }) => {
+      const { nodes: dependenciesData, pageInfo } = data.project.dependencies;
+
+      // Extract the numeric ID from the GraphQL ID and add it as occurrenceId
+      const dependencies = dependenciesData.map((dependency) => ({
+        ...dependency,
+        occurrenceId: getIdFromGraphQLId(dependency.id),
+      }));
+
+      commit(types.RECEIVE_DEPENDENCIES_SUCCESS, {
+        dependencies,
+        pageInfo,
+      });
+    })
+    .catch((error) => {
+      dispatch('receiveDependenciesError', error);
+
+      const errorMessage = error.message || FETCH_ERROR_MESSAGE;
+      createAlert({ message: errorMessage });
+    });
 };
 
-export const toggleSortOrder = ({ commit, dispatch }) => {
+export const setSortField = ({ commit }, id) => {
+  commit(types.SET_SORT_FIELD, id);
+};
+
+export const toggleSortOrder = ({ commit }) => {
   commit(types.TOGGLE_SORT_ORDER);
-  dispatch('fetchDependencies', { page: 1 });
 };
 
 export const fetchExport = ({ state, commit }, params) => {

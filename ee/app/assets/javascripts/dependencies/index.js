@@ -3,7 +3,7 @@ import { parseBoolean, convertObjectPropsToCamelCase } from '~/lib/utils/common_
 import DependenciesApp from './components/app.vue';
 import createStore from './store';
 import apolloProvider from './graphql/provider';
-import { NAMESPACE_GROUP } from './constants';
+import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from './constants';
 
 export default (namespaceType) => {
   const el = document.querySelector('#js-dependencies-app');
@@ -43,10 +43,15 @@ export default (namespaceType) => {
     scanFinishedAt,
     groupFullPath,
     projectFullPath,
+    fullPath: '',
   };
 
   if (namespaceType === NAMESPACE_GROUP) {
     provide.locationsEndpoint = locationsEndpoint;
+  }
+
+  if (namespaceType === NAMESPACE_PROJECT) {
+    provide.fullPath = projectFullPath;
   }
 
   const props = {

@@ -9,6 +9,7 @@ export default () => ({
   errorLoading: false,
   dependencies: [],
   namespaceType: '',
+  fullPath: '',
   pageInfo: {
     total: 0,
   },

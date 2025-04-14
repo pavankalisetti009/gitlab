@@ -9,7 +9,7 @@ import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_erro
 import DependencyExportDropdown from 'ee/dependencies/components/dependency_export_dropdown.vue';
 import PaginatedDependenciesTable from 'ee/dependencies/components/paginated_dependencies_table.vue';
 import createStore from 'ee/dependencies/store';
-import { NAMESPACE_ORGANIZATION } from 'ee/dependencies/constants';
+import { NAMESPACE_ORGANIZATION, NAMESPACE_GROUP } from 'ee/dependencies/constants';
 import { TEST_HOST } from 'helpers/test_constants';
 import { getDateInPast } from '~/lib/utils/datetime_utility';
 import axios from '~/lib/utils/axios_utils';
@@ -30,13 +30,14 @@ describe('DependenciesApp component', () => {
     vulnerabilitiesEndpoint: `/vulnerabilities`,
     latestSuccessfulScanPath: '/group/project/-/pipelines/1',
     scanFinishedAt: getDateInPast(new Date(), 7),
+    fullPath: '/group/project',
   };
 
   const basicProps = {
     sbomReportsErrors: [],
   };
 
-  const factory = ({ provide, props } = {}) => {
+  const factory = ({ provide, props, glFeatures = { projectDependenciesGraphql: true } } = {}) => {
     store = createStore();
     jest.spyOn(store, 'dispatch').mockImplementation();
 
@@ -46,7 +47,7 @@ describe('DependenciesApp component', () => {
       mount(DependenciesApp, {
         store,
         stubs,
-        provide: { ...basicAppProvides, ...provide },
+        provide: { ...basicAppProvides, ...provide, glFeatures },
         propsData: { ...basicProps, ...props },
       }),
     );
@@ -120,13 +121,25 @@ describe('DependenciesApp component', () => {
 
     it('dispatches the correct initial actions', () => {
       expect(store.dispatch.mock.calls).toEqual([
+        ['setFullPath', basicAppProvides.fullPath],
         ['setDependenciesEndpoint', basicAppProvides.endpoint],
         ['setExportDependenciesEndpoint', basicAppProvides.exportEndpoint],
         ['setNamespaceType', basicAppProvides.namespaceType],
         ['setPageInfo', expect.anything()],
         ['setSortField', 'severity'],
+        ['fetchDependenciesViaGraphQL'],
       ]);
     });
+
+    it.each([NAMESPACE_GROUP, NAMESPACE_ORGANIZATION])(
+      'always fetches dependencies via REST when the given namespace is %s',
+      (namespaceType) => {
+        factory({ provide: { namespaceType } });
+
+        expect(store.dispatch).toHaveBeenCalledWith('fetchDependencies', { page: 1 });
+        expect(store.dispatch).not.toHaveBeenCalledWith('fetchDependenciesViaGraphQL');
+      },
+    );
 
     describe('without export endpoint', () => {
       beforeEach(async () => {
@@ -287,6 +300,25 @@ describe('DependenciesApp component', () => {
       });
 
       it('shows the dependencies table with the correct props', expectDependenciesTable);
+    });
+  });
+
+  describe('with "projectDependenciesGraphQL" feature flag disabled', () => {
+    beforeEach(() => {
+      mock = new MockAdapter(axios);
+      factory({ glFeatures: { projectDependenciesGraphql: false } });
+    });
+
+    it('dispatches the correct initial actions', () => {
+      expect(store.dispatch.mock.calls).toEqual([
+        ['setFullPath', basicAppProvides.fullPath],
+        ['setDependenciesEndpoint', basicAppProvides.endpoint],
+        ['setExportDependenciesEndpoint', basicAppProvides.exportEndpoint],
+        ['setNamespaceType', basicAppProvides.namespaceType],
+        ['setPageInfo', expect.anything()],
+        ['setSortField', 'severity'],
+        ['fetchDependencies', { page: 1 }],
+      ]);
     });
   });
 });
