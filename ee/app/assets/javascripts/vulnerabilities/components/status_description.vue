@@ -8,7 +8,6 @@ import {
   GlAvatarLabeled,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { DISMISSAL_REASONS } from '../constants';
 
@@ -22,7 +21,6 @@ export default {
     GlAvatarLink,
     GlAvatarLabeled,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     vulnerability: {
       type: Object,
