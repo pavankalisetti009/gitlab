@@ -10,7 +10,6 @@ import { createAlert } from '~/alert';
 import { TYPENAME_VULNERABILITY } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { s__ } from '~/locale';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { normalizeGraphQLNote } from '../helpers';
 import GenericReportSection from './generic_report/report_section.vue';
 import HistoryEntry from './history_entry.vue';
@@ -33,7 +32,6 @@ export default {
     GlIcon,
     StatusDescription,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: {
     createJiraIssueUrl: {
       default: '',

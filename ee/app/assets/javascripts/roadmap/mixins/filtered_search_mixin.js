@@ -33,7 +33,6 @@ import EmojiToken from '~/vue_shared/components/filtered_search_bar/tokens/emoji
 import GroupToken from '~/vue_shared/components/filtered_search_bar/tokens/group_token.vue';
 import LabelToken from '~/vue_shared/components/filtered_search_bar/tokens/label_token.vue';
 import MilestoneToken from '~/vue_shared/components/filtered_search_bar/tokens/milestone_token.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { TOKEN_TITLE_EPIC } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import EpicToken from 'ee/vue_shared/components/filtered_search_bar/tokens/epic_token.vue';
 
@@ -41,7 +40,6 @@ const CustomFieldToken = () =>
   import('ee/vue_shared/components/filtered_search_bar/tokens/custom_field_token.vue');
 
 export default {
-  mixins: [glFeatureFlagMixin()],
   inject: ['groupFullPath', 'groupMilestonesPath', 'hasCustomFieldsFeature'],
   computed: {
     urlParams() {
