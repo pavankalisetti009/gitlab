@@ -5,7 +5,7 @@ require 'active_support/testing/time_helpers'
 
 # Usage:
 #
-# Simple invocation seeds all projects:
+# Simple invocation creates a new project inside a group:
 #
 # FILTER=productivity_analytics SEED_PRODUCTIVITY_ANALYTICS=1 bundle exec rake db:seed_fu
 #
