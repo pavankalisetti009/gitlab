@@ -43,5 +43,22 @@ FactoryBot.define do
         archived_record.data[:dismissed_by] = 'user'
       end
     end
+
+    trait :with_issues do
+      after(:build) do |archived_record|
+        archived_record.data[:related_issues] = [
+          {
+            type: 'created',
+            id: 1
+          }
+        ]
+      end
+    end
+
+    trait :with_merge_requests do
+      after(:build) do |archived_record|
+        archived_record.data[:related_mrs] = [1, 2]
+      end
+    end
   end
 end

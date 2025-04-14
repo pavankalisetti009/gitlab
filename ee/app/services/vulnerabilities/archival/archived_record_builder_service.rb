@@ -50,7 +50,13 @@ module Vulnerabilities
           full_path: vulnerability.full_path,
           cvss: vulnerability.cvss,
           dismissal_reason: vulnerability_read.dismissal_reason
-        }.merge!(dismissal_information, confirm_information, resolve_information)
+        }.merge!(
+          dismissal_information,
+          confirm_information,
+          resolve_information,
+          related_issue_information,
+          related_mr_information
+        )
       end
 
       def dismissal_information
@@ -77,6 +83,29 @@ module Vulnerabilities
         {
           resolved_at: vulnerability.resolved_at.to_s,
           resolved_by: vulnerability.resolved_by&.username
+        }
+      end
+
+      def related_issue_information
+        return {} unless vulnerability.issue_links.present?
+
+        issue_links_data = vulnerability.issue_links.map do |issue_link|
+          {
+            type: issue_link.link_type,
+            id: issue_link.issue_id
+          }
+        end
+
+        {
+          related_issues: issue_links_data
+        }
+      end
+
+      def related_mr_information
+        return {} unless vulnerability.merge_requests.present?
+
+        {
+          related_mrs: vulnerability.merge_requests.map(&:id)
         }
       end
     end

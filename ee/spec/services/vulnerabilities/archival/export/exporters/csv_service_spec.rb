@@ -4,7 +4,9 @@ require 'spec_helper'
 
 RSpec.describe Vulnerabilities::Archival::Export::Exporters::CsvService, feature_category: :vulnerability_management do
   describe '#generate' do
-    let_it_be(:archived_record) { create(:vulnerability_archived_record, :dismissed) }
+    let_it_be(:archived_record) do
+      create(:vulnerability_archived_record, :dismissed, :with_issues, :with_merge_requests)
+    end
 
     let(:export_csv_service) { described_class.new([archived_record.data]) }
 
@@ -27,7 +29,8 @@ RSpec.describe Vulnerabilities::Archival::Export::Exporters::CsvService, feature
         let(:expected_headers) do
           ['Tool', 'Scanner Name', 'Status', 'Vulnerability', 'Details', 'Severity', 'CVE', 'CWE', 'Other Identifiers',
             'Dismissed At', 'Dismissed By', 'Confirmed At', 'Confirmed By', 'Resolved At', 'Resolved By', 'Detected At',
-            'Location', 'Activity', 'Comments', 'Full Path', 'CVSS Vectors', 'Dismissal Reason']
+            'Location', 'Issues', 'Merge Requests', 'Activity', 'Comments', 'Full Path', 'CVSS Vectors',
+            'Dismissal Reason']
         end
 
         it 'contains the expected headers' do
@@ -62,6 +65,8 @@ RSpec.describe Vulnerabilities::Archival::Export::Exporters::CsvService, feature
               'Location' => '{"class"=>"com.gitlab.security_products.tests.App", "end_line"=>29, ' \
                 '"file"=>"maven/src/main/java/com/gitlab/security_products/tests/App.java", ' \
                 '"method"=>"insecureCypher", "start_line"=>29}',
+              'Issues' => '[{"type"=>"created", "id"=>1}]',
+              'Merge Requests' => '[1, 2]',
               'Activity' => 'false',
               'Comments' => 'Test notes summary',
               'Full Path' => 'Test full path',
