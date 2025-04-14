@@ -11,7 +11,7 @@ module EE
         authorize! :read_admin_users, only: [:index, :show]
 
         before_action only: [:new, :edit] do
-          push_frontend_feature_flag(:custom_admin_roles)
+          push_frontend_feature_flag(:custom_admin_roles) unless gitlab_com_subscription?
           push_licensed_feature(:custom_roles)
         end
       end

@@ -12,6 +12,38 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
     sign_in(admin)
   end
 
+  shared_examples 'pushes custom_admin_roles feature flag' do
+    it 'pushes the feature flag' do
+      get path
+
+      expect(response.body).to have_pushed_frontend_feature_flags(customAdminRoles: true)
+    end
+
+    context 'when gitlab_com_subscriptions feature is available' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
+
+      it 'does not push the feature flag' do
+        get path
+
+        expect(response.body).not_to have_pushed_frontend_feature_flags(customAdminRoles: true)
+      end
+    end
+  end
+
+  describe 'GET new' do
+    it_behaves_like 'pushes custom_admin_roles feature flag' do
+      let(:path) { new_admin_user_path }
+    end
+  end
+
+  describe 'GET edit' do
+    it_behaves_like 'pushes custom_admin_roles feature flag' do
+      let(:path) { edit_admin_user_path(user) }
+    end
+  end
+
   describe 'GET card_match' do
     context 'when not SaaS' do
       it 'responds with 404' do
