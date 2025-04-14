@@ -1,0 +1,18 @@
+#import "./work_item_status.fragment.graphql"
+
+query workItemStatus($fullPath: ID!, $iid: String!) {
+  workspace: namespace(fullPath: $fullPath) {
+    id
+    workItem(iid: $iid) {
+      id
+      widgets {
+        type
+        ... on WorkItemWidgetStatus {
+          status {
+            ...WorkItemStatusFragment
+          }
+        }
+      }
+    }
+  }
+}
