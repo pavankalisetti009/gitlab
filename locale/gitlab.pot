@@ -56308,6 +56308,9 @@ msgstr ""
 msgid "ServiceDesk|Cannot convert issue to ticket because no email was provided or the format was invalid."
 msgstr ""
 
+msgid "ServiceDesk|Cannot convert to ticket because Service Desk is disabled."
+msgstr ""
+
 msgid "ServiceDesk|Cannot convert to ticket because it is already a ticket."
 msgstr ""
 
