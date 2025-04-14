@@ -3298,7 +3298,7 @@
   :feature_category: :security_policy_management
   :has_external_dependencies: false
   :urgency: :throttled
-  :resource_boundary: :unknown
+  :resource_boundary: :cpu
   :weight: 1
   :idempotent: false
   :tags: []
