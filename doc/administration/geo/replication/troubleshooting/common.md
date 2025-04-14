@@ -660,6 +660,45 @@ consume slightly more resources until it finishes. Afterward, CPU usage might
 remain high while verification continues, but queries should complete
 significantly faster, and secondary site status should update correctly.
 
+### Verification failed with: `Verification timed out after (...)`
+
+From GitLab 16.11, Geo may create duplicate `JobArtifactRegistry` entries for the same `artifact_id`, which can lead to synchronization
+failures between primary and secondary sites. This issue may also impact `UploadRegistry` and `PackageFileRegistry` entries.
+
+To determine if you might be experiencing this issue and remove the duplicate entries:
+
+1. Open a [Rails console](../../../operations/rails_console.md) in the secondary site.
+1. Get the number of model record IDs that have duplicates:
+
+   ```ruby
+   artifact_ids = Geo::JobArtifactRegistry.group(:artifact_id).having('COUNT(*) > 1').pluck(:artifact_id); artifact_ids.size
+   upload_ids = Geo::UploadRegistry.group(:file_id).having('COUNT(*) > 1').pluck(:file_id); upload_ids.size
+   package_file_ids = Geo::PackageFileRegistry.group(:package_file_id).having('COUNT(*) > 1').pluck(:package_file_id); package_file_ids.size
+   ```
+
+1. Output the IDs:
+
+   ```ruby
+   puts 'BEGIN Artifact IDs', artifact_ids, 'END Artifact IDs'
+   puts 'BEGIN Upload IDs', upload_ids, 'END Upload IDs'
+   puts 'BEGIN Package File IDs', package_file_ids, 'END Package File IDs'
+   ```
+
+   If the output is empty, you are not affected. Otherwise, save 
+   the terminal output in a text file in case you lose connection later.
+
+1. Delete all duplicates:
+
+   ```ruby
+   Geo::JobArtifactRegistry.where(artifact_id: artifact_ids).delete_all
+   Geo::UploadRegistry.where(file_id: upload_ids).delete_all
+   Geo::PackageFileRegistry.where(package_file_id: package_file_ids).delete_all
+   ```
+
+1. Wait for the background jobs to create the registry rows again and resync.
+
+Follow [issue 479852](https://gitlab.com/gitlab-org/gitlab/-/issues/479852) to get feedback on the fix.
+
 ### Error `end of file reached` when running Geo Rake check task on secondary
 
 You may face the following error when running the [health check Rake task](common.md#health-check-rake-task) on the secondary site:
