@@ -8,8 +8,6 @@ module Gitlab
       module Targets
         # Backup and restores repositories by querying the database
         class Repositories < Target
-          PoolReinitializationResult = Struct.new(:disk_path, :status, :error_message, keyword_init: true)
-
           BATCH_SIZE = 1000
 
           def dump(destination)
@@ -102,39 +100,8 @@ module Gitlab
           end
 
           def restore_object_pools
-            gitlab_path = context.gitlab_basepath
-
-            Gitlab::Backup::Cli::Output.info "Reinitializing object pools..."
-
-            rake = Gitlab::Backup::Cli::Utils::Rake.new(
-              'gitlab:backup:repo:reset_pool_repositories',
-              chdir: gitlab_path)
-
-            rake.capture_each do |stream, output|
-              next Gitlab::Backup::Cli::Output.error output if stream == :stderr
-
-              pool = parse_pool_results(output)
-              next Gitlab::Backup::Cli::Output.warn "Failed to parse: #{output}" unless pool
-
-              case pool.status.to_sym
-              when :scheduled
-                Gitlab::Backup::Cli::Output.success "Object pool #{pool.disk_path}..."
-              when :skipped
-                Gitlab::Backup::Cli::Output.info "Object pool #{pool.disk_path}... [SKIPPED]"
-              when :failed
-                Gitlab::Backup::Cli::Output.info "Object pool #{pool.disk_path}... [FAILED]"
-                Gitlab::Backup::Cli::Output.error(
-                  "Object pool #{pool.disk_path} failed to reset (#{pool.error_message})")
-              end
-            end
-          end
-
-          def parse_pool_results(line)
-            return unless line.start_with?('{') && line.end_with?('}')
-
-            JSON.parse(line, object_class: PoolReinitializationResult)
-          rescue JSON::ParserError
-            nil
+            pool = Gitlab::Backup::Cli::Utils::PoolRepositories.new(gitlab_basepath: context.gitlab_basepath)
+            pool.reinitialize!
           end
         end
       end
