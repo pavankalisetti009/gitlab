@@ -230,7 +230,7 @@ methods we use for replicating and verifying each data type in [supported Geo da
 To find more details about failed items, check
 [the `gitlab-rails/geo.log` file](../../../logs/log_parsing.md#find-most-common-geo-sync-errors)
 
-If you notice replication or verification failures, you can try to [resolve them](replication.md).
+If you notice replication or verification failures, you can try to [resolve them](synchronization_verification.md).
 
 ##### Fixing errors found when running the Geo check Rake task
 
@@ -441,7 +441,7 @@ To check if PostgreSQL replication is working, check if:
 - [Sites are pointing to the correct database node](#are-sites-pointing-to-the-correct-database-node).
 - [Geo can detect the current site correctly](#can-geo-detect-the-current-site-correctly).
 
-If you're still having problems, see the [advanced replication troubleshooting](replication.md).
+If you're still having problems, see the [advanced replication troubleshooting](synchronization_verification.md).
 
 #### Are sites pointing to the correct database node?
 
