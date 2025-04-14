@@ -89,7 +89,6 @@ describe('AiAdminSettings', () => {
 
     it('passes correct props to AiCommonSettings', () => {
       expect(findAiCommonSettings().props()).toEqual({
-        isGroup: false,
         hasParentFormChanged: false,
       });
     });

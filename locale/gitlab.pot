@@ -3927,9 +3927,6 @@ msgstr ""
 msgid "Adjust how frequently the GitLab UI polls for updates."
 msgstr ""
 
-msgid "Admin Area &gt; GitLab Duo"
-msgstr ""
-
 msgid "Admin Mode"
 msgstr ""
 
@@ -5736,9 +5733,6 @@ msgstr ""
 msgid "AiPowered|GitLab Duo seat assignment is now located in GitLab Duo settings."
 msgstr ""
 
-msgid "AiPowered|GitLab Duo settings have moved"
-msgstr ""
-
 msgid "AiPowered|GitLab Duo with Amazon Q"
 msgstr ""
 
@@ -5782,9 +5776,6 @@ msgid "AiPowered|Specify how code completion requests are sent to the AI gateway
 msgstr ""
 
 msgid "AiPowered|Start date: %{startDate}"
-msgstr ""
-
-msgid "AiPowered|To make it easier to configure GitLab Duo, the settings have moved to a more visible location. To access them, go to "
 msgstr ""
 
 msgid "AiPowered|Turn on experiment and beta GitLab Duo features"
@@ -56960,9 +56951,6 @@ msgid "Setting high package limits can impact database performance. Consider the
 msgstr ""
 
 msgid "Settings"
-msgstr ""
-
-msgid "Settings &gt; GitLab Duo"
 msgstr ""
 
 msgid "Settings for the License Compliance feature"

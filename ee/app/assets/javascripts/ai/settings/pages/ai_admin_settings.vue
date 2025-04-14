@@ -173,11 +173,7 @@ export default {
 };
 </script>
 <template>
-  <ai-common-settings
-    :is-group="false"
-    :has-parent-form-changed="hasFormChanged"
-    @submit="updateSettings"
-  >
+  <ai-common-settings :has-parent-form-changed="hasFormChanged" @submit="updateSettings">
     <template #ai-common-settings-bottom>
       <duo-chat-history-expiration-form
         @change-expiration-days="onDuoChatHistoryExpirationDaysChange"

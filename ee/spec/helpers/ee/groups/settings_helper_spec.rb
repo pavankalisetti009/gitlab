@@ -43,42 +43,8 @@ RSpec.describe EE::Groups::SettingsHelper do
     it 'returns the expected data' do
       expect(group_ai_general_settings_helper_data).to include(
         on_general_settings_page: 'true',
-        configuration_settings_path: helper.group_settings_gitlab_duo_path(group),
         base_data: 'data'
       )
-    end
-
-    context 'when group is root and has gitlab.com subscription' do
-      before do
-        allow(group).to receive(:root?).and_return(true)
-        allow(helper).to receive(:gitlab_com_subscription?).and_return(true)
-      end
-
-      it 'sets show_redirect_banner to true' do
-        expect(group_ai_general_settings_helper_data[:show_redirect_banner]).to eq('true')
-      end
-    end
-
-    context 'when group is not root' do
-      before do
-        allow(group).to receive(:root?).and_return(false)
-        allow(helper).to receive(:gitlab_com_subscription?).and_return(true)
-      end
-
-      it 'sets show_redirect_banner to false' do
-        expect(group_ai_general_settings_helper_data[:show_redirect_banner]).to eq('false')
-      end
-    end
-
-    context 'when group does not have gitlab.com subscription' do
-      before do
-        allow(group).to receive(:root?).and_return(true)
-        allow(helper).to receive(:gitlab_com_subscription?).and_return(false)
-      end
-
-      it 'sets show_redirect_banner to false' do
-        expect(group_ai_general_settings_helper_data[:show_redirect_banner]).to eq('false')
-      end
     end
   end
 

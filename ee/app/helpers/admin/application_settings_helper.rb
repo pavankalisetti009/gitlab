@@ -42,14 +42,6 @@ module Admin
       }
     end
 
-    def admin_ai_general_settings_helper_data
-      {
-        on_general_settings_page: 'true',
-        configuration_settings_path: admin_gitlab_duo_path,
-        show_redirect_banner: 'true'
-      }
-    end
-
     def admin_ai_configuration_settings_helper_data
       {
         on_general_settings_page: 'false',
