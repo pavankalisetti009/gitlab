@@ -23,6 +23,7 @@ query complianceFrameworksGroupProjects(
       last: $last
       search: $project
       ids: $ids
+      sort: FULL_PATH_ASC
       complianceFrameworkFilters: {
         ids: $frameworks
         not: { ids: $frameworksNot }
