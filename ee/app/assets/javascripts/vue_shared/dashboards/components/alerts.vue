@@ -33,7 +33,6 @@ export default {
       :class="alertClasses"
       class="js-dashboard-alerts-icon"
       name="warning"
-      :size="12"
       variant="subtle"
     />
     <span class="js-alert-count gl-text-subtle"> {{ alertCount }} </span>
