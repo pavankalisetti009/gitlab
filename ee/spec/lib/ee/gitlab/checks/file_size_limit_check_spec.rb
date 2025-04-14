@@ -102,6 +102,36 @@ RSpec.describe Gitlab::Checks::FileSizeLimitCheck, feature_category: :source_cod
         it_behaves_like 'checks file size limit', 50
       end
 
+      context 'when source is push_rule and the file exceeds the limit' do
+        let(:push_rule_limit) { 2 }
+        let(:global_limit) { 50 }
+        let(:mock_blob_id) { "88acbfafb1b8fdb7c51db870babce21bd861ac4f" }
+        let(:mock_blob_size) { 300 * 1024 * 1024 } # 300 MiB
+        let(:blob_double) { instance_double(Gitlab::Git::Blob, size: mock_blob_size, id: mock_blob_id) }
+
+        before do
+          stub_saas_features(instance_push_limit: true)
+          allow_next_instance_of(Gitlab::Checks::FileSizeCheck::HookEnvironmentAwareAnyOversizedBlobs,
+            project: project,
+            changes: changes,
+            file_size_limit_megabytes: push_rule_limit
+          ) do |check|
+            allow(check).to receive(:find).and_return([blob_double])
+          end
+        end
+
+        it 'returns the correct link to the documentation in the error message' do
+          expect { file_size_check.validate! }
+            .to raise_exception(Gitlab::GitAccess::ForbiddenError) do |error|
+              message = error.message
+
+              expect(message).to include("push_rules/#validate-files")
+              expect(message).not_to include("free_push_limit.md")
+              expect(message).not_to include("account_and_limit_settings.md")
+            end
+        end
+      end
+
       context 'when feature flag "push_rule_file_size_limit" is disabled' do
         let(:push_rule_limit) { 30 }
         let(:global_limit) { 10 }
@@ -154,6 +184,17 @@ RSpec.describe Gitlab::Checks::FileSizeLimitCheck, feature_category: :source_cod
                 file_size_check.validate!
               end.to raise_exception(Gitlab::GitAccess::ForbiddenError,
                 /- #{mock_blob_id} \(#{size_msg} MiB\)/)
+            end
+
+            it 'includes free push limit and account settings links in the error message' do
+              expect { file_size_check.validate! }
+                .to raise_exception(Gitlab::GitAccess::ForbiddenError) do |error|
+                message = error.message
+
+                expect(message).to include("free_push_limit.md")
+                expect(message).to include("account_and_limit_settings.md")
+                expect(message).not_to include("push_rules/#validate-files")
+              end
             end
           end
         end
