@@ -246,6 +246,17 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
     let(:scan_result_policy) { create(:scan_result_policy_read) }
     let(:policy_configuration) { scan_result_policy.security_orchestration_policy_configuration }
 
+    context 'when approval_policy_rule_id is present' do
+      let_it_be(:approval_policy_rule) { create(:approval_policy_rule) }
+      let_it_be(:scan_result_policy) do
+        create(:scan_result_policy_read, approval_policy_rule: approval_policy_rule)
+      end
+
+      it 'returns the associated approval_policy_rule' do
+        expect(scan_result_policy.approval_policy_rule).to eq(approval_policy_rule)
+      end
+    end
+
     context 'when real_policy_index is negative' do
       before do
         allow(scan_result_policy).to receive(:real_policy_index).and_return(-1)
