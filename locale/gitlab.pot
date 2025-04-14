@@ -4934,6 +4934,9 @@ msgstr ""
 msgid "AdminUsers|Access level"
 msgstr ""
 
+msgid "AdminUsers|Access summary for %{userType} user"
+msgstr ""
+
 msgid "AdminUsers|Access the API"
 msgstr ""
 
@@ -4992,6 +4995,9 @@ msgid "AdminUsers|Ban user %{username}?"
 msgstr ""
 
 msgid "AdminUsers|Banned"
+msgstr ""
+
+msgid "AdminUsers|Based on member role in groups and projects. %{linkStart}Learn more about member roles.%{linkEnd}"
 msgstr ""
 
 msgid "AdminUsers|Be added to groups and projects"
@@ -5117,7 +5123,13 @@ msgstr ""
 msgid "AdminUsers|Full access to all groups, projects, users, features, and the Admin area. You cannot remove your own administrator access."
 msgstr ""
 
+msgid "AdminUsers|Full read and write access."
+msgstr ""
+
 msgid "AdminUsers|Group Managed Account"
+msgstr ""
+
+msgid "AdminUsers|Groups and project settings"
 msgstr ""
 
 msgid "AdminUsers|Here are some helpful links to help you manage your instance:"
@@ -5159,10 +5171,16 @@ msgstr ""
 msgid "AdminUsers|Manage (accept/reject) pending user sign ups"
 msgstr ""
 
+msgid "AdminUsers|May be directly added to groups and projects. %{linkStart}Learn more about auditor role.%{linkEnd}"
+msgstr ""
+
 msgid "AdminUsers|Name not matching"
 msgstr ""
 
 msgid "AdminUsers|New user"
+msgstr ""
+
+msgid "AdminUsers|No access."
 msgstr ""
 
 msgid "AdminUsers|Owned groups will be left"
@@ -5192,6 +5210,9 @@ msgstr ""
 msgid "AdminUsers|Reactivating a user will:"
 msgstr ""
 
+msgid "AdminUsers|Read access to all groups and projects."
+msgstr ""
+
 msgid "AdminUsers|Read-only access to all groups and projects. No access to the Admin area by default."
 msgstr ""
 
@@ -5210,10 +5231,16 @@ msgstr ""
 msgid "AdminUsers|Rejected users:"
 msgstr ""
 
+msgid "AdminUsers|Requires at least Maintainer role in specific groups and projects."
+msgstr ""
+
 msgid "AdminUsers|Reset link will be generated and sent to the user. User will be forced to set the password on first sign in."
 msgstr ""
 
 msgid "AdminUsers|Restore user access to the account, including web, Git and API."
+msgstr ""
+
+msgid "AdminUsers|Review and set Admin area access with a custom admin role."
 msgstr ""
 
 msgid "AdminUsers|Role Promotions"
