@@ -113,13 +113,51 @@ Prerequisites:
 1. Enter a name for the service account. A username is automatically generated based on the name. You can modify the username if needed.
 1. Select **Create service account**.
 
-## Manage a service account
+## Edit a service account
 
 You can view, delete or edit an existing service account.
 
+Prerequisites:
+
+- For instance-level service accounts, you must be an administrator for the instance.
+- For group-level service accounts, you must have the Owner role in a top-level group.
+
 1. Go to the [Service Accounts](#view-and-manage-service-accounts) page.
-1. Delete a service account by selecting the three-dot menu (**⋮**) and choosing **Delete**.
-1. Edit a service account's name or username by selecting the three-dot menu (**⋮**) and choosing **Edit**.
+1. Identify a service account.
+1. Select the vertical ellipsis ({{< icon name="ellipsis_v" >}}) > **Edit**.
+1. Edit the name or username for the service account.
+1. Select **Save changes**.
+
+## Delete a service account
+
+When you delete a service account, any contributions made by the account are retained and ownership
+is transfered to a system-wide ghost user account. These contributions can include activity such as
+merge requests, issues, projects, and groups.
+
+Prerequisites:
+
+- For instance-level service accounts, you must be an administrator for the instance.
+- For group-level service accounts, you must have the Owner role in a top-level group.
+
+1. Go to the [Service Accounts](#view-and-manage-service-accounts) page.
+1. Identify a service account.
+1. Select the vertical ellipsis ({{< icon name="ellipsis_v" >}}) > **Delete Account**.
+1. Enter the name of the service account.
+1. Select **Delete user**.
+
+You can also delete the service account and any contributions made by the account. These
+contributions can include activity such as merge requests, issues, groups, and projects.
+
+1. Go to the [Service Accounts](#view-and-manage-service-accounts) page.
+1. Identify a service account.
+1. Select the vertical ellipsis ({{< icon name="ellipsis_v" >}}) > **Delete Account and Contributions**.
+1. Enter the name of the service account.
+1. Select **Delete user and contributions**.
+
+You can also delete service accounts through the API.
+
+- For instance-level service accounts, use the [users API](../../api/users.md#delete-a-user).
+- For group-level service accounts, use the [group service accounts API](../../api/group_service_accounts.md#delete-a-service-account-user).
 
 ## Add a service account to subgroup or project
 
@@ -228,30 +266,6 @@ Prerequisites:
 1. Select the vertical ellipsis ({{< icon name="ellipsis_v" >}}) > **Manage Access Tokens**.
 1. Select **Revoke**.
 1. On the confirmation dialog, select **Revoke**.
-
-## Delete a service account via API
-
-### Top-Level Group Owners
-
-Prerequisites:
-
-- You must have the Owner role in a top-level group.
-
-To delete a service account, [use the service accounts API to delete the service account user](../../api/group_service_accounts.md#delete-a-service-account-user).
-
-### Administrators in GitLab Self-Managed
-
-{{< details >}}
-
-- Offering: GitLab Self-Managed
-
-{{< /details >}}
-
-Prerequisites:
-
-- You must be an administrator for the instance the service account is associated with.
-
-To delete a service account, [use the users API to delete the service account user](../../api/users.md#delete-a-user).
 
 ## Restrict a service account
 
