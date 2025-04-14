@@ -41,6 +41,12 @@ FactoryBot.modify do
       end
     end
 
+    trait :with_vulnerability_statistic do
+      after(:create) do |project|
+        create(:vulnerability_statistic, project: project)
+      end
+    end
+
     trait :with_security_scans do
       after(:create) do |project|
         create_list(:security_scan, 2, project: project)

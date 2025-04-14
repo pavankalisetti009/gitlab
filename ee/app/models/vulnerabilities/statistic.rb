@@ -5,7 +5,8 @@ module Vulnerabilities
     include EachBatch
     self.table_name = 'vulnerability_statistics'
 
-    belongs_to :project, optional: false
+    belongs_to :project, optional: false, inverse_of: :vulnerability_statistic
+
     belongs_to :pipeline, class_name: 'Ci::Pipeline', foreign_key: :latest_pipeline_id
 
     enum letter_grade: { a: 0, b: 1, c: 2, d: 3, f: 4 }

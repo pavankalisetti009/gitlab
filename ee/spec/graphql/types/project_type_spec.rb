@@ -36,7 +36,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
       merge_trains pending_member_approvals observability_logs_links observability_metrics_links
       observability_traces_links dependencies security_exclusions security_exclusion
       compliance_standards_adherence target_branch_rules duo_workflow_status_check component_usages
-      vulnerability_archives component_versions
+      vulnerability_archives component_versions vulnerability_statistic
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
@@ -451,6 +451,50 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
 
       it 'returns nil' do
         results = search_results.dig('data', 'project', 'vulnerabilityIdentifierSearch')
+        expect(results).to be_nil
+      end
+    end
+  end
+
+  describe 'vulnerability_statistic' do
+    subject(:search_results) do
+      GitlabSchema.execute(query, context: { current_user: user }).as_json
+    end
+
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, :with_vulnerability_statistic, group: group) }
+    let_it_be(:user) { create(:user) }
+
+    let(:query) do
+      <<~GQL
+        query {
+          project(fullPath: "#{project.full_path}") {
+            vulnerabilityStatistic {
+              updatedAt
+            }
+          }
+        }
+      GQL
+    end
+
+    before do
+      group.add_maintainer(user)
+    end
+
+    context 'when feature is available' do
+      it 'returns data' do
+        stub_licensed_features(security_inventory: true)
+
+        results = search_results.dig('data', 'project', 'vulnerabilityStatistic')
+        expect(results.present?).to be(true)
+      end
+    end
+
+    context 'when feature is not available' do
+      it 'returns nil' do
+        stub_licensed_features(security_inventory: false)
+
+        results = search_results.dig('data', 'project', 'vulnerabilityStatistic')
         expect(results).to be_nil
       end
     end

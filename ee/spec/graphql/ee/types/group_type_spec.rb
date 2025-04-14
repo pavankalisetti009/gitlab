@@ -15,6 +15,8 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:iteration_cadences) }
   it { expect(described_class).to have_graphql_field(:vulnerabilities) }
   it { expect(described_class).to have_graphql_field(:vulnerability_scanners) }
+  it { expect(described_class).to have_graphql_field(:vulnerability_namespace_statistic) }
+  it { expect(described_class).to have_graphql_field(:vulnerability_severities_count) }
   it { expect(described_class).to have_graphql_field(:vulnerabilities_count_by_day) }
   it { expect(described_class).to have_graphql_field(:vulnerability_grades) }
   it { expect(described_class).to have_graphql_field(:code_coverage_activities) }
@@ -271,6 +273,49 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
 
       it 'returns nil' do
         results = search_results.dig('data', 'group', 'vulnerabilityIdentifierSearch')
+        expect(results).to be_nil
+      end
+    end
+  end
+
+  describe 'vulnerability_namespace_statistic' do
+    subject(:search_results) do
+      GitlabSchema.execute(query, context: { current_user: user }).as_json
+    end
+
+    let_it_be(:group) { create(:group) }
+    let_it_be(:user) { create(:user) }
+
+    let(:query) do
+      <<~GQL
+        query {
+          group(fullPath: "#{group.full_path}") {
+            vulnerabilityNamespaceStatistic {
+              updatedAt
+            }
+          }
+        }
+      GQL
+    end
+
+    before do
+      group.add_maintainer(user)
+    end
+
+    context 'when feature is available' do
+      it 'returns data' do
+        stub_licensed_features(security_inventory: true)
+
+        results = search_results.dig('data', 'group', 'vulnerabilityNamespaceStatistic')
+        expect(results.present?).to eq(true)
+      end
+    end
+
+    context 'when feature is not available' do
+      it 'returns nil' do
+        stub_licensed_features(security_inventory: false)
+
+        results = search_results.dig('data', 'group', 'vulnerabilityNamespaceStatistic')
         expect(results).to be_nil
       end
     end

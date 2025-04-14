@@ -18,10 +18,10 @@ RSpec.describe Vulnerabilities::NamespaceStatistic, feature_category: :security_
     it { is_expected.to validate_numericality_of(:info).is_greater_than_or_equal_to(0) }
   end
 
-  context 'with loose foreign key on vulnerability_namespace_historical_statistics.namespace_id' do
+  context 'with loose foreign key on vulnerability_namespace_statistics.namespace_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
-      let_it_be(:parent) { create(:namespace) }
-      let_it_be(:model) { create(:vulnerability_namespace_statistic, namespace: parent) }
+      let_it_be(:parent) { create(:group) }
+      let_it_be(:model) { create(:vulnerability_namespace_statistic, group: parent) }
     end
   end
 end

@@ -664,6 +664,7 @@ module EE
         enable :manage_project_security_exclusions
         enable :read_project_security_exclusions
         enable :manage_security_settings
+        enable :read_vulnerability_statistics
       end
 
       rule { ~runner_performance_insights_available }.prevent :read_runner_usage

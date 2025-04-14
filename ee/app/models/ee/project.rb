@@ -75,7 +75,7 @@ module EE
       has_many :compliance_framework_settings, class_name: 'ComplianceManagement::ComplianceFramework::ProjectSettings', inverse_of: :project
       has_many :compliance_management_frameworks, through: :compliance_framework_settings, source: 'compliance_management_framework'
       has_one :security_setting, class_name: 'ProjectSecuritySetting'
-      has_one :vulnerability_statistic, class_name: 'Vulnerabilities::Statistic'
+      has_one :vulnerability_statistic, class_name: 'Vulnerabilities::Statistic', foreign_key: :project_id, inverse_of: :project
       has_one :security_statistics, class_name: 'Security::ProjectStatistics'
 
       has_one :dependency_proxy_packages_setting, class_name: '::DependencyProxy::Packages::Setting', inverse_of: :project
