@@ -10,19 +10,24 @@ module CloudConnector
 
     idempotent!
 
-    # Retry for up to approximately 17 hours
-    sidekiq_options retry: 12
+    sidekiq_options retry: 3
 
     worker_has_external_dependencies!
 
     feature_category :cloud_connector
 
     def perform(params = {})
-      # We should refrain from using License.current, because it can cause state drift
-      # when Sidekiq jobs update and read license data and execute in different workers.
-      # We only maintain this for backwards-compatibility.
-      # See: https://gitlab.com/gitlab-org/gitlab/-/issues/498456
-      license = params[:license_id] ? License.find_by_id(params[:license_id]) : License.current
+      # We only refresh the token if we force a refresh, have no token or the token expires soon.
+      access_token = ::CloudConnector::ServiceAccessToken.last
+      unless params['force'] || access_token.nil? || access_token.refresh_required?
+        log_extra_metadata_on_done(:result, 'skipping token refresh')
+        return
+      end
+
+      # Passing the license ID is necessary in cases where the license was just updated, so the
+      # worker may be reading a stale cache: https://gitlab.com/gitlab-org/gitlab/-/issues/498456
+      # When running as a cron job, we always use the current license.
+      license = License.find_by_id(params['license_id']) || License.current
       result = ::CloudConnector::SyncCloudConnectorAccessService.new(license).execute
 
       log_extra_metadata_on_done(:error_message, result[:message]) unless result.success?
