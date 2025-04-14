@@ -7,7 +7,7 @@ import { __, s__ } from '~/locale';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
-import { clearDuoChatCommands } from 'ee/ai/utils';
+import { clearDuoChatCommands, generateEventLabelFromText } from 'ee/ai/utils';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
 import getAiMessages from 'ee/ai/graphql/get_ai_messages.query.graphql';
 import getAiConversationThreads from 'ee/ai/graphql/get_ai_conversation_threads.query.graphql';
@@ -26,11 +26,11 @@ import {
 import getAiSlashCommands from 'ee/ai/graphql/get_ai_slash_commands.query.graphql';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { fetchPolicies } from '~/lib/graphql';
+import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import {
   TANUKI_BOT_TRACKING_EVENT_NAME,
   MESSAGE_TYPES,
   WIDTH_OFFSET,
-  PREDEFINED_PROMPTS,
   MULTI_THREADED_CONVERSATION_TYPE,
 } from '../constants';
 import TanukiBotSubscriptions from './tanuki_bot_subscriptions.vue';
@@ -47,7 +47,6 @@ export default {
     whatIsAForkQuestion: s__('DuoChat|What is a fork?'),
     newSlashCommandDescription: s__('DuoChat|New chat conversation.'),
     GENIE_CHAT_LEGAL_GENERATED_BY_AI: i18n.GENIE_CHAT_LEGAL_GENERATED_BY_AI,
-    predefinedPrompts: PREDEFINED_PROMPTS.map((prompt) => prompt.text),
   },
   helpPagePath: helpPagePath('policy/development_stages_support', { anchor: 'beta' }),
   components: {
@@ -133,6 +132,26 @@ export default {
         this.onError(err);
       },
     },
+    contextPresets: {
+      query: getAiChatContextPresets,
+      skip() {
+        return !this.duoChatGlobalState.isShown;
+      },
+      variables() {
+        return {
+          resourceId: this.resourceId,
+          projectId: this.projectId,
+          url: typeof window !== 'undefined' && window.location ? window.location.href : '',
+          questionCount: 4,
+        };
+      },
+      update(data) {
+        return data?.aiChatContextPresets?.questions || [];
+      },
+      error(err) {
+        this.onError(err);
+      },
+    },
   },
   data() {
     return {
@@ -154,6 +173,7 @@ export default {
       activeThread: undefined,
       multithreadedView: DUO_CHAT_VIEWS.CHAT,
       aiConversationThreads: [],
+      contextPresets: [],
     };
   },
   computed: {
@@ -182,6 +202,15 @@ export default {
     },
     hasCommands() {
       return this.duoChatGlobalState.commands.length > 0;
+    },
+    predefinedPrompts() {
+      return this.contextPresets;
+    },
+    formattedContextPresets() {
+      return this.contextPresets.map((question) => ({
+        text: question,
+        eventLabel: generateEventLabelFromText(question),
+      }));
     },
   },
   watch: {
@@ -239,7 +268,7 @@ export default {
       return [GENIE_CHAT_CLEAR_MESSAGE, GENIE_CHAT_RESET_MESSAGE].includes(question);
     },
     findPredefinedPrompt(question) {
-      return PREDEFINED_PROMPTS.find(({ text }) => text === question);
+      return this.formattedContextPresets.find(({ text }) => text === question);
     },
     async onThreadSelected(e) {
       try {
@@ -477,7 +506,7 @@ export default {
         :error="error"
         :is-loading="loading"
         :should-render-resizable="shouldRenderResizable"
-        :predefined-prompts="$options.i18n.predefinedPrompts"
+        :predefined-prompts="predefinedPrompts"
         :badge-type="null"
         :tool-name="toolName"
         :canceled-request-ids="cancelledRequestIds"

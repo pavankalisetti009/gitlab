@@ -1,4 +1,9 @@
-import { clearDuoChatCommands, sendDuoChatCommand, utils } from 'ee/ai/utils';
+import {
+  clearDuoChatCommands,
+  sendDuoChatCommand,
+  generateEventLabelFromText,
+  utils,
+} from 'ee/ai/utils';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 
 describe('AI Utils', () => {
@@ -106,6 +111,26 @@ describe('AI Utils', () => {
     it('clears all existing commands', () => {
       clearDuoChatCommands();
       expect(duoChatGlobalState.commands).toEqual([]);
+    });
+  });
+
+  describe('generateEventLabelFromText', () => {
+    it.each([
+      {
+        input: 'What are the main points from this MR discussion?',
+        expected: 'what_are_the_main_points_from_this_mr_discussion',
+      },
+      {
+        input: "What's going on with this code?!",
+        expected: 'whats_going_on_with_this_code',
+      },
+      {
+        input:
+          'A very long string that should be truncated because it exceeds the maximum length of fifty characters',
+        expected: 'a_very_long_string_that_should_be_truncated_becaus',
+      },
+    ])('converts "$input" to "$expected"', ({ input, expected }) => {
+      expect(generateEventLabelFromText(input)).toBe(expected);
     });
   });
 });
