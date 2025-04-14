@@ -1,6 +1,7 @@
 import { InMemoryCache } from '@apollo/client/core';
 import {
   addAuditEventsStreamingDestinationToCache,
+  updateAuditEventsStreamingDestinationFromCache,
   updateEventTypeFiltersFromCache,
   addNamespaceFilterToCache,
   removeAuditEventsStreamingDestinationFromCache,
@@ -114,6 +115,40 @@ describe('Audit events GraphQL cache updates', () => {
       });
     });
 
+    describe('updateAuditEventsStreamingDestinationFromCache', () => {
+      it('updates an existing destination in the cache', () => {
+        const [, secondDestination] = getDestinations(view);
+
+        const updatedData = {
+          ...secondDestination,
+          name: 'Updated Name',
+          config: { url: 'https://updated.url' },
+          eventTypeFilters: ['event-type-a', 'event-type-b'],
+        };
+
+        updateAuditEventsStreamingDestinationFromCache({
+          store: cache,
+          isInstance: view === 'instance',
+          updatedData,
+        });
+
+        const [, secondDestinationAfterUpdate] = getDestinations(view);
+
+        expect(secondDestinationAfterUpdate).toStrictEqual(updatedData);
+      });
+
+      it('does not throw on non-existing destination', () => {
+        expect(() =>
+          updateAuditEventsStreamingDestinationFromCache({
+            store: cache,
+            isInstance: view === 'instance',
+            destinationId: 'non-existing-id',
+            filters: [],
+          }),
+        ).not.toThrow();
+      });
+    });
+
     describe('updateEventTypeFiltersFromCache', () => {
       it('updates event type filters on specified destination', () => {
         const [, secondDestination] = getDestinations(view);
@@ -207,6 +242,35 @@ describe('Audit events GraphQL cache updates', () => {
             filter: [],
           }),
         ).not.toThrow();
+      });
+    });
+
+    describe('updateAuditEventsStreamingDestinationFromCache', () => {
+      it('updates namespace filter from an existing destination in the cache', () => {
+        const [, secondDestination] = getGroupDestinations(GROUP1_PATH);
+
+        const updatedData = {
+          ...secondDestination,
+          namespaceFilters: [
+            {
+              id: 'namespace-filter-123',
+              namespace: {
+                id: 'namespace-123',
+                fullPath: `${GROUP1_PATH}/subgroup1`,
+              },
+            },
+          ],
+        };
+
+        updateAuditEventsStreamingDestinationFromCache({
+          store: cache,
+          isInstance: false,
+          updatedData,
+        });
+
+        const [, secondDestinationAfterUpdate] = getGroupDestinations(GROUP1_PATH);
+
+        expect(secondDestinationAfterUpdate).toStrictEqual(updatedData);
       });
     });
   });

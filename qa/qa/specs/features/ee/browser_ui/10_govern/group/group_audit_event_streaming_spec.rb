@@ -20,10 +20,6 @@ module QA
       let(:root_group) { create(:sandbox) }
 
       before(:context) do
-        # TDOD remove `Runtime::Feature.disable` once we finish implementing the feature
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/442447
-        # Because the job gdk-instance-ff-inverse runs this with the feature flag enabled
-        Runtime::Feature.disable(:use_consolidated_audit_event_stream_dest_api)
         Runtime::ApplicationSettings.enable_local_requests
       end
 

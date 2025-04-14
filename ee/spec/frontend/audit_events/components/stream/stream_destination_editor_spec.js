@@ -5,11 +5,16 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
+import updateGroupStreamingDestination from 'ee/audit_events/graphql/mutations/update_group_streaming_destination.mutation.graphql';
 import createGroupStreamingDestination from 'ee/audit_events/graphql/mutations/create_group_streaming_destination.mutation.graphql';
 import addGroupEventTypeFiltersToDestination from 'ee/audit_events/graphql/mutations/add_group_event_type_filters.mutation.graphql';
 import addGroupNamespaceFiltersToDestination from 'ee/audit_events/graphql/mutations/add_group_namespace_filters.mutation.graphql';
+import deleteGroupEventTypeFiltersFromDestination from 'ee/audit_events/graphql/mutations/delete_group_event_type_filters.mutation.graphql';
+import deleteGroupNamespaceFiltersFromDestination from 'ee/audit_events/graphql/mutations/delete_group_namespace_filters.mutation.graphql';
+import updateInstanceStreamingDestination from 'ee/audit_events/graphql/mutations/update_instance_streaming_destination.mutation.graphql';
 import createInstanceStreamingDestination from 'ee/audit_events/graphql/mutations/create_instance_streaming_destination.mutation.graphql';
 import addInstanceEventTypeFiltersToDestination from 'ee/audit_events/graphql/mutations/add_instance_event_type_filters.mutation.graphql';
+import deleteInstanceEventTypeFiltersFromDestination from 'ee/audit_events/graphql/mutations/delete_instance_event_type_filters.mutation.graphql';
 
 import StreamDestinationEditor from 'ee/audit_events/components/stream/stream_destination_editor.vue';
 import StreamDestinationEditorHttpFields from 'ee/audit_events/components/stream/stream_destination_editor_http_fields.vue';
@@ -74,6 +79,27 @@ describe('StreamDestinationEditor', () => {
           }),
         ],
       },
+      updateDestination: {
+        success: [
+          updateGroupStreamingDestination,
+          jest.fn().mockResolvedValue({
+            data: {
+              groupAuditEventStreamingDestinationsUpdate: destinationCreateMutationPopulator(),
+            },
+          }),
+        ],
+        error: [
+          updateGroupStreamingDestination,
+          jest.fn().mockResolvedValue({
+            data: {
+              groupAuditEventStreamingDestinationsUpdate: {
+                errors: ['mock destination update error'],
+                externalAuditEventDestination: null,
+              },
+            },
+          }),
+        ],
+      },
       createEventTypeFilter: [
         addGroupEventTypeFiltersToDestination,
         jest.fn().mockResolvedValue({
@@ -82,6 +108,14 @@ describe('StreamDestinationEditor', () => {
               errors: [],
               eventTypeFilters: ['test_event_type'],
             },
+          },
+        }),
+      ],
+      deleteEventTypeFilter: [
+        deleteGroupEventTypeFiltersFromDestination,
+        jest.fn().mockResolvedValue({
+          data: {
+            auditEventsGroupDestinationEventsDelete: { errors: [] },
           },
         }),
       ],
@@ -99,6 +133,14 @@ describe('StreamDestinationEditor', () => {
                 },
               },
             },
+          },
+        }),
+      ],
+      deleteNamespaceFilter: [
+        deleteGroupNamespaceFiltersFromDestination,
+        jest.fn().mockResolvedValue({
+          data: {
+            auditEventsGroupDestinationNamespaceFilterDelete: { errors: [] },
           },
         }),
       ],
@@ -125,6 +167,27 @@ describe('StreamDestinationEditor', () => {
           }),
         ],
       },
+      updateDestination: {
+        success: [
+          updateInstanceStreamingDestination,
+          jest.fn().mockResolvedValue({
+            data: {
+              instanceAuditEventStreamingDestinationsUpdate: destinationCreateMutationPopulator(),
+            },
+          }),
+        ],
+        error: [
+          updateInstanceStreamingDestination,
+          jest.fn().mockResolvedValue({
+            data: {
+              instanceAuditEventStreamingDestinationsUpdate: {
+                errors: ['mock destination update error'],
+                externalAuditEventDestination: null,
+              },
+            },
+          }),
+        ],
+      },
       createEventTypeFilter: [
         addInstanceEventTypeFiltersToDestination,
         jest.fn().mockResolvedValue({
@@ -133,6 +196,14 @@ describe('StreamDestinationEditor', () => {
               errors: [],
               eventTypeFilters: ['test_event_type'],
             },
+          },
+        }),
+      ],
+      deleteEventTypeFilter: [
+        deleteInstanceEventTypeFiltersFromDestination,
+        jest.fn().mockResolvedValue({
+          data: {
+            auditEventsInstanceDestinationEventsDelete: { errors: [] },
           },
         }),
       ],
@@ -507,6 +578,204 @@ describe('StreamDestinationEditor', () => {
       });
     });
 
+    describe('when updating a destination', () => {
+      describe('when destination category is http', () => {
+        it('updates a destination successfully', async () => {
+          createComponent({
+            props: { item: { ...propsDefinition.httpItem, namespaceFilters: [] } },
+            provide: { groupPath: view },
+            apolloHandlers: [
+              apolloMocks[view].updateDestination.success,
+              apolloMocks[view].createEventTypeFilter,
+              apolloMocks[view].deleteEventTypeFilter,
+            ],
+          });
+
+          const expectedDestinationPayload = {
+            id: propsDefinition.httpItem.id,
+            name: 'Updated Destination name',
+            secretToken: propsDefinition.httpItem.secretToken,
+            config: {
+              ...propsDefinition.httpItem.config,
+              headers: [
+                {
+                  key: 'updated-header-key-1',
+                  value: 'updated-header-value-1',
+                  active: true,
+                },
+              ],
+            },
+          };
+
+          await findStreamDestinationEditorHttpFields().vm.$emit('input', {
+            ...propsDefinition.httpItem,
+            config: {
+              ...expectedDestinationPayload.config,
+            },
+            namespaceFilter: {},
+          });
+          await findStreamEventTypeFilters().vm.$emit('input', ['test_event_type']);
+          await findDestinationName().vm.$emit('input', expectedDestinationPayload.name);
+
+          await findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
+          await waitForPromises();
+
+          expect(apolloMocks[view].updateDestination.success[1]).toHaveBeenCalledWith({
+            input: expectedDestinationPayload,
+          });
+
+          expect(apolloMocks[view].deleteEventTypeFilter[1]).toHaveBeenCalledWith({
+            destinationId: propsDefinition.httpItem.id,
+            eventTypeFilters: propsDefinition.httpItem.eventTypeFilters,
+          });
+
+          expect(apolloMocks[view].createEventTypeFilter[1]).toHaveBeenCalledWith({
+            destinationId: propsDefinition.httpItem.id,
+            eventTypeFilters: ['test_event_type'],
+          });
+
+          expect(findAlertErrors().exists()).toBe(false);
+          expect(wrapper.emitted('updated')).toEqual([[]]);
+        });
+
+        it('shows update error in alert', async () => {
+          createComponent({
+            props: { item: { ...propsDefinition.httpItem, namespaceFilters: [] } },
+            provide: { groupPath: view },
+            apolloHandlers: [apolloMocks[view].updateDestination.error],
+          });
+
+          await findStreamDestinationEditorHttpFields().vm.$emit('input', {
+            ...propsDefinition.httpItem,
+            config: {
+              ...propsDefinition.httpItem.config,
+              headers: [],
+            },
+            namespaceFilter: {},
+          });
+          await findDestinationName().vm.$emit('input', 'Updated Destination Name');
+
+          await findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
+          await waitForPromises();
+
+          expect(apolloMocks[view].createEventTypeFilter[1]).not.toHaveBeenCalled();
+          expect(apolloMocks[view].deleteEventTypeFilter[1]).not.toHaveBeenCalled();
+          expect(findAlertErrors().text()).toBe('mock destination update error');
+          expect(wrapper.emitted('error')).toEqual([[]]);
+        });
+
+        it('shows default alert message when network error', async () => {
+          const mockError = new Error('Network error');
+          const mutationHandler = jest.fn().mockRejectedValue(mockError);
+
+          createComponent({
+            props: { item: { ...propsDefinition.httpItem, namespaceFilters: [] } },
+            provide: { groupPath: view },
+            apolloHandlers: [[apolloMocks[view].updateDestination.error[0], mutationHandler]],
+          });
+
+          await findStreamDestinationEditorHttpFields().vm.$emit('input', {
+            ...propsDefinition.httpItem,
+            config: {
+              ...propsDefinition.httpItem.config,
+              headers: [],
+            },
+            namespaceFilter: {},
+          });
+          await findDestinationName().vm.$emit('input', 'Updated Destination name');
+
+          await findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
+          await waitForPromises();
+
+          expect(findAlertErrors().text()).toBe(
+            'An error occurred when updating external audit event stream destination. Please try it again.',
+          );
+          expect(Sentry.captureException).toHaveBeenCalledWith(mockError);
+          expect(wrapper.emitted('error')).toEqual([[]]);
+        });
+      });
+
+      describe('when destination category is aws', () => {
+        it('updates a destination successfully', async () => {
+          createComponent({
+            props: { item: { ...propsDefinition.awsItem, namespaceFilters: [] } },
+            provide: { groupPath: view },
+            apolloHandlers: [apolloMocks[view].updateDestination.success],
+          });
+
+          const expectedDestinationPayload = {
+            id: propsDefinition.awsItem.id,
+            name: 'Updated Destination name',
+            secretToken: propsDefinition.awsItem.secretToken,
+            config: {
+              accessKeyXid: 'updated-AccessKeyXid',
+              awsRegion: 'us-new-5',
+              bucketName: 'updated-bucket-name',
+            },
+          };
+
+          await findStreamDestinationEditorAwsFields().vm.$emit('input', {
+            ...propsDefinition.awsItem,
+            config: {
+              ...expectedDestinationPayload.config,
+            },
+            namespaceFilter: {},
+          });
+          await findDestinationName().vm.$emit('input', expectedDestinationPayload.name);
+
+          await findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
+          await waitForPromises();
+
+          expect(apolloMocks[view].updateDestination.success[1]).toHaveBeenCalledWith({
+            input: expectedDestinationPayload,
+          });
+
+          expect(findAlertErrors().exists()).toBe(false);
+          expect(wrapper.emitted('updated')).toEqual([[]]);
+        });
+      });
+
+      describe('when destination category is gcp', () => {
+        it('updates a destination successfully', async () => {
+          createComponent({
+            props: { item: { ...propsDefinition.gcpItem, namespaceFilters: [] } },
+            provide: { groupPath: view },
+            apolloHandlers: [apolloMocks[view].updateDestination.success],
+          });
+
+          const expectedDestinationPayload = {
+            id: propsDefinition.gcpItem.id,
+            name: 'Updated Destination name',
+            secretToken: propsDefinition.gcpItem.secretToken,
+            config: {
+              googleProjectIdName: 'updated-google-project-id',
+              clientEmail: 'updated-email@test.com',
+              logIdName: 'updated-gcp-log-id',
+            },
+          };
+
+          await findStreamDestinationEditorGcpFields().vm.$emit('input', {
+            ...propsDefinition.gcpItem,
+            config: {
+              ...expectedDestinationPayload.config,
+            },
+            namespaceFilter: {},
+          });
+          await findDestinationName().vm.$emit('input', expectedDestinationPayload.name);
+
+          await findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
+          await waitForPromises();
+
+          expect(apolloMocks[view].updateDestination.success[1]).toHaveBeenCalledWith({
+            input: expectedDestinationPayload,
+          });
+
+          expect(findAlertErrors().exists()).toBe(false);
+          expect(wrapper.emitted('updated')).toEqual([[]]);
+        });
+      });
+    });
+
     describe('when deleting a destination', () => {
       beforeEach(() => {
         createComponent({
@@ -566,7 +835,7 @@ describe('StreamDestinationEditor', () => {
       });
     });
 
-    describe('when craeting a destination', () => {
+    describe('when creating a destination', () => {
       it('adds a namespace filter to the destination successfully', async () => {
         createComponent({
           props: { item: { ...propsDefinition.newItem, category: DESTINATION_TYPE_AMAZON_S3 } },
@@ -616,6 +885,65 @@ describe('StreamDestinationEditor', () => {
         });
         expect(findAlertErrors().exists()).toBe(false);
         expect(wrapper.emitted('added')).toEqual([[]]);
+      });
+    });
+
+    describe('when updating a destination', () => {
+      it('updates the namespace filter of the destination successfully', async () => {
+        createComponent({
+          props: { item: { ...propsDefinition.httpItem } },
+          provide: { groupPath: 'group' },
+          apolloHandlers: [
+            apolloMocks.group.updateDestination.success,
+            apolloMocks.group.deleteNamespaceFilter,
+            apolloMocks.group.createNamespaceFilter,
+          ],
+        });
+
+        const expectedDestinationPayload = {
+          id: propsDefinition.httpItem.id,
+          name: 'Updated Destination name',
+          secretToken: propsDefinition.httpItem.secretToken,
+          config: {
+            headers: [
+              {
+                key: 'updated-header-key-1',
+                value: 'updated-header-value-1',
+                active: true,
+              },
+            ],
+          },
+        };
+
+        await findStreamDestinationEditorHttpFields().vm.$emit('input', {
+          ...propsDefinition.httpItem,
+          config: {
+            ...expectedDestinationPayload.config,
+          },
+          namespaceFilter: {},
+        });
+        await findDestinationName().vm.$emit('input', expectedDestinationPayload.name);
+        await findStreamNamespaceFilters().vm.$emit('input', {
+          namespace: 'myGroup/updated-project',
+        });
+
+        await findDestinationForm().vm.$emit('submit', { preventDefault: () => {} });
+        await waitForPromises();
+
+        expect(apolloMocks.group.updateDestination.success[1]).toHaveBeenCalledWith({
+          input: expectedDestinationPayload,
+        });
+
+        expect(apolloMocks.group.deleteNamespaceFilter[1]).toHaveBeenCalledWith({
+          namespaceFilterId: propsDefinition.httpItem.namespaceFilters[0].id,
+        });
+
+        expect(apolloMocks.group.createNamespaceFilter[1]).toHaveBeenCalledWith({
+          destinationId: propsDefinition.httpItem.id,
+          namespacePath: 'myGroup/updated-project',
+        });
+        expect(findAlertErrors().exists()).toBe(false);
+        expect(wrapper.emitted('updated')).toEqual([[]]);
       });
     });
   });
