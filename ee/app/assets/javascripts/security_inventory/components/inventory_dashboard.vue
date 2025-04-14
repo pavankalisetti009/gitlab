@@ -1,54 +1,26 @@
 <script>
-import {
-  GlTableLite,
-  GlButton,
-  GlSkeletonLoader,
-  GlTooltipDirective,
-  GlBreadcrumb,
-} from '@gitlab/ui';
-import EMPTY_SUBGROUP_SVG from '@gitlab/svgs/dist/illustrations/empty-state/empty-projects-md.svg?url';
+import { GlSkeletonLoader, GlBreadcrumb } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { __, s__ } from '~/locale';
+import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { getLocationHash, PATH_SEPARATOR } from '~/lib/utils/url_utility';
 import SubgroupsAndProjectsQuery from '../graphql/subgroups_and_projects.query.graphql';
-import { isSubGroup } from '../utils';
-import ProjectToolCoverageIndicator from './project_tool_coverage_indicator.vue';
-import GroupToolCoverageIndicator from './group_tool_coverage_indicator.vue';
 import EmptyState from './empty_state.vue';
-import NameCell from './name_cell.vue';
-import VulnerabilityCell from './vulnerability_cell.vue';
+import SecurityInventoryTable from './security_inventory_table.vue';
 
 export default {
   components: {
-    GlTableLite,
-    GlButton,
     GlSkeletonLoader,
     GlBreadcrumb,
-    GroupToolCoverageIndicator,
-    ProjectToolCoverageIndicator,
     EmptyState,
-    NameCell,
-    VulnerabilityCell,
-  },
-  directives: {
-    GlTooltip: GlTooltipDirective,
+    SecurityInventoryTable,
   },
   inject: ['groupFullPath', 'newProjectPath'],
   i18n: {
     errorFetchingChildren: s__(
       'SecurityInventory||An error occurred while fetching subgroups and projects. Please try again.',
     ),
-    projectConfigurationTooltipTitle: s__('SecurityInventory|Manage security configuration'),
-    projectVulnerabilitiesTooltipTitle: s__('SecurityInventory|Project vulnerabilities'),
   },
-  fields: [
-    { key: 'name', label: __('Name') },
-    { key: 'vulnerabilities', label: __('Vulnerabilities') },
-    { key: 'toolCoverage', label: __('Tool Coverage') },
-    { key: 'actions', label: '' },
-  ],
-  EMPTY_SUBGROUP_SVG,
   data() {
     return {
       children: [],
@@ -106,72 +78,14 @@ export default {
     window.removeEventListener('hashchange', this.handleLocationHashChange);
   },
   methods: {
-    isSubGroup,
     transformData(data) {
       const groupData = data?.group;
       if (!groupData) return [];
 
-      return [
-        ...this.transformGroups(groupData?.descendantGroups?.nodes),
-        ...this.transformProjects(groupData?.projects?.nodes),
-      ];
-    },
+      const descendantGroups = groupData?.descendantGroups?.nodes || [];
+      const projects = groupData?.projects?.nodes || [];
 
-    transformGroups(nodes) {
-      return (
-        nodes?.map(
-          ({
-            __typename,
-            id,
-            name,
-            avatarUrl,
-            webUrl,
-            fullPath,
-            descendantGroupsCount,
-            projectsCount,
-            vulnerabilitySeveritiesCount,
-          }) => ({
-            __typename,
-            id,
-            name,
-            avatarUrl,
-            webUrl,
-            fullPath,
-            descendantGroupsCount,
-            projectsCount,
-            vulnerabilitySeveritiesCount,
-          }),
-        ) || []
-      );
-    },
-
-    transformProjects(nodes) {
-      return (
-        nodes?.map(
-          ({
-            __typename,
-            id,
-            name,
-            avatarUrl,
-            webUrl,
-            fullPath,
-            vulnerabilitySeveritiesCount,
-            securityScanners,
-          }) => ({
-            __typename,
-            id,
-            name,
-            avatarUrl,
-            webUrl,
-            fullPath,
-            vulnerabilitySeveritiesCount,
-            securityScanners,
-          }),
-        ) || []
-      );
-    },
-    projectSecurityConfigurationPath(item) {
-      return item?.webUrl ? `${item.webUrl}/-/security/configuration` : '#';
+      return [...descendantGroups, ...projects];
     },
     handleLocationHashChange() {
       let hash = getLocationHash();
@@ -191,37 +105,6 @@ export default {
       <gl-skeleton-loader />
     </template>
     <template v-else-if="!hasChildren"><empty-state /></template>
-    <gl-table-lite v-else :items="children" :fields="$options.fields" hover>
-      <template #cell(name)="{ item }">
-        <name-cell v-if="item" :item="item" />
-      </template>
-
-      <template #cell(vulnerabilities)="{ item, index }">
-        <vulnerability-cell v-if="item" :item="item" :index="index" />
-      </template>
-
-      <template #cell(toolCoverage)="{ item }">
-        <div id="tool-coverage" class="gl-cursor-pointer">
-          <group-tool-coverage-indicator v-if="isSubGroup(item)" />
-          <project-tool-coverage-indicator
-            v-else
-            :security-scanners="item.securityScanners"
-            :project-name="item.name"
-          />
-        </div>
-      </template>
-
-      <template #cell(actions)="{ item }">
-        <gl-button
-          v-if="!isSubGroup(item)"
-          v-gl-tooltip.hover.left
-          :href="projectSecurityConfigurationPath(item)"
-          class="gl-ml-3"
-          :aria-label="$options.i18n.projectConfigurationTooltipTitle"
-          :title="$options.i18n.projectConfigurationTooltipTitle"
-          icon="settings"
-        />
-      </template>
-    </gl-table-lite>
+    <security-inventory-table v-else :items="children" />
   </div>
 </template>
