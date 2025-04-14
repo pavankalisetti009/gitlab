@@ -1,9 +1,9 @@
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
 
-query getProjectComponentVersions($componentId: SbomComponentID!, $fullPath: ID!, $after: String) {
+query getProjectComponentVersions($componentName: String!, $fullPath: ID!, $after: String) {
   namespace: project(fullPath: $fullPath) {
     id
-    componentVersions(componentId: $componentId, first: 50, after: $after) {
+    componentVersions(componentName: $componentName, first: 50, after: $after) @client {
       nodes {
         id
         version

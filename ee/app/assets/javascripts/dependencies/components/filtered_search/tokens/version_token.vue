@@ -9,7 +9,7 @@ import {
 } from '@gitlab/ui';
 import produce from 'immer';
 // eslint-disable-next-line no-restricted-imports
-import { mapState } from 'vuex';
+import { mapGetters } from 'vuex';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -70,7 +70,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(['componentIds']),
+    ...mapGetters(['componentNames']),
     tokenValue() {
       return {
         ...this.value,
@@ -93,15 +93,15 @@ export default {
     },
     queryVariables() {
       return {
-        componentId: this.componentIds?.[0],
+        componentName: this.componentNames[0],
         fullPath: this.projectFullPath,
       };
     },
     noSelectedComponent() {
-      return this.componentIds.length === 0;
+      return this.componentNames.length === 0;
     },
     multipleSelectedComponents() {
-      return this.componentIds.length > 1;
+      return this.componentNames.length > 1;
     },
     viewOnly() {
       return this.noSelectedComponent || this.multipleSelectedComponents;
