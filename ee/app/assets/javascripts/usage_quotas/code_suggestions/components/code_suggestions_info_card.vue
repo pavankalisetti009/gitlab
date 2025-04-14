@@ -65,8 +65,6 @@ export default {
     addDuoProHref: { default: null },
     isSaaS: { default: false },
     subscriptionName: { default: null },
-    subscriptionStartDate: { default: null },
-    subscriptionEndDate: { default: null },
     duoAddOnIsTrial: { default: null },
     duoAddOnStartDate: { default: null },
     duoAddOnEndDate: { default: null },
@@ -122,19 +120,11 @@ export default {
         : this.$options.i18n.subscriptionEndDate;
     },
     startDate() {
-      if (this.duoAddOnIsTrial) {
-        return this.formattedDate(this.duoAddOnStartDate);
-      }
-
-      const date = this.subscription?.startDate || this.subscriptionStartDate;
+      const date = this.duoAddOnStartDate;
       return date ? this.formattedDate(date) : this.$options.i18n.notAvailable;
     },
     endDate() {
-      if (this.duoAddOnIsTrial) {
-        return this.formattedDate(this.duoAddOnEndDate);
-      }
-
-      const date = this.subscription?.endDate || this.subscriptionEndDate;
+      const date = this.duoAddOnEndDate;
       return date ? this.formattedDate(date) : this.$options.i18n.notAvailable;
     },
     isDuoEnterprise() {

@@ -20,8 +20,10 @@ module Admin
 
       def index
         @subscription_name = License.current.subscription_name
-        @subscription_start_date = License.current.starts_at
-        @subscription_end_date = License.current.expires_at
+        duo_purchase = GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_pro_or_duo_enterprise.last
+
+        @duo_add_on_start_date = duo_purchase&.started_at
+        @duo_add_on_end_date = duo_purchase&.expires_on
       end
 
       private
