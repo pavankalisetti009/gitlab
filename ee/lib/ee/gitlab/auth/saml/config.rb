@@ -15,6 +15,10 @@ module EE
             Array(options[:required_groups])
           end
 
+          def duo_add_on_groups
+            Array(options[:duo_add_on_groups])
+          end
+
           def group_sync_enabled?
             self.class.enabled? && groups.present? && ::License.feature_available?(:saml_group_sync)
           end

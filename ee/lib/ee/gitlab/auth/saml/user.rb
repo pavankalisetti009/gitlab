@@ -34,6 +34,7 @@ module EE
             save
 
             update_group_membership
+            update_duo_add_on_assignment
             gl_user
           end
 
@@ -60,6 +61,10 @@ module EE
 
           def auditor_groups_enabled?
             !saml_config.auditor_groups.blank?
+          end
+
+          def update_duo_add_on_assignment
+            ::Gitlab::Auth::Saml::DuoAddOnAssignmentUpdater.new(gl_user, auth_hash).execute
           end
 
           def update_group_membership
