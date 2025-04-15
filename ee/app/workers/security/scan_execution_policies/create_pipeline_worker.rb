@@ -10,6 +10,7 @@ module Security
       deduplicate :until_executing
       urgency :throttled
       data_consistency :delayed
+      worker_resource_boundary :cpu
 
       concurrency_limit -> { 1000 }
 
