@@ -31,6 +31,10 @@ module Security
         gitlab_security_policies_sync_opened_merge_requests_duration_seconds: {
           description: 'The amount of time to sync opened merge requests after policy changes',
           buckets: [5, 10, 20, 40, 80, 120, 240, 360].freeze
+        },
+        gitlab_security_policies_pipeline_execution_policy_scheduling_duration_seconds: {
+          description: 'The amount of time to schedule due pipeline execution policy project schedules',
+          buckets: [5, 15, 30, 60, 120, 180, 300].freeze
         }
       }.freeze
 
