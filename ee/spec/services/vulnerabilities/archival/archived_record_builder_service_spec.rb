@@ -135,5 +135,38 @@ RSpec.describe Vulnerabilities::Archival::ArchivedRecordBuilderService, feature_
         ))
       end
     end
+
+    context 'when the vulnerability has related issues' do
+      let!(:related_issue_link) { create(:vulnerabilities_issue_link, :related, vulnerability: vulnerability) }
+      let!(:created_issue_link) { create(:vulnerabilities_issue_link, :created, vulnerability: vulnerability) }
+
+      it 'sets the `related_issues` information' do
+        expect(build_archived_record[:data]).to match(hash_including(
+          'related_issues' => match_array([
+            {
+              'type' => 'related',
+              'id' => related_issue_link.issue_id
+            },
+            {
+              'type' => 'created',
+              'id' => created_issue_link.issue_id
+            }
+          ])
+        ))
+      end
+    end
+
+    context 'when the vulnerability has related MRs' do
+      let!(:merge_request_link_1) { create(:vulnerabilities_merge_request_link, vulnerability: vulnerability) }
+      let!(:merge_request_link_2) { create(:vulnerabilities_merge_request_link, vulnerability: vulnerability) }
+
+      it 'sets the `related_mrs` information' do
+        expect(build_archived_record[:data]).to match(hash_including(
+          'related_mrs' => match_array([
+            merge_request_link_1.merge_request_id, merge_request_link_2.merge_request_id
+          ])
+        ))
+      end
+    end
   end
 end

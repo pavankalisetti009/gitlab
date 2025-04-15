@@ -42,6 +42,8 @@ module Vulnerabilities
               'Resolved By' => 'resolved_by',
               'Detected At' => 'created_at',
               'Location' => 'location',
+              'Issues' => 'related_issues',
+              'Merge Requests' => 'related_mrs',
               'Activity' => 'resolved_on_default_branch',
               'Comments' => 'notes_summary',
               'Full Path' => 'full_path',

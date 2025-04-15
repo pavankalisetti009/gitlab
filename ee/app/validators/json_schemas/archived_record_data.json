@@ -59,6 +59,30 @@
     "location": {
       "type": "object"
     },
+    "related_issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "type",
+          "id"
+        ]
+      }
+    },
+    "related_mrs": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
     "resolved_on_default_branch": {
       "type": "boolean"
     },
