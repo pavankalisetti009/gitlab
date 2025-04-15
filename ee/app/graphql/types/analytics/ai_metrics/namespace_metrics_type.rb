@@ -35,6 +35,9 @@ module Types
         field :duo_used_count, GraphQL::Types::Int,
           description: 'Number of contributors who used any GitLab Duo feature.',
           null: true
+        field :root_cause_analysis_users_count, GraphQL::Types::Int,
+          description: 'Number of users using troubleshoot within a failed pipeline.',
+          null: true
       end
       # rubocop: enable GraphQL/ExtractType
       # rubocop: enable Graphql/AuthorizeTypes

@@ -15,7 +15,8 @@ module Analytics
 
       def execute
         data = add_duo_assigned({})
-        data = add_usage(data, CodeSuggestionUsageService, DuoChatUsageService, DuoUsageService)
+        data = add_usage(data, CodeSuggestionUsageService, DuoChatUsageService, DuoUsageService,
+          TroubleshootUsageService)
 
         ServiceResponse.success(payload: data)
       end
