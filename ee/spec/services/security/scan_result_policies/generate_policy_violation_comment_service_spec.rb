@@ -79,15 +79,19 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
       context 'when policy has been violated' do
         let(:violated_policy) { true }
 
-        before do
-          execute
-        end
-
         it_behaves_like 'successful service response'
 
         it 'creates a comment' do
+          execute
+
           expect(last_note.note).to include(expected_violation_note, report_type)
           expect(last_note.author).to eq(bot_user)
+        end
+
+        it 'does not touch merge request' do
+          merge_request.update!(updated_at: 1.day.ago)
+
+          expect { execute }.not_to change { merge_request.reload.updated_at }
         end
       end
 
@@ -147,85 +151,99 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
           ].join("\n"))
       end
 
-      before do
-        execute
-        bot_comment.reload
-      end
-
-      context 'when policy has been violated' do
-        let(:violated_policy) { true }
-
-        it_behaves_like 'successful service response'
-
-        it 'updates the comment with a violated note' do
-          expect(bot_comment.note).to include(expected_violation_note)
+      describe 'note body' do
+        before do
+          execute
+          bot_comment.reload
         end
 
-        context 'when the existing violation was from another report_type' do
-          let(:violated_reports) { 'license_scanning' }
-          let(:report_type) { 'scan_finding' }
+        context 'when policy has been violated' do
+          let(:violated_policy) { true }
 
-          it 'updates the comment with a violated note and overwrites existing violated reports' do
+          it_behaves_like 'successful service response'
+
+          it 'updates the comment with a violated note' do
             expect(bot_comment.note).to include(expected_violation_note)
-            expect(bot_comment.note).to include('scan_finding')
+          end
+
+          context 'when the existing violation was from another report_type' do
+            let(:violated_reports) { 'license_scanning' }
+            let(:report_type) { 'scan_finding' }
+
+            it 'updates the comment with a violated note and overwrites existing violated reports' do
+              expect(bot_comment.note).to include(expected_violation_note)
+              expect(bot_comment.note).to include('scan_finding')
+            end
+          end
+
+          context 'when the existing comment was violated with optional approvals' do
+            let!(:bot_comment) do
+              create(:note, project: project, noteable: merge_request, author: bot_user,
+                note: [
+                  Security::ScanResultPolicies::PolicyViolationComment::MESSAGE_HEADER,
+                  "<!-- violated_reports: #{violated_reports} -->",
+                  "<!-- optional_approvals: #{violated_reports} -->",
+                  "Previous comment"
+                ].join("\n"))
+            end
+
+            it 'updates the comment and removes the optional approvals section' do
+              expect(bot_comment.note).to include(expected_violation_note)
+              expect(bot_comment.note).not_to include('<!-- optional_approvals')
+            end
           end
         end
 
-        context 'when the existing comment was violated with optional approvals' do
-          let!(:bot_comment) do
-            create(:note, project: project, noteable: merge_request, author: bot_user,
-              note: [
-                Security::ScanResultPolicies::PolicyViolationComment::MESSAGE_HEADER,
-                "<!-- violated_reports: #{violated_reports} -->",
-                "<!-- optional_approvals: #{violated_reports} -->",
-                "Previous comment"
-              ].join("\n"))
-          end
+        context 'when policy has been violated with optional approvals' do
+          let(:violated_policy) { true }
+          let(:requires_approval) { false }
 
-          it 'updates the comment and removes the optional approvals section' do
-            expect(bot_comment.note).to include(expected_violation_note)
-            expect(bot_comment.note).not_to include('<!-- optional_approvals')
-          end
-        end
-      end
+          it_behaves_like 'successful service response'
 
-      context 'when policy has been violated with optional approvals' do
-        let(:violated_policy) { true }
-        let(:requires_approval) { false }
-
-        it_behaves_like 'successful service response'
-
-        it 'updates the comment with a violated note' do
-          expect(bot_comment.note).to include(expected_optional_approvals_note)
-        end
-
-        context 'when the existing violation required approvals and was from another report_type' do
-          let(:violated_reports) { 'license_scanning' }
-          let(:report_type) { 'scan_finding' }
-
-          it 'updates the comment with a violated note and overwrites existing violated reports' do
+          it 'updates the comment with a violated note' do
             expect(bot_comment.note).to include(expected_optional_approvals_note)
-            expect(bot_comment.note).to include('scan_finding')
+          end
+
+          context 'when the existing violation required approvals and was from another report_type' do
+            let(:violated_reports) { 'license_scanning' }
+            let(:report_type) { 'scan_finding' }
+
+            it 'updates the comment with a violated note and overwrites existing violated reports' do
+              expect(bot_comment.note).to include(expected_optional_approvals_note)
+              expect(bot_comment.note).to include('scan_finding')
+            end
           end
         end
-      end
 
-      context 'when there was no policy violation' do
-        let(:violated_policy) { false }
+        context 'when there was no policy violation' do
+          let(:violated_policy) { false }
 
-        it_behaves_like 'successful service response'
+          it_behaves_like 'successful service response'
 
-        it 'updates the comment with fixed note' do
-          expect(bot_comment.note).to include(expected_fixed_note)
-        end
-
-        context 'when the existing violation was from another report_type' do
-          let(:violated_reports) { 'license_scanning' }
-          let(:report_type) { 'scan_finding' }
-
-          it 'updates the comment with an fixed note and overwrites violated reports' do
+          it 'updates the comment with fixed note' do
             expect(bot_comment.note).to include(expected_fixed_note)
           end
+
+          context 'when the existing violation was from another report_type' do
+            let(:violated_reports) { 'license_scanning' }
+            let(:report_type) { 'scan_finding' }
+
+            it 'updates the comment with an fixed note and overwrites violated reports' do
+              expect(bot_comment.note).to include(expected_fixed_note)
+            end
+          end
+        end
+      end
+
+      describe 'merge request' do
+        let(:violated_policy) { true }
+
+        before do
+          merge_request.update!(updated_at: 1.day.ago)
+        end
+
+        it 'does not touch merge request' do
+          expect { execute }.not_to change { merge_request.reload.updated_at }
         end
       end
     end
