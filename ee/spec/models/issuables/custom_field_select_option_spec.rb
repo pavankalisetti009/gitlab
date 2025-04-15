@@ -21,7 +21,35 @@ RSpec.describe Issuables::CustomFieldSelectOption, feature_category: :team_plann
     it { is_expected.to validate_presence_of(:custom_field) }
     it { is_expected.to validate_presence_of(:value) }
     it { is_expected.to validate_length_of(:value).is_at_most(255) }
-    it { is_expected.to validate_uniqueness_of(:value).scoped_to(:custom_field_id).case_insensitive }
+
+    describe 'uniqueness of value' do
+      let_it_be(:custom_field, reload: true) { create(:custom_field) }
+
+      it 'is invalid for duplicate non-persisted options' do
+        custom_field.select_options.build(value: 'An option')
+        option = custom_field.select_options.build(value: 'An Option')
+
+        expect(option).not_to be_valid
+        expect(option.errors[:value]).to include('has already been taken')
+      end
+
+      it 'is invalid if value matches an existing option' do
+        create(:custom_field_select_option, custom_field: custom_field, value: 'An option')
+        custom_field.reload
+
+        option = custom_field.select_options.build(value: 'An Option')
+
+        expect(option).not_to be_valid
+        expect(option.errors[:value]).to include('has already been taken')
+      end
+
+      it 'is valid when values are unique' do
+        custom_field.select_options.build(value: 'An option 1')
+        option = custom_field.select_options.build(value: 'An Option 2')
+
+        expect(option).to be_valid
+      end
+    end
   end
 
   describe '#copy_namespace_from_custom_field' do
