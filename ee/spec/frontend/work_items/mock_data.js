@@ -347,45 +347,6 @@ export const namespaceWorkItemsWithoutEpicSupport = {
   },
 };
 
-export const vulnerabilitiesWidgetResponse = {
-  data: {
-    workItem: {
-      __typename: 'WorkItem',
-      id: 'gid://gitlab/WorkItem/1',
-      iid: '1',
-      namespace: {
-        __typename: 'Project',
-        id: '1',
-      },
-      widgets: [
-        {
-          type: 'VULNERABILITIES',
-          relatedVulnerabilities: {
-            nodes: [
-              {
-                id: 'gid://gitlab/Vulnerability/727',
-                state: 'DETECTED',
-                severity: 'MEDIUM',
-                name: "Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
-                __typename: 'Vulnerability',
-              },
-              {
-                id: 'gid://gitlab/Vulnerability/688',
-                state: 'CONFIRMED',
-                severity: 'INFO',
-                name: 'Loop with Unreachable Exit Condition (Infinite Loop)',
-                __typename: 'Vulnerability',
-              },
-            ],
-            __typename: 'VulnerabilityConnection',
-          },
-          __typename: 'WorkItemWidgetVulnerabilities',
-        },
-      ],
-    },
-  },
-};
-
 /*
  * We're disabling the import/export rule here because we want to
  * re-export the mock data from the CE file while also overriding
@@ -773,6 +734,79 @@ export const mockWorkItemNoStatusResponse = {
         __typename: 'WorkItem',
       },
       __typename: 'Namespace',
+    },
+  },
+};
+
+export const vulnerabilitiesWidgetResponse = {
+  data: {
+    workspace: {
+      __typename: 'Namespace',
+      id: 'gid://gitlab/Namespaces::ProjectNamespace/1',
+      workItem: {
+        __typename: 'WorkItem',
+        id: 'gid://gitlab/WorkItem/1',
+        iid: '1',
+        namespace: {
+          __typename: 'Project',
+          id: '1',
+        },
+        widgets: [
+          {
+            type: 'VULNERABILITIES',
+            relatedVulnerabilities: {
+              nodes: [
+                {
+                  id: 'gid://gitlab/Vulnerability/727',
+                  state: 'DETECTED',
+                  severity: 'MEDIUM',
+                  name: "Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
+                  webUrl: '/vulnerabilities/727',
+                  __typename: 'Vulnerability',
+                },
+                {
+                  id: 'gid://gitlab/Vulnerability/688',
+                  state: 'CONFIRMED',
+                  severity: 'INFO',
+                  name: 'Loop with Unreachable Exit Condition (Infinite Loop)',
+                  webUrl: '/vulnerabilities/688',
+                  __typename: 'Vulnerability',
+                },
+              ],
+              __typename: 'VulnerabilityConnection',
+            },
+            __typename: 'WorkItemWidgetVulnerabilities',
+          },
+        ],
+      },
+    },
+  },
+};
+
+export const emptyVulnerabilitiesWidgetResponse = {
+  data: {
+    workspace: {
+      __typename: 'Namespace',
+      id: 'gid://gitlab/Namespaces::ProjectNamespace/1',
+      workItem: {
+        __typename: 'WorkItem',
+        id: 'gid://gitlab/WorkItem/1',
+        iid: '1',
+        namespace: {
+          __typename: 'Project',
+          id: '1',
+        },
+        widgets: [
+          {
+            type: 'VULNERABILITIES',
+            relatedVulnerabilities: {
+              nodes: [],
+              __typename: 'VulnerabilityConnection',
+            },
+            __typename: 'WorkItemWidgetVulnerabilities',
+          },
+        ],
+      },
     },
   },
 };
