@@ -53749,6 +53749,9 @@ msgstr ""
 msgid "Secrets|Secrets can be items like API tokens, database credentials, or private keys. Unlike CI/CD variables, secrets must be explicitly requested by a job."
 msgstr ""
 
+msgid "Secrets|Secure your sensitive information"
+msgstr ""
+
 msgid "Secrets|Select a reminder interval"
 msgstr ""
 
@@ -53756,6 +53759,9 @@ msgid "Secrets|Stored secrets"
 msgstr ""
 
 msgid "Secrets|The name should be unique within this project."
+msgstr ""
+
+msgid "Secrets|Use the Secrets Manager to store your sensitive credentials, and then safely use them in your processes."
 msgstr ""
 
 msgid "Secure Code Warrior"

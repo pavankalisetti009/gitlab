@@ -2,6 +2,7 @@
 import {
   GlAlert,
   GlButton,
+  GlEmptyState,
   GlIcon,
   GlLabel,
   GlLoadingIcon,
@@ -9,6 +10,7 @@ import {
   GlTableLite,
   GlKeysetPagination,
 } from '@gitlab/ui';
+import EmptySecretsSvg from '@gitlab/svgs/dist/illustrations/chat-sm.svg?url';
 import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
@@ -38,6 +40,7 @@ export default {
     CrudComponent,
     GlAlert,
     GlButton,
+    GlEmptyState,
     GlIcon,
     GlKeysetPagination,
     GlLabel,
@@ -61,7 +64,7 @@ export default {
   data() {
     return {
       secretManagerStatus: null,
-      secrets: null,
+      secrets: [],
       endCursor: null,
       startCursor: null,
       secretsCursor: {},
@@ -112,8 +115,8 @@ export default {
         };
       },
       update({ projectSecrets: { edges, pageInfo } }) {
-        this.endCursor = pageInfo.hasNextPage ? pageInfo.endCursor : null;
-        this.startCursor = pageInfo.hasPreviousPage ? pageInfo.startCursor : null;
+        this.endCursor = pageInfo?.hasNextPage ? pageInfo.endCursor : null;
+        this.startCursor = pageInfo?.hasPreviousPage ? pageInfo.startCursor : null;
         return edges.map((e) => e.node) || [];
       },
       error() {
@@ -135,6 +138,9 @@ export default {
     },
     onSecretsPage() {
       return window.location.pathname.includes('/-/secrets');
+    },
+    showEmptyState() {
+      return !this.$apollo.queries.secrets.loading && this.secrets.length === 0;
     },
     showPagination() {
       return this.hasPreviousPage || this.hasNextPage;
@@ -183,6 +189,7 @@ export default {
       tdClass: 'gl-text-right !gl-p-3',
     },
   ],
+  EmptySecretsSvg,
   NEW_ROUTE_NAME,
   SCOPED_LABEL_COLOR,
   SECRET_STATUS,
@@ -215,6 +222,22 @@ export default {
         )
       }}
     </gl-alert>
+    <gl-empty-state
+      v-else-if="showEmptyState"
+      :title="s__('Secrets|Secure your sensitive information')"
+      :description="
+        s__(
+          'Secrets|Use the Secrets Manager to store your sensitive credentials, and then safely use them in your processes.',
+        )
+      "
+      :svg-path="$options.EmptySecretsSvg"
+    >
+      <template #actions>
+        <gl-button :to="$options.NEW_ROUTE_NAME">
+          {{ s__('Secrets|New secret') }}
+        </gl-button>
+      </template>
+    </gl-empty-state>
     <crud-component v-else :title="s__('Secrets|Stored secrets')">
       <template #actions>
         <gl-button size="small" :to="$options.NEW_ROUTE_NAME" data-testid="new-secret-button">
