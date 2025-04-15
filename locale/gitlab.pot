@@ -57406,6 +57406,9 @@ msgstr ""
 msgid "Simulate a pipeline created for the default branch"
 msgstr ""
 
+msgid "Single component can be selected for component filter to be able to filter by version."
+msgstr ""
+
 msgid "Site profile failed to delete"
 msgstr ""
 

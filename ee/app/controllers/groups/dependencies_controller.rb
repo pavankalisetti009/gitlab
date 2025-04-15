@@ -12,6 +12,7 @@ module Groups
 
     before_action :authorize_read_dependency_list!
     before_action :validate_project_ids_limit!, only: :index
+    before_action :validate_component_versions!, only: :index
 
     feature_category :dependency_management
     urgency :low
@@ -20,6 +21,7 @@ module Groups
     # More details on https://gitlab.com/gitlab-org/gitlab/-/issues/411257#note_1508315283
     GROUP_COUNT_LIMIT = 600
     PROJECT_IDS_LIMIT = 10
+    COMPONENT_NAMES_MUST_HAVE_FOR_VERSION_FILTERING = 1
 
     def index
       respond_to do |format|
@@ -85,6 +87,16 @@ module Groups
       )
     end
 
+    def validate_component_versions!
+      return unless params[:component_versions] || (params[:not] && params[:not][:component_versions])
+      return if params.fetch(:component_names, []).size == COMPONENT_NAMES_MUST_HAVE_FOR_VERSION_FILTERING
+
+      render_error(
+        :unprocessable_entity,
+        format(_('Single component can be selected for component filter to be able to filter by version.'))
+      )
+    end
+
     def dependencies
       if using_new_query?
         finder = ::Sbom::AggregationsFinder.new(group, params: dependencies_finder_params)
@@ -122,7 +134,9 @@ module Groups
                           package_managers: [],
                           project_ids: [],
                           component_ids: [],
-                          component_names: []
+                          component_names: [],
+                          component_versions: [],
+                          not: { component_versions: [] }
                         )
                       else
                         params.permit(:cursor, :page, :per_page, :sort, :sort_by)

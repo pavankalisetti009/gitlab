@@ -120,6 +120,16 @@ module Sbom
       where.not(component_version_id: component_version_ids)
     end
 
+    scope :joins_component_versions, -> { joins(:component_version) }
+
+    scope :filter_by_component_versions, ->(versions) do
+      joins_component_versions.where(sbom_component_versions: { version: versions })
+    end
+
+    scope :filter_by_non_component_versions, ->(versions) do
+      joins_component_versions.where.not(sbom_component_versions: { version: versions })
+    end
+
     scope :filter_by_search_with_component_and_group, ->(search, component_id, group) do
       relation = for_namespace_and_descendants(group)
         .where(component_version_id: component_id)

@@ -507,6 +507,80 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
                   )
                 end
               end
+
+              context 'when filtered by component_versions without component_names' do
+                let(:params) do
+                  {
+                    group_id: group.to_param,
+                    component_versions: [sbom_occurrence_bundler.component_version.version]
+                  }
+                end
+
+                it 'returns an error' do
+                  subject
+
+                  expect(response).to have_gitlab_http_status(:unprocessable_entity)
+                  expect(json_response['message']).to eq(
+                    format(
+                      _('Single component can be selected for component filter to be able to filter by version.')
+                    )
+                  )
+                end
+              end
+
+              context 'when negated filtered by component_versions without component_names' do
+                let(:params) do
+                  {
+                    group_id: group.to_param,
+                    not: { component_versions: [sbom_occurrence_bundler.component_version.version] }
+                  }
+                end
+
+                it 'returns an error' do
+                  subject
+
+                  expect(response).to have_gitlab_http_status(:unprocessable_entity)
+                  expect(json_response['message']).to eq(
+                    format(
+                      _('Single component can be selected for component filter to be able to filter by version.')
+                    )
+                  )
+                end
+              end
+
+              context 'when filtered by component_versions' do
+                let(:params) do
+                  {
+                    group_id: group.to_param,
+                    component_names: [component_2.name],
+                    component_versions: [sbom_occurrence_bundler.component_version.version]
+                  }
+                end
+
+                it 'returns a filtered list' do
+                  subject
+
+                  expect(json_response['dependencies'].pluck('occurrence_id')).to match_array([
+                    sbom_occurrence_bundler.id
+                  ])
+                end
+              end
+
+              context 'when filtered by negated component_versions' do
+                let(:params) do
+                  {
+                    group_id: group.to_param,
+                    component_names: [component_2.name],
+                    not: { component_versions: [sbom_occurrence_bundler.component_version.version] }
+                  }
+                end
+
+                it 'returns a filtered list' do
+                  subject
+
+                  expect(json_response['dependencies'].pluck('occurrence_id')).to be_empty
+                end
+              end
             end
           end
         end
