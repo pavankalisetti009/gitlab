@@ -6,7 +6,7 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
   include AdminModeHelper
 
   let_it_be(:admin) { create(:admin) }
-  let_it_be(:user) { create(:user) }
+  let_it_be_with_reload(:user) { create(:user) }
 
   before do
     sign_in(admin)
@@ -99,19 +99,121 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
   end
 
   describe 'PATCH #update' do
+    let(:new_email) { 'new-email@example.com' }
+    let(:user_attrs) { { email: new_email } }
+
+    subject(:request) { patch admin_user_path(user), params: { user: user_attrs } }
+
     context 'when user is an enterprise user' do
       let(:user) { create(:enterprise_user) }
 
       context "when new email is not owned by the user's enterprise group" do
-        let(:new_email) { 'new-email@example.com' }
-
         # See https://gitlab.com/gitlab-org/gitlab/-/issues/412762
         it 'allows change user email', :aggregate_failures do
-          expect { patch admin_user_path(user), params: { user: { email: new_email } } }
-            .to change { user.reload.email }.from(user.email).to(new_email)
+          expect { request }.to change { user.reload.email }.from(user.email).to(new_email)
 
           expect(response).to redirect_to(admin_user_path(user))
           expect(flash[:notice]).to eq('User was successfully updated.')
+        end
+      end
+    end
+
+    describe 'custom admin role assignment' do
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
+      context 'when the user has an assigned role' do
+        let_it_be(:existing_role) { create(:admin_member_role, user: user).member_role }
+
+        context 'and admin_role_id is not present' do
+          it 'does not unassign the user\'s existing role' do
+            expect { request }.not_to change { user.reload.user_member_roles.map(&:member_role_id) }
+              .from([existing_role.id])
+          end
+        end
+
+        context 'when admin_role_id is present' do
+          context 'and matches a custom admin role' do
+            let_it_be(:new_role) { create(:member_role, :admin) }
+            let(:user_attrs) { super().merge(admin_role_id: new_role.id) }
+
+            it 'updates the user\'s assigned role to the new role' do
+              expect { request }.to change { user.reload.user_member_roles.map(&:member_role_id) }
+                .from([existing_role.id]).to([new_role.id])
+            end
+
+            context 'and assignment fails' do
+              let(:service_error) { 'Failure reason' }
+
+              it 'redirects with an alert flash' do
+                expect_next_instance_of(::Users::MemberRoles::AssignService) do |service|
+                  error = ServiceResponse.error(message: service_error)
+                  expect(service).to receive(:execute).and_return(error)
+                end
+
+                request
+
+                expect(response).to redirect_to(admin_user_path(user))
+                expect(flash[:alert]).to eq("Failed to assign custom admin role. Try again or select a different role.")
+              end
+            end
+
+            shared_examples 'does not execute assignment service' do
+              specify do
+                expect(::Users::MemberRoles::AssignService).not_to receive(:new)
+
+                request
+              end
+            end
+
+            context 'when feature is not available' do
+              before do
+                stub_licensed_features(custom_roles: false)
+              end
+
+              it_behaves_like 'does not execute assignment service'
+            end
+
+            context 'when custom_admin_roles feature flag is disabled' do
+              before do
+                stub_feature_flags(custom_admin_roles: false)
+              end
+
+              it_behaves_like 'does not execute assignment service'
+            end
+          end
+
+          context 'and is nil' do
+            let(:user_attrs) { super().merge(admin_role_id: nil) }
+
+            it 'unassigns the user\'s existing role' do
+              expect { request }.to change { user.reload.user_member_roles.map(&:member_role_id) }
+                .from([existing_role.id]).to([])
+            end
+          end
+        end
+      end
+
+      context 'when the user has no assigned role' do
+        context 'when admin_role_id is present' do
+          context 'and matches a custom admin role' do
+            let_it_be(:role) { create(:member_role, :admin) }
+            let(:user_attrs) { super().merge(admin_role_id: role.id) }
+
+            it 'assigns the role to the user' do
+              expect { request }.to change { user.reload.user_member_roles.map(&:member_role_id) }
+                .from([]).to([role.id])
+            end
+          end
+
+          context 'and does not match a custom admin role' do
+            let(:user_attrs) { super().merge(admin_role_id: non_existing_record_id) }
+
+            it 'does not assign any role to the user' do
+              expect { request }.not_to change { user.user_member_roles.size }.from(0)
+            end
+          end
         end
       end
     end
@@ -133,6 +235,85 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
       ).and_call_original
 
       expect { request }.to change { user.reload.access_locked? }.from(true).to(false)
+    end
+  end
+
+  describe 'POST #create', :with_current_organization do
+    let(:user_attrs) { attributes_for(:user).slice(:name, :username, :email) }
+
+    subject(:request) { post admin_users_path, params: { user: user_attrs } }
+
+    def created_user
+      User.find_by_email(user_attrs[:email])
+    end
+
+    describe 'custom admin role assignment' do
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
+      context 'when admin_role_id is present' do
+        context 'and matches a custom admin role' do
+          let_it_be(:role) { create(:member_role, :admin) }
+          let(:user_attrs) { super().merge(admin_role_id: role.id) }
+
+          it 'assigns the role to the user' do
+            request
+
+            expect(created_user.user_member_roles.map(&:member_role_id)).to match_array [role.id]
+          end
+
+          context 'and assignment fails' do
+            let(:service_error) { 'Failure reason' }
+
+            it 'redirects with an alert flash' do
+              expect_next_instance_of(::Users::MemberRoles::AssignService) do |service|
+                error = ServiceResponse.error(message: service_error)
+                expect(service).to receive(:execute).and_return(error)
+              end
+
+              request
+
+              expect(response).to redirect_to(admin_user_path(created_user))
+              expect(flash[:alert]).to eq("Failed to assign custom admin role. Try again or select a different role.")
+            end
+          end
+
+          shared_examples 'does not execute assignment service' do
+            specify do
+              expect(::Users::MemberRoles::AssignService).not_to receive(:new)
+
+              request
+            end
+          end
+
+          context 'when feature is not available' do
+            before do
+              stub_licensed_features(custom_roles: false)
+            end
+
+            it_behaves_like 'does not execute assignment service'
+          end
+
+          context 'when custom_admin_roles feature flag is disabled' do
+            before do
+              stub_feature_flags(custom_admin_roles: false)
+            end
+
+            it_behaves_like 'does not execute assignment service'
+          end
+        end
+
+        context 'and does not match a custom admin role' do
+          let(:user_attrs) { super().merge(admin_role_id: non_existing_record_id) }
+
+          it 'does not assign any role to the user' do
+            request
+
+            expect(created_user.user_member_roles).to be_empty
+          end
+        end
+      end
     end
   end
 end
