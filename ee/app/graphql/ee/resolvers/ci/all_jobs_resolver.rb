@@ -28,6 +28,11 @@ module EE
         def params_data(args)
           super.merge(failure_reason: args[:failure_reason])
         end
+
+        override :unconditional_includes
+        def unconditional_includes
+          [{ project: [:project_feature] }]
+        end
       end
     end
   end

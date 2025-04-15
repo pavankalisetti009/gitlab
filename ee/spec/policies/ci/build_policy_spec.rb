@@ -3,7 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
+  let_it_be(:user) { create(:user) }
+
   it_behaves_like 'a deployable job policy in EE', :ci_build
+
+  subject { described_class.new(user, build) }
 
   describe 'troubleshoot_job_with_ai' do
     let(:authorized) { true }
@@ -11,9 +15,6 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
     let_it_be_with_reload(:project) { create(:project, :private) }
     let_it_be(:pipeline) { create(:ci_empty_pipeline, project: project) }
     let_it_be(:build) { create(:ci_build, pipeline: pipeline) }
-    let_it_be(:user) { create(:user) }
-
-    subject { described_class.new(user, build) }
 
     before_all do
       project.add_maintainer(user)
@@ -137,6 +138,26 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
         let(:policy) { :troubleshoot_job_with_ai }
 
         it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+      end
+    end
+  end
+
+  describe 'admin custom roles', :enable_admin_mode, feature_category: :permissions do
+    context 'when user does not have read_build ability' do
+      let_it_be(:project) { create(:project, :private, public_builds: false) }
+      let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
+      let_it_be(:build) { create(:ci_build, pipeline: pipeline) }
+
+      it { is_expected.to be_disallowed(:read_build_metadata) }
+
+      context 'when user can read_admin_cicd' do
+        before do
+          stub_licensed_features(custom_roles: true)
+          create(:admin_member_role, :read_admin_cicd, user: user)
+        end
+
+        it { is_expected.to be_disallowed(:read_build) }
+        it { is_expected.to be_allowed(:read_build_metadata) }
       end
     end
   end

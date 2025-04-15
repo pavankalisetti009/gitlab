@@ -102,7 +102,84 @@ RSpec.describe 'Query.jobs', feature_category: :continuous_integration do
     end
   end
 
-  describe 'Query.jobs.pipeline' do
+  describe 'fields', :enable_admin_mode, feature_category: :permissions do
+    let_it_be(:runner) { create(:ci_runner) }
+    let_it_be(:job) do
+      create(:ci_build, :failed, :trace_live, :erased, runner: runner, coverage: 1, scheduled_at: Time.now)
+    end
+
+    let(:query) do
+      wrap_fields(query_graphql_path(query_path, all_graphql_fields_for('CiJobInterface')))
+    end
+
+    context 'when current user is an admin' do
+      let_it_be(:current_user) { create(:admin) }
+
+      before do
+        post_graphql(query, current_user: current_user)
+      end
+
+      it 'all fields have values' do
+        exposed_field_values = graphql_data_at(:jobs, :nodes, 0).except('exitCode').values
+
+        expect(exposed_field_values.any?(&:nil?)).to be false
+      end
+    end
+
+    context 'when current user is not an admin but has read_admin_cicd custom admin role' do
+      let_it_be(:role) { create(:admin_member_role, :read_admin_cicd) }
+      let_it_be(:current_user) { role.user }
+
+      let(:exposed_field_names) do
+        ::Types::Ci::JobMinimalAccessType.own_fields.keys
+      end
+
+      let(:unexposed_field_names) do
+        ::Types::Ci::JobInterface.fields.keys - exposed_field_names
+      end
+
+      before do
+        stub_licensed_features(custom_roles: true)
+
+        post_graphql(query, current_user: current_user)
+      end
+
+      it 'only exposed fields have values', :aggregate_failures do
+        job_data = graphql_data_at(:jobs, :nodes, 0)
+
+        exposed_field_values = job_data.slice(*exposed_field_names).values
+        expect(exposed_field_values.any?(&:nil?)).to be false
+
+        unexposed_field_values = job_data.slice(*unexposed_field_names).values
+        expect(unexposed_field_values).to be_all(&:nil?)
+      end
+    end
+  end
+
+  describe 'Query limits' do
+    let_it_be(:current_user) { create(:admin) }
+    let_it_be(:args) { { current_user: current_user } }
+
+    let(:query) do
+      wrap_fields(query_graphql_path(query_path, 'id'))
+    end
+
+    it 'avoids N+1 queries', :request_store, :use_sql_query_cache do
+      control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+        post_graphql(query, **args)
+      end
+
+      create_list(:ci_build, 10)
+
+      expect do
+        post_graphql(query, **args)
+
+        raise StandardError, flattened_errors if graphql_errors # Ensure any error in query causes test to fail
+      end.not_to exceed_query_limit(control)
+    end
+  end
+
+  describe 'Query.jobs.pipeline', :enable_admin_mode, feature_category: :permissions do
     let_it_be(:pipeline) { create(:ci_pipeline, user: create(:user)) }
     let_it_be(:job) { create(:ci_build, pipeline: pipeline) }
 
@@ -112,8 +189,7 @@ RSpec.describe 'Query.jobs', feature_category: :continuous_integration do
       wrap_fields(query_graphql_path(query_path, pipeline_path))
     end
 
-    context 'when current user is an admin',
-      :enable_admin_mode, feature_category: :permissions do
+    context 'when current user is an admin' do
       let_it_be(:current_user) { create(:admin) }
 
       before do
@@ -127,8 +203,7 @@ RSpec.describe 'Query.jobs', feature_category: :continuous_integration do
       end
     end
 
-    context 'when current user is not an admin but has read_admin_cicd custom admin role',
-      :enable_admin_mode, feature_category: :permissions do
+    context 'when current user is not an admin but has read_admin_cicd custom admin role' do
       let_it_be(:role) { create(:admin_member_role, :read_admin_cicd) }
       let_it_be(:current_user) { role.user }
 
