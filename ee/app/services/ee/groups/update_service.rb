@@ -40,6 +40,7 @@ module EE
         handle_pending_members
         update_amazon_q!
         publish_ai_settings_changed_event
+        schedule_remove_dormant_users
       end
 
       override :before_assignment_hook
@@ -192,6 +193,13 @@ module EE
         ::Gitlab::EventStore.publish(
           ::NamespaceSettings::AiRelatedSettingsChangedEvent.new(data: { group_id: group.id })
         )
+      end
+
+      def schedule_remove_dormant_users
+        return unless group.namespace_settings.previous_changes.include?(:remove_dormant_members)
+        return unless group.namespace_settings.remove_dormant_members
+
+        ::Namespaces::RemoveDormantMembersWorker.perform_with_capacity
       end
 
       def ai_settings_changed?
