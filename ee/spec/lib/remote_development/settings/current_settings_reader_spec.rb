@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require 'fast_spec_helper'
 
 RSpec.describe ::RemoteDevelopment::Settings::CurrentSettingsReader, feature_category: :workspaces do
   include ResultMatchers
@@ -8,6 +8,16 @@ RSpec.describe ::RemoteDevelopment::Settings::CurrentSettingsReader, feature_cat
   let(:overridden_setting_type) { String }
   let(:overridden_setting_value_from_current_settings) { "value_from_current_settings" }
   let(:relevant_setting_names) { %i[overridden_setting] }
+  let(:current_settings_class) do
+    # NOTE: We intentionally do not attempt to make this test use the real `ApplicationSetting` class with
+    # `stub_application_setting`, because this resulted in occasional cache-related test failures in
+    # `CurrentSettings.respond_to?` for `ApplicationSetting` fields which are in the process of being deprecated.
+    double( # rubocop:disable RSpec/VerifiedDoubles -- We don't care about using a verified double here, this is a mix of class and dynamic stubbed methods.
+      "Gitlab::CurrentSettings",
+      respond_to?: current_settings_class_responds_to_setting_name,
+      overridden_setting: overridden_setting_value_from_current_settings
+    )
+  end
 
   let(:context) do
     {
@@ -28,13 +38,11 @@ RSpec.describe ::RemoteDevelopment::Settings::CurrentSettingsReader, feature_cat
 
   before do
     stub_const("#{described_class}::RELEVANT_SETTING_NAMES", relevant_setting_names)
-    create(:application_setting)
+    stub_const("#{described_class}::Gitlab::CurrentSettings", current_settings_class)
   end
 
   context "when the relevant settings are valid CurrentSettings entries" do
-    before do
-      stub_application_setting(overridden_setting: overridden_setting_value_from_current_settings)
-    end
+    let(:current_settings_class_responds_to_setting_name) { true }
 
     context "when there are no errors" do
       it "returns ::Gitlab::CurrentSettings overridden settings as well as other non-relevant settings" do
@@ -68,6 +76,8 @@ RSpec.describe ::RemoteDevelopment::Settings::CurrentSettingsReader, feature_cat
   end
 
   context "when no relevant settings are requested" do
+    let(:current_settings_class_responds_to_setting_name) { true }
+
     let(:context) do
       {
         settings: {
@@ -85,6 +95,8 @@ RSpec.describe ::RemoteDevelopment::Settings::CurrentSettingsReader, feature_cat
   end
 
   context "when a relevant setting is not a valid CurrentSettings entry" do
+    let(:current_settings_class_responds_to_setting_name) { false }
+
     it "raises a runtime error" do
       expect { result }.to raise_error("Invalid CurrentSettings entry specified")
     end
