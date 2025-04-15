@@ -13,7 +13,9 @@ import { mapGetters } from 'vuex';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { NAMESPACE_GROUP } from 'ee/dependencies/constants';
 import getProjectComponentVersions from 'ee/dependencies/graphql/project_component_versions.query.graphql';
+import getGroupComponentVersions from 'ee/dependencies/graphql/group_component_versions.query.graphql';
 
 export default {
   components: {
@@ -24,7 +26,7 @@ export default {
     GlIntersperse,
     GlIntersectionObserver,
   },
-  inject: ['projectFullPath'],
+  inject: ['fullPath', 'namespaceType'],
   props: {
     config: {
       type: Object,
@@ -48,7 +50,11 @@ export default {
   },
   apollo: {
     versions: {
-      query: getProjectComponentVersions,
+      query() {
+        return this.namespaceType === NAMESPACE_GROUP
+          ? getGroupComponentVersions
+          : getProjectComponentVersions;
+      },
       variables() {
         return this.queryVariables;
       },
@@ -94,7 +100,7 @@ export default {
     queryVariables() {
       return {
         componentName: this.componentNames[0],
-        fullPath: this.projectFullPath,
+        fullPath: this.fullPath,
       };
     },
     noSelectedComponent() {
