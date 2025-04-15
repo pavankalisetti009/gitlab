@@ -744,4 +744,11 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
       end
     end
   end
+
+  context 'with loose foreign key on approval_merge_request_rules.approval_policy_rule_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:approval_policy_rule) }
+      let_it_be(:model) { create(:approval_merge_request_rule, approval_policy_rule: parent) }
+    end
+  end
 end
