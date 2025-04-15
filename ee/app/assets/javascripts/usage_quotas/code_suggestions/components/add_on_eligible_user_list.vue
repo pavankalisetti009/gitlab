@@ -182,10 +182,24 @@ export default {
       return DUO_ADD_ONS[this.duoTier];
     },
     tableFieldsConfiguration() {
-      let fieldConfig = ['user', this.duoAddOn, 'emailWide', 'lastActivityTimeWide'];
+      let fieldConfig = [
+        'user',
+        // eslint-disable-next-line @gitlab/require-i18n-strings
+        `${this.duoAddOn}Wide`,
+        'emailWide',
+        'lastActivityTime',
+        'lastDuoActivityTime',
+      ];
 
       if (this.isFilteringEnabled && this.hasMaxRoleField) {
-        fieldConfig = ['user', this.duoAddOn, 'email', 'maxRole', 'lastActivityTime'];
+        fieldConfig = [
+          'user',
+          this.duoAddOn,
+          'email',
+          'maxRole',
+          'lastActivityTime',
+          'lastDuoActivityTime',
+        ];
       }
 
       if (this.isBulkAddOnAssignmentEnabled) {
@@ -559,6 +573,11 @@ export default {
       <template #cell(lastActivityTime)="data">
         <span data-testid="last-activity-on">
           {{ data.item.lastActivityOn ? data.item.lastActivityOn : __('Never') }}
+        </span>
+      </template>
+      <template #cell(lastDuoActivityTime)="{ item }">
+        <span data-testid="last-duo-activity-on">
+          {{ item.lastDuoActivityOn ? item.lastDuoActivityOn : __('Never') }}
         </span>
       </template>
     </gl-table>

@@ -177,6 +177,7 @@ export const mockSMUserWithAddOnAssignment = {
   avatarUrl: 'path/to/img_userone',
   webUrl: 'path/to/userone',
   lastActivityOn: '2023-08-25',
+  lastDuoActivityOn: '2023-08-25',
   maxRole: null,
   addOnAssignments: {
     nodes: [{ addOnPurchase: { name: DUO_PRO } }],
@@ -193,6 +194,7 @@ export const mockSMUserWithNoAddOnAssignment = {
   avatarUrl: 'path/to/img_usertwo',
   webUrl: 'path/to/usertwo',
   lastActivityOn: '2023-08-22',
+  lastDuoActivityOn: null,
   maxRole: null,
   addOnAssignments: { nodes: [], __typename: 'UserAddOnAssignmentConnection' },
   __typename: 'AddOnUser',
@@ -206,6 +208,7 @@ export const mockAnotherSMUserWithNoAddOnAssignment = {
   avatarUrl: 'path/to/img_userthree',
   webUrl: 'path/to/userthree',
   lastActivityOn: '2023-03-19',
+  lastDuoActivityOn: '2023-01-20',
   maxRole: null,
   addOnAssignments: { nodes: [], __typename: 'UserAddOnAssignmentConnection' },
   __typename: 'AddOnUser',

@@ -76,19 +76,37 @@ export const addOnEligibleUserListTableFields = {
   codeSuggestionsAddon: {
     key: 'codeSuggestionsAddon',
     label: DUO_TITLES[DUO_PRO],
-    thClass: 'gl-w-5/20',
+    thClass: 'gl-w-3/20',
     tdClass: '!gl-align-middle',
   },
   duoEnterpriseAddon: {
     key: 'codeSuggestionsAddon',
     label: DUO_TITLES[DUO_ENTERPRISE],
-    thClass: 'gl-w-5/20',
+    thClass: 'gl-w-3/20',
     tdClass: '!gl-align-middle',
   },
   duoAmazonQAddon: {
     key: 'codeSuggestionsAddon',
     label: DUO_TITLES[DUO_AMAZON_Q],
-    thClass: 'gl-w-5/20',
+    thClass: 'gl-w-3/20',
+    tdClass: '!gl-align-middle',
+  },
+  codeSuggestionsAddonWide: {
+    key: 'codeSuggestionsAddon',
+    label: DUO_TITLES[DUO_PRO],
+    thClass: 'gl-w-4/20',
+    tdClass: '!gl-align-middle',
+  },
+  duoEnterpriseAddonWide: {
+    key: 'codeSuggestionsAddon',
+    label: DUO_TITLES[DUO_ENTERPRISE],
+    thClass: 'gl-w-4/20',
+    tdClass: '!gl-align-middle',
+  },
+  duoAmazonQAddonWide: {
+    key: 'codeSuggestionsAddon',
+    label: DUO_TITLES[DUO_AMAZON_Q],
+    thClass: 'gl-w-4/20',
     tdClass: '!gl-align-middle',
   },
   email: {
@@ -109,23 +127,22 @@ export const addOnEligibleUserListTableFields = {
     thClass: 'gl-w-3/20',
     tdClass: '!gl-align-middle',
   },
-  lastActivityTimeWide: {
-    key: 'lastActivityTime',
-    label: __('Last GitLab activity'),
-    thClass: 'gl-w-5/20',
+  lastDuoActivityTime: {
+    key: 'lastDuoActivityTime',
+    label: __('Last GitLab Duo activity'),
+    thClass: 'gl-w-3/20 !gl-pr-2',
     tdClass: '!gl-align-middle',
   },
   maxRole: {
     key: 'maxRole',
     label: __('Max role'),
-    thClass: 'gl-w-3/20',
+    thClass: 'gl-w-2/20',
     tdClass: '!gl-align-middle',
   },
   user: {
     key: 'user',
     label: __('User'),
-    // eslint-disable-next-line @gitlab/require-i18n-strings
-    thClass: '!gl-pl-2 gl-w-5/20',
+    thClass: 'gl-w-5/20 !gl-pl-2',
     tdClass: '!gl-align-middle !gl-pl-2',
   },
   checkbox: {
