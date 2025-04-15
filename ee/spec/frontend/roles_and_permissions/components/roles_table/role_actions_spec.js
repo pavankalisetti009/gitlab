@@ -1,8 +1,8 @@
 import { GlDisclosureDropdown, GlIcon, GlLink, GlPopover, GlTooltip } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import RoleActions from 'ee/roles_and_permissions/components/role_actions.vue';
-import { mockMemberRole, adminRoles } from '../mock_data';
+import RoleActions from 'ee/roles_and_permissions/components/roles_table/role_actions.vue';
+import { mockMemberRole, adminRoles } from '../../mock_data';
 
 describe('Role actions', () => {
   let wrapper;

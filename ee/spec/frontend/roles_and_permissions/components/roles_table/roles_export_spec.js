@@ -5,7 +5,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import groupMembersExportMutation from 'ee/roles_and_permissions/graphql/group_members_export.mutation.graphql';
-import RolesExport from 'ee/roles_and_permissions/components/roles_export.vue';
+import RolesExport from 'ee/roles_and_permissions/components/roles_table/roles_export.vue';
 import { createAlert } from '~/alert';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 

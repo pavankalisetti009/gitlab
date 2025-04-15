@@ -1,10 +1,4 @@
-import {
-  GlButton,
-  GlLink,
-  GlSprintf,
-  GlDisclosureDropdown,
-  GlDisclosureDropdownItem,
-} from '@gitlab/ui';
+import { GlButton, GlSprintf, GlDisclosureDropdown, GlDisclosureDropdownItem } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -12,10 +6,10 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import groupRolesQuery from 'ee/roles_and_permissions/graphql/group_roles.query.graphql';
 import instanceRolesQuery from 'ee/roles_and_permissions/graphql/instance_roles.query.graphql';
-import RolesApp from 'ee/roles_and_permissions/components/app.vue';
-import RolesTable from 'ee/roles_and_permissions/components/roles_table.vue';
+import RolesCrud from 'ee/roles_and_permissions/components/roles_table/roles_crud.vue';
+import RolesTable from 'ee/roles_and_permissions/components/roles_table/roles_table.vue';
 import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
-import RolesExport from 'ee/roles_and_permissions/components/roles_export.vue';
+import RolesExport from 'ee/roles_and_permissions/components/roles_table/roles_export.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { createAlert } from '~/alert';
@@ -25,13 +19,13 @@ import {
   adminRoles,
   groupRolesResponse,
   instanceRolesResponse,
-} from '../mock_data';
+} from '../../mock_data';
 
 Vue.use(VueApollo);
 
 jest.mock('~/alert');
 
-describe('Roles app', () => {
+describe('RolesCrud component', () => {
   let wrapper;
 
   const mockToastShow = jest.fn();
@@ -47,16 +41,17 @@ describe('Roles app', () => {
     exportGroupMemberships = true,
     customAdminRoles = true,
   } = {}) => {
-    wrapper = shallowMountExtended(RolesApp, {
+    wrapper = shallowMountExtended(RolesCrud, {
       apolloProvider: createMockApollo([
         [groupRolesQuery, groupRolesQueryHandler],
         [instanceRolesQuery, instanceRolesQueryHandler],
       ]),
       provide: {
+        groupFullPath,
+        newRolePath,
         glFeatures: { membersPermissionsDetailedExport, customAdminRoles },
         glAbilities: { exportGroupMemberships },
       },
-      propsData: { groupFullPath, newRolePath },
       stubs: {
         GlSprintf,
         PageHeading,
@@ -82,34 +77,12 @@ describe('Roles app', () => {
       createComponent();
     });
 
-    it('shows the title', () => {
-      expect(wrapper.findByTestId('page-heading').text()).toBe('Roles and permissions');
-    });
-
     it('shows the New role button', () => {
       const button = wrapper.findComponent(GlButton);
 
       expect(button.text()).toBe('New role');
       expect(button.props('size')).toBe('small');
       expect(button.attributes('href')).toBe('new/role/path');
-    });
-
-    describe('sub-title', () => {
-      it('shows the sub-title', () => {
-        expect(wrapper.findByTestId('page-heading-description').text()).toBe(
-          'Manage which actions users can take with roles and permissions.',
-        );
-      });
-
-      it('links to the docs page', () => {
-        const link = wrapper.findComponent(GlLink);
-
-        expect(link.text()).toBe('roles and permissions');
-        expect(link.attributes()).toMatchObject({
-          href: '/help/user/permissions',
-          target: '_blank',
-        });
-      });
     });
 
     describe('roles table busy state', () => {

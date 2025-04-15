@@ -1,25 +1,19 @@
 <script>
-import { GlSprintf, GlLink, GlButton, GlDisclosureDropdown } from '@gitlab/ui';
+import { GlSprintf, GlButton, GlDisclosureDropdown } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import PageHeading from '~/vue_shared/components/page_heading.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
-import groupRolesQuery from '../graphql/group_roles.query.graphql';
-import instanceRolesQuery from '../graphql/instance_roles.query.graphql';
+import groupRolesQuery from '../../graphql/group_roles.query.graphql';
+import instanceRolesQuery from '../../graphql/instance_roles.query.graphql';
+import DeleteRoleModal from '../delete_role_modal.vue';
 import RolesTable from './roles_table.vue';
-import DeleteRoleModal from './delete_role_modal.vue';
 import RolesExport from './roles_export.vue';
 
 export default {
-  name: 'RolesApp',
   i18n: {
-    title: s__('MemberRole|Roles and permissions'),
-    description: s__(
-      'MemberRole|Manage which actions users can take with %{linkStart}roles and permissions%{linkEnd}.',
-    ),
     roleCrudTitle: __('Roles'),
     roleCount: s__(`MemberRole|%{defaultCount} Default %{customCount} Custom`),
     roleCountAdmin: s__(`MemberRole|%{adminCount} Admin`),
@@ -29,28 +23,15 @@ export default {
   },
   components: {
     GlSprintf,
-    GlLink,
     GlButton,
     GlDisclosureDropdown,
     RolesTable,
     DeleteRoleModal,
     RolesExport,
-    PageHeading,
     CrudComponent,
   },
   mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
-  props: {
-    groupFullPath: {
-      type: String,
-      required: false,
-      default: '',
-    },
-    newRolePath: {
-      type: String,
-      required: false,
-      default: '',
-    },
-  },
+  inject: ['groupFullPath', 'newRolePath'],
   data() {
     return {
       rolesData: null,
@@ -97,7 +78,7 @@ export default {
       );
     },
     canCreateAdminRole() {
-      return this.glFeatures.customAdminRoles && this.newRolePath && !this.groupFullPath.length;
+      return this.glFeatures.customAdminRoles && this.newRolePath && !this.groupFullPath;
     },
     newRoleItems() {
       return [
@@ -128,69 +109,57 @@ export default {
 </script>
 
 <template>
-  <section>
-    <page-heading :heading="$options.i18n.title">
-      <template #description>
-        <gl-sprintf :message="$options.i18n.description">
-          <template #link="{ content }">
-            <gl-link :href="$options.userPermissionsDocPath" target="_blank">{{ content }}</gl-link>
-          </template>
-        </gl-sprintf>
-      </template>
-    </page-heading>
+  <crud-component>
+    <template #title>
+      <div>
+        {{ $options.i18n.roleCrudTitle }}
 
-    <crud-component>
-      <template #title>
-        <div>
-          {{ $options.i18n.roleCrudTitle }}
+        <span data-testid="role-counts" class="gl-ml-2 gl-text-sm gl-font-normal gl-text-subtle">
+          <gl-sprintf :message="$options.i18n.roleCount">
+            <template #defaultCount>
+              <span class="gl-font-bold">{{ defaultRoles.length }}</span>
+            </template>
+            <template #customCount>
+              <span class="gl-ml-3 gl-font-bold">{{ customRoles.length }}</span>
+            </template>
+          </gl-sprintf>
+          <gl-sprintf v-if="glFeatures.customAdminRoles" :message="$options.i18n.roleCountAdmin">
+            <template #adminCount>
+              <span class="gl-ml-3 gl-font-bold">{{ adminRoles.length }}</span>
+            </template>
+          </gl-sprintf>
+        </span>
+      </div>
+    </template>
 
-          <span data-testid="role-counts" class="gl-ml-2 gl-text-sm gl-font-normal gl-text-subtle">
-            <gl-sprintf :message="$options.i18n.roleCount">
-              <template #defaultCount>
-                <span class="gl-font-bold">{{ defaultRoles.length }}</span>
-              </template>
-              <template #customCount>
-                <span class="gl-ml-3 gl-font-bold">{{ customRoles.length }}</span>
-              </template>
-            </gl-sprintf>
-            <gl-sprintf v-if="glFeatures.customAdminRoles" :message="$options.i18n.roleCountAdmin">
-              <template #adminCount>
-                <span class="gl-ml-3 gl-font-bold">{{ adminRoles.length }}</span>
-              </template>
-            </gl-sprintf>
-          </span>
-        </div>
-      </template>
+    <template #actions>
+      <roles-export v-if="canExportRoles" />
 
-      <template #actions>
-        <roles-export v-if="canExportRoles" />
+      <gl-disclosure-dropdown
+        v-if="canCreateAdminRole"
+        :items="newRoleItems"
+        :toggle-text="$options.i18n.newRoleText"
+        placement="bottom-end"
+        fluid-width
+      >
+        <template #list-item="{ item }">
+          <div class="gl-mx-3 gl-w-34">
+            <div class="gl-font-bold">{{ item.text }}</div>
+            <div class="gl-mt-2 gl-text-subtle">{{ item.description }}</div>
+          </div>
+        </template>
+      </gl-disclosure-dropdown>
+      <gl-button v-else-if="newRolePath" :href="newRolePath" size="small">
+        {{ $options.i18n.newRoleText }}
+      </gl-button>
+    </template>
 
-        <gl-disclosure-dropdown
-          v-if="canCreateAdminRole"
-          :items="newRoleItems"
-          :toggle-text="$options.i18n.newRoleText"
-          placement="bottom-end"
-          fluid-width
-        >
-          <template #list-item="{ item }">
-            <div class="gl-mx-3 gl-w-34">
-              <div class="gl-font-bold">{{ item.text }}</div>
-              <div class="gl-mt-2 gl-text-subtle">{{ item.description }}</div>
-            </div>
-          </template>
-        </gl-disclosure-dropdown>
-        <gl-button v-else-if="newRolePath" :href="newRolePath" size="small">
-          {{ $options.i18n.newRoleText }}
-        </gl-button>
-      </template>
-
-      <roles-table :roles="roles" :busy="isLoading" @delete-role="roleToDelete = $event" />
-    </crud-component>
+    <roles-table :roles="roles" :busy="isLoading" @delete-role="roleToDelete = $event" />
 
     <delete-role-modal
       :role="roleToDelete"
       @deleted="processRoleDeletion"
       @close="roleToDelete = null"
     />
-  </section>
+  </crud-component>
 </template>
