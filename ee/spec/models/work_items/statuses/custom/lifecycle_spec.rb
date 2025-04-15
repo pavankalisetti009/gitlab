@@ -124,4 +124,10 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
       end
     end
   end
+
+  describe 'included modules' do
+    subject { described_class }
+
+    it { is_expected.to include(WorkItems::Statuses::SharedConstants) }
+  end
 end

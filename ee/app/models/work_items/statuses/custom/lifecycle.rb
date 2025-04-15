@@ -6,7 +6,7 @@ module WorkItems
       class Lifecycle < ApplicationRecord
         self.table_name = 'work_item_custom_lifecycles'
 
-        include ::WorkItems::Statuses::Status
+        include WorkItems::Statuses::SharedConstants
 
         belongs_to :namespace
         belongs_to :default_open_status, class_name: 'WorkItems::Statuses::Custom::Status'

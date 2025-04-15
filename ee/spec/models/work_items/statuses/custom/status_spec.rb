@@ -36,6 +36,13 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
   end
 
   describe 'enums' do
-    it { is_expected.to define_enum_for(:category).with_values(::WorkItems::Statuses::Status::CATEGORIES) }
+    it { is_expected.to define_enum_for(:category).with_values(described_class::CATEGORIES) }
+  end
+
+  describe 'included modules' do
+    subject { described_class }
+
+    it { is_expected.to include(WorkItems::Statuses::SharedConstants) }
+    it { is_expected.to include(WorkItems::Statuses::Status) }
   end
 end

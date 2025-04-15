@@ -6,7 +6,8 @@ module WorkItems
       class Status < ApplicationRecord
         self.table_name = 'work_item_custom_statuses'
 
-        include ::WorkItems::Statuses::Status
+        include WorkItems::Statuses::SharedConstants
+        include WorkItems::Statuses::Status
 
         enum category: CATEGORIES
 
