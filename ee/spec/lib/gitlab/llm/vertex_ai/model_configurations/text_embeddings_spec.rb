@@ -51,6 +51,12 @@ RSpec.describe Gitlab::Llm::VertexAi::ModelConfigurations::TextEmbeddings, featu
         'https://cloud.gitlab.com/ai/v1/proxy/vertex-ai/v1/projects/PROJECT/locations/LOCATION/publishers/google/models/textembedding-gecko@003:predict'
       )
     end
+
+    it 'returns correct url with custom model' do
+      expect(described_class.new(user: user, options: { model: 'textembedding-custom-model' }).url).to eq(
+        'https://cloud.gitlab.com/ai/v1/proxy/vertex-ai/v1/projects/PROJECT/locations/LOCATION/publishers/google/models/textembedding-custom-model:predict'
+      )
+    end
   end
 
   describe '#as_json' do

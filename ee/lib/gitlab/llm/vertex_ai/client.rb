@@ -95,11 +95,13 @@ module Gitlab
 
         # @param [String] content - Input string
         # @param [Hash] options - Additional options to pass to the request
-        def text_embeddings(content:, **options)
+        def text_embeddings(content:, model: nil, **options)
+          opts = { model: model }.merge(options)
+
           request(
             content: content,
             config: Configuration.new(
-              model_config: ModelConfigurations::TextEmbeddings.new(user: user),
+              model_config: ModelConfigurations::TextEmbeddings.new(user: user, options: opts),
               user: user,
               unit_primitive: unit_primitive
             ),

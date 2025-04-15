@@ -7,8 +7,9 @@ module Gitlab
         class Base
           MissingConfigurationError = Class.new(StandardError)
 
-          def initialize(user:)
+          def initialize(user:, options: {})
             @user = user
+            @options = options
           end
 
           def url
@@ -33,7 +34,7 @@ module Gitlab
 
           private
 
-          attr_reader :user
+          attr_reader :user, :options
 
           def vertex_ai_host
             URI.parse(Gitlab::AiGateway.url).host
