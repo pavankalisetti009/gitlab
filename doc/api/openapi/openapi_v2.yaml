@@ -28963,6 +28963,11 @@ paths:
         type: boolean
         required: false
       - in: formData
+        name: override_params[merge_request_title_regex]
+        description: The regex the Merge Request must adhere to
+        type: string
+        required: false
+      - in: formData
         name: override_params[only_allow_merge_if_all_status_checks_passed]
         description: Blocks merge requests from merging unless all status checks have
           passed
@@ -29606,6 +29611,11 @@ paths:
         name: override_params[mr_default_target_self]
         description: Merge requests of this forked project targets itself by default
         type: boolean
+        required: false
+      - in: formData
+        name: override_params[merge_request_title_regex]
+        description: The regex the Merge Request must adhere to
+        type: string
         required: false
       - in: formData
         name: override_params[only_allow_merge_if_all_status_checks_passed]
@@ -30330,6 +30340,11 @@ paths:
         name: override_params[mr_default_target_self]
         description: Merge requests of this forked project targets itself by default
         type: boolean
+        required: false
+      - in: formData
+        name: override_params[merge_request_title_regex]
+        description: The regex the Merge Request must adhere to
+        type: string
         required: false
       - in: formData
         name: override_params[only_allow_merge_if_all_status_checks_passed]
@@ -44531,6 +44546,9 @@ definitions:
       merge_method:
         type: string
         example: merge
+      merge_request_title_regex:
+        type: string
+        example: "/Title of merge request/"
       squash_option:
         type: string
         example: default_off
@@ -59206,6 +59224,9 @@ definitions:
       mr_default_target_self:
         type: boolean
         description: Merge requests of this forked project targets itself by default
+      merge_request_title_regex:
+        type: string
+        description: The regex the Merge Request must adhere to
       only_allow_merge_if_all_status_checks_passed:
         type: boolean
         description: Blocks merge requests from merging unless all status checks have
@@ -59609,6 +59630,9 @@ definitions:
       mr_default_target_self:
         type: boolean
         description: Merge requests of this forked project targets itself by default
+      merge_request_title_regex:
+        type: string
+        description: The regex the Merge Request must adhere to
       only_allow_merge_if_all_status_checks_passed:
         type: boolean
         description: Blocks merge requests from merging unless all status checks have
@@ -59990,6 +60014,9 @@ definitions:
       merge_method:
         type: string
         example: merge
+      merge_request_title_regex:
+        type: string
+        example: "/Title of merge request/"
       squash_option:
         type: string
         example: default_off
@@ -60469,6 +60496,9 @@ definitions:
       mr_default_target_self:
         type: boolean
         description: Merge requests of this forked project targets itself by default
+      merge_request_title_regex:
+        type: string
+        description: The regex the Merge Request must adhere to
       only_allow_merge_if_all_status_checks_passed:
         type: boolean
         description: Blocks merge requests from merging unless all status checks have
