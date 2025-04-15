@@ -27,11 +27,9 @@ RSpec.describe Projects::ProjectMembersController, feature_category: :groups_and
 
       let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
 
-      let(:feature_flag) { true }
       let(:feature_settings) { true }
 
       before do
-        stub_feature_flags(member_promotion_management: feature_flag)
         stub_application_setting(enable_member_promotion_management: feature_settings)
         allow(License).to receive(:current).and_return(license)
       end
@@ -64,12 +62,6 @@ RSpec.describe Projects::ProjectMembersController, feature_category: :groups_and
 
           expect(assigns(:pending_promotion_members_count)).to eq(0)
         end
-      end
-
-      context 'with member_promotion management feature disabled' do
-        let(:feature_flag) { false }
-
-        it_behaves_like "empty response"
       end
 
       context 'with member_promotion management feature setting disabled' do

@@ -5,7 +5,6 @@ require 'spec_helper'
 RSpec.describe Resolvers::GitlabSubscriptions::MemberManagement::MemberApprovalResolver, feature_category: :seat_cost_management do
   include GraphqlHelpers
 
-  let(:feature_flag) { true }
   let(:feature_setting) { true }
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
   let_it_be(:group) { create(:group) }
@@ -17,7 +16,6 @@ RSpec.describe Resolvers::GitlabSubscriptions::MemberManagement::MemberApprovalR
 
   describe '#resolve' do
     before do
-      stub_feature_flags(member_promotion_management: feature_flag)
       stub_application_setting(enable_member_promotion_management: feature_setting)
       allow(License).to receive(:current).and_return(license)
     end
@@ -46,14 +44,6 @@ RSpec.describe Resolvers::GitlabSubscriptions::MemberManagement::MemberApprovalR
         it 'returns nil' do
           expect(result).to be_nil
         end
-      end
-    end
-
-    context 'when promotion management is not applicable' do
-      let(:feature_flag) { false }
-
-      it 'returns nil' do
-        expect(result).to be_nil
       end
     end
 

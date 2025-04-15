@@ -73,7 +73,7 @@ export const TAB_QUERY_PARAM_VALUES = Object.freeze({
 });
 
 const APP_OPTIONS_BASE = {
-  [MEMBERS_TAB_TYPES.promotionRequest]: gon.features?.memberPromotionManagement,
+  [MEMBERS_TAB_TYPES.promotionRequest]: true,
 };
 
 const uniqueProjectDownloadLimitEnabled =

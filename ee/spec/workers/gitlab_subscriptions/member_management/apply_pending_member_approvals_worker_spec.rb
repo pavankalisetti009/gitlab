@@ -61,14 +61,6 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ApplyPendingMemberApproval
       it_behaves_like 'does not perform any action'
     end
 
-    context 'when feature is disabled' do
-      before do
-        stub_feature_flags(member_promotion_management: false)
-      end
-
-      it_behaves_like 'does not perform any action'
-    end
-
     context 'when setting is disabled' do
       before do
         stub_application_setting(enable_member_promotion_management: false)

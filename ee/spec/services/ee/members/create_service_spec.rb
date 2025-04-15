@@ -775,14 +775,6 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
       end
     end
 
-    context 'when feature is disabled' do
-      before do
-        stub_feature_flags(member_promotion_management: false)
-      end
-
-      it { expect { execute_service }.to change { project.members.count }.by(2) }
-    end
-
     context 'when setting is disabled' do
       before do
         stub_application_setting(enable_member_promotion_management: false)
@@ -867,14 +859,6 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
           end
 
           it_behaves_like 'triggers event', 1
-        end
-
-        context 'when feature is disabled' do
-          before do
-            stub_feature_flags(member_promotion_management: false)
-          end
-
-          it_behaves_like 'does not trigger event'
         end
 
         context 'when setting is disabled' do

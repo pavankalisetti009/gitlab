@@ -30,7 +30,6 @@ RSpec.describe GitlabSubscriptions::MemberManagement::SelfManaged::MaxAccessLeve
   end
 
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
-  let_it_be(:feature_flag) { true }
   let_it_be(:feature_setting) { true }
   let_it_be(:user) { admin_user }
 
@@ -39,7 +38,6 @@ RSpec.describe GitlabSubscriptions::MemberManagement::SelfManaged::MaxAccessLeve
   describe '#execute' do
     before do
       allow(admin_user).to receive(:can_admin_all_resources?).and_return(true)
-      stub_feature_flags(member_promotion_management: feature_flag)
       stub_application_setting(enable_member_promotion_management: feature_setting)
       allow(License).to receive(:current).and_return(license)
     end
@@ -59,12 +57,6 @@ RSpec.describe GitlabSubscriptions::MemberManagement::SelfManaged::MaxAccessLeve
     context 'when user has admin access' do
       it 'returns records corresponding to pending users with max new_access_level' do
         expect(finder.execute).to contain_exactly(project_member_pending_maintainer, group_member_pending_owner)
-      end
-
-      context 'when member promotion management feature is disabled' do
-        let(:feature_flag) { false }
-
-        it_behaves_like 'returns empty'
       end
 
       context 'when member promotion management is disabled in settings' do

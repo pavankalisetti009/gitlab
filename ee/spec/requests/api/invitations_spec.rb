@@ -246,7 +246,6 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
       before do
         source.add_owner(owner)
 
-        stub_feature_flags(member_promotion_management: true)
         stub_application_setting(enable_member_promotion_management: true)
         allow(License).to receive(:current).and_return(license)
       end
@@ -267,14 +266,6 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
       end
 
       context 'on self managed' do
-        context 'when feature is disabled' do
-          before do
-            stub_feature_flags(member_promotion_management: false)
-          end
-
-          it_behaves_like "posts invitation successfully"
-        end
-
         context 'when setting is disabled' do
           before do
             stub_application_setting(enable_member_promotion_management: false)

@@ -90,12 +90,10 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
         create_list(:gitlab_subscription_member_management_member_approval, 2, :for_group_member, member_namespace: group)
       end
 
-      let(:feature_flag) { true }
       let(:feature_settings) { true }
       let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
 
       before do
-        stub_feature_flags(member_promotion_management: feature_flag)
         stub_application_setting(enable_member_promotion_management: feature_settings)
         allow(License).to receive(:current).and_return(license)
       end
@@ -128,12 +126,6 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
 
           expect(assigns(:pending_promotion_members_count)).to eq(0)
         end
-      end
-
-      context 'with member_promotion management feature disabled' do
-        let(:feature_flag) { false }
-
-        it_behaves_like "empty response"
       end
 
       context 'with member_promotion management feature setting disabled' do

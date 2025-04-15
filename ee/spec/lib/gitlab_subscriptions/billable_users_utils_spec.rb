@@ -63,21 +63,6 @@ RSpec.describe GitlabSubscriptions::BillableUsersUtils, feature_category: :consu
     end
   end
 
-  shared_examples 'feature disabled' do
-    before do
-      stub_feature_flags(member_promotion_management: false)
-    end
-
-    let(:role) { Gitlab::Access::DEVELOPER }
-    let(:member_role_id) { nil }
-
-    it 'raises a Runtime Error' do
-      expect { subject }.to raise_error(
-        RuntimeError, 'Attempted to use a WIP feature that is not enabled!'
-      )
-    end
-  end
-
   shared_context 'when self_managed' do
     subject(:sm_billable_role_change?) do
       dummy_class.sm_billable_role_change?(role: role, member_role_id: member_role_id)
@@ -151,8 +136,6 @@ RSpec.describe GitlabSubscriptions::BillableUsersUtils, feature_category: :consu
     context 'when called from sm' do
       it_behaves_like 'billable_role_change?',
         billable_roles, sm_non_billable_roles, sm_excluding_guests_billable_roles
-
-      it_behaves_like 'feature disabled'
     end
 
     context 'when called from saas', :saas do
@@ -166,8 +149,6 @@ RSpec.describe GitlabSubscriptions::BillableUsersUtils, feature_category: :consu
     context 'when called from saas', :saas do
       it_behaves_like 'billable_role_change?',
         billable_roles, saas_non_billable_roles, saas_excluding_guests_billable_roles
-
-      it_behaves_like 'feature disabled'
     end
 
     context 'when called from sm' do

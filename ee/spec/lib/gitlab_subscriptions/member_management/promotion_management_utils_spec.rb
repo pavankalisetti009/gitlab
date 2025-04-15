@@ -8,25 +8,15 @@ RSpec.describe GitlabSubscriptions::MemberManagement::PromotionManagementUtils, 
   let(:current_user) { create(:user) }
   let(:plan_type) { License::ULTIMATE_PLAN }
   let(:license) { create(:license, plan: plan_type) }
-  let(:feature_enabled) { true }
   let(:setting_enabled) { true }
 
   before do
     allow(License).to receive(:current).and_return(license)
-    stub_feature_flags(member_promotion_management: feature_enabled)
     stub_application_setting(enable_member_promotion_management: setting_enabled)
   end
 
   describe '#member_promotion_management_enabled?' do
     context 'when self-managed' do
-      context 'when feature is disabled' do
-        let(:feature_enabled) { false }
-
-        it 'returns false' do
-          expect(member_promotion_management_enabled?).to be false
-        end
-      end
-
       context 'when setting is disabled' do
         let(:setting_enabled) { false }
 
@@ -63,14 +53,6 @@ RSpec.describe GitlabSubscriptions::MemberManagement::PromotionManagementUtils, 
     context 'when self-managed' do
       it 'returns true' do
         expect(member_promotion_management_feature_available?).to be true
-      end
-
-      context 'when feature is disabled' do
-        let(:feature_enabled) { false }
-
-        it 'returns false' do
-          expect(member_promotion_management_feature_available?).to be false
-        end
       end
 
       context 'when guests are not excluded' do

@@ -78,7 +78,6 @@ RSpec.describe Members::CreatorService, feature_category: :groups_and_projects d
       let(:actor) { nil }
 
       before do
-        stub_feature_flags(member_promotion_management: true)
         stub_application_setting(enable_member_promotion_management: true)
         allow(License).to receive(:current).and_return(license)
       end

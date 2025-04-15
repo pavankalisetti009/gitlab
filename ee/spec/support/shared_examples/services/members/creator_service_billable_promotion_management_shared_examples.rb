@@ -8,7 +8,6 @@ RSpec.shared_examples 'billable promotion management feature' do
   before do
     source.add_owner(actor)
 
-    stub_feature_flags(member_promotion_management: true)
     stub_application_setting(enable_member_promotion_management: true)
     allow(License).to receive(:current).and_return(license)
   end
@@ -29,14 +28,6 @@ RSpec.shared_examples 'billable promotion management feature' do
 
       context 'when license is not ultimate' do
         let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
-
-        it_behaves_like 'adds the member'
-      end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(member_promotion_management: false)
-        end
 
         it_behaves_like 'adds the member'
       end
@@ -146,7 +137,6 @@ RSpec.shared_examples 'billable promotion management for multiple users' do
   before do
     source.add_owner(actor)
 
-    stub_feature_flags(member_promotion_management: true)
     stub_application_setting(enable_member_promotion_management: true)
     allow(License).to receive(:current).and_return(license)
   end

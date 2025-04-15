@@ -13,7 +13,6 @@ module GitlabSubscriptions
       end
 
       def member_promotion_management_feature_available?
-        return false unless promotion_management_feature_flag_enabled?
         return false if gitlab_com_subscription?
 
         exclude_guests?
@@ -52,10 +51,6 @@ module GitlabSubscriptions
           new_access_level: member.access_level,
           member_role_id: member.member_role_id
         )
-      end
-
-      def promotion_management_feature_flag_enabled?
-        ::Feature.enabled?(:member_promotion_management, type: :beta)
       end
 
       def promotion_management_settings_enabled?
