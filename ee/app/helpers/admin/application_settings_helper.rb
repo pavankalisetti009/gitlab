@@ -29,7 +29,11 @@ module Admin
         beta_self_hosted_models_enabled: ::Ai::TestingTermsAcceptance.has_accepted?.to_s,
         are_experiment_settings_allowed: experiments_settings_allowed?.to_s,
         duo_workflow_enabled: ::Ai::DuoWorkflow.available?.to_s,
-        duo_workflow_service_account: duo_workflow_service_account
+        duo_workflow_service_account: duo_workflow_service_account,
+        is_saas: ::Gitlab.com?.to_s, # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Will be addressed later when a feature is available
+        duo_workflow_settings_path: admin_ai_duo_workflow_settings_path,
+        duo_workflow_disable_path: disconnect_admin_ai_duo_workflow_settings_path,
+        redirect_path: admin_gitlab_duo_path
       }.merge(duo_add_on_data, duo_amazon_q_add_on_data)
     end
 
