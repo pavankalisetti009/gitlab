@@ -3644,30 +3644,30 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
-  describe '#contributed_wiki_groups' do
-    subject { user.contributed_wiki_groups }
+  describe '#contributed_note_groups' do
+    subject { user.contributed_note_groups }
 
     let_it_be(:user) { create(:user) }
 
-    let_it_be(:group_with_events) { create(:group) }
-    let_it_be(:group_without_events) { create(:group) }
+    let_it_be(:group_with_wiki) { create(:group) }
+    let_it_be(:group_with_epic) { create(:group) }
     let_it_be(:group_aimed_for_deletion) do
       create(:group).tap { |group| create(:group_deletion_schedule, group: group, deleting_user: user) }
     end
 
-    let_it_be(:wiki_page_meta) { create(:wiki_page_meta, :for_wiki_page, container: group_with_events) }
-    let_it_be(:note) { create(:note, author: user, project: nil, noteable: wiki_page_meta) }
-    let_it_be(:non_wiki_note) { create(:note, author: user, project: nil, noteable: create(:epic, group: group_with_events)) }
+    let_it_be(:wiki_page_meta) { create(:wiki_page_meta, :for_wiki_page, container: group_with_wiki) }
+    let_it_be(:wiki_note) { create(:note, author: user, project: nil, noteable: wiki_page_meta) }
+    let_it_be(:epic_note) { create(:note, author: user, project: nil, noteable: create(:epic, group: group_with_epic)) }
 
     before do
-      [group_with_events, group_without_events, group_aimed_for_deletion].each { |group| group.add_maintainer(user) }
+      [group_with_wiki, group_with_epic, group_aimed_for_deletion].each { |group| group.add_maintainer(user) }
 
       create(
         :event,
-        group: group_with_events,
+        group: group_with_wiki,
         project: nil,
         author: user,
-        target: note,
+        target: wiki_note,
         action: :commented
       )
 
@@ -3676,22 +3676,22 @@ RSpec.describe User, feature_category: :system_access do
         group: group_aimed_for_deletion,
         project: nil,
         author: user,
-        target: note,
+        target: wiki_note,
         action: :commented
       )
 
       create(
         :event,
-        group: group_without_events,
+        group: group_with_epic,
         project: nil,
         author: user,
-        target: non_wiki_note,
+        target: epic_note,
         action: :commented
       )
     end
 
-    it 'returns groups not aimed for deletion where wiki events occured' do
-      expect(subject).to contain_exactly(group_with_events)
+    it 'returns groups not aimed for deletion where note events occured' do
+      expect(subject).to contain_exactly(group_with_wiki, group_with_epic)
     end
   end
 
