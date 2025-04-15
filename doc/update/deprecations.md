@@ -560,6 +560,23 @@ For updates and details about this deprecation, follow [this epic](https://gitla
 
 <div class="deprecation breaking-change" data-milestone="19.0">
 
+### GraphQL `target` field for to-do items replaced with `targetEntity`
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.4</span>
+- Removal in GitLab <span class="milestone">19.0</span> ([breaking change](https://docs.gitlab.com/update/terminology/#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/484987).
+
+</div>
+
+Under certain circumstances, the `target` field on a to-do item can be null. The GraphQL schema currently declares this field as non-nullable. The new `targetEntity` field is nullable and replaces the non-nullable `target` field.
+Update any GraphQL queries that use the `currentUser.todos.target` field to use the new `currentUser.todos.targetEntity` field instead.
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="19.0">
+
 ### GraphQL deprecation of `dependencyProxyTotalSizeInBytes` field
 
 <div class="deprecation-notes">
@@ -7718,27 +7735,6 @@ For a more robust, secure, forthcoming, and reliable integration with Kubernetes
 For updates and details about this deprecation, follow [this epic](https://gitlab.com/groups/gitlab-org/configure/-/epics/8).
 
 GitLab Self-Managed customers can still use the feature [with a feature flag](https://docs.gitlab.com/update/deprecations/#self-managed-certificate-based-integration-with-kubernetes).
-
-</div>
-
-<div class="deprecation breaking-change">
-
-### GraphQL `target` field for to-do items replaced with `targetEntity`
-
-<div class="deprecation-notes">
-
-- Announced in GitLab <span class="milestone">17.4</span>
-- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/484987).
-
-</div>
-{{< alert type="note" >}}
-
-This change has been removed from its original milestone and is being reassessed.
-
-{{< /alert >}}
-
-Under certain circumstances, the `target` field on a to-do item can be null. The GraphQL schema currently declares this field as non-nullable. The new `targetEntity` field is nullable and replaces the non-nullable `target` field.
-Update any GraphQL queries that use the `currentUser.todos.target` field to use the new `currentUser.todos.targetEntity` field instead.
 
 </div>
 
