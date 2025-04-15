@@ -60,19 +60,16 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
       end
 
       describe 'cache eviction' do
-        let(:config) { spy }
-
         before do
           allow(Security::OrchestrationPolicyConfiguration)
-            .to receive(:find_by_id).with(policy_configuration.id).and_return(config)
-
+            .to receive(:find_by_id).with(policy_configuration.id).and_return(policy_configuration)
           allow(Gitlab::AppJsonLogger).to receive(:debug)
         end
 
         it 'evicts policy cache' do
-          perform
+          expect(policy_configuration).to receive(:invalidate_policy_yaml_cache).at_least(:once)
 
-          expect(config).to have_received(:invalidate_policy_yaml_cache).at_least(:once)
+          perform
         end
       end
 

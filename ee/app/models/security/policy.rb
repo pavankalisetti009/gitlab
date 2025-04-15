@@ -113,6 +113,10 @@ module Security
       id_in(ids).delete_all
     end
 
+    def self.next_deletion_index
+      (maximum("ABS(policy_index)") || 0) + 1
+    end
+
     def link_project!(project)
       transaction do
         security_policy_project_links.for_project(project).first_or_create!
