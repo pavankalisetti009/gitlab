@@ -11,7 +11,7 @@ module WorkItems
       belongs_to :work_item
 
       belongs_to_fixed_items :system_defined_status, fixed_items_class: WorkItems::Statuses::SystemDefined::Status
-      # In the future add association to custom status
+      belongs_to :custom_status, class_name: 'WorkItems::Statuses::Custom::Status', optional: true
 
       validates :work_item_id, presence: true, unless: -> { validation_context == :status_callback }
 
