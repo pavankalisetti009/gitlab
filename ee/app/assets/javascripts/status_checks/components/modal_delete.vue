@@ -1,7 +1,7 @@
 <script>
 import { GlModal, GlModalDirective, GlSprintf } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
-import { mapActions, mapState } from 'vuex';
+import { mapActions } from 'vuex';
 import { createAlert } from '~/alert';
 import { __, s__, sprintf } from '~/locale';
 
@@ -33,9 +33,6 @@ export default {
     };
   },
   computed: {
-    ...mapState({
-      projectId: ({ settings }) => settings.projectId,
-    }),
     primaryActionProps() {
       return {
         text: i18n.primaryButton,
@@ -63,6 +60,7 @@ export default {
       this.submitting = false;
       this.$refs.modal.hide();
     },
+    // eslint-disable-next-line vue/no-unused-properties -- show() is part of the component's public API.
     show() {
       this.$refs.modal.show();
     },

@@ -16,6 +16,7 @@ export default {
   },
   methods: {
     ...mapActions(['putStatusCheck']),
+    // eslint-disable-next-line vue/no-unused-properties -- show() is part of the component's public API.
     show() {
       this.$refs.modal.show();
     },
