@@ -23,6 +23,14 @@ const mockNotificationSettingsResponses = {
       new_note: true,
     },
   },
+  defaultWithUknownEvent: {
+    level: 'custom',
+    events: {
+      new_release: true,
+      new_note: false,
+      event_without_frontend_translation: true,
+    },
+  },
 };
 
 const mockToastShow = jest.fn();
@@ -88,7 +96,7 @@ describe('CustomNotificationsModal', () => {
 
         mockAxios
           .onGet(endpointUrl)
-          .reply(HTTP_STATUS_OK, mockNotificationSettingsResponses.default);
+          .reply(HTTP_STATUS_OK, mockNotificationSettingsResponses.defaultWithUknownEvent);
 
         wrapper = createComponent();
 
@@ -110,24 +118,11 @@ describe('CustomNotificationsModal', () => {
           expect(checkbox.findComponent(GlLoadingIcon).exists()).toBe(loading);
         },
       );
-    });
 
-    describe('buildEvents', () => {
-      it('filters out event keys that do not have corresponding translations', () => {
-        const events = {
-          new_issue: true,
-          merge_merge_request: false,
-          merge_when_pipeline_succeeds: true,
-          non_existent_event: true, // This should be filtered out
-        };
-
-        const result = wrapper.vm.buildEvents(events);
-
-        // Verify only valid events are included
-        expect(result.some((event) => event.id === 'non_existent_event')).toBe(false);
-        expect(result.some((event) => event.id === 'new_issue')).toBe(true);
-        expect(result.some((event) => event.id === 'merge_merge_request')).toBe(true);
-        expect(result.some((event) => event.id === 'merge_when_pipeline_succeeds')).toBe(true);
+      it('does not render a checkbox without a known translation (i.e., blank)', () => {
+        findAllCheckboxes().wrappers.forEach((checkbox) => {
+          expect(checkbox.text()).not.toMatch(/^\s*$/);
+        });
       });
     });
   });
