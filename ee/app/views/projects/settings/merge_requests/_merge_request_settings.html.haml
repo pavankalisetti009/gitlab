@@ -20,6 +20,9 @@
 - if @project.forked?
   = render 'projects/settings/merge_requests/merge_request_target_project_settings', project: @project, form: form
 
+- if ::Feature.enabled?(:merge_request_title_regex, @project)
+  = render 'projects/settings/merge_requests/merge_request_title_regex', project: @project, form: form
+
 - if @project.feature_available?(:issuable_default_templates)
   .form-group
     = form.label :merge_requests_template, _('Default description template for merge requests'), class: 'gl-mb-0'
