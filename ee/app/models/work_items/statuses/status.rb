@@ -21,6 +21,12 @@ module WorkItems
         done: 'status-success',
         cancelled: 'status-cancelled'
       }.freeze
+
+      DEFAULT_STATUS_CATEGORIES = {
+        default_open_status: [:triage, :to_do, :in_progress],
+        default_closed_status: [:done, :cancelled],
+        default_duplicate_status: [:done, :cancelled]
+      }.freeze
     end
   end
 end
