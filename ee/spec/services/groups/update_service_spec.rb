@@ -763,6 +763,83 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
     end
   end
 
+  context 'remove_dormant_members feature handling' do
+    shared_examples 'does not schedule worker' do |worker|
+      it "does not schedule #{worker} worker" do
+        expect(worker).not_to receive(:perform_with_capacity)
+
+        update_group(group.reload, user, params)
+      end
+    end
+
+    context 'when remove_dormant_members feature changes' do
+      context 'when remove_dormant_members feature is initially disabled and is enabled in the params' do
+        let(:params) { { remove_dormant_members: true } }
+        let(:worker) { Namespaces::RemoveDormantMembersWorker }
+
+        it 'schedules Namespaces::RemoveDormantMembersWorker workers' do
+          expect(worker).to receive(:perform_with_capacity).once
+
+          update_group(group, user, params)
+        end
+      end
+
+      context 'when remove_dormant_members feature is initially disabled and the update to enable it fails' do
+        let(:params) { { remove_dormant_members: true } }
+
+        before do
+          allow(group).to receive(:save).and_return(false)
+        end
+
+        it_behaves_like 'does not schedule worker', Namespaces::RemoveDormantMembersWorker
+      end
+
+      context 'when remove_dormant_members feature is initially enabled and is disabled in the params' do
+        let(:params) { { remove_dormant_members: false } }
+
+        before do
+          group.namespace_settings.update!(remove_dormant_members: true)
+        end
+
+        it_behaves_like 'does not schedule worker', Namespaces::RemoveDormantMembersWorker
+      end
+    end
+
+    context 'when remove_dormant_members feature does not change' do
+      context 'when remove_dormant_members setting is disabled and a value of false is passed for it in the params' do
+        let(:params) { { remove_dormant_members: false } }
+
+        it_behaves_like 'does not schedule worker', Namespaces::RemoveDormantMembersWorker
+      end
+
+      context 'when remove_dormant_members feature is initially disabled and another group setting is changed' do
+        let(:params) { { experiment_features_enabled: true } }
+
+        it_behaves_like 'does not schedule worker', Namespaces::RemoveDormantMembersWorker
+      end
+
+      context 'when remove_dormant_members feature is already enabled and another group setting is changed' do
+        let(:params) { { experiment_features_enabled: true } }
+
+        before do
+          group.namespace_settings.update!(remove_dormant_members: true)
+        end
+
+        it_behaves_like 'does not schedule worker', Namespaces::RemoveDormantMembersWorker
+      end
+
+      context 'when the remove_dormant_members feature is already enabled and its param has a value of true' do
+        let(:params) { { remove_dormant_members: true } }
+
+        before do
+          group.namespace_settings.update!(remove_dormant_members: true)
+        end
+
+        it_behaves_like 'does not schedule worker', Namespaces::RemoveDormantMembersWorker
+      end
+    end
+  end
+
   def update_group(group, user, opts)
     Groups::UpdateService.new(group, user, opts).execute
   end
