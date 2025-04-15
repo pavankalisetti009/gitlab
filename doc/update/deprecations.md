@@ -496,25 +496,6 @@ See the corresponding [deprecation announcement](https://docs.gitlab.com/update/
 
 <div class="deprecation breaking-change" data-milestone="19.0">
 
-### Deprecate License Scanning CI/CD artifact report type
-
-<div class="deprecation-notes">
-
-- Announced in GitLab <span class="milestone">16.9</span>
-- Removal in GitLab <span class="milestone">19.0</span> ([breaking change](https://docs.gitlab.com/update/terminology/#breaking-change))
-- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/439301).
-
-</div>
-
-The CI/CD [artifact report](https://docs.gitlab.com/ci/yaml/artifacts_reports/) type is deprecated in GitLab 16.9, and will be removed in GitLab 18.0. CI/CD configurations using this keyword will stop working in GitLab 18.0.
-
-The artifact report type is no longer used because of the removal of the legacy License Scanning CI/CD job in GitLab 16.3.
-Instead, you should use [License scanning of CycloneDX files](https://docs.gitlab.com/user/compliance/license_scanning_of_cyclonedx_files/).
-
-</div>
-
-<div class="deprecation breaking-change" data-milestone="19.0">
-
 ### Enforce keyset pagination on audit event API
 
 <div class="deprecation-notes">
@@ -8089,6 +8070,29 @@ use `count` from `cars` in `MergeTrains::TrainType` instead.
 ## Cancelled changes
 
 The following changes have been cancelled.
+
+<div class="deprecation breaking-change">
+
+### Deprecate License Scanning CI/CD artifact report type
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">16.9</span>
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/439301).
+
+</div>
+{{< alert type="note" >}}
+
+This change has been cancelled.
+
+{{< /alert >}}
+
+The CI/CD [artifact report](https://docs.gitlab.com/ci/yaml/artifacts_reports/) type is deprecated in GitLab 16.9, and will be removed in GitLab 18.0. CI/CD configurations using this keyword will stop working in GitLab 18.0.
+
+The artifact report type is no longer used because of the removal of the legacy License Scanning CI/CD job in GitLab 16.3.
+Instead, you should use [License scanning of CycloneDX files](https://docs.gitlab.com/user/compliance/license_scanning_of_cyclonedx_files/).
+
+</div>
 
 <div class="deprecation breaking-change">
 
