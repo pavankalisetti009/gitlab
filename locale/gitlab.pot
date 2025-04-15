@@ -42988,6 +42988,9 @@ msgstr ""
 msgid "PackageRegistry|Composer"
 msgstr ""
 
+msgid "PackageRegistry|Composer packages are installed at the group level, but there is no group associated with this project."
+msgstr ""
+
 msgid "PackageRegistry|Composer.json with license: %{license} and version: %{version}"
 msgstr ""
 
@@ -43207,13 +43210,19 @@ msgstr ""
 msgid "PackageRegistry|Hidden"
 msgstr ""
 
-msgid "PackageRegistry|If you haven't already done so, you will need to add the below to your %{codeStart}.pypirc%{codeEnd} file."
+msgid "PackageRegistry|If you haven't already done so, add the configuration below to your %{codeStart}.pypirc%{codeEnd} file."
 msgstr ""
 
-msgid "PackageRegistry|If you haven't already done so, you will need to add the below to your %{codeStart}pom.xml%{codeEnd} file."
+msgid "PackageRegistry|If you haven't already, add the configuration below to your %{codeStart}pom.xml%{codeEnd} file."
+msgstr ""
+
+msgid "PackageRegistry|Install"
 msgstr ""
 
 msgid "PackageRegistry|Install package version"
+msgstr ""
+
+msgid "PackageRegistry|Installation Method"
 msgstr ""
 
 msgid "PackageRegistry|Instance-level"
@@ -43386,6 +43395,9 @@ msgstr ""
 msgid "PackageRegistry|Registry setup"
 msgstr ""
 
+msgid "PackageRegistry|Registry setup command"
+msgstr ""
+
 msgid "PackageRegistry|Remove package"
 msgstr ""
 
@@ -43393,24 +43405,6 @@ msgid "PackageRegistry|Required Python: %{pythonVersion}"
 msgstr ""
 
 msgid "PackageRegistry|RubyGems"
-msgstr ""
-
-msgid "PackageRegistry|Show Composer commands"
-msgstr ""
-
-msgid "PackageRegistry|Show Conan commands"
-msgstr ""
-
-msgid "PackageRegistry|Show NPM commands"
-msgstr ""
-
-msgid "PackageRegistry|Show Nuget commands"
-msgstr ""
-
-msgid "PackageRegistry|Show PyPi commands"
-msgstr ""
-
-msgid "PackageRegistry|Show Yarn commands"
 msgstr ""
 
 msgid "PackageRegistry|Show packages with errors"
@@ -43515,6 +43509,12 @@ msgstr ""
 msgid "PackageRegistry|With the GitLab package registry, you can use GitLab as a private or public registry for a variety of %{linkStart}supported package managers%{linkEnd}. You can publish and share packages, which can be consumed as a dependency in downstream projects."
 msgstr ""
 
+msgid "PackageRegistry|Yarn"
+msgstr ""
+
+msgid "PackageRegistry|Yarn install command"
+msgstr ""
+
 msgid "PackageRegistry|Yes, delete package"
 msgstr ""
 
@@ -43549,6 +43549,9 @@ msgid "PackageRegistry|deprecated"
 msgstr ""
 
 msgid "PackageRegistry|npm"
+msgstr ""
+
+msgid "PackageRegistry|npm install command"
 msgstr ""
 
 msgid "PackageRegistry|published by %{author}"
