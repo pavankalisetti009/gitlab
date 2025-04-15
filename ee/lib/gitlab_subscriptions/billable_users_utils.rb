@@ -14,8 +14,6 @@ module GitlabSubscriptions
     # returns true if role = GUEST and member_role_id corresponds to elevated member_role
     # returns true if role = MINIMAL_ACCESS with any member_role
     def sm_billable_role_change?(role:, member_role_id: nil)
-      ensure_feature_enabled!
-
       raise InvalidSubscriptionTypeError if gitlab_com_subscription?
 
       return true if role > Gitlab::Access::GUEST
@@ -36,8 +34,6 @@ module GitlabSubscriptions
     # returns true if role = GUEST and member_role_id corresponds to elevated member_role
     # returns true if role = MINIMAL_ACCESS with any member_role
     def saas_billable_role_change?(target_namespace:, role:, member_role_id: nil)
-      ensure_feature_enabled!
-
       raise InvalidSubscriptionTypeError unless gitlab_com_subscription?
 
       return true if role > Gitlab::Access::GUEST
@@ -50,12 +46,6 @@ module GitlabSubscriptions
     end
 
     private
-
-    def ensure_feature_enabled!
-      return if ::Feature.enabled?(:member_promotion_management, type: :beta)
-
-      raise "Attempted to use a WIP feature that is not enabled!"
-    end
 
     def minimal_access_billable?(member_role_id)
       member_role_id.present? && valid_member_role(member_role_id).present?

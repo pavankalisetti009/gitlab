@@ -201,10 +201,6 @@ RSpec.describe GitlabSubscriptions::MemberManagement::QueueNonBillableToBillable
     end
 
     context 'when feature is enabled' do
-      before do
-        stub_feature_flags(member_promotion_management: true)
-      end
-
       context 'when setting is disabled' do
         it_behaves_like 'returns success without queuing'
       end

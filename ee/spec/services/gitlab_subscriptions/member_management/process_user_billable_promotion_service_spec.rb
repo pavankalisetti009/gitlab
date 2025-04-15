@@ -27,7 +27,6 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
   describe '#execute' do
     before do
       allow(License).to receive(:current).and_return(license)
-      stub_feature_flags(member_promotion_management: true)
       stub_application_setting(enable_member_promotion_management: true)
     end
 
@@ -73,14 +72,6 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
             end
           end
         end
-      end
-
-      context 'when member_promotion_management_enabled? returns false' do
-        before do
-          stub_feature_flags(member_promotion_management: false)
-        end
-
-        it_behaves_like 'unauthorized response'
       end
 
       context 'when current_user is not admin' do

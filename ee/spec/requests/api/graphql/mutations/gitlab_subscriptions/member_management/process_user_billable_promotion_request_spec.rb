@@ -19,7 +19,6 @@ RSpec.describe 'Update MemberApproval User Status', feature_category: :seat_cost
 
   let(:mutation) { graphql_mutation(:process_user_billable_promotion_request, input) }
   let(:action) { 'APPROVED' }
-  let(:promotion_feature) { true }
   let(:mutation_response) { graphql_mutation_response(:process_user_billable_promotion_request) }
   let(:input) do
     {
@@ -30,7 +29,6 @@ RSpec.describe 'Update MemberApproval User Status', feature_category: :seat_cost
 
   before do
     allow(License).to receive(:current).and_return(license)
-    stub_feature_flags(member_promotion_management: promotion_feature)
     stub_application_setting(enable_member_promotion_management: true)
   end
 
@@ -51,12 +49,6 @@ RSpec.describe 'Update MemberApproval User Status', feature_category: :seat_cost
 
   context 'when called by a non-admin' do
     let(:current_user) { create(:user) }
-
-    include_examples 'returns an error'
-  end
-
-  context 'when member_promotion_management_enabled? returns false' do
-    let(:promotion_feature) { false }
 
     include_examples 'returns an error'
   end

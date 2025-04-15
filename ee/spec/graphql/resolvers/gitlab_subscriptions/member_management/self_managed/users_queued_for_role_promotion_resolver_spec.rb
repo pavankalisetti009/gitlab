@@ -32,7 +32,6 @@ RSpec.describe Resolvers::GitlabSubscriptions::MemberManagement::SelfManaged::Us
   end
 
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
-  let_it_be(:feature_flag) { true }
   let_it_be(:feature_setting) { true }
   let_it_be(:current_user) { admin_user }
 
@@ -40,7 +39,6 @@ RSpec.describe Resolvers::GitlabSubscriptions::MemberManagement::SelfManaged::Us
     subject(:result) { resolve(described_class, ctx: { current_user: current_user }) }
 
     before do
-      stub_feature_flags(member_promotion_management: feature_flag)
       stub_application_setting(enable_member_promotion_management: feature_setting)
       allow(License).to receive(:current).and_return(license)
 
@@ -68,12 +66,6 @@ RSpec.describe Resolvers::GitlabSubscriptions::MemberManagement::SelfManaged::Us
 
       it 'does not return member_approvals with different status' do
         expect(result).not_to include(denied_approval_dev)
-      end
-
-      context 'when member promotion management feature is disabled' do
-        let(:feature_flag) { false }
-
-        it_behaves_like 'not available'
       end
 
       context 'when member promotion management is disabled in settings' do

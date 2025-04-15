@@ -9,7 +9,6 @@ RSpec.describe GitlabSubscriptions::MemberManagement::MemberApprovalFinder, feat
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
 
   let(:source) { group }
-  let(:feature_flag) { true }
   let(:feature_settings) { true }
 
   subject(:finder) { described_class.new(current_user: user, params: {}, source: source) }
@@ -75,15 +74,8 @@ RSpec.describe GitlabSubscriptions::MemberManagement::MemberApprovalFinder, feat
     end
 
     before do
-      stub_feature_flags(member_promotion_management: feature_flag)
       stub_application_setting(enable_member_promotion_management: feature_settings)
       allow(License).to receive(:current).and_return(license)
-    end
-
-    context 'when member promotion management feature is disabled' do
-      let(:feature_flag) { false }
-
-      it_behaves_like 'returns empty'
     end
 
     context 'when member promotion management is disabled in settings' do

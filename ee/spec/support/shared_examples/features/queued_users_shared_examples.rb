@@ -8,7 +8,6 @@ RSpec.shared_examples 'queued users' do
   let(:role) { 'Developer' }
 
   before do
-    stub_feature_flags(member_promotion_management: true)
     stub_application_setting(enable_member_promotion_management: true)
     allow(License).to receive(:current).and_return(license)
     sign_in(user1)

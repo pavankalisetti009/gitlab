@@ -41,7 +41,6 @@ RSpec.shared_examples 'graphql pending members approval list spec' do
 
   before do
     allow(License).to receive(:current).and_return(ultimate)
-    stub_feature_flags(member_promotion_management: true)
     stub_application_setting(enable_member_promotion_management: true)
   end
 

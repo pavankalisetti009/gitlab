@@ -39,7 +39,6 @@ RSpec.describe 'Role promotion requests EE (JavaScript fixtures)', feature_categ
 
   before do
     allow(License).to receive(:current).and_return(ultimate)
-    stub_feature_flags(member_promotion_management: true)
     stub_application_setting(enable_member_promotion_management: true)
   end
 

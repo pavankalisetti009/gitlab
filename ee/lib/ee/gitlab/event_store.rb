@@ -68,8 +68,7 @@ module EE
           store.subscribe ::GitlabSubscriptions::MemberManagement::ApplyPendingMemberApprovalsWorker,
             to: ::Members::MembershipModifiedByAdminEvent,
             if: ->(_) {
-              ::Gitlab::CurrentSettings.enable_member_promotion_management? &&
-                ::Feature.enabled?(:member_promotion_management, :instance, type: :beta)
+              ::Gitlab::CurrentSettings.enable_member_promotion_management?
             }
 
           register_threat_insights_subscribers(store)
