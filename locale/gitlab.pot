@@ -68493,6 +68493,11 @@ msgstr ""
 msgid "WorkItem|Issue"
 msgstr ""
 
+msgid "WorkItem|Issue has 1 related vulnerability"
+msgid_plural "WorkItem|Issue has %{itemCount} related vulnerabilities"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "WorkItem|Issues settings"
 msgstr ""
 
