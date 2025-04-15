@@ -27,7 +27,7 @@ module Gitlab
           if valid_sign_in?
             update_group_membership
             finish_onboarding
-            update_duo_pro_add_on_assignment
+            update_duo_add_on_assignment
           end
 
           gl_user
@@ -110,7 +110,7 @@ module Gitlab
           MembershipUpdater.new(gl_user, saml_provider, auth_hash).execute
         end
 
-        def update_duo_pro_add_on_assignment
+        def update_duo_add_on_assignment
           DuoAddOnAssignmentUpdater.new(gl_user, saml_provider.group, auth_hash).execute
         end
 

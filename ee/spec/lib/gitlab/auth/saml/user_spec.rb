@@ -158,4 +158,22 @@ RSpec.describe Gitlab::Auth::Saml::User, feature_category: :system_access do
       end
     end
   end
+
+  describe '#find_and_update!' do
+    before do
+      allow_next_instance_of(Gitlab::Auth::Saml::Config) do |instance|
+        allow(instance).to receive_messages({ options: { name: 'saml', groups_attribute: 'groups', args: {} } })
+      end
+    end
+
+    it 'calls the DuoAddOnMembershipUpdater' do
+      updater_instance = instance_double(Gitlab::Auth::Saml::DuoAddOnAssignmentUpdater, execute: nil)
+      expect(Gitlab::Auth::Saml::DuoAddOnAssignmentUpdater).to receive(:new).with(
+        gl_user, kind_of(Gitlab::Auth::Saml::AuthHash)
+      ).and_return(updater_instance)
+      expect(updater_instance).to receive(:execute)
+
+      saml_user.find_and_update!
+    end
+  end
 end
