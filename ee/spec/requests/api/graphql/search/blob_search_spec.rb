@@ -215,6 +215,26 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
           expect(graphql_data_at(:blobSearch, :files)).to be_empty
         end
       end
+
+      context 'when exclude_forks is false' do
+        let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group2.id}", exclude_forks: false } }
+
+        it 'returns forked projects' do
+          post_graphql(query, current_user: current_user)
+          expect(graphql_data_at(:blobSearch, :fileCount)).to be > 0
+          expect(graphql_data_at(:blobSearch, :files)).not_to be_empty
+        end
+      end
+
+      context 'when exclude_forks is true' do
+        let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group2.id}", exclude_forks: true } }
+
+        it 'does not return forked projects' do
+          post_graphql(query, current_user: current_user)
+          expect(graphql_data_at(:blobSearch, :fileCount)).to eq(0)
+          expect(graphql_data_at(:blobSearch, :files)).to be_empty
+        end
+      end
     end
 
     context 'when search term is abusive' do

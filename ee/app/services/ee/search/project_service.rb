@@ -8,9 +8,10 @@ module EE
 
       SCOPES_THAT_SUPPORT_BRANCHES = %w[wiki_blobs commits blobs].freeze
 
+      # project search always includes archived and forked projects
       override :zoekt_filters
       def zoekt_filters
-        super.merge(include_archived: true, include_forked: true)
+        super.merge(include_archived: true, exclude_forks: false)
       end
 
       override :search_type
