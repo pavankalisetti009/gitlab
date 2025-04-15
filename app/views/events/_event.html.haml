@@ -1,9 +1,13 @@
 - event = event.present
 
 - if event.visible_to_user?(current_user)
-  .event-item.gl-border-b-0.gl-pb-3{ class: current_path?('users#activity') ? 'user-profile-activity !gl-pl-7' : 'project-activity-item' }
+  .event-item.gl-border-b-0.gl-pb-3{ class: current_controller?('users') ? 'user-profile-activity !gl-pl-7' : 'project-activity-item' }
     .event-item-timestamp.gl-text-sm
-      #{time_ago_with_tooltip(event.created_at)}
+      - if defined?(timezone)
+        %span.light.js-localtime{ data: { datetime: event.created_at.utc.strftime('%Y-%m-%dT%H:%M:%SZ'), toggle: 'tooltip', placement: 'top' } }
+          = event.created_at.to_time.in_time_zone(timezone).strftime('%-I:%M%P')
+      - else
+        #{time_ago_with_tooltip(event.created_at)}
       - if event.imported?
         %span &middot;
         = render "import/shared/imported_badge", text_only: true, importable: _('event')
