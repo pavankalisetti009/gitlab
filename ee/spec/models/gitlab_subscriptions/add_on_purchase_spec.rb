@@ -343,9 +343,9 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
 
       context 'with other purchases' do
         let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
-        let!(:code_suggestions_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
+        let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
 
-        it 'returns only duo_enterprise add-ons' do
+        it 'returns only duo_enterprise add-on purchases' do
           expect(duo_enterprise_add_on_purchases).to eq [duo_enterprise_add_on]
         end
       end
@@ -366,8 +366,29 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         let!(:duo_amazon_q_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
         let!(:duo_pro_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
 
-        it 'returns only duo_amazon_q add-ons' do
+        it 'returns only duo_amazon_q add-on purchases' do
           expect(duo_amazon_q_add_on_purchases).to eq [duo_amazon_q_add_on_purchase]
+        end
+      end
+    end
+
+    describe '.for_duo_nano' do
+      subject(:duo_nano_add_on_purchases) { described_class.for_duo_nano }
+
+      it { expect(duo_nano_add_on_purchases).to be_empty }
+
+      context 'with duo_nano purchase' do
+        let!(:duo_nano_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_nano) }
+
+        it { expect(duo_nano_add_on_purchases).to eq [duo_nano_add_on] }
+      end
+
+      context 'with other purchases' do
+        let!(:duo_nano_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_nano) }
+        let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
+
+        it 'returns only duo_nano add-on purchases' do
+          expect(duo_nano_add_on_purchases).to eq [duo_nano_add_on]
         end
       end
     end
@@ -406,12 +427,13 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       subject(:duo_add_ons_purchases) { described_class.for_duo_add_ons }
 
       let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
-      let!(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
+      let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
+      let!(:duo_nano_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_nano) }
       let!(:product_analytics_add_on) { create(:gitlab_subscription_add_on_purchase, :product_analytics) }
 
-      it 'returns both gitlab_duo_pro and duo_enterprise add-ons' do
+      it 'returns duo_pro, duo_enterprise and duo_nano add-ons' do
         expect(duo_add_ons_purchases).to contain_exactly(
-          duo_enterprise_add_on, gitlab_duo_pro_add_on
+          duo_enterprise_add_on, duo_pro_add_on, duo_nano_add_on
         )
       end
     end

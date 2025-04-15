@@ -73,6 +73,7 @@ module GitlabSubscriptions
 
     def update_add_on_purchases
       ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Duo.new.execute
+      ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoNano.new.execute
     end
   end
 end
