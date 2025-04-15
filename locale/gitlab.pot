@@ -25760,6 +25760,9 @@ msgstr ""
 msgid "Failed to assign a user because no user was found."
 msgstr ""
 
+msgid "Failed to assign custom admin role. Try again or select a different role."
+msgstr ""
+
 msgid "Failed to assign the framework to project %{project_name}"
 msgstr ""
 

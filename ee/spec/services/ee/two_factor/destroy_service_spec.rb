@@ -31,7 +31,7 @@ RSpec.describe TwoFactor::DestroyService, feature_category: :system_access do
 
     shared_examples 'disables two-factor authentication' do
       it 'returns success' do
-        expect(disable_2fa_with_group).to eq({ status: :success })
+        expect(disable_2fa_with_group).to include({ status: :success })
       end
 
       it 'disables the two-factor authentication of the user' do

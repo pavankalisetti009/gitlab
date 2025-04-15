@@ -7,6 +7,8 @@ module EE
       extend ::ActiveSupport::Concern
       extend ::Gitlab::Utils::Override
 
+      include SafeFormatHelper
+
       prepended do
         authorize! :read_admin_users, only: [:index, :show]
 
@@ -89,6 +91,55 @@ module EE
         super
 
         user.skip_enterprise_user_email_change_restrictions!
+      end
+
+      override :after_successful_create_hook
+      def after_successful_create_hook(user)
+        assign_admin_role(user)
+      end
+
+      override :after_successful_update_hook
+      def after_successful_update_hook(user)
+        assign_admin_role(user)
+      end
+
+      def assign_admin_role(user)
+        return unless user_admin_role_params.key?(:admin_role_id)
+        return unless ::Feature.enabled?(:custom_admin_roles, :instance) && ::License.feature_available?(:custom_roles)
+
+        # if admin_role_id is in params but does not have a value we set
+        # member_role param to nil to instruct the service to remove the user's
+        # current role assignment
+        role_id = user_admin_role_params[:admin_role_id]
+        role = role_id.present? ? MemberRole.find_by_id(role_id) : nil
+
+        result = ::Users::MemberRoles::AssignService.new(current_user, { user: user, member_role: role }).execute
+
+        @assign_admin_role_error = result.message if result.error?
+      end
+
+      override :after_successful_create_flash
+      def after_successful_create_flash
+        return super unless assign_admin_role_error
+
+        { alert: assign_admin_role_error }
+      end
+
+      override :after_successful_update_flash
+      def after_successful_update_flash
+        return super unless assign_admin_role_error
+
+        { alert: assign_admin_role_error }
+      end
+
+      def assign_admin_role_error
+        return unless @assign_admin_role_error
+
+        _("Failed to assign custom admin role. Try again or select a different role.")
+      end
+
+      def user_admin_role_params
+        params.require(:user).permit(:admin_role_id)
       end
 
       def log_audit_event
