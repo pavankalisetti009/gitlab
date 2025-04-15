@@ -43209,6 +43209,9 @@ msgstr ""
 msgid "PackageRegistry|Package updated by commit %{link} on branch %{branch}, built by pipeline %{pipeline}, and published to the registry %{datetime}"
 msgstr ""
 
+msgid "PackageRegistry|Packages"
+msgstr ""
+
 msgid "PackageRegistry|Packages and assets cleanup is ready to be executed when the next cleanup job runs."
 msgstr ""
 
