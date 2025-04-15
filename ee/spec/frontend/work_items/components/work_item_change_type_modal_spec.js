@@ -16,8 +16,8 @@ import promoteToEpicMutation from '~/issues/show/queries/promote_to_epic.mutatio
 import {
   WORK_ITEM_TYPE_NAME_TASK,
   WORK_ITEM_WIDGETS_NAME_MAP,
+  WORK_ITEM_TYPE_NAME_EPIC,
   WORK_ITEM_TYPE_NAME_ISSUE,
-  WORK_ITEM_TYPE_ENUM_EPIC,
   WORK_ITEM_TYPE_NAME_KEY_RESULT,
 } from '~/work_items/constants';
 
@@ -39,6 +39,10 @@ describe('WorkItemChangeTypeModal component', () => {
 
   const issueTypeId = namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes.find(
     (item) => item.name === WORK_ITEM_TYPE_NAME_ISSUE,
+  ).id;
+
+  const epicTypeId = namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes.find(
+    (item) => item.name === WORK_ITEM_TYPE_NAME_EPIC,
   ).id;
 
   const namespaceWorkItemTypesQuerySuccessHandler = jest
@@ -160,9 +164,9 @@ describe('WorkItemChangeTypeModal component', () => {
     // These are possible use cases of conflicts among issues EE widgets
     // Other widgets are shared between all the work item types
     it.each`
-      widgetType                              | widgetData                             | workItemType                 | typeTobeConverted           | expectedString
-      ${WORK_ITEM_WIDGETS_NAME_MAP.ITERATION} | ${workItemChangeTypeWidgets.ITERATION} | ${WORK_ITEM_TYPE_NAME_ISSUE} | ${WORK_ITEM_TYPE_ENUM_EPIC} | ${'Iteration'}
-      ${WORK_ITEM_WIDGETS_NAME_MAP.WEIGHT}    | ${workItemChangeTypeWidgets.WEIGHT}    | ${WORK_ITEM_TYPE_NAME_ISSUE} | ${WORK_ITEM_TYPE_ENUM_EPIC} | ${'Weight'}
+      widgetType                              | widgetData                             | workItemType                 | typeTobeConverted | expectedString
+      ${WORK_ITEM_WIDGETS_NAME_MAP.ITERATION} | ${workItemChangeTypeWidgets.ITERATION} | ${WORK_ITEM_TYPE_NAME_ISSUE} | ${epicTypeId}     | ${'Iteration'}
+      ${WORK_ITEM_WIDGETS_NAME_MAP.WEIGHT}    | ${workItemChangeTypeWidgets.WEIGHT}    | ${WORK_ITEM_TYPE_NAME_ISSUE} | ${epicTypeId}     | ${'Weight'}
     `(
       'shows warning message in case of $widgetType widget',
       async ({ workItemType, widgetData, typeTobeConverted, expectedString }) => {
@@ -189,7 +193,7 @@ describe('WorkItemChangeTypeModal component', () => {
 
       await waitForPromises();
 
-      findGlFormSelect().vm.$emit('change', WORK_ITEM_TYPE_ENUM_EPIC);
+      findGlFormSelect().vm.$emit('change', epicTypeId);
 
       await nextTick();
 
@@ -219,7 +223,7 @@ describe('WorkItemChangeTypeModal component', () => {
 
         await waitForPromises();
 
-        findGlFormSelect().vm.$emit('change', WORK_ITEM_TYPE_ENUM_EPIC);
+        findGlFormSelect().vm.$emit('change', epicTypeId);
 
         await nextTick();
 
