@@ -52,6 +52,7 @@ describe('Container protection repository rules project settings', () => {
     wrapper = mountFn(ContainerProtectionRepositoryRules, {
       stubs: {
         GlModal: true,
+        CrudComponent,
       },
       mocks: {
         $toast,
@@ -168,11 +169,10 @@ describe('Container protection repository rules project settings', () => {
       expect(findTableRowCellComboboxSelectedOption(0, 2).text).toBe('Developer (default)');
     });
 
-    it('shows loading icon', () => {
+    it('shows loading indicator', () => {
       createComponent();
 
-      expect(findTableLoadingIcon().exists()).toBe(true);
-      expect(findTableLoadingIcon().attributes('aria-label')).toBe('Loading');
+      expect(findCrudComponent().props('isLoading')).toBe(true);
     });
 
     it('calls graphql api query', () => {

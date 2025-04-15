@@ -1,10 +1,10 @@
-import { GlLoadingIcon } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import MockAdapter from 'axios-mock-adapter';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import SubscriptionTable from 'ee/billings/subscriptions/components/subscription_table.vue';
 import SubscriptionTableRow from 'ee/billings/subscriptions/components/subscription_table_row.vue';
 import initialStore from 'ee/billings/subscriptions/store';
@@ -42,6 +42,7 @@ describe('SubscriptionTable component', () => {
   const findRenewButton = () => wrapper.findByTestId('renew-button');
   const findRefreshSeatsButton = () => wrapper.findByTestId('refresh-seats');
   const findSubscriptionHeader = () => wrapper.findByTestId('crud-title');
+  const findCrudComponent = () => wrapper.findComponent(CrudComponent);
 
   const createComponentWithStore = async ({
     props = {},
@@ -94,7 +95,7 @@ describe('SubscriptionTable component', () => {
     });
 
     it('shows loading icon', () => {
-      expect(wrapper.findComponent(GlLoadingIcon).isVisible()).toBe(true);
+      expect(findCrudComponent().props('isLoading')).toBe(true);
     });
 
     it('dispatches the correct actions', () => {

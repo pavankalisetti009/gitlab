@@ -201,7 +201,7 @@ describe('ResourceLinksBlock', () => {
       mountComponent(mockApollo);
 
       expect(findResourceLinksList().exists()).toBe(false);
-      expect(findResourceCount().text()).toBe('...');
+      expect(findResourceCount().exists()).toBe(false);
     });
 
     it('should render the list and count', async () => {

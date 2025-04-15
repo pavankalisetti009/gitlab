@@ -1,8 +1,8 @@
-import { GlLoadingIcon } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import { nextTick } from 'vue';
 import RelatedFeatureFlags from 'ee/issues/components/related_feature_flags.vue';
 import { TEST_HOST } from 'helpers/test_constants';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { mountExtended, extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
@@ -63,7 +63,7 @@ describe('ee/issues/components/related_feature_flags.vue', () => {
     it('displays a loading icon while feature flags load', () => {
       mock.onGet(ENDPOINT).reply(() => new Promise(() => {}));
       createWrapper();
-      expect(wrapper.findComponent(GlLoadingIcon).exists()).toBe(true);
+      expect(wrapper.findComponent(CrudComponent).props('isLoading')).toBe(true);
     });
 
     it('displays nothing if there are no feature flags loaded', async () => {
