@@ -46,8 +46,16 @@ module Iterations
       add_iteration_events = []
       remove_iteration_events = []
       issues.map do |issue|
-        remove_iteration_events << common_event_attributes(issue).merge({ iteration_id: issue.sprint_id, action: ResourceTimeboxEvent.actions[:remove] })
-        add_iteration_events << common_event_attributes(issue).merge({ iteration_id: to_iteration.id, action: ResourceTimeboxEvent.actions[:add] })
+        remove_iteration_events << common_event_attributes(issue).merge(
+          iteration_id: from_iteration.id,
+          action: ResourceTimeboxEvent.actions[:remove],
+          namespace_id: from_iteration.group_id
+        )
+        add_iteration_events << common_event_attributes(issue).merge(
+          iteration_id: to_iteration.id,
+          action: ResourceTimeboxEvent.actions[:add],
+          namespace_id: to_iteration.group_id
+        )
       end
 
       [add_iteration_events, remove_iteration_events]

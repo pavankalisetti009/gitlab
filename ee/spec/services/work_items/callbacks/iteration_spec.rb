@@ -113,6 +113,25 @@ RSpec.describe WorkItems::Callbacks::Iteration, feature_category: :team_planning
             .and change { ResourceIterationEvent.count }.by(1)
         end
 
+        it 'does not produce N+1 queries' do
+          callback.after_update_commit # warm-up
+
+          new_iteration1 = create(:iteration, group: group)
+          work_item.update!(iteration: new_iteration1)
+
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+            callback.after_update_commit
+          end
+
+          create(:work_item, :task, project: project, sprint_id: new_iteration1.id).tap do |child|
+            create(:parent_link, work_item_parent: work_item, work_item: child)
+          end
+          new_iteration2 = create(:iteration, group: group)
+          work_item.update!(iteration: new_iteration2)
+
+          expect { callback.after_update_commit }.to issue_same_number_of_queries_as(control)
+        end
+
         context 'when child work item is closed' do
           before do
             child_work_item.update!(state: :closed)

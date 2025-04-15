@@ -4,8 +4,14 @@ class ResourceIterationEvent < ResourceTimeboxEvent
   include EachBatch
 
   belongs_to :iteration
+  belongs_to :namespace
   belongs_to :triggered_by_work_item, class_name: 'WorkItem', foreign_key: 'triggered_by_id', optional: true,
     inverse_of: :resource_iteration_events
+
+  validates :iteration, presence: true
+  validates :namespace, presence: true
+
+  before_validation :ensure_namespace_id
 
   scope :with_api_entity_associations, -> { preload(:iteration, :user) }
   scope :by_user, ->(user) { where(user_id: user) }
@@ -16,5 +22,13 @@ class ResourceIterationEvent < ResourceTimeboxEvent
 
   def synthetic_note_class
     IterationNote
+  end
+
+  private
+
+  def ensure_namespace_id
+    return if namespace_id && namespace_id > 0
+
+    self.namespace_id = iteration&.group_id
   end
 end

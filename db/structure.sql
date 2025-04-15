@@ -22208,7 +22208,9 @@ CREATE TABLE resource_iteration_events (
     created_at timestamp with time zone NOT NULL,
     action smallint NOT NULL,
     automated boolean DEFAULT false NOT NULL,
-    triggered_by_id bigint
+    triggered_by_id bigint,
+    namespace_id bigint NOT NULL,
+    CONSTRAINT check_52cee5f824 CHECK ((iteration_id IS NOT NULL))
 );
 
 CREATE SEQUENCE resource_iteration_events_id_seq
@@ -23291,6 +23293,7 @@ CREATE TABLE sprints (
     state_enum smallint DEFAULT 1 NOT NULL,
     iterations_cadence_id bigint,
     sequence integer,
+    CONSTRAINT check_73910a3b6c CHECK ((group_id IS NOT NULL)),
     CONSTRAINT sprints_title CHECK ((char_length(title) <= 255))
 );
 
@@ -33506,6 +33509,8 @@ CREATE INDEX idx_protected_branch_merge_access_levels_protected_branch_proje ON 
 
 CREATE INDEX idx_reminder_frequency_on_work_item_progresses ON work_item_progresses USING btree (reminder_frequency);
 
+CREATE INDEX idx_resource_iteration_events_on_namespace_id ON resource_iteration_events USING btree (namespace_id);
+
 CREATE INDEX idx_resource_milestone_events_on_namespace_id ON resource_milestone_events USING btree (namespace_id);
 
 CREATE UNIQUE INDEX idx_sbom_components_on_name_purl_type_component_type_and_org_id ON sbom_components USING btree (name, purl_type, component_type, organization_id);
@@ -43691,6 +43696,9 @@ ALTER TABLE ONLY boards_epic_user_preferences
 
 ALTER TABLE ONLY user_admin_roles
     ADD CONSTRAINT fk_d3e201cb93 FOREIGN KEY (admin_role_id) REFERENCES admin_roles(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY resource_iteration_events
+    ADD CONSTRAINT fk_d405f1c11a FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;
 
 ALTER TABLE ONLY ci_sources_pipelines
     ADD CONSTRAINT fk_d4e29af7d7_p FOREIGN KEY (source_partition_id, source_pipeline_id) REFERENCES p_ci_pipelines(partition_id, id) ON UPDATE CASCADE ON DELETE CASCADE;

@@ -36,7 +36,11 @@ module EE
       def handle_iteration_change
         return unless issuable.previous_changes.include?('sprint_id')
 
-        ::ResourceEvents::ChangeIterationService.new(issuable, current_user, old_iteration_id: issuable.sprint_id_before_last_save).execute
+        ::ResourceEvents::ChangeIterationService.new(
+          issuable,
+          current_user,
+          old_iteration: Iteration.find_by_id(issuable.sprint_id_before_last_save)
+        ).execute
       end
 
       def handle_weight_change
