@@ -34653,7 +34653,7 @@ msgstr[1] ""
 msgid "Job|Are you sure you want to erase this job log and artifacts?"
 msgstr ""
 
-msgid "Job|Are you sure you want to force cancel this job? This will immediately mark the job as canceled, even if the runner is unresponsive."
+msgid "Job|Are you sure you want to force cancel this job? This will immediately mark the job as canceled, even if the job is still running."
 msgstr ""
 
 msgid "Job|Browse"
