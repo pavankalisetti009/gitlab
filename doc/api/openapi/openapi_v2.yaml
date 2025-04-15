@@ -31744,6 +31744,12 @@ paths:
         type: boolean
         required: false
       - in: query
+        name: marked_for_deletion_on
+        description: Date when the project was marked for deletion
+        type: string
+        format: date
+        required: false
+      - in: query
         name: wiki_checksum_failed
         description: Limit by projects where wiki checksum is failed
         type: boolean
@@ -31760,12 +31766,6 @@ paths:
         description: Include hidden projects. Can only be set by admins
         type: boolean
         default: false
-        required: false
-      - in: query
-        name: marked_for_deletion_on
-        description: Date when the project was marked for deletion
-        type: string
-        format: date
         required: false
       - in: query
         name: page
@@ -32227,6 +32227,12 @@ paths:
         type: boolean
         required: false
       - in: query
+        name: marked_for_deletion_on
+        description: Date when the project was marked for deletion
+        type: string
+        format: date
+        required: false
+      - in: query
         name: wiki_checksum_failed
         description: Limit by projects where wiki checksum is failed
         type: boolean
@@ -32243,12 +32249,6 @@ paths:
         description: Include hidden projects. Can only be set by admins
         type: boolean
         default: false
-        required: false
-      - in: query
-        name: marked_for_deletion_on
-        description: Date when the project was marked for deletion
-        type: string
-        format: date
         required: false
       - in: query
         name: page
@@ -39687,6 +39687,12 @@ paths:
         type: boolean
         required: false
       - in: query
+        name: marked_for_deletion_on
+        description: Date when the project was marked for deletion
+        type: string
+        format: date
+        required: false
+      - in: query
         name: wiki_checksum_failed
         description: Limit by projects where wiki checksum is failed
         type: boolean
@@ -39703,12 +39709,6 @@ paths:
         description: Include hidden projects. Can only be set by admins
         type: boolean
         default: false
-        required: false
-      - in: query
-        name: marked_for_deletion_on
-        description: Date when the project was marked for deletion
-        type: string
-        format: date
         required: false
       - in: query
         name: page
@@ -40018,6 +40018,12 @@ paths:
         type: boolean
         required: false
       - in: query
+        name: marked_for_deletion_on
+        description: Date when the project was marked for deletion
+        type: string
+        format: date
+        required: false
+      - in: query
         name: wiki_checksum_failed
         description: Limit by projects where wiki checksum is failed
         type: boolean
@@ -40034,12 +40040,6 @@ paths:
         description: Include hidden projects. Can only be set by admins
         type: boolean
         default: false
-        required: false
-      - in: query
-        name: marked_for_deletion_on
-        description: Date when the project was marked for deletion
-        type: string
-        format: date
         required: false
       - in: query
         name: page
