@@ -13,6 +13,12 @@ RSpec.describe ResourceIterationEvent, :snowplow, feature_category: :team_planni
   it_behaves_like 'timebox resource event actions'
   it_behaves_like 'timebox resource tracks issue metrics', :iteration
 
+  describe 'validations' do
+    it { is_expected.to validate_presence_of(:iteration) }
+
+    it { is_expected.to validate_presence_of(:namespace) }
+  end
+
   describe 'scopes' do
     describe '.aliased_for_timebox_report', :freeze_time do
       let!(:event) { create(:resource_iteration_event, iteration: iteration) }

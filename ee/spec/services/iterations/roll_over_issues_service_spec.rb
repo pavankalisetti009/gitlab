@@ -8,14 +8,13 @@ RSpec.describe Iterations::RollOverIssuesService, feature_category: :team_planni
   let_it_be(:closed_iteration1) { create(:closed_iteration, group: group) }
   let_it_be(:closed_iteration2) { create(:closed_iteration, group: group) }
   let_it_be(:current_iteration) { create(:current_iteration, group: group) }
-  let_it_be(:upcoming_iteration) { create(:upcoming_iteration, group: group) }
   let_it_be(:open_issues) { [create(:issue, :opened, iteration: closed_iteration1)] }
   let_it_be(:closed_issues) { [create(:issue, :closed, iteration: closed_iteration1)] }
 
   let(:from_iteration) { closed_iteration1 }
   let(:to_iteration) { current_iteration }
 
-  subject { described_class.new(user, from_iteration, to_iteration).execute }
+  subject { execute_service }
 
   context 'when from iteration or null iteration or both are nil' do
     context 'when to iteration is nil' do
@@ -89,10 +88,35 @@ RSpec.describe Iterations::RollOverIssuesService, feature_category: :team_planni
           expect(current_iteration.issues).to be_empty
           expect(closed_iteration1.issues).to match_array(open_issues + closed_issues)
 
-          expect { subject }.to change(ResourceIterationEvent, :count).by(2)
+          expect do
+            execute_service(from: closed_iteration1, to: current_iteration)
+          end.to change(ResourceIterationEvent, :count).by(2)
+
+          created_iteration_events = ResourceIterationEvent.last(2)
+          open_issue = open_issues.first
 
           expect(current_iteration.reload.issues).to match_array(open_issues)
           expect(closed_iteration1.reload.issues).to match_array(closed_issues)
+          expect(created_iteration_events.pluck(:iteration_id, :issue_id, :namespace_id)).to contain_exactly(
+            [current_iteration.id, open_issue.id, group.id],
+            [closed_iteration1.id, open_issue.id, group.id]
+          )
+        end
+
+        it 'does not produce N+1 queries' do
+          execute_service(from: closed_iteration1, to: current_iteration) # warm-up
+
+          new_iteration1 = create(:current_iteration, group: group)
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+            execute_service(to: new_iteration1, from: current_iteration)
+          end
+
+          create(:issue, :opened, iteration: new_iteration1)
+          new_iteration2 = create(:current_iteration, group: group)
+
+          expect { execute_service(to: new_iteration2, from: new_iteration1) }.to issue_same_number_of_queries_as(
+            control
+          )
         end
 
         it 'triggers note created subscription' do
@@ -105,5 +129,9 @@ RSpec.describe Iterations::RollOverIssuesService, feature_category: :team_planni
         end
       end
     end
+  end
+
+  def execute_service(from: from_iteration, to: to_iteration)
+    described_class.new(user, from, to).execute
   end
 end

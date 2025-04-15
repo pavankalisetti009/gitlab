@@ -472,6 +472,7 @@ RSpec.describe ::Iterations::Cadence, :freeze_time, feature_category: :team_plan
                 due_date: start_date + 4.days,
                 iterations_cadence_id: iterations_cadence.id,
                 iid: 1,
+                group_id: group.id,
                 created_at: Time.zone.now,
                 updated_at: Time.zone.now
               },
@@ -482,6 +483,7 @@ RSpec.describe ::Iterations::Cadence, :freeze_time, feature_category: :team_plan
                 due_date: 1.week.from_now + 4.days,
                 iterations_cadence_id: iterations_cadence.id,
                 iid: 2,
+                group_id: group.id,
                 created_at: Time.zone.now,
                 updated_at: Time.zone.now
               },
@@ -492,6 +494,7 @@ RSpec.describe ::Iterations::Cadence, :freeze_time, feature_category: :team_plan
                 due_date: 3.weeks.from_now + 4.days,
                 iterations_cadence_id: iterations_cadence.id,
                 iid: 3,
+                group_id: group.id,
                 created_at: Time.zone.now,
                 updated_at: Time.zone.now
               }

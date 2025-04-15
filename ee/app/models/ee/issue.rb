@@ -109,6 +109,7 @@ module EE
         )
       end
       scope :searchable, -> { where.not(project_id: nil) }
+      scope :preload_iteration, -> { preload(:iteration) }
 
       belongs_to :iteration, foreign_key: 'sprint_id', inverse_of: :issues
 

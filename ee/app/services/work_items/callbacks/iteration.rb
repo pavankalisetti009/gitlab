@@ -55,15 +55,16 @@ module WorkItems
           .id_in(descendant_ids)
           .with_enabled_widget_definition(:iteration)
           .in_iterations(previous_iteration_id)
+          .preload_iteration
           .each_batch(of: BATCH_SIZE) do |children_batch|
-          resource_iteration_event_attributes = children_batch.map do |child|
-            previous_iteration_id = child.sprint_id
+          resource_iteration_event_attributes = children_batch.filter_map do |child|
+            previous_iteration = child.iteration
             child.iteration = work_item.iteration
             ::ResourceEvents::ChangeIterationService
               .new(
                 child,
                 current_user,
-                old_iteration_id: previous_iteration_id,
+                old_iteration: previous_iteration,
                 automated: true,
                 triggered_by_work_item: work_item
               )
