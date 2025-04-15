@@ -178,6 +178,22 @@ export const mockSecret = ({ customSecret } = {}) => ({
   ...customSecret,
 });
 
+export const mockEmptySecrets = {
+  data: {
+    projectSecrets: {
+      edges: [],
+      pageInfo: {
+        endCursor: null,
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: null,
+        __typename: 'PageInfo',
+      },
+      __typename: 'ProjectSecretConnection',
+    },
+  },
+};
+
 export const mockProjectSecret = ({ customSecret, errors = [] } = {}) => ({
   data: {
     projectSecretCreate: {

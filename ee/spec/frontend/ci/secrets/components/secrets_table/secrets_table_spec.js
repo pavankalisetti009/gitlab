@@ -1,4 +1,11 @@
-import { GlAlert, GlLoadingIcon, GlKeysetPagination, GlTableLite } from '@gitlab/ui';
+import {
+  GlAlert,
+  GlButton,
+  GlEmptyState,
+  GlLoadingIcon,
+  GlKeysetPagination,
+  GlTableLite,
+} from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { RouterLinkStub } from '@vue/test-utils';
@@ -18,7 +25,11 @@ import SecretsTable from 'ee/ci/secrets/components/secrets_table/secrets_table.v
 import SecretActionsCell from 'ee/ci/secrets/components/secrets_table/secret_actions_cell.vue';
 import getProjectSecrets from 'ee/ci/secrets/graphql/queries/get_project_secrets.query.graphql';
 import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
-import { mockProjectSecretsData, secretManagerStatusResponse } from '../../mock_data';
+import {
+  mockEmptySecrets,
+  mockProjectSecretsData,
+  secretManagerStatusResponse,
+} from '../../mock_data';
 
 Vue.use(VueApollo);
 
@@ -29,6 +40,8 @@ describe('SecretsTable component', () => {
   let mockSecretManagerStatus;
 
   const findAlert = () => wrapper.findComponent(GlAlert);
+  const findEmptyState = () => wrapper.findComponent(GlEmptyState);
+  const findEmptyStateButton = () => findEmptyState().findComponent(GlButton);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findNewSecretButton = () => wrapper.findByTestId('new-secret-button');
   const findSecretsTable = () => wrapper.findComponent(GlTableLite);
@@ -167,6 +180,10 @@ describe('SecretsTable component', () => {
       await createComponent();
     });
 
+    it('does not show the empty state', () => {
+      expect(findEmptyState().exists()).toBe(false);
+    });
+
     it('shows a link to the new secret page', () => {
       expect(findNewSecretButton().attributes('to')).toBe(NEW_ROUTE_NAME);
     });
@@ -194,6 +211,21 @@ describe('SecretsTable component', () => {
     });
   });
 
+  describe('when there are no secrets', () => {
+    beforeEach(async () => {
+      mockProjectSecretsResponse = jest.fn().mockResolvedValue(mockEmptySecrets);
+      await createComponent();
+    });
+
+    it('shows empty state', () => {
+      expect(findEmptyState().exists()).toBe(true);
+      expect(findSecretsTable().exists()).toBe(false);
+    });
+
+    it('renders link to secret form', () => {
+      expect(findEmptyStateButton().attributes('href')).toBe('new');
+    });
+  });
   describe('pagination', () => {
     it.each`
       startCursor | endCursor | description          | paginationShouldExist
