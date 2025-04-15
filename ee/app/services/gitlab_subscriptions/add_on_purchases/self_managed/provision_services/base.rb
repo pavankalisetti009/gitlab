@@ -11,6 +11,8 @@ module GitlabSubscriptions
           AddOnPurchaseSyncError = Class.new(StandardError)
           MethodNotImplementedError = Class.new(StandardError)
 
+          delegate :add_on, :quantity, :starts_at, :expires_on, :purchase_xid, to: :license_add_on, allow_nil: true
+
           def execute
             result = license_has_add_on? ? create_or_update_add_on_purchase : expire_prior_add_on_purchase
             return result if result.success?
@@ -27,6 +29,10 @@ module GitlabSubscriptions
 
           def license_has_add_on?
             !!current_license&.cloud_license? && quantity.to_i > 0
+          end
+
+          def add_on_purchase
+            raise MethodNotImplementedError
           end
 
           def current_license
@@ -52,14 +58,6 @@ module GitlabSubscriptions
             service_class.new(namespace, add_on, attributes).execute
           end
 
-          def add_on_purchase
-            raise MethodNotImplementedError
-          end
-
-          def add_on
-            raise MethodNotImplementedError
-          end
-
           def namespace
             nil # self-managed is unrelated to namespaces
           end
@@ -81,29 +79,8 @@ module GitlabSubscriptions
             GitlabSubscriptions::AddOnPurchases::SelfManaged::ExpireService.new(add_on_purchase).execute
           end
 
-          def quantity
-            raise MethodNotImplementedError
-          end
-
-          # The naming of this attribute is different in multiple places:
-          # It's called `started_on` within the license's add-ons (original name) but `started_at` in the GitLab
-          # code (due to feedback in a database review). It also uses past tense but we're going to offer support
-          # for future dated add-ons. Since this method is the provisioning method, it uses `starts_at` (present
-          # tense) to try to indicate a possible future start.
-          def starts_at
-            raise MethodNotImplementedError
-          end
-
-          def expires_on
-            raise MethodNotImplementedError
-          end
-
-          def purchase_xid
-            raise MethodNotImplementedError
-          end
-
           def trial?
-            raise MethodNotImplementedError
+            !!license_add_on&.trial?
           end
         end
       end

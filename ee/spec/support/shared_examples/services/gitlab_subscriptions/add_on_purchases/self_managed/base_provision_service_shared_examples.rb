@@ -11,6 +11,11 @@ RSpec.shared_examples 'call runner to handle the provision of add-ons' do
     ) do |runner|
       expect(runner).to receive(:execute).once.and_call_original
     end
+    expect_next_instance_of(
+      GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoNano
+    ) do |runner|
+      expect(runner).to receive(:execute).once.and_call_original
+    end
 
     subject
   end
@@ -139,4 +144,12 @@ RSpec.shared_examples 'provision service creates add-on purchase' do
       trial: false
     )
   end
+end
+
+RSpec.shared_examples 'delegates add_on params to license_add_on' do
+  it { is_expected.to delegate_method(:add_on).to(:license_add_on) }
+  it { is_expected.to delegate_method(:quantity).to(:license_add_on) }
+  it { is_expected.to delegate_method(:starts_at).to(:license_add_on) }
+  it { is_expected.to delegate_method(:expires_on).to(:license_add_on) }
+  it { is_expected.to delegate_method(:purchase_xid).to(:license_add_on) }
 end
