@@ -11,20 +11,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
       .execute
   end
 
-  shared_examples 'succeeds' do
-    specify do
-      expect(persist).to include(status: :success)
-    end
-  end
-
   shared_examples "persists attributes" do
     before do
       persist
     end
 
     subject(:persisted_records) { relation }
-
-    include_examples 'succeeds'
 
     specify do
       expect(persisted_records.size).to be(expected_attributes.size)
@@ -59,7 +51,31 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
     end
 
     context 'without pre-existing policies' do
-      include_examples 'succeeds'
+      it 'logs the start of policy persistence' do
+        expect(Gitlab::AppJsonLogger).to receive(:debug).with(
+          hash_including({
+            class: 'Security::SecurityOrchestrationPolicies::PersistPolicyService',
+            security_orchestration_policy_configuration_id: policy_configuration.id,
+            policy_type: policy_type,
+            message: 'Starting security policy persistence'
+          }.deep_stringify_keys)
+        ).ordered
+
+        expect(Gitlab::AppJsonLogger).to receive(:debug).with(
+          hash_including({
+            class: 'Security::SecurityOrchestrationPolicies::PersistPolicyService',
+            security_orchestration_policy_configuration_id: policy_configuration.id,
+            policy_type: policy_type,
+            new_policies_count: 3,
+            deleted_policies_count: 0,
+            updated_policies_count: 0,
+            rearranged_policies_count: 0,
+            message: 'security policy persisted'
+          }.deep_stringify_keys)
+        ).ordered
+
+        persist
+      end
 
       it 'creates policies' do
         expect { persist }.to change { policy_configuration.security_policies.reload.type_approval_policy.count }.by(3)
@@ -70,7 +86,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
           created_policies: policy_configuration.security_policies.reload.type_approval_policy,
           policies_changes: [],
           deleted_policies: []
-        })
+        }).and_call_original
 
         persist
       end
@@ -92,8 +108,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
           persist
         end
 
-        include_examples 'succeeds'
-
         it { is_expected.to eq([0, 1]) }
       end
 
@@ -103,8 +117,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
         before do
           persist
         end
-
-        include_examples 'succeeds'
 
         it { is_expected.to contain_exactly("scan_finding", "license_finding", "any_merge_request") }
       end
@@ -116,8 +128,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
           allow(ApplicationRecord).to receive(:transaction).and_raise(StandardError, msg)
         end
 
-        it 'errors' do
-          expect(persist).to include(status: :error, message: msg)
+        it 'throws the error' do
+          expect { persist }.to raise_error(StandardError, msg)
         end
       end
 
@@ -195,8 +207,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
       context 'without policy changes' do
         let(:policies) { pre_existing_policies }
 
-        include_examples 'succeeds'
-
         it 'does not create or delete policies' do
           expect do
             persist
@@ -215,7 +225,31 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
       context 'with added policies' do
         let(:policies) { pre_existing_policies << any_merge_request_policy }
 
-        include_examples 'succeeds'
+        it 'logs the policy changes' do
+          expect(Gitlab::AppJsonLogger).to receive(:debug).with(
+            hash_including({
+              class: 'Security::SecurityOrchestrationPolicies::PersistPolicyService',
+              security_orchestration_policy_configuration_id: policy_configuration.id,
+              policy_type: policy_type,
+              message: 'Starting security policy persistence'
+            }.deep_stringify_keys)
+          ).ordered
+
+          expect(Gitlab::AppJsonLogger).to receive(:debug).with(
+            hash_including({
+              class: 'Security::SecurityOrchestrationPolicies::PersistPolicyService',
+              security_orchestration_policy_configuration_id: policy_configuration.id,
+              policy_type: policy_type,
+              new_policies_count: 1,
+              deleted_policies_count: 0,
+              updated_policies_count: 0,
+              rearranged_policies_count: 0,
+              message: 'security policy persisted'
+            }.deep_stringify_keys)
+          ).ordered
+
+          persist
+        end
 
         it 'creates policies' do
           expect do
@@ -238,14 +272,38 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
       context 'with removed policies' do
         let(:policies) { pre_existing_policies - [scan_finding_policy] }
 
-        include_examples 'succeeds'
+        it 'logs the policy changes' do
+          expect(Gitlab::AppJsonLogger).to receive(:debug).with(
+            hash_including({
+              class: 'Security::SecurityOrchestrationPolicies::PersistPolicyService',
+              security_orchestration_policy_configuration_id: policy_configuration.id,
+              policy_type: policy_type,
+              message: 'Starting security policy persistence'
+            }.deep_stringify_keys)
+          ).ordered
+
+          expect(Gitlab::AppJsonLogger).to receive(:debug).with(
+            hash_including({
+              class: 'Security::SecurityOrchestrationPolicies::PersistPolicyService',
+              security_orchestration_policy_configuration_id: policy_configuration.id,
+              policy_type: policy_type,
+              new_policies_count: 0,
+              deleted_policies_count: 1,
+              updated_policies_count: 0,
+              rearranged_policies_count: 1,
+              message: 'security policy persisted'
+            }.deep_stringify_keys)
+          ).ordered
+
+          persist
+        end
 
         it 'calls EventPublisher with deleted policies' do
           expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
             created_policies: [],
             policies_changes: [],
             deleted_policies: [Security::Policy.first]
-          })
+          }).and_call_original
 
           persist
         end
@@ -265,8 +323,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
         let(:pre_existing_policies) { [policy_before] }
         let(:policies) { [policy_after] }
 
-        include_examples 'succeeds'
-
         it 'creates new policy and sets negative index for old policy' do
           expect do
             persist
@@ -276,8 +332,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
 
       context 'with updated policy order' do
         let(:policies) { pre_existing_policies.reverse }
-
-        include_examples 'succeeds'
 
         it 'does not create or delete policies' do
           expect do
@@ -319,8 +373,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
         let(:pre_existing_policies) { [policy_before] }
         let(:policies) { [policy_after] }
 
-        include_examples 'succeeds'
-
         it 'sets negative index for dangling policy rules' do
           expect { persist }.to change {
             policy_configuration
@@ -333,7 +385,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
             created_policies: [],
             policies_changes: [an_instance_of(Security::SecurityOrchestrationPolicies::PolicyComparer)],
             deleted_policies: []
-          })
+          }).and_call_original
 
           persist
         end
@@ -357,8 +409,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
     end
 
     context 'without pre-existing policies' do
-      include_examples 'succeeds'
-
       it 'creates policies' do
         expect { persist }.to change {
           policy_configuration.security_policies.reload.type_scan_execution_policy.count
@@ -381,8 +431,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
           persist
         end
 
-        include_examples 'succeeds'
-
         it { is_expected.to eq([0, 1]) }
       end
 
@@ -392,8 +440,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
         before do
           persist
         end
-
-        include_examples 'succeeds'
 
         it { is_expected.to contain_exactly("pipeline", "schedule") }
       end
@@ -405,8 +451,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
           allow(ApplicationRecord).to receive(:transaction).and_raise(StandardError, msg)
         end
 
-        it 'errors' do
-          expect(persist).to include(status: :error, message: msg)
+        it 'throws the error' do
+          expect { persist }.to raise_error(StandardError, msg)
         end
       end
 
@@ -473,8 +519,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
     end
 
     context 'without pre-existing policies' do
-      include_examples 'succeeds'
-
       it 'creates policies' do
         expect { persist }.to change {
           policy_configuration.security_policies.reload.type_pipeline_execution_policy.count
@@ -488,8 +532,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
           allow(ApplicationRecord).to receive(:transaction).and_raise(StandardError, msg)
         end
 
-        it 'errors' do
-          expect(persist).to include(status: :error, message: msg)
+        it 'throws the error' do
+          expect { persist }.to raise_error(StandardError, msg)
         end
       end
 
@@ -531,8 +575,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
     end
 
     context 'without pre-existing policies' do
-      include_examples 'succeeds'
-
       it 'creates policies' do
         expect { persist }.to change {
           policy_configuration.security_policies.reload.type_pipeline_execution_schedule_policy.count
@@ -546,8 +588,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
           allow(ApplicationRecord).to receive(:transaction).and_raise(StandardError, msg)
         end
 
-        it 'errors' do
-          expect(persist).to include(status: :error, message: msg)
+        it 'throws the error' do
+          expect { persist }.to raise_error(StandardError, msg)
         end
       end
 
@@ -587,8 +629,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
     end
 
     context 'without pre-existing policies' do
-      include_examples 'succeeds'
-
       it 'creates policies' do
         expect { persist }.to change {
           policy_configuration.security_policies.reload.type_vulnerability_management_policy.count
@@ -602,8 +642,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
           allow(ApplicationRecord).to receive(:transaction).and_raise(StandardError, msg)
         end
 
-        it 'errors' do
-          expect(persist).to include(status: :error, message: msg)
+        it 'throws the error' do
+          expect { persist }.to raise_error(StandardError, msg)
         end
       end
 

@@ -23,7 +23,8 @@ module Security
         Gitlab::AppJsonLogger.debug(
           build_structured_payload(
             security_orchestration_policy_configuration_id: policy_configuration.id,
-            policies: policies
+            policy_type: policy_type,
+            message: 'Starting security policy persistence'
           )
         )
 
@@ -39,17 +40,25 @@ module Security
           update_policies(policies_changes)
         end
 
-        if created_policies.any? || policies_changes.any? || deleted_policies.any?
-          Security::SecurityOrchestrationPolicies::EventPublisher.new(
-            created_policies: created_policies,
-            policies_changes: policies_changes,
-            deleted_policies: deleted_policies
-          ).publish
-        end
+        Gitlab::AppJsonLogger.debug(
+          build_structured_payload(
+            security_orchestration_policy_configuration_id: policy_configuration.id,
+            policy_type: policy_type,
+            new_policies_count: new_policies.size,
+            deleted_policies_count: deleted_policies.size,
+            updated_policies_count: policies_changes.size,
+            rearranged_policies_count: rearranged_policies.size,
+            message: 'security policy persisted'
+          )
+        )
 
-        success
-      rescue StandardError => e
-        error(e.message)
+        return unless created_policies.any? || policies_changes.any? || deleted_policies.any?
+
+        Security::SecurityOrchestrationPolicies::EventPublisher.new(
+          created_policies: created_policies,
+          policies_changes: policies_changes,
+          deleted_policies: deleted_policies
+        ).publish
       end
 
       private
@@ -80,7 +89,7 @@ module Security
       def mark_policies_for_deletion(deleted_policies)
         return if deleted_policies.empty?
 
-        max_index = (db_policies.maximum(:policy_index) + 1) || 0
+        max_index = db_policies.next_deletion_index
         deleted_policies.each_with_index do |policy, index|
           new_index = max_index + index
           policy.update!(policy_index: -new_index, enabled: false)

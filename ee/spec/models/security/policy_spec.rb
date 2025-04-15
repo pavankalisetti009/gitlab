@@ -1247,4 +1247,42 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       end
     end
   end
+
+  describe '.next_deletion_index' do
+    let_it_be(:policy_with_positive_index) { create(:security_policy, policy_index: 1) }
+    let_it_be(:policy_with_zero_index) { create(:security_policy, policy_index: 0) }
+    let_it_be(:policy_with_negative_index) { create(:security_policy, policy_index: -1) }
+
+    it 'returns the next available deletion index' do
+      expect(described_class.next_deletion_index).to eq(2)
+    end
+
+    context 'when there are no policies' do
+      before do
+        described_class.delete_all
+      end
+
+      it 'returns 1' do
+        expect(described_class.next_deletion_index).to eq(1)
+      end
+    end
+
+    context 'when there are only negative indices' do
+      let_it_be(:policy_with_negative_index2) { create(:security_policy, policy_index: -2) }
+      let_it_be(:policy_with_negative_index3) { create(:security_policy, policy_index: -3) }
+
+      it 'returns the next available positive index' do
+        expect(described_class.next_deletion_index).to eq(4)
+      end
+    end
+
+    context 'when there are only positive indices' do
+      let_it_be(:policy_with_positive_index2) { create(:security_policy, policy_index: 2) }
+      let_it_be(:policy_with_positive_index3) { create(:security_policy, policy_index: 3) }
+
+      it 'returns the next available index' do
+        expect(described_class.next_deletion_index).to eq(4)
+      end
+    end
+  end
 end
