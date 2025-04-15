@@ -3,8 +3,6 @@ import emptyStateSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-epi
 import { GlEmptyState, GlButton } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
-import { TYPENAME_LABEL } from '~/graphql_shared/constants';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import {
   WORK_ITEM_TYPE_ENUM_EPIC,
@@ -13,8 +11,7 @@ import {
 } from '~/work_items/constants';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
-import EpicsListBulkEditSidebar from 'ee/epics_list/components/epics_list_bulk_edit_sidebar.vue';
-import { findLabelsWidget } from '~/work_items/utils';
+import WorkItemBulkEditSidebar from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_sidebar.vue';
 import workItemBulkUpdateMutation from '~/work_items/graphql/work_item_bulk_update.mutation.graphql';
 import workItemParent from '../graphql/list/work_item_parent.query.graphql';
 
@@ -26,8 +23,8 @@ export default {
     EmptyStateWithAnyIssues,
     GlEmptyState,
     GlButton,
+    WorkItemBulkEditSidebar,
     WorkItemsListApp,
-    EpicsListBulkEditSidebar,
   },
   inject: [
     'hasEpicsFeature',
@@ -102,35 +99,21 @@ export default {
     incrementUpdateCount() {
       this.workItemUpdateCount += 1;
     },
-    convertWorkItemsToIssuables(workItems) {
-      return workItems.map((workItem) => ({
-        labels: findLabelsWidget(workItem).labels,
-        ...workItem,
-      }));
-    },
-    buildInputFromBulkUpdateEvent(updateEvent) {
-      return {
-        parentId: this.parentId,
-        ids: updateEvent.issuable_gids,
-        labelsWidget: {
-          addLabelIds: updateEvent.add_label_ids.map((id) =>
-            convertToGraphQLId(TYPENAME_LABEL, id),
-          ),
-          removeLabelIds: updateEvent.remove_label_ids.map((id) =>
-            convertToGraphQLId(TYPENAME_LABEL, id),
-          ),
-        },
-      };
-    },
-    async handleWorkItemBulkEdit(updateEvent) {
+    async handleWorkItemBulkEdit({ ids, addLabelIds, removeLabelIds }) {
       this.bulkEditInProgress = true;
 
       try {
-        const input = this.buildInputFromBulkUpdateEvent(updateEvent);
         await this.$apollo.mutate({
           mutation: workItemBulkUpdateMutation,
           variables: {
-            input,
+            input: {
+              parentId: this.parentId,
+              ids,
+              labelsWidget: {
+                addLabelIds,
+                removeLabelIds,
+              },
+            },
           },
         });
 
@@ -219,7 +202,7 @@ export default {
       <gl-button
         variant="confirm"
         type="submit"
-        form="epics-list-bulk-edit"
+        form="work-item-list-bulk-edit"
         :disabled="checkedIssuables.length === 0 || bulkEditInProgress"
         :loading="bulkEditInProgress"
         >{{ __('Update selected') }}</gl-button
@@ -229,8 +212,10 @@ export default {
       }}</gl-button>
     </template>
     <template v-if="allowEpicBulkEditing" #sidebar-items="{ checkedIssuables }">
-      <epics-list-bulk-edit-sidebar
-        :checked-epics="convertWorkItemsToIssuables(checkedIssuables)"
+      <work-item-bulk-edit-sidebar
+        :checked-items="checkedIssuables"
+        :full-path="fullPath"
+        :is-group="isGroup"
         @bulk-update="handleWorkItemBulkEdit"
       />
     </template>

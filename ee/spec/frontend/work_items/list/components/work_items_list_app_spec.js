@@ -5,6 +5,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
+import WorkItemBulkEditSidebar from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_sidebar.vue';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/pages/work_items_list_app.vue';
 import { CREATED_DESC } from '~/issues/list/constants';
@@ -19,7 +20,6 @@ import workItemParent from 'ee/work_items/graphql/list/work_item_parent.query.gr
 import { groupWorkItemsQueryResponse } from 'jest/work_items/mock_data';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 import waitForPromises from 'helpers/wait_for_promises';
-import EpicsListBulkEditSidebar from 'ee/epics_list/components/epics_list_bulk_edit_sidebar.vue';
 import { workItemParent as workItemParentResponse } from '../../mock_data';
 
 const skipReason = new SkipReason({
@@ -39,7 +39,7 @@ describeSkipVue3(skipReason, () => {
   const findPageEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findWorkItemsListApp = () => wrapper.findComponent(WorkItemsListApp);
   const findBulkEditStartButton = () => wrapper.findByTestId('bulk-edit-start-button');
-  const findBulkEditSidebar = () => wrapper.findComponent(EpicsListBulkEditSidebar);
+  const findBulkEditSidebar = () => wrapper.findComponent(WorkItemBulkEditSidebar);
 
   const baseProvide = {
     groupIssuesPath: 'groups/gitlab-org/-/issues',
@@ -263,27 +263,24 @@ describeSkipVue3(skipReason, () => {
     it('triggers the bulk edit mutation when bulk edit is submitted', async () => {
       await deepMountComponent({ hasEpicsFeature: true, canBulkEditEpics: true });
 
-      const issuableGids = ['gid://gitlab/WorkItem/1', 'gid://gitlab/WorkItem/2'];
+      const ids = ['gid://gitlab/WorkItem/1', 'gid://gitlab/WorkItem/2'];
+      const addLabelIds = ['gid://gitlab/Label/1', 'gid://gitlab/Label/2', 'gid://gitlab/Label/3'];
+      const removeLabelIds = [
+        'gid://gitlab/Label/4',
+        'gid://gitlab/Label/5',
+        'gid://gitlab/Label/6',
+      ];
 
-      findBulkEditSidebar().vm.$emit('bulk-update', {
-        issuable_gids: issuableGids,
-        add_label_ids: [1, 2, 3],
-        remove_label_ids: [4, 5, 6],
-      });
-
+      findBulkEditSidebar().vm.$emit('bulk-update', { ids, addLabelIds, removeLabelIds });
       await waitForPromises();
 
       expect(workItemBulkUpdateHandler).toHaveBeenCalledWith({
         input: {
           parentId: workItemParentResponse.data.namespace.id,
-          ids: issuableGids,
+          ids,
           labelsWidget: {
-            addLabelIds: ['gid://gitlab/Label/1', 'gid://gitlab/Label/2', 'gid://gitlab/Label/3'],
-            removeLabelIds: [
-              'gid://gitlab/Label/4',
-              'gid://gitlab/Label/5',
-              'gid://gitlab/Label/6',
-            ],
+            addLabelIds,
+            removeLabelIds,
           },
         },
       });
