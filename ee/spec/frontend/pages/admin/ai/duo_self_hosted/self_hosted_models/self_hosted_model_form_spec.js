@@ -516,7 +516,7 @@ describe('SelfHostedModelForm', () => {
             name: SELF_HOSTED_MODEL_MUTATIONS.UPDATE,
             mutation: updateSelfHostedModelMutation,
           },
-          submitButtonText: 'Edit self-hosted model',
+          submitButtonText: 'Save changes',
         },
         apolloHandlers: [[updateSelfHostedModelMutation, updateMutationSuccessHandler]],
       });
@@ -525,7 +525,7 @@ describe('SelfHostedModelForm', () => {
     it('renders the submit button with the correct text', () => {
       const button = findCreateButton();
 
-      expect(button.text()).toBe('Edit self-hosted model');
+      expect(button.text()).toBe('Save changes');
     });
 
     it('invokes the update mutation with correct input variables', async () => {

@@ -75,7 +75,7 @@ describe('EditSelfHostedModel', () => {
         name: SELF_HOSTED_MODEL_MUTATIONS.UPDATE,
         mutation: updateSelfHostedModelMutation,
       });
-      expect(findSelfHostedModelForm().props('submitButtonText')).toBe('Edit self-hosted model');
+      expect(findSelfHostedModelForm().props('submitButtonText')).toBe('Save changes');
     });
   });
 
