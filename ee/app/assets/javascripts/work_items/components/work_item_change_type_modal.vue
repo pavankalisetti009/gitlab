@@ -7,11 +7,10 @@ import WorkItemChangeTypeModal from '~/work_items/components/work_item_change_ty
 import promoteToEpicMutation from '~/issues/show/queries/promote_to_epic.mutation.graphql';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import {
-  WORK_ITEM_TYPE_NAME_EPIC,
-  WIDGET_TYPE_WEIGHT,
-  WORK_ITEM_TYPE_ENUM_EPIC,
-  WORK_ITEM_TYPE_NAME_ISSUE,
   WIDGET_TYPE_ASSIGNEES,
+  WIDGET_TYPE_WEIGHT,
+  WORK_ITEM_TYPE_NAME_EPIC,
+  WORK_ITEM_TYPE_NAME_ISSUE,
 } from '~/work_items/constants';
 
 export default {
@@ -85,26 +84,18 @@ export default {
     },
   },
   computed: {
-    supportedConversionTypes() {
-      return (
-        this.workItemTypes?.find((type) => type.name === this.workItemType)
-          ?.supportedConversionTypes || []
-      );
-    },
-    allowedWorkItems() {
-      const isEpicSupportedType =
-        this.supportedConversionTypes.findIndex(({ name }) => name === WORK_ITEM_TYPE_NAME_EPIC) !==
-        -1;
+    allowedConversionTypesEE() {
+      const allowedConversionTypesEE = this.workItemTypes
+        .find((type) => type.name === this.workItemType)
+        ?.supportedConversionTypes.filter(({ name }) => name === WORK_ITEM_TYPE_NAME_EPIC)
+        .map((item) => ({
+          ...item,
+          text: __('Epic (Promote to group)'),
+        }));
 
-      if (this.workItemType === WORK_ITEM_TYPE_NAME_ISSUE && isEpicSupportedType) {
-        return [
-          {
-            text: __('Epic (Promote to group)'),
-            value: WORK_ITEM_TYPE_ENUM_EPIC,
-          },
-        ];
-      }
-      return [];
+      return allowedConversionTypesEE && this.workItemType === WORK_ITEM_TYPE_NAME_ISSUE
+        ? allowedConversionTypesEE
+        : [];
     },
     epicFieldNote() {
       return sprintf(s__('WorkItem|Epic will be moved to parent group %{groupName}.'), {
@@ -138,6 +129,8 @@ export default {
         Sentry.captureException(error);
       }
     },
+    // show() is invoked by parent component to show the modal
+    // eslint-disable-next-line vue/no-unused-properties
     show() {
       this.$refs.workItemsChangeTypeModal.show();
     },
@@ -175,7 +168,7 @@ export default {
     :widgets="widgets"
     :allowed-child-types="allowedChildTypes"
     :namespace-full-name="namespaceFullName"
-    :allowed-work-item-types-e-e="allowedWorkItems"
+    :allowed-conversion-types-e-e="allowedConversionTypesEE"
     :epic-field-note="epicFieldNote"
     :get-epic-widget-definitions="getEpicWidgetDefinitions"
     @workItemTypeChanged="$emit('workItemTypeChanged')"
