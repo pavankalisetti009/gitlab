@@ -73,7 +73,7 @@ export default {
       v-if="!isLoading"
       :initial-form-values="selfHostedModel"
       :mutation-data="$options.mutationData"
-      :submit-button-text="s__('AdminSelfHostedModels|Edit self-hosted model')"
+      :submit-button-text="__('Save changes')"
     />
   </div>
 </template>
