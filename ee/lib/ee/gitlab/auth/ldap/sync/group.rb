@@ -5,7 +5,7 @@ module EE
     module Auth
       module Ldap
         module Sync
-          class Group
+          class Group < ::Gitlab::Auth::Ldap::Sync::Base
             include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
 
             attr_reader :provider, :group, :proxy
@@ -133,20 +133,6 @@ module EE
 
                 logger.debug "Resolved '#{group.name}' group member access: #{access_levels[:base_access_level]}"
               end
-            end
-
-            def get_member_dns(group_link)
-              group_link.cn ? dns_for_group_cn(group_link.cn) : proxy.dns_for_filter(group_link.filter)
-            end
-
-            def dns_for_group_cn(group_cn)
-              if config.group_base.blank?
-                logger.debug "No `group_base` configured for '#{provider}' provider and group link CN #{group_cn}. Skipping"
-
-                return
-              end
-
-              proxy.dns_for_group_cn(group_cn)
             end
 
             # for all LDAP Distinguished Names in access_levels, merge access level
@@ -304,29 +290,6 @@ module EE
                 .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/422405")
             end
             # rubocop: enable CodeReuse/ActiveRecord
-
-            # returns a hash user_id -> LDAP identity in current LDAP provider
-            def resolve_ldap_identities(for_users:)
-              ::Identity.for_user(for_users).with_provider(provider)
-                .index_by(&:user_id)
-            end
-
-            # returns a hash of normalized DN -> user for the current LDAP provider
-            # rubocop: disable CodeReuse/ActiveRecord
-            def resolve_users_from_normalized_dn(for_normalized_dns:)
-              ::Identity.with_provider(provider).iwhere(extern_uid: for_normalized_dns)
-                .preload(:user)
-                .to_h { |identity| [identity.extern_uid, identity.user] }
-            end
-            # rubocop: enable CodeReuse/ActiveRecord
-
-            def logger
-              ::Gitlab::AppLogger
-            end
-
-            def config
-              @proxy.adapter.config
-            end
           end
         end
       end

@@ -24171,7 +24171,8 @@ CREATE TABLE user_member_roles (
     user_id bigint NOT NULL,
     member_role_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    ldap boolean DEFAULT false NOT NULL
 );
 
 CREATE SEQUENCE user_member_roles_id_seq

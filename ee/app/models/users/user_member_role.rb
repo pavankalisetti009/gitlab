@@ -11,5 +11,7 @@ module Users
 
     validates :member_role, presence: true
     validates :user, presence: true, uniqueness: true
+
+    scope :ldap_synced, -> { where(ldap: true) }
   end
 end
