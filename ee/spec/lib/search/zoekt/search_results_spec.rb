@@ -421,35 +421,31 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
       end
 
       describe 'fork filters' do
-        context 'when include_forked filter is set to true' do
-          let(:filters) { { include_forked: true } }
+        using RSpec::Parameterized::TableSyntax
 
-          it_behaves_like 'a non-filtered search'
+        where(:include_forked, :exclude_forks, :expected_project_ids) do
+          nil   | nil   | ref(:non_forked_project_ids) # forked excluded per default
+          true  | nil   | ref(:non_archived_project_ids)
+          false | nil   | ref(:non_forked_project_ids)
+          nil   | true  | ref(:non_forked_project_ids)
+          nil   | false | ref(:non_archived_project_ids)
+          true  | true  | ref(:non_forked_project_ids) # prefer new param
+          false | false | ref(:non_archived_project_ids) # prefer new param
         end
 
-        context 'when include_forked filter is set to false' do
-          let(:filters) { { include_forked: false } }
+        with_them do
+          let(:filters) { { include_forked: include_forked, exclude_forks: exclude_forks } }
 
-          it 'calls search on Gitlab::Search::Zoekt::Client with non archived project ids' do
+          it 'calls search on Gitlab::Search::Zoekt::Client with the correct list of project ids' do
             expect(Gitlab::Search::Zoekt::Client).to receive(:search).with(
               query,
               num: described_class::ZOEKT_COUNT_LIMIT,
-              project_ids: non_forked_project_ids,
+              project_ids: expected_project_ids,
               node_id: node_id,
               search_mode: :exact
             ).and_call_original
 
             search
-          end
-
-          context 'and all projects are forked' do
-            let(:limit_projects) { ::Project.id_in(forked_project.id) }
-
-            it 'returns an empty result set' do
-              expect(Gitlab::Search::Zoekt::Client).not_to receive(:search)
-
-              expect(search).to be_empty
-            end
           end
         end
       end

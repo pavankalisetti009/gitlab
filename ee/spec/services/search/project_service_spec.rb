@@ -42,9 +42,8 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
 
     with_them do
       before do
-        allow(search_service).to receive(:scope).and_return(scope)
-        allow(search_service).to receive(:use_zoekt?).and_return(use_zoekt)
-        allow(search_service).to receive(:use_elasticsearch?).and_return(use_elasticsearch)
+        allow(search_service).to receive_messages(scope: scope, use_zoekt?: use_zoekt,
+          use_elasticsearch?: use_elasticsearch)
       end
 
       it { is_expected.to eq(expected_type) }
@@ -121,7 +120,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     end
 
     it 'searches with Zoekt' do
-      expect(service.use_zoekt?).to eq(true)
+      expect(service.use_zoekt?).to be(true)
       expect(service.search_type).to eq('zoekt')
       expect(service.zoekt_searchable_scope).to eq(project)
       expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
@@ -133,7 +132,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       end
 
       it 'returns a Search::Zoekt::SearchResults' do
-        expect(service.use_zoekt?).to eq(true)
+        expect(service.use_zoekt?).to be(true)
         expect(service.zoekt_searchable_scope).to eq(project)
         expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
       end
@@ -143,21 +142,21 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       let(:search_code_with_zoekt) { false }
 
       it 'does not search with Zoekt' do
-        expect(service.use_zoekt?).to eq(false)
+        expect(service.use_zoekt?).to be(false)
         expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end
 
     context 'when project is archived' do
-      it 'sets include_archived and include_filtered filters to true' do
+      it 'sets include_archived and exclude_forks filters to false' do
         project.update!(archived: true)
 
-        expect(service.use_zoekt?).to eq(true)
+        expect(service.use_zoekt?).to be(true)
         expect(service.zoekt_searchable_scope).to eq(project)
         result = service.execute
         expect(result).to be_kind_of(::Search::Zoekt::SearchResults)
-        expect(result.filters[:include_archived]).to eq true
-        expect(result.filters[:include_forked]).to eq true
+        expect(result.filters[:include_archived]).to be(true)
+        expect(result.filters[:exclude_forks]).to be(false)
       end
     end
 
@@ -211,7 +210,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       let(:anonymous_user) { true }
 
       it 'searches with Zoekt' do
-        expect(service.use_zoekt?).to eq(true)
+        expect(service.use_zoekt?).to be(true)
         expect(service.zoekt_searchable_scope).to eq(project)
         expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
       end
@@ -221,7 +220,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       let(:source) { 'api' }
 
       it 'searches with Zoekt' do
-        expect(service.use_zoekt?).to eq(true)
+        expect(service.use_zoekt?).to be(true)
         expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
       end
 
@@ -231,7 +230,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
         end
 
         it 'does not search with Zoekt' do
-          expect(service.use_zoekt?).to eq(false)
+          expect(service.use_zoekt?).to be(false)
           expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
         end
 
@@ -262,7 +261,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       end
 
       it 'does not search with Zoekt' do
-        expect(service.use_zoekt?).to eq(false)
+        expect(service.use_zoekt?).to be(false)
         expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end

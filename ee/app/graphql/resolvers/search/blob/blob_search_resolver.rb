@@ -11,15 +11,19 @@ module Resolvers
         argument :chunk_count, type: GraphQL::Types::Int, required: false, experiment: { milestone: '17.2' },
           default_value: ::Search::Zoekt::MultiMatch::DEFAULT_REQUESTED_CHUNK_SIZE,
           description: 'Maximum chunks per file.'
+        argument :exclude_forks, GraphQL::Types::Boolean, required: false,
+          experiment: { milestone: '17.11' },
+          description: "Excludes forked projects in the search. Always false for project search. \
+            Not available for global search."
         argument :group_id, ::Types::GlobalIDType[::Group], required: false, experiment: { milestone: '17.2' },
           description: 'Group to search in.'
         argument :include_archived, GraphQL::Types::Boolean, required: false, default_value: false,
           experiment: { milestone: '17.7' },
           description: 'Includes archived projects in the search. Always true for project search. Default is false.'
-        argument :include_forked, GraphQL::Types::Boolean, required: false, default_value: false,
+        argument :include_forked, GraphQL::Types::Boolean, required: false,
           experiment: { milestone: '17.7' },
           description: "Includes forked projects in the search. Always true for project search. \
-            Not available for global search. Default is false."
+            Not available for global search."
         argument :page, type: GraphQL::Types::Int, required: false, default_value: 1, experiment: { milestone: '17.2' },
           description: 'Page number to fetch the results.'
         argument :per_page, type: GraphQL::Types::Int, required: false, experiment: { milestone: '17.2' },
@@ -47,7 +51,8 @@ module Resolvers
             scope: 'blobs',
             regex: args[:regex],
             include_archived: args[:include_archived],
-            include_forked: args[:include_forked]
+            include_forked: args[:include_forked],
+            exclude_forks: args[:exclude_forks]
           })
 
           verify_global_search_is_allowed!
