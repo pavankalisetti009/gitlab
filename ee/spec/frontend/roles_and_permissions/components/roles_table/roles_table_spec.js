@@ -1,9 +1,11 @@
 import { GlTable, GlLoadingIcon, GlLink, GlBadge } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import RolesTable, { TABLE_FIELDS } from 'ee/roles_and_permissions/components/roles_table.vue';
-import RoleActions from 'ee/roles_and_permissions/components/role_actions.vue';
+import RolesTable, {
+  TABLE_FIELDS,
+} from 'ee/roles_and_permissions/components/roles_table/roles_table.vue';
+import RoleActions from 'ee/roles_and_permissions/components/roles_table/role_actions.vue';
 import { stubComponent } from 'helpers/stub_component';
-import { standardRoles, memberRoles, adminRoles } from '../mock_data';
+import { standardRoles, memberRoles, adminRoles } from '../../mock_data';
 
 describe('Roles table', () => {
   let wrapper;

@@ -23,11 +23,14 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
         expect(data[:group_full_path]).to be_nil
         expect(data[:group_id]).to be_nil
         expect(data[:current_user_email]).to eq user.notification_email_or_default
+        expect(data[:ldap_enabled]).to eq 'false'
       end
 
       context 'with admin member role rights' do
         before do
           allow(helper).to receive(:can?).with(user, :admin_member_role).and_return(true)
+          allow(helper).to receive(:can?).with(user, :manage_ldap_admin_links).and_return(true)
+          allow(Gitlab.config.ldap).to receive(:enabled).and_return(true)
         end
 
         it 'matches the expected data' do
@@ -35,6 +38,27 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
           expect(data[:group_full_path]).to be_nil
           expect(data[:group_id]).to be_nil
           expect(data[:current_user_email]).to eq user.notification_email_or_default
+          expect(data[:ldap_enabled]).to eq 'true'
+        end
+
+        context 'when user cannot manage ldap admin links' do
+          before do
+            allow(helper).to receive(:can?).with(user, :manage_ldap_admin_links).and_return(false)
+          end
+
+          it 'sets ldap_enabled to false' do
+            expect(data[:ldap_enabled]).to eq 'false'
+          end
+        end
+
+        context 'when LDAP is not enabled for the instance' do
+          before do
+            allow(Gitlab.config.ldap).to receive(:enabled).and_return(false)
+          end
+
+          it 'sets ldap_enabled to false' do
+            expect(data[:ldap_enabled]).to eq 'false'
+          end
         end
       end
     end
@@ -48,11 +72,14 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
           expect(data[:group_full_path]).to eq source.full_path
           expect(data[:group_id]).to eq source.id
           expect(data[:current_user_email]).to eq user.notification_email_or_default
+          expect(data[:ldap_enabled]).to eq 'false'
         end
 
         context 'with admin member role rights' do
           before do
             allow(helper).to receive(:can?).with(user, :admin_member_role, root_group).and_return(true)
+            allow(helper).to receive(:can?).with(user, :manage_ldap_admin_links).and_return(true)
+            allow(Gitlab.config.ldap).to receive(:enabled).and_return(true)
           end
 
           it 'matches the expected data' do
@@ -60,6 +87,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
             expect(data[:group_full_path]).to eq source.full_path
             expect(data[:group_id]).to eq source.id
             expect(data[:current_user_email]).to eq user.notification_email_or_default
+            expect(data[:ldap_enabled]).to eq 'false'
           end
         end
       end

@@ -4,7 +4,8 @@ import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { InternalEvents } from '~/tracking';
 import { initPlannerRoleBanner } from '~/planner_role_banner';
-import RolesApp from './components/app.vue';
+import { parseBoolean } from '~/lib/utils/common_utils';
+import RoleTabs from './components/role_tabs.vue';
 
 Vue.use(GlToast);
 Vue.use(VueApollo);
@@ -22,20 +23,20 @@ export const initCustomRolesApp = () => {
 
   initPlannerRoleBanner();
 
-  const { groupFullPath, groupId, newRolePath, currentUserEmail } = el.dataset;
+  const { groupFullPath, groupId, newRolePath, currentUserEmail, ldapEnabled } = el.dataset;
 
   return new Vue({
     el,
     name: 'RolesRoot',
     apolloProvider,
     mixins: [InternalEvents.mixin()],
-    provide: { groupId, currentUserEmail },
+    provide: { groupId, currentUserEmail, groupFullPath, newRolePath },
     mounted() {
       this.trackEvent('view_admin_application_settings_roles_and_permissions_pageload');
     },
     render(createElement) {
-      return createElement(RolesApp, {
-        props: { groupFullPath, newRolePath },
+      return createElement(RoleTabs, {
+        props: { isLdapEnabled: parseBoolean(ldapEnabled) },
       });
     },
   });

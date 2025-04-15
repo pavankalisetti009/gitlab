@@ -8,7 +8,9 @@ module MemberRolesHelper
       new_role_path: new_role_path(group),
       group_full_path: group&.full_path,
       group_id: group&.id,
-      current_user_email: current_user.notification_email_or_default
+      current_user_email: current_user.notification_email_or_default,
+      ldap_enabled: (!gitlab_com_subscription? && Gitlab.config.ldap.enabled && can?(current_user,
+        :manage_ldap_admin_links)).to_s
     }
   end
 

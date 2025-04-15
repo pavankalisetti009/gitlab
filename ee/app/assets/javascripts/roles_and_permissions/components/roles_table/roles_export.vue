@@ -5,7 +5,7 @@ import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import { s__, sprintf } from '~/locale';
-import groupMembersExportMutation from '../graphql/group_members_export.mutation.graphql';
+import groupMembersExportMutation from '../../graphql/group_members_export.mutation.graphql';
 
 export default {
   components: { GlButton, GlSprintf, ConfirmActionModal },
