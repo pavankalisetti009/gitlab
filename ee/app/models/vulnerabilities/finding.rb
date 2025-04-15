@@ -23,7 +23,9 @@ module Vulnerabilities
     HIGH_CONFIDENCE_AI_RESOLUTION_CWES = %w[
       CWE-23
       CWE-73
+      CWE-78
       CWE-80
+      CWE-89
       CWE-116
       CWE-118
       CWE-119
