@@ -11,8 +11,10 @@ import {
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
 import getProjectComponentVersions from 'ee/dependencies/graphql/project_component_versions.query.graphql';
+import getGroupComponentVersions from 'ee/dependencies/graphql/group_component_versions.query.graphql';
 import VersionToken from 'ee/dependencies/components/filtered_search/tokens/version_token.vue';
 import createStore from 'ee/dependencies/store';
+import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from 'ee/dependencies/constants';
 import { OPERATORS_IS_NOT } from '~/vue_shared/components/filtered_search_bar/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -55,32 +57,39 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
   };
 
   const mockApolloHandlers = (nodes = TEST_VERSIONS, hasNextPage = false) => {
-    return {
-      projectHandler: jest.fn().mockResolvedValue({
-        data: {
-          namespace: {
-            id: '1',
-            componentVersions: {
-              nodes,
-              pageInfo: { ...DEFAULT_PAGE_INFO, hasNextPage },
-            },
+    const MOCK_RESPONSE = {
+      data: {
+        namespace: {
+          id: '1',
+          componentVersions: {
+            nodes,
+            pageInfo: { ...DEFAULT_PAGE_INFO, hasNextPage },
           },
         },
-      }),
+      },
+    };
+
+    return {
+      projectHandler: jest.fn().mockResolvedValue(MOCK_RESPONSE),
+      groupHandler: jest.fn().mockResolvedValue(MOCK_RESPONSE),
     };
   };
 
   const createMockApolloProvider = (handlers) => {
     requestHandlers = handlers;
-    return createMockApollo([[getProjectComponentVersions, requestHandlers.projectHandler]]);
+    return createMockApollo([
+      [getProjectComponentVersions, requestHandlers.projectHandler],
+      [getGroupComponentVersions, requestHandlers.groupHandler],
+    ]);
   };
 
-  const createComponent = (handlers = mockApolloHandlers()) => {
+  const createComponent = (handlers = mockApolloHandlers(), namespaceType = NAMESPACE_PROJECT) => {
     wrapper = shallowMountExtended(VersionToken, {
       store,
       apolloProvider: createMockApolloProvider(handlers),
       provide: {
-        projectFullPath: FULL_PATH,
+        fullPath: FULL_PATH,
+        namespaceType,
       },
       propsData: {
         config: TEST_CONFIG,
@@ -141,6 +150,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
 
     it('does not fetch versions', () => {
       expect(requestHandlers.projectHandler).not.toHaveBeenCalled();
+      expect(requestHandlers.groupHandler).not.toHaveBeenCalled();
     });
   });
 
@@ -165,6 +175,7 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
 
     it('does not fetch versions', () => {
       expect(requestHandlers.projectHandler).not.toHaveBeenCalled();
+      expect(requestHandlers.groupHandler).not.toHaveBeenCalled();
     });
   });
 
@@ -190,8 +201,15 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
       expect(wrapper.findComponent(GlLoadingIcon).exists()).toBe(true);
     });
 
-    it('fetches the list of versions', () => {
-      expect(requestHandlers.projectHandler).toHaveBeenCalledWith(
+    it.each`
+      namespaceType        | requestHandlerFn
+      ${NAMESPACE_GROUP}   | ${() => requestHandlers.groupHandler}
+      ${NAMESPACE_PROJECT} | ${() => requestHandlers.projectHandler}
+    `('fetches the list of versions', ({ namespaceType, requestHandlerFn }) => {
+      createComponent(mockApolloHandlers(), namespaceType);
+      setComponentNames(componentNames);
+
+      expect(requestHandlerFn()).toHaveBeenCalledWith(
         expect.objectContaining({ fullPath: FULL_PATH, componentName: componentNames[0] }),
       );
     });

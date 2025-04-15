@@ -48,6 +48,7 @@ export default (namespaceType) => {
 
   if (namespaceType === NAMESPACE_GROUP) {
     provide.locationsEndpoint = locationsEndpoint;
+    provide.fullPath = groupFullPath;
   }
 
   if (namespaceType === NAMESPACE_PROJECT) {
