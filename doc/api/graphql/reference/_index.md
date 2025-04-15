@@ -7744,6 +7744,32 @@ Input type: `LdapAdminRoleLinkCreateInput`
 | <a id="mutationldapadminrolelinkcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationldapadminrolelinkcreateldapadminrolelink"></a>`ldapAdminRoleLink` | [`LdapAdminRoleLink`](#ldapadminrolelink) | Created instance-level LDAP link. |
 
+### `Mutation.ldapAdminRoleLinkDestroy`
+
+Destroys an instance-level custom admin role LDAP link.
+
+{{< details >}}
+**Introduced** in GitLab 18.0.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `LdapAdminRoleLinkDestroyInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationldapadminrolelinkdestroyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationldapadminrolelinkdestroyid"></a>`id` | [`AuthzLdapAdminRoleLinkID!`](#authzldapadminrolelinkid) | Global ID of the instance-level LDAP link to delete. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationldapadminrolelinkdestroyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationldapadminrolelinkdestroyerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationldapadminrolelinkdestroyldapadminrolelink"></a>`ldapAdminRoleLink` | [`LdapAdminRoleLink`](#ldapadminrolelink) | Deleted instance-level LDAP link. |
+
 ### `Mutation.markAsSpamSnippet`
 
 Input type: `MarkAsSpamSnippetInput`
@@ -45758,6 +45784,12 @@ An example `AuditEventsStreamingHeaderID` is: `"gid://gitlab/AuditEvents::Stream
 A `AuditEventsStreamingInstanceHeaderID` is a global ID. It is encoded as a string.
 
 An example `AuditEventsStreamingInstanceHeaderID` is: `"gid://gitlab/AuditEvents::Streaming::InstanceHeader/1"`.
+
+### `AuthzLdapAdminRoleLinkID`
+
+A `AuthzLdapAdminRoleLinkID` is a global ID. It is encoded as a string.
+
+An example `AuthzLdapAdminRoleLinkID` is: `"gid://gitlab/Authz::LdapAdminRoleLink/1"`.
 
 ### `AwardableID`
 
