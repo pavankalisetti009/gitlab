@@ -1,6 +1,6 @@
 /* eslint-disable @gitlab/require-i18n-strings */
 
-export const defaultStageConfig = [
+export const defaultStages = [
   {
     custom: false,
     relativePosition: 1,
@@ -158,5 +158,5 @@ export const customStage = {
 
 export const valueStreamStages = ({ hideStages = false, addCustomStage = false } = {}) => [
   ...(addCustomStage ? [customStage] : []),
-  ...defaultStageConfig.map(({ custom, name }) => ({ custom, name, hidden: hideStages })),
+  ...defaultStages.map(({ custom, name }) => ({ custom, name, hidden: hideStages })),
 ];

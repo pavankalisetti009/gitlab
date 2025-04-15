@@ -8,7 +8,6 @@ import {
   roundOffFloat,
 } from '~/lib/utils/common_utils';
 import { getDateInFuture, newDate } from '~/lib/utils/datetime/date_calculation_utility';
-import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { DEFAULT_NULL_SERIES_OPTIONS, DEFAULT_SERIES_DATA_OPTIONS } from './constants';
 
 export const formattedDate = (d) => dateFormat(d, dateFormats.defaultDate);
@@ -22,17 +21,6 @@ export const formattedDate = (d) => dateFormat(d, dateFormats.defaultDate);
 export const buildValueStreamFromJson = (valueStream) => {
   const { id, name, is_custom: isCustom } = valueStream ? JSON.parse(valueStream) : {};
   return id ? { id, name, isCustom } : null;
-};
-
-/**
- * Creates an array of stage objects from a json string. Returns an empty array if no stages are present.
- *
- * @param {String} stages - JSON encoded array of stages
- * @returns {Array} - An array of stage objects
- */
-const buildDefaultStagesFromJSON = (stages = '') => {
-  if (!stages.length) return [];
-  return JSON.parse(stages);
 };
 
 /**
@@ -112,7 +100,6 @@ export const buildCycleAnalyticsInitialData = ({
   groupAvatarUrl = null,
   labelsPath = '',
   milestonesPath = '',
-  defaultStages = null,
   stage = null,
   aggregationEnabled = false,
   aggregationLastRunAt = null,
@@ -151,12 +138,6 @@ export const buildCycleAnalyticsInitialData = ({
     : null,
   labelsPath,
   milestonesPath,
-  defaultStageConfig: defaultStages
-    ? buildDefaultStagesFromJSON(defaultStages).map(({ name, ...rest }) => ({
-        ...convertObjectPropsToCamelCase(rest),
-        name: capitalizeFirstCharacter(name),
-      }))
-    : [],
   stage: JSON.parse(stage),
   aggregation: {
     enabled: parseBoolean(aggregationEnabled),

@@ -7,12 +7,7 @@ import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective } from 'helpers/vue_mock_directive';
 import { dismissGlobalAlertById } from '~/lib/utils/global_alerts';
-import {
-  valueStreams,
-  defaultStageConfig,
-  newValueStreamPath,
-  editValueStreamPath,
-} from '../mock_data';
+import { valueStreams, newValueStreamPath, editValueStreamPath } from '../mock_data';
 
 jest.mock('~/lib/utils/global_alerts', () => ({
   dismissGlobalAlertById: jest.fn(),
@@ -39,7 +34,6 @@ describe('ValueStreamSelect', () => {
         deleteValueStreamError: null,
         valueStreams: [],
         selectedValueStream: {},
-        defaultStageConfig,
         ...initialState,
       },
       actions: {

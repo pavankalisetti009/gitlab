@@ -11,7 +11,7 @@ export default {
     ValueStreamFormContent,
     GlLoadingIcon,
   },
-  inject: ['valueStream'],
+  inject: ['valueStream', 'defaultStages'],
   props: {
     isEditing: {
       type: Boolean,
@@ -20,15 +20,12 @@ export default {
     },
   },
   computed: {
-    ...mapState(['stages', 'defaultStageConfig', 'isFetchingGroupStages', 'isLoading']),
-    isLoadingOrFetching() {
-      return this.isLoading || this.isFetchingGroupStages;
-    },
+    ...mapState(['stages', 'isFetchingGroupStages', 'isLoading']),
     initialData() {
       return this.isEditing
         ? {
             ...this.valueStream,
-            stages: generateInitialStageData(this.defaultStageConfig, this.stages),
+            stages: generateInitialStageData(this.defaultStages, this.stages),
           }
         : {
             name: '',
@@ -40,14 +37,9 @@ export default {
 </script>
 <template>
   <div>
-    <div v-if="isLoadingOrFetching" class="gl-pt-7 gl-text-center">
+    <div v-if="isLoading || isFetchingGroupStages" class="gl-pt-7 gl-text-center">
       <gl-loading-icon size="lg" />
     </div>
-    <value-stream-form-content
-      v-else
-      :initial-data="initialData"
-      :default-stage-config="defaultStageConfig"
-      :is-editing="isEditing"
-    />
+    <value-stream-form-content v-else :initial-data="initialData" :is-editing="isEditing" />
   </div>
 </template>

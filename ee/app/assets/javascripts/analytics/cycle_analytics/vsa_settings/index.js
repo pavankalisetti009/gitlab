@@ -2,6 +2,7 @@ import Vue from 'vue';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { parseBoolean, convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
+import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { buildCycleAnalyticsInitialData } from 'ee/analytics/shared/utils';
 import createStore from '../store';
 import VSASettingsApp from './components/app.vue';
@@ -14,9 +15,11 @@ export default () => {
     isEditPage,
     vsaPath,
     namespaceFullPath,
+    defaultStages: rawDefaultStages,
     stageEvents: rawStageEvents,
     valueStream: rawValueStream,
   } = el.dataset;
+
   const initialData = buildCycleAnalyticsInitialData(el.dataset);
   const store = createStore();
 
@@ -46,6 +49,21 @@ export default () => {
     }
   }
 
+  let defaultStages = [];
+  if (rawDefaultStages) {
+    try {
+      defaultStages = JSON.parse(rawDefaultStages).map(({ name, ...rest }) => ({
+        ...convertObjectPropsToCamelCase(rest),
+        name: capitalizeFirstCharacter(name),
+      }));
+    } catch (e) {
+      createAlert({
+        message: s__('CycleAnalytics|Failed to parse default stages.'),
+      });
+      return false;
+    }
+  }
+
   return new Vue({
     el,
     store,
@@ -54,6 +72,7 @@ export default () => {
       namespaceFullPath,
       stageEvents,
       valueStream,
+      defaultStages,
     },
     render: (createElement) =>
       createElement(VSASettingsApp, {
