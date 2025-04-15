@@ -15,8 +15,8 @@ RSpec.describe RemoteDevelopment::GroupPolicy, feature_category: :workspaces do
   let_it_be(:reporter) { create(:user, reporter_of: [group]) }
   let_it_be(:guest) { create(:user, guest_of: [group]) }
 
-  describe ':admin_remote_development_cluster_agent_mapping' do
-    let(:ability) { :admin_remote_development_cluster_agent_mapping }
+  describe ':admin_namespace_cluster_agent_mapping' do
+    let(:ability) { :admin_namespace_cluster_agent_mapping }
 
     where(:policy_class, :user, :result) do
       # In the future, there is a possibility that a common policy module may have to be mixed in to multiple
@@ -49,8 +49,8 @@ RSpec.describe RemoteDevelopment::GroupPolicy, feature_category: :workspaces do
     end
   end
 
-  describe ':read_remote_development_cluster_agent_mapping' do
-    let(:ability) { :read_remote_development_cluster_agent_mapping }
+  describe ':read_namespace_cluster_agent_mapping' do
+    let(:ability) { :read_namespace_cluster_agent_mapping }
 
     where(:policy_class, :user, :result) do
       # In the future, there is a possibility that a common policy module may have to be mixed in to multiple

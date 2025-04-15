@@ -49,7 +49,7 @@ module RemoteDevelopment
     end
 
     def self.user_can_read_namespace_agent_mappings?(user:, namespace:)
-      user.can?(:read_remote_development_cluster_agent_mapping, namespace)
+      user.can?(:read_namespace_cluster_agent_mapping, namespace)
     end
   end
 end

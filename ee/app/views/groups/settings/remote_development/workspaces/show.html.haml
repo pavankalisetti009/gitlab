@@ -3,4 +3,4 @@
 
 #js-workspaces-settings{ data: {
   namespace: @group.full_path,
-  can_admin_cluster_agent_mapping: can?(current_user, :admin_remote_development_cluster_agent_mapping, @group).to_s } }
+  can_admin_cluster_agent_mapping: can?(current_user, :admin_namespace_cluster_agent_mapping, @group).to_s } }

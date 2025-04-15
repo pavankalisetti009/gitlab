@@ -17,8 +17,8 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :workspaces do
   let_it_be(:reporter) { create(:user, reporter_of: [project]) }
   let_it_be(:guest) { create(:user, guest_of: [project]) }
 
-  describe ':admin_remote_development_cluster_agent_mapping' do
-    let(:ability) { :admin_remote_development_cluster_agent_mapping }
+  describe ':admin_namespace_cluster_agent_mapping' do
+    let(:ability) { :admin_namespace_cluster_agent_mapping }
 
     where(:user, :result) do
       ref(:guest)                   | false
@@ -73,8 +73,8 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :workspaces do
     end
   end
 
-  describe ':read_remote_development_cluster_agent_mapping' do
-    let(:ability) { :read_remote_development_cluster_agent_mapping }
+  describe ':read_namespace_cluster_agent_mapping' do
+    let(:ability) { :read_namespace_cluster_agent_mapping }
 
     where(:user, :result) do
       ref(:guest)                   | false

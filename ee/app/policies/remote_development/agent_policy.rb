@@ -13,10 +13,10 @@ module RemoteDevelopment
 
       rule { admin_agent }.policy do
         enable :admin_organization_cluster_agent_mapping
-        enable :admin_remote_development_cluster_agent_mapping
+        enable :admin_namespace_cluster_agent_mapping
       end
 
-      rule { can?(:maintainer_access) }.enable :read_remote_development_cluster_agent_mapping
+      rule { can?(:maintainer_access) }.enable :read_namespace_cluster_agent_mapping
 
       rule { workspaces_authorized_agent }.policy do
         enable :read_cluster_agent
