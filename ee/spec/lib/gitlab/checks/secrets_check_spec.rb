@@ -117,38 +117,16 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
             context 'when the protocol is web' do
               subject(:secrets_check) { described_class.new(changes_access_web) }
 
-              context 'when secret_checks_enabled_for_web_requests ff is disabled' do
-                before do
-                  stub_feature_flags(secret_checks_enabled_for_web_requests: false)
-                end
-
-                it_behaves_like 'entire file scan passed'
-                it_behaves_like 'scan detected secrets'
-                it_behaves_like 'scan detected secrets but some errors occured'
-                it_behaves_like 'scan timed out'
-                it_behaves_like 'scan failed to initialize'
-                it_behaves_like 'scan failed with invalid input'
-                it_behaves_like 'scan skipped due to invalid status'
-                it_behaves_like 'scan skipped when a commit has special bypass flag'
-                it_behaves_like 'scan skipped when secret_push_protection.skip_all push option is passed'
-                it_behaves_like 'scan discarded secrets because they match exclusions'
-                it_behaves_like 'detects secrets with special characters in full files'
+              context 'when changes_access.gitaly_context enable_secrets_check is false' do
+                it_behaves_like 'skips the push check'
               end
 
-              context 'when secret_checks_enabled_for_web_requests ff is enabled' do
-                context 'when changes_access.gitaly_context enable_secrets_check is false' do
-                  it_behaves_like 'entire file scan passed'
-                  it_behaves_like 'scan detected secrets'
-                  it_behaves_like 'detects secrets with special characters in full files'
-                end
+              context 'when changes_access.gitaly_context enable_secrets_check is true' do
+                subject(:secrets_check) { described_class.new(changes_access_web_secrets_check_enabled) }
 
-                context 'when changes_access.gitaly_context enable_secrets_check is true' do
-                  subject(:secrets_check) { described_class.new(changes_access_web_secrets_check_enabled) }
-
-                  it_behaves_like 'diff scan passed'
-                  it_behaves_like 'scan detected secrets in diffs'
-                  it_behaves_like 'detects secrets with special characters in diffs'
-                end
+                it_behaves_like 'diff scan passed'
+                it_behaves_like 'scan detected secrets in diffs'
+                it_behaves_like 'detects secrets with special characters in diffs'
               end
             end
           end

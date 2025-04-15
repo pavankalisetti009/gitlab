@@ -67,6 +67,8 @@ module Gitlab
 
         return unless eligibility_checker.should_scan?
 
+        return unless use_diff_scan?
+
         if use_secret_detection_service?
           sds_host = ::Gitlab::CurrentSettings.current_application_settings.secret_detection_service_url
           @sds_auth_token = ::Gitlab::CurrentSettings.current_application_settings.secret_detection_service_auth_token
@@ -184,7 +186,6 @@ module Gitlab
       end
 
       def secrets_check_enabled_for_web_requests?
-        return false if Feature.disabled?(:secret_checks_for_web_requests, project)
         return false if changes_access.gitaly_context.nil?
 
         changes_access.gitaly_context['enable_secrets_check'] == true
@@ -214,33 +215,14 @@ module Gitlab
       # For a more thorough explanation of the diff parsing logic, see the comment above the `parse_diffs` method.
 
       def standardize_payloads
-        if use_diff_scan?
-          payloads = get_diffs
+        payloads = get_diffs
 
-          payloads = payloads.flat_map do |payload|
-            p_ary = parse_diffs(payload)
-            build_payloads(p_ary)
-          end
-
-          payloads.compact.empty? ? nil : payloads
-        else
-          payloads = ::Gitlab::Checks::ChangedBlobs.new(
-            project, revisions, bytes_limit: PAYLOAD_BYTES_LIMIT + 1
-          ).execute(timeout: logger.time_left)
-
-          # Filter out larger than PAYLOAD_BYTES_LIMIT blobs and binary blobs.
-          payloads.reject! { |payload| payload.size > PAYLOAD_BYTES_LIMIT || payload.binary }
-
-          payloads.map do |payload|
-            build_payload(
-              {
-                id: payload.id,
-                data: payload.data,
-                offset: 1
-              }
-            )
-          end
+        payloads = payloads.flat_map do |payload|
+          p_ary = parse_diffs(payload)
+          build_payloads(p_ary)
         end
+
+        payloads.compact.empty? ? nil : payloads
       end
 
       def get_diffs
