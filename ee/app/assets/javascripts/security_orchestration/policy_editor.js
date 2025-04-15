@@ -11,6 +11,7 @@ export default (el, namespaceType) => {
     assignedPolicyProject,
     disableScanPolicyUpdate,
     createAgentHelpPath,
+    enabledExperiments,
     globalGroupApproversEnabled,
     maxActiveScanExecutionPoliciesReached,
     maxActiveScanResultPoliciesReached,
@@ -70,6 +71,7 @@ export default (el, namespaceType) => {
     provide: {
       createAgentHelpPath,
       disableScanPolicyUpdate: parseBoolean(disableScanPolicyUpdate),
+      enabledExperiments,
       globalGroupApproversEnabled: parseBoolean(globalGroupApproversEnabled),
       maxActiveScanExecutionPoliciesReached: parseBoolean(maxActiveScanExecutionPoliciesReached),
       maxActivePipelineExecutionPoliciesReached: parseBoolean(

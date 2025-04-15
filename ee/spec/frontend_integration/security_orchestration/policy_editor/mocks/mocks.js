@@ -10,6 +10,7 @@ export const DEFAULT_PROVIDE = {
   scanPolicyDocumentationPath: 'path/to/policy-docs',
   assignedPolicyProject: {},
   createAgentHelpPath: 'path/to/agent-docs',
+  enabledExperiments: [],
   globalGroupApproversEnabled: false,
   maxActiveScanExecutionPoliciesReached: false,
   maxActiveScanResultPoliciesReached: false,

@@ -13,13 +13,20 @@ import {
 describe('CodeBlockStrategySelector', () => {
   let wrapper;
 
+  const defaultProvide = {
+    enabledExperiments: [],
+  };
+
   const createComponent = ({ propsData = {}, provide = {} } = {}) => {
     wrapper = shallowMount(CodeBlockStrategySelector, {
       propsData,
       stubs: {
         GlCollapsibleListbox,
       },
-      provide,
+      provide: {
+        ...defaultProvide,
+        ...provide,
+      },
     });
   };
 
@@ -121,6 +128,20 @@ describe('CodeBlockStrategySelector', () => {
     describe('with the feature flag', () => {
       it('renders "schedule" strategy in the listbox items', () => {
         createComponent({ provide: { glFeatures: { scheduledPipelineExecutionPolicies: true } } });
+
+        expect(findListBox().props('items')).toEqual([
+          { text: 'Inject', value: INJECT },
+          { text: 'Override', value: OVERRIDE },
+          { text: 'Schedule a new', value: SCHEDULE },
+        ]);
+      });
+    });
+
+    describe('with the experiment', () => {
+      it('renders "schedule" strategy in the listbox items', () => {
+        createComponent({
+          provide: { enabledExperiments: ['pipeline_execution_schedule_policy'] },
+        });
 
         expect(findListBox().props('items')).toEqual([
           { text: 'Inject', value: INJECT },
