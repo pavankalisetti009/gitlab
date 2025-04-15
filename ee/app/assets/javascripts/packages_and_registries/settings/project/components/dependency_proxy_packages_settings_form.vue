@@ -99,7 +99,7 @@ export default {
       {{ s__('DependencyProxy|Enable Dependency Proxy') }}
     </gl-form-checkbox>
     <maven-form v-model="mavenFormData" />
-    <div class="gl-mt-6 gl-flex gl-items-center">
+    <div class="gl-mt-5 gl-flex gl-items-center">
       <gl-button
         type="submit"
         :disabled="updateInProgress"

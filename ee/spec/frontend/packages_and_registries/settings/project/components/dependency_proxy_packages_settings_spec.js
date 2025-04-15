@@ -1,9 +1,10 @@
-import { GlAlert, GlCard, GlSkeletonLoader } from '@gitlab/ui';
+import { GlAlert, GlSkeletonLoader } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import SettingsSubSection from '~/vue_shared/components/settings/settings_sub_section.vue';
 import DependencyProxyPackagesSettings from 'ee_component/packages_and_registries/settings/project/components/dependency_proxy_packages_settings.vue';
 import DependencyProxyPackagesSettingsForm from 'ee_component/packages_and_registries/settings/project/components/dependency_proxy_packages_settings_form.vue';
 import dependencyProxyPackagesSettingsQuery from 'ee_component/packages_and_registries/settings/project/graphql/queries/get_dependency_proxy_packages_settings.query.graphql';
@@ -24,9 +25,7 @@ describe('Dependency proxy packages project settings', () => {
   };
 
   const findAlert = () => wrapper.findComponent(GlAlert);
-  const findCard = () => wrapper.findComponent(GlCard);
-  const findHeader = () => wrapper.find('h2');
-  const findDescription = () => wrapper.findByTestId('description');
+  const findSection = () => wrapper.findComponent(SettingsSubSection);
   const findFormComponent = () => wrapper.findComponent(DependencyProxyPackagesSettingsForm);
   const findLoader = () => wrapper.findComponent(GlSkeletonLoader);
 
@@ -53,14 +52,14 @@ describe('Dependency proxy packages project settings', () => {
   it('renders card component', () => {
     mountComponentWithApollo();
 
-    expect(findCard().exists()).toBe(true);
+    expect(findSection().exists()).toBe(true);
   });
 
   it('has the correct header text and description', () => {
     mountComponentWithApollo();
 
-    expect(findHeader().text()).toBe('Dependency Proxy');
-    expect(findDescription().text()).toBe(
+    expect(findSection().props('heading')).toBe('Dependency Proxy');
+    expect(findSection().props('description')).toBe(
       'Enable the Dependency Proxy for packages, and configure connection settings for external registries.',
     );
     expect(findLoader().exists()).toBe(true);
