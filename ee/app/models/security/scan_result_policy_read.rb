@@ -21,6 +21,7 @@ module Security
 
     belongs_to :security_orchestration_policy_configuration, class_name: 'Security::OrchestrationPolicyConfiguration'
     belongs_to :project, optional: true
+    belongs_to :approval_policy_rule, optional: true, class_name: 'Security::ApprovalPolicyRule'
     has_many :software_license_policies
     has_many :approval_merge_request_rules, foreign_key: 'scan_result_policy_id', inverse_of: :scan_result_policy_read
     has_many :violations, foreign_key: 'scan_result_policy_id', class_name: 'Security::ScanResultPolicyViolation',
@@ -87,6 +88,7 @@ module Security
     end
 
     def approval_policy_rule
+      return super if approval_policy_rule_id.present?
       return if real_policy_index < 0
 
       Security::ApprovalPolicyRule.by_policy_rule_index(
