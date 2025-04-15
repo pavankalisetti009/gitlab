@@ -91,9 +91,7 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
         it 'automatically adds default statuses to the lifecycle statuses' do
           expect { custom_lifecycle.save! }.to change { custom_lifecycle.statuses.count }.from(0).to(3)
 
-          expect(custom_lifecycle.statuses).to include(open_status)
-          expect(custom_lifecycle.statuses).to include(closed_status)
-          expect(custom_lifecycle.statuses).to include(duplicate_status)
+          expect(custom_lifecycle.statuses).to contain_exactly(open_status, closed_status, duplicate_status)
         end
       end
 
@@ -111,9 +109,8 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
             custom_lifecycle.update!(default_open_status: new_open_status)
           end.to change { custom_lifecycle.statuses.count }.by(1)
 
-          expect(custom_lifecycle.statuses).to include(new_open_status)
-          expect(custom_lifecycle.statuses).to include(closed_status)
-          expect(custom_lifecycle.statuses).to include(duplicate_status)
+          expect(custom_lifecycle.statuses)
+            .to contain_exactly(open_status, new_open_status, closed_status, duplicate_status)
         end
 
         it 'does not duplicate statuses already in the collection' do
