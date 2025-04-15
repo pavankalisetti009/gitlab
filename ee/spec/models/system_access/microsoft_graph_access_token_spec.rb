@@ -9,6 +9,10 @@ RSpec.describe SystemAccess::MicrosoftGraphAccessToken, feature_category: :syste
             .inverse_of(:system_access_microsoft_graph_access_token)
   end
 
+  it_behaves_like 'encrypted attribute', :token, :db_key_base_32 do
+    let(:record) { create(:system_access_microsoft_graph_access_token) }
+  end
+
   describe 'validations' do
     let_it_be(:graph_access_token) { create(:system_access_microsoft_graph_access_token) }
 
