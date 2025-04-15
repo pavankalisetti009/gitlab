@@ -660,6 +660,20 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       end
     end
 
+    context 'with PIPELINE_FAILED error' do
+      let_it_be(:violation1) do
+        build_violation_with_error(policy1,
+          Security::ScanResultPolicyViolation::ERRORS[:pipeline_failed])
+      end
+
+      it 'returns associated error messages' do
+        expect(errors.pluck(:message)).to contain_exactly(
+          'Policy `Policy` could not be evaluated because the latest pipeline failed. ' \
+            'Ensure that the pipeline is configured properly and the scanners are present.'
+        )
+      end
+    end
+
     context 'with unsupported error' do
       let_it_be(:violation1) { build_violation_with_error(policy2, 'unsupported') }
 
