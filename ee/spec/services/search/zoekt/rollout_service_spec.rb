@@ -42,18 +42,20 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
     context 'when no enabled namespaces are found' do
       let(:enabled_namespaces) { [] }
 
-      it 'returns a result with empty changes and an appropriate message' do
+      it 'returns a result with empty changes, without re_enqueue and an appropriate message' do
         expect(result.changes).to be_empty
         expect(result.message).to eq('No enabled namespaces found')
+        expect(result.re_enqueue).to be false
       end
     end
 
     context 'when no available nodes are found' do
       let(:nodes) { Search::Zoekt::Node.none }
 
-      it 'returns a result with empty changes and an appropriate message' do
+      it 'returns a result with empty changes, without re_enqueue and an appropriate message' do
         expect(result.changes).to be_empty
         expect(result.message).to eq('No available nodes found')
+        expect(result.re_enqueue).to be false
       end
     end
 
@@ -69,9 +71,10 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
         ).and_return(plan)
       end
 
-      it 'returns a result with empty changes and an appropriate message' do
+      it 'returns a result with empty changes, without re_enqueue and an appropriate message' do
         expect(result.changes).to be_empty
         expect(result.message).to eq('Skipping execution of changes because of dry run')
+        expect(result.re_enqueue).to be false
       end
     end
 
@@ -90,9 +93,10 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
         allow(provisioning_service).to receive(:execute).with(plan).and_return(changes)
       end
 
-      it 'returns a failed result with the provisioning error message' do
+      it 'returns a failed result, without re_enqueue and with the provisioning error message' do
         expect(result.changes).to match_array({ success: [], errors: [{ message: 'Something went wrong' }] })
         expect(result.message).to eq('Batch is completed with failure')
+        expect(result.re_enqueue).to be false
       end
     end
 
@@ -116,9 +120,10 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
         allow(provisioning_service).to receive(:execute).with(plan).and_return(changes)
       end
 
-      it 'returns a successful result indicating completion' do
+      it 'returns a successful result, with re_enqueue and an appropriate message' do
         expect(result.changes).to match_array({ success: [{ namespace_id: 1, replica_id: 1 }], errors: [] })
         expect(result.message).to eq('Batch is completed with success')
+        expect(result.re_enqueue).to be true
       end
     end
 
@@ -141,10 +146,11 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
         allow(provisioning_service).to receive(:execute).with(plan).and_return(changes)
       end
 
-      it 'returns a successful result indicating completion' do
+      it 'returns a result with errors and success, with re_enqueue and an appropriate message' do
         expect(result.changes[:errors]).to eq([{ message: 'Something went wrong' }])
         expect(result.changes[:success]).to match_array([{ namespace_id: 1, replica_id: 1 }])
         expect(result.message).to eq('Batch is completed with partial success')
+        expect(result.re_enqueue).to be true
       end
     end
 
@@ -164,10 +170,11 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
         allow(provisioning_service).to receive(:execute).with(plan).and_return({ errors: [], success: [] })
       end
 
-      it 'returns a successful result indicating completion' do
+      it 'returns a result with empty changes, with re_enqueue and an appropriate message' do
         expect(result.changes[:errors]).to be_empty
         expect(result.changes[:success]).to be_empty
         expect(result.message).to eq('Batch is completed without changes')
+        expect(result.re_enqueue).to be true
       end
     end
   end

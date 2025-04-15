@@ -53,11 +53,12 @@ RSpec.describe Search::Zoekt::RolloutWorker, feature_category: :global_search do
     end
 
     context 'when worker runs' do
+      let(:reenqueue) { false }
       let(:changes) do
         {}
       end
 
-      let(:result) { Search::Zoekt::RolloutService::Result.new('Message', changes) }
+      let(:result) { Search::Zoekt::RolloutService::Result.new('Message', changes, reenqueue) }
 
       before do
         allow(Gitlab::CurrentSettings).to receive(:zoekt_indexing_paused?).and_return(false)
@@ -70,7 +71,8 @@ RSpec.describe Search::Zoekt::RolloutWorker, feature_category: :global_search do
         perform_worker
       end
 
-      context 'when changes has success' do
+      context 'when result has re_enqueue true' do
+        let(:reenqueue) { true }
         let(:changes) do
           { success: [{ namespace_id: 1, replica_id: 1 }] }
         end
@@ -83,29 +85,23 @@ RSpec.describe Search::Zoekt::RolloutWorker, feature_category: :global_search do
         end
       end
 
-      context 'when changes has errors' do
-        let(:changes) do
-          { errors: [{ message: :error_mesage }] }
+      context 'when retry_count is less than MAX_RETRIES' do
+        it 'calls the worker again with a delay' do
+          expect(Search::Zoekt::RolloutService).to receive(:execute).with(dry_run: false, batch_size: batch_size)
+            .and_return(result)
+          expect(described_class).to receive(:perform_in)
+          perform_worker
         end
+      end
 
-        context 'when retry_count is less than MAX_RETRIES' do
-          it 'calls the worker again with a delay' do
-            expect(Search::Zoekt::RolloutService).to receive(:execute).with(dry_run: false, batch_size: batch_size)
-              .and_return(result)
-            expect(described_class).to receive(:perform_in)
-            perform_worker
-          end
-        end
-
-        context 'when retry_count is not less than MAX_RETRIES' do
-          it 'does not calls the worker again' do
-            expect(Search::Zoekt::RolloutService).to receive(:execute).with(dry_run: false, batch_size: batch_size)
-              .and_return(result)
-            expect(described_class).not_to receive(:perform_at)
-            expect(described_class).not_to receive(:perform_in)
-            expect(described_class).not_to receive(:perform_async)
-            described_class.new.perform(5)
-          end
+      context 'when retry_count is not less than MAX_RETRIES' do
+        it 'does not calls the worker again' do
+          expect(Search::Zoekt::RolloutService).to receive(:execute).with(dry_run: false, batch_size: batch_size)
+            .and_return(result)
+          expect(described_class).not_to receive(:perform_at)
+          expect(described_class).not_to receive(:perform_in)
+          expect(described_class).not_to receive(:perform_async)
+          described_class.new.perform(5)
         end
       end
     end
