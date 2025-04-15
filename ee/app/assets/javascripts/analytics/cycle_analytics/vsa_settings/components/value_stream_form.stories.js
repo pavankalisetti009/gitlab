@@ -1,10 +1,5 @@
 import { withVuexStore } from 'storybook_addons/vuex_store';
-import {
-  defaultStageConfig,
-  stageEvents,
-  valueStream,
-  valueStreamStages,
-} from './stories_constants';
+import { defaultStages, stageEvents, valueStream, valueStreamStages } from './stories_constants';
 import ValueStreamForm from './value_stream_form.vue';
 
 export default {
@@ -18,14 +13,16 @@ const createStoryWithState = ({ state = {} } = {}) => {
     components: { ValueStreamForm },
     provide: {
       vsaPath: '',
+      namespaceFullPath: '',
+      valueStream,
       stageEvents,
+      defaultStages,
     },
     props: Object.keys(argTypes),
     template: '<value-stream-form v-bind="$props" />',
     store: createVuexStore({
       state: {
-        defaultStageConfig,
-        isLoading: false,
+        isFetchingGroupStages: false,
         ...state,
       },
     }),
@@ -44,7 +41,6 @@ export const EditValueStream = {
   }),
   args: {
     isEditing: true,
-    valueStream,
   },
 };
 
@@ -56,7 +52,6 @@ export const EditValueStreamWithCustomStages = {
   }),
   args: {
     isEditing: true,
-    valueStream,
   },
 };
 
@@ -68,14 +63,13 @@ export const EditValueStreamWithHiddenStages = {
   }),
   args: {
     isEditing: true,
-    valueStream,
   },
 };
 
 export const Loading = {
   render: createStoryWithState({
     state: {
-      isLoading: true,
+      isFetchingGroupStages: true,
     },
   }),
 };

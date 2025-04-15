@@ -97,7 +97,6 @@ export default {
       createdBefore = null,
       selectedProjects = [],
       selectedValueStream = {},
-      defaultStageConfig = [],
       pagination = {},
       aggregation = {},
       namespace = {},
@@ -116,7 +115,6 @@ export default {
     state.selectedValueStream = selectedValueStream;
     state.createdBefore = createdBefore;
     state.createdAfter = createdAfter;
-    state.defaultStageConfig = defaultStageConfig;
     state.namespace = namespace;
     state.canEdit = canEdit;
     state.canReadCycleAnalytics = canReadCycleAnalytics;

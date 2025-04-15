@@ -29,14 +29,12 @@ import ValueStreamFormContentActions from './value_stream_form_content_actions.v
 import CustomStageFields from './custom_stage_fields.vue';
 import DefaultStageFields from './default_stage_fields.vue';
 
-const initializeStageErrors = (defaultStageConfig, selectedPreset = PRESET_OPTIONS_DEFAULT) =>
-  selectedPreset === PRESET_OPTIONS_DEFAULT ? defaultStageConfig.map(() => ({})) : [{}];
+const initializeStageErrors = (defaultStages, selectedPreset = PRESET_OPTIONS_DEFAULT) =>
+  selectedPreset === PRESET_OPTIONS_DEFAULT ? defaultStages.map(() => ({})) : [{}];
 
-const initializeStages = (defaultStageConfig, selectedPreset = PRESET_OPTIONS_DEFAULT) => {
+const initializeStages = (defaultStages, selectedPreset = PRESET_OPTIONS_DEFAULT) => {
   const stages =
-    selectedPreset === PRESET_OPTIONS_DEFAULT
-      ? defaultStageConfig
-      : [{ ...defaultCustomStageFields }];
+    selectedPreset === PRESET_OPTIONS_DEFAULT ? defaultStages : [{ ...defaultCustomStageFields }];
   return stages.map((stage) => ({ ...stage, transitionKey: uniqueId('stage-') }));
 };
 
@@ -61,16 +59,12 @@ export default {
     ValueStreamFormContentActions,
   },
   mixins: [Tracking.mixin()],
-  inject: ['vsaPath', 'namespaceFullPath', 'stageEvents'],
+  inject: ['vsaPath', 'namespaceFullPath', 'stageEvents', 'defaultStages'],
   props: {
     initialData: {
       type: Object,
       required: false,
       default: () => ({}),
-    },
-    defaultStageConfig: {
-      type: Array,
-      required: true,
     },
     isEditing: {
       type: Boolean,
@@ -80,7 +74,7 @@ export default {
   },
   data() {
     const {
-      defaultStageConfig = [],
+      defaultStages,
       initialData: { name: initialName, stages: initialStages = [] },
     } = this;
 
@@ -95,7 +89,7 @@ export default {
       isSubmitting: false,
       stages: this.isEditing
         ? initializeEditingStages(initialStages)
-        : initializeStages(defaultStageConfig),
+        : initializeStages(defaultStages),
     };
   },
   computed: {
@@ -201,10 +195,9 @@ export default {
       );
     },
     setErrors({ name = [], stages = [{}] }) {
-      const { defaultStageConfig, selectedPreset } = this;
+      const { defaultStages, selectedPreset } = this;
       this.nameErrors = name;
-      this.stageErrors =
-        cloneDeep(stages) || initializeStageErrors(defaultStageConfig, selectedPreset);
+      this.stageErrors = cloneDeep(stages) || initializeStageErrors(defaultStages, selectedPreset);
     },
     validate() {
       const { name } = this;
@@ -279,9 +272,9 @@ export default {
       this.stages = copy;
     },
     resetAllFieldsToDefault() {
-      this.stages = initializeStages(this.defaultStageConfig, this.selectedPreset);
+      this.stages = initializeStages(this.defaultStages, this.selectedPreset);
       this.hiddenStages = [];
-      this.stageErrors = initializeStageErrors(this.defaultStageConfig, this.selectedPreset);
+      this.stageErrors = initializeStageErrors(this.defaultStages, this.selectedPreset);
     },
     handleResetDefaults() {
       if (this.isEditing) {

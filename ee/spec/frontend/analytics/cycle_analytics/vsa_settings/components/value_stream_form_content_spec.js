@@ -20,12 +20,8 @@ import {
   convertObjectPropsToSnakeCase,
 } from '~/lib/utils/common_utils';
 import ValueStreamFormContentActions from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form_content_actions.vue';
-import {
-  customStageEvents as stageEvents,
-  defaultStageConfig,
-  rawCustomStage,
-  endpoints,
-} from '../../mock_data';
+import { customStageEvents as stageEvents, rawCustomStage, endpoints } from '../../mock_data';
+import { defaultStages } from '../mock_data';
 
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
@@ -57,11 +53,13 @@ describe('ValueStreamFormContent', () => {
 
   const createComponent = ({ props = {} } = {}) =>
     shallowMountExtended(ValueStreamFormContent, {
-      provide: { vsaPath: '/mockPath', namespaceFullPath: namespacePath, stageEvents },
-      propsData: {
-        defaultStageConfig,
-        ...props,
+      provide: {
+        vsaPath: '/mockPath',
+        namespaceFullPath: namespacePath,
+        stageEvents,
+        defaultStages,
       },
+      propsData: props,
       stubs: {
         CrudComponent,
       },
@@ -120,7 +118,7 @@ describe('ValueStreamFormContent', () => {
       });
 
       it('will toggle between the blank and default templates', async () => {
-        expect(findDefaultStages()).toHaveLength(defaultStageConfig.length);
+        expect(findDefaultStages()).toHaveLength(defaultStages.length);
         expect(findCustomStages()).toHaveLength(0);
 
         await changeToCustomStages();
@@ -130,7 +128,7 @@ describe('ValueStreamFormContent', () => {
 
         await changeToDefaultStages();
 
-        expect(findDefaultStages()).toHaveLength(defaultStageConfig.length);
+        expect(findDefaultStages()).toHaveLength(defaultStages.length);
         expect(findCustomStages()).toHaveLength(0);
       });
 
@@ -177,12 +175,12 @@ describe('ValueStreamFormContent', () => {
       });
 
       it('adds a blank custom stage when clicked', async () => {
-        expect(findDefaultStages()).toHaveLength(defaultStageConfig.length);
+        expect(findDefaultStages()).toHaveLength(defaultStages.length);
         expect(findCustomStages()).toHaveLength(0);
 
         await clickAddStage();
 
-        expect(findDefaultStages()).toHaveLength(defaultStageConfig.length);
+        expect(findDefaultStages()).toHaveLength(defaultStages.length);
         expect(findCustomStages()).toHaveLength(1);
       });
 
@@ -213,7 +211,7 @@ describe('ValueStreamFormContent', () => {
       });
 
       it('does not allow duplicate stage names', async () => {
-        const [firstDefaultStage] = defaultStageConfig;
+        const [firstDefaultStage] = defaultStages;
         await findNameInput().vm.$emit('input', streamName);
 
         await clickAddStage();
@@ -390,7 +388,7 @@ describe('ValueStreamFormContent', () => {
     });
 
     describe('with hidden stages', () => {
-      const hiddenStages = defaultStageConfig.map((s) => ({ ...s, hidden: true }));
+      const hiddenStages = defaultStages.map((s) => ({ ...s, hidden: true }));
 
       beforeEach(() => {
         wrapper = createComponent({

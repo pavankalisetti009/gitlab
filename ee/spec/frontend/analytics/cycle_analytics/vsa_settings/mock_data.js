@@ -39,3 +39,27 @@ export const minimumFields = {
   startEventIdentifier: MERGE_REQUEST_CREATED,
   endEventIdentifier: MERGE_REQUEST_CLOSED,
 };
+
+export const defaultStages = [
+  {
+    name: 'issue',
+    custom: false,
+    relativePosition: 1,
+    startEventIdentifier: 'issue_created',
+    endEventIdentifier: 'issue_stage_end',
+  },
+  {
+    name: 'plan',
+    custom: false,
+    relativePosition: 2,
+    startEventIdentifier: 'plan_stage_start',
+    endEventIdentifier: 'issue_first_mentioned_in_commit',
+  },
+  {
+    name: 'code',
+    custom: false,
+    relativePosition: 3,
+    startEventIdentifier: 'code_stage_start',
+    endEventIdentifier: 'merge_request_created',
+  },
+];

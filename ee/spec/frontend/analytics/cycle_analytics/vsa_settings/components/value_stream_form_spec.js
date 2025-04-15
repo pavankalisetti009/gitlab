@@ -6,11 +6,8 @@ import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import ValueStreamForm from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form.vue';
 import ValueStreamFormContent from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form_content.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import {
-  rawCustomStage,
-  valueStreams,
-  defaultStageConfig,
-} from 'ee_jest/analytics/cycle_analytics/mock_data';
+import { rawCustomStage, valueStreams } from 'ee_jest/analytics/cycle_analytics/mock_data';
+import { defaultStages } from '../mock_data';
 
 Vue.use(Vuex);
 
@@ -25,7 +22,6 @@ describe('ValueStreamForm', () => {
   const fakeStore = ({ state }) =>
     new Vuex.Store({
       state: {
-        defaultStageConfig,
         isLoading: false,
         isFetchingGroupStages: false,
         ...state,
@@ -37,12 +33,10 @@ describe('ValueStreamForm', () => {
       store: fakeStore({ state }),
       provide: {
         valueStream: undefined,
+        defaultStages,
         ...provide,
       },
-      propsData: {
-        defaultStageConfig,
-        ...props,
-      },
+      propsData: props,
     });
   };
 
@@ -56,7 +50,6 @@ describe('ValueStreamForm', () => {
 
     it('renders the form content component', () => {
       expect(findFormContent().props()).toMatchObject({
-        defaultStageConfig,
         initialData,
         isEditing: false,
       });
@@ -82,12 +75,11 @@ describe('ValueStreamForm', () => {
         name: valueStream.name,
         stages: [
           camelCustomStage,
-          ...defaultStageConfig.map(({ custom, name }) => ({ custom, name, hidden: true })),
+          ...defaultStages.map(({ custom, name }) => ({ custom, name, hidden: true })),
         ],
       };
 
       expect(findFormContent().props()).toMatchObject({
-        defaultStageConfig,
         initialData: populatedInitialData,
         isEditing: true,
       });

@@ -5,7 +5,6 @@ import {
 
 export default () => ({
   features: {},
-  defaultStageConfig: [],
 
   createdAfter: null,
   createdBefore: null,
