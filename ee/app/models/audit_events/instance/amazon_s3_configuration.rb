@@ -6,6 +6,7 @@ module AuditEvents
       include Limitable
       include ExternallyCommonDestinationable
       include InstanceStreamDestinationMappable
+      include Gitlab::EncryptedAttribute
 
       self.limit_name = 'audit_events_amazon_s3_configurations'
       self.limit_scope = Limitable::GLOBAL_SCOPE
@@ -26,7 +27,7 @@ module AuditEvents
 
       attr_encrypted :secret_access_key,
         mode: :per_attribute_iv,
-        key: Settings.attr_encrypted_db_key_base_32,
+        key: :db_key_base_32,
         algorithm: 'aes-256-gcm',
         encode: false,
         encode_iv: false

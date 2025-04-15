@@ -10,6 +10,8 @@ module AuditEvents
     DEFAULT_LOG_ID_NAME = "audit_events"
 
     included do
+      include Gitlab::EncryptedAttribute
+
       attribute :log_id_name, :string, default: DEFAULT_LOG_ID_NAME
 
       validates :log_id_name, presence: true,
@@ -32,7 +34,7 @@ module AuditEvents
 
       attr_encrypted :private_key,
         mode: :per_attribute_iv,
-        key: Settings.attr_encrypted_db_key_base_32,
+        key: :db_key_base_32,
         algorithm: 'aes-256-gcm',
         encode: false,
         encode_iv: false

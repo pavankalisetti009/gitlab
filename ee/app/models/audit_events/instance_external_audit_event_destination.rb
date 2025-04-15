@@ -6,6 +6,7 @@ module AuditEvents
     include CustomHttpExternallyDestinationable
     include Limitable
     include InstanceStreamDestinationMappable
+    include Gitlab::EncryptedAttribute
 
     self.limit_name = 'external_audit_event_destinations'
     self.limit_scope = Limitable::GLOBAL_SCOPE
@@ -25,7 +26,7 @@ module AuditEvents
     attr_encrypted :verification_token,
       mode: :per_attribute_iv,
       algorithm: 'aes-256-gcm',
-      key: Settings.attr_encrypted_db_key_base_32,
+      key: :db_key_base_32,
       encode: false,
       encode_iv: false
 
