@@ -561,4 +561,69 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
       end
     end
   end
+
+  describe 'jobs' do
+    let_it_be(:project) { create(:project, :private, public_builds: false) }
+    let_it_be(:runner) { create(:ci_runner) }
+    let_it_be(:build) do
+      create(:ci_build, :failed, :trace_live, :erased, runner: runner, project: project, coverage: 1,
+        scheduled_at: Time.now)
+    end
+
+    let(:query) do
+      jobs_path = query_graphql_path(%i[jobs nodes], all_graphql_fields_for('CiJobInterface'))
+
+      wrap_fields(query_graphql_path(query_path, jobs_path))
+    end
+
+    let(:query_path) do
+      [
+        [:runner, { id: runner.to_global_id.to_s }]
+      ]
+    end
+
+    context 'when current user is an admin' do
+      let_it_be(:current_user) { create(:admin) }
+
+      before do
+        post_graphql(query, current_user: current_user)
+      end
+
+      it 'all fields have values' do
+        exposed_field_values = graphql_data_at(:runner, :jobs, :nodes, 0).except('exitCode').values
+
+        expect(exposed_field_values.any?(&:nil?)).to be false
+      end
+    end
+
+    context 'when current user is not an admin but has read_admin_cicd custom admin role',
+      :enable_admin_mode, feature_category: :permissions do
+      let_it_be(:role) { create(:admin_member_role, :read_admin_cicd) }
+      let_it_be(:current_user) { role.user }
+
+      let(:exposed_field_names) do
+        ::Types::Ci::JobMinimalAccessType.own_fields.keys
+      end
+
+      let(:unexposed_field_names) do
+        ::Types::Ci::JobInterface.fields.keys - exposed_field_names
+      end
+
+      before do
+        stub_licensed_features(custom_roles: true)
+
+        post_graphql(query, current_user: current_user)
+      end
+
+      it 'only exposed fields have values', :aggregate_failures do
+        job_data = graphql_data_at(:runner, :jobs, :nodes, 0)
+
+        exposed_field_values = job_data.slice(*exposed_field_names).values
+        expect(exposed_field_values.any?(&:nil?)).to be false
+
+        unexposed_field_values = job_data.slice(*unexposed_field_names).values
+        expect(unexposed_field_values).to be_all(&:nil?)
+      end
+    end
+  end
 end
