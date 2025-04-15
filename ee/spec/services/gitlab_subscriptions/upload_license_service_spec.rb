@@ -124,7 +124,7 @@ RSpec.describe GitlabSubscriptions::UploadLicenseService, feature_category: :pla
       include_examples 'successful license upload scenarios'
 
       it 'does not call the service to process add-on purchases' do
-        expect(::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Duo).not_to receive(:new)
+        expect(::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoExclusive).not_to receive(:new)
 
         execute_service
       end
@@ -134,7 +134,7 @@ RSpec.describe GitlabSubscriptions::UploadLicenseService, feature_category: :pla
     include_examples 'successful license upload scenarios'
 
     it 'does not call the service to process add-on purchases' do
-      expect(::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Duo).not_to receive(:new)
+      expect(::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoExclusive).not_to receive(:new)
 
       execute_service
     end
