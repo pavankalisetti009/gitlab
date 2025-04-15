@@ -32,7 +32,9 @@ module Security
         },
         'EVALUATION_SKIPPED' => 'Policy `%{policy}` could not be evaluated within the specified timeframe ' \
           'and, as a result, approvals are required for the policy. ' \
-          'Ensure that scanners are present in the latest pipeline.'
+          'Ensure that scanners are present in the latest pipeline.',
+        'PIPELINE_FAILED' => 'Policy `%{policy}` could not be evaluated because the latest pipeline failed. ' \
+          'Ensure that the pipeline is configured properly and the scanners are present.'
       }.freeze
 
       # These messages correspond to the possible errors above and are shown when a policy is configured to fail open

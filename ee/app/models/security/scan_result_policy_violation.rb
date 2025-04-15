@@ -38,7 +38,8 @@ module Security
       scan_removed: 'SCAN_REMOVED',
       target_pipeline_missing: 'TARGET_PIPELINE_MISSING',
       artifacts_missing: 'ARTIFACTS_MISSING',
-      evaluation_skipped: 'EVALUATION_SKIPPED'
+      evaluation_skipped: 'EVALUATION_SKIPPED',
+      pipeline_failed: 'PIPELINE_FAILED'
     }.freeze
 
     MAX_VIOLATIONS = 10

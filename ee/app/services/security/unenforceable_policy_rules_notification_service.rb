@@ -44,7 +44,7 @@ module Security
       policy_evaluation = Security::SecurityOrchestrationPolicies::PolicyRuleEvaluationService.new(merge_request)
 
       applicable_rules.each do |rule|
-        policy_evaluation.error!(rule, :artifacts_missing, context: validation_context(report_type))
+        policy_evaluation.error!(rule, pipeline_error, context: validation_context(report_type))
       end
 
       policy_evaluation.save
@@ -68,6 +68,10 @@ module Security
       Security::ScanResultPolicies::UnblockFailOpenApprovalRulesService
         .new(merge_request: merge_request, report_types: [report_type])
         .execute
+    end
+
+    def pipeline_error
+      pipeline&.failed? ? :pipeline_failed : :artifacts_missing
     end
 
     def validation_context(report_type)

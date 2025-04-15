@@ -8,7 +8,7 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
   let(:service) { described_class.new(merge_request) }
 
   let_it_be_with_reload(:merge_request) { create(:merge_request, source_project: project) }
-  let_it_be(:pipeline) do
+  let_it_be_with_reload(:pipeline) do
     create(:ee_ci_pipeline,
       :success,
       project: project,
@@ -194,6 +194,26 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
 
       it 'updates violation status' do
         expect { execute }.to change { violation.reload.status }.from('running').to('failed')
+      end
+
+      it 'updates violation data' do
+        expect { execute }.to change { violation.reload.violation_data }
+          .to match(a_hash_including({ 'errors' => ['error' => 'ARTIFACTS_MISSING'] }))
+      end
+
+      context 'when pipeline failed' do
+        before do
+          pipeline.update!(status: :failed)
+        end
+
+        it 'updates violation error' do
+          expect { execute }.to change { violation.reload.status }.from('running').to('failed')
+        end
+
+        it 'updates violation data' do
+          expect { execute }.to change { violation.reload.violation_data }
+            .to match(a_hash_including({ 'errors' => ['error' => 'PIPELINE_FAILED'] }))
+        end
       end
 
       context 'without required approvals' do
