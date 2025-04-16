@@ -3,6 +3,9 @@
 module Ai
   module DuoWorkflows
     class Workflow < ::ApplicationRecord
+      include FromUnion
+      include EachBatch
+
       self.table_name = :duo_workflows_workflows
 
       belongs_to :user
@@ -19,6 +22,9 @@ module Ai
       scope :for_user_with_id!, ->(user_id, id) { find_by!(user_id: user_id, id: id) }
       scope :for_user, ->(user_id) { where(user_id: user_id) }
       scope :for_project, ->(project) { where(project: project) }
+      scope :with_stale_running, ->(time) {
+        with_status(:running).where(updated_at: ...time).order(updated_at: :asc, id: :asc)
+      }
 
       class AgentPrivileges
         READ_WRITE_FILES  = 1
