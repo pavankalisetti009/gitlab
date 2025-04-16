@@ -57,6 +57,7 @@ module VirtualRegistries
           end
           scope :for_group, ->(group) { where(group: group) }
           scope :order_created_desc, -> { reorder(arel_table['created_at'].desc) }
+          scope :for_upstreams, ->(upstreams) { where(upstreams:) }
 
           def self.next_pending_destruction
             pending_destruction.lock('FOR UPDATE SKIP LOCKED').take

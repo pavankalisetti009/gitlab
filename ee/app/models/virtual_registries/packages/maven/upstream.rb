@@ -7,7 +7,8 @@ module VirtualRegistries
         belongs_to :group
         has_one :registry_upstream,
           class_name: 'VirtualRegistries::Packages::Maven::RegistryUpstream',
-          inverse_of: :upstream
+          inverse_of: :upstream,
+          autosave: true
         has_one :registry, class_name: 'VirtualRegistries::Packages::Maven::Registry', through: :registry_upstream
         has_many :cache_entries,
           class_name: 'VirtualRegistries::Packages::Maven::Cache::Entry',
@@ -16,7 +17,14 @@ module VirtualRegistries
         encrypts :username, :password
 
         validates :group, top_level_group: true, presence: true
-        validates :url, addressable_url: { allow_localhost: false, allow_local_network: false }, presence: true
+        validates :url,
+          addressable_url: {
+            allow_localhost: false,
+            allow_local_network: false,
+            dns_rebind_protection: true,
+            enforce_sanitization: true
+          },
+          presence: true
         validates :username, presence: true, if: :password?
         validates :password, presence: true, if: :username?
         validates :url, length: { maximum: 255 }

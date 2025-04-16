@@ -66,13 +66,13 @@ module API
                     ssrf_filter: true,
                     upload_config: {
                       headers: { UPSTREAM_GID_HEADER => upstream.to_global_id.to_s },
-                      authorized_upload_response: authorized_upload_response
+                      authorized_upload_response: authorized_upload_response(upstream)
                     }
                   )
                 )
               end
 
-              def authorized_upload_response
+              def authorized_upload_response(upstream)
                 ::VirtualRegistries::Cache::EntryUploader.workhorse_authorize(
                   has_length: true,
                   maximum_size: MAX_FILE_SIZE,

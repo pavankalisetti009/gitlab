@@ -7,9 +7,9 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
   let_it_be(:project) { create(:project, namespace: registry.group) }
   let_it_be(:user) { create(:user, owner_of: project) }
   let_it_be(:path) { 'com/test/package/1.2.3/package-1.2.3.pom' }
+  let_it_be(:upstream) { registry.upstreams.first }
+  let_it_be(:upstream_resource_url) { upstream.url_for(path) }
 
-  let(:upstream) { registry.upstream }
-  let(:upstream_resource_url) { upstream.url_for(path) }
   let(:etag_returned_by_upstream) { nil }
   let(:service) { described_class.new(registry: registry, current_user: user, params: { path: path }) }
 
@@ -49,8 +49,9 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
           :virtual_registries_packages_maven_cache_entry,
           :upstream_checked,
           :processing,
-          upstream: registry.upstream,
-          relative_path: "/#{path}"
+          relative_path: "/#{path}",
+          upstream: upstream,
+          group: registry.group
         )
       end
 
@@ -78,8 +79,9 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
         let_it_be_with_refind(:cache_entry) do
           create(:virtual_registries_packages_maven_cache_entry,
             :upstream_checked,
-            upstream: registry.upstream,
-            relative_path: "/#{path}"
+            upstream: upstream,
+            relative_path: "/#{path}",
+            group: registry.group
           )
         end
 
@@ -190,7 +192,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
 
     context 'with registry with no upstreams' do
       before do
-        registry.upstream = nil
+        registry.upstreams = []
       end
 
       it { is_expected.to eq(described_class::ERRORS[:no_upstreams]) }

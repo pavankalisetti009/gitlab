@@ -13,5 +13,6 @@ FactoryBot.define do
         registry_upstream: nil
       )
     end
+    sequence(:position) { |n| (n % 20) + 1 }
   end
 end

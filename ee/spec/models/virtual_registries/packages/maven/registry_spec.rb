@@ -8,15 +8,15 @@ RSpec.describe VirtualRegistries::Packages::Maven::Registry, type: :model, featu
   describe 'associations' do
     it { is_expected.to belong_to(:group) }
 
-    it 'has one registry upstream' do
-      is_expected.to have_one(:registry_upstream)
+    it 'has many registry upstream' do
+      is_expected.to have_many(:registry_upstreams)
         .class_name('VirtualRegistries::Packages::Maven::RegistryUpstream')
         .inverse_of(:registry)
     end
 
-    it 'has one upstream' do
-      is_expected.to have_one(:upstream)
-        .through(:registry_upstream)
+    it 'has many upstreams' do
+      is_expected.to have_many(:upstreams)
+        .through(:registry_upstreams)
         .class_name('VirtualRegistries::Packages::Maven::Upstream')
     end
   end
@@ -36,20 +36,37 @@ RSpec.describe VirtualRegistries::Packages::Maven::Registry, type: :model, featu
     it { is_expected.to eq([registry]) }
   end
 
-  describe 'callbacks' do
-    describe '.destroy_upstream' do
-      let(:upstream) { build(:virtual_registries_packages_maven_upstream) }
+  describe 'upstreams ordering' do
+    let_it_be(:registry) { create(:virtual_registries_packages_maven_registry) }
 
-      before do
-        allow(registry).to receive(:upstream).and_return(upstream)
-        allow(upstream).to receive(:destroy!)
-      end
+    let_it_be(:upstream1) do
+      create(:virtual_registries_packages_maven_upstream, group: registry.group, registry: registry)
+    end
 
-      it 'destroys the upstream' do
-        registry.destroy!
+    let_it_be(:upstream2) do
+      create(:virtual_registries_packages_maven_upstream, group: registry.group, registry: registry)
+    end
 
-        expect(upstream).to have_received(:destroy!)
-      end
+    let_it_be(:upstream3) do
+      create(:virtual_registries_packages_maven_upstream, group: registry.group, registry: registry)
+    end
+
+    subject { registry.reload.upstreams.to_a }
+
+    it { is_expected.to eq([upstream1, upstream2, upstream3]) }
+  end
+
+  describe 'registry destruction' do
+    let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream) }
+
+    let(:registry) { upstream.registry }
+
+    subject(:destroy_registry) { registry.destroy! }
+
+    it 'deletes the upstream and the registry_upstream' do
+      expect { destroy_registry }.to change { described_class.count }.by(-1)
+       .and change { VirtualRegistries::Packages::Maven::Upstream.count }.by(-1)
+       .and change { VirtualRegistries::Packages::Maven::RegistryUpstream.count }.by(-1)
     end
   end
 end
