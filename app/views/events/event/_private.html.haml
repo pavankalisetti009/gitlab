@@ -1,11 +1,15 @@
-.event-item{ class: current_path?('users#activity') ? 'user-profile-activity gl-border-b-0 !gl-pl-7 gl-pb-3' : '' }
+.event-item{ class: 'user-profile-activity gl-border-b-0 !gl-pl-7 gl-pb-3' }
   .event-item-timestamp.gl-text-sm
-    = time_ago_with_tooltip(event.created_at)
+    - if timezone
+      %span.light.js-localtime{ data: { datetime: event.created_at.utc.strftime('%Y-%m-%dT%H:%M:%SZ'), toggle: 'tooltip', placement: 'top' } }
+        = event.created_at.to_time.in_time_zone(timezone).strftime('%-I:%M%P')
+    - else
+      = time_ago_with_tooltip(event.created_at)
 
   .system-note-image.gl-rounded-full.gl-bg-strong.gl-leading-0= sprite_icon('eye-slash', size: 14, css_class: 'icon')
 
   = event_user_info(event)
 
-  .event-title.gl-flex
+  .event-title.gl-flex.gl-font-semibold.gl-text-default
     = inline_event_icon(event)
     = s_('Profiles|Made a private contribution')

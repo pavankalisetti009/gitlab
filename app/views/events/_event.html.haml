@@ -1,13 +1,14 @@
 - event = event.present
+- timezone = local_assigns[:timezone] || nil
 
 - if event.visible_to_user?(current_user)
   .event-item.gl-border-b-0.gl-pb-3{ class: current_controller?('users') ? 'user-profile-activity !gl-pl-7' : 'project-activity-item' }
     .event-item-timestamp.gl-text-sm
-      - if defined?(timezone)
+      - if timezone
         %span.light.js-localtime{ data: { datetime: event.created_at.utc.strftime('%Y-%m-%dT%H:%M:%SZ'), toggle: 'tooltip', placement: 'top' } }
           = event.created_at.to_time.in_time_zone(timezone).strftime('%-I:%M%P')
       - else
-        #{time_ago_with_tooltip(event.created_at)}
+        = time_ago_with_tooltip(event.created_at)
       - if event.imported?
         %span &middot;
         = render "import/shared/imported_badge", text_only: true, importable: _('event')
@@ -25,4 +26,4 @@
     - else
       = render "events/event/common", event: event
 - elsif @user&.include_private_contributions?
-  = render "events/event/private", event: event
+  = render "events/event/private", event: event, timezone: timezone
