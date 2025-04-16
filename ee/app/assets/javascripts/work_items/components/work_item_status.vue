@@ -1,5 +1,6 @@
 <script>
 import { GlIcon } from '@gitlab/ui';
+import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { s__, __ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { InternalEvents } from '~/tracking';
@@ -54,6 +55,7 @@ export default {
     return {
       workItem: {},
       workItemTypes: [],
+      searchTerm: '',
       shouldFetch: false,
       updateInProgress: false,
       localStatus: {},
@@ -97,9 +99,17 @@ export default {
         return item.type === WIDGET_TYPE_STATUS;
       });
     },
+    filteredStatuses() {
+      if (this.searchTerm) {
+        return fuzzaldrinPlus.filter(this.statusDefinition?.allowedStatuses, this.searchTerm, {
+          key: ['name'],
+        });
+      }
+      return this.statusDefinition?.allowedStatuses;
+    },
     allowedStatuses() {
       return (
-        this.statusDefinition?.allowedStatuses?.map((item) => ({
+        this.filteredStatuses?.map((item) => ({
           ...item,
           text: item.name,
           value: item.id,
@@ -152,6 +162,9 @@ export default {
     },
   },
   methods: {
+    search(searchTerm) {
+      this.searchTerm = searchTerm;
+    },
     async updateWorkItemStatus(statusId) {
       this.updateInProgress = true;
 
@@ -209,10 +222,11 @@ export default {
     :update-in-progress="updateInProgress"
     :toggle-dropdown-text="dropdownText"
     :header-text="__('Select status')"
-    :searchable="false"
     data-testid="work-item-status"
     no-reset-button
+    @searchStarted="search"
     @dropdownShown="shouldFetch = true"
+    @dropdownHidden="search('')"
     @updateValue="updateWorkItemStatus"
   >
     <template #list-item="{ item }">
