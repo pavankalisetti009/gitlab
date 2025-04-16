@@ -85,7 +85,7 @@ describe('FeatureSettingsBatchAssignmentButton', () => {
         it('invokes the update mutation with correct input', () => {
           expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
             input: {
-              features: ['DUO_CHAT', 'DUO_CHAT_EXPLAIN_CODE'],
+              features: ['DUO_CHAT_TROUBLESHOOT_JOB', 'DUO_CHAT', 'DUO_CHAT_EXPLAIN_CODE'],
               provider: 'SELF_HOSTED',
               aiSelfHostedModelId: 2,
             },
@@ -134,7 +134,7 @@ describe('FeatureSettingsBatchAssignmentButton', () => {
         it('invokes the update mutation with correct input', () => {
           expect(disableFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
             input: {
-              features: ['DUO_CHAT', 'DUO_CHAT_EXPLAIN_CODE'],
+              features: ['DUO_CHAT_TROUBLESHOOT_JOB', 'DUO_CHAT', 'DUO_CHAT_EXPLAIN_CODE'],
               provider: 'DISABLED',
               aiSelfHostedModelId: null,
             },
