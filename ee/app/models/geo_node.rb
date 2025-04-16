@@ -4,6 +4,7 @@ class GeoNode < ApplicationRecord
   include Presentable
   include Geo::SelectiveSync
   include StripAttribute
+  include Gitlab::EncryptedAttribute
 
   SELECTIVE_SYNC_TYPES = %w[namespaces shards].freeze
 
@@ -57,7 +58,7 @@ class GeoNode < ApplicationRecord
   scope :enabled, -> { where(enabled: true) }
 
   attr_encrypted :secret_access_key,
-    key: Settings.attr_encrypted_db_key_base_32,
+    key: :db_key_base_32,
     algorithm: 'aes-256-gcm',
     mode: :per_attribute_iv,
     encode: true

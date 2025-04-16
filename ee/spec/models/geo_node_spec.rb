@@ -24,6 +24,10 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
     it { is_expected.to have_many(:namespaces).through(:geo_node_namespace_links) }
   end
 
+  it_behaves_like 'encrypted attribute', :secret_access_key, :db_key_base_32 do
+    let(:record) { node }
+  end
+
   context 'validations' do
     subject { build(:geo_node) }
 
