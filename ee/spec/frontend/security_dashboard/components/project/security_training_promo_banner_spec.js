@@ -9,6 +9,7 @@ const trackCTAClickSpy = jest.fn();
 
 const SECURITY_CONFIGURATION_PATH = 'foo/bar';
 const PROJECT_FULL_PATH = 'namespace/project';
+
 const MOCK_SLOT_PROPS = {
   buttonText: 'Enable security training',
   buttonLink: 'some/link',
@@ -46,7 +47,6 @@ describe('Security training promo banner component', () => {
     it('renders the component with the correct props', () => {
       expect(findSecurityTrainingPromo().props()).toMatchObject({
         securityConfigurationPath: SECURITY_CONFIGURATION_PATH,
-        projectFullPath: PROJECT_FULL_PATH,
       });
     });
   });

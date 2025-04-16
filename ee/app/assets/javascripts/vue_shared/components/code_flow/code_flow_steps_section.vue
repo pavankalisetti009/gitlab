@@ -26,16 +26,6 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   props: {
-    description: {
-      type: String,
-      required: false,
-      default: null,
-    },
-    descriptionHtml: {
-      type: String,
-      required: false,
-      default: null,
-    },
     details: {
       type: Object,
       required: true,
@@ -43,7 +33,7 @@ export default {
     rawTextBlobs: {
       type: Object,
       required: false,
-      default: () => {},
+      default: () => ({}),
     },
   },
   data() {

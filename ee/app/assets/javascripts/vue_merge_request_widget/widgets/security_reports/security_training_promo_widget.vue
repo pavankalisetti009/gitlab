@@ -23,19 +23,12 @@ export default {
       type: String,
       required: true,
     },
-    projectFullPath: {
-      type: String,
-      required: true,
-    },
   },
 };
 </script>
 
 <template>
-  <security-training-promo
-    :security-configuration-path="securityConfigurationPath"
-    :project-full-path="projectFullPath"
-  >
+  <security-training-promo :security-configuration-path="securityConfigurationPath">
     <template #default="{ buttonLink, buttonText, dismiss, trackCTAClick }">
       <div class="gl-border-t -gl-mx-5 gl-flex gl-border-default gl-bg-strong gl-p-5">
         <gl-icon

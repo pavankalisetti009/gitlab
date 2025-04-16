@@ -42,10 +42,6 @@ module Groups::SecurityFeaturesHelper
     content = 'discover-group-security'
 
     {
-      group: {
-        id: group.id,
-        name: group.name
-      },
       link: {
         main: new_trial_registration_path(glm_source: 'gitlab.com', glm_content: content),
         secondary: group_billings_path(group.root_ancestor, source: content)
