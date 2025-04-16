@@ -14,6 +14,28 @@ RSpec.describe Security::MergeRequestApprovalPolicies::DeniedLicensesChecker, fe
 
   subject(:denied_licenses_with_dependencies) { service.denied_licenses_with_dependencies }
 
+  shared_examples_for 'tracks enforce_approval_policies_with_package_exceptions_in_project event' do
+    # rubocop:disable Layout/LineLength -- easier to read in single line
+    it 'tracks internal metrics with the right parameters', :clean_gitlab_redis_shared_state do
+      expect do
+        denied_licenses_with_dependencies
+      end
+        .to trigger_internal_events('enforce_approval_policies_with_package_exceptions_in_project')
+          .with(project: project,
+            additional_properties: { label: policy_state == :denied ? 'denylist' : 'allowlist' })
+          .and increment_usage_metrics(
+            'redis_hll_counters.count_distinct_namespace_id_from_enforce_approval_policies_with_package_exceptions_in_project_monthly',
+            'redis_hll_counters.count_distinct_namespace_id_from_enforce_approval_policies_with_package_exceptions_in_project_weekly',
+            'redis_hll_counters.count_distinct_project_id_from_enforce_approval_policies_with_package_exceptions_in_project_monthly',
+            'redis_hll_counters.count_distinct_project_id_from_enforce_approval_policies_with_package_exceptions_in_project_weekly',
+            'counts.count_total_enforce_approval_policies_with_package_exceptions_in_project_monthly',
+            'counts.count_total_enforce_approval_policies_with_package_exceptions_in_project_weekly',
+            'counts.count_total_enforce_approval_policies_with_package_exceptions_in_project'
+          )
+    end
+    # rubocop:enable Layout/LineLength
+  end
+
   context 'without package exceptions' do
     include_context 'for denied_licenses_checker without package exceptions'
 
@@ -44,6 +66,8 @@ RSpec.describe Security::MergeRequestApprovalPolicies::DeniedLicensesChecker, fe
       it 'returns denied_licenses_with_dependencies' do
         is_expected.to eq(violated_licenses)
       end
+
+      it_behaves_like 'tracks enforce_approval_policies_with_package_exceptions_in_project event'
     end
   end
 
@@ -96,6 +120,8 @@ RSpec.describe Security::MergeRequestApprovalPolicies::DeniedLicensesChecker, fe
         it 'returns denied_licenses_with_dependencies' do
           is_expected.to eq(violated_licenses)
         end
+
+        it_behaves_like 'tracks enforce_approval_policies_with_package_exceptions_in_project event'
       end
     end
 
