@@ -27,8 +27,8 @@ export default {
     <gl-icon
       v-if="statusPagePublishedIncident"
       name="status_success"
-      class="gl-fill-green-500"
       :aria-label="$options.i18n.published"
+      variant="success"
     />
     <div v-else>{{ unPublished }}</div>
   </div>
