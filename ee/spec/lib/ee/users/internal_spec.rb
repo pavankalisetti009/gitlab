@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Users::Internal, feature_category: :user_profile do
+  let_it_be(:first_organization) { create(:organization) }
+
   shared_examples 'bot users' do |bot_type|
     it 'creates the user if it does not exist' do
       expect do
