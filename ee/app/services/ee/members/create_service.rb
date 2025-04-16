@@ -210,7 +210,7 @@ module EE
         root_namespace = source.root_ancestor
 
         root_namespace&.group_namespace? &&
-          root_namespace&.enable_auto_assign_gitlab_duo_pro_seats? &&
+          root_namespace.enable_auto_assign_gitlab_duo_pro_seats? &&
           add_on_purchase.present?
       end
       strong_memoize_attr :auto_assign_duo_pro?
