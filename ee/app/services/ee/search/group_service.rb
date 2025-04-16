@@ -26,13 +26,6 @@ module EE
       override :zoekt_node_id
       def zoekt_node_id; end
 
-      override :zoekt_filters
-      def zoekt_filters
-        super.merge(include_archived: params[:include_archived],
-          include_forked: params[:include_forked],
-          exclude_forks: params[:exclude_forks])
-      end
-
       override :elastic_global
       def elastic_global
         false
