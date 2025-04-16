@@ -7,7 +7,7 @@ module Ai
     include UsageEvent
 
     self.table_name = "ai_code_suggestion_events"
-    self.clickhouse_table_name = "code_suggestion_usages"
+    self.clickhouse_table_name = "code_suggestion_events"
     self.primary_key = :id
 
     partitioned_by :timestamp, strategy: :monthly, retain_for: 3.months

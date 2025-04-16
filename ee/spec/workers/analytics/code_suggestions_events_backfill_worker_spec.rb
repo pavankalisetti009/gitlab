@@ -30,7 +30,7 @@ RSpec.describe Analytics::CodeSuggestionsEventsBackfillWorker, feature_category:
     end
 
     let(:existing_ch_records) do
-      clickhouse_fixture(:code_suggestion_usages, [
+      clickhouse_fixture(:code_suggestion_events, [
         { user_id: pg_events.first.user.id, event: 2, timestamp: pg_events.first.timestamp }, # duplicate
         { user_id: pg_events.first.user.id, event: 2, timestamp: pg_events.first.timestamp - 10.days }
       ])

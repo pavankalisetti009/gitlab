@@ -52,7 +52,12 @@ module ClickHouse
     end
 
     def next_batch(table_name)
-      ClickHouse::WriteBuffer.pop(table_name, BATCH_SIZE)
+      batch = ClickHouse::WriteBuffer.pop(table_name, BATCH_SIZE)
+
+      # Also fetch legacy table name to flush all events to new table name.
+      return batch unless batch.empty? && table_name == Ai::CodeSuggestionEvent.clickhouse_table_name
+
+      ClickHouse::WriteBuffer.pop('code_suggestion_usages', BATCH_SIZE)
     end
 
     def build_csv_mapping(keys)

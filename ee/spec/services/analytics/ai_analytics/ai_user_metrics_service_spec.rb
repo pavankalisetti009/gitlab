@@ -55,7 +55,7 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
 
       context 'with data' do
         before do
-          clickhouse_fixture(:code_suggestion_usages, [
+          clickhouse_fixture(:code_suggestion_events, [
             { user_id: user1.id, event: 3, timestamp: to - 3.days },
             { user_id: user1.id, event: 3, timestamp: to - 3.days + 1.second },
             { user_id: user1.id, event: 3, timestamp: to - 4.days },

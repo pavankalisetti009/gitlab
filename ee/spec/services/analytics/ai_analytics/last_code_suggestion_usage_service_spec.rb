@@ -43,7 +43,7 @@ RSpec.describe Analytics::AiAnalytics::LastCodeSuggestionUsageService, feature_c
     let(:to) { 1.day.ago }
 
     before do
-      clickhouse_fixture(:code_suggestion_usages, [
+      clickhouse_fixture(:code_suggestion_events, [
         { user_id: user1.id, event: 1, timestamp: to - 3.days },
         { user_id: user1.id, event: 1, timestamp: to - 4.days },
         { user_id: user1.id, event: 1, timestamp: to + 1.day },
