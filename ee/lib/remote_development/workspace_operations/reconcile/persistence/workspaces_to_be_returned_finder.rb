@@ -38,8 +38,7 @@ module RemoteDevelopment
             # For a FULL update, return all workspaces for the agent which exist in the database
             if update_type == FULL
               return agent
-                       .workspaces.desired_state_not_terminated
-                       .or(agent.workspaces.actual_state_not_terminated)
+                       .workspaces.with_desired_state_or_actual_state_not_terminated
                        .order_id_asc
             end
 

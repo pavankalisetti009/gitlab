@@ -48,6 +48,20 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
     )
   end
 
+  let_it_be(:workspace_with_neither_actual_nor_desired_state_terminated, reload: true) do
+    create(
+      :workspace,
+      :without_realistic_after_create_timestamp_updates,
+      name: "workspace_desired_state_and_actual_state_are_not_terminated",
+      desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
+      actual_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
+      agent: agent,
+      user: user,
+      force_include_all_resources: false,
+      responded_to_agent_at: 2.hours.ago
+    )
+  end
+
   let_it_be(:workspace_from_agent_info, reload: true) do
     create(
       :workspace,
@@ -136,6 +150,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
       workspace_desired_is_terminated_actual_is_terminating.responded_to_agent_at - 1.hour
     )
 
+    # desired_state_updated_at IS NOT more recent than responded_to_agent_at
+    workspace_with_neither_actual_nor_desired_state_terminated.update_attribute(
+      :desired_state_updated_at,
+      workspace_with_neither_actual_nor_desired_state_terminated.responded_to_agent_at - 1.hour
+    )
+
     # desired_state_updated_at IS more recent than responded_to_agent_at
     workspace_with_new_update_to_desired_state.update_attribute(
       :desired_state_updated_at,
@@ -167,6 +187,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
         .to be < workspace_that_is_terminated.responded_to_agent_at
       expect(workspace_desired_is_terminated_actual_is_terminating.desired_state_updated_at)
         .to be < workspace_desired_is_terminated_actual_is_terminating.responded_to_agent_at
+      expect(workspace_with_neither_actual_nor_desired_state_terminated.desired_state_updated_at)
+        .to be < workspace_with_neither_actual_nor_desired_state_terminated.responded_to_agent_at
       expect(workspace_with_new_update_to_desired_state.desired_state_updated_at)
         .to be > workspace_with_new_update_to_desired_state.responded_to_agent_at
       expect(workspace_with_new_update_to_actual_state.actual_state_updated_at)
@@ -184,6 +206,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
         # Includes ALL workspaces including workspace_only_returned_by_full_update
         workspace_only_returned_by_full_update,
         workspace_desired_is_terminated_actual_is_terminating,
+        workspace_with_neither_actual_nor_desired_state_terminated,
         workspace_from_agent_info,
         workspace_with_new_update_to_desired_state,
         workspace_with_new_update_to_actual_state,
@@ -214,11 +237,17 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
       [
         # Does NOT include workspace_only_returned_by_full_update
         workspace_desired_is_terminated_actual_is_terminating,
+        workspace_with_neither_actual_nor_desired_state_terminated,
         workspace_from_agent_info,
         workspace_with_new_update_to_desired_state,
         workspace_with_new_update_to_actual_state,
         workspace_with_force_include_all_resources
       ]
+    end
+
+    it "does not return terminated workspaces" do
+      expect(returned_value.fetch(:workspaces_to_be_returned).map(&:name))
+        .not_to include(workspace_that_is_terminated.name)
     end
 
     it "returns only workspaces with new updates to desired state or in workspaces_from_agent_infos" do
