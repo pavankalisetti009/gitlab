@@ -57,6 +57,10 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
           expect(snowplow_context.to_json[:data][:is_gitlab_team_member]).to eq(false)
         end
       end
+
+      it 'hold the original user id value' do
+        expect(snowplow_context.to_json[:data][:user_id]).to eq(user.id)
+      end
     end
 
     context 'on self-managed' do
@@ -66,6 +70,10 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
 
       it 'sets the realm to self-managed' do
         expect(snowplow_context.to_json[:data][:realm]).to eq('self-managed')
+      end
+
+      it 'hashes user_id' do
+        expect(snowplow_context.to_json[:data][:user_id]).to eq(Gitlab::CryptoHelper.sha256(user.id))
       end
     end
   end

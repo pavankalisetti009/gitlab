@@ -23,6 +23,13 @@ module EE
         def instance_id
           ::Gitlab::GlobalAnonymousId.instance_id
         end
+
+        override :tracked_user_id
+        def tracked_user_id
+          return unless user.is_a? User
+
+          ::Gitlab.com? ? user.id : ::Gitlab::CryptoHelper.sha256(user.id)
+        end
       end
     end
   end
