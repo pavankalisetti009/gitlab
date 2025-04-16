@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe 'duo_pro:bulk_user_assignment', feature_category: :plan_provisioning do
-  let(:csv_file_path) { 'spec/fixtures/duo_pro/bulk_user_assignment.csv' }
+RSpec.describe 'duo_pro:bulk_user_assignment', feature_category: :'add-on_provisioning' do
+  let(:csv_file_path) { 'spec/fixtures/gitlab_subscriptions/duo/bulk_user_assignment.csv' }
 
   before do
     Rake.application.rake_require('tasks/duo_pro/bulk_user_assignment')
@@ -33,7 +33,11 @@ RSpec.describe 'duo_pro:bulk_user_assignment', feature_category: :plan_provision
 
       before do
         add_on_purchase = create(:gitlab_subscription_add_on_purchase, :self_managed, quantity: 10, add_on: add_on)
-        allow_next_instance_of(DuoPro::BulkUserAssignment, %w[user1 user2 user3], add_on_purchase) do |instance|
+        allow_next_instance_of(
+          GitlabSubscriptions::Duo::BulkUserAssignment,
+          %w[user1 user2 user3],
+          add_on_purchase
+        ) do |instance|
           response = { successful_assignments: ['success'], failed_assignments: ['Failed'] }
           allow(instance).to receive(:execute).and_return(response)
         end

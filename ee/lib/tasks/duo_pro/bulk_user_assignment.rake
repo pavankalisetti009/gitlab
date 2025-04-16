@@ -29,7 +29,7 @@ namespace :duo_pro do
       ERROR_MESSAGE
     end
 
-    result = DuoPro::BulkUserAssignment.new(user_names, add_on_purchase).execute
+    result = GitlabSubscriptions::Duo::BulkUserAssignment.new(user_names, add_on_purchase).execute
     display_results(result)
   end
 
