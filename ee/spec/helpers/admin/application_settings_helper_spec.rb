@@ -43,21 +43,29 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
     describe '#ai_settings_helper_data' do
       using RSpec::Parameterized::TableSyntax
-      let(:service) { double('CodeSuggestionsService') } # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test purchases call
-      let(:enterprise_service) { double('EnterpriseService') } # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test purchases call
-      let(:ai_gateway_url) { "http://0.0.0.0:5052" }
-      let(:duo_workflow_service_account) { nil }
 
       subject { helper.ai_settings_helper_data }
 
-      where(
-        :terms_accepted, :purchased, :duo_ent, :duo_ent_purchased, :expected_duo_pro_visible_value,
-        :expected_experiments_visible_value, :can_manage_self_hosted_models
-      ) do
-        true  | true  | true  | true  | 'true'  | 'true'  | 'true'
-        true  | true  | true  | false | 'true'  | 'false' | 'true'
-        false | false | false | false | 'false' | 'false' | 'true'
-        true  | nil   | nil   | nil   | ''      | ''      | 'true'
+      let(:service) { double('CodeSuggestionsService') } # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test purchases call
+      let(:enterprise_service) { double('EnterpriseService') } # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test purchases call
+
+      let(:ai_gateway_url) { "http://0.0.0.0:5052" }
+      let(:duo_availability) { 'default_on' }
+      let(:instance_level_ai_beta_features_enabled) { false }
+      let(:enabled_expanded_logging) { false }
+      let(:disabled_direct_code_suggestions) { false }
+      let(:duo_chat_expiration_column) { 'created_at' }
+      let(:duo_chat_expiration_days) { 30 }
+
+      where(:terms_accepted, :purchased, :ultimate, :premium, :duo_ent_purchased, :expected_duo_pro_visible_value,
+        :expected_experiments_visible_value, :expected_can_manage_self_hosted_models) do
+        true  | true  | true  | false | true  | 'true'  | 'true'  | 'true'
+        true  | true  | false | true  | true  | 'true'  | 'true'  | 'true'
+        true  | true  | true  | false | false | 'true'  | 'true'  | 'false'
+        true  | true  | false | true  | false | 'true'  | 'true'  | 'false'
+        true  | true  | false | false | true  | 'true'  | 'true'  | 'false'
+        false | false | false | false | false | 'false' | 'false' | 'false'
+        true  | nil   | true  | false | false | ''      | 'false' | 'false'
       end
 
       with_them do
@@ -71,7 +79,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             beta_self_hosted_models_enabled: terms_accepted.to_s,
             toggle_beta_models_path: admin_ai_duo_self_hosted_toggle_beta_models_path,
             duo_pro_visible: expected_duo_pro_visible_value,
-            can_manage_self_hosted_models: can_manage_self_hosted_models.to_s,
+            can_manage_self_hosted_models: expected_can_manage_self_hosted_models.to_s,
             ai_gateway_url: ai_gateway_url,
             duo_chat_expiration_column: duo_chat_expiration_column,
             duo_chat_expiration_days: duo_chat_expiration_days.to_s
@@ -79,36 +87,55 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         end
 
         before do
+          allow(::Gitlab::CurrentSettings)
+            .to receive(:disabled_direct_code_suggestions)
+            .and_return(disabled_direct_code_suggestions)
+
+          allow(helper).to receive_messages(
+            experiments_settings_allowed?: expected_experiments_visible_value == 'true',
+            duo_availability: duo_availability,
+            instance_level_ai_beta_features_enabled: instance_level_ai_beta_features_enabled,
+            enabled_expanded_logging: enabled_expanded_logging,
+            current_application_settings: double( # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test expiration call
+              duo_chat_expiration_column: duo_chat_expiration_column,
+              duo_chat_expiration_days: duo_chat_expiration_days
+            )
+          )
+
           allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(terms_accepted)
-          allow(License).to receive_message_chain(:current, :ultimate?).and_return(true)
-          allow(::GitlabSubscriptions::AddOnPurchase).to receive_message_chain(:for_duo_enterprise, :active,
-            :exists?).and_return(true)
+
+          allow(License).to receive_message_chain(:current, :ultimate?).and_return(ultimate)
+          allow(License).to receive_message_chain(:current, :premium?).and_return(premium)
+
+          allow(::GitlabSubscriptions::AddOnPurchase)
+            .to receive_message_chain(:for_duo_enterprise, :active, :exists?)
+            .and_return(duo_ent_purchased)
+
           allow(::Ai::Setting).to receive_message_chain(:instance, :ai_gateway_url).and_return(ai_gateway_url)
           allow(::Ai::Setting).to receive_message_chain(:instance, :enabled_instance_verbose_ai_logs)
             .and_return(enabled_expanded_logging)
 
-          if purchased.nil?
-            allow(CloudConnector::AvailableServices)
-              .to receive(:find_by_name).with(:code_suggestions).and_return(nil)
-          else
-            allow(CloudConnector::AvailableServices)
-              .to receive(:find_by_name).with(:code_suggestions).and_return(service)
-            allow(service).to receive(:purchased?).and_return(purchased)
-          end
-
-          if duo_ent.nil?
-            allow(CloudConnector::AvailableServices)
-              .to receive(:find_by_name).with(:anthropic_proxy).and_return(nil)
-          else
-            allow(CloudConnector::AvailableServices)
-              .to receive(:find_by_name).with(:anthropic_proxy).and_return(enterprise_service)
-            allow(enterprise_service).to receive(:purchased?).and_return(duo_ent_purchased)
-          end
+          setup_cloud_connector_services(purchased)
         end
 
         it "returns the expected data" do
           is_expected.to eq(expected_settings_helper_data)
         end
+      end
+
+      def setup_cloud_connector_services(purchased)
+        if purchased.nil?
+          allow(CloudConnector::AvailableServices)
+            .to receive(:find_by_name).with(:code_suggestions).and_return(nil)
+        else
+          allow(CloudConnector::AvailableServices)
+            .to receive(:find_by_name).with(:code_suggestions).and_return(service)
+          allow(service).to receive(:purchased?).and_return(purchased)
+        end
+
+        allow(CloudConnector::AvailableServices)
+          .to receive(:find_by_name).with(:anthropic_proxy).and_return(enterprise_service)
+        allow(enterprise_service).to receive(:purchased?).and_return(true)
       end
     end
   end

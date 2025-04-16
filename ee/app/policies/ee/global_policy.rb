@@ -106,7 +106,7 @@ module EE
         next false if ::Feature.disabled?(:allow_self_hosted_features_for_com) &&
           ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
-        ::License.current&.ultimate? && # Replace with license :ai_self_hosted_model for GA
+        (::License.current&.ultimate? || ::License.current&.premium?) &&
           ::GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.active.exists?
       end
 

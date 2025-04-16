@@ -66,8 +66,7 @@ module Admin
       code_suggestions_purchased = CloudConnector::AvailableServices.find_by_name(:code_suggestions)&.purchased?
       disabled_direct_code_suggestions = ::Gitlab::CurrentSettings.disabled_direct_code_suggestions
       beta_self_hosted_models_enabled = ::Ai::TestingTermsAcceptance.has_accepted?
-      can_manage_self_hosted_models =
-        ::License.current&.ultimate? && ::GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.active.exists?
+      can_manage_self_hosted_models = can_manage_self_hosted_models?
       ai_gateway_url = ::Ai::Setting.instance.ai_gateway_url
 
       {
@@ -87,6 +86,13 @@ module Admin
     end
 
     private
+
+    def can_manage_self_hosted_models?
+      has_required_license = ::License.current&.ultimate? || ::License.current&.premium?
+      has_duo_enterprise = ::GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.active.exists?
+
+      has_required_license && has_duo_enterprise
+    end
 
     def current_application_settings
       # clear cached settings so that duo_availability shows up correctly

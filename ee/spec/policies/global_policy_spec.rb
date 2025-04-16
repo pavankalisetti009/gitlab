@@ -804,58 +804,120 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
   end
 
   describe 'manage self-hosted AI models' do
+    let_it_be(:active_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active) }
+
     let(:current_user) { admin }
-    let(:license_double) { instance_double('License', ultimate?: true) }
 
-    let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active) }
+    shared_examples 'allowed to manage self-hosted models' do
+      it { is_expected.to be_allowed(:manage_self_hosted_models_settings) }
+    end
 
-    before do
-      allow(License).to receive(:current).and_return(license_double)
+    shared_examples 'disallowed to manage self-hosted models' do
+      it { is_expected.to be_disallowed(:manage_self_hosted_models_settings) }
+    end
+
+    shared_context 'with license setup' do |ultimate:, premium:|
+      let(:license_double) { instance_double('License', ultimate?: ultimate, premium?: premium) }
+
+      before do
+        allow(License).to receive(:current).and_return(license_double)
+      end
+    end
+
+    shared_context 'with active add-on' do
+      before do
+        allow(::GitlabSubscriptions::AddOnPurchase)
+          .to receive_message_chain(:for_duo_enterprise, :active, :exists?).and_return(true)
+      end
+    end
+
+    shared_context 'with expired add-on' do
+      before do
+        allow(::GitlabSubscriptions::AddOnPurchase)
+          .to receive_message_chain(:for_duo_enterprise, :active, :exists?).and_return(false)
+      end
     end
 
     context 'when admin' do
-      context 'when conditions are respected', :enable_admin_mode do
-        it { is_expected.to be_allowed(:manage_self_hosted_models_settings) }
+      context 'Ultimate + Active Add-on', :enable_admin_mode do
+        include_context 'with license setup', ultimate: true, premium: false
+        include_context 'with active add-on'
+
+        include_examples 'allowed to manage self-hosted models'
       end
 
-      context 'when admin mode is disabled' do
-        it { is_expected.to be_disallowed(:manage_self_hosted_models_settings) }
+      context 'Premium + Active Add-on', :enable_admin_mode do
+        include_context 'with license setup', ultimate: false, premium: true
+        include_context 'with active add-on'
+
+        include_examples 'allowed to manage self-hosted models'
       end
 
-      context 'when license is not an Ultimate license', :enable_admin_mode do
-        let(:license_double) { instance_double('License', ultimate?: false) }
+      context 'Ultimate + Expired Add-on', :enable_admin_mode do
+        include_context 'with license setup', ultimate: true, premium: false
+        include_context 'with expired add-on'
 
-        it { is_expected.to be_disallowed(:manage_self_hosted_models_settings) }
+        include_examples 'disallowed to manage self-hosted models'
       end
 
-      context 'when there is no active Duo Enterprise subscription', :enable_admin_mode do
-        before do
-          add_on_purchase.update!(expires_on: 1.day.ago)
-        end
+      context 'Premium + Expired Add-on', :enable_admin_mode do
+        include_context 'with license setup', ultimate: false, premium: true
+        include_context 'with expired add-on'
 
-        it { is_expected.to be_disallowed(:manage_self_hosted_models_settings) }
+        include_examples 'disallowed to manage self-hosted models'
       end
 
-      context 'when instance is in SASS mode', :enable_admin_mode do
+      context 'No license', :enable_admin_mode do
+        include_context 'with license setup', ultimate: false, premium: false
+        include_context 'with active add-on'
+
+        include_examples 'disallowed to manage self-hosted models'
+      end
+
+      context 'Admin Mode disabled' do
+        include_context 'with license setup', ultimate: true, premium: false
+        include_context 'with active add-on'
+
+        include_examples 'disallowed to manage self-hosted models'
+      end
+
+      context 'SaaS + feature flag enabled', :enable_admin_mode do
+        include_context 'with license setup', ultimate: true, premium: false
+        include_context 'with active add-on'
+
         before do
           stub_saas_features(gitlab_com_subscriptions: true)
           stub_feature_flags(allow_self_hosted_features_for_com: true)
         end
 
-        it { is_expected.to be_allowed(:manage_self_hosted_models_settings) }
+        include_examples 'allowed to manage self-hosted models'
+      end
 
-        context 'when allow_self_hosted_features_for_com is disabled' do
-          before do
-            stub_feature_flags(allow_self_hosted_features_for_com: false)
-          end
+      context 'SaaS + feature flag disabled', :enable_admin_mode do
+        include_context 'with license setup', ultimate: true, premium: false
+        include_context 'with active add-on'
 
-          it { is_expected.to be_disallowed(:manage_self_hosted_models_settings) }
+        before do
+          stub_saas_features(gitlab_com_subscriptions: true)
+          stub_feature_flags(allow_self_hosted_features_for_com: false)
         end
+
+        include_examples 'disallowed to manage self-hosted models'
       end
     end
 
     context 'when regular user' do
-      it { is_expected.to be_disallowed(:manage_self_hosted_models_settings) }
+      let(:current_user) { build(:user) }
+
+      before do
+        allow(License).to receive(:current)
+          .and_return(instance_double('License', ultimate?: true, premium?: false, feature_available?: false))
+
+        allow(::GitlabSubscriptions::AddOnPurchase)
+          .to receive_message_chain(:for_duo_enterprise, :active, :exists?).and_return(true)
+      end
+
+      include_examples 'disallowed to manage self-hosted models'
     end
   end
 
