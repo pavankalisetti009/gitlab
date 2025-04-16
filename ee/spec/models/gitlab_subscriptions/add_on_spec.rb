@@ -18,18 +18,27 @@ RSpec.describe GitlabSubscriptions::AddOn, feature_category: :subscription_manag
   end
 
   describe 'scopes' do
-    describe '.duo_add_ons' do
-      let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
-      let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
-      let!(:duo_amazon_q_add_on) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
-      let!(:duo_nano_add_on) { create(:gitlab_subscription_add_on, :duo_nano) }
-      let!(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
+    let!(:duo_nano_add_on) { create(:gitlab_subscription_add_on, :duo_nano) }
+    let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
+    let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+    let!(:duo_amazon_q_add_on) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
+    let!(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
 
+    describe '.duo_add_ons' do
       subject(:duo_add_ons) { described_class.duo_add_ons }
 
       it 'only queries the duo add-ons' do
-        expect(duo_add_ons.map(&:id))
-          .to contain_exactly(duo_pro_add_on.id, duo_enterprise_add_on.id, duo_amazon_q_add_on.id, duo_nano_add_on.id)
+        expect(duo_add_ons)
+          .to contain_exactly(duo_nano_add_on, duo_pro_add_on, duo_enterprise_add_on, duo_amazon_q_add_on)
+      end
+    end
+
+    describe '.seat_assignable_duo_add_ons' do
+      subject(:seat_assignable_duo_add_ons) { described_class.seat_assignable_duo_add_ons }
+
+      it 'only queries the duo add-ons with seat assignments' do
+        expect(seat_assignable_duo_add_ons)
+          .to contain_exactly(duo_pro_add_on, duo_enterprise_add_on)
       end
     end
   end
