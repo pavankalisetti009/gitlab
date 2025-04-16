@@ -179,7 +179,7 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
       end
     end
 
-    context 'when project is a fork' do
+    describe 'fork filtering' do
       include ProjectForksHelper
 
       let_it_be(:group2) { create(:group, :public) }

@@ -13,8 +13,7 @@ module Resolvers
           description: 'Maximum chunks per file.'
         argument :exclude_forks, GraphQL::Types::Boolean, required: false,
           experiment: { milestone: '17.11' },
-          description: "Excludes forked projects in the search. Always false for project search. \
-            Not available for global search."
+          description: 'Excludes forked projects in the search. Always false for project search.'
         argument :group_id, ::Types::GlobalIDType[::Group], required: false, experiment: { milestone: '17.2' },
           description: 'Group to search in.'
         argument :include_archived, GraphQL::Types::Boolean, required: false, default_value: false,

@@ -35,7 +35,7 @@ module Search
     end
 
     def zoekt_filters
-      { language: params[:language], include_archived: params[:include_archived] }
+      params.slice(:language, :include_archived, :include_forked, :exclude_forks)
     end
 
     def zoekt_node_id
