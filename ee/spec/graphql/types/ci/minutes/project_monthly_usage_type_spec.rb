@@ -7,8 +7,7 @@ RSpec.describe GitlabSchema.types['CiMinutesProjectMonthlyUsage'] do
     expect(described_class).to have_graphql_fields(
       :minutes,
       :shared_runners_duration,
-      :project,
-      :name
+      :project
     )
   end
 end

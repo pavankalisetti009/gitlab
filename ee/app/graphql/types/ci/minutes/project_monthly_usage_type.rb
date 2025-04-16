@@ -24,12 +24,6 @@ module Types
           null: true,
           description: 'Project having the recorded usage.'
 
-        field :name,
-          ::GraphQL::Types::String,
-          null: true,
-          deprecated: { reason: 'Use `project.name`', milestone: '15.6' },
-          description: 'Name of the project.'
-
         def name
           object.project&.name
         end
