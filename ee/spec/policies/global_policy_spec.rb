@@ -245,48 +245,6 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     end
   end
 
-  describe 'list_removable_projects' do
-    context 'when user is an admin', :enable_admin_mode do
-      let_it_be(:current_user) { admin }
-
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: licensed?)
-      end
-
-      context 'when licensed feature is enabled' do
-        let(:licensed?) { true }
-
-        it { is_expected.to be_allowed(:list_removable_projects) }
-      end
-
-      context 'when licensed feature is not enabled' do
-        let(:licensed?) { false }
-
-        it { is_expected.to be_disallowed(:list_removable_projects) }
-      end
-    end
-
-    context 'when user is a normal user' do
-      let_it_be(:current_user) { create(:user) }
-
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: licensed?)
-      end
-
-      context 'when licensed feature is enabled' do
-        let(:licensed?) { true }
-
-        it { is_expected.to be_allowed(:list_removable_projects) }
-      end
-
-      context 'when licensed feature is not enabled' do
-        let(:licensed?) { false }
-
-        it { is_expected.to be_disallowed(:list_removable_projects) }
-      end
-    end
-  end
-
   describe 'custom roles' do
     describe 'admin_member_role' do
       let(:permissions) { [:admin_member_role, :read_admin_member_role] }
