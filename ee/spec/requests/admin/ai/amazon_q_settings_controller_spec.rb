@@ -6,11 +6,11 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
   # Ultimate license is needed for service account creation available set check
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
   # Default organization needed for creating new users
-  let_it_be(:default_organization) { create(:organization, :default) }
+  let_it_be(:organization) { create(:organization) }
   let_it_be(:active_token) { create(:service_access_token, :active, token: JWT.encode({ sub: 'abc123' }, '')) }
   let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
 
-  let(:admin) { create(:admin) }
+  let(:admin) { create(:admin, organizations: [organization]) }
   let(:amazon_q_ready) { false }
   let(:connected) { true }
 
