@@ -118,6 +118,33 @@ describe('WorkItemStatus component', () => {
       });
     });
 
+    it('searches the options on frontend', async () => {
+      await createComponentAndShowDropdown();
+
+      await waitForPromises();
+      findSidebarDropdownWidget().vm.$emit('searchStarted', 'in progress');
+      await nextTick();
+
+      expect(findSidebarDropdownWidget().props('listItems')).toHaveLength(1);
+    });
+
+    it('resets the options on frontend when dropdown hidden after search', async () => {
+      await createComponentAndShowDropdown();
+
+      await waitForPromises();
+      findSidebarDropdownWidget().vm.$emit('searchStarted', 'in progress');
+      await nextTick();
+
+      expect(findSidebarDropdownWidget().props('listItems')).toHaveLength(1);
+
+      await findSidebarDropdownWidget().vm.$emit('dropdownHidden');
+
+      showDropdown();
+      await waitForPromises();
+
+      expect(findSidebarDropdownWidget().props('listItems')).toHaveLength(allowedStatus.length);
+    });
+
     it('shows the skeleton loader when the items are being fetched on click', async () => {
       await createComponentAndShowDropdown();
 
