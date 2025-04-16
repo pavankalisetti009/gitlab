@@ -4,6 +4,7 @@ module Security
   module MergeRequestApprovalPolicies
     class DeniedLicensesChecker
       include Gitlab::Utils::StrongMemoize
+      include Gitlab::InternalEventsTracking
 
       def initialize(project, report, target_branch_report, scan_result_policy_read, approval_policy_rule)
         @project = project
@@ -19,8 +20,10 @@ module Security
         policy_allowed_licenses = policy_licenses["allowed"]
 
         if policy_denied_licenses
+          track_package_exception_event('denylist')
           licenses_violating_policy = check_denied_licenses(policy_denied_licenses)
         elsif policy_allowed_licenses
+          track_package_exception_event('allowlist')
           licenses_violating_policy = check_allowed_licenses(policy_allowed_licenses)
         end
 
@@ -200,6 +203,16 @@ module Security
         end
       end
       strong_memoize_attr :license_states
+
+      def track_package_exception_event(licenses_list_type)
+        track_internal_event(
+          'enforce_approval_policies_with_package_exceptions_in_project',
+          project: project,
+          additional_properties: {
+            label: licenses_list_type
+          }
+        )
+      end
     end
   end
 end
