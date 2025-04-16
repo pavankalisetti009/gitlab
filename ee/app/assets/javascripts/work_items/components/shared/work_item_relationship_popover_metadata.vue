@@ -1,14 +1,13 @@
 <script>
 import { GlTooltipDirective, GlIcon, GlTooltip } from '@gitlab/ui';
-import {
-  WIDGET_TYPE_WEIGHT,
-  WIDGET_TYPE_ITERATION,
-  WIDGET_TYPE_START_AND_DUE_DATE,
-} from '~/work_items/constants';
-import { findWidget } from '~/issues/list/utils';
 import { humanTimeframe, newDate } from '~/lib/utils/datetime_utility';
 import { getIterationPeriod } from 'ee/iterations/utils';
 import WorkItemRelationshipPopoverMetadata from '~/work_items/components/shared/work_item_relationship_popover_metadata.vue';
+import {
+  findIterationWidget,
+  findStartAndDueDateWidget,
+  findWeightWidget,
+} from '~/work_items/utils';
 
 export default {
   name: 'WorkItemRelationshipPopoverMetadataEE',
@@ -32,16 +31,16 @@ export default {
   },
   computed: {
     workItemWeight() {
-      return findWidget(WIDGET_TYPE_WEIGHT, this.workItem)?.weight;
+      return findWeightWidget(this.workItem)?.weight;
     },
     workItemIteration() {
-      return findWidget(WIDGET_TYPE_ITERATION, this.workItem)?.iteration;
+      return findIterationWidget(this.workItem)?.iteration;
     },
     workItemStartDate() {
-      return findWidget(WIDGET_TYPE_START_AND_DUE_DATE, this.workItem)?.startDate;
+      return findStartAndDueDateWidget(this.workItem)?.startDate;
     },
     workItemDueDate() {
-      return findWidget(WIDGET_TYPE_START_AND_DUE_DATE, this.workItem)?.dueDate;
+      return findStartAndDueDateWidget(this.workItem)?.dueDate;
     },
     showDate() {
       return this.workItemStartDate || this.workItemDueDate;

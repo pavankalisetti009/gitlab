@@ -1,9 +1,9 @@
 <script>
 import { GlBadge } from '@gitlab/ui';
 import { n__, sprintf } from '~/locale';
-import { VULNERABILITIES_ITEMS_ANCHOR, WIDGET_TYPE_VULNERABILITIES } from '~/work_items/constants';
+import { VULNERABILITIES_ITEMS_ANCHOR } from '~/work_items/constants';
+import { findVulnerabilitiesWidget } from '~/work_items/utils';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
-import { findWidget } from '~/issues/list/utils';
 import workItemVulnerabilitiesQuery from '../graphql/work_item_vulnerabilities.query.graphql';
 import WorkItemVulnerabilityItem from './work_item_vulnerability_item.vue';
 
@@ -60,7 +60,7 @@ export default {
         };
       },
       update(data) {
-        return findWidget(WIDGET_TYPE_VULNERABILITIES, data.workspace?.workItem) || {};
+        return findVulnerabilitiesWidget(data.workspace?.workItem) || {};
       },
       skip() {
         return !this.workItemIid;

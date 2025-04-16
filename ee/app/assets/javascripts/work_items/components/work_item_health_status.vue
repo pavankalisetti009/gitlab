@@ -12,15 +12,13 @@ import {
   I18N_WORK_ITEM_ERROR_UPDATING,
   sprintfWorkItem,
   TRACKING_CATEGORY_SHOW,
-  WIDGET_TYPE_HEALTH_STATUS,
   i18n,
 } from '~/work_items/constants';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
-import { newWorkItemId, newWorkItemFullPath } from '~/work_items/utils';
-import { findWidget } from '~/issues/list/utils';
+import { newWorkItemId, newWorkItemFullPath, findHealthStatusWidget } from '~/work_items/utils';
 import Tracking from '~/tracking';
 
 export default {
@@ -77,7 +75,7 @@ export default {
       return this.healthStatus || null;
     },
     healthStatus() {
-      return findWidget(WIDGET_TYPE_HEALTH_STATUS, this.workItem)?.healthStatus;
+      return findHealthStatusWidget(this.workItem)?.healthStatus;
     },
     createFlow() {
       return this.workItemId === newWorkItemId(this.workItemType);
