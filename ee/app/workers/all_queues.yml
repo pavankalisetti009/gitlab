@@ -53,6 +53,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:ai_duo_workflows_fail_stuck_workflows
+  :worker_name: Ai::DuoWorkflows::FailStuckWorkflowsWorker
+  :feature_category: :duo_workflow
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :cpu
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:analytics_cycle_analytics_consistency
   :worker_name: Analytics::CycleAnalytics::ConsistencyWorker
   :feature_category: :value_stream_management
