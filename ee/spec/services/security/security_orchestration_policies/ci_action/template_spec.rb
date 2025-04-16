@@ -188,6 +188,13 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
             },
             rules: [
               {
+                if: '$AST_ENABLE_MR_PIPELINES == "true" && $CI_PIPELINE_SOURCE == "merge_request_event" && ' \
+                    '$CI_GITLAB_FIPS_MODE == "true" && $CS_ANALYZER_IMAGE !~ /-(fips|ubi)\z/',
+                variables: { CS_IMAGE_SUFFIX: '-fips' }
+              },
+              { if: '$AST_ENABLE_MR_PIPELINES == "true" && $CI_PIPELINE_SOURCE == "merge_request_event"' },
+              { if: '$AST_ENABLE_MR_PIPELINES == "true" && $CI_OPEN_MERGE_REQUESTS', when: 'never' },
+              {
                 if: '$CI_COMMIT_BRANCH && ' \
                     '$CI_GITLAB_FIPS_MODE == "true" && $CS_ANALYZER_IMAGE !~ /-(fips|ubi)\z/',
                 variables: { CS_IMAGE_SUFFIX: '-fips' }
