@@ -693,5 +693,105 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
         end
       end
     end
+
+    describe 'Automatic Duo Code Review' do
+      let(:ai_review_allowed) { true }
+      let(:auto_duo_code_review) { true }
+      let(:duo) { ::Users::Internal.duo_code_review_bot }
+      let(:old_title) { 'Draft: Awesome merge_request' }
+
+      let(:merge_request) do
+        create(
+          :merge_request,
+          :simple,
+          title: old_title,
+          description: "This is great",
+          source_project: project,
+          author: create(:user)
+        )
+      end
+
+      before do
+        allow(merge_request).to receive(:ai_review_merge_request_allowed?)
+          .with(user)
+          .and_return(ai_review_allowed)
+
+        allow(project).to receive(:auto_duo_code_review_enabled).and_return(auto_duo_code_review)
+      end
+
+      context 'when it became ready by wip_event the MR title changes' do
+        # wip_event can be set either via UI or /ready quickaction
+        let(:opts) { { wip_event: 'ready' } }
+
+        it 'adds Duo as a reviewer' do
+          update_merge_request(opts)
+
+          expect(merge_request.reviewers).to eq [duo]
+        end
+      end
+
+      context 'when it becomes ready by title change' do
+        let(:opts) { { title: 'Awesome merge_request' } }
+
+        it 'adds Duo as a reviewer' do
+          update_merge_request(opts)
+
+          expect(merge_request.reviewers).to eq [duo]
+        end
+
+        context 'when another reviewer exists' do
+          before do
+            merge_request.reviewers = [user]
+          end
+
+          it 'adds Duo as a reviewer' do
+            update_merge_request(opts)
+
+            expect(merge_request.reviewers).to match_array [user, duo]
+          end
+        end
+
+        context 'when Duo Code Review feature is not allowed' do
+          let(:ai_review_allowed) { false }
+
+          it 'does not add Duo as a reviewer' do
+            update_merge_request(opts)
+
+            expect(merge_request.reviewers).to be_empty
+          end
+        end
+
+        context 'when Auto Duo Code Review project setting is disabled' do
+          let(:auto_duo_code_review) { false }
+
+          it 'does not add Duo as a reviewer' do
+            update_merge_request(opts)
+
+            expect(merge_request.reviewers).to be_empty
+          end
+        end
+      end
+
+      context 'when it becomes draft' do
+        let(:old_title) { 'Awesome merge_request' }
+        let(:opts) { { title: 'Draft: Awesome merge_request' } }
+
+        it 'does not add Duo as a reviewer' do
+          update_merge_request(opts)
+
+          expect(merge_request.reviewers).to be_empty
+        end
+      end
+
+      context 'when title is not being changed' do
+        let(:opts) { { description: 'This is awesome' } }
+
+        it 'does not add Duo as a reviewer' do
+          update_merge_request(opts)
+
+          expect(merge_request.reviewers).to be_empty
+        end
+      end
+    end
   end
 end

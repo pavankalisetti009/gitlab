@@ -7,6 +7,8 @@ module EE
 
       override :handle_changes
       def handle_changes(merge_request, options)
+        handle_draft_state_change(merge_request, merge_request.previous_changes)
+
         super
 
         handle_override_requested_changes(merge_request, merge_request.previous_changes)
@@ -101,6 +103,16 @@ module EE
             data: { current_user_id: current_user.id, merge_request_id: merge_request.id }
           )
         )
+      end
+
+      def handle_draft_state_change(merge_request, changed_fields)
+        return unless changed_fields.include?('title')
+
+        old_title, new_title = changed_fields['title']
+
+        return unless ::MergeRequest.draft?(old_title) && !::MergeRequest.draft?(new_title)
+
+        assign_duo_as_reviewer(merge_request)
       end
     end
   end

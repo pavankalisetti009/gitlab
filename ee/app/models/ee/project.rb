@@ -466,6 +466,7 @@ module EE
         :allow_pipeline_trigger_approve_deployment,
         :allow_pipeline_trigger_approve_deployment=,
         :product_analytics_instrumentation_key,
+        :auto_duo_code_review_enabled,
         to: :project_setting
       with_options prefix: :delegated, to: :project_setting do
         delegate :require_reauthentication_to_approve=

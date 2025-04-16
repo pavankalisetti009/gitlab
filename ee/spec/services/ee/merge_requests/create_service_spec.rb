@@ -85,6 +85,63 @@ RSpec.describe MergeRequests::CreateService, feature_category: :code_review_work
 
       service.execute
     end
+
+    describe 'Automatic Duo Code Review' do
+      let(:ai_review_allowed) { true }
+      let(:auto_duo_code_review) { true }
+      let(:duo) { ::Users::Internal.duo_code_review_bot }
+      let(:created_merge_request) { service.execute }
+
+      before do
+        allow_next_instance_of(MergeRequest) do |merge_request|
+          allow(merge_request).to receive(:ai_review_merge_request_allowed?)
+            .with(user)
+            .and_return(ai_review_allowed)
+        end
+
+        allow(project).to receive(:auto_duo_code_review_enabled).and_return(auto_duo_code_review)
+      end
+
+      it 'adds Duo as a reviewer' do
+        expect(created_merge_request.reviewers).to eq [duo]
+      end
+
+      context 'when another reviewer exists' do
+        let(:opts) do
+          super().merge(reviewer_ids: [user.id])
+        end
+
+        it 'adds Duo as a reviewer' do
+          expect(created_merge_request.reviewers).to match_array [user, duo]
+        end
+      end
+
+      context 'when Duo Code Review feature is not allowed' do
+        let(:ai_review_allowed) { false }
+
+        it 'does not add Duo as a reviewer' do
+          expect(created_merge_request.reviewers).to be_empty
+        end
+      end
+
+      context 'when the MR is draft' do
+        let(:opts) do
+          super().merge(title: 'Draft: Awesome merge_request')
+        end
+
+        it 'does not add Duo as a reviewer' do
+          expect(created_merge_request.reviewers).to be_empty
+        end
+      end
+
+      context 'when Auto Duo Code Review project setting is disabled' do
+        let(:auto_duo_code_review) { false }
+
+        it 'does not add Duo as a reviewer' do
+          expect(created_merge_request.reviewers).to be_empty
+        end
+      end
+    end
   end
 
   describe '#execute with blocking merge requests', :clean_gitlab_redis_shared_state do
