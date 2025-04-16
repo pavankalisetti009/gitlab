@@ -11,6 +11,7 @@ module AuditEvents
     data_consistency :sticky
     feature_category :audit_events
     loggable_arguments 0, 1
+    sidekiq_options retry: 3
 
     def perform(audit_operation, audit_event_id, audit_event_json = nil, model_class = nil)
       return if ::Gitlab::SilentMode.enabled?
