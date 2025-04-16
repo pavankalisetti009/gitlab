@@ -216,9 +216,6 @@ module EE
           store.subscribe ::Search::Zoekt::IndexToEvictEventWorker,
             to: ::Search::Zoekt::IndexToEvictEvent
 
-          store.subscribe ::Search::Zoekt::AdjustIndicesReservedStorageBytesEventWorker,
-            to: ::Search::Zoekt::AdjustIndicesReservedStorageBytesEvent
-
           store.subscribe ::Search::Zoekt::NodeWithNegativeUnclaimedStorageEventWorker,
             to: ::Search::Zoekt::NodeWithNegativeUnclaimedStorageEvent
 
