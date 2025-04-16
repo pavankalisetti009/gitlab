@@ -151,7 +151,7 @@ module EE
       redirect = ::Gitlab::Auth::GroupSaml::SsoEnforcer.access_restricted?(resource: search_group, user: current_user)
       return unless redirect
 
-      redirect_to sso_group_saml_providers_url(search_group, { redirect: request.fullpath })
+      redirect_to sso_group_saml_providers_url(search_group.root_ancestor, { redirect: request.fullpath })
     end
   end
 end
