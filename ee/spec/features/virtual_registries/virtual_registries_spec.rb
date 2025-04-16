@@ -28,39 +28,7 @@ RSpec.describe 'Virtual registries', feature_category: :virtual_registry do
         group.add_guest(user)
       end
 
-      context 'when dependency proxy feature is not available' do
-        before do
-          stub_config(dependency_proxy: { enabled: false })
-        end
-
-        it 'renders 404' do
-          visit url
-
-          expect(page).to have_gitlab_http_status(:not_found)
-        end
-      end
-
-      context 'when license is invalid' do
-        before do
-          stub_licensed_features(packages_virtual_registry: false)
-        end
-
-        it 'renders 404' do
-          visit url
-
-          expect(page).to have_gitlab_http_status(:not_found)
-        end
-      end
-
-      context 'when group is not root group' do
-        let(:group) { create(:group, :private, parent: super()) }
-
-        it 'renders 404' do
-          visit url
-
-          expect(page).to have_gitlab_http_status(:not_found)
-        end
-      end
+      it_behaves_like 'disallowed access to virtual registries'
 
       it 'renders virtual registries page' do
         visit url
