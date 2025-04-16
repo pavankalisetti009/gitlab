@@ -159,6 +159,7 @@ export default {
                     :selected-reviewers="reviewers"
                     :visible-reviewers="visibleReviewersForRule(rule)"
                     :users="rule.eligibleApprovers"
+                    :unique-id="rule.id"
                   />
                 </div>
               </td>
