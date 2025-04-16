@@ -27,11 +27,6 @@ module Types
         field :duo_chat_contributors_count, GraphQL::Types::Int,
           description: 'Number of contributors who used GitLab Duo Chat features.',
           null: true
-        field :duo_pro_assigned_users_count, GraphQL::Types::Int,
-          description: 'Number of assigned Duo Pro and Enterprise seats. Ignores time period filter.',
-          null: true,
-          deprecated: { reason: 'use duoAssignedUsersCount for the same behavior', milestone: '17.6' },
-          hash_key: :duo_assigned_users_count
         field :duo_used_count, GraphQL::Types::Int,
           description: 'Number of contributors who used any GitLab Duo feature.',
           null: true
