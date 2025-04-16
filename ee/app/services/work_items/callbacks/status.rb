@@ -3,7 +3,7 @@
 module WorkItems
   module Callbacks
     class Status < Base
-      def after_initialize
+      def after_save
         return unless params.key?(:status)
         return if excluded_in_new_type?
         return unless feature_available?
@@ -13,25 +13,8 @@ module WorkItems
         return unless has_correct_type?(target_status)
         return if work_item.current_status&.status == target_status
 
-        current_status = work_item.current_status || work_item.build_current_status
-        current_status.status = target_status
-
-        # Validation checks whether status is allowed for the lifecycle of the work item type.
-        if current_status.valid?(:status_callback)
-          work_item.current_status = current_status
-        else
-          raise_error(current_status.errors.full_messages.join(', '))
-        end
-      end
-
-      def after_save
-        return unless work_item.current_status&.previous_changes&.include?('system_defined_status_id')
-
-        ::SystemNotes::IssuablesService.new(
-          noteable: work_item,
-          container: work_item.namespace,
-          author: current_user
-        ).change_work_item_status(work_item.current_status.status)
+        update_work_item_status(target_status)
+        create_system_note
       end
 
       private
@@ -40,8 +23,29 @@ module WorkItems
         work_item.resource_parent.try(:work_item_status_feature_available?)
       end
 
+      # TODO: Handle custom statuses
+      # https://gitlab.com/gitlab-org/gitlab/-/work_items/524078
       def has_correct_type?(status)
         status.is_a?(::WorkItems::Statuses::SystemDefined::Status)
+      end
+
+      def update_work_item_status(target_status)
+        current_status = work_item.current_status || work_item.build_current_status
+        current_status.status = target_status
+
+        current_status.save!
+      end
+
+      # TODO: Handle custom statuses
+      # https://gitlab.com/gitlab-org/gitlab/-/work_items/524078
+      def create_system_note
+        return unless work_item.current_status&.system_defined_status_id_previously_changed?
+
+        ::SystemNotes::IssuablesService.new(
+          noteable: work_item,
+          container: work_item.namespace,
+          author: current_user
+        ).change_work_item_status(work_item.current_status.status)
       end
     end
   end

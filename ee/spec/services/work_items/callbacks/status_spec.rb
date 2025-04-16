@@ -10,7 +10,7 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
   let_it_be_with_reload(:work_item) { create(:work_item, :task, project: project) }
   let_it_be_with_reload(:unsupported_work_item) { create(:work_item, :ticket, project: project) }
 
-  let_it_be(:error_class) { ::Issuable::Callbacks::Base::Error }
+  let_it_be(:error_class) { ActiveRecord::RecordInvalid }
 
   let(:original_status) { ::WorkItems::Statuses::SystemDefined::Status.find(1) }
   let(:target_status) { ::WorkItems::Statuses::SystemDefined::Status.find(2) }
@@ -27,11 +27,29 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
     work_item.reload.current_status&.status
   end
 
-  shared_examples 'work item and status is unchanged' do
+  shared_examples 'changes work item status' do
+    it 'updates work item status value' do
+      expect { subject }.to change { work_item_status }.to(target_status)
+    end
+
+    it 'creates system note' do
+      expect { subject }.to change { work_item.notes.count }.by(1)
+
+      note = work_item.notes.first
+      expect(note.note).to eq(format("set status to **%{status_name}**", status_name: target_status.name))
+      expect(note.system_note_metadata.action).to eq('work_item_status')
+    end
+  end
+
+  shared_examples 'preserves work item status' do
     it 'does not change work item status value' do
       expect { subject }
         .to not_change { work_item_status }
         .and not_change { work_item.updated_at }
+    end
+
+    it 'does not create system notes' do
+      expect { subject }.to not_change { work_item.notes.count }
     end
   end
 
@@ -47,8 +65,24 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
     context 'when status param is present and valid' do
       let(:params) { { status: target_status } }
 
-      it 'updates work item status value' do
-        expect { subject }.to change { work_item_status }.to(target_status)
+      context 'when current status differs from target status' do
+        let_it_be_with_reload(:current_status) do
+          create(:work_item_current_status, work_item: work_item, system_defined_status_id: 1)
+        end
+
+        it_behaves_like 'changes work item status'
+      end
+
+      context 'when current status matches target status' do
+        let_it_be_with_reload(:current_status) do
+          create(:work_item_current_status, work_item: work_item, system_defined_status_id: 2)
+        end
+
+        it_behaves_like 'preserves work item status'
+      end
+
+      context 'when current status does not exist' do
+        it_behaves_like 'changes work item status'
       end
 
       context 'when work item type does not have lifecycle' do
@@ -57,7 +91,7 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
         end
 
         it_behaves_like 'raises a callback error' do
-          let(:message) { "System defined status not allowed for this work item type" }
+          let(:message) { "Validation failed: System defined status not allowed for this work item type" }
         end
       end
     end
@@ -65,21 +99,21 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
     context 'when status param is not present' do
       let(:params) { {} }
 
-      it_behaves_like 'work item and status is unchanged'
+      it_behaves_like 'preserves work item status'
 
       context 'when widget does not exist in type' do
         before do
           allow(callback).to receive(:excluded_in_new_type?).and_return(true)
         end
 
-        it_behaves_like 'work item and status is unchanged'
+        it_behaves_like 'preserves work item status'
       end
     end
 
     context 'when status param is of invalid type' do
       let(:params) { { status: 'In progress' } }
 
-      it_behaves_like 'work item and status is unchanged'
+      it_behaves_like 'preserves work item status'
     end
 
     context 'when status param is is invalid status' do
@@ -88,7 +122,9 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
       end
 
       it_behaves_like 'raises a callback error' do
-        let(:message) { "System defined status not provided or references non-existent system defined status" }
+        let(:message) do
+          "Validation failed: System defined status not provided or references non-existent system defined status"
+        end
       end
     end
 
@@ -96,7 +132,7 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
       let(:current_user) { user }
       let(:params) { { status: target_status } }
 
-      it_behaves_like 'work item and status is unchanged'
+      it_behaves_like 'preserves work item status'
     end
   end
 
@@ -105,48 +141,13 @@ RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
       stub_licensed_features(work_item_status: false)
     end
 
-    it_behaves_like 'work item and status is unchanged'
-  end
-
-  describe '#after_initialize' do
-    subject(:after_initialize_callback) { callback.after_initialize }
-
-    it_behaves_like 'when status feature is licensed'
-    it_behaves_like 'when status feature is unlicensed'
-
-    context 'when current status exists' do
-      let_it_be_with_reload(:current_status) do
-        create(:work_item_current_status, work_item: work_item, system_defined_status_id: 1)
-      end
-
-      it_behaves_like 'when status feature is licensed'
-      it_behaves_like 'when status feature is unlicensed'
-    end
+    it_behaves_like 'preserves work item status'
   end
 
   describe '#after_save' do
     subject(:after_save_callback) { callback.after_save }
 
-    let_it_be_with_reload(:current_status) do
-      create(:work_item_current_status, work_item: work_item, system_defined_status_id: 2)
-    end
-
-    it "does not create system notes when status didn't change" do
-      expect { after_save_callback }.to not_change { work_item.notes.count }
-    end
-
-    context 'when status was updated' do
-      before do
-        allow(work_item.current_status).to receive_message_chain(:previous_changes, :include?).and_return(true)
-      end
-
-      it 'creates system note' do
-        expect { after_save_callback }.to change { work_item.notes.count }.by(1)
-
-        note = work_item.notes.first
-        expect(note.note).to eq(format("set status to **%{status_name}**", status_name: target_status.name))
-        expect(note.system_note_metadata.action).to eq('work_item_status')
-      end
-    end
+    it_behaves_like 'when status feature is licensed'
+    it_behaves_like 'when status feature is unlicensed'
   end
 end

@@ -44,7 +44,6 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
 
   describe 'validations' do
     it { is_expected.to be_valid } # factory is valid
-    it { is_expected.to validate_presence_of(:work_item_id) }
 
     describe '#validate_status_exists' do
       shared_examples 'failing validation' do
