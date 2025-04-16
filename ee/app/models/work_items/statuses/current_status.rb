@@ -13,8 +13,6 @@ module WorkItems
       belongs_to_fixed_items :system_defined_status, fixed_items_class: WorkItems::Statuses::SystemDefined::Status
       belongs_to :custom_status, class_name: 'WorkItems::Statuses::Custom::Status', optional: true
 
-      validates :work_item_id, presence: true, unless: -> { validation_context == :status_callback }
-
       validate :validate_status_exists
       validate :validate_allowed_status
 
