@@ -129,7 +129,7 @@ RSpec.describe "Code owner approvals reset after pushing merge conflict to sourc
             changes)
         end
 
-        it 'resets code owner approvals' do
+        it 'resets code owner approvals', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472632' do
           expect(merge_request.reload.approvals).to be_empty
           page.within('.mr-widget-section') do
             expect(page).not_to have_content('Ready to merge')
