@@ -11,15 +11,15 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { OPERATOR_NOT } from '~/vue_shared/components/filtered_search_bar/constants';
 import projectDependencies from '../graphql/project_dependencies.query.graphql';
 import {
+  EXPORT_STARTED_MESSAGE,
   FETCH_ERROR_MESSAGE,
   FETCH_ERROR_MESSAGE_WITH_DETAILS,
   FETCH_EXPORT_ERROR_MESSAGE,
-  EXPORT_STARTED_MESSAGE,
   LICENSES_FETCH_ERROR_MESSAGE,
   VULNERABILITIES_FETCH_ERROR_MESSAGE,
 } from './constants';
 import * as types from './mutation_types';
-import { isValidResponse, graphQLClient } from './utils';
+import { graphQLClient, isValidResponse } from './utils';
 
 export const setDependenciesEndpoint = ({ commit }, endpoint) =>
   commit(types.SET_DEPENDENCIES_ENDPOINT, endpoint);
@@ -59,6 +59,28 @@ const parsePagination = (headers) => {
     return parseCursorPagination(headers);
   }
   return parseOffsetPagination(headers);
+};
+
+const buildGraphQLPaginationVariables = ({ cursor, pageInfo = {}, pageSize = 20 }) => {
+  const isInitialPage = !cursor;
+  const isNavigatingBackward = cursor === pageInfo.startCursor;
+
+  if (isInitialPage) {
+    return { first: pageSize };
+  }
+
+  if (isNavigatingBackward) {
+    return {
+      last: pageSize,
+      before: cursor,
+    };
+  }
+
+  // Default to forward navigation for all other cases
+  return {
+    first: pageSize,
+    after: cursor,
+  };
 };
 
 export const receiveDependenciesSuccess = ({ commit }, { headers, data }) => {
@@ -121,20 +143,28 @@ export const fetchDependencies = ({ state, dispatch }, params) => {
     });
 };
 
-export const fetchDependenciesViaGraphQL = ({ state, dispatch, commit }) => {
+export const fetchDependenciesViaGraphQL = ({ state, dispatch, commit }, params = {}) => {
   dispatch('requestDependencies');
 
-  const { fullPath } = state;
+  const { cursor, pageSize } = params;
+  const { fullPath, pageInfo } = state;
+
+  const variables = {
+    fullPath,
+    ...buildGraphQLPaginationVariables({
+      cursor,
+      pageInfo,
+      pageSize,
+    }),
+  };
 
   graphQLClient
     .query({
       query: projectDependencies,
-      variables: {
-        fullPath,
-      },
+      variables,
     })
     .then(({ data }) => {
-      const { nodes: dependenciesData, pageInfo } = data.project.dependencies;
+      const { nodes: dependenciesData, pageInfo: responsePageInfo } = data.project.dependencies;
 
       // Extract the numeric ID from the GraphQL ID and add it as occurrenceId
       const dependencies = dependenciesData.map((dependency) => ({
@@ -144,7 +174,7 @@ export const fetchDependenciesViaGraphQL = ({ state, dispatch, commit }) => {
 
       commit(types.RECEIVE_DEPENDENCIES_SUCCESS, {
         dependencies,
-        pageInfo,
+        pageInfo: responsePageInfo,
       });
     })
     .catch((error) => {
