@@ -21,9 +21,10 @@ module GitlabSubscriptions
 
     DUO_ADD_ONS = %i[code_suggestions duo_enterprise duo_amazon_q duo_nano].freeze
 
-    DUO_ADD_ONS_WITH_SEAT_ASSIGNMENTS = %w[code_suggestions duo_enterprise].freeze
+    SEAT_ASSIGNABLE_DUO_ADD_ONS = %w[code_suggestions duo_enterprise].freeze
 
     scope :duo_add_ons, -> { where(name: DUO_ADD_ONS) }
+    scope :seat_assignable_duo_add_ons, -> { where(name: SEAT_ASSIGNABLE_DUO_ADD_ONS) }
 
     # Note: If a new enum is added, make sure to update this method to reflect that as well.
     def self.descriptions
@@ -50,7 +51,7 @@ module GitlabSubscriptions
     end
 
     def self.seat_assignable?(add_on_name)
-      DUO_ADD_ONS_WITH_SEAT_ASSIGNMENTS.include?(add_on_name)
+      SEAT_ASSIGNABLE_DUO_ADD_ONS.include?(add_on_name)
     end
   end
 end

@@ -46,6 +46,9 @@ module GitlabSubscriptions
     scope :for_duo_pro_or_duo_enterprise, -> { for_gitlab_duo_pro.or(for_duo_enterprise) }
     # this queries the `AddOn` table *once* for the duo add-ons (`code_suggestions` and `duo_enterprise`)
     scope :for_duo_add_ons, -> { where(subscription_add_on_id: AddOn.duo_add_ons.select(:id)) }
+    scope :for_seat_assignable_duo_add_ons, -> do
+      where(subscription_add_on_id: AddOn.seat_assignable_duo_add_ons.select(:id))
+    end
     scope :for_user, ->(user) { by_namespace(user.billable_gitlab_duo_pro_root_group_ids) }
     scope :assigned_to_user, ->(user) do
       active.joins(:assigned_users).merge(UserAddOnAssignment.by_user(user))
@@ -55,7 +58,7 @@ module GitlabSubscriptions
       # Fetches add_on_purchases whose assigned_users have not been refreshed in last 8 hours.
       # Used primarily by BulkRefreshUserAssignmentsWorker, which is scheduled every 4 hours
       # by ScheduleBulkRefreshUserAssignmentsWorker.
-      for_duo_add_ons
+      for_seat_assignable_duo_add_ons
         .where("last_assigned_users_refreshed_at < ? OR last_assigned_users_refreshed_at is NULL", 8.hours.ago)
         .limit(limit)
     end
