@@ -419,19 +419,17 @@ export default {
           :invalid-feedback="i18n.requiredField"
           :state="validationState.startDate"
         >
-          <gl-datepicker :target="null">
-            <gl-form-input
-              id="cadence-start-date"
-              v-model="startDate"
-              :placeholder="i18n.automationStartDate.placeholder"
-              autocomplete="off"
-              inputmode="none"
-              :disabled="disableAutomationFields"
-              :state="validationState.startDate"
-              data-testid="iteration-cadence-start-date-field"
-              @blur="validate('startDate')"
-            />
-          </gl-datepicker>
+          <gl-datepicker
+            v-model="startDate"
+            input-id="cadence-start-date"
+            :placeholder="i18n.automationStartDate.placeholder"
+            autocomplete="off"
+            inputmode="none"
+            :disabled="disableAutomationFields"
+            :state="validationState.startDate"
+            data-testid="iteration-cadence-start-date-field"
+            @blur="validate('startDate')"
+          />
         </gl-form-group>
 
         <gl-form-group
