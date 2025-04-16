@@ -1,5 +1,6 @@
 <script>
 import { GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
+import { sortBy } from 'lodash';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -36,19 +37,13 @@ export default {
       return this.$apollo.loading;
     },
     codeSuggestionsFeatures() {
-      return this.aiFeatureSettings.filter(
-        (setting) => setting.mainFeature === DUO_MAIN_FEATURES.CODE_SUGGESTIONS,
-      );
+      return this.getSubFeatures(DUO_MAIN_FEATURES.CODE_SUGGESTIONS);
     },
     duoChatFeatures() {
-      return this.aiFeatureSettings.filter(
-        (setting) => setting.mainFeature === DUO_MAIN_FEATURES.DUO_CHAT,
-      );
+      return this.getSubFeatures(DUO_MAIN_FEATURES.DUO_CHAT);
     },
     otherGitLabDuoFeatures() {
-      return this.aiFeatureSettings
-        .filter((setting) => setting.mainFeature === DUO_MAIN_FEATURES.OTHER_GITLAB_DUO_FEATURES)
-        .sort((a, b) => a.releaseState.localeCompare(b.releaseState)); // sort by releaseState due to mix of experimental & beta features
+      return this.getSubFeatures(DUO_MAIN_FEATURES.OTHER_GITLAB_DUO_FEATURES);
     },
   },
   apollo: {
@@ -64,6 +59,21 @@ export default {
           captureError: true,
         });
       },
+    },
+  },
+  methods: {
+    getSubFeatures(mainFeature) {
+      const displayOrder = {
+        GA: 1,
+        BETA: 2,
+        EXPERIMENT: 3,
+      };
+
+      const subFeatures = this.aiFeatureSettings.filter(
+        (setting) => setting.mainFeature === mainFeature,
+      );
+      // sort rows by releaseState
+      return sortBy(subFeatures, (subFeature) => displayOrder[subFeature.releaseState]);
     },
   },
 };

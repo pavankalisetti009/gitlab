@@ -63,7 +63,7 @@ describe('FeatureSettingsTableRows', () => {
 
     describe('beta features', () => {
       it('renders the beta badge for beta features', () => {
-        const betaFeature = mockAiFeatureSettings[3];
+        const betaFeature = mockAiFeatureSettings[4];
         createComponent({ aiFeatureSettings: [betaFeature] });
 
         expect(findBetaBadges().length).toBe(1);
@@ -78,7 +78,7 @@ describe('FeatureSettingsTableRows', () => {
 
     describe('experiment features', () => {
       it('renders the experiment badge for experiment features', () => {
-        const experimentFeature = mockAiFeatureSettings[4];
+        const experimentFeature = mockAiFeatureSettings[2];
         createComponent({ aiFeatureSettings: [experimentFeature] });
 
         expect(findExperimentBadges().length).toBe(1);

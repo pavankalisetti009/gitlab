@@ -59,6 +59,18 @@ export const mockCodeSuggestionsFeatureSettings = [
 
 export const mockDuoChatFeatureSettings = [
   {
+    feature: 'duo_chat_troubleshoot_job',
+    title: 'Troubleshoot Job',
+    mainFeature: 'GitLab Duo Chat',
+    releaseState: 'EXPERIMENT',
+    provider: 'self_hosted',
+    selfHostedModel: {
+      id: 1,
+      releaseState: 'GA',
+    },
+    validModels: { nodes: mockSelfHostedModels },
+  },
+  {
     feature: 'duo_chat',
     title: 'General Chat',
     mainFeature: 'GitLab Duo Chat',

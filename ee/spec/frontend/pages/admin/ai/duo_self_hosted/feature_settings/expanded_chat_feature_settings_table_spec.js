@@ -7,7 +7,6 @@ import ExpandedChatFeatureSettingsTable from 'ee/pages/admin/ai/duo_self_hosted/
 import getAiFeatureSettingsQuery from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
-import { DUO_MAIN_FEATURES } from 'ee/pages/admin/ai/duo_self_hosted/constants';
 import {
   mockAiFeatureSettings,
   mockDuoChatFeatureSettings,
@@ -156,20 +155,35 @@ describe('ExpandedChatFeatureSettingsTable', () => {
 
     it('passes Code Suggestions table row data to FeatureSettingsTableRows', () => {
       expect(findCodeSuggestionsTableRows().props('isLoading')).toEqual(false);
-      expect(findCodeSuggestionsTableRows().props('aiFeatureSettings')).toEqual(
-        mockAiFeatureSettings.filter(
-          (setting) => setting.mainFeature === DUO_MAIN_FEATURES.CODE_SUGGESTIONS,
-        ),
-      );
+
+      const tableRowsFeatureSettingsProps =
+        findCodeSuggestionsTableRows().props('aiFeatureSettings');
+      expect(tableRowsFeatureSettingsProps.map((fs) => [fs.feature, fs.releaseState])).toEqual([
+        ['code_generations', 'GA'],
+        ['code_completions', 'GA'],
+      ]);
     });
 
-    it('passes Duo Chat table row data to FeatureSettingsTableRows', () => {
+    it('passes sorted Duo Chat table row data to FeatureSettingsTableRows', () => {
       expect(findDuoChatTableRows().props('isLoading')).toEqual(false);
-      expect(findDuoChatTableRows().props('aiFeatureSettings')).toEqual(
-        mockAiFeatureSettings.filter(
-          (setting) => setting.mainFeature === DUO_MAIN_FEATURES.DUO_CHAT,
-        ),
-      );
+
+      const tableRowsFeatureSettingsProps = findDuoChatTableRows().props('aiFeatureSettings');
+      expect(tableRowsFeatureSettingsProps.map((fs) => [fs.feature, fs.releaseState])).toEqual([
+        ['duo_chat', 'GA'],
+        ['duo_chat_explain_code', 'BETA'],
+        ['duo_chat_troubleshoot_job', 'EXPERIMENT'],
+      ]);
+    });
+
+    it('passes sorted Other Duo Features table row data to FeatureSettingsTableRows', () => {
+      expect(findOtherDuoFeaturesTableRows().props('isLoading')).toEqual(false);
+
+      const tableRowsFeatureSettingsProps =
+        findOtherDuoFeaturesTableRows().props('aiFeatureSettings');
+      expect(tableRowsFeatureSettingsProps.map((fs) => [fs.feature, fs.releaseState])).toEqual([
+        ['generate_commit_message', 'BETA'],
+        ['summarize_review', 'EXPERIMENT'],
+      ]);
     });
   });
 
