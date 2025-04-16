@@ -46,7 +46,6 @@ export default {
   inject: ['context', 'group', 'project'],
   data() {
     return {
-      unsubscribe: null,
       isLoading: true,
       error: null,
       pendingMemberApprovals: {},
