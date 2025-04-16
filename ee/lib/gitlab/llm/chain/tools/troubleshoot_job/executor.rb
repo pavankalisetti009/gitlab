@@ -113,6 +113,7 @@ module Gitlab
 
               return error_with_message(error_message, error_code: 'M4005', source: 'troubleshoot') if error_message
 
+              track_troubleshoot_event
               super
             end
 
@@ -187,6 +188,11 @@ module Gitlab
               else
                 "The repository code is written in #{last_language}."
               end
+            end
+
+            def track_troubleshoot_event
+              Gitlab::Tracking::AiTracking.track_event('troubleshoot_job', user: context.current_user, job: job,
+                project: job.project)
             end
           end
         end
