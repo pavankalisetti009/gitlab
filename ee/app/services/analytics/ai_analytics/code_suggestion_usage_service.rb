@@ -29,7 +29,7 @@ module Analytics
 
       CODE_SUGGESTIONS_CONTRIBUTORS_COUNT_QUERY = <<~SQL.freeze
         SELECT COUNT(DISTINCT user_id)
-          FROM code_suggestion_daily_events
+          FROM code_suggestion_events_daily
           WHERE user_id IN (SELECT author_id FROM code_contributors)
           AND date >= {from:Date}
           AND date <= {to:Date}
@@ -39,7 +39,7 @@ module Analytics
 
       CODE_SUGGESTIONS_SHOWN_COUNT_QUERY = <<~SQL.freeze
         SELECT SUM(occurrences)
-        FROM code_suggestion_daily_events
+        FROM code_suggestion_events_daily
         WHERE user_id IN (SELECT author_id FROM code_contributors)
         AND date >= {from:Date}
         AND date <= {to:Date}
@@ -49,7 +49,7 @@ module Analytics
 
       CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY = <<~SQL.freeze
         SELECT SUM(occurrences)
-        FROM code_suggestion_daily_events
+        FROM code_suggestion_events_daily
         WHERE user_id IN (SELECT author_id FROM code_contributors)
         AND date >= {from:Date}
         AND date <= {to:Date}

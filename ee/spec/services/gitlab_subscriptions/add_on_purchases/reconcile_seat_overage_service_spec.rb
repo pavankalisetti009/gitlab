@@ -76,7 +76,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::ReconcileSeatOverageService,
 
         context 'when there are no records related to user' do
           before do
-            clickhouse_fixture(:code_suggestion_usages, [
+            clickhouse_fixture(:code_suggestion_events, [
               { user_id: create(:user).id, event: 1, timestamp: 2.days.ago }
             ])
           end
@@ -91,7 +91,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::ReconcileSeatOverageService,
 
         context 'when there are records related to user' do
           before do
-            clickhouse_fixture(:code_suggestion_usages, [
+            clickhouse_fixture(:code_suggestion_events, [
               { user_id: user_2.id, event: 1, timestamp: 2.days.ago }
             ])
           end
@@ -109,7 +109,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::ReconcileSeatOverageService,
             before do
               add_on_purchase.assigned_users.create!(user: user_3)
 
-              clickhouse_fixture(:code_suggestion_usages, [
+              clickhouse_fixture(:code_suggestion_events, [
                 { user_id: user_1.id, event: 1, timestamp: 4.days.ago },
                 { user_id: user_2.id, event: 1, timestamp: 3.days.ago },
                 { user_id: user_1.id, event: 1, timestamp: 2.days.ago },

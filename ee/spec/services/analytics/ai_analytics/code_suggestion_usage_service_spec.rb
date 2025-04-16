@@ -80,7 +80,7 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
 
       context 'with data' do
         before do
-          clickhouse_fixture(:code_suggestion_usages, [
+          clickhouse_fixture(:code_suggestion_events, [
             { user_id: user1.id, event: 2, timestamp: to - 3.days }, # shown
             { user_id: user1.id, event: 3, timestamp: to - 3.days + 1.second }, # accepted
             { user_id: user1.id, event: 2, timestamp: to - 4.days }, # shown

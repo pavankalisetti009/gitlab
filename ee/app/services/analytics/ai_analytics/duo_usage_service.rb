@@ -27,7 +27,7 @@ module Analytics
           AND event = 1
           UNION DISTINCT
           SELECT DISTINCT user_id
-          FROM code_suggestion_daily_events
+          FROM code_suggestion_events_daily
           WHERE user_id IN (SELECT author_id FROM contributors)
           AND date >= {from:Date}
           AND date <= {to:Date}

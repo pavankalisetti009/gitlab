@@ -5,7 +5,7 @@ module Analytics
     class AiUserMetricsService
       CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY = <<~SQL.freeze
         SELECT SUM(occurrences) as code_suggestions_accepted_count, user_id
-        FROM code_suggestion_daily_events
+        FROM code_suggestion_events_daily
         WHERE user_id IN ({user_ids:Array(UInt64)})
         AND date >= {from:Date}
         AND date <= {to:Date}

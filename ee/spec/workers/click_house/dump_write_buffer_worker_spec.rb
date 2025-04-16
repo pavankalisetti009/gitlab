@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe ClickHouse::DumpWriteBufferWorker, feature_category: :value_stream_management do
   let(:job) { described_class.new }
   let(:perform) { job.perform(table_name) }
-  let(:table_name) { 'code_suggestion_usages' }
+  let(:table_name) { 'code_suggestion_events' }
 
   context 'when ClickHouse is disabled for analytics' do
     before do
@@ -128,6 +128,26 @@ RSpec.describe ClickHouse::DumpWriteBufferWorker, feature_category: :value_strea
         expect(inserted_records).to match([
           hash_including('user_id' => 1),
           hash_including('user_id' => 2)
+        ])
+      end
+    end
+
+    context 'with legacy buffered data for code suggestions' do
+      before do
+        ClickHouse::WriteBuffer.add(table_name, { user_id: 1 })
+        ClickHouse::WriteBuffer.add(table_name, { user_id: 2 })
+        ClickHouse::WriteBuffer.add('code_suggestion_usages', { user_id: 3 })
+      end
+
+      it 'inserts all rows' do
+        status = perform
+
+        expect(status).to eq({ status: :processed, inserted_rows: 3 })
+
+        expect(inserted_records).to match([
+          hash_including('user_id' => 1),
+          hash_including('user_id' => 2),
+          hash_including('user_id' => 3)
         ])
       end
     end

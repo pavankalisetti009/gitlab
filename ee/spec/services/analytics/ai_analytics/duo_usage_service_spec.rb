@@ -75,7 +75,7 @@ RSpec.describe Analytics::AiAnalytics::DuoUsageService, feature_category: :value
             { user_id: user3.id, event: 1, timestamp: from - 2.days }
           ])
 
-          clickhouse_fixture(:code_suggestion_usages, [
+          clickhouse_fixture(:code_suggestion_events, [
             { user_id: user1.id, event: 2, timestamp: to - 3.days }, # shown
             { user_id: user1.id, event: 3, timestamp: to - 3.days + 1.second }, # accepted
             { user_id: user1.id, event: 2, timestamp: to - 4.days }, # shown
