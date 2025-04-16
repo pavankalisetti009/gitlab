@@ -6,4 +6,7 @@ redis 7.0.14
 ruby 3.3.7 3.2.4
 rust 1.73.0
 yarn 1.22.19
+
+# For linting documentation
+markdownlint-cli2 0.17.2
 vale 3.11.2
