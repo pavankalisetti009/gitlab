@@ -1,0 +1,81 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Groups::VirtualRegistries::Maven::RegistriesController, feature_category: :virtual_registry do
+  let_it_be(:user) { create(:user) }
+  let_it_be(:group) { create(:group, :private) }
+
+  before do
+    stub_config(dependency_proxy: { enabled: true })
+    stub_licensed_features(packages_virtual_registry: true)
+  end
+
+  describe 'GET #index' do
+    subject { get group_virtual_registries_maven_registries_path(group) }
+
+    it { is_expected.to have_request_urgency(:low) }
+
+    context 'when user is not signed in' do
+      it { is_expected.to redirect_to(new_user_session_path) }
+    end
+
+    context 'when user is signed in' do
+      before do
+        sign_in(user)
+      end
+
+      context 'when user is not a group member' do
+        it_behaves_like 'returning response status', :not_found
+      end
+
+      context 'when user is group member' do
+        before_all do
+          group.add_guest(user)
+        end
+
+        it_behaves_like 'returning response status', :ok
+
+        it_behaves_like 'disallowed access to virtual regsitries'
+      end
+    end
+  end
+
+  describe 'GET #new' do
+    subject { get new_group_virtual_registries_maven_registry_path(group) }
+
+    it { is_expected.to have_request_urgency(:low) }
+
+    context 'when user is not signed in' do
+      it { is_expected.to redirect_to(new_user_session_path) }
+    end
+
+    context 'when user is signed in' do
+      before do
+        sign_in(user)
+      end
+
+      context 'when user is not a group member' do
+        it_behaves_like 'returning response status', :not_found
+      end
+
+      context 'when user is guest user' do
+        before_all do
+          group.add_guest(user)
+        end
+
+        it_behaves_like 'returning response status', :not_found
+      end
+
+      context 'when user is group member' do
+        before_all do
+          group.add_maintainer(user)
+        end
+
+        it_behaves_like 'returning response status', :ok
+
+        it_behaves_like 'disallowed access to virtual regsitries'
+      end
+    end
+  end
+end

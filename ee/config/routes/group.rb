@@ -277,6 +277,6 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
       end
     end
 
-    resources :virtual_registries, only: [:index]
+    draw :virtual_registries
   end
 end
