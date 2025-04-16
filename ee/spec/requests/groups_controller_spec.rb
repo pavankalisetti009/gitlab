@@ -441,10 +441,7 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
       let(:params) { { group: { enterprise_users_extensions_marketplace_enabled: true } } }
 
       before do
-        stub_feature_flags(
-          vscode_web_ide: true,
-          web_ide_extensions_marketplace: true
-        )
+        stub_feature_flags(web_ide_extensions_marketplace: true)
         stub_application_setting(vscode_extension_marketplace: { enabled: true, preset: 'open_vsx' })
       end
 
