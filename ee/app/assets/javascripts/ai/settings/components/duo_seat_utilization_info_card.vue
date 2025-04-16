@@ -37,8 +37,7 @@ export default {
     },
     duoTier: {
       type: String,
-      required: false,
-      default: DUO_IDENTIFIERS[0],
+      required: true,
       validator: (val) => DUO_IDENTIFIERS.includes(val),
     },
   },

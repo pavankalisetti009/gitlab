@@ -15,6 +15,7 @@ describe('DuoSeatUtilizationInfoCard', () => {
       propsData: {
         usageValue: 5,
         totalValue: 10,
+        duoTier: DUO_PRO,
         ...props,
       },
       provide: {
@@ -111,7 +112,7 @@ describe('DuoSeatUtilizationInfoCard', () => {
       expect(findActionButtons().at(1).findComponent(GlIcon).props('name')).toBe('external-link');
     });
 
-    it('renders only assign seats button for duo enterprise', () => {
+    it('renders only assign seats button for non-Duo Pro add-ons', () => {
       wrapper = createComponent({ duoTier: DUO_ENTERPRISE });
 
       expect(findActionButtons()).toHaveLength(1);

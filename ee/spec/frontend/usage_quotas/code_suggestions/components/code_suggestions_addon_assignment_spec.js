@@ -199,6 +199,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
         addOnAssignments: [],
         userId: userIdForAssignment,
         addOnPurchaseId,
+        duoTier: DUO_PRO,
         ...props,
       },
     });
