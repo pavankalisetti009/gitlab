@@ -29,7 +29,8 @@ module Namespaces
         ::Namespaces::FreeUserCap::Enforcement.new(namespace).qualified_namespace? &&
           ::Namespaces::FreeUserCap.owner_access?(user: user, namespace: namespace) &&
           namespace.trial_active? &&
-          !dismissed_for_namespace
+          !dismissed_for_namespace &&
+          !::Onboarding::Progress.completed?(namespace, :user_added)
       end
 
       def feature_name

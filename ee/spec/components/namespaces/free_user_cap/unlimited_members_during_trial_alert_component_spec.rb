@@ -15,6 +15,7 @@ RSpec.describe Namespaces::FreeUserCap::UnlimitedMembersDuringTrialAlertComponen
   subject(:component) { described_class.new(**params) }
 
   before do
+    ::Onboarding::Progress.onboard(namespace)
     build(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: namespace, trial: trial?)
     stub_ee_application_setting(dashboard_limit_enabled: dashboard_limit_enabled?)
     stub_ee_application_setting(dashboard_limit: 0)
@@ -70,6 +71,14 @@ RSpec.describe Namespaces::FreeUserCap::UnlimitedMembersDuringTrialAlertComponen
           build(:user, group_callouts: [
             build(:group_callout, group: namespace, feature_name: 'unlimited_members_during_trial_alert')
           ])
+        end
+
+        it_behaves_like 'not rendering the alert'
+      end
+
+      context 'when user completed inviting members' do
+        before do
+          ::Onboarding::Progress.register(namespace, :user_added)
         end
 
         it_behaves_like 'not rendering the alert'
