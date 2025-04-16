@@ -466,51 +466,110 @@ RSpec.describe SearchHelper, feature_category: :global_search do
 
   describe '#should_show_zoekt_results?' do
     context 'with the blobs scope and zoekt search type' do
-      subject(:should_show_zoekt_results?) { helper.should_show_zoekt_results?('blobs', 'zoekt') }
+      let(:scope) { 'blobs' }
+      let(:search_type) { 'zoekt' }
+      let(:project) { build_stubbed(:project) }
+      let(:group) { build_stubbed(:group) }
 
-      context 'when the group is present' do
-        it 'when the group is present returns true' do
-          @group = build_stubbed(:group)
-          expect(should_show_zoekt_results?).to be true
-        end
+      subject(:should_show_zoekt_results?) { helper.should_show_zoekt_results?(scope, search_type) }
+
+      before do
+        allow(helper).to receive_messages(repository_ref: nil, super: false)
       end
 
-      context 'when the project is present' do
-        let_it_be(:project) { build_stubbed(:project) }
-
-        before do
-          @project = project
-          allow(project).to receive(:default_branch).and_return('main')
-        end
-
-        context 'when the repository ref is not defined' do
-          it 'returns true' do
-            expect(should_show_zoekt_results?).to be true
-          end
-        end
-
-        context 'when the repository ref is different' do
-          it 'returns false' do
-            allow(helper).to receive(:params).and_return({ project_id: :any_type, repository_ref: 'other-branch' })
-
-            expect(should_show_zoekt_results?).to be false
-          end
-        end
-      end
-
-      context 'when the FF is false' do
+      context 'when the FF zoekt_multimatch_frontend is disabled' do
         it 'returns false' do
           stub_feature_flags(zoekt_multimatch_frontend: false)
+          helper.instance_variable_set(:@project, project)
 
           expect(should_show_zoekt_results?).to be false
+        end
+      end
+
+      context 'when the FF zoekt_multimatch_frontend is enabled' do
+        before do
+          stub_feature_flags(zoekt_multimatch_frontend: true)
+        end
+
+        context 'when FF zoekt_cross_namespace_search is enabled' do
+          before do
+            stub_feature_flags(zoekt_cross_namespace_search: true)
+          end
+
+          context 'when project is blank' do
+            it 'returns true' do
+              helper.instance_variable_set(:@project, nil)
+
+              expect(should_show_zoekt_results?).to be true
+            end
+          end
+
+          context 'when project is present' do
+            before do
+              helper.instance_variable_set(:@project, project)
+              allow(project).to receive(:default_branch).and_return('main')
+            end
+
+            context 'when repository ref matches default branch' do
+              it 'returns true' do
+                allow(helper).to receive(:repository_ref).with(project).and_return('main')
+
+                expect(should_show_zoekt_results?).to be true
+              end
+            end
+          end
+        end
+
+        context 'when FF zoekt_cross_namespace_search is disabled' do
+          before do
+            stub_feature_flags(zoekt_cross_namespace_search: false)
+          end
+
+          context 'when group is present' do
+            it 'returns true' do
+              helper.instance_variable_set(:@group, group)
+              helper.instance_variable_set(:@project, nil)
+
+              expect(should_show_zoekt_results?).to be true
+            end
+          end
+
+          context 'when project is present and repository ref matches default branch' do
+            it 'returns true' do
+              helper.instance_variable_set(:@project, project)
+              helper.instance_variable_set(:@group, nil)
+              allow(project).to receive(:default_branch).and_return('main')
+              allow(helper).to receive(:repository_ref).with(project).and_return('main')
+
+              expect(should_show_zoekt_results?).to be true
+            end
+          end
+
+          context 'in other cases' do
+            before do
+              helper.instance_variable_set(:@project, project)
+              helper.instance_variable_set(:@group, nil)
+              allow(project).to receive(:default_branch).and_return('main')
+              allow(helper).to receive(:repository_ref).with(project).and_return('other-branch')
+            end
+
+            it 'returns false when super returns false' do
+              allow(helper).to receive(:super).and_return(false)
+
+              expect(should_show_zoekt_results?).to be false
+            end
+          end
         end
       end
     end
 
     context 'with any other scope or search type' do
-      it 'returns false' do
-        expect(helper.should_show_zoekt_results?('blobs', :any_type)).to be false
+      it 'returns false for non-blobs scope' do
         expect(helper.should_show_zoekt_results?(:any_type, 'zoekt')).to be false
+      end
+
+      it 'returns false for non-zoekt search type' do
+        expect(helper.should_show_zoekt_results?('blobs', :any_type)).to be false
       end
     end
   end

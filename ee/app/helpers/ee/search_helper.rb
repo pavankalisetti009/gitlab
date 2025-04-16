@@ -119,7 +119,11 @@ module EE
       return false if ::Feature.disabled?(:zoekt_multimatch_frontend, current_user)
       return false if scope != 'blobs' || search_type != 'zoekt'
 
-      @group.present? || (@project.present? && @project.default_branch == repository_ref(@project)) || super
+      if ::Feature.enabled?(:zoekt_cross_namespace_search, current_user)
+        @project.blank? || @project.default_branch == repository_ref(@project) || super
+      else
+        @group.present? || (@project.present? && @project.default_branch == repository_ref(@project)) || super
+      end
     end
 
     override :blob_data_oversize_message
