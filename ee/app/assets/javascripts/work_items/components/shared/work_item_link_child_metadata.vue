@@ -32,10 +32,6 @@ export default {
   },
   mixins: [timeagoMixin],
   props: {
-    iid: {
-      type: String,
-      required: true,
-    },
     reference: {
       type: String,
       required: true,
@@ -146,11 +142,7 @@ export default {
 </script>
 
 <template>
-  <work-item-link-child-metadata
-    :iid="iid"
-    :reference="reference"
-    :metadata-widgets="metadataWidgets"
-  >
+  <work-item-link-child-metadata :reference="reference" :metadata-widgets="metadataWidgets">
     <template #left-metadata>
       <work-item-attribute
         v-if="shouldShowWeight"
