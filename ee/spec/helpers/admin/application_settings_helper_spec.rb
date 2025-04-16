@@ -211,6 +211,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         add_duo_pro_seats_url: 'https://customers.staging.gitlab.com/gitlab/subscriptions/A-S00613274/duo_pro_seats',
         subscription_name: 'Test Subscription Name',
         is_bulk_add_on_assignment_enabled: 'true',
+        is_duo_base_access_allowed: 'true',
         subscription_start_date: starts_at,
         subscription_end_date: expires_at,
         duo_availability: 'default_off',
@@ -234,6 +235,16 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
       it 'sets is_saas to true' do
         expect(helper.admin_duo_home_app_data[:is_saas]).to eq('true')
+      end
+    end
+
+    context 'with feature flag allow_duo_base_access set to false' do
+      before do
+        stub_feature_flags(allow_duo_base_access: false)
+      end
+
+      it 'sets is_duo_base_access_allowed to false' do
+        expect(helper.admin_duo_home_app_data).to include(is_duo_base_access_allowed: 'false')
       end
     end
 
