@@ -9,6 +9,14 @@ module EE
 
       attr_accessor :blocking_merge_requests_params, :suggested_reviewer_ids
 
+      def assign_duo_as_reviewer(merge_request)
+        return unless merge_request.project.auto_duo_code_review_enabled
+        return unless merge_request.ai_review_merge_request_allowed?(current_user)
+
+        duo_bot = ::Users::Internal.duo_code_review_bot
+        merge_request.reviewers << duo_bot unless merge_request.reviewer_ids.include?(duo_bot.id)
+      end
+
       override :handle_reviewers_change
       def handle_reviewers_change(merge_request, old_reviewers)
         super

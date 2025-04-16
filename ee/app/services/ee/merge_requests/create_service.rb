@@ -36,6 +36,12 @@ module EE
         stream_audit_event(issuable)
       end
 
+      def before_create(merge_request)
+        super
+
+        assign_duo_as_reviewer(merge_request) unless merge_request.draft?
+      end
+
       private
 
       def stream_audit_event(merge_request)
