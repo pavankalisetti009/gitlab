@@ -40,7 +40,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
       end
     end
 
-    shared_examples 'member role creation' do
+    shared_examples 'member role creation' do |audit_event_type, audit_event_message|
       context 'with valid params' do
         it 'is successful' do
           expect(create_member_role).to be_success
@@ -60,7 +60,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
 
         include_examples 'audit event logging' do
           let(:licensed_features_to_stub) { { custom_roles: true } }
-          let_it_be(:event_type) { 'member_role_created' }
+          let_it_be(:event_type) { audit_event_type }
           let(:operation) { create_member_role.payload[:member_role] }
 
           let(:attributes) do
@@ -70,7 +70,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
               entity_type: audit_entity_type,
               details: {
                 author_name: user.name,
-                event_name: "member_role_created",
+                event_name: audit_event_type,
                 target_id: operation.id,
                 target_type: operation.class.name,
                 target_details: {
@@ -78,7 +78,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
                   description: operation.description,
                   abilities: abilities.keys.join(', ')
                 }.to_s,
-                custom_message: 'Member role was created',
+                custom_message: audit_event_message,
                 author_class: user.class.name
               }
             }
@@ -111,7 +111,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
 
         context 'with root group' do
           context 'when on SaaS', :saas do
-            it_behaves_like 'member role creation'
+            it_behaves_like 'member role creation', 'member_role_created', 'Member role was created'
 
             context 'with a missing param' do
               before do
@@ -178,7 +178,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
         end
 
         context 'when on self-managed' do
-          it_behaves_like 'member role creation'
+          it_behaves_like 'member role creation', 'member_role_created', 'Member role was created'
 
           context 'with a missing param' do
             before do
@@ -205,7 +205,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
 
             let(:abilities) { { read_admin_dashboard: true } }
 
-            it_behaves_like 'member role creation'
+            it_behaves_like 'member role creation', 'admin_role_created', 'Admin role was created'
           end
         end
       end
