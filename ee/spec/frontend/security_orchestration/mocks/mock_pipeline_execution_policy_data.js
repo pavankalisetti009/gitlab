@@ -252,6 +252,29 @@ content:
        file: pipeline_execution_jobs.yml
 `;
 
+const mockPipelineExecutionWithSnoozeManifest = `name: ''
+description: ''
+enabled: true
+content:
+   include:
+     - project: gitlab-policies/js6
+       ref: main
+       file: pipeline_execution_jobs.yml
+skip_ci:
+  allowed: false
+schedules:
+  - type: daily
+    start_time: '00:00'
+    time_window:
+      value: 3600
+      distribution: random
+    timezone: America/New_York
+    snooze:
+       reason: This is a reason
+       until: "2021-10-13T07:11:00Z"
+type: pipeline_execution_schedule_policy
+`;
+
 export const mockPipelineScanExecutionObject = {
   type: 'pipeline_execution_policy',
   name: 'Include external file',
@@ -305,6 +328,12 @@ export const mockGroupPipelineExecutionPolicy = {
 export const mockSchedulePipelineExecutionPolicy = {
   ...mockProjectPipelineExecutionPolicy,
   yaml: mockSchedulePipelineExecutionWithTypeManifest,
+  __typename: 'PipelineExecutionSchedulePolicy',
+};
+
+export const mockSnoozeSchedulePipelineExecutionPolicy = {
+  ...mockProjectPipelineExecutionPolicy,
+  yaml: mockPipelineExecutionWithSnoozeManifest,
   __typename: 'PipelineExecutionSchedulePolicy',
 };
 

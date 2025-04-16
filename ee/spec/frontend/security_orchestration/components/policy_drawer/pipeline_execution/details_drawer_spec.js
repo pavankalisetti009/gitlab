@@ -8,6 +8,7 @@ import {
   mockProjectPipelineExecutionPolicy,
   mockProjectPipelineExecutionWithConfigurationPolicy,
   mockSchedulePipelineExecutionPolicy,
+  mockSnoozeSchedulePipelineExecutionPolicy,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 
 describe('PipelineExecutionDrawer', () => {
@@ -22,6 +23,7 @@ describe('PipelineExecutionDrawer', () => {
   const findPolicyDrawerLayout = () => wrapper.findComponent(PolicyDrawerLayout);
   const findLink = (parent) => parent.findComponent(GlLink);
   const findConfigurationRow = () => wrapper.findByTestId('policy-configuration');
+  const findSnoozeSummary = () => wrapper.findByTestId('snooze-summary');
 
   const createComponent = ({ propsData = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(PipelineExecutionDrawer, {
@@ -59,12 +61,22 @@ describe('PipelineExecutionDrawer', () => {
       expect(findSchedule().exists()).toBe(false);
     });
 
-    it('does render if there are are schedules', () => {
+    it('renders if there are are schedules', () => {
       createComponent({ propsData: { policy: mockSchedulePipelineExecutionPolicy } });
       expect(findSchedule().exists()).toBe(true);
       expect(findSchedule().text()).toBe(
         'Schedule the following pipeline execution policy to run for default branch daily at 00:00 and run for 1 hour in timezone America/New_York.',
       );
+    });
+
+    it('does not render the snooze info if it exists', () => {
+      createComponent({ propsData: { policy: mockSchedulePipelineExecutionPolicy } });
+      expect(findSnoozeSummary().exists()).toBe(false);
+    });
+
+    it('renders the snooze info if it exists', () => {
+      createComponent({ propsData: { policy: mockSnoozeSchedulePipelineExecutionPolicy } });
+      expect(findSnoozeSummary().exists()).toBe(true);
     });
   });
 
