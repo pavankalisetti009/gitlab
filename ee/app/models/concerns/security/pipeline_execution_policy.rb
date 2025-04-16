@@ -14,7 +14,7 @@ module Security
 
     def policy_limit
       Security::SecurityOrchestrationPolicies::LimitService
-        .new(container: project)
+        .new(container: source)
         .pipeline_execution_policies_per_configuration_limit
     end
   end

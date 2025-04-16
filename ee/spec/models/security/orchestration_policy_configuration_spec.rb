@@ -3477,6 +3477,12 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       expect(active_pipeline_execution_policies.count).to be(5)
     end
 
+    it 'uses limits defined based on the project' do
+      expect(Security::SecurityOrchestrationPolicies::LimitService).to receive(:new).with(container: security_orchestration_policy_configuration.project).and_call_original
+
+      active_pipeline_execution_policies
+    end
+
     context 'when policy configuration is configured for namespace' do
       let(:security_orchestration_policy_configuration) do
         create(:security_orchestration_policy_configuration, :namespace, security_policy_management_project: security_policy_management_project)
@@ -3488,6 +3494,34 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
 
       it 'returns only 5 from all active policies' do
         expect(active_pipeline_execution_policies.count).to be(5)
+      end
+
+      it 'uses limits defined based on the namespace' do
+        expect(Security::SecurityOrchestrationPolicies::LimitService).to receive(:new).with(container: security_orchestration_policy_configuration.namespace).and_call_original
+
+        active_pipeline_execution_policies
+      end
+
+      describe 'limits' do
+        let(:namespace) { security_orchestration_policy_configuration.namespace }
+
+        it 'uses limits defined based on the namespace' do
+          expect(Security::SecurityOrchestrationPolicies::LimitService).to receive(:new).with(container: namespace).and_call_original
+
+          active_pipeline_execution_policies
+        end
+
+        context 'when the limit is defined in the namespace settings' do
+          let(:setting) { build(:namespace_settings, pipeline_execution_policies_per_configuration_limit: 1) }
+
+          before do
+            namespace.update!(namespace_settings: setting)
+          end
+
+          it 'returns only 1 active policy' do
+            expect(active_pipeline_execution_policies.count).to be(1)
+          end
+        end
       end
     end
   end
