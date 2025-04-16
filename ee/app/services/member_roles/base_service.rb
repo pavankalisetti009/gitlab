@@ -25,25 +25,35 @@ module MemberRoles
       params[:namespace] || member_role&.namespace
     end
 
-    def log_audit_event(member_role, action:)
+    def log_audit_event(role, action:)
       audit_context = {
-        name: "member_role_#{action}",
         author: current_user,
-        scope: audit_event_scope,
-        target: member_role,
+        target: role,
         target_details: {
-          name: member_role.name,
-          description: member_role.description,
-          abilities: member_role.enabled_permissions(current_user).keys.join(', ')
+          name: role.name,
+          description: role.description,
+          abilities: role.enabled_permissions(current_user).keys.join(', ')
         },
-        message: "Member role was #{action}"
+        **audit_event_attributes(role, action)
       }
 
       ::Gitlab::Audit::Auditor.audit(audit_context)
     end
 
-    def audit_event_scope
-      group || Gitlab::Audit::InstanceScope.new
+    def audit_event_attributes(role, action)
+      if role.admin_related_role?
+        {
+          name: "admin_role_#{action}",
+          scope: Gitlab::Audit::InstanceScope.new,
+          message: "Admin role was #{action}"
+        }
+      else
+        {
+          name: "member_role_#{action}",
+          scope: group || Gitlab::Audit::InstanceScope.new,
+          message: "Member role was #{action}"
+        }
+      end
     end
   end
 end
