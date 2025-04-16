@@ -382,14 +382,16 @@ RSpec.shared_context 'with remote development shared fixtures' do
   )
     spec_replicas = started == true ? 1 : 0
     host_template_annotation = get_workspace_host_template_annotation(workspace.name, dns_zone)
-    max_resources_per_workspace_sha256 = Digest::SHA256.hexdigest(
-      max_resources_per_workspace.sort.to_h.to_s
-    )
+
+    # NOTE: The deep_symbolize_keys here is likely redundant, but it's included so that we exactly match
+    #       the legacy implementation of the "workspaces.gitlab.com/max-resources-per-workspace-sha256" annotation.
+    max_resources_per_workspace_with_legacy_sorting = max_resources_per_workspace.deep_symbolize_keys.sort.to_h.to_s
+
     common_annotations = agent_annotations.merge({
       "workspaces.gitlab.com/host-template": host_template_annotation.to_s,
       "workspaces.gitlab.com/id": workspace.id.to_s,
       "workspaces.gitlab.com/max-resources-per-workspace-sha256":
-        max_resources_per_workspace_sha256
+        Digest::SHA256.hexdigest(max_resources_per_workspace_with_legacy_sorting)
     })
     workspace_inventory_annotations = common_annotations.merge(
       { "config.k8s.io/owning-inventory": "#{workspace.name}-workspace-inventory" }

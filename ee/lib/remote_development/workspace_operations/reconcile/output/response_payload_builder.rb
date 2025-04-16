@@ -105,7 +105,7 @@ module RemoteDevelopment
               end
 
             stable_sorted_workspace_resources = workspace_resources.map do |resource|
-              Gitlab::Utils.deep_sort_hash(resource.deep_symbolize_keys)
+              Gitlab::Utils.deep_sort_hash(resource)
             end
 
             return nil, NO_RESOURCES_INCLUDED unless stable_sorted_workspace_resources.present?
