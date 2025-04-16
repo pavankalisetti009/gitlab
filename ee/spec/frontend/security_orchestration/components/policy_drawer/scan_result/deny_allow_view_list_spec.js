@@ -73,7 +73,7 @@ describe('DenyAllowViewList', () => {
 
       expect(
         findTableCell({ rowIndex: 0, cellIndex: 1, table: 'thead', cellType: 'th' }).text(),
-      ).toBe('Exceptions that require approval');
+      ).toBe('Exceptions that do not require approval');
     });
   });
 });

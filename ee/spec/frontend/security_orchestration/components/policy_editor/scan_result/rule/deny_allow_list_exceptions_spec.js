@@ -7,12 +7,9 @@ describe('DenyAllowExceptions', () => {
   let wrapper;
 
   const VALID_EXCEPTIONS_STRING = 'test@project, test1@project';
-  const EXCEPTIONS_WITHOUT_FULL_PATH_STRING = 'test@project, test1';
   const EXCEPTIONS_WITH_DUPLICATES_STRING = 'test@project, test@project, test2@project';
 
   const VALID_EXCEPTIONS = ['test@project', 'test1@project'];
-
-  const INVALID_EXCEPTIONS = ['project', 'project1'];
 
   const createComponent = ({ propsData } = {}) => {
     wrapper = shallowMountExtended(DenyAllowExceptions, {
@@ -78,7 +75,7 @@ describe('DenyAllowExceptions', () => {
 
       expect(findTextArea().props('value')).toBe(VALID_EXCEPTIONS_STRING);
       expect(findFormatDescription().text()).toBe(
-        'Use the format path-to-package@package-version. For multiple packages, separate paths with commas. For example: path/file1.yaml@1.1.1, path/file2.yaml@2.2.2',
+        'Use the format path-to-package@package-version. For multiple packages, separate paths with commas. For example: npm/lodash@4.17.21, maven/org.apache.commons/commons-lang3@3.12.0, pypi/requests',
       );
     });
 
@@ -98,20 +95,6 @@ describe('DenyAllowExceptions', () => {
   });
 
   describe('error state', () => {
-    it('renders validation error state when invalid exceptions passed by default', () => {
-      createComponent({
-        propsData: {
-          exceptionType: EXCEPTION_KEY,
-          exceptions: INVALID_EXCEPTIONS,
-        },
-      });
-
-      expect(findDuplicateErrorMessage().exists()).toBe(false);
-      expect(findValidationErrorMessage().text()).toBe(
-        'Add project full path after @ to following exceptions: project project1',
-      );
-    });
-
     it('renders duplicate error', async () => {
       createComponent({
         propsData: {
@@ -123,21 +106,6 @@ describe('DenyAllowExceptions', () => {
 
       expect(findValidationErrorMessage().exists()).toBe(false);
       expect(findDuplicateErrorMessage().text()).toBe('Duplicates will be removed');
-    });
-
-    it('renders validation error', async () => {
-      createComponent({
-        propsData: {
-          exceptionType: EXCEPTION_KEY,
-        },
-      });
-
-      await findTextArea().vm.$emit('input', EXCEPTIONS_WITHOUT_FULL_PATH_STRING);
-
-      expect(findDuplicateErrorMessage().exists()).toBe(false);
-      expect(findValidationErrorMessage().text()).toBe(
-        'Add project full path after @ to following exceptions: test1',
-      );
     });
   });
 });

@@ -12,6 +12,7 @@ export default {
     denyTableHeader: s__('SecurityOrchestration|Denied licenses'),
     allowTableHeader: s__('SecurityOrchestration|Allowed licenses'),
     exceptionsHeader: s__('ScanResultPolicy|Exceptions that require approval'),
+    exceptionsDenyHeader: s__('ScanResultPolicy|Exceptions that do not require approval'),
     noExceptionsText: s__('SecurityOrchestration|No exceptions'),
   },
   name: 'DenyAllowViewList',
@@ -49,7 +50,9 @@ export default {
         },
         {
           key: 'exceptions',
-          label: this.$options.i18n.exceptionsHeader,
+          label: this.isDenied
+            ? this.$options.i18n.exceptionsDenyHeader
+            : this.$options.i18n.exceptionsHeader,
           thAttr: { 'data-testid': 'exception-th' },
           thClass: TH_CSS_CLASSES,
           tdClass: TD_CSS_CLASSES,

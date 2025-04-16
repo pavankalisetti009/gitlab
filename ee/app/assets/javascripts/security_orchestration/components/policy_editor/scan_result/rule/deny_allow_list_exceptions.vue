@@ -1,7 +1,7 @@
 <script>
 import { debounce } from 'lodash';
 import { GlCollapsibleListbox, GlFormTextarea, GlSprintf } from '@gitlab/ui';
-import { s__, sprintf } from '~/locale';
+import { s__ } from '~/locale';
 import {
   EXCEPTION_KEY,
   EXCEPTION_TYPE_ITEMS,
@@ -17,10 +17,7 @@ import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 export default {
   i18n: {
     exceptionMessage: s__(
-      'SecurityOrchestration|Use the format %{schemaStart}path-to-package@package-version%{schemaEnd}. For multiple packages, separate paths with commas. For example: path/file1.yaml@1.1.1, path/file2.yaml@2.2.2',
-    ),
-    errorMessage: s__(
-      'SecurityOrchestration|Add project full path after @ to following exceptions: %{exceptions}',
+      'SecurityOrchestration|Use the format %{schemaStart}path-to-package@package-version%{schemaEnd}. For multiple packages, separate paths with commas. For example: npm/lodash@4.17.21, maven/org.apache.commons/commons-lang3@3.12.0, pypi/requests',
     ),
     duplicatesError: s__('ScanResultPolicy|Duplicates will be removed'),
     exceptionsPlaceholder: s__(
@@ -61,13 +58,10 @@ export default {
     },
   },
   data() {
-    const { parsedExceptions = [], parsedWithErrorsExceptions = [] } = parseExceptionsStringToItems(
-      this.exceptions,
-    );
+    const { parsedExceptions = [] } = parseExceptionsStringToItems(this.exceptions);
 
     return {
       parsedExceptions,
-      parsedWithErrorsExceptions,
     };
   },
   computed: {
@@ -85,14 +79,6 @@ export default {
 
       return items.size < this.parsedExceptions.length;
     },
-    hasValidationError() {
-      return this.parsedWithErrorsExceptions.length > 0;
-    },
-    errorMessage() {
-      return sprintf(this.$options.i18n.errorMessage, {
-        exceptions: this.parsedWithErrorsExceptions.join(' '),
-      });
-    },
   },
   created() {
     this.debouncedSetExceptions = debounce(this.setExceptions, DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
@@ -102,11 +88,9 @@ export default {
   },
   methods: {
     parsePackages(packages) {
-      const { parsedExceptions = [], parsedWithErrorsExceptions = [] } =
-        parseExceptionsStringToItems(packages);
+      const { parsedExceptions = [] } = parseExceptionsStringToItems(packages);
 
       this.parsedExceptions = parsedExceptions;
-      this.parsedWithErrorsExceptions = parsedWithErrorsExceptions;
     },
     setExceptions(packages) {
       const split = splitItemsByCommaOrSpace(packages);
@@ -140,20 +124,8 @@ export default {
         @input="debouncedSetExceptions"
       />
 
-      <p
-        v-if="hasDuplicates && !hasValidationError"
-        data-testid="error-duplicates-message"
-        class="gl-my-2 gl-text-danger"
-      >
+      <p v-if="hasDuplicates" data-testid="error-duplicates-message" class="gl-my-2 gl-text-danger">
         {{ $options.i18n.duplicatesError }}
-      </p>
-
-      <p
-        v-if="hasValidationError"
-        data-testid="error-validation-message"
-        class="gl-my-2 gl-text-danger"
-      >
-        {{ errorMessage }}
       </p>
 
       <p data-testid="format-description" class="gl-mt-3">
