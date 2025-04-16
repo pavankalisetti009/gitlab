@@ -8,18 +8,13 @@ export default () => {
     return null;
   }
 
-  const { groupId, groupName, projectId, projectName, projectPersonal, linkMain, linkSecondary } =
-    securityTab.dataset;
+  const { projectId, projectName, projectPersonal, linkMain, linkSecondary } = securityTab.dataset;
 
   const props = {
     project: {
       id: projectId,
       name: projectName,
       isPersonal: parseBoolean(projectPersonal),
-    },
-    group: {
-      id: groupId,
-      name: groupName,
     },
     linkMain,
     linkSecondary,

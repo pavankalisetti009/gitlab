@@ -17,10 +17,6 @@ export default {
       type: String,
       required: true,
     },
-    projectFullPath: {
-      type: String,
-      required: true,
-    },
   },
   i18n: {
     buttonText: __('Enable security training'),

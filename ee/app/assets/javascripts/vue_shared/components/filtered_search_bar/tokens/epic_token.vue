@@ -38,13 +38,6 @@ export default {
     idProperty() {
       return this.config.idProperty || 'iid';
     },
-    currentValue() {
-      const epicIid = Number(this.value.data);
-      if (epicIid) {
-        return epicIid;
-      }
-      return this.value.data;
-    },
     defaultEpics() {
       return this.config.defaultEpics || OPTIONS_NONE_ANY;
     },

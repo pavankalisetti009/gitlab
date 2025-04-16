@@ -8,7 +8,6 @@ const dismissSpy = jest.fn();
 const trackCTAClickSpy = jest.fn();
 
 const SECURITY_CONFIGURATION_PATH = '/help/user/application_security/_index.md';
-const PROJECT_FULL_PATH = 'namespace/project';
 const MOCK_SLOT_PROPS = {
   buttonText: 'Enable security training',
   buttonLink: 'some/link',
@@ -22,7 +21,6 @@ describe('Security training promo widget component', () => {
   const createWrapper = () => {
     wrapper = shallowMountExtended(SecurityTraininPromoWidget, {
       propsData: {
-        projectFullPath: PROJECT_FULL_PATH,
         securityConfigurationPath: SECURITY_CONFIGURATION_PATH,
       },
       stubs: {
@@ -48,7 +46,6 @@ describe('Security training promo widget component', () => {
     it('renders the component with the correct props', () => {
       expect(findSecurityTrainingPromo().props()).toEqual({
         securityConfigurationPath: SECURITY_CONFIGURATION_PATH,
-        projectFullPath: PROJECT_FULL_PATH,
       });
     });
   });

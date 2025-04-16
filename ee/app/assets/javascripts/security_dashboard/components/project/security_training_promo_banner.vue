@@ -9,7 +9,7 @@ export default {
     GlBanner,
     SecurityTrainingPromo,
   },
-  inject: ['securityConfigurationPath', 'projectFullPath'],
+  inject: ['securityConfigurationPath'],
   i18n: {
     title: __('Reduce risk and triage fewer vulnerabilities with security training'),
     content: i18n.securityTrainingDescription,
@@ -18,10 +18,7 @@ export default {
 </script>
 
 <template>
-  <security-training-promo
-    :security-configuration-path="securityConfigurationPath"
-    :project-full-path="projectFullPath"
-  >
+  <security-training-promo :security-configuration-path="securityConfigurationPath">
     <template #default="{ buttonLink, buttonText, dismiss, trackCTAClick }">
       <gl-banner
         :title="$options.i18n.title"

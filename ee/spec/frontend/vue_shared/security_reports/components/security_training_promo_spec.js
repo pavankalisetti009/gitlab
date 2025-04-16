@@ -8,7 +8,6 @@ import {
 } from '~/security_configuration/constants';
 
 const SECURITY_CONFIGURATION_PATH = 'foo/bar';
-const PROJECT_FULL_PATH = 'namespace/project';
 
 describe('Security training promo component', () => {
   let wrapper;
@@ -21,7 +20,6 @@ describe('Security training promo component', () => {
   } = {}) => {
     wrapper = shallowMount(SecurityTrainingPromo, {
       propsData: {
-        projectFullPath: PROJECT_FULL_PATH,
         securityConfigurationPath: SECURITY_CONFIGURATION_PATH,
       },
       scopedSlots: {

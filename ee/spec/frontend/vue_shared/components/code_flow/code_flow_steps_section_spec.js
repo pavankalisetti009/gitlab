@@ -9,8 +9,6 @@ describe('Vulnerability Code Flow', () => {
 
   const createWrapper = (vulnerabilityOverrides) => {
     const propsData = {
-      description: mockVulnerability.description,
-      descriptionHtml: mockVulnerability.descriptionHtml,
       details: mockVulnerability.details,
       rawTextBlobs: mockVulnerability.rawTextBlobs,
       ...vulnerabilityOverrides,

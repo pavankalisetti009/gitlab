@@ -461,10 +461,7 @@ export default {
         @detected="updateFindingState('detected')"
         @resolveWithAiSuccess="handleResolveWithAiSuccess"
       />
-      <security-training-promo-widget
-        :security-configuration-path="mr.securityConfigurationPath"
-        :project-full-path="mr.sourceProjectFullPath"
-      />
+      <security-training-promo-widget :security-configuration-path="mr.securityConfigurationPath" />
       <mr-widget-row
         v-for="report in reports"
         :key="report.reportType"

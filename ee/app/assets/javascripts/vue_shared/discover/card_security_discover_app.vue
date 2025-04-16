@@ -26,11 +26,6 @@ export default {
       required: false,
       default: null,
     },
-    group: {
-      type: Object,
-      required: false,
-      default: null,
-    },
     linkMain: {
       type: String,
       required: false,
