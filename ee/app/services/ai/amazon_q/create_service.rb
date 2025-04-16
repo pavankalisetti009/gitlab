@@ -51,7 +51,7 @@ module Ai
               username: username,
               avatar: Users::Internal.bot_avatar(image: 'q_avatar.png'),
               composite_identity_enforced: true,
-              organization_id: Organizations::Organization::DEFAULT_ORGANIZATION_ID,
+              organization_id: @user.organizations.first.id,
               private_profile: true
             }
           ).execute

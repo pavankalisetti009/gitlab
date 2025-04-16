@@ -5,8 +5,8 @@ require 'spec_helper'
 RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
   describe '#execute', :enable_admin_mode do
     let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
-    let_it_be(:organization) { create(:organization, :default) }
-    let_it_be(:user) { create(:admin) }
+    let_it_be(:organization) { create(:organization) }
+    let_it_be(:user) { create(:admin, organizations: [organization]) }
     let_it_be(:doorkeeper_application) { create(:doorkeeper_application) }
 
     let(:params) { { role_arn: 'a', availability: 'default_on', auto_review_enabled: true } }
