@@ -173,18 +173,5 @@ RSpec.describe Security::RelatedPipelinesFinder, feature_category: :security_pol
 
       described_class.new(pipeline, {}).send(:latest_completed_pipelines_matching_sha, pipelines)
     end
-
-    context 'when approval_policies_pipelines_limit feature flag is disabled' do
-      before do
-        stub_feature_flags(approval_policies_pipelines_limit: false)
-      end
-
-      it 'calls latest_completed_or_manual_pipeline_ids_per_source' do
-        expect(Ci::Pipeline).to receive(:latest_completed_or_manual_pipeline_ids_per_source)
-          .with(pipeline.sha)
-
-        described_class.new(pipeline, {}).send(:latest_completed_pipelines_matching_sha, pipelines)
-      end
-    end
   end
 end
