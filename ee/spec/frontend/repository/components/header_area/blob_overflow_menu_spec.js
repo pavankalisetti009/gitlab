@@ -51,6 +51,21 @@ describe('EE Blob Overflow Menu', () => {
   const findBlobButtonGroup = () => wrapper.findComponent(BlobButtonGroup);
   const findBlobDeleteFileGroup = () => wrapper.findComponent(BlobDeleteFileGroup);
 
+  it('emits lock information to parent component', async () => {
+    createComponent({
+      projectInfoResolver: jest.fn().mockResolvedValue({
+        data: {
+          project: getProjectMockWithOverrides({
+            pathLockNodesOverride: [],
+          }),
+        },
+      }),
+    });
+    await waitForPromises();
+
+    expect(wrapper.emitted('lockedFile')).toEqual([[{ isLocked: false, lockAuthor: undefined }]]);
+  });
+
   describe('canModifyFile', () => {
     beforeEach(() => {
       window.gon.current_user_name = 'root';

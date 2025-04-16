@@ -110,6 +110,13 @@ describe('LockDirectoryButton', () => {
 
     it('renders when feature is available and user logged in', () => {
       expect(findLockDirectoryButton().exists()).toBe(true);
+      expect(findLockDirectoryButton().text()).toBe('Lock');
+    });
+
+    it('emits lock information to parent component', () => {
+      expect(wrapper.emitted('lockedDirectory')).toEqual([
+        [{ isLocked: false, lockAuthor: undefined }],
+      ]);
     });
 
     it('renders with loading state until query fetches projects info', async () => {
@@ -235,6 +242,23 @@ describe('LockDirectoryButton', () => {
         expect(findLockDirectoryButton().props('disabled')).toBe(true);
         expect(findTooltip().text()).toContain('Locked by User2');
       });
+
+      it('emits lock information to parent component', async () => {
+        createComponent({
+          projectInfoResolver: jest.fn().mockResolvedValue({
+            data: {
+              project: getProjectMockWithOverrides({
+                pathLockNodesOverride: [exactDirectoryLock],
+              }),
+            },
+          }),
+        });
+        await waitForPromises();
+
+        expect(wrapper.emitted('lockedDirectory')).toEqual([
+          [{ isLocked: true, lockAuthor: 'User2' }],
+        ]);
+      });
     });
 
     describe('when there is an upstream lock', () => {
@@ -280,6 +304,23 @@ describe('LockDirectoryButton', () => {
           expect(findTooltip().text()).toBe(expectedTooltipText);
         },
       );
+
+      it('emits lock information to parent component', async () => {
+        createComponent({
+          projectInfoResolver: jest.fn().mockResolvedValue({
+            data: {
+              project: getProjectMockWithOverrides({
+                pathLockNodesOverride: [upstreamDirectoryLock],
+              }),
+            },
+          }),
+        });
+        await waitForPromises();
+
+        expect(wrapper.emitted('lockedDirectory')).toEqual([
+          [{ isLocked: true, lockAuthor: 'User2' }],
+        ]);
+      });
     });
 
     describe('when there is a downstream lock', () => {

@@ -62,6 +62,12 @@ export default {
           ) || {};
         this.projectUserPermissions = project.userPermissions;
       },
+      result() {
+        this.$emit('lockedDirectory', {
+          isLocked: this.hasPathLocks && this.isLocked,
+          lockAuthor: this.pathLock.user?.name,
+        });
+      },
       error(error) {
         logError(`Unexpected error while fetching projectInfo query`, error);
         this.onFetchError(error);

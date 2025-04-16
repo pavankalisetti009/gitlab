@@ -22511,6 +22511,9 @@ msgstr ""
 msgid "Direction"
 msgstr ""
 
+msgid "Directory locked"
+msgstr ""
+
 msgid "Directory name"
 msgstr ""
 
@@ -26409,6 +26412,9 @@ msgid "File hooks are similar to system hooks but are executed as files instead 
 msgstr ""
 
 msgid "File is too big (%{fileSize}MiB). Max filesize: %{maxFileSize}MiB."
+msgstr ""
+
+msgid "File locked"
 msgstr ""
 
 msgid "File mode changed from %{a_mode} to %{b_mode}"

@@ -47,6 +47,12 @@ export default {
         this.pathLocks = project?.pathLocks || DEFAULT_BLOB_INFO.pathLocks;
         this.userPermissions = project?.userPermissions;
       },
+      result() {
+        this.$emit('lockedFile', {
+          isLocked: this.isLocked,
+          lockAuthor: this.pathLockedByUser?.name,
+        });
+      },
       error() {
         createAlert({ message: this.$options.i18n.fetchError });
       },
@@ -93,6 +99,9 @@ export default {
     onShowForkSuggestion() {
       this.$emit('showForkSuggestion');
     },
+    onLockedFile(isLocked) {
+      this.$emit('lockedFile', { isLocked, lockAuthor: this.pathLockedByUser?.name });
+    },
   },
 };
 </script>
@@ -108,5 +117,6 @@ export default {
     :ee-can-lock="canLock"
     @copy="onCopy"
     @showForkSuggestion="onShowForkSuggestion"
+    @lockedFile="onLockedFile"
   />
 </template>
