@@ -27,16 +27,16 @@ describe('CodeSuggestionsAddonAssignment', () => {
   const userIdForAssignment = mockUserWithNoAddOnAssignment.id;
   const userIdForUnassignment = mockUserWithAddOnAssignment.id;
 
-  const addOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/2';
+  const duoProAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/2';
   const duoEnterpriseAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3';
   const duoAmazonQAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/4';
 
-  const codeSuggestionsAddOn = { addOnPurchase: { name: DUO_PRO } };
+  const duoProAddOn = { addOnPurchase: { name: DUO_PRO } };
   const duoEnterpriseAddOn = { addOnPurchase: { name: DUO_ENTERPRISE } };
   const duoAmazonQAddOn = { addOnPurchase: { name: DUO_AMAZON_Q } };
 
-  const addOnPurchase = {
-    id: addOnPurchaseId,
+  const duoProAddOnPurchase = {
+    id: duoProAddOnPurchaseId,
     name: DUO_PRO,
     purchasedQuantity: 3,
     assignedQuantity: 2,
@@ -57,10 +57,10 @@ describe('CodeSuggestionsAddonAssignment', () => {
     __typename: 'AddOnPurchase',
   };
 
-  const addOnEligibleUsersQueryVariables = {
+  const duoProAddOnEligibleUsersQueryVariables = {
     fullPath: 'namespace/full-path',
     addOnType: DUO_PRO,
-    addOnPurchaseIds: [addOnPurchaseId],
+    addOnPurchaseIds: [duoProAddOnPurchaseId],
   };
   const duoEnterpriseAddOnEligibleUsersQueryVariables = {
     fullPath: 'namespace/full-path',
@@ -73,14 +73,14 @@ describe('CodeSuggestionsAddonAssignment', () => {
     addOnPurchaseIds: [duoAmazonQAddOnPurchaseId],
   };
 
-  const addOnAssignmentSuccess = {
+  const duoProAddOnAssignmentSuccess = {
     clientMutationId: '1',
     errors: [],
-    addOnPurchase,
+    addOnPurchase: duoProAddOnPurchase,
     user: {
       id: userIdForAssignment,
       addOnAssignments: {
-        nodes: codeSuggestionsAddOn,
+        nodes: duoProAddOn,
         __typename: 'UserAddOnAssignmentConnection',
       },
       __typename: 'AddOnUser',
@@ -113,10 +113,10 @@ describe('CodeSuggestionsAddonAssignment', () => {
     },
   };
 
-  const addOnUnassignmentSuccess = {
+  const duoProAddOnUnassignmentSuccess = {
     clientMutationId: '1',
     errors: [],
-    addOnPurchase,
+    addOnPurchase: duoProAddOnPurchase,
     user: {
       id: userIdForUnassignment,
       addOnAssignments: {
@@ -146,8 +146,8 @@ describe('CodeSuggestionsAddonAssignment', () => {
     user: null,
   };
 
-  const assignAddOnHandler = jest.fn().mockResolvedValue({
-    data: { userAddOnAssignmentCreate: addOnAssignmentSuccess },
+  const duoProAssignAddOnHandler = jest.fn().mockResolvedValue({
+    data: { userAddOnAssignmentCreate: duoProAddOnAssignmentSuccess },
   });
   const duoEnterpriseAssignAddOnHandler = jest.fn().mockResolvedValue({
     data: { userAddOnAssignmentCreate: duoEnterpriseAddOnAssignmentSuccess },
@@ -156,17 +156,17 @@ describe('CodeSuggestionsAddonAssignment', () => {
     data: { userAddOnAssignmentCreate: duoAmazonQAddOnAssignmentSuccess },
   });
 
-  const unassignAddOnHandler = jest.fn().mockResolvedValue({
-    data: { userAddOnAssignmentRemove: addOnUnassignmentSuccess },
+  const duoProUnassignAddOnHandler = jest.fn().mockResolvedValue({
+    data: { userAddOnAssignmentRemove: duoProAddOnUnassignmentSuccess },
   });
 
   const createMockApolloProvider = (
-    addonAssignmentCreateHandler,
+    addOnAssignmentCreateHandler,
     addOnAssignmentRemoveHandler,
     addOnAssignmentQueryVariables,
   ) => {
     const mockApollo = createMockApollo([
-      [userAddOnAssignmentCreateMutation, addonAssignmentCreateHandler],
+      [userAddOnAssignmentCreateMutation, addOnAssignmentCreateHandler],
       [userAddOnAssignmentRemoveMutation, addOnAssignmentRemoveHandler],
     ]);
 
@@ -184,12 +184,12 @@ describe('CodeSuggestionsAddonAssignment', () => {
 
   const createComponent = ({
     props = {},
-    addonAssignmentCreateHandler = assignAddOnHandler,
-    addOnAssignmentRemoveHandler = unassignAddOnHandler,
-    addOnAssignmentQueryVariables = addOnEligibleUsersQueryVariables,
+    addOnAssignmentCreateHandler = duoProAssignAddOnHandler,
+    addOnAssignmentRemoveHandler = duoProUnassignAddOnHandler,
+    addOnAssignmentQueryVariables = duoProAddOnEligibleUsersQueryVariables,
   } = {}) => {
     mockApolloClient = createMockApolloProvider(
-      addonAssignmentCreateHandler,
+      addOnAssignmentCreateHandler,
       addOnAssignmentRemoveHandler,
       addOnAssignmentQueryVariables,
     );
@@ -198,7 +198,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
       propsData: {
         addOnAssignments: [],
         userId: userIdForAssignment,
-        addOnPurchaseId,
+        addOnPurchaseId: duoProAddOnPurchaseId,
         duoTier: DUO_PRO,
         ...props,
       },
@@ -207,7 +207,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
 
   const getAddOnAssignmentStatusForUserFromCache = (
     userId,
-    variables = addOnEligibleUsersQueryVariables,
+    variables = duoProAddOnEligibleUsersQueryVariables,
   ) => {
     return mockApolloClient.clients.defaultClient.cache
       .readQuery({ query: getAddOnEligibleUsers, variables })
@@ -244,7 +244,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
   describe.each([
     {
       title: 'when there are assigned add-ons',
-      addOnAssignments: [codeSuggestionsAddOn],
+      addOnAssignments: [duoProAddOn],
       toggleProps: { disabled: false, value: true },
     },
     {
@@ -257,7 +257,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
       createComponent({ props: { addOnAssignments } });
     });
 
-    it('renders addon toggle with appropriate props', () => {
+    it('renders add-on toggle with appropriate props', () => {
       expect(findToggle().props()).toEqual(expect.objectContaining(toggleProps));
     });
   });
@@ -279,9 +279,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
     it('updates the cache with latest add-on assignment status', async () => {
       await waitForPromises();
 
-      expect(getAddOnAssignmentStatusForUserFromCache(userIdForAssignment)).toEqual(
-        codeSuggestionsAddOn,
-      );
+      expect(getAddOnAssignmentStatusForUserFromCache(userIdForAssignment)).toEqual(duoProAddOn);
     });
 
     it('does not show loading state once updated', async () => {
@@ -290,15 +288,15 @@ describe('CodeSuggestionsAddonAssignment', () => {
       expect(findToggle().props('isLoading')).toBe(false);
     });
 
-    it('calls addon assigment mutation with appropriate params', () => {
-      expect(assignAddOnHandler).toHaveBeenCalledWith({
-        addOnPurchaseId,
+    it('calls add-on assigment mutation with appropriate params', () => {
+      expect(duoProAssignAddOnHandler).toHaveBeenCalledWith({
+        addOnPurchaseId: duoProAddOnPurchaseId,
         userId: userIdForAssignment,
       });
     });
 
-    it('does not call addon un-assigment mutation', () => {
-      expect(unassignAddOnHandler).not.toHaveBeenCalled();
+    it('does not call add-on un-assigment mutation', () => {
+      expect(duoProUnassignAddOnHandler).not.toHaveBeenCalled();
     });
 
     it('tracks the `enable_gitlab_duo_pro_for_seat` event', async () => {
@@ -321,7 +319,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
           userId: userIdForAssignment,
           addOnPurchaseId: duoEnterpriseAddOnPurchaseId,
         },
-        addonAssignmentCreateHandler: duoEnterpriseAssignAddOnHandler,
+        addOnAssignmentCreateHandler: duoEnterpriseAssignAddOnHandler,
         addOnAssignmentQueryVariables: duoEnterpriseAddOnEligibleUsersQueryVariables,
       });
 
@@ -339,15 +337,15 @@ describe('CodeSuggestionsAddonAssignment', () => {
       ).toEqual(duoEnterpriseAddOn);
     });
 
-    it('calls addon assigment mutation with appropriate params', () => {
+    it('calls add-on assigment mutation with appropriate params', () => {
       expect(duoEnterpriseAssignAddOnHandler).toHaveBeenCalledWith({
         addOnPurchaseId: duoEnterpriseAddOnPurchaseId,
         userId: userIdForAssignment,
       });
     });
 
-    it('does not call addon un-assigment mutation', () => {
-      expect(unassignAddOnHandler).not.toHaveBeenCalled();
+    it('does not call add-on un-assigment mutation', () => {
+      expect(duoProUnassignAddOnHandler).not.toHaveBeenCalled();
     });
   });
 
@@ -360,7 +358,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
           userId: userIdForAssignment,
           addOnPurchaseId: duoAmazonQAddOnPurchaseId,
         },
-        addonAssignmentCreateHandler: duoAmazonQAssignAddOnHandler,
+        addOnAssignmentCreateHandler: duoAmazonQAssignAddOnHandler,
         addOnAssignmentQueryVariables: duoAmazonQAddOnEligibleUsersQueryVariables,
       });
 
@@ -378,15 +376,15 @@ describe('CodeSuggestionsAddonAssignment', () => {
       ).toEqual(duoAmazonQAddOn);
     });
 
-    it('calls addon assigment mutation with appropriate params', () => {
+    it('calls add-on assigment mutation with appropriate params', () => {
       expect(duoAmazonQAssignAddOnHandler).toHaveBeenCalledWith({
         addOnPurchaseId: duoAmazonQAddOnPurchaseId,
         userId: userIdForAssignment,
       });
     });
 
-    it('does not call addon un-assigment mutation', () => {
-      expect(unassignAddOnHandler).not.toHaveBeenCalled();
+    it('does not call add-on un-assigment mutation', () => {
+      expect(duoProUnassignAddOnHandler).not.toHaveBeenCalled();
     });
   });
 
@@ -396,7 +394,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
     it('emits an event with the error code from response for a known error', async () => {
       createComponent({
         props: { addOnAssignments },
-        addonAssignmentCreateHandler: jest
+        addOnAssignmentCreateHandler: jest
           .fn()
           .mockResolvedValue({ data: { userAddOnAssignmentCreate: knownAddOnAssignmentError } }),
       });
@@ -411,7 +409,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
     it('emits an event with generic error code for a non string error code', async () => {
       createComponent({
         props: { addOnAssignments },
-        addonAssignmentCreateHandler: jest.fn().mockResolvedValue({
+        addOnAssignmentCreateHandler: jest.fn().mockResolvedValue({
           data: { userAddOnAssignmentCreate: nonStringAddOnAssignmentError },
         }),
       });
@@ -426,7 +424,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
     it('emits an event with generic error code for an unknown error', async () => {
       createComponent({
         props: { addOnAssignments },
-        addonAssignmentCreateHandler: jest
+        addOnAssignmentCreateHandler: jest
           .fn()
           .mockResolvedValue({ data: { userAddOnAssignmentCreate: unknownAddOnAssignmentError } }),
       });
@@ -441,7 +439,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
     it('emits an event with the generic error code', async () => {
       createComponent({
         props: { addOnAssignments },
-        addonAssignmentCreateHandler: jest.fn().mockRejectedValue(new Error('An error')),
+        addOnAssignmentCreateHandler: jest.fn().mockRejectedValue(new Error('An error')),
       });
       findToggle().vm.$emit('change', true);
 
@@ -455,7 +453,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
       const error = new Error('An error');
       createComponent({
         props: { addOnAssignments },
-        addonAssignmentCreateHandler: jest.fn().mockRejectedValue(error),
+        addOnAssignmentCreateHandler: jest.fn().mockRejectedValue(error),
       });
       findToggle().vm.$emit('change', true);
 
@@ -465,12 +463,12 @@ describe('CodeSuggestionsAddonAssignment', () => {
     });
   });
 
-  describe('when un-assigning an addon', () => {
+  describe('when un-assigning an add-on', () => {
     beforeEach(() => {
       jest.spyOn(Tracking, 'event');
 
       createComponent({
-        props: { addOnAssignments: [codeSuggestionsAddOn], userId: userIdForUnassignment },
+        props: { addOnAssignments: [duoProAddOn], userId: userIdForUnassignment },
       });
       findToggle().vm.$emit('change', false);
     });
@@ -491,15 +489,15 @@ describe('CodeSuggestionsAddonAssignment', () => {
       expect(findToggle().props('isLoading')).toBe(false);
     });
 
-    it('calls addon un-assigment mutation with appropriate params', () => {
-      expect(unassignAddOnHandler).toHaveBeenCalledWith({
-        addOnPurchaseId,
+    it('calls add-on un-assigment mutation with appropriate params', () => {
+      expect(duoProUnassignAddOnHandler).toHaveBeenCalledWith({
+        addOnPurchaseId: duoProAddOnPurchaseId,
         userId: userIdForUnassignment,
       });
     });
 
-    it('does not call addon assigment mutation', () => {
-      expect(assignAddOnHandler).not.toHaveBeenCalled();
+    it('does not call add-on assigment mutation', () => {
+      expect(duoProAssignAddOnHandler).not.toHaveBeenCalled();
     });
 
     it('tracks the `disable_gitlab_duo_pro_for_seat` event', async () => {
@@ -514,7 +512,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
   });
 
   describe('when error occurs while un-assigning add-on', () => {
-    const addOnAssignments = [codeSuggestionsAddOn];
+    const addOnAssignments = [duoProAddOn];
 
     it('emits an event with the error code from response for a known error', async () => {
       createComponent({

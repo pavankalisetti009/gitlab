@@ -42,7 +42,7 @@ describe('Add On Eligible User List', () => {
   let wrapper;
 
   const fullPath = 'namespace/full-path';
-  const addOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/1';
+  const duoProAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/1';
   const duoEnterpriseAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/2';
   const duoTier = DUO_PRO;
   const error = new Error('Error');
@@ -55,10 +55,10 @@ describe('Add On Eligible User List', () => {
     sort: DEFAULT_SORT_OPTION,
   };
 
-  const defaultQueryVariables = {
+  const duoProDefaultQueryVariables = {
     fullPath,
     addOnType: DUO_PRO,
-    addOnPurchaseIds: [addOnPurchaseId],
+    addOnPurchaseIds: [duoProAddOnPurchaseId],
     ...defaultPaginationParams,
   };
   const defaultDuoEnterpriseQueryVariables = {
@@ -95,7 +95,7 @@ describe('Add On Eligible User List', () => {
     wrapper = mountFn(SaasAddOnEligibleUserList, {
       apolloProvider: createMockApolloProvider(handler),
       propsData: {
-        addOnPurchaseId,
+        addOnPurchaseId: duoProAddOnPurchaseId,
         duoTier,
         ...props,
       },
@@ -128,7 +128,7 @@ describe('Add On Eligible User List', () => {
       const { pageInfo, nodes: users } =
         mockPaginatedAddOnEligibleUsers.data.namespace.addOnEligibleUsers;
       const expectedProps = {
-        addOnPurchaseId,
+        addOnPurchaseId: duoProAddOnPurchaseId,
         duoTier,
         isLoading: false,
         pageInfo,
@@ -141,7 +141,7 @@ describe('Add On Eligible User List', () => {
     });
 
     it('calls addOnEligibleUsers query with appropriate params', () => {
-      expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith(defaultQueryVariables);
+      expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith(duoProDefaultQueryVariables);
     });
 
     describe('with Duo Enterprise add-on tier', () => {
@@ -261,7 +261,7 @@ describe('Add On Eligible User List', () => {
       await waitForPromises();
 
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
-        ...defaultQueryVariables,
+        ...duoProDefaultQueryVariables,
         after: endCursor,
       });
     });
@@ -271,7 +271,7 @@ describe('Add On Eligible User List', () => {
       await waitForPromises();
 
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
-        ...defaultQueryVariables,
+        ...duoProDefaultQueryVariables,
         first: null,
         last: 20,
         before: startCursor,
@@ -287,7 +287,7 @@ describe('Add On Eligible User List', () => {
 
     it('fetches changed number of user items', async () => {
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
-        ...defaultQueryVariables,
+        ...duoProDefaultQueryVariables,
         first: DEFAULT_PER_PAGE,
       });
 
@@ -296,7 +296,7 @@ describe('Add On Eligible User List', () => {
       await waitForPromises();
 
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
-        ...defaultQueryVariables,
+        ...duoProDefaultQueryVariables,
         first: newPageSize,
       });
     });
@@ -311,7 +311,7 @@ describe('Add On Eligible User List', () => {
       await waitForPromises();
 
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
-        ...defaultQueryVariables,
+        ...duoProDefaultQueryVariables,
         sort: DEFAULT_SORT_OPTION,
       });
     });
@@ -323,7 +323,7 @@ describe('Add On Eligible User List', () => {
       await waitForPromises();
 
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
-        ...defaultQueryVariables,
+        ...duoProDefaultQueryVariables,
         ...filterOptions,
       });
     });
@@ -333,7 +333,7 @@ describe('Add On Eligible User List', () => {
       await waitForPromises();
 
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
-        ...defaultQueryVariables,
+        ...duoProDefaultQueryVariables,
         sort: 'LAST_ACTIVITY_ON_DESC',
       });
     });
@@ -344,7 +344,7 @@ describe('Add On Eligible User List', () => {
       await waitForPromises();
 
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith({
-        ...defaultQueryVariables,
+        ...duoProDefaultQueryVariables,
         ...filterOptions,
       });
     });
