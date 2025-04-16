@@ -73,6 +73,21 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
           expect(response).to have_gitlab_http_status(:redirect)
           expect(response).to redirect_to(sso_group_saml_providers_url(group, { redirect: request.fullpath }))
         end
+
+        context 'when searching a subgroup' do
+          let(:params) { { group_id: subgroup.id, search: 'title', scope: 'issues' } }
+          let(:subgroup) { create(:group, parent: group) }
+
+          it 'redirects user to sso sign-in' do
+            allow(::Gitlab::Auth::GroupSaml::SsoEnforcer).to receive(:access_restricted?)
+              .with(resource: subgroup, user: user).and_return(false, true)
+
+            send_search_request(params)
+
+            expect(response).to have_gitlab_http_status(:redirect)
+            expect(response).to redirect_to(sso_group_saml_providers_url(group, { redirect: request.fullpath }))
+          end
+        end
       end
 
       context 'for project level search' do
