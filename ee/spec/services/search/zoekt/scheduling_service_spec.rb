@@ -285,14 +285,6 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
   end
 
-  describe '#node_assignment' do
-    let(:task) { :node_assignment }
-
-    it 'returns nil' do
-      expect(execute_task).to be_nil
-    end
-  end
-
   describe '#mark_indices_as_ready' do
     let(:logger) { instance_double(::Search::Zoekt::Logger) }
     let(:task) { :mark_indices_as_ready }

@@ -56,18 +56,6 @@ RSpec.describe ::Search::Zoekt::SchedulingWorker, feature_category: :global_sear
           end
         end
       end
-
-      context 'when a specific task is provided' do
-        let(:task) { :node_assignment }
-
-        it_behaves_like 'an idempotent worker' do
-          it 'executes the scheduling service with the given task' do
-            expect(Search::Zoekt::SchedulingService).to receive(:execute).with(task)
-
-            worker.perform(task)
-          end
-        end
-      end
     end
   end
 end

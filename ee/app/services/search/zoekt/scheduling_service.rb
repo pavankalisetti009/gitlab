@@ -86,10 +86,8 @@ module Search
 
       TASKS = (%i[
         auto_index_self_managed
-        dot_com_rollout
         eviction
         initial_indexing
-        node_assignment
         node_with_negative_unclaimed_storage_bytes_check
         update_index_used_bytes
       ] + CONFIG.keys).freeze
@@ -249,12 +247,6 @@ module Search
           end
         end
       end
-
-      # Task has been replaced by saas_rollout
-      def dot_com_rollout; end
-
-      # Task has been replaced by Search::Zoekt::RolloutWorker
-      def node_assignment; end
 
       def node_with_negative_unclaimed_storage_bytes_check
         execute_every 1.hour do
