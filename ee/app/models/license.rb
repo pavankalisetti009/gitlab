@@ -165,6 +165,10 @@ class License < ApplicationRecord
     plan == License::ULTIMATE_PLAN
   end
 
+  def premium?
+    plan == License::PREMIUM_PLAN
+  end
+
   def customer_service_enabled?
     !!license&.operational_metrics?
   end
