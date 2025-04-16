@@ -8,6 +8,7 @@ module EE
       prepended do
         before_action do
           push_licensed_feature(:remote_development)
+          push_frontend_feature_flag(:repository_lock_information, @project)
         end
       end
     end
