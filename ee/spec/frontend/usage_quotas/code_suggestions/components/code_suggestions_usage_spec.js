@@ -27,6 +27,7 @@ import {
 } from 'ee/admin/subscriptions/show/constants';
 
 import {
+  noAssignedDuoAddOnData,
   noAssignedDuoProAddOnData,
   noAssignedDuoEnterpriseAddOnData,
   noAssignedDuoAmazonQAddOnData,
@@ -48,6 +49,7 @@ describe('GitLab Duo Usage', () => {
 
   const error = new Error('Something went wrong');
 
+  const noAssignedDuoAddOnDataHandler = jest.fn().mockResolvedValue(noAssignedDuoAddOnData);
   const noAssignedDuoProAddOnDataHandler = jest.fn().mockResolvedValue(noAssignedDuoProAddOnData);
   const noAssignedDuoEnterpriseAddOnDataHandler = jest
     .fn()
@@ -249,6 +251,24 @@ describe('GitLab Duo Usage', () => {
         });
       });
 
+      describe('with Duo add-on enabled', () => {
+        beforeEach(() => {
+          return createComponent({
+            addOnPurchasesHandler: noAssignedDuoAddOnDataHandler,
+            provideProps: { isStandalonePage: true, groupId: 289561 },
+          });
+        });
+
+        it('hides other components', () => {
+          expect(findCodeSuggestionsIntro().exists()).toBe(false);
+          expect(findCodeSuggestionsInfo().exists()).toBe(false);
+          expect(findAmazonQInfoCard().exists()).toBe(false);
+          expect(findCodeSuggestionsStatistics().exists()).toBe(false);
+          expect(findSaasAddOnEligibleUserList().exists()).toBe(false);
+          expect(findErrorAlert().exists()).toBe(false);
+        });
+      });
+
       describe('with Duo Pro add-on enabled', () => {
         beforeEach(() => {
           return createComponent({
@@ -359,6 +379,32 @@ describe('GitLab Duo Usage', () => {
     });
 
     describe('when instance is SM', () => {
+      beforeEach(() => {
+        return createComponent({
+          addOnPurchasesHandler: noAssignedDuoAddOnDataHandler,
+          provideProps: { isSaaS: false },
+        });
+      });
+
+      it('renders code suggestions title', () => {
+        expect(findCodeSuggestionsTitle().text()).toBe('Seat utilization');
+      });
+
+      it('renders code suggestions subtitle', () => {
+        expect(findCodeSuggestionsSubtitle().text()).toBe(
+          'Manage seat assignments for GitLab Duo.',
+        );
+      });
+
+      it('hides other components', () => {
+        expect(findAmazonQInfoCard().exists()).toBe(false);
+        expect(findCodeSuggestionsInfo().exists()).toBe(false);
+        expect(findCodeSuggestionsIntro().exists()).toBe(false);
+        expect(findCodeSuggestionsStatistics().exists()).toBe(false);
+        expect(findErrorAlert().exists()).toBe(false);
+        expect(findSaasAddOnEligibleUserList().exists()).toBe(false);
+      });
+
       describe('with Duo Pro add-on enabled', () => {
         beforeEach(() => {
           return createComponent({
@@ -522,7 +568,7 @@ describe('GitLab Duo Usage', () => {
 
       it('renders code suggestions subtitle', () => {
         expect(findCodeSuggestionsSubtitle().text()).toBe(
-          'Manage seat assignments for GitLab Duo Pro.',
+          'Manage seat assignments for GitLab Duo.',
         );
       });
 

@@ -1,20 +1,26 @@
 import { PROMO_URL } from '~/constants';
 import { __, s__ } from '~/locale';
 
+// There has been no decision on the final name yet temporary we are using 'duo_nano'
+// After we make a decision, we will adapt it with https://gitlab.com/gitlab-org/gitlab/-/issues/536376
+export const DUO = 'DUO_NANO';
+
 export const DUO_PRO = 'CODE_SUGGESTIONS';
 export const DUO_ENTERPRISE = 'DUO_ENTERPRISE';
 export const DUO_AMAZON_Q = 'DUO_AMAZON_Q';
-export const DUO_IDENTIFIERS = [DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q];
+export const DUO_IDENTIFIERS = [DUO, DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q];
 
 export const codeSuggestionsLearnMoreLink = `${PROMO_URL}/gitlab-duo/`;
 
 export const DUO_TITLES = {
+  [DUO]: s__('CodeSuggestions|GitLab Duo'),
   [DUO_PRO]: s__('CodeSuggestions|GitLab Duo Pro'),
   [DUO_ENTERPRISE]: s__('CodeSuggestions|GitLab Duo Enterprise'),
   [DUO_AMAZON_Q]: s__('AmazonQ|GitLab Duo with Amazon Q'),
 };
 
 export const DUO_BADGE_TITLES = {
+  [DUO]: '',
   [DUO_PRO]: s__('CodeSuggestions|Pro'),
   [DUO_ENTERPRISE]: s__('CodeSuggestions|Enterprise'),
   [DUO_AMAZON_Q]: __('Amazon Q'),
