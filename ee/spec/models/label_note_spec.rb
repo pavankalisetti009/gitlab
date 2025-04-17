@@ -16,13 +16,25 @@ RSpec.describe LabelNote do
   let(:resource_key) { resource.class.name.underscore.to_s }
   let(:events) { [create(:resource_label_event, label: label, resource_key => resource)] }
 
-  subject { described_class.from_events(events) }
+  subject { described_class.from_events(events, resource: resource, resource_parent: resource_parent) }
 
   context 'when resource is epic' do
     it_behaves_like 'label note created from events'
 
     it 'includes a link to the list of epics filtered by the label' do
       expect(subject.note_html).to include(group_epics_path(group, label_name: label.title))
+    end
+
+    context 'when render_label_notes_lazily is disabled' do
+      before do
+        stub_feature_flags(render_label_notes_lazily: false)
+      end
+
+      it_behaves_like 'label note created from events'
+
+      it 'includes a link to the list of epics filtered by the label' do
+        expect(subject.note_html).to include(group_epics_path(group, label_name: label.title))
+      end
     end
   end
 
