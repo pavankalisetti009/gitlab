@@ -4153,6 +4153,49 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  describe ':destroy_group policy' do
+    context 'when default_project_deletion_protection is set to true' do
+      before do
+        stub_application_setting(default_project_deletion_protection: true)
+        stub_licensed_features(custom_roles: true)
+      end
+
+      context 'with admin', :enable_admin_mode do
+        let(:current_user) { admin }
+
+        it { is_expected.to be_allowed(:remove_group) }
+      end
+
+      context 'with owner' do
+        let(:current_user) { owner }
+
+        context 'when group is empty' do
+          it { is_expected.to be_allowed(:remove_group) }
+        end
+
+        context 'when group has only inactive project' do
+          let_it_be(:project_marked_for_deletion) do
+            create(:project, group: group, marked_for_deletion_at: Time.current)
+          end
+
+          let_it_be(:project_archived) do
+            create(:project, group: group, archived: true)
+          end
+
+          it { is_expected.to be_allowed(:remove_group) }
+        end
+
+        context 'when group has at least one active project' do
+          let_it_be(:project) do
+            create(:project, group: group)
+          end
+
+          it { is_expected.to be_disallowed(:remove_group) }
+        end
+      end
+    end
+  end
+
   context 'for :read_limit_alert' do
     context 'when the user is a guest member of the group' do
       let(:current_user) { guest }

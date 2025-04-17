@@ -798,11 +798,6 @@ module EE
         !::Gitlab::IpRestriction::Enforcer.new(subject.group).allows_current_ip? if subject.group
       end
 
-      condition(:owner_cannot_destroy_project, scope: :global) do
-        ::Gitlab::CurrentSettings.current_application_settings
-          .default_project_deletion_protection
-      end
-
       rule { custom_role_enables_archive_project }.policy do
         enable :archive_project
       end
