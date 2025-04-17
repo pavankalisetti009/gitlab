@@ -213,6 +213,40 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
       end
     end
 
+    describe 'duo_base_features_enabled' do
+      describe 'new record' do
+        it 'returns nil as default value' do
+          expect(settings.duo_base_features_enabled).to be_nil
+        end
+
+        it 'returns nil as default value for sub-group' do
+          settings = create(:group, parent: group).namespace_settings
+
+          expect(settings.duo_base_features_enabled).to be_nil
+        end
+      end
+
+      describe 'existing record' do
+        it 'accepts only boolean values for update' do
+          settings.update!(duo_base_features_enabled: true)
+          expect(settings).to be_valid
+
+          settings.update!(duo_base_features_enabled: false)
+          expect(settings).to be_valid
+
+          settings.duo_base_features_enabled = nil
+          expect(settings).to be_invalid
+        end
+
+        it 'does not allow update for non root group' do
+          settings = create(:group, parent: group).namespace_settings
+
+          settings.duo_base_features_enabled = true
+          expect(settings).to be_invalid
+        end
+      end
+    end
+
     describe 'duo_nano_features_enabled' do
       describe 'new record' do
         it 'returns nil as default value' do
@@ -620,7 +654,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
           unique_project_download_limit
           unique_project_download_limit_interval_in_seconds
           unique_project_download_limit_allowlist
-          duo_nano_features_enabled
+          duo_base_features_enabled
           duo_features_enabled
           lock_duo_features_enabled
         ])
