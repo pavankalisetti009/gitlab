@@ -56622,6 +56622,9 @@ msgstr ""
 msgid "Service accounts"
 msgstr ""
 
+msgid "ServiceAccounts|Access Tokens"
+msgstr ""
+
 msgid "ServiceAccounts|Add Service Account"
 msgstr ""
 
