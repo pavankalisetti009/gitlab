@@ -7,6 +7,8 @@ module API
         include PaginationParams
         include APIGuard
 
+        helpers ::API::Helpers::DuoWorkflowHelpers
+
         feature_category :duo_workflow
 
         before do
@@ -155,6 +157,8 @@ module API
                 result = service.execute
 
                 bad_request!(result[:message]) if result[:status] == :error
+
+                push_ai_gateway_headers
 
                 if params[:start_workflow].present?
                   response = ::Ai::DuoWorkflows::StartWorkflowService.new(

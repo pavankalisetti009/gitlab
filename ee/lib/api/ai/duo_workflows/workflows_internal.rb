@@ -12,6 +12,8 @@ module API
         include PaginationParams
         include APIGuard
 
+        helpers ::API::Helpers::DuoWorkflowHelpers
+
         allow_access_with_scope :ai_workflows
 
         feature_category :duo_workflow
@@ -49,6 +51,7 @@ module API
                 end
                 get do
                   workflow = find_workflow!(params[:id])
+                  push_ai_gateway_headers
 
                   present workflow, with: ::API::Entities::Ai::DuoWorkflows::Workflow
                 end

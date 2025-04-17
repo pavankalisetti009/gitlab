@@ -1,0 +1,9 @@
+---
+name: batch_duo_workflow_planner_tasks
+feature_issue_url: https://gitlab.com/gitlab-org/duo-workflow/duo-workflow-service/-/issues/284
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/185920
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/536039
+milestone: '18.0'
+group: group::duo workflow
+type: experiment
+default_enabled: false

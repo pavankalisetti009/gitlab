@@ -31,12 +31,19 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
     end
 
     context 'when success' do
+      before do
+        allow(Gitlab::AiGateway).to receive(:public_headers)
+          .with(user: user, service_name: :duo_workflow)
+          .and_return({ 'x-gitlab-enabled-feature-flags' => 'test-feature' })
+      end
+
       it 'creates the Ai::DuoWorkflows::Workflow' do
         expect do
           post api(path, user), params: params
           expect(response).to have_gitlab_http_status(:created)
         end.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
         expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
+        expect(response.headers['X-Gitlab-Enabled-Feature-Flags']).to include('test-feature')
 
         created_workflow = Ai::DuoWorkflows::Workflow.last
 
