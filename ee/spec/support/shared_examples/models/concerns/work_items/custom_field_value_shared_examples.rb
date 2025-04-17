@@ -42,4 +42,28 @@ RSpec.shared_examples 'a work item custom field value' do |factory:|
       ).to contain_exactly(matching_value)
     end
   end
+
+  describe '.for_work_item' do
+    let(:work_item1) { create(:work_item) }
+    let(:work_item2) { create(:work_item) }
+    let(:custom_field) { create(:custom_field) }
+
+    let!(:custom_field_value1) { create(factory, work_item: work_item1, custom_field: custom_field) }
+    let!(:custom_field_value2) { create(factory, work_item: work_item2, custom_field: custom_field) }
+
+    it 'returns only custom field values for the specified work item' do
+      result = described_class.for_work_item(work_item1.id)
+
+      expect(result).to include(custom_field_value1)
+      expect(result).not_to include(custom_field_value2)
+    end
+
+    it 'returns empty relation when work item has no custom field values' do
+      new_work_item = create(:work_item)
+
+      result = described_class.for_work_item(new_work_item.id)
+
+      expect(result).to be_empty
+    end
+  end
 end

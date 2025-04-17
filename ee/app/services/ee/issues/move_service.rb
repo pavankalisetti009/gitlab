@@ -11,6 +11,13 @@ module EE
         super
       end
 
+      override :update_new_entity
+      def update_new_entity
+        super
+
+        copy_custom_field_values
+      end
+
       override :execute
       def execute(issue, target_project, move_any_issue_type = false)
         new_issue = super
@@ -111,6 +118,13 @@ module EE
         end
 
         super
+      end
+
+      def copy_custom_field_values
+        ::WorkItems::Widgets::CopyCustomFieldValuesService.new(
+          work_item: original_entity,
+          target_work_item: new_entity
+        ).execute
       end
     end
   end

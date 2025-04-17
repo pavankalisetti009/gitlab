@@ -9,6 +9,7 @@ module EE
       def update_new_entity
         super
         add_epic
+        copy_custom_field_values
       end
 
       private
@@ -32,6 +33,13 @@ module EE
         end
 
         super
+      end
+
+      def copy_custom_field_values
+        ::WorkItems::Widgets::CopyCustomFieldValuesService.new(
+          work_item: original_entity,
+          target_work_item: new_entity
+        ).execute
       end
     end
   end

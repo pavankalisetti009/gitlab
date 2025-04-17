@@ -73,6 +73,26 @@ RSpec.describe Issues::MoveService, feature_category: :team_planning do
         expect(new_issue.resource_weight_events.map(&:weight)).to contain_exactly(1, 42, 5)
       end
     end
+
+    context 'when issue with custom fields' do
+      include_context 'with group configured with custom fields'
+
+      before do
+        # Create one of each type of field value
+        create(:work_item_text_field_value, work_item_id: old_issue.id, custom_field: text_field, value: 'Sample text')
+        create(:work_item_number_field_value, work_item_id: old_issue.id, custom_field: number_field, value: 42)
+        create(:work_item_select_field_value, work_item_id: old_issue.id, custom_field: select_field,
+          custom_field_select_option: select_option_1)
+      end
+
+      it 'copies the custom fields' do
+        new_issue = move_service.execute(old_issue, new_project)
+
+        expect(WorkItems::TextFieldValue.last.work_item_id).to eq(new_issue.id)
+        expect(WorkItems::NumberFieldValue.last.work_item_id).to eq(new_issue.id)
+        expect(WorkItems::SelectFieldValue.last.work_item_id).to eq(new_issue.id)
+      end
+    end
   end
 
   describe '#rewrite_related_vulnerability_issues' do
