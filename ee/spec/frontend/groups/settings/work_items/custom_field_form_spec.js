@@ -3,6 +3,7 @@ import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox, GlModal } from '@gitlab/ui';
 import Draggable from 'vuedraggable';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { ENTER_KEY } from '~/lib/utils/keys';
 import CustomFieldForm from 'ee/groups/settings/work_items/custom_field_form.vue';
 import createCustomFieldMutation from 'ee/groups/settings/work_items/create_custom_field.mutation.graphql';
 import updateCustomFieldMutation from 'ee/groups/settings/work_items/update_custom_field.mutation.graphql';
@@ -38,6 +39,7 @@ describe('CustomFieldForm', () => {
     wrapper.find('[data-testid="custom-field-options"]');
   const findAddSelectOptionButton = () => wrapper.findByTestId('add-select-option');
   const findAddSelectInputAt = (i) => wrapper.findByTestId(`select-options-${i}`);
+  const findAllAddSelectInputs = () => wrapper.findAll('[data-testid^="select-options"]');
   const findDraggableComponent = () => wrapper.findComponent(Draggable);
   const findDragHandles = () => wrapper.findAll('.drag-handle');
 
@@ -209,27 +211,173 @@ describe('CustomFieldForm', () => {
       expect(findWorkItemTypeListbox().props('toggleText')).toBe('Issue');
     });
 
-    it('adds select option when add button is clicked', async () => {
-      await findFieldTypeSelect().vm.$emit('input', 'SINGLE_SELECT');
-      await nextTick();
+    describe('add select options', () => {
+      beforeEach(async () => {
+        await findFieldTypeSelect().vm.$emit('input', 'SINGLE_SELECT');
+        await nextTick();
+      });
 
-      expect(findAddSelectOptionButton().exists()).toBe(true);
-      expect(findAddSelectInputAt(1).exists()).toBe(false);
+      it('adds select option when add button is clicked', async () => {
+        expect(findAddSelectOptionButton().exists()).toBe(true);
+        expect(findAddSelectInputAt(1).exists()).toBe(false);
 
-      findAddSelectOptionButton().vm.$emit('click');
-      await nextTick();
+        findAddSelectOptionButton().vm.$emit('click');
+        await nextTick();
 
-      expect(findAddSelectInputAt(1).exists()).toBe(true);
+        expect(findAddSelectInputAt(1).exists()).toBe(true);
+      });
+
+      it('adds select option when Enter key is pressed', async () => {
+        expect(findAddSelectInputAt(1).exists()).toBe(false);
+
+        findAddSelectInputAt(0).vm.$emit('keyup', new KeyboardEvent('keyup', { key: ENTER_KEY }));
+        await nextTick();
+        expect(findAddSelectInputAt(1).exists()).toBe(true);
+      });
     });
 
     it('remove button removes select option', async () => {
       await findFieldTypeSelect().vm.$emit('input', 'SINGLE_SELECT');
       await nextTick();
 
-      findRemoveSelectButtonAt(0).vm.$emit('click');
+      // No remove button unless >1 option
+      expect(findRemoveSelectButtonAt(0).exists()).toBe(false);
+
+      findAddSelectOptionButton().vm.$emit('click');
       await nextTick();
 
-      expect(findAddSelectInputAt(0).exists()).toBe(false);
+      // Both options have remove buttons now
+      expect(findRemoveSelectButtonAt(0).exists()).toBe(true);
+      findRemoveSelectButtonAt(1).vm.$emit('click');
+      await nextTick();
+
+      expect(findAddSelectInputAt(1).exists()).toBe(false);
+    });
+
+    describe('paste behavior for select options', () => {
+      beforeEach(async () => {
+        createComponent();
+        findToggleModalButton().vm.$emit('click');
+        findFieldTypeSelect().vm.$emit('input', 'SINGLE_SELECT');
+        await nextTick();
+      });
+
+      it('handles single line paste normally', async () => {
+        findAddSelectInputAt(0).vm.$emit('input', 'Initial ');
+        await nextTick();
+
+        // Create clipboard event with single line of text
+        const clipboardData = {
+          getData: jest.fn().mockReturnValue('pasted text'),
+        };
+        const event = {
+          clipboardData,
+          preventDefault: jest.fn(),
+          target: {
+            dataset: { optionIndex: '0' },
+            selectionStart: 8,
+            selectionEnd: 8,
+          },
+        };
+
+        findAddSelectInputAt(0).vm.$emit('paste', event);
+        await nextTick();
+
+        // For single line, use default paste behavior
+        expect(event.preventDefault).not.toHaveBeenCalled();
+        expect(findAllAddSelectInputs()).toHaveLength(1);
+      });
+
+      it('splits multi-line paste into separate options', async () => {
+        findAddSelectInputAt(0).vm.$emit('input', '');
+        await nextTick();
+
+        const clipboardData = {
+          getData: jest.fn().mockReturnValue('Option 1\nOption 2\nOption 3'),
+        };
+        const event = {
+          clipboardData,
+          preventDefault: jest.fn(),
+          target: {
+            dataset: { optionIndex: '0' },
+            selectionStart: 0,
+            selectionEnd: 0,
+          },
+        };
+
+        findAddSelectInputAt(0).vm.$emit('paste', event);
+        await nextTick();
+
+        // Use multiline paste behavior
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(findAllAddSelectInputs()).toHaveLength(3);
+        expect(findAddSelectInputAt(0).attributes('value')).toBe('Option 1');
+        expect(findAddSelectInputAt(1).attributes('value')).toBe('Option 2');
+        expect(findAddSelectInputAt(2).attributes('value')).toBe('Option 3');
+      });
+
+      it('handles paste in the middle of text correctly', async () => {
+        findAddSelectInputAt(0).vm.$emit('input', 'Start End');
+
+        // Add a second option to verify new lines insert in between
+        findAddSelectOptionButton().vm.$emit('click');
+        await nextTick();
+        findAddSelectInputAt(1).vm.$emit('input', 'Last option');
+        await nextTick();
+
+        const clipboardData = {
+          getData: jest.fn().mockReturnValue('Middle\nNew Line 1\nNew Line 2'),
+        };
+        const event = {
+          clipboardData,
+          preventDefault: jest.fn(),
+          target: {
+            dataset: { optionIndex: '0' },
+            selectionStart: 6, // After "Start "
+            selectionEnd: 6,
+          },
+        };
+
+        findAddSelectInputAt(0).vm.$emit('paste', event);
+        await nextTick();
+
+        expect(event.preventDefault).toHaveBeenCalled();
+
+        // Should insert first line at cursor position
+        expect(findAddSelectInputAt(0).attributes('value')).toBe('Start MiddleEnd');
+
+        // Should add additional options for subsequent lines ahead of original last option
+        expect(findAddSelectInputAt(1).attributes('value')).toBe('New Line 1');
+        expect(findAddSelectInputAt(2).attributes('value')).toBe('New Line 2');
+        expect(findAddSelectInputAt(3).attributes('value')).toBe('Last option');
+        expect(findAllAddSelectInputs()).toHaveLength(4);
+      });
+
+      it('ignores empty lines when pasting', async () => {
+        findAddSelectInputAt(0).vm.$emit('input', '');
+        await nextTick();
+
+        const clipboardData = {
+          getData: jest.fn().mockReturnValue('Line 1\n\n\nLine 2\n\nLine 3'),
+        };
+        const event = {
+          clipboardData,
+          preventDefault: jest.fn(),
+          target: {
+            dataset: { optionIndex: '0' },
+            selectionStart: 0,
+            selectionEnd: 0,
+          },
+        };
+
+        findAddSelectInputAt(0).vm.$emit('paste', event);
+        await nextTick();
+
+        expect(findAllAddSelectInputs()).toHaveLength(3);
+        expect(findAddSelectInputAt(0).attributes('value')).toBe('Line 1');
+        expect(findAddSelectInputAt(1).attributes('value')).toBe('Line 2');
+        expect(findAddSelectInputAt(2).attributes('value')).toBe('Line 3');
+      });
     });
   });
 

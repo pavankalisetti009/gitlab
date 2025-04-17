@@ -68163,6 +68163,9 @@ msgstr ""
 msgid "WorkItemCustomField|Remove"
 msgstr ""
 
+msgid "WorkItemCustomField|To add multiple options at once, paste a list of items, one per line."
+msgstr ""
+
 msgid "WorkItemCustomField|Type"
 msgstr ""
 
