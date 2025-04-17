@@ -9,6 +9,7 @@ import getAddOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_pu
 import getCurrentLicense from 'ee/admin/subscriptions/show/graphql/queries/get_current_license.query.graphql';
 
 import {
+  DUO,
   DUO_PRO,
   DUO_ENTERPRISE,
   DUO_AMAZON_Q,
@@ -67,7 +68,6 @@ export default {
     subscriptionHistoryFailedTitle,
     subscriptionHistoryFailedMessage,
     subscriptionActivationFutureDatedNotificationTitle,
-    codeSuggestionTitle: s__('UsageQuota|Seat utilization'),
     subscriptionActivationNotificationText: s__(
       'CodeSuggestions|Your subscription was successfully activated.',
     ),
@@ -122,13 +122,16 @@ export default {
       return this.addOnPurchase?.assignedQuantity ?? 0;
     },
     duoTier() {
-      return this.addOnPurchase?.name || DUO_PRO;
+      return this.addOnPurchase?.name || DUO;
+    },
+    isDuoTier() {
+      return this.duoTier === DUO;
     },
     isDuoTierAmazonQ() {
       // Currently, AmazonQ is available for self-managed customers only, so let's add an extra isSaaS check
       return !this.isSaaS && this.duoTier === DUO_AMAZON_Q;
     },
-    hasCodeSuggestions() {
+    hasAddOnPurchase() {
       return this.totalValue > 0 && this.usageValue >= 0;
     },
     isLoading() {
@@ -148,7 +151,7 @@ export default {
       if (this.shouldForceHideTitle) {
         return false;
       }
-      return !this.isLoading && (this.hasCodeSuggestions || this.addOnPurchaseFetchError);
+      return !this.isLoading && (this.hasAddOnPurchase || this.addOnPurchaseFetchError);
     },
     subtitleText() {
       if (this.subtitle) {
@@ -179,7 +182,7 @@ export default {
         return this.queryVariables;
       },
       update({ addOnPurchases }) {
-        // Prioritize Duo with Amazon Q over Duo Enterprise over Duo Pro.
+        // Prioritization order: Duo with Amazon Q > Duo Enterprise > Duo Pro > Duo
         // For example, a namespace can have a Duo Pro add-on but also a Duo Enterprise trial add-on,
         // and Duo Enterprise would take precedence
 
@@ -188,6 +191,8 @@ export default {
           if (priorityPurchase?.name === DUO_AMAZON_Q) return priorityPurchase;
           if (currentPurchase.name === DUO_ENTERPRISE) return currentPurchase;
           if (priorityPurchase?.name === DUO_ENTERPRISE) return priorityPurchase;
+          if (currentPurchase.name === DUO_PRO) return currentPurchase;
+          if (priorityPurchase?.name === DUO_PRO) return priorityPurchase;
 
           return currentPurchase;
         }, undefined);
@@ -287,7 +292,9 @@ export default {
           <template #heading>
             <span class="gl-flex gl-items-center gl-gap-3">
               <span data-testid="code-suggestions-title">{{ title }}</span>
-              <gl-badge variant="tier" icon="license">{{ duoBadgeTitle }}</gl-badge>
+              <gl-badge v-if="duoBadgeTitle" variant="tier" icon="license">{{
+                duoBadgeTitle
+              }}</gl-badge>
             </span>
           </template>
 
@@ -302,7 +309,7 @@ export default {
       </template>
 
       <duo-amazon-q-info-card v-if="isDuoTierAmazonQ" />
-      <section v-else-if="hasCodeSuggestions">
+      <section v-else-if="hasAddOnPurchase && !isDuoTier">
         <slot name="duo-card" v-bind="{ totalValue, usageValue, duoTier }">
           <template v-if="isSaaS && !isStandalonePage && duoPagePath">
             <gl-alert
@@ -351,7 +358,7 @@ export default {
         class="gl-mt-5"
       />
       <code-suggestions-intro
-        v-else
+        v-else-if="!hasAddOnPurchase"
         :subscription="currentSubscription"
         v-on="activationListeners"
       />
