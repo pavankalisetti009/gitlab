@@ -12,7 +12,6 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import Api from 'ee/api';
 import axios from '~/lib/utils/axios_utils';
 import { __, s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import AccessDropdown from '~/projects/settings/components/access_dropdown.vue';
 import GroupsAccessDropdown from '~/groups/settings/components/access_dropdown.vue';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
@@ -32,7 +31,6 @@ export default {
     GroupsAccessDropdown,
     AddApprovers,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: {
     accessLevelsData: { default: [] },
     apiLink: {},

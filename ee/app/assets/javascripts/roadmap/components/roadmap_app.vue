@@ -3,7 +3,6 @@ import { GlLoadingIcon } from '@gitlab/ui';
 import { isEmpty } from 'lodash';
 
 import RoadmapShell from 'jh_else_ee/roadmap/components/roadmap_shell.vue';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
@@ -33,7 +32,6 @@ export default {
     RoadmapSettings,
     RoadmapShell,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['epicIid', 'fullPath'],
   data() {
     return {

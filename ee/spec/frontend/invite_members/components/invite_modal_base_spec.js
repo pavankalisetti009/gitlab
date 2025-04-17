@@ -52,7 +52,6 @@ describe('EEInviteModalBase', () => {
 
   const createComponent = ({
     props = {},
-    glFeatures = {},
     overageMembersModalAvailable = true,
     inviteWithCustomRoleEnabled = false,
     queryHandler = defaultReconciliationMock,
@@ -79,7 +78,6 @@ describe('EEInviteModalBase', () => {
       },
       apolloProvider: mockApollo,
       provide: {
-        glFeatures,
         overageMembersModalAvailable,
         inviteWithCustomRoleEnabled,
       },
@@ -284,7 +282,6 @@ describe('EEInviteModalBase', () => {
       beforeEach(async () => {
         createComponent({
           props: { defaultAccessLevel: 10, defaultMemberRoleId: 100, newUsersToInvite: [123] },
-          glFeatures: { overageMembersModal: true },
           overageMembersModalAvailable: true,
         });
         await waitForPromises();
@@ -311,7 +308,6 @@ describe('EEInviteModalBase', () => {
       beforeEach(async () => {
         createComponent({
           props: { defaultAccessLevel: 10, defaultMemberRoleId: 100, newUsersToInvite: [123] },
-          glFeatures: { overageMembersModal: true },
           overageMembersModalAvailable: false,
         });
         await waitForPromises();
@@ -329,12 +325,11 @@ describe('EEInviteModalBase', () => {
     });
   });
 
-  describe('with overageMembersModal feature flag and a group to invite, and invite is clicked', () => {
+  describe('with a group to invite, and invite is clicked', () => {
     describe('when overageMembersModalAvailable is true', () => {
       beforeEach(async () => {
         createComponent({
           props: { newGroupToInvite: 123, rootGroupId: '54321' },
-          glFeatures: { overageMembersModal: true },
           overageMembersModalAvailable: true,
         });
         clickInviteButton();
@@ -359,7 +354,6 @@ describe('EEInviteModalBase', () => {
       beforeEach(async () => {
         createComponent({
           props: { newGroupToInvite: 123, rootGroupId: '54321' },
-          glFeatures: { overageMembersModal: true },
           overageMembersModalAvailable: true,
           getBillableUserCountChangesQueryHandler: jest.fn().mockRejectedValueOnce(),
         });
@@ -377,7 +371,6 @@ describe('EEInviteModalBase', () => {
       beforeEach(async () => {
         createComponent({
           props: { newGroupToInvite: 123, rootGroupId: '54321' },
-          glFeatures: { overageMembersModal: true },
           overageMembersModalAvailable: true,
           getBillableUserCountChangesQueryHandler: jest.fn().mockResolvedValueOnce({}),
         });
@@ -395,7 +388,6 @@ describe('EEInviteModalBase', () => {
       beforeEach(async () => {
         createComponent({
           props: { newGroupToInvite: 123, rootGroupId: '54321' },
-          glFeatures: { overageMembersModal: true },
           overageMembersModalAvailable: false,
         });
         clickInviteButton();
@@ -410,11 +402,10 @@ describe('EEInviteModalBase', () => {
     });
   });
 
-  describe('with overageMembersModal feature flag, overageMembersModalAvailable is true, and invite is clicked', () => {
+  describe('with overageMembersModalAvailable is true, and invite is clicked', () => {
     beforeEach(async () => {
       createComponent({
         props: { newUsersToInvite: [123] },
-        glFeatures: { overageMembersModal: true },
         overageMembersModalAvailable: true,
       });
       clickInviteButton();
@@ -474,7 +465,6 @@ describe('EEInviteModalBase', () => {
     (overageMembersModalAvailable) => {
       beforeEach(async () => {
         createComponent({
-          glFeatures: { overageMembersModal: true },
           overageMembersModalAvailable,
           queryHandler: generateReconciliationResponse(false),
         });
@@ -497,7 +487,6 @@ describe('EEInviteModalBase', () => {
   describe('when group eligibility API request fails', () => {
     beforeEach(async () => {
       createComponent({
-        glFeatures: { overageMembersModal: true },
         queryHandler: jest.fn().mockRejectedValue(new Error('GraphQL error')),
       });
 
@@ -525,7 +514,7 @@ describe('EEInviteModalBase', () => {
     it('does not show in initial modal', () => {
       createComponent({
         props: { newUsersToInvite: [123] },
-        glFeatures: { overageMembersModal: true, overageMembersModalAvailable: true },
+        overageMembersModalAvailable: true,
       });
 
       expect(findModal().props('title')).toBe(propsDataCE.modalTitle);
@@ -535,7 +524,6 @@ describe('EEInviteModalBase', () => {
     it('does not show after invite if invalidFeedbackMessage prop is not passed', async () => {
       createComponent({
         props: { newUsersToInvite: [123] },
-        glFeatures: { overageMembersModal: true },
         overageMembersModalAvailable: true,
       });
 
@@ -549,7 +537,6 @@ describe('EEInviteModalBase', () => {
     it('shows if invalidFeedbackMessage prop is passed', () => {
       createComponent({
         props: { newUsersToInvite: [123], invalidFeedbackMessage: 'invalid message' },
-        glFeatures: { overageMembersModal: true },
         overageMembersModalAvailable: true,
       });
 

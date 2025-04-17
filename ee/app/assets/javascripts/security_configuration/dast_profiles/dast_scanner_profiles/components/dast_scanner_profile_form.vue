@@ -11,7 +11,6 @@ import {
 import { initFormField } from 'ee/security_configuration/utils';
 import { serializeFormObject } from '~/lib/utils/forms';
 import { s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import BaseDastProfileForm from '../../components/base_dast_profile_form.vue';
 import dastProfileFormMixin from '../../dast_profile_form_mixin';
 import { SCAN_TYPE, SCAN_TYPE_OPTIONS } from '../constants';
@@ -39,7 +38,7 @@ export default {
     GlInputGroupText,
     TooltipIcon,
   },
-  mixins: [dastProfileFormMixin(), glFeatureFlagsMixin()],
+  mixins: [dastProfileFormMixin()],
   data() {
     const {
       profileName = '',

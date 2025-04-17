@@ -1,7 +1,6 @@
 <script>
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 import CommonMixin from '../mixins/common_mixin';
 import MonthsPresetMixin from '../mixins/months_preset_mixin';
@@ -32,13 +31,7 @@ export default {
     EpicItemTimeline,
     EpicItemContainer,
   },
-  mixins: [
-    CommonMixin,
-    QuartersPresetMixin,
-    MonthsPresetMixin,
-    WeeksPresetMixin,
-    glFeatureFlagsMixin(),
-  ],
+  mixins: [CommonMixin, QuartersPresetMixin, MonthsPresetMixin, WeeksPresetMixin],
   inject: ['currentGroupId'],
   props: {
     epic: {

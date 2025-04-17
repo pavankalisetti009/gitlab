@@ -9,7 +9,6 @@ import dateFormat from '~/lib/dateformat';
 import axios from '~/lib/utils/axios_utils';
 import { getDayDifference, nDaysAfter, newDate } from '~/lib/utils/datetime_utility';
 import { __ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import BurndownChartData from '../burn_chart_data';
 import BurndownChart from './burndown_chart.vue';
 import BurnupChart from './burnup_chart.vue';
@@ -30,7 +29,6 @@ export default {
     OpenTimeboxSummary,
     TimeboxSummaryCards,
   },
-  mixins: [glFeatureFlagsMixin()],
   props: {
     startDate: {
       type: String,

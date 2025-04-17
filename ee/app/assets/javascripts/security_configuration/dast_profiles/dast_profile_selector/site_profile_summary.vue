@@ -1,7 +1,6 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import TooltipOnTruncate from '~/vue_shared/components/tooltip_on_truncate/tooltip_on_truncate.vue';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import DastSiteValidationBadge from 'ee/security_configuration/dast_profiles/components/dast_site_validation_badge.vue';
 import DastSiteValidationModal from 'ee/security_configuration/dast_site_validation/components/dast_site_validation_modal.vue';
 import {
@@ -70,7 +69,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['projectPath', 'additionalVariableOptions'],
   props: {
     profile: {

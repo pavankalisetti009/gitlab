@@ -13,7 +13,6 @@ import {
 // eslint-disable-next-line no-restricted-imports
 import { mapGetters, mapState } from 'vuex';
 import { s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { billingPlans, billingPlanNames } from '~/integrations/constants';
 import { defaultJiraIssueTypeId } from '../constants';
 
@@ -58,7 +57,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagsMixin()],
   props: {
     showFullFeature: {
       type: Boolean,
