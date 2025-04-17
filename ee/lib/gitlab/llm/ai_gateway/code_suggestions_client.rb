@@ -45,7 +45,14 @@ module Gitlab
           end
 
           unless response.code == 200
-            response_message = ::Gitlab::Json.parse(response.body).dig("detail", 0, "msg") || 'Unknown error'
+
+            response_message = begin
+              ::Gitlab::Json.parse(response.body).dig("detail", 0, "msg")
+            rescue StandardError
+              'Unknown error. Make sure your self-hosted model is running ' \
+                'and that your AI Gateway URL is configured correctly.'
+            end
+
             return "AI Gateway returned code #{response.code}: #{response_message}"
           end
 

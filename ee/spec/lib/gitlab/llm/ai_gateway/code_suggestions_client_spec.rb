@@ -109,17 +109,32 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
       it_behaves_like 'error response', "The self-hosted model server returned code 401: Unauthorized"
     end
 
-    context 'when response code is not 200' do
+    context 'when response code is not 200 and response.body is valid json' do
       before do
         stub_request(:post, endpoint)
           .to_return(
             status: 401,
-            body: { detail: [{ msg: "model configuration error" }] }.to_json,
+            body: { detail: [{ msg: "a specific error" }] }.to_json,
             headers: { 'Content-Type' => 'application/json' }
           )
       end
 
-      it_behaves_like 'error response', 'AI Gateway returned code 401: model configuration error'
+      it_behaves_like 'error response', "AI Gateway returned code 401: a specific error"
+    end
+
+    context 'when response code is not 200 and response.body is a string' do
+      before do
+        stub_request(:post, endpoint)
+          .to_return(
+            status: 404,
+            body: "a string",
+            headers: { 'Content-Type' => 'application/json' }
+          )
+      end
+
+      it_behaves_like 'error response', "AI Gateway returned code 404: " \
+        "Unknown error. Make sure your self-hosted model is running and that " \
+        "your AI Gateway URL is configured correctly."
     end
 
     include_examples 'with tests requests', :self_hosted_models
