@@ -196,6 +196,41 @@ export default {
         option.value.trim(),
       );
     },
+    // Support pasting many lines at once and translate them to new options
+    parsePastedOptions(event) {
+      const clipboardData = event.clipboardData || window.clipboardData;
+      const pastedText = clipboardData.getData('text');
+
+      if (!pastedText.trim()) return;
+
+      const lines = pastedText
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line !== '');
+
+      // If paste content is not multiline, just paste as normal
+      if (lines.length < 2) return;
+
+      // If paste content is multiline, paste first line into selection, rest as new options
+      event.preventDefault();
+
+      const currentIndex = parseInt(event.target.dataset.optionIndex, 10);
+      const currentInput = event.target;
+      const currentValue = this.formData.selectOptions[currentIndex].value;
+
+      const { selectionStart, selectionEnd } = currentInput;
+
+      // Respect user selection for first line so it pastes as it would otherwise, e.g. replacing selected text
+      const newValue =
+        currentValue.substring(0, selectionStart) + lines[0] + currentValue.substring(selectionEnd);
+
+      this.formData.selectOptions[currentIndex] = { value: newValue };
+
+      const newOptions = lines.slice(1).map((line) => ({ value: line }));
+      this.formData.selectOptions.splice(currentIndex + 1, 0, ...newOptions);
+
+      this.validateSelectOptions();
+    },
     resetForm() {
       this.formData = {
         fieldType: FIELD_TYPE_OPTIONS[0].value,
@@ -382,6 +417,15 @@ export default {
           :state="formState.selectOptions"
           :invalid-feedback="s__('WorkItemCustomField|At least one option is required.')"
         >
+          <template #label-description>
+            <span class="gl-text-sm">
+              {{
+                s__(
+                  'WorkItemCustomField|To add multiple options at once, paste a list of items, one per line.',
+                )
+              }}
+            </span></template
+          >
           <draggable v-model="formData.selectOptions" v-bind="dragOptions">
             <div
               v-for="(selectOption, index) in formData.selectOptions"
@@ -398,11 +442,14 @@ export default {
               <gl-form-input
                 :ref="`selectOptions${index}`"
                 v-model="selectOption.value"
-                width="md"
                 :data-testid="`select-options-${index}`"
+                :data-option-index="index"
                 @input="validateSelectOptions"
+                @paste="parsePastedOptions"
+                @keyup.enter="addSelectOption"
               />
               <gl-button
+                v-if="formData.selectOptions.length > 1"
                 category="tertiary"
                 icon="remove"
                 :aria-label="s__('WorkItemCustomField|Remove')"
