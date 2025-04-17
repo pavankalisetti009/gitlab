@@ -254,6 +254,48 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
     end
   end
 
+  describe "when using 'with_overrides_for_all_possible_config_values' factory trait" do
+    it "ensures that all possible config values are set", :unlimited_max_formatted_output_length do
+      # NOTE: If this spec fails while adding a new field or attribute to
+      #       the WorkspacesAgentConfig model, and it is a value that comes from
+      #       the agent config file then you need to update
+      #       `ee/spec/fixtures/remote_development/example.agent_config.yaml`
+      #       to include the new field or attribute with a non-default value,
+      #       then update the list below to include the attribute.
+      #
+      #       If it is a value that does not come from the agent config file, then you can just update the list.
+      #
+      #       And don't forget to update the example at `doc/user/workspace/settings.md` too!
+
+      known_attributes = %w[
+        allow_privilege_escalation
+        annotations
+        cluster_agent_id
+        created_at
+        default_resources_per_workspace_container
+        default_runtime_class
+        dns_zone
+        enabled
+        gitlab_workspaces_proxy_namespace
+        id
+        image_pull_secrets
+        labels
+        max_active_hours_before_stop
+        max_resources_per_workspace
+        max_stopped_hours_before_termination
+        network_policy_egress
+        network_policy_enabled
+        project_id
+        shared_namespace
+        updated_at
+        use_kubernetes_user_namespaces
+        workspaces_per_user_quota
+        workspaces_quota
+      ]
+      expect(config.attributes.keys.sort).to eq(known_attributes)
+    end
+  end
+
   it_behaves_like 'a model with paper trail configured' do
     let(:factory) { :workspaces_agent_config }
     let(:attributes_to_update) { { enabled: false } }

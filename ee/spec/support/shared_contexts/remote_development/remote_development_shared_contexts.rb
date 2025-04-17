@@ -320,6 +320,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Hash] args
   # @return [Array<Hash>]
   def create_config_to_apply(workspace:, **args)
+    validate_hash_is_deep_symbolized(args)
+
     desired_config_generator_version = workspace.desired_config_generator_version
 
     method_name = "create_config_to_apply_v#{desired_config_generator_version}"
@@ -387,26 +389,32 @@ RSpec.shared_context 'with remote development shared fixtures' do
     #       the legacy implementation of the "workspaces.gitlab.com/max-resources-per-workspace-sha256" annotation.
     max_resources_per_workspace_with_legacy_sorting = max_resources_per_workspace.deep_symbolize_keys.sort.to_h.to_s
 
-    common_annotations = agent_annotations.merge({
-      "workspaces.gitlab.com/host-template": host_template_annotation.to_s,
-      "workspaces.gitlab.com/id": workspace.id.to_s,
-      "workspaces.gitlab.com/max-resources-per-workspace-sha256":
-        Digest::SHA256.hexdigest(max_resources_per_workspace_with_legacy_sorting)
-    })
-    workspace_inventory_annotations = common_annotations.merge(
-      { "config.k8s.io/owning-inventory": "#{workspace.name}-workspace-inventory" }
-    )
-    labels = agent_labels.merge({
-      "agent.gitlab.com/id": workspace.agent.id.to_s
-    })
-    secrets_inventory_annotations = common_annotations.merge(
-      { "config.k8s.io/owning-inventory": "#{workspace.name}-secrets-inventory" }
-    )
+    common_annotations =
+      Gitlab::Utils.deep_sort_hashes(
+        agent_annotations.merge({
+          "workspaces.gitlab.com/host-template": host_template_annotation.to_s,
+          "workspaces.gitlab.com/id": workspace.id.to_s,
+          "workspaces.gitlab.com/max-resources-per-workspace-sha256":
+            Digest::SHA256.hexdigest(max_resources_per_workspace_with_legacy_sorting)
+        })
+      ).to_h
+    workspace_inventory_annotations =
+      Gitlab::Utils.deep_sort_hashes(
+        common_annotations.merge({ "config.k8s.io/owning-inventory": "#{workspace.name}-workspace-inventory" })
+      ).to_h
+    labels =
+      Gitlab::Utils.deep_sort_hashes(
+        agent_labels.merge({ "agent.gitlab.com/id": workspace.agent.id.to_s })
+      ).to_h
+    secrets_inventory_annotations =
+      Gitlab::Utils.deep_sort_hashes(
+        common_annotations.merge({ "config.k8s.io/owning-inventory": "#{workspace.name}-secrets-inventory" })
+      ).to_h
 
     workspace_inventory_config_map = workspace_inventory_config_map(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
-      agent_id: workspace.agent.id,
+      labels: labels,
       annotations: common_annotations
     )
 
@@ -447,7 +455,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     secrets_inventory_config_map = secrets_inventory_config_map(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
-      agent_id: workspace.agent.id,
+      labels: labels,
       annotations: common_annotations
     )
 
@@ -523,19 +531,22 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   # @param [String] workspace_name
   # @param [String] workspace_namespace
-  # @param [Integer] agent_id
+  # @param [Hash] labels
   # @param [Hash] annotations
   # @return [Hash]
-  def workspace_inventory_config_map(workspace_name:, workspace_namespace:, agent_id:, annotations:)
+  def workspace_inventory_config_map(workspace_name:, workspace_namespace:, labels:, annotations:)
     {
       apiVersion: "v1",
       kind: "ConfigMap",
       metadata: {
         annotations: annotations,
-        labels: {
-          "agent.gitlab.com/id": agent_id.to_s,
-          "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-workspace-inventory"
-        },
+        labels: Gitlab::Utils.deep_sort_hashes(
+          labels.merge(
+            {
+              "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-workspace-inventory"
+            }
+          )
+        ),
         name: "#{workspace_name}-workspace-inventory",
         namespace: workspace_namespace.to_s
       }
@@ -1068,19 +1079,19 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   # @param [String] workspace_name
   # @param [String] workspace_namespace
-  # @param [Integer] agent_id
+  # @param [Hash] labels
   # @param [Hash] annotations
   # @return [Hash]
-  def secrets_inventory_config_map(workspace_name:, workspace_namespace:, agent_id:, annotations:)
+  def secrets_inventory_config_map(workspace_name:, workspace_namespace:, labels:, annotations:)
     {
       apiVersion: "v1",
       kind: "ConfigMap",
       metadata: {
         annotations: annotations,
-        labels: {
-          "agent.gitlab.com/id": agent_id.to_s,
-          "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-secrets-inventory"
-        },
+        labels:
+          Gitlab::Utils.deep_sort_hashes(
+            labels.merge({ "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-secrets-inventory" })
+          ),
         name: "#{workspace_name}-secrets-inventory",
         namespace: workspace_namespace.to_s
       }
@@ -1259,5 +1270,20 @@ RSpec.shared_context 'with remote development shared fixtures' do
     yaml_safe_load_symbolized(
       example_processed_devfile_yaml(project_name: project_name, namespace_path: namespace_path)
     )
+  end
+
+  # @param [Hash] hash
+  # @return [void]
+  def validate_hash_is_deep_symbolized(hash)
+    hash.each do |key, value|
+      next unless value.is_a?(Hash) || value.is_a?(Array)
+
+      unless { key => value } == { key => value }.deep_symbolize_keys
+        fix = value.is_a?(Hash) ? '.deep_symbolize_keys' : '.map(&:deep_symbolize_keys)'
+        raise "#{key} must be deep_symbolized - call '#{fix}' on it as early as possible (where it is first read)"
+      end
+    end
+
+    nil
   end
 end

@@ -177,10 +177,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
 
     expect(extracted_values[:workspace_inventory_annotations]).to eq(
       {
+        "config.k8s.io/owning-inventory": "#{workspace.name}-workspace-inventory",
         "some/annotation": "value",
         "workspaces.gitlab.com/host-template": "{{.port}}-#{workspace.name}.#{dns_zone}",
         "workspaces.gitlab.com/id": workspace.id.to_s,
-        "config.k8s.io/owning-inventory": "#{workspace.name}-workspace-inventory",
         "workspaces.gitlab.com/max-resources-per-workspace-sha256":
           "e3dd9c9741b2b3f07cfd341f80ea3a9d4b5a09b29e748cf09b546e93ff98241c"
       }

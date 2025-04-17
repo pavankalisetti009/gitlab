@@ -6,7 +6,8 @@ require 'spec_helper'
 #       the project factory and subsequently modifying it, because it's a real on-disk repo at `tmp/tests/gitlab-test/`,
 #       and any changes made to it are not reverted by let it be (even with reload). This means we also cannot use
 #       these `let` declarations in a `before` context, so any mocking of them must occur in the examples themselves.
-
+# NOTE: The fixture setup in this spec is complex, so we use let instead of let_it_be, so it's easier to reason about
+# noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
 RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_time, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
@@ -19,7 +20,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   let(:devfile_yaml) { read_devfile_yaml(devfile_fixture_name) }
   let(:expected_processed_devfile) { example_processed_devfile }
   let(:workspace_root) { '/projects' }
-  let(:dns_zone) { 'dns.zone.me' }
   let(:variables) do
     [
       { key: 'VAR1', value: 'value 1', type: 'ENVIRONMENT' },
@@ -35,10 +35,10 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   end
 
   let(:agent) do
-    create(:ee_cluster_agent, project: project, created_by_user: user)
+    agent = create(:cluster_agent, project: project, created_by_user: user)
+    create(:workspaces_agent_config, :with_overrides_for_all_possible_config_values, agent: agent)
+    agent.reload
   end
-
-  let!(:workspaces_agent_config) { create(:workspaces_agent_config, agent: agent, dns_zone: dns_zone) }
 
   let(:params) do
     {
@@ -95,7 +95,11 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     end
 
     context 'when devfile is valid' do
-      let(:expected_workspaces_agent_config_version) { 1 }
+      # NOTE: The PaperTrail version value on workspaces_agent_config.versions.size is `2` on the created record. This
+      #       is because the record is created by FactoryBot, then re-saved by Updater class in factory after(:create).
+      #       This seems to be unavoidable due to the way PaperTrail works and the hooks that FactoryBot provides.
+      #       See corresponding comment in `workspaces_agent_configs.rb` factory.
+      let(:expected_workspaces_agent_config_version) { 2 }
 
       it 'creates a new workspace and returns success', :aggregate_failures do
         # NOTE: This example is structured and ordered to give useful and informative error messages in case of failures
@@ -115,11 +119,10 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         expect(workspace.actual_state).to eq(RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED)
         expect(workspace.actual_state_updated_at).to eq(Time.current)
         expect(workspace.name).to eq("workspace-#{agent.id}-#{user.id}-#{random_string}")
-        namespace_prefix = RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::NAMESPACE_PREFIX
-        expect(workspace.namespace).to eq("#{namespace_prefix}-#{agent.id}-#{user.id}-#{random_string}")
+        expect(workspace.namespace).to eq("my-shared-namespace")
         expect(workspace.workspaces_agent_config_version).to eq(expected_workspaces_agent_config_version)
         expect(workspace.url).to eq(URI::HTTPS.build({
-          host: "60001-#{workspace.name}.#{dns_zone}",
+          host: "60001-#{workspace.name}.#{agent.unversioned_latest_workspaces_agent_config.dns_zone}",
           path: '/',
           query: {
             folder: "#{workspace_root}/#{project.path}"
@@ -148,11 +151,24 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
           agent.unversioned_latest_workspaces_agent_config.touch
         end
 
-        let(:expected_workspaces_agent_config_version) { 2 }
+        let(:expected_workspaces_agent_config_version) { 3 }
 
         it 'creates a new workspace with latest workspaces_agent_config version' do
           workspace = response.fetch(:payload).fetch(:workspace)
           expect(workspace.workspaces_agent_config_version).to eq(expected_workspaces_agent_config_version)
+        end
+      end
+
+      context "without shared namespace" do
+        namespace_prefix = RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::NAMESPACE_PREFIX
+
+        before do
+          agent.unversioned_latest_workspaces_agent_config.update!(shared_namespace: "")
+        end
+
+        it 'uses a unique namespace', :aggregate_failures do
+          workspace = response.fetch(:payload).fetch(:workspace)
+          expect(workspace.namespace).to eq("#{namespace_prefix}-#{agent.id}-#{user.id}-#{random_string}")
         end
       end
     end
@@ -204,11 +220,10 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     end
 
     context 'when agent has no associated config' do
-      let(:workspaces_agent_config) { nil }
       let(:agent) { create(:cluster_agent, name: "007") }
 
       it 'does not create the workspace and returns error' do
-        # sanity check on fixture
+        # confirm fixture value
         expect(agent.unversioned_latest_workspaces_agent_config).to be_nil
 
         expect { response }.not_to change { RemoteDevelopment::Workspace.count }

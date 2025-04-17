@@ -39,7 +39,7 @@ module RemoteDevelopment
               "workspaces.gitlab.com/max-resources-per-workspace-sha256":
                 max_resources_per_workspace_sha256_with_legacy_sorting
             }
-            agent_annotations = deep_sort_and_symbolize_hashes(workspaces_agent_config.annotations)
+            agent_annotations = workspaces_agent_config.annotations
             common_annotations = agent_annotations.merge(extra_annotations)
 
             workspace_inventory_name = "#{workspace_name}-workspace-inventory"
@@ -48,7 +48,7 @@ module RemoteDevelopment
             {
               # Please keep alphabetized
               allow_privilege_escalation: workspaces_agent_config.allow_privilege_escalation,
-              common_annotations: common_annotations,
+              common_annotations: deep_sort_and_symbolize_hashes(common_annotations),
               default_resources_per_workspace_container:
                 default_resources_per_workspace_container,
               default_runtime_class: workspaces_agent_config.default_runtime_class,
@@ -76,7 +76,9 @@ module RemoteDevelopment
               secrets_inventory_name: secrets_inventory_name,
               use_kubernetes_user_namespaces: workspaces_agent_config.use_kubernetes_user_namespaces,
               workspace_inventory_annotations:
-                common_annotations.merge("config.k8s.io/owning-inventory": workspace_inventory_name),
+                deep_sort_and_symbolize_hashes(
+                  common_annotations.merge("config.k8s.io/owning-inventory": workspace_inventory_name)
+                ),
               workspace_inventory_name: workspace_inventory_name
             }
           end
