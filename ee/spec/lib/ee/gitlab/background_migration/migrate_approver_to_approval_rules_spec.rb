@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 # rubocop:disable RSpec/FactoriesInMigrationSpecs
-RSpec.describe Gitlab::BackgroundMigration::MigrateApproverToApprovalRules do
+RSpec.describe Gitlab::BackgroundMigration::MigrateApproverToApprovalRules, feature_category: :source_code_management do
   def create_skip_sync(*args)
     build(*args) do |record|
       allow(record).to receive(:schedule_approval_migration)
