@@ -105,24 +105,45 @@ module Elastic
         return query_hash unless options[:autocomplete]
 
         authorized_groups = ::Search::GroupsFinder.new(user: user).execute
-        group_authorized_traversal_ids = ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids))
+        group_authorized_ids = ::Namespaces::Traversal::TrieNode.build(authorized_groups.map(&:traversal_ids)).to_a
 
         authorized_projects = ::Search::ProjectsFinder.new(user: user).execute
         project_authorized_traversal_ids = authorized_projects.map(&:elastic_namespace_ancestry)
 
-        traversal_ids_from_groups_and_projects = group_authorized_traversal_ids.to_a + project_authorized_traversal_ids
+        return query_hash if group_authorized_ids.empty? && project_authorized_traversal_ids.empty?
 
-        return query_hash if traversal_ids_from_groups_and_projects.empty?
+        filter = {
+          bool: {
+            minimum_should_match: 1,
+            should: []
+          }
+        }
 
-        options.merge!(
-          traversal_ids_prefix: :namespace_ancestry_ids,
-          traversal_ids: traversal_ids_from_groups_and_projects.flatten
-        )
+        unless group_authorized_ids.empty?
+          group_authorized_ids.flatten.each do |traversal_id|
+            filter[:bool][:should] << {
+              prefix: {
+                namespace_ancestry_ids: {
+                  _name: 'namespace:ancestry_filter:descendants',
+                  value: traversal_id
+                }
+              }
+            }
+          end
+        end
 
-        Search::Elastic::Filters.by_traversal_ids(
-          query_hash: query_hash,
-          options: options
-        )
+        unless project_authorized_traversal_ids.empty?
+          filter[:bool][:should] << {
+            terms: {
+              namespace_ancestry_ids: project_authorized_traversal_ids,
+              _name: 'namespace:ancestry_filter:project_ids'
+            }
+          }
+        end
+
+        query_hash[:query][:bool][:filter] << filter
+
+        query_hash
       end
 
       # rubocop: disable CodeReuse/ActiveRecord
