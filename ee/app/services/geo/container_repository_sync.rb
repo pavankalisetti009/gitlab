@@ -5,6 +5,7 @@ require 'tempfile'
 module Geo
   class ContainerRepositorySync
     include Gitlab::Utils::StrongMemoize
+    include ::Gitlab::Geo::LogHelpers
 
     FOREIGN_MEDIA_TYPE = 'application/vnd.docker.image.rootfs.foreign.diff.tar.gzip'
 
@@ -24,8 +25,19 @@ module Geo
     def execute
       raise "No valid connection to primary registry" unless client.connected?
 
-      tags_to_sync.each { |tag| sync_tag(tag) }
-      tags_to_remove.each { |tag| remove_tag(tag) }
+      tags_to_sync.each do |tag|
+        sync_tag(tag)
+      rescue StandardError => e
+        Gitlab::ErrorTracking.track_and_raise_exception(e,
+          extra: { tag_name: tag[:name], message: "Error while syncing tag" })
+      end
+
+      tags_to_remove.each do |tag|
+        remove_tag(tag)
+      rescue StandardError => e
+        Gitlab::ErrorTracking.track_and_raise_exception(e,
+          extra: { tag_name: tag[:name], message: "Error while removing tag" })
+      end
 
       true
     end
