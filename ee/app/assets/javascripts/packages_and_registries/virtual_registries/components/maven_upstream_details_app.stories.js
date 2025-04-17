@@ -14,9 +14,9 @@ const Template = (_, { argTypes }) => ({
 export const Default = Template.bind({});
 Default.args = {
   upstream: {
+    id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/1',
     name: 'Upstream title',
     description: 'Upstream description',
-    registryType: 'maven',
     url: 'http://maven.org/test',
     cacheValidityHours: 24,
     cacheEntries: {
