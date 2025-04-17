@@ -8,7 +8,7 @@ module Mutations
 
         include Gitlab::Utils::UsageData
 
-        authorize :admin_remote_development_cluster_agent_mapping
+        authorize :admin_namespace_cluster_agent_mapping
 
         field :namespace_cluster_agent_mapping,
           ::Types::RemoteDevelopment::NamespaceClusterAgentMappingType,
