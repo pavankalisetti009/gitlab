@@ -6,18 +6,29 @@ import RootCauseAnalysisHotspotExperiment from 'ee_else_ce/ci/job_details/compon
 import { stubExperiments } from 'helpers/experimentation_helper';
 import { sendDuoChatCommand } from 'ee/ai/utils';
 import Tracking from '~/tracking';
+import { getCookie, setCookie } from '~/lib/utils/common_utils';
 
 jest.mock('ee/ai/utils', () => ({
   sendDuoChatCommand: jest.fn(),
 }));
 
+jest.mock('~/lib/utils/common_utils', () => ({
+  getCookie: jest.fn(),
+  setCookie: jest.fn(),
+  parseBoolean: jest.fn((val) => val === 'true'),
+}));
+
 describe('RootCauseAnalysisHotspotExperiment component', () => {
   let wrapper;
+  let trackEventSpy;
 
   beforeEach(() => {
-    jest.spyOn(Tracking, 'event');
+    trackEventSpy = jest.spyOn(Tracking, 'event');
     sendDuoChatCommand.mockClear();
     Tracking.event.mockClear();
+
+    // Default to no cookie value
+    getCookie.mockReturnValue(null);
   });
 
   const defaultProps = {
@@ -31,8 +42,13 @@ describe('RootCauseAnalysisHotspotExperiment component', () => {
   const findHotspot = () => wrapper.findByTestId('hotspot');
   const findPopover = () => wrapper.findComponent(GlPopover);
 
-  const mountComponent = ({ props = {}, experimentVariant = 'control' } = {}) => {
-    // Stub the experiment before mounting
+  const mountComponent = ({
+    props = {},
+    experimentVariant = 'control',
+    cookieValue = null,
+  } = {}) => {
+    getCookie.mockReturnValue(cookieValue);
+
     stubExperiments({ root_cause_analysis_hotspot: experimentVariant });
 
     wrapper = shallowMountExtended(RootCauseAnalysisHotspotExperiment, {
@@ -61,7 +77,6 @@ describe('RootCauseAnalysisHotspotExperiment component', () => {
         },
       },
     });
-
     return wrapper;
   };
 
@@ -101,6 +116,11 @@ describe('RootCauseAnalysisHotspotExperiment component', () => {
           }),
         }),
       );
+    });
+
+    it('does not track render_hotspot in control variant', () => {
+      const calls = trackEventSpy.mock.calls.map((call) => call[1]);
+      expect(calls).not.toContain('render_hotspot');
     });
   });
 
@@ -150,6 +170,8 @@ describe('RootCauseAnalysisHotspotExperiment component', () => {
         await nextTick();
 
         expect(findPopover().props('show')).toBe(false);
+        // According to experiment design, the hotspot should be dismissed too
+        expect(findHotspot().exists()).toBe(false);
       });
 
       it('tracks click_troubleshoot and hides popover when troubleshoot button is clicked with open popover', async () => {
@@ -166,10 +188,40 @@ describe('RootCauseAnalysisHotspotExperiment component', () => {
           expect.any(Object),
         );
         expect(findPopover().props('show')).toBe(false);
+        // Per design requirements, clicking troubleshoot should dismiss hotspot as well
+        expect(findHotspot().exists()).toBe(false);
+      });
+
+      it('sets cookie when popover is dismissed via close button', async () => {
+        findHotspot().trigger('click.stop');
+        await nextTick();
+
+        findPopover().vm.$emit('close-button-clicked');
+        await nextTick();
+
+        expect(setCookie).toHaveBeenCalledWith(
+          'rca_hotspot_dismissed',
+          'true',
+          expect.objectContaining({
+            path: '/',
+          }),
+        );
+      });
+
+      it('does not set cookie when troubleshoot button is clicked', async () => {
+        findHotspot().trigger('click.stop');
+        await nextTick();
+
+        setCookie.mockClear();
+        findRootCauseAnalysisButton().vm.$emit('duo-called');
+        await nextTick();
+
+        expect(setCookie).not.toHaveBeenCalled();
       });
     });
 
     describe('tracking', () => {
+      // Test that tracking events align with experiment design requirements
       it('tracks click_troubleshoot when button is clicked', async () => {
         Tracking.event.mockClear();
 
@@ -218,6 +270,31 @@ describe('RootCauseAnalysisHotspotExperiment component', () => {
           'dismiss_popover',
           expect.any(Object),
         );
+      });
+
+      it('tracks render on mount', () => {
+        expect(trackEventSpy).toHaveBeenCalledWith(undefined, 'render', expect.any(Object));
+      });
+    });
+
+    describe('cookie behavior', () => {
+      it('hides hotspot when cookie is set', async () => {
+        // Re-mount with cookie set to 'true'
+        mountComponent({ experimentVariant: 'candidate', cookieValue: 'true' });
+        await nextTick();
+
+        expect(findHotspot().exists()).toBe(false);
+      });
+
+      it('does not track render_hotspot when hotspot is hidden due to cookie', async () => {
+        trackEventSpy.mockClear();
+
+        mountComponent({ experimentVariant: 'candidate', cookieValue: 'true' });
+
+        await nextTick();
+
+        const trackingCalls = trackEventSpy.mock.calls.map((call) => call[1]);
+        expect(trackingCalls).not.toContain('render_hotspot');
       });
     });
   });
