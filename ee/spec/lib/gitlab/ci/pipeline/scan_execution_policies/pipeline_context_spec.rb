@@ -122,7 +122,6 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
       end
 
       let(:action_limit) { 2 }
-
       let(:all_actions) { policy[:actions] + other_policy[:actions] }
       let(:limited_actions) { policy[:actions].first(action_limit) + other_policy[:actions].first(action_limit) }
 
@@ -132,10 +131,8 @@ RSpec.describe Gitlab::Ci::Pipeline::ScanExecutionPolicies::PipelineContext, fea
 
       it { is_expected.to match_array(limited_actions) }
 
-      context 'when feature flag "scan_execution_policy_action_limit" is disabled' do
-        before do
-          stub_feature_flags(scan_execution_policy_action_limit: false)
-        end
+      context 'when value is zero' do
+        let(:action_limit) { 0 }
 
         it { is_expected.to match_array(all_actions) }
       end

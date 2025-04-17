@@ -94,15 +94,7 @@ module Security
 
       def exceeds_action_limit?
         return false if removing_policy?
-        return false unless scan_execution_policy?
-
-        limit_enforced = if project_container?
-                           Feature.enabled?(:scan_execution_policy_action_limit, container)
-                         else
-                           Feature.enabled?(:scan_execution_policy_action_limit_group, container)
-                         end
-
-        return false unless limit_enforced
+        return false if !scan_execution_policy? || scan_execution_policies_action_limit == 0
 
         (policy[:actions]&.count || 0) > scan_execution_policies_action_limit
       end

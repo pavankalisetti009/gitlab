@@ -3,8 +3,10 @@ import { GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 import { s__ } from '~/locale';
+import { ACTION_LIMIT } from 'ee/security_orchestration/components/policies/constants';
 
 export default {
+  ACTION_LIMIT,
   SCAN_EXECUTION_ACTION_LIMIT_PATH: helpPagePath(
     'user/application_security/policies/scan_execution_policies',
   ),
@@ -24,7 +26,6 @@ export default {
     GlSprintf,
     LocalStorageSync,
   },
-  inject: ['maxScanExecutionPolicyActions'],
   data() {
     return {
       alertDismissed: false,
@@ -61,7 +62,7 @@ export default {
             }}</gl-link>
           </template>
           <template #maxCount>
-            {{ maxScanExecutionPolicyActions }}
+            {{ $options.ACTION_LIMIT }}
           </template>
         </gl-sprintf>
       </p>

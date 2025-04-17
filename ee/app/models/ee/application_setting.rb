@@ -258,7 +258,7 @@ module EE
 
       validates :security_policies, json_schema: { filename: "application_setting_security_policies" }
 
-      jsonb_accessor :security_policies, scan_execution_policies_action_limit: [:integer, { default: 10 }]
+      jsonb_accessor :security_policies, scan_execution_policies_action_limit: [:integer, { default: 0 }]
       jsonb_accessor :security_policies, scan_execution_policies_schedule_limit: [:integer, { default: 0 }]
       jsonb_accessor :security_policies, pipeline_execution_policies_per_configuration_limit: [:integer, { default: 5 }]
 

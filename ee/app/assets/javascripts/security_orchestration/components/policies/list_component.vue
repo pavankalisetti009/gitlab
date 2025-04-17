@@ -12,7 +12,6 @@ import { __, s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { getSecurityPolicyListUrl } from '~/editor/extensions/source_editor_security_policy_schema_ext';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { DATE_ONLY_FORMAT } from '~/lib/utils/datetime_utility';
 import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
 import getGroupProjectsCount from 'ee/security_orchestration/graphql/queries/get_group_project_count.query.graphql';
@@ -83,7 +82,6 @@ export default {
     TimeAgoTooltip,
     StatusIcon,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: [
     'assignedPolicyProject',
     'namespacePath',
@@ -140,12 +138,6 @@ export default {
     };
   },
   computed: {
-    hasExceedLimitActions() {
-      return Boolean(
-        this.glFeatures.scanExecutionPolicyActionLimitGroup ||
-          this.glFeatures.scanExecutionPolicyActionLimit,
-      );
-    },
     isBusy() {
       return this.isLoadingPolicies || this.isProcessingAction;
     },
@@ -364,14 +356,11 @@ export default {
       this.$emit('update-policy-source', source);
     },
     exceedsActionLimit(policyType, yaml) {
-      return (
-        this.hasExceedLimitActions &&
-        exceedsActionLimit({
-          policyType,
-          yaml,
-          maxScanExecutionPolicyActions: this.maxScanExecutionPolicyActions,
-        })
-      );
+      return exceedsActionLimit({
+        policyType,
+        yaml,
+        maxScanExecutionPolicyActions: this.maxScanExecutionPolicyActions,
+      });
     },
     violationList(policyType, deprecatedProperties, yaml) {
       return buildPolicyViolationList({

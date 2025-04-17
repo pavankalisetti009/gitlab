@@ -184,10 +184,7 @@ export default {
       return actions;
     },
     scanExecutionActionsLimitEnabled() {
-      return Boolean(
-        this.glFeatures.scanExecutionPolicyActionLimitGroup ||
-          this.glFeatures.scanExecutionPolicyActionLimit,
-      );
+      return this.maxScanExecutionPolicyActions !== 0;
     },
     addActionButtonDisabled() {
       return (

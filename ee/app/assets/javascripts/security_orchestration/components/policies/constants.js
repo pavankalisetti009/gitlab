@@ -85,3 +85,5 @@ export const BREAKING_CHANGES_POPOVER_CONTENTS = {
     link: helpPagePath('user/application_security/policies/scan_execution_policies'),
   },
 };
+
+export const ACTION_LIMIT = 10;

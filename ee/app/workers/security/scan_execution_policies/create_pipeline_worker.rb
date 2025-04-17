@@ -24,7 +24,7 @@ module Security
         schedule = Security::OrchestrationPolicyRuleSchedule.find_by_id(schedule_id)
         return unless schedule
 
-        actions = actions_for(schedule, project)
+        actions = actions_for(schedule)
 
         service_result = ::Security::SecurityOrchestrationPolicies::CreatePipelineService
           .new(project: project, current_user: current_user, params: { actions: actions, branch: branch })
@@ -39,16 +39,17 @@ module Security
 
       private
 
-      def actions_for(schedule, project)
+      def actions_for(schedule)
         policy = schedule.policy
 
         return [] if policy.blank?
 
         actions = policy[:actions]
+        action_limit = Gitlab::CurrentSettings.scan_execution_policies_action_limit
 
-        return actions if Feature.disabled?(:scan_execution_policy_action_limit, project)
+        return actions if action_limit == 0
 
-        actions.first(Gitlab::CurrentSettings.scan_execution_policies_action_limit)
+        actions.first(action_limit)
       end
 
       def track_creation_event(project, schedule, scans_count, result)

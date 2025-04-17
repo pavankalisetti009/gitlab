@@ -21,7 +21,11 @@ import projectVulnerabilityManagementPoliciesQuery from '../../graphql/queries/p
 import groupVulnerabilityManagementPoliciesQuery from '../../graphql/queries/group_vulnerability_management_policies.query.graphql';
 import ListHeader from './list_header.vue';
 import ListComponent from './list_component.vue';
-import { DEPRECATED_CUSTOM_SCAN_PROPERTY, POLICY_TYPE_FILTER_OPTIONS } from './constants';
+import {
+  DEPRECATED_CUSTOM_SCAN_PROPERTY,
+  POLICY_TYPE_FILTER_OPTIONS,
+  ACTION_LIMIT,
+} from './constants';
 
 const NAMESPACE_QUERY_DICT = {
   scanExecution: {
@@ -108,7 +112,7 @@ export default {
           exceedsActionLimit({
             policyType: POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.text,
             yaml,
-            maxScanExecutionPolicyActions: this.maxScanExecutionPolicyActions,
+            maxScanExecutionPolicyActions: ACTION_LIMIT,
           }),
         );
 

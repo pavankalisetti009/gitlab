@@ -15,6 +15,7 @@ import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/compone
 import {
   mockDastScanExecutionManifest,
   mockMultipleScheduleScanExecutionManifest,
+  mockMultipleActionsScanExecutionManifest,
   mockScheduleScanExecutionManifest,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 
@@ -109,7 +110,7 @@ describe('utils', () => {
       ${POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.text} | ${''}                            | ${5}                          | ${false}
       ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text}     | ${mockDastScanExecutionManifest} | ${5}                          | ${false}
       ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text}     | ${''}                            | ${5}                          | ${false}
-      ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text}     | ${mockDastScanExecutionManifest} | ${0}                          | ${true}
+      ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text}     | ${mockDastScanExecutionManifest} | ${0}                          | ${false}
     `(
       'should validate if action count exceeds allowed number for policy type $policyType',
       ({ policyType, yaml, maxScanExecutionPolicyActions, output }) => {
@@ -161,17 +162,18 @@ describe('utils', () => {
         link: '/help/user/application_security/policies/scan_execution_policies#scan-execution-policies-schema',
       },
       {
-        content: 'Scan actions exceed the limit of 0 actions per policy.',
+        content: 'Scan actions exceed the limit of 1 actions per policy.',
         link: '/help/user/application_security/policies/scan_execution_policies#scan-execution-policies-schema',
       },
     ];
     it.each`
-      policyType                                              | yaml                             | deprecatedProperties | maxScanExecutionPolicyActions | output
-      ${POLICY_TYPE_COMPONENT_OPTIONS.approval.text}          | ${''}                            | ${[]}                | ${5}                          | ${[]}
-      ${POLICY_TYPE_COMPONENT_OPTIONS.approval.text}          | ${''}                            | ${['invalid']}       | ${5}                          | ${approvalPolicyDeprecatedViolation}
-      ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text}     | ${''}                            | ${['invalid']}       | ${5}                          | ${scanExecutionDeprecatedViolation}
-      ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text}     | ${mockDastScanExecutionManifest} | ${['invalid']}       | ${0}                          | ${scanExecutionExceedingLimit}
-      ${POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.text} | ${''}                            | ${[]}                | ${5}                          | ${[]}
+      policyType                                              | yaml                                        | deprecatedProperties | maxScanExecutionPolicyActions | output
+      ${POLICY_TYPE_COMPONENT_OPTIONS.approval.text}          | ${''}                                       | ${[]}                | ${5}                          | ${[]}
+      ${POLICY_TYPE_COMPONENT_OPTIONS.approval.text}          | ${''}                                       | ${['invalid']}       | ${5}                          | ${approvalPolicyDeprecatedViolation}
+      ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text}     | ${''}                                       | ${['invalid']}       | ${5}                          | ${scanExecutionDeprecatedViolation}
+      ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text}     | ${mockDastScanExecutionManifest}            | ${['invalid']}       | ${0}                          | ${scanExecutionDeprecatedViolation}
+      ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text}     | ${mockMultipleActionsScanExecutionManifest} | ${['invalid']}       | ${1}                          | ${scanExecutionExceedingLimit}
+      ${POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.text} | ${''}                                       | ${[]}                | ${5}                          | ${[]}
     `(
       'renders violation list for policy with type $policyType',
       ({ policyType, yaml, deprecatedProperties, maxScanExecutionPolicyActions, output }) => {
