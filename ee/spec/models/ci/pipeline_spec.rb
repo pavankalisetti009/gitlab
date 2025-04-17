@@ -603,6 +603,36 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
         end
       end
     end
+
+    context 'Security::PipelineAnalyzersStatusUpdateWorker' do
+      let(:pipeline) { create(:ci_empty_pipeline, status: from_status) }
+
+      shared_examples 'schedules security status update worker' do
+        Ci::HasStatus::ACTIVE_STATUSES.each do |status|
+          context "from #{status}" do
+            let(:from_status) { status }
+
+            it do
+              expect(Security::PipelineAnalyzersStatusUpdateWorker).to receive(:perform_async).with(pipeline.id)
+
+              transition_pipeline
+            end
+          end
+        end
+      end
+
+      context 'on pipeline success' do
+        subject(:transition_pipeline) { pipeline.succeed }
+
+        it_behaves_like 'schedules security status update worker'
+      end
+
+      context 'on pipeline failed' do
+        subject(:transition_pipeline) { pipeline.drop }
+
+        it_behaves_like 'schedules security status update worker'
+      end
+    end
   end
 
   describe '#latest_merged_result_pipeline?' do

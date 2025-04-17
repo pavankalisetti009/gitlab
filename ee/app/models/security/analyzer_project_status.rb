@@ -17,5 +17,8 @@ module Security
     validates :status, presence: true
     validates :last_call, presence: true
     validates :traversal_ids, presence: true
+
+    scope :by_projects, ->(project_ids) { where(project: project_ids) }
+    scope :without_types, ->(types) { where.not(analyzer_type: types) }
   end
 end

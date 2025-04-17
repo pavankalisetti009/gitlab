@@ -3253,6 +3253,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_pipeline_analyzers_status_update
+  :worker_name: Security::PipelineAnalyzersStatusUpdateWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_pipeline_execution_policies_run_schedule
   :worker_name: Security::PipelineExecutionPolicies::RunScheduleWorker
   :feature_category: :security_policy_management
