@@ -808,45 +808,6 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
   end
 
-  describe "#show_pending_deletion_project_banner?" do
-    shared_examples 'does not show the banner' do |pass_project: true|
-      it 'hides the archived project banner' do
-        expect(project.marked_for_deletion_at.present?).to be(false)
-        expect(helper.show_pending_deletion_project_banner?(pass_project ? project : nil)).to be(false)
-      end
-    end
-
-    context 'with no project' do
-      it_behaves_like 'does not show the banner', pass_project: false
-    end
-
-    context 'with unsaved project' do
-      let_it_be(:project) { build(:project) }
-
-      it_behaves_like 'does not show the banner'
-    end
-
-    context 'with the setting enabled' do
-      context 'with an active project' do
-        it_behaves_like 'does not show the banner'
-      end
-
-      context 'with an project marked for deletion' do
-        before do
-          stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-          project.update!(marked_for_deletion_at: Date.current)
-        end
-
-        it 'shows the banner' do
-          expect(project.present?).to be(true)
-          expect(project.saved?).to be(true)
-          expect(project.marked_for_deletion?).to be(true)
-          expect(helper.show_pending_deletion_project_banner?(project)).to be(true)
-        end
-      end
-    end
-  end
-
   describe '#remote_mirror_setting_enabled?' do
     context 'when ci_cd_projects licensed feature is enabled' do
       before do
