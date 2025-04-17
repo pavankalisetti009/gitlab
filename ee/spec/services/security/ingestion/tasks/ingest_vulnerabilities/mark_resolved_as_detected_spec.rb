@@ -8,24 +8,34 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::MarkResolvedAs
   let_it_be(:identifier) { create(:vulnerabilities_identifier) }
 
   let_it_be(:existing_vulnerability) do
-    create(:vulnerability, :detected, :with_finding,
-      resolved_on_default_branch: true, present_on_default_branch: false
+    create(:vulnerability,
+      :detected,
+      :with_finding,
+      resolved_on_default_branch: true,
+      present_on_default_branch: false,
+      project: pipeline.project
     )
   end
 
   let_it_be(:resolved_vulnerability) do
-    create(:vulnerability, :resolved, :with_finding,
-      resolved_on_default_branch: true, present_on_default_branch: false, resolved_by_id: user.id
+    create(:vulnerability,
+      :resolved,
+      :with_finding,
+      resolved_on_default_branch: true,
+      present_on_default_branch: false,
+      resolved_by_id: user.id,
+      project: pipeline.project
     )
   end
 
-  let(:existing_detected_finding_map) { create(:finding_map) }
-  let(:existing_resolved_finding_map) { create(:finding_map) }
-  let(:new_finding_map) { create(:finding_map) }
+  let(:existing_detected_finding_map) { create(:finding_map, pipeline: pipeline) }
+  let(:existing_resolved_finding_map) { create(:finding_map, pipeline: pipeline) }
+  let(:new_finding_map) { create(:finding_map, pipeline: pipeline) }
 
   let(:finding_maps) { [existing_detected_finding_map, existing_resolved_finding_map, new_finding_map] }
+  let(:context) { Security::Ingestion::Context.new }
 
-  subject(:mark_resolved_as_detected) { described_class.new(pipeline, finding_maps).execute }
+  subject(:mark_resolved_as_detected) { described_class.new(pipeline, finding_maps, context).execute }
 
   before do
     existing_detected_finding_map.vulnerability_id = existing_vulnerability.id
@@ -54,12 +64,34 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::MarkResolvedAs
       .from(0)
       .to(1)
 
-    expect(::Vulnerabilities::StateTransition.last.vulnerability_id).to eq(resolved_vulnerability.id)
+    state_transition = ::Vulnerabilities::StateTransition.last
+    expect(state_transition).to be_valid
+    expect(state_transition.vulnerability_id).to eq(resolved_vulnerability.id)
   end
 
   it 'marks the findings as transitioned_to_detected' do
     expect { mark_resolved_as_detected }.to change { existing_resolved_finding_map.transitioned_to_detected }.to(true)
                                         .and not_change { existing_detected_finding_map.transitioned_to_detected }
                                         .and not_change { new_finding_map.transitioned_to_detected }
+  end
+
+  describe 'after sec transaction is committed' do
+    before do
+      mark_resolved_as_detected
+    end
+
+    subject(:post_commit) { context.run_sec_after_commit_tasks }
+
+    it 'publishes the bulk dismissed event', :freeze_time do
+      expect { post_commit }.to publish_event(Vulnerabilities::BulkRedetectedEvent).with(
+        {
+          vulnerabilities: [{
+            vulnerability_id: resolved_vulnerability.id,
+            pipeline_id: pipeline.id,
+            timestamp: Time.zone.now.iso8601
+          }]
+        }
+      )
+    end
   end
 end
