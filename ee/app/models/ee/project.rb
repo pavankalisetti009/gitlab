@@ -997,11 +997,6 @@ module EE
       path_lock_finder.find(path, exact_match: exact_match, downstream: downstream)
     end
 
-    def import_url_updated?
-      # check if import_url has been updated and it's not just the first assignment
-      saved_change_to_import_url? && saved_changes['import_url'].first
-    end
-
     def username_only_import_url
       bare_url = read_attribute(:import_url)
       return bare_url unless ::Gitlab::UrlSanitizer.valid?(bare_url)
