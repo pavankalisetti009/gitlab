@@ -59,10 +59,13 @@ module EE
       end
 
       # On a dedicated installation we use a table to track which runners are hosted at registration time
+      # TODO (issue#533869): after 18.0 this should change to
+      # return true if ::Gitlab::CurrentSettings.gitlab_dedicated_instance? &&
+      #   hosted_registration.present?
       override :dedicated_gitlab_hosted?
       def dedicated_gitlab_hosted?
         return true if ::Gitlab::CurrentSettings.gitlab_dedicated_instance? &&
-          hosted_registration.present?
+          creator&.admin_bot?
 
         super
       end

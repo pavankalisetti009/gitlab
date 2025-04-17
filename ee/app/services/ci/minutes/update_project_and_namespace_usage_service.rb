@@ -69,6 +69,8 @@ module Ci
 
       # Ensure we only add the compute usage once for the given build
       # even if the worker is retried.
+      # TODO: consolidate with the implementation in ::Ci::Minutes::GitlabHostedRunnerMonthlyUsageService
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/533876
       def ensure_idempotency
         if already_completed?
           ::Gitlab::AppJsonLogger.info(event: 'ci_minutes_consumption_already_updated', build_id: @build_id)

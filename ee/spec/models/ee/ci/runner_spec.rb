@@ -36,24 +36,28 @@ RSpec.describe Ci::Runner, feature_category: :hosted_runners do
   end
 
   describe '#dedicated_gitlab_hosted?' do
-    let_it_be(:runner) { create(:ci_runner) }
-
     context 'when on dedicated installation' do
       before do
         allow(Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(true)
       end
 
-      context 'with hosted registration' do
-        before do
-          create(:ci_hosted_runner, runner: runner)
-        end
+      context 'with an admin bot created runner' do
+        let_it_be(:runner) { create(:ci_runner, creator: Users::Internal.admin_bot) }
 
         it 'returns true' do
           expect(runner.dedicated_gitlab_hosted?).to be_truthy
         end
       end
 
-      context 'without hosted registration' do
+      context 'without an admin_bot created runner' do
+        let(:runner) { create(:ci_runner, creator: create(:user)) }
+
+        it 'returns false' do
+          expect(runner.dedicated_gitlab_hosted?).to be_falsey
+        end
+      end
+
+      context 'without a runner creator' do
         let(:runner) { create(:ci_runner) }
 
         it 'returns false' do
@@ -63,13 +67,13 @@ RSpec.describe Ci::Runner, feature_category: :hosted_runners do
     end
 
     context 'when not on dedicated installation' do
+      let_it_be(:runner) { create(:ci_runner, creator: Users::Internal.admin_bot) }
+
       before do
         allow(Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(false)
       end
 
-      it 'returns false regardless of hosted registration' do
-        create(:ci_hosted_runner, runner: runner)
-
+      it 'returns false regardless of user' do
         expect(runner.dedicated_gitlab_hosted?).to be_falsey
       end
     end
