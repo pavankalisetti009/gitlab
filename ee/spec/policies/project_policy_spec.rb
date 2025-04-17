@@ -4235,6 +4235,81 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
+    describe 'access_duo_nano_features' do
+      let_it_be(:current_user) { create(:user) }
+      let_it_be_with_reload(:project) { create(:project, :public, group: group) }
+
+      subject { described_class.new(current_user, project) }
+
+      context 'when on GitLab.com', :saas do
+        before do
+          stub_ee_application_setting(should_check_namespace_plan: true)
+        end
+
+        context 'with a project in a group with Duo Nano enabled' do
+          before do
+            group.namespace_settings.reload.update!(duo_nano_features_enabled: true)
+          end
+
+          context 'with duo nano addon' do
+            include_context 'with duo nano addon'
+
+            context 'when user is a guest' do
+              before do
+                group.add_guest(current_user)
+              end
+
+              it { is_expected.to be_disallowed(:access_duo_nano_features) }
+            end
+
+            context 'when user is a member of the project' do
+              where(:access_level) { %i[reporter developer maintainer owner] }
+
+              with_them do
+                before do
+                  project.add_member(current_user, access_level)
+                end
+
+                it { is_expected.to be_allowed(:access_duo_nano_features) }
+              end
+            end
+
+            context 'when user is a member of a project in a subgroup' do
+              before do
+                project = create(:project, group: create(:group, parent: group))
+                project.add_reporter(current_user)
+              end
+
+              it { is_expected.to be_allowed(:access_duo_nano_features) }
+            end
+          end
+
+          ['with duo pro addon', 'with duo enterprise addon'].each do |context|
+            context context do
+              include_context context
+
+              it { is_expected.to be_disallowed(:access_duo_nano_features) }
+            end
+          end
+        end
+
+        context 'with a project in a group with Duo Nano disabled' do
+          before do
+            group.namespace_settings.reload.update!(duo_nano_features_enabled: false)
+            project.add_member(current_user, :owner)
+          end
+
+          ['with duo nano addon', 'with duo pro addon', 'with duo enterprise addon'].each do |context|
+            context context do
+              include_context context
+
+              it { is_expected.to be_disallowed(:access_duo_nano_features) }
+            end
+          end
+        end
+      end
+    end
+
     describe 'access to project for duo workflow' do
       let_it_be_with_reload(:project) { public_project }
 
