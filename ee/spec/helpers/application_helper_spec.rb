@@ -325,7 +325,7 @@ RSpec.describe ApplicationHelper do
   end
 
   context 'when both CE and EE has partials with the same name' do
-    let(:partial) { 'projects/settings/archive' }
+    let(:partial) { 'admin/users/stats_cards' }
     let(:view) { 'projects/merge_requests/show' }
     let(:project) { build_stubbed(:project) }
 
