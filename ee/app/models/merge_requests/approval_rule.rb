@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module MergeRequests
+  # This is what is referred to elsewhere as the v2 approval rule.
+  # https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/rearchitect_approval_rules/
   class ApprovalRule < ApplicationRecord
     self.table_name = 'merge_requests_approval_rules'
 
