@@ -143,6 +143,107 @@ RSpec.describe Ci::Minutes::GitlabHostedRunnerMonthlyUsage, factory_default: :ke
     end
   end
 
+  describe '.find_or_create_current' do
+    let_it_be(:current_month) { Time.current.beginning_of_month }
+
+    subject(:find_or_create_current) do
+      described_class.find_or_create_current(
+        root_namespace_id: root_namespace.id,
+        project_id: project.id,
+        runner_id: runner.id
+      )
+    end
+
+    context 'when usage record already exists' do
+      let!(:existing_usage) do
+        create(:ci_hosted_runner_monthly_usage,
+          root_namespace: root_namespace,
+          project: project,
+          runner: runner,
+          billing_month: current_month,
+          compute_minutes_used: 10.5,
+          runner_duration_seconds: 100
+        )
+      end
+
+      it 'returns the existing record' do
+        expect(find_or_create_current).to eq(existing_usage)
+      end
+
+      it 'does not create a new record' do
+        expect { find_or_create_current }.not_to change { described_class.count }
+      end
+
+      it 'maintains the existing values' do
+        usage = find_or_create_current
+
+        expect(usage.compute_minutes_used).to eq(10.5)
+        expect(usage.runner_duration_seconds).to eq(100)
+      end
+
+      context 'when unique index violation occurs' do
+        before do
+          allow(described_class).to receive(:find_or_create_by).and_call_original
+          allow(described_class).to receive(:find_by).and_call_original
+
+          # Simulate the race condition by having find_or_create_by attempt to create a duplicate
+          # this will result in ActiveRecord::RecordNotUnique error raised and rescued
+          allow(described_class).to receive(:exists?).and_return(false)
+        end
+
+        it 'finds the existing record' do
+          result = described_class.find_or_create_current(
+            root_namespace_id: root_namespace.id,
+            project_id: project.id,
+            runner_id: runner.id
+          )
+
+          expect(result.id).to eq(existing_usage.id)
+          expect(result.root_namespace_id).to eq(root_namespace.id)
+          expect(result.project_id).to eq(project.id)
+          expect(result.runner_id).to eq(runner.id)
+        end
+      end
+    end
+
+    context 'when usage record does not exist' do
+      it 'creates a new record' do
+        expect { find_or_create_current }.to change { described_class.count }.by(1)
+      end
+
+      it 'sets the correct attributes' do
+        usage = find_or_create_current
+
+        expect(usage).to have_attributes(
+          root_namespace_id: root_namespace.id,
+          project_id: project.id,
+          runner_id: runner.id,
+          billing_month: current_month,
+          compute_minutes_used: 0.0,
+          runner_duration_seconds: 0
+        )
+      end
+
+      it 'persists the record' do
+        expect(find_or_create_current).to be_persisted
+      end
+    end
+
+    context 'with invalid attributes' do
+      subject(:find_or_create_current) do
+        described_class.find_or_create_current(
+          root_namespace_id: nil,
+          project_id: nil,
+          runner_id: nil
+        )
+      end
+
+      it 'raises an error' do
+        expect { find_or_create_current }.to raise_error(ActiveRecord::RecordInvalid)
+      end
+    end
+  end
+
   describe '.distinct_runner_ids' do
     let_it_be(:runner1) { create(:ci_runner) }
     let_it_be(:runner2) { create(:ci_runner) }

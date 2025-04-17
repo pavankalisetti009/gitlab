@@ -12,6 +12,7 @@ module Ci
       belongs_to :root_namespace, class_name: 'Namespace', inverse_of: :hosted_runner_monthly_usages
       belongs_to :runner, class_name: 'Ci::Runner', inverse_of: :hosted_runner_monthly_usages
 
+      validates_uniqueness_of :billing_month, scope: %i[root_namespace_id runner_id project_id]
       validates :runner, presence: true, on: :create
       validates :project, presence: true, on: :create
       validates :root_namespace, presence: true, on: :create
@@ -73,7 +74,18 @@ module Ci
       end
       # rubocop:enable Database/AvoidUsingPluckWithoutLimit
 
-      private
+      def self.find_or_create_current(root_namespace_id:, project_id:, runner_id:)
+        find_by_params = {
+          root_namespace_id: root_namespace_id,
+          project_id: project_id,
+          runner_id: runner_id,
+          billing_month: Time.current.beginning_of_month
+        }
+        find_or_create_by!(**find_by_params)
+      # Handle race condition at the database level
+      rescue ActiveRecord::RecordNotUnique
+        find_by(**find_by_params)
+      end
 
       def self.billing_month_range(billing_month, year)
         if billing_month.present?
@@ -87,6 +99,21 @@ module Ci
 
         start_date..end_date
       end
+
+      def increase_usage(compute_minutes: 0, duration: 0)
+        increment_params = {}
+        increment_params[:compute_minutes_used] = compute_minutes if compute_minutes > 0
+        increment_params[:runner_duration_seconds] = duration if duration > 0
+
+        return if increment_params.empty?
+
+        # The use of `update_counters` puts the math within a sql query
+        # i.e. compute_minutes_used = COALESCE(compute_minutes_used, 0) + 5
+        # This is better for concurrent updates.
+        self.class.update_counters(self, increment_params)
+      end
+
+      private
 
       def validate_billing_month_format
         return if billing_month.blank?
