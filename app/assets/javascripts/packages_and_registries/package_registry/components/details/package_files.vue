@@ -370,7 +370,7 @@ export default {
     :title="__('Assets')"
     :count="filesTableRows.length"
     icon="doc-compressed"
-    class="gl-mt-6"
+    class="gl-mt-5"
   >
     <template #actions>
       <gl-button
