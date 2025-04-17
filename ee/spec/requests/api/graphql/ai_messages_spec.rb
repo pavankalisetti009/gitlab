@@ -53,7 +53,7 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
       user: user,
       extras: {
         additional_context: [
-          { category: 'file', id: 'hello.rb', content: 'puts "hello"', metadata: '{"file_name":"hello.rb"}' }
+          { category: 'file', id: 'hello.rb', content: 'puts "hello"', metadata: { "file_name" => "hello.rb" } }
         ]
       }
     )
@@ -92,7 +92,7 @@ RSpec.describe 'Querying user AI messages', :clean_gitlab_redis_cache, feature_c
                 'category' => 'FILE',
                 'id' => 'hello.rb',
                 'content' => 'puts "hello"',
-                'metadata' => '{"file_name":"hello.rb"}'
+                'metadata' => { "file_name" => "hello.rb" }
               }
             ]
           }
