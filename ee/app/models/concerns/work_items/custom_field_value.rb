@@ -18,6 +18,7 @@ module WorkItems
       scope :for_field_and_work_item, ->(field_ids, work_item_ids) {
         where(custom_field_id: field_ids, work_item_id: work_item_ids)
       }
+      scope :for_work_item, ->(work_item_id) { where(work_item_id: work_item_id) }
     end
 
     private
