@@ -3642,6 +3642,89 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'access_duo_nano_features' do
+    let_it_be(:current_user) { create(:user) }
+
+    context 'when on GitLab.com', :saas do
+      before do
+        stub_ee_application_setting(should_check_namespace_plan: true)
+      end
+
+      subject { described_class.new(current_user, group) }
+
+      context 'with a group with Duo Nano enabled' do
+        before do
+          group.namespace_settings.reload.update!(duo_nano_features_enabled: true)
+        end
+
+        context 'with duo nano addon' do
+          include_context 'with duo nano addon'
+
+          context 'when the group is not yet persisted' do
+            subject { described_class.new(admin, build(:group)) }
+
+            it { is_expected.to be_disallowed(:access_duo_nano_features) }
+          end
+
+          context 'when user is a guest' do
+            before do
+              group.add_guest(current_user)
+            end
+
+            it { is_expected.to be_disallowed(:access_duo_nano_features) }
+          end
+
+          context 'when user is a member of the group' do
+            where(:access_level) { %i[reporter developer maintainer owner] }
+
+            with_them do
+              before do
+                group.add_member(current_user, access_level)
+              end
+
+              it { is_expected.to be_allowed(:access_duo_nano_features) }
+            end
+          end
+
+          context 'when user is a member of a subgroup' do
+            let(:subgroup) { create(:group, :private, parent: group) }
+
+            subject { described_class.new(current_user, subgroup) }
+
+            before do
+              subgroup.add_reporter(current_user)
+            end
+
+            it { is_expected.to be_allowed(:access_duo_nano_features) }
+          end
+        end
+
+        ['with duo pro addon', 'with duo enterprise addon'].each do |context|
+          context context do
+            include_context context
+
+            it { is_expected.to be_disallowed(:access_duo_nano_features) }
+          end
+        end
+      end
+
+      context 'with a group with Duo Nano disabled' do
+        before do
+          group.namespace_settings.reload.update!(duo_nano_features_enabled: false)
+          group.add_member(current_user, :owner)
+        end
+
+        ['with duo nano addon', 'with duo pro addon', 'with duo enterprise addon'].each do |context|
+          context context do
+            include_context context
+
+            it { is_expected.to be_disallowed(:access_duo_nano_features) }
+          end
+        end
+      end
+    end
+  end
+
   describe ':read_saml_user' do
     let_it_be(:user) { non_group_member }
     let_it_be(:subgroup) { create(:group, :private, parent: group) }

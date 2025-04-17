@@ -209,3 +209,34 @@ RSpec.shared_context 'with duo enterprise addon' do
     end
   end
 end
+
+# This context is the same as the ones for Duo Pro and Enterprise
+# only difference is the purchased addon
+RSpec.shared_context 'with duo nano addon' do
+  before do
+    the_user = if defined?(current_user) && current_user.present?
+                 current_user
+               elsif defined?(user) && user.present?
+                 user
+               else
+                 false
+               end
+
+    if the_user
+      active_purchase = GitlabSubscriptions::AddOnPurchase.find_by(namespace: group)
+
+      active_purchase ||= create(:gitlab_subscription_add_on_purchase, :duo_nano, namespace: group)
+
+      active_assignment = GitlabSubscriptions::UserAddOnAssignment.find_by(
+        user: the_user, add_on_purchase: active_purchase)
+
+      unless active_assignment
+        create(
+          :gitlab_subscription_user_add_on_assignment,
+          user: the_user,
+          add_on_purchase: active_purchase
+        )
+      end
+    end
+  end
+end
