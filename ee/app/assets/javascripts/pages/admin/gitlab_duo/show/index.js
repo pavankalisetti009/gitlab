@@ -28,6 +28,12 @@ export function mountGitlabDuoHomeApp() {
     amazonQReady,
     amazonQAutoReviewEnabled,
     amazonQConfigurationPath,
+    duoWorkflowEnabled,
+    duoWorkflowServiceAccount,
+    isSaas,
+    duoWorkflowSettingsPath,
+    redirectPath,
+    duoWorkflowDisablePath,
   } = el.dataset;
 
   return new Vue({
@@ -35,7 +41,7 @@ export function mountGitlabDuoHomeApp() {
     name: 'GitlabDuoHome',
     apolloProvider,
     provide: {
-      isSaaS: false,
+      isSaaS: parseBoolean(isSaas),
       addDuoProHref: addDuoProSeatsUrl,
       duoSeatUtilizationPath,
       isBulkAddOnAssignmentEnabled: parseBoolean(isBulkAddOnAssignmentEnabled),
@@ -53,6 +59,13 @@ export function mountGitlabDuoHomeApp() {
       amazonQReady: parseBoolean(amazonQReady),
       amazonQAutoReviewEnabled: parseBoolean(amazonQAutoReviewEnabled),
       amazonQConfigurationPath,
+      duoWorkflowEnabled: parseBoolean(duoWorkflowEnabled),
+      duoWorkflowServiceAccount: duoWorkflowServiceAccount
+        ? JSON.parse(duoWorkflowServiceAccount)
+        : undefined,
+      duoWorkflowSettingsPath,
+      redirectPath,
+      duoWorkflowDisablePath,
     },
     render: (h) => h(GitlabDuoHome),
   });
