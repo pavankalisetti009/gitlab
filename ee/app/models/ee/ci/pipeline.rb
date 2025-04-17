@@ -124,6 +124,12 @@ module EE
               )
             end
           end
+
+          after_transition any => [:success, :failed] do |pipeline|
+            pipeline.run_after_commit do
+              Security::PipelineAnalyzersStatusUpdateWorker.perform_async(pipeline.id)
+            end
+          end
         end
       end
 

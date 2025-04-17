@@ -10,5 +10,11 @@ FactoryBot.define do
     after(:build) do |status, _|
       status.traversal_ids = status.project&.namespace&.traversal_ids
     end
+
+    Enums::Security.analyzer_types.each_key do |type|
+      trait type do
+        analyzer_type { type }
+      end
+    end
   end
 end

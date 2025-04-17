@@ -13,6 +13,57 @@ RSpec.describe Security::AnalyzerProjectStatus, feature_category: :security_asse
     it { is_expected.to validate_presence_of(:traversal_ids) }
   end
 
+  describe 'enums' do
+    it { is_expected.to define_enum_for(:analyzer_type).with_values(Enums::Security.analyzer_types) }
+    it { is_expected.to define_enum_for(:status).with_values(not_configured: 0, success: 1, failed: 2) }
+  end
+
+  describe 'scopes' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:sast_analyzer) { create(:analyzer_project_status, project: project) }
+    let_it_be(:dast_analyzer) { create(:analyzer_project_status, :dast, project: project) }
+    let_it_be(:container_scanning_analyzer) { create(:analyzer_project_status, :container_scanning, project: project) }
+    let_it_be(:another_analyzer_status) { create(:analyzer_project_status, :secret_detection) }
+
+    describe '.by_projects' do
+      subject { described_class.by_projects(project) }
+
+      it 'returns analyzer statuses for the specified project only' do
+        is_expected.to contain_exactly(sast_analyzer, dast_analyzer, container_scanning_analyzer)
+      end
+    end
+
+    describe '.without_types' do
+      subject { described_class.without_types(excluded_types) }
+
+      context 'when excluding a single type' do
+        let(:excluded_types) { :sast }
+
+        it 'returns analyzers of all types except the excluded one' do
+          is_expected.to include(dast_analyzer, container_scanning_analyzer, another_analyzer_status)
+          is_expected.not_to include(sast_analyzer)
+        end
+      end
+
+      context 'when excluding multiple types' do
+        let(:excluded_types) { [:sast, :dast] }
+
+        it 'returns analyzers of all types except the excluded ones' do
+          is_expected.to include(container_scanning_analyzer, another_analyzer_status)
+          is_expected.not_to include(sast_analyzer, dast_analyzer)
+        end
+      end
+
+      context 'when not excluding any types' do
+        let(:excluded_types) { [] }
+
+        it 'returns all analyzers' do
+          is_expected.to include(sast_analyzer, dast_analyzer, container_scanning_analyzer, another_analyzer_status)
+        end
+      end
+    end
+  end
+
   context 'with loose foreign key on analyzer_project_statuses.project_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:project) }
