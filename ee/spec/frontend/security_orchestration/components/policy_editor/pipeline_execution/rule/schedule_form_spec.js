@@ -339,9 +339,9 @@ describe('ScheduleForm', () => {
         );
       });
 
-      it('ignores empty or invalid inputs', async () => {
+      it.each(['', undefined, null, 'hello'])('ignores the input $input', async (input) => {
         createComponent({ schedule: { time_window: { value: 3600 } } });
-        await findDurationInput().vm.$emit('update', '');
+        await findDurationInput().vm.$emit('update', input);
 
         // Should not emit a change event for empty input
         expect(wrapper.emitted('changed')).toBe(undefined);

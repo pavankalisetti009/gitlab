@@ -1,4 +1,5 @@
 import { __ } from '~/locale';
+import { isNumeric } from '~/lib/utils/number_utils';
 import { getWeekdayNames } from '~/lib/utils/datetime_utility';
 import { DAILY, WEEKLY, MONTHLY } from '../constants';
 
@@ -122,6 +123,10 @@ export const timeUnitToSeconds = (value, unit) => {
  * @returns {Number} Value in the specified unit
  */
 export const secondsToValue = (seconds, unit) => {
+  if (!isNumeric(seconds) || seconds < 0) {
+    return 0;
+  }
+
   return seconds / unit;
 };
 
@@ -131,11 +136,17 @@ export const secondsToValue = (seconds, unit) => {
  * @returns {Number} The appropriate time unit from TIME_UNITS
  */
 export const determineTimeUnit = (seconds) => {
+  if (!isNumeric(seconds) || seconds < 0) {
+    return TIME_UNITS.MINUTE;
+  }
+
   if (seconds % TIME_UNITS.DAY === 0 && seconds >= TIME_UNITS.DAY) {
     return TIME_UNITS.DAY;
   }
+
   if (seconds % TIME_UNITS.HOUR === 0 && seconds >= TIME_UNITS.HOUR) {
     return TIME_UNITS.HOUR;
   }
+
   return TIME_UNITS.MINUTE;
 };
