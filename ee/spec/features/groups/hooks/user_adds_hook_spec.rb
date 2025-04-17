@@ -17,7 +17,9 @@ RSpec.describe "User adds hook", feature_category: :webhooks do
 
   it "adds new hook", :js do
     click_button 'Add new webhook'
-    fill_in("URL", with: url)
+    fill_in 'Name (optional)', with: 'New group hook'
+    fill_in 'Description (optional)', with: 'A new group hook for testing'
+    fill_in 'URL', with: url
 
     expect { click_button("Add webhook") }.to change { GroupHook.count }.by(1)
     expect(page).to have_current_path group_hooks_path(group), ignore_query: true
