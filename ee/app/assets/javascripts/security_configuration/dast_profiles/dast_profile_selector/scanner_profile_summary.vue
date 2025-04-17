@@ -2,7 +2,6 @@
 import { SCAN_TYPE_LABEL } from 'ee/security_configuration/dast_profiles/dast_scanner_profiles/constants';
 import { SCANNER_TYPE } from 'ee/on_demand_scans/constants';
 import ScanTypeBadge from 'ee/security_configuration/dast_profiles/components/dast_scan_type_badge.vue';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import DastProfileSummaryCard from './dast_profile_summary_card.vue';
 import SummaryCell from './summary_cell.vue';
 
@@ -13,7 +12,6 @@ export default {
     SummaryCell,
     ScanTypeBadge,
   },
-  mixins: [glFeatureFlagsMixin()],
   props: {
     profile: {
       type: Object,

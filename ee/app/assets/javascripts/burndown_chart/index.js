@@ -2,7 +2,6 @@ import $ from 'jquery';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import BurnCharts from './components/burn_charts.vue';
 
 Vue.use(VueApollo);
@@ -29,7 +28,6 @@ export default () => {
       components: {
         BurnCharts,
       },
-      mixins: [glFeatureFlagsMixin()],
       apolloProvider,
       render(createElement) {
         return createElement('burn-charts', {

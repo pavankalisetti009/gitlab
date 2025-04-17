@@ -4,7 +4,6 @@ import { partition, isString } from 'lodash';
 import { ACCESS_LEVEL_LABELS } from '~/access_level/constants';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import CeInviteModalBase from '~/invite_members/components/invite_modal_base.vue';
 import apolloProvider from '../provider';
 import {
@@ -38,7 +37,6 @@ export default {
     CeInviteModalBase,
   },
   apolloProvider,
-  mixins: [glFeatureFlagsMixin()],
   inject: {
     overageMembersModalAvailable: {
       default: false,

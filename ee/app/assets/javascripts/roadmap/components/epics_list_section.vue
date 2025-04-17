@@ -1,6 +1,5 @@
 <script>
 import { GlIntersectionObserver, GlLoadingIcon } from '@gitlab/ui';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 import { EPIC_DETAILS_CELL_WIDTH, TIMELINE_CELL_MIN_WIDTH, EPIC_ITEM_HEIGHT } from '../constants';
 import eventHub from '../event_hub';
@@ -18,7 +17,6 @@ export default {
     EpicItem,
     CurrentDayIndicator,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: {
     epicIid: {
       default: null,
