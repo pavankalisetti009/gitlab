@@ -6456,6 +6456,12 @@ msgstr ""
 msgid "Amazon Q connectivity check failed: %{message}"
 msgstr ""
 
+msgid "Amazon Q could not call your GitLab instance. Please review your configuration and try again. Detail: %{error}"
+msgstr ""
+
+msgid "Amazon Q successfully received the callback request from your GitLab instance."
+msgstr ""
+
 msgid "AmazonQ|Active cloud connector token not found."
 msgstr ""
 
@@ -12431,9 +12437,6 @@ msgid "Checking branch validity…"
 msgstr ""
 
 msgid "Checking group path availability…"
-msgstr ""
-
-msgid "Checking if %{message} failed: %{error}"
 msgstr ""
 
 msgid "Checking if merge request can be merged…"
@@ -18769,6 +18772,9 @@ msgid "Creator"
 msgstr ""
 
 msgid "Credentials"
+msgstr ""
+
+msgid "Credentials stored in Amazon Q are valid and functioning correctly."
 msgstr ""
 
 msgid "CredentialsInventory|Deleted user"
@@ -27926,9 +27932,6 @@ msgstr ""
 msgid "GitLab container registry API not supported"
 msgstr ""
 
-msgid "GitLab credentials used by Amazon Q are valid"
-msgstr ""
-
 msgid "GitLab detected an attempt to sign in to your %{host} account using an incorrect verification code"
 msgstr ""
 
@@ -27951,9 +27954,6 @@ msgid "GitLab group: %{source_link}"
 msgstr ""
 
 msgid "GitLab informs you if a new version is available. %{link_start}What information does GitLab Inc. collect?%{link_end}"
-msgstr ""
-
-msgid "GitLab instance is reachable by Amazon Q"
 msgstr ""
 
 msgid "GitLab is a complete DevOps platform, delivered as a single application, fundamentally changing the way Development, Security, and Ops teams collaborate"
@@ -60314,6 +60314,9 @@ msgid "The Bugzilla logo is a trademark of the Mozilla Foundation in the U.S. an
 msgstr ""
 
 msgid "The CSV export will be created in the background. Once finished, it will be sent to %{email} in an attachment."
+msgstr ""
+
+msgid "The GitLab instance can be reached but the credentials stored in Amazon Q are not valid. Please disconnect and start over."
 msgstr ""
 
 msgid "The GitLab subscription service (customers.gitlab.com) is currently experiencing an outage. You can monitor the status and get updates at %{linkStart}status.gitlab.com%{linkEnd}."

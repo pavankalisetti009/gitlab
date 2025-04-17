@@ -49,21 +49,37 @@ module CloudConnector
           end
 
           def probe_results(body)
-            status_messages = {
-              "GITLAB_INSTANCE_REACHABILITY" => _("GitLab instance is reachable by Amazon Q"),
-              "GITLAB_CREDENTIAL_VALIDITY" => _("GitLab credentials used by Amazon Q are valid")
+            success_status_messages = {
+              "GITLAB_INSTANCE_REACHABILITY" =>
+                _("Amazon Q successfully received the callback request from your GitLab instance."),
+              "GITLAB_CREDENTIAL_VALIDITY" => _("Credentials stored in Amazon Q are valid and functioning correctly.")
+            }
+
+            error_status_messages = {
+              "GITLAB_INSTANCE_REACHABILITY" =>
+                _("Amazon Q could not call your GitLab instance. Please review your configuration and try again. " \
+                  "Detail: %{error}"),
+              "GITLAB_CREDENTIAL_VALIDITY" =>
+                _("The GitLab instance can be reached but the credentials " \
+                  "stored in Amazon Q are not valid. Please disconnect and " \
+                  "start over.")
             }
 
             body.filter_map do |check_code, results|
-              message = status_messages[check_code]
+              message = success_status_messages[check_code]
               next if message.blank?
 
               case results['status']
               when STATUS_CODE_PASSED
                 create_result(true, message)
               when STATUS_CODE_FAILED
-                error_msg = format(_("Checking if %{message} failed: %{error}"),
-                  message: message, error: results['message'])
+                message = error_status_messages[check_code]
+                error_msg = if message.include?("%{error}")
+                              format(message, error: results['message'])
+                            else
+                              message
+                            end
+
                 create_result(false, error_msg)
               end
             end

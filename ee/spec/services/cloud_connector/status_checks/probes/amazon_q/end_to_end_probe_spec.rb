@@ -64,7 +64,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::AmazonQ::EndToEndProbe, fea
       end
     end
 
-    context 'when the user is provided and the connectivity check succeeds' do
+    context 'when the credential check fails and the connectivity check succeeds' do
       let(:status) { 200 }
       let(:body) do
         {
@@ -79,10 +79,37 @@ RSpec.describe CloudConnector::StatusChecks::Probes::AmazonQ::EndToEndProbe, fea
 
         expect(result.length).to eq(2)
         expect(result.first.success).to be true
-        expect(result.first.message).to match('GitLab instance is reachable by Amazon Q')
+        expect(result.first.message).to match(
+          'Amazon Q successfully received the callback request from your GitLab instance.'
+        )
         expect(result.second.success).to be false
         expect(result.second.message).to match(
-          'Checking if GitLab credentials used by Amazon Q are valid failed: Invalid credentials'
+          'The GitLab instance can be reached but the credentials stored in Amazon Q are not valid. ' \
+            'Please disconnect and start over.'
+        )
+      end
+    end
+
+    context 'when the credential check succeeds and the connectivity check fails' do
+      let(:status) { 200 }
+      let(:body) do
+        {
+          'GITLAB_INSTANCE_REACHABILITY' => { 'status' => 'FAILED', 'message' => 'unreachable' },
+          'GITLAB_CREDENTIAL_VALIDITY' => { 'status' => 'PASSED' },
+          'GITLAB_OTHER_STATUS' => { 'status' => 'INCOMPLETE' }
+        }.to_json
+      end
+
+      it 'returns a success result for the passed check' do
+        result = probe.execute
+
+        expect(result.length).to eq(2)
+        expect(result.first.success).to be false
+        expect(result.first.message).to match('Amazon Q could not call your GitLab instance. ' \
+          'Please review your configuration and try again. Detail: unreachable')
+        expect(result.second.success).to be true
+        expect(result.second.message).to match(
+          'Credentials stored in Amazon Q are valid and functioning correctly.'
         )
       end
     end
