@@ -78,7 +78,8 @@ module Security
       def note_params(body)
         {
           note: body,
-          noteable: merge_request
+          noteable: merge_request,
+          skip_touch_noteable: true
         }
       end
     end
