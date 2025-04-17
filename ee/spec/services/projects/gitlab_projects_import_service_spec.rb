@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Projects::GitlabProjectsImportService, feature_category: :importers do
+RSpec.describe Projects::GitlabProjectsImportService, feature_category: :source_code_management do
   let_it_be(:namespace) { create(:namespace) }
 
   let(:path) { 'test-path' }
@@ -12,7 +12,9 @@ RSpec.describe Projects::GitlabProjectsImportService, feature_category: :importe
     { namespace_id: namespace.id, path: path, custom_template: custom_template, overwrite: overwrite }
   end
 
-  subject(:service) { described_class.new(namespace.owner, import_params) }
+  subject(:service) do
+    described_class.new(namespace.owner, import_params, import_type: 'gitlab_custom_project_template')
+  end
 
   after do
     TestEnv.clean_test_path
@@ -53,6 +55,6 @@ RSpec.describe Projects::GitlabProjectsImportService, feature_category: :importe
       end
     end
 
-    it_behaves_like 'gitlab projects import validations'
+    it_behaves_like 'gitlab projects import validations', import_type: 'gitlab_custom_project_template'
   end
 end

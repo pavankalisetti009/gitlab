@@ -26,7 +26,6 @@ module EE
           params[:import_data] ||= {}
           params[:import_data][:data] ||= {}
           params[:import_data][:data][:template_project_id] = custom_template.id
-          params[:import_type] = 'gitlab_custom_project_template'
         end
       end
 
