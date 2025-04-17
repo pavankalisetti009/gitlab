@@ -63,7 +63,6 @@ export const mockSchedulePipelineExecutionManifest = `pipeline_execution_schedul
         time_window:
           distribution: "random"
           value: 3600
-        timezone: "America/New_York"
         type: "daily"
     content:
       include:
@@ -84,7 +83,6 @@ schedules:
     time_window:
       value: 3600
       distribution: random
-    timezone: America/New_York
 type: pipeline_execution_schedule_policy
 `;
 
@@ -96,7 +94,6 @@ schedules:
     time_window:
       distribution: "random"
       value: 3600
-    timezone: "America/New_York"
     type: "daily"
 content:
    include:
@@ -268,7 +265,6 @@ schedules:
     time_window:
       value: 3600
       distribution: random
-    timezone: America/New_York
     snooze:
        reason: This is a reason
        until: "2021-10-13T07:11:00Z"

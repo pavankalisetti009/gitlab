@@ -10,6 +10,7 @@ import {
   ALL_PROTECTED_BRANCHES,
   PROJECT_DEFAULT_BRANCH,
 } from 'ee/security_orchestration/components/policy_editor/constants';
+import { DEFAULT_TIMEZONE } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/constants';
 
 /**
  * Gets a formatted list of weekdays from the schedule
@@ -110,12 +111,8 @@ export const getTimeWindowInfo = (timeWindow) => {
  * @returns {String} Formatted timezone information
  */
 export const getTimezoneInfo = (timezone) => {
-  if (!timezone) {
-    return '';
-  }
-
   return sprintf(s__('SecurityOrchestration|in timezone %{timezone}'), {
-    timezone,
+    timezone: timezone || DEFAULT_TIMEZONE,
   });
 };
 

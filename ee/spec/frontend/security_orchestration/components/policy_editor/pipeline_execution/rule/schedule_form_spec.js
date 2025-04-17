@@ -21,7 +21,6 @@ describe('ScheduleForm', () => {
     type: 'daily',
     time_window: { value: 3600 },
     branch_type: 'protected',
-    timezone: 'America/New_York',
   };
   const mockTimezones = [
     { identifier: 'America/New_York', name: 'Eastern Time' },
@@ -90,16 +89,21 @@ describe('ScheduleForm', () => {
     });
 
     describe('timezone dropdown', () => {
-      it('renders the timezone dropdown', () => {
+      it('renders the timezone dropdown with the default timezone', () => {
         createComponent();
         const timezoneDropdown = findTimezoneDropdown();
         expect(timezoneDropdown.exists()).toBe(true);
         expect(timezoneDropdown.props()).toMatchObject({
           timezoneData: mockTimezones,
-          value: 'America/New_York',
+          value: 'Etc/UTC',
           headerText: 'Select timezone',
         });
         expect(timezoneDropdown.attributes('title')).toBe('on gitlab.example.com');
+      });
+
+      it('renders the timezone if specified in the schedule', () => {
+        createComponent({ schedule: { type: 'daily', timezone: 'America/New_York' } });
+        expect(findTimezoneDropdown().props('value')).toBe('America/New_York');
       });
     });
 
