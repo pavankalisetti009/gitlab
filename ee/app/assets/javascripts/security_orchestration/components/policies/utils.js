@@ -69,6 +69,10 @@ export const extractSourceParameter = (source) =>
  * @returns {boolean}
  */
 export const exceedsActionLimit = ({ policyType, yaml, maxScanExecutionPolicyActions } = {}) => {
+  if (maxScanExecutionPolicyActions === 0) {
+    return false;
+  }
+
   if (policyType === POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.text) {
     const policy = fromYaml({
       manifest: yaml,

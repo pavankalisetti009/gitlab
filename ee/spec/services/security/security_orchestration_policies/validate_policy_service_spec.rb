@@ -627,11 +627,21 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
     end
 
     shared_examples 'checks scan execution policy action limit' do
-      let(:limit) { Gitlab::CurrentSettings.scan_execution_policies_action_limit }
-      let(:action) do
-        {
-          scan: 'container_scanning'
-        }
+      let(:action) { { scan: 'container_scanning' } }
+      let(:action_limit) { 2 }
+
+      before do
+        stub_application_setting(scan_execution_policies_action_limit: action_limit)
+      end
+
+      context 'when set to zero' do
+        let(:action_limit) { 0 }
+
+        before do
+          policy[:actions] = [action] * 4
+        end
+
+        it { expect(result[:status]).to eq(:success) }
       end
 
       context 'when below limit' do
@@ -642,14 +652,22 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it { expect(result[:status]).to eq(:success) }
       end
 
+      context 'when equal to limit' do
+        before do
+          policy[:actions] = [action] * 2
+        end
+
+        it { expect(result[:status]).to eq(:success) }
+      end
+
       context 'when exceeding limit' do
         before do
-          policy[:actions] = [action] * (limit + 1)
+          policy[:actions] = [action] * 3
         end
 
         it { expect(result[:status]).to eq(:error) }
 
-        it_behaves_like 'sets validation errors', message: "Policy exceeds the maximum of 10 actions"
+        it_behaves_like 'sets validation errors', message: "Policy exceeds the maximum of 2 actions"
 
         context 'with approval policy' do
           let(:policy_type) { 'approval_policy' }
@@ -659,16 +677,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
 
         context 'when removing policy' do
           let(:operation) { :remove }
-
-          it { expect(result[:status]).to eq(:success) }
-        end
-
-        context 'with feature disabled' do
-          before do
-            stub_feature_flags(
-              scan_execution_policy_action_limit: false,
-              scan_execution_policy_action_limit_group: false)
-          end
 
           it { expect(result[:status]).to eq(:success) }
         end

@@ -450,9 +450,6 @@ enabled: true`;
       factory({
         provide: {
           maxScanExecutionPolicyActions: 3,
-          glFeatures: {
-            scanExecutionPolicyActionLimitGroup: true,
-          },
         },
       });
 
@@ -690,9 +687,6 @@ enabled: true`;
           provide: {
             namespaceType: NAMESPACE_TYPES.PROJECT,
             maxScanExecutionPolicyActions: 1,
-            glFeatures: {
-              scanExecutionPolicyActionLimit: true,
-            },
           },
         });
 

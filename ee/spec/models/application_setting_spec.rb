@@ -28,7 +28,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.zoekt_indexing_enabled).to be false }
     it { expect(setting.zoekt_indexing_paused).to be false }
     it { expect(setting.zoekt_search_enabled).to be false }
-    it { expect(setting.scan_execution_policies_action_limit).to be(10) }
+    it { expect(setting.scan_execution_policies_action_limit).to be(0) }
     it { expect(setting.scan_execution_policies_schedule_limit).to be(0) }
     it { expect(setting.allow_all_integrations).to be true }
     it { expect(setting.allowed_integrations).to eq([]) }

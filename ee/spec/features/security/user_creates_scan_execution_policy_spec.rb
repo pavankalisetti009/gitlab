@@ -10,7 +10,7 @@ RSpec.describe "User creates scan execution policy", :js, feature_category: :sec
   let_it_be(:project) { create(:project, :repository, namespace: owner.namespace) }
   let_it_be(:protected_branch) { create(:protected_branch, name: 'spooky-stuff', project: project) }
   let_it_be(:policy_management_project) { create(:project, :repository, owners: owner) }
-  let_it_be(:limit) { Gitlab::CurrentSettings.scan_execution_policies_action_limit }
+  let_it_be(:limit) { 3 }
 
   let_it_be(:policy_yaml) do
     Gitlab::Config::Loader::Yaml.new(fixture_file('security_orchestration/merge_request_approval_policy.yml',
@@ -20,6 +20,8 @@ RSpec.describe "User creates scan execution policy", :js, feature_category: :sec
   before do
     sign_in(owner)
     stub_licensed_features(security_orchestration_policies: true)
+
+    stub_application_setting(scan_execution_policies_action_limit: limit)
   end
 
   shared_examples "user creates scan execution policy" do
