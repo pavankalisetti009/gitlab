@@ -169,15 +169,16 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
   describe 'state transitions' do
     using RSpec::Parameterized::TableSyntax
     where(:status, :can_start, :can_pause, :can_resume, :can_finish, :can_drop, :can_stop, :can_retry,
-      :can_require_input, :can_require_plan_approval) do
-      0 | true  | false | false | false | true  | true  | false | false | false
-      1 | false | true  | false | true  | true  | true  | true  | true  | true
-      2 | false | false | true  | false | true  | true  | false | false | false
-      3 | false | false | false | false | false | false | false | false | false
-      4 | false | false | false | false | false | false | true  | false | false
-      5 | false | false | false | false | false | false | true  | false | false
-      6 | false | false | true  | false | true  | true  | false | false | false
-      7 | false | false | true  | false | true  | true  | false | false | false
+      :can_require_input, :can_require_plan_approval, :can_require_tool_call_approval) do
+      0 | true  | false | false | false | true  | true  | false | false | false | false
+      1 | false | true  | false | true  | true  | true  | true  | true  | true  | true
+      2 | false | false | true  | false | true  | true  | false | false | false | false
+      3 | false | false | false | false | false | false | false | false | false | false
+      4 | false | false | false | false | false | false | true  | false | false | false
+      5 | false | false | false | false | false | false | true  | false | false | false
+      6 | false | false | true  | false | true  | true  | false | false | false | false
+      7 | false | false | true  | false | true  | true  | false | false | false | false
+      8 | false | false | true  | false | true  | true  | false | false | false | false
     end
 
     with_them do
@@ -193,6 +194,7 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
         expect(owned_workflow.can_retry?).to eq(can_retry)
         expect(owned_workflow.can_require_input?).to eq(can_require_input)
         expect(owned_workflow.can_require_plan_approval?).to eq(can_require_plan_approval)
+        expect(owned_workflow.can_require_tool_call_approval?).to eq(can_require_tool_call_approval)
       end
     end
   end
