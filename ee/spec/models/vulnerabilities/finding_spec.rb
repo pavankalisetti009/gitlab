@@ -1531,7 +1531,9 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       expect(Vulnerabilities::Finding::HIGH_CONFIDENCE_AI_RESOLUTION_CWES).to match_array %w[
         CWE-23
         CWE-73
+        CWE-78
         CWE-80
+        CWE-89
         CWE-116
         CWE-118
         CWE-119
@@ -1574,7 +1576,7 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
         CWE-1275
       ]
 
-      expect(Vulnerabilities::Finding::HIGH_CONFIDENCE_AI_RESOLUTION_CWES.count).to be(43)
+      expect(Vulnerabilities::Finding::HIGH_CONFIDENCE_AI_RESOLUTION_CWES.count).to be(45)
     end
   end
 
