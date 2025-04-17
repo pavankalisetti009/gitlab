@@ -116,7 +116,7 @@ RSpec.describe Elastic::Latest::UserClassProxy, feature_category: :global_search
             it 'has a filter for authorized groups and projects' do
               elastic_search.response
 
-              assert_named_queries('namespace:ancestry_filter:descendants')
+              assert_named_queries('namespace:ancestry_filter:project_ids')
             end
           end
 
@@ -235,18 +235,16 @@ RSpec.describe Elastic::Latest::UserClassProxy, feature_category: :global_search
         project.add_developer(user)
       end
 
-      it 'adds a prefix filter for the project' do
+      it 'adds a terms query for the project' do
         expected_query = {
           query: {
             bool: {
               filter: [
                 bool: {
                   should: [
-                    prefix: {
-                      namespace_ancestry_ids: {
-                        _name: "namespace:ancestry_filter:descendants",
-                        value: "#{project.namespace.id}-p#{project.id}-"
-                      }
+                    terms: {
+                      _name: "namespace:ancestry_filter:project_ids",
+                      namespace_ancestry_ids: ["#{project.namespace.id}-p#{project.id}-"]
                     }
                   ],
                   minimum_should_match: 1
@@ -279,11 +277,9 @@ RSpec.describe Elastic::Latest::UserClassProxy, feature_category: :global_search
                         }
                       },
                       {
-                        prefix: {
-                          namespace_ancestry_ids: {
-                            _name: "namespace:ancestry_filter:descendants",
-                            value: "#{project.namespace.id}-p#{project.id}-"
-                          }
+                        terms: {
+                          _name: "namespace:ancestry_filter:project_ids",
+                          namespace_ancestry_ids: ["#{project.namespace.id}-p#{project.id}-"]
                         }
                       }
                     ],
@@ -329,11 +325,9 @@ RSpec.describe Elastic::Latest::UserClassProxy, feature_category: :global_search
                         }
                       },
                       {
-                        prefix: {
-                          namespace_ancestry_ids: {
-                            _name: "namespace:ancestry_filter:descendants",
-                            value: "#{project.namespace.id}-p#{project.id}-"
-                          }
+                        terms: {
+                          _name: "namespace:ancestry_filter:project_ids",
+                          namespace_ancestry_ids: ["#{project.namespace.id}-p#{project.id}-"]
                         }
                       }
                     ],
