@@ -1,0 +1,21 @@
+# frozen_string_literal: true
+
+module API
+  module Helpers
+    module DuoWorkflowHelpers
+      def push_ai_gateway_headers
+        push_feature_flags
+
+        Gitlab::AiGateway.public_headers(user: current_user, service_name: :duo_workflow).each do |name, value|
+          header(name, value)
+        end
+      end
+
+      private
+
+      def push_feature_flags
+        Gitlab::AiGateway.push_feature_flag(:batch_duo_workflow_planner_tasks, current_user)
+      end
+    end
+  end
+end

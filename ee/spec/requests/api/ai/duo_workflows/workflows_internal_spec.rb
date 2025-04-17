@@ -330,6 +330,13 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
   describe 'GET /ai/duo_workflows/workflows/:id' do
     let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}" }
 
+    before do
+      allow(Gitlab::AiGateway)
+        .to receive(:public_headers)
+        .with(user: user, service_name: :duo_workflow)
+        .and_return({ 'x-gitlab-enabled-feature-flags' => 'test-feature' })
+    end
+
     it 'returns the Ai::DuoWorkflows::Workflow' do
       get api(path, user)
 
@@ -340,6 +347,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       expect(json_response['agent_privileges_names']).to eq(["read_write_files"])
       expect(json_response['allow_agent_to_request_user']).to be(true)
       expect(json_response['status']).to eq("created")
+      expect(response.headers['X-Gitlab-Enabled-Feature-Flags']).to include('test-feature')
     end
 
     context 'when authenticated with a token that has the ai_workflows scope' do
