@@ -6,6 +6,9 @@ import GitlabExperiment from '~/experimentation/components/gitlab_experiment.vue
 import RootCauseAnalysisButton from 'ee_else_ce/ci/job_details/components/root_cause_analysis_button.vue';
 import hotspotImageUrl from 'ee_images/illustrations/hotspot.gif';
 import Tracking from '~/tracking';
+import { getCookie, setCookie, parseBoolean } from '~/lib/utils/common_utils';
+
+const HOTSPOT_DISMISSED_COOKIE_KEY = 'rca_hotspot_dismissed';
 
 export default {
   name: 'RootCauseAnalysisHotspotExperiment',
@@ -48,27 +51,43 @@ export default {
     return {
       showPopover: false,
       hotspotId: null,
+      showHotspot: !this.isHotspotDismissed(),
     };
   },
   mounted() {
     this.hotspotId = ['job', this.jobId || uniqueId(), 'hotspot'].join('-');
+
     this.track('render');
+
+    this.$nextTick(() => {
+      if (this.$refs.hotspotElement) {
+        this.track('render_hotspot');
+      }
+    });
   },
   methods: {
     onDuoCalled() {
       this.track('click_troubleshoot');
-
-      if (this.showPopover) {
-        this.showPopover = false;
-      }
+      this.showPopover = false;
+      this.showHotspot = false;
     },
     onHotspotClick() {
       this.track('click_hotspot');
-
       this.showPopover = !this.showPopover;
     },
     dismissPopover() {
       this.track('dismiss_popover');
+      this.dismissHotspot();
+    },
+    dismissHotspot() {
+      this.showHotspot = false;
+      this.setDismissalCookie();
+    },
+    isHotspotDismissed() {
+      return parseBoolean(getCookie(HOTSPOT_DISMISSED_COOKIE_KEY));
+    },
+    setDismissalCookie() {
+      setCookie(HOTSPOT_DISMISSED_COOKIE_KEY, 'true', { path: '/' });
     },
   },
   hotspotImageUrl,
@@ -99,9 +118,11 @@ export default {
           @duo-called="onDuoCalled"
         />
         <button
+          v-if="showHotspot"
           :id="hotspotId"
-          data-testid="hotspot"
+          ref="hotspotElement"
           class="gl-ml-3 gl-flex gl-items-center gl-rounded-full gl-border-0 gl-bg-transparent gl-p-0 gl-leading-0"
+          data-testid="hotspot"
           @click.stop="onHotspotClick"
         >
           <img
