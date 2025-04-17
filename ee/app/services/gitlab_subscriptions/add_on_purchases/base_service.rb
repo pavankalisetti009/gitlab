@@ -34,7 +34,7 @@ module GitlabSubscriptions
 
       def error_response
         ServiceResponse.error(
-          message: 'Add-on purchase could not be saved',
+          message: "#{add_on_purchase.errors.full_messages.to_sentence}.",
           payload: { add_on_purchase: add_on_purchase }
         )
       end
