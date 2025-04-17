@@ -12,6 +12,10 @@ module Security
 
             mark_as_resolved
 
+            context.run_after_sec_commit do
+              publish_redetected_event
+            end
+
             finding_maps
           end
 
@@ -24,6 +28,18 @@ module Security
             end
 
             set_transitioned_to_detected
+          end
+
+          def publish_redetected_event
+            attrs = updated_finding_maps.map do |map|
+              {
+                vulnerability_id: map.vulnerability_id,
+                pipeline_id: map.pipeline.id,
+                timestamp: current_time.iso8601
+              }
+            end
+
+            Gitlab::EventStore.publish(::Vulnerabilities::BulkRedetectedEvent.new(data: { vulnerabilities: attrs }))
           end
 
           def redetected_vulnerability_ids

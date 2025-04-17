@@ -3,6 +3,8 @@
 module Security
   module Ingestion
     class IngestSliceBaseService
+      include Gitlab::Utils::StrongMemoize
+
       def self.execute(pipeline, finding_maps)
         new(pipeline, finding_maps).execute
       end
@@ -17,6 +19,8 @@ module Security
           self.class::SEC_DB_TASKS.each { |task| execute_task(task) }
         end
 
+        context.run_sec_after_commit_tasks
+
         ::ApplicationRecord.transaction do
           self.class::MAIN_DB_TASKS.each { |task| execute_task(task) }
         end
@@ -29,8 +33,13 @@ module Security
       attr_reader :pipeline, :finding_maps
 
       def execute_task(task)
-        Tasks.const_get(task, false).execute(pipeline, finding_maps)
+        Tasks.const_get(task, false).execute(pipeline, finding_maps, context)
       end
+
+      def context
+        Context.new
+      end
+      strong_memoize_attr :context
     end
   end
 end

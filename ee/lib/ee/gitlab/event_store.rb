@@ -114,6 +114,9 @@ module EE
           store.subscribe ::Vulnerabilities::ProcessTransferEventsWorker, to: ::Groups::GroupTransferedEvent
           store.subscribe ::Vulnerabilities::ProcessArchivedEventsWorker, to: ::Projects::ProjectArchivedEvent
           store.subscribe ::Vulnerabilities::ProcessBulkDismissedEventsWorker, to: ::Vulnerabilities::BulkDismissedEvent
+          store.subscribe ::Vulnerabilities::ProcessBulkRedetectedEventsWorker,
+            to: ::Vulnerabilities::BulkRedetectedEvent,
+            if: ->(_) { ::Feature.enabled?(:vulnerability_redetected_note, :instance) }
 
           store.subscribe ::Vulnerabilities::NamespaceHistoricalStatistics::ProcessTransferEventsWorker,
             to: ::Groups::GroupTransferedEvent

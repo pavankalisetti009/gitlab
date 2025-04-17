@@ -3,13 +3,14 @@
 module Security
   module Ingestion
     class AbstractTask
-      def self.execute(pipeline, finding_maps)
-        new(pipeline, finding_maps).execute
+      def self.execute(...)
+        new(...).execute
       end
 
-      def initialize(pipeline, finding_maps)
+      def initialize(pipeline, finding_maps, context = nil)
         @pipeline = pipeline
         @finding_maps = finding_maps
+        @context = context
       end
 
       def execute
@@ -18,7 +19,7 @@ module Security
 
       private
 
-      attr_reader :pipeline, :finding_maps
+      attr_reader :pipeline, :finding_maps, :context
     end
   end
 end
