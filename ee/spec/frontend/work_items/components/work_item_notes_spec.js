@@ -72,6 +72,7 @@ describe('WorkItemNotes component', () => {
       },
       propsData: {
         fullPath: 'test-path',
+        uploadsPath: '/group/project/uploads',
         workItemId,
         workItemIid,
         workItemType: 'task',
