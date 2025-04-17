@@ -455,5 +455,85 @@ RSpec.describe Geo::ContainerRepositorySync, :geo, feature_category: :geo_replic
         expect(client2.object_id).not_to be(client.object_id)
       end
     end
+
+    context 'when tag sync fails' do
+      let(:tag) { { name: 'latest', digest: 'sha256:123' } }
+
+      before do
+        client = subject.send(:client)
+        allow(client).to receive(:connected?).and_return(true)
+        allow(subject).to receive(:tags_to_sync).and_return([tag])
+        allow(subject).to receive(:tags_to_remove).and_return([])
+        allow(subject).to receive(:sync_tag).with(tag).and_raise(StandardError.new("Sync failed"))
+      end
+
+      it 'logs the error and continues execution', :aggregate_failures do
+        expect(Gitlab::ErrorTracking).to receive(:track_and_raise_exception).with(a_kind_of(StandardError), extra: { tag_name: tag[:name], message: "Error while syncing tag" })
+
+        expect(subject.execute).to be true
+      end
+
+      it 'logs multiple errors if multiple tags fail', :aggregate_failures do
+        multiple_tags = [
+          { name: 'latest', digest: 'sha256:123' },
+          { name: 'v1.0', digest: 'sha256:456' }
+        ]
+
+        allow(subject).to receive(:tags_to_sync).and_return(multiple_tags)
+        allow(subject).to receive(:sync_tag).and_raise(StandardError.new("Sync failed"))
+
+        multiple_tags.each do |tag|
+          expect(Gitlab::ErrorTracking).to receive(:track_and_raise_exception).with(a_kind_of(StandardError), extra: { tag_name: tag[:name], message: "Error while syncing tag" })
+        end
+
+        expect { subject.execute }.not_to raise_error
+      end
+    end
+
+    context 'when tag removal fails' do
+      let(:tag) { { name: 'latest', digest: 'sha256:123' } }
+
+      before do
+        client = subject.send(:client)
+        allow(client).to receive(:connected?).and_return(true)
+        allow(subject).to receive(:tags_to_sync).and_return([])
+        allow(subject).to receive(:tags_to_remove).and_return([tag])
+
+        # Simulate the error during tag removal
+        allow(container_repository).to receive(:delete_tag)
+          .with(tag[:digest])
+          .and_raise(StandardError.new("Failed to remove tag"))
+      end
+
+      it 'logs the error message', :aggregate_failures do
+        expect(Gitlab::ErrorTracking).to receive(:track_and_raise_exception)
+          .with(a_kind_of(StandardError), extra: { tag_name: tag[:name], message: "Error while removing tag" })
+
+        expect(subject.execute).to be true
+      end
+
+      it 'continues execution after logging the error' do
+        allow(Gitlab::ErrorTracking).to receive(:track_and_raise_exception).once
+
+        expect { subject.execute }.not_to raise_error
+      end
+
+      it 'processes all tags in tags_to_remove even if one fails' do
+        another_tag = { name: 'v1.0', digest: 'sha256:456' }
+        allow(subject).to receive(:tags_to_remove).and_return([tag, another_tag])
+
+        allow(container_repository).to receive(:delete_tag)
+          .with(tag[:digest])
+          .and_raise(StandardError.new("Failed to remove tag"))
+        allow(container_repository).to receive(:delete_tag)
+          .with(another_tag[:digest])
+          .and_return(true)
+
+        expect(container_repository).to receive(:delete_tag).twice
+        expect(Gitlab::ErrorTracking).to receive(:track_and_raise_exception).once
+
+        subject.execute
+      end
+    end
   end
 end
