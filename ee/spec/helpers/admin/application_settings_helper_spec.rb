@@ -172,6 +172,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
     let(:amazon_q_available) { false }
     let(:duo_workflow_enabled) { false }
     let(:duo_workflow_service_account) { nil }
+    let(:is_saas) { false }
 
     before do
       allow(License).to receive(:current).and_return(license)
@@ -185,6 +186,9 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       allow(helper).to receive_messages(
         admin_gitlab_duo_seat_utilization_index_path: '/admin/gitlab_duo/seat_utilization',
         admin_gitlab_duo_configuration_index_path: '/admin/gitlab_duo/configuration',
+        admin_gitlab_duo_path: '/admin/gitlab_duo',
+        admin_ai_duo_workflow_settings_path: '/admin/ai/duo_workflow/settings',
+        disconnect_admin_ai_duo_workflow_settings_path: '/admin/ai/duo_workflow/settings/disconnect',
         duo_pro_bulk_user_assignment_available?: true,
         duo_availability: 'default_off',
         instance_level_ai_beta_features_enabled: true,
@@ -197,6 +201,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         :disabled_direct_code_suggestions).and_return(false)
       allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
       allow(::Ai::DuoWorkflow).to receive(:available?).and_return(duo_workflow_enabled)
+      allow(::Gitlab).to receive(:com?).and_return(is_saas)
     end
 
     it 'returns a hash with all required keys and correct values' do
@@ -215,9 +220,21 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         are_experiment_settings_allowed: 'true',
         duo_workflow_enabled: 'false',
         duo_workflow_service_account: nil,
+        is_saas: 'false',
+        duo_workflow_settings_path: '/admin/ai/duo_workflow/settings',
+        duo_workflow_disable_path: '/admin/ai/duo_workflow/settings/disconnect',
+        redirect_path: '/admin/gitlab_duo',
         duo_add_on_start_date: nil,
         duo_add_on_end_date: nil
       })
+    end
+
+    context 'when the instance is SaaS' do
+      let(:is_saas) { true }
+
+      it 'sets is_saas to true' do
+        expect(helper.admin_duo_home_app_data[:is_saas]).to eq('true')
+      end
     end
 
     context 'when the instance has a Duo purchase' do
