@@ -1,6 +1,10 @@
 <script>
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import * as DoraApi from 'ee/api/dora_api';
+import {
+  CHANGE_FAILURE_RATE,
+  getProjectDoraMetrics,
+  getGroupDoraMetrics,
+} from 'ee/dora/api/dora_api';
 import {
   DORA_METRICS_QUERY_TYPE,
   CHANGE_FAILURE_RATE_SECONDARY_SERIES_NAME,
@@ -32,7 +36,7 @@ import {
   extractOverviewMetricsQueryParameters,
 } from './util';
 
-const VISIBLE_METRICS = [DoraApi.CHANGE_FAILURE_RATE];
+const VISIBLE_METRICS = [CHANGE_FAILURE_RATE];
 
 // The metrics API endpoint returns a few different types of metrics, we only want change failure rate here
 const extractFailureRateMetrics = (data) =>
@@ -114,15 +118,13 @@ export default {
         throw new Error('Either projectPath or groupPath must be provided');
       }
 
-      const getDoraMetrics = this.projectPath
-        ? DoraApi.getProjectDoraMetrics
-        : DoraApi.getGroupDoraMetrics;
+      const getDoraMetrics = this.projectPath ? getProjectDoraMetrics : getGroupDoraMetrics;
 
       const results = await Promise.allSettled(
         allChartDefinitions.map(async ({ id, requestParams, startDate, endDate }) => {
           const { data: apiData } = await getDoraMetrics(
             requestPath,
-            DoraApi.CHANGE_FAILURE_RATE,
+            CHANGE_FAILURE_RATE,
             requestParams,
           );
 

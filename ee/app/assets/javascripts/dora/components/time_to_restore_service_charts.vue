@@ -1,6 +1,10 @@
 <script>
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import * as DoraApi from 'ee/api/dora_api';
+import {
+  TIME_TO_RESTORE_SERVICE,
+  getProjectDoraMetrics,
+  getGroupDoraMetrics,
+} from 'ee/dora/api/dora_api';
 import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import { createAlert } from '~/alert';
 import { s__, sprintf } from '~/locale';
@@ -31,7 +35,7 @@ import {
   extractOverviewMetricsQueryParameters,
 } from './util';
 
-const VISIBLE_METRICS = [DoraApi.TIME_TO_RESTORE_SERVICE];
+const VISIBLE_METRICS = [TIME_TO_RESTORE_SERVICE];
 
 // The metrics API endpoint returns a few different types of metrics, we only want time to restore here
 const extractTimeToRestoreServiceMetrics = (data) =>
@@ -117,15 +121,13 @@ export default {
         throw new Error('Either projectPath or groupPath must be provided');
       }
 
-      const getDoraMetrics = this.projectPath
-        ? DoraApi.getProjectDoraMetrics
-        : DoraApi.getGroupDoraMetrics;
+      const getDoraMetrics = this.projectPath ? getProjectDoraMetrics : getGroupDoraMetrics;
 
       const results = await Promise.allSettled(
         allChartDefinitions.map(async ({ id, requestParams, startDate, endDate }) => {
           const { data: apiData } = await getDoraMetrics(
             requestPath,
-            DoraApi.TIME_TO_RESTORE_SERVICE,
+            TIME_TO_RESTORE_SERVICE,
             requestParams,
           );
 

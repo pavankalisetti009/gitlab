@@ -1,5 +1,9 @@
 <script>
-import * as DoraApi from 'ee/api/dora_api';
+import {
+  LEAD_TIME_FOR_CHANGES,
+  getProjectDoraMetrics,
+  getGroupDoraMetrics,
+} from 'ee/dora/api/dora_api';
 import {
   LEAD_TIME_NO_DATA_MESSAGE,
   LEAD_TIME_FOR_CHANGES_SECONDARY_SERIES_NAME,
@@ -75,16 +79,8 @@ export default {
     const results = await Promise.allSettled(
       allChartDefinitions.map(async ({ id, requestParams, startDate, endDate }) => {
         const { data: apiData } = this.projectPath
-          ? await DoraApi.getProjectDoraMetrics(
-              this.projectPath,
-              DoraApi.LEAD_TIME_FOR_CHANGES,
-              requestParams,
-            )
-          : await DoraApi.getGroupDoraMetrics(
-              this.groupPath,
-              DoraApi.LEAD_TIME_FOR_CHANGES,
-              requestParams,
-            );
+          ? await getProjectDoraMetrics(this.projectPath, LEAD_TIME_FOR_CHANGES, requestParams)
+          : await getGroupDoraMetrics(this.groupPath, LEAD_TIME_FOR_CHANGES, requestParams);
 
         const seriesData = apiDataToChartSeries(apiData, startDate, endDate, CHART_TITLE, null);
         const nullSeries = buildNullSeries({
