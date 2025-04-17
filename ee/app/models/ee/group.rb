@@ -366,7 +366,6 @@ module EE
         super()
           .preload(
             :ldap_group_links,
-            :deletion_schedule,
             :saml_group_links,
             :file_template_project,
             group_wiki_repository: :shard)
