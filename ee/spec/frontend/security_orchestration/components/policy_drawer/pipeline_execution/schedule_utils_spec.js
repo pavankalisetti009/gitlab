@@ -109,13 +109,12 @@ describe('getTimeWindowInfo', () => {
 });
 
 describe('getTimezoneInfo', () => {
-  it.each([undefined, null, ''])('returns empty string when timezone is $input', (input) => {
-    expect(getTimezoneInfo(input)).toBe('');
-  });
-
   it.each`
     input                 | output
-    ${'UTC'}              | ${'UTC'}
+    ${undefined}          | ${'Etc/UTC'}
+    ${null}               | ${'Etc/UTC'}
+    ${''}                 | ${'Etc/UTC'}
+    ${'Etc/UTC'}          | ${'Etc/UTC'}
     ${'America/New_York'} | ${'America/New_York'}
     ${'Europe/London'}    | ${'Europe/London'}
     ${'Asia/Tokyo'}       | ${'Asia/Tokyo'}

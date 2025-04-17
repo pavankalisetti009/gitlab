@@ -8,6 +8,7 @@ import BranchSelection from 'ee/security_orchestration/components/policy_editor/
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
 import { getHostname } from '../../utils';
 import { PROJECT_DEFAULT_BRANCH } from '../../constants';
+import { DEFAULT_TIMEZONE } from './constants';
 import {
   CADENCE_OPTIONS,
   DEFAULT_TIME_PER_UNIT,
@@ -115,6 +116,9 @@ export default {
     },
     showWeekdayDropdown() {
       return isCadenceWeekly(this.cadence);
+    },
+    timezone() {
+      return this.schedule.timezone || DEFAULT_TIMEZONE;
     },
     timezoneTooltipText() {
       return sprintf(this.$options.i18n.timezoneLabel, { hostname: getHostname() });
@@ -274,7 +278,7 @@ export default {
             :header-text="$options.i18n.timezonePlaceholder"
             :timezone-data="timezones"
             :title="timezoneTooltipText"
-            :value="schedule.timezone"
+            :value="timezone"
             @input="updatePolicy('timezone', $event.identifier)"
           />
         </template>

@@ -62,7 +62,6 @@ export const DEFAULT_SCHEDULE = {
     value: HOUR_IN_SECONDS,
     distribution: 'random',
   },
-  timezone: 'America/New_York',
 };
 
 export const CONDITIONS_LABEL = s__('ScanExecutionPolicy|Conditions');
