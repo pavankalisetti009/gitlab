@@ -12,6 +12,73 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
     it { is_expected.to validate_presence_of(:content) }
     it { is_expected.to validate_presence_of(:role) }
     it { is_expected.to validate_presence_of(:thread_id) }
+
+    describe 'extras json validation' do
+      context 'when extras match the JSON schema' do
+        let(:valid_json) do
+          {
+            additional_context: [
+              {
+                id: "123",
+                category: "category",
+                content: "content",
+                metadata: { key: "value" }
+              }
+            ],
+            agent_scratchpad: [
+              {
+                action: {
+                  thought: "thought",
+                  tool: "tool",
+                  tool_input: "tool_input"
+                },
+                observation: "observation"
+              }
+            ],
+            sources: [
+              {
+                source_url: "https://example.com",
+                title: "Fork a project",
+                source_type: "doc",
+                md5sum: "md5sum",
+                source: "project_forks.md"
+              }
+            ],
+            has_feedback: false
+          }.to_json
+        end
+
+        it { is_expected.to allow_value(valid_json).for(:extras) }
+      end
+    end
+
+    context 'when record already exists' do
+      let(:invalid_json) { { invalid_key: "value" }.to_json }
+      let(:updated_invalid_json) { { another_invalid_key: "value" }.to_json }
+      let(:message) { create(:ai_conversation_message) }
+
+      before do
+        message.extras = invalid_json
+        message.save!(validate: false)
+      end
+
+      it 'skips validation if extras is not changed' do
+        expect(message.update(content: 'New content')).to be true
+      end
+
+      it 'accepts valid JSON when extras is changed' do
+        expect(message.update(extras: updated_invalid_json)).to be true
+      end
+    end
+
+    context 'when there are fields undefined in the JSON schema' do
+      let(:invalid_json) { { invalid_key: "value" }.to_json }
+      let(:thread) { create(:ai_conversation_thread) }
+
+      subject { build(:ai_conversation_message, thread: thread, content: 'test', role: 'user', extras: invalid_json) }
+
+      it { is_expected.to be_valid }
+    end
   end
 
   describe 'enums' do

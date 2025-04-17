@@ -9,6 +9,8 @@ module Ai
       belongs_to :thread, class_name: 'Ai::Conversation::Thread', inverse_of: :messages
 
       validates :content, :role, :thread_id, presence: true
+      validates :extras, json_schema: { filename: "ai_conversation_message_extras", parse_json: true },
+        if: -> { new_record? || extras_changed? }
 
       scope :for_thread, ->(thread) { where(thread: thread) }
       scope :for_user, ->(user) { joins(:thread).where(ai_conversation_threads: { user_id: user.id }) }
