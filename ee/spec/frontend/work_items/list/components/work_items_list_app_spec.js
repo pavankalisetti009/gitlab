@@ -10,9 +10,11 @@ import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/pages/work_items_list_app.vue';
 import { CREATED_DESC } from '~/issues/list/constants';
 import {
+  BASE_ALLOWED_CREATE_TYPES,
   WORK_ITEM_TYPE_ENUM_EPIC,
   WORK_ITEM_TYPE_ENUM_ISSUE,
-  BASE_ALLOWED_CREATE_TYPES,
+  WORK_ITEM_TYPE_NAME_EPIC,
+  WORK_ITEM_TYPE_NAME_ISSUE,
 } from '~/work_items/constants';
 import getWorkItemsQuery from '~/work_items/graphql/list/get_work_items.query.graphql';
 import workItemBulkUpdateMutation from '~/work_items/graphql/work_item_bulk_update.mutation.graphql';
@@ -64,7 +66,7 @@ describeSkipVue3(skipReason, () => {
     showNewIssueLink = true,
     canBulkEditEpics = true,
     isGroup = true,
-    workItemType = WORK_ITEM_TYPE_ENUM_EPIC,
+    workItemType = WORK_ITEM_TYPE_NAME_EPIC,
     props = {},
   } = {}) => {
     wrapper = shallowMountExtended(EEWorkItemsListApp, {
@@ -95,7 +97,7 @@ describeSkipVue3(skipReason, () => {
     hasEpicsFeature = true,
     showNewIssueLink = true,
     canBulkEditEpics = true,
-    workItemType = WORK_ITEM_TYPE_ENUM_EPIC,
+    workItemType = WORK_ITEM_TYPE_NAME_EPIC,
   } = {}) => {
     wrapper = mountExtended(EEWorkItemsListApp, {
       apolloProvider: createMockApollo([
@@ -157,7 +159,7 @@ describeSkipVue3(skipReason, () => {
         hasEpicsFeature: true,
         showNewIssueLink: true,
         isGroup: false,
-        workItemType: WORK_ITEM_TYPE_ENUM_ISSUE,
+        workItemType: WORK_ITEM_TYPE_NAME_ISSUE,
       });
 
       expect(findCreateWorkItemModal().exists()).toBe(true);
@@ -174,7 +176,7 @@ describeSkipVue3(skipReason, () => {
         hasEpicsFeature: true,
         showNewIssueLink: true,
         isGroup: true,
-        workItemType: WORK_ITEM_TYPE_ENUM_EPIC,
+        workItemType: WORK_ITEM_TYPE_NAME_EPIC,
       });
 
       expect(findCreateWorkItemModal().exists()).toBe(true);

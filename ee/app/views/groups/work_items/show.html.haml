@@ -9,4 +9,4 @@
 - @gfm_form = true
 - @noteable_type = 'WorkItem'
 
-#js-work-items{ data: work_items_data(@group, current_user).merge(epics_list_path: group_epics_path(@group)).merge(work_item_type: 'EPIC') }
+#js-work-items{ data: work_items_data(@group, current_user).merge(epics_list_path: group_epics_path(@group)).merge(work_item_type: ::WorkItems::Type::TYPE_NAMES[:epic]) }

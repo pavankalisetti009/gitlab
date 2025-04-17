@@ -1,3 +1,5 @@
+import { WORK_ITEM_TYPE_NAME_EPIC } from '~/work_items/constants';
+
 const initWorkItemEpicPage = async () => {
   const [
     { WORKSPACE_GROUP },
@@ -13,7 +15,7 @@ const initWorkItemEpicPage = async () => {
     import('~/locale'),
   ]);
 
-  initWorkItemsRoot({ workItemType: 'epics', workspaceType: WORKSPACE_GROUP });
+  initWorkItemsRoot({ workItemType: WORK_ITEM_TYPE_NAME_EPIC, workspaceType: WORKSPACE_GROUP });
   initWorkItemsFeedback({
     feedbackIssue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/494462',
     feedbackIssueText: __('Provide feedback on the experience'),
