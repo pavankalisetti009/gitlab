@@ -187,32 +187,6 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       end
     end
 
-    context 'marked_for_deletion_on attribute' do
-      context 'when feature is available' do
-        before do
-          stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-        end
-
-        it 'is exposed' do
-          get api("/groups/#{group.id}", user)
-
-          expect(json_response).to have_key 'marked_for_deletion_on'
-        end
-      end
-
-      context 'when feature is not available' do
-        before do
-          stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
-        end
-
-        it 'is not exposed' do
-          get api("/groups/#{group.id}", user)
-
-          expect(json_response).not_to have_key 'marked_for_deletion_on'
-        end
-      end
-    end
-
     context 'when using the marked_for_deletion_on filter' do
       let_it_be(:group_with_deletion_on) { create(:group_with_deletion_schedule, name: "group_with_deletion_on", marked_for_deletion_on: Date.parse('2024-01-01'), owners: user) }
       let_it_be(:group_without_deletion) { create(:group, name: "group_without_deletion", owners: user) }
