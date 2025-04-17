@@ -13,7 +13,6 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { mockAuthor, mockLabels } from 'jest/vue_shared/issuable/list/mock_data';
 import {
   STATE_OPEN,
-  WORK_ITEM_TYPE_ENUM_EPIC,
   WORK_ITEM_TYPE_NAME_EPIC,
   WORK_ITEM_TYPE_NAME_ISSUE,
 } from '~/work_items/constants';
@@ -431,10 +430,9 @@ describe('EpicsListRoot', () => {
       },
     });
 
-    expect(findCreateWorkItemModal().exists()).toBe(true);
     expect(findCreateWorkItemModal().props()).toMatchObject({
       isGroup: true,
-      preselectedWorkItemType: WORK_ITEM_TYPE_ENUM_EPIC,
+      preselectedWorkItemType: WORK_ITEM_TYPE_NAME_EPIC,
     });
   });
 

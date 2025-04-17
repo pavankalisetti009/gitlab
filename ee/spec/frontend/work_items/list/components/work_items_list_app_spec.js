@@ -6,7 +6,7 @@ import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_a
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/pages/work_items_list_app.vue';
-import { WORK_ITEM_TYPE_ENUM_EPIC, WORK_ITEM_TYPE_NAME_EPIC } from '~/work_items/constants';
+import { WORK_ITEM_TYPE_NAME_EPIC } from '~/work_items/constants';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 
 const skipReason = new SkipReason({
@@ -81,7 +81,7 @@ describeSkipVue3(skipReason, () => {
       expect(findCreateWorkItemModal().exists()).toBe(true);
       expect(findCreateWorkItemModal().props()).toMatchObject({
         isGroup: true,
-        preselectedWorkItemType: WORK_ITEM_TYPE_ENUM_EPIC,
+        preselectedWorkItemType: WORK_ITEM_TYPE_NAME_EPIC,
       });
     });
 

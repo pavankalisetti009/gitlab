@@ -25,7 +25,6 @@ import {
   CUSTOM_FIELDS_TYPE_MULTI_SELECT,
   CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
   STATE_CLOSED,
-  WORK_ITEM_TYPE_ENUM_EPIC,
   WORK_ITEM_TYPE_NAME_EPIC,
 } from '~/work_items/constants';
 import { STATUS_CLOSED } from '~/issues/constants';
@@ -37,7 +36,7 @@ import EpicsListEmptyState from './epics_list_empty_state.vue';
 import EpicsListBulkEditSidebar from './epics_list_bulk_edit_sidebar.vue';
 
 export default {
-  WORK_ITEM_TYPE_ENUM_EPIC,
+  WORK_ITEM_TYPE_NAME_EPIC,
   issuableListTabs,
   epicsSortOptions,
   defaultPageSize: DEFAULT_PAGE_SIZE,
@@ -353,7 +352,7 @@ export default {
           v-if="canCreateEpic && glFeatures.namespaceLevelWorkItems"
           class="gl-grow"
           is-group
-          :preselected-work-item-type="$options.WORK_ITEM_TYPE_ENUM_EPIC"
+          :preselected-work-item-type="$options.WORK_ITEM_TYPE_NAME_EPIC"
           @workItemCreated="handleWorkItemCreated"
         />
         <gl-button

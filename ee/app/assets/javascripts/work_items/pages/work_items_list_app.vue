@@ -2,17 +2,13 @@
 import emptyStateSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-epic-md.svg';
 import { GlEmptyState } from '@gitlab/ui';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
-import {
-  WORK_ITEM_TYPE_ENUM_EPIC,
-  WORK_ITEM_TYPE_ENUM_ISSUE,
-  WORK_ITEM_TYPE_NAME_EPIC,
-} from '~/work_items/constants';
+import { WORK_ITEM_TYPE_NAME_EPIC, WORK_ITEM_TYPE_NAME_ISSUE } from '~/work_items/constants';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 
 export default {
   emptyStateSvg,
-  WORK_ITEM_TYPE_ENUM_EPIC,
+  WORK_ITEM_TYPE_NAME_EPIC,
   components: {
     CreateWorkItemModal,
     EmptyStateWithAnyIssues,
@@ -39,7 +35,7 @@ export default {
   },
   computed: {
     preselectedWorkItemType() {
-      return this.isEpicsList ? WORK_ITEM_TYPE_ENUM_EPIC : WORK_ITEM_TYPE_ENUM_ISSUE;
+      return this.isEpicsList ? WORK_ITEM_TYPE_NAME_EPIC : WORK_ITEM_TYPE_NAME_ISSUE;
     },
     isEpicsList() {
       return this.workItemType === WORK_ITEM_TYPE_NAME_EPIC;
@@ -91,7 +87,7 @@ export default {
           <create-work-item-modal
             class="gl-grow"
             :is-group="isGroup"
-            :preselected-work-item-type="$options.WORK_ITEM_TYPE_ENUM_EPIC"
+            :preselected-work-item-type="$options.WORK_ITEM_TYPE_NAME_EPIC"
             @workItemCreated="incrementUpdateCount"
           />
         </template>
