@@ -12,13 +12,13 @@ title: Reduce package registry storage
 
 {{< /details >}}
 
-Without cleanup, package registries become large over time. When a large number of packages and
-their assets are added:
+Package registries accumulate packages and their assets over time. Without regular cleanup:
 
-- Fetching the list of packages becomes slower.
-- They take up a large amount of storage space on the server.
+- Package lists take longer to fetch, which impacts CI/CD pipeline performance
+- Servers allocate more storage space to unused or old packages
+- Users might struggle to find relevant packages among numerous outdated package versions
 
-We recommend deleting unnecessary packages and assets. This page offers examples of how to do so.
+You should implement a regular cleanup strategy to reduce package registry bloat and free up storage.
 
 ## Check package registry storage use
 
