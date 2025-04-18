@@ -26,14 +26,12 @@ RSpec.describe 'API-Discovery.gitlab-ci.yml', feature_category: :dynamic_applica
   end
 
   describe 'the created pipeline' do
-    let(:default_branch) { 'master' }
-    let(:pipeline_branch) { default_branch }
+    let_it_be(:default_branch) { 'master' }
+    let_it_be(:feature_branch) { 'patch-1' }
     let_it_be(:project) { create(:project, :custom_repo, files: { 'README.txt' => '' }) }
-
-    let(:user) { project.first_owner }
-    let(:service) { Ci::CreatePipelineService.new(project, user, ref: pipeline_branch) }
+    let_it_be(:user) { project.first_owner }
     let(:pipeline) { service.execute(:push).payload }
-    let(:build_names) { pipeline.builds.pluck(:name) }
+
     let(:ci_pipeline_job) do
       <<~YAML
 
@@ -58,8 +56,11 @@ RSpec.describe 'API-Discovery.gitlab-ci.yml', feature_category: :dynamic_applica
         stub_ci_pipeline_yaml_file(template.content)
       end
 
-      it 'included jobs are hidden' do
-        expect(build_names).to be_empty
+      include_context 'with default branch pipeline setup'
+
+      it 'includes no jobs' do
+        expect(pipeline.builds.pluck(:name)).to be_empty
+        expect(pipeline.errors.full_messages).to match_array(['jobs config should contain at least one visible job'])
       end
     end
 
@@ -69,30 +70,47 @@ RSpec.describe 'API-Discovery.gitlab-ci.yml', feature_category: :dynamic_applica
       end
 
       context 'when project has no license' do
-        it 'includes job to display error' do
-          expect(build_names).to match_array(%w[api_discovery])
-        end
+        include_context 'with default branch pipeline setup'
+
+        # job still runs to display an error
+        include_examples 'has expected jobs', %w[api_discovery]
       end
 
       context 'when project has Ultimate license' do
+        let(:license) { build(:license, plan: License::ULTIMATE_PLAN) }
+
         before do
-          stub_licensed_features(api_discovery: true)
+          allow(License).to receive(:current).and_return(license)
         end
 
-        it 'includes a job' do
-          expect(build_names).to match_array(%w[api_discovery])
+        shared_examples 'common pipeline checks' do
+          include_examples 'has expected jobs', %w[api_discovery]
+          include_examples 'has jobs that can be disabled', 'API_DISCOVERY_DISABLED', %w[true 1], %w[api_discovery]
         end
 
-        context 'when API_DISCOVERY_DISABLED=1' do
-          before do
-            create(:ci_variable, project: project, key: 'API_DISCOVERY_DISABLED', value: '1')
-          end
+        context 'as a branch pipeline on the default branch' do
+          include_context 'with default branch pipeline setup'
 
-          it 'includes no jobs' do
-            expect(build_names).to be_empty
-            expect(pipeline.errors.full_messages).to match_array([
-              sanitize_message(Ci::Pipeline.rules_failure_message)
-            ])
+          include_examples 'common pipeline checks'
+          include_examples 'has jobs that can be disabled',
+            'API_DISCOVERY_DISABLED_FOR_DEFAULT_BRANCH', %w[true 1], %w[api_discovery]
+        end
+
+        context 'as a branch pipeline on a feature branch' do
+          include_context 'with feature branch pipeline setup'
+
+          include_examples 'common pipeline checks'
+        end
+
+        context 'as an MR pipeline' do
+          include_context 'with MR pipeline setup'
+
+          include_examples 'has expected jobs', []
+
+          context 'when AST_ENABLE_MR_PIPELINES=true' do
+            include_context 'with CI variables', { 'AST_ENABLE_MR_PIPELINES' => 'true' }
+
+            include_examples 'common pipeline checks'
           end
         end
       end
