@@ -47,10 +47,6 @@ describe('MavenUpstreamDetailsApp', () => {
       createComponent();
     });
 
-    it('renders the component', () => {
-      expect(wrapper.exists()).toBe(true);
-    });
-
     it('renders the TitleArea component with correct props', () => {
       expect(findTitleArea().props('title')).toBe(defaultProps.upstream.name);
     });
