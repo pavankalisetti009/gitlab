@@ -15,22 +15,29 @@ module Security
       end
 
       def execute
-        ::Gitlab::Database::SecApplicationRecord.transaction do
-          self.class::SEC_DB_TASKS.each { |task| execute_task(task) }
-        end
+        run_tasks_in_sec_db
+        run_tasks_in_main_db
 
-        context.run_sec_after_commit_tasks
+        update_elasticsearch
 
-        ::ApplicationRecord.transaction do
-          self.class::MAIN_DB_TASKS.each { |task| execute_task(task) }
-        end
-
-        finding_maps.map(&:vulnerability_id)
+        vulnerability_ids
       end
 
       private
 
       attr_reader :pipeline, :finding_maps
+
+      def run_tasks_in_sec_db
+        ::Gitlab::Database::SecApplicationRecord.transaction do
+          self.class::SEC_DB_TASKS.each { |task| execute_task(task) }
+        end
+      end
+
+      def run_tasks_in_main_db
+        ::ApplicationRecord.transaction do
+          self.class::MAIN_DB_TASKS.each { |task| execute_task(task) }
+        end
+      end
 
       def execute_task(task)
         Tasks.const_get(task, false).execute(pipeline, finding_maps, context)
@@ -40,6 +47,26 @@ module Security
         Context.new
       end
       strong_memoize_attr :context
+
+      # TODO: With FF removal tracked in https://gitlab.com/gitlab-org/gitlab/-/issues/536299
+      # 1. Remove preloading logic
+      def update_elasticsearch
+        return unless ::Search::Elastic::VulnerabilityIndexingHelper.vulnerability_indexing_allowed?
+
+        # rubocop:disable CodeReuse/ActiveRecord -- short lived code will be removed with FF.
+        vulnerabilities = Vulnerability.includes(:project, :group).where(id: vulnerability_ids)
+        # rubocop:enable CodeReuse/ActiveRecord
+
+        eligible_vulnerabilities = vulnerabilities.select(&:maintaining_elasticsearch?)
+
+        eligible_vulnerabilities.each do |vulnerability|
+          ::Elastic::ProcessBookkeepingService.track!(vulnerability)
+        end
+      end
+
+      def vulnerability_ids
+        @vulnerability_ids ||= finding_maps.map(&:vulnerability_id)
+      end
     end
   end
 end
