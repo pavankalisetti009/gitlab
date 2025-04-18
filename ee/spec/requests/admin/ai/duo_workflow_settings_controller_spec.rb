@@ -2,9 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :enable_admin_mode, feature_category: :ai_abstraction_layer do
-  let_it_be(:admin) { create(:admin) }
-  let_it_be(:default_organization) { create(:organization, :default) }
+RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :with_current_organization, :enable_admin_mode, feature_category: :ai_abstraction_layer do
+  let_it_be(:admin) { create(:admin, organizations: [current_organization]) }
 
   let(:actual_view_model) do
     Gitlab::Json.parse(
@@ -14,7 +13,6 @@ RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :enable_admin_mode, fea
 
   before do
     allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
-    allow(::Current).to receive(:organization).and_return(default_organization)
     sign_in(admin)
   end
 
@@ -58,7 +56,7 @@ RSpec.describe Admin::Ai::DuoWorkflowSettingsController, :enable_admin_mode, fea
         before do
           allow(::Ai::DuoWorkflow).to receive(:connected?).and_return(false)
           allow(::Ai::DuoWorkflows::OnboardingService).to receive(:new)
-            .with(current_user: admin, organization: default_organization)
+            .with(current_user: admin, organization: current_organization)
             .and_return(onboarding_service)
         end
 

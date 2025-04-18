@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::QAi::Client, feature_category: :ai_agents do
-  let_it_be(:default_organization) { create(:organization, :default) }
+  let_it_be(:organization) { create(:organization) }
   let_it_be_with_reload(:service_account) { create(:user, :service_account, composite_identity_enforced: true) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:user) { create(:user, organizations: [organization]) }
   let_it_be(:oauth_app) { create(:doorkeeper_application) }
 
   let(:service_data) { instance_double(CloudConnector::SelfManaged::AvailableServiceData) }
