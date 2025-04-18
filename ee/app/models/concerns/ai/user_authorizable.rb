@@ -11,6 +11,9 @@ module Ai
     GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_KEY = 'group_ids_with_ai_chat_enabled'
     GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_PERIOD = 1.hour
 
+    BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY = 'billable_duo_pro_root_group_ids'
+    BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_PERIOD = 10.minutes
+
     DUO_PRO_ADD_ON_CACHE_KEY = 'user-%{user_id}-code-suggestions-add-on-cache'
     # refers to add-ons listed in GitlabSubscriptions::AddOn::DUO_ADD_ONS
     DUO_ADD_ONS_CACHE_KEY = 'user-%{user_id}-duo-add-ons-cache'
@@ -57,15 +60,21 @@ module Ai
       def billable_gitlab_duo_pro_root_group_ids
         return unless gitlab_com_subscription?
 
-        group_ids_from_project_authorizaton = Project.where(id: project_authorizations.non_guests.select(:project_id))
-          .pluck(:namespace_id)
-        group_ids_from_memberships = GroupMember.with_user(self).active.non_guests.pluck(:source_id)
-        group_ids_from_linked_groups = GroupGroupLink.non_guests.where(shared_with_group_id: group_ids_from_memberships)
-          .pluck(:shared_group_id)
+        Rails.cache.fetch(
+          ['users', id, BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY],
+          expires_in: BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_PERIOD
+        ) do
+          group_ids_from_project_authorizaton = Project.where(id: project_authorizations.non_guests.select(:project_id))
+            .pluck(:namespace_id)
+          group_ids_from_memberships = GroupMember.with_user(self).active.non_guests.pluck(:source_id)
+          group_ids_from_linked_groups = GroupGroupLink.non_guests
+          .where(shared_with_group_id: group_ids_from_memberships)
+            .pluck(:shared_group_id)
 
-        Group.where(
-          id: group_ids_from_project_authorizaton | group_ids_from_memberships | group_ids_from_linked_groups
-        ).pluck(Arel.sql('traversal_ids[1]')).uniq
+          Group.where(
+            id: group_ids_from_project_authorizaton | group_ids_from_memberships | group_ids_from_linked_groups
+          ).pluck(Arel.sql('traversal_ids[1]')).uniq
+        end
       end
       # rubocop: enable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's groups
 
@@ -163,8 +172,14 @@ module Ai
         cache_keys_ai_chat_group_ids = Array.wrap(ids).map do |id|
           ["users", id, GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_KEY]
         end
+        cache_keys_billable_duo_pro_group_ids = Array.wrap(ids).map do |id|
+          ["users", id, BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY]
+        end
 
-        cache_keys = cache_keys_ai_features + cache_keys_ai_chat_group_ids + cache_keys_ga_ai_features
+        cache_keys = cache_keys_ai_features \
+          + cache_keys_ai_chat_group_ids \
+          + cache_keys_ga_ai_features \
+          + cache_keys_billable_duo_pro_group_ids
         ::Gitlab::Instrumentation::RedisClusterValidator.allow_cross_slot_commands do
           Rails.cache.delete_multi(cache_keys)
         end
