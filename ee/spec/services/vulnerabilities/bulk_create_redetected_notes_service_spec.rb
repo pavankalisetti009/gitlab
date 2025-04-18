@@ -5,14 +5,14 @@ require 'spec_helper'
 RSpec.describe Vulnerabilities::BulkCreateRedetectedNotesService, feature_category: :vulnerability_management do
   let_it_be(:project) { create(:project) }
   let_it_be(:pipeline) { create(:ci_pipeline, project: project, user: create(:user)) }
-  let_it_be(:time) { Time.current }
-  let_it_be(:timestamp) { time.iso8601 }
+  let(:time) { Time.current }
+  let(:timestamp) { time.iso8601 }
 
   let_it_be(:vulnerability) do
     create(:vulnerability, project: project)
   end
 
-  let_it_be(:vulnerabilities_data) do
+  let(:vulnerabilities_data) do
     [{
       vulnerability_id: vulnerability.id,
       pipeline_id: pipeline.id,
