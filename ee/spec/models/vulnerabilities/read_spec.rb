@@ -968,6 +968,107 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
     it { is_expected.to eq('("vulnerability_reads"."traversal_ids", "vulnerability_reads"."vulnerability_id")') }
   end
 
+  describe 'Elastic::ApplicationVersionedSearch' do
+    let(:vulnerability_read) { create(:vulnerability_read) }
+
+    before do
+      stub_ee_application_setting(elasticsearch_indexing: true)
+      allow(Elastic::ProcessBookkeepingService).to receive(:track!)
+    end
+
+    shared_examples 'does not use elasticsearch' do
+      describe '#maintaining_elasticsearch?' do
+        it 'returns false' do
+          expect(vulnerability_read.maintaining_elasticsearch?).to be(false)
+        end
+      end
+    end
+
+    shared_examples 'uses elasticsearch' do
+      describe '#maintaining_elasticsearch?' do
+        it 'returns true' do
+          expect(vulnerability_read.maintaining_elasticsearch?).to be(true)
+        end
+      end
+
+      context 'on create' do
+        it 'tracks vulnerability read creation in elasticsearch' do
+          expect(Elastic::ProcessBookkeepingService)
+            .to have_received(:track!)
+            .with(vulnerability_read)
+            .once
+
+          vulnerability_read
+        end
+      end
+
+      context 'on delete' do
+        it 'tracks vulnerability read deletion in elasticsearch' do
+          expect(Elastic::ProcessBookkeepingService)
+            .to have_received(:track!)
+            .with(vulnerability_read)
+            .once
+
+          vulnerability_read.destroy!
+        end
+      end
+
+      context 'on update' do
+        context 'when an elastic field is updated' do
+          it 'tracks vulnerability read update in elasticsearch' do
+            expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(vulnerability_read).once
+
+            vulnerability_read.update!(resolved_on_default_branch: true)
+          end
+        end
+
+        context 'when a non-elastic field is updated' do
+          it 'does not call track' do
+            expect(Elastic::ProcessBookkeepingService).not_to receive(:track!).with(vulnerability_read)
+
+            vulnerability_read.update!(owasp_top_10: 'A1:2021-Broken Access Control')
+          end
+        end
+      end
+    end
+
+    it 'includes Elastic::ApplicationVersionedSearch' do
+      expect(described_class).to include_module(Elastic::ApplicationVersionedSearch)
+    end
+
+    context 'when vulnerability indexing is allowed' do
+      before do
+        allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(true)
+      end
+
+      it_behaves_like 'uses elasticsearch'
+
+      context 'when vulnerability_es_ingestion feature flag is disabled' do
+        before do
+          stub_feature_flags(vulnerability_es_ingestion: false)
+        end
+
+        it_behaves_like 'does not use elasticsearch'
+      end
+    end
+
+    context 'when vulnerability indexing is disallowed' do
+      before do
+        allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(false)
+      end
+
+      it_behaves_like 'does not use elasticsearch'
+    end
+
+    context 'when elasticsearch indexing is disabled' do
+      before do
+        stub_ee_application_setting(elasticsearch_indexing: false)
+      end
+
+      it_behaves_like 'does not use elasticsearch'
+    end
+  end
+
   describe '#es_parent' do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }

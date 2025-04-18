@@ -2,12 +2,15 @@
 
 module Vulnerabilities
   class Read < Gitlab::Database::SecApplicationRecord
+    extend ::Gitlab::Utils::Override
+
     include VulnerabilityScopes
     include EachBatch
     include UnnestedInFilters::Dsl
     include FromUnion
     include SafelyChangeColumnDefault
     include ::Gitlab::SQL::Pattern
+    include ::Elastic::ApplicationVersionedSearch
 
     ignore_column :namespace_id, remove_with: '17.7', remove_after: '2024-11-21'
 
@@ -15,6 +18,7 @@ module Vulnerabilities
 
     SEVERITY_COUNT_LIMIT = 1001
     OWASP_TOP_10_DEFAULT = -1
+    ELASTICSEARCH_TRACKED_FIELDS = %w[id vulnerability_id project_id scanner_id report_type severity state has_issues resolved_on_default_branch uuid location_image casted_cluster_agent_id dismissal_reason has_merge_request has_remediations traversal_ids archived has_vulnerability_resolution auto_resolved identifier_names].freeze
 
     self.table_name = "vulnerability_reads"
     self.primary_key = :vulnerability_id
@@ -265,7 +269,25 @@ module Vulnerabilities
       ::Search::Elastic::References::Vulnerability.serialize(self)
     end
 
+    # NOTE:
+    # 1. For On-premise, post MVC. We may have to honour the setting of skipping indexing for selected projects. Tracked in https://gitlab.com/gitlab-org/gitlab/-/issues/525484
+    override :use_elasticsearch?
+    def use_elasticsearch?
+      ::Search::Elastic::VulnerabilityIndexingHelper.vulnerability_indexing_allowed? && (::Feature.enabled?(:vulnerability_es_ingestion, vulnerability.group, type: :gitlab_com_derisk) ||
+        ::Feature.enabled?(:vulnerability_es_ingestion, vulnerability.project, type: :gitlab_com_derisk))
+    end
+
+    override :maintain_elasticsearch_update
+    def maintain_elasticsearch_update(updated_attributes: previous_changes.keys)
+      super if update_elasticsearch?
+    end
+
     private
+
+    def update_elasticsearch?
+      changed_fields = previous_changes.keys
+      changed_fields && (changed_fields & ELASTICSEARCH_TRACKED_FIELDS).any?
+    end
 
     def database_serialized_traversal_ids
       self.class.attribute_types['traversal_ids']
