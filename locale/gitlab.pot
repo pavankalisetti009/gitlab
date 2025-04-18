@@ -18783,9 +18783,6 @@ msgstr ""
 msgid "CredentialsInventory|Expired"
 msgstr ""
 
-msgid "CredentialsInventory|GPG Keys"
-msgstr ""
-
 msgid "CredentialsInventory|GPG keys"
 msgstr ""
 
@@ -27040,10 +27037,10 @@ msgstr ""
 msgid "GPG Key ID:"
 msgstr ""
 
-msgid "GPG Keys"
+msgid "GPG key mismatch"
 msgstr ""
 
-msgid "GPG key mismatch"
+msgid "GPG keys"
 msgstr ""
 
 msgid "GPG keys allow you to verify signed commits."
