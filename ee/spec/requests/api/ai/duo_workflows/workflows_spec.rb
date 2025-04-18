@@ -12,6 +12,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
   let_it_be(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
   let_it_be(:ai_workflows_oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
   let(:agent_privileges) { [::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES] }
+  let(:pre_approved_agent_privileges) { [::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES] }
   let(:workflow_definition) { 'software_development' }
   let(:allow_agent_to_request_user) { false }
 
@@ -25,6 +26,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       {
         project_id: project.id,
         agent_privileges: agent_privileges,
+        pre_approved_agent_privileges: pre_approved_agent_privileges,
         workflow_definition: workflow_definition,
         allow_agent_to_request_user: allow_agent_to_request_user
       }
@@ -48,6 +50,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         created_workflow = Ai::DuoWorkflows::Workflow.last
 
         expect(created_workflow.agent_privileges).to eq(agent_privileges)
+        expect(created_workflow.pre_approved_agent_privileges).to eq(pre_approved_agent_privileges)
         expect(created_workflow.workflow_definition).to eq(workflow_definition)
         expect(created_workflow.allow_agent_to_request_user).to eq(allow_agent_to_request_user)
       end
@@ -63,6 +66,55 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           expect(created_workflow.agent_privileges).to match_array(
             ::Ai::DuoWorkflows::Workflow::AgentPrivileges::DEFAULT_PRIVILEGES
           )
+        end
+      end
+
+      context 'when pre_approved_agent_privileges is not provided' do
+        let(:params) do
+          {
+            project_id: project.id,
+            agent_privileges: ::Ai::DuoWorkflows::Workflow::AgentPrivileges::DEFAULT_PRIVILEGES
+          }
+        end
+
+        it 'creates a workflow with the default pre_approved_agent_privileges' do
+          post api(path, user), params: params
+          expect(response).to have_gitlab_http_status(:created)
+
+          created_workflow = Ai::DuoWorkflows::Workflow.last
+          expect(created_workflow.pre_approved_agent_privileges).to match_array(
+            ::Ai::DuoWorkflows::Workflow::AgentPrivileges::DEFAULT_PRIVILEGES
+          )
+        end
+      end
+
+      context 'when pre_approved_agent_privileges has invalid privilege' do
+        let(:params) do
+          {
+            project_id: project.id,
+            agent_privileges: [::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES],
+            pre_approved_agent_privileges: [999]
+          }
+        end
+
+        it 'returns bad request' do
+          post api(path, user), params: params
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+
+      context 'when pre_approved_agent_privileges contains privilege not in agent_privileges' do
+        let(:params) do
+          {
+            project_id: project.id,
+            agent_privileges: [::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES],
+            pre_approved_agent_privileges: [::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB]
+          }
+        end
+
+        it 'returns bad request' do
+          post api(path, user), params: params
+          expect(response).to have_gitlab_http_status(:bad_request)
         end
       end
 

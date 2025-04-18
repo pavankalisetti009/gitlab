@@ -45,9 +45,12 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
 
     describe '#only_known_agent_priviliges' do
       it 'is valid with a valid privilege' do
-        workflow = described_class.new(agent_privileges: [
-          Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES
-        ])
+        workflow = described_class.new(
+          agent_privileges: [
+            Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES
+          ],
+          pre_approved_agent_privileges: []
+        )
         expect(workflow).to be_valid
       end
 
@@ -57,14 +60,77 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
         expect(workflow.errors[:agent_privileges]).to include("contains an invalid value 999")
       end
     end
+
+    describe '#only_known_pre_approved_agent_priviliges' do
+      let(:agent_privileges) { [] }
+      let(:pre_approved_agent_privileges) { [] }
+
+      subject(:workflow) do
+        described_class.new(
+          agent_privileges: agent_privileges,
+          pre_approved_agent_privileges: pre_approved_agent_privileges
+        )
+      end
+
+      it { is_expected.to be_valid }
+
+      context 'with valid privilege' do
+        let(:agent_privileges) { [Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES] }
+        let(:pre_approved_agent_privileges) { [Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES] }
+
+        it { is_expected.to be_valid }
+      end
+
+      context 'with invalid privilege' do
+        let(:pre_approved_agent_privileges) { [999] }
+
+        it 'is invalid' do
+          is_expected.to be_invalid
+          expect(workflow.errors[:pre_approved_agent_privileges]).to include("contains an invalid value 999")
+        end
+      end
+    end
+
+    describe '#pre_approved_privileges_included_in_agent_privileges' do
+      using RSpec::Parameterized::TableSyntax
+      let(:default_privileges) { Ai::DuoWorkflows::Workflow::AgentPrivileges::DEFAULT_PRIVILEGES }
+      let(:rw_files) { Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES }
+      let(:ro_gitlab) { Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB }
+
+      where(:pre_approved, :agent_privileges, :valid) do
+        nil                               | nil                               | true
+        []                                | []                                | true
+        nil                               | []                                | false
+        []                                | nil                               | true
+        ref(:default_privileges)          | nil                               | true
+        [ref(:ro_gitlab)]                 | [ref(:ro_gitlab)]                 | true
+        [ref(:ro_gitlab)]                 | [ref(:rw_files), ref(:ro_gitlab)] | true
+        [ref(:rw_files), ref(:ro_gitlab)] | [ref(:rw_files)]                  | false
+      end
+
+      with_them do
+        specify do
+          workflow = described_class
+                       .new(
+                         agent_privileges: agent_privileges,
+                         pre_approved_agent_privileges: pre_approved
+                       )
+
+          expect(workflow.valid?).to eq(valid)
+        end
+      end
+    end
   end
 
   describe '#agent_privileges' do
     it 'returns the privileges that are set' do
-      workflow = described_class.new(agent_privileges: [
-        Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
-        Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB
-      ])
+      workflow = described_class.new(
+        agent_privileges: [
+          Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
+          Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB
+        ],
+        pre_approved_agent_privileges: []
+      )
 
       # Validation triggers setting the default
       expect(workflow).to be_valid

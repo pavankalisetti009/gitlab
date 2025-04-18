@@ -18,6 +18,8 @@ module Ai
       validates :goal, length: { maximum: 4096 }
 
       validate :only_known_agent_priviliges
+      validate :only_known_pre_approved_agent_privileges
+      validate :pre_approved_privileges_included_in_agent_privileges, on: :create
 
       scope :for_user_with_id!, ->(user_id, id) { find_by!(user_id: user_id, id: id) }
       scope :for_user, ->(user_id) { where(user_id: user_id) }
@@ -69,6 +71,35 @@ module Ai
           unless AgentPrivileges::ALL_PRIVILEGES.key?(privilege)
             errors.add(:agent_privileges, "contains an invalid value #{privilege}")
           end
+        end
+      end
+
+      private
+
+      def only_known_pre_approved_agent_privileges
+        return if pre_approved_agent_privileges.nil?
+
+        pre_approved_agent_privileges.each do |privilege|
+          next if AgentPrivileges::ALL_PRIVILEGES.key?(privilege)
+
+          errors.add(:pre_approved_agent_privileges, "contains an invalid value #{privilege}")
+        end
+      end
+
+      def pre_approved_privileges_included_in_agent_privileges
+        # both columns will use db default values which are equal
+        return if pre_approved_agent_privileges.nil? && agent_privileges.nil?
+
+        pre_approved_privileges_with_defaults = pre_approved_agent_privileges || AgentPrivileges::DEFAULT_PRIVILEGES
+        agent_privileges_with_defaults = agent_privileges || AgentPrivileges::DEFAULT_PRIVILEGES
+
+        pre_approved_privileges_with_defaults.each do |privilege|
+          next if agent_privileges_with_defaults.include?(privilege)
+
+          errors.add(
+            :pre_approved_agent_privileges,
+            "contains privilege #{privilege} not present in agent_privileges"
+          )
         end
       end
 

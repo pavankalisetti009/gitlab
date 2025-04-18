@@ -9,12 +9,20 @@ module API
           expose :project_id
           expose :agent_privileges
           expose :agent_privileges_names
+          expose :pre_approved_agent_privileges
+          expose :pre_approved_agent_privileges_names
           expose :workflow_definition
           expose :status_name, as: :status
           expose :allow_agent_to_request_user
 
           def agent_privileges_names
             object.agent_privileges.map do |privilege|
+              ::Ai::DuoWorkflows::Workflow::AgentPrivileges::ALL_PRIVILEGES[privilege][:name]
+            end
+          end
+
+          def pre_approved_agent_privileges_names
+            object.pre_approved_agent_privileges.map do |privilege|
               ::Ai::DuoWorkflows::Workflow::AgentPrivileges::ALL_PRIVILEGES[privilege][:name]
             end
           end

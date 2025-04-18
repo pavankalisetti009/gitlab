@@ -8,9 +8,18 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:user) { create(:user, maintainer_of: project) }
-  let_it_be(:workflow) { create(:duo_workflows_workflow, user: user, project: project) }
+
   let_it_be(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
   let_it_be(:ai_workflows_oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
+  let_it_be(:workflow) do
+    create(
+      :duo_workflows_workflow,
+      user: user,
+      project: project,
+      pre_approved_agent_privileges: [Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES],
+      agent_privileges: [Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES]
+    )
+  end
 
   before do
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
@@ -345,6 +354,8 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       expect(json_response['project_id']).to eq(project.id)
       expect(json_response['agent_privileges']).to eq(workflow.agent_privileges)
       expect(json_response['agent_privileges_names']).to eq(["read_write_files"])
+      expect(json_response['pre_approved_agent_privileges']).to eq(workflow.pre_approved_agent_privileges)
+      expect(json_response['pre_approved_agent_privileges_names']).to eq(["read_write_files"])
       expect(json_response['allow_agent_to_request_user']).to be(true)
       expect(json_response['status']).to eq("created")
       expect(response.headers['X-Gitlab-Enabled-Feature-Flags']).to include('test-feature')
