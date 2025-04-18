@@ -1,0 +1,14 @@
+query getDedicatedInstanceRunnerFilters {
+  ciDedicatedHostedRunnerFilters {
+    runners {
+      nodes {
+        id
+        runnerType
+        description
+        adminUrl
+        status
+      }
+    }
+    years
+  }
+}

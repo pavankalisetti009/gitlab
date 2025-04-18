@@ -68,3 +68,15 @@ export const parseNamespaceProvideData = (el) => {
     helpLinks,
   };
 };
+
+export const parseAdminProvideData = (el) => {
+  if (!el) {
+    return {};
+  }
+
+  const { namespacePlanName } = el.dataset;
+
+  return {
+    namespacePlanName,
+  };
+};
