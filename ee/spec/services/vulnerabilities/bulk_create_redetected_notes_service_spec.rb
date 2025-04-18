@@ -28,28 +28,27 @@ RSpec.describe Vulnerabilities::BulkCreateRedetectedNotesService, feature_catego
     path = "/#{pipeline.project.full_path}/-/pipelines/#{pipeline.id}"
     link = %r{\[#{pipeline.id}\]\(.*#{path}\)}
     expected_note = %r{changed vulnerability status to Needs Triage because it was redetected in pipeline #{link}}
-    expected_time = time.round(0)
 
     note = Note.find_by(noteable_type: vulnerability.class.name, noteable_id: vulnerability.id)
 
     expect(note).to be_valid
     expect(note.note).to match(expected_note)
+    expect(note.created_at).to be_like_time(time)
+    expect(note.updated_at).to be_like_time(time)
     expect(note).to have_attributes(
       author_id: pipeline.user_id,
       project_id: pipeline.project_id,
       namespace_id: pipeline.project.namespace_id,
       noteable: vulnerability,
-      system: true,
-      created_at: expected_time,
-      updated_at: expected_time
+      system: true
     )
 
     expect(note.system_note_metadata).to be_valid
     expect(note.system_note_metadata).to have_attributes(
-      action: 'vulnerability_detected',
-      created_at: expected_time,
-      updated_at: expected_time
+      action: 'vulnerability_detected'
     )
+    expect(note.system_note_metadata.created_at).to be_like_time(time)
+    expect(note.system_note_metadata.updated_at).to be_like_time(time)
   end
 
   it 'does not execute N+1 queries' do
