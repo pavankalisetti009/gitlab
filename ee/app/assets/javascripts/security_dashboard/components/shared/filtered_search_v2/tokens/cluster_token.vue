@@ -5,18 +5,23 @@ import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import getClusterAgentsQuery from 'ee/security_dashboard/graphql/queries/cluster_agents.query.graphql';
 import SearchSuggestion from '../components/search_suggestion.vue';
-import QuerystringSync from '../../filters/querystring_sync.vue';
 import { ALL_ID as ALL_CLUSTER_VALUE } from '../../filters/constants';
-import eventHub from '../event_hub';
 
 export default {
   components: {
     GlFilteredSearchToken,
     GlLoadingIcon,
-    QuerystringSync,
     SearchSuggestion,
   },
   inject: ['projectFullPath'],
+  transformQueryParams: (filters) => {
+    return filters.map(({ value }) => value).join(',');
+  },
+  transformFilters: (filters) => {
+    return {
+      clusterAgentId: filters.map(({ gid }) => gid),
+    };
+  },
   props: {
     config: {
       type: Object,
@@ -46,11 +51,6 @@ export default {
           text: c.name,
           gid: c.id,
         })) || [],
-      result() {
-        // The gids of the cluster agents are required to filter, so in case the querystring contains cluster agents
-        // on initialisation, the filters-changed event is emitted once we have the result of the cluster agents query.
-        this.emitFiltersChanged();
-      },
       error() {
         createAlert({ message: this.$options.i18n.loadingError });
       },
@@ -93,29 +93,13 @@ export default {
     },
     clusterAgentIds() {
       return this.clusterAgents.flatMap(({ value, gid }) =>
-        this.selected.includes(value) ? [gid] : [],
+        this.selected.includes(value) ? [{ value, gid }] : [],
       );
     },
   },
   methods: {
-    emitFiltersChanged() {
-      eventHub.$emit('filters-changed', {
-        clusterAgentId: this.clusterAgentIds,
-      });
-    },
     resetSelected() {
       this.selected = [ALL_CLUSTER_VALUE];
-      this.emitFiltersChanged();
-    },
-    updateSelectedFromQS(values) {
-      // This happens when we clear the token and re-select `Cluster`
-      // to open the dropdown. At that stage we simply want to wait
-      // for the user to select new clusters.
-      if (!values.length) {
-        return;
-      }
-
-      this.selected = values;
     },
     toggleSelected(selectedValue) {
       const allClustersSelected = selectedValue === ALL_CLUSTER_VALUE;
@@ -143,32 +127,29 @@ export default {
 </script>
 
 <template>
-  <querystring-sync querystring-key="cluster" :value="selected" @input="updateSelectedFromQS">
-    <gl-filtered-search-token
-      :config="config"
-      v-bind="{ ...$props, ...$attrs }"
-      :multi-select-values="selected"
-      :value="tokenValue"
-      v-on="$listeners"
-      @select="toggleSelected"
-      @destroy="resetSelected"
-      @complete="emitFiltersChanged"
-    >
-      <template #view>
-        <span data-testid="cluster-token-placeholder">{{ toggleText }}</span>
-      </template>
-      <template #suggestions>
-        <gl-loading-icon v-if="isLoading" size="sm" />
-        <search-suggestion
-          v-for="cluster in items"
-          v-else
-          :key="cluster.value"
-          :value="cluster.value"
-          :text="cluster.text"
-          :selected="isClusterSelected(cluster.value)"
-          :data-testid="`suggestion-${cluster.value}`"
-        />
-      </template>
-    </gl-filtered-search-token>
-  </querystring-sync>
+  <gl-filtered-search-token
+    :config="config"
+    v-bind="{ ...$props, ...$attrs }"
+    :multi-select-values="clusterAgentIds"
+    :value="tokenValue"
+    v-on="$listeners"
+    @select="toggleSelected"
+    @destroy="resetSelected"
+  >
+    <template #view>
+      <span data-testid="cluster-token-placeholder">{{ toggleText }}</span>
+    </template>
+    <template #suggestions>
+      <gl-loading-icon v-if="isLoading" size="sm" />
+      <search-suggestion
+        v-for="cluster in items"
+        v-else
+        :key="cluster.value"
+        :value="cluster.value"
+        :text="cluster.text"
+        :selected="isClusterSelected(cluster.value)"
+        :data-testid="`suggestion-${cluster.value}`"
+      />
+    </template>
+  </gl-filtered-search-token>
 </template>
