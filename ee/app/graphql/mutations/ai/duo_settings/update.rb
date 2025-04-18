@@ -18,7 +18,8 @@ module Mutations
         def resolve(**args)
           raise_resource_not_available_error! unless Ability.allowed?(current_user, :manage_self_hosted_models_settings)
 
-          result = ::Ai::DuoSettings::UpdateService.new(ai_gateway_url: args[:ai_gateway_url].presence).execute
+          ai_gateway_url_cleaned = args[:ai_gateway_url]&.chomp('/')
+          result = ::Ai::DuoSettings::UpdateService.new(ai_gateway_url: ai_gateway_url_cleaned.presence).execute
 
           if result.error?
             {
