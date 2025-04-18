@@ -255,14 +255,6 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
       end
 
       it { is_expected.to eq(true) }
-
-      context 'with feature disabled' do
-        before do
-          stub_feature_flags(scheduled_pipeline_execution_policies: false)
-        end
-
-        it { is_expected.to eq(false) }
-      end
     end
   end
 

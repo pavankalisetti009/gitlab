@@ -14,8 +14,6 @@ module Security
         end
 
         def execute
-          return ServiceResponse.success if Feature.disabled?(:scheduled_pipeline_execution_policies, project)
-
           schedules = policy.content.fetch("schedules")
 
           policy.transaction do
@@ -24,7 +22,7 @@ module Security
               .for_project(project)
               .delete_all
 
-            policy.security_pipeline_execution_project_schedules.create!(attributes(schedules))
+            policy.security_pipeline_execution_project_schedules.create!(attributes(schedules)) if feature_enabled?
           end
 
           ServiceResponse.success
@@ -62,6 +60,12 @@ module Security
               exception_message: error.message,
               project_id: project.id,
               policy_id: policy.id))
+        end
+
+        def feature_enabled?
+          return false if Feature.disabled?(:scheduled_pipeline_execution_policies, project)
+
+          policy.security_orchestration_policy_configuration.experiment_enabled?(:pipeline_execution_schedule_policy)
         end
       end
     end

@@ -9,11 +9,16 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, '#perform
   let_it_be(:ci_config_project) { create(:project, :repository) }
   let_it_be(:security_bot) { create(:user, :security_policy_bot) }
   let_it_be(:policy_ci_filename) { "policy-ci.yml" }
+  let_it_be(:security_orchestration_policy_configuration) do
+    create(:security_orchestration_policy_configuration,
+      experiments: { pipeline_execution_schedule_policy: { enabled: false } })
+  end
 
   let_it_be(:security_policy) do
     create(
       :security_policy,
       :pipeline_execution_schedule_policy,
+      security_orchestration_policy_configuration: security_orchestration_policy_configuration,
       content: {
         content: { include: [{ project: ci_config_project.full_path, file: policy_ci_filename }] },
         schedules: [{ type: "daily", start_time: "00:00", time_window: { distribution: 'random', value: 4000 } }]
@@ -81,88 +86,99 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, '#perform
   context 'when schedule exists' do
     let(:schedule_id) { schedule.id }
 
-    it 'creates a pipeline' do
-      expect { perform }.to change { project.all_pipelines.count }.from(0).to(1)
+    it 'does not create a pipeline' do
+      expect { perform }.not_to change { project.all_pipelines.count }.from(0)
     end
 
-    describe 'resulting pipeline' do
-      subject(:pipeline) { perform.then { project.all_pipelines.last! } }
-
-      it { is_expected.to be_created }
-
-      it "ignores [ci skip]" do
-        expect(pipeline.commit.message).to eq(ci_skip_commit_message)
+    context 'with experiment enabled' do
+      before_all do
+        security_orchestration_policy_configuration
+          .update!(experiments: { pipeline_execution_schedule_policy: { enabled: true } })
       end
 
-      it "targets the default branch" do
-        expect(pipeline.ref).to eq(project.default_branch_or_main)
-      end
+      context 'when the scheduled_pipeline_execution_policies feature is disabled' do
+        before do
+          stub_feature_flags(scheduled_pipeline_execution_policies: false)
+        end
 
-      it "belongs to policy bot" do
-        expect(pipeline.user).to eq(security_bot)
-      end
-
-      it "has expected source" do
-        expect(pipeline.source).to eq("pipeline_execution_policy_schedule")
-      end
-
-      it "contains stages" do
-        expect(pipeline.stages.map(&:name)).to match_array(%w[.pipeline-policy-pre test .pipeline-policy-post])
-      end
-
-      it "contains builds" do
-        expect(pipeline.builds.map(&:name)).to match_array(%w[scheduled_pep_job_pre scheduled_pep_job_test
-          scheduled_pep_job_post])
-      end
-    end
-
-    it "doesn't log" do
-      expect(Gitlab::AppJsonLogger).not_to receive(:error)
-
-      perform
-    end
-
-    context 'when pipeline creation fails' do
-      let_it_be(:expected_log) do
-        {
-          "class" => described_class.name,
-          "event" => described_class::EVENT_KEY,
-          "message" => a_string_including("Project `#{ci_config_project.full_path}` not found or access denied"),
-          "reason" => nil,
-          "project_id" => schedule.project_id,
-          "schedule_id" => schedule.id,
-          "policy_id" => schedule.security_policy.id
-        }
-      end
-
-      shared_examples 'logs the error' do
-        specify do
-          expect(Gitlab::AppJsonLogger).to receive(:error).with(expected_log)
-
-          perform
+        it 'does not create a pipeline' do
+          expect { perform }.not_to change { project.all_pipelines.count }.from(0)
         end
       end
 
-      context 'with SPP access setting disabled' do
-        let(:spp_repository_pipeline_access?) { false }
-
-        it_behaves_like 'logs the error'
+      it 'creates a pipeline' do
+        expect { perform }.to change { project.all_pipelines.count }.from(0).to(1)
       end
 
-      context 'with SPP not linked' do
-        let(:spp_linked?) { false }
+      describe 'resulting pipeline' do
+        subject(:pipeline) { perform.then { project.all_pipelines.last! } }
 
-        it_behaves_like 'logs the error'
+        it { is_expected.to be_created }
+
+        it "ignores [ci skip]" do
+          expect(pipeline.commit.message).to eq(ci_skip_commit_message)
+        end
+
+        it "targets the default branch" do
+          expect(pipeline.ref).to eq(project.default_branch_or_main)
+        end
+
+        it "belongs to policy bot" do
+          expect(pipeline.user).to eq(security_bot)
+        end
+
+        it "has expected source" do
+          expect(pipeline.source).to eq("pipeline_execution_policy_schedule")
+        end
+
+        it "contains stages" do
+          expect(pipeline.stages.map(&:name)).to match_array(%w[.pipeline-policy-pre test .pipeline-policy-post])
+        end
+
+        it "contains builds" do
+          expect(pipeline.builds.map(&:name)).to match_array(%w[scheduled_pep_job_pre scheduled_pep_job_test
+            scheduled_pep_job_post])
+        end
       end
-    end
 
-    context 'with feature disabled' do
-      before do
-        stub_feature_flags(scheduled_pipeline_execution_policies: false)
+      it "doesn't log" do
+        expect(Gitlab::AppJsonLogger).not_to receive(:error)
+
+        perform
       end
 
-      it 'does not create a pipeline' do
-        expect { perform }.not_to change { project.all_pipelines.count }.from(0)
+      context 'when pipeline creation fails' do
+        let_it_be(:expected_log) do
+          {
+            "class" => described_class.name,
+            "event" => described_class::EVENT_KEY,
+            "message" => a_string_including("Project `#{ci_config_project.full_path}` not found or access denied"),
+            "reason" => nil,
+            "project_id" => schedule.project_id,
+            "schedule_id" => schedule.id,
+            "policy_id" => schedule.security_policy.id
+          }
+        end
+
+        shared_examples 'logs the error' do
+          specify do
+            expect(Gitlab::AppJsonLogger).to receive(:error).with(expected_log)
+
+            perform
+          end
+        end
+
+        context 'with SPP access setting disabled' do
+          let(:spp_repository_pipeline_access?) { false }
+
+          it_behaves_like 'logs the error'
+        end
+
+        context 'with SPP not linked' do
+          let(:spp_linked?) { false }
+
+          it_behaves_like 'logs the error'
+        end
       end
     end
 
