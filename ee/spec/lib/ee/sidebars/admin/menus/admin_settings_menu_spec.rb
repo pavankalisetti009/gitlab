@@ -49,6 +49,26 @@ RSpec.describe Sidebars::Admin::Menus::AdminSettingsMenu, feature_category: :nav
       end
     end
 
+    describe 'Usage Quotas' do
+      let(:item_id) { :admin_usage_quotas }
+
+      context 'when the instance is a Dedicated instance' do
+        before do
+          stub_application_setting(gitlab_dedicated_instance: true)
+        end
+
+        it { is_expected.to be_present }
+
+        context 'when in SaaS mode', :saas do
+          before do
+            stub_application_setting(gitlab_dedicated_instance: false)
+          end
+
+          it { is_expected.not_to be_present }
+        end
+      end
+    end
+
     describe 'Service accounts menu', feature_category: :user_management do
       let(:item_id) { :service_accounts }
 

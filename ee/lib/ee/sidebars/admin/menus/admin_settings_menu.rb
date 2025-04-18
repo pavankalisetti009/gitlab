@@ -17,6 +17,7 @@ module EE
             insert_item_after(:admin_reporting, templates_menu_item)
             insert_item_after(:admin_ci_cd, security_and_compliance_menu_item)
             insert_item_after(:security_and_compliance_menu_item, analytics_menu_item)
+            insert_item_after(:admin_preferences, usage_quotas_menu_item)
 
             true
           end
@@ -95,6 +96,22 @@ module EE
               item_id: :admin_analytics,
               container_html_options: { testid: 'admin-analytics-link' }
             )
+          end
+
+          def usage_quotas_menu_item
+            return unless dedicated?
+
+            ::Sidebars::MenuItem.new(
+              title: _('Usage Quotas'),
+              link: usage_quotas_admin_application_settings_path,
+              active_routes: { path: 'admin/application_settings#usage_quotas' },
+              item_id: :admin_usage_quotas,
+              container_html_options: { 'data-testid': 'admin-settings-usage-quotas-link' }
+            )
+          end
+
+          def dedicated?
+            ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
           end
         end
       end

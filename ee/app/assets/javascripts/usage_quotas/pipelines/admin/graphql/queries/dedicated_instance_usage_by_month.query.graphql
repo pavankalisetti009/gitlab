@@ -1,0 +1,19 @@
+query getDedicatedInstanceUsageByMonth(
+  $grouping: GroupingEnum
+  $month: Date
+  $runnerId: CiRunnerID
+) {
+  ciDedicatedHostedRunnerUsage(grouping: $grouping, billingMonth: $month, runnerId: $runnerId) {
+    nodes {
+      billingMonth
+      billingMonthIso8601
+      computeMinutes
+      durationSeconds
+      rootNamespace {
+        id
+        avatarUrl
+        name
+      }
+    }
+  }
+}
