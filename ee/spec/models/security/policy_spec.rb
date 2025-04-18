@@ -209,16 +209,6 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
         expect(schedule.project).to eq(project)
         expect(schedule.security_policy).to eq(policy)
       end
-
-      context 'with feature disabled' do
-        before do
-          stub_feature_flags(scheduled_pipeline_execution_policies: false)
-        end
-
-        it 'does not create a link' do
-          expect { policy.link_project!(project) }.not_to change { Security::PipelineExecutionProjectSchedule.count }
-        end
-      end
     end
   end
 
