@@ -130,7 +130,7 @@ describe('Pipeline execution rule utils', () => {
 
     const weeklySchedule = {
       type: 'weekly',
-      days: 'monday',
+      days: ['Monday'],
       ...baseSchedule,
     };
 
