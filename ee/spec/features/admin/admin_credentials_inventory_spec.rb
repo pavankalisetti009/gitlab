@@ -43,7 +43,7 @@ RSpec.describe 'Admin::CredentialsInventory', feature_category: :user_management
         it 'contains the relevant filter tabs' do
           expect(page).to have_link('Personal access tokens', href: admin_credentials_path(filter: 'personal_access_tokens'))
           expect(page).to have_link('SSH Keys', href: admin_credentials_path(filter: 'ssh_keys'))
-          expect(page).to have_link('GPG Keys', href: admin_credentials_path(filter: 'gpg_keys'))
+          expect(page).to have_link('GPG keys', href: admin_credentials_path(filter: 'gpg_keys'))
           expect(page).to have_link('Project and group access tokens', href: admin_credentials_path(filter: 'resource_access_tokens'))
         end
       end
@@ -69,7 +69,7 @@ RSpec.describe 'Admin::CredentialsInventory', feature_category: :user_management
         it_behaves_like 'credentials inventory resource access tokens'
       end
 
-      context 'by GPG Keys' do
+      context 'by GPG keys' do
         let(:credentials_path) { admin_credentials_path(filter: 'gpg_keys') }
 
         context 'when a GPG key is verified' do

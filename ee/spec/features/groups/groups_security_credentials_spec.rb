@@ -69,7 +69,7 @@ RSpec.describe 'Groups::Security::Credentials', :saas, feature_category: :user_m
             expect(page).to have_link('Personal access tokens', href: group_security_credentials_path(group_id: group_id, filter: 'personal_access_tokens'))
             expect(page).to have_link('SSH Keys', href: group_security_credentials_path(group_id: group_id, filter: 'ssh_keys'))
             expect(page).to have_link('Project and group access tokens', href: group_security_credentials_path(group_id: group_id, filter: 'resource_access_tokens'))
-            expect(page).not_to have_link('GPG Keys', href: group_security_credentials_path(group_id: group_id, filter: 'gpg_keys'))
+            expect(page).not_to have_link('GPG keys', href: group_security_credentials_path(group_id: group_id, filter: 'gpg_keys'))
           end
         end
       end
@@ -87,7 +87,7 @@ RSpec.describe 'Groups::Security::Credentials', :saas, feature_category: :user_m
           it_behaves_like 'credentials inventory SSH keys'
         end
 
-        context 'by GPG Keys' do
+        context 'by GPG keys' do
           before do
             visit group_security_credentials_path(group_id: group_id, filter: 'gpg_keys')
           end
