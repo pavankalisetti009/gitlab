@@ -45,7 +45,7 @@ module Gitlab
         def published_issue_available?(issue, setting)
           issue.status_page_published_incident &&
             setting&.enabled? &&
-            setting&.status_page_url
+            setting.status_page_url
         end
       end
 

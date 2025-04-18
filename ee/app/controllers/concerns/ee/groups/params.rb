@@ -96,7 +96,7 @@ module EE
       def allow_update_enable_auto_assign_gitlab_duo_pro_seats?
         ::Feature.enabled?(:auto_assign_gitlab_duo_pro_seats, current_group) &&
           gitlab_com_subscription? && current_group&.root? &&
-          can?(current_user, :admin_group, current_group) && current_group&.code_suggestions_purchased?
+          can?(current_user, :admin_group, current_group) && current_group.code_suggestions_purchased?
       end
 
       def experiment_settings_allowed?
