@@ -153,6 +153,7 @@ export default {
       :title="$options.i18n.upstreamTitle"
       :empty-text="$options.i18n.upstreamEmptyText"
       show-actions
+      data-testid="upstream-project-subscriptions"
       @showModal="showModal"
       @refetchSubscriptions="refetchUpstreamSubscriptions"
     />
@@ -164,6 +165,7 @@ export default {
       :subscriptions="downstreamSubscriptions.nodes"
       :title="$options.i18n.downstreamTitle"
       :empty-text="$options.i18n.downstreamEmptyText"
+      data-testid="downstream-project-subscriptions"
     />
 
     <delete-subscription-confirmation-modal

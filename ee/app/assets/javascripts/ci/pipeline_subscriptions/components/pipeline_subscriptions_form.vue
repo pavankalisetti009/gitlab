@@ -17,7 +17,7 @@ export default {
     generalError: s__(
       'PipelineSubscriptions|An error occurred while adding a new pipeline subscription.',
     ),
-    addSuccess: s__('PipelineSubscriptions|Subscription successfully added.'),
+    addSuccess: s__('PipelineSubscriptions|Subscription successfully created.'),
   },
   docsLink: helpPagePath('ci/pipelines/_index', {
     anchor: 'trigger-a-pipeline-when-an-upstream-project-is-rebuilt-deprecated',

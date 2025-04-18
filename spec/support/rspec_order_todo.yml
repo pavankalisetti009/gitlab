@@ -2311,7 +2311,6 @@
 - './ee/spec/views/projects/security/policies/index.html.haml_spec.rb'
 - './ee/spec/views/projects/security/sast_configuration/show.html.haml_spec.rb'
 - './ee/spec/views/projects/settings/merge_requests/_merge_request_status_checks_settings.html.haml_spec.rb'
-- './ee/spec/views/projects/settings/subscriptions/_index.html.haml_spec.rb'
 - './ee/spec/views/registrations/groups/new.html.haml_spec.rb'
 - './ee/spec/views/shared/billings/_billing_plan_actions.html.haml_spec.rb'
 - './ee/spec/views/shared/billings/_billing_plan.html.haml_spec.rb'

@@ -10,7 +10,4 @@
     = _("Pipeline subscriptions trigger a new pipeline on the default branch of this project when a pipeline completes for a new tag of the subscribed project.")
     = _("A limit of %{ci_project_subscriptions_limit} subscriptions to or from a project applies.").html_safe % { ci_project_subscriptions_limit: @project.actual_limits.ci_project_subscriptions }
   - c.with_body do
-    - if Feature.enabled?(:pipeline_subscriptions_vue, @project)
-      #js-pipeline-subscriptions-app{ data: { project_path: @project.full_path } }
-    - else
-      = render 'projects/settings/subscriptions/index'
+    #js-pipeline-subscriptions-app{ data: { project_path: @project.full_path } }

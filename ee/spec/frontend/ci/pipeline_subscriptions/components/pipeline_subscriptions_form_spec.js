@@ -69,7 +69,7 @@ describe('Pipeline subscriptions form', () => {
         },
       });
       expect(createAlert).toHaveBeenCalledWith({
-        message: 'Subscription successfully added.',
+        message: 'Subscription successfully created.',
         variant: 'success',
       });
     });

@@ -2,12 +2,16 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Project Subscriptions',
+RSpec.describe 'Project Subscriptions', :js,
   feature_category: :continuous_integration do
-  let_it_be(:project) { create(:project, :public, :repository) }
-  let_it_be(:upstream_project) { create(:project, :public, :repository) }
-  let_it_be(:downstream_project) { create(:project, :public, :repository, upstream_projects: [project]) }
   let_it_be(:user) { create(:user) }
+  let_it_be(:group_one) { create(:group) }
+  let_it_be(:group_two) { create(:group) }
+  let_it_be(:project) { create(:project, :public, :repository) }
+  let_it_be(:upstream_project) { create(:project, :public, :repository, namespace: group_one) }
+  let_it_be(:downstream_project) do
+    create(:project, :public, :repository, upstream_projects: [project], namespace: group_two)
+  end
 
   before_all do
     project.add_maintainer(user)
@@ -17,19 +21,11 @@ RSpec.describe 'Project Subscriptions',
 
   before do
     stub_licensed_features(ci_project_subscriptions: true)
-    stub_feature_flags(pipeline_subscriptions_vue: false)
 
     sign_in(user)
     visit project_settings_ci_cd_path(project)
-  end
 
-  it 'renders the correct path for the form action' do
-    within '#pipeline-subscriptions' do
-      click_on 'Add new'
-      form_action = find('#pipeline-subscriptions-form')['action']
-
-      expect(form_action).to end_with("/#{project.full_path}/-/subscriptions")
-    end
+    wait_for_requests
   end
 
   it 'renders the list of downstream projects' do
@@ -43,23 +39,21 @@ RSpec.describe 'Project Subscriptions',
 
   it 'doesn\'t allow to delete downstream projects' do
     within_testid('downstream-project-subscriptions') do
-      expect(page).not_to have_content('[data-testid="delete-subscription"]')
+      expect(page).not_to have_content('[data-testid="delete-subscription-btn"]')
     end
   end
 
   it 'successfully creates new pipeline subscription' do
-    within '#pipeline-subscriptions' do
+    within_testid('upstream-project-subscriptions') do
       click_on 'Add new'
-      within 'form' do
-        fill_in 'upstream_project_path', with: upstream_project.full_path
 
-        click_on 'Subscribe'
-      end
+      find_by_testid('upstream-project-path-field').fill_in with: upstream_project.full_path
 
-      within_testid('upstream-project-subscriptions') do
-        expect(find_by_testid('crud-count').text).to eq '1'
-      end
+      click_on 'Subscribe'
 
+      wait_for_requests
+
+      expect(find_by_testid('crud-count').text).to eq '1'
       expect(page).to have_content(upstream_project.name)
       expect(page).to have_content(upstream_project.namespace.name)
     end
@@ -67,37 +61,47 @@ RSpec.describe 'Project Subscriptions',
     expect(page).to have_content('Subscription successfully created.')
   end
 
-  it 'shows flash warning when unsuccessful in creating a pipeline subscription',
-    quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/469604' do
+  it 'shows alert warning when unsuccessful in creating a pipeline subscription' do
     within '#pipeline-subscriptions' do
       click_on 'Add new'
-      within 'form' do
-        fill_in 'upstream_project_path', with: 'wrong/path'
-
-        click_on 'Subscribe'
-      end
 
       within_testid('upstream-project-subscriptions') do
+        find_by_testid('upstream-project-path-field').fill_in with: 'wrong/path'
+
+        click_on 'Subscribe'
+
+        wait_for_requests
+
         expect(find_by_testid('crud-count').text).to eq '0'
         expect(page).to have_content('This project is not subscribed to any project pipelines.')
       end
     end
 
-    expect(page).to have_content('This project path either does not exist or you do not have access.')
+    # rubocop:disable Layout/LineLength -- The error message is longer than the line limit
+    expect(page).to have_content("The resource that you are attempting to access does not exist or you don't have permission to perform this action")
+    # rubocop:enable Layout/LineLength
   end
 
-  it 'subscription is removed successfully', :js, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/438106' do
+  it 'subscription is removed successfully' do
     within '#pipeline-subscriptions' do
       click_on 'Add new'
-      within 'form' do
-        fill_in 'upstream_project_path', with: upstream_project.full_path
+
+      within_testid('upstream-project-subscriptions') do
+        find_by_testid('upstream-project-path-field').fill_in with: upstream_project.full_path
 
         click_on 'Subscribe'
+
+        wait_for_requests
+
+        find_by_testid('delete-subscription-btn').click
       end
     end
 
-    find_by_testid('delete-subscription').click
-    click_button 'OK'
+    within '#delete-subscription-modal' do
+      click_button 'OK'
+
+      wait_for_requests
+    end
 
     expect(page).to have_content('Subscription successfully deleted.')
   end
