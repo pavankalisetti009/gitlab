@@ -3,7 +3,7 @@
 require 'base64'
 
 module QA
-  describe 'Verify', :github, :requires_admin, only: { subdomain: %i[staging staging-canary] } do
+  describe 'Verify', :github, :requires_admin, only: { pipeline: %i[staging staging-canary] } do
     describe 'Pipeline for project mirrors Github', product_group: :pipeline_execution do
       include QA::Support::Data::Github
 

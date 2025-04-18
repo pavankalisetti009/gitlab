@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Govern', only: { subdomain: %i[staging staging-canary] },
+  RSpec.describe 'Govern', only: { pipeline: %i[staging staging-canary] },
     product_group: :security_policies do
     describe 'Scan result policy' do
       let!(:project) do
