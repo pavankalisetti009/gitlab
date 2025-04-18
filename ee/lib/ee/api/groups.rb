@@ -18,7 +18,7 @@ module EE
 
           override :allowable_find_params
           def allowable_find_params
-            super + [:repository_storage, :marked_for_deletion_on]
+            super + [:repository_storage]
           end
 
           override :create_group
