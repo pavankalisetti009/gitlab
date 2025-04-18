@@ -63,6 +63,11 @@ export default {
       required: true,
     },
   },
+  computed: {
+    toggleText() {
+      return this.showActions ? this.$options.i18n.newBtnText : '';
+    },
+  },
 };
 </script>
 
@@ -72,9 +77,19 @@ export default {
     :title="title"
     icon="pipeline"
     :count="count"
-    :toggle-text="showActions ? $options.i18n.newBtnText : ''"
     class="gl-mt-5"
   >
+    <template v-if="showActions" #actions="{ showForm, isFormVisible }">
+      <gl-button
+        v-if="!isFormVisible"
+        size="small"
+        data-testid="add-new-subscription-button"
+        @click="showForm"
+      >
+        {{ toggleText }}
+      </gl-button>
+    </template>
+
     <template #form>
       <pipeline-subscriptions-form
         @canceled="$refs.pipelineSubscriptionsTable.hideForm"

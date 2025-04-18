@@ -26,7 +26,7 @@ describe('Pipeline Subscriptions Table', () => {
   };
 
   const findDeleteBtn = () => wrapper.findByTestId('delete-subscription-btn');
-  const findAddNewBtn = () => wrapper.findByTestId('crud-form-toggle');
+  const findAddNewBtn = () => wrapper.findByTestId('add-new-subscription-button');
   const findTitle = () => wrapper.findByTestId('crud-title');
   const findCount = () => wrapper.findByTestId('crud-count');
   const findNamespace = () => wrapper.findByTestId('subscription-namespace');
