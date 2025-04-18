@@ -664,7 +664,7 @@ module EE
       end
 
       def vulnerability_statistic
-        return unless ::Feature.enabled?(:security_inventory_dashboard, object.group)
+        return unless ::Feature.enabled?(:security_inventory_dashboard, object.group&.root_ancestor)
         return unless object.licensed_feature_available?(:security_inventory)
 
         object.vulnerability_statistic

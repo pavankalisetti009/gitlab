@@ -8,7 +8,7 @@ module Groups
       before_action :ensure_feature_available!
 
       before_action do
-        push_frontend_feature_flag(:security_inventory_dashboard, @group)
+        push_frontend_feature_flag(:security_inventory_dashboard, @group.root_ancestor)
       end
 
       feature_category :security_asset_inventories
@@ -23,7 +23,7 @@ module Groups
 
       def ensure_feature_available!
         render_404 unless License.feature_available?(:security_inventory) &&
-          ::Feature.enabled?(:security_inventory_dashboard, group, type: :wip)
+          ::Feature.enabled?(:security_inventory_dashboard, group.root_ancestor, type: :wip)
       end
 
       def tracking_namespace_source
