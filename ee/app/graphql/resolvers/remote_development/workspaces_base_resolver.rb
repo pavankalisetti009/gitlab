@@ -23,6 +23,8 @@ module Resolvers
         required: false,
         description: 'Filter workspaces by actual states.'
 
+      # @param [Hash] args
+      # @return [Boolean]
       def ready?(**args)
         # rubocop:disable Graphql/ResourceNotAvailableError -- Gitlab::Graphql::Authorize::AuthorizeResource is not included
         unless License.feature_available?(:remote_development)
@@ -34,6 +36,7 @@ module Resolvers
         super
       end
 
+      # @return [Hash]
       def preloads
         {
           user_provided_workspace_variables: [:user_provided_workspace_variables]

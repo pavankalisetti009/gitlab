@@ -6,6 +6,10 @@ module RemoteDevelopment
     MAX_LENGTH = 63
     VALID_CHARACTERS = ALPHA_NUMERIC_CHARACTERS + %w[- .].to_set
 
+    # @param [RemoteDevelopment::WorkspacesAgentConfig] record
+    # @param [Symbol] attribute
+    # @param [String] value
+    # @return [void]
     def validate_each(record, attribute, value)
       unless value.is_a?(String)
         record.errors.add(attribute, _("must be a string"))
@@ -20,18 +24,26 @@ module RemoteDevelopment
       return if valid_characters?(value)
 
       record.errors.add(attribute, "must contain only lowercase alphanumeric characters, '-', and '.'")
+
+      nil
     end
 
     private
 
+    # @param [String] value
+    # @return [Boolean]
     def valid_start_end?(value)
-      alphanumeric?(value[0]) && alphanumeric?(value[-1])
+      alphanumeric?(value[0].to_s) && alphanumeric?(value[-1].to_s)
     end
 
+    # @param [String] value
+    # @return [Boolean]
     def valid_characters?(value)
       value.chars.all? { |char| VALID_CHARACTERS.include?(char) }
     end
 
+    # @param [String] char
+    # @return [Boolean]
     def alphanumeric?(char)
       ALPHA_NUMERIC_CHARACTERS.include?(char)
     end

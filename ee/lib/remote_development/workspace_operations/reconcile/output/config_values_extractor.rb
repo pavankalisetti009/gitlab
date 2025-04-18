@@ -20,7 +20,7 @@ module RemoteDevelopment
 
             # NOTE: In order to prevent unwanted restarts of the workspace, we need to ensure that the hexdigest
             #       of the max_resources_per_workspace is backward compatible, and uses the same sorting as the
-            #       legacy logic of existing running workspaces. This means that we only the top level keys are sorted,
+            #       legacy logic of existing running workspaces. This means that only the top level keys are sorted,
             #       not the nested hashes. But everywhere else we will use the deeply sorted version. This workaround
             #       can be removed if we move all of this logic from workspace reconcile-time to create-time.
             #       Also note that the value has always been deep_symbolized before #to_s, so we preserve that as well.
@@ -64,9 +64,9 @@ module RemoteDevelopment
                 deep_sort_and_symbolize_hashes(
                   workspaces_agent_config.labels.merge({ "agent.gitlab.com/id": workspace.agent.id.to_s })
                 ),
+              max_resources_per_workspace: max_resources_per_workspace,
               network_policy_enabled: workspaces_agent_config.network_policy_enabled,
               network_policy_egress: deep_sort_and_symbolize_hashes(workspaces_agent_config.network_policy_egress),
-              max_resources_per_workspace: max_resources_per_workspace,
               processed_devfile_yaml: workspace.processed_devfile,
               replicas: workspace.desired_state_running? ? 1 : 0,
               secrets_inventory_annotations:

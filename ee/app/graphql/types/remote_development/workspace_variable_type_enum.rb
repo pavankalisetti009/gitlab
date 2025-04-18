@@ -12,6 +12,7 @@ module Types
         value name.to_s.upcase, value: value, description: "#{name.to_s.capitalize} type."
       end
 
+      # @return [Integer]
       def self.environment
         enum[:environment]
       end

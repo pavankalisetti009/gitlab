@@ -8,8 +8,11 @@ module EE
 
         prepended do
           helpers do
+            # @param [Clusters::Agent] agent
+            # @param [Hash] config
+            # @return [TrueClass]
             def update_configuration(agent:, config:)
-              super(agent: agent, config: config)
+              super
 
               if ::License.feature_available?(:remote_development)
                 # NOTE: The other existing service called from the `internal/kubernetes/agent_configuration` API

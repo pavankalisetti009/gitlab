@@ -5,11 +5,9 @@ module RemoteDevelopment
     #
     # Validate filter arguments against the given types.
     #
-    # @param [Hash<Symbol, Module|Class>] types Types of arguments passed in the filter
+    # @param [Hash] types Types of arguments passed in the filter
     # @param [Hash<Symbol, Object>] filter_arguments Filter arguments to be validated
-    #
     # @return [Boolean] Whether the arguments are valid
-    #
     def self.validate_filter_argument_types!(types, filter_arguments)
       errors = []
 
@@ -25,7 +23,6 @@ module RemoteDevelopment
     # Validate that at least one filter argument is provided.
     #
     # @param [Hash] filter_arguments Filter arguments to be validated
-    #
     # @return [Boolean] Whether at least one filter argument is provided
     #
     def self.validate_at_least_one_filter_argument_provided!(**filter_arguments)

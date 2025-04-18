@@ -3,6 +3,7 @@
 require "spec_helper"
 
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
+# noinspection RubyResolve -- RubyMine not detecting workspace.workspaces_agent_config_version association
 RSpec.describe RemoteDevelopment::Workspace, "paper_trail behavior", feature_category: :workspaces do
   ##########
   # NOTE: This spec tests the behavior of the paper_trail library and its usage by the Workspace#workspaces_agent_config

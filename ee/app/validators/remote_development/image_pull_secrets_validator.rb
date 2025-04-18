@@ -2,6 +2,10 @@
 
 module RemoteDevelopment
   class ImagePullSecretsValidator < ActiveModel::EachValidator
+    # @param [RemoteDevelopment::WorkspacesAgentConfig] record
+    # @param [Symbol] attribute
+    # @param [Hash] value
+    # @return [void]
     def validate_each(record, attribute, value)
       return if record.errors[attribute].any?
 
@@ -16,6 +20,8 @@ module RemoteDevelopment
             name: image_pull_secret_duplicate_name)
         )
       end
+
+      nil
     end
   end
 end

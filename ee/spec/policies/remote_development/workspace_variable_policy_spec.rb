@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe RemoteDevelopment::WorkspaceVariablePolicy, feature_category: :workspaces do
   include AdminModeHelper
   using RSpec::Parameterized::TableSyntax
@@ -44,6 +45,7 @@ RSpec.describe RemoteDevelopment::WorkspaceVariablePolicy, feature_category: :wo
     user.reload
 
     debug = false # Set to true to enable debugging of policies, but change back to false before committing
+    # noinspection RubyMismatchedArgumentType -- We are passing a QA::Resource::User test double
     debug_policies(user, workspace_variable, policy_class, ability) if debug
   end
 

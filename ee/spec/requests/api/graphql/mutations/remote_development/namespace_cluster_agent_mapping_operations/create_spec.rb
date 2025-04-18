@@ -46,11 +46,6 @@ RSpec.describe 'Map a cluster agent to a group', feature_category: :workspaces d
     }
   end
 
-  # @return [String]
-  def mutation_response
-    graphql_mutation_response(:namespace_create_remote_development_cluster_agent_mapping)
-  end
-
   before do
     stub_licensed_features(remote_development: true)
   end

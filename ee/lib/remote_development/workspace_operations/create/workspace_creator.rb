@@ -39,6 +39,7 @@ module RemoteDevelopment
           workspace.namespace = workspace_namespace
           workspace.desired_state = desired_state
           workspace.actual_state = CREATION_REQUESTED
+          # noinspection RubyResolve -- RubyMine not detecting project_ref field
           workspace.project_ref = project_ref
           workspace.devfile_path = devfile_path
           workspace.devfile = devfile_yaml

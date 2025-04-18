@@ -41,6 +41,7 @@ RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :workspace
   end
 
   subject(:collection_proxy) do
+    # noinspection RubyMismatchedArgumentType -- We are passing a QA::Resource::User test double
     described_class.execute(current_user: current_user, **filter_arguments)
   end
 

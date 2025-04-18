@@ -2,6 +2,10 @@
 
 module RemoteDevelopment
   class NetworkPolicyEgressValidator < ActiveModel::EachValidator
+    # @param [RemoteDevelopment::WorkspacesAgentConfig] record
+    # @param [Symbol] attribute
+    # @param [Array] value
+    # @return [void]
     def validate_each(record, attribute, value)
       unless value.is_a?(Array)
         record.errors.add(attribute, _("must be an array"))
@@ -14,9 +18,9 @@ module RemoteDevelopment
           break
         end
 
-        # noinspection RubyMismatchedArgumentType - RubyMine is resolving egress_rule as an array instead of a hash
+        # noinspection RubyMismatchedArgumentType,RubyArgCount - RubyMine is resolving egress_rule as array, not hash
         allow = egress_rule.deep_symbolize_keys.fetch(:allow, nil)
-        # noinspection RubyMismatchedArgumentType - RubyMine is resolving egress_rule as an array instead of a hash
+        # noinspection RubyMismatchedArgumentType,RubyArgCount - RubyMine is resolving egress_rule as array, not hash
         except = egress_rule.deep_symbolize_keys.fetch(:except, [])
 
         if allow.nil?
@@ -49,6 +53,8 @@ module RemoteDevelopment
         except_validator = IpCidrArrayValidator.new(attributes: attribute)
         except_validator.validate_each(record, attribute, except)
       end
+
+      nil
     end
   end
 end

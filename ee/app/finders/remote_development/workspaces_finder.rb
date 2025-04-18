@@ -5,6 +5,14 @@ module RemoteDevelopment
     # NOTE: We implement .execute as a class method instead of an instance method, in order to be consistent with the
     #       functional patterns found elsewhere in the Remote Development domain code. For more context, see:
     #       https://gitlab.com/gitlab-org/gitlab/-/blob/master/ee/lib/remote_development/README.md?plain=0#functional-patterns
+    #
+    # @param [User] current_user
+    # @param [Array] ids
+    # @param [Array] user_ids
+    # @param [Array] project_ids
+    # @param [Array] agent_ids
+    # @param [Array] actual_states
+    # @return [ActiveRecord::Relation]
     def self.execute(current_user:, ids: [], user_ids: [], project_ids: [], agent_ids: [], actual_states: [])
       # NOTE: This check is included in the :read_workspace ability, but we do it here to short
       #       circuit for performance if the user can't access the feature, because otherwise
@@ -42,6 +50,8 @@ module RemoteDevelopment
       collection_proxy.order_id_desc
     end
 
+    # @param [Array] actual_states
+    # @return [void]
     def self.validate_actual_state_values!(actual_states)
       invalid_actual_state = actual_states.find do |actual_state|
         WorkspaceOperations::States::VALID_ACTUAL_STATES.exclude?(actual_state)

@@ -2,13 +2,21 @@
 
 module RemoteDevelopment
   class NamespaceClusterAgentsFinder
+    # @param [GraphQL::Schema::Object] namespace
+    # @param [Symbol] filter
+    # @param [User] user
+    # @return [ActiveRecord::Relation]
     def self.execute(namespace:, filter:, user:)
-      agents = fetch_agents(filter, namespace, user)
+      agents = fetch_agents(namespace: namespace, filter: filter, user: user)
 
       agents.ordered_by_name
     end
 
-    def self.fetch_agents(filter, namespace, user)
+    # @param [GraphQL::Schema::Object] namespace
+    # @param [Symbol] filter
+    # @param [User] user
+    # @return [ActiveRecord::Relation]
+    def self.fetch_agents(namespace:, filter:, user:)
       case filter
       when :unmapped
         return Clusters::Agent.none unless user_can_read_namespace_agent_mappings?(user: user, namespace: namespace)
@@ -48,7 +56,10 @@ module RemoteDevelopment
       end
     end
 
-    def self.user_can_read_namespace_agent_mappings?(user:, namespace:)
+    # @param [GraphQL::Schema::Object] namespace
+    # @param [User] user
+    # @return [Boolean]
+    def self.user_can_read_namespace_agent_mappings?(namespace:, user:)
       user.can?(:read_namespace_cluster_agent_mapping, namespace)
     end
   end

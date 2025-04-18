@@ -26,6 +26,8 @@ module Mutations
           required: true,
           description: 'GlobalID of the namespace to be un-associated from the cluster agent.'
 
+        # @param [Hash] args
+        # @return [Hash]
         def resolve(args)
           unless License.feature_available?(:remote_development)
             raise_resource_not_available_error!("'remote_development' licensed feature is not available")

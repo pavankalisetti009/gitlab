@@ -6,7 +6,7 @@ require_relative "../../shared"
 # SHARED CONTEXTS - INDIVIDUAL ARGUMENTS SCENARIOS
 #-------------------------------------------------
 
-# noinspection RubyArgCount
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.shared_context "with agents and users setup in an organization" do
   let_it_be(:organization) { create(:organization) }
 
@@ -108,6 +108,7 @@ RSpec.shared_examples "multiple agents in organization query" do
     end
   end
 
+  # noinspection RubyArgCount -- Rubymine detecting wrong types, thinks some #create are from Minitest, not FactoryBot
   context "when the user is authorized only on mapped and available agents" do
     let_it_be(:current_user) do
       create(:user).tap do |u|

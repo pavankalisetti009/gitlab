@@ -23,14 +23,17 @@ module RemoteDevelopment
 
     private
 
+    # @return [RemoteDevelopment::Workspace]
     def workspace
       subject
     end
 
+    # @return [Boolean]
     def workspace_owner?
       user&.id == workspace.user_id
     end
 
+    # @return [Boolean]
     def has_developer_access_to_workspace_project?
       can?(:developer_access, workspace.project)
     end

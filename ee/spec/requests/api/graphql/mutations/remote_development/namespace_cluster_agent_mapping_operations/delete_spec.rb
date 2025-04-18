@@ -16,6 +16,10 @@ RSpec.describe 'Remove existing mapping between a cluster and a group', feature_
     graphql_mutation(:namespace_delete_remote_development_cluster_agent_mapping, mutation_args)
   end
 
+  let(:mutation_response) do
+    graphql_mutation_response(:namespace_delete_remote_development_cluster_agent_mapping)
+  end
+
   let(:stub_service_payload) { { namespace_cluster_agent_mapping: deleted_mapping } }
   let(:stub_service_response) do
     ServiceResponse.success(payload: stub_service_payload)
@@ -42,10 +46,6 @@ RSpec.describe 'Remove existing mapping between a cluster and a group', feature_
         cluster_agent: agent
       }
     }
-  end
-
-  def mutation_response
-    graphql_mutation_response(:namespace_delete_remote_development_cluster_agent_mapping)
   end
 
   before do

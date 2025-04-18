@@ -25,6 +25,9 @@ module Mutations
           required: true, # NOTE: This is required, because it is the only mutable field.
           description: 'Desired state of the created workspace.'
 
+        # @param [GlobalID] id
+        # @param [Hash] args
+        # @return [Hash]
         def resolve(id:, **args)
           unless License.feature_available?(:remote_development)
             raise_resource_not_available_error!("'remote_development' licensed feature is not available")

@@ -58,19 +58,19 @@ module RemoteDevelopment
             end
 
             devfile_parser_params = {
+              allow_privilege_escalation: allow_privilege_escalation,
+              annotations: workspace_inventory_annotations,
+              default_resources_per_workspace_container: default_resources_per_workspace_container,
+              default_runtime_class: default_runtime_class,
+              domain_template: domain_template,
+              env_secret_names: [env_secret_name],
+              file_secret_names: [file_secret_name],
+              labels: labels,
               name: workspace.name,
               namespace: workspace.namespace,
               replicas: replicas,
-              domain_template: domain_template,
-              labels: labels,
-              annotations: workspace_inventory_annotations,
-              env_secret_names: [env_secret_name],
-              file_secret_names: [file_secret_name],
               service_account_name: workspace.name,
-              default_resources_per_workspace_container: default_resources_per_workspace_container,
-              allow_privilege_escalation: allow_privilege_escalation,
-              use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
-              default_runtime_class: default_runtime_class
+              use_kubernetes_user_namespaces: use_kubernetes_user_namespaces
             }
 
             resources_from_devfile_parser = DevfileParser.get_all(

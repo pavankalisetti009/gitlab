@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe 'Mutation.organizationDeleteClusterAgentMapping', feature_category: :workspaces do
   include GraphqlHelpers
   include StubFeatureFlags
@@ -15,6 +16,10 @@ RSpec.describe 'Mutation.organizationDeleteClusterAgentMapping', feature_categor
 
   let(:mutation) do
     graphql_mutation(:organization_delete_cluster_agent_mapping, mutation_args)
+  end
+
+  let(:mutation_response) do
+    graphql_mutation_response(:organization_delete_cluster_agent_mapping)
   end
 
   let(:stub_service_payload) { { organization_cluster_agent_mapping: created_mapping } }
@@ -41,10 +46,6 @@ RSpec.describe 'Mutation.organizationDeleteClusterAgentMapping', feature_categor
         user: current_user
       }
     }
-  end
-
-  def mutation_response
-    graphql_mutation_response(:organization_delete_cluster_agent_mapping)
   end
 
   before do

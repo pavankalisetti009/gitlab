@@ -108,9 +108,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
           image_pull_secrets
           gitlab_workspaces_proxy_namespace
           labels
+          max_resources_per_workspace
           network_policy_enabled
           network_policy_egress
-          max_resources_per_workspace
           processed_devfile_yaml
           replicas
           secrets_inventory_annotations
