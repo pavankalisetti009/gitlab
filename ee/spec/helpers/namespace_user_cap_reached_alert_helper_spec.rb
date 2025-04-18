@@ -2,40 +2,32 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::NamespaceUserCapReachedAlertHelper, :use_clean_rails_memory_store_caching do
-  include ReactiveCachingHelpers
-
+RSpec.describe NamespaceUserCapReachedAlertHelper, type: :helper, feature_category: :seat_cost_management do
   describe '#display_namespace_user_cap_reached_alert?', :freeze_time do
     subject(:display_alert?) { helper.display_namespace_user_cap_reached_alert?(group) }
 
     context 'with a non persisted namespace' do
-      let(:group) { build(:group) }
+      let(:group) { build_stubbed(:group) }
 
-      it { is_expected.to eq(false) }
+      it { is_expected.to be(false) }
     end
 
     context 'with a persisted namespace' do
-      let_it_be(:group, refind: true) do
-        create(:group, :public,
-          namespace_settings: create(:namespace_settings, seat_control: :user_cap, new_user_signups_cap: 1))
+      let_it_be(:group) do
+        build_stubbed(:group, :public,
+          namespace_settings: build_stubbed(:namespace_settings, seat_control: :user_cap, new_user_signups_cap: 1))
       end
 
-      let_it_be(:subgroup) { create(:group, parent: group) }
-      let_it_be(:owner) { create(:user) }
-      let_it_be(:developer) { create(:user) }
-
-      before_all do
-        group.add_owner(owner)
-        group.add_developer(developer)
-      end
+      let_it_be(:subgroup) { build_stubbed(:group, parent: group) }
+      let_it_be(:owner) { build_stubbed(:user) }
+      let_it_be(:developer) { build_stubbed(:user) }
 
       before do
         allow(helper).to receive(:can?).with(owner, :admin_namespace, group).and_return(true)
         allow(helper).to receive(:can?).with(developer, :admin_namespace, group).and_return(false)
         allow(group).to receive(:user_cap_available?).and_return(true)
+        set_cap_reached(true)
         set_dismissed(false)
-
-        stub_cache(group)
       end
 
       it 'returns true when the user cap is reached for a user who can admin the namespace' do
@@ -44,18 +36,17 @@ RSpec.describe EE::NamespaceUserCapReachedAlertHelper, :use_clean_rails_memory_s
         expect(display_alert?).to be true
       end
 
-      it 'returns false when the user cap is reached for a user who cannot admin the namespace' do
-        sign_in(developer)
+      it 'returns false if the user cap has not been reached for a user who can admin the namespace' do
+        set_cap_reached(false)
+
+        sign_in(owner)
 
         expect(display_alert?).to be false
       end
 
-      it 'does not trigger reactive caching if there is no user cap set' do
-        group.namespace_settings.update!(seat_control: :off)
+      it 'returns false when the user cap is reached for a user who cannot admin the namespace' do
+        sign_in(developer)
 
-        sign_in(owner)
-
-        expect(group).not_to receive(:with_reactive_cache)
         expect(display_alert?).to be false
       end
 
@@ -75,14 +66,19 @@ RSpec.describe EE::NamespaceUserCapReachedAlertHelper, :use_clean_rails_memory_s
         expect(display_alert?).to be false
       end
 
+      it 'returns false if on the pending members page' do
+        allow(helper).to receive(:current_page?).with(pending_members_group_usage_quotas_path(group)).and_return(true)
+        sign_in(owner)
+
+        expect(display_alert?).to be false
+      end
+
       def sign_in(user)
         allow(helper).to receive(:current_user).and_return(user)
       end
 
-      def stub_cache(group)
-        group_with_fresh_memoization = Group.find(group.id)
-        result = group_with_fresh_memoization.calculate_reactive_cache
-        stub_reactive_cache(group, result)
+      def set_cap_reached(user_cap_reached)
+        allow(group).to receive(:user_cap_reached?).with(use_cache: true).and_return(user_cap_reached)
       end
 
       def set_dismissed(dismissed)
