@@ -3,11 +3,9 @@
 fragment WorkItemWidgets on WorkItemWidget {
   ...BaseWorkItemWidgets
   ... on WorkItemWidgetHealthStatus {
-    type
     healthStatus
   }
   ... on WorkItemWidgetWeight {
-    type
     weight
   }
   ... on WorkItemWidgetLinkedItems {
