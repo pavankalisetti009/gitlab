@@ -8,8 +8,7 @@ module Resolvers
       def resolve
         return false unless current_user
 
-        Feature.enabled?(:ai_duo_chat_switch, type: :ops) &&
-          ::Gitlab::Llm::Chain::Utils::ChatAuthorizer.user(user: current_user).allowed?
+        ::Gitlab::Llm::Chain::Utils::ChatAuthorizer.user(user: current_user).allowed?
       end
     end
   end

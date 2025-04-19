@@ -56,29 +56,5 @@ RSpec.describe Gitlab::Llm::Utils::FlagChecker, feature_category: :ai_abstractio
         end
       end
     end
-
-    context 'for chat feature' do
-      let(:feature) { :chat }
-
-      context 'when chat feature flag is disabled' do
-        before do
-          stub_feature_flags(ai_duo_chat_switch: false)
-        end
-
-        it 'returns false' do
-          expect(response).to eq(false)
-        end
-      end
-
-      context 'when chat feature flag is enabled' do
-        before do
-          stub_feature_flags(ai_duo_chat_switch: true)
-        end
-
-        it 'returns true' do
-          expect(response).to eq(true)
-        end
-      end
-    end
   end
 end

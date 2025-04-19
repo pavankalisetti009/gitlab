@@ -248,7 +248,6 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       end
 
       it_behaves_like 'an AI action'
-      it_behaves_like 'an AI action when feature flag disabled', :ai_duo_chat_switch
     end
 
     context 'when summarize_comments input is set' do
@@ -329,7 +328,6 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       let(:expected_thread_id) { user.ai_conversation_threads.last.to_global_id }
 
       it_behaves_like 'an AI action'
-      it_behaves_like 'an AI action when feature flag disabled', :ai_duo_chat_switch
 
       it 'creates a thread' do
         resource.project.add_developer(user)
@@ -370,7 +368,6 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       let(:expected_thread_id) { thread.to_global_id }
 
       it_behaves_like 'an AI action'
-      it_behaves_like 'an AI action when feature flag disabled', :ai_duo_chat_switch
 
       it 'does not create a thread' do
         resource.project.add_developer(user)
@@ -449,7 +446,6 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       end
 
       it_behaves_like 'an AI action'
-      it_behaves_like 'an AI action when feature flag disabled', :ai_duo_chat_switch
     end
 
     context 'when explain_vulnerability input is set', :saas do
