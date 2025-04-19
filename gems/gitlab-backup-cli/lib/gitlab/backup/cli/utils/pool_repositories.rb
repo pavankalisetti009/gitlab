@@ -16,15 +16,12 @@ module Gitlab
           def reinitialize!
             Gitlab::Backup::Cli::Output.info "Reinitializing object pools..."
 
-            rake = Gitlab::Backup::Cli::Utils::Rake.new(
-              'gitlab:backup:repo:reset_pool_repositories',
-              chdir: gitlab_basepath)
-
+            rake = build_reset_task
             rake.capture_each do |stream, output|
-              next Gitlab::Backup::Cli::Output.warn output if stream == :stderr
+              next Gitlab::Backup::Cli::Output.warning output if stream == :stderr
 
               pool = parse_pool_results(output)
-              next Gitlab::Backup::Cli::Output.warn "Failed to parse: #{output}" unless pool
+              next Gitlab::Backup::Cli::Output.warning "Failed to parse: #{output}" unless pool
 
               case pool.status.to_sym
               when :scheduled
@@ -40,6 +37,12 @@ module Gitlab
           end
 
           private
+
+          def build_reset_task
+            Gitlab::Backup::Cli::Utils::Rake.new(
+              'gitlab:backup:repo:reset_pool_repositories',
+              chdir: gitlab_basepath)
+          end
 
           def parse_pool_results(line)
             return unless line.start_with?('{') && line.end_with?('}')

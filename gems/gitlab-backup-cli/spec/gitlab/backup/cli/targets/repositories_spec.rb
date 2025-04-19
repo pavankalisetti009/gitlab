@@ -35,7 +35,7 @@ RSpec.describe Gitlab::Backup::Cli::Targets::Repositories do
   end
 
   describe '#enqueue_consecutive' do
-    it 'calls each resource respective enqueue methods' do
+    it 'calls each resource respective enqueue methods', :aggregate_failures do
       expect(repo_target).to receive(:enqueue_consecutive_projects_source_code)
       expect(repo_target).to receive(:enqueue_consecutive_projects_wiki)
       expect(repo_target).to receive(:enqueue_consecutive_groups_wiki)
