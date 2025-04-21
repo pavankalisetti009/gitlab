@@ -166,7 +166,7 @@ export default {
           :runners="runners"
           @runnerSelected="updateSelectedRunnerUsageByMonth"
         >
-          <gl-form-group class="gl-mr-4" :label="s__('UsageQuota|Filter chart by year')">
+          <gl-form-group class="gl-mr-4" :label="__('Year')">
             <gl-collapsible-listbox
               v-model="selectedYear"
               :items="years"
@@ -190,7 +190,7 @@ export default {
           :runners="runners"
           @runnerSelected="updatedSelectedRunnerUsageByNamespace"
         >
-          <gl-form-group class="gl-mr-4" :label="s__('UsageQuota|Filter list by month')">
+          <gl-form-group class="gl-mr-4" :label="__('Month')">
             <gl-collapsible-listbox
               v-model="selectedMonth"
               :items="months"

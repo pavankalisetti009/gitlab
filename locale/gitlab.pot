@@ -64680,16 +64680,7 @@ msgstr ""
 msgid "UsageQuota|Excess storage usage"
 msgstr ""
 
-msgid "UsageQuota|Filter by runner"
-msgstr ""
-
-msgid "UsageQuota|Filter chart by year"
-msgstr ""
-
 msgid "UsageQuota|Filter charts by year"
-msgstr ""
-
-msgid "UsageQuota|Filter list by month"
 msgstr ""
 
 msgid "UsageQuota|Filter projects data by month"
