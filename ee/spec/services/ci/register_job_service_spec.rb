@@ -219,10 +219,6 @@ RSpec.describe Ci::RegisterJobService, '#execute', feature_category: :continuous
 
         context 'when there is no Vault server provided' do
           it 'does not pick the build and drops the build during the validation before assigning runner' do
-            allow_next_instance_of(Ci::PipelineCreation::DropSecretsProviderNotFoundBuildsService) do |instance|
-              expect(instance).not_to receive(:execute)
-            end
-
             result = service.execute(params).build
 
             aggregate_failures do
@@ -230,20 +226,6 @@ RSpec.describe Ci::RegisterJobService, '#execute', feature_category: :continuous
               expect(pending_build.reload).to be_failed
               expect(pending_build.failure_reason).to eq('secrets_provider_not_found')
               expect(pending_build).to be_secrets_provider_not_found
-            end
-          end
-
-          context 'when enable_secrets_provider_check_on_pre_assign_runner_checks feature flag is disabled' do
-            before do
-              stub_feature_flags(enable_secrets_provider_check_on_pre_assign_runner_checks: false)
-            end
-
-            it 'validates the secrets provider using DropSecretsProviderNotFoundBuildsService service' do
-              allow_next_instance_of(Ci::PipelineCreation::DropSecretsProviderNotFoundBuildsService) do |instance|
-                expect(instance).to receive(:execute)
-              end
-
-              service.execute(params).build
             end
           end
         end
