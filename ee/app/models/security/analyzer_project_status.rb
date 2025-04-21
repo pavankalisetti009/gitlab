@@ -5,6 +5,7 @@ module Security
     self.table_name = 'analyzer_project_statuses'
 
     belongs_to :project
+    belongs_to :build, class_name: 'Ci::Build', optional: true
 
     enum analyzer_type: Enums::Security.analyzer_types
     enum status: {
