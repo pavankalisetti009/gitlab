@@ -42,7 +42,9 @@ module EE
               event.attributes.except('id').merge(
                 'issue_id' => new_entity.id,
                 'action' => ResourceIterationEvent.actions[event.action]
-              )
+              ).tap do |attrs|
+                attrs['namespace_id'] = event.iteration.group_id unless attrs['namespace_id'].to_i > 0
+              end
             end
           end
         end
