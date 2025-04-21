@@ -11,7 +11,6 @@ import {
 } from '@gitlab/ui';
 
 import { STATUS_OPEN, WORKSPACE_PROJECT } from '~/issues/constants';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import IssuableShow from '~/vue_shared/issuable/show/components/issuable_show_root.vue';
 import IssuableEventHub from '~/vue_shared/issuable/show/event_hub';
 import { s__, __ } from '~/locale';
@@ -84,12 +83,6 @@ export default {
       const todos = this.testCase.currentUserTodos.nodes;
 
       return todos.length ? todos[0] : null;
-    },
-    selectedLabels() {
-      return this.testCase.labels.nodes.map((label) => ({
-        ...label,
-        id: getIdFromGraphQLId(label.id),
-      }));
     },
     editTestCaseItem() {
       return {
@@ -275,7 +268,6 @@ export default {
       <template #right-sidebar-items="{ sidebarExpanded, toggleSidebar }">
         <test-case-sidebar
           :sidebar-expanded="sidebarExpanded"
-          :selected-labels="selectedLabels"
           :moved="testCase.moved"
           @test-case-updated="handleTestCaseUpdated"
           @sidebar-toggle="toggleSidebar"

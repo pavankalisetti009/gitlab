@@ -1,7 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import TestCaseSidebar from 'ee/test_case_show/components/test_case_sidebar.vue';
-import { mockLabels } from 'jest/vue_shared/issuable/list/mock_data';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import ProjectSelect from '~/sidebar/components/move/issuable_move_dropdown.vue';
 import LabelsSelectWidget from '~/sidebar/components/labels/labels_select_widget/labels_select_root.vue';
@@ -18,12 +17,7 @@ Vue.use(VueApollo);
 describe('TestCaseSidebar', () => {
   let wrapper;
 
-  const createComponent = ({
-    provide = {},
-    sidebarExpanded = true,
-    selectedLabels = mockLabels,
-    moved = false,
-  } = {}) => {
+  const createComponent = ({ provide = {}, sidebarExpanded = true, moved = false } = {}) => {
     const apolloProvider = createMockApollo([[projectTestCase, mockTaskCompletionResponse]]);
 
     wrapper = shallowMountExtended(TestCaseSidebar, {
@@ -34,7 +28,6 @@ describe('TestCaseSidebar', () => {
       apolloProvider,
       propsData: {
         sidebarExpanded,
-        selectedLabels,
         moved,
       },
     });

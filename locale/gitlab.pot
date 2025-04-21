@@ -60158,9 +60158,6 @@ msgstr ""
 msgid "TestCases|Something went wrong while moving test case."
 msgstr ""
 
-msgid "TestCases|Something went wrong while updating the test case labels."
-msgstr ""
-
 msgid "TestCases|Something went wrong while updating the test case."
 msgstr ""
 
