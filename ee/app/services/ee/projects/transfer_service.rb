@@ -36,6 +36,7 @@ module EE
         delete_scan_result_policies(old_group)
         unassign_policy_project
         sync_new_group_policies
+        create_security_policy_bot
         delete_compliance_framework_setting(old_group)
         update_compliance_standards_adherence
       end
@@ -72,6 +73,13 @@ module EE
         project.all_security_orchestration_policy_configurations.each do |configuration|
           ::Security::SyncProjectPoliciesWorker.perform_async(project.id, configuration.id)
         end
+      end
+
+      def create_security_policy_bot
+        return unless project.licensed_feature_available?(:security_orchestration_policies)
+        return unless project.all_security_orchestration_policy_configurations(include_invalid: true).any?
+
+        ::Security::Orchestration::CreateBotService.new(project, current_user).execute
       end
 
       def delete_compliance_framework_setting(old_group)

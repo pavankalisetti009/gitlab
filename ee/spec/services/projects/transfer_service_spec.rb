@@ -142,6 +142,12 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
 
         expect { configuration.reload }.to raise_exception(ActiveRecord::RecordNotFound)
       end
+
+      it 'does not create a security policy bot' do
+        expect(::Security::Orchestration::CreateBotService).not_to receive(:new)
+
+        subject.execute(group)
+      end
     end
 
     context 'when project has inherited policy project' do
@@ -179,6 +185,14 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
 
           subject.execute(sub_group)
         end
+
+        it 'creates a security policy bot' do
+          expect_next_instance_of(::Security::Orchestration::CreateBotService) do |service|
+            expect(service).to receive(:execute).and_call_original
+          end
+
+          subject.execute(sub_group)
+        end
       end
 
       context 'when transferring the project from one hierarchy to another' do
@@ -200,6 +214,24 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
           expect(Security::ScanResultPolicies::SyncProjectWorker).to receive(:perform_async).with(project.id)
 
           subject.execute(other_group)
+        end
+
+        it 'does not create a security policy bot' do
+          expect(::Security::Orchestration::CreateBotService).not_to receive(:new)
+
+          subject.execute(other_group)
+        end
+
+        context 'and the new group has a security policy' do
+          let_it_be(:other_group_configuration, reload: true) { create(:security_orchestration_policy_configuration, project: nil, namespace: other_group) }
+
+          it 'creates a security policy bot' do
+            expect_next_instance_of(::Security::Orchestration::CreateBotService) do |service|
+              expect(service).to receive(:execute).and_call_original
+            end
+
+            subject.execute(other_group)
+          end
         end
       end
     end
