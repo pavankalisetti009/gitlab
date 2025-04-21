@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Secure', product_group: :composition_analysis,
-    only: { subdomain: %i[staging staging-canary] } do
+    only: { pipeline: %i[staging staging-canary] } do
     describe 'License Scanning' do
       let!(:test_project) do
         create(:project, :with_readme, name: 'license-scanning-project', description: 'License Scanning Project')
