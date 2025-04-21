@@ -168,29 +168,14 @@ RSpec.describe Sbom::DependenciesFinder, feature_category: :dependency_managemen
 
           expect(component_names).to eq([occurrence_1.name])
         end
-
-        context 'when component_version_ids is also present in params' do
-          let_it_be(:params) do
-            {
-              component_names: [occurrence_1.name],
-              component_ids: [occurrence_2.component_id]
-            }
-          end
-
-          it 'returns only records corresponding to the filter by component_version_ids' do
-            component_names = dependencies.map(&:name)
-
-            expect(component_names).to eq([occurrence_2.name])
-          end
-        end
       end
 
-      context 'when filtered by component version IDs' do
-        context 'when `version_filtering_on_project_level_dependency_list` feature flag is enabled' do
+      context 'when filtered by component versions' do
+        context 'when version filtering feature flag is enabled' do
           context 'when negated filter present' do
             let_it_be(:params) do
               {
-                not: { component_version_ids: [occurrence_1.component_version_id] }
+                not: { component_versions: [occurrence_1.component_version.version] }
               }
             end
 
@@ -205,7 +190,7 @@ RSpec.describe Sbom::DependenciesFinder, feature_category: :dependency_managemen
           context 'when negated filter is not present' do
             let_it_be(:params) do
               {
-                component_version_ids: [occurrence_1.component_version_id]
+                component_versions: [occurrence_1.component_version.version]
               }
             end
 
@@ -217,14 +202,15 @@ RSpec.describe Sbom::DependenciesFinder, feature_category: :dependency_managemen
           end
         end
 
-        context 'when `version_filtering_on_project_level_dependency_list` feature flag is disabled' do
+        context 'when version filtering FF feature flag is disabled' do
           before do
             stub_feature_flags(version_filtering_on_project_level_dependency_list: false)
+            stub_feature_flags(version_filtering_on_group_level_dependency_list: false)
           end
 
           let_it_be(:params) do
             {
-              component_version_ids: [occurrence_1.component_version_id]
+              component_versions: [occurrence_1.component_version.version]
             }
           end
 

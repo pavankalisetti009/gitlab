@@ -76,6 +76,16 @@ module Sbom
     end
 
     scope :unarchived, -> { where(archived: false) }
+
+    # This scope helps to use the available index for filter performance
+    scope :for_project, ->(project) do
+      where(
+        traversal_ids: project.namespace.traversal_ids,
+        archived: project.archived,
+        project_id: project.id
+      )
+    end
+
     scope :by_project_ids, ->(project_ids) do
       where(project_id: project_ids)
     end
