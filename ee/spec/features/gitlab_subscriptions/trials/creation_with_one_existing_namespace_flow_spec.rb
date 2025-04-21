@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'Trial lead submission and creation with one eligible namespace', :saas_trial, :js, :use_clean_rails_memory_store_caching, feature_category: :plan_provisioning do
-  let_it_be(:user) { create(:user) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- to skip registration and creating group
+  let_it_be(:user, reload: true) { create(:user) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- to skip registration and creating group
   let_it_be_with_reload(:group) { create(:group_with_plan, name: 'gitlab', owners: user) } # rubocop:disable Gitlab/RSpec/AvoidSetup -- to skip registration and creating group
 
   before_all do
@@ -22,6 +22,25 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       submit_single_namespace_trial_company_form(with_trial: true)
 
       expect_to_be_on_gitlab_duo_page
+    end
+
+    context 'when last name is blank' do
+      it 'fills out form, including last name, submits and lands on the duo page' do
+        user.update!(name: 'Bob')
+
+        sign_in(user)
+
+        stub_cdot_namespace_eligible_trials
+        visit new_trial_path
+
+        expect_to_be_on_lead_form_with_name_fields
+
+        fill_in_company_information_with_last_name('Smith')
+
+        submit_single_namespace_trial_company_form(with_trial: true, last_name: 'Smith')
+
+        expect_to_be_on_gitlab_duo_page
+      end
     end
 
     context 'on a premium plan' do

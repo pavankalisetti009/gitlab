@@ -42,6 +42,13 @@ module Features
       expect(page).to have_content('This trial is for')
     end
 
+    def expect_to_be_on_lead_form_with_name_fields
+      within_testid('lead-form') do
+        expect(find_by_testid('first-name-field').value).to have_content(user.first_name)
+        expect(find_by_testid('last-name-field').value).to have_content(user.last_name)
+      end
+    end
+
     def expect_to_have_namespace_creation_errors(group_name: '_invalid group name_', error_message: 'Group URL can')
       within('[data-testid="trial-form"]') do
         expect(page).not_to have_content('This trial is for')
@@ -105,11 +112,17 @@ module Features
       select form_data.dig(:state, :name), from: 'state'
     end
 
+    def fill_in_company_information_with_last_name(last_name)
+      fill_in 'last_name', with: last_name
+      fill_in_company_information
+    end
+
     def submit_company_information_form(
       button_text: 'Continue',
       lead_result: ServiceResponse.success,
       trial_result: ServiceResponse.success,
       with_trial: false,
+      last_name: user.last_name,
       extra_params: {}
     )
       # lead
@@ -117,7 +130,7 @@ module Features
         company_name: form_data[:company_name],
         company_size: form_data[:company_size].delete(' '),
         first_name: user.first_name,
-        last_name: user.last_name,
+        last_name: last_name,
         phone_number: form_data[:phone_number],
         country: form_data.dig(:country, :id),
         work_email: user.email,
@@ -226,6 +239,7 @@ module Features
       lead_result: ServiceResponse.success,
       trial_result: ServiceResponse.success,
       with_trial: false,
+      last_name: user.last_name,
       button_text: 'Continue'
     )
       # lead
@@ -233,7 +247,7 @@ module Features
         company_name: form_data[:company_name],
         company_size: form_data[:company_size].delete(' '),
         first_name: user.first_name,
-        last_name: user.last_name,
+        last_name: last_name,
         phone_number: form_data[:phone_number],
         country: form_data.dig(:country, :id),
         work_email: user.email,
@@ -347,6 +361,7 @@ module Features
       lead_result: ServiceResponse.success,
       trial_result: ServiceResponse.success,
       with_trial: false,
+      last_name: user.last_name,
       button_text: 'Continue'
     )
       # lead
@@ -354,7 +369,7 @@ module Features
         company_name: form_data[:company_name],
         company_size: form_data[:company_size].delete(' '),
         first_name: user.first_name,
-        last_name: user.last_name,
+        last_name: last_name,
         phone_number: form_data[:phone_number],
         country: form_data.dig(:country, :id),
         work_email: user.email,

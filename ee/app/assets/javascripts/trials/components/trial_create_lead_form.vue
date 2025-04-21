@@ -82,9 +82,9 @@ export default {
 </script>
 
 <template>
-  <gl-form :action="submitPath" method="post" @submit="onSubmit">
+  <gl-form :action="submitPath" method="post" data-testid="lead-form" @submit="onSubmit">
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
-    <div class="gl-mt-5 gl-flex gl-flex-col sm:gl-flex-row">
+    <div v-show="showNameFields" class="gl-mt-5 gl-flex gl-flex-col sm:gl-flex-row">
       <gl-form-group
         :label="$options.i18n.firstNameLabel"
         label-size="sm"

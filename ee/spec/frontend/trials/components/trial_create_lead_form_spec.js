@@ -7,7 +7,12 @@ import TrialCreateLeadForm from 'ee/trials/components/trial_create_lead_form.vue
 import CountryOrRegionSelector from 'jh_else_ee/trials/components/country_or_region_selector.vue';
 import { TRIAL_TERMS_TEXT } from 'ee/trials/constants';
 import { trackSaasTrialLeadSubmit } from 'ee/google_tag_manager';
-import { FORM_DATA, SUBMIT_PATH, GTM_SUBMIT_EVENT_LABEL } from './mock_data';
+import {
+  FORM_DATA,
+  NO_USER_LAST_NAME_FORM_DATA,
+  SUBMIT_PATH,
+  GTM_SUBMIT_EVENT_LABEL,
+} from './mock_data';
 
 jest.mock('ee/google_tag_manager', () => ({
   trackSaasTrialLeadSubmit: jest.fn(),
@@ -21,13 +26,15 @@ describe('TrialCreateLeadForm', () => {
 
   const createComponent = ({
     mountFunction = shallowMountExtended,
-    provide = { submitButtonText },
+    provide = {},
+    formData = FORM_DATA,
   } = {}) =>
     mountFunction(TrialCreateLeadForm, {
       provide: {
         submitPath: SUBMIT_PATH,
-        user: FORM_DATA,
+        user: formData,
         gtmSubmitEventLabel: GTM_SUBMIT_EVENT_LABEL,
+        submitButtonText,
         ...provide,
       },
       stubs: {
@@ -43,35 +50,62 @@ describe('TrialCreateLeadForm', () => {
   const findTermsSprintf = () => wrapper.findComponent(GlSprintf);
 
   describe('rendering', () => {
-    beforeEach(() => {
-      wrapper = createComponent();
+    const FORM_FIELDS = [
+      'first-name-field',
+      'last-name-field',
+      'company-name-field',
+      'company-size-dropdown',
+      'phone-number-field',
+    ];
+
+    describe('with default props', () => {
+      beforeEach(() => {
+        wrapper = createComponent();
+      });
+
+      it.each`
+        testid                     | value
+        ${'first-name-field'}      | ${'Joe'}
+        ${'last-name-field'}       | ${''}
+        ${'company-name-field'}    | ${'ACME'}
+        ${'phone-number-field'}    | ${'192919'}
+        ${'company-size-dropdown'} | ${'1-99'}
+      `('has the default injected value for $testid', ({ testid, value }) => {
+        expect(findFormInput(testid).attributes('value')).toBe(value);
+      });
+
+      it('has the correct form input in the form content', () => {
+        FORM_FIELDS.forEach((f) => expect(findFormInput(f).exists()).toBe(true));
+        FORM_FIELDS.forEach((f) => expect(findFormInput(f).isVisible()).toBe(true));
+      });
+
+      it('has correct terms and conditions content', () => {
+        expect(findTermsSprintf().attributes('message')).toBe(TRIAL_TERMS_TEXT);
+      });
     });
 
-    it.each`
-      testid                     | value
-      ${'first-name-field'}      | ${'Joe'}
-      ${'last-name-field'}       | ${'Doe'}
-      ${'company-name-field'}    | ${'ACME'}
-      ${'phone-number-field'}    | ${'192919'}
-      ${'company-size-dropdown'} | ${'1-99'}
-    `('has the default injected value for $testid', ({ testid, value }) => {
-      expect(findFormInput(testid).attributes('value')).toBe(value);
-    });
+    describe('with hidden name fields', () => {
+      beforeEach(() => {
+        wrapper = createComponent({ formData: NO_USER_LAST_NAME_FORM_DATA });
+      });
 
-    it('has the correct form input in the form content', () => {
-      const visibleFields = [
-        'first-name-field',
-        'last-name-field',
-        'company-name-field',
-        'company-size-dropdown',
-        'phone-number-field',
-      ];
+      it.each`
+        testid                     | value
+        ${'first-name-field'}      | ${'Joe'}
+        ${'last-name-field'}       | ${'Doe'}
+        ${'company-name-field'}    | ${'ACME'}
+        ${'phone-number-field'}    | ${'192919'}
+        ${'company-size-dropdown'} | ${'1-99'}
+      `('has the default injected value for $testid', ({ testid, value }) => {
+        expect(findFormInput(testid).attributes('value')).toBe(value);
+      });
 
-      visibleFields.forEach((f) => expect(findFormInput(f).exists()).toBe(true));
-    });
+      it('has the correct form input in the form content when name fields are hidden', () => {
+        const NAME_FIELDS = ['first-name-field', 'last-name-field'];
 
-    it('has correct terms and conditions content', () => {
-      expect(findTermsSprintf().attributes('message')).toBe(TRIAL_TERMS_TEXT);
+        FORM_FIELDS.forEach((f) => expect(findFormInput(f).exists()).toBe(true));
+        NAME_FIELDS.forEach((f) => expect(findFormInput(f).isVisible()).toBe(false));
+      });
     });
   });
 

@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Duo Pro trial lead submission and creation with one eligible namespace', :saas_trial, :js, feature_category: :acquisition do
   # rubocop:disable Gitlab/RSpec/AvoidSetup -- to skip registration and creating group
-  let_it_be(:user) { create(:user) }
+  let_it_be(:user, reload: true) { create(:user) }
   let_it_be(:group) do
     create(:group_with_plan, plan: :premium_plan, name: 'gitlab').tap do |record|
       record.add_owner(user)
@@ -27,6 +27,24 @@ RSpec.describe 'Duo Pro trial lead submission and creation with one eligible nam
       submit_single_namespace_duo_pro_trial_company_form(with_trial: true)
 
       expect_to_be_on_gitlab_duo_page
+    end
+
+    context 'when last name is blank' do
+      it 'fills out form, including last name, submits and lands on the duo page' do
+        user.update!(name: 'Bob')
+
+        sign_in(user)
+
+        visit new_trials_duo_pro_path
+
+        expect_to_be_on_lead_form_with_name_fields
+
+        fill_in_company_information_with_last_name('Smith')
+
+        submit_single_namespace_duo_pro_trial_company_form(with_trial: true, last_name: 'Smith')
+
+        expect_to_be_on_gitlab_duo_page
+      end
     end
   end
 
