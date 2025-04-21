@@ -96,6 +96,7 @@ module Sbom
       relation = filter_by_component_ids(relation)
       relation = filter_by_component_names(relation)
       relation = filter_by_package_managers(relation)
+      relation = filter_by_component_versions(relation)
 
       relation
         .order(inner_order)
@@ -126,6 +127,20 @@ module Sbom
       return relation unless params[:package_managers].present?
 
       relation.filter_by_package_managers(params[:package_managers])
+    end
+
+    def filter_by_component_versions(relation)
+      return relation if Feature.disabled?(:version_filtering_on_group_level_dependency_list, namespace)
+
+      negated_filter = params[:not]
+
+      return relation if params[:component_versions].blank? && negated_filter.nil?
+
+      if params[:component_versions]
+        relation.filter_by_component_versions(params[:component_versions])
+      elsif negated_filter && negated_filter[:component_versions]
+        relation.filter_by_non_component_versions(negated_filter[:component_versions])
+      end
     end
 
     def inner_order

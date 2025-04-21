@@ -364,5 +364,55 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
         with_them { it { is_expected.to match_array expected_uniq_package_managers } }
       end
     end
+
+    context 'when filtered by component versions' do
+      context 'when `version_filtering_on_group_level_dependency_list` feature flag is enabled' do
+        context 'when negated filter present' do
+          let_it_be(:params) do
+            {
+              not: { component_versions: [target_occurrences.first.component_version.version] }
+            }
+          end
+
+          it 'returns only records corresponding to the filter' do
+            component_version_ids = execute.map(&:component_version_id)
+
+            expect(component_version_ids).to match_array([target_occurrences.second.component_version_id])
+          end
+        end
+
+        context 'when negated filter is not present' do
+          let_it_be(:params) do
+            {
+              component_versions: [target_occurrences.first.component_version.version]
+            }
+          end
+
+          it 'returns only records corresponding to the filter' do
+            component_version_ids = execute.map(&:component_version_id)
+
+            expect(component_version_ids).to eq([target_occurrences.first.component_version_id])
+          end
+        end
+      end
+
+      context 'when `version_filtering_on_group_level_dependency_list` feature flag is disabled' do
+        before do
+          stub_feature_flags(version_filtering_on_group_level_dependency_list: false)
+        end
+
+        let_it_be(:params) do
+          {
+            component_versions: [target_occurrences.first.component_version.version]
+          }
+        end
+
+        it 'returns all records' do
+          component_version_ids = execute.map(&:component_version_id)
+
+          expect(component_version_ids).to match_array(target_occurrences.map(&:component_version_id))
+        end
+      end
+    end
   end
 end
