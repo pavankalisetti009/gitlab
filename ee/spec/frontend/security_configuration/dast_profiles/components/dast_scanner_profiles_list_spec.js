@@ -1,5 +1,5 @@
 import { mount, shallowMount } from '@vue/test-utils';
-import { merge } from 'lodash';
+import { merge, omit } from 'lodash';
 import ProfilesList from 'ee/security_configuration/dast_profiles/components/dast_profiles_list.vue';
 import Component from 'ee/security_configuration/dast_profiles/components/dast_scanner_profiles_list.vue';
 import { scannerProfiles } from '../mocks/mock_data';
@@ -15,7 +15,6 @@ describe('EE - DastScannerProfileList', () => {
     errorMessage: '',
     noProfilesMessage: 'no scanner profiles created yet',
     errorDetails: [],
-    fullPath: '/namespace/project',
     hasMoreProfilesToLoad: false,
     isLoading: false,
   };
@@ -48,7 +47,7 @@ describe('EE - DastScannerProfileList', () => {
   it('passes down the props properly', () => {
     createFullComponent();
 
-    expect(findProfileList().props()).toEqual(defaultProps);
+    expect(findProfileList().props()).toEqual(omit(defaultProps, 'fullPath'));
   });
 
   it('sets listeners on profile list component', () => {

@@ -73,10 +73,6 @@ export default {
       required: false,
       default: false,
     },
-    fullPath: {
-      type: String,
-      required: true,
-    },
   },
   data() {
     return {

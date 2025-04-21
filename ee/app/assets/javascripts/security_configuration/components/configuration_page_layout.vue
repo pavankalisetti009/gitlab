@@ -5,13 +5,6 @@ export default {
   components: {
     PageHeading,
   },
-  props: {
-    noBorder: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-  },
 };
 </script>
 

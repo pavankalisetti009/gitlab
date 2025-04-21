@@ -52,6 +52,7 @@ export default {
     },
   },
   methods: {
+    // eslint-disable-next-line vue/no-unused-properties -- show() is part of the parent component.
     show() {
       this.$refs.deleteModal.show();
     },

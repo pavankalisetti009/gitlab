@@ -28,17 +28,7 @@ export default {
       required: false,
       default: '',
     },
-    pipelineId: {
-      type: String,
-      required: false,
-      default: '',
-    },
     pipelineCreatedAt: {
-      type: String,
-      required: false,
-      default: '',
-    },
-    pipelinePath: {
       type: String,
       required: false,
       default: '',

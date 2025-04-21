@@ -71,7 +71,6 @@ export default {
     return {
       sastCiConfiguration: null,
       hasLoadingError: false,
-      specificErrorText: undefined,
       errorText: '',
     };
   },

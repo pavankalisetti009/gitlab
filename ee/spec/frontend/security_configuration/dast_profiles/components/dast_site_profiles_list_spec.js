@@ -1,6 +1,6 @@
 import { within } from '@testing-library/dom';
 import Vue, { nextTick } from 'vue';
-import { merge } from 'lodash';
+import { merge, omit } from 'lodash';
 import { GlButton, GlTable } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import VueApollo from 'vue-apollo';
@@ -107,7 +107,7 @@ describe('EE - DastSiteProfileList', () => {
   it('passes down the props properly', () => {
     createFullComponent();
 
-    expect(findProfileList().props()).toEqual(defaultProps);
+    expect(findProfileList().props()).toEqual(omit(defaultProps, 'fullPath'));
   });
 
   it('sets listeners on profile list component', () => {

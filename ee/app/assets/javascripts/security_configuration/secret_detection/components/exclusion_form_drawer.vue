@@ -44,6 +44,7 @@ export default {
     },
   },
   methods: {
+    // eslint-disable-next-line vue/no-unused-properties -- `open()` is called from the parent component
     open(mode = DRAWER_MODES.ADD, item = {}) {
       this.exclusion = item;
       this.mode = mode;

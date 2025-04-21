@@ -32,6 +32,7 @@ export default {
     HelpIcon,
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties -- `validations` is not tied to an internal state property
     validations: {
       query: dastSiteValidationsQuery,
       fetchPolicy: fetchPolicies.NO_CACHE,
@@ -76,7 +77,6 @@ export default {
     return {
       validatingProfile: null,
       revokeValidationProfile: null,
-      validations: [],
     };
   },
   DOCS_LINK: `${DOCS_URL_IN_EE_DIR}/user/application_security/dast/proxy-based#site-profile-validation`,

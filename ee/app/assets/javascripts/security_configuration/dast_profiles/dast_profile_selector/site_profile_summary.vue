@@ -23,7 +23,7 @@ import { getTimeDifferenceMinutes } from 'ee/security_configuration/utils';
 import DastProfileSummaryCard from './dast_profile_summary_card.vue';
 import SummaryCell from './summary_cell.vue';
 
-const { NONE, PENDING, INPROGRESS, FAILED, PASSED } = DAST_SITE_VALIDATION_STATUS;
+const { NONE, PENDING, INPROGRESS, FAILED } = DAST_SITE_VALIDATION_STATUS;
 
 export default {
   SITE_TYPE,
@@ -121,11 +121,6 @@ export default {
     },
     isTargetAPI() {
       return this.profile.targetType === TARGET_TYPES.API.value;
-    },
-    isProfileValidated() {
-      return this.profile.validationStatus === PASSED
-        ? s__('DastProfiles|Validated')
-        : s__('DastProfiles|Not Validated');
     },
     selectedScanMethod() {
       return SCAN_METHODS[this.profile.scanMethod];

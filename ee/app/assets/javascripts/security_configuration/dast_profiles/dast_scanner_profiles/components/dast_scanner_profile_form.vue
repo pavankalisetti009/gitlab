@@ -72,6 +72,7 @@ export default {
 
     return {
       form,
+      // eslint-disable-next-line vue/no-unused-properties -- initialFormValues is used in dastProfileFormMixin
       initialFormValues: serializeFormObject(form.fields),
     };
   },
