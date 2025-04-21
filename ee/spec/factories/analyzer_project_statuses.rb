@@ -3,7 +3,8 @@
 FactoryBot.define do
   factory :analyzer_project_status, class: 'Security::AnalyzerProjectStatus' do
     project
-    status { :not_configured }
+    build factory: [:ci_build, :success]
+    status { :success }
     analyzer_type { :sast }
     last_call { Time.current }
 
