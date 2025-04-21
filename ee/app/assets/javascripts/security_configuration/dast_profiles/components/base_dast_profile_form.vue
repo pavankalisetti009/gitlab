@@ -28,11 +28,6 @@ export default {
   },
   mixins: [dastProfileConfiguratorMixin()],
   props: {
-    profile: {
-      type: Object,
-      required: false,
-      default: () => ({}),
-    },
     mutation: {
       type: Object,
       required: true,

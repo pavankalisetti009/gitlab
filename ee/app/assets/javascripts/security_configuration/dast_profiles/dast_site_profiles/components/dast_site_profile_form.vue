@@ -135,13 +135,10 @@ export default {
     return {
       form,
       authSection: { fields: auth },
+      // eslint-disable-next-line vue/no-unused-properties -- initialFormValues is used in dastProfileFormMixin.
       initialFormValues: serializeFormObject(form.fields),
-      tokenId: null,
-      token: null,
       targetTypesOptions: Object.values(TARGET_TYPES),
-      showAPIFilePath: false,
       scanMethodOptions: Object.values(SCAN_METHODS),
-      SCAN_METHODS,
     };
   },
   computed: {

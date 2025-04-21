@@ -135,6 +135,10 @@ export default {
       });
       this.close();
     },
+    // `editVariable` is called in `dast_variables_form_group`.
+    // This should be refactored to leverage a prop rather than have the consumer call some
+    // internal method.
+    // eslint-disable-next-line vue/no-unused-properties
     editVariable() {
       this.isEdit = true;
       this.selectedVariableValid = true;
@@ -143,6 +147,10 @@ export default {
       this.extendSelectedVariable();
       this.show();
     },
+    // `createVariable` is called in `dast_variables_form_group`.
+    // This should be refactored to leverage a prop rather than have the consumer call some
+    // internal method.
+    // eslint-disable-next-line vue/no-unused-properties
     createVariable() {
       this.isEdit = false;
       this.selectedVariableValid = true;

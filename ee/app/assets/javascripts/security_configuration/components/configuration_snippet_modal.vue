@@ -63,6 +63,7 @@ export default {
     },
   },
   methods: {
+    // eslint-disable-next-line vue/no-unused-properties -- show() is used in parent component
     show() {
       this.$refs.modal.show();
     },

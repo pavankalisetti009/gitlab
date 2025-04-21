@@ -40,11 +40,6 @@ export default {
     modalId: 'corpus-upload-modal',
   },
   computed: {
-    queryVariables() {
-      return {
-        projectPath: this.projectFullPath,
-      };
-    },
     isUploaded() {
       return Boolean(this.uploadState?.uploadedPackageId);
     },

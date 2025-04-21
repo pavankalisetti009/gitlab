@@ -40,11 +40,6 @@ export default {
     DastVariablesModal,
   },
   props: {
-    stacked: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
     value: {
       type: Array,
       required: false,

@@ -18,7 +18,6 @@ import {
   DRAWER_VIEW_MODE,
 } from 'ee/on_demand_scans/constants';
 import SectionLayout from '~/vue_shared/security_configuration/components/section_layout.vue';
-import { ERROR_MESSAGES } from 'ee/on_demand_scans_form/settings';
 
 export default {
   SCANNER_TYPE,
@@ -70,9 +69,6 @@ export default {
     };
   },
   computed: {
-    errorMessage() {
-      return ERROR_MESSAGES[this.errorType] || null;
-    },
     profileIdInUse() {
       return this.isScannerProfile ? this.savedScannerProfileId : this.savedSiteProfileId;
     },

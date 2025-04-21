@@ -161,7 +161,7 @@ export default {
 </script>
 
 <template>
-  <configuration-page-layout v-if="hasData" no-border>
+  <configuration-page-layout v-if="hasData">
     <template #alert>
       <gl-alert
         v-if="showAuditorMessageAlert"
