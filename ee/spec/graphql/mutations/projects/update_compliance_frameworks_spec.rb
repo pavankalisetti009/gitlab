@@ -27,7 +27,7 @@ RSpec.describe Mutations::Projects::UpdateComplianceFrameworks, feature_category
   shared_examples "the user can update compliance frameworks of the project" do
     it 'updates the compliance frameworks to the project' do
       expect { subject }.to change { project.reload.compliance_management_frameworks }
-                              .from([existing_framework]).to([framework, existing_framework])
+                              .from([existing_framework]).to(match_array([framework, existing_framework]))
     end
 
     it 'returns the project that was updated' do
