@@ -1,12 +1,5 @@
 <script>
-import {
-  GlBadge,
-  GlFormGroup,
-  GlFormRadio,
-  GlFormRadioGroup,
-  GlFormInput,
-  GlSprintf,
-} from '@gitlab/ui';
+import { GlFormGroup, GlFormRadio, GlFormRadioGroup, GlFormInput, GlSprintf } from '@gitlab/ui';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { SEAT_CONTROL } from 'ee/pages/admin/application_settings/general/constants';
@@ -15,7 +8,6 @@ import SeatControlMemberPromotionManagement from 'ee_component/pages/admin/appli
 export default {
   name: 'SeatControlsSection',
   components: {
-    GlBadge,
     GlFormGroup,
     GlFormRadio,
     GlFormRadioGroup,
@@ -99,7 +91,6 @@ export default {
           data-testid="seat-control-restricted-access"
         >
           {{ s__('ApplicationSettings|Restricted access') }}
-          <gl-badge variants="neutral" class="gl-ml-2">{{ __('Beta') }}</gl-badge>
           <template #help>{{
             s__(
               'ApplicationSettings|Prevent the billable user count from exceeding the number of seats in the license.',
