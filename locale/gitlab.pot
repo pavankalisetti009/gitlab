@@ -11578,9 +11578,6 @@ msgstr ""
 msgid "CICD|Allow Git push requests to the repository"
 msgstr ""
 
-msgid "CICD|Allow composite identities to run pipelines"
-msgstr ""
-
 msgid "CICD|An error occurred while adding the authentication log entries. Please try again."
 msgstr ""
 
@@ -11636,9 +11633,6 @@ msgid "CICD|Continuous deployment to production"
 msgstr ""
 
 msgid "CICD|Continuous deployment to production using timed incremental rollout"
-msgstr ""
-
-msgid "CICD|Controls whether AI agents can automatically run pipelines. When disabled, pipelines triggered by AI agents will require manual review and execution by a human user."
 msgstr ""
 
 msgid "CICD|Default (user membership and role)"
@@ -11713,6 +11707,9 @@ msgstr ""
 msgid "CICD|Pipelines older than the configured time are deleted. Leave empty to never delete pipelines automatically. The default unit is in seconds, but you can use other units, for example %{code_open}15 days%{code_close}, %{code_open}1 month%{code_close}, %{code_open}1 year%{code_close}. Can be between 1 day to 1 year."
 msgstr ""
 
+msgid "CICD|Pipelines triggered by composite identities, including AI agents, run automatically without review or manual interaction."
+msgstr ""
+
 msgid "CICD|Prevent CI/CD job tokens from this project from being used to access other projects unless the other project is added to the allowlist. It is a security risk to disable this feature, because unauthorized projects might attempt to retrieve an active token and access the API. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
@@ -11726,6 +11723,9 @@ msgid "CICD|Removing auto-added allowlist entries. Please wait while the action 
 msgstr ""
 
 msgid "CICD|Removing these entries could cause authentication failures or disrupt pipelines."
+msgstr ""
+
+msgid "CICD|Run pipelines triggered by AI agents automatically"
 msgstr ""
 
 msgid "CICD|Select the groups and projects authorized to use a CI/CD job token to authenticate requests to this project. %{linkStart}Learn more%{linkEnd}."
