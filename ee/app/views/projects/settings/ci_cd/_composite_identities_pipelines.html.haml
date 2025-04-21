@@ -4,5 +4,5 @@
 .form-group
   = form.fields_for :ci_cd_settings_attributes, @project.ci_cd_settings do |f|
     = f.gitlab_ui_checkbox_component :allow_composite_identities_to_run_pipelines,
-      s_("CICD|Allow composite identities to run pipelines"),
-      help_text: (s_('CICD|Controls whether AI agents can automatically run pipelines. When disabled, pipelines triggered by AI agents will require manual review and execution by a human user.') + ' ' + help_link).html_safe
+      s_("CICD|Run pipelines triggered by AI agents automatically"),
+      help_text: (s_('CICD|Pipelines triggered by composite identities, including AI agents, run automatically without review or manual interaction.') + ' ' + help_link).html_safe
