@@ -271,22 +271,22 @@ module EE
       super + [
         form.gitlab_ui_checkbox_component(
           :global_search_code_enabled,
-          _("Enable code tab in global search results"),
+          _("Show code in global search results"),
           checkbox_options: { checked: @application_setting.global_search_code_enabled, multiple: false }
         ),
         form.gitlab_ui_checkbox_component(
           :global_search_commits_enabled,
-          _("Enable commits tab in global search results"),
+          _("Show commits in global search results"),
           checkbox_options: { checked: @application_setting.global_search_commits_enabled, multiple: false }
         ),
         form.gitlab_ui_checkbox_component(
           :global_search_epics_enabled,
-          _("Enable epics tab in global search results"),
+          _("Show epics in global search results"),
           checkbox_options: { checked: @application_setting.global_search_epics_enabled, multiple: false }
         ),
         form.gitlab_ui_checkbox_component(
           :global_search_wiki_enabled,
-          _("Enable wiki tab in global search results"),
+          _("Show wiki in global search results"),
           checkbox_options: { checked: @application_setting.global_search_wiki_enabled, multiple: false }
         )
       ]
