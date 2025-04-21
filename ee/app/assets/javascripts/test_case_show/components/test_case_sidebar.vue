@@ -30,10 +30,6 @@ export default {
       type: Boolean,
       required: true,
     },
-    selectedLabels: {
-      type: Array,
-      required: true,
-    },
     moved: {
       type: Boolean,
       required: false,
@@ -43,7 +39,6 @@ export default {
   data() {
     return {
       sidebarExpandedOnClick: false,
-      testCaseLabelsSelectInProgress: false,
     };
   },
   computed: {
@@ -102,41 +97,6 @@ export default {
     },
     handleProjectsCollapsedButtonClick() {
       this.expandSidebarAndOpenDropdown('.js-issuable-move-block .js-sidebar-dropdown-toggle');
-    },
-    handleUpdateSelectedLabels(labels) {
-      // Iterate over selection and check if labels which were
-      // either selected or removed aren't leading to same selection
-      // as current one, as then we don't want to make network call
-      // since nothing has changed.
-      const anyLabelUpdated = labels.some((label) => {
-        // Find this label in existing selection.
-        const existingLabel = this.selectedLabels.find((l) => l.id === label.id);
-
-        // Check either of the two following conditions;
-        // 1. A label that's not currently applied is being applied.
-        // 2. A label that's already applied is being removed.
-        return (!existingLabel && label.set) || (existingLabel && !label.set);
-      });
-
-      // Only proceed with action if there are any label updates to be done.
-      if (anyLabelUpdated) {
-        this.testCaseLabelsSelectInProgress = true;
-
-        return this.updateTestCase({
-          variables: {
-            addLabelIds: labels.filter((label) => label.set).map((label) => label.id),
-            removeLabelIds: labels.filter((label) => !label.set).map((label) => label.id),
-          },
-          errorMessage: s__('TestCases|Something went wrong while updating the test case labels.'),
-        })
-          .then((updatedTestCase) => {
-            this.$emit('test-case-updated', updatedTestCase);
-          })
-          .finally(() => {
-            this.testCaseLabelsSelectInProgress = false;
-          });
-      }
-      return null;
     },
   },
 };

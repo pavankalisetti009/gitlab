@@ -118,14 +118,6 @@ describe('TestCaseShowRoot', () => {
         });
       },
     );
-
-    describe('selectedLabels', () => {
-      it('returns `testCase.labels.nodes` array with GraphQL IDs converted to numeric IDs', () => {
-        mockTestCase.labels.nodes.forEach((label, index) => {
-          expect(label.id.endsWith(`${wrapper.vm.selectedLabels[index].id}`)).toBe(true);
-        });
-      });
-    });
   });
 
   describe('methods', () => {
