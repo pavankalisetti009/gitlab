@@ -15,3 +15,5 @@ class BackfillTraversalIdsOnMergeRequests < Elastic::Migration
     'traversal_ids'
   end
 end
+
+BackfillTraversalIdsOnMergeRequests.prepend ::Search::Elastic::MigrationObsolete
