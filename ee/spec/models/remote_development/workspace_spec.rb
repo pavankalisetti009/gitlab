@@ -2,7 +2,6 @@
 
 require "spec_helper"
 
-# rubocop:disable RSpec/ MultipleMemoizedHelpers -- this is a complex model, it requires many helpers for thorough testing
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
 RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :workspaces do
@@ -56,7 +55,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       it { is_expected.to belong_to(:user) }
       it { is_expected.to belong_to(:personal_access_token) }
 
-      it do
+      it 'has correct relation setup' do
         is_expected
           .to belong_to(:agent)
                 .class_name("Clusters::Agent")
@@ -244,7 +243,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
         it "prevents changes to desired_state" do
           workspace.save!
           updated = workspace.update(desired_state: ::RemoteDevelopment::WorkspaceOperations::States::STOPPED)
-          expect(updated).to eq(false)
+          expect(updated).to be(false)
           expect(workspace).not_to be_valid
           expect(workspace.errors[:desired_state])
             .to include("is 'Terminated', and cannot be updated. Create a new workspace instead.")
@@ -260,7 +259,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       end
 
       describe "when quotas are not exceeded" do
-        shared_context "does not exceed per user quota" do
+        shared_context "and not exceeding per user quota" do
           let(:workspaces_per_user_quota) { 2 }
           let(:workspaces_count_for_current_user_and_agent) { 1 }
 
@@ -274,12 +273,12 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
           let(:workspaces_per_user_quota) { -1 }
           let(:workspaces_count_for_current_user_and_agent) { 99 }
 
-          it_behaves_like "does not exceed per user quota"
+          it_behaves_like "and not exceeding per user quota"
         end
       end
 
       context "when quotas are exceeded" do
-        shared_context "exceeds per user quota" do
+        shared_examples "exceeds per user quota" do
           it "adds per user quota exceeded error to base error" do
             workspace.validate
 
@@ -396,7 +395,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
             .to include(workspace)
 
           # NOTE: We will also test the corresponding method here, since its logic is the same as the scope
-          expect(workspace.desired_state_updated_more_recently_than_last_response_to_agent?).to eq(true)
+          expect(workspace.desired_state_updated_more_recently_than_last_response_to_agent?).to be(true)
         end
       end
 
@@ -418,7 +417,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
               .to include(workspace)
 
             # NOTE: We will also test the corresponding method here, since its logic is the same as the scope
-            expect(workspace.desired_state_updated_more_recently_than_last_response_to_agent?).to eq(true)
+            expect(workspace.desired_state_updated_more_recently_than_last_response_to_agent?).to be(true)
           end
         end
 
@@ -439,7 +438,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
               .not_to include(workspace)
 
             # NOTE: We will also test the corresponding method here, since its logic is the same as the scope
-            expect(workspace.desired_state_updated_more_recently_than_last_response_to_agent?).to eq(false)
+            expect(workspace.desired_state_updated_more_recently_than_last_response_to_agent?).to be(false)
           end
         end
 
@@ -460,7 +459,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
               .not_to include(workspace)
 
             # NOTE: We will also test the corresponding method here, since its logic is the same as the scope
-            expect(workspace.desired_state_updated_more_recently_than_last_response_to_agent?).to eq(false)
+            expect(workspace.desired_state_updated_more_recently_than_last_response_to_agent?).to be(false)
           end
         end
       end
@@ -496,7 +495,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
             # fixture sanity check
             expect(workspace.responded_to_agent_at).to be_nil
 
-            expect(workspace.actual_state_updated_more_recently_than_last_response_to_agent?).to eq(true)
+            expect(workspace.actual_state_updated_more_recently_than_last_response_to_agent?).to be(true)
           end
         end
 
@@ -518,7 +517,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
                 .to include(workspace)
 
               # NOTE: We will also test the corresponding method here, since its logic is the same as the scope
-              expect(workspace.actual_state_updated_more_recently_than_last_response_to_agent?).to eq(true)
+              expect(workspace.actual_state_updated_more_recently_than_last_response_to_agent?).to be(true)
             end
           end
 
@@ -539,7 +538,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
                 .not_to include(workspace)
 
               # NOTE: We will also test the corresponding method here, since its logic is the same as the scope
-              expect(workspace.actual_state_updated_more_recently_than_last_response_to_agent?).to eq(false)
+              expect(workspace.actual_state_updated_more_recently_than_last_response_to_agent?).to be(false)
             end
           end
 
@@ -560,7 +559,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
                 .not_to include(workspace)
 
               # NOTE: We will also test the corresponding method here, since its logic is the same as the scope
-              expect(workspace.actual_state_updated_more_recently_than_last_response_to_agent?).to eq(false)
+              expect(workspace.actual_state_updated_more_recently_than_last_response_to_agent?).to be(false)
             end
           end
         end
@@ -597,7 +596,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
         it "does not returns workspace" do
           workspace.save!
           expect(described_class.with_desired_state_or_actual_state_not_terminated)
-            .to_not include(workspace)
+            .not_to include(workspace)
         end
       end
     end
@@ -612,7 +611,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
           it "returns workspace" do
             workspace.save!
             expect(described_class.with_desired_state_terminated_and_actual_state_not_terminated)
-              .to_not include(workspace)
+              .not_to include(workspace)
           end
         end
 
@@ -622,7 +621,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
           it "returns workspace" do
             workspace.save!
             expect(described_class.with_desired_state_terminated_and_actual_state_not_terminated)
-              .to_not include(workspace)
+              .not_to include(workspace)
           end
         end
       end
@@ -645,7 +644,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
           it "returns workspace" do
             workspace.save!
             expect(described_class.with_desired_state_terminated_and_actual_state_not_terminated)
-              .to_not include(workspace)
+              .not_to include(workspace)
           end
         end
       end
@@ -732,7 +731,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
         end
 
         it "returns nil as devfile_web_url" do
-          expect(workspace.devfile_web_url).to eq(nil)
+          expect(workspace.devfile_web_url).to be_nil
         end
       end
     end
@@ -858,4 +857,3 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
     end
   end
 end
-# rubocop:enable RSpec/ MultipleMemoizedHelpers
