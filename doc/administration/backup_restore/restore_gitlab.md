@@ -149,10 +149,16 @@ your installation is using PgBouncer, for either performance reasons or when usi
 
 {{< /alert >}}
 
-Next, restart and [check](../raketasks/maintenance.md#check-gitlab-configuration) GitLab:
+Run reconfigure on the PostgreSQL node:
 
 ```shell
-sudo gitlab-ctl restart
+sudo gitlab-ctl reconfigure
+```
+
+Next, start and [check](../raketasks/maintenance.md#check-gitlab-configuration) GitLab:
+
+```shell
+sudo gitlab-ctl start
 sudo gitlab-rake gitlab:check SANITIZE=true
 ```
 
