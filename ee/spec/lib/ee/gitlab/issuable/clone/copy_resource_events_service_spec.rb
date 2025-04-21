@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Issuable::Clone::CopyResourceEventsService do
+RSpec.describe Gitlab::Issuable::Clone::CopyResourceEventsService, feature_category: :team_planning do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :public, group: group) }
@@ -29,15 +29,47 @@ RSpec.describe Gitlab::Issuable::Clone::CopyResourceEventsService do
   end
 
   context 'resource iteration events' do
-    before_all do
-      create(:resource_iteration_event, issue: original_issue, iteration: cadence, action: :add)
-      create(:resource_iteration_event, issue: original_issue, iteration: cadence, action: :remove)
+    context 'when namespace_id is set to a real value' do
+      before do
+        create(:resource_iteration_event, issue: original_issue, iteration: cadence, action: :add)
+        create(:resource_iteration_event, issue: original_issue, iteration: cadence, action: :remove)
+      end
+
+      it 'creates expected resource iteration events' do
+        expect { subject.execute }.to change { ResourceIterationEvent.count }.by(2)
+
+        expect(new_issue.resource_iteration_events.map(&:action)).to contain_exactly("add", "remove")
+      end
     end
 
-    it 'creates expected resource iteration events' do
-      expect { subject.execute }.to change { ResourceIterationEvent.count }.by(2)
+    context 'when namespace_id is defaulted to 0' do
+      let_it_be(:another_group) { create(:group) }
 
-      expect(new_issue.resource_iteration_events.map(&:action)).to contain_exactly("add", "remove")
+      before do
+        # Simulate the case when namespace_id is "0"
+        # Remove constraint to allow creation of invalid records
+        ApplicationRecord.connection.execute("ALTER TABLE resource_iteration_events DROP CONSTRAINT fk_d405f1c11a;")
+
+        create(:resource_iteration_event, issue: original_issue, iteration: cadence, action: :add)
+        create(:resource_iteration_event, issue: original_issue, iteration: cadence, action: :remove)
+
+        original_issue.resource_iteration_events.update_all(namespace_id: 0)
+
+        ApplicationRecord.connection.execute("ALTER TABLE ONLY resource_iteration_events
+        ADD CONSTRAINT fk_d405f1c11a FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;")
+      end
+
+      it 'copies namespace_id from even iteration' do
+        expect(original_issue.resource_iteration_events.map(&:namespace_id)).to match_array([0, 0])
+
+        expect { subject.execute }.to change { ResourceIterationEvent.count }.by(2)
+
+        namespace_ids = [
+          original_issue.resource_iteration_events.first.iteration.group_id,
+          original_issue.resource_iteration_events.second.iteration.group_id
+        ]
+        expect(new_issue.resource_iteration_events.map(&:namespace_id)).to match_array(namespace_ids)
+      end
     end
   end
 
