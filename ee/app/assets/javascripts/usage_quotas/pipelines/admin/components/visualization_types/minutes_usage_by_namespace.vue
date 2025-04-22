@@ -1,11 +1,13 @@
 <script>
 import { GlAvatar, GlTable } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import NoMinutesAlert from '../shared/no_minutes_alert.vue';
 
 export default {
   components: {
     GlAvatar,
     GlTable,
+    NoMinutesAlert,
   },
   props: {
     usageData: {
@@ -36,34 +38,41 @@ export default {
         },
       ];
     },
+    emptyData() {
+      return this.usageData.length === 0;
+    },
   },
 };
 </script>
 <template>
-  <gl-table
-    thead-class="gl-border-b-solid gl-border-default gl-border-1"
-    :fields="tableFields"
-    :items="usageData"
-    stacked="md"
-    fixed
-  >
-    <template
-      #cell(namespace)="{
-        item: {
-          rootNamespace: { avatarUrl, name },
-        },
-      }"
+  <div>
+    <no-minutes-alert v-if="emptyData" />
+    <gl-table
+      v-else
+      thead-class="gl-border-b-solid gl-border-default gl-border-1"
+      :fields="tableFields"
+      :items="usageData"
+      stacked="md"
+      fixed
     >
-      <div class="gl-flex gl-items-center">
-        <gl-avatar :src="avatarUrl" :size="32" />
-        <span class="gl-ml-4">{{ name }}</span>
-      </div>
-    </template>
-    <template #cell(hostedRunnerDuration)="{ item: { durationSeconds } }">
-      <span data-testid="runner-duration">{{ durationSeconds }}</span>
-    </template>
-    <template #cell(computeUsage)="{ item: { computeMinutes } }">
-      <span data-testid="compute-minutes">{{ computeMinutes }}</span>
-    </template>
-  </gl-table>
+      <template
+        #cell(namespace)="{
+          item: {
+            rootNamespace: { avatarUrl, name },
+          },
+        }"
+      >
+        <div class="gl-flex gl-items-center">
+          <gl-avatar :src="avatarUrl" :size="32" />
+          <span class="gl-ml-4">{{ name }}</span>
+        </div>
+      </template>
+      <template #cell(hostedRunnerDuration)="{ item: { durationSeconds } }">
+        <span data-testid="runner-duration">{{ durationSeconds }}</span>
+      </template>
+      <template #cell(computeUsage)="{ item: { computeMinutes } }">
+        <span data-testid="compute-minutes">{{ computeMinutes }}</span>
+      </template>
+    </gl-table>
+  </div>
 </template>

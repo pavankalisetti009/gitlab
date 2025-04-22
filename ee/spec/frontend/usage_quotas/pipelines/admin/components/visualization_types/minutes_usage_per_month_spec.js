@@ -1,5 +1,6 @@
 import { GlAreaChart } from '@gitlab/ui/dist/charts';
 import MinutesUsagePerMonth from 'ee/usage_quotas/pipelines/admin/components/visualization_types/minutes_usage_per_month.vue';
+import NoMinutesAlert from 'ee/usage_quotas/pipelines/admin/components/shared/no_minutes_alert.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { usageDataInstanceAggregated } from '../../mock_data';
 
@@ -8,6 +9,8 @@ describe('MinutesUsagePerMonth', () => {
   let wrapper;
 
   const findAreaChart = () => wrapper.findComponent(GlAreaChart);
+  const findNoMinutesAlertComponent = () => wrapper.findComponent(NoMinutesAlert);
+
   const createComponent = (props = {}) => {
     wrapper = shallowMountExtended(MinutesUsagePerMonth, {
       propsData: {
@@ -18,15 +21,29 @@ describe('MinutesUsagePerMonth', () => {
     });
   };
 
-  beforeEach(() => {
-    createComponent();
+  describe('with usage data', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders an area chart component', () => {
+      expect(findAreaChart().exists()).toBe(true);
+    });
+
+    it('should contain a responsive attribute for the area chart', () => {
+      expect(findAreaChart().attributes('responsive')).toBeDefined();
+    });
   });
 
-  it('renders an area chart component', () => {
-    expect(findAreaChart().exists()).toBe(true);
-  });
+  describe('without usage data', () => {
+    beforeEach(() => {
+      createComponent({
+        usageData: [],
+      });
+    });
 
-  it('should contain a responsive attribute for the area chart', () => {
-    expect(findAreaChart().attributes('responsive')).toBeDefined();
+    it('renders an empty state', () => {
+      expect(findNoMinutesAlertComponent().exists()).toBe(true);
+    });
   });
 });
