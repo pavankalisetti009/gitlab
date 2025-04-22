@@ -51,6 +51,20 @@ module Gitlab
             :ai_chat
           when :duo_workflow
             :ai_workflows
+          when :glab_ask_git_command
+            :glab_ask_git_command
+          when :generate_commit_message
+            :generate_commit_message
+          when :summarize_new_merge_request
+            :summarize_new_merge_request
+          when :summarize_review
+            :summarize_review
+          when :generate_description
+            :generate_description
+          when :summarize_comments
+            :summarize_comments
+          when :review_merge_request
+            :review_merge_request
           else
             :ai_features
           end

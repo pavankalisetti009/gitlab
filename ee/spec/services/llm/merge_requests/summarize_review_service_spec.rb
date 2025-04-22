@@ -17,7 +17,6 @@ RSpec.describe Llm::MergeRequests::SummarizeReviewService, :saas, feature_catego
   describe "#perform" do
     before do
       stub_ee_application_setting(should_check_namespace_plan: true)
-      stub_licensed_features(summarize_my_mr_code_review: true, ai_features: true, experimental_features: true)
       allow(user).to receive(:allowed_to_use?).with(:summarize_review).and_return(true)
 
       group.add_developer(user)

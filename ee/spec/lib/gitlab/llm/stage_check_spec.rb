@@ -38,30 +38,30 @@ RSpec.describe Gitlab::Llm::StageCheck, feature_category: :ai_abstraction_layer 
         end
       end
 
-      context 'when feature is chat' do
-        let(:feature_name) { :chat }
-
-        context 'when not on a plan with ai_chat licensed' do
-          before do
-            stub_licensed_features(ai_chat: false)
-          end
-
-          it 'returns false' do
-            expect(described_class.available?(container, feature_name)).to eq(false)
-          end
+      context 'with specific license features' do
+        where(:specific_feature, :license_feature) do
+          :chat                     | :ai_chat
+          :duo_workflow             | :ai_workflows
+          :glab_ask_git_command     | :glab_ask_git_command
+          :generate_commit_message  | :generate_commit_message
+          :summarize_new_merge_request | :summarize_new_merge_request
+          :summarize_review         | :summarize_review
+          :generate_description     | :generate_description
+          :summarize_comments       | :summarize_comments
+          :review_merge_request     | :review_merge_request
         end
-      end
 
-      context 'when feature is duo_workflow' do
-        let(:feature_name) { :duo_workflow }
+        with_them do
+          let(:feature_name) { specific_feature }
 
-        context 'when not on a plan with workflows licensed' do
-          before do
-            stub_licensed_features(ai_workflows: false)
-          end
+          context 'when feature is not licensed' do
+            before do
+              stub_licensed_features(license_feature => false)
+            end
 
-          it 'returns false' do
-            expect(described_class.available?(container, feature_name)).to eq(false)
+            it 'returns false' do
+              expect(described_class.available?(container, feature_name)).to eq(false)
+            end
           end
         end
       end
