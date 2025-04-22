@@ -87,6 +87,25 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::BaseCreateService, fea
       end
     end
 
+    context 'when Add-on purchase does not belong to seat assignable Add-on' do
+      let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
+      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, add_on: add_on) }
+
+      it 'logs an error and returns a failure response' do
+        expect(Gitlab::AppLogger).to receive(:info).with(
+          hash_including(
+            message: 'User AddOn assignment creation failed',
+            error: 'SEAT_ASSIGNMENT_NOT_SUPPORTED', username: user.username
+          )
+        )
+
+        result = described_class.new(add_on_purchase: add_on_purchase, user: user).execute
+
+        expect(result).to be_error
+        expect(result.message).to eq('SEAT_ASSIGNMENT_NOT_SUPPORTED')
+      end
+    end
+
     context 'when user membership is invalid' do
       it 'logs an error and returns a failure response' do
         allow_next_instance_of(described_class) do |instance|

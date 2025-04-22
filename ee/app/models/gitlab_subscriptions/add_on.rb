@@ -50,8 +50,8 @@ module GitlabSubscriptions
           ::Feature.disabled?(:product_analytics_billing, namespace, type: :development)
     end
 
-    def self.seat_assignable?(add_on_name)
-      SEAT_ASSIGNABLE_DUO_ADD_ONS.include?(add_on_name)
+    def seat_assignable?
+      name.in?(SEAT_ASSIGNABLE_DUO_ADD_ONS)
     end
   end
 end
