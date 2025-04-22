@@ -955,15 +955,12 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       allow(Elastic::ProcessInitialBookkeepingService).to receive(:queue_size).and_return(100)
       allow(Elastic::ProcessBookkeepingService).to receive(:queue_size).and_return(200)
       allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
-        .with('ElasticCommitIndexerWorker')
-        .and_return(50)
-      allow(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService).to receive(:queue_size)
         .with('Search::Elastic::CommitIndexerWorker')
         .and_return(75)
 
       expect(logger).to receive(:info).with(/Initial queue:\s+100/)
       expect(logger).to receive(:info).with(/Incremental queue:\s+200/)
-      expect(logger).to receive(:info).with(/Concurrency limit code queue:\s+125/)
+      expect(logger).to receive(:info).with(/Concurrency limit code queue:\s+75/)
 
       info
     end

@@ -54,11 +54,7 @@ module Search
     def repair_index_for_blobs
       index_repair_counter.increment(base_metrics_labels(Repository))
 
-      if ::Feature.enabled?(:rename_commit_indexer_worker, ::Feature.current_request)
-        ::Search::Elastic::CommitIndexerWorker.perform_in(rand(DELAY_INTERVAL), project.id, { 'force' => true })
-      else
-        ElasticCommitIndexerWorker.perform_in(rand(DELAY_INTERVAL), project.id, false, { 'force' => true })
-      end
+      ::Search::Elastic::CommitIndexerWorker.perform_in(rand(DELAY_INTERVAL), project.id, { 'force' => true })
 
       ElasticWikiIndexerWorker.perform_in(rand(DELAY_INTERVAL), project.id, project.class.name, { 'force' => true })
     end
