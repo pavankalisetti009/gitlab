@@ -58,6 +58,13 @@ module EE
           })
         end
 
+        if project.project_setting.duo_features_enabled?
+          settings.push({
+            text: s_("DuoCodeReview|GitLab Duo Code Review"),
+            href: project_settings_merge_requests_path(project, anchor: 'merge-request-duo-code-review-settings')
+          })
+        end
+
         settings
       end
 

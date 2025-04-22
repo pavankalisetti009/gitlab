@@ -23038,6 +23038,9 @@ msgstr ""
 msgid "DuoCodeReview|Can't access the merge request. When SAML single sign-on is enabled on a group or its parent, Duo Code Reviews can't be requested from the API. Request a review from the GitLab UI instead."
 msgstr ""
 
+msgid "DuoCodeReview|GitLab Duo Code Review"
+msgstr ""
+
 msgid "DuoCodeReview|Hey :wave: I'm reviewing your merge request now. I will let you know when I'm finished."
 msgstr ""
 
@@ -47635,6 +47638,9 @@ msgstr ""
 msgid "ProjectSettings|Enable \"Delete source branch\" option by default"
 msgstr ""
 
+msgid "ProjectSettings|Enable automatic reviews by GitLab Duo"
+msgstr ""
+
 msgid "ProjectSettings|Enable email notifications"
 msgstr ""
 
@@ -47702,6 +47708,9 @@ msgid "ProjectSettings|Git Large File Storage (LFS)"
 msgstr ""
 
 msgid "ProjectSettings|GitLab Duo"
+msgstr ""
+
+msgid "ProjectSettings|GitLab Duo reviews new merge requests immediately, and when a draft is marked ready."
 msgstr ""
 
 msgid "ProjectSettings|Global"

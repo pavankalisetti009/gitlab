@@ -10,3 +10,5 @@ class ReindexUsersToUpdateIntegerWithLongType < Elastic::Migration
   DOCUMENT_TYPE = User
   NEW_SCHEMA_VERSION = 25_06
 end
+
+ReindexUsersToUpdateIntegerWithLongType.prepend ::Search::Elastic::MigrationObsolete
