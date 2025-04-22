@@ -1,5 +1,5 @@
 import { __, s__, n__, sprintf } from '~/locale';
-import { formatDate, getWeekdayNames, parseSeconds } from '~/lib/utils/datetime_utility';
+import { formatDate, parseSeconds } from '~/lib/utils/datetime_utility';
 import {
   DAILY,
   WEEKLY,
@@ -11,24 +11,6 @@ import {
   PROJECT_DEFAULT_BRANCH,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import { DEFAULT_TIMEZONE } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/constants';
-
-/**
- * Gets a formatted list of weekdays
- * @param {Array} days
- * @returns {String} Formatted weekdays list
- */
-export const getWeekdaysList = (days = []) => {
-  // Handle days array, which is the actual property used in the YAML
-  if (days?.length) {
-    const weekdayMap = getWeekdayNames().reduce((acc, curr) => {
-      return { ...acc, [curr.toLowerCase()]: curr };
-    }, {});
-
-    return days.map((day) => weekdayMap[day.toLowerCase()]).join(', ');
-  }
-
-  return '';
-};
 
 /**
  * Gets the branch information
@@ -126,10 +108,8 @@ export const getWeeklyScheduleInfo = (days) => {
     return __('weekly');
   }
 
-  const daysText = getWeekdaysList(days);
-
   return sprintf(s__('SecurityOrchestration|starting every %{days}'), {
-    days: daysText,
+    days: days.join(', '),
   });
 };
 

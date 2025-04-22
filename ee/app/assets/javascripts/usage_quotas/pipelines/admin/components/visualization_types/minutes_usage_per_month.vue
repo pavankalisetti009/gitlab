@@ -2,6 +2,7 @@
 import { GlTab, GlTabs } from '@gitlab/ui';
 import { GlAreaChart } from '@gitlab/ui/dist/charts';
 import { __, s__ } from '~/locale';
+import NoMinutesAlert from '../shared/no_minutes_alert.vue';
 
 const X_AXIS_CATEGORY = 'category';
 
@@ -10,6 +11,7 @@ export default {
     GlAreaChart,
     GlTab,
     GlTabs,
+    NoMinutesAlert,
   },
   props: {
     usageData: {
@@ -32,6 +34,9 @@ export default {
         .sort((a, b) => new Date(a.billingMonthIso8601) - new Date(b.billingMonthIso8601))
         .map((el) => [el.billingMonth, el.computeMinutes]);
     },
+    emptyData() {
+      return this.usageData.length === 0;
+    },
   },
   chartOptions: {
     xAxis: {
@@ -50,7 +55,14 @@ export default {
 <template>
   <gl-tabs>
     <gl-tab :title="s__('UsageQuota|Compute usage')">
-      <gl-area-chart :data="formattedData" :option="$options.chartOptions" responsive :width="0" />
+      <no-minutes-alert v-if="emptyData" />
+      <gl-area-chart
+        v-else
+        :data="formattedData"
+        :option="$options.chartOptions"
+        responsive
+        :width="0"
+      />
     </gl-tab>
   </gl-tabs>
 </template>

@@ -60,7 +60,7 @@ describe('EditorComponent', () => {
   const policyEditorEmptyStateSvgPath = 'path/to/svg';
   const scanPolicyDocumentationPath = 'path/to/docs';
   const defaultProjectPath = 'path/to/project';
-  const defaultSchedules = [{ type: 'weekly', days: 'monday' }];
+  const defaultSchedules = [{ type: 'weekly', days: ['Monday'] }];
 
   const factory = ({ propsData = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(EditorComponent, {
@@ -222,7 +222,7 @@ describe('EditorComponent', () => {
       expect(findPolicyEditorLayout().props('yamlEditorValue')).not.toContain('schedules');
       await findRuleSection().vm.$emit('changed', defaultSchedules[0]);
       expect(findPolicyEditorLayout().props('yamlEditorValue')).toContain(
-        '    schedules:\n      - type: weekly\n        days: monday',
+        '    schedules:\n      - type: weekly\n        days:\n          - Monday',
       );
     });
   });

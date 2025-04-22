@@ -1,9 +1,11 @@
 <script>
 import { GlLoadingIcon } from '@gitlab/ui';
+import { GlSingleStat } from '@gitlab/ui/dist/charts';
 
 export default {
   components: {
     GlLoadingIcon,
+    GlSingleStat,
   },
   props: {
     monthlyUsage: {
@@ -25,12 +27,14 @@ export default {
     </h2>
 
     <div class="gl-pb-4">
-      <span class="gl-text-subtle">{{ __('Usage this month') }}</span>
       <gl-loading-icon v-if="loading" />
-      <div v-else class="gl-block" data-testid="hosted-runner-monthly-usage">
-        <span class="gl-heading-3">{{ monthlyUsage }}</span>
-        <span class="gl-font-bold">{{ __('minutes') }}</span>
-      </div>
+      <gl-single-stat
+        v-else
+        :title="__('Usage this month')"
+        :value="monthlyUsage"
+        :unit="__('minutes')"
+        data-testid="hosted-runner-monthly-usage"
+      />
     </div>
   </div>
 </template>

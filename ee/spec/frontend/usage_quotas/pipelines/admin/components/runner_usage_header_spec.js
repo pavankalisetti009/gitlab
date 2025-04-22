@@ -1,3 +1,4 @@
+import { GlSingleStat } from '@gitlab/ui/dist/charts';
 import RunnerUsageHeader from 'ee/usage_quotas/pipelines/admin/components/runner_usage_header.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -17,6 +18,9 @@ describe('RunnerUsageHeader', () => {
         ...defaultProps,
         ...props,
       },
+      stubs: {
+        GlSingleStat,
+      },
     });
   };
 
@@ -25,7 +29,7 @@ describe('RunnerUsageHeader', () => {
       createComponent();
 
       expect(findSubtitle().text()).toBe('Hosted runner usage');
-      expect(findHostedRunnerMonthlyUsage().text()).toBe('200 minutes');
+      expect(findHostedRunnerMonthlyUsage().text()).toBe('Usage this month 200 minutes');
     });
   });
 });

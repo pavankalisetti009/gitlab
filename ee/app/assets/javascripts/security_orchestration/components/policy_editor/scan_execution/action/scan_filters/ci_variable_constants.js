@@ -10,7 +10,7 @@ import {
 /* eslint-disable @gitlab/require-i18n-strings */
 
 // These options apply to all analyzers.
-const COMMON_OPTIONS = ['SECURE_LOG_LEVEL'];
+const COMMON_OPTIONS = ['SECURE_LOG_LEVEL', 'AST_ENABLE_MR_PIPELINES'];
 
 // These options apply to both SAST and SAST-IaC.
 const SAST_COMMON_OPTIONS = ['SAST_IMAGE_SUFFIX', 'SAST_ANALYZER_IMAGE_TAG'];

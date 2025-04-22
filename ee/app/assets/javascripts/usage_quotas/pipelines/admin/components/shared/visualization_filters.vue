@@ -30,7 +30,7 @@ export default {
 <template>
   <div class="gl-my-4 gl-flex">
     <slot></slot>
-    <gl-form-group :label="s__('UsageQuota|Filter by runner')">
+    <gl-form-group :label="__('Runner')">
       <gl-collapsible-listbox
         v-model="selectedRunner"
         :items="runners"
