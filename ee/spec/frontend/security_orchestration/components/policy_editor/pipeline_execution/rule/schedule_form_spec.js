@@ -64,6 +64,14 @@ describe('ScheduleForm', () => {
         { value: 'weekly', text: 'Weekly' },
         { value: 'monthly', text: 'Monthly' },
       ]);
+      expect(listbox.props('toggleText')).toBe('daily');
+    });
+
+    it('renders the cadence selector with when the cadence is invalid', () => {
+      createComponent({ schedule: { type: 'invalid' } });
+      const listbox = findListbox();
+      expect(listbox.exists()).toBe(true);
+      expect(listbox.props('toggleText')).toBe('Select a cadence');
     });
 
     it('sets the selected value based on schedule prop', () => {
@@ -116,10 +124,10 @@ describe('ScheduleForm', () => {
 
     describe('weekday dropdown', () => {
       it('renders weekday dropdown for weekly schedule', () => {
-        createComponent({ schedule: { type: 'weekly', days: ['monday'] } });
+        createComponent({ schedule: { type: 'weekly', days: ['Monday'] } });
         const weekdayDropdown = findWeekdayDropdown();
         expect(weekdayDropdown.exists()).toBe(true);
-        expect(weekdayDropdown.props('selected')).toEqual(['monday']);
+        expect(weekdayDropdown.props('selected')).toEqual(['Monday']);
         expect(weekdayDropdown.props('multiple')).toBe(true);
       });
 
@@ -135,18 +143,18 @@ describe('ScheduleForm', () => {
         });
 
         it('returns single day when one day is selected', () => {
-          createComponent({ schedule: { type: 'weekly', days: ['monday'] } });
+          createComponent({ schedule: { type: 'weekly', days: ['Monday'] } });
           expect(findWeekdayDropdown().props('toggleText')).toBe('Monday');
         });
 
         it('returns two days when two days are selected', () => {
-          createComponent({ schedule: { type: 'weekly', days: ['monday', 'friday'] } });
+          createComponent({ schedule: { type: 'weekly', days: ['Monday', 'Friday'] } });
           expect(findWeekdayDropdown().props('toggleText')).toBe('Monday, Friday');
         });
 
         it('returns truncated text when more than two days are selected', () => {
           createComponent({
-            schedule: { type: 'weekly', days: ['monday', 'wednesday', 'friday'] },
+            schedule: { type: 'weekly', days: ['Monday', 'Wednesday', 'Friday'] },
           });
           expect(findWeekdayDropdown().props('toggleText')).toBe('Monday, Wednesday +1 more');
         });
@@ -238,7 +246,7 @@ describe('ScheduleForm', () => {
 
         expect(wrapper.emitted('changed')).toHaveLength(1);
         expect(wrapper.emitted('changed')).toMatchObject([
-          [{ type: 'weekly', days: 'monday', time_window: { value: 86400 } }],
+          [{ type: 'weekly', days: ['Monday'], time_window: { value: 86400 } }],
         ]);
       });
 
@@ -257,7 +265,7 @@ describe('ScheduleForm', () => {
           schedule: {
             type: 'daily',
             start_time: '12:00',
-            days: 'friday',
+            days: ['Friday'],
             days_of_month: '15',
             time_window: { value: 3600 },
           },
@@ -294,11 +302,11 @@ describe('ScheduleForm', () => {
 
     describe('weekday dropdown', () => {
       it('emits changed event when days are selected', async () => {
-        createComponent({ schedule: { type: 'weekly', days: ['monday'] } });
+        createComponent({ schedule: { type: 'weekly', days: ['Monday'] } });
         const weekdayDropdown = findWeekdayDropdown();
-        await weekdayDropdown.vm.$emit('select', ['monday', 'wednesday']);
+        await weekdayDropdown.vm.$emit('select', ['Monday', 'Wednesday']);
         expect(wrapper.emitted('changed')).toEqual([
-          [expect.objectContaining({ days: ['monday', 'wednesday'] })],
+          [expect.objectContaining({ days: ['Monday', 'Wednesday'] })],
         ]);
       });
     });

@@ -3,7 +3,7 @@ import { isNumeric } from '~/lib/utils/number_utils';
 import { getWeekdayNames } from '~/lib/utils/datetime_utility';
 import { DAILY, WEEKLY, MONTHLY } from '../constants';
 
-const DEFAULT_START_WEEKDAY = 'monday';
+const DEFAULT_START_WEEKDAY = 'Monday';
 const DEFAULT_START_MONTH_DAY = 1;
 
 export const MINIMUM_SECONDS = 600; // 10 minutes, set in ee/app/validators/json_schemas/security_orchestration_policy.json
@@ -43,7 +43,7 @@ const CADENCE_CONFIG = {
     time_window: { value: TIME_UNITS.MINUTE },
   },
   [WEEKLY]: {
-    days: DEFAULT_START_WEEKDAY,
+    days: [DEFAULT_START_WEEKDAY],
     time_window: { value: TIME_UNITS.DAY },
   },
   [MONTHLY]: {
@@ -92,7 +92,7 @@ export const HOUR_MINUTE_LIST = Array.from(Array(24).keys()).map((num) => {
  * @returns {Array} Array of weekday options
  */
 export const WEEKDAY_OPTIONS = getWeekdayNames().map((day) => {
-  return { value: day.toLowerCase(), text: day };
+  return { value: day, text: day };
 });
 
 /**
@@ -105,6 +105,13 @@ export const getMonthlyDayOptions = () => {
     return { value: day, text: day };
   });
 };
+
+/**
+ * Validates a cadence value to ensure it's one of the supported options
+ * @param {string} cadence
+ * @returns {Boolean}
+ */
+export const isValidCadence = (cadence) => [DAILY, WEEKLY, MONTHLY].includes(cadence);
 
 /**
  * Converts a value and time unit to seconds

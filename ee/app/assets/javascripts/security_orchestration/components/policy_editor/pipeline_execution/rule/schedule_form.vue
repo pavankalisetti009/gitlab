@@ -20,6 +20,7 @@ import {
   TIME_UNITS,
   isCadenceWeekly,
   isCadenceMonthly,
+  isValidCadence,
   updateScheduleCadence,
   getMonthlyDayOptions,
   timeUnitToSeconds,
@@ -37,6 +38,7 @@ export default {
   i18n: {
     cadence: __('Cadence'),
     cadenceDetail: s__('SecurityOrchestration|on every'),
+    cadencePlaceholder: s__('SecurityOrchestration|Select a cadence'),
     details: s__(
       'SecurityOrchestration|at the following times: %{cadenceSelector}, start at %{start}, run for: %{duration}, and timezone is %{timezoneSelector}',
     ),
@@ -87,7 +89,10 @@ export default {
       };
     },
     cadence() {
-      return this.schedule.type;
+      return this.schedule?.type;
+    },
+    cadenceToggleText() {
+      return isValidCadence(this.cadence) ? this.cadence : this.$options.i18n.cadencePlaceholder;
     },
     durationValue() {
       const seconds = this.schedule.time_window?.value || 0;
@@ -206,6 +211,7 @@ export default {
             :aria-label="$options.i18n.cadence"
             :items="$options.CADENCE_OPTIONS"
             :selected="cadence"
+            :toggle-text="cadenceToggleText"
             @select="updateCadence"
           />
 

@@ -56,7 +56,7 @@ describe('RuleSection', () => {
         });
 
         it('passes schedule prop to ScheduleForm component', () => {
-          const customSchedule = { type: 'weekly', days: 'monday' };
+          const customSchedule = { type: 'weekly', days: ['Monday'] };
           createComponent({
             propsData: { schedules: [customSchedule], strategy: SCHEDULE },
             provide: { glFeatures: { scheduledPipelineExecutionPolicies: true } },

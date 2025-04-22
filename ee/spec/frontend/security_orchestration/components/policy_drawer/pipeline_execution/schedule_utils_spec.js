@@ -1,6 +1,5 @@
 import {
   generateScheduleSummary,
-  getWeekdaysList,
   getBranchInfo,
   getTimeInfo,
   getTimeWindowInfo,
@@ -21,30 +20,6 @@ import {
   ALL_PROTECTED_BRANCHES,
   PROJECT_DEFAULT_BRANCH,
 } from 'ee/security_orchestration/components/policy_editor/constants';
-
-describe('getWeekdaysList', () => {
-  it.each([{}, [], undefined])('returns empty string when schedule is $input', (input) => {
-    expect(getWeekdaysList(input)).toBe('');
-  });
-
-  it.each`
-    days                      | output
-    ${['monday']}             | ${'Monday'}
-    ${['thursday']}           | ${'Thursday'}
-    ${['monday', 'thursday']} | ${'Monday, Thursday'}
-  `('returns formatted weekdays for $days', ({ days, output }) => {
-    expect(getWeekdaysList(days)).toBe(output);
-  });
-
-  it.each`
-    days                      | output
-    ${['MONDAY']}             | ${'Monday'}
-    ${['thursDAY']}           | ${'Thursday'}
-    ${['MonDay', 'ThurSDAY']} | ${'Monday, Thursday'}
-  `('handles case-insensitive weekday names for $days', ({ days, output }) => {
-    expect(getWeekdaysList(days)).toBe(output);
-  });
-});
 
 describe('getBranchInfo', () => {
   it.each([undefined, null, ''])('returns empty string when branch type is $input', (input) => {
@@ -134,10 +109,10 @@ describe('getWeeklyScheduleInfo', () => {
 
   it.each`
     days                                 | expectedText
-    ${['monday']}                        | ${'starting every Monday'}
-    ${['thursday']}                      | ${'starting every Thursday'}
-    ${['monday', 'thursday']}            | ${'starting every Monday, Thursday'}
-    ${['monday', 'wednesday', 'friday']} | ${'starting every Monday, Wednesday, Friday'}
+    ${['Monday']}                        | ${'starting every Monday'}
+    ${['Thursday']}                      | ${'starting every Thursday'}
+    ${['Monday', 'Thursday']}            | ${'starting every Monday, Thursday'}
+    ${['Monday', 'Wednesday', 'Friday']} | ${'starting every Monday, Wednesday, Friday'}
   `('formats days $days correctly', ({ days, expectedText }) => {
     expect(getWeeklyScheduleInfo(days)).toContain(expectedText);
   });
@@ -174,8 +149,8 @@ describe('getScheduleTypeInfo', () => {
   it.each`
     days                      | expectedText
     ${[]}                     | ${'weekly'}
-    ${['monday']}             | ${'starting every Monday'}
-    ${['monday', 'thursday']} | ${'starting every Monday, Thursday'}
+    ${['Monday']}             | ${'starting every Monday'}
+    ${['Monday', 'Thursday']} | ${'starting every Monday, Thursday'}
   `('formats weekly schedule with days $days correctly', ({ days, expectedText }) => {
     const schedule = { type: WEEKLY, days };
     expect(getScheduleTypeInfo(schedule)).toBe(expectedText);
@@ -219,7 +194,7 @@ describe('generateScheduleSummary', () => {
     ${{
   type: WEEKLY,
   branch_type: PROJECT_DEFAULT_BRANCH.value,
-  days: ['monday', 'wednesday'],
+  days: ['Monday', 'Wednesday'],
   start_time: '09:30',
   time_window: { value: 7200 },
   timezone: 'America/New_York',
