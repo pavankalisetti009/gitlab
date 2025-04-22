@@ -80,12 +80,6 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
       merge_request.project.update!(visibility_level: Gitlab::VisibilityLevel::INTERNAL)
     end
 
-    it 'does not include traversal_ids or assignee_ids if add_traversal_ids_to_merge_requests is not finished' do
-      set_elasticsearch_migration_to :add_traversal_ids_to_merge_requests, including: false
-      expect(merge_request.__elasticsearch__.as_indexed_json)
-        .to eq(expected_hash.except('traversal_ids', 'assignee_ids'))
-    end
-
     it 'does not include assignee_ids if add_assignees_to_merge_requests is not finished' do
       set_elasticsearch_migration_to :add_assignees_to_merge_requests, including: false
       expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('assignee_ids'))

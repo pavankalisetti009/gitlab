@@ -11,3 +11,5 @@ class AddTraversalIdsToMergeRequests < Elastic::Migration
     { traversal_ids: { type: 'keyword' } }
   end
 end
+
+AddTraversalIdsToMergeRequests.prepend ::Search::Elastic::MigrationObsolete
