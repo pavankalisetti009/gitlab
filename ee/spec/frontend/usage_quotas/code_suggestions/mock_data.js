@@ -7,7 +7,7 @@ import {
   DUO_AMAZON_Q,
 } from 'ee/usage_quotas/code_suggestions/constants';
 
-export const noAssignedDuoAddOnData = {
+export const noAssignedDuoCoreAddOnData = {
   data: {
     addOnPurchases: [
       {
