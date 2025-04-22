@@ -56,17 +56,16 @@ class SoftwareLicensePolicy < ApplicationRecord
     if Feature.enabled?(:static_licenses) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- This FF is all or nothing
       license_names = Array.wrap(license_name).map(&:downcase)
       related_spdx_identifiers = latest_active_licenses_by_name(license_names).map(&:id)
-      where(software_license_spdx_identifier: related_spdx_identifiers)
+      with_license.where(software_license_spdx_identifier: related_spdx_identifiers)
     else
       with_license.where(SoftwareLicense.arel_table[:name].lower.in(Array(license_name).map(&:downcase)))
     end
   end
 
   scope :with_license_or_custom_license_by_name, ->(license_names) do
-    license_names = Array(license_names).map(&:downcase)
+    software_licenses = with_license_by_name(license_names)
 
-    software_licenses = joins(:software_license)
-      .where(SoftwareLicense.arel_table[:name].lower.in(license_names))
+    license_names = Array(license_names).map(&:downcase)
 
     custom_software_licenses = joins(:custom_software_license)
       .where(Security::CustomSoftwareLicense.arel_table[:name].lower.in(license_names))

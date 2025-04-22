@@ -87,7 +87,7 @@ RSpec.describe Projects::PipelinesController do
   describe 'GET licenses', feature_category: :software_composition_analysis do
     let(:licenses_with_html) { get :licenses, format: :html, params: { namespace_id: project.namespace, project_id: project, id: pipeline } }
     let(:licenses_with_json) { get :licenses, format: :json, params: { namespace_id: project.namespace, project_id: project, id: pipeline } }
-    let!(:software_license_policy) { create(:software_license_policy, software_license: mit, project: project) }
+    let!(:software_license_policy) { create(:software_license_policy, software_license: mit, project: project, software_license_spdx_identifier: mit.spdx_identifier) }
 
     let(:payload) { Gitlab::Json.parse(licenses_with_json.body) }
 
@@ -98,7 +98,7 @@ RSpec.describe Projects::PipelinesController do
       context 'with feature enabled' do
         before do
           stub_licensed_features(license_scanning: true)
-          create(:pm_package, name: "esutils", purl_type: "npm",
+          create(:pm_package, name: "esutils", purl_type: "npm", default_license_names: ['OLDAP-1.1'],
             other_licenses: [{ license_names: ["BSD-2-Clause"], versions: ["2.0.3"] }])
           create(:pm_package, name: "github.com/astaxie/beego", purl_type: "golang",
             other_licenses: [{ license_names: ["Apache-2.0"], versions: ["v1.10.0"] }])
@@ -120,6 +120,57 @@ RSpec.describe Projects::PipelinesController do
         context 'with json' do
           let(:scanner) { ::Gitlab::LicenseScanning.scanner_for_pipeline(project, pipeline) }
 
+          context 'when the feature flag `static_licenses` is disabled' do
+            before do
+              stub_feature_flags(static_licenses: false)
+            end
+
+            it 'returns license scanning report in json format' do
+              expect(payload.size).to eq(scanner.report.licenses.size)
+              expect(payload.first.keys).to match_array(%w[name classification dependencies count url])
+            end
+
+            it 'returns MIT license allowed status' do
+              payload_mit = payload.find { |l| l['name'] == 'MIT License' }
+              expect(payload_mit['count']).to eq(scanner.report.licenses.find { |x| x.name == 'MIT License' }.count)
+              expect(payload_mit['url']).to eq("https://spdx.org/licenses/MIT.html")
+              expect(payload_mit['classification']['approval_status']).to eq('allowed')
+            end
+
+            context 'approval_status' do
+              subject(:status) { payload.find { |l| l['name'] == 'MIT License' }.dig('classification', 'approval_status') }
+
+              it { is_expected.to eq('allowed') }
+            end
+
+            it 'returns the JSON license data sorted by license name' do
+              expect(payload.pluck('name')).to match_array([
+                'Apache License 2.0',
+                'BSD 2-Clause "Simplified" License',
+                'Open LDAP Public License v1.1',
+                'MIT License',
+                'unknown'
+              ])
+            end
+
+            it 'returns a JSON representation of the license data' do
+              expect(payload).to be_present
+
+              payload.each do |item|
+                expect(item['name']).to be_present
+                expect(item['classification']).to have_key('id')
+                expect(item.dig('classification', 'approval_status')).to be_present
+                expect(item.dig('classification', 'name')).to be_present
+                expect(item).to have_key('dependencies')
+                item['dependencies'].each do |dependency|
+                  expect(dependency['name']).to be_present
+                end
+                expect(item['count']).to be_present
+                expect(item).to have_key('url')
+              end
+            end
+          end
+
           it 'returns license scanning report in json format' do
             expect(payload.size).to eq(scanner.report.licenses.size)
             expect(payload.first.keys).to match_array(%w[name classification dependencies count url])
@@ -127,7 +178,7 @@ RSpec.describe Projects::PipelinesController do
 
           it 'returns MIT license allowed status' do
             payload_mit = payload.find { |l| l['name'] == 'MIT License' }
-            expect(payload_mit['count']).to eq(scanner.report.licenses.find { |x| x.name == 'MIT' }.count)
+            expect(payload_mit['count']).to eq(scanner.report.licenses.find { |x| x.name == 'MIT License' }.count)
             expect(payload_mit['url']).to eq("https://spdx.org/licenses/MIT.html")
             expect(payload_mit['classification']['approval_status']).to eq('allowed')
           end
@@ -139,10 +190,10 @@ RSpec.describe Projects::PipelinesController do
           end
 
           it 'returns the JSON license data sorted by license name' do
-            expect(payload.pluck('name')).to eq([
-              'Apache 2.0 License',
-              'BSD-2-Clause',
-              'Default License 2.1',
+            expect(payload.pluck('name')).to match_array([
+              'Apache License 2.0',
+              'BSD 2-Clause "Simplified" License',
+              'Open LDAP Public License v1.1',
               'MIT License',
               'unknown'
             ])

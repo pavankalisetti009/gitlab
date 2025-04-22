@@ -75,9 +75,27 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
             other_licenses: [{ license_names: ["BSD-4-Clause"], versions: ["1.8.0"] }])
         end
 
+        context 'when the feature flag `static_licenses` is disabled' do
+          before do
+            stub_feature_flags(static_licenses: false)
+          end
+
+          it 'reports new licenses' do
+            expect(subject[:status]).to eq(:parsed)
+            expect(subject[:data]['new_licenses']).to match_array([a_hash_including('name' => 'BSD 4-Clause "Original" or "Old" License'),
+              a_hash_including('name' => 'unknown')])
+          end
+
+          it 'reports new licenses statuses' do
+            expect(subject[:data]['new_licenses'][0]['classification']['approval_status']).to eq('unclassified')
+          end
+
+          it_behaves_like 'fallback to the service class project instance variable to invoke the SCA::LicenseCompliance'
+        end
+
         it 'reports new licenses' do
           expect(subject[:status]).to eq(:parsed)
-          expect(subject[:data]['new_licenses']).to match_array([a_hash_including('name' => 'BSD-4-Clause'),
+          expect(subject[:data]['new_licenses']).to match_array([a_hash_including('name' => 'BSD 4-Clause "Original" or "Old" License'),
             a_hash_including('name' => 'unknown')])
         end
 
@@ -171,12 +189,46 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
             other_licenses: [{ license_names: ["BSD-4-Clause", "Apache-2.0"], versions: ["1.11.4"] }])
         end
 
+        context 'when the feature flag `static_licenses` is disabled' do
+          before do
+            stub_feature_flags(static_licenses: false)
+          end
+
+          it 'reports status as parsed' do
+            expect(subject[:status]).to eq(:parsed)
+          end
+
+          it 'reports new licenses' do
+            expect(subject[:data]['new_licenses']).to match([a_hash_including('name' => 'Apache License 2.0')])
+          end
+
+          it 'reports new licenses statuses' do
+            expect(subject[:data]['new_licenses'][0]['classification']['approval_status']).to eq('unclassified')
+          end
+
+          it 'reports existing licenses' do
+            expect(subject[:data]['existing_licenses']).to match(
+              [a_hash_including('name' => 'BSD 4-Clause "Original" or "Old" License'), a_hash_including('name' => 'unknown')]
+            )
+          end
+
+          it 'reports existing licenses statuses' do
+            expect(subject[:data]['existing_licenses'][0]['classification']['approval_status']).to eq('unclassified')
+          end
+
+          it 'reports removed licenses' do
+            expect(subject[:data]['removed_licenses']).to match([a_hash_including('name' => 'MIT License')])
+          end
+
+          it_behaves_like 'invokes the SCA::LicenseCompliance using the pipeline\'s project'
+        end
+
         it 'reports status as parsed' do
           expect(subject[:status]).to eq(:parsed)
         end
 
         it 'reports new licenses' do
-          expect(subject[:data]['new_licenses']).to match([a_hash_including('name' => 'Apache 2.0 License')])
+          expect(subject[:data]['new_licenses']).to match([a_hash_including('name' => 'Apache License 2.0')])
         end
 
         it 'reports new licenses statuses' do
@@ -185,7 +237,7 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
 
         it 'reports existing licenses' do
           expect(subject[:data]['existing_licenses']).to match(
-            [a_hash_including('name' => 'BSD-4-Clause'), a_hash_including('name' => 'unknown')]
+            [a_hash_including('name' => 'BSD 4-Clause "Original" or "Old" License'), a_hash_including('name' => 'unknown')]
           )
         end
 
@@ -194,7 +246,7 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
         end
 
         it 'reports removed licenses' do
-          expect(subject[:data]['removed_licenses']).to match([a_hash_including('name' => 'MIT')])
+          expect(subject[:data]['removed_licenses']).to match([a_hash_including('name' => 'MIT License')])
         end
 
         it_behaves_like 'invokes the SCA::LicenseCompliance using the pipeline\'s project'

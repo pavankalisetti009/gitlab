@@ -21,7 +21,7 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
 
   describe '#fetch' do
     before_all do
-      create(:pm_package, name: "beego", purl_type: "golang",
+      create(:pm_package, name: "beego", purl_type: "golang", default_license_names: ['OLDAP-1.1'],
         other_licenses: [{ license_names: %w[OLDAP-2.1 OLDAP-2.2], versions: ["v1.10.0"] }])
 
       create(:pm_package, name: "camelcase", purl_type: "npm", other_licenses: [
@@ -563,9 +563,9 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
           expect(fetch).to eq([
             "name" => "beego", "purl_type" => "golang", "version" => "v00000005", "path" => "",
             "licenses" => [{
-              "name" => "Default License 2.1",
-              "spdx_identifier" => "DEFAULT-2.1",
-              "url" => "https://spdx.org/licenses/DEFAULT-2.1.html"
+              "name" => "Open LDAP Public License v1.1",
+              "spdx_identifier" => "OLDAP-1.1",
+              "url" => "https://spdx.org/licenses/OLDAP-1.1.html"
             }]
           ])
         end
@@ -573,7 +573,6 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
 
       context 'when software license is not present for a given spdx identifier' do
         before do
-          create(:software_license, :user_entered, spdx_identifier: 'CUSTOM-0.1')
           create(:pm_package, name: "beego_custom",
             purl_type: "golang",
             other_licenses: [{ license_names: ['CUSTOM-0.1'], versions: ["v1.10.0"] }])
@@ -583,6 +582,23 @@ RSpec.describe Gitlab::LicenseScanning::PackageLicenses, feature_category: :soft
           [
             Hashie::Mash.new({ name: "beego_custom", purl_type: "golang", version: "v1.10.0" })
           ]
+        end
+
+        context 'when the feature flag static_licenses is disabled' do
+          before do
+            stub_feature_flags(static_licenses: false)
+            create(:software_license, :user_entered)
+          end
+
+          it 'returns spdx identifier instead of license name' do
+            expect(fetch).to contain_exactly(
+              have_attributes(name: 'beego_custom', purl_type: 'golang', version: 'v1.10.0', licenses: [{
+                "name" => "CUSTOM-0.1",
+                "spdx_identifier" => "CUSTOM-0.1",
+                "url" => "https://spdx.org/licenses/CUSTOM-0.1.html"
+              }])
+            )
+          end
         end
 
         it 'returns spdx identifier instead of license name' do
