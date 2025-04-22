@@ -700,7 +700,7 @@ GEM
       multi_json (~> 1.10)
     fog-local (0.8.0)
       fog-core (>= 1.27, < 3.0)
-    fog-xml (0.1.3)
+    fog-xml (0.1.5)
       fog-core
       nokogiri (>= 1.5.11, < 2.0.0)
     formatador (0.2.5)
