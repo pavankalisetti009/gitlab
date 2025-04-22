@@ -34,7 +34,7 @@ module Resolvers
             namespace: namespace,
             from: params[:start_date],
             to: params[:end_date],
-            fields: selected_fields
+            fields: lookahead.selections.map(&:name)
           ).execute
 
           return unless usage.success?
@@ -58,13 +58,6 @@ module Resolvers
 
         def namespace
           object.respond_to?(:project_namespace) ? object.project_namespace : object
-        end
-
-        def selected_fields
-          names = lookahead.selections.map(&:name)
-          # Deprecation compatibility. Remove in https://gitlab.com/gitlab-org/gitlab/-/issues/498483
-          names << :duo_assigned_users_count if names.include?(:duo_pro_assigned_users_count)
-          names
         end
       end
     end
