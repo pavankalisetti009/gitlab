@@ -1429,6 +1429,7 @@ export const workItemResponseFactory = ({
   notificationsWidgetPresent = true,
   currentUserTodosWidgetPresent = true,
   awardEmojiWidgetPresent = true,
+  newCustomEmojiPath = '',
   subscribed = true,
   allowsMultipleAssignees = true,
   assigneesWidgetPresent = true,
@@ -1782,6 +1783,7 @@ export const workItemResponseFactory = ({
               __typename: 'WorkItemWidgetAwardEmoji',
               type: 'AWARD_EMOJI',
               awardEmoji,
+              ...(newCustomEmojiPath ? { newCustomEmojiPath } : {}),
             }
           : { type: 'MOCK TYPE' },
         linkedItemsWidgetPresent ? linkedItems : { type: 'MOCK TYPE' },
