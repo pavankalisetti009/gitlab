@@ -6459,3 +6459,11 @@ export const errorTrackingQueryResponseWithStackTrace = getErrorTrackingQueryRes
 });
 
 export const mockRolledUpHealthStatus = [];
+
+export const workItemParentQueryResponse = {
+  data: {
+    namespace: {
+      id: 'gid://gitlab/Group/1',
+    },
+  },
+};

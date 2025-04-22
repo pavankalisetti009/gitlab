@@ -16,6 +16,7 @@ module Security
 
       def execute
         run_tasks_in_sec_db
+        context.run_sec_after_commit_tasks
         run_tasks_in_main_db
 
         update_elasticsearch

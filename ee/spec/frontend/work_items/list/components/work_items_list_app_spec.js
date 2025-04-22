@@ -1,28 +1,13 @@
 import { GlEmptyState } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import createMockApollo from 'helpers/mock_apollo_helper';
-import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
-import WorkItemBulkEditSidebar from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_sidebar.vue';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/pages/work_items_list_app.vue';
-import { CREATED_DESC } from '~/issues/list/constants';
-import {
-  BASE_ALLOWED_CREATE_TYPES,
-  WORK_ITEM_TYPE_ENUM_EPIC,
-  WORK_ITEM_TYPE_ENUM_ISSUE,
-  WORK_ITEM_TYPE_NAME_EPIC,
-  WORK_ITEM_TYPE_NAME_ISSUE,
-} from '~/work_items/constants';
-import getWorkItemsQuery from '~/work_items/graphql/list/get_work_items.query.graphql';
-import workItemBulkUpdateMutation from '~/work_items/graphql/work_item_bulk_update.mutation.graphql';
-import workItemParent from 'ee/work_items/graphql/list/work_item_parent.query.graphql';
-import { groupWorkItemsQueryResponse } from 'jest/work_items/mock_data';
+import { WORK_ITEM_TYPE_ENUM_EPIC, WORK_ITEM_TYPE_NAME_EPIC } from '~/work_items/constants';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
-import waitForPromises from 'helpers/wait_for_promises';
-import { workItemParent as workItemParentResponse } from '../../mock_data';
 
 const skipReason = new SkipReason({
   name: 'WorkItemsListApp EE component',
@@ -40,31 +25,15 @@ describeSkipVue3(skipReason, () => {
   const findListEmptyState = () => wrapper.findComponent(EmptyStateWithAnyIssues);
   const findPageEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findWorkItemsListApp = () => wrapper.findComponent(WorkItemsListApp);
-  const findBulkEditStartButton = () => wrapper.findByTestId('bulk-edit-start-button');
-  const findBulkEditSidebar = () => wrapper.findComponent(WorkItemBulkEditSidebar);
 
   const baseProvide = {
     groupIssuesPath: 'groups/gitlab-org/-/issues',
     fullPath: 'gitlab-org',
   };
 
-  const extendedProvide = {
-    autocompleteAwardEmojisPath: '/emojis/please',
-    labelsManagePath: '/labels/please',
-    labelsFetchPath: '/labels/please',
-    initialSort: CREATED_DESC,
-    isGroup: true,
-    isSignedIn: true,
-    hasOkrsFeature: true,
-    hasQualityManagementFeature: true,
-    hasIssuableHealthStatusFeature: true,
-    hasIssueDateFilterFeature: false,
-  };
-
   const mountComponent = ({
     hasEpicsFeature = true,
-    showNewIssueLink = true,
-    canBulkEditEpics = true,
+    showNewWorkItem = true,
     isGroup = true,
     workItemType = WORK_ITEM_TYPE_NAME_EPIC,
     props = {},
@@ -72,8 +41,7 @@ describeSkipVue3(skipReason, () => {
     wrapper = shallowMountExtended(EEWorkItemsListApp, {
       provide: {
         hasEpicsFeature,
-        showNewIssueLink,
-        canBulkEditEpics,
+        showNewWorkItem,
         isGroup,
         workItemType,
         ...baseProvide,
@@ -89,55 +57,18 @@ describeSkipVue3(skipReason, () => {
     });
   };
 
-  const getWorkitemsQueryHandler = jest.fn().mockResolvedValue(groupWorkItemsQueryResponse);
-  const workItemParentQueryHandler = jest.fn().mockResolvedValue(workItemParentResponse);
-  const workItemBulkUpdateHandler = jest.fn();
-
-  const deepMountComponent = async ({
-    hasEpicsFeature = true,
-    showNewIssueLink = true,
-    canBulkEditEpics = true,
-    workItemType = WORK_ITEM_TYPE_NAME_EPIC,
-  } = {}) => {
-    wrapper = mountExtended(EEWorkItemsListApp, {
-      apolloProvider: createMockApollo([
-        [getWorkItemsQuery, getWorkitemsQueryHandler],
-        [workItemParent, workItemParentQueryHandler],
-        [workItemBulkUpdateMutation, workItemBulkUpdateHandler],
-      ]),
-      provide: {
-        hasEpicsFeature,
-        showNewIssueLink,
-        canBulkEditEpics,
-        workItemType,
-        glFeatures: {
-          workItemClientsideBoards: false,
-        },
-        ...baseProvide,
-        ...extendedProvide,
-      },
-      stubs: {
-        IssuableItem: true,
-        IssueCardTimeInfo: true,
-        IssueHealthStatus: true,
-      },
-    });
-
-    await waitForPromises();
-  };
-
   describe('create-work-item modal', () => {
     describe.each`
-      hasEpicsFeature | showNewIssueLink | exists
-      ${false}        | ${false}         | ${false}
-      ${true}         | ${false}         | ${false}
-      ${false}        | ${true}          | ${false}
-      ${true}         | ${true}          | ${true}
+      hasEpicsFeature | showNewWorkItem | exists
+      ${false}        | ${false}        | ${false}
+      ${true}         | ${false}        | ${false}
+      ${false}        | ${true}         | ${false}
+      ${true}         | ${true}         | ${true}
     `(
-      'when hasEpicsFeature=$hasEpicsFeature and showNewIssueLink=$showNewIssueLink',
-      ({ hasEpicsFeature, showNewIssueLink, exists }) => {
+      'when hasEpicsFeature=$hasEpicsFeature and showNewWorkItem=$showNewWorkItem',
+      ({ hasEpicsFeature, showNewWorkItem, exists }) => {
         it(`${exists ? 'renders' : 'does not render'}`, () => {
-          mountComponent({ hasEpicsFeature, showNewIssueLink });
+          mountComponent({ hasEpicsFeature, showNewWorkItem });
 
           expect(findCreateWorkItemModal().exists()).toBe(exists);
         });
@@ -145,45 +76,11 @@ describeSkipVue3(skipReason, () => {
     );
 
     it('passes the right props to modal when hasEpicsFeature is true', () => {
-      mountComponent({ hasEpicsFeature: true, showNewIssueLink: true });
+      mountComponent({ hasEpicsFeature: true, showNewWorkItem: true });
 
       expect(findCreateWorkItemModal().exists()).toBe(true);
       expect(findCreateWorkItemModal().props()).toMatchObject({
         isGroup: true,
-        preselectedWorkItemType: WORK_ITEM_TYPE_ENUM_EPIC,
-      });
-    });
-
-    it('`alwaysShowWorkItemTypeSelect` props is `true` for project level', () => {
-      mountComponent({
-        hasEpicsFeature: true,
-        showNewIssueLink: true,
-        isGroup: false,
-        workItemType: WORK_ITEM_TYPE_NAME_ISSUE,
-      });
-
-      expect(findCreateWorkItemModal().exists()).toBe(true);
-      expect(findCreateWorkItemModal().props()).toMatchObject({
-        isGroup: false,
-        alwaysShowWorkItemTypeSelect: true,
-        allowedWorkItemTypes: BASE_ALLOWED_CREATE_TYPES,
-        preselectedWorkItemType: WORK_ITEM_TYPE_ENUM_ISSUE,
-      });
-    });
-
-    it('`alwaysShowWorkItemTypeSelect` props is `false` when the workItemType is `Epic`', () => {
-      mountComponent({
-        hasEpicsFeature: true,
-        showNewIssueLink: true,
-        isGroup: true,
-        workItemType: WORK_ITEM_TYPE_NAME_EPIC,
-      });
-
-      expect(findCreateWorkItemModal().exists()).toBe(true);
-      expect(findCreateWorkItemModal().props()).toMatchObject({
-        isGroup: true,
-        allowedWorkItemTypes: [],
-        alwaysShowWorkItemTypeSelect: false,
         preselectedWorkItemType: WORK_ITEM_TYPE_ENUM_EPIC,
       });
     });
@@ -236,55 +133,6 @@ describeSkipVue3(skipReason, () => {
 
       it('does not render page empty state', () => {
         expect(findPageEmptyState().exists()).toBe(false);
-      });
-    });
-  });
-
-  describe('when bulk editing', () => {
-    it('does not show bulk edit toggle by default', () => {
-      mountComponent({ hasEpicsFeature: false, canBulkEditEpics: false });
-
-      expect(findBulkEditStartButton().exists()).toBe(false);
-      expect(findWorkItemsListApp().props('showBulkEditSidebar')).toBe(false);
-    });
-
-    it('shows the bulk edit toggle when the work item type is epic and the correct features are enabled', () => {
-      mountComponent({ hasEpicsFeature: true, canBulkEditEpics: true });
-
-      expect(findBulkEditStartButton().exists()).toBe(true);
-    });
-
-    it('opens the bulk update sidebar when the toggle is clicked', async () => {
-      mountComponent({ hasEpicsFeature: true, canBulkEditEpics: true });
-
-      await findBulkEditStartButton().vm.$emit('click');
-
-      expect(findWorkItemsListApp().props('showBulkEditSidebar')).toBe(true);
-    });
-
-    it('triggers the bulk edit mutation when bulk edit is submitted', async () => {
-      await deepMountComponent({ hasEpicsFeature: true, canBulkEditEpics: true });
-
-      const ids = ['gid://gitlab/WorkItem/1', 'gid://gitlab/WorkItem/2'];
-      const addLabelIds = ['gid://gitlab/Label/1', 'gid://gitlab/Label/2', 'gid://gitlab/Label/3'];
-      const removeLabelIds = [
-        'gid://gitlab/Label/4',
-        'gid://gitlab/Label/5',
-        'gid://gitlab/Label/6',
-      ];
-
-      findBulkEditSidebar().vm.$emit('bulk-update', { ids, addLabelIds, removeLabelIds });
-      await waitForPromises();
-
-      expect(workItemBulkUpdateHandler).toHaveBeenCalledWith({
-        input: {
-          parentId: workItemParentResponse.data.namespace.id,
-          ids,
-          labelsWidget: {
-            addLabelIds,
-            removeLabelIds,
-          },
-        },
       });
     });
   });
