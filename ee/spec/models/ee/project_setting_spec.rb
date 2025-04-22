@@ -136,4 +136,9 @@ RSpec.describe ProjectSetting, feature_category: :groups_and_projects do
     it_behaves_like 'a cascading project setting boolean attribute',
       settings_attribute_name: :spp_repository_pipeline_access
   end
+
+  describe '#model_prompt_cache_enabled' do
+    it_behaves_like 'a cascading project setting boolean attribute',
+      settings_attribute_name: :model_prompt_cache_enabled
+  end
 end

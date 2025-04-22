@@ -823,6 +823,11 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
     it_behaves_like 'a cascading namespace setting boolean attribute', settings_attribute_name: :duo_features_enabled
   end
 
+  describe '#model_prompt_cache_enabled' do
+    it_behaves_like 'a cascading namespace setting boolean attribute',
+      settings_attribute_name: :model_prompt_cache_enabled
+  end
+
   describe '#enterprise_users_extensions_marketplace_enabled=' do
     subject { setting.enterprise_users_extensions_marketplace_opt_in_status }
 

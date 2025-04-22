@@ -28,19 +28,29 @@ module API
       end
       strong_memoize_attr :completion_model_details
 
+      def project(project_path)
+        strong_memoize_with(:project, project_path) do
+          ::ProjectsFinder
+            .new(
+              params: { full_paths: [project_path] },
+              current_user: current_user
+            ).execute.first
+        end
+      end
+
       def model_gateway_headers(headers, service)
         Gitlab::AiGateway.headers(
           user: current_user,
           service: service,
           agent: headers["User-Agent"],
           lsp_version: headers["X-Gitlab-Language-Server-Version"]
-        ).merge(saas_headers).transform_values { |v| Array(v) }
+        ).merge(saas_headers).merge(model_config_headers).transform_values { |v| Array(v) }
       end
 
       def connector_public_headers(service_name)
-        Gitlab::AiGateway.public_headers(user: current_user,
-          service_name: service_name)
+        Gitlab::AiGateway.public_headers(user: current_user, service_name: service_name)
           .merge(saas_headers)
+          .merge(model_config_headers)
           .merge('X-Gitlab-Authentication-Type' => 'oidc')
       end
 
@@ -52,6 +62,15 @@ module API
           'X-Gitlab-Saas-Duo-Pro-Namespace-Ids' => current_user
                                                      .duo_pro_add_on_available_namespace_ids
                                                      .join(',')
+        }
+      end
+
+      def model_config_headers
+        model_prompt_cache_enabled = model_prompt_cache_enabled?(declared_params.fetch(:project_path))
+
+        {
+          # this config will decide if we allow the underlying model to cache the generated completion response
+          'X-Gitlab-Model-Prompt-Cache-Enabled' => (!!model_prompt_cache_enabled).to_s
         }
       end
 
@@ -77,6 +96,16 @@ module API
           Feature.enabled?(:incident_fail_over_completion_provider, current_user) ||
           completion_model_details.any_user_groups_claude_code_completion? ||
           ::Ai::AmazonQ.connected?
+      end
+
+      def model_prompt_cache_enabled?(project_path)
+        current_project = project(project_path) if project_path.present?
+
+        if current_project.present?
+          current_project.model_prompt_cache_enabled
+        else
+          Gitlab::CurrentSettings.model_prompt_cache_enabled
+        end
       end
     end
 
@@ -175,6 +204,10 @@ module API
           ]
         end
 
+        params do
+          optional :project_path, type: String, desc: 'The path of the project',
+            documentation: { example: 'namespace/project' }
+        end
         post do
           forbidden!('Direct connections are disabled') if forbid_direct_access?
 
