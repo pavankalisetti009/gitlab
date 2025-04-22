@@ -63,7 +63,7 @@ module GitlabSubscriptions
         .limit(limit)
     end
 
-    delegate :name, to: :add_on, prefix: true, allow_nil: true
+    delegate :name, :seat_assignable?, to: :add_on, prefix: true
 
     def self.find_by_namespace_and_add_on(namespace, add_on)
       find_by(namespace: namespace, add_on: add_on)
@@ -130,10 +130,6 @@ module GitlabSubscriptions
       end
 
       deleted_assignments_count
-    end
-
-    def seat_assignable?
-      AddOn.seat_assignable?(add_on.name)
     end
 
     def lock_key_for_refreshing_user_assignments

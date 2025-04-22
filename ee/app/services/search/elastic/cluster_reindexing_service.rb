@@ -256,11 +256,9 @@ module Search
       end
 
       def compare_documents_count
-        save_documents_count!(refresh: true)
-
         current_task.subtasks.each do |subtask|
-          old_documents_count = subtask.documents_count
-          new_documents_count = subtask.documents_count_target
+          old_documents_count = elastic_helper.documents_count(index_name: subtask.index_name_from, refresh: true)
+          new_documents_count = elastic_helper.documents_count(index_name: subtask.index_name_to, refresh: true)
           next if old_documents_count == new_documents_count
 
           abort_reindexing!('Documents count is different. ' \
@@ -275,6 +273,9 @@ module Search
 
           return false
         end
+
+        # Update the database counts one final time for the UI.
+        save_documents_count!(refresh: true)
 
         true
       end

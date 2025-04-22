@@ -50,6 +50,9 @@ module Security
     scope :for_policy_configuration, ->(policy_configuration) {
       where(security_orchestration_policy_configuration: policy_configuration)
     }
+    scope :for_approval_policy_rules, ->(approval_policy_rules) {
+      where(approval_policy_rule: approval_policy_rules)
+    }
     scope :for_policy_index, ->(policy_index) { where(orchestration_policy_idx: policy_index) }
     scope :for_rule_index, ->(rule_index) { where(rule_idx: rule_index) }
     scope :targeting_commits, -> { where.not(commits: nil) }

@@ -642,7 +642,8 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
   end
 
   describe 'delegations' do
-    it { is_expected.to delegate_method(:name).to(:add_on).with_prefix.allow_nil }
+    it { is_expected.to delegate_method(:name).to(:add_on).with_prefix }
+    it { is_expected.to delegate_method(:seat_assignable?).to(:add_on).with_prefix }
   end
 
   describe '.uniq_add_on_names' do
@@ -831,22 +832,6 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     end
 
     context 'when user is not already assigned' do
-      it { is_expected.to eq(false) }
-    end
-  end
-
-  describe '.seat_assignable?' do
-    subject { add_on_purchase.seat_assignable? }
-
-    context 'when the associated add-on is seat assignable' do
-      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
-
-      it { is_expected.to eq(true) }
-    end
-
-    context 'when the associated add-on is not seat assignable' do
-      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core) }
-
       it { is_expected.to eq(false) }
     end
   end

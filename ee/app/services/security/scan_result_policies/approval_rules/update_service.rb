@@ -1,0 +1,67 @@
+# frozen_string_literal: true
+
+module Security
+  module ScanResultPolicies
+    module ApprovalRules
+      class UpdateService < BaseService
+        def execute
+          approval_policy_rules.each do |approval_policy_rule|
+            if approval_actions.blank?
+              update_rule(approval_policy_rule)
+              next
+            end
+
+            approval_actions.each_with_index do |approval_action, action_index|
+              update_rule(approval_policy_rule, action_index, approval_action)
+            end
+          end
+        end
+
+        private
+
+        def update_rule(approval_policy_rule, action_index = 0, approval_action = nil)
+          scan_result_policy_read = scan_result_policy_reads_map.dig(approval_policy_rule.id, action_index)
+          update_scan_result_policy_read(approval_policy_rule, scan_result_policy_read, action_index, approval_action)
+
+          sync_license_scanning_rule(approval_policy_rule, scan_result_policy_read)
+
+          approval_rule = project_approval_rules_map.dig(approval_policy_rule.id, action_index)
+
+          return if approval_rule.blank?
+
+          ::ApprovalRules::UpdateService.new(approval_rule, author,
+            rule_params(approval_policy_rule, scan_result_policy_read, action_index, approval_action)
+          ).execute
+        end
+
+        def project_approval_rules_map
+          project
+            .approval_rules
+            .for_approval_policy_rules(approval_policy_rules)
+            .each_with_object({}) do |item, result|
+              result[item.approval_policy_rule_id] ||= {}
+              result[item.approval_policy_rule_id][item.approval_policy_action_idx] = item
+            end
+        end
+
+        def scan_result_policy_reads_map
+          project
+            .scan_result_policy_reads
+            .for_approval_policy_rules(approval_policy_rules)
+            .each_with_object({}) do |item, result|
+              result[item.approval_policy_rule_id] ||= {}
+              result[item.approval_policy_rule_id][item.action_idx] = item
+            end
+        end
+
+        def update_scan_result_policy_read(
+          approval_policy_rule, scan_result_policy_read, action_index = 0,
+          approval_action = nil)
+          scan_result_policy_read.update!(
+            scan_result_policy_read_params(approval_policy_rule, action_index, approval_action)
+          )
+        end
+      end
+    end
+  end
+end

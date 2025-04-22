@@ -820,6 +820,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
           project: project,
           security_orchestration_policy_configuration: policy_configuration,
           orchestration_policy_idx: policy.policy_index,
+          approval_policy_rule: approval_policy_rules[i],
           rule_idx: approval_policy_rules[i].rule_index)
       end
 
@@ -1273,6 +1274,16 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       it 'returns the next available index' do
         expect(described_class.next_deletion_index).to eq(4)
       end
+    end
+  end
+
+  describe '#policy_content' do
+    let_it_be(:policy) { create(:security_policy, :require_approval) }
+
+    it 'returns content with symbol keys' do
+      expect(policy.policy_content).to eq({
+        actions: [{ type: 'require_approval', approvals_required: 1, user_approvers: %w[owner] }]
+      })
     end
   end
 end

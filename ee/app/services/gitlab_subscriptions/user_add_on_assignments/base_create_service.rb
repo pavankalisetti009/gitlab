@@ -7,6 +7,7 @@ module GitlabSubscriptions
 
       ERROR_NO_SEATS_AVAILABLE = 'NO_SEATS_AVAILABLE'
       ERROR_INVALID_USER_MEMBERSHIP = 'INVALID_USER_MEMBERSHIP'
+      ERROR_SEAT_ASSIGNMENT_NOT_SUPPORTED = 'SEAT_ASSIGNMENT_NOT_SUPPORTED'
       VALIDATION_ERROR_CODE = 422
 
       NoSeatsAvailableError = Class.new(StandardError) do
@@ -75,6 +76,7 @@ module GitlabSubscriptions
 
       def validate
         return ERROR_NO_SEATS_AVAILABLE unless seats_available?
+        return ERROR_SEAT_ASSIGNMENT_NOT_SUPPORTED unless add_on_purchase.add_on_seat_assignable?
 
         ERROR_INVALID_USER_MEMBERSHIP unless eligible_for_gitlab_duo_pro_seat?
       end
