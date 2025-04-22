@@ -15,9 +15,15 @@ FactoryBot.define do
           when 'BSD'
             'BSD-4-Clause'
           when 'Apache-2.0'
-            'Apache 2.0 License'
+            'Apache License 2.0'
           when 'DEFAULT-2.1'
             'Default License 2.1'
+          when 'BSD-4-Clause'
+            'BSD 4-Clause "Original" or "Old" License'
+          when 'MIT'
+            'MIT License'
+          when 'BSD-2-Clause'
+            'BSD 2-Clause "Simplified" License'
           else
             license.spdx_identifier
           end

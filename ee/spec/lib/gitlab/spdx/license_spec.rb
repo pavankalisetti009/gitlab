@@ -40,4 +40,32 @@ RSpec.describe Gitlab::SPDX::License, feature_category: :software_composition_an
       expect(license[:methods]).to be_nil
     end
   end
+
+  describe '#canonical_id' do
+    context 'when the spdx_identifier is set' do
+      it 'returns the spdx_identifier' do
+        expect(license.canonical_id).to eq(id)
+      end
+    end
+
+    context 'when the spdx_identifier is not set' do
+      let(:id) { nil }
+
+      context 'when the name is set' do
+        let(:name) { 'Custom License' }
+
+        it 'returns the downcased name' do
+          expect(license.canonical_id).to eq(name.downcase)
+        end
+      end
+
+      context 'when the name is not set' do
+        let(:name) { nil }
+
+        it 'returns nil' do
+          expect(license.canonical_id).to be_nil
+        end
+      end
+    end
+  end
 end

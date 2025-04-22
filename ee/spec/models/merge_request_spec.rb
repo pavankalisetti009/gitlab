@@ -750,7 +750,11 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
 
         context 'with denied policy' do
-          let(:denied_policy) { create(:software_license_policy, :denied, software_license: apache) }
+          let(:denied_policy) do
+            create(:software_license_policy, :denied, software_license: apache,
+              software_license_spdx_identifier: apache.spdx_identifier)
+          end
+
           let(:merge_request) { create(:ee_merge_request, :with_cyclonedx_reports, source_project: project) }
 
           before do
@@ -775,8 +779,12 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
             let!(:license_check) { create(:report_approver_rule, :license_scanning, merge_request: merge_request) }
 
             context 'when rule is not approved' do
+              let(:software_license) { build(:software_license, :apache_2_0) }
               let(:merge_request) { create(:ee_merge_request, :with_cyclonedx_reports, source_project: project) }
-              let(:denied_policy) { create(:software_license_policy, :denied, software_license: build(:software_license, :apache_2_0)) }
+              let(:denied_policy) do
+                create(:software_license_policy, :denied, software_license: software_license,
+                  software_license_spdx_identifier: software_license.spdx_identifier)
+              end
 
               before do
                 allow_any_instance_of(ApprovalWrappedRule).to receive(:approved?).and_return(false)
@@ -785,6 +793,14 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
                   :pm_package, name: "nokogiri", purl_type: "gem",
                   other_licenses: [{ license_names: ["Apache-2.0"], versions: ["1.8.0"] }]
                 )
+              end
+
+              context 'when the feature flag `static_licenses` is disabled' do
+                before do
+                  stub_feature_flags(static_licenses: false)
+                end
+
+                it { is_expected.to be_truthy }
               end
 
               it { is_expected.to be_truthy }
@@ -1333,9 +1349,25 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           subject
         end
 
-        context 'cache key includes sofware license policies' do
-          let!(:license_1) { create(:software_license_policy, project: project) }
-          let!(:license_2) { create(:software_license_policy, project: project) }
+        context 'cache key includes software license policies' do
+          let(:apache_2_0) { build(:software_license, :apache_2_0) }
+          let!(:license_1) { create(:software_license_policy, project: project, software_license: apache_2_0, software_license_spdx_identifier: apache_2_0.spdx_identifier) }
+          let(:mit) { build(:software_license, :mit) }
+          let!(:license_2) { create(:software_license_policy, project: project, software_license: mit, software_license_spdx_identifier: mit.spdx_identifier) }
+
+          context 'when the feature flag `static_licenses` is disabled' do
+            before do
+              stub_feature_flags(static_licenses: false)
+            end
+
+            it 'returns key with license information' do
+              expect_any_instance_of(Ci::CompareLicenseScanningReportsService)
+                .to receive(:execute).with(base_pipeline, head_pipeline).and_call_original
+
+              expect(subject[:key].last).to include("software_license_policies/query-")
+              expect(subject[:data]['existing_licenses'].last.dig('classification', 'approval_status')).to eq('unclassified')
+            end
+          end
 
           it 'returns key with license information' do
             expect_any_instance_of(Ci::CompareLicenseScanningReportsService)

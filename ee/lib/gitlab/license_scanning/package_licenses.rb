@@ -190,13 +190,24 @@ module Gitlab
         @pm_licenses[license_id]
       end
 
-      # there's only about 500 _valid_ licenses in the software_licenses table, and the data doesn't change often,
+      # there's only about 650 _valid_ licenses in the software_licenses table, and the data doesn't change often,
       # so we use a cache to avoid a separate sql query every time we need to convert from spdx_identifier to
       # license name.
       def license_name_for(spdx_id:)
-        @software_licenses ||= SoftwareLicense.spdx.to_h { |license| [license.spdx_identifier, license.name] }
-        @software_licenses[spdx_id] || spdx_id
+        if Feature.enabled?(:static_licenses) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- This FF is all or nothing
+          catalogue_licenses_map[spdx_id] || spdx_id
+        else
+          @software_licenses ||= SoftwareLicense.spdx.to_h { |license| [license.spdx_identifier, license.name] }
+          @software_licenses[spdx_id] || spdx_id
+        end
       end
+
+      def catalogue_licenses_map
+        Gitlab::SPDX::Catalogue.latest_active_licenses.to_h do |license|
+          [license.id, license.name]
+        end
+      end
+      strong_memoize_attr :catalogue_licenses_map
 
       def add_components_with_license(components_with_licenses)
         components_with_licenses.each do |component|
