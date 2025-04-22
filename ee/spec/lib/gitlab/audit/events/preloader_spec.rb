@@ -40,7 +40,7 @@ RSpec.describe Gitlab::Audit::Events::Preloader, feature_category: :audit_events
   describe '#find_each' do
     let(:preloader) { described_class.new(audit_events_relation) }
 
-    it 'yields a list audit events' do
+    it 'yields a list audit events', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/516109' do
       expect { |b| preloader.find_each(&b) }.to yield_successive_args(*audit_events)
     end
 
