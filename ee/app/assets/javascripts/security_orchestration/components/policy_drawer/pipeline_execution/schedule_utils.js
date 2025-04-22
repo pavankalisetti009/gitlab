@@ -13,8 +13,8 @@ import {
 import { DEFAULT_TIMEZONE } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/constants';
 
 /**
- * Gets a formatted list of weekdays from the schedule
- * @param {Object} schedule - The schedule object
+ * Gets a formatted list of weekdays
+ * @param {Array} days
  * @returns {String} Formatted weekdays list
  */
 export const getWeekdaysList = (days = []) => {
@@ -31,8 +31,8 @@ export const getWeekdaysList = (days = []) => {
 };
 
 /**
- * Gets the branch information text
- * @param {String} branchType - The branch type
+ * Gets the branch information
+ * @param {String} branchType
  * @returns {String} Formatted branch information
  */
 export const getBranchInfo = (branchType) => {
@@ -48,8 +48,8 @@ export const getBranchInfo = (branchType) => {
 };
 
 /**
- * Gets the schedule time information
- * @param {String} time - The schedule time
+ * Gets the time information
+ * @param {String} time
  * @returns {String} Formatted time information
  */
 export const getTimeInfo = (time) => {
@@ -62,7 +62,7 @@ export const getTimeInfo = (time) => {
 
 /**
  * Gets the time window information
- * @param {Object} timeWindow - The time window object
+ * @param {Object} timeWindow
  * @returns {String} Formatted time window information
  */
 export const getTimeWindowInfo = (timeWindow) => {
@@ -107,7 +107,7 @@ export const getTimeWindowInfo = (timeWindow) => {
 
 /**
  * Gets the timezone information
- * @param {String} timezone - The timezone
+ * @param {String} timezone
  * @returns {String} Formatted timezone information
  */
 export const getTimezoneInfo = (timezone) => {
@@ -118,7 +118,7 @@ export const getTimezoneInfo = (timezone) => {
 
 /**
  * Gets the weekly schedule information
- * @param {Object} schedule - The schedule object
+ * @param {Array} days
  * @returns {String} Formatted weekly schedule information
  */
 export const getWeeklyScheduleInfo = (days) => {
@@ -135,7 +135,7 @@ export const getWeeklyScheduleInfo = (days) => {
 
 /**
  * Gets the monthly schedule information
- * @param {Object} schedule - The schedule object
+ * @param {Array} daysOfMonth
  * @returns {String} Formatted monthly schedule information
  */
 export const getMonthlyScheduleInfo = (daysOfMonth = []) => {
@@ -154,7 +154,7 @@ export const getMonthlyScheduleInfo = (daysOfMonth = []) => {
 
 /**
  * Gets the schedule type information
- * @param {Object} schedule - The schedule object
+ * @param {Object} schedule
  * @returns {String} Formatted schedule type information
  */
 export const getScheduleTypeInfo = (schedule) => {
