@@ -1,5 +1,5 @@
-// eslint-disable-next-line no-restricted-imports
-import { mapActions } from 'vuex';
+import { mapActions } from 'pinia';
+import { useNotes } from '~/notes/store/legacy_notes';
 
 export default {
   computed: {
@@ -8,7 +8,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['toggleDiscussion']),
+    ...mapActions(useNotes, ['toggleDiscussion']),
     clickedToggle(discussion) {
       if (!discussion.isDraft) {
         this.toggleDiscussion({ discussionId: discussion.id });

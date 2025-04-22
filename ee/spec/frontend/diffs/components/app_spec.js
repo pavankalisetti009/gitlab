@@ -1,5 +1,4 @@
 import { shallowMount } from '@vue/test-utils';
-
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { PiniaVuePlugin } from 'pinia';
@@ -13,9 +12,9 @@ import { TEST_HOST } from 'spec/test_constants';
 import App, { FINDINGS_POLL_INTERVAL } from '~/diffs/components/app.vue';
 import DiffFile from '~/diffs/components/diff_file.vue';
 import vuexStore from 'helpers/mocks/mr_notes/stores';
-
 import { globalAccessorPlugin } from '~/pinia/plugins';
 import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
+import { useNotes } from '~/notes/store/legacy_notes';
 import {
   codeQualityNewErrorsHandler,
   SASTParsedHandler,
@@ -92,6 +91,8 @@ describe('diffs/components/app', () => {
     store.fetchDiffFilesMeta.mockResolvedValue({ real_size: '20' });
     store.fetchDiffFilesBatch.mockResolvedValue();
     store.assignDiscussionsToDiff.mockResolvedValue();
+
+    useNotes();
   });
 
   describe('EE codequality diff', () => {
