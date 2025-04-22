@@ -43,6 +43,12 @@ module Types
       field :tag_list, [GraphQL::Types::String],
         null: true, description: 'Runner tags associated with the profile.'
 
+      def branch
+        return unless object.project.repository_access_level != ProjectFeature::DISABLED
+
+        object.branch
+      end
+
       def edit_path
         Gitlab::Routing.url_helpers.edit_project_on_demand_scan_path(object.project, object)
       end

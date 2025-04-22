@@ -8,17 +8,17 @@ import {
   GlModal,
   GlTooltipDirective,
 } from '@gitlab/ui';
-import { __, s__ } from '~/locale';
-import { visitUrl } from '~/lib/utils/url_utility';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import ScanTypeBadge from 'ee/security_configuration/dast_profiles/components/dast_scan_type_badge.vue';
 import PreScanVerificationConfigurator from 'ee/security_configuration/dast_pre_scan_verification/components/pre_scan_verification_configurator.vue';
-import dastProfileRunMutation from '../../graphql/dast_profile_run.mutation.graphql';
-import dastProfileDelete from '../../graphql/dast_profile_delete.mutation.graphql';
-import handlesErrors from '../../mixins/handles_errors';
+import ScanTypeBadge from 'ee/security_configuration/dast_profiles/components/dast_scan_type_badge.vue';
+import { visitUrl } from '~/lib/utils/url_utility';
+import { __, s__ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { LEARN_MORE_TEXT, MAX_DAST_PROFILES_COUNT, SAVED_TAB_TABLE_FIELDS } from '../../constants';
 import { removeProfile } from '../../graphql/cache_utils';
+import dastProfileDelete from '../../graphql/dast_profile_delete.mutation.graphql';
+import dastProfileRunMutation from '../../graphql/dast_profile_run.mutation.graphql';
 import dastProfilesQuery from '../../graphql/dast_profiles.query.graphql';
-import { SAVED_TAB_TABLE_FIELDS, LEARN_MORE_TEXT, MAX_DAST_PROFILES_COUNT } from '../../constants';
+import handlesErrors from '../../mixins/handles_errors';
 import BaseTab from './base_tab.vue';
 
 export default {
@@ -201,7 +201,9 @@ export default {
       {{ actionErrorMessage }}
     </template>
 
-    <template #after-name="item"><gl-icon name="branch" /> {{ item.branch.name }}</template>
+    <template #after-name="item">
+      <template v-if="item.branch"> <gl-icon name="branch" /> {{ item.branch.name }} </template>
+    </template>
 
     <template #cell(scanType)="{ value }">
       <scan-type-badge :scan-type="value" />
