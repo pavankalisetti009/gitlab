@@ -106,7 +106,7 @@ module QA
 
             def has_sent_via_email_alert?
               wait_for_requests
-              page.has_content?("The report is being generated and will be sent to your email.")
+              page.has_content?("Report export in progress. After the report is generated, an email will be sent with the download link.")
             end
           end
         end
