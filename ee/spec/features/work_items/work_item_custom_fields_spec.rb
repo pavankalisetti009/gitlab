@@ -47,7 +47,7 @@ RSpec.describe 'Work Item Custom Fields', :js, feature_category: :team_planning 
     end
   end
 
-  it 'persists custom field values correctly', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/526378' do
+  it 'persists custom field values correctly' do
     visit project_work_item_path(project, work_item)
 
     within_testid('work-item-custom-field') do
@@ -64,8 +64,9 @@ RSpec.describe 'Work Item Custom Fields', :js, feature_category: :team_planning 
         expect(page).to have_text('None')
 
         click_button('Edit')
-        find('input').fill_in(with: '5')
-        click_button('Apply')
+
+        expect(page).to have_field('custom-field-number-input', placeholder: 'Enter a number')
+        fill_in('custom-field-number-input', with: "5\n")
 
         expect(page).to have_text('5')
       end
@@ -74,8 +75,9 @@ RSpec.describe 'Work Item Custom Fields', :js, feature_category: :team_planning 
         expect(page).to have_text('None')
 
         click_button('Edit')
-        find('input').fill_in(with: 'Sample text')
-        click_button('Apply')
+
+        expect(page).to have_field('custom-field-text-input', placeholder: 'Enter text')
+        fill_in('custom-field-text-input', with: "Sample text\n")
 
         expect(page).to have_text('Sample text')
       end
