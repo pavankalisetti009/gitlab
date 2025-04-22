@@ -73,11 +73,7 @@ module EE
 
           if state.project.use_elasticsearch? && !::Gitlab::Geo.secondary?
             state.run_after_commit do
-              if ::Feature.enabled?(:rename_commit_indexer_worker, ::Feature.current_request)
-                ::Search::Elastic::CommitIndexerWorker.perform_async(state.project_id)
-              else
-                ElasticCommitIndexerWorker.perform_async(state.project_id)
-              end
+              ::Search::Elastic::CommitIndexerWorker.perform_async(state.project_id)
             end
           end
 

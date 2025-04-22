@@ -48,11 +48,7 @@ module EE
         end
 
         if elasticsearch_project_blobs_need_updating? && !::Gitlab::Geo.secondary?
-          if ::Feature.enabled?(:rename_commit_indexer_worker, ::Feature.current_request)
-            ::Search::Elastic::CommitIndexerWorker.perform_async(project.id, { 'force' => true })
-          else
-            ElasticCommitIndexerWorker.perform_async(project.id, false, { 'force' => true })
-          end
+          ::Search::Elastic::CommitIndexerWorker.perform_async(project.id, { 'force' => true })
         end
 
         return unless elasticsearch_project_wikis_need_updating?

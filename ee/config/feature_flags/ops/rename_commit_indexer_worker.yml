@@ -1,9 +1,0 @@
----
-name: rename_commit_indexer_worker
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/518703
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/182114
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/518704
-milestone: '17.10'
-group: group::global search
-type: ops
-default_enabled: true

@@ -1973,16 +1973,6 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
-- :name: elastic_commit_indexer
-  :worker_name: ElasticCommitIndexerWorker
-  :feature_category: :global_search
-  :has_external_dependencies: false
-  :urgency: :throttled
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-  :queue_namespace:
 - :name: elastic_delete_project
   :worker_name: ElasticDeleteProjectWorker
   :feature_category: :global_search
