@@ -46708,6 +46708,9 @@ msgstr ""
 msgid "Profiles|Setting locked"
 msgstr ""
 
+msgid "Profiles|Social accounts"
+msgstr ""
+
 msgid "Profiles|Some options are unavailable for LDAP accounts"
 msgstr ""
 
