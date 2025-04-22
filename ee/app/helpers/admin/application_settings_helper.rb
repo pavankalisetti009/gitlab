@@ -21,6 +21,7 @@ module Admin
         add_duo_pro_seats_url: add_duo_pro_seats_url(subscription_name),
         subscription_name: subscription_name,
         is_bulk_add_on_assignment_enabled: 'true',
+        is_duo_base_access_allowed: Feature.enabled?(:allow_duo_base_access, :instance).to_s,
         subscription_start_date: License.current.starts_at,
         subscription_end_date: License.current.expires_at,
         duo_availability: duo_availability,

@@ -1,7 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
 import { createTestingPinia } from '@pinia/testing';
 import { PiniaVuePlugin } from 'pinia';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -18,7 +16,6 @@ import { useNotes } from '~/notes/store/legacy_notes';
 import { useBatchComments } from '~/batch_comments/store';
 import { useMrNotes } from '~/mr_notes/store/legacy_mr_notes';
 
-Vue.use(Vuex);
 Vue.use(PiniaVuePlugin);
 jest.mock('~/alert');
 
@@ -28,30 +25,7 @@ describe('EE DiffLineNoteForm', () => {
 
   let saveDraft;
 
-  const createStoreOptions = () => {
-    const state = {
-      notes: {
-        notesData: { draftsPath: null },
-        noteableData: {},
-      },
-    };
-    const getters = {
-      getUserData: jest.fn(),
-      isLoggedIn: jest.fn(),
-      noteableType: jest.fn(),
-      resetAutoSave: jest.fn(),
-    };
-
-    return {
-      state,
-      getters,
-    };
-  };
-
   const createComponent = (props = {}) => {
-    const storeOptions = createStoreOptions();
-    const store = new Vuex.Store(storeOptions);
-
     const diffFile = getDiffFileMock();
     const diffLines = diffFile.highlighted_diff_lines;
 
@@ -63,7 +37,6 @@ describe('EE DiffLineNoteForm', () => {
         noteTargetLine: diffLines[0],
         ...props,
       },
-      store,
       pinia,
       mocks: {
         resetAutoSave: jest.fn(),

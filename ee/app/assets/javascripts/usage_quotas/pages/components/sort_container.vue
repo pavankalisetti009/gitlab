@@ -51,7 +51,6 @@ export default {
     <label for="sort" class="gl-m-0 gl-text-nowrap">{{ __('Sort by') }}</label>
     <gl-sorting
       id="sort"
-      data-test-id="gl-sorting"
       :sort-options="$options.sortOptions"
       :sort-by="sortBy"
       :is-ascending="sortAscending"
