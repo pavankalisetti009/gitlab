@@ -45,8 +45,8 @@ FactoryBot.define do
       add_on { association(:gitlab_subscription_add_on, :product_analytics) }
     end
 
-    trait :duo_nano do
-      add_on { association(:gitlab_subscription_add_on, :duo_nano) }
+    trait :duo_core do
+      add_on { association(:gitlab_subscription_add_on, :duo_core) }
     end
 
     trait :duo_pro do

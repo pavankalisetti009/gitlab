@@ -7,6 +7,6 @@ RSpec.describe Types::GitlabSubscriptions::AddOnTypeEnum, feature_category: :sha
 
   it 'exposes all add-on types' do
     expect(described_class.values.keys)
-      .to contain_exactly('DUO_NANO', 'CODE_SUGGESTIONS', 'DUO_ENTERPRISE', 'DUO_AMAZON_Q')
+      .to contain_exactly('DUO_CORE', 'CODE_SUGGESTIONS', 'DUO_ENTERPRISE', 'DUO_AMAZON_Q')
   end
 end

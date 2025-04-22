@@ -14526,7 +14526,7 @@ msgstr ""
 msgid "CodeSuggestions|Get started with GitLab Duo Pro today."
 msgstr ""
 
-msgid "CodeSuggestions|GitLab Duo"
+msgid "CodeSuggestions|GitLab Duo Core"
 msgstr ""
 
 msgid "CodeSuggestions|GitLab Duo Enterprise"

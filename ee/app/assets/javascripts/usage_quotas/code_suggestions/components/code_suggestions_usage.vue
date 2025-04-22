@@ -9,7 +9,7 @@ import getAddOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_pu
 import getCurrentLicense from 'ee/admin/subscriptions/show/graphql/queries/get_current_license.query.graphql';
 
 import {
-  DUO,
+  DUO_CORE,
   DUO_PRO,
   DUO_ENTERPRISE,
   DUO_AMAZON_Q,
@@ -123,13 +123,13 @@ export default {
       return this.addOnPurchase?.assignedQuantity ?? 0;
     },
     duoTier() {
-      return this.addOnPurchase?.name || DUO;
+      return this.addOnPurchase?.name || DUO_CORE;
     },
-    isDuoTier() {
-      return this.duoTier === DUO;
+    isDuoCoreTier() {
+      return this.duoTier === DUO_CORE;
     },
     ignoreAddOnPurchase() {
-      return this.isDuoTier && !this.isDuoBaseAccessAllowed;
+      return this.isDuoCoreTier && !this.isDuoBaseAccessAllowed;
     },
     isDuoTierAmazonQ() {
       // Currently, AmazonQ is available for self-managed customers only, so let's add an extra isSaaS check
@@ -190,7 +190,7 @@ export default {
         return this.queryVariables;
       },
       update({ addOnPurchases }) {
-        // Prioritization order: Duo with Amazon Q > Duo Enterprise > Duo Pro > Duo
+        // Prioritization order: Duo with Amazon Q > Duo Enterprise > Duo Pro > Duo Core
         // For example, a namespace can have a Duo Pro add-on but also a Duo Enterprise trial add-on,
         // and Duo Enterprise would take precedence
 
@@ -317,7 +317,7 @@ export default {
       </template>
 
       <duo-amazon-q-info-card v-if="isDuoTierAmazonQ" />
-      <section v-else-if="hasAddOnPurchase && !isDuoTier">
+      <section v-else-if="hasAddOnPurchase && !isDuoCoreTier">
         <slot name="duo-card" v-bind="{ totalValue, usageValue, duoTier }">
           <template v-if="isSaaS && !isStandalonePage && duoPagePath">
             <gl-alert

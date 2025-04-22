@@ -342,10 +342,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
         end
       end
 
-      context 'with Duo Nano and another Duo add-on' do
+      context 'with Duo Core and another Duo add-on' do
         let(:add_on_products) do
           {
-            'duo_nano' => [add_on_product],
+            'duo_core' => [add_on_product],
             'duo_pro' => [add_on_product]
           }
         end
@@ -362,7 +362,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
           execute_service
 
           expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
-            expected_attributes.merge(add_on: have_attributes(name: 'duo_nano'))
+            expected_attributes.merge(add_on: have_attributes(name: 'duo_core'))
           )
 
           expect(GitlabSubscriptions::AddOnPurchase.second).to have_attributes(
@@ -386,11 +386,11 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
         end
       end
 
-      context 'with Duo Nano to deprovision' do
+      context 'with Duo Core to deprovision' do
         let!(:add_on_purchase) do
           create(
             :gitlab_subscription_add_on_purchase,
-            :duo_nano,
+            :duo_core,
             started_at: started_at,
             expires_on: expires_on,
             namespace: namespace,
@@ -402,7 +402,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
 
         let(:add_on_products) do
           {
-            'duo_nano' => [{
+            'duo_core' => [{
               'started_on' => yesterday,
               'expires_on' => yesterday,
               'purchase_xid' => nil,
@@ -416,7 +416,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
           execute_service
 
           expect(add_on_purchase.reload).to have_attributes(
-            add_on: be_duo_nano,
+            add_on: be_duo_core,
             started_at: yesterday,
             expires_on: yesterday,
             purchase_xid: 'S-A00000001',

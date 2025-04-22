@@ -16,10 +16,10 @@ module GitlabSubscriptions
       product_analytics: 2,
       duo_enterprise: 3,
       duo_amazon_q: 4,
-      duo_nano: 5
+      duo_core: 5
     }
 
-    DUO_ADD_ONS = %i[code_suggestions duo_enterprise duo_amazon_q duo_nano].freeze
+    DUO_ADD_ONS = %i[code_suggestions duo_enterprise duo_amazon_q duo_core].freeze
 
     SEAT_ASSIGNABLE_DUO_ADD_ONS = %w[code_suggestions duo_enterprise].freeze
 
@@ -33,7 +33,7 @@ module GitlabSubscriptions
         product_analytics: 'Add-on for product analytics. Quantity suggests multiple of available stored event.',
         duo_enterprise: 'Add-on for GitLab Duo Enterprise.',
         duo_amazon_q: 'Add-on for GitLab Duo with Amazon Q.',
-        duo_nano: 'Add-on for Gitlab Duo Nano.'
+        duo_core: 'Add-on for Gitlab Duo Core.'
       }
     end
 

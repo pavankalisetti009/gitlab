@@ -846,17 +846,17 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
   end
 
-  describe '#any_root_namespace_with_duo_nano_add_on?', :saas do
+  describe '#any_root_namespace_with_duo_core_add_on?', :saas do
     let_it_be(:user) { create(:user) }
     let_it_be(:root_group) { create(:group) }
     let_it_be(:sub_group) { create(:group, parent: root_group) }
     let_it_be(:root_project) { create(:project, group: root_group) }
     let_it_be(:sub_group_project) { create(:project, group: sub_group) }
-    let_it_be(:duo_nano_add_on) { create(:gitlab_subscription_add_on, :duo_nano) }
+    let_it_be(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
 
-    subject { user.any_root_namespace_with_duo_nano_add_on? }
+    subject { user.any_root_namespace_with_duo_core_add_on? }
 
-    context 'with a group without Duo Nano add-on' do
+    context 'with a group without Duo Core add-on' do
       before_all do
         root_group.add_developer(user)
       end
@@ -864,9 +864,9 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       it { is_expected.to eq(false) }
     end
 
-    context 'with a group with expired Duo Nano add-on' do
-      let_it_be(:expired_duo_nano_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :expired, add_on: duo_nano_add_on, namespace: root_group)
+    context 'with a group with expired Duo Core add-on' do
+      let_it_be(:expired_duo_core_purchase) do
+        create(:gitlab_subscription_add_on_purchase, :expired, add_on: duo_core_add_on, namespace: root_group)
       end
 
       before_all do
@@ -876,9 +876,9 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       it { is_expected.to eq(false) }
     end
 
-    context 'with a top-level namespace with Duo Nano add-on' do
-      let_it_be(:active_duo_nano_purchase) do
-        create(:gitlab_subscription_add_on_purchase, add_on: duo_nano_add_on, namespace: root_group)
+    context 'with a top-level namespace with Duo Core add-on' do
+      let_it_be(:active_duo_core_purchase) do
+        create(:gitlab_subscription_add_on_purchase, add_on: duo_core_add_on, namespace: root_group)
       end
 
       before_all do
