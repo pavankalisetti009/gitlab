@@ -251,13 +251,7 @@ export default {
       @submit="onFiltersChanged"
     />
 
-    <gl-alert
-      v-if="hasQueryError"
-      variant="danger"
-      class="gl-my-3"
-      :dismissible="false"
-      data-test-id="query-error-alert"
-    >
+    <gl-alert v-if="hasQueryError" variant="danger" class="gl-my-3" :dismissible="false">
       {{ $options.i18n.queryError }}
     </gl-alert>
 

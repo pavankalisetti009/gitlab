@@ -38,7 +38,7 @@ RSpec.describe 'Merge request > User sees status checks widget', :js, feature_ca
 
   shared_examples 'no status checks widget' do
     it 'does not show the widget' do
-      expect(page).not_to have_selector('[data-test-id="widget-extension"]')
+      expect(page).not_to have_selector('[data-testid="widget-extension"]')
     end
   end
 
