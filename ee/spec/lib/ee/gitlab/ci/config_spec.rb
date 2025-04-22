@@ -134,7 +134,7 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
                 stage: 'dast',
                 image: { name: '$SECURE_ANALYZERS_PREFIX/dast:$DAST_VERSION$DAST_IMAGE_SUFFIX' },
                 variables: {
-                  DAST_VERSION: 5,
+                  DAST_VERSION: 6,
                   SECURE_ANALYZERS_PREFIX: '$CI_TEMPLATE_REGISTRY_HOST/security-products',
                   DAST_IMAGE_SUFFIX: '',
                   GIT_STRATEGY: 'none'

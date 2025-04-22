@@ -237,7 +237,7 @@ RSpec.describe 'Secure-Binaries.gitlab-ci.yml' do
 
     describe 'dast' do
       let_it_be(:build_name) { 'dast' }
-      let_it_be(:version) { 5 }
+      let_it_be(:version) { 6 }
 
       it_behaves_like 'an offline image download job'
     end
@@ -257,11 +257,11 @@ RSpec.describe 'Secure-Binaries.gitlab-ci.yml' do
 
     describe 'api-security' do
       let_it_be(:build_name) { 'api-security' }
-      let_it_be(:version) { 5 }
+      let_it_be(:version) { 6 }
 
       it_behaves_like 'an offline image download job' do
         it 'sets SECURE_BINARIES_ANALYZER_VERSION explicitly' do
-          api_security_analyzer_version = "5"
+          api_security_analyzer_version = "6"
 
           expect(build.variables.to_hash).to include(
             'SECURE_BINARIES_ANALYZER_VERSION' => api_security_analyzer_version)
