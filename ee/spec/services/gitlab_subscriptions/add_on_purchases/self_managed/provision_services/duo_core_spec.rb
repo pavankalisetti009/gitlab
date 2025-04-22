@@ -51,7 +51,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
 
         expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
           subscription_add_on_id: add_on_duo_core.id,
-          quantity: 1,
+          quantity: quantity,
           started_at: started_at,
           expires_on: started_at + 1.year,
           purchase_xid: '123456789',
@@ -110,6 +110,30 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
           purchase_xid: '123456789',
           trial: trial
         )
+      end
+    end
+
+    context 'with an existing expired Duo Core' do
+      let(:add_ons) { %i[duo_core] }
+
+      let!(:existing_add_on_purchase) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: add_on_duo_core,
+          quantity: quantity,
+          started_at: 2.years.ago,
+          expires_on: 1.year.ago,
+          namespace: nil
+        )
+      end
+
+      it 'updates existing add-on purchase' do
+        expect do
+          provision_service.execute
+        end.not_to change { GitlabSubscriptions::AddOnPurchase.count }
+
+        expect(existing_add_on_purchase.reload.started_at).to eq(started_at)
+        expect(existing_add_on_purchase.expires_on).to eq(started_at + 1.year)
       end
     end
   end

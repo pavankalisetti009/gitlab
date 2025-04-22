@@ -23,6 +23,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
     end
 
     let(:start_date) { Date.current }
+    let(:end_date) { start_date + 1.year }
     let(:trial) { false }
     let(:restrictions) do
       {
@@ -31,7 +32,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
             {
               "quantity" => quantity,
               "started_on" => start_date.to_s,
-              "expires_on" => (start_date + 1.year).to_s,
+              "expires_on" => end_date.to_s,
               "purchase_xid" => "C-0000001",
               "trial" => trial
             }
@@ -92,7 +93,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
     describe "#expires_on" do
       it { expect { add_on_license_base.expires_on }.to raise_error described_class::MethodNotImplementedError }
 
-      it { expect(add_on_license.expires_on).to eq(start_date + 1.year) }
+      it { expect(add_on_license.expires_on).to eq(end_date) }
 
       context 'without add-on info' do
         let(:restrictions) do
