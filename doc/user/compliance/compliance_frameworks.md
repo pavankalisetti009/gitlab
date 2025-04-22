@@ -57,7 +57,8 @@ or deleted by using subgroups or projects. Project owners can choose a framework
 
 {{< history >}}
 
-- Assigning multiple compliance frameworks [introduced](https://gitlab.com/groups/gitlab-org/-/epics/13294) in GitLab 17.3.
+- Applying multiple compliance frameworks [introduced](https://gitlab.com/groups/gitlab-org/-/epics/13294) in GitLab 17.3.
+- Applying a compliance framework to a project through a compliance framework [introduced](https://gitlab.com/groups/gitlab-org/-/epics/16747) in GitLab 17.11.
 
 {{< /history >}}
 

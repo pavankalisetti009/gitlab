@@ -16,9 +16,7 @@ module EE
           end
 
           override :scoped_variables_for_pipeline_seed
-          def scoped_variables_for_pipeline_seed(
-            job_attr, environment:, kubernetes_namespace:, user:,
-            trigger_or_request:)
+          def scoped_variables_for_pipeline_seed(job_attr, environment:, kubernetes_namespace:, user:, trigger:)
             variables = super.tap do |variables|
               variables.concat(scan_execution_policies_variables_builder.variables(job_attr[:name]))
             end

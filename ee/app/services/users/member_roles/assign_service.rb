@@ -35,6 +35,9 @@ module Users
       end
 
       def assign_or_unassign_admin_role
+        # Admins already have all abilities custom admin roles grants
+        return destroy_record if user_to_be_assigned.admin? # rubocop:disable Cop/UserAdmin -- Not current_user so no need to check if admin mode is enabled
+
         # if admin role is present -> create or update database record
         # if admin role is nil -> that means we are unassigning admin role from user,
         # hence destroy any existing records

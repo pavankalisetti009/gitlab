@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Members::MemberRolePolicy, feature_category: :system_access do
+  using RSpec::Parameterized::TableSyntax
   include AdminModeHelper
 
   let_it_be_with_reload(:user) { create(:user) }
@@ -151,5 +152,20 @@ RSpec.describe Members::MemberRolePolicy, feature_category: :system_access do
         it { is_expected.to be_disallowed(permission) }
       end
     end
+  end
+
+  describe 'admin role permissions' do
+    let_it_be(:current_user) { user }
+    let_it_be(:admin) { build(:admin) }
+
+    subject(:policy) { described_class.new(current_user, member_role) }
+
+    where(:permission, :license) do
+      :read_admin_role    | :custom_roles
+      :update_admin_role  | :custom_roles
+      :delete_admin_role  | :custom_roles
+    end
+
+    include_examples 'permission is allowed/disallowed with feature flags toggled'
   end
 end

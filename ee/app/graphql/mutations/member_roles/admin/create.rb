@@ -6,7 +6,7 @@ module Mutations
       class Create < Base
         graphql_name 'MemberRoleAdminCreate'
 
-        authorize :admin_member_role
+        authorize :create_admin_role
 
         def resolve(**args)
           params = canonicalize_for_create(args)
