@@ -20,11 +20,7 @@ module EE
       end
 
       condition(:top_level_group_creation_enabled) do
-        if ::Gitlab.com?
-          ::Feature.enabled?(:top_level_group_creation_enabled, type: :ops)
-        else
-          true
-        end
+        ::Gitlab::CurrentSettings.top_level_group_creation_enabled?
       end
 
       condition(:clickhouse_main_database_available) do
