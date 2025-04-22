@@ -19,6 +19,9 @@ module Members
     rule { admin & custom_roles_allowed }.policy do
       enable :admin_member_role
       enable :read_member_role
+      enable :read_admin_role
+      enable :update_admin_role
+      enable :delete_admin_role
     end
   end
 end

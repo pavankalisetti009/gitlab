@@ -246,72 +246,16 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
   end
 
   describe 'custom roles' do
-    describe 'admin_member_role' do
-      let(:permissions) { [:admin_member_role, :read_admin_member_role] }
-
-      context 'when custom_roles feature is enabled' do
-        before do
-          stub_licensed_features(custom_roles: true)
-        end
-
-        it { is_expected.to be_disallowed(*permissions) }
-
-        context 'when admin mode enabled', :enable_admin_mode do
-          let(:current_user) { admin }
-
-          it { is_expected.to be_allowed(*permissions) }
-        end
-
-        context 'when admin mode disabled' do
-          let(:current_user) { admin }
-
-          it { is_expected.to be_disallowed(*permissions) }
-        end
+    describe 'various permissions' do
+      where(:permission, :license) do
+        :admin_member_role | :custom_roles
+        :view_member_roles | :custom_roles
+        :view_member_roles | :default_roles_assignees
+        :read_admin_role   | :custom_roles
+        :create_admin_role | :custom_roles
       end
 
-      context 'when custom_roles feature is disabled' do
-        let(:current_user) { admin }
-
-        context 'when admin mode enabled', :enable_admin_mode do
-          it { is_expected.to be_disallowed(*permissions) }
-        end
-      end
-    end
-
-    describe 'view_member_roles' do
-      let(:permissions) { [:view_member_roles] }
-
-      where(license: [:custom_roles, :default_roles_assignees])
-
-      with_them do
-        context 'when feature is enabled' do
-          before do
-            stub_licensed_features(license => true)
-          end
-
-          it { is_expected.to be_disallowed(*permissions) }
-
-          context 'when admin mode enabled', :enable_admin_mode do
-            let(:current_user) { admin }
-
-            it { is_expected.to be_allowed(*permissions) }
-          end
-
-          context 'when admin mode disabled' do
-            let(:current_user) { admin }
-
-            it { is_expected.to be_disallowed(*permissions) }
-          end
-        end
-
-        context 'when feature is disabled' do
-          let(:current_user) { admin }
-
-          context 'when admin mode enabled', :enable_admin_mode do
-            it { is_expected.to be_disallowed(*permissions) }
-          end
-        end
-      end
+      include_examples 'permission is allowed/disallowed with feature flags toggled'
     end
 
     describe 'read_member_role' do
@@ -328,7 +272,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
           it { is_expected.to be_disallowed(*permissions) }
         end
 
-        context 'for registeres user' do
+        context 'for registered user' do
           let(:current_user) { user }
 
           it { is_expected.to be_allowed(*permissions) }
