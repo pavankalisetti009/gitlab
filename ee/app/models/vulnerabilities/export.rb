@@ -12,6 +12,7 @@ module Vulnerabilities
     EXPORTER_CLASS = VulnerabilityExports::ExportService
     MAX_EXPORT_DURATION = 24.hours
     EXPIRES_AFTER = 7.days
+    RECENT_WINDOW = 1.hour
 
     self.table_name = "vulnerability_exports"
 
@@ -35,6 +36,12 @@ module Vulnerabilities
     validate :only_one_exportable
 
     scope :expired, -> { where(expires_at: ..Time.zone.now) }
+    scope :recent, -> { where(created_at: RECENT_WINDOW.ago..) }
+    scope :in_progress, -> { where(status: [:created, :running]) }
+    scope :for_author, ->(author) { where(author: author) }
+    scope :for_group, ->(group) { where(group: group) }
+    scope :for_project, ->(project) { where(project: project) }
+    scope :instance, -> { where(group: nil, project: nil) }
 
     state_machine :status, initial: :created do
       event :start do

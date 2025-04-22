@@ -18,7 +18,7 @@ RSpec.describe GitlabSubscriptions::AddOn, feature_category: :subscription_manag
   end
 
   describe 'scopes' do
-    let!(:duo_nano_add_on) { create(:gitlab_subscription_add_on, :duo_nano) }
+    let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
     let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
     let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
     let!(:duo_amazon_q_add_on) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
@@ -29,7 +29,7 @@ RSpec.describe GitlabSubscriptions::AddOn, feature_category: :subscription_manag
 
       it 'only queries the duo add-ons' do
         expect(duo_add_ons)
-          .to contain_exactly(duo_nano_add_on, duo_pro_add_on, duo_enterprise_add_on, duo_amazon_q_add_on)
+          .to contain_exactly(duo_core_add_on, duo_pro_add_on, duo_enterprise_add_on, duo_amazon_q_add_on)
       end
     end
 
@@ -112,7 +112,7 @@ RSpec.describe GitlabSubscriptions::AddOn, feature_category: :subscription_manag
       'product_analytics' | false
       'duo_enterprise'    | true
       'duo_amazon_q'      | false
-      'duo_nano'          | false
+      'duo_core'          | false
     end
 
     with_them do

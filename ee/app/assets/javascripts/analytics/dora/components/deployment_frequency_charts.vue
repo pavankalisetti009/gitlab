@@ -3,11 +3,6 @@ import { GlToggle, GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import { GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { BASE_FORECAST_SERIES_OPTIONS } from 'ee/analytics/shared/constants';
-import {
-  DEPLOYMENT_FREQUENCY_METRIC_TYPE,
-  getProjectDoraMetrics,
-  getGroupDoraMetrics,
-} from 'ee/dora/api/dora_api';
 import { linearRegression } from 'ee/analytics/shared/utils';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
@@ -22,6 +17,11 @@ import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_m
 import CiCdAnalyticsCharts from '~/analytics/ci_cd/components/ci_cd_analytics_charts.vue';
 import { DEFAULT_SELECTED_CHART } from '~/analytics/ci_cd/components/constants';
 import { PROMO_URL } from '~/constants';
+import {
+  DEPLOYMENT_FREQUENCY_METRIC_TYPE,
+  getProjectDoraMetrics,
+  getGroupDoraMetrics,
+} from '../api/dora_api';
 import DoraChartHeader from './dora_chart_header.vue';
 import {
   allChartDefinitions,

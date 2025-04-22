@@ -372,23 +372,23 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       end
     end
 
-    describe '.for_duo_nano' do
-      subject(:duo_nano_add_on_purchases) { described_class.for_duo_nano }
+    describe '.for_duo_core' do
+      subject(:duo_core_add_on_purchases) { described_class.for_duo_core }
 
-      it { expect(duo_nano_add_on_purchases).to be_empty }
+      it { expect(duo_core_add_on_purchases).to be_empty }
 
-      context 'with duo_nano purchase' do
-        let!(:duo_nano_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_nano) }
+      context 'with duo_core purchase' do
+        let!(:duo_core_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_core) }
 
-        it { expect(duo_nano_add_on_purchases).to eq [duo_nano_add_on] }
+        it { expect(duo_core_add_on_purchases).to eq [duo_core_add_on] }
       end
 
       context 'with other purchases' do
-        let!(:duo_nano_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_nano) }
+        let!(:duo_core_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_core) }
         let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
 
-        it 'returns only duo_nano add-on purchases' do
-          expect(duo_nano_add_on_purchases).to eq [duo_nano_add_on]
+        it 'returns only duo_core add-on purchases' do
+          expect(duo_core_add_on_purchases).to eq [duo_core_add_on]
         end
       end
     end
@@ -428,12 +428,12 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
 
       let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
       let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
-      let!(:duo_nano_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_nano) }
+      let!(:duo_core_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_core) }
       let!(:product_analytics_add_on) { create(:gitlab_subscription_add_on_purchase, :product_analytics) }
 
-      it 'returns duo_pro, duo_enterprise and duo_nano add-ons' do
+      it 'returns duo_pro, duo_enterprise and duo_core add-ons' do
         expect(duo_add_ons_purchases).to contain_exactly(
-          duo_enterprise_add_on, duo_pro_add_on, duo_nano_add_on
+          duo_enterprise_add_on, duo_pro_add_on, duo_core_add_on
         )
       end
     end
@@ -442,7 +442,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       subject(:seat_assignable_duo_add_on_purchases) { described_class.for_seat_assignable_duo_add_ons }
 
       it 'returns duo add-on purchases with seat assignments supported' do
-        create(:gitlab_subscription_add_on_purchase, :duo_nano)
+        create(:gitlab_subscription_add_on_purchase, :duo_core)
         create(:gitlab_subscription_add_on_purchase, :product_analytics)
 
         duo_enterprise_add_on_purchase = create(:gitlab_subscription_add_on_purchase, :duo_enterprise)
@@ -514,7 +514,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     end
 
     describe '.requiring_assigned_users_refresh' do
-      let_it_be(:duo_nano_add_on) { create(:gitlab_subscription_add_on, :duo_nano) }
+      let_it_be(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
       let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
       let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
       let_it_be(:duo_amazon_q_add_on) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
@@ -560,10 +560,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         create(:gitlab_subscription_add_on_purchase, add_on: product_analytics_add_on)
       end
 
-      let_it_be(:duo_nano_add_on_purchase_stale) do
+      let_it_be(:duo_core_add_on_purchase_stale) do
         create(
           :gitlab_subscription_add_on_purchase,
-          add_on: duo_nano_add_on,
+          add_on: duo_core_add_on,
           last_assigned_users_refreshed_at: 21.hours.ago
         )
       end
@@ -845,7 +845,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     end
 
     context 'when the associated add-on is not seat assignable' do
-      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_nano) }
+      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core) }
 
       it { is_expected.to eq(false) }
     end

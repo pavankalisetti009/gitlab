@@ -4235,7 +4235,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    describe 'access_duo_nano_features' do
+    describe 'access_duo_core_features' do
       let_it_be(:current_user) { create(:user) }
       let_it_be_with_reload(:project) { create(:project, :public, group: group) }
 
@@ -4246,20 +4246,20 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_ee_application_setting(should_check_namespace_plan: true)
         end
 
-        context 'with a project in a group with Duo Nano enabled' do
+        context 'with a project in a group with Duo Core enabled' do
           before do
-            group.namespace_settings.reload.update!(duo_nano_features_enabled: true)
+            group.namespace_settings.reload.update!(duo_core_features_enabled: true)
           end
 
-          context 'with duo nano addon' do
-            include_context 'with duo nano addon'
+          context 'with duo core addon' do
+            include_context 'with duo core addon'
 
             context 'when user is a guest' do
               before do
                 group.add_guest(current_user)
               end
 
-              it { is_expected.to be_disallowed(:access_duo_nano_features) }
+              it { is_expected.to be_disallowed(:access_duo_core_features) }
             end
 
             context 'when user is a member of the project' do
@@ -4270,7 +4270,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
                   project.add_member(current_user, access_level)
                 end
 
-                it { is_expected.to be_allowed(:access_duo_nano_features) }
+                it { is_expected.to be_allowed(:access_duo_core_features) }
               end
             end
 
@@ -4280,7 +4280,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
                 project.add_reporter(current_user)
               end
 
-              it { is_expected.to be_allowed(:access_duo_nano_features) }
+              it { is_expected.to be_allowed(:access_duo_core_features) }
             end
           end
 
@@ -4288,22 +4288,22 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             context context do
               include_context context
 
-              it { is_expected.to be_disallowed(:access_duo_nano_features) }
+              it { is_expected.to be_disallowed(:access_duo_core_features) }
             end
           end
         end
 
-        context 'with a project in a group with Duo Nano disabled' do
+        context 'with a project in a group with Duo Core disabled' do
           before do
-            group.namespace_settings.reload.update!(duo_nano_features_enabled: false)
+            group.namespace_settings.reload.update!(duo_core_features_enabled: false)
             project.add_member(current_user, :owner)
           end
 
-          ['with duo nano addon', 'with duo pro addon', 'with duo enterprise addon'].each do |context|
+          ['with duo core addon', 'with duo pro addon', 'with duo enterprise addon'].each do |context|
             context context do
               include_context context
 
-              it { is_expected.to be_disallowed(:access_duo_nano_features) }
+              it { is_expected.to be_disallowed(:access_duo_core_features) }
             end
           end
         end

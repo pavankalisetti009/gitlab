@@ -1,18 +1,14 @@
 <script>
 import {
-  LEAD_TIME_FOR_CHANGES,
-  getProjectDoraMetrics,
-  getGroupDoraMetrics,
-} from 'ee/dora/api/dora_api';
-import {
   LEAD_TIME_NO_DATA_MESSAGE,
   LEAD_TIME_FOR_CHANGES_SECONDARY_SERIES_NAME,
 } from '~/analytics/shared/constants';
 import { createAlert } from '~/alert';
 import { s__, sprintf } from '~/locale';
 import CiCdAnalyticsCharts from '~/analytics/ci_cd/components/ci_cd_analytics_charts.vue';
-import { buildNullSeries } from '../../analytics/shared/utils';
-import ChartTooltipText from '../../analytics/shared/components/chart_tooltip_text.vue';
+import { LEAD_TIME_FOR_CHANGES, getProjectDoraMetrics, getGroupDoraMetrics } from '../api/dora_api';
+import { buildNullSeries } from '../../shared/utils';
+import ChartTooltipText from '../../shared/components/chart_tooltip_text.vue';
 import DoraChartHeader from './dora_chart_header.vue';
 import {
   allChartDefinitions,

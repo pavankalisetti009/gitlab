@@ -43337,8 +43337,8 @@ Types of add-ons.
 | ----- | ----------- |
 | <a id="gitlabsubscriptionsaddontypecode_suggestions"></a>`CODE_SUGGESTIONS` | GitLab Duo Pro add-on. |
 | <a id="gitlabsubscriptionsaddontypeduo_amazon_q"></a>`DUO_AMAZON_Q` | GitLab Duo with Amazon Q add-on. |
+| <a id="gitlabsubscriptionsaddontypeduo_core"></a>`DUO_CORE` {{< icon name="warning-solid" >}} | **Introduced** in GitLab 18.0. **Status**: Experiment. GitLab Duo Core add-on. |
 | <a id="gitlabsubscriptionsaddontypeduo_enterprise"></a>`DUO_ENTERPRISE` | GitLab Duo Enterprise add-on. |
-| <a id="gitlabsubscriptionsaddontypeduo_nano"></a>`DUO_NANO` {{< icon name="warning-solid" >}} | **Introduced** in GitLab 18.0. **Status**: Experiment. GitLab Duo Nano add-on. |
 
 ### `GitlabSubscriptionsUserRole`
 

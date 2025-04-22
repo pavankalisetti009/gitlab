@@ -7,7 +7,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
   describe '#execute', :aggregate_failures do
     subject(:provision_service) { described_class.new }
 
-    let_it_be(:add_on_duo_nano) { create(:gitlab_subscription_add_on, :duo_nano) }
+    let_it_be(:add_on_duo_core) { create(:gitlab_subscription_add_on, :duo_core) }
     let_it_be(:add_on_duo_pro) { create(:gitlab_subscription_add_on, :duo_pro) }
     let_it_be(:add_on_duo_enterprise) { create(:gitlab_subscription_add_on, :duo_enterprise) }
     let_it_be(:add_on_duo_amazon_q) { create(:gitlab_subscription_add_on, :duo_amazon_q) }

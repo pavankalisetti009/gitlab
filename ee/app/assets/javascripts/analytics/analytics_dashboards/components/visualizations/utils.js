@@ -2,7 +2,7 @@ import { isNil } from 'lodash';
 import { isNumeric } from '~/lib/utils/number_utils';
 import { formatNumber, n__, __, sprintf } from '~/locale';
 import { formatDate, humanizeTimeInterval } from '~/lib/utils/datetime/date_format_utility';
-import { formatAsPercentage } from 'ee/dora/components/util';
+import { formatAsPercentage } from 'ee/analytics/dora/components/util';
 import { NULL_SERIES_ID } from 'ee/analytics/shared/constants';
 import { UNITS } from '~/analytics/shared/constants';
 

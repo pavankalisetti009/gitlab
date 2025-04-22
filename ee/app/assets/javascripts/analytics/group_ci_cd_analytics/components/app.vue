@@ -1,9 +1,9 @@
 <script>
 import { GlTabs, GlTab, GlLink } from '@gitlab/ui';
-import DeploymentFrequencyCharts from 'ee/dora/components/deployment_frequency_charts.vue';
-import LeadTimeCharts from 'ee/dora/components/lead_time_charts.vue';
-import TimeToRestoreServiceCharts from 'ee/dora/components/time_to_restore_service_charts.vue';
-import ChangeFailureRateCharts from 'ee/dora/components/change_failure_rate_charts.vue';
+import DeploymentFrequencyCharts from 'ee/analytics/dora/components/deployment_frequency_charts.vue';
+import LeadTimeCharts from 'ee/analytics/dora/components/lead_time_charts.vue';
+import TimeToRestoreServiceCharts from 'ee/analytics/dora/components/time_to_restore_service_charts.vue';
+import ChangeFailureRateCharts from 'ee/analytics/dora/components/change_failure_rate_charts.vue';
 import { mergeUrlParams, updateHistory, getParameterValues } from '~/lib/utils/url_utility';
 import API from '~/api';
 import ReleaseStatsCard from './release_stats_card.vue';

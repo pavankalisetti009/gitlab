@@ -290,7 +290,7 @@ module EE
       licensed_feature_available?(:ai_features) || licensed_feature_available?(:ai_chat)
     end
 
-    def licensed_duo_nano_features_available?
+    def licensed_duo_core_features_available?
       licensed_feature_available?(:code_suggestions) || licensed_feature_available?(:ai_chat)
     end
 

@@ -1,4 +1,4 @@
-import * as DoraApi from 'ee/dora/api/dora_api';
+import * as DoraApi from 'ee/analytics/dora/api/dora_api';
 import axios from '~/lib/utils/axios_utils';
 
 jest.mock('~/lib/utils/axios_utils', () => ({

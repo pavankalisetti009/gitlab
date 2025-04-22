@@ -3,7 +3,7 @@ import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { DORA_METRICS } from '~/analytics/shared/constants';
 import { DASHBOARD_SCHEMA_VERSION } from '~/vue_shared/components/customizable_dashboard/constants';
-import { formatAsPercentage } from 'ee/dora/components/util';
+import { formatAsPercentage } from 'ee/analytics/dora/components/util';
 
 export const EVENTS_TYPES = ['pageViews', 'linkClickEvents', 'events'];
 

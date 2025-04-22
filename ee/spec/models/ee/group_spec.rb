@@ -3990,8 +3990,8 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#licensed_duo_nano_features_available?' do
-    subject { group.licensed_duo_nano_features_available? }
+  describe '#licensed_duo_core_features_available?' do
+    subject { group.licensed_duo_core_features_available? }
 
     where(:code_suggestions, :ai_chat, :result) do
       true  | true  | true

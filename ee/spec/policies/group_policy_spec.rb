@@ -3642,7 +3642,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
-  describe 'access_duo_nano_features' do
+  describe 'access_duo_core_features' do
     let_it_be(:current_user) { create(:user) }
 
     context 'when on GitLab.com', :saas do
@@ -3652,18 +3652,18 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
       subject { described_class.new(current_user, group) }
 
-      context 'with a group with Duo Nano enabled' do
+      context 'with a group with Duo Core enabled' do
         before do
-          group.namespace_settings.reload.update!(duo_nano_features_enabled: true)
+          group.namespace_settings.reload.update!(duo_core_features_enabled: true)
         end
 
-        context 'with duo nano addon' do
-          include_context 'with duo nano addon'
+        context 'with duo core addon' do
+          include_context 'with duo core addon'
 
           context 'when the group is not yet persisted' do
             subject { described_class.new(admin, build(:group)) }
 
-            it { is_expected.to be_disallowed(:access_duo_nano_features) }
+            it { is_expected.to be_disallowed(:access_duo_core_features) }
           end
 
           context 'when user is a guest' do
@@ -3671,7 +3671,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
               group.add_guest(current_user)
             end
 
-            it { is_expected.to be_disallowed(:access_duo_nano_features) }
+            it { is_expected.to be_disallowed(:access_duo_core_features) }
           end
 
           context 'when user is a member of the group' do
@@ -3682,7 +3682,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
                 group.add_member(current_user, access_level)
               end
 
-              it { is_expected.to be_allowed(:access_duo_nano_features) }
+              it { is_expected.to be_allowed(:access_duo_core_features) }
             end
           end
 
@@ -3695,7 +3695,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
               subgroup.add_reporter(current_user)
             end
 
-            it { is_expected.to be_allowed(:access_duo_nano_features) }
+            it { is_expected.to be_allowed(:access_duo_core_features) }
           end
         end
 
@@ -3703,22 +3703,22 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           context context do
             include_context context
 
-            it { is_expected.to be_disallowed(:access_duo_nano_features) }
+            it { is_expected.to be_disallowed(:access_duo_core_features) }
           end
         end
       end
 
-      context 'with a group with Duo Nano disabled' do
+      context 'with a group with Duo Core disabled' do
         before do
-          group.namespace_settings.reload.update!(duo_nano_features_enabled: false)
+          group.namespace_settings.reload.update!(duo_core_features_enabled: false)
           group.add_member(current_user, :owner)
         end
 
-        ['with duo nano addon', 'with duo pro addon', 'with duo enterprise addon'].each do |context|
+        ['with duo core addon', 'with duo pro addon', 'with duo enterprise addon'].each do |context|
           context context do
             include_context context
 
-            it { is_expected.to be_disallowed(:access_duo_nano_features) }
+            it { is_expected.to be_disallowed(:access_duo_core_features) }
           end
         end
       end

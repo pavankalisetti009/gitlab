@@ -62,7 +62,17 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       click_button 'Allow'
       wait_for_requests
     end
-    click_button 'Allow agent'
+
+    begin
+      allow_agent_button = find('button', text: 'Allow agent', visible: true, wait: 2)
+    rescue Capybara::ElementNotFound
+      # Work around for bug when sometimes the button is not visible when test is run in local development, as part of a
+      # suite. See https://gitlab.com/gitlab-org/gitlab/-/issues/536663 for follow-up investigation of root cause.
+      allow_agent_button = find('button', text: 'Allow agent', visible: false)
+    end
+
+    allow_agent_button.click
+
     expect(page).to have_selector(gitlab_badge_selector, text: 'Allowed')
 
     nil

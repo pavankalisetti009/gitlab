@@ -4,12 +4,12 @@ module GitlabSubscriptions
   module AddOnPurchases
     module SelfManaged
       module LicenseAddOns
-        class DuoNano < Base
+        class DuoCore < Base
           private
 
           override :name
           def name
-            :duo_nano
+            :duo_core
           end
         end
       end

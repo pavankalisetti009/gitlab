@@ -180,8 +180,8 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
         end
       end
 
-      context 'with Duo Nano' do
-        let(:add_on_name) { :duo_nano }
+      context 'with Duo Core' do
+        let(:add_on_name) { :duo_core }
 
         it_behaves_like 'successful request'
       end

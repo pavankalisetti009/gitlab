@@ -441,7 +441,7 @@ describe('GitLab Duo Usage', () => {
 
       it('renders code suggestions subtitle', () => {
         expect(findCodeSuggestionsSubtitle().text()).toBe(
-          'Manage seat assignments for GitLab Duo.',
+          'Manage seat assignments for GitLab Duo Core.',
         );
       });
 
@@ -663,7 +663,7 @@ describe('GitLab Duo Usage', () => {
 
       it('renders code suggestions subtitle', () => {
         expect(findCodeSuggestionsSubtitle().text()).toBe(
-          'Manage seat assignments for GitLab Duo.',
+          'Manage seat assignments for GitLab Duo Core.',
         );
       });
 

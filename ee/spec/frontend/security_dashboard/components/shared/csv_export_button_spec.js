@@ -7,7 +7,7 @@ import { TEST_HOST } from 'helpers/test_constants';
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import {
-  HTTP_STATUS_ACCEPTED,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
   HTTP_STATUS_NOT_FOUND,
   HTTP_STATUS_OK,
 } from '~/lib/utils/http_status';
@@ -31,16 +31,8 @@ describe('CsvExportButton', () => {
     });
   };
 
-  const mockSyncExportRequest = (download, status = 'finished') => {
-    mock
-      .onPost(vulnerabilitiesExportEndpoint)
-      .reply(HTTP_STATUS_ACCEPTED, { _links: { self: 'status/url' } });
-
-    mock.onGet('status/url').reply(HTTP_STATUS_OK, { _links: { download }, status });
-  };
-
-  const mockAsyncExportRequest = (status = HTTP_STATUS_ACCEPTED) => {
-    mock.onPost(vulnerabilitiesExportEndpoint, { send_email: true }).reply(status);
+  const mockAsyncExportRequest = (status = HTTP_STATUS_OK, response = {}) => {
+    mock.onPost(vulnerabilitiesExportEndpoint, { send_email: true }).reply(status, response);
   };
 
   beforeEach(() => {
@@ -52,40 +44,53 @@ describe('CsvExportButton', () => {
   });
 
   describe('asynchronous export', () => {
-    describe.each`
-      entity
-      ${'group'}
-      ${'project'}
-    `('CsvExportButton for $entity dashboard', ({ entity }) => {
-      beforeEach(() => {
-        createComponent();
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('sends async export request and shows success alert', async () => {
+      mockAsyncExportRequest();
+
+      findButton().vm.$emit('click');
+      await axios.waitForAll();
+
+      expect(mock.history.post[0].data).toBe(JSON.stringify({ send_email: true }));
+      expect(createAlert).toHaveBeenCalledWith({
+        message:
+          'Report export in progress. After the report is generated, an email will be sent with the download link.',
+        variant: 'info',
+        dismissible: true,
+      });
+    });
+
+    it('shows error alert on running export and HTTP_STATUS_TOO_MANY_REQUESTS', async () => {
+      const serverMessage =
+        'Export already in progress. Please retry after the current export completes.';
+
+      mockAsyncExportRequest(HTTP_STATUS_TOO_MANY_REQUESTS, {
+        message: serverMessage,
       });
 
-      it(`sends async export request and shows success alert for ${entity}`, async () => {
-        mockAsyncExportRequest();
+      findButton().vm.$emit('click');
+      await axios.waitForAll();
 
-        findButton().vm.$emit('click');
-        await axios.waitForAll();
-
-        expect(mock.history.post[0].data).toBe(JSON.stringify({ send_email: true }));
-        expect(createAlert).toHaveBeenCalledWith({
-          message: 'The report is being generated and will be sent to your email.',
-          variant: 'info',
-          dismissible: true,
-        });
+      expect(createAlert).toHaveBeenCalledWith({
+        message: serverMessage,
+        variant: 'danger',
+        dismissible: true,
       });
+    });
 
-      it(`shows error alert when async export fails for ${entity}`, async () => {
-        mockAsyncExportRequest(HTTP_STATUS_NOT_FOUND);
+    it('shows error alert when async export fails', async () => {
+      mockAsyncExportRequest(HTTP_STATUS_NOT_FOUND);
 
-        findButton().vm.$emit('click');
-        await axios.waitForAll();
+      findButton().vm.$emit('click');
+      await axios.waitForAll();
 
-        expect(createAlert).toHaveBeenCalledWith({
-          message: 'There was an error while generating the report.',
-          variant: 'danger',
-          dismissible: true,
-        });
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'There was an error while generating the report.',
+        variant: 'danger',
+        dismissible: true,
       });
     });
   });
@@ -95,9 +100,8 @@ describe('CsvExportButton', () => {
       createComponent();
     });
 
-    it('toggles loading and icon correctly', async () => {
-      const url = 'download/url';
-      mockSyncExportRequest(url);
+    it('toggles loading and icon correctly during async export', async () => {
+      mockAsyncExportRequest();
 
       findButton().vm.$emit('click');
       await nextTick();
@@ -117,16 +121,10 @@ describe('CsvExportButton', () => {
   });
 
   describe('tooltip', () => {
-    describe.each`
-      entity
-      ${'group'}
-      ${'project'}
-    `('when async export is enabled for $entity', ({ entity }) => {
-      it(`shows "Send as CSV to email" for ${entity}`, () => {
-        createComponent();
+    it('shows "Send as CSV to email" when async export is enabled', () => {
+      createComponent();
 
-        expect(findButton().attributes('title')).toBe('Send as CSV to email');
-      });
+      expect(findButton().attributes('title')).toBe('Send as CSV to email');
     });
   });
 
