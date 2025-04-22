@@ -2,17 +2,18 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Query.gitlabSubscriptionsPreviewBillableUserChange', feature_category: :subscription_management do
+RSpec.describe 'Query.gitlabSubscriptionsPreviewBillableUserChange', :saas, feature_category: :subscription_management do
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }
+  let_it_be(:other_user_id) { create(:user).id }
   let_it_be(:fields) { 'willIncreaseOverage newBillableUserCount seatsInSubscription' }
   let_it_be(:base_args) { { role: :DEVELOPER } }
 
   shared_examples 'preview billable user change' do
     context 'when project_or_group does not exist' do
       let(:full_path) { 'non_existent_path' }
-      let(:args) { base_args.merge(add_user_ids: [1]) }
+      let(:args) { base_args.merge(add_user_ids: [other_user_id]) }
 
       it 'returns nil' do
         post_graphql(query, current_user: current_user)
@@ -61,7 +62,7 @@ RSpec.describe 'Query.gitlabSubscriptionsPreviewBillableUserChange', feature_cat
         end
 
         context 'with add_user_ids' do
-          let(:args) { base_args.merge(add_user_ids: [1]) }
+          let(:args) { base_args.merge(add_user_ids: [other_user_id]) }
 
           it 'returns successfully' do
             post_graphql(query, current_user: current_user)
@@ -81,7 +82,7 @@ RSpec.describe 'Query.gitlabSubscriptionsPreviewBillableUserChange', feature_cat
             create(:member_role, :guest, namespace: project_or_group.root_ancestor, read_vulnerability: true)
           end
 
-          let(:args) { base_args.merge(add_user_ids: [1], member_role_id: member_role.id) }
+          let(:args) { base_args.merge(add_user_ids: [other_user_id], member_role_id: member_role.id) }
 
           it 'returns successfully' do
             post_graphql(query, current_user: current_user)
@@ -110,7 +111,7 @@ RSpec.describe 'Query.gitlabSubscriptionsPreviewBillableUserChange', feature_cat
       end
 
       context 'when current_user does not have access to project_or_group' do
-        let(:args) { base_args.merge(add_user_ids: [1]) }
+        let(:args) { base_args.merge(add_user_ids: [other_user_id]) }
 
         it 'returns error' do
           post_graphql(query, current_user: current_user)

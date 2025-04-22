@@ -2,7 +2,8 @@
 
 module GitlabSubscriptions
   class PreviewBillableUserChangeService
-    include Gitlab::Utils::StrongMemoize
+    include ::Gitlab::Utils::StrongMemoize
+    include ::GitlabSubscriptions::BillableUsersUtils
 
     attr_reader :current_user, :target_namespace, :role, :add_group_id, :add_user_emails, :add_user_ids, :member_role_id
 
@@ -78,20 +79,18 @@ module GitlabSubscriptions
 
     def new_billable_user_count
       @new_billable_user_count ||= begin
-        return target_namespace.billable_members_count unless increase_billable_members_count?
+        unless saas_billable_role_change?(
+          target_namespace: target_namespace,
+          role: ::Gitlab::Access.sym_options[role],
+          member_role_id: member_role_id
+        )
+          return target_namespace.billable_members_count
+        end
 
         unmatched_added_emails_count = filtered_add_user_emails.count - user_ids_from_added_emails.count
 
         (target_namespace.billed_user_ids[:user_ids].to_set + all_added_user_ids).count + unmatched_added_emails_count
       end
-    end
-
-    def increase_billable_members_count?
-      return true if role != :guest || !target_namespace.exclude_guests?
-      return false unless member_role_id
-      return false unless member_role
-
-      member_role.occupies_seat
     end
 
     def member_role
