@@ -79,7 +79,7 @@ module Ai
       # rubocop: enable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's groups
 
       def any_root_namespace_with_duo_core_add_on?
-        # Duo Nano doesn't use seats, so this checks if the user is a member of a root namespace with the add-on
+        # Duo Core doesn't use seats, so this checks if the user is a member of a root namespace with the add-on
         GitlabSubscriptions::AddOnPurchase.for_duo_core.for_user(self).active.any?
       end
 
