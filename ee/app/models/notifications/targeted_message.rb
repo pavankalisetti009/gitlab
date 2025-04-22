@@ -3,6 +3,7 @@
 module Notifications
   class TargetedMessage < ApplicationRecord
     validates :target_type, presence: true
+    validates :targeted_message_namespaces, presence: true
 
     has_many :targeted_message_namespaces
     has_many :namespaces, through: :targeted_message_namespaces

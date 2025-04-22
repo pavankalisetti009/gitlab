@@ -7,6 +7,7 @@ RSpec.describe Notifications::TargetedMessage, feature_category: :acquisition do
     subject { build(:targeted_message) }
 
     it { is_expected.to validate_presence_of(:target_type) }
+    it { is_expected.to validate_presence_of(:targeted_message_namespaces) }
   end
 
   describe 'associations' do

@@ -4,9 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Admin::TargetedMessagesController, :enable_admin_mode, :saas, feature_category: :acquisition do
   let_it_be(:admin) { create(:admin) }
-  let_it_be(:targeted_message) { build(:targeted_message) }
-  let(:invalid_targeted_message_params) { { targeted_message: { target_type: '' } } }
-  let(:targeted_message_params) { targeted_message.as_json(root: true) }
+  let(:targeted_message) { build(:targeted_message) }
 
   before do
     sign_in(admin)
@@ -43,125 +41,125 @@ RSpec.describe Admin::TargetedMessagesController, :enable_admin_mode, :saas, fea
   end
 
   describe 'POST #create' do
-    it 'persists the message and redirects to index on success' do
-      post admin_targeted_messages_path, params: targeted_message_params
-      expect(response).to redirect_to(admin_targeted_messages_path)
-      expect(flash[:notice]).to eq('Targeted message was successfully created.')
+    let_it_be(:targeted_namespace_ids) { create_list(:namespace, 2).map(&:id) }
+    let(:invalid_namespace_ids) { [] }
+    let(:targeted_message_params) do
+      { targeted_message: targeted_message.attributes.merge(namespace_ids_csv: csv_file) }
     end
 
-    it 'does not persist and renders the new page on failure' do
-      post admin_targeted_messages_path, params: invalid_targeted_message_params
-      expect(response.body).to render_template(:new)
-      expect(flash[:alert]).to eq("Failed to create targeted message: Target type can't be blank")
+    let(:csv_content) { (targeted_namespace_ids + invalid_namespace_ids).map(&:to_s).join("\n") }
+    let(:csv_file) do
+      temp_file = Tempfile.new(%w[namespace_ids csv])
+      temp_file.write(csv_content)
+      temp_file.rewind
+
+      fixture_file_upload(temp_file.path, 'text/csv')
     end
 
-    context 'with targeted message namespace ids' do
-      let(:valid_namespace) { create(:namespace) }
-      let(:valid_namespace_id) { valid_namespace.id }
-      let(:invalid_namespace_ids) { [123456] }
-      let(:stubbed_file) { 'stubbed csv file' }
+    after do
+      csv_file.unlink
+    end
 
-      let(:targeted_message_params_with_csv) do
-        targeted_message_params.deep_symbolize_keys.deep_merge(targeted_message: { namespace_ids_csv: stubbed_file })
+    context 'when successful' do
+      it 'redirects to index on success' do
+        expect do
+          post admin_targeted_messages_path, params: targeted_message_params
+        end.to change { Notifications::TargetedMessage.count }.by(1)
+
+        expect(response).to redirect_to(admin_targeted_messages_path)
+        expect(flash[:notice]).to eq('Targeted message was successfully created.')
+      end
+    end
+
+    context 'when there are invalid namespace ids' do
+      let(:invalid_namespace_ids) { [non_existing_record_id] }
+
+      it 'renders the edit page' do
+        expect do
+          post admin_targeted_messages_path, params: targeted_message_params
+        end.to change { Notifications::TargetedMessage.count }.by(1)
+
+        expect(flash[:alert]).to eq(
+          "Targeted message was successfully created. But the following namespace ids " \
+            "were invalid and have been ignored: #{non_existing_record_id}"
+        )
+        expect(response).to render_template(:edit)
+      end
+    end
+
+    context 'when on failure' do
+      let(:targeted_message_params) do
+        { targeted_message: { target_type: '', namespace_ids_csv: csv_file } }
       end
 
-      context 'when successfully processing csv' do
-        before do
-          allow_next_instance_of(Notifications::TargetedMessages::ProcessCsvService) do |service|
-            allow(service).to receive(:execute).and_return(
-              ServiceResponse.success(payload: {
-                valid_namespace_ids: [valid_namespace_id],
-                invalid_namespace_ids: invalid_namespace_ids
-              }))
-          end
-        end
+      it 'renders the new page' do
+        expect { post admin_targeted_messages_path, params: targeted_message_params }.not_to change {
+          Notifications::TargetedMessage.count
+        }
 
-        it 'processes CSV, assigns valid namespace ids and sets flash alert for invalid namespace ids' do
-          expect { post admin_targeted_messages_path, params: targeted_message_params_with_csv }.to change {
-            Notifications::TargetedMessage.count
-          }.by(1)
-          expect(Notifications::TargetedMessage.last.targeted_message_namespaces.map(&:namespace_id))
-            .to contain_exactly(valid_namespace_id)
-          expect(flash[:warning])
-            .to eq("The following namespace ids were invalid and have been ignored: #{invalid_namespace_ids.join}")
-        end
-
-        context 'with invalid namespace ids being more than 5' do
-          let(:invalid_namespace_ids) { [12345, 22345, 32345, 42345, 52345, 62345] }
-
-          it 'processes CSV and truncate invalid namespace ids in flash message' do
-            expect { post admin_targeted_messages_path, params: targeted_message_params_with_csv }.to change {
-              Notifications::TargetedMessage.count
-            }.by(1)
-            expect(flash[:warning])
-              .to eq("The following namespace ids were invalid and have been ignored: " \
-                "#{invalid_namespace_ids.first(5).join(', ')} and 1 more")
-          end
-        end
-      end
-
-      context 'with errors from process csv' do
-        it 'creates the message but does not assign any namespace ids' do
-          allow_next_instance_of(Notifications::TargetedMessages::ProcessCsvService) do |service|
-            allow(service).to receive(:execute).and_return(
-              ServiceResponse.error(message: 'StandardError'))
-          end
-
-          expect { post admin_targeted_messages_path, params: targeted_message_params_with_csv }.to change {
-            Notifications::TargetedMessage.count
-          }.by(1)
-          expect(Notifications::TargetedMessage.last.targeted_message_namespaces).to be_empty
-          expect(flash[:warning])
-            .to eq("Failed to assign namespaces due to error processing CSV: StandardError")
-        end
+        expect(response).to render_template(:new)
       end
     end
   end
 
   describe 'PATCH #update' do
-    let_it_be(:targeted_message, reload: true) { create(:targeted_message) }
-
-    it 'updates the message and redirects to index on success' do
-      patch admin_targeted_message_path(targeted_message), params: targeted_message_params
-      expect(response).to redirect_to(admin_targeted_messages_path)
-      expect(flash[:notice]).to eq('Targeted message was successfully updated.')
+    let_it_be(:targeted_namespace_ids) { create_list(:namespace, 2).map(&:id) }
+    let(:invalid_namespace_ids) { [] }
+    let(:targeted_message_params) do
+      { targeted_message: targeted_message.attributes.merge(namespace_ids_csv: csv_file) }
     end
 
-    it 'does not update and renders the edit page on failure' do
-      patch admin_targeted_message_path(targeted_message), params: invalid_targeted_message_params
-      expect(response.body).to render_template(:edit)
-      expect(flash[:alert]).to eq("Failed to update targeted message: Target type can't be blank")
+    let(:csv_content) { (targeted_namespace_ids + invalid_namespace_ids).map(&:to_s).join("\n") }
+    let(:temp_file) do
+      temp_file = Tempfile.new(%w[namespace_ids csv])
+      temp_file.write(csv_content)
+      temp_file.rewind
+
+      temp_file
     end
 
-    context 'with updating targeted message namespace ids' do
-      let_it_be(:old_targeted_namespaces) do
-        create_list(:targeted_message_namespace, 3, targeted_message: targeted_message)
+    let(:csv_file) { fixture_file_upload(temp_file.path, 'text/csv') }
+
+    after do
+      temp_file.unlink
+    end
+
+    before do
+      targeted_message.save!
+    end
+
+    context 'when successful' do
+      it 'redirects to index on success' do
+        patch admin_targeted_message_path(targeted_message), params: targeted_message_params
+
+        expect(response).to redirect_to(admin_targeted_messages_path)
+        expect(flash[:notice]).to eq('Targeted message was successfully updated.')
+      end
+    end
+
+    context 'when there are invalid namespace ids' do
+      let(:invalid_namespace_ids) { [non_existing_record_id] }
+
+      it 'renders the edit page' do
+        patch admin_targeted_message_path(targeted_message), params: targeted_message_params
+
+        expect(flash[:alert]).to eq(
+          "Targeted message was successfully updated. But the following namespace ids " \
+            "were invalid and have been ignored: #{non_existing_record_id}"
+        )
+        expect(response).to render_template(:edit)
+      end
+    end
+
+    context 'when on failure' do
+      let(:targeted_message_params) do
+        { targeted_message: { target_type: '', namespace_ids_csv: csv_file } }
       end
 
-      let(:old_targeted_namespace_ids) { old_targeted_namespaces.map(&:namespace_id) }
-      let_it_be(:new_targeted_namespace_ids) { [create(:namespace).id, create(:namespace).id] }
-      let(:targeted_message_params_with_csv) do
-        targeted_message_params.deep_symbolize_keys.deep_merge(targeted_message: { namespace_ids_csv: 'stubbed_file' })
-      end
+      it 'renders the new page on failure' do
+        patch admin_targeted_message_path(targeted_message), params: targeted_message_params
 
-      before do
-        allow_next_instance_of(Notifications::TargetedMessages::ProcessCsvService) do |service|
-          allow(service).to receive(:execute).and_return(
-            ServiceResponse.success(payload: {
-              valid_namespace_ids: new_targeted_namespace_ids,
-              invalid_namespace_ids: []
-            }))
-        end
-      end
-
-      it 'replaces targeted namespaces with new set' do
-        expect(targeted_message.targeted_message_namespaces.map(&:namespace_id))
-          .to match(old_targeted_namespace_ids)
-
-        patch admin_targeted_message_path(targeted_message), params: targeted_message_params_with_csv
-
-        expect(targeted_message.reload.targeted_message_namespaces.map(&:namespace_id))
-          .to match(new_targeted_namespace_ids)
+        expect(response).to render_template(:edit)
       end
     end
   end
