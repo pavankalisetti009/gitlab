@@ -137,7 +137,7 @@ describe('Merge requests data source', () => {
       });
     });
 
-    it('returns an empty array for the data list', () => {
+    it('returns an empty object', () => {
       expect(res).toEqual({
         list: [],
         pageInfo: {

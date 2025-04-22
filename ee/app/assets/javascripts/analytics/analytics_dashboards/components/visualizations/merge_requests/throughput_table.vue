@@ -6,20 +6,10 @@ import {
   GlAvatar,
   GlAvatarsInline,
   GlTooltipDirective,
-  GlLoadingIcon,
-  GlAlert,
   GlIcon,
-  GlPagination,
+  GlKeysetPagination,
 } from '@gitlab/ui';
-// eslint-disable-next-line no-restricted-imports
-import { mapState } from 'vuex';
-import { dateFormats } from '~/analytics/shared/constants';
-import dateFormat from '~/lib/dateformat';
-import { approximateDuration, differenceInSeconds } from '~/lib/utils/datetime_utility';
-import { n__ } from '~/locale';
-import { filterToQueryObject } from '~/vue_shared/components/filtered_search_bar/filtered_search_utils';
 import {
-  THROUGHPUT_TABLE_STRINGS,
   MERGE_REQUEST_ID_PREFIX,
   LINE_CHANGE_SYMBOLS,
   ASSIGNEES_VISIBLE,
@@ -28,16 +18,11 @@ import {
   THROUGHPUT_TABLE_TEST_IDS,
   PIPELINE_STATUS_ICON_CLASSES,
   THROUGHPUT_TABLE_HEADER_FIELDS,
-} from '../constants';
-import throughputTableQuery from '../graphql/queries/throughput_table.query.graphql';
-
-const initialPaginationState = {
-  currentPage: 1,
-  prevPageCursor: '',
-  nextPageCursor: '',
-  firstPageSize: PER_PAGE,
-  lastPageSize: null,
-};
+} from 'ee/analytics/merge_request_analytics/constants';
+import { dateFormats } from '~/analytics/shared/constants';
+import dateFormat from '~/lib/dateformat';
+import { approximateDuration, differenceInSeconds } from '~/lib/utils/datetime_utility';
+import { n__ } from '~/locale';
 
 export default {
   name: 'ThroughputTable',
@@ -47,112 +32,25 @@ export default {
     GlAvatarLink,
     GlAvatar,
     GlAvatarsInline,
-    GlLoadingIcon,
-    GlAlert,
     GlIcon,
-    GlPagination,
+    GlKeysetPagination,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['fullPath'],
   tableHeaderFields: THROUGHPUT_TABLE_HEADER_FIELDS,
   props: {
-    startDate: {
-      type: Date,
+    data: {
+      type: Object,
       required: true,
-    },
-    endDate: {
-      type: Date,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      throughputTableData: {},
-      pagination: initialPaginationState,
-      hasError: false,
-    };
-  },
-  apollo: {
-    throughputTableData: {
-      query: throughputTableQuery,
-      variables() {
-        return {
-          fullPath: this.fullPath,
-          startDate: dateFormat(this.startDate, dateFormats.isoDate),
-          endDate: dateFormat(this.endDate, dateFormats.isoDate),
-          firstPageSize: this.pagination.firstPageSize,
-          lastPageSize: this.pagination.lastPageSize,
-          prevPageCursor: this.pagination.prevPageCursor,
-          nextPageCursor: this.pagination.nextPageCursor,
-          ...this.options,
-        };
-      },
-      update(data) {
-        const { mergeRequests: { nodes: list = [], pageInfo = {} } = {} } = data.project || {};
-        return {
-          list,
-          pageInfo,
-        };
-      },
-      error() {
-        this.hasError = true;
-      },
     },
   },
   computed: {
-    ...mapState('filters', {
-      selectedSourceBranch: (state) => state.branches.source.selected,
-      selectedTargetBranch: (state) => state.branches.target.selected,
-      selectedMilestone: (state) => state.milestones.selected,
-      selectedAuthor: (state) => state.authors.selected,
-      selectedAssignee: (state) => state.assignees.selected,
-      selectedLabelList: (state) => state.labels.selectedList,
-    }),
-    options() {
-      const options = filterToQueryObject({
-        sourceBranches: this.selectedSourceBranch,
-        targetBranches: this.selectedTargetBranch,
-        milestoneTitle: this.selectedMilestone,
-        authorUsername: this.selectedAuthor,
-        assigneeUsername: this.selectedAssignee,
-        labels: this.selectedLabelList,
-      });
-
-      return {
-        ...options,
-        notLabels: options['not[labels]'],
-        notMilestoneTitle: options['not[milestoneTitle]'],
-      };
-    },
-    tableDataAvailable() {
-      return this.throughputTableData.list?.length;
-    },
-    tableDataLoading() {
-      return !this.hasError && this.$apollo.queries.throughputTableData.loading;
-    },
-    alertDetails() {
-      return {
-        class: this.hasError ? 'danger' : 'info',
-        message: this.hasError
-          ? THROUGHPUT_TABLE_STRINGS.ERROR_FETCHING_DATA
-          : THROUGHPUT_TABLE_STRINGS.NO_DATA,
-      };
-    },
-    prevPage() {
-      return Math.max(this.pagination.currentPage - 1, 0);
-    },
-    nextPage() {
-      return this.throughputTableData.pageInfo.hasNextPage ? this.pagination.currentPage + 1 : null;
+    pagination() {
+      return this.data.pageInfo;
     },
     showPaginationControls() {
-      return Boolean(this.prevPage || this.nextPage);
-    },
-  },
-  watch: {
-    options() {
-      this.resetPagination();
+      return Boolean(this.pagination.hasPreviousPage || this.pagination.hasNextPage);
     },
   },
   methods: {
@@ -179,26 +77,24 @@ export default {
     formatApprovalText(approvals) {
       return n__('%d Approval', '%d Approvals', approvals);
     },
-    handlePageChange(page) {
-      const { startCursor, endCursor } = this.throughputTableData.pageInfo;
+    nextPage() {
+      const { endCursor } = this.pagination;
 
-      if (page > this.pagination.currentPage) {
-        this.pagination = {
-          ...initialPaginationState,
+      this.$emit('updateQuery', {
+        pagination: {
+          firstPageSize: PER_PAGE,
           nextPageCursor: endCursor,
-          currentPage: page,
-        };
-      } else {
-        this.pagination = {
-          lastPageSize: PER_PAGE,
-          firstPageSize: null,
-          prevPageCursor: startCursor,
-          currentPage: page,
-        };
-      }
+        },
+      });
     },
-    resetPagination() {
-      this.pagination = initialPaginationState;
+    prevPage() {
+      const { startCursor } = this.pagination;
+      this.$emit('updateQuery', {
+        pagination: {
+          lastPageSize: PER_PAGE,
+          prevPageCursor: startCursor,
+        },
+      });
     },
     hasPipelineNodes(item) {
       return item.pipelines?.nodes;
@@ -217,11 +113,10 @@ export default {
 };
 </script>
 <template>
-  <gl-loading-icon v-if="tableDataLoading" size="lg" />
-  <div v-else-if="tableDataAvailable">
+  <div>
     <gl-table-lite
       :fields="$options.tableHeaderFields"
-      :items="throughputTableData.list"
+      :items="data.list"
       stacked="sm"
       thead-class="gl-bg-default gl-border-t-0 gl-border-b-solid gl-border-b-1 gl-border-b-default"
       data-testid="mr-table"
@@ -302,7 +197,7 @@ export default {
           <span class="gl-font-bold gl-text-success">{{
             formatLineChangeAdditions(item.diffStatsSummary.additions)
           }}</span>
-          <span class="gl-font-bold gl-text-danger">{{
+          <span class="gl-font-bold gl-text-red-500">{{
             formatLineChangeDeletions(item.diffStatsSummary.deletions)
           }}</span>
         </div>
@@ -331,17 +226,12 @@ export default {
         </div>
       </template>
     </gl-table-lite>
-    <gl-pagination
+    <gl-keyset-pagination
       v-if="showPaginationControls"
-      :value="pagination.currentPage"
-      :prev-page="prevPage"
-      :next-page="nextPage"
-      align="center"
-      class="gl-mt-3"
-      @input="handlePageChange"
+      class="gl-m-3 gl-flex gl-items-center gl-justify-center"
+      v-bind="pagination"
+      @prev="prevPage"
+      @next="nextPage"
     />
   </div>
-  <gl-alert v-else :variant="alertDetails.class" :dismissible="false" class="gl-mt-4">{{
-    alertDetails.message
-  }}</gl-alert>
 </template>
