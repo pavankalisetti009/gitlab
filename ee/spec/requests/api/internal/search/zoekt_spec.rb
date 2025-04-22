@@ -57,26 +57,8 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response).to eq(
             { 'id' => node.id, 'tasks' => tasks, 'pull_frequency' => Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT,
-              'truncate' => true, 'stop_indexing' => false, 'optimized_performance' => true }
+              'truncate' => true, 'stop_indexing' => false }
           )
-        end
-
-        context 'when zoekt_optimized_performance_indexing is disabled' do
-          before do
-            stub_feature_flags(zoekt_optimized_performance_indexing: false)
-          end
-
-          it 'sends optimized_performance as false' do
-            expect(node).to receive(:save).and_return(true)
-
-            get api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
-
-            expect(::Search::Zoekt::TaskPresenterService).not_to receive(:execute)
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to eq({ 'id' => node.id, 'tasks' => tasks, 'truncate' => true,
-                                          'pull_frequency' =>  Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT,
-                                          'optimized_performance' => false, 'stop_indexing' => false })
-          end
         end
 
         context 'when node is over critical watermark' do
@@ -281,31 +263,9 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
           expect(json_response).to eq(
             {
               'id' => node.id, 'tasks' => tasks, 'pull_frequency' => Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT,
-              'truncate' => true, 'stop_indexing' => false, 'optimized_performance' => true
+              'truncate' => true, 'stop_indexing' => false
             }
           )
-        end
-
-        context 'when zoekt_optimized_performance_indexing is disabled' do
-          before do
-            stub_feature_flags(zoekt_optimized_performance_indexing: false)
-          end
-
-          it 'sends optimized_performance as false' do
-            expect(node).to receive(:save).and_return(true)
-
-            post api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
-
-            expect(::Search::Zoekt::TaskPresenterService).not_to receive(:execute)
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to eq(
-              {
-                'id' => node.id, 'tasks' => tasks, 'truncate' => true,
-                'pull_frequency' => Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT,
-                'optimized_performance' => false, 'stop_indexing' => false
-              }
-            )
-          end
         end
 
         context 'when node is over critical watermark' do
