@@ -25,7 +25,7 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
           create(:gitlab_subscription_seat_assignment, namespace: group, last_activity_on: Time.zone.today)
         end
 
-        let_it_be(:dormant_assignment) do
+        let_it_be(:dormant_assignment, reload: true) do
           create(:gitlab_subscription_seat_assignment, namespace: group, last_activity_on: 91.days.ago)
         end
 
@@ -63,6 +63,16 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
               bot_user = create(:user, :project_bot)
               dormant_assignment.update!(user: bot_user)
 
+              expect { perform_work }.not_to change { Members::DeletionSchedule.count }
+            end
+          end
+
+          context 'when the dormant member is already deactivated' do
+            before do
+              dormant_assignment.user.deactivate!
+            end
+
+            it 'does not remove the user' do
               expect { perform_work }.not_to change { Members::DeletionSchedule.count }
             end
           end

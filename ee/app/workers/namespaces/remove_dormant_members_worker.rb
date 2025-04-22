@@ -68,7 +68,7 @@ module Namespaces
 
         user = assignment.user
 
-        next if user.bot?
+        next if user.bot? || user.deactivated?
 
         ::Gitlab::Auth::CurrentUserMode.optionally_run_in_admin_mode(admin_bot) do
           if user.enterprise_user_of_group?(namespace)
