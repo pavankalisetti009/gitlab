@@ -14,6 +14,8 @@ RSpec.describe "Search results for settings", :js, feature_category: :global_sea
       protected_environments: true,
       push_rules: true
     )
+
+    stub_config(dependency_proxy: { enabled: true })
   end
 
   it_behaves_like 'all group settings sections exist and have correct anchor links'
