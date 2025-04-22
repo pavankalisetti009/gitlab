@@ -4901,6 +4901,19 @@ CREATE TABLE loose_foreign_keys_deleted_records (
 )
 PARTITION BY LIST (partition);
 
+CREATE TABLE merge_request_commits_metadata (
+    authored_date timestamp without time zone,
+    committed_date timestamp without time zone,
+    id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    commit_author_id bigint NOT NULL,
+    committer_id bigint NOT NULL,
+    sha bytea NOT NULL,
+    message text,
+    trailers jsonb DEFAULT '{}'::jsonb NOT NULL
+)
+PARTITION BY RANGE (project_id);
+
 CREATE TABLE p_batched_git_ref_updates_deletions (
     id bigint NOT NULL,
     project_id bigint NOT NULL,
@@ -17104,6 +17117,42 @@ CREATE SEQUENCE merge_request_cleanup_schedules_merge_request_id_seq
 
 ALTER SEQUENCE merge_request_cleanup_schedules_merge_request_id_seq OWNED BY merge_request_cleanup_schedules.merge_request_id;
 
+CREATE SEQUENCE merge_request_commits_metadata_commit_author_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE merge_request_commits_metadata_commit_author_id_seq OWNED BY merge_request_commits_metadata.commit_author_id;
+
+CREATE SEQUENCE merge_request_commits_metadata_committer_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE merge_request_commits_metadata_committer_id_seq OWNED BY merge_request_commits_metadata.committer_id;
+
+CREATE SEQUENCE merge_request_commits_metadata_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE merge_request_commits_metadata_id_seq OWNED BY merge_request_commits_metadata.id;
+
+CREATE SEQUENCE merge_request_commits_metadata_project_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE merge_request_commits_metadata_project_id_seq OWNED BY merge_request_commits_metadata.project_id;
+
 CREATE TABLE merge_request_context_commit_diff_files (
     sha bytea NOT NULL,
     relative_order integer NOT NULL,
@@ -27521,6 +27570,14 @@ ALTER TABLE ONLY merge_request_blocks ALTER COLUMN id SET DEFAULT nextval('merge
 
 ALTER TABLE ONLY merge_request_cleanup_schedules ALTER COLUMN merge_request_id SET DEFAULT nextval('merge_request_cleanup_schedules_merge_request_id_seq'::regclass);
 
+ALTER TABLE ONLY merge_request_commits_metadata ALTER COLUMN id SET DEFAULT nextval('merge_request_commits_metadata_id_seq'::regclass);
+
+ALTER TABLE ONLY merge_request_commits_metadata ALTER COLUMN project_id SET DEFAULT nextval('merge_request_commits_metadata_project_id_seq'::regclass);
+
+ALTER TABLE ONLY merge_request_commits_metadata ALTER COLUMN commit_author_id SET DEFAULT nextval('merge_request_commits_metadata_commit_author_id_seq'::regclass);
+
+ALTER TABLE ONLY merge_request_commits_metadata ALTER COLUMN committer_id SET DEFAULT nextval('merge_request_commits_metadata_committer_id_seq'::regclass);
+
 ALTER TABLE ONLY merge_request_context_commits ALTER COLUMN id SET DEFAULT nextval('merge_request_context_commits_id_seq'::regclass);
 
 ALTER TABLE ONLY merge_request_diff_commit_users ALTER COLUMN id SET DEFAULT nextval('merge_request_diff_commit_users_id_seq'::regclass);
@@ -30138,6 +30195,9 @@ ALTER TABLE ONLY merge_request_blocks
 
 ALTER TABLE ONLY merge_request_cleanup_schedules
     ADD CONSTRAINT merge_request_cleanup_schedules_pkey PRIMARY KEY (merge_request_id);
+
+ALTER TABLE ONLY merge_request_commits_metadata
+    ADD CONSTRAINT merge_request_commits_metadata_pkey PRIMARY KEY (id, project_id);
 
 ALTER TABLE ONLY merge_request_context_commit_diff_files
     ADD CONSTRAINT merge_request_context_commit_diff_files_pkey PRIMARY KEY (merge_request_context_commit_id, relative_order);
@@ -35955,6 +36015,8 @@ CREATE INDEX index_merge_request_blocks_on_project_id ON merge_request_blocks US
 CREATE UNIQUE INDEX index_merge_request_cleanup_schedules_on_merge_request_id ON merge_request_cleanup_schedules USING btree (merge_request_id);
 
 CREATE INDEX index_merge_request_cleanup_schedules_on_status ON merge_request_cleanup_schedules USING btree (status);
+
+CREATE UNIQUE INDEX index_merge_request_commits_metadata_on_project_id_and_sha ON ONLY merge_request_commits_metadata USING btree (project_id, sha);
 
 CREATE INDEX index_merge_request_context_commit_diff_files_on_project_id ON merge_request_context_commit_diff_files USING btree (project_id);
 
