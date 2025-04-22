@@ -18,17 +18,19 @@ module API
 
         CALLBACKS_CLASS = Struct.new(:skip_upload, :before_respond_with)
 
-        CSP_DIRECTIVES = "default-src 'none'; script-src 'none'; connect-src 'none'; img-src 'none';" \
-          "style-src 'none'; frame-ancestors 'none'; form-action 'none'"
-
-        RESPONSE_HEADERS = {
-          # from https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html#basic-non-strict-csp-policy
-          # but with all directives set to none
-          'Content-Security-Policy' => CSP_DIRECTIVES,
-          'X-Content-Type-Options' => 'nosniff'
+        EXTRA_RESPONSE_HEADERS = {
+          'Content-Security-Policy' => "sandbox; default-src 'none'; require-trusted-types-for 'script'",
+          'X-Content-Type-Options' => 'nosniff',
+          'Content-Disposition' => 'attachment'
         }.freeze
 
-        MAJOR_BROWSERS = %i[webkit firefox ie edge opera chrome].freeze
+        ALLOWED_HEADERS = %w[
+          Content-Type
+          Content-Length
+          X-Checksum-Sha1
+          X-Checksum-Md5
+        ].freeze
+
         WEB_BROWSER_ERROR_MESSAGE = 'This endpoint is not meant to be accessed by a web browser.'
 
         included do
@@ -87,13 +89,17 @@ module API
                 Gitlab::Workhorse.send_url(
                   remote_package_file_url,
                   headers: remote_url_headers,
-                  response_headers: RESPONSE_HEADERS,
+                  response_headers: EXTRA_RESPONSE_HEADERS,
                   allow_localhost: allow_localhost,
                   allow_redirects: true,
                   timeouts: TIMEOUTS,
                   response_statuses: RESPONSE_STATUSES,
                   ssrf_filter: true,
-                  allowed_uris: allowed_uris
+                  allowed_uris: allowed_uris,
+                  restrict_forwarded_response_headers: {
+                    enabled: true,
+                    allow_list: ALLOWED_HEADERS
+                  }
                 )
               )
             end
@@ -126,9 +132,13 @@ module API
                   remote_package_file_url,
                   allow_localhost: allow_localhost,
                   upload_config: upload_config,
-                  response_headers: RESPONSE_HEADERS,
+                  response_headers: EXTRA_RESPONSE_HEADERS,
                   ssrf_filter: true,
-                  allowed_uris: allowed_uris
+                  allowed_uris: allowed_uris,
+                  restrict_forwarded_response_headers: {
+                    enabled: true,
+                    allow_list: ALLOWED_HEADERS
+                  }
                 )
               )
             end
@@ -195,7 +205,7 @@ module API
 
             def require_non_web_browser!
               browser = ::Browser.new(request.user_agent)
-              bad_request!(WEB_BROWSER_ERROR_MESSAGE) if MAJOR_BROWSERS.any? { |b| browser.public_send(:"#{b}?") } # rubocop:disable GitlabSecurity/PublicSend -- Hardcoded list of methods.
+              bad_request!(WEB_BROWSER_ERROR_MESSAGE) if browser.known?
             end
 
             def allow_localhost

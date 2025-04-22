@@ -490,7 +490,7 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
           expect(Gitlab::Workhorse).to have_received(:send_dependency).with(
             an_instance_of(Hash),
             a_string_matching(%r{sandbox.test/#{path}/#{file_name}}),
-            a_hash_including(:upload_config)
+            a_hash_including(:upload_config, :restrict_forwarded_response_headers)
           )
         end
       end
@@ -538,20 +538,18 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
         it_behaves_like 'returning response status', :forbidden
       end
 
-      described_class::MAJOR_BROWSERS.each do |browser|
-        context "when accessing with a #{browser} browser" do
-          before do
-            allow_next_instance_of(::Browser) do |b|
-              allow(b).to receive("#{browser}?").and_return(true)
-            end
+      context "when accessing with a browser" do
+        before do
+          allow_next_instance_of(::Browser) do |b|
+            allow(b).to receive(:known?).and_return(true)
           end
+        end
 
-          it 'returns a bad request response' do
-            api_request
+        it 'returns a bad request response' do
+          api_request
 
-            expect(response).to have_gitlab_http_status(:bad_request)
-            expect(response.body).to include(described_class::WEB_BROWSER_ERROR_MESSAGE)
-          end
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(response.body).to include(described_class::WEB_BROWSER_ERROR_MESSAGE)
         end
       end
 

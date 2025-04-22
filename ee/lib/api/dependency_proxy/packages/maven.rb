@@ -71,8 +71,16 @@ module API
           end
 
           def present_package_file!(package_file)
-            RESPONSE_HEADERS.each { |k, v| header(k, v) }
-            download_package_file!(package_file)
+            download_package_file!(
+              package_file,
+              extra_response_headers: EXTRA_RESPONSE_HEADERS,
+              extra_send_url_params: {
+                restrict_forwarded_response_headers: {
+                  enabled: true,
+                  allow_list: ALLOWED_HEADERS
+                }
+              }
+            )
           end
         end
 
