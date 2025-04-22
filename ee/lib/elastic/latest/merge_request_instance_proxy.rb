@@ -38,14 +38,11 @@ module Elastic
         data['hidden'] = target.author&.banned?
         data['archived'] = target.project.archived?
 
-        # Schema version. The format is Date.today.strftime('%y_%m')
+        # Schema version. The format is Date.today.strftime('%y_%w')
         # Please update if you're changing the schema of the document
         data['schema_version'] = SCHEMA_VERSION
         data['label_ids'] = target.label_ids.map(&:to_s)
-
-        if ::Elastic::DataMigrationService.migration_has_finished?(:add_traversal_ids_to_merge_requests)
-          data['traversal_ids'] = target.project.elastic_namespace_ancestry
-        end
+        data['traversal_ids'] = target.project.elastic_namespace_ancestry
 
         if ::Elastic::DataMigrationService.migration_has_finished?(:add_assignees_to_merge_requests)
           data['assignee_ids'] = target.assignee_ids.map(&:to_s)
