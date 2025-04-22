@@ -1,6 +1,6 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
-import { createAlert } from '~/alert';
+import { createAlert, VARIANT_DANGER } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import { s__ } from '~/locale';
 
@@ -26,7 +26,7 @@ export default {
         await axios.post(this.vulnerabilitiesExportEndpoint, { send_email: true });
         this.notifyUserReportWillBeEmailed();
       } catch (error) {
-        this.notifyUserOfExportError();
+        this.notifyUserOfExportError(error);
       } finally {
         this.isPreparingCsvExport = false;
       }
@@ -35,17 +35,19 @@ export default {
     notifyUserReportWillBeEmailed() {
       createAlert({
         message: s__(
-          'SecurityReports|The report is being generated and will be sent to your email.',
+          'SecurityReports|Report export in progress. After the report is generated, an email will be sent with the download link.',
         ),
         variant: 'info',
         dismissible: true,
       });
     },
 
-    notifyUserOfExportError() {
+    notifyUserOfExportError(error) {
+      const message = error.response?.data?.message;
+
       createAlert({
-        message: s__('SecurityReports|There was an error while generating the report.'),
-        variant: 'danger',
+        message: message || s__('SecurityReports|There was an error while generating the report.'),
+        variant: VARIANT_DANGER,
         dismissible: true,
       });
     },
