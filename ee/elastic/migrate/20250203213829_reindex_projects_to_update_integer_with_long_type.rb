@@ -10,3 +10,5 @@ class ReindexProjectsToUpdateIntegerWithLongType < Elastic::Migration
   DOCUMENT_TYPE = Project
   NEW_SCHEMA_VERSION = 25_06
 end
+
+ReindexProjectsToUpdateIntegerWithLongType.prepend ::Search::Elastic::MigrationObsolete
