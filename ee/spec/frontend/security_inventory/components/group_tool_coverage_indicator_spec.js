@@ -1,6 +1,6 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GroupToolCoverageIndicator from 'ee/security_inventory/components/group_tool_coverage_indicator.vue';
-import { SCANNERS } from 'ee/security_inventory/constants';
+import { SCANNER_POPOVER_GROUPS, SCANNER_TYPES } from 'ee/security_inventory/constants';
 
 describe('GroupToolCoverageIndicator', () => {
   let wrapper;
@@ -12,12 +12,16 @@ describe('GroupToolCoverageIndicator', () => {
     wrapper = shallowMountExtended(GroupToolCoverageIndicator, { propsData });
   };
 
-  describe.each(SCANNERS)('$scanner bar', ({ scanner, label }) => {
+  const scanners = Object.keys(SCANNER_POPOVER_GROUPS).map((key) => ({
+    key,
+    label: SCANNER_TYPES[key].textLabel,
+  }));
+
+  describe.each(scanners)('$label bar', ({ label, key }) => {
     describe.each([17, 100, 0])('with %d% tool coverage', (value) => {
       it('passes correct segments prop to segmented bar, shows a label', () => {
-        createComponent({ scanners: { [scanner]: value } });
-
-        expect(findScannerBar(scanner).props()).toStrictEqual({
+        createComponent({ scanners: { [key]: value } });
+        expect(findScannerBar(key).props()).toStrictEqual({
           segments: [
             {
               class: 'gl-bg-green-500',
@@ -30,8 +34,7 @@ describe('GroupToolCoverageIndicator', () => {
           ],
         });
 
-        const scannerLabel = findScannerLabel(scanner);
-
+        const scannerLabel = findScannerLabel(key);
         expect(scannerLabel).toContain(label);
         expect(scannerLabel).toContain(`${value}%`);
       });

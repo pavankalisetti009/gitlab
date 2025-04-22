@@ -1,5 +1,15 @@
-import { __, s__ } from '~/locale';
+import { s__ } from '~/locale';
 import { CRITICAL, HIGH, MEDIUM, LOW } from 'ee/vulnerabilities/constants';
+
+const DEPENDENCY_SCANNING_KEY = 'DEPENDENCY_SCANNING';
+const SAST_KEY = 'SAST';
+const SAST_ADVANCED_KEY = 'SAST_ADVANCED';
+const SECRET_DETECTION_KEY = 'SECRET_DETECTION';
+const PIPELINE_SECRET_DETECTION_KEY = 'PIPELINE_SECRET_DETECTION';
+const CONTAINER_SCANNING_KEY = 'CONTAINER_SCANNING';
+const CONTAINER_SCANNING_FOR_REGISTRY_KEY = 'CONTAINER_SCANNING_FOR_REGISTRY';
+const DAST_KEY = 'DAST';
+const SAST_IAC_KEY = 'SAST_IAC';
 
 const SAST_LABEL = s__('SecurityInventory|SAST');
 const DAST_LABEL = s__('SecurityInventory|DAST');
@@ -8,38 +18,62 @@ const SECRET_DETECTION_LABEL = s__('SecurityInventory|SD');
 const DEPENDENCY_SCANNING_LABEL = s__('SecurityInventory|DS');
 const CONTAINER_SCANNING_LABEL = s__('SecurityInventory|CS');
 
-export const SCANNERS = [
-  {
-    scanner: 'DEPENDENCY_SCANNING',
-    label: DEPENDENCY_SCANNING_LABEL,
-    name: __('Dependency scanning'),
+export const SCANNER_TYPES = {
+  [DEPENDENCY_SCANNING_KEY]: {
+    textLabel: DEPENDENCY_SCANNING_LABEL,
+    name: s__('SecurityInventory|Dependency scanning'),
   },
-  {
-    scanner: 'SAST',
-    label: SAST_LABEL,
-    name: __('Static application security testing (SAST)'),
+  [SAST_KEY]: {
+    textLabel: SAST_LABEL,
+    name: s__('SecurityInventory|Static application security testing (SAST)'),
   },
-  {
-    scanner: 'SECRET_DETECTION',
-    label: SECRET_DETECTION_LABEL,
-    name: __('Secret detection'),
+  [SAST_ADVANCED_KEY]: {
+    textLabel: SAST_LABEL,
+    name: s__('SecurityInventory|Static application security testing (SAST)'),
   },
-  {
-    scanner: 'CONTAINER_SCANNING',
-    label: CONTAINER_SCANNING_LABEL,
-    name: __('Container scanning'),
+  [SECRET_DETECTION_KEY]: {
+    textLabel: SECRET_DETECTION_LABEL,
+    name: s__('SecurityInventory|Secret detection'),
   },
-  {
-    scanner: 'DAST',
-    label: DAST_LABEL,
-    name: __('Dynamic application security testing (DAST)'),
+  [PIPELINE_SECRET_DETECTION_KEY]: {
+    textLabel: SECRET_DETECTION_LABEL,
+    name: s__('SecurityInventory|Secret detection'),
   },
-  {
-    scanner: 'SAST_IAC',
-    label: SAST_IAC_LABEL,
-    name: __('Infrastructure as code scanning (IaC)'),
+  [CONTAINER_SCANNING_KEY]: {
+    textLabel: CONTAINER_SCANNING_LABEL,
+    name: s__('SecurityInventory|Container scanning'),
   },
-];
+  [CONTAINER_SCANNING_FOR_REGISTRY_KEY]: {
+    textLabel: CONTAINER_SCANNING_LABEL,
+    name: s__('SecurityInventory|Container scanning'),
+  },
+  [DAST_KEY]: {
+    textLabel: DAST_LABEL,
+    name: s__('SecurityInventory|Dynamic application security testing (DAST)'),
+  },
+  [SAST_IAC_KEY]: {
+    textLabel: SAST_IAC_LABEL,
+    name: s__('SecurityInventory|Infrastructure as code scanning (IaC)'),
+  },
+};
+
+export const SCANNER_POPOVER_GROUPS = {
+  [DEPENDENCY_SCANNING_KEY]: ['DEPENDENCY_SCANNING'],
+  [SAST_KEY]: ['SAST', 'SAST_ADVANCED'],
+  [SECRET_DETECTION_KEY]: ['SECRET_DETECTION', 'PIPELINE_SECRET_DETECTION'],
+  [CONTAINER_SCANNING_KEY]: ['CONTAINER_SCANNING', 'CONTAINER_SCANNING_FOR_REGISTRY'],
+  [DAST_KEY]: ['DAST'],
+  [SAST_IAC_KEY]: ['SAST_IAC'],
+};
+
+export const SCANNER_POPOVER_LABELS = {
+  [SAST_KEY]: s__('SecurityInventory|Basic SAST'),
+  [SAST_ADVANCED_KEY]: s__('SecurityInventory|GitLab Advanced SAST'),
+  [SECRET_DETECTION_KEY]: s__('SecurityInventory|Secret push protection'),
+  [PIPELINE_SECRET_DETECTION_KEY]: s__('SecurityInventory|Pipeline secret detection'),
+  [CONTAINER_SCANNING_KEY]: s__('SecurityInventory|Container scanning (standard)'),
+  [CONTAINER_SCANNING_FOR_REGISTRY_KEY]: s__('SecurityInventory|Container scanning for registry'),
+};
 
 export const SEVERITY_SEGMENTS = [CRITICAL, HIGH, MEDIUM, LOW];
 

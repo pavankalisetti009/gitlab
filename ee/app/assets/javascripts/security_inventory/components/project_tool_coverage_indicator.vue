@@ -1,6 +1,7 @@
 <script>
 import { GlBadge, GlPopover } from '@gitlab/ui';
-import { SCANNERS } from '../constants';
+import { filterSecurityScanners } from 'ee/security_inventory/utils';
+import { SCANNER_POPOVER_GROUPS, SCANNER_TYPES } from '../constants';
 import ToolCoverageDetails from './tool_coverage_details.vue';
 
 export default {
@@ -45,58 +46,63 @@ export default {
     //    }
   },
   methods: {
-    isEnabled(scanner) {
+    isEnabled(scannerTypes) {
       return (
-        this.securityScanners.enabled?.includes(scanner) &&
-        this.securityScanners.pipelineRun?.includes(scanner)
+        scannerTypes.some((item) => this.securityScanners.enabled?.includes(item)) &&
+        scannerTypes.some((item) => this.securityScanners.pipelineRun?.includes(item))
       );
     },
-    isFailed(scanner) {
+    isFailed(scannerTypes) {
       return (
-        this.securityScanners.enabled?.includes(scanner) &&
-        !this.securityScanners.pipelineRun?.includes(scanner)
+        scannerTypes.some((item) => this.securityScanners.enabled?.includes(item)) &&
+        !scannerTypes.some((item) => this.securityScanners.pipelineRun?.includes(item))
       );
     },
-    scannerStyling(scanner) {
-      if (this.isEnabled(scanner)) {
+    scannerStyling(scannerTypes) {
+      if (this.isEnabled(scannerTypes)) {
         // TODO: replace with this.scanners[scanner].status === 'SCANNER_ENABLED'
         return { variant: 'success', class: 'gl-border-transparent' };
       }
-      if (this.isFailed(scanner)) {
+      if (this.isFailed(scannerTypes)) {
         // TODO: replace with this.scanners[scanner].status === 'SCANNER_FAILED'
         return { variant: 'danger', class: 'gl-border-red-600' };
       }
       // otherwise assume status is SCANNER_DISABLED
       return { class: '!gl-bg-default !gl-text-neutral-600 gl-border-gray-200 gl-border-dashed' };
     },
-    getToolCoverageTitle(scanner) {
-      return SCANNERS.find((item) => {
-        return item.scanner === scanner;
-      }).name;
+    getToolCoverageTitle(key) {
+      return SCANNER_TYPES[key].name;
+    },
+    getSecurityScanner(scannerTypes) {
+      return filterSecurityScanners(scannerTypes, this.securityScanners);
+    },
+    getLabel(key) {
+      return SCANNER_TYPES[key].textLabel;
     },
   },
-  SCANNERS,
+  SCANNER_POPOVER_GROUPS,
 };
 </script>
 
 <template>
   <div class="gl-flex gl-flex-row gl-gap-2">
-    <div v-for="{ scanner, label } in $options.SCANNERS" :key="label">
+    <div v-for="(value, key) in $options.SCANNER_POPOVER_GROUPS" :key="key">
       <gl-badge
-        :id="`tool-coverage-${label}-${projectName}`"
-        v-bind="scannerStyling(scanner)"
+        :id="`tool-coverage-${key}-${projectName}`"
+        v-bind="scannerStyling(value)"
         class="gl-border gl-w-8 gl-text-xs gl-font-bold"
-        :data-testid="`badge-${label}-${projectName}`"
+        :data-testid="`badge-${key}-${projectName}`"
       >
-        {{ label }}
+        {{ getLabel(key) }}
       </gl-badge>
       <gl-popover
-        :title="getToolCoverageTitle(scanner)"
-        :target="`tool-coverage-${label}-${projectName}`"
-        :data-testid="`popover-${label}-${projectName}`"
+        :css-classes="['gl-max-w-full']"
+        :title="getToolCoverageTitle(key)"
+        :target="`tool-coverage-${key}-${projectName}`"
+        :data-testid="`popover-${key}-${projectName}`"
         show-close-button
       >
-        <tool-coverage-details />
+        <tool-coverage-details :is-project="true" :security-scanner="getSecurityScanner(value)" />
       </gl-popover>
     </div>
   </div>
