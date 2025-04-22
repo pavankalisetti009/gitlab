@@ -3,9 +3,6 @@
 module Issuables
   module CustomFields
     class UnarchiveService < BaseGroupService
-      FeatureNotAvailableError = ServiceResponse.error(
-        message: 'This feature is currently behind a feature flag and it is not available.'
-      )
       NotAuthorizedError = ServiceResponse.error(
         message: "You don't have permissions to update a custom field for this group."
       )
@@ -22,7 +19,6 @@ module Issuables
       end
 
       def execute
-        return FeatureNotAvailableError unless Feature.enabled?(:custom_fields_feature, group)
         return NotAuthorizedError unless can?(current_user, :admin_custom_field, group)
         return AlreadyActiveError if custom_field.active?
 

@@ -15,7 +15,6 @@ RSpec.describe 'Work Item Custom Fields', :js, feature_category: :team_planning 
   end
 
   before do
-    # feature flag `custom_fields_feature` defaults `true`
     stub_licensed_features(custom_fields: true)
     sign_in(user)
   end
@@ -104,18 +103,6 @@ RSpec.describe 'Work Item Custom Fields', :js, feature_category: :team_planning 
 
       expect(page).to have_css(':scope > :nth-child(4)', text: multi_select_option_2.value)
       expect(page).to have_css(':scope > :nth-child(4)', text: multi_select_option_3.value)
-    end
-  end
-
-  context 'when custom fields feature is disabled' do
-    before do
-      stub_feature_flags(custom_fields_feature: false)
-    end
-
-    it 'does not display custom fields section' do
-      visit project_work_item_path(project, work_item)
-
-      expect(page).not_to have_selector('[data-testid="work-item-custom-field"]')
     end
   end
 end

@@ -17,7 +17,6 @@ module WorkItems
       end
 
       def execute
-        return unless Feature.enabled?(:custom_fields_feature, target_work_item.namespace.root_ancestor)
         return if work_item.namespace.root_ancestor != target_work_item.namespace.root_ancestor
 
         FIELD_VALUE_CLASSES.each { |klass| copy_field_values(klass) }

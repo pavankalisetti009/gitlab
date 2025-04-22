@@ -29,7 +29,6 @@ RSpec.describe 'Filter issues by custom fields', :js, feature_category: :team_pl
     context 'when custom fields feature is enabled' do
       before do
         stub_licensed_features(custom_fields: true)
-        stub_feature_flags(custom_fields_feature: true)
       end
 
       it 'allows filtering by select field', :aggregate_failures do
@@ -58,7 +57,6 @@ RSpec.describe 'Filter issues by custom fields', :js, feature_category: :team_pl
 
       before do
         stub_licensed_features(custom_fields: false)
-        stub_feature_flags(custom_fields_feature: true)
       end
 
       it 'does not show custom field tokens in filtered search or suggestions' do
@@ -70,31 +68,6 @@ RSpec.describe 'Filter issues by custom fields', :js, feature_category: :team_pl
           within_testid('filtered-search-input') do
             expect(page).not_to have_content(select_field.name)
             # even if there is no name the search field might try to tokenize the id
-            expect(page).not_to have_content(select_option_2.id)
-            expect(page).not_to have_content(multi_select_field.name)
-            expect(page).not_to have_content(text_field.name)
-            expect(page).not_to have_content(number_field.name)
-          end
-        end
-      end
-    end
-
-    context 'when custom fields feature flag is disabled' do
-      let(:query) { { "custom-field[#{select_field.id}]": select_option_2.id } }
-
-      before do
-        stub_licensed_features(custom_fields: true)
-        stub_feature_flags(custom_fields_feature: false)
-
-        visit issues_page_path
-      end
-
-      it 'does not show custom field tokens in filtered search' do
-        click_filtered_search_bar
-
-        aggregate_failures do
-          within_testid('filtered-search-input') do
-            expect(page).not_to have_content(select_field.name)
             expect(page).not_to have_content(select_option_2.id)
             expect(page).not_to have_content(multi_select_field.name)
             expect(page).not_to have_content(text_field.name)

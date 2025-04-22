@@ -159,8 +159,7 @@ module EE
 
         field :custom_fields,
           null: true,
-          description: 'Custom fields configured for the namespace. ' \
-            'Available only when feature flag `custom_fields_feature` is enabled.',
+          description: 'Custom fields configured for the namespace.',
           resolver: ::Resolvers::Issuables::CustomFieldsResolver,
           experiment: { milestone: '17.10' }
 

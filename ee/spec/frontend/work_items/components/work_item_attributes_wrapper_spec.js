@@ -314,22 +314,11 @@ describe('EE WorkItemAttributesWrapper component', () => {
   });
 
   describe('custom fields widget', () => {
-    it('renders when flag `customFieldsFeature` is enabled', async () => {
-      createComponent({
-        featureFlags: { customFieldsFeature: true },
-      });
+    it('renders custom fields widget', async () => {
+      createComponent();
       await waitForPromises();
 
       expect(findWorkItemCustomFields().exists()).toBe(true);
-    });
-
-    it('does not render when flag `customFieldsFeature` is disabled', async () => {
-      createComponent({
-        featureFlags: { customFieldsFeature: false },
-      });
-      await waitForPromises();
-
-      expect(findWorkItemCustomFields().exists()).toBe(false);
     });
   });
 

@@ -520,7 +520,7 @@ export default {
         Boolean(this.workItemDueDateIsFixed) ||
         Boolean(this.workItemStartDateIsFixed) ||
         Boolean(this.workItemIterationId) ||
-        (this.glFeatures.customFieldsFeature && isCustomFieldsFilled)
+        isCustomFieldsFilled
       );
     },
     shouldDatesRollup() {
@@ -530,7 +530,7 @@ export default {
       return findWidget(WIDGET_TYPE_CUSTOM_FIELDS, this.workItem)?.customFieldValues ?? null;
     },
     showWorkItemCustomFields() {
-      return this.glFeatures.customFieldsFeature && this.workItemCustomFields;
+      return this.workItemCustomFields;
     },
   },
   watch: {

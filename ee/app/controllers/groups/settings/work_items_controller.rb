@@ -16,8 +16,7 @@ module Groups
       private
 
       def check_feature_availability
-        render_404 unless group.licensed_feature_available?(:custom_fields) &&
-          Feature.enabled?(:custom_fields_feature, group)
+        render_404 unless group.licensed_feature_available?(:custom_fields)
       end
 
       def authorize_admin_work_item_settings

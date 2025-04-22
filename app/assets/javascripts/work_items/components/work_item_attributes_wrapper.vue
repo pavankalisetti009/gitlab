@@ -188,7 +188,7 @@ export default {
       return this.isWidgetPresent(WIDGET_TYPE_CUSTOM_FIELDS)?.customFieldValues;
     },
     showWorkItemCustomFields() {
-      return this.glFeatures.customFieldsFeature && this.customFields;
+      return this.customFields;
     },
     showWorkItemStatus() {
       return this.glFeatures.workItemStatusFeatureFlag;

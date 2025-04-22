@@ -13,7 +13,6 @@ module WorkItems
       # ]
       # Only values for the provided custom_field_ids are mutated. Omitted ones are left as-is.
       def after_save
-        return unless Feature.enabled?(:custom_fields_feature, work_item.namespace.root_ancestor)
         return unless has_permission?(:set_work_item_metadata)
 
         custom_fields = ::Issuables::CustomFieldsFinder.active_fields_for_work_item(work_item)

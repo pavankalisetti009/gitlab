@@ -558,7 +558,7 @@ Returns [`CurrentUser`](#currentuser).
 
 ### `Query.customField`
 
-Find a custom field by its ID. Available only when feature flag `custom_fields_feature` is enabled.
+Find a custom field by its ID.
 
 {{< details >}}
 **Introduced** in GitLab 17.10.
@@ -27737,7 +27737,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ##### `Group.customField`
 
-A custom field configured for the group. Available only when feature flag `custom_fields_feature` is enabled.
+A custom field configured for the group.
 
 {{< details >}}
 **Introduced** in GitLab 17.6.
@@ -27754,7 +27754,7 @@ Returns [`CustomField`](#customfield).
 
 ##### `Group.customFields`
 
-Custom fields configured for the group. Available only when feature flag `custom_fields_feature` is enabled.
+Custom fields configured for the group.
 
 {{< details >}}
 **Introduced** in GitLab 17.5.
@@ -32842,7 +32842,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ##### `Namespace.customFields`
 
-Custom fields configured for the namespace. Available only when feature flag `custom_fields_feature` is enabled.
+Custom fields configured for the namespace.
 
 {{< details >}}
 **Introduced** in GitLab 17.10.

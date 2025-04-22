@@ -180,21 +180,6 @@ RSpec.describe WorkItems::Callbacks::CustomFields, feature_category: :team_plann
       end
     end
 
-    context 'when custom_fields_feature is disabled' do
-      before do
-        stub_feature_flags(custom_fields_feature: false)
-      end
-
-      it 'does not set any custom field values' do
-        after_save_callback
-
-        expect(custom_field_values_for(text_field)).to be_empty
-        expect(custom_field_values_for(number_field)).to be_empty
-        expect(custom_field_values_for(select_field)).to be_empty
-        expect(custom_field_values_for(multi_select_field)).to be_empty
-      end
-    end
-
     context 'when user does not have access' do
       let(:current_user) { create(:user) }
 

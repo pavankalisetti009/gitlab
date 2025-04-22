@@ -243,8 +243,7 @@ module EE
           def show_group_work_items_settings_menu_item?
             context.group.root? &&
               context.group.licensed_feature_available?(:custom_fields) &&
-              can?(context.current_user, :admin_custom_field, context.group) &&
-              ::Feature.enabled?(:custom_fields_feature, context.group)
+              can?(context.current_user, :admin_custom_field, context.group)
           end
         end
       end
