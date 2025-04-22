@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Coverage-Fuzzing.latest.gitlab-ci.yml', feature_category: :continuous_integration do
+RSpec.describe 'Coverage-Fuzzing.latest.gitlab-ci.yml', feature_category: :dynamic_application_security_testing do
   include Ci::PipelineMessageHelpers
 
   subject(:template) do
@@ -55,7 +55,36 @@ RSpec.describe 'Coverage-Fuzzing.latest.gitlab-ci.yml', feature_category: :conti
 
       it_behaves_like 'acts as branch pipeline', %w[my_fuzz_target]
 
-      it_behaves_like 'acts as MR pipeline', %w[my_fuzz_target], { 'CHANGELOG.md' => '' }
+      # Can't reuse the shared example as this template has not been
+      # updated to use AST_ENABLE_MR_PIPELINES
+      context 'when MR pipeline' do
+        let(:service) { MergeRequests::CreatePipelineService.new(project: project, current_user: user) }
+        let(:feature_branch) { 'feature' }
+        let(:pipeline) { service.execute(merge_request).payload }
+
+        let(:merge_request) do
+          create(:merge_request,
+            source_project: project,
+            source_branch: feature_branch,
+            target_project: project,
+            target_branch: default_branch)
+        end
+
+        before do
+          project.repository.create_file(
+            project.creator,
+            'README.md',
+            "README on branch feature",
+            message: 'Add README.md',
+            branch_name: feature_branch)
+        end
+
+        it 'creates a pipeline with the expected jobs' do
+          expect(pipeline).to be_merge_request_event
+          expect(pipeline.errors.full_messages).to be_empty
+          expect(build_names).to match_array(%w[my_fuzz_target])
+        end
+      end
 
       context 'when COVFUZZ_DISABLED=1' do
         before do

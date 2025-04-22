@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'DAST-API.gitlab-ci.yml', feature_category: :continuous_integration do
+RSpec.describe 'DAST-API.gitlab-ci.yml', feature_category: :dynamic_application_security_testing do
   include Ci::PipelineMessageHelpers
 
   subject(:template) { Gitlab::Template::GitlabCiYmlTemplate.find('DAST-API') }
@@ -31,36 +31,23 @@ RSpec.describe 'DAST-API.gitlab-ci.yml', feature_category: :continuous_integrati
   end
 
   describe 'the created pipeline' do
-    let(:default_branch) { 'master' }
-    let(:pipeline_branch) { default_branch }
+    let_it_be(:default_branch) { 'master' }
+    let_it_be(:feature_branch) { 'patch-1' }
     let_it_be(:project) { create(:project, :custom_repo, files: { 'README.txt' => '' }) }
-
-    let(:user) { project.first_owner }
-    let(:service) { Ci::CreatePipelineService.new(project, user, ref: pipeline_branch) }
+    let_it_be(:user) { project.first_owner }
     let(:pipeline) { service.execute(:push).payload }
-    let(:build_names) { pipeline.builds.pluck(:name) }
 
-    before do
-      allow_next_instance_of(Ci::BuildScheduleWorker) do |worker|
-        allow(worker).to receive(:perform).and_return(true)
-      end
-
-      allow(project).to receive(:default_branch).and_return(default_branch)
-    end
-
-    context 'when no stages' do
+    context 'when stages list does not include dast' do
       before do
         stub_ci_pipeline_yaml_file(template.content)
       end
 
-      context 'when project has no stages' do
-        it 'includes no jobs' do
-          expect(build_names).to be_empty
-        end
-      end
+      include_context 'with default branch pipeline setup'
+
+      include_examples 'missing stage', 'dast'
     end
 
-    context 'when stages includes dast' do
+    context 'when stages list includes dast' do
       let(:ci_pipeline_yaml) { "stages: [\"dast\"]\n" }
 
       before do
@@ -68,63 +55,48 @@ RSpec.describe 'DAST-API.gitlab-ci.yml', feature_category: :continuous_integrati
       end
 
       context 'when project has no license' do
-        before do
-          create(:ci_variable, project: project, key: 'DAST_API_HAR', value: 'testing.har')
-          create(:ci_variable, project: project, key: 'DAST_API_TARGET_URL', value: 'http://example.com')
-        end
+        include_context 'with default branch pipeline setup'
 
-        it 'includes job to display error' do
-          expect(build_names).to match_array(%w[dast_api])
-        end
+        # job still runs to display an error
+        include_examples 'has expected jobs', %w[dast_api], ignore_errors: true
       end
 
       context 'when project has Ultimate license' do
+        let(:license) { build(:license, plan: License::ULTIMATE_PLAN) }
+
         before do
-          stub_licensed_features(dast: true)
+          allow(License).to receive(:current).and_return(license)
         end
 
-        context 'by default' do
-          it 'includes a job' do
-            expect(build_names).to match_array(%w[dast_api])
-          end
+        shared_examples 'common pipeline checks' do
+          include_examples 'has expected jobs', %w[dast_api]
+          include_examples 'has jobs that can be disabled', 'DAST_API_DISABLED', %w[true 1], %w[dast_api]
+          include_examples 'has FIPS compatible jobs', 'DAST_API_IMAGE_SUFFIX', %w[dast_api]
         end
 
-        context 'when DAST_API_DISABLED=1' do
-          before do
-            create(:ci_variable, project: project, key: 'DAST_API_DISABLED', value: '1')
-            create(:ci_variable, project: project, key: 'DAST_API_HAR', value: 'testing.har')
-            create(:ci_variable, project: project, key: 'DAST_API_TARGET_URL', value: 'http://example.com')
-          end
+        context 'as a branch pipeline on the default branch' do
+          include_context 'with default branch pipeline setup'
 
-          it 'includes no jobs' do
-            expect(build_names).to be_empty
-            expect(pipeline.errors.full_messages).to match_array([sanitize_message(Ci::Pipeline.rules_failure_message)])
-          end
+          include_examples 'common pipeline checks'
+          include_examples 'has jobs that can be disabled',
+            'DAST_API_DISABLED_FOR_DEFAULT_BRANCH', %w[true 1], %w[dast_api]
         end
 
-        context 'when CI_GITLAB_FIPS_MODE=false' do
-          let(:build_dast_api) { pipeline.builds.find_by(name: 'dast_api') }
-          let(:build_variables) { build_dast_api.variables.pluck(:key, :value) }
+        context 'as a branch pipeline on a feature branch' do
+          include_context 'with feature branch pipeline setup'
 
-          before do
-            create(:ci_variable, project: project, key: 'CI_GITLAB_FIPS_MODE', value: 'false')
-          end
-
-          it 'sets DAST_API_IMAGE_SUFFIX to ""' do
-            expect(build_variables).to be_include(['DAST_API_IMAGE_SUFFIX', ''])
-          end
+          include_examples 'common pipeline checks'
         end
 
-        context 'when CI_GITLAB_FIPS_MODE=true' do
-          let(:build_dast_api) { pipeline.builds.find_by(name: 'dast_api') }
-          let(:build_variables) { build_dast_api.variables.pluck(:key, :value) }
+        context 'as an MR pipeline' do
+          include_context 'with MR pipeline setup'
 
-          before do
-            create(:ci_variable, project: project, key: 'CI_GITLAB_FIPS_MODE', value: 'true')
-          end
+          include_examples 'has expected jobs', []
 
-          it 'sets DAST_API_IMAGE_SUFFIX to "-fips"' do
-            expect(build_variables).to be_include(['DAST_API_IMAGE_SUFFIX', '-fips'])
+          context 'when AST_ENABLE_MR_PIPELINES=true' do
+            include_context 'with CI variables', { 'AST_ENABLE_MR_PIPELINES' => 'true' }
+
+            include_examples 'common pipeline checks'
           end
         end
       end

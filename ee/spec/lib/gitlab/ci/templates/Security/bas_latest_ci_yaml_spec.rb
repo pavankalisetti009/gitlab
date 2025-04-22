@@ -38,7 +38,6 @@ RSpec.describe 'Security/BAS.latest.gitlab-ci.yml', feature_category: :continuou
     end
 
     it_behaves_like 'acts as branch pipeline', %w[dast dast_with_bas]
-    it_behaves_like 'acts as MR pipeline', %w[dast dast_with_bas], { 'CHANGELOG.md' => '' }
 
     %w[true 1].each do |dast_bas_disabled|
       context "when DAST_BAS_DISABLED=#{dast_bas_disabled}" do
@@ -47,7 +46,37 @@ RSpec.describe 'Security/BAS.latest.gitlab-ci.yml', feature_category: :continuou
         end
 
         it_behaves_like 'acts as branch pipeline', %w[dast]
-        it_behaves_like 'acts as MR pipeline', %w[dast], { 'CHANGELOG.md' => '' }
+
+        # Can't reuse the shared example as this template has not been
+        # updated to use AST_ENABLE_MR_PIPELINES (since it's deprecated)
+        context 'when MR pipeline' do
+          let(:service) { MergeRequests::CreatePipelineService.new(project: project, current_user: user) }
+          let(:feature_branch) { 'feature' }
+          let(:pipeline) { service.execute(merge_request).payload }
+
+          let(:merge_request) do
+            create(:merge_request,
+              source_project: project,
+              source_branch: feature_branch,
+              target_project: project,
+              target_branch: default_branch)
+          end
+
+          before do
+            project.repository.create_file(
+              project.creator,
+              'README.md',
+              "README on branch feature",
+              message: 'Add README.md',
+              branch_name: feature_branch)
+          end
+
+          it 'creates a pipeline with the expected jobs' do
+            expect(pipeline).to be_merge_request_event
+            expect(pipeline.errors.full_messages).to be_empty
+            expect(build_names).to match_array(%w[dast])
+          end
+        end
       end
     end
 

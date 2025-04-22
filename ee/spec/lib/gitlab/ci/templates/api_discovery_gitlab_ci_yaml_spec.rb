@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'API-Discovery.gitlab-ci.yml', feature_category: :continuous_integration do
+RSpec.describe 'API-Discovery.gitlab-ci.yml', feature_category: :dynamic_application_security_testing do
   include Ci::PipelineMessageHelpers
 
   subject(:template) { Gitlab::Template::GitlabCiYmlTemplate.find('API-Discovery') }

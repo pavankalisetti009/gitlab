@@ -1,353 +1,253 @@
 # frozen_string_literal: true
 
-# rubocop:disable Layout/LineLength
-
 require 'spec_helper'
 
-RSpec.shared_examples 'language detection' do
-  using RSpec::Parameterized::TableSyntax
-
-  where(:case_name, :files, :include_build_names) do
-    'Dart'                           | { 'pubspec.lock' => '' }                  | %w[dependency-scanning]
-    'Go'                             | { 'go.sum' => '' }                        | %w[gemnasium-dependency_scanning]
-    'Java'                           | { 'pom.xml' => '' }                       | %w[gemnasium-maven-dependency_scanning]
-    'Java Gradle'                    | { 'build.gradle' => '' }                  | %w[gemnasium-maven-dependency_scanning]
-    'Java Gradle Kotlin DSL'         | { 'build.gradle.kts' => '' }              | %w[gemnasium-maven-dependency_scanning]
-    'Javascript package-lock.json'   | { 'package-lock.json' => '' }             | %w[gemnasium-dependency_scanning]
-    'Javascript yarn.lock'           | { 'yarn.lock' => '' }                     | %w[gemnasium-dependency_scanning]
-    'Javascript npm-shrinkwrap.json' | { 'npm-shrinkwrap.json' => '' }           | %w[gemnasium-dependency_scanning]
-    'Multiple languages'             | { 'pom.xml' => '', 'package-lock.json' => '', 'Podfile.lock' => '' } | %w[dependency-scanning gemnasium-maven-dependency_scanning gemnasium-dependency_scanning]
-    'NuGet'                          | { 'packages.lock.json' => '' }            | %w[gemnasium-dependency_scanning]
-    'Conan'                          | { 'conan.lock' => '' }                    | %w[gemnasium-dependency_scanning]
-    'PHP'                            | { 'composer.lock' => '' }                 | %w[gemnasium-dependency_scanning]
-    'Python requirements.txt'        | { 'requirements.txt' => '' }              | %w[gemnasium-python-dependency_scanning]
-    'Python requirements.pip'        | { 'requirements.pip' => '' }              | %w[gemnasium-python-dependency_scanning]
-    'Python Pipfile'                 | { 'Pipfile' => '' }                       | %w[gemnasium-python-dependency_scanning]
-    'Python requires.txt'            | { 'requires.txt' => '' }                  | %w[gemnasium-python-dependency_scanning]
-    'Python with setup.py'           | { 'setup.py' => '' }                      | %w[gemnasium-python-dependency_scanning]
-    'Python with poetry.lock'        | { 'poetry.lock' => '' }                   | %w[gemnasium-python-dependency_scanning]
-    'Ruby Gemfile.lock'              | { 'Gemfile.lock' => '' }                  | %w[gemnasium-dependency_scanning]
-    'Ruby gems.locked'               | { 'gems.locked' => '' }                   | %w[gemnasium-dependency_scanning]
-    'Scala'                          | { 'build.sbt' => '' }                     | %w[gemnasium-maven-dependency_scanning]
-    'Objective-C Cocoapods'          | { 'Podfile.lock' => '' }                  | %w[dependency-scanning]
-    'Conda'                          | { 'conda-lock.yml' => '' }                | %w[dependency-scanning]
-    'Rust Cargo'                     | { 'Cargo.lock' => '' }                    | %w[dependency-scanning]
-    'Swift'                          | { 'Package.resolved' => '' }              | %w[dependency-scanning]
-  end
-
-  with_them do
-    let(:project) { create(:project, :custom_repo, files: files_at_depth_x) }
-
-    context 'with file at root' do
-      let(:files_at_depth_x) { files }
-
-      it 'creates a pipeline with the expected jobs' do
-        expect(build_names).to include(*include_build_names)
-      end
-
-      include_examples 'predefined image suffix'
-    end
-
-    context 'with file at depth 1' do
-      # prepend a directory to files (e.g. convert go.sum to foo/go.sum)
-      let(:files_at_depth_x) { files.transform_keys { |k| "foo/#{k}" } }
-
-      it 'creates a pipeline with the expected jobs' do
-        expect(build_names).to include(*include_build_names)
-      end
-
-      include_examples 'predefined image suffix'
-    end
-
-    context 'with file at depth 2' do
-      # prepend a directory to files (e.g. convert go.sum to foo/bar/go.sum)
-      let(:files_at_depth_x) { files.transform_keys { |k| "foo/bar/#{k}" } }
-
-      it 'creates a pipeline with the expected jobs' do
-        expect(build_names).to include(*include_build_names)
-      end
-
-      include_examples 'predefined image suffix'
-    end
-
-    context 'with file at depth > 2' do
-      let(:files_at_depth_x) { files.transform_keys { |k| "foo/bar/baz/#{k}" } }
-
-      it 'creates a pipeline with the expected jobs' do
-        expect(build_names).to include(*include_build_names)
-      end
-
-      include_examples 'predefined image suffix'
-    end
-
-    context 'with merge request pipelines' do
-      let(:service) { MergeRequests::CreatePipelineService.new(project: project, current_user: user) }
-      let(:feature_branch) { 'feature' }
-      let(:pipeline) { service.execute(merge_request).payload }
-      let(:files_at_depth_x) { files }
-
-      let(:merge_request) do
-        create(:merge_request,
-          source_project: project,
-          source_branch: feature_branch,
-          target_project: project,
-          target_branch: default_branch)
-      end
-
-      before do
-        files.each do |filename, contents|
-          project.repository.create_file(
-            project.creator,
-            filename,
-            contents,
-            message: "Add #{filename}",
-            branch_name: feature_branch)
-        end
-      end
-
-      it 'includes jobs' do
-        expect(pipeline).to be_merge_request_event
-        expect(pipeline.errors.full_messages).to be_empty
-        expect(build_names).to match_array(include_build_names)
-      end
-    end
-  end
-end
-
-RSpec.shared_examples 'PIP_REQUIREMENTS_FILE support' do
-  context 'when PIP_REQUIREMENTS_FILE is defined' do
-    before do
-      create(:ci_variable, project: project, key: 'PIP_REQUIREMENTS_FILE', value: '/some/path/requirements.txt')
-    end
-
-    it 'creates a pipeline with the expected jobs' do
-      expect(build_names).to include('gemnasium-python-dependency_scanning')
-    end
-
-    include_examples 'predefined image suffix'
-  end
-end
-
-RSpec.shared_examples 'predefined image suffix' do
-  it 'sets the image suffix as expected' do
-    pipeline.builds.each do |build|
-      # The new DS analyzer has a different image naming scheme
-      next if build.name == 'dependency-scanning'
-
-      expect(build.image.name).to end_with('$DS_IMAGE_SUFFIX')
-      expect(String(build.variables.to_hash['DS_IMAGE_SUFFIX'])).to eql(expected_image_suffix)
-    end
-  end
-end
-
-RSpec.shared_examples 'DS_REMEDIATE default value' do |expected|
-  context 'when project supported by gemnasium analyzer' do
-    let(:project) { create(:project, :custom_repo, files: { 'yarn.lock' => '' }) }
-
-    it 'sets default value for DS_REMEDIATE' do
-      build = pipeline.builds.first
-      expect(String(build.variables.to_hash['DS_REMEDIATE'])).to eql(expected)
-    end
-  end
-end
-
-RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :continuous_integration do
+RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :software_composition_analysis do
   include Ci::PipelineMessageHelpers
 
-  subject(:template) do
-    <<~YAML
-      include:
-        - template: 'Jobs/Dependency-Scanning.latest.gitlab-ci.yml'
-    YAML
-  end
+  subject(:template) { Gitlab::Template::GitlabCiYmlTemplate.find('Jobs/Dependency-Scanning.latest') }
 
-  context 'on branch pipeline' do
-    let(:default_branch) { 'master' }
-    let(:files) { { 'README.txt' => '' } }
-    let(:project) { create(:project, :custom_repo, files: files) }
-    let(:user) { project.first_owner }
-    let(:service) { Ci::CreatePipelineService.new(project, user, ref: 'master') }
+  describe 'the created pipeline' do
+    let_it_be(:default_branch) { 'master' }
+    let_it_be(:feature_branch) { 'patch-1' }
+
     let(:pipeline) { service.execute(:push).payload }
-    let(:build_names) { pipeline.builds.pluck(:name) }
 
     before do
-      stub_ci_pipeline_yaml_file(template)
-      allow_next_instance_of(Ci::BuildScheduleWorker) do |worker|
-        allow(worker).to receive(:perform).and_return(true)
-      end
-      allow(project).to receive(:default_branch).and_return(default_branch)
+      stub_ci_pipeline_yaml_file(template.content)
     end
 
     context 'when project has no license' do
-      it 'includes no jobs' do
-        expect(build_names).to be_empty
-        expect(pipeline.errors.full_messages).to match_array([sanitize_message(Ci::Pipeline.rules_failure_message)])
-      end
+      # Add necessary files to enable all analyzers jobs
+      include_context 'when project has files', %w[Gemfile.lock pom.xml Poetry.lock]
+      include_context 'with default branch pipeline setup'
+
+      include_examples 'has expected jobs', []
     end
 
     context 'when project has Ultimate license' do
       let(:license) { build(:license, plan: License::ULTIMATE_PLAN) }
-      let(:files) { { 'conan.lock' => '', 'Gemfile.lock' => '', 'package.json' => '', 'pom.xml' => '', 'Pipfile' => '', 'Podfile.lock' => '' } }
 
       before do
         allow(License).to receive(:current).and_return(license)
       end
 
-      context 'when DEPENDENCY_SCANNING_DISABLED=1' do
-        before do
-          create(:ci_variable, project: project, key: 'DEPENDENCY_SCANNING_DISABLED', value: '1')
+      describe "DS_EXCLUDED_ANALYZERS" do
+        using RSpec::Parameterized::TableSyntax
+        # Add necessary files to enable all analyzers jobs
+        include_context 'when project has files', %w[Gemfile.lock pom.xml poetry.lock Cargo.lock]
+        include_context 'with default branch pipeline setup'
+
+        where(:case_name, :excluded_analyzers, :jobs) do
+          # rubocop:disable Layout/LineLength -- TableSyntax
+          'default'             | ''                            | %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning dependency-scanning]
+          'gemnasium'           | 'gemnasium'                   | %w[gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning dependency-scanning]
+          'gemnasium-maven'     | 'gemnasium-maven'             | %w[gemnasium-dependency_scanning gemnasium-python-dependency_scanning dependency-scanning]
+          'gemnasium-python'    | 'gemnasium-python'            | %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning dependency-scanning]
+          'dependency-scanning' | 'dependency-scanning'         | %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
+          'multiple analyzers'  | 'gemnasium, gemnasium-python' | %w[gemnasium-maven-dependency_scanning dependency-scanning]
+          # rubocop:enable Layout/LineLength
         end
 
-        it 'includes no jobs' do
-          expect(build_names).to be_empty
-          expect(pipeline.errors.full_messages).to match_array([sanitize_message(Ci::Pipeline.rules_failure_message)])
-        end
-      end
+        with_them do
+          include_context 'with CI variables', { 'DS_EXCLUDED_ANALYZERS' => params[:excluded_analyzers] }
 
-      context 'when DEPENDENCY_SCANNING_DISABLED="true"' do
-        before do
-          create(:ci_variable, project: project, key: 'DEPENDENCY_SCANNING_DISABLED', value: 'true')
-        end
-
-        it 'includes no jobs' do
-          expect(build_names).to be_empty
-          expect(pipeline.errors.full_messages).to match_array([sanitize_message(Ci::Pipeline.rules_failure_message)])
-        end
-      end
-
-      context 'when DEPENDENCY_SCANNING_DISABLED="false"' do
-        before do
-          create(:ci_variable, project: project, key: 'DEPENDENCY_SCANNING_DISABLED', value: 'false')
-        end
-
-        it 'includes jobs' do
-          expect(pipeline.errors.full_messages).to be_empty
-          expect(build_names).not_to be_empty
+          include_examples 'has expected jobs', params[:jobs]
         end
       end
 
-      context 'when DS_EXCLUDED_ANALYZERS set to' do
-        describe 'exclude' do
-          using RSpec::Parameterized::TableSyntax
+      describe "DEPENDENCY_SCANNING_DISABLED" do
+        # Add necessary files to enable all analyzers jobs
+        include_context 'when project has files', %w[Gemfile.lock pom.xml poetry.lock Cargo.lock]
+        include_context 'with default branch pipeline setup'
 
-          where(:case_name, :excluded_analyzers, :included_build_names) do
-            'nothing'              | []                             | %w[dependency-scanning gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
-            'gemnasium'            | %w[gemnasium]                  | %w[dependency-scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
-            'gemnasium-maven'      | %w[gemnasium-maven]            | %w[dependency-scanning gemnasium-dependency_scanning gemnasium-python-dependency_scanning]
-            'gemnasium-python'     | %w[gemnasium-python]           | %w[dependency-scanning gemnasium-dependency_scanning gemnasium-maven-dependency_scanning]
-            'dependency-scanning'  | %w[dependency-scanning]        | %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning]
-            'two'                  | %w[gemnasium]                  | %w[dependency-scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
-            'three'                | %w[gemnasium-maven gemnasium]  | %w[dependency-scanning gemnasium-python-dependency_scanning]
-            'four'                 | %w[gemnasium-maven gemnasium]  | %w[dependency-scanning gemnasium-python-dependency_scanning]
+        include_examples 'has jobs that can be disabled', 'DEPENDENCY_SCANNING_DISABLED', %w[true 1],
+          %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning
+            gemnasium-python-dependency_scanning dependency-scanning]
+      end
+
+      describe "FIPS mode" do
+        # Add necessary files to enable all analyzers jobs
+        # FIPS mode does not affect the new DS analyzer job (dependency-scanning)
+        include_context 'when project has files', %w[Gemfile.lock pom.xml poetry.lock]
+
+        context 'as a branch pipeline on the default branch' do
+          include_context 'with default branch pipeline setup'
+
+          include_examples 'has FIPS compatible jobs', 'DS_IMAGE_SUFFIX',
+            %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
+        end
+
+        context 'as a branch pipeline on a feature branch' do
+          include_context 'with feature branch pipeline setup'
+
+          include_examples 'has FIPS compatible jobs', 'DS_IMAGE_SUFFIX',
+            %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
+        end
+
+        context 'as an MR pipeline' do
+          include_context 'with MR pipeline setup'
+          include_context 'with CI variables', { 'AST_ENABLE_MR_PIPELINES' => 'true' }
+
+          include_examples 'has FIPS compatible jobs', 'DS_IMAGE_SUFFIX',
+            %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
+        end
+      end
+
+      describe "DS_REMEDIATE" do
+        # Add necessary files to enable the analyzers compatible with Auto-Remediation (gemnasium only)
+        include_context 'when project has files', %w[Gemfile.lock]
+        include_context 'with default branch pipeline setup'
+
+        let(:gemnasium_job) { pipeline.builds.find_by(name: 'gemnasium-dependency_scanning') }
+
+        context 'when CI_GITLAB_FIPS_MODE=false', fips_mode: false do
+          let(:expected) { '' }
+
+          it 'sets DS_REMEDIATE to ""' do
+            expect(String(gemnasium_job.variables.to_hash['DS_REMEDIATE'])).to eql(expected)
+          end
+        end
+
+        context 'when CI_GITLAB_FIPS_MODE=true', :fips_mode do
+          let(:expected) { 'false' }
+
+          it 'sets DS_REMEDIATE to "false"' do
+            expect(String(gemnasium_job.variables.to_hash['DS_REMEDIATE'])).to eql(expected)
+          end
+        end
+      end
+
+      describe "DS_ENFORCE_NEW_ANALYZER" do
+        # Add necessary files to enable the new DS analyzer
+        include_context 'when project has files', %w[Cargo.lock]
+        include_context 'with default branch pipeline setup'
+
+        context 'when new DS analyzer is not enforced' do
+          it "only scans the newly supported files and ignores project types already supported by Gemnasium" do
+            new_ds_build = pipeline.builds.find { |b| b.name == 'dependency-scanning' }
+            expect(String(new_ds_build.variables.to_hash['DS_EXCLUDED_PATHS']))
+              .to eql(
+                'spec, test, tests, tmp, **/build.gradle, **/build.gradle.kts, **/build.sbt, **/pom.xml, ' \
+                  '**/requirements.txt, **/requirements.pip, **/Pipfile, **/Pipfile.lock, **/requires.txt, ' \
+                  '**/setup.py, **/poetry.lock, **/uv.lock, **/packages.lock.json, **/conan.lock, ' \
+                  '**/package-lock.json, **/npm-shrinkwrap.json, **/pnpm-lock.yaml, **/yarn.lock, **/composer.lock, ' \
+                  '**/Gemfile.lock, **/gems.locked, **/go.graph, **/ivy-report.xml, **/maven.graph.json, ' \
+                  '**/dependencies.lock, **/pipdeptree.json, **/pipenv.graph.json, **/dependencies-compile.dot')
+          end
+        end
+
+        context 'when new DS analyzer is enforced' do
+          include_context 'with CI variables', { 'DS_ENFORCE_NEW_ANALYZER' => 'true' }
+
+          it "scans all supported files" do
+            new_ds_build = pipeline.builds.find { |b| b.name == 'dependency-scanning' }
+            expect(String(new_ds_build.variables.to_hash['DS_EXCLUDED_PATHS'])).to eql('spec, test, tests, tmp')
+          end
+        end
+      end
+
+      context "with project type" do
+        using RSpec::Parameterized::TableSyntax
+        where(:case_name, :files, :variables, :jobs) do
+          # rubocop:disable Layout/LineLength -- TableSyntax
+          'Go'                             | ['go.sum']                       | {} | %w[gemnasium-dependency_scanning]
+          'Go (nested)'                    | ['a/b/go.sum']                   | {} | %w[gemnasium-dependency_scanning]
+          'Java'                           | ['pom.xml']                      | {} | %w[gemnasium-maven-dependency_scanning]
+          'Java Gradle'                    | ['build.gradle']                 | {} | %w[gemnasium-maven-dependency_scanning]
+          'Java Gradle Kotlin DSL'         | ['build.gradle.kts']             | {} | %w[gemnasium-maven-dependency_scanning]
+          'Javascript package-lock.json'   | ['package-lock.json']            | {} | %w[gemnasium-dependency_scanning]
+          'Javascript yarn.lock'           | ['yarn.lock']                    | {} | %w[gemnasium-dependency_scanning]
+          'Javascript pnpm-lock.yaml'      | ['pnpm-lock.yaml']               | {} | %w[gemnasium-dependency_scanning]
+          'Javascript npm-shrinkwrap.json' | ['npm-shrinkwrap.json']          | {} | %w[gemnasium-dependency_scanning]
+          'Multiple languages'             | ['pom.xml', 'package-lock.json'] | {} | %w[gemnasium-maven-dependency_scanning gemnasium-dependency_scanning]
+          'NuGet'                          | ['packages.lock.json']           | {} | %w[gemnasium-dependency_scanning]
+          'Conan'                          | ['conan.lock']                   | {} | %w[gemnasium-dependency_scanning]
+          'PHP'                            | ['composer.lock']                | {} | %w[gemnasium-dependency_scanning]
+          'Python requirements.txt'        | ['requirements.txt']             | {} | %w[gemnasium-python-dependency_scanning]
+          'Python custom file'             | ['custom-req.txt']               | { 'PIP_REQUIREMENTS_FILE' => 'custom-req.txt' } | %w[gemnasium-python-dependency_scanning]
+          'Python requirements.pip'        | ['requirements.pip']             | {} | %w[gemnasium-python-dependency_scanning]
+          'Python Pipfile'                 | ['Pipfile']                      | {} | %w[gemnasium-python-dependency_scanning]
+          'Python requires.txt'            | ['requires.txt']                 | {} | %w[gemnasium-python-dependency_scanning]
+          'Python with setup.py'           | ['setup.py']                     | {} | %w[gemnasium-python-dependency_scanning]
+          'Python with poetry.lock'        | ['poetry.lock']                  | {} | %w[gemnasium-python-dependency_scanning]
+          'Python with uv.lock'            | ['uv.lock']                      | {} | %w[gemnasium-python-dependency_scanning]
+          'Ruby Gemfile.lock'              | ['Gemfile.lock']                 | {} | %w[gemnasium-dependency_scanning]
+          'Ruby gems.locked'               | ['gems.locked']                  | {} | %w[gemnasium-dependency_scanning]
+          'Scala'                          | ['build.sbt']                    | {} | %w[gemnasium-maven-dependency_scanning]
+          # New languages supported by default by the new DS analyzer
+          'Dart'                           | ['pubspec.lock']                 | {} | %w[dependency-scanning]
+          'Objective-C Cocoapods'          | ['Podfile.lock']                 | {} | %w[dependency-scanning]
+          'Conda'                          | ['conda-lock.yml']               | {} | %w[dependency-scanning]
+          'Rust Cargo'                     | ['Cargo.lock']                   | {} | %w[dependency-scanning]
+          'Swift'                          | ['Package.resolved']             | {} | %w[dependency-scanning]
+          # All languages enforced on the new DS analyzer
+          'new DS analyzer - Go go.mod'                      | ['go.mod']                       | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Go go.mod (nested)'             | ['a/b/go.mod']                   | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Go go.graph'                    | ['go.graph']                     | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Java'                           | ['pom.xml']                      | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Java maven.graph.json'          | ['maven.graph.json']             | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Java Gradle'                    | ['build.gradle']                 | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Java Gradle Kotlin DSL'         | ['build.gradle.kts']             | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Java Gradle dependencies.lock'  | ['dependencies.lock']            | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Javascript package-lock.json'   | ['package-lock.json']            | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Javascript yarn.lock'           | ['yarn.lock']                    | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Javascript pnpm-lock.yaml'      | ['pnpm-lock.yaml']               | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Javascript npm-shrinkwrap.json' | ['npm-shrinkwrap.json']          | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Multiple languages'             | ['pom.xml', 'package-lock.json'] | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - NuGet'                          | ['packages.lock.json']           | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Conan'                          | ['conan.lock']                   | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - PHP'                            | ['composer.lock']                | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Python requirements.txt'        | ['requirements.txt']             | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Python custom file'             | ['custom-req.txt']               | { 'DS_ENFORCE_NEW_ANALYZER' => 'true', 'DS_PIPCOMPILE_REQUIREMENTS_FILE_NAME_PATTERN' => 'custom-req.txt' } | %w[dependency-scanning]
+          'new DS analyzer - Python requirements.pip'        | ['requirements.pip']             | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Python pipdeptree.json'         | ['pipdeptree.json']              | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Python Pipfile'                 | ['Pipfile']                      | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Python Pipfile.lock'            | ['Pipfile.lock']                 | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Python pipenv.graph.json'       | ['pipenv.graph.json']            | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Python requires.txt'            | ['requires.txt']                 | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Python with setup.py'           | ['setup.py']                     | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Python with poetry.lock'        | ['poetry.lock']                  | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Python with uv.lock'            | ['uv.lock']                      | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Ruby Gemfile.lock'              | ['Gemfile.lock']                 | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Ruby gems.locked'               | ['gems.locked']                  | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Scala'                          | ['build.sbt']                    | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Scala dependencies-compile.dot' | ['dependencies-compile.dot']     | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          'new DS analyzer - Ivy'                            | ['ivy-report.xml']               | { 'DS_ENFORCE_NEW_ANALYZER' => 'true' } | %w[dependency-scanning]
+          # Static Reachability
+          'Static Reachability - Python ' | ['Pipfile'] | { 'DS_ENFORCE_NEW_ANALYZER' => 'true', 'DS_STATIC_REACHABILITY_ENABLED' => 'true' } | %w[dependency-scanning-with-reachability gitlab-static-reachability]
+          # rubocop:enable Layout/LineLength
+        end
+
+        with_them do
+          include_context 'when project has files', params[:files]
+          include_context 'with CI variables', params[:variables], if: params[:variables].any?
+
+          context 'as a branch pipeline on the default branch' do
+            include_context 'with default branch pipeline setup'
+
+            include_examples 'has expected jobs', params[:jobs]
           end
 
-          with_them do
-            before do
-              create(:ci_variable, project: project, key: 'DS_EXCLUDED_ANALYZERS', value: excluded_analyzers.join(','))
+          context 'as a branch pipeline on a feature branch' do
+            include_context 'with feature branch pipeline setup'
+
+            include_examples 'has expected jobs', params[:jobs]
+          end
+
+          context 'as an MR pipeline' do
+            include_context 'with MR pipeline setup'
+
+            include_examples 'has expected jobs', params[:jobs]
+
+            context 'when AST_ENABLE_MR_PIPELINES=false' do
+              include_context 'with CI variables', { 'AST_ENABLE_MR_PIPELINES' => 'false' }
+
+              include_examples 'has expected jobs', []
             end
-
-            it "creates pipeline with excluded analyzers skipped" do
-              expect(build_names).to include(*included_build_names)
-            end
-          end
-
-          context 'when all analyzers excluded' do
-            before do
-              create(:ci_variable, project: project, key: 'DS_EXCLUDED_ANALYZERS', value: 'gemnasium-maven, gemnasium-python, gemnasium, dependency-scanning')
-            end
-
-            it 'creates a pipeline excluding jobs from specified analyzers' do
-              expect(build_names).to be_empty
-              expect(pipeline.errors.full_messages).to match_array([sanitize_message(Ci::Pipeline.rules_failure_message)])
-            end
           end
         end
-      end
-
-      context 'when DS_ENFORCE_NEW_ANALYZER is set to false (default)' do
-        let(:files) { { 'conan.lock' => '', 'Gemfile.lock' => '', 'package.json' => '', 'pom.xml' => '', 'Pipfile' => '', 'Podfile.lock' => '' } }
-
-        before do
-          create(:ci_variable, project: project, key: 'DS_ENFORCE_NEW_ANALYZER', value: 'false')
-        end
-
-        it "creates pipeline with all compatible analyzers, including the new DS analyzer" do
-          expect(build_names).to match_array(%w[dependency-scanning gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning])
-        end
-
-        it "the DS analyzer only scans the newly supported files and ignore these already supported by Gemnasium" do
-          new_ds_build = pipeline.builds.find { |b| b.name == 'dependency-scanning' }
-          expect(String(new_ds_build.variables.to_hash['DS_EXCLUDED_PATHS'])).to eql('spec, test, tests, tmp, **/build.gradle, **/build.gradle.kts, **/build.sbt, **/pom.xml, **/requirements.txt, **/requirements.pip, **/Pipfile, **/Pipfile.lock, **/requires.txt, **/setup.py, **/poetry.lock, **/uv.lock, **/packages.lock.json, **/conan.lock, **/package-lock.json, **/npm-shrinkwrap.json, **/pnpm-lock.yaml, **/yarn.lock, **/composer.lock, **/Gemfile.lock, **/gems.locked, **/go.graph, **/ivy-report.xml, **/maven.graph.json, **/dependencies.lock, **/pipdeptree.json, **/pipenv.graph.json, **/dependencies-compile.dot')
-        end
-      end
-
-      context 'when DS_ENFORCE_NEW_ANALYZER is set to true' do
-        let(:files) { { 'conan.lock' => '', 'Gemfile.lock' => '', 'package.json' => '', 'pom.xml' => '', 'Pipfile' => '', 'Podfile.lock' => '' } }
-
-        before do
-          create(:ci_variable, project: project, key: 'DS_ENFORCE_NEW_ANALYZER', value: 'true')
-        end
-
-        it "creates pipeline with only the new DS analyzer" do
-          expect(build_names).to eq(['dependency-scanning'])
-        end
-
-        context 'when DS_STATIC_REACHABILITY_ENABLED is set to true' do
-          before do
-            create(:ci_variable, project: project, key: 'DS_STATIC_REACHABILITY_ENABLED', value: 'true')
-          end
-
-          context 'when python files are present' do
-            let(:files) { { 'Pipfile' => '', 'app.py' => '' } }
-
-            it "gitlab-static-reachability job is present" do
-              expect(build_names).to eq(%w[dependency-scanning-with-reachability gitlab-static-reachability])
-            end
-          end
-
-          context 'when python files are missing' do
-            let(:files) { { 'Pipfile' => '' } }
-
-            it "gitlab-static-reachability job is present" do
-              expect(build_names).to eq(%w[dependency-scanning-with-reachability gitlab-static-reachability])
-            end
-          end
-        end
-
-        it "the DS analyzer scans all compatible files" do
-          build = pipeline.builds.first
-          expect(String(build.variables.to_hash['DS_EXCLUDED_PATHS'])).to eql('spec, test, tests, tmp')
-        end
-
-        context 'when DS_PIPCOMPILE_REQUIREMENTS_FILE_NAME_PATTERN is defined' do
-          let(:files) { { 'some_file' => '' } }
-
-          before do
-            create(:ci_variable, project: project, key: 'DS_PIPCOMPILE_REQUIREMENTS_FILE_NAME_PATTERN', value: 'some/custom-requirements.txt')
-          end
-
-          it 'creates a pipeline with the new DS analyzer, independently from which files are in the repo' do
-            expect(build_names).to include('dependency-scanning')
-          end
-        end
-      end
-
-      context 'as default', fips_mode: false do
-        let(:expected_image_suffix) { "" }
-
-        include_examples 'language detection'
-        include_examples 'PIP_REQUIREMENTS_FILE support'
-        include_examples 'DS_REMEDIATE default value', ""
-      end
-
-      context 'when FIPS mode is enabled', :fips_mode do
-        let(:expected_image_suffix) { "-fips" }
-
-        include_examples 'language detection'
-        include_examples 'PIP_REQUIREMENTS_FILE support'
-        include_examples 'DS_REMEDIATE default value', "false"
       end
     end
   end
 end
-# rubocop:enable Layout/LineLength

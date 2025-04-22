@@ -377,7 +377,11 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
           let(:expected_jobs) { starting_with('secret-detection-') }
           let(:expected_configuration) do
             hash_including(
-              rules: [{ if: '$CI_COMMIT_BRANCH' }],
+              rules: [
+                { if: '$AST_ENABLE_MR_PIPELINES == "true" && $CI_PIPELINE_SOURCE == "merge_request_event"' },
+                { if: '$AST_ENABLE_MR_PIPELINES == "true" && $CI_OPEN_MERGE_REQUESTS', when: 'never' },
+                { if: '$CI_COMMIT_BRANCH' }
+              ],
               script: ["/analyzer run"],
               stage: scan_policy_stage,
               image: '$SECURE_ANALYZERS_PREFIX/secrets:$SECRETS_ANALYZER_VERSION$SECRET_DETECTION_IMAGE_SUFFIX',
