@@ -84,7 +84,7 @@ module MemberRoles
     def can_return_admin_roles?
       return false if Feature.disabled?(:custom_admin_roles, :instance)
 
-      current_user.can?(:read_admin_member_role)
+      current_user.can?(:read_admin_role)
     end
 
     def allowed_namespace_ids(items)

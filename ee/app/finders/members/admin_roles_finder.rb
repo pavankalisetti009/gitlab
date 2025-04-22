@@ -9,7 +9,7 @@ module Members
     end
 
     def validate_arguments!
-      return if current_user.can?(:read_admin_member_role)
+      return if current_user.can?(:read_admin_role)
 
       super
     end

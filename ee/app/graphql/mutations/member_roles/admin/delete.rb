@@ -7,7 +7,7 @@ module Mutations
       class Delete < ::Mutations::BaseMutation
         graphql_name 'MemberRoleAdminDelete'
 
-        authorize :admin_member_role
+        authorize :delete_admin_role
 
         argument :id, ::Types::GlobalIDType[::MemberRole],
           required: true,

@@ -160,7 +160,8 @@ module EE
       rule { admin & custom_roles_allowed }.policy do
         enable :admin_member_role
         enable :view_member_roles
-        enable :read_admin_member_role
+        enable :read_admin_role
+        enable :create_admin_role
       end
 
       rule { admin & default_roles_assignees_allowed }.policy do
