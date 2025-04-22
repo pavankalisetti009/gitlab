@@ -1,4 +1,5 @@
 = gitlab_ui_form_for @targeted_message, url: url, as: :targeted_message do |f|
+  = form_errors(@targeted_message)
   .form-group
     = f.label :target_type, s_('TargetedMessages|Target Type')
     = f.select :target_type,
