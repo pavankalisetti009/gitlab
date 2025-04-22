@@ -22,6 +22,7 @@ import { resolvers } from '~/graphql_shared/issuable_client';
 import {
   createWorkItemMutationResponse,
   createWorkItemQueryResponse,
+  customFieldsWidgetResponseFactory,
   namespaceWorkItemsWithoutEpicSupport,
 } from '../mock_data';
 
@@ -44,7 +45,9 @@ describe('EE Create work item component', () => {
   let mockApollo;
 
   const createWorkItemSuccessHandler = jest.fn().mockResolvedValue(createWorkItemMutationResponse);
-  const workItemQuerySuccessHandler = jest.fn().mockResolvedValue(createWorkItemQueryResponse);
+  const workItemQuerySuccessHandler = jest
+    .fn()
+    .mockResolvedValue(createWorkItemQueryResponse([customFieldsWidgetResponseFactory()]));
   const namespaceWorkItemTypesHandler = jest
     .fn()
     .mockResolvedValue(namespaceWorkItemTypesQueryResponse);

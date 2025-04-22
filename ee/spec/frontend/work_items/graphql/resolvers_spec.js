@@ -10,7 +10,7 @@ import {
   WIDGET_TYPE_WEIGHT,
   WIDGET_TYPE_CUSTOM_FIELDS,
 } from '~/work_items/constants';
-import { createWorkItemQueryResponse } from '../mock_data';
+import { createWorkItemQueryResponse, customFieldsWidgetResponseFactory } from '../mock_data';
 
 describe('EE work items graphql resolvers', () => {
   describe('updateNewWorkItemCache', () => {
@@ -69,7 +69,7 @@ describe('EE work items graphql resolvers', () => {
       mockApollo.clients.defaultClient.cache.writeQuery({
         query: workItemByIidQuery,
         variables: { fullPath: fullPathWithId, iid },
-        data: createWorkItemQueryResponse.data,
+        data: createWorkItemQueryResponse([customFieldsWidgetResponseFactory()]).data,
       });
       mockApolloClient = mockApollo.clients.defaultClient;
     });

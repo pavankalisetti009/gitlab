@@ -5735,7 +5735,7 @@ export const namespaceGroupsList = {
   },
 };
 
-export const createWorkItemQueryResponse = {
+export const createWorkItemQueryResponse = (widgets = []) => ({
   data: {
     workspace: {
       id: 'full-path-epic-id',
@@ -5945,14 +5945,14 @@ export const createWorkItemQueryResponse = {
             },
             __typename: 'WorkItemWidgetWeight',
           },
-          customFieldsWidgetResponseFactory(),
+          ...widgets,
         ],
         __typename: 'WorkItem',
       },
       __typename: 'Namespace',
     },
   },
-};
+});
 
 export const mockToggleResolveDiscussionResponse = {
   data: {

@@ -353,6 +353,9 @@ export const namespaceWorkItemsWithoutEpicSupport = {
  * anything that's EE-specific.
  */
 /* eslint-disable import/export */
+export const createWorkItemQueryResponse = (options) =>
+  applyEEWorkItemPermissions(CE.createWorkItemQueryResponse(options), true);
+
 export const workItemResponseFactory = (options) =>
   applyEEWorkItemPermissions(CE.workItemResponseFactory(options), true);
 
@@ -378,11 +381,6 @@ export const workItemQueryResponse = applyEEWorkItemPermissions(CE.workItemQuery
 
 export const createWorkItemMutationResponse = applyEEWorkItemPermissions(
   CE.createWorkItemMutationResponse,
-  true,
-);
-
-export const createWorkItemQueryResponse = applyEEWorkItemPermissions(
-  CE.createWorkItemQueryResponse,
   true,
 );
 
