@@ -41,7 +41,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to delegate_method(:additional_purchased_storage_ends_on=).to(:namespace_limit).with_arguments(:args) }
   it { is_expected.to delegate_method(:experiment_features_enabled).to(:namespace_settings).allow_nil }
   it { is_expected.to delegate_method(:experiment_features_enabled=).to(:namespace_settings).with_arguments(:args).allow_nil }
-  it { is_expected.to delegate_method(:duo_nano_features_enabled).to(:namespace_settings).allow_nil }
+  it { is_expected.to delegate_method(:duo_core_features_enabled).to(:namespace_settings).allow_nil }
   it { is_expected.to delegate_method(:duo_features_enabled).to(:namespace_settings) }
   it { is_expected.to delegate_method(:lock_duo_features_enabled).to(:namespace_settings) }
   it { is_expected.to delegate_method(:duo_availability).to(:namespace_settings) }
@@ -2467,18 +2467,18 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#duo_nano_features_enabled?' do
+  describe '#duo_core_features_enabled?' do
     let(:group) { create(:group) }
     let(:sub_group) { create(:group, parent: group) }
 
-    subject(:result) { group.duo_nano_features_enabled? }
+    subject(:result) { group.duo_core_features_enabled? }
 
     it { is_expected.to eq(false) }
 
-    context 'when namespace_settings has duo_nano_features enabled' do
+    context 'when namespace_settings has duo_core_features enabled' do
       before do
         group.namespace_settings.update!(
-          duo_nano_features_enabled: true
+          duo_core_features_enabled: true
         )
       end
 
@@ -2486,7 +2486,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
       context 'with sub-group' do
         it 'checks the namespace_settings of root_namespace' do
-          expect(sub_group.duo_nano_features_enabled?).to eq(true)
+          expect(sub_group.duo_core_features_enabled?).to eq(true)
         end
       end
     end
@@ -2494,7 +2494,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     context 'when namespace_settings has duo_nano_features disabled' do
       before do
         group.namespace_settings.update!(
-          duo_nano_features_enabled: false
+          duo_core_features_enabled: false
         )
       end
 
@@ -2502,7 +2502,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
       context 'with sub-group' do
         it 'checks the namespace_settings of root_namespace' do
-          expect(sub_group.duo_nano_features_enabled?).to eq(false)
+          expect(sub_group.duo_core_features_enabled?).to eq(false)
         end
       end
     end
@@ -2510,7 +2510,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     context 'when namespace_settings has duo_nano_features as null' do
       before do
         group.namespace_settings.update!(
-          duo_nano_features_enabled: nil
+          duo_core_features_enabled: nil
         )
       end
 
@@ -2518,7 +2518,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
       context 'with sub-group' do
         it 'checks the namespace_settings of root_namespace' do
-          expect(sub_group.duo_nano_features_enabled?).to eq(false)
+          expect(sub_group.duo_core_features_enabled?).to eq(false)
         end
       end
     end

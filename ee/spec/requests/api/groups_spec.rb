@@ -543,8 +543,8 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       end
     end
 
-    context 'duo_base_features_enabled' do
-      let(:params) { { duo_base_features_enabled: true } }
+    context 'duo_core_features_enabled' do
+      let(:params) { { duo_core_features_enabled: true } }
 
       before do
         stub_licensed_features(code_suggestions: true)
@@ -561,7 +561,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         end
 
         with_them do
-          let(:params) { { duo_base_features_enabled: param_value } }
+          let(:params) { { duo_core_features_enabled: param_value } }
 
           before do
             stub_licensed_features(code_suggestions: code_suggestions_enabled)
@@ -571,7 +571,7 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
             update_group_request
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response['duo_base_features_enabled']).to eq(result)
+            expect(json_response['duo_core_features_enabled']).to eq(result)
           end
         end
 
@@ -587,10 +587,10 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         end
 
         context 'when updating already toggled value to nil' do
-          let(:params) { { duo_base_features_enabled: nil } }
+          let(:params) { { duo_core_features_enabled: nil } }
 
           before do
-            group.namespace_settings.update!(duo_base_features_enabled: true)
+            group.namespace_settings.update!(duo_core_features_enabled: true)
           end
 
           it 'doest not allow update and returns bad request' do

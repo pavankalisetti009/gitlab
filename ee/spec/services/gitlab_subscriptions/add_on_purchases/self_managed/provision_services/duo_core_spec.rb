@@ -2,12 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoNano,
+RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoCore,
   feature_category: :'add-on_provisioning' do
   describe '#execute' do
     subject(:provision_service) { described_class.new }
 
-    let_it_be(:add_on_duo_nano) { create(:gitlab_subscription_add_on, :duo_nano) }
+    let_it_be(:add_on_duo_core) { create(:gitlab_subscription_add_on, :duo_core) }
     let_it_be(:add_on_duo_enterprise) { create(:gitlab_subscription_add_on, :duo_enterprise) }
 
     let_it_be(:organization) { create(:organization) }
@@ -33,24 +33,24 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
       it_behaves_like 'delegates add_on params to license_add_on'
     end
 
-    context 'without Duo Nano' do
+    context 'without Duo Core' do
       let(:add_ons) { [] }
 
-      it 'does not create a Duo Nano add-on purchase' do
+      it 'does not create a Duo Core add-on purchase' do
         expect { provision_service.execute }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
       end
     end
 
-    context 'with Duo Nano' do
-      let(:add_ons) { %i[duo_nano] }
+    context 'with Duo Core' do
+      let(:add_ons) { %i[duo_core] }
 
-      it 'creates a new Duo Nano add-on purchase' do
+      it 'creates a new Duo Core add-on purchase' do
         expect do
           provision_service.execute
         end.to change { GitlabSubscriptions::AddOnPurchase.count }.from(0).to(1)
 
         expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
-          subscription_add_on_id: add_on_duo_nano.id,
+          subscription_add_on_id: add_on_duo_core.id,
           quantity: 1,
           started_at: started_at,
           expires_on: started_at + 1.year,
@@ -60,14 +60,14 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
       end
     end
 
-    context 'with existing Duo Nano and seat count increase' do
-      let(:add_ons) { %i[duo_nano] }
+    context 'with existing Duo Core and seat count increase' do
+      let(:add_ons) { %i[duo_core] }
       let(:quantity) { 2 }
 
       before do
         create(
           :gitlab_subscription_add_on_purchase,
-          add_on: add_on_duo_nano,
+          add_on: add_on_duo_core,
           quantity: 1,
           namespace: nil
         )
@@ -77,7 +77,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         expect { provision_service.execute }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
 
         expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
-          subscription_add_on_id: add_on_duo_nano.id,
+          subscription_add_on_id: add_on_duo_core.id,
           quantity: quantity,
           started_at: started_at,
           expires_on: started_at + 1.year,
@@ -87,23 +87,23 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
       end
     end
 
-    context 'with existing Duo Nano and additional purchase of Duo Enterprise' do
-      let(:add_ons) { %i[duo_nano duo_enterprise] }
+    context 'with existing Duo Core and additional purchase of Duo Enterprise' do
+      let(:add_ons) { %i[duo_core duo_enterprise] }
 
       before do
         create(
           :gitlab_subscription_add_on_purchase,
-          add_on: add_on_duo_nano,
+          add_on: add_on_duo_core,
           quantity: quantity,
           namespace: nil
         )
       end
 
-      it 'does not affect duo nano provision' do
+      it 'does not affect duo core provision' do
         expect { provision_service.execute }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
 
         expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
-          subscription_add_on_id: add_on_duo_nano.id,
+          subscription_add_on_id: add_on_duo_core.id,
           quantity: quantity,
           started_at: started_at,
           expires_on: started_at + 1.year,

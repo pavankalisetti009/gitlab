@@ -35,13 +35,12 @@ module EE
             group.group_wiki_repository&.shard_name
           end
 
-          expose :duo_nano_features_enabled,
-            as: :duo_base_features_enabled,
+          expose :duo_core_features_enabled,
             if: ->(group, options) {
-              group.licensed_duo_nano_features_available? &&
+              group.licensed_duo_core_features_available? &&
                 Ability.allowed?(options[:current_user], :admin_group, group)
             }, documentation: {
-              desc: '[Experimental] Indicates whether GitLab Duo features are enabled for the group',
+              desc: '[Experimental] Indicates whether GitLab Duo Core features are enabled for the group',
               type: 'boolean'
             }
 

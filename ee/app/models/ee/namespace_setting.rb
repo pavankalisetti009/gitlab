@@ -43,8 +43,8 @@ module EE
       validates :experiment_features_enabled, inclusion: { in: [true, false] }
 
       with_options if: :will_save_change_to_duo_nano_features_enabled? do
-        validates :duo_base_features_enabled, inclusion: { in: [true, false] }
-        validate :valid_namespace_for_duo_base_features
+        validates :duo_core_features_enabled, inclusion: { in: [true, false] }
+        validate :valid_namespace_for_duo_core_features
       end
 
       validates :new_user_signups_cap,
@@ -155,15 +155,15 @@ module EE
         end
       end
 
-      # Define duo_base_features_enabled as an alias to duo_nano_features_enabled to be used in Grape API
+      # Define duo_core_features_enabled as an alias to duo_nano_features_enabled
       # More info: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/187565#note_2450475141
-      def duo_base_features_enabled
+      def duo_core_features_enabled
         duo_nano_features_enabled
       end
 
-      # Define duo_base_features_enabled as an alias to duo_nano_features_enabled to be used in Grape API
+      # Define duo_core_features_enabled as an alias to duo_nano_features_enabled
       # More info: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/187565#note_2450475141
-      def duo_base_features_enabled=(value)
+      def duo_core_features_enabled=(value)
         self.duo_nano_features_enabled = value
       end
 
@@ -201,10 +201,10 @@ module EE
         namespace.non_invite_owner_members.where(user: ::User.active).distinct(:user_id).pluck_user_ids
       end
 
-      def valid_namespace_for_duo_base_features
+      def valid_namespace_for_duo_core_features
         return if namespace&.root? && namespace.group_namespace?
 
-        errors.add(:duo_base_features_enabled, _('can only be set for root group namespace'))
+        errors.add(:duo_core_features_enabled, _('can only be set for root group namespace'))
       end
 
       def experiment_features_allowed
@@ -231,7 +231,7 @@ module EE
         only_allow_merge_if_all_discussions_are_resolved
         experiment_features_enabled
         service_access_tokens_expiration_enforced
-        duo_base_features_enabled
+        duo_core_features_enabled
         duo_features_enabled
         lock_duo_features_enabled
         enterprise_users_extensions_marketplace_opt_in_status

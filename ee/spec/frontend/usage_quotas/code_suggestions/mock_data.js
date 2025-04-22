@@ -1,7 +1,7 @@
 import { subscriptionTypes } from 'ee/admin/subscriptions/show/constants';
 
 import {
-  DUO,
+  DUO_CORE,
   DUO_PRO,
   DUO_ENTERPRISE,
   DUO_AMAZON_Q,
@@ -12,7 +12,7 @@ export const noAssignedDuoAddOnData = {
     addOnPurchases: [
       {
         id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-        name: DUO,
+        name: DUO_CORE,
         assignedQuantity: 0,
         purchasedQuantity: 20,
         __typename: 'AddOnPurchase',
@@ -68,7 +68,7 @@ export const noAssignedDuoAddOnsData = {
     addOnPurchases: [
       {
         id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/8',
-        name: DUO,
+        name: DUO_CORE,
         assignedQuantity: 0,
         purchasedQuantity: 20,
         __typename: 'AddOnPurchase',
@@ -110,7 +110,7 @@ export const noAssignedDuoAddOnsData = {
       },
       {
         id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/8',
-        name: DUO,
+        name: DUO_CORE,
         assignedQuantity: 0,
         purchasedQuantity: 20,
         __typename: 'AddOnPurchase',
