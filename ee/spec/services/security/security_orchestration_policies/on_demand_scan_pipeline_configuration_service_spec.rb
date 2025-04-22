@@ -69,7 +69,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::OnDemandScanPipelineConf
             tags: ['runner-tag'],
             image: { name: '$SECURE_ANALYZERS_PREFIX/dast:$DAST_VERSION$DAST_IMAGE_SUFFIX' },
             variables: {
-              DAST_VERSION: 5,
+              DAST_VERSION: 6,
               SECURE_ANALYZERS_PREFIX: '$CI_TEMPLATE_REGISTRY_HOST/security-products',
               DAST_IMAGE_SUFFIX: '',
               GIT_STRATEGY: 'none'
@@ -108,7 +108,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::OnDemandScanPipelineConf
             stage: 'dast',
             variables: {
               SECURE_ANALYZERS_PREFIX: '$CI_TEMPLATE_REGISTRY_HOST/security-products',
-              DAST_API_VERSION: '5',
+              DAST_API_VERSION: '6',
               DAST_API_IMAGE_SUFFIX: '',
               DAST_API_IMAGE: 'api-security'
             },
