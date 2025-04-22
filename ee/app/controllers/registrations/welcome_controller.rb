@@ -168,8 +168,7 @@ module Registrations
     strong_memoize_attr :onboarding_status_presenter
 
     def set_update_onboarding_status_params
-      @onboarding_status_params = params.require(:user).permit(:setup_for_company)
-                                        .merge(params.permit(:joining_project)).to_h.deep_symbolize_keys
+      @onboarding_status_params = params.require(:user).permit(:setup_for_company).to_h.deep_symbolize_keys
     end
   end
 end
