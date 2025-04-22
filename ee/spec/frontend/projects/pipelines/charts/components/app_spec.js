@@ -8,29 +8,29 @@ import App from '~/projects/pipelines/charts/components/app.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 import PipelinesDashboard from '~/projects/pipelines/charts/components/pipelines_dashboard.vue';
-import DeploymentFrequencyCharts from 'ee_component/dora/components/deployment_frequency_charts.vue';
-import LeadTimeCharts from 'ee_component/dora/components/lead_time_charts.vue';
-import TimeToRestoreServiceCharts from 'ee_component/dora/components/time_to_restore_service_charts.vue';
-import ChangeFailureRateCharts from 'ee_component/dora/components/change_failure_rate_charts.vue';
+import DeploymentFrequencyCharts from 'ee_component/analytics/dora/components/deployment_frequency_charts.vue';
+import LeadTimeCharts from 'ee_component/analytics/dora/components/lead_time_charts.vue';
+import TimeToRestoreServiceCharts from 'ee_component/analytics/dora/components/time_to_restore_service_charts.vue';
+import ChangeFailureRateCharts from 'ee_component/analytics/dora/components/change_failure_rate_charts.vue';
 import ProjectQualitySummaryApp from 'ee_component/project_quality_summary/app.vue';
 
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
   updateHistory: jest.fn(),
 }));
-jest.mock('ee_component/dora/components/deployment_frequency_charts.vue', () => ({
+jest.mock('ee_component/analytics/dora/components/deployment_frequency_charts.vue', () => ({
   name: 'DeploymentFrequencyChartsStub',
   render: () => {},
 }));
-jest.mock('ee_component/dora/components/lead_time_charts.vue', () => ({
+jest.mock('ee_component/analytics/dora/components/lead_time_charts.vue', () => ({
   name: 'LeadTimeChartsStub',
   render: () => {},
 }));
-jest.mock('ee_component/dora/components/time_to_restore_service_charts.vue', () => ({
+jest.mock('ee_component/analytics/dora/components/time_to_restore_service_charts.vue', () => ({
   name: 'TimeToRestoreServiceChartsStub',
   render: () => {},
 }));
-jest.mock('ee_component/dora/components/change_failure_rate_charts.vue', () => ({
+jest.mock('ee_component/analytics/dora/components/change_failure_rate_charts.vue', () => ({
   name: 'ChangeFailureRateChartsStub',
   render: () => {},
 }));

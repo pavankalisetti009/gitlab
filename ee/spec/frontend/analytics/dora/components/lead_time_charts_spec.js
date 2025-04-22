@@ -1,32 +1,29 @@
+import { GlSprintf } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import MockAdapter from 'axios-mock-adapter';
-import last180DaysData from 'test_fixtures/api/dora/metrics/daily_change_failure_rate_for_last_180_days.json';
-import lastWeekData from 'test_fixtures/api/dora/metrics/daily_change_failure_rate_for_last_week.json';
-import lastMonthData from 'test_fixtures/api/dora/metrics/daily_change_failure_rate_for_last_month.json';
-import last90DaysData from 'test_fixtures/api/dora/metrics/daily_change_failure_rate_for_last_90_days.json';
-import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import last180DaysData from 'test_fixtures/api/dora/metrics/daily_lead_time_for_changes_for_last_180_days.json';
+import lastWeekData from 'test_fixtures/api/dora/metrics/daily_lead_time_for_changes_for_last_week.json';
+import lastMonthData from 'test_fixtures/api/dora/metrics/daily_lead_time_for_changes_for_last_month.json';
+import last90DaysData from 'test_fixtures/api/dora/metrics/daily_lead_time_for_changes_for_last_90_days.json';
 import { useFixturesFakeDate } from 'helpers/fake_date';
-import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metrics.vue';
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 
 jest.mock('~/alert');
 
-describe('change_failure_rate_charts.vue', () => {
+describe('lead_time_charts.vue', () => {
   useFixturesFakeDate();
 
-  let ChangeFailureRateCharts;
+  let LeadTimeCharts;
   let DoraChartHeader;
 
   // Import these components _after_ the date has been set using `useFakeDate`, so
   // that any calls to `new Date()` during module initialization use the fake date
   beforeAll(async () => {
-    ChangeFailureRateCharts = (
-      await import('ee_component/dora/components/change_failure_rate_charts.vue')
-    ).default;
-    DoraChartHeader = (await import('ee/dora/components/dora_chart_header.vue')).default;
+    LeadTimeCharts = (await import('ee_component/analytics/dora/components/lead_time_charts.vue'))
+      .default;
+    DoraChartHeader = (await import('ee/analytics/dora/components/dora_chart_header.vue')).default;
   });
 
   let wrapper;
@@ -34,28 +31,20 @@ describe('change_failure_rate_charts.vue', () => {
   const defaultMountOptions = {
     provide: {
       projectPath: 'test/project',
-      shouldRenderDoraCharts: true,
     },
+    stubs: { GlSprintf },
   };
 
-  const createComponent = (mountOptions = defaultMountOptions) => {
-    wrapper = extendedWrapper(
-      shallowMount(ChangeFailureRateCharts, {
-        stubs: {
-          CiCdAnalyticsCharts: {
-            template: `<div><slot name="metrics" :selectedChart="1"></slot></div>`,
-          },
-        },
-        ...mountOptions,
-      }),
-    );
+  const createComponent = ({ mountFn = shallowMount, mountOptions = defaultMountOptions } = {}) => {
+    wrapper = mountFn(LeadTimeCharts, mountOptions);
   };
 
-  const setUpMockChangeFailureRate = ({ start_date, data }) => {
+  // Initializes the mock endpoint to return a specific set of lead time data for a given "from" date.
+  const setUpMockLeadTime = ({ start_date, data }) => {
     mock
       .onGet(/projects\/test%2Fproject\/dora\/metrics/, {
         params: {
-          metric: 'change_failure_rate',
+          metric: 'lead_time_for_changes',
           interval: 'daily',
           per_page: 100,
           end_date: '2015-07-04T00:00:00+0000',
@@ -65,8 +54,6 @@ describe('change_failure_rate_charts.vue', () => {
       .replyOnce(HTTP_STATUS_OK, data);
   };
 
-  const findValueStreamMetrics = () => wrapper.findComponent(ValueStreamMetrics);
-
   afterEach(() => {
     mock.restore();
   });
@@ -75,19 +62,19 @@ describe('change_failure_rate_charts.vue', () => {
     beforeEach(async () => {
       mock = new MockAdapter(axios);
 
-      setUpMockChangeFailureRate({
+      setUpMockLeadTime({
         start_date: '2015-06-27T00:00:00+0000',
         data: lastWeekData,
       });
-      setUpMockChangeFailureRate({
+      setUpMockLeadTime({
         start_date: '2015-06-04T00:00:00+0000',
         data: lastMonthData,
       });
-      setUpMockChangeFailureRate({
+      setUpMockLeadTime({
         start_date: '2015-04-05T00:00:00+0000',
         data: last90DaysData,
       });
-      setUpMockChangeFailureRate({
+      setUpMockLeadTime({
         start_date: '2015-01-05T00:00:00+0000',
         data: last180DaysData,
       });
@@ -108,68 +95,26 @@ describe('change_failure_rate_charts.vue', () => {
     it('renders a header', () => {
       expect(wrapper.findComponent(DoraChartHeader).exists()).toBe(true);
     });
-
-    describe('value stream metrics', () => {
-      beforeEach(() => {
-        createComponent({
-          ...defaultMountOptions,
-        });
-      });
-
-      it('renders the value stream metrics component', () => {
-        const metricsComponent = findValueStreamMetrics();
-        expect(metricsComponent.exists()).toBe(true);
-      });
-
-      it('sets the `isLicensed` prop', () => {
-        expect(findValueStreamMetrics().props('isLicensed')).toBe(true);
-      });
-
-      it('correctly computes the requestParams', () => {
-        const metricsComponent = findValueStreamMetrics();
-        expect(metricsComponent.props('requestParams')).toMatchObject({
-          startDate: '2015-06-04T00:00:00+0000',
-          endDate: '2015-07-04T00:00:00+0000',
-        });
-      });
-    });
   });
 
   describe('when there are network errors', () => {
-    let captureExceptionSpy;
     beforeEach(async () => {
       mock = new MockAdapter(axios);
 
       createComponent();
 
-      captureExceptionSpy = jest.spyOn(Sentry, 'captureException');
-
       await axios.waitForAll();
-    });
-
-    afterEach(() => {
-      captureExceptionSpy.mockRestore();
     });
 
     it('shows an alert message', () => {
       expect(createAlert).toHaveBeenCalledTimes(1);
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'Something went wrong while getting change failure rate data.',
-      });
-    });
-
-    it('reports an error to Sentry', () => {
-      expect(captureExceptionSpy).toHaveBeenCalledTimes(1);
-
-      const expectedErrorMessage = [
-        'Something went wrong while getting change failure rate data:',
-        'Error: Request failed with status code 404',
-        'Error: Request failed with status code 404',
-        'Error: Request failed with status code 404',
-        'Error: Request failed with status code 404',
-      ].join('\n');
-
-      expect(captureExceptionSpy).toHaveBeenCalledWith(new Error(expectedErrorMessage));
+      expect(createAlert.mock.calls[0]).toEqual([
+        {
+          message: 'Something went wrong while getting lead time data.',
+          captureError: true,
+          error: expect.any(Error),
+        },
+      ]);
     });
   });
 
@@ -184,8 +129,10 @@ describe('change_failure_rate_charts.vue', () => {
     describe('when projectPath is provided', () => {
       beforeEach(async () => {
         createComponent({
-          provide: {
-            projectPath: 'test/project',
+          mountOptions: {
+            provide: {
+              projectPath: 'test/project',
+            },
           },
         });
 
@@ -193,7 +140,7 @@ describe('change_failure_rate_charts.vue', () => {
       });
 
       it('makes a call to the project API endpoint', () => {
-        expect(mock.history.get).toHaveLength(4);
+        expect(mock.history.get.length).toBe(4);
         expect(mock.history.get[0].url).toMatch('/projects/test%2Fproject/dora/metrics');
       });
 
@@ -205,8 +152,10 @@ describe('change_failure_rate_charts.vue', () => {
     describe('when groupPath is provided', () => {
       beforeEach(async () => {
         createComponent({
-          provide: {
-            groupPath: 'test/group',
+          mountOptions: {
+            provide: {
+              groupPath: 'test/group',
+            },
           },
         });
 
@@ -214,7 +163,7 @@ describe('change_failure_rate_charts.vue', () => {
       });
 
       it('makes a call to the group API endpoint', () => {
-        expect(mock.history.get).toHaveLength(4);
+        expect(mock.history.get.length).toBe(4);
         expect(mock.history.get[0].url).toMatch('/groups/test%2Fgroup/dora/metrics');
       });
 
@@ -226,9 +175,11 @@ describe('change_failure_rate_charts.vue', () => {
     describe('when both projectPath and groupPath are provided', () => {
       beforeEach(async () => {
         createComponent({
-          provide: {
-            projectPath: 'test/project',
-            groupPath: 'test/group',
+          mountOptions: {
+            provide: {
+              projectPath: 'test/project',
+              groupPath: 'test/group',
+            },
           },
         });
 
@@ -243,7 +194,9 @@ describe('change_failure_rate_charts.vue', () => {
     describe('when neither projectPath nor groupPath are provided', () => {
       beforeEach(async () => {
         createComponent({
-          provide: {},
+          mountOptions: {
+            provide: {},
+          },
         });
 
         await axios.waitForAll();

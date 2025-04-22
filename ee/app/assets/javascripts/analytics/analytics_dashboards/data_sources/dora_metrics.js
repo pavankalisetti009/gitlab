@@ -25,8 +25,8 @@ import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filte
 import {
   startOfTomorrow,
   lineChartAdditionalSeriesOptions,
-} from 'ee/dora/components/static_data/shared';
-import { seriesToMedianSeries, seriesToAverageSeries } from 'ee/dora/components/util';
+} from 'ee/analytics/dora/components/static_data/shared';
+import { seriesToMedianSeries, seriesToAverageSeries } from 'ee/analytics/dora/components/util';
 import { DEFAULT_NULL_SERIES_OPTIONS, NULL_SERIES_ID } from 'ee/analytics/shared/constants';
 import { defaultClient } from '../graphql/client';
 

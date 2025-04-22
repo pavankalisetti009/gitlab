@@ -53,9 +53,9 @@ describe('deployment_frequency_charts.vue', () => {
   // that any calls to `new Date()` during module initialization use the fake date
   beforeAll(async () => {
     DeploymentFrequencyCharts = (
-      await import('ee_component/dora/components/deployment_frequency_charts.vue')
+      await import('ee_component/analytics/dora/components/deployment_frequency_charts.vue')
     ).default;
-    DoraChartHeader = (await import('ee/dora/components/dora_chart_header.vue')).default;
+    DoraChartHeader = (await import('ee/analytics/dora/components/dora_chart_header.vue')).default;
   });
 
   let wrapper;

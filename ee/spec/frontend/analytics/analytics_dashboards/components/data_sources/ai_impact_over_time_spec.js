@@ -6,7 +6,11 @@ import {
 import { AI_METRICS } from '~/analytics/shared/constants';
 import fetch from 'ee/analytics/analytics_dashboards/data_sources/ai_impact_over_time';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
-import { LAST_WEEK, LAST_30_DAYS, LAST_180_DAYS } from 'ee/dora/components/static_data/shared';
+import {
+  LAST_WEEK,
+  LAST_30_DAYS,
+  LAST_180_DAYS,
+} from 'ee/analytics/dora/components/static_data/shared';
 
 describe('AI Impact Over Time Data Source', () => {
   let res;

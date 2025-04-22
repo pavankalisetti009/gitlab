@@ -1,11 +1,6 @@
 <script>
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
-  CHANGE_FAILURE_RATE,
-  getProjectDoraMetrics,
-  getGroupDoraMetrics,
-} from 'ee/dora/api/dora_api';
-import {
   DORA_METRICS_QUERY_TYPE,
   CHANGE_FAILURE_RATE_SECONDARY_SERIES_NAME,
 } from '~/analytics/shared/constants';
@@ -13,8 +8,9 @@ import ValueStreamMetrics from '~/analytics/shared/components/value_stream_metri
 import { createAlert } from '~/alert';
 import { s__, sprintf } from '~/locale';
 import CiCdAnalyticsCharts from '~/analytics/ci_cd/components/ci_cd_analytics_charts.vue';
-import { buildNullSeries } from '../../analytics/shared/utils';
-import ChartTooltipText from '../../analytics/shared/components/chart_tooltip_text.vue';
+import { CHANGE_FAILURE_RATE, getProjectDoraMetrics, getGroupDoraMetrics } from '../api/dora_api';
+import { buildNullSeries } from '../../shared/utils';
+import ChartTooltipText from '../../shared/components/chart_tooltip_text.vue';
 import DoraChartHeader from './dora_chart_header.vue';
 import {
   allChartDefinitions,

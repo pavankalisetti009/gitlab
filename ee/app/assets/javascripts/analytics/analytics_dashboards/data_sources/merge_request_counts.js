@@ -5,7 +5,7 @@ import {
 } from 'ee/analytics/merge_request_analytics/utils';
 import { BUCKETING_INTERVAL_MONTHLY } from '~/analytics/shared/graphql/constants';
 import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
-import { startOfTomorrow } from 'ee/dora/components/static_data/shared';
+import { startOfTomorrow } from 'ee/analytics/dora/components/static_data/shared';
 import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filters/utils';
 import { DATE_RANGE_OPTION_LAST_365_DAYS } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { defaultClient } from '../graphql/client';
