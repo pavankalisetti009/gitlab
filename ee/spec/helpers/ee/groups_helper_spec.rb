@@ -364,8 +364,19 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         experiment_features_enabled: 'true',
         duo_configuration_path: '/groups/my-group/-/settings/gitlab_duo/configuration',
         code_suggestions: 'data',
-        are_experiment_settings_allowed: 'true'
+        are_experiment_settings_allowed: 'true',
+        is_duo_base_access_allowed: 'true'
       })
+    end
+
+    context 'with feature flag allow_duo_base_access set to false' do
+      before do
+        stub_feature_flags(allow_duo_base_access: false)
+      end
+
+      it 'sets is_duo_base_access_allowed to false' do
+        expect(helper.duo_home_app_data(group)).to include(is_duo_base_access_allowed: 'false')
+      end
     end
   end
 

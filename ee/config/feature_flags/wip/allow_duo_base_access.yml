@@ -1,0 +1,9 @@
+---
+name: allow_duo_base_access
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/536311
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/188414
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/536311
+milestone: '18.0'
+group: group::provision
+type: wip
+default_enabled: false

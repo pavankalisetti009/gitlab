@@ -73,7 +73,8 @@ module EE
         duo_availability: group.namespace_settings.duo_availability.to_s,
         experiment_features_enabled: group.namespace_settings.experiment_features_enabled.to_s,
         are_experiment_settings_allowed: group.experiment_settings_allowed?.to_s,
-        duo_configuration_path: group_settings_gitlab_duo_configuration_index_path(group)
+        duo_configuration_path: group_settings_gitlab_duo_configuration_index_path(group),
+        is_duo_base_access_allowed: ::Feature.enabled?(:allow_duo_base_access, group).to_s
       }.merge(code_suggestions_usage_app_data(group))
     end
 

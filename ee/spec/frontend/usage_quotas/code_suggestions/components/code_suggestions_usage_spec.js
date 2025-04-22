@@ -104,6 +104,7 @@ describe('GitLab Duo Usage', () => {
     wrapper = shallowMountExtended(CodeSuggestionsUsage, {
       provide: {
         isSaaS: true,
+        isDuoBaseAccessAllowed: true,
         duoPagePath: '/gitlab_duo',
         ...provideProps,
       },
@@ -267,6 +268,54 @@ describe('GitLab Duo Usage', () => {
           expect(findSaasAddOnEligibleUserList().exists()).toBe(false);
           expect(findErrorAlert().exists()).toBe(false);
         });
+
+        describe('with feature flag isDuoBaseAccessAllowed set to false', () => {
+          beforeEach(() => {
+            return createComponent({
+              addOnPurchasesHandler: noAssignedDuoAddOnDataHandler,
+              provideProps: {
+                isSaaS: true,
+                isStandalonePage: true,
+                isDuoBaseAccessAllowed: false,
+              },
+            });
+          });
+
+          it('renders the intro', () => {
+            expect(findCodeSuggestionsIntro().exists()).toBe(true);
+          });
+
+          it('hides everything eles', () => {
+            expect(findCodeSuggestionsTitle().exists()).toBe(false);
+            expect(findCodeSuggestionsSubtitle().exists()).toBe(false);
+            expect(findCodeSuggestionsInfo().exists()).toBe(false);
+            expect(findCodeSuggestionsStatistics().exists()).toBe(false);
+          });
+        });
+      });
+
+      describe('with non Duo Base add-on enabled', () => {
+        describe('with feature flag isDuoBaseAccessAllowed set to false', () => {
+          beforeEach(() => {
+            return createComponent({
+              addOnPurchasesHandler: noAssignedDuoProAddOnDataHandler,
+              provideProps: {
+                isSaaS: true,
+                isStandalonePage: true,
+                isDuoBaseAccessAllowed: false,
+              },
+            });
+          });
+
+          it('hides intro', () => {
+            expect(findCodeSuggestionsIntro().exists()).toBe(false);
+          });
+
+          it('shows add-on information', () => {
+            expect(findCodeSuggestionsTitle().exists()).toBe(true);
+            expect(findCodeSuggestionsSubtitle().exists()).toBe(true);
+          });
+        });
       });
 
       describe('with Duo Pro add-on enabled', () => {
@@ -403,6 +452,52 @@ describe('GitLab Duo Usage', () => {
         expect(findCodeSuggestionsStatistics().exists()).toBe(false);
         expect(findErrorAlert().exists()).toBe(false);
         expect(findSaasAddOnEligibleUserList().exists()).toBe(false);
+      });
+
+      describe('with feature flag isDuoBaseAccessAllowed set to false', () => {
+        beforeEach(() => {
+          return createComponent({
+            addOnPurchasesHandler: noAssignedDuoAddOnDataHandler,
+            provideProps: {
+              isSaaS: false,
+              isDuoBaseAccessAllowed: false,
+            },
+          });
+        });
+
+        it('renders the intro', () => {
+          expect(findCodeSuggestionsIntro().exists()).toBe(true);
+        });
+
+        it('hides everything eles', () => {
+          expect(findCodeSuggestionsTitle().exists()).toBe(false);
+          expect(findCodeSuggestionsSubtitle().exists()).toBe(false);
+          expect(findCodeSuggestionsInfo().exists()).toBe(false);
+          expect(findCodeSuggestionsStatistics().exists()).toBe(false);
+        });
+      });
+
+      describe('with non Duo Base add-on enabled', () => {
+        describe('with feature flag isDuoBaseAccessAllowed set to false', () => {
+          beforeEach(() => {
+            return createComponent({
+              addOnPurchasesHandler: noAssignedDuoProAddOnDataHandler,
+              provideProps: {
+                isSaaS: false,
+                isDuoBaseAccessAllowed: false,
+              },
+            });
+          });
+
+          it('hides intro', () => {
+            expect(findCodeSuggestionsIntro().exists()).toBe(false);
+          });
+
+          it('shows add-on information', () => {
+            expect(findCodeSuggestionsTitle().exists()).toBe(true);
+            expect(findCodeSuggestionsSubtitle().exists()).toBe(true);
+          });
+        });
       });
 
       describe('with Duo Pro add-on enabled', () => {

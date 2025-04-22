@@ -61,6 +61,7 @@ export default {
     isStandalonePage: { default: false },
     groupId: { default: null },
     duoPagePath: { default: null },
+    isDuoBaseAccessAllowed: { default: false },
   },
   addOnErrorDictionary: ADD_ON_ERROR_DICTIONARY,
   i18n: {
@@ -127,6 +128,9 @@ export default {
     isDuoTier() {
       return this.duoTier === DUO;
     },
+    ignoreAddOnPurchase() {
+      return this.isDuoTier && !this.isDuoBaseAccessAllowed;
+    },
     isDuoTierAmazonQ() {
       // Currently, AmazonQ is available for self-managed customers only, so let's add an extra isSaaS check
       return !this.isSaaS && this.duoTier === DUO_AMAZON_Q;
@@ -148,10 +152,14 @@ export default {
       return this.isSaaS && !this.isStandalonePage;
     },
     showTitleAndSubtitle() {
-      if (this.shouldForceHideTitle) {
+      if (this.ignoreAddOnPurchase || this.shouldForceHideTitle) {
         return false;
       }
+
       return !this.isLoading && (this.hasAddOnPurchase || this.addOnPurchaseFetchError);
+    },
+    shouldShowIntro() {
+      return !this.hasAddOnPurchase || this.ignoreAddOnPurchase;
     },
     subtitleText() {
       if (this.subtitle) {
@@ -358,7 +366,7 @@ export default {
         class="gl-mt-5"
       />
       <code-suggestions-intro
-        v-else-if="!hasAddOnPurchase"
+        v-else-if="shouldShowIntro"
         :subscription="currentSubscription"
         v-on="activationListeners"
       />
