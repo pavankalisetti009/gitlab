@@ -131,7 +131,7 @@ If you experience issues with GitLab Duo Chat related to JCEF (Java Chromium Emb
 
 Before contacting Support, make sure the latest GitLab Workflow extension is installed. All releases
 are available in the [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/22325-gitlab-duo/versions),
-on the `Versions` tab.
+on the **Versions** tab.
 
 Gather this information from affected users, and provide it in your bug report:
 
