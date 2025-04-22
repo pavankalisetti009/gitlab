@@ -12,6 +12,7 @@ module EE
         has_issue_weights_feature: resource_parent.licensed_feature_available?(:issue_weights).to_s,
         has_okrs_feature: resource_parent.licensed_feature_available?(:okrs).to_s,
         has_epics_feature: resource_parent.licensed_feature_available?(:epics).to_s,
+        has_group_bulk_edit_feature: resource_parent.licensed_feature_available?(:group_bulk_edit).to_s,
         has_iterations_feature: resource_parent.licensed_feature_available?(:iterations).to_s,
         has_issuable_health_status_feature: resource_parent.licensed_feature_available?(:issuable_health_status).to_s,
         has_subepics_feature: resource_parent.licensed_feature_available?(:subepics).to_s,
