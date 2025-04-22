@@ -20852,7 +20852,7 @@ CREATE TABLE project_compliance_standards_adherence (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     project_id bigint NOT NULL,
-    namespace_id bigint NOT NULL,
+    namespace_id bigint,
     status smallint NOT NULL,
     check_name smallint NOT NULL,
     standard smallint NOT NULL
