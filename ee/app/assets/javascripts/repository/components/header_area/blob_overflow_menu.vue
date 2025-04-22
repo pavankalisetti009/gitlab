@@ -94,7 +94,7 @@ export default {
   },
   methods: {
     onCopy() {
-      this.$emit('onCopy');
+      this.$emit('copy');
     },
     onShowForkSuggestion() {
       this.$emit('showForkSuggestion');
