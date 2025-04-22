@@ -187,6 +187,96 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyDiff::Diff, featur
     end
   end
 
+  describe '#needs_complete_rules_refresh?' do
+    subject(:needs_complete_rules_refresh?) { diff.needs_complete_rules_refresh? }
+
+    context 'when actions have not changed' do
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when actions have changed' do
+      before do
+        diff.add_policy_field(:actions, from_actions, to_actions)
+      end
+
+      context 'when approval actions count remains the same' do
+        let(:from_actions) do
+          [
+            { type: 'require_approval', user_approvers: ['user1'] },
+            { type: 'send_bot_message', enabled: false }
+          ]
+        end
+
+        let(:to_actions) do
+          [
+            { type: 'require_approval', user_approvers: ['user2'] },
+            { type: 'send_bot_message', enabled: false }
+          ]
+        end
+
+        it { is_expected.to be_falsey }
+      end
+
+      context 'when approval action is added' do
+        let(:from_actions) do
+          [
+            { type: 'send_bot_message', enabled: false }
+          ]
+        end
+
+        let(:to_actions) do
+          [
+            { type: 'require_approval', user_approvers: ['user1'] },
+            { type: 'send_bot_message', enabled: false }
+          ]
+        end
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when approval action is removed' do
+        let(:from_actions) do
+          [
+            { type: 'require_approval', user_approvers: ['user1'] },
+            { type: 'send_bot_message', enabled: false }
+          ]
+        end
+
+        let(:to_actions) do
+          [
+            { type: 'send_bot_message', enabled: false }
+          ]
+        end
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when actions are nil' do
+        let(:from_actions) { nil }
+        let(:to_actions) { [{ type: 'require_approval', user_approvers: ['user1'] }] }
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when multiple approval actions are changed' do
+        let(:from_actions) do
+          [
+            { type: 'require_approval', user_approvers: ['user1'] },
+            { type: 'require_approval', user_approvers: ['user2'] }
+          ]
+        end
+
+        let(:to_actions) do
+          [
+            { type: 'require_approval', user_approvers: ['user3'] }
+          ]
+        end
+
+        it { is_expected.to be_truthy }
+      end
+    end
+  end
+
   describe '.from_json' do
     let(:diff) do
       {

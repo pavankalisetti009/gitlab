@@ -298,6 +298,11 @@ module Security
       content&.dig('content', 'include', 0)
     end
 
+    def policy_content
+      content.deep_symbolize_keys
+    end
+    strong_memoize_attr :policy_content
+
     def warn_mode?
       actions = content&.dig('actions')
       return false unless actions

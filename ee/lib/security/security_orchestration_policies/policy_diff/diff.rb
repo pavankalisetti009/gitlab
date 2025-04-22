@@ -47,6 +47,15 @@ module Security
           rules_diff.updated.any? || actions_changed? || fallback_behavior_changed?
         end
 
+        def needs_complete_rules_refresh?
+          return false unless actions_changed?
+
+          approval_count_from = approval_actions_count(diff[:actions].from)
+          approval_count_to = approval_actions_count(diff[:actions].to)
+
+          approval_count_from != approval_count_to
+        end
+
         def status_changed?
           diff.key?(:enabled)
         end
@@ -70,6 +79,12 @@ module Security
         def content_project_changed?
           content_changed? &&
             diff[:content].from&.dig(:include, 0, :project) != diff[:content].to&.dig(:include, 0, :project)
+        end
+
+        private
+
+        def approval_actions_count(actions)
+          Array.wrap(actions).count { |action| action[:type] == 'require_approval' }
         end
       end
     end

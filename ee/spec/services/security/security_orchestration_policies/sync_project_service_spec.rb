@@ -160,6 +160,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
               create(:scan_result_policy_read,
                 project: project,
                 orchestration_policy_idx: security_policy.policy_index,
+                approval_policy_rule: approval_policy_rule,
                 rule_idx: approval_policy_rule.rule_index,
                 security_orchestration_policy_configuration: security_policy.security_orchestration_policy_configuration
               )
