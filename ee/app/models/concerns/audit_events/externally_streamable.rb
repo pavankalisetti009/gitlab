@@ -11,6 +11,7 @@ module AuditEvents
     included do
       include Gitlab::EncryptedAttribute
 
+      before_validation :ensure_config_is_hash
       before_validation :assign_default_name
       before_validation :assign_secret_token_for_http
       before_validation :assign_default_log_id, if: :gcp?
@@ -23,6 +24,8 @@ module AuditEvents
 
       validates :name, length: { maximum: 72 }
       validates :category, presence: true
+
+      validate :config_is_properly_formatted
 
       validates :config, presence: true,
         json_schema: { filename: 'audit_events_http_external_streaming_destination_config' }, if: :http?
@@ -48,6 +51,18 @@ module AuditEvents
         where.not(id: record_id).where(category: category).limit(MAXIMUM_DESTINATIONS_PER_ENTITY).pluck(:config)
       }
 
+      def config
+        stored_config = super
+
+        return stored_config unless stored_config.is_a?(String)
+
+        begin
+          ::Gitlab::Json.parse(stored_config)
+        rescue JSON::ParserError
+          stored_config
+        end
+      end
+
       def headers_hash
         return {} unless http?
 
@@ -58,6 +73,24 @@ module AuditEvents
       end
 
       private
+
+      def config_is_properly_formatted
+        return unless config_changed? || new_record?
+
+        return if config.is_a?(Hash)
+
+        errors.add(:config, "must be a hash")
+      end
+
+      def ensure_config_is_hash
+        return unless config.is_a?(String)
+
+        begin
+          self.config = ::Gitlab::Json.parse(config)
+        rescue JSON::ParserError
+          # Let validation handle this
+        end
+      end
 
       def assign_default_name
         self.name ||= "Destination_#{SecureRandom.uuid}"

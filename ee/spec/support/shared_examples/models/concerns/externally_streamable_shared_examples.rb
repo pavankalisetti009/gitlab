@@ -355,4 +355,99 @@ RSpec.shared_examples 'includes ExternallyStreamable concern' do
       end
     end
   end
+
+  describe 'config format validation' do
+    context 'when config is a JSON string' do
+      it 'automatically converts valid JSON strings to hash before validation' do
+        json_string = '{"url":"https://example.com","headers":{"X-Header":{"value":"test","active":true}}}'
+        destination = build(model_factory_name, category: 'http', config: json_string)
+
+        expect(destination).to be_valid
+        expect(destination.config).to be_a(Hash)
+        expect(destination.config['url']).to eq('https://example.com')
+        expect(destination.config['headers']['X-Header']['value']).to eq('test')
+      end
+
+      it 'handles JSON strings with whitespace before or after braces' do
+        json_string = '  {"url":"https://example.com"}  '
+        destination = build(model_factory_name, category: 'http', config: json_string)
+
+        expect(destination).to be_valid
+        expect(destination.config).to be_a(Hash)
+        expect(destination.config['url']).to eq('https://example.com')
+      end
+
+      it 'rejects invalid JSON strings' do
+        invalid_json = '{this is not valid json}'
+        destination = build(model_factory_name, category: 'http', config: invalid_json)
+
+        expect(destination).not_to be_valid
+        expect(destination.errors[:config]).to include('must be a hash')
+      end
+
+      it 'rejects regular strings' do
+        destination = build(model_factory_name, category: 'http', config: 'just a regular string')
+
+        expect(destination).not_to be_valid
+        expect(destination.errors[:config]).to include('must be a hash')
+      end
+
+      it 'handles double-encoded JSON strings from migrations' do
+        hash_config = { 'url' => 'https://example.com' }
+        json_string = hash_config.to_json
+
+        destination = build(model_factory_name, category: 'http', config: json_string)
+
+        expect(destination).to be_valid
+        expect(destination.config).to be_a(Hash)
+        expect(destination.config['url']).to eq('https://example.com')
+      end
+    end
+
+    context 'when accessing config' do
+      it 'dynamically converts string configs when accessed' do
+        destination = build(model_factory_name, category: 'http')
+        destination.send(:write_attribute, :config, '{"url":"https://example.com"}')
+
+        expect(destination.config).to be_a(Hash)
+        expect(destination.config['url']).to eq('https://example.com')
+      end
+
+      it 'returns original config when string cannot be parsed' do
+        destination = build(model_factory_name, category: 'http')
+        destination.send(:write_attribute, :config, '{invalid json}')
+
+        expect(destination.config).to eq('{invalid json}')
+      end
+    end
+
+    context 'when updating non-config attributes' do
+      it 'allows updates to other attributes when config is invalid but unchanged' do
+        destination = create(model_factory_name, category: 'http', config: { url: 'https://example.com' })
+
+        described_class.where(id: destination.id).update_all(config: '{"url":"https://example.com"}')
+
+        destination.reload
+
+        allow(destination).to receive(:config_changed?).and_return(false)
+
+        destination.name = "New name"
+        expect(destination.valid?).to be_truthy
+        expect(destination.save).to be_truthy
+      end
+    end
+
+    context 'when saving to database' do
+      it 'stores config in a format that is loaded as a hash' do
+        json_string = '{"url":"https://example.com"}'
+        destination = create(model_factory_name, category: 'http', config: json_string)
+
+        reloaded = described_class.find(destination.id)
+
+        expect(reloaded.config).to be_a(Hash)
+        expect(reloaded.config).to include('url' => 'https://example.com')
+        expect(reloaded.config['url']).to eq('https://example.com')
+      end
+    end
+  end
 end
