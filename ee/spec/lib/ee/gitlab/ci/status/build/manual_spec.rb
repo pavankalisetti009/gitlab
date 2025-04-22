@@ -44,7 +44,7 @@ RSpec.describe Gitlab::Ci::Status::Build::Manual do
 
         it 'instructs the user about possible actions' do
           expect(illustration[:content]).to eq(
-            _('This job does not start automatically and must be started manually.')
+            _('This job does not start automatically and must be started manually. You can add CI/CD variables below for last-minute configuration changes before starting the job.')
           )
         end
       end

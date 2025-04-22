@@ -13017,9 +13017,6 @@ msgstr ""
 msgid "CiVariables|What are pipeline variables?"
 msgstr ""
 
-msgid "CiVariables|You can add CI/CD variables below for last-minute configuration changes before starting the job."
-msgstr ""
-
 msgid "CiVariables|You can use CI/CD variables with the same name in different places, but the variables might overwrite each other. %{linkStart}What is the order of precedence for variables?%{linkEnd}"
 msgstr ""
 
@@ -61794,6 +61791,9 @@ msgid "This job does not run automatically and must be started manually, but you
 msgstr ""
 
 msgid "This job does not start automatically and must be started manually."
+msgstr ""
+
+msgid "This job does not start automatically and must be started manually. You can add CI/CD variables below for last-minute configuration changes before starting the job."
 msgstr ""
 
 msgid "This job has been canceled"
