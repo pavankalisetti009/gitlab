@@ -53,6 +53,24 @@ RSpec.describe Issuables::CustomFields::CreateService, feature_category: :team_p
           have_attributes(id: a_kind_of(Integer), value: 'option2', position: 1)
         ])
       end
+
+      context 'when there are duplicate options' do
+        let(:params) do
+          {
+            name: 'my custom field',
+            field_type: 'single_select',
+            select_options: [
+              { value: 'option1' },
+              { value: 'option1' }
+            ]
+          }
+        end
+
+        it 'returns an error' do
+          expect(response).to be_error
+          expect(response.message).to contain_exactly('Select options value has already been taken')
+        end
+      end
     end
 
     context 'when setting work item types' do
