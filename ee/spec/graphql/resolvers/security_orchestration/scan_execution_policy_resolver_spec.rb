@@ -191,15 +191,6 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
           end
         end
 
-        context 'when the policy contains deprecated properties' do
-          let(:actions) { [{ scan: 'custom', ci_configuration: 'config' }] }
-          let(:deprecated_properties) { %w[custom_scan] }
-
-          it 'returns scan execution policies with deprecated_properties' do
-            expect(resolve_scan_policies).to eq(expected_resolved)
-          end
-        end
-
         context 'when relationship argument is provided as INHERITED' do
           let(:args) { { relationship: :inherited } }
 

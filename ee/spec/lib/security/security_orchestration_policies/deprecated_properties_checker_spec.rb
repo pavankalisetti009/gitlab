@@ -103,15 +103,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::DeprecatedPropertiesChec
       let(:policy) { build(:scan_execution_policy) }
 
       it { is_expected.to be_empty }
-
-      context 'when the policy contains custom scan action' do
-        let(:policy) { build(:scan_execution_policy, actions: actions) }
-        let(:actions) do
-          [{ scan: 'custom', ci_configuration: 'config' }]
-        end
-
-        it { is_expected.to contain_exactly('custom_scan') }
-      end
     end
   end
 end
