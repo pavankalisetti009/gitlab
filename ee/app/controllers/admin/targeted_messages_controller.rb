@@ -16,15 +16,17 @@ module Admin
     end
 
     def create
-      @targeted_message = Notifications::TargetedMessage.new(targeted_message_params)
-      success = @targeted_message.save
+      result = Notifications::TargetedMessages::CreateService.new(targeted_message_params).execute
 
-      if success
+      if result.success?
         redirect_to admin_targeted_messages_path,
           notice: s_('TargetedMessages|Targeted message was successfully created.')
+      elsif result.reason == Notifications::TargetedMessages::CreateService::FOUND_INVALID_NAMESPACES
+        @targeted_message = result.payload
+        flash[:alert] = result.message
+        render :edit
       else
-        flash[:alert] = format(s_("TargetedMessages|Failed to create targeted message: " \
-          "%{error_message}"), error_message: @targeted_message.errors.full_messages.to_sentence)
+        @targeted_message = result.payload
         render :new
       end
     end
@@ -32,14 +34,17 @@ module Admin
     def edit; end
 
     def update
-      success = @targeted_message.update(targeted_message_params)
+      result = Notifications::TargetedMessages::UpdateService.new(@targeted_message, targeted_message_params).execute
 
-      if success
+      if result.success?
         redirect_to admin_targeted_messages_path,
           notice: s_('TargetedMessages|Targeted message was successfully updated.')
+      elsif result.reason == Notifications::TargetedMessages::UpdateService::FOUND_INVALID_NAMESPACES
+        @targeted_message = result.payload
+        flash[:alert] = result.message
+        render :edit
       else
-        flash[:alert] = format(s_("TargetedMessages|Failed to update targeted message: " \
-          "%{error_message}"), error_message: @targeted_message.errors.full_messages.to_sentence)
+        @targeted_message = result.payload
         render :edit
       end
     end
@@ -56,38 +61,7 @@ module Admin
     end
 
     def targeted_message_params
-      base_params = params.require(:targeted_message).permit(:target_type, :namespace_ids_csv)
-
-      return base_params unless base_params[:namespace_ids_csv].present?
-
-      base_params.merge(namespace_ids: valid_namespace_ids_from_csv(base_params.delete(:namespace_ids_csv)))
-    end
-
-    def valid_namespace_ids_from_csv(csv)
-      result = Notifications::TargetedMessages::ProcessCsvService.new(csv).execute
-
-      if result.success?
-        invalid_namespace_ids, valid_namespace_ids = result.payload.values_at(:invalid_namespace_ids,
-          :valid_namespace_ids)
-
-        if invalid_namespace_ids.any?
-          invalid_ids_msg = if invalid_namespace_ids.size <= 5
-                              invalid_namespace_ids.join(", ")
-                            else
-                              "#{invalid_namespace_ids.first(5).join(', ')} and #{invalid_namespace_ids.size - 5} more"
-                            end
-
-          flash[:warning] = format(s_("TargetedMessages|The following namespace ids were invalid and have been " \
-            "ignored: %{invalid_ids_message}"), invalid_ids_message: invalid_ids_msg)
-        end
-
-        valid_namespace_ids
-      else
-        flash[:warning] =
-          format(s_("TargetedMessages|Failed to assign namespaces due to error processing CSV: %{error_message}"),
-            error_message: result.message)
-        []
-      end
+      params.require(:targeted_message).permit(:target_type, :namespace_ids_csv)
     end
   end
 end
