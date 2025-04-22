@@ -35,6 +35,7 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
       it 'returns true for the features' do
         expect(work_items_data).to include(
           {
+            has_group_bulk_edit_feature: "true",
             has_issuable_health_status_feature: "true",
             has_issue_weights_feature: "true",
             has_iterations_feature: "true",
@@ -62,6 +63,7 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
       it 'returns false for the features' do
         expect(work_items_data).to include(
           {
+            has_group_bulk_edit_feature: "false",
             has_issuable_health_status_feature: "false",
             has_issue_weights_feature: "false",
             has_iterations_feature: "false",

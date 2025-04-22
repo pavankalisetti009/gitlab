@@ -1,20 +1,14 @@
 <script>
 import emptyStateSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-epic-md.svg';
-import { GlEmptyState, GlButton } from '@gitlab/ui';
-import { createAlert } from '~/alert';
-import { s__ } from '~/locale';
+import { GlEmptyState } from '@gitlab/ui';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import {
-  BASE_ALLOWED_CREATE_TYPES,
   WORK_ITEM_TYPE_ENUM_EPIC,
   WORK_ITEM_TYPE_ENUM_ISSUE,
   WORK_ITEM_TYPE_NAME_EPIC,
 } from '~/work_items/constants';
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
-import WorkItemBulkEditSidebar from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_sidebar.vue';
-import workItemBulkUpdateMutation from '~/work_items/graphql/work_item_bulk_update.mutation.graphql';
-import workItemParent from '../graphql/list/work_item_parent.query.graphql';
 
 export default {
   emptyStateSvg,
@@ -23,19 +17,9 @@ export default {
     CreateWorkItemModal,
     EmptyStateWithAnyIssues,
     GlEmptyState,
-    GlButton,
-    WorkItemBulkEditSidebar,
     WorkItemsListApp,
   },
-  inject: [
-    'hasEpicsFeature',
-    'showNewIssueLink',
-    'canBulkEditEpics',
-    'groupIssuesPath',
-    'workItemType',
-    'fullPath',
-    'isGroup',
-  ],
+  inject: ['hasEpicsFeature', 'isGroup', 'showNewWorkItem', 'workItemType'],
   props: {
     withTabs: {
       type: Boolean,
@@ -51,39 +35,9 @@ export default {
   data() {
     return {
       workItemUpdateCount: 0,
-      bulkEditInProgress: false,
-      showBulkEditSidebar: false,
     };
   },
-  apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
-    parentId: {
-      query: workItemParent,
-      variables() {
-        return {
-          fullPath: this.fullPath,
-        };
-      },
-      update(data) {
-        return data.namespace.id;
-      },
-    },
-  },
   computed: {
-    allowedWorkItemTypes() {
-      if (this.isGroup) {
-        return [];
-      }
-
-      if (!this.isEpicsList) {
-        return BASE_ALLOWED_CREATE_TYPES;
-      }
-
-      return [];
-    },
-    allowEpicBulkEditing() {
-      return this.hasEpicsFeature && this.canBulkEditEpics && this.isEpicsList;
-    },
     preselectedWorkItemType() {
       return this.isEpicsList ? WORK_ITEM_TYPE_ENUM_EPIC : WORK_ITEM_TYPE_ENUM_ISSUE;
     },
@@ -95,74 +49,23 @@ export default {
     incrementUpdateCount() {
       this.workItemUpdateCount += 1;
     },
-    async handleWorkItemBulkEdit({ ids, addLabelIds, removeLabelIds }) {
-      this.bulkEditInProgress = true;
-
-      try {
-        await this.$apollo.mutate({
-          mutation: workItemBulkUpdateMutation,
-          variables: {
-            input: {
-              parentId: this.parentId,
-              ids,
-              labelsWidget: {
-                addLabelIds,
-                removeLabelIds,
-              },
-            },
-          },
-        });
-
-        this.incrementUpdateCount();
-      } catch (error) {
-        createAlert({
-          message: s__('Epics|Something went wrong while updating epics.'),
-          captureError: true,
-          error,
-        });
-      } finally {
-        this.bulkEditInProgress = false;
-        this.showBulkEditSidebar = false;
-      }
-    },
   },
 };
 </script>
 
 <template>
   <work-items-list-app
-    :show-bulk-edit-sidebar="showBulkEditSidebar"
     :ee-work-item-update-count="workItemUpdateCount"
     :with-tabs="withTabs"
     :new-comment-template-paths="newCommentTemplatePaths"
   >
-    <template v-if="hasEpicsFeature && showNewIssueLink" #nav-actions>
-      <div class="gl-flex gl-gap-3">
-        <gl-button
-          v-if="allowEpicBulkEditing"
-          class="!gl-w-auto gl-grow"
-          data-testid="bulk-edit-start-button"
-          :disabled="showBulkEditSidebar"
-          @click="showBulkEditSidebar = true"
-          >{{ __('Bulk edit') }}</gl-button
-        >
-        <create-work-item-modal
-          :is-group="isGroup"
-          class="gl-grow"
-          :preselected-work-item-type="preselectedWorkItemType"
-          :always-show-work-item-type-select="showNewIssueLink && !isEpicsList"
-          :allowed-work-item-types="allowedWorkItemTypes"
-          @workItemCreated="incrementUpdateCount"
-        />
-      </div>
-    </template>
-    <template v-if="hasEpicsFeature" #list-empty-state="{ hasSearch, isOpenTab }">
+    <template v-if="isEpicsList && hasEpicsFeature" #list-empty-state="{ hasSearch, isOpenTab }">
       <empty-state-with-any-issues
         :has-search="hasSearch"
         :is-epic="isEpicsList"
         :is-open-tab="isOpenTab"
       >
-        <template v-if="showNewIssueLink" #new-issue-button>
+        <template v-if="showNewWorkItem" #new-issue-button>
           <create-work-item-modal
             class="gl-grow"
             :is-group="isGroup"
@@ -172,7 +75,7 @@ export default {
         </template>
       </empty-state-with-any-issues>
     </template>
-    <template v-if="hasEpicsFeature && isEpicsList" #page-empty-state>
+    <template v-if="isEpicsList && hasEpicsFeature" #page-empty-state>
       <gl-empty-state
         :description="
           __('Track groups of issues that share a theme, across projects and milestones')
@@ -184,7 +87,7 @@ export default {
           )
         "
       >
-        <template v-if="showNewIssueLink" #actions>
+        <template v-if="showNewWorkItem" #actions>
           <create-work-item-modal
             class="gl-grow"
             :is-group="isGroup"
@@ -193,27 +96,6 @@ export default {
           />
         </template>
       </gl-empty-state>
-    </template>
-    <template v-if="allowEpicBulkEditing" #bulk-edit-actions="{ checkedIssuables }">
-      <gl-button
-        variant="confirm"
-        type="submit"
-        form="work-item-list-bulk-edit"
-        :disabled="checkedIssuables.length === 0 || bulkEditInProgress"
-        :loading="bulkEditInProgress"
-        >{{ __('Update selected') }}</gl-button
-      >
-      <gl-button class="gl-float-right" @click="showBulkEditSidebar = false">{{
-        __('Cancel')
-      }}</gl-button>
-    </template>
-    <template v-if="allowEpicBulkEditing" #sidebar-items="{ checkedIssuables }">
-      <work-item-bulk-edit-sidebar
-        :checked-items="checkedIssuables"
-        :full-path="fullPath"
-        :is-group="isGroup"
-        @bulk-update="handleWorkItemBulkEdit"
-      />
     </template>
   </work-items-list-app>
 </template>
