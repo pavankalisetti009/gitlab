@@ -200,6 +200,38 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
         expect(described_class.for_rule_index(99)).to be_empty
       end
     end
+
+    describe '.for_approval_policy_rules' do
+      let_it_be(:approval_policy_rule_1) { create(:approval_policy_rule) }
+      let_it_be(:approval_policy_rule_2) { create(:approval_policy_rule) }
+      let_it_be(:scan_result_policy_1) do
+        create(:scan_result_policy_read, approval_policy_rule: approval_policy_rule_1)
+      end
+
+      let_it_be(:scan_result_policy_2) do
+        create(:scan_result_policy_read, approval_policy_rule: approval_policy_rule_2)
+      end
+
+      let_it_be(:scan_result_policy_3) { create(:scan_result_policy_read) }
+
+      it 'returns policies for the specified approval policy rules' do
+        expect(
+          described_class.for_approval_policy_rules([approval_policy_rule_1])
+        ).to contain_exactly(scan_result_policy_1)
+      end
+
+      it 'returns policies for multiple approval policy rules' do
+        expect(
+          described_class.for_approval_policy_rules([approval_policy_rule_1, approval_policy_rule_2])
+        ).to contain_exactly(scan_result_policy_1, scan_result_policy_2)
+      end
+
+      it 'returns empty when no matching approval policy rules exist' do
+        expect(
+          described_class.for_approval_policy_rules([create(:approval_policy_rule)])
+        ).to be_empty
+      end
+    end
   end
 
   describe '#newly_detected?' do

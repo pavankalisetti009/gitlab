@@ -8,7 +8,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
   let_it_be(:approver) { create(:user) }
   let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
   let_it_be_with_refind(:security_policy) do
-    create(:security_policy, :require_approval, security_orchestration_policy_configuration: policy_configuration)
+    create(:security_policy, :require_approval, security_orchestration_policy_configuration: policy_configuration,
+      linked_projects: [project])
   end
 
   let(:service) { described_class.new(project: project, security_policy: security_policy) }
@@ -40,7 +41,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
 
     before do
       allow(project).to receive(:multiple_approval_rules_available?).and_return(true)
-      allow(policy_configuration).to receive(:policy_last_updated_by).and_return(approver)
+      allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |configuration|
+        allow(configuration).to receive(:policy_last_updated_by).and_return(approver)
+      end
     end
 
     subject(:create_rules) { service.create_rules }
@@ -54,6 +57,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
 
     it_behaves_like 'calls sync_merge_requests' do
       let(:action) { create_rules }
+    end
+
+    it 'calls Security::ScanResultPolicies::ApprovalRules::CreateService' do
+      expect(Security::ScanResultPolicies::ApprovalRules::CreateService).to receive(:new).with(
+        project: project,
+        security_policy: security_policy,
+        approval_policy_rules: security_policy.approval_policy_rules.undeleted,
+        author: approver
+      ).and_call_original
+
+      create_rules
     end
 
     context 'with empty actions' do
@@ -493,6 +507,47 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
         expect(scan_result_policy_read.rule_idx).to be(approval_policy_rule.rule_index)
       end
     end
+
+    context 'with multiple require_approval actions' do
+      let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
+
+      let_it_be(:developer) { create(:user) }
+
+      before do
+        security_policy.update!(
+          content: {
+            actions: [
+              { type: 'require_approval', approvals_required: 1, user_approvers: [approver.username] },
+              { type: 'require_approval', approvals_required: 1, role_approvers: ['developer'] }
+            ]
+          }
+        )
+
+        project.add_developer(developer) # rubocop:disable RSpec/BeforeAllRoleAssignment -- Does not work in before_all
+      end
+
+      it_behaves_like 'calls sync_merge_requests' do
+        let(:action) { create_rules }
+      end
+
+      it 'creates multiple approval rules for multiple actions', :aggregate_failures do
+        expect { create_rules }.to change { project.approval_rules.count }.by(2)
+
+        first_approval_rule = project.approval_rules.first
+        second_approval_rule = project.approval_rules.last
+
+        expect(first_approval_rule.approvers).to contain_exactly(approver)
+        expect(second_approval_rule.approvers).to contain_exactly(developer)
+        expect(first_approval_rule.approval_policy_action_idx).to eq(0)
+        expect(second_approval_rule.approval_policy_action_idx).to eq(1)
+      end
+
+      it 'creates scan_result_policy_reads with action_idx' do
+        expect { create_rules }.to change { project.scan_result_policy_reads.count }.by(2)
+
+        expect(project.scan_result_policy_reads.map(&:action_idx)).to contain_exactly(0, 1)
+      end
+    end
   end
 
   describe '#delete_rules' do
@@ -518,6 +573,16 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
 
     it 'deletes approval rules linked to project' do
       expect { delete_rules }.to change { project.approval_rules.count }.by(-1)
+    end
+
+    it 'calls Security::ScanResultPolicies::ApprovalRules::DeleteService' do
+      expect(Security::ScanResultPolicies::ApprovalRules::DeleteService).to receive(:new).with(
+        project: project,
+        security_policy: security_policy,
+        approval_policy_rules: security_policy.approval_policy_rules
+      ).and_call_original
+
+      delete_rules
     end
 
     it 'schedules DeleteApprovalPolicyRulesWorker when rules are not linked to projects' do
@@ -551,7 +616,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
         project: project,
         security_orchestration_policy_configuration: policy_configuration,
         orchestration_policy_idx: security_policy.policy_index,
-        rule_idx: approval_policy_rule.rule_index
+        rule_idx: approval_policy_rule.rule_index,
+        approval_policy_rule_id: approval_policy_rule.id
       )
     end
 
@@ -564,7 +630,24 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
       )
     end
 
+    before do
+      allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |configuration|
+        allow(configuration).to receive(:policy_last_updated_by).and_return(approver)
+      end
+    end
+
     subject(:update_rules) { service.update_rules }
+
+    it 'calls Security::ScanResultPolicies::ApprovalRules::UpdateService' do
+      expect(Security::ScanResultPolicies::ApprovalRules::UpdateService).to receive(:new).with(
+        project: project,
+        security_policy: security_policy,
+        approval_policy_rules: security_policy.approval_policy_rules.undeleted,
+        author: approver
+      ).and_call_original
+
+      update_rules
+    end
 
     context 'with scan_finding rule changes' do
       let(:vulnerability_attributes) do
@@ -650,6 +733,137 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolic
         expect(scan_result_policy_read.license_states).to match_array(%w[newly_detected detected])
         expect(scan_result_policy_read.rule_idx).to be(approval_policy_rule.rule_index)
         expect(scan_result_policy_read.approval_policy_rule_id).to be(approval_policy_rule.id)
+      end
+    end
+
+    context 'with multiple require_approval actions' do
+      let_it_be(:scan_result_policy_read_2) do
+        create(:scan_result_policy_read,
+          project: project,
+          security_orchestration_policy_configuration: policy_configuration,
+          orchestration_policy_idx: security_policy.policy_index,
+          approval_policy_rule_id: approval_policy_rule.id,
+          rule_idx: approval_policy_rule.rule_index,
+          action_idx: 1
+        )
+      end
+
+      let_it_be(:project_approval_rule_2) do
+        create(:approval_project_rule, :scan_finding,
+          project: project,
+          approval_policy_rule: approval_policy_rule,
+          scan_result_policy_read: scan_result_policy_read,
+          security_orchestration_policy_configuration: policy_configuration,
+          approval_policy_action_idx: 1
+        )
+      end
+
+      let_it_be(:maintainer) { create(:user) }
+      let_it_be(:approver) { create(:user) }
+
+      before_all do
+        security_policy.update!(
+          content: {
+            actions: [
+              { type: 'require_approval', approvals_required: 1, user_approvers_ids: [approver.id] },
+              { type: 'require_approval', approvals_required: 1, role_approvers: ['maintainer'] }
+            ]
+          }
+        )
+        project.add_developer(approver)
+        project.add_maintainer(maintainer)
+      end
+
+      it_behaves_like 'calls sync_merge_requests' do
+        let(:action) { update_rules }
+      end
+
+      it 'updates approval rules and scan_result_policy_reads', :aggregate_failures do
+        update_rules
+
+        expect(project.approval_rules.first.approvers).to contain_exactly(approver)
+        expect(project.approval_rules.last.approvers).to contain_exactly(maintainer)
+        expect(project.scan_result_policy_reads.last.role_approvers)
+          .to contain_exactly(Gitlab::Access.sym_options_with_owner[:maintainer])
+      end
+    end
+  end
+
+  describe '#sync_policy_diff' do
+    let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
+
+    subject(:sync_policy_diff) { service.sync_policy_diff(policy_diff) }
+
+    context 'when require_approval actions are updated' do
+      let_it_be(:scan_result_policy_read) do
+        create(:scan_result_policy_read,
+          project: project,
+          security_orchestration_policy_configuration: policy_configuration,
+          orchestration_policy_idx: security_policy.policy_index,
+          rule_idx: approval_policy_rule.rule_index,
+          approval_policy_rule_id: approval_policy_rule.id
+        )
+      end
+
+      let_it_be(:project_approval_rule) do
+        create(:approval_project_rule, :scan_finding,
+          project: project,
+          approval_policy_rule: approval_policy_rule,
+          scan_result_policy_read: scan_result_policy_read,
+          security_orchestration_policy_configuration: policy_configuration
+        )
+      end
+
+      let_it_be(:maintainer) { create(:user) }
+      let_it_be(:approver) { create(:user) }
+
+      let_it_be(:new_actions) do
+        [
+          { type: 'require_approval', user_approvers_ids: [approver.id], approvals_required: 1 },
+          { type: 'require_approval', role_approvers: ['maintainer'], approvals_required: 1 }
+        ]
+      end
+
+      let_it_be(:policy_diff) do
+        Security::SecurityOrchestrationPolicies::PolicyDiff::Diff.new.tap do |diff|
+          diff.add_policy_field(:actions,
+            [
+              { type: 'require_approval', user_approvers_ids: [approver.id], approvals_required: 1 }
+            ],
+            new_actions)
+        end
+      end
+
+      before_all do
+        project.add_maintainer(maintainer)
+        project.add_developer(approver)
+
+        security_policy.update!(content: { actions: new_actions })
+      end
+
+      context 'when use_approval_policy_rules_for_approval_rules is disabled' do
+        before do
+          stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
+        end
+
+        it 'does not update approval rules', :aggregate_failures do
+          expect { sync_policy_diff }
+            .to not_change { ApprovalProjectRule.count }
+            .and not_change { Security::ScanResultPolicyRead.count }
+        end
+      end
+
+      it_behaves_like 'calls sync_merge_requests' do
+        let(:action) { sync_policy_diff }
+      end
+
+      it 'deletes and recreates approval rules and scan_result_policy_reads', :aggregate_failures do
+        expect { sync_policy_diff }
+          .to change { ApprovalProjectRule.count }.by(1)
+          .and change { Security::ScanResultPolicyRead.count }.by(1)
+
+        expect(project.approval_rules.map(&:approval_policy_action_idx)).to contain_exactly(0, 1)
+        expect(project.scan_result_policy_reads.map(&:action_idx)).to contain_exactly(0, 1)
       end
     end
   end
