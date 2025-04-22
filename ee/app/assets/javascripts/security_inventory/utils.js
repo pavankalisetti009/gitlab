@@ -20,3 +20,21 @@ export const isSubGroup = (item) => {
   // eslint-disable-next-line no-underscore-dangle
   return item.__typename === 'Group';
 };
+
+/**
+ * Filter security scanners based on scanner type
+ * @param {Array} scanners - Array of scanner types to filter
+ * @param {Object} securityScanners - Object containing enabled and pipelineRun scanners, and the relevant scanner
+ * @returns {Object} Filtered security scanners object
+ */
+export const filterSecurityScanners = (
+  scanners = [],
+  securityScanners = { enabled: [], pipelineRun: [] },
+) => {
+  return {
+    scannerTypes: scanners,
+    enabled: securityScanners.enabled?.filter((scanner) => scanners.includes(scanner)) || [],
+    pipelineRun:
+      securityScanners.pipelineRun?.filter((scanner) => scanners.includes(scanner)) || [],
+  };
+};

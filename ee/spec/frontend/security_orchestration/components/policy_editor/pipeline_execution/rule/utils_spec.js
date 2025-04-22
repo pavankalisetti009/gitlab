@@ -74,16 +74,20 @@ describe('Pipeline execution rule utils', () => {
     });
 
     describe('secondsToValue', () => {
-      it('converts seconds to minutes correctly', () => {
-        expect(secondsToValue(60, TIME_UNITS.MINUTE)).toBe(1);
-      });
+      it.each([-1, Infinity, 'hello'])(
+        'return 0 with the invalid second value $time',
+        ({ time }) => {
+          expect(secondsToValue(time, TIME_UNITS.MINUTE)).toBe(0);
+        },
+      );
 
-      it('converts seconds to hours correctly', () => {
-        expect(secondsToValue(7200, TIME_UNITS.HOUR)).toBe(2);
-      });
-
-      it('converts seconds to days correctly', () => {
-        expect(secondsToValue(86400, TIME_UNITS.DAY)).toBe(1);
+      it.each`
+        time     | unit                 | output
+        ${60}    | ${TIME_UNITS.MINUTE} | ${1}
+        ${7200}  | ${TIME_UNITS.HOUR}   | ${2}
+        ${86400} | ${TIME_UNITS.DAY}    | ${1}
+      `('converts $time seconds to $unit correctly', ({ time, unit, output }) => {
+        expect(secondsToValue(time, unit)).toBe(output);
       });
     });
 
@@ -103,10 +107,12 @@ describe('Pipeline execution rule utils', () => {
         expect(determineTimeUnit(120)).toBe(TIME_UNITS.MINUTE);
       });
 
-      it('defaults to minutes for zero or negative values', () => {
-        expect(determineTimeUnit(0)).toBe(TIME_UNITS.MINUTE);
-        expect(determineTimeUnit(-60)).toBe(TIME_UNITS.MINUTE);
-      });
+      it.each([-1, Infinity, 'hello', 0])(
+        'selects minutes for invalid seconds value $time',
+        ({ time }) => {
+          expect(determineTimeUnit(time)).toBe(TIME_UNITS.MINUTE);
+        },
+      );
     });
   });
 

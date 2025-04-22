@@ -1,7 +1,7 @@
 import { GlPopover } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ProjectToolCoverageIndicator from 'ee/security_inventory/components/project_tool_coverage_indicator.vue';
-import { SCANNERS } from 'ee/security_inventory/constants';
+import { SCANNER_POPOVER_GROUPS, SCANNER_TYPES } from 'ee/security_inventory/constants';
 import toolCoverageDetails from 'ee/security_inventory/components/tool_coverage_details.vue';
 
 describe('ProjectToolCoverageIndicator', () => {
@@ -9,7 +9,7 @@ describe('ProjectToolCoverageIndicator', () => {
 
   const projectName = 'my-project';
 
-  const createComponent = (props = {}) => {
+  const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMountExtended(ProjectToolCoverageIndicator, {
       propsData: {
         projectName,
@@ -22,39 +22,43 @@ describe('ProjectToolCoverageIndicator', () => {
   const findToolCoverageDetails = () => wrapper.findComponent(toolCoverageDetails);
   const findByTestId = (id) => wrapper.findByTestId(id);
 
-  describe.each(SCANNERS)('$scanner badge', ({ scanner, label }) => {
+  const scanners = Object.entries(SCANNER_POPOVER_GROUPS).map(([key, scannerTypes]) => ({
+    key,
+    scannerTypes,
+    label: SCANNER_TYPES[key].textLabel,
+  }));
+
+  describe.each(scanners)('$scanner badge', ({ scannerTypes, label, key }) => {
     it('shows success variant when enabled', () => {
       createComponent({
-        securityScanners: { enabled: [scanner], pipelineRun: [scanner] },
+        props: { securityScanners: { enabled: scannerTypes, pipelineRun: scannerTypes } },
       });
 
-      expect(findByTestId(`badge-${label}-${projectName}`).props('variant')).toBe('success');
-      expect(findByTestId(`badge-${label}-${projectName}`).text()).toBe(label);
+      expect(findByTestId(`badge-${key}-${projectName}`).props('variant')).toBe('success');
+      expect(findByTestId(`badge-${key}-${projectName}`).text()).toBe(label);
     });
 
     it('shows danger variant with border when failed', () => {
-      createComponent({ securityScanners: { enabled: [scanner] } });
+      createComponent({ props: { securityScanners: { enabled: scannerTypes } } });
 
-      expect(findByTestId(`badge-${label}-${projectName}`).props('variant')).toBe('danger');
-      expect(findByTestId(`badge-${label}-${projectName}`).classes()).toContain(
-        'gl-border-red-600',
-      );
-      expect(findByTestId(`badge-${label}-${projectName}`).text()).toBe(label);
+      expect(findByTestId(`badge-${key}-${projectName}`).props('variant')).toBe('danger');
+      expect(findByTestId(`badge-${key}-${projectName}`).classes()).toContain('gl-border-red-600');
+      expect(findByTestId(`badge-${key}-${projectName}`).text()).toBe(label);
     });
 
     it('shows dashed outline for $scanner when disabled', () => {
-      createComponent({ enabledScanners: [] });
+      createComponent({ props: { enabledScanners: [] } });
 
-      expect(findByTestId(`badge-${label}-${projectName}`).classes()).toContain('gl-border-dashed');
-      expect(findByTestId(`badge-${label}-${projectName}`).text()).toBe(label);
+      expect(findByTestId(`badge-${key}-${projectName}`).classes()).toContain('gl-border-dashed');
+      expect(findByTestId(`badge-${key}-${projectName}`).text()).toBe(label);
     });
 
     it('render current values of popover', () => {
       createComponent();
       expect(findPopover().exists()).toBe(true);
       expect(findToolCoverageDetails().exists()).toBe(true);
-      expect(findByTestId(`popover-${label}-${projectName}`).props('target')).toBe(
-        `tool-coverage-${label}-${projectName}`,
+      expect(findByTestId(`popover-${key}-${projectName}`).props('target')).toBe(
+        `tool-coverage-${key}-${projectName}`,
       );
     });
   });
