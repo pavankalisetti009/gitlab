@@ -104,10 +104,14 @@ module EE
       end
 
       def assign_admin_role(user)
-        return unless user_admin_role_params.key?(:admin_role_id)
+        update_assignment = user.admin? || # rubocop:disable Cop/UserAdmin -- Not current_user so no need to check if admin mode is enabled
+          user_admin_role_params.key?(:admin_role_id)
+
+        return unless update_assignment
         return unless ::Feature.enabled?(:custom_admin_roles, :instance) && ::License.feature_available?(:custom_roles)
 
-        # if admin_role_id is in params but does not have a value we set
+        # If admin_role_id is in params but does not have a value or if
+        # admin_role_id is not in params but updated user is an admin we set
         # member_role param to nil to instruct the service to remove the user's
         # current role assignment
         role_id = user_admin_role_params[:admin_role_id]
