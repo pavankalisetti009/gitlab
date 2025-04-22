@@ -1,5 +1,5 @@
 <script>
-import { SCANNERS } from '../constants';
+import { SCANNER_TYPES, SCANNER_POPOVER_GROUPS } from '../constants';
 import SegmentedBar from './segmented_bar.vue';
 
 export default {
@@ -11,47 +11,50 @@ export default {
       type: Object,
       required: false,
       default: () =>
-        SCANNERS.reduce(
-          (scanners, s) => ({
+        Object.entries(SCANNER_POPOVER_GROUPS).reduce(
+          (scanners, [key]) => ({
             ...scanners,
-            [s.scanner]: Math.random() * 100,
+            [key]: Math.random() * 100,
           }),
           {},
         ),
     },
   },
   methods: {
-    coverageSegments(scanner) {
-      const value = this.scanners[scanner] || 0;
+    coverageSegments(key) {
+      const value = this.scanners[key] || 0;
       return [
         { class: 'gl-bg-green-500', count: value },
         { class: 'gl-bg-neutral-200', count: 100 - value },
       ];
     },
+    getLabel(key) {
+      return SCANNER_TYPES[key].textLabel;
+    },
   },
-  SCANNERS,
+  SCANNER_POPOVER_GROUPS,
 };
 </script>
 
 <template>
   <div class="gl-flex gl-flex-row gl-gap-2">
-    <div v-for="{ scanner, label } in $options.SCANNERS" :key="scanner" class="gl-w-8">
+    <div v-for="(value, key) in $options.SCANNER_POPOVER_GROUPS" :key="key" class="gl-w-8">
       <segmented-bar
-        :aria-labelledby="`${scanner}-label`"
-        :segments="coverageSegments(scanner)"
+        :aria-labelledby="`${key}-label`"
+        :segments="coverageSegments(key)"
         class="gl-mb-1"
-        :data-testid="`${scanner}-bar`"
+        :data-testid="`${key}-bar`"
       />
       <span
-        :id="`${scanner}-label`"
+        :id="`${key}-label`"
         class="gl-text-sm gl-text-status-neutral"
-        :data-testid="`${scanner}-label`"
+        :data-testid="`${key}-label`"
       >
-        {{ label }}
+        {{ getLabel(key) }}
         <span class="gl-sr-only">
           {{
             sprintf(s__('SecurityInventory|Tool coverage: %{coverage}%%'), {
-              coverage: scanners[scanner],
+              coverage: scanners[key],
             })
           }}
         </span>
