@@ -125,6 +125,19 @@ RSpec.describe Projects::Settings::MergeRequestsController, feature_category: :c
       end
     end
 
+    context 'when auto_duo_code_review_enabled param is specified' do
+      let(:params) { { project_setting_attributes: { auto_duo_code_review_enabled: '1' } } }
+
+      let(:request) do
+        put :update, params: { namespace_id: project.namespace, project_id: project, project: params }
+      end
+
+      it 'updates the attribute' do
+        request
+        expect(project.reload.auto_duo_code_review_enabled).to be(true)
+      end
+    end
+
     context 'when merge_trains_enabled param is specified' do
       let(:params) { { merge_trains_enabled: true } }
 

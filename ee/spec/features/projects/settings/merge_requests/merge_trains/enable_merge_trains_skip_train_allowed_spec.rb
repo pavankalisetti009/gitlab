@@ -27,7 +27,9 @@ RSpec.describe 'Merge Trains Skip Train Setting', :js, feature_category: :merge_
         expect(find('#project_merge_trains_skip_train_allowed')).to be_checked
       end
 
-      click_button('Save changes')
+      page.within('#js-merge-request-settings') do
+        click_button('Save changes')
+      end
 
       wait_for_requests
 

@@ -31,7 +31,7 @@ module EE
 
         override :project_setting_attributes
         def project_setting_attributes
-          attributes = %i[prevent_merge_without_jira_issue suggested_reviewers_enabled]
+          attributes = %i[prevent_merge_without_jira_issue suggested_reviewers_enabled auto_duo_code_review_enabled]
 
           attributes << :only_allow_merge_if_all_status_checks_passed if allow_external_status_checks?
 
