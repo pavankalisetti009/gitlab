@@ -73,7 +73,11 @@ module QA
       end
 
       context 'on GitLab.com', :smoke, :external_ai_provider,
-        only: { pipeline: %i[staging staging-canary canary production] } do
+        only: { pipeline: %i[staging staging-canary canary production] },
+        quarantine: {
+          issue: 'https://gitlab.com/gitlab-org/gitlab-vscode-extension/-/issues/1948',
+          type: :bug
+        } do
         it_behaves_like 'a code generation suggestion',
           'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/425756'
 
