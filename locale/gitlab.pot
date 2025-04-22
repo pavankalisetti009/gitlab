@@ -22496,6 +22496,9 @@ msgstr ""
 msgid "Direction"
 msgstr ""
 
+msgid "Directories cannot be uploaded. Please upload a single file instead."
+msgstr ""
+
 msgid "Directory locked"
 msgstr ""
 

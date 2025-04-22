@@ -20981,6 +20981,7 @@ Requires ClickHouse. Premium and Ultimate with GitLab Duo Pro and Enterprise onl
 | <a id="aimetricsduochatcontributorscount"></a>`duoChatContributorsCount` | [`Int`](#int) | Number of contributors who used GitLab Duo Chat features. |
 | <a id="aimetricsduoproassigneduserscount"></a>`duoProAssignedUsersCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Deprecated** in GitLab 17.6. use duoAssignedUsersCount for the same behavior. |
 | <a id="aimetricsduousedcount"></a>`duoUsedCount` | [`Int`](#int) | Number of contributors who used any GitLab Duo feature. |
+| <a id="aimetricsrootcauseanalysisuserscount"></a>`rootCauseAnalysisUsersCount` | [`Int`](#int) | Number of users using troubleshoot within a failed pipeline. |
 
 ### `AiSelfHostedModel`
 
@@ -22921,7 +22922,6 @@ CI/CD variables given to a manual job.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="ciminutesprojectmonthlyusageminutes"></a>`minutes` | [`Int`](#int) | Number of compute minutes used by the project in the month. |
-| <a id="ciminutesprojectmonthlyusagename"></a>`name` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 15.6. Use `project.name`. |
 | <a id="ciminutesprojectmonthlyusageproject"></a>`project` | [`Project`](#project) | Project having the recorded usage. |
 | <a id="ciminutesprojectmonthlyusagesharedrunnersduration"></a>`sharedRunnersDuration` | [`Int`](#int) | Total duration (in seconds) of shared runners use by the project for the month. |
 
