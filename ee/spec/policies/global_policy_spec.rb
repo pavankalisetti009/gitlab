@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GlobalPolicy, feature_category: :shared do
+RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
   include ExternalAuthorizationServiceHelpers
   using RSpec::Parameterized::TableSyntax
 
@@ -412,44 +412,16 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
   describe 'create_group_via_api' do
     let(:policy) { :create_group_via_api }
 
-    context 'on .com' do
-      before do
-        allow(::Gitlab).to receive(:com?).and_return(true)
-      end
-
-      context 'when feature is enabled' do
-        before do
-          stub_feature_flags(top_level_group_creation_enabled: true)
-        end
-
-        it { is_expected.to be_allowed(policy) }
-      end
-
-      context 'when feature is disabled' do
-        before do
-          stub_feature_flags(top_level_group_creation_enabled: false)
-        end
-
-        it { is_expected.to be_disallowed(policy) }
-      end
+    context 'when the top_level_group_creation_enabled application_setting is enabled (default)' do
+      it { is_expected.to be_allowed(policy) }
     end
 
-    context 'on self-managed' do
-      context 'when feature is enabled' do
-        before do
-          stub_feature_flags(top_level_group_creation_enabled: true)
-        end
-
-        it { is_expected.to be_allowed(policy) }
+    context 'when the top_level_group_creation_enabled application_setting is disabled' do
+      before do
+        stub_ee_application_setting(top_level_group_creation_enabled: false)
       end
 
-      context 'when feature is disabled' do
-        before do
-          stub_feature_flags(top_level_group_creation_enabled: false)
-        end
-
-        it { is_expected.to be_allowed(policy) }
-      end
+      it { is_expected.to be_disallowed(policy) }
     end
   end
 
