@@ -1,4 +1,4 @@
-import { __ } from '~/locale';
+import { __, s__ } from '~/locale';
 
 export const DEFAULT_NUMBER_OF_DAYS = 365;
 export const STAT_LOADER_HEIGHT = 46;
@@ -30,7 +30,7 @@ export const MERGE_REQUEST_ID_PREFIX = '!';
 
 export const LINE_CHANGE_SYMBOLS = {
   ADDITIONS: '+',
-  DELETITIONS: '-',
+  DELETIONS: '-',
 };
 
 export const THROUGHPUT_TABLE_TEST_IDS = {
@@ -68,3 +68,51 @@ export const INITIAL_PAGINATION_STATE = {
   firstPageSize: PER_PAGE,
   lastPageSize: null,
 };
+
+const TH_COMMON_OPTS = {
+  tdClass: 'merge-request-analytics-td',
+  thAttr: { 'data-testid': THROUGHPUT_TABLE_TEST_IDS.TABLE_HEADERS },
+};
+
+export const THROUGHPUT_TABLE_HEADER_FIELDS = [
+  {
+    key: 'mr_details',
+    label: s__('MergeRequestAnalytics|Merge Request'),
+    ...TH_COMMON_OPTS,
+  },
+  {
+    key: 'date_merged',
+    label: s__('MergeRequestAnalytics|Date Merged'),
+    ...TH_COMMON_OPTS,
+  },
+  {
+    key: 'time_to_merge',
+    label: s__('MergeRequestAnalytics|Time to merge'),
+    ...TH_COMMON_OPTS,
+  },
+  {
+    key: 'milestone',
+    label: s__('MergeRequestAnalytics|Milestone'),
+    ...TH_COMMON_OPTS,
+  },
+  {
+    key: 'commits',
+    label: __('Commits'),
+    ...TH_COMMON_OPTS,
+  },
+  {
+    key: 'pipelines',
+    label: s__('MergeRequestAnalytics|Pipelines'),
+    ...TH_COMMON_OPTS,
+  },
+  {
+    key: 'line_changes',
+    label: s__('MergeRequestAnalytics|Line changes'),
+    ...TH_COMMON_OPTS,
+  },
+  {
+    key: 'assignees',
+    label: s__('MergeRequestAnalytics|Assignees'),
+    ...TH_COMMON_OPTS,
+  },
+];
