@@ -27,7 +27,7 @@ import {
 } from 'ee/admin/subscriptions/show/constants';
 
 import {
-  noAssignedDuoAddOnData,
+  noAssignedDuoCoreAddOnData,
   noAssignedDuoProAddOnData,
   noAssignedDuoEnterpriseAddOnData,
   noAssignedDuoAmazonQAddOnData,
@@ -49,7 +49,7 @@ describe('GitLab Duo Usage', () => {
 
   const error = new Error('Something went wrong');
 
-  const noAssignedDuoAddOnDataHandler = jest.fn().mockResolvedValue(noAssignedDuoAddOnData);
+  const noAssignedDuoCoreAddOnDataHandler = jest.fn().mockResolvedValue(noAssignedDuoCoreAddOnData);
   const noAssignedDuoProAddOnDataHandler = jest.fn().mockResolvedValue(noAssignedDuoProAddOnData);
   const noAssignedDuoEnterpriseAddOnDataHandler = jest
     .fn()
@@ -252,10 +252,10 @@ describe('GitLab Duo Usage', () => {
         });
       });
 
-      describe('with Duo add-on enabled', () => {
+      describe('with Duo Core add-on enabled', () => {
         beforeEach(() => {
           return createComponent({
-            addOnPurchasesHandler: noAssignedDuoAddOnDataHandler,
+            addOnPurchasesHandler: noAssignedDuoCoreAddOnDataHandler,
             provideProps: { isStandalonePage: true, groupId: 289561 },
           });
         });
@@ -272,7 +272,7 @@ describe('GitLab Duo Usage', () => {
         describe('with feature flag isDuoBaseAccessAllowed set to false', () => {
           beforeEach(() => {
             return createComponent({
-              addOnPurchasesHandler: noAssignedDuoAddOnDataHandler,
+              addOnPurchasesHandler: noAssignedDuoCoreAddOnDataHandler,
               provideProps: {
                 isSaaS: true,
                 isStandalonePage: true,
@@ -430,7 +430,7 @@ describe('GitLab Duo Usage', () => {
     describe('when instance is SM', () => {
       beforeEach(() => {
         return createComponent({
-          addOnPurchasesHandler: noAssignedDuoAddOnDataHandler,
+          addOnPurchasesHandler: noAssignedDuoCoreAddOnDataHandler,
           provideProps: { isSaaS: false },
         });
       });
@@ -457,7 +457,7 @@ describe('GitLab Duo Usage', () => {
       describe('with feature flag isDuoBaseAccessAllowed set to false', () => {
         beforeEach(() => {
           return createComponent({
-            addOnPurchasesHandler: noAssignedDuoAddOnDataHandler,
+            addOnPurchasesHandler: noAssignedDuoCoreAddOnDataHandler,
             provideProps: {
               isSaaS: false,
               isDuoBaseAccessAllowed: false,
