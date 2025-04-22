@@ -131,6 +131,16 @@ RSpec.describe Admin::UsersController, :enable_admin_mode, feature_category: :us
             expect { request }.not_to change { user.reload.user_member_roles.map(&:member_role_id) }
               .from([existing_role.id])
           end
+
+          context 'when user is an admin' do
+            let_it_be(:user) { create(:admin) }
+            let_it_be(:existing_role) { create(:admin_member_role, user: user).member_role }
+
+            it 'unassigns the user\'s existing role' do
+              expect { request }.to change { user.reload.user_member_roles.map(&:member_role_id) }
+                .from([existing_role.id]).to([])
+            end
+          end
         end
 
         context 'when admin_role_id is present' do

@@ -73,6 +73,14 @@ RSpec.describe Users::MemberRoles::AssignService, feature_category: :permissions
             expect(response.payload[:user_member_role]).to eq(::Users::UserMemberRole.last)
           end
 
+          context 'when the user is an admin' do
+            let_it_be(:user) { create(:admin) }
+
+            it 'does not create a new record' do
+              expect { assign_member_role }.not_to change { user.user_member_roles.size }
+            end
+          end
+
           include_examples 'audit event logging' do
             let(:licensed_features_to_stub) { { custom_roles: true } }
             let(:operation) { assign_member_role }
@@ -111,6 +119,15 @@ RSpec.describe Users::MemberRoles::AssignService, feature_category: :permissions
           it 'updates the record' do
             expect { assign_member_role }.to change { user_member_role.reload.member_role }
               .from(admin_role_1).to(admin_role_2)
+          end
+
+          context 'when the user is an admin' do
+            let_it_be(:user) { create(:admin) }
+            let_it_be(:user_member_role) { create(:user_member_role, member_role: admin_role_1, user: user) }
+
+            it 'deletes the existing record' do
+              expect { assign_member_role }.to change { user.reload.user_member_roles.size }.to(0)
+            end
           end
 
           it 'returns success' do
