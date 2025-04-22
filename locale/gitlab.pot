@@ -16569,9 +16569,6 @@ msgstr ""
 msgid "Confidentiality"
 msgstr ""
 
-msgid "Confidentiality controls have moved to the issue actions menu (%{icon}) at the top of the page."
-msgstr ""
-
 msgid "Configuration help"
 msgstr ""
 
