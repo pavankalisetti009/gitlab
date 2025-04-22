@@ -68791,9 +68791,6 @@ msgstr ""
 msgid "WorkItem|Options:"
 msgstr ""
 
-msgid "WorkItem|Parent"
-msgstr ""
-
 msgid "WorkItem|Parent item type %{parentWorkItemType} is not supported on %{workItemType}. Remove the parent item to change type."
 msgstr ""
 
