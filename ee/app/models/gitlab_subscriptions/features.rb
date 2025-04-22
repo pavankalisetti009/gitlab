@@ -190,6 +190,13 @@ module GitlabSubscriptions
       ci_component_usages_in_projects
       branch_rule_squash_options
       work_item_status
+      glab_ask_git_command
+      generate_commit_message
+      summarize_new_merge_request
+      summarize_review
+      generate_description
+      summarize_comments
+      review_merge_request
     ].freeze
 
     ULTIMATE_FEATURES = %i[
@@ -202,7 +209,6 @@ module GitlabSubscriptions
       api_discovery
       api_fuzzing
       auto_rollback
-      glab_ask_git_command
       cluster_receptive_agents
       cluster_image_scanning
       external_status_checks
@@ -221,8 +227,6 @@ module GitlabSubscriptions
       explain_code
       external_audit_events
       experimental_features
-      generate_description
-      generate_commit_message
       generate_test_file
       ai_generate_cube_query
       git_abuse_rate_limit
@@ -273,9 +277,6 @@ module GitlabSubscriptions
       security_training
       ssh_key_expiration_policy
       summarize_mr_changes
-      summarize_my_mr_code_review
-      summarize_new_merge_request
-      summarize_comments
       stale_runner_cleanup_for_namespace
       status_page
       suggested_reviewers

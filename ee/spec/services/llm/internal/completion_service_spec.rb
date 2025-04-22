@@ -45,6 +45,7 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
       allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
       allow(logger).to receive(:conditional_info)
       allow(logger).to receive(:debug)
+      stub_licensed_features(summarize_comments: true)
     end
 
     subject(:execute) { service.execute }
