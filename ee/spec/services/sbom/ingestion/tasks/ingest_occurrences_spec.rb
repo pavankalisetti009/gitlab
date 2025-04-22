@@ -5,8 +5,8 @@ require 'spec_helper'
 RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dependency_management do
   let_it_be(:default_licenses) do
     [
-      { name: 'Apache 2.0 License', spdx_identifier: 'Apache-2.0', url: 'https://spdx.org/licenses/Apache-2.0.html' },
-      { name: 'MIT', spdx_identifier: 'MIT', url: 'https://spdx.org/licenses/MIT.html' }
+      { name: 'Apache License 2.0', spdx_identifier: 'Apache-2.0', url: 'https://spdx.org/licenses/Apache-2.0.html' },
+      { name: 'MIT License', spdx_identifier: 'MIT', url: 'https://spdx.org/licenses/MIT.html' }
     ]
   end
 
@@ -293,9 +293,9 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
     context 'when the components license are persisted in the database' do
       let_it_be(:default_licenses) do
         [
-          { "name" => 'Apache 2.0 License', "spdx_identifier" => 'Apache-2.0',
+          { "name" => 'Apache License 2.0', "spdx_identifier" => 'Apache-2.0',
             "url" => 'https://spdx.org/licenses/Apache-2.0.html' },
-          { "name" => 'MIT', "spdx_identifier" => 'MIT', "url" => 'https://spdx.org/licenses/MIT.html' }
+          { "name" => 'MIT License', "spdx_identifier" => 'MIT', "url" => 'https://spdx.org/licenses/MIT.html' }
         ]
       end
 
@@ -345,6 +345,18 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
       context 'when the SBOM does not provide licenses for any component' do
         let(:occurrence_maps) { [occurrence_map_without_license] }
 
+        context 'when the feature flag `static_licenses` is disabled' do
+          before do
+            stub_feature_flags(static_licenses: false)
+          end
+
+          it 'sets the license using the license database' do
+            task
+
+            expect(Sbom::Occurrence.last&.licenses).to match_array(default_licenses)
+          end
+        end
+
         it 'sets the license using the license database' do
           task
 
@@ -354,6 +366,20 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
 
       context 'when the SBOM provides licenses for some components' do
         let_it_be(:occurrence_maps) { [occurrence_map_with_license, occurrence_map_without_license] }
+
+        context 'when the feature flag `static_licenses` is disabled' do
+          before do
+            stub_feature_flags(static_licenses: false)
+          end
+
+          it 'sets the license using the report and the license database' do
+            task
+
+            occurrences = Sbom::Occurrence.last(2)
+            expect(occurrences[0].licenses).to match_array(report_licenses)
+            expect(occurrences[1].licenses).to match_array(default_licenses)
+          end
+        end
 
         it 'sets the license using the report and the license database' do
           task

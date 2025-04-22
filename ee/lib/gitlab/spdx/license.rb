@@ -39,6 +39,10 @@ module Gitlab
         public_send(key)
         # rubocop:enable GitlabSecurity/PublicSend
       end
+
+      def canonical_id
+        spdx_identifier || name&.downcase
+      end
     end
   end
 end

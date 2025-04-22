@@ -70,9 +70,7 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
     end
   end
 
-  describe ".with_license_by_name" do
-    subject { described_class.with_license_by_name(name) }
-
+  shared_examples_for 'search license by name' do
     context 'when the feature flag static_licenses is disabled' do
       before do
         stub_feature_flags(static_licenses: false)
@@ -131,6 +129,12 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
     end
   end
 
+  describe ".with_license_by_name" do
+    subject { described_class.with_license_by_name(name) }
+
+    it_behaves_like 'search license by name'
+  end
+
   describe ".with_license_or_custom_license_by_name" do
     subject { described_class.with_license_or_custom_license_by_name(name) }
 
@@ -168,6 +172,10 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
 
         it { is_expected.to match_array([custom_software_license_policy, other_custom_software_license_policy]) }
       end
+    end
+
+    context 'when related to a software license' do
+      it_behaves_like 'search license by name'
     end
   end
 

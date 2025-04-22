@@ -535,44 +535,60 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
   describe '#license_scanning_violations' do
     subject(:violations) { details.license_scanning_violations }
 
-    before do
-      build_violation_details(policy1, violations: { license_scanning: { 'MIT License' => %w[B C D] } })
-    end
+    context 'when a violation exists' do
+      context 'when software license matching the name does not exists' do
+        before do
+          build_violation_details(policy1, violations: { license_scanning: { 'License' => %w[B C D] } })
+        end
 
-    it 'returns list of licenses with dependencies' do
-      expect(violations.size).to eq 1
-      violation = violations.first
-      expect(violation.license).to eq 'MIT License'
-      expect(violation.dependencies).to contain_exactly('B', 'C', 'D')
-      expect(violation.url).to be_nil
-    end
-
-    context 'when software license matching the name exists' do
-      before do
-        create(:software_license, name: 'MIT License', spdx_identifier: 'MIT')
+        it 'returns list of licenses with dependencies' do
+          expect(violations.size).to eq 1
+          violation = violations.first
+          expect(violation.license).to eq 'License'
+          expect(violation.dependencies).to contain_exactly('B', 'C', 'D')
+          expect(violation.url).to be_nil
+        end
       end
 
-      it 'includes license URL' do
-        violation = violations.first
-        expect(violation.url).to eq 'https://spdx.org/licenses/MIT.html'
-      end
-    end
+      context 'when software license matching the name exists' do
+        before do
+          build_violation_details(policy1, violations: { license_scanning: { 'MIT License' => %w[B C D] } })
+        end
 
-    context 'when multiple violations exist' do
-      before do
-        build_violation_details(policy2,
-          violations: { license_scanning: { 'MIT License' => %w[A B], 'GPL 3' => %w[A] } }
-        )
-      end
+        context 'when the feature flag static_licenses is disabled' do
+          before do
+            stub_feature_flags(static_licenses: false)
+            create(:software_license, name: 'MIT License', spdx_identifier: 'MIT')
+          end
 
-      it 'merges the licenses and dependencies' do
-        expect(violations.size).to eq 2
-        expect(violations).to contain_exactly(
-          Security::ScanResultPolicies::PolicyViolationDetails::LicenseScanningViolation.new(license: 'GPL 3',
-            dependencies: %w[A]),
-          Security::ScanResultPolicies::PolicyViolationDetails::LicenseScanningViolation.new(license: 'MIT License',
-            dependencies: %w[A B C D])
-        )
+          it 'includes license URL' do
+            violation = violations.first
+            expect(violation.url).to eq 'https://spdx.org/licenses/MIT.html'
+          end
+        end
+
+        it 'includes license URL' do
+          violation = violations.first
+          expect(violation.url).to eq 'https://spdx.org/licenses/MIT.html'
+        end
+
+        context 'when multiple violations exist' do
+          before do
+            build_violation_details(policy2,
+              violations: { license_scanning: { 'MIT License' => %w[A B], 'w3m License' => %w[A] } }
+            )
+          end
+
+          it 'merges the licenses and dependencies' do
+            expect(violations.size).to eq 2
+            expect(violations).to contain_exactly(
+              Security::ScanResultPolicies::PolicyViolationDetails::LicenseScanningViolation.new(license: 'w3m License',
+                dependencies: %w[A], url: 'https://spdx.org/licenses/w3m.html'),
+              Security::ScanResultPolicies::PolicyViolationDetails::LicenseScanningViolation.new(license: 'MIT License',
+                dependencies: %w[A B C D], url: 'https://spdx.org/licenses/MIT.html')
+            )
+          end
+        end
       end
     end
   end

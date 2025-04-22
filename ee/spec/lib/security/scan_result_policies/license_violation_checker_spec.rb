@@ -19,6 +19,8 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
   let(:case2) { [['GPL v3', 'GNU 3', 'A']] }
   let(:case1) { [] }
 
+  let(:license_name_spdx_map) { { 'GNU 3' => 'GPL v3', 'MIT License' => 'MIT' } }
+
   describe 'possible combinations' do
     using RSpec::Parameterized::TableSyntax
 
@@ -56,8 +58,21 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
           create(:software_license_policy, policy_state,
             project: project,
             software_license: license,
-            scan_result_policy_read: scan_result_policy_read
+            scan_result_policy_read: scan_result_policy_read,
+            software_license_spdx_identifier: license_name_spdx_map[license.name]
           )
+        end
+
+        context 'when the feature flag `static_licenses` is disabled' do
+          before do
+            stub_feature_flags(static_licenses: false)
+          end
+
+          it 'syncs approvals_required' do
+            result = service.execute(scan_result_policy_read)
+
+            expect(result).to eq(violated_licenses)
+          end
         end
 
         it 'syncs approvals_required' do
@@ -145,7 +160,8 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
                 project: project,
                 custom_software_license: nil,
                 software_license: license,
-                scan_result_policy_read: scan_result_policy_read
+                scan_result_policy_read: scan_result_policy_read,
+                software_license_spdx_identifier: license.spdx_identifier
               )
             else
               create(:software_license_policy, policy_state,
@@ -154,6 +170,18 @@ RSpec.describe Security::ScanResultPolicies::LicenseViolationChecker, feature_ca
                 software_license: nil,
                 scan_result_policy_read: scan_result_policy_read
               )
+            end
+          end
+
+          context 'when the feature flag `static_licenses` is disabled' do
+            before do
+              stub_feature_flags(static_licenses: false)
+            end
+
+            it 'syncs approvals_required' do
+              result = service.execute(scan_result_policy_read)
+
+              expect(result).to eq(violated_licenses)
             end
           end
 
