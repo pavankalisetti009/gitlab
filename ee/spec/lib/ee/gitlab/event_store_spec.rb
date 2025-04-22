@@ -63,7 +63,6 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         Search::Zoekt::IndexMarkedAsToDeleteEvent,
         Search::Zoekt::IndexMarkPendingEvictionEvent,
         Search::Zoekt::IndexToEvictEvent,
-        Search::Zoekt::IndexWatermarkChangedEvent,
         Search::Zoekt::InitialIndexingEvent,
         Search::Zoekt::LostNodeEvent,
         Search::Zoekt::NodeWithNegativeUnclaimedStorageEvent,
