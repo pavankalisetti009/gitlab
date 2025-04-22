@@ -19,8 +19,7 @@
               "cluster_image_scanning",
               "sast",
               "dependency_scanning",
-              "sast_iac",
-              "custom"
+              "sast_iac"
             ],
             "type": "string"
           },
@@ -54,23 +53,6 @@
               "type": "string"
             }
           },
-          "ci_configuration": {
-            "type": "string"
-          },
-          "ci_configuration_path": {
-            "type": "object",
-            "properties": {
-              "project": {
-                "type": "string"
-              },
-              "file": {
-                "type": "string"
-              },
-              "ref": {
-                "type": "string"
-              }
-            }
-          },
           "template": {
             "description": "The type of the CI template that should be used to enforce the scan. Available: `default` and `latest`.",
             "enum": [
@@ -81,30 +63,6 @@
           }
         },
         "allOf": [
-          {
-            "if": {
-              "properties": {
-                "scan": {
-                  "const": "custom"
-                }
-              }
-            },
-            "then": {
-              "anyOf": [
-                {
-                  "required": [
-                    "ci_configuration"
-                  ]
-                },
-                {
-                  "required": [
-                    "ci_configuration_path"
-                  ]
-                }
-              ],
-              "maxProperties": 2
-            }
-          },
           {
             "if": {
               "properties": {
