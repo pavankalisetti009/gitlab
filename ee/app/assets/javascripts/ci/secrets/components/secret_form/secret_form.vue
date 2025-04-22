@@ -68,7 +68,7 @@ export default {
       secret: {
         branch: '',
         createdAt: undefined,
-        description: '',
+        description: undefined,
         environment: '',
         expiration: undefined,
         name: undefined,
@@ -95,7 +95,10 @@ export default {
       return this.secret.branch.length > 0;
     },
     isDescriptionValid() {
-      return this.secret.description.length <= SECRET_DESCRIPTION_MAX_LENGTH;
+      return (
+        this.secret.description.length > 0 &&
+        this.secret.description.length <= SECRET_DESCRIPTION_MAX_LENGTH
+      );
     },
     isEnvironmentScopeValid() {
       return this.secret.environment.length > 0;
@@ -175,7 +178,7 @@ export default {
   datePlaceholder: 'YYYY-MM-DD',
   cronPlaceholder: '0 6 * * *',
   i18n: {
-    fieldRequired: __('This field is required'),
+    fieldRequired: __('This field is required.'),
   },
   rotationPeriodOptions: ROTATION_PERIOD_OPTIONS,
   secretsIndexRoute: INDEX_ROUTE_NAME,
@@ -221,15 +224,16 @@ export default {
         data-testid="secret-description-field-group"
         label-for="secret-description"
         :description="s__('Secrets|Maximum 200 characters.')"
-        :invalid-feedback="s__('Secrets|Description must be 200 characters or less.')"
-        optional
+        :invalid-feedback="
+          s__('Secrets|This field is required and must be 200 characters or less.')
+        "
       >
         <gl-form-input
           id="secret-description"
           v-model.trim="secret.description"
           data-testid="secret-description"
           :placeholder="s__('Secrets|Add a description for the secret')"
-          :state="isDescriptionValid"
+          :state="secret.description === undefined || isDescriptionValid"
         />
       </gl-form-group>
       <div class="gl-flex gl-gap-4">
@@ -242,7 +246,6 @@ export default {
             id="secret-environments"
             :are-environments-loading="areEnvironmentsLoading"
             :environments="environments"
-            :is-environment-required="false"
             :selected-environment-scope="secret.environment"
             @select-environment="setEnvironment"
             @search-environment-scope="$emit('search-environment', $event)"
