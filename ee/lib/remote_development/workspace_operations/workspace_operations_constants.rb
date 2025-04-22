@@ -18,7 +18,7 @@ module RemoteDevelopment
     module WorkspaceOperationsConstants
       # Please keep alphabetized
       VARIABLES_FILE_DIR = "/.workspace-data/variables/file"
-      WORKSPACE_TOOLS_IMAGE = "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:9.0.0"
+      WORKSPACE_TOOLS_IMAGE = "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:11.0.0"
     end
   end
 end
