@@ -21,7 +21,7 @@ module Groups
     # More details on https://gitlab.com/gitlab-org/gitlab/-/issues/411257#note_1508315283
     GROUP_COUNT_LIMIT = 600
     PROJECT_IDS_LIMIT = 10
-    COMPONENT_NAMES_MUST_HAVE_FOR_VERSION_FILTERING = 1
+    COMPONENT_NAMES_LIMIT_FOR_VERSION_FILTERING = 1
 
     def index
       respond_to do |format|
@@ -89,7 +89,7 @@ module Groups
 
     def validate_component_versions!
       return unless params[:component_versions] || (params[:not] && params[:not][:component_versions])
-      return if params.fetch(:component_names, []).size == COMPONENT_NAMES_MUST_HAVE_FOR_VERSION_FILTERING
+      return if params.fetch(:component_names, []).size == COMPONENT_NAMES_LIMIT_FOR_VERSION_FILTERING
 
       render_error(
         :unprocessable_entity,
