@@ -1,3 +1,4 @@
+import { GlToast } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
@@ -7,6 +8,7 @@ import SecretsApp from './components/secrets_app.vue';
 import SecretsBreadcrumbs from './components/secrets_breadcrumbs.vue';
 
 Vue.use(VueApollo);
+Vue.use(GlToast);
 
 const apolloProvider = new VueApollo({
   defaultClient: createDefaultClient(),

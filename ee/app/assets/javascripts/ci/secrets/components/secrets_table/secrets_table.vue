@@ -85,10 +85,6 @@ export default {
           this.$apollo.queries.secretManagerStatus.stopPolling();
         }
 
-        if (newStatus === SECRET_MANAGER_STATUS_ACTIVE) {
-          this.$apollo.queries.secrets.refetch();
-        }
-
         return newStatus;
       },
       error() {
@@ -144,6 +140,13 @@ export default {
     },
     showPagination() {
       return this.hasPreviousPage || this.hasNextPage;
+    },
+  },
+  watch: {
+    secretManagerStatus(value) {
+      if (value === SECRET_MANAGER_STATUS_ACTIVE) {
+        this.$apollo.queries.secrets.refetch();
+      }
     },
   },
   methods: {
