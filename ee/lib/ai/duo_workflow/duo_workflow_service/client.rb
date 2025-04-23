@@ -39,7 +39,7 @@ module Ai
 
         def metadata
           {
-            "authorization" => "Bearer #{token}",
+            "authorization" => "Bearer #{cloud_connector_token}",
             "x-gitlab-authentication-type" => "oidc",
             'x-gitlab-instance-id' => ::Gitlab::GlobalAnonymousId.instance_id,
             'x-gitlab-realm' => ::CloudConnector.gitlab_realm,
@@ -47,8 +47,12 @@ module Ai
           }
         end
 
-        def token
-          CloudConnector::AvailableServices.find_by_name(:duo_workflow).access_token
+        def cloud_connector_token
+          if Feature.enabled?(:cloud_connector_new_token_impl, current_user)
+            CloudConnector::Tokens.get
+          else
+            CloudConnector::AvailableServices.find_by_name(:duo_workflow).access_token
+          end
         end
 
         def channel_credentials

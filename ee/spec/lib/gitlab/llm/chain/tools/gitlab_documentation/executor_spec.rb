@@ -113,26 +113,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::GitlabDocumentation::Executor, :saas, 
           expect(result.extras).to eq(nil)
         end
       end
-
-      context 'when no documents are found' do
-        let(:docs_search_response) do
-          {
-            'response' => { 'results' => [] }
-          }
-        end
-
-        it 'returns an empty response message' do
-          expect_next_instance_of(::Gitlab::Llm::AiGateway::DocsClient, user) do |instance|
-            expect(instance).to receive(:search).with(query: options[:input]).and_return(docs_search_response)
-          end
-
-          response = "I'm sorry, I couldn't find any documentation to answer your question."
-
-          expect(result.content).to eq(response)
-          expect(result.error_code).to eq("M2000")
-          expect(result.extras).to eq(nil)
-        end
-      end
     end
 
     context 'when context is not authorized' do

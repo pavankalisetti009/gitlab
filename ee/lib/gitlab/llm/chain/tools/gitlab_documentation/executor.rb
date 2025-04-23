@@ -36,8 +36,6 @@ module Gitlab
 
               search_documents = get_search_results(options[:input])
 
-              return empty_response if search_documents.blank?
-
               streamed_answer = StreamedDocumentationAnswer.new
 
               response_modifier = ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion.new(

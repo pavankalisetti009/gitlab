@@ -25,6 +25,10 @@ module GitlabSubscriptions
 
     scope :duo_add_ons, -> { where(name: DUO_ADD_ONS) }
     scope :seat_assignable_duo_add_ons, -> { where(name: SEAT_ASSIGNABLE_DUO_ADD_ONS) }
+    scope :active, ->(group_ids = []) do
+      joins(:add_on_purchases)
+        .merge(AddOnPurchase.active.by_namespace(group_ids.presence))
+    end
 
     # Note: If a new enum is added, make sure to update this method to reflect that as well.
     def self.descriptions
