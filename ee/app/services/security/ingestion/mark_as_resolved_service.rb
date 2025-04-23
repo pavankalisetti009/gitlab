@@ -86,7 +86,11 @@ module Security
 
         result = Vulnerabilities::AutoResolveService.new(project, missing_ids, budget).execute
 
-        @auto_resolved_count += result.payload[:count] if result.success?
+        if result.success?
+          @auto_resolved_count += result.payload[:count]
+        else
+          track_auto_resolve_error(result)
+        end
       end
 
       def process_existing_cvs_vulnerabilities_for_container_scanning
@@ -115,6 +119,23 @@ module Security
 
       def scanner_for_dependency_scanning?
         scanner.external_id.in?(DS_SCANNERS_EXTERNAL_IDS)
+      end
+
+      def track_auto_resolve_error(result)
+        # Log only once per pipeline
+        strong_memoize(:track_auto_resolve_error) do
+          exception = result.payload[:exception]
+
+          if exception
+            Gitlab::ErrorTracking.track_exception(exception)
+          else
+            Gitlab::AppJsonLogger.error(
+              class: self.class.name,
+              message: result.message,
+              reason: result.reason
+            )
+          end
+        end
       end
 
       def track_no_longer_detected_vulnerabilities(count)

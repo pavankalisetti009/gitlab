@@ -47,37 +47,82 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           command.execute
         end
 
-        it 'stops calling AutoResolveService when count of resolved vulnerabilities is over limit' do
-          # Setting the BATCH_SIZE to 1 forces us to handle each vulnerability one by one.
-          # The first vulnerability that we handle should be auto resolved.
-          stub_const("#{described_class.name}::BATCH_SIZE", 1)
-          # Setting AUTO_RESOLVE_LIMIT to 1 is what lets us check that the limit works as expected
-          # By running in batches of 1, the first vulnerability should be auto-resolved and the
-          # second should not.
-          stub_const("#{described_class.name}::AUTO_RESOLVE_LIMIT", 1)
-
-          # The first vulnerability is created on L16.
-          second_vulnerability = create(:vulnerability, :sast,
-            project: project,
-            present_on_default_branch: true,
-            resolved_on_default_branch: false,
-            findings: [create(:vulnerabilities_finding, project: project, scanner: scanner)]
-          )
-
-          # This expectation doesn't fail if it is called multiple times, it fails if it is called with different
-          # arguments to those set up here. Both vulnerabilities will have different IDs, so if it **is** called
-          # twice then it will fail.
-          # This expectation confirms that the first vulnerability is successfully passed on to the auto-resolve
-          # service and the second is not.
-          expect_next_instance_of(Vulnerabilities::AutoResolveService, project, [vulnerability.id], 1) do |service|
-            expect(service).to receive(:execute).and_return(ServiceResponse.success(payload: { count: 1 }))
+        context 'with multiple batches' do
+          let_it_be(:second_vulnerability) do
+            create(:vulnerability, :sast,
+              project: project,
+              present_on_default_branch: true,
+              resolved_on_default_branch: false,
+              findings: [create(:vulnerabilities_finding, project: project, scanner: scanner)]
+            )
           end
 
-          command.execute
+          before do
+            # Setting the BATCH_SIZE to 1 forces us to handle each vulnerability one by one.
+            # The first vulnerability that we handle should be auto resolved.
+            stub_const("#{described_class.name}::BATCH_SIZE", 1)
+          end
 
-          # Finally, check that both vulnerabilities are still resolved_on_default_branch as before.
-          expect(vulnerability.reload).to be_resolved_on_default_branch
-          expect(second_vulnerability.reload).to be_resolved_on_default_branch
+          it 'stops calling AutoResolveService when count of resolved vulnerabilities is over limit' do
+            # Setting AUTO_RESOLVE_LIMIT to 1 is what lets us check that the limit works as expected
+            # By running in batches of 1, the first vulnerability should be auto-resolved and the
+            # second should not.
+            stub_const("#{described_class.name}::AUTO_RESOLVE_LIMIT", 1)
+
+            # This expectation doesn't fail if it is called multiple times, it fails if it is called with different
+            # arguments to those set up here. Both vulnerabilities will have different IDs, so if it **is** called
+            # twice then it will fail.
+            # This expectation confirms that the first vulnerability is successfully passed on to the auto-resolve
+            # service and the second is not.
+            expect_next_instance_of(Vulnerabilities::AutoResolveService, project, [vulnerability.id], 1) do |service|
+              expect(service).to receive(:execute).and_return(ServiceResponse.success(payload: { count: 1 }))
+            end
+
+            command.execute
+
+            # Finally, check that both vulnerabilities are still resolved_on_default_branch as before.
+            expect(vulnerability.reload).to be_resolved_on_default_branch
+            expect(second_vulnerability.reload).to be_resolved_on_default_branch
+          end
+
+          context 'when AutoResolveService returns an error' do
+            let(:error) do
+              ServiceResponse.error(
+                message: 'message',
+                reason: 'reason',
+                payload: payload
+              )
+            end
+
+            let(:payload) { {} }
+
+            before do
+              allow_next_instances_of(Vulnerabilities::AutoResolveService, 2) do |instance|
+                allow(instance).to receive(:execute).and_return(error)
+              end
+            end
+
+            it 'logs error only once' do
+              expect(Gitlab::AppJsonLogger).to receive(:error).with(
+                class: described_class.name,
+                message: 'message',
+                reason: 'reason'
+              ).once
+
+              command.execute
+            end
+
+            context 'with an exception' do
+              let(:exception) { StandardError.new('error') }
+              let(:payload) { { exception: exception } }
+
+              it 'tracks exception only once' do
+                expect(Gitlab::ErrorTracking).to receive(:track_exception).with(exception).once
+
+                command.execute
+              end
+            end
+          end
         end
 
         it 'creates a RepresentationInformation record for the resolved vulnerability' do

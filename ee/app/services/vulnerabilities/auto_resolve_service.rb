@@ -13,16 +13,17 @@ module Vulnerabilities
 
     def execute
       return ServiceResponse.success(payload: { count: 0 }) if policies.blank?
-      return error_response unless can_create_state_transitions?
+
+      unless can_create_state_transitions?
+        return error_response(reason: 'Bot user does not have permission to create state transitions')
+      end
 
       resolve_vulnerabilities
       refresh_statistics
 
       ServiceResponse.success(payload: { count: vulnerabilities_to_resolve.size })
     rescue ActiveRecord::ActiveRecordError => e
-      Gitlab::ErrorTracking.track_exception(e)
-
-      error_response
+      error_response(reason: 'ActiveRecord error', exception: e)
     end
 
     private
@@ -173,8 +174,12 @@ module Vulnerabilities
       @now ||= Time.current.utc
     end
 
-    def error_response
-      ServiceResponse.error(message: "Could not resolve vulnerabilities")
+    def error_response(reason:, exception: nil)
+      ServiceResponse.error(
+        message: "Could not resolve vulnerabilities",
+        reason: reason,
+        payload: { exception: exception }
+      )
     end
   end
 end
