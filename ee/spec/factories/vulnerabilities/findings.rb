@@ -59,7 +59,6 @@ FactoryBot.define do
 
     name { 'Cipher with no integrity' }
     project
-    project_fingerprint { generate(:project_fingerprint) }
     primary_identifier { association(:vulnerabilities_identifier, project: project) }
     location_fingerprint { SecureRandom.hex(20) }
     report_type { :sast }
@@ -206,8 +205,7 @@ FactoryBot.define do
         create(
           :vulnerability_feedback,
           :issue,
-          project: finding.project,
-          project_fingerprint: finding.project_fingerprint
+          project: finding.project
         )
       end
     end

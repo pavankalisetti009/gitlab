@@ -154,7 +154,7 @@ module Security
       if pipeline.project.licensed_feature_available?(:vulnerability_finding_signatures) && !finding.signatures.empty?
         dismissal_feedback_by_finding_signatures(finding)
       else
-        dismissal_feedback_by_project_fingerprint(finding)
+        dismissal_feedback_by_finding_uuid(finding)
       end
     end
 
@@ -171,14 +171,14 @@ module Security
       all_dismissal_feedbacks.any? { |dismissal| potential_uuids.include?(dismissal.finding_uuid) }
     end
 
-    def dismissal_feedback_by_fingerprint
-      strong_memoize(:dismissal_feedback_by_fingerprint) do
-        all_dismissal_feedbacks.group_by(&:project_fingerprint)
+    def dismissal_feedback_by_uuid
+      strong_memoize(:dismissal_feedback_by_uuid) do
+        all_dismissal_feedbacks.group_by(&:finding_uuid)
       end
     end
 
-    def dismissal_feedback_by_project_fingerprint(finding)
-      dismissal_feedback_by_fingerprint[finding.project_fingerprint]
+    def dismissal_feedback_by_finding_uuid(finding)
+      dismissal_feedback_by_uuid[finding.uuid]
     end
 
     def report_types

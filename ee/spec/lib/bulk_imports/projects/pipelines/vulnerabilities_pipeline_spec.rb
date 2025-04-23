@@ -34,7 +34,6 @@ RSpec.describe BulkImports::Projects::Pipelines::VulnerabilitiesPipeline, featur
         "severity" => "medium",
         "report_type" => "sast",
         "project_id" => project.id,
-        "project_fingerprint" => "4ce7494840bb1882d5a9003b0f272f8e3e22c7a5",
         "location_fingerprint" => "4f7a2fffbb791c4cc8d1454db40b80f7fa9ed5be",
         "name" => "Regular expression with non-literal value",
         "metadata_version" => "15.1.4",
@@ -81,7 +80,6 @@ RSpec.describe BulkImports::Projects::Pipelines::VulnerabilitiesPipeline, featur
         "severity" => "high",
         "report_type" => "sast",
         "project_id" => project.id,
-        "project_fingerprint" => "8af9b3e6d2c5f1a4b7e0d9c8f6a3b2e1",
         "location_fingerprint" => "7bc8a2d5e4f3c6b9a0d1e8f7c4b3a2d5",
         "name" => "Unsafe Deserialization of User Input",
         "metadata_version" => "15.1.4",
@@ -149,10 +147,6 @@ RSpec.describe BulkImports::Projects::Pipelines::VulnerabilitiesPipeline, featur
 
       expect(imported_finding.uuid).not_to be_empty
       expect(imported_finding.uuid).not_to eq('00000000-0000-0000-0000-000000000000')
-      expect(imported_finding.project_fingerprint)
-      .to eq(exported_vulnerability['vulnerability_finding']['project_fingerprint'])
-      expect(imported_finding.project_fingerprint)
-      .to eq(exported_vulnerability['vulnerability_finding']['project_fingerprint'])
       expect(imported_finding.name).to eq(exported_vulnerability['vulnerability_finding']['name'])
       expect(imported_finding.severity).to eq(exported_vulnerability['vulnerability_finding']['severity'])
       expect(imported_finding.detection_method)
@@ -173,8 +167,6 @@ RSpec.describe BulkImports::Projects::Pipelines::VulnerabilitiesPipeline, featur
 
       expect(imported_finding2.uuid).not_to be_empty
       expect(imported_finding2.uuid).not_to eq('00000000-0000-0000-0000-000000000000')
-      expect(imported_finding2.project_fingerprint)
-      .to eq(exported_vulnerability2['vulnerability_finding']['project_fingerprint'])
       expect(imported_finding2.location_fingerprint)
       .to eq(exported_vulnerability2['vulnerability_finding']['location_fingerprint'])
       expect(imported_finding2.name).to eq(exported_vulnerability2['vulnerability_finding']['name'])

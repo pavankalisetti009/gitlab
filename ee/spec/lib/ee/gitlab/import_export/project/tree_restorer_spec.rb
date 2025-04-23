@@ -403,7 +403,6 @@ RSpec.describe Gitlab::ImportExport::Project::TreeRestorer, :clean_gitlab_redis_
 
         expect(finding.severity).to eq('medium')
         expect(finding.report_type).to eq('sast')
-        expect(finding.project_fingerprint).to eq('4ce7494840bb1882d5a9003b0f272f8e3e22c7a5')
         expect(finding.location_fingerprint).to eq('4f7a2fffbb791c4cc8d1454db40b80f7fa9ed5be')
       end
 

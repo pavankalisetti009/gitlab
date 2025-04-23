@@ -8,7 +8,6 @@ class Vulnerabilities::FindingEntity < Grape::Entity
   expose :id, :report_type, :name, :severity
   expose :scanner, using: Vulnerabilities::ScannerEntity
   expose :identifiers, using: Vulnerabilities::IdentifierEntity
-  expose :project_fingerprint
   expose :uuid
   expose :create_jira_issue_url do |occurrence|
     create_jira_issue_url_for(occurrence)

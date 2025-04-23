@@ -34,7 +34,7 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportSummary', fe
         create(
           :security_finding,
           severity: finding.severity,
-          project_fingerprint: finding.project_fingerprint,
+          uuid: finding.uuid,
           deduplicated: true,
           scan: scan
         )

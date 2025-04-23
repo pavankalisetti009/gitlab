@@ -45,7 +45,6 @@ RSpec.describe Security::Ingestion::FindingMap, feature_category: :vulnerability
         scanner_id: security_finding.scanner_id,
         primary_identifier_id: nil,
         location_fingerprint: report_finding.location.fingerprint,
-        project_fingerprint: report_finding.project_fingerprint,
         name: 'Cipher with no integrity',
         report_type: :sast,
         severity: :high,

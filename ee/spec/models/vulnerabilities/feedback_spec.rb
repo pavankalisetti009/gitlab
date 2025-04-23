@@ -32,7 +32,6 @@ RSpec.describe Vulnerabilities::Feedback, feature_category: :vulnerability_manag
     it { is_expected.to validate_presence_of(:author) }
     it { is_expected.to validate_presence_of(:feedback_type) }
     it { is_expected.to validate_presence_of(:category) }
-    it { is_expected.to validate_presence_of(:project_fingerprint) }
     it { is_expected.to validate_length_of(:comment).is_at_most(50_000) }
 
     context 'pipeline is nil' do
@@ -235,7 +234,6 @@ RSpec.describe Vulnerabilities::Feedback, feature_category: :vulnerability_manag
     let(:user) { create(:user) }
     let(:pipeline) { create(:ci_pipeline, project: project) }
     let(:finding_uuid) { SecureRandom.uuid }
-    let(:project_fingerprint) { '418291a26024a1445b23fe64de9380cdcdfd1fa8' }
 
     let(:feedback_params) do
       {
@@ -243,7 +241,6 @@ RSpec.describe Vulnerabilities::Feedback, feature_category: :vulnerability_manag
         feedback_type: 'dismissal',
         pipeline_id: pipeline.id,
         category: 'sast',
-        project_fingerprint: project_fingerprint,
         author: user,
         vulnerability_data: {
           category: 'sast',
@@ -269,13 +266,13 @@ RSpec.describe Vulnerabilities::Feedback, feature_category: :vulnerability_manag
 
       context 'when there is a record for the given params' do
         context 'when the existing record matches by finding_uuid' do
-          let!(:existing_feedback) { create(:vulnerability_feedback, :dismissal, finding_uuid: finding_uuid, project_fingerprint: 'foo') }
+          let!(:existing_feedback) { create(:vulnerability_feedback, :dismissal, finding_uuid: finding_uuid) }
 
           it { is_expected.to eq(existing_feedback) }
         end
 
         context 'when the existing record does not match by finding uuid' do
-          let!(:existing_feedback) { create(:vulnerability_feedback, :dismissal, finding_uuid: nil, project_fingerprint: project_fingerprint) }
+          let!(:existing_feedback) { create(:vulnerability_feedback, :dismissal, finding_uuid: nil) }
 
           it { is_expected.to eq(existing_feedback) }
         end

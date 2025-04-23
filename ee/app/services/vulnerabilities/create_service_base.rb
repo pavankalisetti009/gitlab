@@ -129,7 +129,6 @@ module Vulnerabilities
         name: vulnerability.title,
         severity: vulnerability.severity,
         report_type: vulnerability.report_type,
-        project_fingerprint: Digest::SHA1.hexdigest(identifiers.first.name),
         location: location,
         location_fingerprint: loc_fingerprint,
         metadata_version: metadata_version,

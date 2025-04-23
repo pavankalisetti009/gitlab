@@ -85,7 +85,6 @@ module Security
         {
           category: @security_finding.scan_type,
           feedback_type: 'dismissal',
-          project_fingerprint: @security_finding.project_fingerprint,
           comment: @comment,
           dismissal_reason: @dismissal_reason,
           pipeline: @security_finding.pipeline,

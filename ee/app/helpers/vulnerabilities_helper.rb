@@ -3,7 +3,7 @@
 module VulnerabilitiesHelper
   include ::API::Helpers::RelatedResourcesHelpers
 
-  FINDING_FIELDS = %i[metadata identifiers name issue_feedback merge_request_feedback project project_fingerprint scanner uuid details dismissal_feedback false_positive state_transitions issue_links merge_request_links].freeze
+  FINDING_FIELDS = %i[metadata identifiers name issue_feedback merge_request_feedback project scanner uuid details dismissal_feedback false_positive state_transitions issue_links merge_request_links].freeze
 
   def vulnerability_details_app_data(vulnerability, pipeline, project)
     {

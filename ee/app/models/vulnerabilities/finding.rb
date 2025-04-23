@@ -8,9 +8,11 @@ module Vulnerabilities
     include ::VulnerabilityFindingHelpers
     include EachBatch
 
+    ignore_column :project_fingerprint, remove_with: '18.0', remove_after: '2025-04-21'
+
     # https://gitlab.com/groups/gitlab-org/-/epics/3148
     # https://gitlab.com/gitlab-org/gitlab/-/issues/214563#note_370782508 is why the table names are not renamed
-    self.table_name = "vulnerability_occurrences"
+    self.table_name = 'vulnerability_occurrences'
 
     FINDINGS_PER_PAGE = 20
     MAX_NUMBER_OF_IDENTIFIERS = 20
@@ -70,7 +72,6 @@ module Vulnerabilities
 
     paginates_per FINDINGS_PER_PAGE
 
-    sha_attribute :project_fingerprint
     sha_attribute :location_fingerprint
 
     attr_readonly :initial_pipeline_id
@@ -128,7 +129,6 @@ module Vulnerabilities
     validates :uuid, presence: true
 
     validates :primary_identifier, presence: true
-    validates :project_fingerprint, presence: true
     validates :location_fingerprint, presence: true
     # Uniqueness validation doesn't work with binary columns, so save this useless query. It is enforce by DB constraint anyway.
     # TODO: find out why it fails

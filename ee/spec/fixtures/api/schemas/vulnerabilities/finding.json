@@ -2,7 +2,6 @@
   "type": "object",
   "required": [
     "name",
-    "project_fingerprint",
     "severity",
     "report_type",
     "scanner",
@@ -11,9 +10,6 @@
   ],
   "properties": {
     "name": {
-      "type": "string"
-    },
-    "project_fingerprint": {
       "type": "string"
     },
     "uuid": {

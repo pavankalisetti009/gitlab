@@ -7,7 +7,6 @@ FactoryBot.define do
 
     severity { :critical }
     uuid { SecureRandom.uuid }
-    project_fingerprint { generate(:project_fingerprint) }
 
     transient do
       false_positive { false }

@@ -98,8 +98,7 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
           create(:vulnerabilities_finding,
             :confirmed,
             project: project,
-            report_type: report_finding.report_type,
-            project_fingerprint: report_finding.project_fingerprint)
+            report_type: report_finding.report_type)
         end
 
         # Need to warm the cache
@@ -233,7 +232,6 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
               :dependency_scanning,
               project: project,
               pipeline: pipeline,
-              project_fingerprint: ds_finding.project_fingerprint,
               vulnerability_data: ds_finding.raw_metadata,
               finding_uuid: ds_finding.uuid
             ),
@@ -243,7 +241,6 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
               :sast,
               project: project,
               pipeline: pipeline,
-              project_fingerprint: sast_finding.project_fingerprint,
               vulnerability_data: sast_finding.raw_metadata,
               finding_uuid: sast_finding.uuid
             )
@@ -259,7 +256,7 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
 
           it 'returns non-dismissed vulnerabilities' do
             expect(subject.findings.count).to eq(cs_count + dast_count + ds_count + sast_count - feedback.count)
-            expect(subject.findings.map(&:project_fingerprint)).not_to include(*feedback.map(&:project_fingerprint))
+            expect(subject.findings.map(&:uuid)).not_to include(*feedback.map(&:finding_uuid))
           end
         end
 
@@ -268,7 +265,7 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
 
           it 'returns non-dismissed vulnerabilities' do
             expect(subject.findings.count).to eq(ds_count - 1)
-            expect(subject.findings.map(&:project_fingerprint)).not_to include(ds_finding.project_fingerprint)
+            expect(subject.findings.map(&:uuid)).not_to include(ds_finding.uuid)
           end
         end
 
@@ -290,7 +287,6 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
               :sast,
               project: project,
               pipeline: pipeline,
-              project_fingerprint: sast_finding.project_fingerprint,
               vulnerability_data: sast_finding.raw_metadata,
               finding_uuid: sast_finding.uuid
             )
@@ -306,7 +302,7 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
 
           it 'returns non-dismissed vulnerabilities' do
             expect(subject.findings.count).to eq(cs_count + dast_count + ds_count + sast_count - feedback.count)
-            expect(subject.findings.map(&:project_fingerprint)).not_to include(*feedback.map(&:project_fingerprint))
+            expect(subject.findings.map(&:uuid)).not_to include(*feedback.map(&:finding_uuid))
           end
         end
 
@@ -315,7 +311,7 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
 
           it 'returns non-dismissed vulnerabilities' do
             expect(subject.findings.count).to eq(sast_count - 1)
-            expect(subject.findings.map(&:project_fingerprint)).not_to include(sast_finding.project_fingerprint)
+            expect(subject.findings.map(&:uuid)).not_to include(sast_finding.uuid)
           end
         end
 
@@ -393,7 +389,6 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
           project: project,
           pipeline: pipeline,
           category: finding_with_feedback.report_type,
-          project_fingerprint: finding_with_feedback.project_fingerprint,
           vulnerability_data: finding_with_feedback.raw_metadata,
           finding_uuid: finding_with_feedback.uuid
         )
@@ -417,7 +412,6 @@ RSpec.describe Security::PipelineVulnerabilitiesFinder, feature_category: :vulne
             vulnerability: vulnerability,
             report_type: finding_with_associated_vulnerability.report_type,
             project: project,
-            project_fingerprint: finding_with_associated_vulnerability.project_fingerprint,
             uuid: finding_with_associated_vulnerability.uuid
           )
         end

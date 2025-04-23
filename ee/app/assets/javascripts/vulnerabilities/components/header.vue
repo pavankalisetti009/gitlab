@@ -312,7 +312,6 @@ export default {
       const {
         reportType: category,
         pipeline: { sourceBranch },
-        projectFingerprint,
         uuid,
       } = this.vulnerability;
 
@@ -323,7 +322,6 @@ export default {
           vulnerability_feedback: {
             feedback_type: FEEDBACK_TYPES.MERGE_REQUEST,
             category,
-            project_fingerprint: projectFingerprint,
             finding_uuid: uuid,
             vulnerability_data: {
               ...convertObjectPropsToSnakeCase(this.vulnerability),

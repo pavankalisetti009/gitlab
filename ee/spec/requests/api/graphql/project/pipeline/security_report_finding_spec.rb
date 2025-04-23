@@ -25,7 +25,6 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportFinding',
               scanner {
                 name
               }
-              projectFingerprint
               identifiers {
                 name
               }

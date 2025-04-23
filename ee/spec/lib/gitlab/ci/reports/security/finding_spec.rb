@@ -63,7 +63,6 @@ RSpec.describe Gitlab::Ci::Reports::Security::Finding, feature_category: :vulner
 
         expect(subject).to have_attributes(
           confidence: :medium,
-          project_fingerprint: 'a0f79a47f5b5ab03cd1126486fdbfe14bae26c77',
           identifiers: [primary_identifier, other_identifier],
           links: [link],
           flags: [flag_1, flag_2],
@@ -138,7 +137,6 @@ RSpec.describe Gitlab::Ci::Reports::Security::Finding, feature_category: :vulner
         evidence: occurrence.evidence,
         metadata_version: occurrence.metadata_version,
         name: occurrence.name,
-        project_fingerprint: occurrence.project_fingerprint,
         raw_metadata: occurrence.raw_metadata,
         report_type: occurrence.report_type,
         scanner: occurrence.scanner,
