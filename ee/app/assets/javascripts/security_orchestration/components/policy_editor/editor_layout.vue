@@ -468,6 +468,51 @@ export default {
         <gl-icon v-gl-tooltip="$options.i18n.POLICY_RUN_TIME_TOOLTIP" name="information-o" />
         {{ $options.i18n.POLICY_RUN_TIME_MESSAGE }}
       </p>
+
+      <div
+        class="security-policies-actions gl-flex gl-flex-col gl-flex-wrap gl-items-baseline gl-gap-3"
+        :class="{ 'security-policies-actions-sidebar': ruleCollapsed }"
+      >
+        <p
+          v-if="shouldShowRuntimeMessage && hasNewSplitView"
+          class="gl-mb-0 gl-mt-5"
+          data-testid="scan-result-policy-run-time-info"
+        >
+          <gl-icon v-gl-tooltip="$options.i18n.POLICY_RUN_TIME_TOOLTIP" name="information-o" />
+          {{ $options.i18n.POLICY_RUN_TIME_MESSAGE }}
+        </p>
+
+        <div
+          class="gl-mt-5 gl-flex gl-grow gl-flex-wrap gl-gap-3"
+          :class="{ '!gl-mt-3': shouldShowRuntimeMessage }"
+        >
+          <gl-button
+            v-gl-tooltip
+            type="submit"
+            variant="confirm"
+            data-testid="save-policy"
+            :title="saveTooltipText"
+            :loading="isUpdatingPolicy"
+            @click="savePolicy"
+          >
+            {{ saveButtonText }}
+          </gl-button>
+          <gl-button category="secondary" :href="policiesPath">
+            {{ __('Cancel') }}
+          </gl-button>
+        </div>
+        <gl-button
+          v-if="isEditing"
+          v-gl-modal="'delete-modal'"
+          class="gl-self-end"
+          category="secondary"
+          variant="danger"
+          data-testid="delete-policy"
+          :loading="isRemovingPolicy"
+        >
+          {{ s__('SecurityOrchestration|Delete policy') }}
+        </gl-button>
+      </div>
     </div>
 
     <aside
@@ -509,47 +554,7 @@ export default {
         />
       </section>
     </aside>
-    <div
-      class="security-policies-actions gl-flex gl-flex-col gl-flex-wrap gl-items-baseline gl-gap-3"
-      :class="{ 'security-policies-actions-sidebar': ruleCollapsed }"
-    >
-      <p
-        v-if="shouldShowRuntimeMessage && hasNewSplitView"
-        class="gl-mb-2"
-        data-testid="scan-result-policy-run-time-info"
-      >
-        <gl-icon v-gl-tooltip="$options.i18n.POLICY_RUN_TIME_TOOLTIP" name="information-o" />
-        {{ $options.i18n.POLICY_RUN_TIME_MESSAGE }}
-      </p>
 
-      <div class="gl-flex gl-grow gl-flex-wrap gl-gap-3">
-        <gl-button
-          v-gl-tooltip
-          type="submit"
-          variant="confirm"
-          data-testid="save-policy"
-          :title="saveTooltipText"
-          :loading="isUpdatingPolicy"
-          @click="savePolicy"
-        >
-          {{ saveButtonText }}
-        </gl-button>
-        <gl-button category="secondary" :href="policiesPath">
-          {{ __('Cancel') }}
-        </gl-button>
-      </div>
-      <gl-button
-        v-if="isEditing"
-        v-gl-modal="'delete-modal'"
-        class="gl-self-end"
-        category="secondary"
-        variant="danger"
-        data-testid="delete-policy"
-        :loading="isRemovingPolicy"
-      >
-        {{ s__('SecurityOrchestration|Delete policy') }}
-      </gl-button>
-    </div>
     <gl-modal
       modal-id="delete-modal"
       :title="deleteModalTitle"
