@@ -4,8 +4,9 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :code_review_workflow do
   describe '#to_prompt' do
-    let(:diff) do
-      <<~RAWDIFF
+    let(:diffs_and_paths) do
+      {
+        'NEW.md' => <<~RAWDIFF
         @@ -1,4 +1,4 @@
          # NEW
 
@@ -18,30 +19,32 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
 
         -This is an old line
         +This is a new line
-      RAWDIFF
+        RAWDIFF
+      }
     end
 
     let(:new_path) { 'NEW.md' }
-    let(:hunk) { '-Welcome\n-This is a new file+Welcome!\n+This is a new file.' }
     let(:user) { build(:user) }
     let(:mr_title) { 'Fix typos in welcome message' }
     let(:mr_description) { 'Improving readability by fixing typos and adding proper punctuation.' }
 
     let(:prompt) do
       described_class.new(
-        new_path: new_path,
-        raw_diff: diff,
-        hunk: hunk,
-        user: user,
         mr_title: mr_title,
-        mr_description: mr_description
+        mr_description: mr_description,
+        diffs_and_paths: diffs_and_paths,
+        user: user
       ).to_prompt
     end
 
     subject(:user_prompt) { prompt&.dig(:messages, 0, :content) }
 
+    before do
+      stub_feature_flags(duo_code_review_multi_file: false)
+    end
+
     it 'includes new_path' do
-      expect(user_prompt).to include(new_path)
+      expect(user_prompt).to include("<filename>\n#{new_path}\n</filename>")
     end
 
     it 'includes merge request title' do
@@ -86,6 +89,34 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
 
     it 'specifies the system prompt' do
       expect(prompt[:system]).to eq(described_class::SYSTEM_MESSAGE[1])
+    end
+
+    context 'with multiple files' do
+      before do
+        stub_feature_flags(duo_code_review_multi_file: true)
+      end
+
+      let(:diffs_and_paths) do
+        {
+          'NEW.md' => "@@ -1,4 +1,4 @@\n # NEW\n-Welcome\n-This is a new file\n+Welcome!\n+This is a new file.",
+          'OTHER.md' => "@@ -5,3 +5,3 @@\n # CONTENT\n-This is old content\n+This is updated content"
+        }
+      end
+
+      it 'includes both file diffs' do
+        expect(user_prompt).to include('<file_diff filename="NEW.md">')
+        expect(user_prompt).to include('<file_diff filename="OTHER.md">')
+      end
+
+      it 'includes content from both files' do
+        # First file content
+        expect(user_prompt).to include('Welcome')
+        expect(user_prompt).to include('Welcome!')
+
+        # Second file content
+        expect(user_prompt).to include('This is old content')
+        expect(user_prompt).to include('This is updated content')
+      end
     end
   end
 end

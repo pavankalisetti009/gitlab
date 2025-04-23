@@ -20,26 +20,58 @@ module API
       not_found! unless license_feature_available && global_feature_flag_enabled && feature_flag_enabled
     end
 
+    helpers do
+      def parse_raw_diffs(raw_diffs)
+        diffs = {}
+        current_file = nil
+        current_content = []
+
+        raw_diffs.each_line do |line|
+          if line.start_with?('diff --git ')
+            # Save the previous file's content
+            if current_file && !current_content.empty?
+              diffs[current_file] = current_content.join
+              current_content = []
+            end
+
+            # Extract the new file path
+            match = line.match(%r{diff --git a/.+ b/(.+)})
+            current_file = match[1] if match
+
+            # Start collecting content for this file
+            current_content << line
+          elsif current_file
+            # Add line to current file's content
+            current_content << line
+          end
+        end
+
+        # Add the last file's content
+        diffs[current_file] = current_content.join if current_file && !current_content.empty?
+        diffs
+      end
+    end
+
     namespace 'duo_code_review' do
       resources :evaluations do
         params do
-          requires :new_path, type: String, limit: 255, desc: 'New path of the diff file'
-          requires :diff, type: String, desc: 'Diff for context'
-          requires :hunk, type: String, desc: 'Hunk to be reviewed'
+          requires :diffs, type: String, desc: 'Raw diffs to review'
           requires :mr_title, type: String, desc: 'Title of the merge request'
           requires :mr_description, type: String, desc: 'Description of the merge request'
         end
+
         post do
+          # Parse the raw diffs to extract individual files
+          diffs_and_paths = parse_raw_diffs(declared_params[:diffs])
+
           prompt = ::Gitlab::Llm::Templates::ReviewMergeRequest
-          .new(
-            new_path: declared_params[:new_path],
-            raw_diff: declared_params[:diff],
-            hunk: declared_params[:hunk],
-            user: current_user,
-            mr_title: declared_params[:mr_title],
-            mr_description: declared_params[:mr_description]
-          )
-          .to_prompt
+            .new(
+              mr_title: declared_params[:mr_title],
+              mr_description: declared_params[:mr_description],
+              diffs_and_paths: diffs_and_paths,
+              user: current_user
+            )
+            .to_prompt
 
           response = ::Gitlab::Llm::Anthropic::Client.new(
             current_user,
