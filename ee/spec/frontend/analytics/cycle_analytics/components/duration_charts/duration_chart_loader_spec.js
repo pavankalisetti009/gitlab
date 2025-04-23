@@ -55,6 +55,16 @@ describe('DurationChartLoader', () => {
     author_username: null,
     milestone_title: null,
     assignee_username: null,
+    'not[label_name]': null,
+  };
+
+  const gqlTransformedFilters = {
+    authorUsername: null,
+    assigneeUsernames: null,
+    milestoneTitle: null,
+    not: {
+      labelNames: null,
+    },
   };
 
   const defaultValueStreamStageMetricsParams = (isProject) => ({
@@ -64,6 +74,7 @@ describe('DurationChartLoader', () => {
     stageId: `gid://gitlab/Analytics::CycleAnalytics::Stage/${selectedStage.id}`,
     startDate: createdAfter,
     endDate: createdBefore,
+    ...gqlTransformedFilters,
   });
 
   const createWrapper = ({

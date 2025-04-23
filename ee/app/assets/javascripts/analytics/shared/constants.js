@@ -77,3 +77,8 @@ export const CONTRIBUTIONS_METRICS = {
   ISSUES: 'issues',
   CONTRIBUTIONS_BY_USER: 'contributions_by_user',
 };
+
+export const DEFAULT_RENAMED_FILTER_KEYS = {
+  assigneeUsername: 'assigneeUsernames',
+  'not[assigneeUsername]': 'not[assigneeUsernames]',
+};

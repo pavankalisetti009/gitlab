@@ -5,7 +5,14 @@ fragment ValueStreamStageMetrics on ValueStreamConnection {
     stages(id: $stageId) {
       id
       name
-      metrics(timeframe: { start: $startDate, end: $endDate }) {
+      metrics(
+        timeframe: { start: $startDate, end: $endDate }
+        assigneeUsernames: $assigneeUsernames
+        authorUsername: $authorUsername
+        milestoneTitle: $milestoneTitle
+        labelNames: $labelNames
+        not: $not
+      ) {
         items(sort: END_EVENT_ASC, first: 100, after: $endCursor) {
           edges {
             node {

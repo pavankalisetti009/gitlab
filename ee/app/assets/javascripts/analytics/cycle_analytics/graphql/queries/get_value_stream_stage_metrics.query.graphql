@@ -7,6 +7,11 @@ query getValueStreamStageMetrics(
   $startDate: Date!
   $endDate: Date!
   $endCursor: String = ""
+  $assigneeUsernames: [String!]
+  $authorUsername: String
+  $milestoneTitle: String
+  $labelNames: [String!]
+  $not: NegatedValueStreamAnalyticsIssuableFilterInput
   $isProject: Boolean = false
 ) {
   group(fullPath: $fullPath) @skip(if: $isProject) {

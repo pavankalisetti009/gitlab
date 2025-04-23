@@ -8,12 +8,15 @@ import {
 } from '~/lib/utils/datetime_utility';
 import { s__ } from '~/locale';
 import { createAlert, VARIANT_WARNING } from '~/alert';
+import { transformFilters } from 'ee/analytics/shared/utils';
+import { DEFAULT_RENAMED_FILTER_KEYS } from 'ee/analytics/shared/constants';
 import FilteredSearchIssueAnalytics from '../filtered_search_issues_analytics';
-import { RENAMED_FILTER_KEYS_CHART, DEFAULT_MONTHS_BACK } from '../constants';
-import { transformFilters } from '../utils';
+import { DEFAULT_MONTHS_BACK } from '../constants';
 import IssuesAnalyticsTable from './issues_analytics_table.vue';
 import IssuesAnalyticsChart from './issues_analytics_chart.vue';
 import TotalIssuesAnalyticsChart from './total_issues_analytics_chart.vue';
+
+const DROP_FILTER_KEYS = ['scope', 'include_subepics'];
 
 export default {
   components: {
@@ -51,10 +54,18 @@ export default {
       return getCurrentUtcDate();
     },
     chartFilters() {
-      return transformFilters(this.appliedFilters, RENAMED_FILTER_KEYS_CHART);
+      return transformFilters({
+        filters: this.appliedFilters,
+        renamedKeys: {
+          labelName: 'labelNames',
+          'not[labelName]': 'not[labelNames]',
+          ...DEFAULT_RENAMED_FILTER_KEYS,
+        },
+        dropKeys: DROP_FILTER_KEYS,
+      });
     },
     tableFilters() {
-      return transformFilters(this.appliedFilters);
+      return transformFilters({ filters: this.appliedFilters, dropKeys: DROP_FILTER_KEYS });
     },
   },
   watch: {
