@@ -16,10 +16,6 @@ module EE
       private
 
       def secrets_provider_not_found?(build)
-        unless ::Feature.enabled?(:enable_secrets_provider_check_on_pre_assign_runner_checks, build.project)
-          return false
-        end
-
         return false unless build.ci_secrets_management_available?
         return false unless build.secrets?
 

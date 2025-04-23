@@ -103,32 +103,6 @@ RSpec.describe Ci::RetryPipelineService, :freeze_time, feature_category: :contin
     end
   end
 
-  context 'when secrets provider not found check fails' do
-    before do
-      stub_licensed_features(ci_secrets_management: true)
-      stub_feature_flags(enable_secrets_provider_check_on_pre_assign_runner_checks: false)
-    end
-
-    let!(:build) { create(:ci_build, status: :created, pipeline: pipeline) }
-
-    it 'gracefully fails pipeline' do
-      allow_next_found_instance_of(::Ci::Build) do |build|
-        allow(build)
-          .to receive(:secrets?)
-          .and_return(true)
-        allow(build)
-          .to receive(:secrets_provider?)
-          .and_return(false)
-      end
-
-      response = service.execute(pipeline)
-
-      expect(response.http_status).to eq(:ok)
-      expect(pipeline.reload).to be_failed
-      expect(build.reload).to be_failed
-    end
-  end
-
   def build(name)
     pipeline.reload.statuses.latest.find_by(name: name)
   end
