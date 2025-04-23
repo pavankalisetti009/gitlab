@@ -90,13 +90,6 @@ module Types
       null: false,
       description: 'Identifiers of the vulnerability finding.'
 
-    field :project_fingerprint,
-      type: GraphQL::Types::String,
-      null: true,
-      method: :uuid,
-      description: 'Same as uuid. It is strongly suggested to use the uuid field instead.',
-      deprecated: { milestone: '16.1', reason: 'Use uuid instead' }
-
     field :uuid,
       type: GraphQL::Types::String,
       null: true,

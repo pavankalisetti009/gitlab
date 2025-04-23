@@ -15,6 +15,8 @@ module Security
     include Presentable
     include PartitionedTable
 
+    ignore_column :project_fingerprint, remove_with: '18.0', remove_after: '2025-04-21'
+
     MAX_PARTITION_SIZE = 100.gigabytes
     ATTRIBUTES_DELEGATED_TO_FINDING_DATA = %i[name description solution location identifiers links false_positive?
       assets evidence details remediation_byte_offsets

@@ -60,7 +60,6 @@ module Vulnerabilities
       {
         category: finding.report_type,
         feedback_type: 'dismissal',
-        project_fingerprint: finding.project_fingerprint,
         comment: @comment,
         dismissal_reason: @dismissal_reason,
         pipeline: @project.latest_ingested_security_pipeline,

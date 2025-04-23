@@ -9,8 +9,7 @@ RSpec.describe Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer, f
   let(:base_report) { build(:ci_reports_security_aggregated_findings, findings: [base_vulnerability]) }
 
   let(:head_vulnerability) do
-    build(:security_finding, uuid: base_vulnerability.uuid,
-      project_fingerprint: base_vulnerability.project_fingerprint)
+    build(:security_finding, uuid: base_vulnerability.uuid)
   end
 
   let(:head_report) { build(:ci_reports_security_aggregated_findings, findings: [head_vulnerability]) }

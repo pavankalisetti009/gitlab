@@ -21,9 +21,6 @@ export default {
     vulnerabilityId: {
       default: 0,
     },
-    projectFingerprint: {
-      default: '',
-    },
     newIssueUrl: {
       default: '',
     },

@@ -1,12 +1,7 @@
 # frozen_string_literal: true
 
 require 'digest'
-
 FactoryBot.define do
-  sequence :project_fingerprint do |n|
-    Digest::SHA1.hexdigest n.to_s
-  end
-
   factory :vulnerability_feedback, class: 'Vulnerabilities::Feedback' do
     project
     author
@@ -15,7 +10,6 @@ FactoryBot.define do
     pipeline { association(:ci_pipeline, project: project) }
     feedback_type { 'dismissal' }
     category { 'sast' }
-    project_fingerprint { generate(:project_fingerprint) }
     vulnerability_data { { category: 'sast' } }
     finding_uuid { Gitlab::UUID.v5(SecureRandom.hex) }
 

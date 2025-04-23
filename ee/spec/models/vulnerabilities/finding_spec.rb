@@ -40,7 +40,6 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       it { is_expected.to validate_presence_of(:scanner) }
       it { is_expected.to validate_presence_of(:project) }
       it { is_expected.to validate_presence_of(:uuid) }
-      it { is_expected.to validate_presence_of(:project_fingerprint) }
       it { is_expected.to validate_presence_of(:primary_identifier) }
       it { is_expected.to validate_presence_of(:location_fingerprint) }
       it { is_expected.to validate_presence_of(:name) }

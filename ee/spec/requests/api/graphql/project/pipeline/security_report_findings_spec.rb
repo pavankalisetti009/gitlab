@@ -22,7 +22,6 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportFindings',
                 scanner {
                   name
                 }
-                projectFingerprint
                 identifiers {
                   name
                 }
@@ -90,7 +89,6 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportFindings',
         expect(security_report_finding['severity']).not_to be_nil
         expect(security_report_finding['reportType']).not_to be_nil
         expect(security_report_finding['name']).not_to be_nil
-        expect(security_report_finding['projectFingerprint']).not_to be_nil
         expect(security_report_finding['uuid']).not_to be_nil
         expect(security_report_finding['solution']).not_to be_nil
         expect(security_report_finding['description']).not_to be_nil

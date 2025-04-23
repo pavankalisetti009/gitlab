@@ -34,7 +34,6 @@ RSpec.describe GitlabSchema.types['PipelineSecurityReportFinding'], feature_cate
       links
       assets
       evidence
-      project_fingerprint
       uuid
       project
       description

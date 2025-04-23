@@ -72,7 +72,6 @@ module Quality
           scanner: scanner,
           severity: random_severity_level,
           primary_identifier: primary_identifier,
-          project_fingerprint: random_fingerprint,
           location_fingerprint: random_fingerprint,
           raw_metadata: Gitlab::Json.dump(metadata(rank))
         )
@@ -102,8 +101,7 @@ module Quality
           project: project,
           author: author,
           issue: issue,
-          pipeline: pipeline,
-          project_fingerprint: finding.project_fingerprint
+          pipeline: pipeline
         )
       end
 

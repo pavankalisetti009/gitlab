@@ -75,14 +75,14 @@ RSpec.describe Vulnerabilities::FindingEntity, feature_category: :vulnerability_
       let(:dismiss_feedback) do
         build(
           :vulnerability_feedback, :sast, :dismissal,
-          project: project, project_fingerprint: occurrence.project_fingerprint
+          project: project, uuid: occurrence.uuid
         )
       end
 
       let(:issue_feedback) do
         build(
           :vulnerability_feedback, :sast, :issue,
-          project: project, project_fingerprint: occurrence.project_fingerprint
+          project: project, uuid: occurrence.uuid
         )
       end
 
@@ -101,7 +101,7 @@ RSpec.describe Vulnerabilities::FindingEntity, feature_category: :vulnerability_
 
       it 'contains required fields' do
         expect(subject).to include(:id)
-        expect(subject).to include(:name, :report_type, :severity, :project_fingerprint)
+        expect(subject).to include(:name, :report_type, :severity)
         expect(subject).to include(:scanner, :project, :identifiers)
         expect(subject).to include(:dismissal_feedback, :issue_feedback)
         expect(subject).to include(:description, :links, :location, :remediations, :solution, :evidence)

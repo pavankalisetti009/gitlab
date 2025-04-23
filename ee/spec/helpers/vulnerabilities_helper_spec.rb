@@ -48,7 +48,7 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
       )
     end
 
-    let(:desired_serializer_fields) { %i[metadata identifiers name issue_feedback merge_request_feedback project project_fingerprint scanner uuid details dismissal_feedback false_positive state_transitions issue_links merge_request_links] }
+    let(:desired_serializer_fields) { %i[metadata identifiers name issue_feedback merge_request_feedback project scanner uuid details dismissal_feedback false_positive state_transitions issue_links merge_request_links] }
 
     before do
       vulnerability_serializer_stub = instance_double("VulnerabilitySerializer")
@@ -450,7 +450,6 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
         name: finding.name,
         merge_request_feedback: anything,
         project: kind_of(Grape::Entity::Exposure::NestingExposure::OutputBuilder),
-        project_fingerprint: finding.project_fingerprint,
         remediations: finding.remediations,
         solution: kind_of(String),
         solution_html: match(%r{p data-sourcepos.*?\<\/p}),

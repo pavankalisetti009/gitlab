@@ -46,7 +46,6 @@ class Vulnerabilities::FeedbackEntity < Grape::Entity
   expose :branch do |feedback|
     feedback&.pipeline&.ref
   end
-  expose :project_fingerprint
 
   expose :dismissal_reason
 

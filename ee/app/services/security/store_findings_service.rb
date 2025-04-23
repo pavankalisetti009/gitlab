@@ -66,7 +66,6 @@ module Security
         severity: report_finding.severity,
         uuid: report_finding.uuid,
         overridden_uuid: report_finding.overridden_uuid,
-        project_fingerprint: report_finding.project_fingerprint,
         scanner_id: scanner.id,
         deduplicated: deduplicated?(report_finding),
         finding_data: finding_data_for(report_finding)

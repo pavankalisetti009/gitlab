@@ -156,7 +156,7 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
           )
 
           expect do
-            finding.update!(project_fingerprint: "123qweasdzx")
+            finding.update!(uuid: SecureRandom.uuid)
           end.not_to change { Vulnerabilities::Read.first.location_image }
         end
       end
@@ -1127,14 +1127,13 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   # rubocop:disable Metrics/ParameterLists
   def create_finding(
     vulnerability: nil, primary_identifier: identifier, severity: 7, report_type: 0,
-    project_fingerprint: '123qweasdzxc', location: { "image" => "alpine:3.4" }, location_fingerprint: 'test',
+    location: { "image" => "alpine:3.4" }, location_fingerprint: 'test',
     metadata_version: 'test', raw_metadata: 'test', uuid: SecureRandom.uuid)
     create(:vulnerabilities_finding,
       vulnerability: vulnerability,
       project: project,
       severity: severity,
       report_type: report_type,
-      project_fingerprint: project_fingerprint,
       scanner: scanner,
       primary_identifier: primary_identifier,
       location: location,

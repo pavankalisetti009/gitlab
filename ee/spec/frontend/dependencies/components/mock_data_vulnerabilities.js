@@ -20,7 +20,6 @@ export const issueData = {
   category: 'sast',
   feedback_type: 'issue',
   branch: 'main',
-  project_fingerprint: '4e5b6966dd100170b4b1ad599c7058cce91b57b4',
   link_type: 'created',
 };
 
@@ -51,7 +50,6 @@ export default [
         url: 'http://cve.mitre.org/cgi-bin/cvename.cgi?name=2018-1234',
       },
     ],
-    project_fingerprint: '4e5b6966dd100170b4b1ad599c7058cce91b57b4',
     project: {
       id: 1,
       name: 'project1',
@@ -121,7 +119,6 @@ export default [
         url: 'http://cve.mitre.org/cgi-bin/cvename.cgi?name=2018-1234',
       },
     ],
-    project_fingerprint: '4e5b6966dd100170b4b1ad599c7058cce91b57b4',
     project: {
       id: 1,
       name: 'project1',
@@ -177,7 +174,6 @@ export default [
         url: 'http://cve.mitre.org/cgi-bin/cvename.cgi?name=2018-1234',
       },
     ],
-    project_fingerprint: '4e5b6966dd100170b4b1ad599c7058cce91b57b4',
     project: {
       id: 1,
       name: 'project1',
@@ -206,7 +202,6 @@ export default [
       category: 'sast',
       feedback_type: 'dismissal',
       branch: 'main',
-      project_fingerprint: '4e5b6966dd100170b4b1ad599c7058cce91b57b4',
     },
     state_transitions: [{ to_state: 'dismissed' }],
     issue_feedback: null,
@@ -257,7 +252,6 @@ export default [
         url: 'http://cve.mitre.org/cgi-bin/cvename.cgi?name=2018-1234',
       },
     ],
-    project_fingerprint: '4e5b6966dd100170b4b1ad599c7058cce91b57b4',
     project: {
       id: 1,
       name: 'project1',
@@ -295,7 +289,6 @@ export default [
         url: 'http://cve.mitre.org/cgi-bin/cvename.cgi?name=2018-1234',
       },
     ],
-    project_fingerprint: '4e5b6966dd100170b4b1ad599c7058cce91b57b4',
     project: {
       id: 1,
       name: 'project1',
@@ -324,7 +317,6 @@ export default [
       category: 'sast',
       feedback_type: 'dismissal',
       branch: 'main',
-      project_fingerprint: '4e5b6966dd100170b4b1ad599c7058cce91b57b4',
     },
     issue_feedback: issueData,
     issue_links: [issueData],
@@ -374,7 +366,6 @@ export default [
         url: 'http://cve.mitre.org/cgi-bin/cvename.cgi?name=2018-1234',
       },
     ],
-    project_fingerprint: '4e5b6966dd100170b4b1ad599c7058cce91b57b4',
     project: {
       id: 1,
       name: 'project1',
@@ -430,7 +421,6 @@ export default [
         url: 'http://cve.mitre.org/cgi-bin/cvename.cgi?name=2018-1234',
       },
     ],
-    project_fingerprint: '4e5b6966dd100170b4b1ad599c7058cce91b57b4',
     project: {
       id: 1,
       name: 'project1',
@@ -480,7 +470,6 @@ export default [
         url: 'https://security-tracker.debian.org/tracker/CVE-2018-1000001',
       },
     ],
-    project_fingerprint: 'af08ab5aa899af9e74318ebc23684c9aa728ab7c',
     create_vulnerability_feedback_issue_path: '/gitlab-org/sec-reports/vulnerability_feedback',
     create_vulnerability_feedback_merge_request_path:
       '/gitlab-org/sec-reports/vulnerability_feedback',
@@ -540,7 +529,6 @@ export default [
         url: 'https://security-tracker.debian.org/tracker/CVE-2018-1000001',
       },
     ],
-    project_fingerprint: 'af08ab5aa899af9e74318ebc23684c9aa728ab7c',
     create_vulnerability_feedback_issue_path: '/gitlab-org/sec-reports/vulnerability_feedback',
     create_vulnerability_feedback_merge_request_path:
       '/gitlab-org/sec-reports/vulnerability_feedback',
