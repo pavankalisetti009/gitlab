@@ -10,7 +10,7 @@ class Groups::SamlProvidersController < Groups::ApplicationController
   before_action :check_group_saml_available!
   before_action :check_group_saml_configured
   before_action :check_microsoft_group_sync_available, only: [:update_microsoft_application]
-  before_action :find_or_initialize_microsoft_application, only: [:show]
+  before_action :find_or_initialize_microsoft_application, only: [:show, :update_microsoft_application]
 
   feature_category :system_access
 
@@ -45,14 +45,12 @@ class Groups::SamlProvidersController < Groups::ApplicationController
     params = microsoft_application_params.dup
     params.delete(:client_secret) if params[:client_secret].blank?
 
-    result = update_microsoft_application_model(params)
-
-    if result[:status]
+    if @microsoft_application.update(params)
       flash[:notice] = s_('Microsoft|Microsoft Azure integration settings were successfully updated.')
     else
       flash[:alert] = safe_format(
         s_('Microsoft|Microsoft Azure integration settings failed to save. %{errors}'),
-        errors: result[:errors].to_sentence
+        errors: @microsoft_application.errors.full_messages.to_sentence
       )
     end
 
@@ -89,54 +87,16 @@ class Groups::SamlProvidersController < Groups::ApplicationController
 
   # rubocop:disable CodeReuse/ActiveRecord -- splitting out legacy code
   def find_or_initialize_microsoft_application
-    is_enabled = Feature.enabled?(:group_microsoft_applications_table, @group)
-
-    @microsoft_application = if is_enabled
-                               ::SystemAccess::GroupMicrosoftApplication.find_or_initialize_by(
-                                 group: @group
-                               )
-                             else
-                               ::SystemAccess::MicrosoftApplication.find_or_initialize_by(
-                                 namespace: @group
-                               )
-                             end
-  end
-
-  def update_microsoft_application_model(params)
-    group_app = ::SystemAccess::GroupMicrosoftApplication.find_or_initialize_by(
+    @microsoft_application = ::SystemAccess::GroupMicrosoftApplication.find_or_initialize_by(
       group: @group
     )
-    legacy_app = ::SystemAccess::MicrosoftApplication.find_or_initialize_by(
-      namespace: @group
-    )
-
-    group_app_result = nil
-    legacy_app_result = nil
-
-    ::SystemAccess::GroupMicrosoftApplication.transaction do
-      group_app_result = group_app.update(params)
-      legacy_app_result = legacy_app.update(params)
-
-      raise ActiveRecord::Rollback unless group_app_result && legacy_app_result
-    end
-
-    errors = group_app.errors.full_messages + legacy_app.errors.full_messages
-
-    {
-      status: group_app_result && legacy_app_result,
-      errors: errors.uniq
-    }
   end
   # rubocop:enable CodeReuse/ActiveRecord
 
   def microsoft_application_params
     fields = %i[enabled tenant_xid client_xid client_secret login_endpoint graph_endpoint]
 
-    if Feature.enabled?(:group_microsoft_applications_table, @group)
-      params.require(:system_access_group_microsoft_application).permit(*fields)
-    else
-      params.require(:system_access_microsoft_application).permit(*fields)
-    end
+    params.require(:system_access_group_microsoft_application).permit(*fields)
   end
 
   def check_microsoft_group_sync_available

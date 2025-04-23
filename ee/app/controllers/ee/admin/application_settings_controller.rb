@@ -22,7 +22,7 @@ module EE
         before_action :new_license, only: [:general]
         before_action :scim_token, only: [:general]
         before_action :check_microsoft_group_sync_available, only: [:update_microsoft_application]
-        before_action :find_or_initialize_microsoft_application, only: [:general]
+        before_action :find_or_initialize_microsoft_application, only: [:general, :update_microsoft_application]
         before_action :verify_namespace_plan_check_enabled, only: [:namespace_storage]
         before_action :indexing_status, only: [:search]
 
@@ -101,14 +101,12 @@ module EE
           params = microsoft_application_params.dup
           params.delete(:client_secret) if params[:client_secret].blank?
 
-          result = update_microsoft_application_model(params)
-
-          if result[:status]
+          if @microsoft_application.update(params)
             flash[:notice] = s_('Microsoft|Microsoft Azure integration settings were successfully updated.')
           else
             flash[:alert] = safe_format(
               s_('Microsoft|Microsoft Azure integration settings failed to save. %{errors}'),
-              errors: result[:errors].to_sentence
+              errors: @microsoft_application.errors.full_messages.to_sentence
             )
           end
 
@@ -264,12 +262,6 @@ module EE
         return unless microsoft_group_sync_enabled?
 
         @microsoft_application = ::SystemAccess::MicrosoftApplication.find_or_initialize_by(namespace: nil)
-      end
-
-      def update_microsoft_application_model(params)
-        instance_app = ::SystemAccess::MicrosoftApplication.find_or_initialize_by(namespace: nil)
-        status = instance_app.update(params)
-        { status: status, errors: instance_app.errors.full_messages }
       end
       # rubocop:enable CodeReuse/ActiveRecord, Gitlab/ModuleWithInstanceVariables
 

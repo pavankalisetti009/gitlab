@@ -39,11 +39,14 @@ module EE
         inverse_of: :namespace
       has_one :upcoming_reconciliation, inverse_of: :namespace,
         class_name: "GitlabSubscriptions::UpcomingReconciliation"
+      has_one :system_access_microsoft_application,
+        class_name: '::SystemAccess::GroupMicrosoftApplication',
+        foreign_key: :group_id,
+        inverse_of: :group
       has_one :group_system_access_microsoft_application,
         class_name: '::SystemAccess::GroupMicrosoftApplication',
         foreign_key: :group_id,
         inverse_of: :group
-      has_one :legacy_system_access_microsoft_application, class_name: '::SystemAccess::MicrosoftApplication'
       has_one :onboarding_progress, class_name: 'Onboarding::Progress'
 
       has_many :gitlab_subscription_histories, class_name: "GitlabSubscriptions::SubscriptionHistory"
@@ -633,14 +636,6 @@ module EE
 
     def resource_parent
       self
-    end
-
-    def system_access_microsoft_application
-      if ::Feature.enabled?(:group_microsoft_applications_table, self)
-        group_system_access_microsoft_application
-      else
-        legacy_system_access_microsoft_application
-      end
     end
 
     def projects_with_repository_size_limit_usage_ratio_greater_than(ratio:)

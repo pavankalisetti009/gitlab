@@ -243,39 +243,6 @@ RSpec.describe Gitlab::Auth::GroupSaml::MembershipUpdater, feature_category: :sy
               it_behaves_like 'not enqueueing Group SAML Group Sync worker'
             end
           end
-
-          context 'when the group_microsoft_applications_table FF is disabled' do
-            before do
-              stub_feature_flags(group_microsoft_applications_table: false)
-            end
-
-            context 'and a Microsoft Application is present' do
-              let!(:application) { create(:system_access_microsoft_application, namespace: group) }
-
-              context 'when the Microsoft Application is not enabled' do
-                before do
-                  application.update!(enabled: false)
-                end
-
-                it_behaves_like 'not enqueueing Microsoft Group Sync worker'
-              end
-
-              context 'when the Microsoft application is enabled' do
-                before do
-                  application.update!(enabled: true)
-                end
-
-                it 'enqueues Microsoft Group Sync worker' do
-                  expect(::SystemAccess::GroupSamlMicrosoftGroupSyncWorker)
-                    .to receive(:perform_async).with(user.id, group.id)
-
-                  update_membership
-                end
-
-                it_behaves_like 'not enqueueing Group SAML Group Sync worker'
-              end
-            end
-          end
         end
       end
     end
@@ -310,42 +277,6 @@ RSpec.describe Gitlab::Auth::GroupSaml::MembershipUpdater, feature_category: :sy
       end
 
       it_behaves_like 'not enqueueing Group SAML Group Sync worker'
-    end
-
-    context 'when the group_microsoft_applications_table FF is disabled' do
-      before do
-        stub_feature_flags(group_microsoft_applications_table: false)
-      end
-
-      context 'when the auth hash contains both groups and a group claim' do
-        let_it_be(:auth_hash) do
-          Gitlab::Auth::GroupSaml::AuthHash.new(
-            OmniAuth::AuthHash.new(extra: {
-              raw_info: OneLogin::RubySaml::Attributes.new({
-                'groups' => %w[Developers Owners],
-                'http://schemas.microsoft.com/claims/groups.link' =>
-                  ['https://graph.windows.net/8c750e43/users/e631c82c/getMemberObjects']
-              })
-            })
-          )
-        end
-
-        let!(:application) { create(:system_access_microsoft_application, enabled: true, namespace: group) }
-
-        before do
-          stub_licensed_features(microsoft_group_sync: true)
-          stub_saml_group_sync_available(true)
-        end
-
-        it 'enqueues Microsoft Group Sync worker' do
-          expect(::SystemAccess::GroupSamlMicrosoftGroupSyncWorker)
-            .to receive(:perform_async).with(user.id, group.id)
-
-          update_membership
-        end
-
-        it_behaves_like 'not enqueueing Group SAML Group Sync worker'
-      end
     end
   end
 

@@ -103,31 +103,6 @@ RSpec.describe SystemAccess::SamlMicrosoftGroupSyncWorker, :aggregate_failures, 
 
           worker.perform(user_with_identity.id)
         end
-
-        # this should have no effect on the worker, but including for coverage of all call-sites to
-        # SystemAccess::MicrosoftApplication . Can be removed along with group_microsoft_applications_table FF
-        context 'when FF is disabled' do
-          before do
-            stub_feature_flags(group_microsoft_applications_table: false)
-          end
-
-          it 'calls the service for all top-level groups with any groups links in the hierarchy' do
-            expect(Groups::SyncService).to receive(:new).with(
-              group1,
-              user_with_identity,
-              group_links: [subgroup1_link],
-              manage_group_ids: an_array_matching([group1.id, subgroup1.id])
-            ).and_call_original
-
-            expect(Groups::SyncService).to receive(:new).with(
-              group2, user_with_identity, group_links: [], manage_group_ids: [group2.id]
-            ).and_call_original
-
-            expect(Groups::SyncService).not_to receive(:new).with(group3, any_args)
-
-            worker.perform(user_with_identity.id)
-          end
-        end
       end
 
       context 'with a group in the hierarchy that has no group links' do
