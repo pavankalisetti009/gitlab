@@ -9182,7 +9182,6 @@ CREATE TABLE application_settings (
     vscode_extension_marketplace jsonb DEFAULT '{}'::jsonb NOT NULL,
     token_prefixes jsonb DEFAULT '{}'::jsonb NOT NULL,
     ci_cd_settings jsonb DEFAULT '{}'::jsonb NOT NULL,
-    duo_nano_features_enabled boolean,
     database_reindexing jsonb DEFAULT '{}'::jsonb NOT NULL,
     duo_chat jsonb DEFAULT '{}'::jsonb NOT NULL,
     CONSTRAINT app_settings_container_reg_cleanup_tags_max_list_size_positive CHECK ((container_registry_cleanup_tags_service_max_list_size >= 0)),
