@@ -44,9 +44,7 @@ module Elastic
         data['label_ids'] = target.label_ids.map(&:to_s)
         data['traversal_ids'] = target.project.elastic_namespace_ancestry
 
-        if ::Elastic::DataMigrationService.migration_has_finished?(:add_assignees_to_merge_requests)
-          data['assignee_ids'] = target.assignee_ids.map(&:to_s)
-        end
+        data['assignee_ids'] = target.assignee_ids.map(&:to_s)
 
         data.merge(generic_attributes)
       end
