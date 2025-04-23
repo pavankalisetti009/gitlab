@@ -130,6 +130,7 @@ module Security
             Gitlab::ErrorTracking.track_exception(exception)
           else
             Gitlab::AppJsonLogger.error(
+              class: self.class.name,
               message: result.message,
               reason: result.reason
             )

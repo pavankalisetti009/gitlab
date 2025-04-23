@@ -104,6 +104,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
 
             it 'logs error only once' do
               expect(Gitlab::AppJsonLogger).to receive(:error).with(
+                class: described_class.name,
                 message: 'message',
                 reason: 'reason'
               ).once
