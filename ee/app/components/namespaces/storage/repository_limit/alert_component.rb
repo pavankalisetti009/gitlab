@@ -104,17 +104,17 @@ module Namespaces
             safe_format(
               s_(
                 "NamespaceStorageSize|You have consumed all available " \
-                  "%{storage_docs_link_start}storage%{link_end} and you can't " \
-                  "push or add large files to projects over the free tier limit (%{free_size_limit})."
+                  "%{storage_docs_link_start}storage%{link_end} and can't " \
+                  "push or add large files to projects over the included storage (%{free_size_limit})."
               ),
               text_args
             )
           else
             safe_format(
               s_(
-                "NamespaceStorageSize|If a project reaches 100%% of the " \
-                  "%{storage_docs_link_start}storage quota%{link_end} (%{free_size_limit}) the project will be " \
-                  "in a read-only state, and you won't be able to push to your repository or add large files."
+                "NamespaceStorageSize|When a project reaches 100%% of the " \
+                  "%{storage_docs_link_start}allocated storage%{link_end} (%{free_size_limit}) it will be placed " \
+                  "in a read-only state. You won't be able to push and add large files to your repository."
               ),
               text_args
             )
@@ -124,33 +124,48 @@ module Namespaces
         def alert_message_cta
           group_member_link = group_group_members_path(root_namespace)
           purchase_more_link = help_page_path('subscriptions/gitlab_com/_index.md', anchor: 'purchase-more-storage')
+          manage_storage_link = help_page_path('user/storage_usage_quotas.md', anchor: 'manage-storage-usage')
           text_args = {
             **tag_pair(link_to('', group_member_link), :group_member_link_start, :link_end),
-            **tag_pair(link_to('', purchase_more_link), :purchase_more_link_start, :link_end)
+            **tag_pair(link_to('', purchase_more_link), :purchase_more_link_start, :link_end),
+            **tag_pair(link_to('', manage_storage_link), :manage_storage_link_start, :link_end),
+            **tag_pair(link_to('', "https://support.gitlab.com"), :support_link_start, :link_end)
           }
 
-          if root_storage_size.above_size_limit?
-            if Ability.allowed?(user, :owner_access, context)
-              return safe_format(
-                s_(
-                  "NamespaceStorageSize|To remove the read-only state, reduce git repository and git LFS storage, " \
-                    "or %{purchase_more_link_start}purchase more storage%{link_end}."
-                ),
-                text_args
-              )
-            end
+          unless root_storage_size.above_size_limit?
+            return s_("NamespaceStorageSize|To reduce storage usage, reduce git repository and git LFS storage.")
+          end
 
-            safe_format(
+          if root_storage_size.subject_to_high_limit?
+            return safe_format(
               s_(
-                "NamespaceStorageSize|To remove the read-only state, reduce git repository and git LFS storage, " \
-                  "or contact a user with the %{group_member_link_start}owner role for this namespace%{link_end} " \
-                  "and ask them to %{purchase_more_link_start}purchase more storage%{link_end}."
+                "NamespaceStorageSize|To remove the read-only state, " \
+                  "%{manage_storage_link_start}manage your storage usage%{link_end} " \
+                  "or %{support_link_start}contact support%{link_end}."
               ),
               text_args
             )
-          else
-            s_("NamespaceStorageSize|To reduce storage usage, reduce git repository and git LFS storage.")
           end
+
+          if Ability.allowed?(user, :owner_access, context)
+            return safe_format(
+              s_(
+                "NamespaceStorageSize|To remove the read-only state, " \
+                  "%{manage_storage_link_start}manage your storage usage%{link_end} " \
+                  "or %{purchase_more_link_start}purchase more storage%{link_end}."
+              ),
+              text_args
+            )
+          end
+
+          safe_format(
+            s_(
+              "NamespaceStorageSize|To remove the read-only state " \
+                "contact a user with the %{group_member_link_start}owner role for this namespace%{link_end} " \
+                "and ask them to %{purchase_more_link_start}purchase more storage%{link_end}."
+            ),
+            text_args
+          )
         end
 
         def usage_thresholds

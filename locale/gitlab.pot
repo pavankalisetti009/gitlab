@@ -39433,9 +39433,6 @@ msgstr ""
 msgid "NamespaceStorageSize|If %{namespace_name} exceeds the %{storage_docs_link_start}storage quota%{link_end}, your ability to write new data to this namespace will be restricted. %{read_only_link_start}Which actions become restricted?%{link_end}"
 msgstr ""
 
-msgid "NamespaceStorageSize|If a project reaches 100%% of the %{storage_docs_link_start}storage quota%{link_end} (%{free_size_limit}) the project will be in a read-only state, and you won't be able to push to your repository or add large files."
-msgstr ""
-
 msgid "NamespaceStorageSize|To manage your usage and prevent your projects from being placed in a read-only state, you should immediately %{manage_storage_link_start}reduce storage%{link_end}, or %{support_link_start}contact support%{link_end} to help you manage your usage."
 msgstr ""
 
@@ -39454,16 +39451,22 @@ msgstr ""
 msgid "NamespaceStorageSize|To remove the read-only state %{manage_storage_link_start}manage your storage usage%{link_end}, or contact a user with the %{group_member_link_start}owner role for this namespace%{link_end} and ask them to %{purchase_more_link_start}purchase more storage%{link_end}."
 msgstr ""
 
-msgid "NamespaceStorageSize|To remove the read-only state, reduce git repository and git LFS storage, or %{purchase_more_link_start}purchase more storage%{link_end}."
+msgid "NamespaceStorageSize|To remove the read-only state contact a user with the %{group_member_link_start}owner role for this namespace%{link_end} and ask them to %{purchase_more_link_start}purchase more storage%{link_end}."
 msgstr ""
 
-msgid "NamespaceStorageSize|To remove the read-only state, reduce git repository and git LFS storage, or contact a user with the %{group_member_link_start}owner role for this namespace%{link_end} and ask them to %{purchase_more_link_start}purchase more storage%{link_end}."
+msgid "NamespaceStorageSize|To remove the read-only state, %{manage_storage_link_start}manage your storage usage%{link_end} or %{purchase_more_link_start}purchase more storage%{link_end}."
+msgstr ""
+
+msgid "NamespaceStorageSize|To remove the read-only state, %{manage_storage_link_start}manage your storage usage%{link_end} or %{support_link_start}contact support%{link_end}."
 msgstr ""
 
 msgid "NamespaceStorageSize|We've noticed an unusually high storage usage on %{namespace_name}"
 msgstr ""
 
-msgid "NamespaceStorageSize|You have consumed all available %{storage_docs_link_start}storage%{link_end} and you can't push or add large files to projects over the free tier limit (%{free_size_limit})."
+msgid "NamespaceStorageSize|When a project reaches 100%% of the %{storage_docs_link_start}allocated storage%{link_end} (%{free_size_limit}) it will be placed in a read-only state. You won't be able to push and add large files to your repository."
+msgstr ""
+
+msgid "NamespaceStorageSize|You have consumed all available %{storage_docs_link_start}storage%{link_end} and can't push or add large files to projects over the included storage (%{free_size_limit})."
 msgstr ""
 
 msgid "NamespaceStorageSize|You have reached the free storage limit of %{free_size_limit} for %{namespace_name}"
