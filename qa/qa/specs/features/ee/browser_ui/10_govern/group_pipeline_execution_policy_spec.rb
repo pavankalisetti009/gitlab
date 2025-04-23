@@ -137,7 +137,7 @@ module QA
       end
 
       def merge_pipeline_execution_policy
-        Support::Waiter.wait_until(message: 'Wait for policy MR page', max_duration: 80) do
+        Support::Waiter.wait_until(message: 'Wait for policy MR page', sleep_interval: 2, max_duration: 80) do
           Page::MergeRequest::Show.perform(&:has_merge_button?)
         end
 
