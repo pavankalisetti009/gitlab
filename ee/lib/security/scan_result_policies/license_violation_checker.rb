@@ -73,13 +73,13 @@ module Security
         if Feature.enabled?(:custom_software_license, project)
           policies_with_matching_license_name = software_license_policies
                                                   .denied
-                                                  .with_license_or_custom_license_by_name(names)
-          policies_with_matching_spdx_id = software_license_policies.denied.by_spdx(ids)
+                                                  .with_license_or_custom_license_by_name(names, project)
+          policies_with_matching_spdx_id = software_license_policies.denied.by_spdx(ids, project)
 
           policies_with_matching_spdx_id.present? || policies_with_matching_license_name.present?
         else
-          policies_with_matching_license_name = software_license_policies.denied.with_license_by_name(names)
-          policies_with_matching_spdx_id = software_license_policies.denied.by_spdx(ids)
+          policies_with_matching_license_name = software_license_policies.denied.with_license_by_name(names, project)
+          policies_with_matching_spdx_id = software_license_policies.denied.by_spdx(ids, project)
           policies_with_matching_spdx_id.or(policies_with_matching_license_name).exists?
         end
       end

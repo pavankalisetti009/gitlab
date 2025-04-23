@@ -76,9 +76,10 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
         stub_feature_flags(static_licenses: false)
       end
 
-      let!(:mit_policy) { create(:software_license_policy, software_license: mit) }
+      let_it_be(:project) { create(:project) }
+      let!(:mit_policy) { create(:software_license_policy, project: project, software_license: mit) }
       let!(:mit) { create(:software_license, :mit) }
-      let!(:apache_policy) { create(:software_license_policy, software_license: apache) }
+      let!(:apache_policy) { create(:software_license_policy, project: project, software_license: apache) }
       let!(:apache) { create(:software_license, :apache_2_0) }
 
       context 'with an exact match' do
@@ -101,13 +102,14 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
     end
 
     context 'when the feature flag static_licenses is enabled' do
+      let_it_be(:project) { create(:project) }
       let(:mit_license_name) { 'MIT License' }
       let(:mit_license_spdx_identifier) { 'MIT' }
-      let!(:mit_policy) { create(:software_license_policy, software_license_spdx_identifier: mit_license_spdx_identifier) }
+      let!(:mit_policy) { create(:software_license_policy, project: project, software_license_spdx_identifier: mit_license_spdx_identifier) }
 
       let(:apache_license_name) { 'Apache License 2.0' }
       let(:apache_license_spdx_identifier) { 'Apache-2.0' }
-      let!(:apache_policy) { create(:software_license_policy, software_license_spdx_identifier: apache_license_spdx_identifier) }
+      let!(:apache_policy) { create(:software_license_policy, project: project, software_license_spdx_identifier: apache_license_spdx_identifier) }
 
       context 'with an exact match' do
         let(:name) { mit_license_name }
@@ -130,7 +132,7 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
   end
 
   describe ".with_license_by_name" do
-    subject { described_class.with_license_by_name(name) }
+    subject { described_class.with_license_by_name(name, project) }
 
     it_behaves_like 'search license by name'
   end
@@ -175,6 +177,8 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
     end
 
     context 'when related to a software license' do
+      subject { described_class.with_license_or_custom_license_by_name(name, project) }
+
       it_behaves_like 'search license by name'
     end
   end
@@ -196,15 +200,24 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
     end
 
     context 'when the feature flag static_licenses is enabled' do
+      let_it_be(:project) { create(:project) }
       let_it_be(:mit_license_spdx_identifier) { 'MIT' }
       let_it_be(:mit_policy) { create(:software_license_policy, software_license_spdx_identifier: mit_license_spdx_identifier) }
 
       let_it_be(:apache_license_spdx_identifier) { 'Apache-2.0' }
       let_it_be(:apache_policy) { create(:software_license_policy, software_license_spdx_identifier: apache_license_spdx_identifier) }
 
-      it { expect(described_class.by_spdx(mit_license_spdx_identifier)).to match_array([mit_policy]) }
-      it { expect(described_class.by_spdx([mit_license_spdx_identifier, apache_license_spdx_identifier])).to match_array([mit_policy, apache_policy]) }
-      it { expect(described_class.by_spdx(SecureRandom.uuid)).to be_empty }
+      context 'when a project is provided' do
+        it { expect(described_class.by_spdx(mit_license_spdx_identifier, project)).to match_array([mit_policy]) }
+        it { expect(described_class.by_spdx([mit_license_spdx_identifier, apache_license_spdx_identifier], project)).to match_array([mit_policy, apache_policy]) }
+        it { expect(described_class.by_spdx(SecureRandom.uuid, project)).to be_empty }
+      end
+
+      context 'when a project is not provided' do
+        it { expect(described_class.by_spdx(mit_license_spdx_identifier)).to be_empty }
+        it { expect(described_class.by_spdx([mit_license_spdx_identifier, apache_license_spdx_identifier])).to be_empty }
+        it { expect(described_class.by_spdx(SecureRandom.uuid)).to be_empty }
+      end
     end
   end
 

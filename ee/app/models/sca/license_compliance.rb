@@ -76,7 +76,7 @@ module SCA
     def direct_license_policies
       strong_memoize(:direct_license_policies) do
         license_policies.sort_by(&:classification).to_h do |policy|
-          software_license = if Feature.enabled?(:static_licenses) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- This FF is all or nothing
+          software_license = if Feature.enabled?(:static_licenses, project.namespace)
                                Gitlab::SPDX::Catalogue.latest_active_licenses.find do |license|
                                  license.id == policy.software_license_spdx_identifier
                                end

@@ -244,7 +244,7 @@ module Security
       end
 
       def license_spdx(licenses)
-        if Feature.enabled?(:static_licenses) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- This FF is all or nothing
+        if Feature.enabled?(:static_licenses, project.namespace)
           licenses = ::Gitlab::SPDX::Catalogue.latest_active_licenses.select do |spdx_license|
             licenses.include?(spdx_license.name)
           end
