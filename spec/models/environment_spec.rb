@@ -1674,7 +1674,10 @@ RSpec.describe Environment, :use_clean_rails_memory_store_caching, feature_categ
 
     context 'when the environment is available' do
       context 'with a deployment service' do
-        let_it_be(:project) { create(:project, :with_prometheus_integration, :repository) }
+        let_it_be(:project) { create(:project, :repository) }
+        let_it_be(:cluster) do
+          create(:cluster, :provided_by_gcp, :with_installed_prometheus, environment_scope: '*', projects: [project])
+        end
 
         context 'and a deployment' do
           let!(:deployment) { create(:deployment, environment: environment) }
@@ -1706,7 +1709,7 @@ RSpec.describe Environment, :use_clean_rails_memory_store_caching, feature_categ
 
         context 'with no prometheus adapter configured' do
           before do
-            allow(environment.prometheus_adapter).to receive(:configured?).and_return(false)
+            allow(environment).to receive(:prometheus_adapter).and_return(nil)
           end
 
           it { is_expected.to be_truthy }
@@ -1726,7 +1729,7 @@ RSpec.describe Environment, :use_clean_rails_memory_store_caching, feature_categ
 
         context 'with no prometheus adapter configured' do
           before do
-            allow(environment.prometheus_adapter).to receive(:configured?).and_return(false)
+            allow(environment).to receive(:prometheus_adapter).and_return(nil)
           end
 
           it { is_expected.to be_truthy }
@@ -1774,14 +1777,18 @@ RSpec.describe Environment, :use_clean_rails_memory_store_caching, feature_categ
   end
 
   describe '#additional_metrics' do
-    let_it_be(:project) { create(:project, :with_prometheus_integration) }
+    let_it_be(:project) { create(:project, :repository) }
+    let_it_be(:cluster) do
+      create(:cluster, :provided_by_gcp, :with_installed_prometheus, environment_scope: '*', projects: [project])
+    end
+
     let(:metric_params) { [] }
 
     subject { environment.additional_metrics(*metric_params) }
 
     context 'when the environment has additional metrics' do
       before do
-        allow(environment).to receive(:has_metrics?).and_return(true)
+        allow(environment).to receive(:has_metrics_and_can_query?).and_return(true)
       end
 
       it 'returns the additional metrics from the deployment service' do
