@@ -4,10 +4,18 @@
 module Gitlab
   module Duo
     module Developments
-      def self.seed_data
-        if Group.find_by_full_path(@namespace)
-          puts "Gitlab Duo data already seeded."
+      def self.seed_data(namespace)
+        if Group.find_by_full_path(namespace)
+          puts <<~TXT.strip
+          ================================================================================
+          ## Gitlab Duo test group and project already seeded
+          ## If you want to destroy and re-create them, you can re-run the seed task
+          ## SEED_GITLAB_DUO=1 FILTER=gitlab_duo bundle exec rake db:seed_fu
+          ## See https://docs.gitlab.com/development/ai_features/testing_and_validation/#seed-project-and-group-resources-for-testing-and-evaluation
+          ================================================================================
+          TXT
         else
+          # see ee/db/fixtures/development/95_gitlab_duo.rb
           puts "Seeding GitLab Duo data..."
           ENV['FILTER'] = 'gitlab_duo'
           ENV['SEED_GITLAB_DUO'] = '1'
@@ -23,10 +31,22 @@ module Gitlab
 
         private
 
-        def create_add_on_purchases!
-          group = Group.find_by_full_path(@namespace) # will be nil for self-managed mode
-
+        def create_add_on_purchases!(group: nil)
           ::GitlabSubscriptions::AddOnPurchase.by_namespace(group).delete_all
+
+          duo_core_add_on = ::GitlabSubscriptions::AddOn.find_or_create_by_name(:duo_core)
+          response = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(
+            group,
+            duo_core_add_on,
+            {
+              quantity: 100,
+              started_on: Time.current,
+              expires_on: 1.year.from_now,
+              purchase_xid: 'A-S0001'
+            }
+          ).execute
+
+          raise response.message unless response.success?
 
           if @args[:add_on] == 'duo_pro'
             create_duo_pro_purchase!(group)
@@ -49,7 +69,7 @@ module Gitlab
 
           response.payload[:add_on_purchase].update!(users: [User.find_by_username('root')])
 
-          puts "Code suggestions add-on added..."
+          puts "Duo Pro add-on added..."
         end
 
         def create_enterprise_purchase!(group)
@@ -75,12 +95,15 @@ module Gitlab
           ================================================================================
           ## Running self-managed mode setup
           ## If you want to run .com mode, set GITLAB_SIMULATE_SAAS=1
+          ## and re-run this script
+          ## See https://docs.gitlab.com/ee/development/ee_features.html#simulate-a-saas-instance
+          ## for more information.
           ================================================================================
           TXT
 
           require_self_managed!
 
-          Developments.seed_data
+          Developments.seed_data(@namespace)
           create_add_on_purchases!
         end
 
@@ -102,34 +125,25 @@ module Gitlab
         def execute
           puts <<~TXT.strip
           ================================================================================
-          ## Running .com mode setup for group '#{@namespace}'
+          ## Running GitLab.com mode setup for group '#{@namespace}'
+          ## If you want to run self-managed mode, set GITLAB_SIMULATE_SAAS=0
+          ## and re-run this script
+          ## See https://docs.gitlab.com/ee/development/ee_features.html#simulate-a-saas-instance
+          ## for more information.
           ================================================================================
           TXT
 
-          require_dot_com!
           ensure_application_settings!
 
-          Developments.seed_data
+          Developments.seed_data(@namespace)
 
-          group = ensure_group
+          group = Group.find_by_full_path(@namespace)
           ensure_group_subscription!(group)
           ensure_group_settings!(group)
-          ensure_group_membership!(group)
-          create_add_on_purchases!
+          create_add_on_purchases!(group: group)
         end
 
         private
-
-        def require_dot_com!
-          # rubocop:disable Style/GuardClause -- For reading simplicity
-          unless ::Gitlab::Utils.to_boolean(ENV['GITLAB_SIMULATE_SAAS'])
-            raise <<~MSG
-              Make sure 'GITLAB_SIMULATE_SAAS' environment variable is truthy.
-              See https://docs.gitlab.com/ee/development/ee_features.html#simulate-a-saas-instance for more information.
-            MSG
-          end
-          # rubocop:enable Style/GuardClause
-        end
 
         # rubocop:disable CodeReuse/ActiveRecord -- Development purpose
         def ensure_group_subscription!(group)
@@ -146,64 +160,26 @@ module Gitlab
         def ensure_application_settings!
           puts "Enabling application settings...."
 
-          Gitlab::CurrentSettings.current_application_settings
-            .update!(check_namespace_plan: true, allow_local_requests_from_web_hooks_and_services: true)
-        end
-
-        def ensure_group
-          puts "Checking the specified group exists...."
-
-          raise "You must specify :root_group_path" unless @namespace.present?
-          raise "Provided group name must be a root group" if @namespace.include?('/')
-
-          group = Group.find_by_full_path(@namespace)
-
-          if group
-            puts "Found the group: #{group.name}"
-
-            return group
-          end
-
-          puts "The specified group is not found. Creating a new one..."
-
-          current_user = User.find_by_username('root')
-          org = create_org(current_user)
-          group_params = {
-            name: @namespace,
-            path: @namespace,
-            organization: org,
-            visibility_level: org.visibility_level
-          }
-          response = Groups::CreateService.new(current_user, group_params).execute
-          group = response[:group]
-
-          raise "Failed to create a group: #{group.errors.full_messages}" if response.error?
-
-          group
-        end
-
-        def create_org(current_user)
-          response = ::Organizations::CreateService.new(
-            current_user: current_user,
-            params: { name: @namespace, path: @namespace, visibility_level: ::Gitlab::VisibilityLevel::PUBLIC }
-          ).execute
-          org = response[:organization]
-
-          raise "Failed to create an org: #{response.errors}" if response.error?
-
-          org
+          Gitlab::CurrentSettings.current_application_settings.update!(
+            check_namespace_plan: true,
+            allow_local_requests_from_web_hooks_and_services: true,
+            instance_level_ai_beta_features_enabled: true,
+            duo_features_enabled: true
+          )
         end
 
         def ensure_group_settings!(group)
           puts "Enabling the group settings...."
 
           group = Group.find(group.id) # Hard Reload for refreshing the cache
-          group.update!(experiment_features_enabled: true)
-        end
+          group.update!(
+            experiment_features_enabled: true
+          )
 
-        def ensure_group_membership!(group)
-          # this is needed because of the add-on creation - we need to make sure user is a member of a group.
-          group.add_owner(User.find_by_username('root'))
+          group.namespace_settings.update!(
+            duo_features_enabled: true,
+            duo_nano_features_enabled: true
+          )
         end
       end
 
@@ -246,9 +222,7 @@ module Gitlab
           puts "Enabling feature flags...."
 
           Gitlab::Duo::Developments::FeatureFlagEnabler.execute
-          ::Feature.enable(:summarize_my_code_review)
           ::Feature.enable(:enable_hamilton_in_user_preferences)
-          ::Feature.enable(:allow_organization_creation)
         end
 
         def ensure_license!
