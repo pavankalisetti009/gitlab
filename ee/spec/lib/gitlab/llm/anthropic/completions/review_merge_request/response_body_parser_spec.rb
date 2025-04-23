@@ -13,7 +13,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
         let(:body) do
           <<~RESPONSE
           <review>
-          <comment priority="3" old_line="1" new_line="2">
+          <comment file="example.rb" priority="3" old_line="1" new_line="2">
           First line of comment
           Second line of comment
 
@@ -29,6 +29,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           expect(comment.priority).to eq 3
           expect(comment.old_line).to eq 1
           expect(comment.new_line).to eq 2
+          expect(comment.file).to eq "example.rb"
           expect(comment.content).to eq <<~NOTE_CONTENT
           First line of comment
           Second line of comment
@@ -42,7 +43,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
         let(:body) do
           <<~RESPONSE
             <review>
-            <comment priority="3" old_line="" new_line="2">
+            <comment file="example.rb" priority="3" old_line="" new_line="2">
             Example comment
             </comment>
             </review>
@@ -55,6 +56,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           expect(comment.priority).to be 3
           expect(comment.old_line).to be_nil
           expect(comment.new_line).to be 2
+          expect(comment.file).to eq "example.rb"
           expect(comment.content).to eq <<~NOTE_CONTENT
           Example comment
           NOTE_CONTENT
@@ -65,7 +67,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
         let(:body) do
           <<~RESPONSE
             <review>
-            <comment priority="3" old_line="1" new_line="">
+            <comment file="example.rb" priority="3" old_line="1" new_line="">
             Example comment
             </comment>
             </review>
@@ -78,6 +80,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           expect(comment.priority).to be 3
           expect(comment.old_line).to be 1
           expect(comment.new_line).to be_nil
+          expect(comment.file).to eq "example.rb"
           expect(comment.content).to eq <<~NOTE_CONTENT
           Example comment
           NOTE_CONTENT
@@ -88,7 +91,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
         let(:body) do
           <<~RESPONSE
           <review>
-          <comment priority="3" old_line="1" new_line="2">
+          <comment file="example.rb" priority="3" old_line="1" new_line="2">
           First comment with suggestions
           <from>
               first offending line
@@ -104,7 +107,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
 
         it 'returns the expected comment' do
           comment = parser.comments.sole
-
+          expect(comment.file).to eq "example.rb"
           expect(comment.content).to eq <<~NOTE_CONTENT
           First comment with suggestions
           ```suggestion:-0+0
@@ -118,7 +121,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
             <review>
-            <comment priority="3" old_line="1" new_line="2">
+            <comment file="example.rb" priority="3" old_line="1" new_line="2">
             First comment with suggestions
             <from>    first offending line</from>
             <to>    first improved line</to>
@@ -130,7 +133,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
 
           it 'returns the expected comment' do
             comment = parser.comments.sole
-
+            expect(comment.file).to eq "example.rb"
             expect(comment.content).to eq <<~NOTE_CONTENT
             First comment with suggestions
             ```suggestion:-0+0
@@ -145,7 +148,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
             <review>
-            <comment priority="3" old_line="1" new_line="2">
+            <comment file="example.rb" priority="3" old_line="1" new_line="2">
             First comment with a suggestion
             <from>
                 first offending line
@@ -166,7 +169,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
 
           it 'returns the expected comment' do
             comment = parser.comments.sole
-
+            expect(comment.file).to eq "example.rb"
             expect(comment.content).to eq <<~NOTE_CONTENT
             First comment with a suggestion
             ```suggestion:-0+2
@@ -180,11 +183,11 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           end
         end
 
-        context 'when the response contains multiple comments' do
+        context 'when the response contains multiple comments for different files' do
           let(:body) do
             <<~RESPONSE
             <review>
-            <comment priority="3" old_line="1" new_line="2">
+            <comment file="example.rb" priority="3" old_line="1" new_line="2">
             First comment with a suggestion
             <from>
                 first offending line
@@ -193,8 +196,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
                 first improved line
             </to>
             </comment>
-
-            <comment priority="2" old_line="" new_line="5">
+            <comment file="other.rb" priority="2" old_line="" new_line="5">
             Second comment with a suggestion
             <from>
                 first offending line
@@ -218,6 +220,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
             expect(first_comment.priority).to eq 3
             expect(first_comment.old_line).to eq 1
             expect(first_comment.new_line).to eq 2
+            expect(first_comment.file).to eq "example.rb"
             expect(first_comment.content).to eq <<~NOTE_CONTENT
             First comment with a suggestion
             ```suggestion:-0+0
@@ -229,6 +232,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
             expect(second_comment.priority).to be 2
             expect(second_comment.old_line).to be_nil
             expect(second_comment.new_line).to be 5
+            expect(second_comment.file).to eq "other.rb"
             expect(second_comment.content).to eq <<~NOTE_CONTENT
             Second comment with a suggestion
             ```suggestion:-0+1
@@ -245,7 +249,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
             <review>
-            <comment priority="3" old_line="1" new_line="2">
+            <comment file="example.rb" priority="3" old_line="1" new_line="2">
             First comment with a suggestion
             <from>
                 first offending line
@@ -272,7 +276,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
 
           it 'parses both suggestions correctly' do
             comment = parser.comments.sole
-
+            expect(comment.file).to eq "example.rb"
             expect(comment.content).to eq <<~NOTE_CONTENT
             First comment with a suggestion
             ```suggestion:-0+0
@@ -294,7 +298,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
               <review>
-              <comment priority="3" old_line="" new_line="2">
+              <comment file="example.rb" priority="3" old_line="" new_line="2">
               <from>
                   <div>first offending line</div>
                     <p>second offending line</p>
@@ -310,7 +314,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
 
           it 'returns the expected comment' do
             comment = parser.comments.sole
-
+            expect(comment.file).to eq "example.rb"
             expect(comment.content).to eq <<~NOTE_CONTENT
               ```suggestion:-0+1
                   <div>first improved line</div>
@@ -324,7 +328,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
               <review>
-              <comment priority="3" old_line="" new_line="2">
+              <comment file="example.rb" priority="3" old_line="" new_line="2">
               <from>
                   <from>first offending line</from>
                   <to>second offending line</to>
@@ -340,7 +344,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
 
           it 'returns the expected comment' do
             comment = parser.comments.sole
-
+            expect(comment.file).to eq "example.rb"
             expect(comment.content).to eq <<~NOTE_CONTENT
               ```suggestion:-0+1
                   <from>first improved line</from>
@@ -354,7 +358,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
               <review>
-              <comment priority="3" old_line="1" new_line="2">
+              <comment file="example.rb" priority="3" old_line="1" new_line="2">
               Some comment including a <from> tag
               <from>
                   <from>
@@ -373,7 +377,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
 
           it 'returns the expected comment' do
             comment = parser.comments.sole
-
+            expect(comment.file).to eq "example.rb"
             expect(comment.content).to eq <<~NOTE_CONTENT
               Some comment including a <from> tag
               ```suggestion:-0+2
@@ -389,7 +393,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
             <review>
-            <comment priority="3" old_line="1" new_line="2">
+            <comment file="example.rb" priority="3" old_line="1" new_line="2">
             First comment with suggestions
             <from>
               a && b
@@ -404,7 +408,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
 
           it 'returns the expected comment' do
             comment = parser.comments.sole
-
+            expect(comment.file).to eq "example.rb"
             expect(comment.content).to eq <<~NOTE_CONTENT
             First comment with suggestions
             ```suggestion:-0+0
@@ -418,7 +422,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
             <review>
-            <comment priority="3" old_line="1" new_line="2">
+            <comment file="example.rb" priority="3" old_line="1" new_line="2">
             Please remove extra lines
             <from>
 
@@ -435,7 +439,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
 
           it 'returns the expected comment' do
             comment = parser.comments.sole
-
+            expect(comment.file).to eq "example.rb"
             expect(comment.content).to eq <<~NOTE_CONTENT
             Please remove extra lines
             ```suggestion:-0+2
@@ -449,7 +453,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           let(:body) do
             <<~RESPONSE
               <review>
-              <comment priority="3" old_line="" new_line="2">
+              <comment file="example.rb" priority="3" old_line="" new_line="2">
               First comment with suggestions
               <to>
                   something random
@@ -462,7 +466,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
 
           it 'returns the expected comment' do
             comment = parser.comments.sole
-
+            expect(comment.file).to eq "example.rb"
             expect(comment.content).to eq <<~NOTE_CONTENT
               First comment with suggestions
               <to>
@@ -479,7 +483,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
               Let me explain how awesome this review is.
 
               <review>
-              <comment priority="3" old_line="" new_line="2">
+              <comment file="example.rb" priority="3" old_line="" new_line="2">
               Example comment
               </comment>
               </review>
@@ -488,7 +492,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
 
           it 'returns the expected comment' do
             comment = parser.comments.sole
-
+            expect(comment.file).to eq "example.rb"
             expect(comment.content).to eq <<~NOTE_CONTENT
               Example comment
             NOTE_CONTENT
@@ -549,7 +553,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
       let(:body) do
         <<~RESPONSE
           <review>
-          <comment old_line="1" new_line="2">
+          <comment file="example.rb" old_line="1" new_line="2">
           Example comment
           </comment>
           </review>
@@ -565,7 +569,23 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
       let(:body) do
         <<~RESPONSE
           <review>
-          <comment old_line="1">
+          <comment file="example.rb" old_line="1">
+          Example comment
+          </comment>
+          </review>
+        RESPONSE
+      end
+
+      it 'returns expected output' do
+        expect(parser.comments).to be_empty
+      end
+    end
+
+    context 'when file attribute is missing' do
+      let(:body) do
+        <<~RESPONSE
+          <review>
+          <comment priority="3" old_line="1" new_line="2">
           Example comment
           </comment>
           </review>

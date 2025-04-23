@@ -31,7 +31,6 @@ module Gitlab
       end
 
       def self.chat_enabled?(user)
-        return false unless Feature.enabled?(:ai_duo_chat_switch, type: :ops)
         return false unless user
 
         true

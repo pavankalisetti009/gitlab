@@ -57,18 +57,6 @@ RSpec.describe 'Querying user available features', :clean_gitlab_redis_cache, fe
       expect(graphql_response).to eq(%w[include_file_context include_merge_request_context])
     end
 
-    context 'when ai_duo_chat_switch feature flag is off' do
-      before do
-        stub_feature_flags(ai_duo_chat_switch: false)
-      end
-
-      it 'returns an empty response' do
-        post_graphql(query, current_user: current_user)
-
-        expect(graphql_response).to eq([])
-      end
-    end
-
     context 'when user does not have access to chat' do
       before do
         allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:user, :allowed?).and_return(false)

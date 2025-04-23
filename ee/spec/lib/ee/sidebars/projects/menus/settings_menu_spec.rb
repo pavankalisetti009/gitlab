@@ -96,6 +96,7 @@ RSpec.describe Sidebars::Projects::Menus::SettingsMenu, feature_category: :navig
       :manage_merge_request_settings | 'Merge requests'
       :manage_project_access_tokens  | 'Access tokens'
       :admin_integrations            | 'Integrations'
+      :admin_web_hook                | 'Webhooks'
     end
 
     with_them do

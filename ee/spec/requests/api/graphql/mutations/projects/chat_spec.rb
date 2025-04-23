@@ -109,18 +109,6 @@ RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
     end
   end
 
-  context 'when ai_duo_chat_switch feature flag is disabled' do
-    before do
-      stub_feature_flags(ai_duo_chat_switch: false)
-    end
-
-    it 'returns nil' do
-      expect(Llm::CompletionWorker).not_to receive(:perform_for)
-
-      post_graphql_mutation(mutation, current_user: current_user)
-    end
-  end
-
   context 'when current_file is present' do
     let(:current_file) { { selected_text: 'selected', content_above_cursor: 'prefix', file_name: 'test.py' } }
     let(:params) { { chat: { resource_id: resource&.to_gid, content: "summarize", current_file: current_file } } }

@@ -225,7 +225,7 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
         end
 
         before do
-          stub_feature_flags(ai_duo_chat_switch: true, ai_global_switch: false)
+          stub_feature_flags(ai_global_switch: false)
         end
 
         it_behaves_like 'performs successfully'
@@ -233,7 +233,7 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
 
       context 'when it is self-managed feature request' do
         before do
-          stub_feature_flags(ai_duo_chat_switch: false, ai_global_switch: false)
+          stub_feature_flags(ai_global_switch: false)
           stub_const(
             "::Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST",
             summarize_comments: {

@@ -22,21 +22,7 @@ RSpec.describe Resolvers::Ai::UserAvailableFeaturesResolver, feature_category: :
     context 'when user is authenticated' do
       let(:current_user) { user }
 
-      context 'when duo chat is disabled' do
-        before do
-          stub_feature_flags(ai_duo_chat_switch: false)
-        end
-
-        it 'returns an empty array' do
-          expect(resolver).to eq([])
-        end
-      end
-
       context 'when duo chat is enabled' do
-        before do
-          stub_feature_flags(ai_duo_chat_switch: true)
-        end
-
         context 'when user does not have access to duo chat' do
           before do
             allow(::Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:user,
