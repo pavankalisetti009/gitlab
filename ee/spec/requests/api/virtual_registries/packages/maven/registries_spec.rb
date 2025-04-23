@@ -81,8 +81,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
     let_it_be(:registry_class) { ::VirtualRegistries::Packages::Maven::Registry }
     let(:group_id) { group.id }
     let(:url) { "/groups/#{group_id}/-/virtual_registries/packages/maven/registries" }
+    let(:params) { { name: 'foo' } }
 
-    subject(:api_request) { post api(url), headers: headers }
+    subject(:api_request) { post api(url), headers:, params: }
 
     shared_examples 'successful response' do
       it 'returns a successful response' do
@@ -93,7 +94,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
       end
     end
 
-    context 'with valid group_id' do
+    context 'with valid params' do
       it { is_expected.to have_request_urgency(:low) }
 
       it_behaves_like 'disabled virtual_registry_maven feature flag'
@@ -167,6 +168,24 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
         non_existing_record_id  | :not_found
         'foo'                   | :not_found
         ''                      | :not_found
+      end
+
+      with_them do
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+
+    context 'with invalid params' do
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      let(:params) { { name:, description: } }
+
+      where(:name, :description, :status) do
+        ''            | 'bar'          | :bad_request
+        ('foo' * 256) | 'bar'          | :bad_request
+        'foo'         | ('bar' * 1025) | :bad_request
       end
 
       with_them do
@@ -257,6 +276,78 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
       with_them do
         let(:headers) { token_header(token) }
 
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+  end
+
+  describe 'PATCH /api/v4/virtual_registries/packages/maven/registries/:id' do
+    let(:url) { "/virtual_registries/packages/maven/registries/#{registry.id}" }
+
+    subject(:api_request) { patch api(url), params:, headers: }
+
+    context 'with valid params' do
+      let(:params) { { name: 'foo', description: 'description' } }
+
+      it { is_expected.to have_request_urgency(:low) }
+
+      it_behaves_like 'disabled virtual_registry_maven feature flag'
+      it_behaves_like 'maven virtual registry disabled dependency proxy'
+      it_behaves_like 'maven virtual registry not authenticated user'
+      it_behaves_like 'maven virtual registry feature not licensed'
+
+      where(:user_role, :status) do
+        :owner      | :ok
+        :maintainer | :ok
+        :developer  | :forbidden
+        :reporter   | :forbidden
+        :guest      | :forbidden
+      end
+
+      with_them do
+        before do
+          group.send(:"add_#{user_role}", user)
+        end
+
+        it_behaves_like 'returning response status', params[:status]
+      end
+
+      context 'for authentication' do
+        before_all do
+          group.add_maintainer(user)
+        end
+
+        where(:token, :sent_as, :status) do
+          :personal_access_token | :header     | :ok
+          :deploy_token          | :header     | :forbidden
+          :job_token             | :header     | :ok
+        end
+
+        with_them do
+          let(:headers) { token_header(token) }
+
+          it_behaves_like 'returning response status', params[:status]
+        end
+      end
+    end
+
+    context 'for params' do
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      let(:params) { { name:, description: }.compact }
+
+      where(:name, :description, :status) do
+        nil   | 'bar' | :ok
+        'foo' | nil   | :ok
+        'foo' | 'bar' | :ok
+        ''    | 'bar' | :bad_request
+        'foo' | ''    | :bad_request
+        nil   | nil   | :bad_request
+      end
+
+      with_them do
         it_behaves_like 'returning response status', params[:status]
       end
     end

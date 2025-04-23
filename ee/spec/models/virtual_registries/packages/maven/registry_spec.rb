@@ -24,6 +24,9 @@ RSpec.describe VirtualRegistries::Packages::Maven::Registry, type: :model, featu
   describe 'validations' do
     it { is_expected.to validate_uniqueness_of(:group) }
     it { is_expected.to validate_presence_of(:group) }
+    it { is_expected.to validate_presence_of(:name) }
+    it { is_expected.to validate_length_of(:name).is_at_most(255) }
+    it { is_expected.to validate_length_of(:description).is_at_most(1024) }
   end
 
   describe '.for_group' do

@@ -4,6 +4,9 @@ FactoryBot.define do
   factory :virtual_registries_packages_maven_registry, class: 'VirtualRegistries::Packages::Maven::Registry' do
     group
 
+    name { 'name' }
+    description { 'description' }
+
     trait :with_upstream do
       registry_upstreams do
         [

@@ -2,6 +2,8 @@
 
 FactoryBot.define do
   factory :virtual_registries_packages_maven_upstream, class: 'VirtualRegistries::Packages::Maven::Upstream' do
+    name { 'name' }
+    description { 'description' }
     sequence(:url) { |n| "https://gitlab.com/maven/#{n}" }
     username { 'user' }
     password { 'password' }
