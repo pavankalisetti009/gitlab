@@ -22,6 +22,7 @@ module EE
 
       # we'd need to make sure these override the existing associations so we prepend this.
       include ::WorkItems::EpicAsWorkItem
+      include ::WorkItems::HasStatus
 
       scope :order_blocking_issues_asc, -> { reorder(blocking_issues_count: :asc) }
       scope :order_blocking_issues_desc, -> { reorder(blocking_issues_count: :desc) }
