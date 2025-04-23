@@ -190,11 +190,7 @@ module EE
       end
 
       def secrets_integration
-        if ::Feature.enabled?(:enable_secrets_provider_check_on_pre_assign_runner_checks, project)
-          ::Ci::Secrets::Integration.new(variables: variables_encompassing_secrets_configs, project: project)
-        else
-          ::Ci::Secrets::Integration.new(variables: variables, project: project)
-        end
+        ::Ci::Secrets::Integration.new(variables: variables_encompassing_secrets_configs, project: project)
       end
 
       def playable?
