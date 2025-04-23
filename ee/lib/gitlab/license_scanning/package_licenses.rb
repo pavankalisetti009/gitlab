@@ -194,7 +194,7 @@ module Gitlab
       # so we use a cache to avoid a separate sql query every time we need to convert from spdx_identifier to
       # license name.
       def license_name_for(spdx_id:)
-        if Feature.enabled?(:static_licenses) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- This FF is all or nothing
+        if project && Feature.enabled?(:static_licenses, project.namespace)
           catalogue_licenses_map[spdx_id] || spdx_id
         else
           @software_licenses ||= SoftwareLicense.spdx.to_h { |license| [license.spdx_identifier, license.name] }
