@@ -18,11 +18,11 @@ RSpec.describe GitlabSubscriptions::AddOn, feature_category: :subscription_manag
   end
 
   describe 'scopes' do
-    let!(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
-    let!(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
-    let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
-    let!(:duo_amazon_q_add_on) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
-    let!(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
+    let_it_be(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+    let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
+    let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+    let_it_be(:duo_amazon_q_add_on) { create(:gitlab_subscription_add_on, :duo_amazon_q) }
+    let_it_be(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
 
     describe '.duo_add_ons' do
       subject(:duo_add_ons) { described_class.duo_add_ons }
@@ -39,6 +39,86 @@ RSpec.describe GitlabSubscriptions::AddOn, feature_category: :subscription_manag
       it 'only queries the duo add-ons with seat assignments' do
         expect(seat_assignable_duo_add_ons)
           .to contain_exactly(duo_pro_add_on, duo_enterprise_add_on)
+      end
+    end
+
+    describe '.active' do
+      let_it_be(:group_1) { create(:group) }
+      let_it_be(:group_2) { create(:group) }
+      let_it_be(:active_pro_add_on_for_gitlab_com) { duo_pro_add_on }
+      let_it_be(:active_q_add_on_for_gitlab_com) { duo_amazon_q_add_on }
+      let_it_be(:active_add_on_for_self_managed) { duo_enterprise_add_on }
+
+      before_all do
+        create(:gitlab_subscription_add_on_purchase, :active,
+          add_on: active_pro_add_on_for_gitlab_com, namespace: group_1)
+        create(:gitlab_subscription_add_on_purchase, :active,
+          add_on: active_q_add_on_for_gitlab_com, namespace: group_2)
+        create(:gitlab_subscription_add_on_purchase, :active, :self_managed,
+          add_on: active_add_on_for_self_managed)
+        create(:gitlab_subscription_add_on_purchase, :expired,
+          add_on: duo_core_add_on, namespace: group_1)
+        create(:gitlab_subscription_add_on_purchase, :expired, :self_managed,
+          add_on: product_analytics_add_on)
+      end
+
+      context 'when several group IDs are provided' do
+        let(:group_ids) { [group_1.id, group_2.id] }
+
+        subject(:active_add_ons) { described_class.active(group_ids) }
+
+        it 'returns add-ons filtered by active purchases for gitlab.com' do
+          expect(active_add_ons.map(&:id)).to contain_exactly(
+            active_pro_add_on_for_gitlab_com.id,
+            active_q_add_on_for_gitlab_com.id
+          )
+        end
+      end
+
+      context 'when one group ID is provided' do
+        let(:group_ids) { [group_2.id] }
+
+        subject(:active_add_ons) { described_class.active(group_ids) }
+
+        it 'returns add-ons filtered by active purchases for gitlab.com' do
+          expect(active_add_ons.map(&:id)).to contain_exactly(
+            active_q_add_on_for_gitlab_com.id
+          )
+        end
+      end
+
+      context 'when nil is provided' do
+        let(:group_ids) { nil }
+
+        subject(:active_add_ons) { described_class.active(group_ids) }
+
+        it 'returns add-ons with active purchases for self-managed' do
+          expect(active_add_ons.map(&:id)).to contain_exactly(
+            active_add_on_for_self_managed.id
+          )
+        end
+      end
+
+      context 'when empty group IDs array is provided' do
+        let(:group_ids) { [] }
+
+        subject(:active_add_ons) { described_class.active(group_ids) }
+
+        it 'returns add-ons with active purchases for self-managed' do
+          expect(active_add_ons.map(&:id)).to contain_exactly(
+            active_add_on_for_self_managed.id
+          )
+        end
+      end
+
+      context 'when no group IDs are provided' do
+        subject(:active_add_ons) { described_class.active }
+
+        it 'returns all active add-ons with active purchases for self-managed' do
+          expect(active_add_ons.map(&:id)).to contain_exactly(
+            active_add_on_for_self_managed.id
+          )
+        end
       end
     end
   end
