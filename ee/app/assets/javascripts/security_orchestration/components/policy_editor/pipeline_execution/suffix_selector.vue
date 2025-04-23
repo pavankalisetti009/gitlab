@@ -38,9 +38,7 @@ export default {
 </script>
 
 <template>
-  <div
-    class="security-policies-bg-subtle gl-flex gl-flex-col gl-items-center gl-gap-3 gl-rounded-base lg:gl-flex-row"
-  >
+  <div class="security-policies-bg-subtle gl-flex gl-items-center gl-gap-3 gl-rounded-base">
     <gl-sprintf :message="$options.i18n.suffixLabel">
       <template #suffixEditor>
         <gl-collapsible-listbox
