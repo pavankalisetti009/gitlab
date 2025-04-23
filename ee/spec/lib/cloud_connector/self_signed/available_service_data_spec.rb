@@ -130,7 +130,7 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
 
         before do
           allow(available_service_data)
-            .to receive_message_chain(:add_on_purchases_assigned_to, :uniq_add_on_names).and_return(%w[duo_pro])
+            .to receive_message_chain(:add_on_purchases, :for_user, :uniq_add_on_names).and_return(%w[duo_pro])
         end
 
         include_examples 'issue a token with scopes'
@@ -141,7 +141,7 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
 
         before do
           allow(available_service_data)
-            .to receive_message_chain(:add_on_purchases_assigned_to, :uniq_add_on_names)
+            .to receive_message_chain(:add_on_purchases, :for_user, :uniq_add_on_names)
             .and_return(%w[code_suggestions])
         end
 
@@ -153,7 +153,7 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
 
         before do
           allow(available_service_data)
-            .to receive_message_chain(:add_on_purchases_assigned_to, :uniq_add_on_names).and_return(%w[duo_extra])
+            .to receive_message_chain(:add_on_purchases, :for_user, :uniq_add_on_names).and_return(%w[duo_extra])
         end
 
         include_examples 'issue a token with scopes'
@@ -164,7 +164,7 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
 
         before do
           allow(available_service_data)
-            .to receive_message_chain(:add_on_purchases_assigned_to, :uniq_add_on_names)
+            .to receive_message_chain(:add_on_purchases, :for_user, :uniq_add_on_names)
             .and_return(%w[duo_pro duo_extra])
         end
 
