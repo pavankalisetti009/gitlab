@@ -131,6 +131,22 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
         end
       end
     end
+
+    context 'when current license is premium' do
+      before do
+        allow(::License).to receive(:current).and_return(instance_double(License, premium?: true))
+      end
+
+      it 'excludes restricted features for premium users' do
+        expected_features = stable_features.merge(feature_flagged_features)
+        expected_features.except!(
+          'duo_chat_explain_vulnerability',
+          'resolve_vulnerability'
+        )
+
+        expect(described_class.allowed_features).to eq(expected_features)
+      end
+    end
   end
 
   describe '#base_url' do
