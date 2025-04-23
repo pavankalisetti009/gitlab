@@ -70,7 +70,7 @@ describe('DuoExperimentBetaFeaturesForm', () => {
 
     it('emits change event when checkbox is clicked', () => {
       findFormCheckbox().vm.$emit('change');
-      expect(findFormCheckbox().attributes('value')).toBe('true');
+      expect(wrapper.emitted('change')).toEqual([[false]]);
     });
 
     it('does not show popover when disabledCheckbox prop is false', () => {
@@ -89,7 +89,7 @@ describe('DuoExperimentBetaFeaturesForm', () => {
     });
 
     it('disables checkbox', () => {
-      expect(findFormCheckbox().attributes('disabled')).toBe('true');
+      expect(findFormCheckbox().attributes().disabled).toBe('true');
     });
 
     it('shows popover', () => {
