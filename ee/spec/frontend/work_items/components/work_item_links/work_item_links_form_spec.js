@@ -9,10 +9,10 @@ import waitForPromises from 'helpers/wait_for_promises';
 import WorkItemLinksForm from '~/work_items/components/work_item_links/work_item_links_form.vue';
 import {
   FORM_TYPES,
-  WORK_ITEM_TYPE_ENUM_TASK,
-  WORK_ITEM_TYPE_ENUM_KEY_RESULT,
-  WORK_ITEM_TYPE_NAME_ISSUE,
   SEARCH_DEBOUNCE,
+  WORK_ITEM_TYPE_NAME_ISSUE,
+  WORK_ITEM_TYPE_NAME_KEY_RESULT,
+  WORK_ITEM_TYPE_NAME_TASK,
 } from '~/work_items/constants';
 import projectWorkItemsQuery from '~/work_items/graphql/project_work_items.query.graphql';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
@@ -64,7 +64,7 @@ describe('WorkItemLinksForm', () => {
     parentMilestone = null,
     formType = FORM_TYPES.create,
     parentWorkItemType = WORK_ITEM_TYPE_NAME_ISSUE,
-    childrenType = WORK_ITEM_TYPE_ENUM_TASK,
+    childrenType = WORK_ITEM_TYPE_NAME_TASK,
     updateMutation = updateMutationResolver,
     createMutation = createMutationResolver,
     isGroup = false,
@@ -161,7 +161,7 @@ describe('WorkItemLinksForm', () => {
       await createComponent({
         hasIterationsFeature: true,
         parentIteration: mockParentIteration,
-        childrenType: WORK_ITEM_TYPE_ENUM_KEY_RESULT,
+        childrenType: WORK_ITEM_TYPE_NAME_KEY_RESULT,
       });
 
       findInput().vm.$emit('input', 'Create task test');
@@ -220,7 +220,7 @@ describe('WorkItemLinksForm', () => {
     it('does not send the milestone widget to mutation when milestone is not supported in child type', async () => {
       await createComponent({
         parentMilestone: mockParentMilestone,
-        childrenType: WORK_ITEM_TYPE_ENUM_KEY_RESULT,
+        childrenType: WORK_ITEM_TYPE_NAME_KEY_RESULT,
       });
 
       findInput().vm.$emit('input', 'Create task test');
