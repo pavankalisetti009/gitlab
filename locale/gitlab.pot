@@ -28241,6 +28241,9 @@ msgstr ""
 msgid "GithubImporter|Release attachments"
 msgstr ""
 
+msgid "GithubImporter|Something went wrong while fetching GitHub organizations."
+msgstr ""
+
 msgid "GithubImporter|Your import of GitHub gists into GitLab snippets is complete."
 msgstr ""
 
