@@ -19,6 +19,7 @@ RSpec.describe GitlabSchema.types['Issue'] do
   it { expect(described_class).to have_graphql_field(:metric_images) }
   it { expect(described_class).to have_graphql_field(:escalation_policy) }
   it { expect(described_class).to have_graphql_field(:issuable_resource_links) }
+  it { expect(described_class).to have_graphql_field(:status) }
 
   context 'N+1 queries' do
     let_it_be(:user) { create(:user) }

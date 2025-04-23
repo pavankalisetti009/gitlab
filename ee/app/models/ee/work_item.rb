@@ -12,7 +12,6 @@ module EE
 
       has_one :progress, class_name: 'WorkItems::Progress', foreign_key: 'issue_id', inverse_of: :work_item
       has_one :color, class_name: 'WorkItems::Color', foreign_key: 'issue_id', inverse_of: :work_item
-      has_one :current_status, class_name: 'WorkItems::Statuses::CurrentStatus'
 
       delegate :reminder_frequency, to: :progress, allow_nil: true
 
