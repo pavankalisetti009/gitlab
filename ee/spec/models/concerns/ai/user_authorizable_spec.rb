@@ -691,113 +691,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
   end
 
-  context 'on .com', :saas do
-    let_it_be_with_reload(:ultimate_group) { create(:group_with_plan, plan: :ultimate_plan, name: 'ultimate_group') }
-    let_it_be_with_reload(:bronze_group) { create(:group_with_plan, plan: :bronze_plan, name: 'bronze_group') }
-    let_it_be_with_reload(:free_group) { create(:group_with_plan, plan: :free_plan, name: 'free_group') }
-    let_it_be_with_reload(:group_without_plan) { create(:group, name: 'group_without_plan') }
-    let_it_be_with_reload(:ultimate_sub_group) { create(:group, parent: ultimate_group, name: 'ultimate_sub_group') }
-    let_it_be_with_reload(:bronze_sub_group) { create(:group, parent: bronze_group, name: 'bronze_sub_group') }
-    let_it_be_with_reload(:trial_group) do
-      create(
-        :group_with_plan,
-        plan: :ultimate_plan,
-        trial: true,
-        trial_starts_on: Date.current,
-        trial_ends_on: 1.day.from_now,
-        name: 'trial_group'
-      )
-    end
-
-    describe '#ai_chat_enabled_namespace_ids', :use_clean_rails_redis_caching do
-      using RSpec::Parameterized::TableSyntax
-
-      let_it_be_with_reload(:ultimate_group_id) { ultimate_group.id }
-
-      let_it_be_with_reload(:trial_group_id) { trial_group.id }
-
-      subject(:group_with_ai_chat_enabled) { user.ai_chat_enabled_namespace_ids }
-
-      where(:group, :result) do
-        ref(:bronze_group)       | []
-        ref(:free_group)         | []
-        ref(:group_without_plan) | []
-        ref(:ultimate_group)     | [ref(:ultimate_group_id)]
-        ref(:trial_group)        | [ref(:trial_group_id)]
-      end
-
-      with_them do
-        context 'when member of the root group' do
-          before do
-            group.add_guest(user)
-          end
-
-          context 'when ai features are enabled' do
-            include_context 'with ai features enabled for group'
-
-            it { is_expected.to eq(result) }
-
-            it 'caches the result' do
-              group_with_ai_chat_enabled
-
-              expect(Rails.cache.fetch(['users', user.id, 'group_ids_with_ai_chat_enabled'])).to eq(result)
-            end
-          end
-        end
-      end
-
-      context 'when member of a sub-group only' do
-        include_context 'with ai features enabled for group'
-
-        context 'with eligible group' do
-          let(:group) { ultimate_group }
-
-          before_all do
-            ultimate_sub_group.add_guest(user)
-          end
-
-          it { is_expected.to eq([group.id]) }
-        end
-
-        context 'with not eligible group' do
-          let(:group) { bronze_group }
-
-          before_all do
-            bronze_sub_group.add_guest(user)
-          end
-
-          it { is_expected.to eq([]) }
-        end
-      end
-
-      context 'when member of a project only' do
-        include_context 'with ai features enabled for group'
-
-        context 'with eligible group' do
-          let(:group) { ultimate_group }
-          let_it_be(:project) { create(:project, group: ultimate_group) }
-
-          before_all do
-            project.add_guest(user)
-          end
-
-          it { is_expected.to eq([group.id]) }
-        end
-
-        context 'with not eligible group' do
-          let(:group) { bronze_group }
-          let_it_be(:project) { create(:project, group: bronze_group) }
-
-          before_all do
-            project.add_guest(user)
-          end
-
-          it { is_expected.to eq([]) }
-        end
-      end
-    end
-  end
-
   describe '.clear_group_with_ai_available_cache', :use_clean_rails_redis_caching do
     let_it_be(:other_user) { create(:user) }
     let_it_be(:yet_another_user) { create(:user) }
@@ -808,14 +701,13 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
       user.any_group_with_ai_available?
       other_user.any_group_with_ai_available?
-      yet_another_user.ai_chat_enabled_namespace_ids
+
       billable_groups_user.billable_gitlab_duo_pro_root_group_ids
     end
 
     it 'clears cache from users with the given ids', :aggregate_failures do
       expect(Rails.cache.fetch(['users', user.id, 'group_with_ai_enabled'])).to eq(false)
       expect(Rails.cache.fetch(['users', other_user.id, 'group_with_ai_enabled'])).to eq(false)
-      expect(Rails.cache.fetch(['users', yet_another_user.id, 'group_ids_with_ai_chat_enabled'])).to eq([])
       expect(Rails.cache.fetch(['users', billable_groups_user.id,
         described_class::BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY])).to eq([])
 
@@ -823,7 +715,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
       expect(Rails.cache.fetch(['users', user.id, 'group_with_ai_enabled'])).to be_nil
       expect(Rails.cache.fetch(['users', other_user.id, 'group_with_ai_enabled'])).to eq(false)
-      expect(Rails.cache.fetch(['users', yet_another_user.id, 'group_ids_with_ai_chat_enabled'])).to be_nil
       expect(Rails.cache.fetch(['users', billable_groups_user.id,
         described_class::BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY])).to be_nil
     end

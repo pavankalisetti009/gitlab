@@ -3547,10 +3547,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         end
 
         context 'when the user is not a member but has AI enabled via another group' do
-          before do
-            allow(current_user).to receive(:any_group_with_ai_chat_available?).and_return(true)
-          end
-
           context 'user can view group' do
             it 'is allowed' do
               is_expected.to be_allowed(:access_duo_chat)

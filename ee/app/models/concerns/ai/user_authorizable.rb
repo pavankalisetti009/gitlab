@@ -6,10 +6,6 @@ module Ai
 
     GROUP_WITH_AI_ENABLED_CACHE_PERIOD = 1.hour
     GROUP_WITH_AI_ENABLED_CACHE_KEY = 'group_with_ai_enabled'
-    GROUP_WITH_GA_AI_ENABLED_CACHE_KEY = 'group_with_ga_ai_enabled'
-
-    GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_KEY = 'group_ids_with_ai_chat_enabled'
-    GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_PERIOD = 1.hour
 
     BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY = 'billable_duo_pro_root_group_ids'
     BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_PERIOD = 10.minutes
@@ -92,23 +88,6 @@ module Ai
         end
       end
 
-      def any_group_with_ga_ai_available?
-        Rails.cache.fetch(
-          ['users', id, GROUP_WITH_GA_AI_ENABLED_CACHE_KEY],
-          expires_in: GROUP_WITH_AI_ENABLED_CACHE_PERIOD
-        ) do
-          member_namespaces.with_ai_supported_plan.any?
-        end
-      end
-
-      def ai_chat_enabled_namespace_ids
-        Rails.cache.fetch(['users', id, GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_KEY],
-          expires_in: GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_PERIOD) do
-          groups = member_namespaces.with_ai_supported_plan(:ai_chat)
-          groups.pluck(Arel.sql('DISTINCT traversal_ids[1]')) # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's groups
-        end
-      end
-
       def allowed_to_use?(ai_feature, service_name: nil, licensed_feature: :ai_features)
         return true if amazon_q_connected?(ai_feature)
 
@@ -168,18 +147,11 @@ module Ai
     class_methods do
       def clear_group_with_ai_available_cache(ids)
         cache_keys_ai_features = Array.wrap(ids).map { |id| ["users", id, GROUP_WITH_AI_ENABLED_CACHE_KEY] }
-        cache_keys_ga_ai_features = Array.wrap(ids).map { |id| ["users", id, GROUP_WITH_GA_AI_ENABLED_CACHE_KEY] }
-        cache_keys_ai_chat_group_ids = Array.wrap(ids).map do |id|
-          ["users", id, GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_KEY]
-        end
         cache_keys_billable_duo_pro_group_ids = Array.wrap(ids).map do |id|
           ["users", id, BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY]
         end
 
-        cache_keys = cache_keys_ai_features \
-          + cache_keys_ai_chat_group_ids \
-          + cache_keys_ga_ai_features \
-          + cache_keys_billable_duo_pro_group_ids
+        cache_keys = cache_keys_ai_features + cache_keys_billable_duo_pro_group_ids
         ::Gitlab::Instrumentation::RedisClusterValidator.allow_cross_slot_commands do
           Rails.cache.delete_multi(cache_keys)
         end

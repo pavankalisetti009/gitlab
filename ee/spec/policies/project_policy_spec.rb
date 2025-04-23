@@ -4146,10 +4146,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
           context 'when user is not a member of the parent group' do
             context 'when the user has AI enabled via another group' do
-              before do
-                allow(current_user).to receive(:any_group_with_ai_chat_available?).and_return(true)
-              end
-
               context 'user can view project' do
                 it 'is allowed' do
                   is_expected.to be_allowed(:access_duo_chat)
@@ -4175,8 +4171,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
             context 'when the user has AI enabled through parent group' do
               it 'is allowed' do
-                allow(current_user).to receive(:any_group_with_ai_chat_available?).and_return(true)
-
                 is_expected.to be_allowed(:access_duo_chat)
               end
             end
