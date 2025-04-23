@@ -21,7 +21,7 @@ RSpec.describe 'Query.issue(id)', feature_category: :team_planning do
   end
 
   before do
-    stub_licensed_features(epics: true)
+    stub_licensed_features(epics: true, work_item_status: true)
   end
 
   context 'when user has no access to the epic' do
@@ -141,6 +141,61 @@ RSpec.describe 'Query.issue(id)', feature_category: :team_planning do
       let(:link_type) { 'blocks' }
       let(:expected_link) { blocked_link }
       let(:expected_work_item) { blocked_work_item }
+    end
+  end
+
+  context 'when selecting status' do
+    let(:issue_fields) { ['status { id name iconName color }'] }
+
+    before do
+      project.add_developer(current_user)
+    end
+
+    context 'when issue has no status' do
+      it 'returns nil' do
+        post_graphql(query, current_user: current_user)
+
+        expect(issue_data['status']).to be_nil
+      end
+    end
+
+    context 'when issue has a status' do
+      let_it_be(:current_status) { create(:work_item_current_status, work_item: WorkItem.find(issue.id)) }
+
+      it 'returns the status details' do
+        post_graphql(query, current_user: current_user)
+
+        expect(issue_data['status']).to include(
+          'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
+          'name' => 'To do',
+          'iconName' => 'status-waiting',
+          'color' => '#737278'
+        )
+      end
+
+      context 'when feature is not licensed' do
+        before do
+          stub_licensed_features(work_item_status: false)
+        end
+
+        it 'returns nil' do
+          post_graphql(query, current_user: current_user)
+
+          expect(issue_data['status']).to be_nil
+        end
+      end
+
+      context 'when work_item_status_feature_flag is disabled' do
+        before do
+          stub_feature_flags(work_item_status_feature_flag: false)
+        end
+
+        it 'returns nil' do
+          post_graphql(query, current_user: current_user)
+
+          expect(issue_data['status']).to be_nil
+        end
+      end
     end
   end
 end

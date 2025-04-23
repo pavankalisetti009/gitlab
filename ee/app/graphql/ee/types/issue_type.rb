@@ -67,6 +67,12 @@ module EE
           null: true,
           description: 'Related vulnerabilities of the issue.'
 
+        field :status, ::Types::WorkItems::StatusType,
+          null: true,
+          description: 'Status of the issue.',
+          experiment: { milestone: '18.0' },
+          resolver: ::Resolvers::WorkItems::Statuses::BulkStatusResolver
+
         def iteration
           ::Gitlab::Graphql::Loaders::BatchModelLoader.new(::Iteration, object.sprint_id).find
         end
