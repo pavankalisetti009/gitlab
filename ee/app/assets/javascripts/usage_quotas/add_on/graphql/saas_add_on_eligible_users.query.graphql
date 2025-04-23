@@ -33,6 +33,7 @@ query getAddOnEligibleUsers(
         avatarUrl
         webUrl
         lastActivityOn
+        lastDuoActivityOn
         maxRole @client
         membershipType @client
         addOnAssignments(addOnPurchaseIds: $addOnPurchaseIds) {

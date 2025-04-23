@@ -282,6 +282,7 @@ describe('Add On Eligible User List', () => {
       email: emailWrapper.text(),
       tooltip: emailWrapper.find('span').attributes('title'),
       lastActivityOn: rowWrapper.find('[data-testid="last-activity-on"]').text(),
+      lastDuoActivityOn: rowWrapper.find('[data-testid="last-duo-activity-on"]').text(),
       maxRole: maxRoleWrapper.exists() ? maxRoleWrapper.text() : undefined,
     };
   };
@@ -353,6 +354,7 @@ describe('Add On Eligible User List', () => {
         {
           email: 'Private',
           lastActivityOn: '2023-08-25',
+          lastDuoActivityOn: '2023-08-25',
           tooltip: 'An email address is only visible for users with public emails.',
           user: {
             avatarLabeled: { size: '32', src: 'path/to/img_userone', text: 'User One  @userone' },
@@ -362,6 +364,7 @@ describe('Add On Eligible User List', () => {
         {
           email: 'Private',
           lastActivityOn: '2023-08-22',
+          lastDuoActivityOn: 'Never',
           tooltip: 'An email address is only visible for users with public emails.',
           user: {
             avatarLabeled: { size: '32', src: 'path/to/img_usertwo', text: 'User Two  @usertwo' },
@@ -371,6 +374,7 @@ describe('Add On Eligible User List', () => {
         {
           email: 'Private',
           lastActivityOn: '2023-03-19',
+          lastDuoActivityOn: '2023-01-20',
           tooltip: 'An email address is only visible for users with public emails.',
           user: {
             avatarLabeled: {
@@ -393,6 +397,7 @@ describe('Add On Eligible User List', () => {
         'codeSuggestionsAddon',
         'email',
         'lastActivityTime',
+        'lastDuoActivityTime',
       ]);
     });
 
@@ -446,6 +451,7 @@ describe('Add On Eligible User List', () => {
           'codeSuggestionsAddon',
           'email',
           'lastActivityTime',
+          'lastDuoActivityTime',
         ]);
       });
 
@@ -465,6 +471,7 @@ describe('Add On Eligible User List', () => {
             'email',
             'maxRole',
             'lastActivityTime',
+            'lastDuoActivityTime',
           ]);
         });
 
@@ -473,6 +480,7 @@ describe('Add On Eligible User List', () => {
             {
               email: 'Private',
               lastActivityOn: '2023-08-25',
+              lastDuoActivityOn: '2023-08-25',
               maxRole: 'developer',
               tooltip: 'An email address is only visible for users with public emails.',
               user: {
@@ -487,6 +495,7 @@ describe('Add On Eligible User List', () => {
             {
               email: 'Private',
               lastActivityOn: '2023-08-22',
+              lastDuoActivityOn: 'Never',
               maxRole: 'developer',
               tooltip: 'An email address is only visible for users with public emails.',
               user: {
@@ -501,6 +510,7 @@ describe('Add On Eligible User List', () => {
             {
               email: 'Private',
               lastActivityOn: '2023-03-19',
+              lastDuoActivityOn: '2023-01-20',
               maxRole: 'developer',
               tooltip: 'An email address is only visible for users with public emails.',
               user: {
@@ -532,6 +542,7 @@ describe('Add On Eligible User List', () => {
           'codeSuggestionsAddon',
           'email',
           'lastActivityTime',
+          'lastDuoActivityTime',
         ]);
       });
     });
@@ -551,6 +562,7 @@ describe('Add On Eligible User List', () => {
           'codeSuggestionsAddon',
           'email',
           'lastActivityTime',
+          'lastDuoActivityTime',
         ]);
       });
 
@@ -572,6 +584,7 @@ describe('Add On Eligible User List', () => {
             'email',
             'maxRole',
             'lastActivityTime',
+            'lastDuoActivityTime',
           ]);
         });
       });

@@ -35357,6 +35357,9 @@ msgstr ""
 msgid "Last Accessed On"
 msgstr ""
 
+msgid "Last GitLab Duo activity"
+msgstr ""
+
 msgid "Last GitLab activity"
 msgstr ""
 
