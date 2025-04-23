@@ -14,10 +14,13 @@ module EE
           def configure_menu_items
             super
 
+            if can?(context.current_user, :read_web_hook, context.group)
+              insert_item_after(:integrations, webhooks_menu_item)
+            end
+
             if can?(context.current_user, :admin_group, context.group)
               insert_item_after(:general, service_accounts_menu_item)
               insert_item_after(:service_accounts, roles_and_permissions_menu_item)
-              insert_item_after(:integrations, webhooks_menu_item)
               insert_item_after(:group_projects, group_work_items_menu_item)
               insert_item_after(:ci_cd, analytics_menu_item)
               insert_item_after(:usage_quotas, gitlab_duo_settings_menu_item)

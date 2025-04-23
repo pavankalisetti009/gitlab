@@ -453,6 +453,7 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
         :manage_merge_request_settings | 'General'
         :remove_group                  | 'General'
         :admin_integrations            | 'Integrations'
+        :admin_web_hook                | 'Webhooks'
       end
 
       with_them do
