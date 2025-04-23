@@ -185,7 +185,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
             dependencies: [],
             script: ['gtcs scan'],
             variables: {
-              CS_ANALYZER_IMAGE: "$CI_TEMPLATE_REGISTRY_HOST/security-products/container-scanning:7",
+              CS_ANALYZER_IMAGE: "$CI_TEMPLATE_REGISTRY_HOST/security-products/container-scanning:8",
               GIT_STRATEGY: 'fetch',
               VARIABLE_1: 10,
               CS_SCHEMA_MODEL: 15
@@ -302,7 +302,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
         expected_variables = {
           'SECURE_ANALYZERS_PREFIX' => "$CI_TEMPLATE_REGISTRY_HOST/security-products",
           'DS_EXCLUDED_PATHS' => "spec, test, tests, tmp",
-          'DS_MAJOR_VERSION' => 5
+          'DS_MAJOR_VERSION' => 6
         }
 
         expect(config[:variables]).to be_nil
