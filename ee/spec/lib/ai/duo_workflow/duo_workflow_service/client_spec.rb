@@ -10,7 +10,6 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :d
   let(:request) { instance_double('DuoWorkflowService::GenerateTokenRequest') }
   let(:response) { double(token: 'a user jwt', expiresAt: 'a timestamp') } # rubocop:disable RSpec/VerifiedDoubles -- instance_double keeps raising error  the DuoWorkflowService::GenerateTokenResponse class does not implement the class method: token
   let(:channel_credentials) { instance_of(GRPC::Core::ChannelCredentials) }
-  let(:cloud_connector_service_data_double) { instance_of(CloudConnector::SelfSigned::AvailableServiceData) }
 
   subject(:client) do
     described_class.new(
@@ -21,10 +20,6 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :d
   end
 
   before do
-    allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:duo_workflow).and_return(
-      cloud_connector_service_data_double
-    )
-    allow(cloud_connector_service_data_double).to receive(:access_token).and_return('instance jwt')
     allow(DuoWorkflowService::DuoWorkflow::Stub).to receive(:new).with(anything, channel_credentials).and_return(stub)
     allow(stub).to receive(:generate_token).and_return(response)
     allow(DuoWorkflowService::GenerateTokenRequest).to receive(:new).and_return(request)
@@ -32,6 +27,8 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :d
 
   describe '#generate_token' do
     it 'sends the correct metadata hash' do
+      expect(::CloudConnector::Tokens).to receive(:get).and_return('instance jwt')
+
       client.generate_token
 
       expect(stub).to have_received(:generate_token).with(
@@ -44,6 +41,34 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :d
           'x-gitlab-global-user-id' => ::Gitlab::GlobalAnonymousId.user_id(current_user)
         }
       )
+    end
+
+    context 'when cloud_connector_new_token_impl feature is disabled' do
+      let(:cloud_connector_service_data_double) { instance_of(CloudConnector::SelfSigned::AvailableServiceData) }
+
+      before do
+        stub_feature_flags(cloud_connector_new_token_impl: false)
+      end
+
+      it 'obtains Cloud Connector token via AvailableServices class' do
+        expect(CloudConnector::AvailableServices).to receive(:find_by_name).with(:duo_workflow).and_return(
+          cloud_connector_service_data_double
+        )
+        expect(cloud_connector_service_data_double).to receive(:access_token).and_return('instance jwt')
+
+        client.generate_token
+
+        expect(stub).to have_received(:generate_token).with(
+          request,
+          metadata: {
+            "authorization" => "Bearer instance jwt",
+            "x-gitlab-authentication-type" => "oidc",
+            'x-gitlab-instance-id' => ::Gitlab::GlobalAnonymousId.instance_id,
+            'x-gitlab-realm' => ::CloudConnector.gitlab_realm,
+            'x-gitlab-global-user-id' => ::Gitlab::GlobalAnonymousId.user_id(current_user)
+          }
+        )
+      end
     end
 
     it 'returns a success ServiceResponse with token and expires_at' do
