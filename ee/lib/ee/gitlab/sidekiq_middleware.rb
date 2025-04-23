@@ -3,23 +3,33 @@
 module EE
   module Gitlab
     module SidekiqMiddleware
-      extend ActiveSupport::Concern
+      module Client
+        extend ActiveSupport::Concern
 
-      class_methods do
-        extend ::Gitlab::Utils::Override
+        class_methods do
+          extend ::Gitlab::Utils::Override
 
-        override :server_configurator
-        def server_configurator(metrics: true, arguments_logger: true, skip_jobs: true)
-          ->(chain) do
-            super.call(chain)
-            chain.add ::Gitlab::SidekiqMiddleware::SetSession::Server
+          override :configurator
+          def configurator
+            ->(chain) do
+              super.call(chain)
+            end
           end
         end
+      end
 
-        override :client_configurator
-        def client_configurator
-          ->(chain) do
-            super.call(chain)
+      module Server
+        extend ActiveSupport::Concern
+
+        class_methods do
+          extend ::Gitlab::Utils::Override
+
+          override :configurator
+          def configurator(metrics: true, arguments_logger: true, skip_jobs: true)
+            ->(chain) do
+              super.call(chain)
+              chain.add ::Gitlab::SidekiqMiddleware::SetSession::Server
+            end
           end
         end
       end

@@ -41,8 +41,8 @@ RSpec.describe Gitlab::SidekiqMiddleware, feature_category: :shared do
     end
   end
 
-  describe '.server_configurator' do
-    let(:configurator) { described_class.server_configurator }
+  describe 'Server.configurator' do
+    let(:configurator) { described_class::Server.configurator }
     let(:worker_args) { [worker_class.new, { 'args' => job_args }, queue] }
     let(:middleware_expected_args) { [a_kind_of(worker_class), hash_including({ 'args' => job_args }), queue] }
     let(:all_sidekiq_middlewares) do
