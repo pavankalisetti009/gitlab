@@ -29,6 +29,9 @@ module Resolvers
         def resolve_with_lookahead(**args)
           params = params_with_defaults(args)
 
+          # Creates parameters context to be used in resolvers coming later in the chain.
+          set_context(params)
+
           usage = ::Analytics::AiAnalytics::AiMetricsService.new(
             current_user,
             namespace: namespace,
@@ -43,6 +46,11 @@ module Resolvers
         end
 
         private
+
+        def set_context(params)
+          context[:ai_metrics_params] = params
+          context[:ai_metrics_namespace] = namespace
+        end
 
         def validate_params!(args)
           params = params_with_defaults(args)
