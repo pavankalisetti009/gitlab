@@ -30,7 +30,7 @@ module EE
         before_action :authorize_read_security_reports!, only: [:security_reports]
         before_action :set_application_context!, only: [:show, :diffs, :commits, :pipelines]
 
-        before_action only: [:pipelines] do
+        before_action only: [:show] do
           experiment(:root_cause_analysis_hotspot, actor: current_user, group: project.root_ancestor).publish
         end
 
