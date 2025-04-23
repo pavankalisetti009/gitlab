@@ -340,26 +340,6 @@ RSpec.describe TodoService, feature_category: :notifications do
       end
     end
 
-    describe '#review_submitted' do
-      let(:review) { create(:review, merge_request: merge_request) }
-
-      before do
-        service.review_submitted(review)
-      end
-
-      it 'creates a pending todo for reviewed merge request author' do
-        should_create_todo(user: merge_request.author, author: review.author, target: merge_request, action: Todo::REVIEW_SUBMITTED)
-      end
-
-      context 'when merge request author is the review author' do
-        let(:review) { create(:review, merge_request: merge_request, author: merge_request.author) }
-
-        it 'does not create a pending todo for reviewed merge request author' do
-          should_not_create_todo(user: merge_request.author, author: review.author, target: merge_request, action: Todo::REVIEW_SUBMITTED)
-        end
-      end
-    end
-
     describe '#request_okr_checkin' do
       let_it_be(:project_member) { create(:project_member, :maintainer) }
       let_it_be(:project) { project_member.project }

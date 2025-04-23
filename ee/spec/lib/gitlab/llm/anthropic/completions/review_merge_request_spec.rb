@@ -226,6 +226,29 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         expect(merge_request.notes.non_diff_notes.last.note).to eq(summary_answer)
       end
 
+      context 'when draft_notes is empty after mapping DraftNote objects' do
+        let(:combined_review_response) { { content: [{ text: combined_review_answer }] } }
+        let(:summary_response) { nil }
+        let(:combined_review_answer) do
+          <<~RESPONSE
+            <review>
+            <comment file="UPDATED.md" priority="2" old_line="" new_line="2">High priority comment</comment>
+            </review>
+          RESPONSE
+        end
+
+        it 'updates progress note with no comment message and creates a todo' do
+          expect_any_instance_of(TodoService) do |service|
+            expect(service).to receive(:new_review).with(merge_request, duo_code_review_bot)
+          end
+
+          completion.execute
+
+          expect(merge_request.notes.diff_notes.count).to eq 0
+          expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.no_comment_msg)
+        end
+      end
+
       context 'when review note already exists on the same position' do
         let(:progress_note2) do
           create(
@@ -368,6 +391,14 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           expect(merge_request.notes.count).to eq 1
           expect(merge_request.notes.last.note).to eq(described_class.no_comment_msg)
         end
+
+        it 'creates a new todo' do
+          expect_any_instance_of(TodoService) do |service|
+            expect(service).to receive(:new_review).with(merge_request, duo_code_review_bot)
+          end
+
+          completion.execute
+        end
       end
 
       context 'when review response is nil' do
@@ -378,6 +409,14 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
 
           expect(merge_request.notes.count).to eq 1
           expect(merge_request.notes.last.note).to eq(described_class.no_comment_msg)
+        end
+
+        it 'creates a new todo' do
+          expect_any_instance_of(TodoService) do |service|
+            expect(service).to receive(:new_review).with(merge_request, duo_code_review_bot)
+          end
+
+          completion.execute
         end
       end
 
