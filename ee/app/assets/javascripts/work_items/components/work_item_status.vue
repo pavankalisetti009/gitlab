@@ -4,7 +4,6 @@ import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { s__, __ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { InternalEvents } from '~/tracking';
-import { findWidget } from '~/issues/list/utils';
 import {
   I18N_WORK_ITEM_ERROR_UPDATING,
   sprintfWorkItem,
@@ -14,6 +13,7 @@ import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_i
 
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
+import { findStatusWidget } from '~/work_items/utils';
 import workItemStatusQuery from '../graphql/work_item_status.query.graphql';
 import WorkItemStatusBadge from './shared/work_item_status_badge.vue';
 
@@ -63,7 +63,7 @@ export default {
   },
   computed: {
     workItemStatus() {
-      return findWidget(WIDGET_TYPE_STATUS, this.workItem);
+      return findStatusWidget(this.workItem);
     },
     hasStatus() {
       return this.localStatus?.id !== null;
@@ -130,7 +130,7 @@ export default {
         return data?.workspace?.workItem ?? {};
       },
       result({ data }) {
-        this.localStatus = findWidget(WIDGET_TYPE_STATUS, data?.workspace?.workItem)?.status || {};
+        this.localStatus = findStatusWidget(data?.workspace?.workItem)?.status || {};
       },
       skip() {
         return !this.workItemIid || !this.fullPath;
