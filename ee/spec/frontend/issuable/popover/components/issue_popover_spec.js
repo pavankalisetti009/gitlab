@@ -1,3 +1,4 @@
+import { GlPopover } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
@@ -9,9 +10,12 @@ import IssuePopover from '~/issuable/popover/components/issue_popover.vue';
 import IssueWeight from 'ee_component/issues/components/issue_weight.vue';
 
 describe('Issue Popover', () => {
+  /** @type {import('@vue/test-utils').Wrapper} */
   let wrapper;
 
   Vue.use(VueApollo);
+
+  const findGlPopover = () => wrapper.findComponent(GlPopover);
 
   const mountComponent = ({
     queryResponse = jest.fn().mockResolvedValue(issueQueryResponse),
@@ -33,6 +37,7 @@ describe('Issue Popover', () => {
   describe('when loaded', () => {
     beforeEach(async () => {
       mountComponent();
+      findGlPopover().vm.$emit('show');
       await waitForPromises();
     });
 
