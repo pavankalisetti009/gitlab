@@ -30,6 +30,9 @@ module EE
             ],
             integrations_menu_item: [
               :admin_integrations
+            ],
+            webhooks_menu_item: [
+              :read_web_hook
             ]
           }.freeze
 
