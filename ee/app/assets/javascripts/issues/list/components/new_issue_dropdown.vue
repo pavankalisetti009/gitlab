@@ -6,10 +6,10 @@ import {
   GlDisclosureDropdownItem,
 } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
-import { sprintfWorkItem, WORK_ITEM_TYPE_ENUM_OBJECTIVE } from '~/work_items/constants';
+import { sprintfWorkItem, WORK_ITEM_TYPE_NAME_OBJECTIVE } from '~/work_items/constants';
 
 export default {
-  WORK_ITEM_TYPE_ENUM_OBJECTIVE,
+  WORK_ITEM_TYPE_NAME_OBJECTIVE,
   i18n: {
     newIssueLabel: __('New issue'),
     toggleSrText: __('Issue type'),
@@ -49,7 +49,7 @@ export default {
     >
       <gl-disclosure-dropdown-item :item="newIssueItem" />
       <create-work-item-modal
-        :preselected-work-item-type="$options.WORK_ITEM_TYPE_ENUM_OBJECTIVE"
+        :preselected-work-item-type="$options.WORK_ITEM_TYPE_NAME_OBJECTIVE"
         as-dropdown-item
         @workItemCreated="$emit('workItemCreated')"
       />
