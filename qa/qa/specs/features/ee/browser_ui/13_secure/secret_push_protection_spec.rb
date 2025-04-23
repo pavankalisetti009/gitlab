@@ -2,7 +2,11 @@
 
 module QA
   RSpec.describe 'Secure', :requires_admin, product_group: :secret_detection do
-    describe 'Secret Push Protection' do
+    describe 'Secret Push Protection',
+      quarantine: {
+        type: :investigating,
+        issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/537185"
+      } do
       let!(:project) do
         create(:project, :with_readme, name: 'secret-push-project', description: 'Secret Push Protection Project')
       end
