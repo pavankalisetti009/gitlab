@@ -50,16 +50,6 @@ RSpec.describe Admin::ApplicationSettingsController, :enable_admin_mode, feature
     it 'does not create a SystemAccess::GroupMicrosoftApplication' do
       expect { update_request }.not_to change { SystemAccess::GroupMicrosoftApplication.count }
     end
-
-    context 'when group_microsoft_applications_table FF is disabled' do
-      before do
-        stub_feature_flags(group_microsoft_applications_table: false)
-      end
-
-      it 'creates new SystemAccess::MicrosoftApplication' do
-        expect { update_request }.to change { SystemAccess::MicrosoftApplication.count }.by(1)
-      end
-    end
   end
 
   describe 'GET #general', feature_category: :user_management do
@@ -74,20 +64,6 @@ RSpec.describe Admin::ApplicationSettingsController, :enable_admin_mode, feature
         get general_admin_application_settings_path
 
         expect(response.body).to match(/test-xid-456/)
-      end
-
-      context 'with feature flag group_microsoft_applications_table disabled' do
-        before do
-          stub_feature_flags(group_microsoft_applications_table: false)
-        end
-
-        it 'initializes correctly with SystemAccess::MicrosoftApplication' do
-          create(:system_access_microsoft_application, namespace: nil, client_xid: 'test-xid-123')
-
-          get general_admin_application_settings_path
-
-          expect(response.body).to match(/test-xid-123/)
-        end
       end
     end
 

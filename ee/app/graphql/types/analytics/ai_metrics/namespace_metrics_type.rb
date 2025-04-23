@@ -12,15 +12,22 @@ module Types
         field :code_contributors_count, GraphQL::Types::Int,
           description: 'Number of code contributors.',
           null: true
+        field :code_suggestions,
+          resolver: Resolvers::Analytics::AiMetrics::CodeSuggestionMetricsResolver,
+          null: true,
+          description: 'Code suggestions metrics.'
         field :code_suggestions_accepted_count, GraphQL::Types::Int,
           description: 'Total count of code suggestions accepted by code contributors.',
-          null: true
+          null: true,
+          deprecated: { reason: 'moved to codeSuggestions field', milestone: '18.0' }
         field :code_suggestions_contributors_count, GraphQL::Types::Int,
           description: 'Number of code contributors who used GitLab Duo Code Suggestions features.',
-          null: true
+          null: true,
+          deprecated: { reason: 'moved to codeSuggestions field', milestone: '18.0' }
         field :code_suggestions_shown_count, GraphQL::Types::Int,
           description: 'Total count of code suggestions shown to code contributors.',
-          null: true
+          null: true,
+          deprecated: { reason: 'moved to codeSuggestions field', milestone: '18.0' }
         field :duo_assigned_users_count, GraphQL::Types::Int,
           description: 'Total assigned Duo Pro and Enterprise seats. Ignores time period filter. Returns current data.',
           null: true

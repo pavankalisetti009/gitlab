@@ -17,32 +17,69 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
 
   shared_examples 'common ai metrics' do
     let(:fields) do
-      %w[codeSuggestionsContributorsCount codeContributorsCount codeSuggestionsShownCount codeSuggestionsAcceptedCount
-        duoChatContributorsCount duoAssignedUsersCount duoUsedCount rootCauseAnalysisUsersCount]
+      <<~FIELDS
+        codeSuggestionsContributorsCount
+        codeContributorsCount
+        codeSuggestionsShownCount
+        codeSuggestionsAcceptedCount
+        duoChatContributorsCount
+        duoAssignedUsersCount
+        duoUsedCount
+        rootCauseAnalysisUsersCount
+        codeSuggestions(languages: ["ruby"]) {
+          shownCount
+          acceptedCount
+          contributorsCount
+          languages
+          shownLinesOfCode
+          acceptedLinesOfCode
+        }
+      FIELDS
     end
 
     let(:from) { '2024-05-01'.to_date }
     let(:to) { '2024-05-31'.to_date }
     let(:filter_params) { { startDate: from, endDate: to } }
     let(:expected_filters) { { from: from, to: to } }
+    let(:code_suggestions_expected_filters) { expected_filters.merge(languages: ['ruby']) }
 
-    let(:service_payload) do
+    let(:ai_metrics_service_payload) do
       {
         code_contributors_count: 10,
-        code_suggestions_contributors_count: 3,
-        code_suggestions_shown_count: 5,
-        code_suggestions_accepted_count: 2,
         duo_chat_contributors_count: 8,
         duo_assigned_users_count: 18,
         duo_used_count: 17,
+        # Experimental fields below were deprecated in 17.11.
+        # They can be removed after one release without deprecation process.
+        code_suggestions_contributors_count: 3,
+        code_suggestions_shown_count: 5,
+        code_suggestions_accepted_count: 2,
         root_cause_analysis_users_count: 20
+      }
+    end
+
+    let(:code_suggestion_usage_service_payload) do
+      {
+        contributors_count: 3,
+        shown_count: 20,
+        accepted_count: 30,
+        languages: %w[csharp go],
+        accepted_lines_of_code: 100,
+        shown_lines_of_code: 200
       }
     end
 
     before do
       allow_next_instance_of(::Analytics::AiAnalytics::AiMetricsService,
         current_user, hash_including(expected_filters)) do |instance|
-        allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: service_payload))
+        allow(instance).to receive(:execute)
+          .and_return(ServiceResponse.success(payload: ai_metrics_service_payload))
+      end
+
+      allow_next_instance_of(::Analytics::AiAnalytics::CodeSuggestionUsageService,
+        current_user, hash_including(code_suggestions_expected_filters)) do |instance|
+        allow(instance).to receive(:execute)
+          .and_return(ServiceResponse.success(payload: code_suggestion_usage_service_payload))
       end
 
       allow(Ability).to receive(:allowed?).and_call_original
@@ -54,7 +91,7 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
     end
 
     it 'returns all metrics' do
-      expect(ai_metrics).to eq({
+      expected_results = {
         'codeSuggestionsContributorsCount' => 3,
         'codeContributorsCount' => 10,
         'codeSuggestionsShownCount' => 5,
@@ -62,12 +99,22 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         'duoChatContributorsCount' => 8,
         'duoAssignedUsersCount' => 18,
         'duoUsedCount' => 17,
-        'rootCauseAnalysisUsersCount' => 20
-      })
+        'rootCauseAnalysisUsersCount' => 20,
+        'codeSuggestions' => {
+          'contributorsCount' => 3,
+          'shownCount' => 20,
+          'acceptedCount' => 30,
+          'languages' => %w[csharp go],
+          'acceptedLinesOfCode' => 100,
+          'shownLinesOfCode' => 200
+        }
+      }
+
+      expect(ai_metrics).to eq(expected_results)
     end
 
     context 'when AiMetrics service returns only part of queried fields' do
-      let(:service_payload) do
+      let(:ai_metrics_service_payload) do
         {
           code_contributors_count: 10,
           code_suggestions_contributors_count: 3,
@@ -76,8 +123,12 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         }
       end
 
+      let(:code_suggestion_usage_service_payload) do
+        {}
+      end
+
       it 'returns all metrics filled by default' do
-        expect(ai_metrics).to eq({
+        expected_results = {
           'codeSuggestionsContributorsCount' => 3,
           'codeContributorsCount' => 10,
           'codeSuggestionsShownCount' => 5,
@@ -85,8 +136,17 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
           'duoChatContributorsCount' => nil,
           'duoAssignedUsersCount' => nil,
           'duoUsedCount' => nil,
-          'rootCauseAnalysisUsersCount' => nil
-        })
+          'rootCauseAnalysisUsersCount' => nil,
+          'codeSuggestions' => {
+            'contributorsCount' => nil,
+            'shownCount' => nil,
+            'acceptedCount' => nil,
+            'languages' => nil,
+            'acceptedLinesOfCode' => nil,
+            'shownLinesOfCode' => nil
+          }
+        }
+        expect(ai_metrics).to eq(expected_results)
       end
     end
 
@@ -101,18 +161,17 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
   end
 
   context 'for group' do
-    it_behaves_like 'common ai metrics' do
-      let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_metrics_fields) }
-      let(:ai_metrics) { graphql_data['group']['aiMetrics'] }
-    end
+    let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_metrics_fields) }
+    let(:ai_metrics) { graphql_data['group']['aiMetrics'] }
+
+    it_behaves_like 'common ai metrics'
   end
 
   context 'for project' do
     let_it_be(:project) { create(:project, group: group) }
+    let(:query) { graphql_query_for(:project, { fullPath: project.full_path }, ai_metrics_fields) }
+    let(:ai_metrics) { graphql_data['project']['aiMetrics'] }
 
-    it_behaves_like 'common ai metrics' do
-      let(:query) { graphql_query_for(:project, { fullPath: project.full_path }, ai_metrics_fields) }
-      let(:ai_metrics) { graphql_data['project']['aiMetrics'] }
-    end
+    it_behaves_like 'common ai metrics'
   end
 end

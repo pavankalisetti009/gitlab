@@ -7,3 +7,5 @@ class ReindexWikisToUpdateIntegerWithLongType < Elastic::Migration
     %w[Wiki]
   end
 end
+
+ReindexWikisToUpdateIntegerWithLongType.prepend ::Search::Elastic::MigrationObsolete
