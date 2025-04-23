@@ -386,7 +386,7 @@ class Snippet < ApplicationRecord
   end
 
   def hidden_due_to_author_ban?
-    Feature.enabled?(:hide_snippets_of_banned_users) && author.banned?
+    author.banned?
   end
 end
 
