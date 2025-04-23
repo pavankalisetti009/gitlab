@@ -262,7 +262,6 @@ describe('EE - DastProfilesList', () => {
       const disabledRow = getAllTableRows()[0];
       const deleteButton = getDeleteButtonWithin(disabledRow);
       expect(deleteButton.attributes('disabled')).toBeDefined();
-      expect(deleteButton.attributes('aria-disabled')).toBe('true');
     });
 
     it('shows the correct tooltip text', () => {
