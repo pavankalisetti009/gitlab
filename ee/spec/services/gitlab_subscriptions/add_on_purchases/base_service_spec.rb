@@ -81,7 +81,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::BaseService, feature_categor
 
         it 'returns an error' do
           expect(result[:status]).to eq(:error)
-          expect(result[:message]).to eq('Add-on purchase could not be saved')
+          expect(result[:message]).to eq('Quantity must be greater than or equal to 1.')
           expect(result[:add_on_purchase]).to be_present
         end
       end

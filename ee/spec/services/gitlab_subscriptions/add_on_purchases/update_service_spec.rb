@@ -98,7 +98,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::UpdateService, :aggregate_fa
             expect { result }.not_to change { add_on_purchase.quantity }
 
             expect(result[:status]).to eq(:error)
-            expect(result[:message]).to eq('Add-on purchase could not be saved')
+            expect(result[:message]).to eq('Quantity must be greater than or equal to 1.')
             expect(result[:add_on_purchase]).to be_an_instance_of(GitlabSubscriptions::AddOnPurchase)
             expect(result[:add_on_purchase]).to eq(add_on_purchase)
           end

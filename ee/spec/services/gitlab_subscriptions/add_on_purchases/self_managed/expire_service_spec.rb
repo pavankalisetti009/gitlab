@@ -24,12 +24,14 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ExpireService, 
 
     context 'when update fails' do
       before do
-        allow(add_on_purchase).to receive(:update).and_return(false)
+        errors = ActiveModel::Errors.new(add_on_purchase).tap { |e| e.add(:base, 'error message') }
+
+        allow(add_on_purchase).to receive_messages(update: false, errors: errors)
       end
 
       it 'returns an error' do
         expect(result[:status]).to eq(:error)
-        expect(result[:message]).to eq('Add-on purchase could not be saved')
+        expect(result[:message]).to eq('error message.')
         expect(result[:add_on_purchase]).to be_an_instance_of(GitlabSubscriptions::AddOnPurchase)
       end
     end
