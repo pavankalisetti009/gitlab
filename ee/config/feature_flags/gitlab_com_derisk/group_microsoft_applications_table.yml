@@ -1,9 +1,0 @@
----
-name: group_microsoft_applications_table
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/495499
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180119
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/512497
-milestone: '17.9'
-group: group::authentication
-type: gitlab_com_derisk
-default_enabled: false

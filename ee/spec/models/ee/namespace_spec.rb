@@ -17,8 +17,8 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to have_one(:security_orchestration_policy_configuration).class_name('Security::OrchestrationPolicyConfiguration').with_foreign_key(:namespace_id) }
   it { is_expected.to have_one :upcoming_reconciliation }
   it { is_expected.to have_one(:storage_limit_exclusion) }
+  it { is_expected.to have_one(:system_access_microsoft_application) }
   it { is_expected.to have_one(:group_system_access_microsoft_application) }
-  it { is_expected.to have_one(:legacy_system_access_microsoft_application) }
   it { is_expected.to have_many(:ci_minutes_additional_packs) }
   it { is_expected.to have_many(:member_roles) }
   it { is_expected.to have_many(:subscription_add_on_purchases).class_name('GitlabSubscriptions::AddOnPurchase') }
@@ -2446,24 +2446,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   describe '#block_seat_overages?' do
     it 'returns false' do
       expect(namespace.block_seat_overages?).to eq(false)
-    end
-  end
-
-  describe '#system_access_microsoft_application' do
-    let(:namespace) { create(:group) }
-    let!(:legacy_app) { create(:system_access_microsoft_application, namespace: namespace) }
-    let!(:group_app) { create(:system_access_group_microsoft_application, group: namespace) }
-
-    subject(:system_access_microsoft_application) { namespace.system_access_microsoft_application }
-
-    it { is_expected.to eq(group_app) }
-
-    context 'when group_microsoft_applications_table FF is disabled' do
-      before do
-        stub_feature_flags(group_microsoft_applications_table: false)
-      end
-
-      it { is_expected.to eq(legacy_app) }
     end
   end
 
