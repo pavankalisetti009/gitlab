@@ -20,18 +20,25 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
     let(:global_feature_flag_enabled) { true }
     let(:feature_flag_enabled) { true }
     let(:current_user) { authorized_user }
-    let(:new_path) { 'path.md' }
-    let(:diff) { 'Diff' }
-    let(:hunk) { 'Hunk' }
+    let(:raw_diffs) do
+      <<~DIFFS
+        diff --git a/path.md b/path.md
+        index 1234567..abcdefg 100644
+        --- a/path.md
+        +++ b/path.md
+        @@ -1,1 +1,1 @@
+        -Old content
+        +New content
+      DIFFS
+    end
+
     let(:mr_title) { 'Test MR Title' }
     let(:mr_description) { 'Test MR Description' }
     let(:headers) { {} }
 
     let(:body) do
       {
-        new_path: new_path,
-        diff: diff,
-        hunk: hunk,
+        diffs: raw_diffs,
         mr_title: mr_title,
         mr_description: mr_description
       }
@@ -39,6 +46,11 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
 
     let(:review_prompt) { { messages: ['prompt'] } }
     let(:review_response) { { content: [{ text: 'Review response' }] } }
+    let(:expected_diffs_and_paths) do
+      {
+        'path.md' => raw_diffs
+      }
+    end
 
     subject(:post_api) do
       post api('/duo_code_review/evaluations', current_user), headers: headers, params: body
@@ -53,12 +65,10 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
 
       allow_next_instance_of(
         ::Gitlab::Llm::Templates::ReviewMergeRequest,
-        new_path: new_path,
-        raw_diff: diff,
-        hunk: hunk,
-        user: authorized_user,
         mr_title: mr_title,
-        mr_description: mr_description
+        mr_description: mr_description,
+        diffs_and_paths: expected_diffs_and_paths,
+        user: authorized_user
       ) do |prompt|
         allow(prompt).to receive(:to_prompt).and_return(review_prompt)
       end
@@ -129,9 +139,7 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
     context 'when mr_title parameter is missing' do
       let(:body) do
         {
-          new_path: new_path,
-          diff: diff,
-          hunk: hunk,
+          diffs: raw_diffs,
           mr_description: mr_description
         }
       end
@@ -142,14 +150,75 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
     context 'when mr_description parameter is missing' do
       let(:body) do
         {
-          new_path: new_path,
-          diff: diff,
-          hunk: hunk,
+          diffs: raw_diffs,
           mr_title: mr_title
         }
       end
 
       it { expect(response).to have_gitlab_http_status(:bad_request) }
+    end
+
+    context 'with more complex diff content' do
+      let(:raw_diffs) do
+        <<~DIFFS
+        diff --git a/file1.rb b/file1.rb
+        index 123..456 100644
+        --- a/file1.rb
+        +++ b/file1.rb
+        @@ -1,3 +1,3 @@
+        -old line
+        +new line
+        unchanged
+        diff --git a/file2.rb b/file2.rb
+        index 789..012 100644
+        --- a/file2.rb
+        +++ b/file2.rb
+        @@ -5,2 +5,2 @@
+        -another old line
+        +another new line
+        DIFFS
+      end
+
+      let(:expected_diffs_and_paths) do
+        {
+          'file1.rb' => [
+            "diff --git a/file1.rb b/file1.rb",
+            "index 123..456 100644",
+            "--- a/file1.rb",
+            "+++ b/file1.rb",
+            "@@ -1,3 +1,3 @@",
+            "-old line",
+            "+new line",
+            "unchanged\n"
+          ].join("\n"),
+          'file2.rb' => [
+            "diff --git a/file2.rb b/file2.rb",
+            "index 789..012 100644",
+            "--- a/file2.rb",
+            "+++ b/file2.rb",
+            "@@ -5,2 +5,2 @@",
+            "-another old line",
+            "+another new line\n"
+          ].join("\n")
+        }
+      end
+
+      before do
+        allow_next_instance_of(::Gitlab::Llm::Templates::ReviewMergeRequest) do |instance|
+          allow(instance).to receive(:to_prompt).and_return(review_prompt)
+        end
+      end
+
+      it 'passes the correct parsed diffs to the template' do
+        expect(::Gitlab::Llm::Templates::ReviewMergeRequest)
+          .to have_received(:new)
+          .with(
+            mr_title: mr_title,
+            mr_description: mr_description,
+            user: authorized_user,
+            diffs_and_paths: expected_diffs_and_paths
+          )
+      end
     end
   end
 end

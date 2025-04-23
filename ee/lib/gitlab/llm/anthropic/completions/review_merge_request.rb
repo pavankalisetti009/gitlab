@@ -81,21 +81,82 @@ module Gitlab
           def perform_review
             # Initialize ivar that will be populated as AI review diff hunks
             @draft_notes_by_priority = []
+
+            diff_files = merge_request.ai_reviewable_diff_files
+
+            if diff_files.blank?
+              update_progress_note(self.class.nothing_to_review_msg)
+              return
+            end
+
             mr_diff_refs = merge_request.diff_refs
 
-            merge_request.ai_reviewable_diff_files.each do |diff_file|
-              # NOTE: perhaps we should fall back to hunk when diff_file is too large?
-              # I'm just ignoring this for now
-              review_prompt = generate_review_prompt(diff_file, {})
+            if Feature.enabled?(:duo_code_review_multi_file, user)
+              process_all_files_together(diff_files, mr_diff_refs)
+            else
+              process_files_individually(diff_files, mr_diff_refs)
+            end
 
+            if @draft_notes_by_priority.empty?
+              update_progress_note(self.class.no_comment_msg)
+            else
+              publish_draft_notes
+            end
+          end
+
+          def process_all_files_together(diff_files, mr_diff_refs)
+            diffs_and_paths = diff_files.each_with_object({}) do |diff_file, result|
+              result[diff_file.new_path] = diff_file.raw_diff
+            end
+
+            review_prompt = generate_review_prompt(diffs_and_paths)
+            return unless review_prompt.present?
+
+            response = review_response_for(review_prompt)
+            return if note_not_required?(response)
+
+            parsed_body = ResponseBodyParser.new(response.response_body)
+            comments_by_file = parsed_body.comments.group_by(&:file)
+
+            diff_files.each do |diff_file|
+              file_comments = comments_by_file[diff_file.new_path]
+              next if file_comments.blank?
+
+              process_comments(file_comments, diff_file, mr_diff_refs)
+            end
+          end
+
+          def process_files_individually(diff_files, mr_diff_refs)
+            diff_files.each do |diff_file|
+              single_file_diff = { diff_file.new_path => diff_file.raw_diff }
+
+              review_prompt = generate_review_prompt(single_file_diff)
               next unless review_prompt.present?
 
               response = review_response_for(review_prompt)
+              next if note_not_required?(response)
 
-              build_draft_notes(response, diff_file, mr_diff_refs)
+              parsed_body = ResponseBodyParser.new(response.response_body)
+              file_comments = parsed_body.comments.select { |comment| comment.file == diff_file.new_path }
+
+              process_comments(file_comments, diff_file, mr_diff_refs)
             end
+          end
 
-            publish_draft_notes
+          def process_comments(comments, diff_file, diff_refs)
+            comments.each do |comment|
+              # NOTE: LLM may return invalid line numbers sometimes so we should double check the existence of the line.
+              line = diff_file.diff_lines.find do |line|
+                line.old_line == comment.old_line && line.new_line == comment.new_line
+              end
+
+              next unless line.present?
+
+              draft_note_params = build_draft_note_params(comment.content, diff_file, line, diff_refs)
+              next unless draft_note_params.present?
+
+              @draft_notes_by_priority << [comment.priority, draft_note_params]
+            end
           end
 
           def ai_client
@@ -115,14 +176,12 @@ module Gitlab
             resource || progress_note&.noteable
           end
 
-          def generate_review_prompt(diff_file, hunk)
+          def generate_review_prompt(diffs_and_paths)
             ai_prompt_class.new(
-              new_path: diff_file.new_path,
-              raw_diff: diff_file.raw_diff,
-              hunk: hunk[:text],
-              user: user,
               mr_title: merge_request.title,
-              mr_description: merge_request.description
+              mr_description: merge_request.description,
+              diffs_and_paths: diffs_and_paths,
+              user: user
             ).to_prompt
           end
 
@@ -142,29 +201,6 @@ module Gitlab
 
           def note_not_required?(response_modifier)
             response_modifier.errors.any? || response_modifier.response_body.blank?
-          end
-
-          def build_draft_notes(response_modifier, diff_file, diff_refs)
-            return if note_not_required?(response_modifier)
-
-            parsed_body = ResponseBodyParser.new(response_modifier.response_body)
-
-            parsed_body.comments.each do |comment|
-              # NOTE: LLM may return invalid line numbers sometimes so we should double check the existence of the line.
-              line = diff_file.diff_lines.find do |line|
-                line.old_line == comment.old_line && line.new_line == comment.new_line
-              end
-
-              next unless line.present?
-
-              draft_note_params = build_draft_note_params(comment.content, diff_file, line, diff_refs)
-              next unless draft_note_params.present?
-
-              @draft_notes_by_priority << [
-                comment.priority,
-                draft_note_params
-              ]
-            end
           end
 
           def build_draft_note_params(comment, diff_file, line, diff_refs)
