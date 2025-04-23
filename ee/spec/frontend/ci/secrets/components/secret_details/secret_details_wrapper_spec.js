@@ -1,12 +1,19 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlLoadingIcon } from '@gitlab/ui';
+import {
+  GlAlert,
+  GlDisclosureDropdown,
+  GlDisclosureDropdownItem,
+  GlLoadingIcon,
+  GlModal,
+} from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { EDIT_ROUTE_NAME, DETAILS_ROUTE_NAME } from 'ee/ci/secrets/constants';
 import getSecretDetailsQuery from 'ee/ci/secrets/graphql/queries/get_secret_details.query.graphql';
+import SecretDeleteModal from 'ee/ci/secrets/components/secret_delete_modal.vue';
 import SecretDetailsWrapper from 'ee/ci/secrets/components/secret_details/secret_details_wrapper.vue';
 import { mockProjectSecretQueryResponse } from '../../mock_data';
 
@@ -30,7 +37,7 @@ describe('SecretDetailsWrapper component', () => {
 
   const createComponent = async ({
     props = {},
-    stubs = {},
+    stubs = { GlDisclosureDropdown, GlDisclosureDropdownItem, SecretDeleteModal },
     isLoading = false,
     mountFn = shallowMountExtended,
     routeName = DETAILS_ROUTE_NAME,
@@ -59,14 +66,18 @@ describe('SecretDetailsWrapper component', () => {
   };
 
   const findAlert = () => wrapper.findComponent(GlAlert);
-  const findDeleteButton = () => wrapper.findByTestId('secret-delete-button');
+  const findDisclosureDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
+  const findDeleteButton = () =>
+    findDisclosureDropdown().findAllComponents(GlDisclosureDropdownItem).at(0).find('button');
+  const findDeleteModal = () => wrapper.findComponent(GlModal);
+  const findSecretDeleteModalComponent = () => wrapper.findComponent(SecretDeleteModal);
   const findEditButton = () => wrapper.findByTestId('secret-edit-button');
   const findKey = () => wrapper.find('h1');
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
-  const findRevokeButton = () => wrapper.findByTestId('secret-revoke-button');
 
   beforeEach(() => {
     mockSecretQuery = jest.fn();
+    mockSecretQuery.mockResolvedValue(mockProjectSecretQueryResponse());
   });
 
   describe('when query is loading', () => {
@@ -106,7 +117,6 @@ describe('SecretDetailsWrapper component', () => {
 
   describe('when query succeeds', () => {
     beforeEach(async () => {
-      mockSecretQuery.mockResolvedValue(mockProjectSecretQueryResponse());
       await createComponent();
     });
 
@@ -115,9 +125,8 @@ describe('SecretDetailsWrapper component', () => {
     });
 
     it('renders action buttons', () => {
-      expect(findDeleteButton().exists()).toBe(true);
       expect(findEditButton().exists()).toBe(true);
-      expect(findRevokeButton().exists()).toBe(true);
+      expect(findDeleteButton().exists()).toBe(true);
     });
 
     it('renders secret details', () => {
@@ -133,6 +142,38 @@ describe('SecretDetailsWrapper component', () => {
         name: EDIT_ROUTE_NAME,
         params: { secretName: defaultProps.secretName },
       });
+    });
+  });
+
+  describe('delete secrets modal', () => {
+    beforeEach(async () => {
+      await createComponent();
+    });
+
+    it('renders modal when clicking on the delete button', async () => {
+      expect(findDeleteModal().props('visible')).toBe(false);
+
+      findDeleteButton().trigger('click');
+      await nextTick();
+
+      expect(findDeleteModal().props('visible')).toBe(true);
+    });
+
+    it('can reopen modal after it is hidden', async () => {
+      findDeleteButton().trigger('click');
+      await nextTick();
+
+      expect(findDeleteModal().props('visible')).toBe(true);
+
+      findSecretDeleteModalComponent().vm.$emit('hide');
+      await nextTick();
+
+      expect(findDeleteModal().props('visible')).toBe(false);
+
+      findDeleteButton().trigger('click');
+      await nextTick();
+
+      expect(findDeleteModal().props('visible')).toBe(true);
     });
   });
 });

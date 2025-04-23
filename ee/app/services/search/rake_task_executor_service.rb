@@ -333,7 +333,7 @@ module Search
 
         ElasticNamespaceIndexerWorker.bulk_perform_async_with_contexts(
           batch,
-          arguments_proc: ->(namespace) { [namespace.id, :index] },
+          arguments_proc: ->(namespace) { [namespace.id, 'index'] },
           context_proc: ->(namespace) { { namespace: namespace } }
         )
       end

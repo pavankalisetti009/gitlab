@@ -722,8 +722,16 @@ module EE
         prevent :read_compliance_violations_report
       end
 
+      condition(:any_projects_except_soft_deleted) do
+        @subject.all_projects.non_archived.not_aimed_for_deletion.exists?
+      end
+
       rule { custom_role_enables_remove_group & has_parent }.policy do
         enable :remove_group
+      end
+
+      rule { ~admin & owner_cannot_destroy_project & any_projects_except_soft_deleted }.policy do
+        prevent :remove_group
       end
 
       rule { custom_role_enables_admin_push_rules }.policy do

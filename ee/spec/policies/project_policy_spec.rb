@@ -1032,8 +1032,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     describe 'remove_project when default_project_deletion_protection is set to true' do
       before do
-        allow(Gitlab::CurrentSettings.current_application_settings)
-          .to receive(:default_project_deletion_protection) { true }
+        stub_application_setting(default_project_deletion_protection: true)
       end
 
       context 'with admin' do
@@ -1045,12 +1044,12 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
         context 'when admin mode disabled' do
           it { is_expected.to be_disallowed(:remove_project) }
-        end
 
-        context 'who owns the project' do
-          let(:project) { create(:project, :public, namespace: admin.namespace) }
+          context 'and admin owns the project' do
+            let_it_be(:project) { create(:project, :public, namespace: admin.namespace) }
 
-          it { is_expected.to be_disallowed(:remove_project) }
+            it { is_expected.to be_disallowed(:remove_project) }
+          end
         end
       end
 
