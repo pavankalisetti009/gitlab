@@ -12,6 +12,7 @@ import {
   GlSegmentedControl,
   GlTooltipDirective,
 } from '@gitlab/ui';
+import { isEmpty } from 'lodash';
 import { __, s__, sprintf } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import DimDisableContainer from 'ee/security_orchestration/components/policy_editor/dim_disable_container.vue';
@@ -57,6 +58,9 @@ export default {
     description: __('Description'),
     failedValidationText: __('This field is required'),
     name: __('Name'),
+    newProjectInfo: s__(
+      'SecurityOrchestration|A new project will be created to be used to store security policies. If a project already exists with security policies, link it via the policy list page.',
+    ),
     toggleLabel: s__('SecurityOrchestration|Policy status'),
     yamlPreview: s__('SecurityOrchestration|.yaml preview'),
     rulesHeader: s__('SecurityOrchestration|Rules'),
@@ -64,6 +68,9 @@ export default {
     resizerLabel: s__("SecurityOrchestration|Drag with a mouse to adjust editor's width"),
     saveExistingPolicyText: s__('SecurityOrchestration|Update via merge request'),
     saveNewPolicyText: __('Configure with a merge request'),
+    saveNewProjectAndPolicyText: s__(
+      'SecurityOrchestration|Create new project with the new policy',
+    ),
   },
   STATUS_OPTIONS: [
     { value: true, text: __('Enabled') },
@@ -88,6 +95,7 @@ export default {
   directives: { GlModal: GlModalDirective, GlTooltip: GlTooltipDirective },
   mixins: [glFeatureFlagsMixin()],
   inject: [
+    'assignedPolicyProject',
     'namespaceType',
     'policiesPath',
     'maxActiveScanExecutionPoliciesReached',
@@ -100,11 +108,6 @@ export default {
     'maxPipelineExecutionPoliciesAllowed',
   ],
   props: {
-    customSaveTooltipText: {
-      type: String,
-      required: false,
-      default: '',
-    },
     defaultEditorMode: {
       type: String,
       required: false,
@@ -179,6 +182,9 @@ export default {
     hasNewSplitView() {
       return this.glFeatures.securityPoliciesSplitView;
     },
+    hasSPP() {
+      return !isEmpty(this.assignedPolicyProject);
+    },
     layoutClass() {
       if (this.hasNewSplitView) {
         return 'security-policies-split-view';
@@ -235,13 +241,14 @@ export default {
     hasValidName() {
       return this.policy.name !== '';
     },
-    saveTooltipText() {
-      return this.customSaveTooltipText || this.saveButtonText;
-    },
     saveButtonText() {
-      return this.isEditing
-        ? this.$options.i18n.saveExistingPolicyText
-        : this.$options.i18n.saveNewPolicyText;
+      if (this.isEditing) {
+        return this.$options.i18n.saveExistingPolicyText;
+      }
+
+      return this.hasSPP
+        ? this.$options.i18n.saveNewPolicyText
+        : this.$options.i18n.saveNewProjectAndPolicyText;
     },
     shouldShowRuleEditor() {
       return this.selectedEditorMode === EDITOR_MODE_RULE;
@@ -476,16 +483,18 @@ export default {
           {{ $options.i18n.POLICY_RUN_TIME_MESSAGE }}
         </p>
 
+        <p v-if="!hasSPP" class="gl-mb-0 gl-mt-5" data-testid="no-spp-info">
+          <gl-icon name="information-o" /> {{ $options.i18n.newProjectInfo }}
+        </p>
+
         <div
           class="gl-mt-5 gl-flex gl-grow gl-flex-wrap gl-gap-3"
           :class="{ '!gl-mt-3': shouldShowRuntimeMessage }"
         >
           <gl-button
-            v-gl-tooltip
             type="submit"
             variant="confirm"
             data-testid="save-policy"
-            :title="saveTooltipText"
             :loading="isUpdatingPolicy"
             @click="savePolicy"
           >
