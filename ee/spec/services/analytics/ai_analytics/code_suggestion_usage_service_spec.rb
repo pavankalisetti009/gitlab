@@ -4,7 +4,13 @@ require 'spec_helper'
 
 RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_category: :value_stream_management do
   subject(:service_response) do
-    described_class.new(current_user, namespace: container, from: from, to: to).execute
+    described_class.new(
+      current_user,
+      namespace: container,
+      from: from,
+      to: to,
+      languages: languages
+    ).execute
   end
 
   let_it_be(:group) { create(:group) }
@@ -13,7 +19,8 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
   let_it_be(:user1) { create(:user, developer_of: group) }
   let_it_be(:user2) { create(:user, developer_of: subgroup) }
   let_it_be(:user3) { create(:user, developer_of: group) }
-  let_it_be(:stranger_user) { create(:user) }
+  let_it_be(:not_member) { create(:user) }
+  let(:languages) { [] }
 
   let(:current_user) { user1 }
   let(:from) { Time.current }
@@ -48,7 +55,14 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
             code_contributors_count: 0,
             code_suggestions_contributors_count: 0,
             code_suggestions_accepted_count: 0,
-            code_suggestions_shown_count: 0
+            code_suggestions_shown_count: 0,
+            # New fields
+            accepted_count: 0,
+            accepted_lines_of_code: 0,
+            contributors_count: 0,
+            languages: [],
+            shown_count: 0,
+            shown_lines_of_code: 0
           })
         end
       end
@@ -81,15 +95,24 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
       context 'with data' do
         before do
           clickhouse_fixture(:code_suggestion_events, [
-            { user_id: user1.id, event: 2, timestamp: to - 3.days }, # shown
-            { user_id: user1.id, event: 3, timestamp: to - 3.days + 1.second }, # accepted
-            { user_id: user1.id, event: 2, timestamp: to - 4.days }, # shown
-            { user_id: user2.id, event: 2, timestamp: to - 2.days }, # shown
-            { user_id: user2.id, event: 2, timestamp: to - 2.days }, # shown
-            { user_id: stranger_user.id, event: 2, timestamp: to - 2.days }, # shown
-            { user_id: stranger_user.id, event: 3, timestamp: to - 2.days + 1.second }, # accepted
-            { user_id: user3.id, event: 2, timestamp: to + 2.days }, # shown
-            { user_id: user3.id, event: 2, timestamp: from - 2.days } # shown
+            # shown
+            { user_id: user1.id, event: 2, language: 'ruby', suggestion_size: 10, timestamp: to - 3.days },
+            # accepted
+            { user_id: user1.id, event: 3, language: 'ruby', suggestion_size: 20, timestamp: to - 3.days + 1.second },
+            # shown
+            { user_id: user1.id, event: 2, language: 'ruby', suggestion_size: 30, timestamp: to - 4.days },
+            # shown
+            { user_id: user2.id, event: 2, language: 'js', suggestion_size: 40, timestamp: to - 2.days },
+            # shown
+            { user_id: user2.id, event: 2, language: 'rust', suggestion_size: 50, timestamp: to - 2.days },
+            # shown
+            { user_id: not_member.id, language: 'c++', suggestion_size: 60, event: 2, timestamp: to - 2.days },
+            # accepted
+            { user_id: not_member.id, language: 'c', suggestion_size: 70, event: 3, timestamp: to - 2.days + 1.second },
+            # shown
+            { user_id: user3.id, event: 2, language: 'perl', suggestion_size: 80, timestamp: to + 2.days },
+            # shown
+            { user_id: user3.id, event: 2, language: 'php', suggestion_size: 90, timestamp: from - 2.days }
           ])
 
           insert_events_into_click_house([
@@ -106,8 +129,36 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
             code_contributors_count: 3,
             code_suggestions_contributors_count: 2,
             code_suggestions_accepted_count: 1,
-            code_suggestions_shown_count: 4
+            code_suggestions_shown_count: 4,
+            # New fields
+            contributors_count: 2,
+            shown_count: 4,
+            accepted_count: 1,
+            languages: %w[js rust ruby],
+            shown_lines_of_code: 130,
+            accepted_lines_of_code: 20
           )
+        end
+
+        context 'when using languages filter' do
+          let(:languages) { %w[js rust] }
+
+          it 'returns metrics filtered by languages used' do
+            expect(service_response.payload).to match(
+              # Legacy fields do not support languages filter
+              code_contributors_count: 3,
+              code_suggestions_contributors_count: 2,
+              code_suggestions_accepted_count: 1,
+              code_suggestions_shown_count: 4,
+              # Fields filtered by languages
+              contributors_count: 1,
+              shown_count: 2,
+              accepted_count: 0,
+              languages: %w[js rust],
+              shown_lines_of_code: 90,
+              accepted_lines_of_code: 0
+            )
+          end
         end
       end
     end

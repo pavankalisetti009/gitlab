@@ -55,12 +55,12 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
 
       payload = {
         unique_tracking_id: 'FOO',
-        language: 'ruby',
         branch_name: 'main'
       }
 
       CS_EVENT_COUNT_SAMPLE.times do
         payload[:suggestion_size] = rand(100)
+        payload[:language] = %w[ruby js go].sample
 
         Ai::CodeSuggestionEvent.new(
           user: user,
