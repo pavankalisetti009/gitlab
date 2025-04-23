@@ -31,10 +31,6 @@ module Llm
       options[:content]
     end
 
-    def ai_integration_enabled?
-      ::Feature.enabled?(:ai_duo_chat_switch, type: :ops)
-    end
-
     def user_can_send_to_ai?
       ::Gitlab::Llm::Chain::Utils::ChatAuthorizer.user(user: user).allowed?
     end

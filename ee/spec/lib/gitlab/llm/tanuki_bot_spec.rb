@@ -10,18 +10,15 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
     let(:authorizer_response) { instance_double(Gitlab::Llm::Utils::Authorizer::Response, allowed?: allowed) }
 
     context 'when user present and container is not present' do
-      where(:ai_duo_chat_switch_enabled, :allowed, :result) do
+      where(:allowed, :result) do
         [
-          [true, true, true],
-          [true, false, false],
-          [false, true, false],
-          [false, false, false]
+          [true, true],
+          [false, false]
         ]
       end
 
       with_them do
         before do
-          stub_feature_flags(ai_duo_chat_switch: ai_duo_chat_switch_enabled)
           allow(Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive(:user).with(user: user)
                                                                             .and_return(authorizer_response)
         end
@@ -33,18 +30,15 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
     end
 
     context 'when user and container are both present' do
-      where(:ai_duo_chat_switch_enabled, :allowed, :result) do
+      where(:allowed, :result) do
         [
-          [true, true, true],
-          [true, false, false],
-          [false, true, false],
-          [false, false, false]
+          [true, true],
+          [false, false]
         ]
       end
 
       with_them do
         before do
-          stub_feature_flags(ai_duo_chat_switch: ai_duo_chat_switch_enabled)
           allow(Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive(:container).with(user: user, container: group)
                                                                                  .and_return(authorizer_response)
         end

@@ -54,17 +54,5 @@ RSpec.describe 'Querying user chat access', :clean_gitlab_redis_cache, feature_c
         expect(graphql_response).to eq(false)
       end
     end
-
-    context 'when feature flag is off' do
-      before do
-        stub_feature_flags(ai_duo_chat_switch: false)
-      end
-
-      it 'returns false' do
-        post_graphql(query, current_user: current_user)
-
-        expect(graphql_response).to eq(false)
-      end
-    end
   end
 end

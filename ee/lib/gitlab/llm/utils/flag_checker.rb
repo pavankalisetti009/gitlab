@@ -7,8 +7,8 @@ module Gitlab
         def self.flag_enabled_for_feature?(method)
           is_chat = method.eql?(:chat)
           # rubocop:disable Gitlab/FeatureFlagWithoutActor -- those are ops flags
-          return true if Feature.enabled?(:ai_duo_chat_switch, type: :ops) && is_chat
-          return false if Feature.disabled?(:ai_duo_chat_switch, type: :ops) && is_chat
+          # Chat is now always enabled
+          return true if is_chat
 
           return true if method.in?(::Gitlab::Llm::Utils::AiFeaturesCatalogue.for_sm.keys)
 
