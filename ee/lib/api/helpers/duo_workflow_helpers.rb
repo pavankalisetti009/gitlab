@@ -16,6 +16,7 @@ module API
       def push_feature_flags
         Gitlab::AiGateway.push_feature_flag(:batch_duo_workflow_planner_tasks, current_user)
         Gitlab::AiGateway.push_feature_flag(:duo_workflow_claude_3_7, current_user)
+        Gitlab::AiGateway.push_feature_flag(:duo_workflow_better_tool_messages, current_user)
       end
     end
   end
