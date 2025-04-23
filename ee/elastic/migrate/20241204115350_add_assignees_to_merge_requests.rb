@@ -11,3 +11,5 @@ class AddAssigneesToMergeRequests < Elastic::Migration
     { assignee_ids: { type: 'keyword' } }
   end
 end
+
+AddAssigneesToMergeRequests.prepend ::Search::Elastic::MigrationObsolete
