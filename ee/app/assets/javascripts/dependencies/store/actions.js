@@ -147,8 +147,10 @@ export const fetchDependenciesViaGraphQL = ({ state, dispatch, commit }, params 
   dispatch('requestDependencies');
 
   const { cursor, pageSize } = params;
-  const { fullPath, pageInfo } = state;
+  const { fullPath, pageInfo, sortField, sortOrder } = state;
 
+  const sortOptions =
+    sortField && sortOrder ? { sort: `${sortField.toUpperCase()}_${sortOrder.toUpperCase()}` } : {};
   const variables = {
     fullPath,
     ...buildGraphQLPaginationVariables({
@@ -156,6 +158,7 @@ export const fetchDependenciesViaGraphQL = ({ state, dispatch, commit }, params 
       pageInfo,
       pageSize,
     }),
+    ...sortOptions,
   };
 
   graphQLClient
