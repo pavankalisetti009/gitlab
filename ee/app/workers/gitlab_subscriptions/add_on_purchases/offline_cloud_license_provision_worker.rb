@@ -25,7 +25,7 @@ module GitlabSubscriptions
       strong_memoize_attr :license
 
       def provision_add_on_purchases
-        ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Duo.new.execute
+        ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoExclusive.new.execute
       end
 
       def log_event(response)

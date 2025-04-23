@@ -23,7 +23,7 @@ module Licenses
     end
 
     def update_add_on_purchases
-      ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Duo.new.execute
+      ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoExclusive.new.execute
       ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoCore.new.execute
     end
   end

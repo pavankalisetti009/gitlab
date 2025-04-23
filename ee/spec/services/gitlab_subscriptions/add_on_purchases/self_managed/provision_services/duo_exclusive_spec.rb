@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Duo,
+RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoExclusive,
   :aggregate_failures, feature_category: :'add-on_provisioning' do
   describe '#execute', :aggregate_failures do
     subject(:provision_service) { described_class.new }
@@ -48,7 +48,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
       end
 
       it 'does not create a Duo Pro add-on purchase' do
-        expect { provision_service.execute }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(0)
+        expect { provision_service.execute }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
       end
     end
 
@@ -88,7 +88,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
 
     shared_examples 'seat increase provision' do
       it 'updates quantity of existing add-on purchase' do
-        expect { provision_service.execute }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(0)
+        expect { provision_service.execute }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
 
         expect(GitlabSubscriptions::AddOnPurchase.count).to eq(1)
         expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
@@ -132,7 +132,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
       end
 
       it 'updates the add-on' do
-        expect { provision_service.execute }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(0)
+        expect { provision_service.execute }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
 
         expect(GitlabSubscriptions::AddOnPurchase.count).to eq(1)
         expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
