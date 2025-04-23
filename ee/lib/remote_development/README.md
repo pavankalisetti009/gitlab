@@ -29,6 +29,7 @@
   - [Inversion of control](#inversion-of-control)
   - [Metaprogramming](#metaprogramming)
   - [Constant declarations](#constant-declarations)
+  - [Validation strategy](#validation-strategy)
 - [Railway Oriented Programming and the Result class](#railway-oriented-programming-and-the-result-class)
   - [Result class](#result-class)
   - [Message class and Messages module](#message-class-and-messages-module)
@@ -554,6 +555,69 @@ We _currently_ do not make heavy use of metaprogramming. But, we may make use of
     - Constants within a single file should be kept alphabetized. This is so no thought is required on how to group them - if grouping is desired, name them with the same prefix.
     - Spec/factory code may refer to constants from different modules than their own if necessary. The scoping rules only apply to usages within production code.
 - Do not declare string constants which are only interpolated into other string constants, and are not used anywhere else. Instead, declare a single constant as single string.
+
+### Validation strategy
+The Remote Development domain uses three validation approaches, in order of preference:
+
+1. Simple Active Record Validations - Built-in Rails validations defined directly in model classes
+1. Custom Active Record Validator Classes - Ruby-based validator classes for more complex validations
+1. JSON Schema Validations - Schema-based validations for complex nested data structures for checking the types/structure of nested objects
+
+#### When to Use Each Approach
+1. Simple Active Record Validations
+- Use for basic attribute validations (presence, length, format, etc.)
+- Example: `validates :name, presence: true, length: { maximum: 255 }`
+
+2. Custom Active Record Validator Classes
+- Use when validation logic is complex but can still be expressed in Ruby
+- Use when validation logic needs to be reused across multiple models
+- Location: `ee/app/validators/remote_development/`
+
+3. JSON Schema Validations
+- Use only when validating complex nested JSON structures that cannot be effectively validated with the other approaches
+- Location: `ee/lib/remote_development/json_schemas/`
+- Must have an Active Record Validator class to complement the JSON Schema
+- Should avoid duplicating validation which is already covered by the ActiveRecord validations
+
+
+Prefer Active Record validations when possible and JSON Schema validations only when Active Record validations cannot effectively handle the validation requirements.
+
+Example
+
+The `WorkspacesAgentConfig` model demonstrates this approach:
+
+```ruby
+  # ee/app/models/remote_development/workspaces_agent_config.rb
+  module RemoteDevelopment
+    class WorkspacesAgentConfig < ApplicationRecord
+      # Active Record validations
+      validates :agent, presence: true
+      validates :dns_zone, hostname: true
+      validates :enabled, inclusion: { in: [true, false] }
+      
+      # JSON Schema validation for complex nested structure
+      validates :network_policy_egress,
+        json_schema: { filename: 'workspaces_agent_configs_network_policy_egress' }
+      
+      # Custom validation using Ruby validator for business logic
+      validates :network_policy_egress, 'remote_development/network_policy_egress': true
+    end
+  end
+```
+This tiered approach ensures we use the simplest, most maintainable validation method for each validation requirement while still ensuring data integrity.
+
+#### Model-Layer Validation
+All validations must be performed at the model layer, not in graphql/service objects. Service objects should:
+
+- Use model validations - Call `valid?` or `save` on models and handle the resulting errors
+- Not duplicate validation logic - Avoid reimplementing validations that belong in the model
+- Focus on orchestration - Handle the workflow and coordination between models
+
+This approach ensures:
+
+- Single source of truth - Validation rules are defined in one place
+- Consistent error handling - All validations use the same error collection mechanism
+- Better maintainability - Changes to validation rules only need to be made in one place
 
 ### Using non-Ruby files in domain code
 
