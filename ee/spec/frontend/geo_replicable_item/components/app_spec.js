@@ -4,6 +4,7 @@ import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import GeoFeedbackBanner from 'ee/geo_replicable/components/geo_feedback_banner.vue';
 import GeoReplicableItemApp from 'ee/geo_replicable_item/components/app.vue';
 import GeoReplicableItemRegistryInfo from 'ee/geo_replicable_item/components/geo_replicable_item_registry_info.vue';
 import GeoReplicableItemReplicationInfo from 'ee/geo_replicable_item/components/geo_replicable_item_replication_info.vue';
@@ -76,6 +77,17 @@ describe('GeoReplicableItemApp', () => {
     wrapper.findComponent(GeoReplicableItemReplicationInfo);
   const findVerificationInfoComponent = () =>
     wrapper.findComponent(GeoReplicableItemVerificationInfo);
+  const findGeoFeedbackBanner = () => wrapper.findComponent(GeoFeedbackBanner);
+
+  describe('banner', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders the Geo Feedback Banner', () => {
+      expect(findGeoFeedbackBanner().exists()).toBe(true);
+    });
+  });
 
   describe('loading state', () => {
     beforeEach(() => {

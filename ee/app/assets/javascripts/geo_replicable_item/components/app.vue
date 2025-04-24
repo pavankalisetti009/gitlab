@@ -5,6 +5,7 @@ import { s__ } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import buildReplicableItemQuery from '../graphql/replicable_item_query_builder';
+import GeoFeedbackBanner from '../../geo_replicable/components/geo_feedback_banner.vue';
 import GeoReplicableItemRegistryInfo from './geo_replicable_item_registry_info.vue';
 import GeoReplicableItemReplicationInfo from './geo_replicable_item_replication_info.vue';
 import GeoReplicableItemVerificationInfo from './geo_replicable_item_verification_info.vue';
@@ -17,6 +18,7 @@ export default {
     GeoReplicableItemRegistryInfo,
     GeoReplicableItemReplicationInfo,
     GeoReplicableItemVerificationInfo,
+    GeoFeedbackBanner,
   },
   i18n: {
     errorMessage: s__("Geo|There was an error fetching this replicable's details"),
@@ -71,6 +73,7 @@ export default {
 
 <template>
   <section>
+    <geo-feedback-banner />
     <gl-loading-icon v-if="isLoading" size="xl" class="gl-mt-4" />
     <div v-else-if="replicableItem" data-testid="replicable-item-details">
       <page-heading :heading="registryId" />

@@ -2,6 +2,7 @@ import { GlButton, GlLoadingIcon, GlModal, GlSprintf } from '@gitlab/ui';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import GeoFeedbackBanner from 'ee/geo_replicable/components/geo_feedback_banner.vue';
 import GeoSitesApp from 'ee/geo_sites/components/app.vue';
 import GeoSites from 'ee/geo_sites/components/geo_sites.vue';
 import GeoSitesEmptyState from 'ee/geo_sites/components/geo_sites_empty_state.vue';
@@ -61,11 +62,16 @@ describe('GeoSitesApp', () => {
   const findGlModal = () => wrapper.findComponent(GlModal);
   const findPrimarySiteTitle = () => wrapper.findByText('Primary site');
   const findSecondarySiteTitle = () => wrapper.findByText('Secondary site');
+  const findGeoFeedbackBanner = () => wrapper.findComponent(GeoFeedbackBanner);
 
   describe('template', () => {
     describe('always', () => {
       beforeEach(() => {
         createComponent();
+      });
+
+      it('renders the Geo Feedback Banner', () => {
+        expect(findGeoFeedbackBanner().exists()).toBe(true);
       });
 
       it('renders the GlModal', () => {

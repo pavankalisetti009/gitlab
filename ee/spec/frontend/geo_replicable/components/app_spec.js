@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import GeoFeedbackBanner from 'ee/geo_replicable/components/geo_feedback_banner.vue';
 import GeoReplicableApp from 'ee/geo_replicable/components/app.vue';
 import GeoReplicable from 'ee/geo_replicable/components/geo_replicable.vue';
 import GeoReplicableEmptyState from 'ee/geo_replicable/components/geo_replicable_empty_state.vue';
@@ -73,6 +74,7 @@ describe('GeoReplicableApp', () => {
     findGeoReplicableContainer().findComponent(GeoReplicableFilteredSearchBar);
   const findGeoReplicableBulkActions = () =>
     findGeoReplicableContainer().findComponent(GeoReplicableBulkActions);
+  const findGeoFeedbackBanner = () => wrapper.findComponent(GeoFeedbackBanner);
 
   describe.each`
     isLoading | graphqlFieldName         | replicableItems            | showReplicableItems | showEmptyState | showLoader
@@ -240,6 +242,16 @@ describe('GeoReplicableApp', () => {
           expect(findGeoReplicableBulkActions().exists()).toBe(true);
         });
       });
+    });
+  });
+
+  describe('banner', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('renders the Geo Feedback Banner', () => {
+      expect(findGeoFeedbackBanner().exists()).toBe(true);
     });
   });
 

@@ -6,6 +6,7 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { s__, __ } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import { REMOVE_SITE_MODAL_ID, VIEW_ADMIN_GEO_SITES_PAGELOAD } from '../constants';
+import GeoFeedbackBanner from '../../geo_replicable/components/geo_feedback_banner.vue';
 import GeoSitesFilters from './geo_sites_filters.vue';
 import GeoSites from './geo_sites.vue';
 import GeoSitesEmptyState from './geo_sites_empty_state.vue';
@@ -39,6 +40,7 @@ export default {
     GeoSites,
     GeoSitesEmptyState,
     GlModal,
+    GeoFeedbackBanner,
   },
   mixins: [InternalEvents.mixin()],
   props: {
@@ -108,6 +110,7 @@ export default {
 
 <template>
   <section>
+    <geo-feedback-banner />
     <page-heading v-if="hasSites" :heading="$options.i18n.geoSites">
       <template #actions>
         <gl-button
