@@ -12,13 +12,22 @@ export default {
       type: Object,
       required: true,
     },
+    secretName: {
+      type: String,
+      required: true,
+    },
+  },
+  methods: {
+    deleteSecret() {
+      this.$emit('delete-secret', this.secretName);
+    },
   },
 };
 </script>
 <template>
   <gl-disclosure-dropdown
     icon="ellipsis_v"
-    :toggle-text="s__('Secrets|Actions')"
+    :toggle-text="__('Actions')"
     text-sr-only
     category="tertiary"
     no-caret
@@ -30,18 +39,13 @@ export default {
           :to="detailsRoute"
           class="gl-block gl-text-default hover:gl-text-default hover:gl-no-underline"
         >
-          {{ s__('Secrets|Edit secret') }}
+          {{ __('Edit') }}
         </router-link>
       </template>
     </gl-disclosure-dropdown-item>
-    <gl-disclosure-dropdown-item>
+    <gl-disclosure-dropdown-item @action="deleteSecret">
       <template #list-item>
-        <span class="gl-text-danger">{{ s__('Secrets|Delete') }}</span>
-      </template>
-    </gl-disclosure-dropdown-item>
-    <gl-disclosure-dropdown-item>
-      <template #list-item>
-        <span class="gl-text-danger">{{ s__('Secrets|Revoke') }}</span>
+        <span class="gl-text-danger">{{ __('Delete') }}</span>
       </template>
     </gl-disclosure-dropdown-item>
   </gl-disclosure-dropdown>

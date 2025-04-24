@@ -1,6 +1,7 @@
 import {
   GlAlert,
   GlButton,
+  GlDisclosureDropdownItem,
   GlEmptyState,
   GlLoadingIcon,
   GlKeysetPagination,
@@ -23,6 +24,7 @@ import {
 } from 'ee/ci/secrets/constants';
 import SecretsTable from 'ee/ci/secrets/components/secrets_table/secrets_table.vue';
 import SecretActionsCell from 'ee/ci/secrets/components/secrets_table/secret_actions_cell.vue';
+import SecretDeleteModal from 'ee/ci/secrets/components/secret_delete_modal.vue';
 import getProjectSecrets from 'ee/ci/secrets/graphql/queries/get_project_secrets.query.graphql';
 import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
 import {
@@ -40,6 +42,7 @@ describe('SecretsTable component', () => {
   let mockSecretManagerStatus;
 
   const findAlert = () => wrapper.findComponent(GlAlert);
+  const findDeleteModal = () => wrapper.findComponent(SecretDeleteModal);
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findEmptyStateButton = () => findEmptyState().findComponent(GlButton);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
@@ -49,6 +52,14 @@ describe('SecretsTable component', () => {
   const findSecretDetailsLink = () => wrapper.findByTestId('secret-details-link');
   const findSecretActionsCell = () => wrapper.findComponent(SecretActionsCell);
   const findPagination = () => wrapper.findComponent(GlKeysetPagination);
+
+  const findDeleteButton = (index) =>
+    wrapper
+      .findAllComponents(SecretActionsCell)
+      .at(index)
+      .findAllComponents(GlDisclosureDropdownItem)
+      .at(1)
+      .find('button');
 
   const createComponent = async ({ props } = {}) => {
     const handlers = [
@@ -203,11 +214,16 @@ describe('SecretsTable component', () => {
 
     it('passes correct props to actions cell', () => {
       expect(findSecretActionsCell().props()).toMatchObject({
+        secretName: secret.name,
         detailsRoute: {
           name: EDIT_ROUTE_NAME,
           params: { name: secret.name },
         },
       });
+    });
+
+    it('hides the delete secret modal', () => {
+      expect(findDeleteModal().props('showModal')).toBe(false);
     });
   });
 
@@ -226,6 +242,7 @@ describe('SecretsTable component', () => {
       expect(findEmptyStateButton().attributes('href')).toBe('new');
     });
   });
+
   describe('pagination', () => {
     it.each`
       startCursor | endCursor | description          | paginationShouldExist
@@ -301,6 +318,50 @@ describe('SecretsTable component', () => {
         before: 'MQ',
         projectPath: 'path/to/project',
         limit: 3,
+      });
+    });
+  });
+
+  describe('delete secret modal', () => {
+    describe('when deleting a secret', () => {
+      beforeEach(async () => {
+        await createComponent();
+
+        findDeleteButton(0).trigger('click');
+        await nextTick();
+      });
+
+      it('shows delete modal when clicking on "Delete" action', () => {
+        expect(findDeleteModal().props('showModal')).toBe(true);
+      });
+
+      it('refetches secrets and hides modal when secret is deleted', async () => {
+        expect(mockProjectSecretsResponse).toHaveBeenCalledTimes(1);
+
+        findDeleteModal().vm.$emit('refetch-secrets');
+        await nextTick();
+
+        expect(findDeleteModal().props('showModal')).toBe(false);
+        expect(mockProjectSecretsResponse).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe('when re-opening the modal', () => {
+      beforeEach(async () => {
+        await createComponent();
+      });
+
+      it('resets the secret name', async () => {
+        findDeleteButton(0).trigger('click');
+        await nextTick();
+
+        expect(findDeleteModal().props('secretName')).toBe('SECRET_1');
+
+        findDeleteModal().vm.$emit('hide');
+        findDeleteButton(1).trigger('click');
+        await nextTick();
+
+        expect(findDeleteModal().props('secretName')).toBe('SECRET_2');
       });
     });
   });

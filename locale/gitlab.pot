@@ -53664,9 +53664,6 @@ msgstr ""
 msgid "Secrets manager"
 msgstr ""
 
-msgid "Secrets|Actions"
-msgstr ""
-
 msgid "Secrets|Add a description for the secret"
 msgstr ""
 
@@ -53694,9 +53691,6 @@ msgstr ""
 msgid "Secrets|Created"
 msgstr ""
 
-msgid "Secrets|Delete"
-msgstr ""
-
 msgid "Secrets|Delete Secret"
 msgstr ""
 
@@ -53707,9 +53701,6 @@ msgid "Secrets|Description must be 200 characters or less."
 msgstr ""
 
 msgid "Secrets|Edit %{id}"
-msgstr ""
-
-msgid "Secrets|Edit secret"
 msgstr ""
 
 msgid "Secrets|Enable the Secrets Manager to securely store and manage sensitive information for this project."
@@ -53743,9 +53734,6 @@ msgid "Secrets|Please wait while the Secrets manager is provisioned. It is safe 
 msgstr ""
 
 msgid "Secrets|Provisioning in progress"
-msgstr ""
-
-msgid "Secrets|Revoke"
 msgstr ""
 
 msgid "Secrets|Rotation period"
