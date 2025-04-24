@@ -23,7 +23,7 @@
             "value": {
               "type": "string",
               "pattern": "^[!-~¡-ÿ]([!-~¡-ÿ]| |\t)*[!-~¡-ÿ]$|^[!-~¡-ÿ]$|^$",
-              "maxLength": 255
+              "maxLength": 2000
             },
             "active": {
               "type": "boolean",
