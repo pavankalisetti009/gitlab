@@ -31985,6 +31985,11 @@ paths:
         format: date
         required: false
       - in: query
+        name: active
+        description: Limit by projects that are not archived and not marked for deletion
+        type: boolean
+        required: false
+      - in: query
         name: wiki_checksum_failed
         description: Limit by projects where wiki checksum is failed
         type: boolean
@@ -32466,6 +32471,11 @@ paths:
         description: Date when the project was marked for deletion
         type: string
         format: date
+        required: false
+      - in: query
+        name: active
+        description: Limit by projects that are not archived and not marked for deletion
+        type: boolean
         required: false
       - in: query
         name: wiki_checksum_failed
@@ -39933,6 +39943,11 @@ paths:
         format: date
         required: false
       - in: query
+        name: active
+        description: Limit by projects that are not archived and not marked for deletion
+        type: boolean
+        required: false
+      - in: query
         name: wiki_checksum_failed
         description: Limit by projects where wiki checksum is failed
         type: boolean
@@ -40262,6 +40277,11 @@ paths:
         description: Date when the project was marked for deletion
         type: string
         format: date
+        required: false
+      - in: query
+        name: active
+        description: Limit by projects that are not archived and not marked for deletion
+        type: boolean
         required: false
       - in: query
         name: wiki_checksum_failed
