@@ -129,9 +129,13 @@ RSpec.shared_examples 'includes ExternallyStreamable concern' do
         let(:more_than_allowed_headers) { {} }
 
         let(:large_string) { "a" * 256 }
+        let(:very_large_string) { "a" * 2001 }
+        let(:large_but_valid_string) { "a" * 2000 }
         let(:large_url) { "http://#{large_string}.com" }
         let(:header_hash1) { { key1: { value: 'value1', active: true }, key2: { value: 'value2', active: false } } }
         let(:header_hash2) { { key1: { value: 'value1', active: true }, key2: { value: 'value2', active: false } } }
+        let(:header_with_large_valid_value) { { key1: { value: large_but_valid_string, active: true } } }
+        let(:header_with_too_large_value) { { key1: { value: very_large_string, active: true } } }
         let(:invalid_properties) { { key1: { value: 'value1', extra: 'extra key value' } } }
         let(:invalid_characters) { { key1: { value: ' leading or trailing space ', active: true } } }
         let(:valid_special_characters) { { 'X-Meta-Custom_header': { value: '"value",commas,' } } }
@@ -150,7 +154,9 @@ RSpec.shared_examples 'includes ExternallyStreamable concern' do
           'ftp://example.com'   | nil                                                   | false
           nil                   | { key1: 'value1' }                                    | false
           'http://example.com'  | { key1: { value: 'value1', active: true } }           | true
-          'http://example.com'  | { key1: { value: ref(:large_string), active: true } } | false
+          'http://example.com'  | { key1: { value: ref(:large_string), active: true } } | true
+          'http://example.com'  | ref(:header_with_large_valid_value)                   | true
+          'http://example.com'  | ref(:header_with_too_large_value)                     | false
           'http://example.com'  | { key1: { value: 'value1', active: false } }          | true
           'http://example.com'  | {}                                                    | false
           'http://example.com'  | ref(:header_hash1)                                    | true
@@ -352,6 +358,37 @@ RSpec.shared_examples 'includes ExternallyStreamable concern' do
           expect(headers_hash[AuditEvents::ExternallyStreamable::STREAMING_TOKEN_HEADER_KEY])
           .to eq(destination.secret_token)
         end
+      end
+    end
+
+    context 'with large header values' do
+      it 'accepts values up to 2000 characters' do
+        large_value = 'a' * 2000
+        destination = build(model_factory_name,
+          config: {
+            url: 'https://example.com',
+            headers: {
+              'X-Custom-Header': { value: large_value, active: true }
+            }
+          }
+        )
+
+        expect(destination).to be_valid
+      end
+
+      it 'rejects values over 2000 characters' do
+        too_large_value = 'a' * 2001
+        destination = build(model_factory_name,
+          config: {
+            url: 'https://example.com',
+            headers: {
+              'X-Custom-Header': { value: too_large_value, active: true }
+            }
+          }
+        )
+
+        expect(destination).not_to be_valid
+        expect(destination.errors.full_messages).to include('Config must be a valid json schema')
       end
     end
   end
