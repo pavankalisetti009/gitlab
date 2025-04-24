@@ -143,7 +143,7 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
           it 'renders template' do
             get :new, params: { group_id: group }
 
-            expect(response).to render_template 'groups/epics/new'
+            expect(response).to render_template 'groups/work_items/show'
           end
         end
       end

@@ -14,13 +14,21 @@ class Groups::EpicsController < Groups::ApplicationController
   before_action :authorize_create_epic!, only: [:create, :new]
   before_action :verify_group_bulk_edit_enabled!, only: [:bulk_update]
   before_action :set_summarize_notes_feature_flag, only: :show
-  before_action :set_work_item_epics_feature_flag, only: [:show, :new]
+  before_action :set_work_item_epics_feature_flag, only: [:show]
+  before_action :enforce_work_item_epics_feature_flags, only: [:new]
   after_action :log_epic_show, only: :show
 
   before_action do
     push_frontend_feature_flag(:preserve_markdown, @group)
     push_frontend_feature_flag(:notifications_todos_buttons, current_user)
-    push_force_frontend_feature_flag(:namespace_level_work_items, epic_work_items_enabled?)
+
+    # The new page enables namepace_level_work_items by default when epics are licensed.
+    # This code can be removed, once work_item_epics feature flag is removed.
+    unless params[:action] == "new"
+      push_force_frontend_feature_flag(:namespace_level_work_items,
+        epic_work_items_enabled?)
+    end
+
     push_force_frontend_feature_flag(:glql_integration, !!@group&.glql_integration_feature_flag_enabled?)
     push_force_frontend_feature_flag(:glql_load_on_click, !!@group&.glql_load_on_click_feature_flag_enabled?)
     push_force_frontend_feature_flag(:continue_indented_text, !!@group&.continue_indented_text_feature_flag_enabled?)
@@ -32,10 +40,6 @@ class Groups::EpicsController < Groups::ApplicationController
 
   before_action only: :show do
     push_frontend_ability(ability: :measure_comment_temperature, resource: epic, user: current_user)
-  end
-
-  before_action only: :index do
-    push_force_frontend_feature_flag(:namespace_level_work_items, epic_work_items_enabled?)
   end
 
   feature_category :portfolio_management
@@ -53,12 +57,8 @@ class Groups::EpicsController < Groups::ApplicationController
   end
 
   def new
-    if work_item_view?
-      page_title _('New epic')
-      render 'groups/work_items/show'
-    else
-      @noteable = Epic.new
-    end
+    page_title _('New epic')
+    render 'groups/work_items/show'
   end
 
   def index
@@ -186,6 +186,12 @@ class Groups::EpicsController < Groups::ApplicationController
 
   def set_work_item_epics_feature_flag
     push_force_frontend_feature_flag(:work_item_epics, work_item_view?)
+  end
+
+  def enforce_work_item_epics_feature_flags
+    epic_license_available = !!@group.licensed_feature_available?(:epics)
+    push_force_frontend_feature_flag(:work_item_epics, epic_license_available)
+    push_force_frontend_feature_flag(:namespace_level_work_items, epic_license_available)
   end
 
   def set_summarize_notes_feature_flag

@@ -29,10 +29,19 @@ RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :team
       resolve_items(timeframe: timeframe)
     end
 
-    context 'when namespace level work items are enabled' do
+    context 'when epics are disabled' do
+      it 'does not return work items' do
+        expect(resolve_items).to be_empty
+      end
+    end
+
+    context 'when epics are enabled' do
       before do
-        stub_feature_flags(namespace_level_work_items: true, work_item_epics: true)
         stub_licensed_features(epics: true)
+      end
+
+      it 'does return work items' do
+        expect(resolve_items).to contain_exactly(group_work_item1, group_work_item2)
       end
 
       context 'with timeframe filtering' do

@@ -20,6 +20,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
 
     before do
       visit new_group_epic_path(group)
+      wait_for_requests
     end
 
     it 'opens quick action autocomplete in the description field' do

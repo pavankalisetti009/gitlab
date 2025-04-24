@@ -35,23 +35,4 @@ RSpec.describe 'Epics > User uses quick actions', :js, feature_category: :portfo
       expect(page).to have_content("added #{epic_1.work_item.to_reference} as parent epic")
     end
   end
-
-  context 'on epic form' do
-    it 'applies quick action' do
-      # TODO: remove threshold after epic-work item sync
-      # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(140)
-
-      epic_title = 'New epic with parent'
-      visit new_group_epic_path(group)
-
-      find('#epic-title').native.send_keys(epic_title)
-      find('#epic-description').native.send_keys("With parent \n\n/set_parent #{epic_1.to_reference}")
-      click_button 'Create epic'
-      wait_for_requests
-
-      expect(group.epics.find_by_title(epic_title).parent).to eq(epic_1)
-      expect(page).to have_content("added #{epic_1.work_item.to_reference} as parent epic")
-    end
-  end
 end

@@ -32,10 +32,48 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
         stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
       end
 
-      it 'returns not found' do
+      it 'renders with feature flags disabled' do
         get_index
 
         expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: false)
+      end
+    end
+
+    context 'when epics are not licensed' do
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      it 'returns not_found' do
+        get_index
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
+  describe 'GET #new' do
+    subject(:get_new) { get new_group_epic_path(group) }
+
+    before do
+      stub_feature_flags(namespace_level_work_items: false, work_item_epics: false)
+    end
+
+    it 'with feature flag disabled it still sets the epic flags to true' do
+      get_new
+
+      expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: true, workItemEpics: true)
+    end
+
+    context 'when license is not available' do
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      it 'returns not found' do
+        get_new
+
+        expect(response).to have_gitlab_http_status(:not_found)
       end
     end
   end

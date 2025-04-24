@@ -24600,9 +24600,6 @@ msgstr ""
 msgid "Epics|Learn more about linking child issues and epics"
 msgstr ""
 
-msgid "Epics|Leave empty to inherit from milestone dates"
-msgstr ""
-
 msgid "Epics|Link child issues and epics together to show that they're related, or that one blocks another."
 msgstr ""
 
@@ -24633,16 +24630,7 @@ msgstr ""
 msgid "Epics|Something went wrong while updating epics."
 msgstr ""
 
-msgid "Epics|The color for the epic when it's visualized, such as on roadmap timeline bars."
-msgstr ""
-
-msgid "Epics|This epic and any containing child epics are confidential and should only be visible to team members with at least the Planner role."
-msgstr ""
-
 msgid "Epics|This will also remove any descendents of %{bStart}%{targetEpicTitle}%{bEnd} from %{bStart}%{parentEpicTitle}%{bEnd}. Are you sure?"
-msgstr ""
-
-msgid "Epics|Unable to save epic. Please try again"
 msgstr ""
 
 msgid "Erased"
@@ -39721,9 +39709,6 @@ msgid "New %{type} in %{project}"
 msgstr ""
 
 msgid "New Application"
-msgstr ""
-
-msgid "New Epic"
 msgstr ""
 
 msgid "New File"
