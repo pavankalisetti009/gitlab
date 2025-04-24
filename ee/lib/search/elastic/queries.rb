@@ -236,13 +236,14 @@ module Search
         def embedding(query, options)
           tracking_context = { action: 'hybrid_issue_search_embedding' }
           user = options[:current_user]
+          model = options[:model]
 
           if embeddings_throttled_after_increment?
             raise StandardError, "Rate limited endpoint '#{ENDPOINT}' is throttled"
           end
 
           Gitlab::Llm::VertexAi::Embeddings::Text
-            .new(query, user: user, tracking_context: tracking_context, unit_primitive: UNIT_PRIMITIVE)
+            .new(query, user: user, tracking_context: tracking_context, unit_primitive: UNIT_PRIMITIVE, model: model)
             .execute
         end
       end

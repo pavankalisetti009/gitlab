@@ -8,7 +8,10 @@ module Search
         include Search::Elastic::Concerns::RateLimiter
         extend Search::Elastic::Concerns::DatabaseClassReference
 
-        MODEL_VERSIONS = { 0 => 'textembedding-gecko@003' }.freeze
+        MODEL_VERSIONS = {
+          0 => 'textembedding-gecko@003',
+          1 => 'text-embedding-005'
+        }.freeze
         UNIT_PRIMITIVE = 'semantic_search_issue'
 
         override :serialize
@@ -42,20 +45,20 @@ module Search
         override :as_indexed_json
         def as_indexed_json
           case model_klass.name
-          when 'Issue'
-            {
-              embedding: embedding(issue_content),
-              embedding_version: 0,
-              routing: routing
-            }
           when 'WorkItem'
-            {
-              embedding_0: embedding(work_item_content),
-              routing: routing
-            }
+            work_item_json
           else
             raise ReferenceFailure, "Unknown as_indexed_json definition for model class: #{model_klass.name}"
           end
+        end
+
+        def work_item_json
+          json = { routing: routing }
+
+          json[:embedding_0] = embedding(work_item_content) if embedding_0_in_use?
+          json[:embedding_1] = embedding(work_item_content, model: MODEL_VERSIONS[1]) if embedding_1_added_to_work_item?
+
+          json
         end
 
         override :operation
@@ -70,13 +73,13 @@ module Search
 
         private
 
-        def embedding(content)
+        def embedding(content, model: nil)
           if embeddings_throttled_after_increment?
             raise ReferenceFailure, "Rate limited endpoint '#{ENDPOINT}' is throttled"
           end
 
           Gitlab::Llm::VertexAi::Embeddings::Text
-            .new(content, user: nil, tracking_context: tracking_context, unit_primitive: UNIT_PRIMITIVE)
+            .new(content, user: nil, tracking_context: tracking_context, unit_primitive: UNIT_PRIMITIVE, model: model)
             .execute
         rescue StandardError => error
           raise ReferenceFailure, "Failed to generate embedding: #{error}"
@@ -90,6 +93,15 @@ module Search
           "work item of type '#{database_record.work_item_type.name}' " \
             "with title '#{database_record.title}' " \
             "and description '#{database_record.description}'"
+        end
+
+        def embedding_0_in_use?
+          !::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_items_embeddings1)
+        end
+
+        def embedding_1_added_to_work_item?
+          ::Elastic::DataMigrationService.migration_has_finished?(:add_embedding1_to_work_items_elastic) ||
+            ::Elastic::DataMigrationService.migration_has_finished?(:add_embedding1_to_work_items_open_search)
         end
 
         def tracking_context
