@@ -23,9 +23,9 @@ module Vulnerabilities
         pending_ids = []
         index = 0
 
-        Namespace.without_deleted.group_namespaces.each_batch(of: BATCH_SIZE) do |relation|
+        Namespace.group_namespaces.each_batch(of: BATCH_SIZE) do |relation|
           # rubocop:disable CodeReuse/ActiveRecord -- Specific order and use case
-          namespace_map = relation.pluck(:id, :traversal_ids).to_h
+          namespace_map = relation.without_deleted.pluck(:id, :traversal_ids).to_h
           traversal_arrays = format_for_sql_query(namespace_map.values)
 
           # rubocop:disable Rails/WhereEquals -- Hash syntax treats array as one value
