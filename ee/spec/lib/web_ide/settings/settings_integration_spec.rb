@@ -16,7 +16,6 @@ RSpec.describe ::WebIde::Settings, feature_category: :web_ide do # rubocop:disab
 
   before do
     stub_feature_flags(
-      vscode_web_ide: true,
       web_ide_extensions_marketplace: true,
       vscode_extension_marketplace_settings: true
     )
