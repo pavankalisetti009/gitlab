@@ -14,10 +14,16 @@ module Security
           sync_policy_for_compliance_framework(event)
         when ::Repositories::ProtectedBranchCreatedEvent, ::Repositories::ProtectedBranchDestroyedEvent
           sync_policy_for_protected_branch(event)
+        when ::Repositories::DefaultBranchChangedEvent
+          sync_all_rules
         end
       end
 
       private
+
+      def sync_all_rules
+        sync_project_approval_policy_rules_service.update_rules(security_policy.approval_policy_rules.undeleted)
+      end
 
       def sync_policy_for_compliance_framework(event)
         return unless security_policy.scope_has_framework?(event.data[:compliance_framework_id])
