@@ -49603,7 +49603,7 @@ msgstr ""
 msgid "Rate the review"
 msgstr ""
 
-msgid "Rate this response %{separator} %{codeStart}%{botUser}%{codeEnd} in reply for more questions"
+msgid "Rate this response %{separator} Mention %{codeStart}%{botUser}%{codeEnd} to continue the conversation."
 msgstr ""
 
 msgid "Raw blob request rate limit per minute"
