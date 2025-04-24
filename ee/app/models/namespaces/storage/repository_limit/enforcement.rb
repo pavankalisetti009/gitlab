@@ -65,7 +65,6 @@ module Namespaces
         end
 
         def subject_to_high_limit?
-          return false unless Feature.enabled?(:plan_limits_repository_size, root_namespace)
           return false unless root_namespace.actual_plan.actual_limits.repository_size.present?
 
           root_namespace.actual_plan.paid_excluding_trials?

@@ -149,17 +149,6 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::Enforcement, feature_catego
   end
 
   describe '#subject_to_high_limit?', :saas do
-    context 'when the feature flag is turned off' do
-      let_it_be_with_refind(:namespace) { create(:group_with_plan, plan: :ultimate_plan) }
-
-      before do
-        namespace.actual_plan.actual_limits.update!(repository_size: 10)
-        stub_feature_flags(plan_limits_repository_size: false)
-      end
-
-      it { expect(model.subject_to_high_limit?).to be false }
-    end
-
     where :plan_name, :is_subject_to_high_limit do
       :default_plan                      | false
       :free_plan                         | false
