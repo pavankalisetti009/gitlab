@@ -463,36 +463,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
     end
 
-    describe '.namespace_settings_with_duo_nano_features_enabled' do
-      subject { described_class.namespace_settings_with_duo_nano_features_enabled }
-
-      let_it_be_with_reload(:group) { create(:group) }
-
-      before do
-        group.namespace_settings.update!(
-          duo_nano_features_enabled: duo_nano_features_enabled
-        )
-      end
-
-      context 'when duo_nano_features_enabled is true' do
-        let(:duo_nano_features_enabled) { true }
-
-        it { is_expected.to contain_exactly(group) }
-      end
-
-      context 'when duo_nano_features_enabled is false' do
-        let(:duo_nano_features_enabled) { false }
-
-        it { is_expected.to be_empty }
-      end
-
-      context 'when duo_nano_features_enabled is null' do
-        let(:duo_nano_features_enabled) { nil }
-
-        it { is_expected.to be_empty }
-      end
-    end
-
     describe '.with_ai_supported_plan', :saas do
       subject { described_class.with_ai_supported_plan }
 
