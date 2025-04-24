@@ -22,7 +22,7 @@ module EE
           private
 
           def encrypt_secret_token
-            key = Settings.attr_encrypted_db_key_base_32
+            key = Settings.db_key_base_keys_32_bytes.first
             cipher = OpenSSL::Cipher.new('aes-256-gcm')
             cipher.encrypt
             iv = cipher.random_iv
