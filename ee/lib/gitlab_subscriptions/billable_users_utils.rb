@@ -7,38 +7,27 @@ module GitlabSubscriptions
 
     InvalidSubscriptionTypeError = Class.new(StandardError)
 
-    # if not Ultimate
-    # returns true for all roles besides NO_ACCESS
-    # if Ultimate
-    # returns true for all roles > GUEST
-    # returns true if role = GUEST and member_role_id corresponds to elevated member_role
-    # returns true if role = MINIMAL_ACCESS with any member_role
+    # GUEST(non elevated) and MINIMAL ACCESS are non-billable on
+    # exclude_guests_from_active_count? plans, rest are billable
     def sm_billable_role_change?(role:, member_role_id: nil)
       raise InvalidSubscriptionTypeError if gitlab_com_subscription?
 
       return true if role > Gitlab::Access::GUEST
-      return false if role == Gitlab::Access::NO_ACCESS
 
       return true unless License.current&.exclude_guests_from_active_count?
 
-      return minimal_access_billable?(member_role_id) if role == Gitlab::Access::MINIMAL_ACCESS
+      return false if role == Gitlab::Access::MINIMAL_ACCESS
 
       member_role_billable?(member_role_id)
     end
 
-    # if not Ultimate
-    # returns false for NO_ACCESS and (MINIMAL_ACCESS without member_role_id)
-    # returns true otherwise
-    # if Ultimate
-    # returns true for all roles > GUEST
-    # returns true if role = GUEST and member_role_id corresponds to elevated member_role
-    # returns true if role = MINIMAL_ACCESS with any member_role
+    # MINIMAL ACCESS are always non-billable
+    # GUEST(non elevated) are non-billable for groups with exclude_guests? plans, rest are billable
     def saas_billable_role_change?(target_namespace:, role:, member_role_id: nil)
       raise InvalidSubscriptionTypeError unless gitlab_com_subscription?
 
       return true if role > Gitlab::Access::GUEST
-      return false if role == Gitlab::Access::NO_ACCESS
-      return minimal_access_billable?(member_role_id) if role == Gitlab::Access::MINIMAL_ACCESS
+      return false if role == Gitlab::Access::MINIMAL_ACCESS
 
       return true unless target_namespace&.exclude_guests?
 
@@ -46,10 +35,6 @@ module GitlabSubscriptions
     end
 
     private
-
-    def minimal_access_billable?(member_role_id)
-      member_role_id.present? && valid_member_role(member_role_id).present?
-    end
 
     def member_role_billable?(member_role_id)
       return false unless member_role_id
