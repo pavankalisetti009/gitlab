@@ -48,28 +48,25 @@ RSpec.describe Gitlab::Auth::GroupSaml::DuoAddOnAssignmentUpdater, feature_categ
     end
 
     context 'for main functionality' do
-      where(:feature_flag, :duo_group_link, :active_add_on, :saml_groups, :existing_assignment, :shared_examples) do
+      where(:duo_group_link, :active_add_on, :saml_groups, :existing_assignment, :shared_examples) do
         # Test early returns
-        false | true  | true  | ['Duo']        | false | 'does not modify assignments'
-        true  | false | true  | ['Duo']        | false | 'does not modify assignments'
-        true  | false | true  | ['Duo']        | true  | 'does not modify assignments'
-        true  | true  | false | ['Duo']        | false | 'does not modify assignments'
+        false | true  | ['Duo']        | false | 'does not modify assignments'
+        false | true  | ['Duo']        | true  | 'does not modify assignments'
+        true  | false | ['Duo']        | false | 'does not modify assignments'
 
         # Test main functionality
-        true  | true  | true  | ['Duo']        | false | 'creates assignment'
-        true  | true  | true  | ['Duo']        | true  | 'does not modify assignments'
-        true  | true  | true  | ['Other']      | true  | 'removes assignment'
-        true  | true  | true  | ['Other']      | false | 'does not modify assignments'
-        true  | true  | true  | []             | true  | 'removes assignment'
-        true  | true  | true  | []             | false | 'does not modify assignments'
-        true  | true  | true  | nil            | true  | 'removes assignment'
-        true  | true  | true  | %w[Duo Dev]    | false | 'creates assignment'
+        true  | true  | ['Duo']        | false | 'creates assignment'
+        true  | true  | ['Duo']        | true  | 'does not modify assignments'
+        true  | true  | ['Other']      | true  | 'removes assignment'
+        true  | true  | ['Other']      | false | 'does not modify assignments'
+        true  | true  | []             | true  | 'removes assignment'
+        true  | true  | []             | false | 'does not modify assignments'
+        true  | true  | nil            | true  | 'removes assignment'
+        true  | true  | %w[Duo Dev]    | false | 'creates assignment'
       end
 
       with_them do
         before do
-          stub_feature_flags(saml_groups_duo_add_on_assignment: feature_flag)
-
           create(:saml_group_link, group: group, saml_group_name: 'Duo', assign_duo_seats: true) if duo_group_link
 
           add_on_purchase if active_add_on
@@ -90,7 +87,6 @@ RSpec.describe Gitlab::Auth::GroupSaml::DuoAddOnAssignmentUpdater, feature_categ
       let(:saml_groups) { ['Engineering'] }
 
       before do
-        stub_feature_flags(saml_groups_duo_add_on_assignment: true)
         add_on_purchase
 
         # Create multiple Duo group links
@@ -111,7 +107,6 @@ RSpec.describe Gitlab::Auth::GroupSaml::DuoAddOnAssignmentUpdater, feature_categ
       let(:active_add_on) { false }
 
       before do
-        stub_feature_flags(saml_groups_duo_add_on_assignment: true)
         create(:saml_group_link, group: group, saml_group_name: 'Duo', assign_duo_seats: true)
 
         create(
