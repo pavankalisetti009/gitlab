@@ -111,12 +111,15 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         project.security_policy_bots.delete_all
       end
 
-      it 'returns an error response' do
+      it 'creates a new security policy bot' do
+        expect { service.execute }.to change { project.security_policy_bots.count }.by(1)
+      end
+
+      it 'returns a success response' do
         result = service.execute
 
-        expect(result).to be_error
-        expect(result.message).to eq('Could not resolve vulnerabilities')
-        expect(result.reason).to eq('Bot user does not have permission to create state transitions')
+        expect(result).to be_success
+        expect(result.payload[:count]).to eq(1)
       end
     end
 
