@@ -27,7 +27,7 @@ import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completio
 
 jest.mock('~/lib/utils/common_utils');
 Vue.use(VueRouter);
-const router = new VueRouter();
+const router = new VueRouter({ mode: 'history' });
 const mockAxios = new MockAdapter(axios);
 
 let wrapper;
