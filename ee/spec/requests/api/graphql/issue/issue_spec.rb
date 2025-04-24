@@ -160,7 +160,7 @@ RSpec.describe 'Query.issue(id)', feature_category: :team_planning do
     end
 
     context 'when issue has a status' do
-      let_it_be(:current_status) { create(:work_item_current_status, work_item: WorkItem.find(issue.id)) }
+      let_it_be(:current_status) { create(:work_item_current_status, work_item_id: issue.id) }
 
       it 'returns the status details' do
         post_graphql(query, current_user: current_user)
