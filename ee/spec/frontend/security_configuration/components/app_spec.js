@@ -45,7 +45,6 @@ describe('~/security_configuration/components/app', () => {
           dismiss: userCalloutDismissSpy,
           shouldShowCallout,
         }),
-        UpgradeBanner: false,
         ...stubs,
       },
     });
@@ -63,8 +62,8 @@ describe('~/security_configuration/components/app', () => {
     const makeAvailable = (available) => (feature) => ({ ...feature, available });
 
     describe('given at least one unavailable feature', () => {
-      beforeEach(() => {
-        createComponent({
+      beforeEach(async () => {
+        await createComponent({
           props: {
             augmentedSecurityFeatures: [
               {
