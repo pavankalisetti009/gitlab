@@ -34023,7 +34023,13 @@ msgstr ""
 msgid "JiraConnect|Your browser is not supported"
 msgstr ""
 
+msgid "JiraIntegration|Enable creating Jira issues for GitLab vulnerabilities."
+msgstr ""
+
 msgid "JiraIntegration|Enable viewing Jira issues in GitLab."
+msgstr ""
+
+msgid "JiraIntegration|Jira issue type to use when creating issues from vulnerabilities."
 msgstr ""
 
 msgid "JiraIntegration|Keys of Jira projects. When `issues_enabled` is `true`, this setting specifies which Jira projects to view issues from in GitLab."
