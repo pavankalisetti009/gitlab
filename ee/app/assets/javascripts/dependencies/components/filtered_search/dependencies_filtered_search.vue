@@ -3,11 +3,13 @@ import { GlFilteredSearch } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions } from 'vuex';
 import { s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 export default {
   components: {
     GlFilteredSearch,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     filteredSearchId: {
       type: String,
@@ -24,7 +26,18 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['setSearchFilterParameters', 'fetchDependencies']),
+    ...mapActions([
+      'setSearchFilterParameters',
+      'fetchDependencies',
+      'fetchDependenciesViaGraphQL',
+    ]),
+    fetchDependenciesWithFeatureFlag() {
+      if (this.glFeatures.projectDependenciesGraphql) {
+        this.fetchDependenciesViaGraphQL();
+      } else {
+        this.fetchDependencies({ page: 1 });
+      }
+    },
   },
   i18n: {
     searchInputPlaceholder: s__('Dependencies|Search or filter dependencies…'),
@@ -40,6 +53,6 @@ export default {
     terms-as-tokens
     :view-only="viewOnly"
     @input="setSearchFilterParameters"
-    @submit="fetchDependencies({ page: 1 })"
+    @submit="fetchDependenciesWithFeatureFlag"
   />
 </template>

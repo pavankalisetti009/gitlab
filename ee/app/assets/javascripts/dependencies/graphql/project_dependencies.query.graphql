@@ -5,10 +5,18 @@ query getDependencies(
   $after: String
   $before: String
   $sort: DependencySort
+  $componentNames: [String!]
 ) {
   project(fullPath: $fullPath) {
     id
-    dependencies(first: $first, last: $last, after: $after, before: $before, sort: $sort) {
+    dependencies(
+      first: $first
+      last: $last
+      after: $after
+      before: $before
+      sort: $sort
+      componentNames: $componentNames
+    ) {
       pageInfo {
         hasNextPage
         hasPreviousPage

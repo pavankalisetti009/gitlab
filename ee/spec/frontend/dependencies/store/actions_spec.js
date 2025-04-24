@@ -932,6 +932,44 @@ describe('Dependencies actions', () => {
         );
       });
 
+      describe('filters', () => {
+        it.each`
+          scenario                                                                            | searchFilterParameters                               | expectedComponentNames
+          ${'includes componentNames as a query variable when present'}                       | ${{ component_names: ['component1', 'component2'] }} | ${['component1', 'component2']}
+          ${'does not include componentNames as a query variable when filter is empty'}       | ${{ component_names: [] }}                           | ${undefined}
+          ${'does not include componentNames as a query variable when filter is not present'} | ${{}}                                                | ${undefined}
+        `('$scenario', async ({ searchFilterParameters, expectedComponentNames }) => {
+          state.searchFilterParameters = searchFilterParameters;
+
+          await testAction(
+            actions.fetchDependenciesViaGraphQL,
+            undefined,
+            state,
+            [
+              {
+                type: types.RECEIVE_DEPENDENCIES_SUCCESS,
+                payload: {
+                  dependencies: expectedDependencies,
+                  pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                },
+              },
+            ],
+            [{ type: 'requestDependencies' }],
+          );
+
+          const expectedVariables = {
+            query: projectDependencies,
+            variables: {
+              first: 20,
+              fullPath: state.fullPath,
+              ...(expectedComponentNames && { componentNames: expectedComponentNames }),
+            },
+          };
+
+          expect(graphQLClient.query).toHaveBeenCalledWith(expectedVariables);
+        });
+      });
+
       describe('pagination', () => {
         it('uses "first" query-parameter when no cursor is provided (initial page)', async () => {
           await testAction(
