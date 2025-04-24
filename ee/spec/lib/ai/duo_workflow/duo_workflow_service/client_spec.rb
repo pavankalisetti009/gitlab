@@ -43,34 +43,6 @@ RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :d
       )
     end
 
-    context 'when cloud_connector_new_token_impl feature is disabled' do
-      let(:cloud_connector_service_data_double) { instance_of(CloudConnector::SelfSigned::AvailableServiceData) }
-
-      before do
-        stub_feature_flags(cloud_connector_new_token_impl: false)
-      end
-
-      it 'obtains Cloud Connector token via AvailableServices class' do
-        expect(CloudConnector::AvailableServices).to receive(:find_by_name).with(:duo_workflow).and_return(
-          cloud_connector_service_data_double
-        )
-        expect(cloud_connector_service_data_double).to receive(:access_token).and_return('instance jwt')
-
-        client.generate_token
-
-        expect(stub).to have_received(:generate_token).with(
-          request,
-          metadata: {
-            "authorization" => "Bearer instance jwt",
-            "x-gitlab-authentication-type" => "oidc",
-            'x-gitlab-instance-id' => ::Gitlab::GlobalAnonymousId.instance_id,
-            'x-gitlab-realm' => ::CloudConnector.gitlab_realm,
-            'x-gitlab-global-user-id' => ::Gitlab::GlobalAnonymousId.user_id(current_user)
-          }
-        )
-      end
-    end
-
     it 'returns a success ServiceResponse with token and expires_at' do
       result = client.generate_token
 
