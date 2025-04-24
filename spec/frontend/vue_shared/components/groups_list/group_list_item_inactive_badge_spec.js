@@ -1,6 +1,6 @@
 import { GlBadge } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import GroupListItemInactiveBadge from 'ee/vue_shared/components/groups_list/group_list_item_inactive_badge.vue';
+import GroupListItemInactiveBadge from '~/vue_shared/components/groups_list/group_list_item_inactive_badge.vue';
 import { groups } from 'jest/vue_shared/components/groups_list/mock_data';
 
 describe('GroupListItemInactiveBadge', () => {

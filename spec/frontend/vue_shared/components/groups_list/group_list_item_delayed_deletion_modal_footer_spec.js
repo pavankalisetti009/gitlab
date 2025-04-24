@@ -1,10 +1,10 @@
 import { GlLink, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import GroupListItemDelayedDeletionModalFooter from 'ee/vue_shared/components/groups_list/group_list_item_delayed_deletion_modal_footer.vue';
+import GroupListItemDelayedDeletionModalFooter from '~/vue_shared/components/groups_list/group_list_item_delayed_deletion_modal_footer.vue';
 import { groups } from 'jest/vue_shared/components/groups_list/mock_data';
 
-describe('GroupListItemDelayedDeletionModalFooterEE', () => {
+describe('GroupListItemDelayedDeletionModalFooter', () => {
   let wrapper;
 
   const [group] = groups;

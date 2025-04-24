@@ -1,8 +1,0 @@
-#import "~/organizations/shared/graphql/fragments/base_group.fragment.graphql"
-
-fragment Group on Group {
-  ...BaseGroup
-  markedForDeletionOn
-  isAdjournedDeletionEnabled
-  permanentDeletionDate
-}
