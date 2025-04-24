@@ -321,19 +321,38 @@ export const mockGroupPipelineExecutionPolicy = {
   },
 };
 
-export const mockSchedulePipelineExecutionPolicy = {
+export const mockProjectPipelineExecutionSchedulePolicy = {
   ...mockProjectPipelineExecutionPolicy,
+  editPath: '/policies/policy-name/edit?type="pipeline_execution_schedule_policy"',
   yaml: mockSchedulePipelineExecutionWithTypeManifest,
   __typename: 'PipelineExecutionSchedulePolicy',
 };
 
-export const mockSnoozeSchedulePipelineExecutionPolicy = {
+export const mockSnoozePipelineExecutionSchedulePolicy = {
   ...mockProjectPipelineExecutionPolicy,
   yaml: mockPipelineExecutionWithSnoozeManifest,
   __typename: 'PipelineExecutionSchedulePolicy',
 };
 
+export const mockGroupPipelineExecutionSchedulePolicy = {
+  ...mockProjectPipelineExecutionSchedulePolicy,
+  source: {
+    __typename: 'GroupSecurityPolicySource',
+    inherited: true,
+    namespace: {
+      __typename: 'Namespace',
+      id: '1',
+      fullPath: 'parent-group-path',
+      name: 'parent-group-name',
+    },
+  },
+};
+
 export const mockPipelineExecutionPoliciesResponse = [
   mockProjectPipelineExecutionPolicy,
   mockGroupPipelineExecutionPolicy,
+];
+export const mockPipelineExecutionSchedulePoliciesResponse = [
+  mockProjectPipelineExecutionSchedulePolicy,
+  mockGroupPipelineExecutionSchedulePolicy,
 ];

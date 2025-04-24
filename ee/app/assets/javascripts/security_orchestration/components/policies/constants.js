@@ -1,6 +1,9 @@
 import { s__ } from '~/locale';
 import {
+  MERGE_REQUEST_APPROVAL_POLICY_TYPE_HEADER,
   PIPELINE_EXECUTION_POLICY_TYPE_HEADER,
+  PIPELINE_EXECUTION_SCHEDULE_POLICY_TYPE_HEADER,
+  SCAN_EXECUTION_POLICY_TYPE_HEADER,
   VULNERABILITY_MANAGEMENT_POLICY_TYPE_HEADER,
 } from 'ee/security_orchestration/components/constants';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -27,15 +30,19 @@ export const POLICY_TYPE_FILTER_OPTIONS = {
   },
   SCAN_EXECUTION: {
     value: 'SCAN_EXECUTION',
-    text: s__('SecurityOrchestration|Scan execution'),
+    text: SCAN_EXECUTION_POLICY_TYPE_HEADER,
   },
   APPROVAL: {
     value: 'APPROVAL',
-    text: s__('SecurityOrchestration|Merge request approval'),
+    text: MERGE_REQUEST_APPROVAL_POLICY_TYPE_HEADER,
   },
   PIPELINE_EXECUTION: {
     value: 'PIPELINE_EXECUTION',
     text: PIPELINE_EXECUTION_POLICY_TYPE_HEADER,
+  },
+  PIPELINE_EXECUTION_SCHEDULE: {
+    value: 'PIPELINE_EXECUTION_SCHEDULE',
+    text: PIPELINE_EXECUTION_SCHEDULE_POLICY_TYPE_HEADER,
   },
   VULNERABILITY_MANAGEMENT: {
     value: 'VULNERABILITY_MANAGEMENT',

@@ -32,7 +32,7 @@ export default {
   computed: {
     hasScheduledPipelines() {
       return (
-        this.enabledExperiments.includes('pipeline_execution_schedule_policy') ||
+        this.enabledExperiments.includes('pipeline_execution_schedule_policy') &&
         this.glFeatures.scheduledPipelineExecutionPolicies
       );
     },

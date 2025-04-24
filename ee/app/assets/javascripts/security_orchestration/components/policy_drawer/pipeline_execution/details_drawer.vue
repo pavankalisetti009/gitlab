@@ -11,10 +11,7 @@ import {
   SUMMARY_TITLE,
   CONFIGURATION_TITLE,
 } from 'ee/security_orchestration/components/policy_drawer/constants';
-import {
-  PIPELINE_EXECUTION_POLICY_TYPE_HEADER,
-  POLICY_TYPE_COMPONENT_OPTIONS,
-} from 'ee/security_orchestration/components/constants';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
 import DrawerLayout from '../drawer_layout.vue';
 import InfoRow from '../info_row.vue';
@@ -23,7 +20,6 @@ import SkipCiConfiguration from '../skip_ci_configuration.vue';
 export default {
   i18n: {
     noActionMessage: s__('SecurityOrchestration|No actions defined - policy will not run.'),
-    pipelineExecution: PIPELINE_EXECUTION_POLICY_TYPE_HEADER,
     pipelineExecutionActionsHeader: s__(
       'SecurityOrchestration|Enforce the following pipeline execution policy:',
     ),
@@ -62,6 +58,9 @@ export default {
     configuration() {
       return this.parsedYaml.skip_ci;
     },
+    policyType() {
+      return this.policy?.policyType || '';
+    },
   },
   methods: {
     getComponent(prop) {
@@ -93,7 +92,7 @@ export default {
     :description="parsedYaml.description"
     :policy="policy"
     :policy-scope="policyScope"
-    :type="$options.i18n.pipelineExecution"
+    :type="policyType"
   >
     <template v-if="parsedYaml" #summary>
       <info-row data-testid="policy-summary" :label="$options.i18n.summary">

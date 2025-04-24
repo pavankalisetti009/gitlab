@@ -54982,6 +54982,9 @@ msgstr ""
 msgid "SecurityOrchestration|Schedule to run for %{branchSelector}"
 msgstr ""
 
+msgid "SecurityOrchestration|Scheduled pipeline execution"
+msgstr ""
+
 msgid "SecurityOrchestration|Scope"
 msgstr ""
 

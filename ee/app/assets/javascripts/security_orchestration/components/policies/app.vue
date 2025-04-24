@@ -4,6 +4,7 @@ import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/querie
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { createAlert } from '~/alert';
 import { getParameterByName } from '~/lib/utils/url_utility';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   exceedsActionLimit,
   exceedsScheduleRulesLimit,
@@ -17,6 +18,8 @@ import projectScanResultPoliciesQuery from '../../graphql/queries/project_scan_r
 import groupScanResultPoliciesQuery from '../../graphql/queries/group_scan_result_policies.query.graphql';
 import projectPipelineExecutionPoliciesQuery from '../../graphql/queries/project_pipeline_execution_policies.query.graphql';
 import groupPipelineExecutionPoliciesQuery from '../../graphql/queries/group_pipeline_execution_policies.query.graphql';
+import projectPipelineExecutionSchedulePoliciesQuery from '../../graphql/queries/project_pipeline_execution_schedule_policies.query.graphql';
+import groupPipelineExecutionSchedulePoliciesQuery from '../../graphql/queries/group_pipeline_execution_schedule_policies.query.graphql';
 import projectVulnerabilityManagementPoliciesQuery from '../../graphql/queries/project_vulnerability_management_policies.query.graphql';
 import groupVulnerabilityManagementPoliciesQuery from '../../graphql/queries/group_vulnerability_management_policies.query.graphql';
 import ListHeader from './list_header.vue';
@@ -40,6 +43,10 @@ const NAMESPACE_QUERY_DICT = {
     [NAMESPACE_TYPES.PROJECT]: projectPipelineExecutionPoliciesQuery,
     [NAMESPACE_TYPES.GROUP]: groupPipelineExecutionPoliciesQuery,
   },
+  pipelineExecutionSchedule: {
+    [NAMESPACE_TYPES.PROJECT]: projectPipelineExecutionSchedulePoliciesQuery,
+    [NAMESPACE_TYPES.GROUP]: groupPipelineExecutionSchedulePoliciesQuery,
+  },
   vulnerabilityManagement: {
     [NAMESPACE_TYPES.PROJECT]: projectVulnerabilityManagementPoliciesQuery,
     [NAMESPACE_TYPES.GROUP]: groupVulnerabilityManagementPoliciesQuery,
@@ -61,8 +68,10 @@ export default {
     ListHeader,
     ListComponent,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: [
     'assignedPolicyProject',
+    'enabledExperiments',
     'namespacePath',
     'namespaceType',
     'maxScanExecutionPolicyActions',
@@ -162,6 +171,27 @@ export default {
       },
       error: createPolicyFetchError,
     },
+    pipelineExecutionSchedulePolicies: {
+      query() {
+        return NAMESPACE_QUERY_DICT.pipelineExecutionSchedule[this.namespaceType];
+      },
+      variables() {
+        return {
+          fullPath: this.namespacePath,
+          relationship: this.selectedPolicySource,
+        };
+      },
+      update(data) {
+        return data?.namespace?.pipelineExecutionSchedulePolicies?.nodes ?? [];
+      },
+      skip() {
+        return !(
+          this.enabledExperiments.includes('pipeline_execution_schedule_policy') &&
+          this.glFeatures.scheduledPipelineExecutionPolicies
+        );
+      },
+      error: createPolicyFetchError,
+    },
     vulnerabilityManagementPolicies: {
       query() {
         return NAMESPACE_QUERY_DICT.vulnerabilityManagement[this.namespaceType];
@@ -193,6 +223,7 @@ export default {
       shouldUpdatePolicyList: false,
       linkedSppItems: [],
       pipelineExecutionPolicies: [],
+      pipelineExecutionSchedulePolicies: [],
       scanExecutionPolicies: [],
       scanResultPolicies: [],
       vulnerabilityManagementPolicies: [],
@@ -204,6 +235,8 @@ export default {
         [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]: this.scanExecutionPolicies,
         [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]: this.scanResultPolicies,
         [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]: this.pipelineExecutionPolicies,
+        [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION_SCHEDULE.value]:
+          this.pipelineExecutionSchedulePolicies,
         [POLICY_TYPE_FILTER_OPTIONS.VULNERABILITY_MANAGEMENT.value]:
           this.vulnerabilityManagementPolicies,
       };
@@ -213,6 +246,7 @@ export default {
         this.$apollo.queries.scanExecutionPolicies.loading ||
         this.$apollo.queries.scanResultPolicies.loading ||
         this.$apollo.queries.pipelineExecutionPolicies.loading ||
+        this.$apollo.queries.pipelineExecutionSchedulePolicies.loading ||
         this.$apollo.queries.vulnerabilityManagementPolicies.loading
       );
     },
@@ -230,6 +264,9 @@ export default {
 
       this.$apollo.queries.scanExecutionPolicies.refetch();
       this.$apollo.queries.scanResultPolicies.refetch();
+      this.$apollo.queries.pipelineExecutionPolicies.refetch();
+      this.$apollo.queries.pipelineExecutionSchedulePolicies.refetch();
+      this.$apollo.queries.vulnerabilityManagementPolicies.refetch();
     },
     handleUpdatePolicySource(value) {
       this.selectedPolicySource = value;
