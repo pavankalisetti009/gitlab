@@ -17252,7 +17252,8 @@ CREATE TABLE merge_request_diff_commits (
     message text,
     trailers jsonb DEFAULT '{}'::jsonb,
     commit_author_id bigint,
-    committer_id bigint
+    committer_id bigint,
+    merge_request_commits_metadata_id bigint
 );
 
 CREATE TABLE merge_request_diff_details (
