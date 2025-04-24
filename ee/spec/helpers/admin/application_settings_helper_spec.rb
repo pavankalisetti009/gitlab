@@ -176,6 +176,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
     before do
       allow(License).to receive(:current).and_return(license)
+      allow(license).to receive(:ultimate?).and_return(true)
       allow(::Ai::AmazonQ).to receive(:feature_available?).and_return(amazon_q_available)
       allow(license).to receive_messages(
         subscription_name: subscription_name,
@@ -224,7 +225,9 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         is_saas: 'false',
         duo_workflow_settings_path: '/admin/ai/duo_workflow/settings',
         duo_workflow_disable_path: '/admin/ai/duo_workflow/settings/disconnect',
+        duo_self_hosted_path: '/admin/ai/duo_self_hosted',
         redirect_path: '/admin/gitlab_duo',
+        can_manage_self_hosted_models: 'false',
         duo_add_on_start_date: nil,
         duo_add_on_end_date: nil
       })

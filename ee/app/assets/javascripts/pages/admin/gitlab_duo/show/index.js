@@ -19,6 +19,7 @@ export function mountGitlabDuoHomeApp() {
     subscriptionStartDate,
     subscriptionEndDate,
     duoConfigurationPath,
+    duoSelfHostedPath,
     duoAvailability,
     directCodeSuggestionsEnabled,
     experimentFeaturesEnabled,
@@ -29,6 +30,7 @@ export function mountGitlabDuoHomeApp() {
     amazonQReady,
     amazonQAutoReviewEnabled,
     amazonQConfigurationPath,
+    canManageSelfHostedModels,
   } = el.dataset;
 
   return new Vue({
@@ -45,6 +47,7 @@ export function mountGitlabDuoHomeApp() {
       subscriptionStartDate,
       subscriptionEndDate,
       duoConfigurationPath,
+      duoSelfHostedPath,
       duoAvailability,
       directCodeSuggestionsEnabled: parseBoolean(directCodeSuggestionsEnabled),
       experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled),
@@ -55,6 +58,7 @@ export function mountGitlabDuoHomeApp() {
       amazonQReady: parseBoolean(amazonQReady),
       amazonQAutoReviewEnabled: parseBoolean(amazonQAutoReviewEnabled),
       amazonQConfigurationPath,
+      canManageSelfHostedModels,
     },
     render: (h) => h(GitlabDuoHome),
   });

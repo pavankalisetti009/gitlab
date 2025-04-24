@@ -48,13 +48,6 @@ module EE
             ::Sidebars::Admin::Menus::SubscriptionMenu,
             ::Sidebars::Admin::Menus::DuoSettingsMenu.new(context)
           )
-
-          return unless Ability.allowed?(context.current_user, :manage_self_hosted_models_settings)
-
-          insert_menu_after(
-            ::Sidebars::Admin::Menus::DuoSettingsMenu,
-            ::Sidebars::Admin::Menus::SelfHostedModelsMenu.new(context)
-          )
         end
       end
     end
