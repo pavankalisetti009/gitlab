@@ -18,7 +18,6 @@ import { NAMESPACE_GROUP, NAMESPACE_PROJECT } from 'ee/dependencies/constants';
 import { OPERATORS_IS_NOT } from '~/vue_shared/components/filtered_search_bar/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { createAlert } from '~/alert';
 
 Vue.use(VueApollo);
@@ -108,8 +107,8 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
   const findFilteredSearchToken = () => wrapper.findComponent(GlFilteredSearchToken);
   const findFirstSearchSuggestionIcon = () =>
     wrapper.findAllComponents(GlFilteredSearchSuggestion).at(0).findComponent(GlIcon);
-  const selectVersion = (versionId) => {
-    findFilteredSearchToken().vm.$emit('select', getIdFromGraphQLId(versionId));
+  const selectVersion = (version) => {
+    findFilteredSearchToken().vm.$emit('select', version);
     return nextTick();
   };
 
@@ -237,20 +236,20 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
       it('displays a check-icon next to the selected project', async () => {
         expect(findFirstSearchSuggestionIcon().classes()).toContain('gl-invisible');
 
-        await selectVersion(TEST_VERSIONS[0].id);
+        await selectVersion(TEST_VERSIONS[0].version);
 
         expect(findFirstSearchSuggestionIcon().classes()).not.toContain('gl-invisible');
       });
 
       it('does not display check-icon if unchecked again', async () => {
-        await selectVersion(TEST_VERSIONS[0].id);
-        await selectVersion(TEST_VERSIONS[0].id);
+        await selectVersion(TEST_VERSIONS[0].version);
+        await selectVersion(TEST_VERSIONS[0].version);
         expect(findFirstSearchSuggestionIcon().classes()).toContain('gl-invisible');
       });
 
       it('shows a comma seperated list of selected versions', async () => {
-        await selectVersion(TEST_VERSIONS[0].id);
-        await selectVersion(TEST_VERSIONS[1].id);
+        await selectVersion(TEST_VERSIONS[0].version);
+        await selectVersion(TEST_VERSIONS[1].version);
 
         expect(wrapper.findByTestId('selected-versions').text()).toMatchInterpolatedText(
           `${TEST_VERSIONS[0].version}, ${TEST_VERSIONS[1].version}`,

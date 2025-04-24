@@ -12,7 +12,6 @@ import produce from 'immer';
 import { mapGetters } from 'vuex';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { NAMESPACE_GROUP } from 'ee/dependencies/constants';
 import getProjectComponentVersions from 'ee/dependencies/graphql/project_component_versions.query.graphql';
 import getGroupComponentVersions from 'ee/dependencies/graphql/group_component_versions.query.graphql';
@@ -44,7 +43,7 @@ export default {
   data() {
     return {
       versions: [],
-      selectedVersionIds: [],
+      selectedVersions: [],
       pageInfo: {},
     };
   },
@@ -61,7 +60,7 @@ export default {
       update(data) {
         return data.namespace.componentVersions.nodes.map(({ version, id }) => ({
           version,
-          id: getIdFromGraphQLId(id),
+          id,
         }));
       },
       result({ data }) {
@@ -83,7 +82,7 @@ export default {
         // when the token is active (dropdown is open), we set the value to null to prevent an UX issue
         // in which only the last selected item is being displayed.
         // more information: https://gitlab.com/gitlab-org/gitlab-ui/-/issues/2381
-        data: this.active ? '' : this.selectedVersionIds,
+        data: this.active ? '' : this.selectedVersions,
       };
     },
     tokenConfig() {
@@ -115,22 +114,19 @@ export default {
     isLoading() {
       return this.$apollo.queries.versions.loading;
     },
-    selectedVersions() {
-      return this.versions.filter(({ id }) => this.isVersionSelected(id));
-    },
     hasNextPage() {
       return this.pageInfo.hasNextPage;
     },
   },
   methods: {
-    isVersionSelected(id) {
-      return this.selectedVersionIds.includes(id);
+    isVersionSelected(version) {
+      return this.selectedVersions.includes(version);
     },
-    toggleSelectedVersion(id) {
-      if (this.isVersionSelected(id)) {
-        this.selectedVersionIds = this.selectedVersionIds.filter((versionId) => versionId !== id);
+    toggleSelectedVersion(version) {
+      if (this.isVersionSelected(version)) {
+        this.selectedVersions = this.selectedVersions.filter((v) => v !== version);
       } else {
-        this.selectedVersionIds.push(id);
+        this.selectedVersions.push(version);
       }
     },
     bottomReached() {
@@ -170,7 +166,7 @@ export default {
   <gl-filtered-search-token
     :config="tokenConfig"
     v-bind="{ ...$props, ...$attrs }"
-    :multi-select-values="selectedVersionIds"
+    :multi-select-values="selectedVersions"
     :value="tokenValue"
     :view-only="viewOnly"
     v-on="$listeners"
@@ -178,7 +174,7 @@ export default {
   >
     <template #view>
       <gl-intersperse data-testid="selected-versions">
-        <span v-for="{ id, version } in selectedVersions" :key="id">{{ version }}</span>
+        <span v-for="version in selectedVersions" :key="version">{{ version }}</span>
       </gl-intersperse>
     </template>
     <template #suggestions>
@@ -189,13 +185,17 @@ export default {
         {{ s__('Dependencies|To filter by version, select exactly one component first') }}
       </div>
       <template v-else>
-        <gl-filtered-search-suggestion v-for="{ version, id } in versions" :key="id" :value="id">
+        <gl-filtered-search-suggestion
+          v-for="{ version, id } in versions"
+          :key="id"
+          :value="version"
+        >
           <div class="gl-flex gl-items-center">
             <gl-icon
               name="check"
               class="gl-mr-3 gl-shrink-0"
               :class="{
-                'gl-invisible': !isVersionSelected(id),
+                'gl-invisible': !isVersionSelected(version),
               }"
               variant="subtle"
             />

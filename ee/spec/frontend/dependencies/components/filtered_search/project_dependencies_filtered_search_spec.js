@@ -37,7 +37,7 @@ describe('ProjectDependenciesFilteredSearch', () => {
   it.each`
     tokenTitle     | tokenConfig
     ${'Component'} | ${{ title: 'Component', type: 'component_names', multiSelect: true, token: ComponentToken, operators: OPERATORS_IS }}
-    ${'Version'}   | ${{ title: 'Version', type: 'component_version_ids', multiSelect: true, token: VersionToken, operators: OPERATORS_IS_NOT }}
+    ${'Version'}   | ${{ title: 'Version', type: 'component_versions', multiSelect: true, token: VersionToken, operators: OPERATORS_IS_NOT }}
   `('contains a "$tokenTitle" search token', ({ tokenConfig }) => {
     expect(findDependenciesFilteredSearch().props('tokens')).toMatchObject(
       expect.arrayContaining([
