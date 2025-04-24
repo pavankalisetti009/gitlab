@@ -8,6 +8,7 @@ import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/pages/work_items_list_app.vue';
 import { WORK_ITEM_TYPE_NAME_EPIC } from '~/work_items/constants';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
+import getWorkItemsForEpicsQuery from 'ee/work_items/graphql/list/get_work_items_for_epics.query.graphql';
 
 const skipReason = new SkipReason({
   name: 'WorkItemsListApp EE component',
@@ -143,5 +144,11 @@ describeSkipVue3(skipReason, () => {
 
       expect(findWorkItemsListApp().props('withTabs')).toBe(false);
     });
+  });
+
+  it('passes the eeEpicListQuery prop down to WorkItemsListApp', () => {
+    mountComponent();
+
+    expect(findWorkItemsListApp().props('eeEpicListQuery')).toBe(getWorkItemsForEpicsQuery);
   });
 });
