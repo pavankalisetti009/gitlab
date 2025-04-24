@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddTestNewPermissionToMemberRole < Gitlab::Database::Migration[2.2]
+class AddTestNewPermissionToMemberRole < Gitlab::Database::Migration[2.3]
   milestone '16.5'
 
   enable_lock_retries!
