@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'updating admin member role', :enable_admin_mode, feature_category: :permissions do
   include GraphqlHelpers
 
-  let_it_be(:member_role) { create(:member_role, :read_admin_dashboard) }
+  let_it_be(:member_role) { create(:member_role, :read_admin_users) }
   let_it_be_with_reload(:current_user) { create(:admin) }
 
   let(:name) { 'new name' }
@@ -73,7 +73,7 @@ RSpec.describe 'updating admin member role', :enable_admin_mode, feature_categor
         expect(member_role.description).to eq('new description')
         expect(member_role.read_admin_monitoring).to be(true)
         expect(member_role.read_admin_cicd).to be(true)
-        expect(member_role.read_admin_dashboard).to be(false)
+        expect(member_role.read_admin_users).to be(false)
       end
     end
 

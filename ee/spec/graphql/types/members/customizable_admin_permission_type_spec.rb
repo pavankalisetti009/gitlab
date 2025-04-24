@@ -8,7 +8,7 @@ RSpec.describe GitlabSchema.types['CustomizableAdminPermission'], feature_catego
   let(:permissions) do
     {
       read_code: { description: 'permission definition 1' },
-      read_admin_dashboard: { description: 'admin permission definition' }
+      read_admin_users: { description: 'admin permission definition' }
     }
   end
 
@@ -29,7 +29,7 @@ RSpec.describe GitlabSchema.types['CustomizableAdminPermission'], feature_catego
     allow(MemberRole).to receive(:all_customizable_admin_permissions).and_return(permissions)
 
     expect(
-      resolve_field(:description, :read_admin_dashboard)
+      resolve_field(:description, :read_admin_users)
     ).to eq('admin permission definition')
   end
 end

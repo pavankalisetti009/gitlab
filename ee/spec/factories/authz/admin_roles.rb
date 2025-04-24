@@ -12,7 +12,7 @@ FactoryBot.define do
     after(:build) do |admin_role, evaluator|
       next if evaluator.without_any_permissions || evaluator.permissions.any?
 
-      admin_role[:read_admin_dashboard] = true
+      admin_role[:read_admin_users] = true
     end
 
     Gitlab::CustomRoles::Definition.admin.each_value do |attributes|

@@ -6,7 +6,7 @@ RSpec.describe Authz::Admin, feature_category: :permissions do
   subject(:instance_authorization) { described_class.new(user) }
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:admin_role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
+  let_it_be(:admin_role) { create(:admin_member_role, :read_admin_users, user: user) }
 
   before do
     stub_licensed_features(custom_roles: true)
@@ -17,7 +17,7 @@ RSpec.describe Authz::Admin, feature_category: :permissions do
 
     context 'with admin mode enabled', :enable_admin_mode do
       it 'includes the ability' do
-        is_expected.to eq([:read_admin_dashboard])
+        is_expected.to eq([:read_admin_users])
       end
     end
 
@@ -33,13 +33,13 @@ RSpec.describe Authz::Admin, feature_category: :permissions do
 
     context 'with admin mode enabled', :enable_admin_mode do
       it 'includes the ability' do
-        is_expected.to eq([:read_admin_dashboard])
+        is_expected.to eq([:read_admin_users])
       end
     end
 
     context 'with admin mode disabled' do
       it 'includes the ability' do
-        is_expected.to eq([:read_admin_dashboard])
+        is_expected.to eq([:read_admin_users])
       end
     end
   end

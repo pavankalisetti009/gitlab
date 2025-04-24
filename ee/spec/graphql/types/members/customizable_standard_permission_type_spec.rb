@@ -8,7 +8,7 @@ RSpec.describe GitlabSchema.types['CustomizableStandardPermission'], feature_cat
   let(:permissions) do
     {
       read_code: { description: 'permission definition 1' },
-      read_admin_dashboard: { description: 'admin permission definition' }
+      read_admin_users: { description: 'admin permission definition' }
     }
   end
 

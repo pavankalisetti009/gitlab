@@ -8,7 +8,7 @@ RSpec.describe Authz::AdminRollable, feature_category: :permissions do
   subject(:klass) { Class.new(ApplicationRecord).include(described_class) }
 
   describe '.admin_permission_enabled?' do
-    let(:ability) { :read_admin_dashboard }
+    let(:ability) { :read_admin_users }
 
     subject(:admin_permission_enabled) { klass.admin_permission_enabled?(ability) }
 
@@ -21,8 +21,8 @@ RSpec.describe Authz::AdminRollable, feature_category: :permissions do
     with_them do
       before do
         if flag_exists
-          stub_feature_flag_definition("custom_ability_read_admin_dashboard")
-          stub_feature_flags(custom_ability_read_admin_dashboard: flag_enabled)
+          stub_feature_flag_definition("custom_ability_read_admin_users")
+          stub_feature_flags(custom_ability_read_admin_users: flag_enabled)
         end
       end
 

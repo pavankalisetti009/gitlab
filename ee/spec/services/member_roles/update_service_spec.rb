@@ -45,8 +45,8 @@ RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
         it_behaves_like 'custom role update'
 
         context 'with admin roles' do
-          let_it_be(:existing_abilities) { { read_admin_dashboard: true } }
-          let(:updated_abilities) { { read_admin_dashboard: false, read_admin_users: true } }
+          let_it_be(:existing_abilities) { { read_admin_cicd: true } }
+          let(:updated_abilities) { { read_admin_cicd: false, read_admin_users: true } }
           let_it_be(:role) { create(:member_role, :admin, **existing_abilities) }
 
           it_behaves_like 'custom role update' do
@@ -84,8 +84,8 @@ RSpec.describe MemberRoles::UpdateService, feature_category: :system_access do
       end
 
       context 'when admin role', :enable_admin_mode do
-        let_it_be(:existing_abilities) { { read_admin_dashboard: true } }
-        let(:updated_abilities) { { read_admin_dashboard: false, read_admin_users: true } }
+        let_it_be(:existing_abilities) { { read_admin_cicd: true } }
+        let(:updated_abilities) { { read_admin_cicd: false, read_admin_users: true } }
         let_it_be(:role) { create(:member_role, :admin, **existing_abilities) }
 
         context 'with unauthorized user' do

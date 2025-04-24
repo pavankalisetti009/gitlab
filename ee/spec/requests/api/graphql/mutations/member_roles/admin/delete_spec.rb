@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe 'deleting admin member role', :enable_admin_mode, feature_category: :system_access do
   include GraphqlHelpers
 
-  let_it_be(:member_role) { create(:member_role, :read_admin_dashboard) }
+  let_it_be(:member_role) { create(:member_role, :read_admin_users) }
   let_it_be(:current_user, refind: true) { create(:admin) }
 
   let(:input) { { id: member_role.to_global_id.to_s } }

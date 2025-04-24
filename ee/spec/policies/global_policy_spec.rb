@@ -849,7 +849,6 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
   context 'custom permissions', :enable_admin_mode do
     where(:custom_ability, :enabled_permissions) do
       :read_admin_cicd         | %i[access_admin_area read_admin_cicd]
-      :read_admin_dashboard    | %i[access_admin_area read_admin_dashboard]
       :read_admin_monitoring   | %i[
         access_admin_area
         read_admin_audit_log
