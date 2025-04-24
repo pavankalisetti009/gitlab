@@ -1,4 +1,4 @@
-#import "~/ci/runner/graphql/list/group_runner_connection.fragment.graphql"
+#import "~/ci/runner/graphql/list/runner_connection.fragment.graphql"
 
 query getGroupRunnersEE(
   $groupFullPath: ID!
@@ -31,7 +31,7 @@ query getGroupRunnersEE(
       search: $search
       sort: $sort
     ) {
-      ...GroupRunnerConnection
+      ...RunnerConnection
     }
   }
 }
