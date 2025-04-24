@@ -442,7 +442,11 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
 
       context 'when assigning Duo Code Review bot as a reviewer' do
         before do
-          allow(merge_request.merge_request_diff).to receive(:persisted?).and_return(persisted)
+          allow(merge_request.merge_request_diff).to receive_messages(
+            persisted?: persisted,
+            empty?: empty
+          )
+
           allow(merge_request).to receive(:ai_review_merge_request_allowed?)
             .with(current_user)
             .and_return(ai_review_allowed)
@@ -451,6 +455,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
         context 'when AI review feature is not allowed' do
           let(:ai_review_allowed) { false }
           let(:persisted) { true }
+          let(:empty) { false }
 
           it 'does not call ::Llm::ReviewMergeRequestService' do
             expect(Llm::ReviewMergeRequestService).not_to receive(:new)
@@ -461,6 +466,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
 
         context 'when AI review feature is allowed' do
           let(:ai_review_allowed) { true }
+          let(:empty) { false }
 
           context 'when the merge_request_diff is not persisted yet' do
             let(:persisted) { false }
@@ -481,6 +487,16 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
               end
 
               update_merge_request(reviewer_ids: [::Users::Internal.duo_code_review_bot.id])
+            end
+
+            context 'when merge_request_diff is empty' do
+              let(:empty) { true }
+
+              it 'does not call ::Llm::ReviewMergeRequestService' do
+                expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+                update_merge_request(reviewer_ids: [::Users::Internal.duo_code_review_bot.id])
+              end
             end
           end
         end
