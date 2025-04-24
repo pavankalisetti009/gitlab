@@ -37,6 +37,19 @@ export const projectPipelineResultPolicies = (nodes) =>
 export const groupPipelineResultPolicies = (nodes) =>
   mockPolicyResponse({ nodes, namespaceType: 'Group', policyType: 'pipelineExecutionPolicies' });
 
+export const projectPipelineExecutionSchedulePolicies = (nodes) =>
+  mockPolicyResponse({
+    nodes,
+    namespaceType: 'Project',
+    policyType: 'pipelineExecutionSchedulePolicies',
+  });
+export const groupPipelineExecutionSchedulePolicies = (nodes) =>
+  mockPolicyResponse({
+    nodes,
+    namespaceType: 'Group',
+    policyType: 'pipelineExecutionSchedulePolicies',
+  });
+
 export const projectVulnerabilityManagementPolicies = (nodes) =>
   mockPolicyResponse({
     nodes,

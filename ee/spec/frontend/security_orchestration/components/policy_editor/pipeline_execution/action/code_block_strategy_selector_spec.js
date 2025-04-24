@@ -14,7 +14,8 @@ describe('CodeBlockStrategySelector', () => {
   let wrapper;
 
   const defaultProvide = {
-    enabledExperiments: [],
+    enabledExperiments: ['pipeline_execution_schedule_policy'],
+    glFeatures: { scheduledPipelineExecutionPolicies: true },
   };
 
   const createComponent = ({ propsData = {}, provide = {} } = {}) => {
@@ -64,18 +65,10 @@ describe('CodeBlockStrategySelector', () => {
       });
 
       expect(findListBox().props('items')).toEqual([
-        {
-          text: 'Inject',
-          value: INJECT,
-        },
-        {
-          text: 'Override',
-          value: OVERRIDE,
-        },
-        {
-          text: 'Inject without custom stages',
-          value: DEPRECATED_INJECT,
-        },
+        { text: 'Inject', value: INJECT },
+        { text: 'Override', value: OVERRIDE },
+        { text: 'Inject without custom stages', value: DEPRECATED_INJECT },
+        { text: 'Schedule a new', value: SCHEDULE },
       ]);
     });
 
@@ -87,14 +80,9 @@ describe('CodeBlockStrategySelector', () => {
       });
 
       expect(findListBox().props('items')).toEqual([
-        {
-          text: 'Inject',
-          value: INJECT,
-        },
-        {
-          text: 'Override',
-          value: OVERRIDE,
-        },
+        { text: 'Inject', value: INJECT },
+        { text: 'Override', value: OVERRIDE },
+        { text: 'Schedule a new', value: SCHEDULE },
       ]);
     });
 
@@ -113,42 +101,25 @@ describe('CodeBlockStrategySelector', () => {
       expect(findDeprecatedBadge().exists()).toBe(expectedExists);
     });
   });
-  describe('schedule strategy', () => {
-    describe('without the feature flag', () => {
-      it('does not render the "schedule" strategy in the listbox items', () => {
-        createComponent();
-
-        expect(findListBox().props('items')).toEqual([
-          { text: 'Inject', value: INJECT },
-          { text: 'Override', value: OVERRIDE },
-        ]);
-      });
-    });
-
-    describe('with the feature flag', () => {
-      it('renders "schedule" strategy in the listbox items', () => {
-        createComponent({ provide: { glFeatures: { scheduledPipelineExecutionPolicies: true } } });
-
-        expect(findListBox().props('items')).toEqual([
-          { text: 'Inject', value: INJECT },
-          { text: 'Override', value: OVERRIDE },
-          { text: 'Schedule a new', value: SCHEDULE },
-        ]);
-      });
-    });
-
-    describe('with the experiment', () => {
-      it('renders "schedule" strategy in the listbox items', () => {
+  describe('schedule strategy with feature flag and enabledExperiments', () => {
+    it.each([
+      [[], false],
+      [[], true],
+      [['pipeline_execution_schedule_policy'], false],
+    ])(
+      "does not render the 'schedule' strategy in the listbox items when enabledExperiments: %s and glFeatures: %s",
+      (enabledExperiments, glFeatures) => {
         createComponent({
-          provide: { enabledExperiments: ['pipeline_execution_schedule_policy'] },
+          provide: {
+            enabledExperiments,
+            glFeatures: { scheduledPipelineExecutionPolicies: glFeatures },
+          },
         });
-
         expect(findListBox().props('items')).toEqual([
           { text: 'Inject', value: INJECT },
           { text: 'Override', value: OVERRIDE },
-          { text: 'Schedule a new', value: SCHEDULE },
         ]);
-      });
-    });
+      },
+    );
   });
 });

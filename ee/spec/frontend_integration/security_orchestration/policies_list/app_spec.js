@@ -16,7 +16,10 @@ import {
 } from 'ee_jest/security_orchestration/mocks/mock_apollo';
 import { mockScanExecutionPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 import { mockScanResultPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
-import { mockPipelineExecutionPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
+import {
+  mockPipelineExecutionPoliciesResponse,
+  mockPipelineExecutionSchedulePoliciesResponse,
+} from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import { mockVulnerabilityManagementPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_vulnerability_management_policy_data';
 import ListHeader from 'ee/security_orchestration/components/policies/list_header.vue';
 import ListComponent from 'ee/security_orchestration/components/policies/list_component.vue';
@@ -27,6 +30,8 @@ import projectScanResultPoliciesQuery from 'ee/security_orchestration/graphql/qu
 import groupScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_scan_result_policies.query.graphql';
 import projectPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_pipeline_execution_policies.query.graphql';
 import groupPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_pipeline_execution_policies.query.graphql';
+import projectPipelineExecutionSchedulePoliciesQuery from 'ee/security_orchestration/graphql/queries/project_pipeline_execution_schedule_policies.query.graphql';
+import groupPipelineExecutionSchedulePoliciesQuery from 'ee/security_orchestration/graphql/queries/group_pipeline_execution_schedule_policies.query.graphql';
 import projectVulnerabilityManagementPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_vulnerability_management_policies.query.graphql';
 import groupVulnerabilityManagementPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_vulnerability_management_policies.query.graphql';
 import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
@@ -47,6 +52,12 @@ const projectPipelineExecutionPoliciesSpy = projectPipelineResultPolicies(
 const groupPipelineExecutionPoliciesSpy = groupPipelineResultPolicies(
   mockPipelineExecutionPoliciesResponse,
 );
+const projectPipelineExecutionSchedulePoliciesSpy = projectPipelineResultPolicies(
+  mockPipelineExecutionSchedulePoliciesResponse,
+);
+const groupPipelineExecutionSchedulePoliciesSpy = groupPipelineResultPolicies(
+  mockPipelineExecutionSchedulePoliciesResponse,
+);
 const projectVulnerabilityManagementPoliciesSpy = projectVulnerabilityManagementPolicies(
   mockVulnerabilityManagementPoliciesResponse,
 );
@@ -62,6 +73,8 @@ const defaultRequestHandlers = {
   groupScanResultPolicies: groupScanResultPoliciesSpy,
   projectPipelineExecutionPolicies: projectPipelineExecutionPoliciesSpy,
   groupPipelineExecutionPolicies: groupPipelineExecutionPoliciesSpy,
+  projectPipelineExecutionSchedulePolicies: projectPipelineExecutionSchedulePoliciesSpy,
+  groupPipelineExecutionSchedulePolicies: groupPipelineExecutionSchedulePoliciesSpy,
   projectVulnerabilityManagementPolicies: projectVulnerabilityManagementPoliciesSpy,
   groupVulnerabilityManagementPolicies: groupVulnerabilityManagementPoliciesSpy,
   linkedSppItemsResponse: linkedSppItemsResponseSpy,
@@ -92,6 +105,14 @@ describe('Policies List', () => {
         [groupScanResultPoliciesQuery, requestHandlers.groupScanResultPolicies],
         [projectPipelineExecutionPoliciesQuery, requestHandlers.projectPipelineExecutionPolicies],
         [groupPipelineExecutionPoliciesQuery, requestHandlers.groupPipelineExecutionPolicies],
+        [
+          projectPipelineExecutionSchedulePoliciesQuery,
+          requestHandlers.projectPipelineExecutionSchedulePolicies,
+        ],
+        [
+          groupPipelineExecutionSchedulePoliciesQuery,
+          requestHandlers.groupPipelineExecutionSchedulePolicies,
+        ],
         [
           projectVulnerabilityManagementPoliciesQuery,
           requestHandlers.projectVulnerabilityManagementPolicies,

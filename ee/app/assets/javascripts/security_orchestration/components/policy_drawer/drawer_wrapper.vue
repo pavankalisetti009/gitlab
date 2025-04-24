@@ -26,6 +26,7 @@ const policyComponent = {
   [POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value]: ScanExecutionDrawer,
   [POLICY_TYPE_COMPONENT_OPTIONS.approval.value]: ScanResultDrawer,
   [POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.value]: PipelineExecutionDrawer,
+  [POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecutionSchedule.value]: PipelineExecutionDrawer,
   [POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.value]: VulnerabilityManagementDrawer,
 };
 
