@@ -126,28 +126,20 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
         is_expected.to contain_exactly(*described_class.base_types.keys)
       end
 
-      context 'when create_group_level_work_items is disabled and work_item_epics is enabled' do
+      context 'when create_group_level_work_items is disabled' do
         before do
-          stub_feature_flags(create_group_level_work_items: false, work_item_epics: root_group)
+          stub_feature_flags(create_group_level_work_items: false)
         end
 
         it { is_expected.to contain_exactly('epic') }
       end
 
-      context 'when create_group_level_work_items is enabled and work_item_epics is disabled' do
+      context 'when create_group_level_work_items is enabled' do
         before do
-          stub_feature_flags(create_group_level_work_items: true, work_item_epics: false)
+          stub_feature_flags(create_group_level_work_items: true)
         end
 
-        it { is_expected.to contain_exactly(*described_class.base_types.keys.excluding('epic')) }
-      end
-
-      context 'when create_group_level_work_items is disabled and work_item_epics is disabled' do
-        before do
-          stub_feature_flags(create_group_level_work_items: false, work_item_epics: false)
-        end
-
-        it { is_expected.to be_empty }
+        it { is_expected.to contain_exactly(*described_class.base_types.keys).and include('epic') }
       end
     end
 

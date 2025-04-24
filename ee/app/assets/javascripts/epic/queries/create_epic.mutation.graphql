@@ -1,9 +1,0 @@
-mutation createEpic($input: CreateEpicInput!) {
-  createEpic(input: $input) {
-    epic {
-      id
-      webUrl
-    }
-    errors
-  }
-}
