@@ -54533,9 +54533,6 @@ msgstr ""
 msgid "SecurityOrchestration|Create new framework label"
 msgstr ""
 
-msgid "SecurityOrchestration|Create policy"
-msgstr ""
-
 msgid "SecurityOrchestration|Create security policy"
 msgstr ""
 
@@ -54968,9 +54965,6 @@ msgid "SecurityOrchestration|Run %{scannerStart}%{scanner}%{scannerEnd} with the
 msgstr ""
 
 msgid "SecurityOrchestration|Run a %{scannerStart}%{scanner}%{scannerEnd} scan with the following options:"
-msgstr ""
-
-msgid "SecurityOrchestration|Save changes"
 msgstr ""
 
 msgid "SecurityOrchestration|Scan actions exceed the limit of %{maxScanExecutionPolicyActions} actions per policy."

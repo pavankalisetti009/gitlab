@@ -62,6 +62,8 @@ export default {
     rulesHeader: s__('SecurityOrchestration|Rules'),
     yamlHeader: s__('SecurityOrchestration|Yaml'),
     resizerLabel: s__("SecurityOrchestration|Drag with a mouse to adjust editor's width"),
+    saveExistingPolicyText: s__('SecurityOrchestration|Update via merge request'),
+    saveNewPolicyText: __('Configure with a merge request'),
   },
   STATUS_OPTIONS: [
     { value: true, text: __('Enabled') },
@@ -98,11 +100,6 @@ export default {
     'maxPipelineExecutionPoliciesAllowed',
   ],
   props: {
-    customSaveButtonText: {
-      type: String,
-      required: false,
-      default: '',
-    },
     customSaveTooltipText: {
       type: String,
       required: false,
@@ -242,12 +239,9 @@ export default {
       return this.customSaveTooltipText || this.saveButtonText;
     },
     saveButtonText() {
-      return (
-        this.customSaveButtonText ||
-        (this.isEditing
-          ? s__('SecurityOrchestration|Save changes')
-          : s__('SecurityOrchestration|Create policy'))
-      );
+      return this.isEditing
+        ? this.$options.i18n.saveExistingPolicyText
+        : this.$options.i18n.saveNewPolicyText;
     },
     shouldShowRuleEditor() {
       return this.selectedEditorMode === EDITOR_MODE_RULE;

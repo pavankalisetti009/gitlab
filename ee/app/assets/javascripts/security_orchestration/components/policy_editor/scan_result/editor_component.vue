@@ -67,7 +67,6 @@ export default {
     PARSING_ERROR_MESSAGE,
     RULE_SECTION_DISABLE_ERROR,
     SETTING_SECTION_DISABLE_ERROR,
-    createMergeRequest: __('Configure with a merge request'),
     filterHeaderText: s__('SecurityOrchestration|Choose an action'),
     notOwnerButtonText: __('Learn more'),
     notOwnerDescription: s__(
@@ -520,7 +519,6 @@ export default {
 <template>
   <editor-layout
     v-if="!disableScanPolicyUpdate"
-    :custom-save-button-text="$options.i18n.createMergeRequest"
     :is-editing="isEditing"
     :is-removing-policy="isDeleting"
     :is-updating-policy="isCreating"
