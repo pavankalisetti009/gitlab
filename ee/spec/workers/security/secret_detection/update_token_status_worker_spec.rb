@@ -107,24 +107,22 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusWorker, feature_categ
       end
 
       describe 'when token is found' do
-        let(:mock_token) do
-          token_value = finding.metadata['raw_source_code_extract']
-          token_sha = Gitlab::CryptoHelper.sha256(token_value)
-          instance_double(PersonalAccessToken, active?: active, token_digest: token_sha)
-        end
-
         before do
-          allow(PersonalAccessToken).to receive(:with_token_digests).and_return([mock_token])
+          raw_token = token.token
+
+          metadata = ::Gitlab::Json.parse(finding.raw_metadata)
+          metadata['raw_source_code_extract'] = raw_token
+          finding.update!(raw_metadata: metadata.to_json)
         end
 
         describe 'when a token is active' do
-          let(:active) { true }
+          let(:token) { create(:personal_access_token) }
 
           it_behaves_like 'creates a finding token status', 'active'
         end
 
         describe 'when a token is inactive' do
-          let(:active) { false }
+          let(:token) { create(:personal_access_token, :expired) }
 
           describe 'when finding has no status' do
             it_behaves_like 'creates a finding token status', 'inactive'

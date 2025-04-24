@@ -48,7 +48,8 @@ module Security
         return if findings.empty?
 
         token_status_attr_by_sha = build_token_status_attributes_by_token_sha(findings)
-        tokens = @token_lookup_service.find('gitlab_personal_access_token', token_status_attr_by_sha.keys) # rubocop:disable Gitlab/NoFindInWorkers -- find is not an active record find
+        finding_raw_tokens = findings.filter_map { |finding| finding.metadata['raw_source_code_extract'] }
+        tokens = @token_lookup_service.find('gitlab_personal_access_token', finding_raw_tokens) # rubocop:disable Gitlab/NoFindInWorkers -- find is not an active record find
 
         tokens.each do |token|
           token_status_attr_by_sha[token.token_digest].each do |finding_token_status_attr|
