@@ -36,14 +36,14 @@ RSpec.describe "User creates pipeline execution policy", :js, feature_category: 
       select_from_listbox project.name, from: 'Select projects'
       fill_in 'file-path', with: '.gitlab-ci.yml'
     end
-    click_button _('Update via merge request')
+    click_button _('Configure with a merge request')
 
     expect(page).to have_current_path(project_merge_request_path(policy_management_project, 1))
   end
 
   it "fails validation for an invalid policy and stays on the page" do
     fill_in _('Name'), with: 'Run custom pipeline jobs'
-    click_button _('Update via merge request')
+    click_button _('Configure with a merge request')
     expect(page).to have_current_path(path_to_specific_policy_editor)
     expect(page).to have_text(_('Invalid policy YAML'))
   end

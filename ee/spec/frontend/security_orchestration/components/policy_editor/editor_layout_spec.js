@@ -108,7 +108,7 @@ describe('EditorLayout component', () => {
     it('does display the correct save button text when creating a new policy', () => {
       const saveButton = findSavePolicyButton();
       expect(saveButton.exists()).toBe(true);
-      expect(saveButton.text()).toBe('Create policy');
+      expect(saveButton.text()).toBe('Configure with a merge request');
     });
 
     it('emits when the save button is clicked', () => {
@@ -124,13 +124,6 @@ describe('EditorLayout component', () => {
       expect(findRuleModeSection().exists()).toBe(false);
       expect(findYamlModeSection().exists()).toBe(true);
       expect(wrapper.emitted('update-editor-mode')).toStrictEqual([[EDITOR_MODE_YAML]]);
-    });
-
-    it('does display custom save button text', () => {
-      const saveButton = findSavePolicyButton();
-      expect(saveButton.exists()).toBe(true);
-      expect(saveButton.attributes('disabled')).toBe(undefined);
-      expect(saveButton.text()).toBe('Create policy');
     });
   });
 
@@ -229,14 +222,6 @@ describe('EditorLayout component', () => {
   });
 
   describe('custom behavior', () => {
-    it('displays the custom save button text when it is passed in', async () => {
-      const customSaveButtonText = 'Custom Text';
-      factory({ propsData: { customSaveButtonText } });
-      await nextTick();
-      expect(findSavePolicyButton().exists()).toBe(true);
-      expect(findSavePolicyButton().text()).toBe(customSaveButtonText);
-    });
-
     it('enables the save button tooltip when "disableTooltip" is false', async () => {
       const customSaveTooltipText = 'Custom Test';
       factory({ propsData: { customSaveTooltipText, disableTooltip: false } });

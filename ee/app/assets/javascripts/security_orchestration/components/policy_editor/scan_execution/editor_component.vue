@@ -57,7 +57,6 @@ export default {
     CONDITIONS_LABEL,
     CONDITION_SECTION_DISABLE_ERROR,
     PARSING_ERROR_MESSAGE,
-    createMergeRequest: __('Configure with a merge request'),
     notOwnerButtonText: __('Learn more'),
     notOwnerDescription: s__(
       'SecurityOrchestration|Scan execution policies can only be created by project owners.',
@@ -307,7 +306,6 @@ export default {
 <template>
   <editor-layout
     v-if="!disableScanPolicyUpdate"
-    :custom-save-button-text="$options.i18n.createMergeRequest"
     :is-editing="isEditing"
     :is-removing-policy="isDeleting"
     :is-updating-policy="isCreating"

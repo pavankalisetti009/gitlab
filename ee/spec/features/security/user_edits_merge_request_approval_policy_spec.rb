@@ -35,7 +35,7 @@ RSpec.describe "User edits merge request approval policy", :js, feature_category
 
       fill_in _('Name'), with: ''
 
-      click_button _('Configure with a merge request')
+      click_button _('Update via merge request')
 
       expect(page).to have_content('Empty policy name')
     end

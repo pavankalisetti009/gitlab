@@ -34,7 +34,6 @@ export default {
     CONDITIONS_LABEL,
     PARSING_ERROR_MESSAGE,
     notOwnerButtonText: __('Learn more'),
-    createMergeRequest: s__('SecurityOrchestration|Update via merge request'),
     configurationTitle: s__('SecurityOrchestration|Additional configuration'),
   },
   components: {
@@ -221,7 +220,6 @@ export default {
 <template>
   <editor-layout
     v-if="!disableScanPolicyUpdate"
-    :custom-save-button-text="$options.i18n.createMergeRequest"
     :is-editing="isEditing"
     :is-removing-policy="isDeleting"
     :is-updating-policy="isCreating"
