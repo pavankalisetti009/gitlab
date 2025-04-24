@@ -58,6 +58,13 @@ module Types
         description: 'Pipeline Execution Policies of the compliance framework.',
         resolver: ::Resolvers::ComplianceManagement::SecurityPolicies::PipelineExecutionPolicyResolver
 
+      field :pipeline_execution_schedule_policies,
+        ::Types::SecurityOrchestration::PipelineExecutionSchedulePolicyType.connection_type,
+        calls_gitaly: true,
+        null: true,
+        description: 'Pipeline Execution Schedule Policies of the compliance framework.',
+        resolver: ::Resolvers::SecurityOrchestration::PipelineExecutionSchedulePolicyResolver
+
       field :compliance_requirements,
         ::Types::ComplianceManagement::ComplianceRequirementType.connection_type,
         null: true,

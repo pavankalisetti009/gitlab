@@ -26,7 +26,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
       security_dashboard_path iterations iteration_cadences repository_size_excess actual_repository_size_limit
       code_coverage_summary api_fuzzing_ci_configuration corpuses path_locks incident_management_escalation_policies
       incident_management_escalation_policy vulnerability_management_policies
-      scan_execution_policies pipeline_execution_policies approval_policies
+      scan_execution_policies pipeline_execution_policies pipeline_execution_schedule_policies approval_policies
       security_policy_project security_training_urls vulnerability_images only_allow_merge_if_all_status_checks_passed
       security_policy_project_linked_projects security_policy_project_linked_namespaces
       dependencies merge_requests_disable_committers_approval has_jira_vulnerability_issue_creation_enabled

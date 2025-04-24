@@ -230,6 +230,13 @@ module EE
           description: 'Pipeline Execution Policies of the project.',
           resolver: ::Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
 
+        field :pipeline_execution_schedule_policies,
+          ::Types::SecurityOrchestration::PipelineExecutionSchedulePolicyType.connection_type,
+          calls_gitaly: true,
+          null: true,
+          description: 'Pipeline Execution Schedule Policies of the namespace.',
+          resolver: ::Resolvers::SecurityOrchestration::PipelineExecutionSchedulePolicyResolver
+
         field :scan_execution_policies,
           ::Types::SecurityOrchestration::ScanExecutionPolicyType.connection_type,
           calls_gitaly: true,

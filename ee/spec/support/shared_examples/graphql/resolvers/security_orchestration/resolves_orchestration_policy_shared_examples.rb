@@ -22,7 +22,7 @@ RSpec.shared_examples 'as an orchestration policy' do
       end
 
       it 'returns empty collection' do
-        expect(resolve_scan_policies).to be_empty
+        is_expected.to be_empty
       end
     end
 
@@ -37,13 +37,13 @@ RSpec.shared_examples 'as an orchestration policy' do
         end
 
         it 'returns scan execution policies' do
-          expect(resolve_scan_policies).to eq(expected_resolved)
+          is_expected.to eq(expected_resolved)
         end
       end
 
       context 'when user is unauthorized' do
         it 'returns empty collection' do
-          expect(resolve_scan_policies).to be_empty
+          is_expected.to be_empty
         end
       end
     end
