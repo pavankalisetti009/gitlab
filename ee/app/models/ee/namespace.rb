@@ -349,10 +349,11 @@ module EE
     def actual_repository_size_limit
       return repository_size_limit if repository_size_limit.present?
 
-      setting_limit = ::Gitlab::CurrentSettings.repository_size_limit
-      return setting_limit unless ::Feature.enabled?(:plan_limits_repository_size, self)
+      settings_limit = ::Gitlab::CurrentSettings.repository_size_limit
 
-      actual_plan.actual_limits.repository_size || setting_limit
+      return settings_limit unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
+      actual_plan.actual_limits.repository_size || settings_limit
     end
 
     ##
