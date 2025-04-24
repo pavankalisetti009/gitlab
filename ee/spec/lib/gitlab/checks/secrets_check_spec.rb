@@ -134,39 +134,4 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
       end
     end
   end
-
-  # Most of the shared examples exercise build_payload normally, but this tests it specifically for
-  # a situation where the data is not a valid utf8 string after being forced into one.
-  # Remove this if refactoring the shared exazmples makes this easier through testing public methods
-  describe '#build_payload' do
-    context 'when data has invalid encoding' do
-      let(:datum_id) { 'test-blob-id' }
-      let(:datum_offset) { 1 }
-      let(:original_encoding) { 'ASCII-8BIT' }
-
-      let(:data_content) { +'encoded string' }
-
-      let(:invalid_datum) do
-        {
-          id: datum_id,
-          data: data_content,
-          offset: datum_offset
-        }
-      end
-
-      it 'returns nil and logs a warning' do
-        expect(data_content).to receive(:encoding).and_return(original_encoding)
-        expect(data_content).to receive(:dup).and_return(data_content)
-        expect(data_content).to receive(:force_encoding).and_return(data_content)
-        expect(data_content).to receive(:valid_encoding?).and_return(false)
-
-        expect(secret_detection_logger).to receive(:warn)
-          .with({ "message" => format(log_messages[:invalid_encoding], { encoding: original_encoding }),
-            "class" => "Gitlab::Checks::SecretsCheck" })
-
-        result = secrets_check.send(:build_payload, invalid_datum)
-        expect(result).to be_nil
-      end
-    end
-  end
 end

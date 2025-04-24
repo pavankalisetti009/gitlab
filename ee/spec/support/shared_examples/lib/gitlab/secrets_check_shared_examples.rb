@@ -189,7 +189,7 @@ RSpec.shared_examples 'diff scan passed' do
   end
 
   it 'gets and parses diffs' do
-    expect_next_instance_of(described_class) do |instance|
+    expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
       expect(instance).to receive(:get_diffs)
         .once
         .and_return([diff_blob])
@@ -246,7 +246,7 @@ end
 RSpec.shared_examples 'processes hunk headers' do
   using RSpec::Parameterized::TableSyntax
 
-  let(:hunk_header_regex) { described_class::HUNK_HEADER_REGEX }
+  let(:hunk_header_regex) { Gitlab::Checks::SecretPushProtection::PayloadProcessor::HUNK_HEADER_REGEX }
 
   context 'with valid hunk headers' do
     where(:hunk_header, :expected_offset) do
@@ -280,7 +280,7 @@ RSpec.shared_examples 'processes hunk headers' do
 
         expected_payload = { id: new_blob_reference, data: 'BASE_URL=https://foo.bar', offset: expected_offset }
 
-        expect_next_instance_of(described_class) do |instance|
+        expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
           expect(instance).to receive(:get_diffs)
             .once
             .and_return([diff_blob])
@@ -331,7 +331,7 @@ RSpec.shared_examples 'processes hunk headers' do
 
         expect(hunk_header).not_to match(hunk_header_regex)
 
-        expect_next_instance_of(described_class) do |instance|
+        expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
           expect(instance).to receive(:get_diffs)
             .once
             .and_return([diff_blob])
@@ -342,7 +342,7 @@ RSpec.shared_examples 'processes hunk headers' do
         expect(logged_messages[:error]).to include(
           hash_including(
             "message" => error_msg,
-            "class" => "Gitlab::Checks::SecretsCheck"
+            "class" => "Gitlab::Checks::SecretPushProtection::PayloadProcessor"
           ),
           hash_including(
             "message" => error_messages[:invalid_input_error],
@@ -372,7 +372,7 @@ RSpec.shared_examples 'processes hunk headers' do
         over_patch_bytes_limit: false
       )
 
-      expect_next_instance_of(described_class) do |instance|
+      expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
         expect(instance).to receive(:get_diffs)
           .once
           .and_return([diff_blob])
@@ -383,7 +383,7 @@ RSpec.shared_examples 'processes hunk headers' do
       expect(logged_messages[:error]).to include(
         hash_including(
           "message" => error_msg,
-          "class" => "Gitlab::Checks::SecretsCheck"
+          "class" => "Gitlab::Checks::SecretPushProtection::PayloadProcessor"
         ),
         hash_including(
           "message" => error_messages[:invalid_input_error],
@@ -437,7 +437,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
   end
 
   it 'gets and parses diffs' do
-    expect_next_instance_of(described_class) do |instance|
+    expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
       expect(instance).to receive(:get_diffs)
         .once
         .and_return([diff_blob])
@@ -552,7 +552,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
       end
 
       it 'gets and parses diffs' do
-        expect_next_instance_of(described_class) do |instance|
+        expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
           expect(instance).to receive(:get_diffs)
             .once
             .and_return([diff_blob])
@@ -569,7 +569,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
       end
 
       it 'scans diffs' do
-        expect_next_instance_of(described_class) do |instance|
+        expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
           expect(instance).to receive(:get_diffs)
             .once
             .and_return([diff_blob])
@@ -619,7 +619,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
       end
 
       it 'gets and parses diffs' do
-        expect_next_instance_of(described_class) do |instance|
+        expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
           expect(instance).to receive(:get_diffs)
             .once
             .and_return([diff_blob])
@@ -636,7 +636,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
       end
 
       it 'scans diffs' do
-        expect_next_instance_of(described_class) do |instance|
+        expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
           expect(instance).to receive(:get_diffs)
             .once
             .and_return([diff_blob])
@@ -1466,7 +1466,7 @@ RSpec.shared_examples 'detects secrets with special characters in diffs' do
     end
 
     it "detects secret in diff containing #{params[:description]}" do
-      expect_next_instance_of(described_class) do |instance|
+      expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
         expect(instance).to receive(:get_diffs)
           .once
           .and_return([diff_blob])
