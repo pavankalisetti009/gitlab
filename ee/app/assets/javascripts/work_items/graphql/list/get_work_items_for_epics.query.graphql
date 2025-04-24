@@ -1,0 +1,157 @@
+#import "~/graphql_shared/fragments/page_info.fragment.graphql"
+#import "~/graphql_shared/fragments/label.fragment.graphql"
+#import "~/graphql_shared/fragments/user.fragment.graphql"
+
+query getWorkItemsForEpics(
+  $excludeProjects: Boolean = false
+  $includeDescendants: Boolean = true
+  $fullPath: ID!
+  $search: String
+  $sort: WorkItemSort
+  $state: IssuableState
+  $assigneeWildcardId: AssigneeWildcardId
+  $assigneeUsernames: [String!]
+  $authorUsername: String
+  $closedAfter: Time
+  $closedBefore: Time
+  $confidential: Boolean
+  $createdAfter: Time
+  $createdBefore: Time
+  $dueAfter: Time
+  $dueBefore: Time
+  $labelName: [String!]
+  $milestoneTitle: [String!]
+  $milestoneWildcardId: MilestoneWildcardId
+  $myReactionEmoji: String
+  $subscribed: SubscriptionStatus
+  $types: [IssueType!]
+  $updatedAfter: Time
+  $updatedBefore: Time
+  $in: [IssuableSearchableField!]
+  $not: NegatedWorkItemFilterInput
+  $or: UnionedWorkItemFilterInput
+  $afterCursor: String
+  $beforeCursor: String
+  $firstPageSize: Int
+  $lastPageSize: Int
+) {
+  group(fullPath: $fullPath) {
+    id
+    name
+    workItems(
+      excludeProjects: $excludeProjects
+      includeDescendants: $includeDescendants
+      search: $search
+      sort: $sort
+      state: $state
+      assigneeUsernames: $assigneeUsernames
+      assigneeWildcardId: $assigneeWildcardId
+      authorUsername: $authorUsername
+      closedAfter: $closedAfter
+      closedBefore: $closedBefore
+      confidential: $confidential
+      createdAfter: $createdAfter
+      createdBefore: $createdBefore
+      dueBefore: $dueBefore
+      dueAfter: $dueAfter
+      labelName: $labelName
+      milestoneTitle: $milestoneTitle
+      milestoneWildcardId: $milestoneWildcardId
+      myReactionEmoji: $myReactionEmoji
+      subscribed: $subscribed
+      types: $types
+      updatedAfter: $updatedAfter
+      updatedBefore: $updatedBefore
+      in: $in
+      not: $not
+      or: $or
+      after: $afterCursor
+      before: $beforeCursor
+      first: $firstPageSize
+      last: $lastPageSize
+    ) {
+      pageInfo {
+        ...PageInfo
+      }
+      nodes {
+        id
+        author {
+          ...User
+        }
+        closedAt
+        userDiscussionsCount
+        confidential
+        createdAt
+        iid
+        namespace {
+          id
+          fullPath
+        }
+        reference(full: true)
+        state
+        title
+        updatedAt
+        webUrl
+        widgets(
+          onlyTypes: [
+            ASSIGNEES
+            LABELS
+            START_AND_DUE_DATE
+            MILESTONE
+            HEALTH_STATUS
+            LINKED_ITEMS
+            AWARD_EMOJI
+          ]
+        ) {
+          type
+          ... on WorkItemWidgetAssignees {
+            assignees {
+              nodes {
+                ...User
+              }
+            }
+          }
+          ... on WorkItemWidgetLabels {
+            labels {
+              nodes {
+                ...Label
+              }
+            }
+          }
+          ... on WorkItemWidgetStartAndDueDate {
+            dueDate
+            startDate
+          }
+          ... on WorkItemWidgetMilestone {
+            milestone {
+              id
+              dueDate
+              startDate
+              title
+              webPath
+            }
+          }
+          ... on WorkItemWidgetHealthStatus {
+            healthStatus
+          }
+          ... on WorkItemWidgetLinkedItems {
+            linkedItems {
+              nodes {
+                linkId
+                linkType
+              }
+            }
+          }
+          ... on WorkItemWidgetAwardEmoji {
+            upvotes
+            downvotes
+          }
+        }
+        workItemType {
+          id
+          name
+        }
+      }
+    }
+  }
+}
