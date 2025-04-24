@@ -353,10 +353,6 @@ module EE
         enable :read_runner
       end
 
-      rule { admin_custom_role_enables_read_admin_dashboard }.policy do
-        enable :read_member_access_request
-      end
-
       rule { admin_custom_role_enables_read_admin_cicd }.policy do
         enable :read_project_metadata
       end
