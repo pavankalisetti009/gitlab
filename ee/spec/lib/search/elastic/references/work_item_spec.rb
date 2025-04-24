@@ -7,9 +7,20 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
   let_it_be(:group) { create(:group, parent: parent_group) }
   let_it_be(:label) { create(:group_label, group: group) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:work_item) { create(:work_item, :opened, labels: [label], namespace: group) }
-  let_it_be(:user_work_item) { create(:work_item, :opened, labels: [label], namespace: create(:namespace)) }
-  let_it_be(:project_work_item) { create(:work_item, :opened, labels: [label], project: project) }
+  let_it_be(:user_project) { create(:project, namespace: create(:namespace)) }
+  let_it_be(:work_item) do
+    create(:work_item, :opened, labels: [label], namespace: group, milestone: create(:milestone, group: group))
+  end
+
+  let_it_be_with_reload(:user_work_item) do
+    milestone = create(:milestone, project: user_project)
+    create(:work_item, :opened, labels: [label], milestone: milestone,
+      project: user_project)
+  end
+
+  let_it_be(:project_work_item) do
+    create(:work_item, :opened, labels: [label], project: project, milestone: create(:milestone, project: project))
+  end
 
   before do
     allow(Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(true)
@@ -21,7 +32,7 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         project_id: object.reload.project_id,
         id: object.id,
         iid: object.iid,
-        root_namespace_id: object.namespace_id,
+        root_namespace_id: object.namespace.root_ancestor.id,
         hashed_root_namespace_id: object.namespace.hashed_root_namespace_id,
         created_at: object.created_at,
         updated_at: object.updated_at,
@@ -38,7 +49,9 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         due_date: object.due_date,
         traversal_ids: "#{object.namespace.id}-",
         schema_version: described_class::SCHEMA_VERSION,
-        type: 'work_item'
+        type: 'work_item',
+        milestone_title: object.milestone&.title,
+        milestone_id: object.milestone_id
       }
     end
 
@@ -46,7 +59,14 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
 
     describe 'user namespace work item' do
       let(:object) { user_work_item }
-      let(:expected_hash) { base_work_item_hash }
+      let(:expected_hash) do
+        base_work_item_hash.merge(
+          archived: object.project.archived?,
+          traversal_ids: object.namespace.elastic_namespace_ancestry,
+          project_visibility_level: object.project.visibility_level,
+          issues_access_level: object.project.issues_access_level
+        )
+      end
 
       it 'serializes work_item as a hash' do
         expect(indexed_json).to match(expected_hash)
@@ -64,8 +84,34 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         )
       end
 
-      it 'serializes work_item as a hash' do
-        expect(indexed_json).to match(expected_hash)
+      context 'when add_work_item_milestone_data migration has finished' do
+        context 'when milestone is present' do
+          it 'serializes work_item as a hash' do
+            expect(indexed_json).to match(expected_hash)
+          end
+        end
+
+        context 'when milestone is missing' do
+          let_it_be(:work_item_without_milestone) do
+            create(:work_item, :opened, labels: [label], namespace: group)
+          end
+
+          let(:object) { work_item_without_milestone }
+
+          it 'serializes work_item as a hash without milestone references' do
+            expect(indexed_json).to match(expected_hash.except(:milestone_title, :milestone_id))
+          end
+        end
+      end
+
+      context 'when add_work_item_milestone_data migration has not finished' do
+        before do
+          set_elasticsearch_migration_to(:add_work_item_milestone_data, including: false)
+        end
+
+        it 'serializes work_item as a hash without milestone references' do
+          expect(indexed_json).to match(expected_hash.except(:milestone_title, :milestone_id))
+        end
       end
     end
 

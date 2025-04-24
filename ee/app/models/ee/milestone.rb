@@ -9,6 +9,10 @@ module EE
       include Elastic::UpdateAssociatedEpicsOnDateChange
 
       has_many :boards
+
+      elastic_index_dependant_association :issues,
+        on_change: :title,
+        depends_on_finished_migration: :add_work_item_milestone_data
     end
 
     class_methods do

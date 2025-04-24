@@ -6,8 +6,21 @@ module Search
       class WorkItem < Reference
         include Search::Elastic::Concerns::DatabaseReference
 
-        SCHEMA_VERSION = 25_08
+        SCHEMA_VERSION = 25_15
         NOTES_MAXIMUM_BYTES = 512.kilobytes
+        DEFAULT_INDEX_ATTRIBUTES = %i[
+          id
+          iid
+          created_at
+          updated_at
+          title
+          description
+          author_id
+          due_date
+          confidential
+          project_id
+          state
+        ].freeze
 
         override :serialize
         def self.serialize(record)
@@ -83,54 +96,66 @@ module Search
         def build_indexed_json(target)
           data = {}
 
-          [
-            :id,
-            :iid,
-            :created_at,
-            :updated_at,
-            :title,
-            :description,
-            :author_id,
-            :due_date,
-            :confidential,
-            :project_id,
-            :state
-          ].each do |attribute|
+          DEFAULT_INDEX_ATTRIBUTES.each do |attribute|
             data[attribute.to_s] = safely_read_attribute_for_elasticsearch(target, attribute)
           end
 
-          data['label_ids'] = target.label_ids.map(&:to_s)
-          data['hidden'] = target.hidden?
-          data['root_namespace_id'] = target.namespace.root_ancestor.id
-          data['traversal_ids'] = target.namespace.elastic_namespace_ancestry
-          data['hashed_root_namespace_id'] = target.namespace.hashed_root_namespace_id
-          data['work_item_type_id'] = target.work_item_type_id
+          data.merge!(build_extra_data(target))
+          data.merge!(build_namespace_data(target))
+          data.merge!(build_project_data(target))
+          data.merge!(build_milestone_data(target))
 
           if ::Feature.enabled?(:search_work_items_index_notes, ::Feature.current_request)
             data = populate_notes(target, data)
           end
 
-          data['upvotes'] = target.upvotes_count
+          data.stringify_keys
+        end
 
-          if target.namespace.group_namespace?
-            data['namespace_visibility_level'] = target.namespace.visibility_level
-            data['namespace_id'] = target.namespace_id
-          end
+        def build_extra_data(target)
+          {
+            label_ids: target.label_ids.map(&:to_s),
+            hidden: target.hidden?,
+            root_namespace_id: target.namespace.root_ancestor.id,
+            traversal_ids: target.namespace.elastic_namespace_ancestry,
+            hashed_root_namespace_id: target.namespace.hashed_root_namespace_id,
+            work_item_type_id: target.work_item_type_id,
+            assignee_id: safely_read_attribute_for_elasticsearch(target, :issue_assignee_user_ids),
+            upvotes: target.upvotes_count,
+            # Schema version. The format is Date.today.strftime('%y_%w')
+            # Please update if you're changing the schema of the document
+            schema_version: SCHEMA_VERSION,
+            type: model_klass.es_type
+          }
+        end
 
-          if target.project.present?
-            data['archived'] = target.project.archived?
-            data['project_visibility_level'] = target.project.visibility_level
-            data['issues_access_level'] = target.project.issues_access_level
-          end
+        def build_namespace_data(target)
+          return {} unless target.namespace.group_namespace?
 
-          data['assignee_id'] = safely_read_attribute_for_elasticsearch(target, :issue_assignee_user_ids)
+          {
+            namespace_visibility_level: target.namespace.visibility_level,
+            namespace_id: target.namespace_id
+          }
+        end
 
-          # Schema version. The format is Date.today.strftime('%y_%m')
-          # Please update if you're changing the schema of the document
-          data['schema_version'] = SCHEMA_VERSION
-          data['type'] = model_klass.es_type
+        def build_project_data(target)
+          return {} unless target.project.present?
 
-          data
+          {
+            archived: target.project.archived?,
+            project_visibility_level: target.project.visibility_level,
+            issues_access_level: target.project.issues_access_level
+          }
+        end
+
+        def build_milestone_data(target)
+          return {} unless target.milestone.present? &&
+            ::Elastic::DataMigrationService.migration_has_finished?(:add_work_item_milestone_data)
+
+          {
+            milestone_title: target.milestone&.title,
+            milestone_id: target.milestone_id
+          }
         end
       end
     end

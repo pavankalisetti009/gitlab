@@ -43,6 +43,7 @@ module EE
           :assignees,
           :labels,
           :namespace,
+          :milestone,
           project: :project_feature
         )
 
