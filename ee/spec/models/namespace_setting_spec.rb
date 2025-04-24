@@ -214,7 +214,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
     end
 
     describe 'duo_core_features_enabled' do
-      describe 'new record' do
+      context 'with a new record' do
         it 'returns nil as default value' do
           expect(settings.duo_core_features_enabled).to be_nil
         end
@@ -226,7 +226,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         end
       end
 
-      describe 'existing record' do
+      context 'with an existing record' do
         it 'accepts only boolean values for update' do
           settings.update!(duo_core_features_enabled: true)
           expect(settings).to be_valid
@@ -248,7 +248,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
     end
 
     describe 'duo_nano_features_enabled' do
-      describe 'new record' do
+      context 'with a new record' do
         it 'returns nil as default value' do
           expect(settings.duo_nano_features_enabled).to be_nil
         end
@@ -260,7 +260,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         end
       end
 
-      describe 'existing record' do
+      context 'with an existing record' do
         it 'accepts only boolean values for update' do
           settings.update!(duo_nano_features_enabled: true)
           expect(settings).to be_valid
@@ -312,7 +312,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         stub_licensed_features(group_forking_protection: true)
       end
 
-      context 'group with no associated saml provider' do
+      context 'when group has no associated saml provider' do
         before do
           setting.update!(prevent_forking_outside_group: true)
         end
@@ -322,7 +322,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         end
       end
 
-      context 'group with associated saml provider' do
+      context 'when group has associated saml provider' do
         before do
           stub_licensed_features(group_saml: true, group_forking_protection: true)
         end
@@ -493,7 +493,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
     end
   end
 
-  context 'validating new_user_signup_cap' do
+  describe 'validating new_user_signup_cap' do
     using RSpec::Parameterized::TableSyntax
 
     where(:feature_available, :seat_control_old, :old_value, :seat_control_new, :new_value, :expectation) do
@@ -564,7 +564,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
     end
   end
 
-  context 'hooks related to group user cap update' do
+  describe 'hooks related to group user cap update' do
     let(:group) { create(:group) }
     let(:settings) { group.namespace_settings }
 
@@ -670,7 +670,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
       end
     end
 
-    context 'three configurations of MR checks' do
+    context 'with three configurations of MR checks' do
       let_it_be_with_reload(:group) { create(:group) }
       let_it_be_with_reload(:subgroup) { create(:group, parent: group) }
       let_it_be_with_reload(:subsubgroup) { create(:group, parent: subgroup) }
