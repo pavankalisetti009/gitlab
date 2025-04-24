@@ -69,38 +69,39 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
             expect(json_response['dependencies']).to match_array(expected)
           end
 
+          # rubocop:disable RSpec/PendingWithoutReason -- TODO:
           # We unfortunately have an unavoidable N+1 query for now
           # because of the dependency_paths method in Sbom::Occurrence model
           # So skipping this test for now
-          # it 'avoids N+1 queries' do
-          #   control_count = ActiveRecord::QueryRecorder
-          #     .new { get project_dependencies_path(project, **params, format: :json) }.count
-          #   create_list(:sbom_occurrence, 2, project: project)
+          xit 'avoids N+1 queries' do
+            control_count = ActiveRecord::QueryRecorder
+              .new { get project_dependencies_path(project, **params, format: :json) }.count
+            create_list(:sbom_occurrence, 2, project: project)
 
-          #   expect { get project_dependencies_path(project, **params, format: :json) }
-          #     .not_to exceed_query_limit(control_count)
-          # end
+            expect { get project_dependencies_path(project, **params, format: :json) }
+              .not_to exceed_query_limit(control_count)
+          end
+          # rubocop:enable RSpec/PendingWithoutReason
 
           shared_examples 'it can filter dependencies' do |filter_under_test|
             subject(:show_dependency_list) { json_response['dependencies'].map(&matcher) }
 
             let(:matcher) { ->(d) { d['occurrence_id'] } }
             let(:unfiltered_result_ids) { unfiltered_results.map(&:id) }
+            let(:params) { { filter_under_test => filter_value } }
 
             context 'when the filter has a valid param' do
-              let(:params) { { filter_under_test => filter_value } }
-
               it { is_expected.to match_array(expected_results.map(&:id)) }
             end
 
             context 'when the filter is blank' do
-              let(:params) { { filter_under_test => [] } }
+              let(:params) { super().transform_values { [] } }
 
               it { is_expected.to match_array(unfiltered_result_ids) }
             end
 
             context 'when the filter has invalid input' do
-              let(:params) { { filter_under_test => nil } }
+              let(:params) { super().transform_values { nil } }
 
               it { is_expected.to match_array(unfiltered_result_ids) }
             end
@@ -134,15 +135,61 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
             end
           end
 
-          context 'with component_version_id filter' do
-            it_behaves_like 'it can filter dependencies', :component_version_ids do
-              let(:filter_value) { [occurrences.last.component_version_id] }
-              let(:expected_results) { [occurrences.last] }
+          context 'with component_versions filter' do
+            context 'when filtered by component_versions without component_names' do
+              let(:params) do
+                {
+                  component_versions: [occurrences.first.component_version.version]
+                }
+              end
+
+              it 'returns an error' do
+                expect(response).to have_gitlab_http_status(:unprocessable_entity)
+                expect(json_response['message']).to eq(
+                  format(
+                    _('Single component can be selected for component filter to be able to filter by version.')
+                  )
+                )
+              end
             end
 
-            it_behaves_like 'it can filter dependencies', :not do
-              let(:filter_value) { { component_version_ids: [occurrences.last.component_version_id] } }
-              let(:expected_results) { occurrences - [occurrences.last] }
+            context 'when negated filtered by component_versions without component_names' do
+              let(:params) do
+                {
+                  not: { component_versions: [occurrences.first.component_version.version] }
+                }
+              end
+
+              it 'returns an error' do
+                expect(response).to have_gitlab_http_status(:unprocessable_entity)
+                expect(json_response['message']).to eq(
+                  format(
+                    _('Single component can be selected for component filter to be able to filter by version.')
+                  )
+                )
+              end
+            end
+
+            it_behaves_like 'it can filter dependencies' do
+              let(:expected_results) { [occurrences.last] }
+
+              let(:params) do
+                {
+                  component_names: [occurrences.last.component.name],
+                  component_versions: [occurrences.last.component_version.version]
+                }
+              end
+            end
+
+            it_behaves_like 'it can filter dependencies' do
+              let(:params) do
+                {
+                  component_names: [occurrences.last.component.name],
+                  not: { component_versions: [occurrences.last.component_version.version] }
+                }
+              end
+
+              let(:expected_results) { [] }
             end
           end
 

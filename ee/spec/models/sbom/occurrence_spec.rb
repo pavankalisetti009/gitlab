@@ -670,6 +670,15 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     end
   end
 
+  describe '.for_project' do
+    let_it_be(:occurrence_1) { create(:sbom_occurrence) }
+    let_it_be(:occurrence_2) { create(:sbom_occurrence) }
+
+    it 'returns records filtered by project_id' do
+      expect(described_class.for_project(occurrence_1.project)).to eq([occurrence_1])
+    end
+  end
+
   describe 'group related scopes' do
     let_it_be(:parent_group) { create(:group) }
     let_it_be(:child_group_1) { create(:group, parent: parent_group) }

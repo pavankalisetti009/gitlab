@@ -42,7 +42,7 @@ module Sbom
       filter_by_component_names
       filter_by_component_ids
       filter_by_licences
-      filter_by_component_version_ids
+      filter_by_component_versions
       sort
     end
 
@@ -65,7 +65,7 @@ module Sbom
     end
 
     def filter_by_component_names
-      return if params[:component_names].blank? || params[:component_ids]
+      return if params[:component_names].blank?
 
       @collection = @collection.filter_by_component_names(params[:component_names])
     end
@@ -82,16 +82,17 @@ module Sbom
       @collection = @collection.by_licenses(params[:licenses])
     end
 
-    def filter_by_component_version_ids
+    def filter_by_component_versions
+      return if version_filtering_disabled?
+
       negated_filter = params[:not]
 
-      return if Feature.disabled?(:version_filtering_on_project_level_dependency_list, dependable) ||
-        (params[:component_version_ids].blank? && negated_filter.nil?)
+      return if params[:component_versions].blank? && negated_filter.nil?
 
-      if params[:component_version_ids]
-        @collection = @collection.filter_by_component_version_ids(params[:component_version_ids])
-      elsif negated_filter && negated_filter[:component_version_ids]
-        @collection = @collection.filter_by_non_component_version_ids(negated_filter[:component_version_ids])
+      if params[:component_versions]
+        @collection = @collection.filter_by_component_versions(params[:component_versions])
+      elsif negated_filter && negated_filter[:component_versions]
+        @collection = @collection.filter_by_non_component_versions(negated_filter[:component_versions])
       end
     end
 
@@ -116,7 +117,8 @@ module Sbom
 
     def occurrences
       return Sbom::Occurrence.unarchived if organization?
-      return dependable.sbom_occurrences if params[:project_ids].blank? || project?
+      return dependable.sbom_occurrences.for_project(dependable) if project?
+      return dependable.sbom_occurrences if params[:project_ids].blank?
 
       project_ids = []
 
@@ -144,6 +146,14 @@ module Sbom
 
     def project?
       dependable.is_a?(::Project)
+    end
+
+    def version_filtering_disabled?
+      if project?
+        Feature.disabled?(:version_filtering_on_project_level_dependency_list, dependable)
+      elsif dependable.is_a?(::Group)
+        Feature.disabled?(:version_filtering_on_group_level_dependency_list, dependable)
+      end
     end
   end
 end

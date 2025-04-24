@@ -13,10 +13,13 @@ module Projects
     end
 
     before_action :authorize_read_dependency_list!
+    before_action :validate_component_versions!, only: :index
 
     feature_category :dependency_management
     urgency :low
     track_govern_activity 'dependencies', :index
+
+    COMPONENT_NAMES_LIMIT_FOR_VERSION_FILTERING = 1
 
     def index
       respond_to do |format|
@@ -81,8 +84,8 @@ module Projects
         package_managers: [],
         component_names: [],
         source_types: [],
-        component_version_ids: [],
-        not: { component_version_ids: [] }
+        component_versions: [],
+        not: { component_versions: [] }
       ).with_defaults(source_types: default_source_type_filters)
     end
 
@@ -105,6 +108,27 @@ module Projects
         end
         format.json do
           render_403
+        end
+      end
+    end
+
+    def validate_component_versions!
+      return unless dependency_list_params[:component_versions] || (
+        dependency_list_params[:not] && dependency_list_params[:not][:component_versions])
+
+      return if dependency_list_params.fetch(:component_names, [])
+        .size == COMPONENT_NAMES_LIMIT_FOR_VERSION_FILTERING
+
+      render_error(
+        :unprocessable_entity,
+        format(_('Single component can be selected for component filter to be able to filter by version.'))
+      )
+    end
+
+    def render_error(status, message)
+      respond_to do |format|
+        format.json do
+          render json: { message: message }, status: status
         end
       end
     end
