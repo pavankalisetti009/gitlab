@@ -2,13 +2,17 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Search::Elastic::References::Embedding, feature_category: :global_search do
+RSpec.describe ::Search::Elastic::References::Embedding, :elastic_helpers, feature_category: :global_search do
   let_it_be(:project) { create(:project) }
   let_it_be(:issue) { create(:issue, project: project) }
   let(:routing) { issue.es_parent }
   let(:embedding_ref) { described_class.new(Issue, issue.id, routing) }
   let(:embedding_ref_serialized) { "Embedding|Issue|#{issue.id}|#{routing}" }
   let(:work_item_embedding_ref) { described_class.new(WorkItem, issue.id, routing) }
+
+  before do
+    allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(false)
+  end
 
   it 'inherits from Reference' do
     expect(described_class.ancestors).to include(Search::Elastic::Reference)
@@ -91,6 +95,7 @@ RSpec.describe ::Search::Elastic::References::Embedding, feature_category: :glob
   describe '#as_indexed_json' do
     let(:embedding_service) { instance_double(Gitlab::Llm::VertexAi::Embeddings::Text) }
     let(:mock_embedding) { [1, 2, 3] }
+    let(:model) { 'text-embedding-005' }
 
     before do
       allow(Gitlab::Llm::VertexAi::Embeddings::Text).to receive(:new).and_return(embedding_service)
@@ -98,38 +103,90 @@ RSpec.describe ::Search::Elastic::References::Embedding, feature_category: :glob
     end
 
     it 'returns the embedding and its version' do
-      expect(embedding_ref.as_indexed_json).to eq({ embedding: mock_embedding, embedding_version: 0, routing: routing })
+      expect(work_item_embedding_ref.as_indexed_json).to eq({ embedding_0: mock_embedding, routing: routing })
     end
 
     it 'calls embedding API' do
-      content = "issue with title '#{issue.title}' and description '#{issue.description}'"
-      tracking_context = { action: 'issue_embedding' }
+      content = "work item of type 'Issue' with title '#{issue.title}' and description '#{issue.description}'"
+      tracking_context = { action: 'work_item_embedding' }
       primitive = 'semantic_search_issue'
 
       expect(Gitlab::Llm::VertexAi::Embeddings::Text)
         .to receive(:new)
-        .with(content, user: nil, tracking_context: tracking_context, unit_primitive: primitive)
+        .with(content, user: nil, tracking_context: tracking_context, unit_primitive: primitive, model: nil)
         .and_return(embedding_service)
 
-      embedding_ref.as_indexed_json
+      work_item_embedding_ref.as_indexed_json
     end
 
     context 'when model_klass is work_item' do
+      let(:content) { "work item of type 'Issue' with title '#{issue.title}' and description '#{issue.description}'" }
+      let(:tracking_context) { { action: 'work_item_embedding' } }
+      let(:primitive) { 'semantic_search_issue' }
+
       it 'returns the embedding and its version' do
         expect(work_item_embedding_ref.as_indexed_json).to eq({ embedding_0: mock_embedding, routing: routing })
       end
 
       it 'calls embedding API' do
-        content = "work item of type 'Issue' with title '#{issue.title}' and description '#{issue.description}'"
-        tracking_context = { action: 'work_item_embedding' }
-        primitive = 'semantic_search_issue'
-
         expect(Gitlab::Llm::VertexAi::Embeddings::Text)
           .to receive(:new)
-          .with(content, user: nil, tracking_context: tracking_context, unit_primitive: primitive)
+          .with(content, user: nil, tracking_context: tracking_context, unit_primitive: primitive, model: nil)
           .and_return(embedding_service)
 
-        work_item_embedding_ref.as_indexed_json
+        expect(work_item_embedding_ref.as_indexed_json.keys).to match_array([:routing, :embedding_0])
+      end
+
+      context 'when embedding_1 migration is added to Elasticsearch' do
+        before do
+          set_elasticsearch_migration_to :add_embedding1_to_work_items_elastic, including: true
+        end
+
+        it 'calls embedding API with custom model' do
+          expect(Gitlab::Llm::VertexAi::Embeddings::Text)
+            .to receive(:new)
+            .with(content, user: nil, tracking_context: tracking_context, unit_primitive: primitive, model: model)
+            .and_return(embedding_service)
+
+          expect(work_item_embedding_ref.as_indexed_json.keys).to match_array([:routing, :embedding_0, :embedding_1])
+        end
+
+        context 'when backfill_work_items_embeddings1 migration is complete' do
+          before do
+            set_elasticsearch_migration_to :backfill_work_items_embeddings1, including: true
+          end
+
+          it 'does not set embedding_0' do
+            expect(work_item_embedding_ref.as_indexed_json.keys).to match_array([:routing, :embedding_1])
+          end
+        end
+      end
+
+      context 'when embedding_1 migration is added to OpenSearch' do
+        before do
+          allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
+            .with(:add_embedding1_to_work_items_open_search).and_return(true)
+        end
+
+        it 'calls embedding API with custom model' do
+          expect(Gitlab::Llm::VertexAi::Embeddings::Text)
+            .to receive(:new)
+            .with(content, user: nil, tracking_context: tracking_context, unit_primitive: primitive, model: model)
+            .and_return(embedding_service)
+
+          expect(work_item_embedding_ref.as_indexed_json.keys).to match_array([:routing, :embedding_0, :embedding_1])
+        end
+
+        context 'when backfill_work_items_embeddings1 migration is complete' do
+          before do
+            allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
+              .with(:backfill_work_items_embeddings1).and_return(true)
+          end
+
+          it 'does not set embedding_0' do
+            expect(work_item_embedding_ref.as_indexed_json.keys).to match_array([:routing, :embedding_1])
+          end
+        end
       end
     end
 
@@ -148,7 +205,8 @@ RSpec.describe ::Search::Elastic::References::Embedding, feature_category: :glob
 
       it 'raises a ReferenceFailure error' do
         message = "Failed to generate embedding: Rate limited endpoint 'vertex_embeddings_api' is throttled"
-        expect { embedding_ref.as_indexed_json }.to raise_error(::Search::Elastic::Reference::ReferenceFailure, message)
+        expect { work_item_embedding_ref.as_indexed_json }
+          .to raise_error(::Search::Elastic::Reference::ReferenceFailure, message)
       end
     end
 
@@ -159,7 +217,8 @@ RSpec.describe ::Search::Elastic::References::Embedding, feature_category: :glob
 
       it 'raises a ReferenceFailure error' do
         message = 'Failed to generate embedding: error'
-        expect { embedding_ref.as_indexed_json }.to raise_error(::Search::Elastic::Reference::ReferenceFailure, message)
+        expect { work_item_embedding_ref.as_indexed_json }
+          .to raise_error(::Search::Elastic::Reference::ReferenceFailure, message)
       end
     end
   end

@@ -116,6 +116,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       allow(embedding_service).to receive(:execute).and_return(mock_embedding)
       allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
       allow(helper).to receive(:vectors_supported?).and_return(true)
+      allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(false)
     end
 
     context 'when we cannot generate embeddings' do
@@ -145,7 +146,12 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         allow(helper).to receive(:vectors_supported?).with(:opensearch).and_return(true)
       end
 
-      it 'add knn query for opensearch' do
+      it 'add knn query for opensearch using the textembedding-gecko@003 model' do
+        model = 'textembedding-gecko@003'
+        expect(Gitlab::Llm::VertexAi::Embeddings::Text).to receive(:new)
+          .with(anything, user: anything, tracking_context: anything, unit_primitive: anything, model: model)
+          .and_return(embedding_service)
+
         query = build
         os_knn_query = {
           knn: {
@@ -156,6 +162,31 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
           }
         }
         expect(query[:query][:bool][:should]).to include(os_knn_query)
+      end
+
+      context 'when embedding_1 field is backfilled' do
+        before do
+          allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
+            .with(:backfill_work_items_embeddings1).and_return(true)
+        end
+
+        it 'adds a knn query for opensearch on the embedding_1 field using the text-embedding-005 model' do
+          model = 'text-embedding-005'
+          expect(Gitlab::Llm::VertexAi::Embeddings::Text).to receive(:new)
+            .with(anything, user: anything, tracking_context: anything, unit_primitive: anything, model: model)
+            .and_return(embedding_service)
+
+          query = build
+          os_knn_query = {
+            knn: {
+              embedding_1: {
+                k: 25,
+                vector: mock_embedding
+              }
+            }
+          }
+          expect(query[:query][:bool][:should]).to include(os_knn_query)
+        end
       end
 
       context 'when simple_query_string is used' do
