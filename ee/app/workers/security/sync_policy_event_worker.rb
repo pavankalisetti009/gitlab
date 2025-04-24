@@ -5,7 +5,7 @@ module Security
     include Gitlab::EventStore::Subscriber
     include Gitlab::Utils::StrongMemoize
 
-    data_consistency :delayed
+    data_consistency :always
     deduplicate :until_executing
     idempotent!
 
@@ -15,20 +15,31 @@ module Security
     # a huge number of projects to reduce the pressure on sidekiq.
     PROJECTS_BATCH_SYNC_DELAY = 10.seconds
     SYNC_SERVICE_DELAY_INTERVAL = 1.minute
-    PROTECTED_BRANCH_EVENTS = [
-      ::Repositories::ProtectedBranchCreatedEvent,
-      ::Repositories::ProtectedBranchDestroyedEvent
-    ].freeze
 
     def handle_event(event)
-      raise ArgumentError, "Unknown event: #{event.class}" unless PROTECTED_BRANCH_EVENTS.include?(event.class)
-
-      sync_rules(event)
+      case event
+      when ::Repositories::ProtectedBranchCreatedEvent, ::Repositories::ProtectedBranchDestroyedEvent
+        sync_rules_for_protected_branch_event(event)
+      when ::Repositories::DefaultBranchChangedEvent
+        sync_rules_for_default_branch_changed_event(event)
+      else
+        raise ArgumentError, "Unknown event: #{event.class}"
+      end
     end
 
     private
 
-    def sync_rules(event)
+    def sync_rules_for_default_branch_changed_event(event)
+      return if event.data[:container_type] != 'Project'
+
+      project = Project.find_by_id(event.data[:container_id])
+      return unless project.licensed_feature_available?(:security_orchestration_policies)
+      return unless use_approval_policy_rules_for_approval_rules(project)
+
+      sync_rules_for_project_from_read_model(project, event)
+    end
+
+    def sync_rules_for_protected_branch_event(event)
       project_or_group = parent(event)
 
       return unless project_or_group

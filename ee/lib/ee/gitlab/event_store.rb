@@ -99,6 +99,8 @@ module EE
 
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchCreatedEvent
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchDestroyedEvent
+          store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::DefaultBranchChangedEvent
+
           store.subscribe ::Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker,
             to: ::MergeRequests::ClosedEvent
           store.subscribe ::Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker,

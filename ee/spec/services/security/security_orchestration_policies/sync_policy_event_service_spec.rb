@@ -164,5 +164,35 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncPolicyEventService, 
         end
       end
     end
+
+    context 'when event is DefaultBranchChangedEvent' do
+      let(:event) do
+        Repositories::DefaultBranchChangedEvent.new(data: { container_id: project.id, container_type: 'Project' })
+      end
+
+      let(:sync_service) do
+        instance_double(Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolicyRulesService)
+      end
+
+      let!(:undeleted_rules) do
+        create_list(:approval_policy_rule, 2, security_policy: security_policy)
+      end
+
+      let!(:deleted_rule) { create(:approval_policy_rule, security_policy: security_policy, rule_index: -1) }
+
+      before do
+        allow(Security::SecurityOrchestrationPolicies::SyncProjectApprovalPolicyRulesService)
+          .to receive(:new)
+          .and_return(sync_service)
+
+        allow(sync_service).to receive(:update_rules)
+      end
+
+      it 'updates all undeleted rules' do
+        execute
+
+        expect(sync_service).to have_received(:update_rules).with(undeleted_rules)
+      end
+    end
   end
 end
