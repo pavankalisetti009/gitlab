@@ -34,7 +34,9 @@ module Admin
         is_saas: ::Gitlab.com?.to_s, # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Will be addressed later when a feature is available
         duo_workflow_settings_path: admin_ai_duo_workflow_settings_path,
         duo_workflow_disable_path: disconnect_admin_ai_duo_workflow_settings_path,
-        redirect_path: admin_gitlab_duo_path
+        duo_self_hosted_path: admin_ai_duo_self_hosted_path,
+        redirect_path: admin_gitlab_duo_path,
+        can_manage_self_hosted_models: can_manage_self_hosted_models?.to_s
       }.merge(duo_add_on_data, duo_amazon_q_add_on_data)
     end
 

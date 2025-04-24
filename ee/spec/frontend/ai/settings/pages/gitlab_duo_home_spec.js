@@ -3,6 +3,7 @@ import { stubComponent } from 'helpers/stub_component';
 import CodeSuggestionsUsage from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage.vue';
 import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
 import DuoSeatUtilizationInfoCard from 'ee/ai/settings/components/duo_seat_utilization_info_card.vue';
+import DuoSelfHostedInfoCard from 'ee/ai/settings/components/duo_self_hosted_info_card.vue';
 import GitlabDuoHome from 'ee/ai/settings/pages/gitlab_duo_home.vue';
 import { DUO_PRO } from 'ee/usage_quotas/code_suggestions/constants';
 
@@ -15,11 +16,12 @@ describe('GitLab Duo Home', () => {
 
   let wrapper;
 
-  const createComponent = ({ isSaaS = true } = {}) => {
+  const createComponent = ({ isSaaS = true, canManageSelfHostedModels = false } = {}) => {
     wrapper = shallowMount(GitlabDuoHome, {
       propsData: {},
       provide: {
         isSaaS,
+        canManageSelfHostedModels,
       },
       stubs: {
         CodeSuggestionsUsage: stubComponent(CodeSuggestionsUsage, {
@@ -38,6 +40,7 @@ describe('GitLab Duo Home', () => {
   const findCodeSuggestionsUsage = () => wrapper.findComponent(CodeSuggestionsUsage);
   const findHealthCheckList = () => wrapper.findComponent(HealthCheckList);
   const findDuoSeatUtilizationInfoCard = () => wrapper.findComponent(DuoSeatUtilizationInfoCard);
+  const findDuoSelfHostedInfoCard = () => wrapper.findComponent(DuoSelfHostedInfoCard);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -59,18 +62,28 @@ describe('GitLab Duo Home', () => {
     });
 
     describe('when isSaaS is true', () => {
-      it('renders HealthCheckList', () => {
+      it('does not render HealthCheckList', () => {
         expect(findHealthCheckList().exists()).toBe(false);
+      });
+
+      it('does not render DuoSelfHostedInfoCard', () => {
+        expect(findDuoSelfHostedInfoCard().exists()).toBe(false);
       });
     });
 
     describe('when isSaaS is false', () => {
-      beforeEach(() => {
+      it('renders HealthCheckList', () => {
         createComponent({ isSaaS: false });
+
+        expect(findHealthCheckList().exists()).toBe(true);
       });
 
-      it('renders HealthCheckList', () => {
-        expect(findHealthCheckList().exists()).toBe(true);
+      describe('when canManageSelfHostedModels is true', () => {
+        it('renders DuoSelfHostedInfoCard', () => {
+          createComponent({ isSaaS: false, canManageSelfHostedModels: true });
+
+          expect(findDuoSelfHostedInfoCard().exists()).toBe(true);
+        });
       });
     });
 
