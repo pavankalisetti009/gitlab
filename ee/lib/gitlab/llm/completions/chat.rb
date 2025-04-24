@@ -160,6 +160,10 @@ module Gitlab
             Gitlab::AiGateway.push_feature_flag(:enable_anthropic_prompt_caching, user)
           end
 
+          if Feature.enabled?(:redirect_v1_chat_request, user)
+            Gitlab::AiGateway.push_feature_flag(:redirect_v1_chat_request, user)
+          end
+
           return if ::CloudConnector.self_managed_cloud_connected?
 
           Gitlab::AiGateway.push_feature_flag(:expanded_ai_logging, user)
