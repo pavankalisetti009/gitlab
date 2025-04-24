@@ -9,3 +9,5 @@ class ReindexWikiToUpdateAnalyzerForContent < Elastic::Migration
     true
   end
 end
+
+ReindexWikiToUpdateAnalyzerForContent.prepend ::Search::Elastic::MigrationObsolete
