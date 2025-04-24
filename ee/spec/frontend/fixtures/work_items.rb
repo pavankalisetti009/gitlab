@@ -29,7 +29,7 @@ RSpec.describe "Work items", '(JavaScript fixtures)', type: :request, feature_ca
     stub_feature_flags(okrs_mvc: true)
   end
 
-  it 'graphql/work_items/namespace_work_item_types.query.graphql.json' do
+  it 'graphql/work_items/group_namespace_work_item_types.query.graphql.json' do
     query = get_graphql_query_as_string(namespace_work_item_types_query_path)
 
     post_graphql(query, current_user: user, variables: { fullPath: group.full_path })
