@@ -807,6 +807,8 @@ RSpec.shared_examples 'migration removes field' do
   let(:migration) { described_class.new(version) }
   let(:klass) { objects.first.class }
   let(:index_name) { klass.__elasticsearch__.index_name }
+  let(:value) { 1 }
+  let(:mapping) { { type: type } }
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -824,12 +826,12 @@ RSpec.shared_examples 'migration removes field' do
   describe '#completed?' do
     context 'when field is present in the mapping' do
       before do
-        add_field_in_mapping!
+        add_field_in_mapping!(mapping)
       end
 
       context 'when some documents have the value for field set' do
         before do
-          add_field_value_to_documents!(3)
+          add_field_value_to_documents!(3, value)
         end
 
         it 'returns false' do
@@ -856,8 +858,8 @@ RSpec.shared_examples 'migration removes field' do
     let(:batch_size) { 2 }
 
     before do
-      add_field_in_mapping!
-      add_field_value_to_documents!(original_target_doc_count)
+      add_field_in_mapping!(mapping)
+      add_field_value_to_documents!(original_target_doc_count, value)
       allow(migration).to receive(:batch_size).and_return(batch_size)
     end
 
@@ -878,15 +880,15 @@ RSpec.shared_examples 'migration removes field' do
     end
   end
 
-  def add_field_in_mapping!
+  def add_field_in_mapping!(mapping)
     client.indices.put_mapping(index: index_name,
-      body: { properties: { "#{field}": { type: type } } }
+      body: { properties: { "#{field}": mapping } }
     )
   end
 
-  def add_field_value_to_documents!(count)
+  def add_field_value_to_documents!(count, value)
     client.update_by_query(index: index_name, refresh: true, body: {
-      script: { source: "ctx._source.#{field}=1" }, max_docs: count
+      script: { source: "ctx._source.#{field}=#{value}" }, max_docs: count
     })
   end
 
