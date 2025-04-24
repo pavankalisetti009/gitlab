@@ -247,6 +247,7 @@ RSpec.describe Ci::Minutes::GitlabHostedRunnerMonthlyUsage, factory_default: :ke
   describe '.distinct_runner_ids' do
     let_it_be(:runner1) { create(:ci_runner) }
     let_it_be(:runner2) { create(:ci_runner) }
+    let_it_be(:deleted_runner_id) { runner2.id }
 
     before do
       create(:ci_hosted_runner_monthly_usage, runner: runner1)
@@ -256,6 +257,18 @@ RSpec.describe Ci::Minutes::GitlabHostedRunnerMonthlyUsage, factory_default: :ke
 
     it 'returns distinct runner IDs' do
       expect(described_class.distinct_runner_ids).to contain_exactly(runner1.id, runner2.id)
+    end
+
+    context 'when runner no longer exists' do
+      before do
+        runner2.destroy!
+      end
+
+      it 'includes IDs for runners that no longer exist' do
+        expect(Ci::Runner.find_by(id: deleted_runner_id)).to be_nil
+
+        expect(described_class.distinct_runner_ids).to include(deleted_runner_id)
+      end
     end
   end
 
