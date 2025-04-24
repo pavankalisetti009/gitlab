@@ -11593,7 +11593,7 @@ msgstr ""
 msgid "CICD|Are you sure you want to remove %{namespace} from the job token allowlist? This action cannot be undone."
 msgstr ""
 
-msgid "CICD|Authentication events from the last 30 days. %{linkStart}Learn more.%{linkEnd}"
+msgid "CICD|Authentication events using the job token. %{linkStart}Learn more.%{linkEnd}"
 msgstr ""
 
 msgid "CICD|Authentication log"
@@ -11692,7 +11692,7 @@ msgstr ""
 msgid "CICD|Maintainer"
 msgstr ""
 
-msgid "CICD|No authentication events in the last 30 days."
+msgid "CICD|No authentication events to display."
 msgstr ""
 
 msgid "CICD|No resources selected (minimal access only)"
