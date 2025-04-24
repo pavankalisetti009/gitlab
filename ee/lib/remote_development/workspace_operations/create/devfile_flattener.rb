@@ -27,6 +27,8 @@ module RemoteDevelopment
           processed_devfile[:components] ||= []
           processed_devfile[:commands] ||= []
           processed_devfile[:events] ||= {}
+          processed_devfile[:events][:preStart] ||= []
+          processed_devfile[:events][:postStart] ||= []
           processed_devfile[:variables] ||= {}
 
           Gitlab::Fp::Result.ok(context.merge(processed_devfile: processed_devfile))

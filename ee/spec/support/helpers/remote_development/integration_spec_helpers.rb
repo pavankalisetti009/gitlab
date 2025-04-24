@@ -150,11 +150,6 @@ module RemoteDevelopment
       nil
     end
 
-    # @return [String (frozen)]
-    def workspace_reconciled_actual_state_file_name
-      RemoteDevelopment::WorkspaceOperations::Reconcile::ReconcileConstants::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME
-    end
-
     # @param [Workspace] workspace
     # @param [QA::Resource::Clusters::AgentToken] agent_token
     # @param [String] actual_state
@@ -166,10 +161,9 @@ module RemoteDevelopment
 
       expected_config_to_apply_yaml_stream = create_config_to_apply_yaml_stream(
         workspace: workspace,
-        started: true,
         include_all_resources: true,
         workspace_variables_additional_data: {
-          "#{workspace_reconciled_actual_state_file_name}": actual_state
+          "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": actual_state
         },
         **additional_args_for_create_config_to_apply_yaml_stream
       )
@@ -211,7 +205,7 @@ module RemoteDevelopment
         started: true,
         include_all_resources: true,
         workspace_variables_additional_data: {
-          "#{workspace_reconciled_actual_state_file_name}": actual_state
+          "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": actual_state
         },
         **additional_args_for_create_config_to_apply_yaml_stream
       )
@@ -256,7 +250,7 @@ module RemoteDevelopment
         workspace: workspace,
         started: false,
         workspace_variables_additional_data: {
-          "#{workspace_reconciled_actual_state_file_name}": actual_state
+          "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": actual_state
         },
         **additional_args_for_create_config_to_apply_yaml_stream
       )
@@ -302,7 +296,7 @@ module RemoteDevelopment
         started: false,
         include_all_resources: true,
         workspace_variables_additional_data: {
-          "#{workspace_reconciled_actual_state_file_name}": actual_state
+          "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": actual_state
         },
         **additional_args_for_create_config_to_apply_yaml_stream
       )
@@ -348,7 +342,7 @@ module RemoteDevelopment
         started: false,
         include_all_resources: true,
         workspace_variables_additional_data: {
-          "#{workspace_reconciled_actual_state_file_name}": actual_state
+          "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": actual_state
         },
         **additional_args_for_create_config_to_apply_yaml_stream
       )
@@ -415,7 +409,7 @@ module RemoteDevelopment
         started: false,
         include_all_resources: true,
         workspace_variables_additional_data: {
-          "#{workspace_reconciled_actual_state_file_name}": actual_state
+          "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": actual_state
         },
         **additional_args_for_create_config_to_apply_yaml_stream
       )
@@ -460,7 +454,7 @@ module RemoteDevelopment
         workspace: workspace,
         started: true,
         workspace_variables_additional_data: {
-          "#{workspace_reconciled_actual_state_file_name}": actual_state
+          "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": actual_state
         },
         **additional_args_for_create_config_to_apply_yaml_stream
       )
@@ -511,7 +505,7 @@ module RemoteDevelopment
         started: true,
         include_all_resources: true,
         workspace_variables_additional_data: {
-          "#{workspace_reconciled_actual_state_file_name}": actual_state
+          "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": actual_state
         },
         **additional_args_for_create_config_to_apply_yaml_stream
       )
@@ -557,7 +551,7 @@ module RemoteDevelopment
         workspace: workspace,
         started: false,
         workspace_variables_additional_data: {
-          "#{workspace_reconciled_actual_state_file_name}": actual_state
+          "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": actual_state
         },
         **additional_args_for_create_config_to_apply_yaml_stream
       )
@@ -603,7 +597,7 @@ module RemoteDevelopment
         started: false,
         include_all_resources: true,
         workspace_variables_additional_data: {
-          "#{workspace_reconciled_actual_state_file_name}": actual_state
+          "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": actual_state
         },
         **additional_args_for_create_config_to_apply_yaml_stream
       )
@@ -651,7 +645,7 @@ module RemoteDevelopment
         started: false,
         include_all_resources: true,
         workspace_variables_additional_data: {
-          "#{workspace_reconciled_actual_state_file_name}": actual_state
+          "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": actual_state
         },
         **additional_args_for_create_config_to_apply_yaml_stream
       )
@@ -698,7 +692,7 @@ module RemoteDevelopment
         started: false,
         desired_state_is_terminated: true,
         workspace_variables_additional_data: {
-          "#{workspace_reconciled_actual_state_file_name}": actual_state
+          "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": actual_state
         },
         **additional_args_for_create_config_to_apply_yaml_stream
       )
@@ -744,7 +738,7 @@ module RemoteDevelopment
         desired_state_is_terminated: true,
         include_all_resources: true,
         workspace_variables_additional_data: {
-          "#{workspace_reconciled_actual_state_file_name}": actual_state
+          "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": actual_state
         },
         **additional_args_for_create_config_to_apply_yaml_stream
       )

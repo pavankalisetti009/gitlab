@@ -17,7 +17,9 @@ module RemoteDevelopment
     #       See documentation at ../README.md#constant-declarations for more information.
     module WorkspaceOperationsConstants
       # Please keep alphabetized
-      VARIABLES_FILE_DIR = "/.workspace-data/variables/file"
+      VARIABLES_VOLUME_NAME = "gl-workspace-variables"
+      VARIABLES_VOLUME_PATH = "/.workspace-data/variables/file"
+      WORKSPACE_DATA_VOLUME_PATH = "/projects"
       WORKSPACE_TOOLS_IMAGE = "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:12.0.0"
     end
   end

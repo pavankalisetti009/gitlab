@@ -7,17 +7,17 @@ module RemoteDevelopment
         include CreateConstants
         include Files
 
-        WORKSPACE_SSH_PORT = 60022
-
         # @param [Hash] context
         # @return [Hash]
         def self.update(context)
           context => {
-            processed_devfile: {
-              components: Array => components
-            },
+            processed_devfile: Hash => processed_devfile,
             tools_dir: String => tools_dir,
             vscode_extension_marketplace_metadata: Hash => vscode_extension_marketplace_metadata
+          }
+
+          processed_devfile => {
+            components: Array => components
           }
 
           # NOTE: We will always have exactly one main_component found, because we have already
@@ -28,10 +28,10 @@ module RemoteDevelopment
             component.dig(:attributes, MAIN_COMPONENT_INDICATOR_ATTRIBUTE.to_sym)
           end
 
-          container = main_component.fetch(:container)
+          main_component_container = main_component.fetch(:container)
 
           update_env_vars(
-            container: container,
+            main_component_container: main_component_container,
             tools_dir: tools_dir,
             editor_port: WORKSPACE_EDITOR_PORT,
             ssh_port: WORKSPACE_SSH_PORT,
@@ -39,26 +39,26 @@ module RemoteDevelopment
           )
 
           update_endpoints(
-            container: container,
+            main_component_container: main_component_container,
             editor_port: WORKSPACE_EDITOR_PORT,
             ssh_port: WORKSPACE_SSH_PORT
           )
 
           override_command_and_args(
-            container: container
+            main_component_container: main_component_container
           )
 
           context
         end
 
-        # @param [Hash] container
+        # @param [Hash] main_component_container
         # @param [String] tools_dir
         # @param [Integer] editor_port
         # @param [Integer] ssh_port
         # @param [Boolean] enable_marketplace
         # @return [void]
-        def self.update_env_vars(container:, tools_dir:, editor_port:, ssh_port:, enable_marketplace:)
-          (container[:env] ||= []).append(
+        def self.update_env_vars(main_component_container:, tools_dir:, editor_port:, ssh_port:, enable_marketplace:)
+          (main_component_container[:env] ||= []).append(
             {
               # NOTE: Only "TOOLS_DIR" env var is extracted to a constant, because it is the only one referenced
               #       in multiple different classes.
@@ -86,12 +86,12 @@ module RemoteDevelopment
           nil
         end
 
-        # @param [Hash] container
+        # @param [Hash] main_component_container
         # @param [Integer] editor_port
         # @param [Integer] ssh_port
         # @return [void]
-        def self.update_endpoints(container:, editor_port:, ssh_port:)
-          (container[:endpoints] ||= []).append(
+        def self.update_endpoints(main_component_container:, editor_port:, ssh_port:)
+          (main_component_container[:endpoints] ||= []).append(
             {
               name: "editor-server",
               targetPort: editor_port,
@@ -110,16 +110,15 @@ module RemoteDevelopment
           nil
         end
 
-        # @param [Hash] container
+        # @param [Hash] main_component_container
         # @return [void]
-        def self.override_command_and_args(container:)
+        def self.override_command_and_args(main_component_container:)
           # This overrides the main container's command
           # Open issue to support both starting the editor and running the default command:
           # https://gitlab.com/gitlab-org/gitlab/-/issues/392853
-          container_args = MAIN_COMPONENT_UPDATER_CONTAINER_ARGS
 
-          container[:command] = %w[/bin/sh -c]
-          container[:args] = [container_args]
+          main_component_container[:command] = %w[/bin/sh -c]
+          main_component_container[:args] = [MAIN_COMPONENT_UPDATER_CONTAINER_ARGS]
 
           nil
         end

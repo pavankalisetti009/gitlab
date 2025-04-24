@@ -17,13 +17,12 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
   let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
   let(:random_string) { 'abcdef' }
   let(:project_ref) { 'main' }
-  let(:workspace_root) { '/projects' }
   let(:params) do
     {
       agent: agent,
       user: user,
       project: project,
-      desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
+      desired_state: states_module::RUNNING,
       project_ref: project_ref,
       devfile_path: devfile_path
     }

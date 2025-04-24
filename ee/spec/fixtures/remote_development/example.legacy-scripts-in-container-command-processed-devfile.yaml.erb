@@ -82,11 +82,6 @@ components:
   - name: gl-workspace-data
     volume:
       size: 50Gi
-events:
-  preStart:
-    - gl-tools-injector-command
-    - gl-project-cloner-command
-  postStart: []
 commands:
   - id: gl-tools-injector-command
     apply:
@@ -94,4 +89,8 @@ commands:
   - id: gl-project-cloner-command
     apply:
       component: gl-project-cloner
+events:
+  preStart:
+    - gl-tools-injector-command
+    - gl-project-cloner-command
 variables: {}

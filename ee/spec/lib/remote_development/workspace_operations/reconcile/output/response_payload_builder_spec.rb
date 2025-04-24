@@ -7,8 +7,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
 
   let(:update_types) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes }
   let(:logger) { instance_double(Logger) }
-  let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
-  let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+  let(:desired_state) { states_module::RUNNING }
+  let(:actual_state) { states_module::STOPPED }
   let(:processed_devfile_yaml) { example_processed_devfile_yaml }
   let(:force_include_all_resources) { false }
   let(:image_pull_secrets) { [{ name: "secret-name", namespace: "secret-namespace" }] }

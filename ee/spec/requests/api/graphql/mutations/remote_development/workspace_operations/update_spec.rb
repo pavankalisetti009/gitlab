@@ -6,6 +6,8 @@ require 'spec_helper'
 RSpec.describe 'Updating a workspace', feature_category: :workspaces do
   include GraphqlHelpers
 
+  include_context "with constant modules"
+
   let_it_be(:user) { create(:user) }
   let_it_be(:current_user) { user } # NOTE: Some graphql spec helper methods rely on current_user to be set
   let_it_be(:project) do
@@ -23,19 +25,19 @@ RSpec.describe 'Updating a workspace', feature_category: :workspaces do
       agent: agent,
       project: project,
       user: user,
-      desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING
+      desired_state: states_module::RUNNING
     )
   end
 
   let(:all_mutation_args) do
     {
       id: workspace.to_global_id.to_s,
-      desired_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED
+      desired_state: states_module::STOPPED
     }
   end
 
   let(:mutation_args) do
-    { id: global_id_of(workspace), desired_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+    { id: global_id_of(workspace), desired_state: states_module::STOPPED }
   end
 
   let(:mutation) { graphql_mutation(:workspace_update, mutation_args) }

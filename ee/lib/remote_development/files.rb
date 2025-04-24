@@ -6,6 +6,9 @@ module RemoteDevelopment
   # via inline HEREDOC or other means, so that they can have full support for
   # syntax highlighting, refactoring, linting, etc.
   module Files
+    # TODO: Add a spec for this module, and auto-reload in Spring when the files change.
+    #       See https://gitlab.com/gitlab-org/gitlab/-/issues/520870
+
     # @param [String] path - file path relative to domain logic root (this directory, `ee/lib/remote_development`)
     # @return [String] content of the file
     def self.read_file(path)
@@ -25,12 +28,12 @@ module RemoteDevelopment
     # that architecture yet and thus the workspace won't start.
     # This will be fixed in https://gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools/-/issues/12
     DEFAULT_DEVFILE_YAML = read_file("settings/default_devfile.yaml")
+    GIT_CREDENTIAL_STORE_SCRIPT =
+      read_file("workspace_operations/create/workspace_variables_git_credential_store.sh")
     PROJECTS_CLONER_COMPONENT_INSERTER_CONTAINER_ARGS =
       read_file("workspace_operations/create/project_cloner_component_inserter_container_args.sh")
     MAIN_COMPONENT_UPDATER_CONTAINER_ARGS =
       read_file("workspace_operations/create/main_component_updater_container_args.sh")
-    GIT_CREDENTIAL_STORE_SCRIPT =
-      read_file("workspace_operations/create/workspace_variables_git_credential_store_script.sh")
 
     private_class_method :read_file
   end

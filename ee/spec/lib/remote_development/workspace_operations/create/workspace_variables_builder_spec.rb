@@ -3,6 +3,8 @@
 require "fast_spec_helper"
 
 RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariablesBuilder, feature_category: :workspaces do
+  include_context "with constant modules"
+
   let(:name) { "name" }
   let(:dns_zone) { "example.dns.zone" }
   let(:personal_access_token_value) { "example-pat-value" }
@@ -12,45 +14,23 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
   let(:vscode_extensions_gallery_service_url) { "https://open-vsx.org/vscode/gallery" }
   let(:vscode_extensions_gallery_item_url) { "https://open-vsx.org/vscode/item" }
   let(:vscode_extensions_gallery_resource_url_template) { "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{versionRaw}/{path}" }
-  let(:git_credential_store_script) do
-    <<~SH
-      #!/bin/sh
-      # This is a readonly store so we can exit cleanly when git attempts a store or erase action
-      if [ "$1" != "get" ];
-      then
-        exit 0
-      fi
-
-      if [ -z "${GL_TOKEN_FILE_PATH}" ];
-      then
-        echo "We could not find the GL_TOKEN_FILE_PATH variable"
-        exit 1
-      fi
-      password=$(cat "${GL_TOKEN_FILE_PATH}")
-
-      # The username is derived from the "user.email" configuration item. Ensure it is set.
-      echo "username=does-not-matter"
-      echo "password=${password}"
-      exit 0
-    SH
-  end
-
+  let(:git_credential_store_script) { RemoteDevelopment::Files::GIT_CREDENTIAL_STORE_SCRIPT }
   let(:expected_variables) do
     [
       {
-        key: RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOKEN_FILE_NAME,
+        key: create_constants_module::TOKEN_FILE_NAME,
         value: "example-pat-value",
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::FILE_TYPE,
         workspace_id: workspace_id
       },
       {
         key: "GL_TOKEN_FILE_PATH",
-        value: RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOKEN_FILE_PATH,
+        value: create_constants_module::TOKEN_FILE_PATH,
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
         workspace_id: workspace_id
       },
       {
-        key: RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME,
+        key: create_constants_module::GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME,
         value: git_credential_store_script,
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::FILE_TYPE,
         workspace_id: workspace_id
@@ -69,7 +49,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
       },
       {
         key: "GIT_CONFIG_VALUE_0",
-        value: RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::GIT_CREDENTIAL_STORE_SCRIPT_FILE_PATH,
+        value: create_constants_module::GIT_CREDENTIAL_STORE_SCRIPT_FILE_PATH,
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
         workspace_id: workspace_id
       },
@@ -129,7 +109,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
       },
       {
         key: "GITLAB_WORKFLOW_TOKEN_FILE",
-        value: RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOKEN_FILE_PATH,
+        value: create_constants_module::TOKEN_FILE_PATH,
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
         workspace_id: workspace_id
       },

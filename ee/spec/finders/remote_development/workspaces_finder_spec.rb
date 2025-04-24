@@ -4,7 +4,7 @@ require "spec_helper"
 
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :workspaces do
-  include ::RemoteDevelopment::WorkspaceOperations::States
+  include_context "with constant modules"
 
   let_it_be(:current_user) { create(:user) }
 
@@ -23,20 +23,20 @@ RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :workspace
   let_it_be(:project_c) { create(:project, :public) }
   let_it_be(:workspace_a) do
     create(:workspace, user: workspace_owner_user, updated_at: 2.days.ago, project: project_a,
-      actual_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING, agent: agent_a
+      actual_state: states_module::RUNNING, agent: agent_a
     )
   end
 
   let_it_be(:workspace_b) do
     create(:workspace, user: workspace_owner_user, updated_at: 1.day.ago, project: project_b,
-      actual_state: ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED, agent: agent_b
+      actual_state: states_module::TERMINATED, agent: agent_b
     )
   end
 
   let_it_be(:other_user) { create(:user) }
   let_it_be(:other_users_workspace) do
     create(:workspace, user: other_user, project_id: project_c.id,
-      actual_state: ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED, agent: agent_b
+      actual_state: states_module::TERMINATED, agent: agent_b
     )
   end
 
@@ -85,7 +85,7 @@ RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :workspace
   end
 
   context "with actual_states argument" do
-    let(:filter_arguments) { { actual_states: [::RemoteDevelopment::WorkspaceOperations::States::RUNNING] } }
+    let(:filter_arguments) { { actual_states: [states_module::RUNNING] } }
 
     it "returns only workspaces matching the specified actual_states" do
       expect(collection_proxy).to contain_exactly(workspace_a)
@@ -100,8 +100,8 @@ RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :workspace
         project_ids: [project_a.id, project_b.id, project_c.id],
         agent_ids: [agent_a.id, agent_b.id],
         actual_states: [
-          ::RemoteDevelopment::WorkspaceOperations::States::RUNNING,
-          ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED
+          states_module::RUNNING,
+          states_module::TERMINATED
         ]
       }
     end

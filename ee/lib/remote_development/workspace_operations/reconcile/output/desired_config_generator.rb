@@ -12,7 +12,8 @@ module RemoteDevelopment
           # @param [RemoteDevelopment::Logger] logger
           # @return [Array<Hash>]
           def self.generate_desired_config(workspace:, include_all_resources:, logger:)
-            ConfigValuesExtractor.extract(workspace: workspace) => {
+            config_values_extractor_result = ConfigValuesExtractor.extract(workspace: workspace)
+            config_values_extractor_result => {
               allow_privilege_escalation: TrueClass | FalseClass => allow_privilege_escalation,
               common_annotations: Hash => common_annotations,
               default_resources_per_workspace_container: Hash => default_resources_per_workspace_container,
@@ -157,7 +158,7 @@ module RemoteDevelopment
             append_secret_data(
               desired_config: desired_config,
               secret_name: file_secret_name,
-              data: { File.basename(WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH).to_sym => workspace.actual_state }
+              data: { WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME.to_sym => workspace.actual_state }
             )
 
             desired_config

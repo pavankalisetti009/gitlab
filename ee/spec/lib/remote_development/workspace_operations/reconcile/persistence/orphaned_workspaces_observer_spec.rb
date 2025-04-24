@@ -3,6 +3,8 @@
 require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::OrphanedWorkspacesObserver, feature_category: :workspaces do
+  include_context "with constant modules"
+
   let(:agent) { instance_double("Clusters::Agent", id: 1) } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::PARTIAL }
   let(:logger) { instance_double(::Logger) }
@@ -13,7 +15,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::O
     RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfo.new(
       name: workspace.name,
       namespace: workspace.namespace,
-      actual_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED,
+      actual_state: states_module::STOPPED,
       deployment_resource_version: "1"
     )
   end
@@ -22,7 +24,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::O
     RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfo.new(
       name: "orphaned_workspace",
       namespace: "orphaned_workspace_namespace",
-      actual_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
+      actual_state: states_module::RUNNING,
       deployment_resource_version: "1"
     )
   end

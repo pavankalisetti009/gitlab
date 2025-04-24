@@ -22,8 +22,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
       name: "name",
       namespace: "namespace",
       deployment_resource_version: "1",
-      desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
-      actual_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED,
+      desired_state: states_module::RUNNING,
+      actual_state: states_module::STOPPED,
       processed_devfile: example_processed_devfile_yaml,
       user: user,
       agent: agent,
@@ -36,8 +36,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
 
   let(:processed_devfile_yaml) do
     yaml = example_processed_devfile_yaml
-
-    puts yaml
 
     # Add additional entries to the processed devfile yaml to ensure full coverage of all DevfileParser logic
     hash = yaml_safe_load_symbolized(yaml)

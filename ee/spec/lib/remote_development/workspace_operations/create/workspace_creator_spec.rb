@@ -16,9 +16,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreato
   let(:devfile_path) { '.devfile.yaml' }
   let(:devfile_yaml) { example_devfile_yaml }
   let(:processed_devfile) { example_flattened_devfile }
-  let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+  let(:desired_state) { states_module::RUNNING }
 
-  let(:workspace_root) { '/projects' }
   let(:params) do
     {
       agent: agent,
@@ -31,7 +30,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreato
   end
 
   let(:context) do
-    namespace_prefix = RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::NAMESPACE_PREFIX
+    namespace_prefix = create_constants_module::NAMESPACE_PREFIX
     {
       params: params,
       user: user,
@@ -42,8 +41,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreato
       workspace_namespace: "#{namespace_prefix}-#{agent.id}-#{user.id}-#{random_string}",
       volume_mounts: {
         data_volume: {
-          name: RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::WORKSPACE_DATA_VOLUME_NAME,
-          path: workspace_root
+          name: create_constants_module::WORKSPACE_DATA_VOLUME_NAME,
+          path: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
         }
       }
     }
@@ -66,7 +65,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreato
     it 'creates the workspace with the right url components' do
       expect(result).to be_ok_result do |message|
         message => { workspace: RemoteDevelopment::Workspace => workspace }
-        expected_url = "https://60001-#{workspace.name}.#{agent.unversioned_latest_workspaces_agent_config.dns_zone}/" \
+        expected_url = "https://#{create_constants_module::WORKSPACE_EDITOR_PORT}-#{workspace.name}." \
+          "#{agent.unversioned_latest_workspaces_agent_config.dns_zone}/" \
           "?folder=%2Fprojects%2F#{project.path}"
         expect(workspace.url).to eq(expected_url)
       end

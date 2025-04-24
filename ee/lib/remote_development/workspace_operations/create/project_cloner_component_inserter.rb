@@ -27,7 +27,7 @@ module RemoteDevelopment
           settings => {
             project_cloner_image: String => image,
           }
-          project_cloning_successful_file = "#{volume_path}/#{PROJECT_CLONING_SUCCESSFUL_FILENAME}"
+          project_cloning_successful_file = "#{volume_path}/#{PROJECT_CLONING_SUCCESSFUL_FILE_NAME}"
 
           # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/408448
           #       replace the alpine/git docker image with one that is published by gitlab for security / reliability
