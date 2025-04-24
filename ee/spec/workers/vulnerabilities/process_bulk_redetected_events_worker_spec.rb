@@ -36,14 +36,4 @@ RSpec.describe Vulnerabilities::ProcessBulkRedetectedEventsWorker, feature_categ
 
     use_event
   end
-
-  context 'when vulnerability_redetected_note is disabled' do
-    before do
-      stub_feature_flags(vulnerability_redetected_note: false)
-    end
-
-    it_behaves_like 'ignores the published event' do
-      let(:event) { bulk_redetected_event }
-    end
-  end
 end
