@@ -99,6 +99,7 @@ RSpec.describe RemoteDevelopment::OrganizationPolicy, feature_category: :workspa
     puts "user: #{user.username} (id: #{user.id}, admin: #{user.admin?}, " \
       "admin_mode: #{user && Gitlab::Auth::CurrentUserMode.new(user).admin_mode?}" \
       ")\n"
+    # noinspection RubyRedundantSafeNavigation -- Inspection bug in RubyMine, this safe navigation operator is needed
     puts "org: #{org.name} (id: #{org.id}, " \
       "owners: #{org_owners} " \
       "user access level in org: #{org_user&.access_level || 'not in org'}" \

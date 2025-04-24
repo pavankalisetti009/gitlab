@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe RemoteDevelopment::WorkspacesAgentConfigPolicy, feature_category: :workspaces do
   include AdminModeHelper
   using RSpec::Parameterized::TableSyntax
@@ -29,11 +30,13 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfigPolicy, feature_category:
     agent_project.reload
 
     debug = false # Set to true to enable debugging of policies, but change back to false before committing
+    # noinspection RubyMismatchedArgumentType -- We are passing a QA::Resource::User test double
     debug_policies(user, agent_config, policy_class, ability) if debug
   end
 
   shared_examples 'fixture sanity checks' do
     it "has fixture sanity checks" do
+      # noinspection RubyMismatchedArgumentType,RubyResolve -- We are passing a test double
       expect(agent_project.creator_id).not_to eq(user.id)
     end
   end
@@ -69,6 +72,12 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfigPolicy, feature_category:
   #       https://docs.gitlab.com/ee/development/permissions/custom_roles.html#refactoring-abilities
   # This may be generalized in the future for use across all policy specs
   # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/463453
+  #
+  # @param [User] user
+  # @param [RemoteDevelopment::WorkspacesAgentConfig] agent_config
+  # @param [Class] policy_class
+  # @param [Symbol] ability
+  # @return [void]
   def debug_policies(user, agent_config, policy_class, ability)
     puts "\n\nPolicy debug for #{policy_class} policy:\n"
     puts "user: #{user.username} (id: #{user.id}, admin: #{user.admin?}, " \

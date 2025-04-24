@@ -16,6 +16,8 @@ module Resolvers
         deprecated: { reason: 'Use actual_states instead', milestone: '16.7' },
         description: 'Filter workspaces by actual states.'
 
+      # @param [Hash] args
+      # @return [RemoteDevelopment::Workspace::ActiveRecord_Relation]
       def resolve_with_lookahead(**args)
         # noinspection RubyNilAnalysis - This is because the superclass #current_user uses #[], which can return nil
         # TODO: Change the superclass to use context.fetch(:current_user) instead of context[:current_user]

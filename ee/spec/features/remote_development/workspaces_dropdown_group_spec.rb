@@ -127,8 +127,11 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
   describe 'when viewing project overview page' do
     subject { project_path(project) }
 
+    # @return [void]
     def click_code_dropdown
       find_by_testid("code-dropdown").click
+
+      nil
     end
 
     it_behaves_like 'views and manages workspaces in workspaces dropdown group'
@@ -138,8 +141,11 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
     # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
     subject { project_blob_path(project, "#{project.default_branch}/#{devfile_path}") }
 
+    # @return [void]
     def click_code_dropdown
       click_button 'Edit'
+
+      nil
     end
 
     it_behaves_like 'views and manages workspaces in workspaces dropdown group'
@@ -152,8 +158,11 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
       stub_feature_flags(directory_code_dropdown_updates: false)
     end
 
+    # @return [void]
     def click_code_dropdown
       click_button 'Edit'
+
+      nil
     end
 
     it_behaves_like 'views and manages workspaces in workspaces dropdown group'

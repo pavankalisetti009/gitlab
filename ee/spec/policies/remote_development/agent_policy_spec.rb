@@ -37,6 +37,7 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :workspaces do
         enable_admin_mode!(admin_in_admin_mode) if user == admin_in_admin_mode
 
         debug = false # Set to true to enable debugging of policies, but change back to false before committing
+        # noinspection RubyMismatchedArgumentType -- RubyMine not properly detecting that this is a Class type
         debug_policies(user, agent, Clusters::AgentPolicy, ability) if debug
       end
 
@@ -66,6 +67,7 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :workspaces do
         enable_admin_mode!(admin_in_admin_mode) if user == admin_in_admin_mode
 
         debug = false # Set to true to enable debugging of policies, but change back to false before committing
+        # noinspection RubyMismatchedArgumentType -- RubyMine not properly detecting that this is a Class type
         debug_policies(user, agent, Clusters::AgentPolicy, ability) if debug
       end
 
@@ -93,6 +95,7 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :workspaces do
         enable_admin_mode!(admin_in_admin_mode) if user == admin_in_admin_mode
 
         debug = false # Set to true to enable debugging of policies, but change back to false before committing
+        # noinspection RubyMismatchedArgumentType -- RubyMine not properly detecting that this is a Class type
         debug_policies(user, agent, Clusters::AgentPolicy, ability) if debug
       end
 
@@ -152,6 +155,7 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :workspaces do
       before do
         create(:organization_user, organization: organization, user: user) if user_in_org
         debug = false # Set to true to enable debugging of policies, but change back to false before committing
+        # noinspection RubyMismatchedArgumentType -- RubyMine not properly detecting that this is a Class type
         debug_policies(user, agent, Clusters::AgentPolicy, ability) if debug
       end
 
@@ -164,11 +168,11 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :workspaces do
   # This may be generalized in the future for use across all policy specs
   # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/463453
   #
-  # @param user [User] the user making the request.
-  # @param agent [Clusters::Agent] the agent that is the subject of the request.
-  # @param policy_class [Clusters::AgentPolicy] the policy class.
-  # @param ability [Symbol] the ability needed by the user to allow the request.
-  # @return [nil] This method does not return any value.
+  # @param [User] user
+  # @param [Clusters::Agent] agent
+  # @param [Class] policy_class
+  # @param [Symbol] ability
+  # @return [void]
   def debug_policies(user, agent, policy_class, ability)
     puts "\n\nPolicy debug for #{policy_class} policy:\n"
     puts "user: #{user.username} (id: #{user.id}, admin: #{user.admin?}, " \

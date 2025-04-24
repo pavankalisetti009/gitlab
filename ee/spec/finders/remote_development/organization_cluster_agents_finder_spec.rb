@@ -39,6 +39,7 @@ RSpec.describe RemoteDevelopment::OrganizationClusterAgentsFinder, feature_categ
 
   describe '#execute' do
     subject(:response) do
+      # noinspection RubyMismatchedArgumentType -- We are passing a test double
       described_class.execute(
         organization: organization,
         filter: filter,

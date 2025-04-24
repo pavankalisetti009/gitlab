@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe 'Mutation.organizationCreateClusterAgentMapping', feature_category: :workspaces do
   include GraphqlHelpers
   include StubFeatureFlags
@@ -43,6 +44,7 @@ RSpec.describe 'Mutation.organizationCreateClusterAgentMapping', feature_categor
     }
   end
 
+  # @return [Object]
   def mutation_response
     graphql_mutation_response(:organization_create_cluster_agent_mapping)
   end

@@ -12,6 +12,8 @@ module Resolvers
           required: true,
           description: 'Filter the types of cluster agents to return.'
 
+        # @param [Hash] args
+        # @return [ActiveRecord::Relation]
         def resolve(**args)
           unless License.feature_available?(:remote_development)
             raise_resource_not_available_error! "'remote_development' licensed feature is not available"

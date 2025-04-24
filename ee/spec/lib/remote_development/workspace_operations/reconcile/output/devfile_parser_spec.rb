@@ -120,6 +120,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
   end
 
   subject(:resources_from_devfile_parser) do
+    # noinspection RubyMismatchedArgumentType -- We are passing a test double
     described_class.get_all(
       processed_devfile_yaml: processed_devfile_yaml,
       params: params,

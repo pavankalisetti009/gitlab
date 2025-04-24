@@ -258,6 +258,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     all_actual_vars = RemoteDevelopment::WorkspaceVariable.where(workspace: workspace)
 
     # noinspection RailsParamDefResolve -- RubyMine is incorrectly detecting this as ActiveRecord #select method
+    # noinspection RubyArgCount -- RubyMine is incorrectly detecting this as an unused block argument
     actual_user_provided_vars = all_actual_vars.select(&:user_provided)
 
     all_actual_vars = all_actual_vars.map { |v| { key: v.key, type: types.invert[v.variable_type], value: v.value } }

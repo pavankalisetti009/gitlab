@@ -3,6 +3,8 @@
 module RemoteDevelopment
   module Settings
     class SettingsInitializer
+      # @param [Hash] context
+      # @return [Hash]
       def self.init(context)
         context => { requested_setting_names: Array => requested_setting_names }
 

@@ -65,6 +65,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     end
 
     subject(:workspace_resources) do
+      # noinspection RubyMismatchedArgumentType -- We are passing a test double
       described_class.generate_desired_config(
         workspace: workspace,
         include_all_resources: include_all_resources,

@@ -9,6 +9,7 @@ module RemoteDevelopment
 
     private
 
+    # @return [Clusters::Agent]
     def agent
       @subject.agent
     end

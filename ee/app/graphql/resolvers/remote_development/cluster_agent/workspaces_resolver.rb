@@ -12,6 +12,8 @@ module Resolvers
 
         alias_method :agent, :object
 
+        # @param [Hash] args
+        # @return [RemoteDevelopment::Workspace::ActiveRecord_Relation]
         def resolve_with_lookahead(**args)
           apply_lookahead(
             ::RemoteDevelopment::WorkspacesFinder.execute(

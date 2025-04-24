@@ -2,6 +2,7 @@
 
 require_relative '../../shared'
 
+# noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.shared_context 'for a Query.currentUser.workspaces query' do
   include GraphqlHelpers
 
