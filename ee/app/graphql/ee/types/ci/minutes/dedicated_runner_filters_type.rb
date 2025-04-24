@@ -5,36 +5,63 @@ module EE
   module Types
     module Ci
       module Minutes
+        class DeletedRunnerType < ::Types::BaseObject
+          graphql_name 'CiDeletedRunner'
+          description 'Reference to a deleted runner'
+
+          field :id, ::Types::GlobalIDType[::Ci::Runner], null: false,
+            description: 'Global ID of the deleted runner.'
+        end
+
         class DedicatedRunnerFiltersType < ::Types::BaseObject
           graphql_name 'CiDedicatedHostedRunnerFilters'
           description 'Filter options available for GitLab Dedicated runner usage data.'
 
           include ::Gitlab::Graphql::Authorize::AuthorizeResource
+          include ::Gitlab::Utils::StrongMemoize
 
+          authorize :read_dedicated_hosted_runner_usage
+
+          DeletedRunner = Struct.new(:db_id) do
+            def to_global_id
+              ::Gitlab::GlobalId.build(model_name: ::Ci::Runner.name, id: db_id)
+            end
+          end
+
+          field :deleted_runners, DeletedRunnerType.connection_type, null: true,
+            description: 'List of runner IDs from usage data without associated runner records.'
           field :runners, ::Types::Ci::RunnerType.connection_type, null: true,
             description: 'List of unique runners with usage data.'
           field :years, [GraphQL::Types::Int], null: true,
             description: 'List of years with available usage data.'
 
           def runners
-            raise_resource_not_available_error! unless allowed?
+            found_runners
+          end
 
-            runner_ids = ::Ci::Minutes::GitlabHostedRunnerMonthlyUsage.distinct_runner_ids
+          def deleted_runners
+            deleted_ids = all_runner_ids - found_runners.map(&:id)
 
-            ::Ci::RunnersFinder
-              .new(current_user: context[:current_user], params: { id_in: runner_ids })
-              .execute
+            deleted_ids.map { |db_id| DeletedRunner.new(db_id) }
           end
 
           def years
-            raise_resource_not_available_error! unless allowed?
-
             ::Ci::Minutes::GitlabHostedRunnerMonthlyUsage.distinct_years
           end
 
-          def allowed?
-            current_user.can?(:read_dedicated_hosted_runner_usage)
+          private
+
+          def found_runners
+            ::Ci::RunnersFinder
+              .new(current_user: context[:current_user], params: { id_in: all_runner_ids })
+              .execute
           end
+          strong_memoize_attr :found_runners
+
+          def all_runner_ids
+            ::Ci::Minutes::GitlabHostedRunnerMonthlyUsage.distinct_runner_ids
+          end
+          strong_memoize_attr :all_runner_ids
         end
       end
     end

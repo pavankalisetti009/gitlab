@@ -13953,6 +13953,29 @@ The edge type for [`CiDedicatedHostedRunnerUsage`](#cidedicatedhostedrunnerusage
 | <a id="cidedicatedhostedrunnerusageedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="cidedicatedhostedrunnerusageedgenode"></a>`node` | [`CiDedicatedHostedRunnerUsage`](#cidedicatedhostedrunnerusage) | The item at the end of the edge. |
 
+#### `CiDeletedRunnerConnection`
+
+The connection type for [`CiDeletedRunner`](#cideletedrunner).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cideletedrunnerconnectionedges"></a>`edges` | [`[CiDeletedRunnerEdge]`](#cideletedrunneredge) | A list of edges. |
+| <a id="cideletedrunnerconnectionnodes"></a>`nodes` | [`[CiDeletedRunner]`](#cideletedrunner) | A list of nodes. |
+| <a id="cideletedrunnerconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `CiDeletedRunnerEdge`
+
+The edge type for [`CiDeletedRunner`](#cideletedrunner).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cideletedrunneredgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="cideletedrunneredgenode"></a>`node` | [`CiDeletedRunner`](#cideletedrunner) | The item at the end of the edge. |
+
 #### `CiGroupConnection`
 
 The connection type for [`CiGroup`](#cigroup).
@@ -22535,6 +22558,7 @@ Filter options available for GitLab Dedicated runner usage data.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="cidedicatedhostedrunnerfiltersdeletedrunners"></a>`deletedRunners` | [`CiDeletedRunnerConnection`](#cideletedrunnerconnection) | List of runner IDs from usage data without associated runner records. (see [Connections](#connections)) |
 | <a id="cidedicatedhostedrunnerfiltersrunners"></a>`runners` | [`CiRunnerConnection`](#cirunnerconnection) | List of unique runners with usage data. (see [Connections](#connections)) |
 | <a id="cidedicatedhostedrunnerfiltersyears"></a>`years` | [`[Int!]`](#int) | List of years with available usage data. |
 
@@ -22551,6 +22575,16 @@ Compute usage data for hosted runners on GitLab Dedicated.
 | <a id="cidedicatedhostedrunnerusagecomputeminutes"></a>`computeMinutes` | [`Int!`](#int) | Total compute minutes used across all namespaces. |
 | <a id="cidedicatedhostedrunnerusagedurationseconds"></a>`durationSeconds` | [`Int!`](#int) | Total duration in seconds of runner usage. |
 | <a id="cidedicatedhostedrunnerusagerootnamespace"></a>`rootNamespace` | [`Namespace`](#namespace) | Namespace associated with the usage data. Null for instance aggregate data. |
+
+### `CiDeletedRunner`
+
+Reference to a deleted runner.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cideletedrunnerid"></a>`id` | [`CiRunnerID!`](#cirunnerid) | Global ID of the deleted runner. |
 
 ### `CiDurationStatistics`
 

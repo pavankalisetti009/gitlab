@@ -61,7 +61,6 @@ module Ci
       # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- This will be done on GitLab dedicated only. Result set would be small.
       scope :distinct_runner_ids, -> do
         loose_index_scan(column: :runner_id)
-          .joins(:runner)
           .pluck(:runner_id)
       end
       # rubocop:enable Database/AvoidUsingPluckWithoutLimit

@@ -22,7 +22,7 @@ RSpec.describe GitlabSchema.types['CiDedicatedHostedRunnerFilters'], feature_cat
     )
   end
 
-  let_it_be(:fields) { %i[runners years] }
+  let_it_be(:fields) { %i[runners years deletedRunners] }
 
   subject(:graphql_response) { GitlabSchema.execute(query, context: { current_user: admin }).as_json }
 
@@ -38,6 +38,7 @@ RSpec.describe GitlabSchema.types['CiDedicatedHostedRunnerFilters'], feature_cat
     it { expect(type_fields['runners'].type).to be_present }
     it { expect(type_fields['years'].type).to be_present }
     it { expect(type_fields['years'].type.to_type_signature).to eq('[Int!]') }
+    it { expect(type_fields['deletedRunners'].type).to be_present }
   end
 
   describe 'runners field' do
@@ -49,7 +50,7 @@ RSpec.describe GitlabSchema.types['CiDedicatedHostedRunnerFilters'], feature_cat
       subject(:graphql_response) { GitlabSchema.execute(query, context: { current_user: unauthorized_user }).as_json }
 
       it 'returns nil' do
-        expect(filters['runners']).to be_nil
+        expect(filters).to be_nil
       end
     end
 
@@ -64,6 +65,44 @@ RSpec.describe GitlabSchema.types['CiDedicatedHostedRunnerFilters'], feature_cat
     end
   end
 
+  describe 'deletedRunners field' do
+    let(:query_field) { 'deletedRunners { nodes { id } }' }
+
+    context 'when user is not authorized' do
+      let(:unauthorized_user) { create(:user) }
+
+      subject(:graphql_response) { GitlabSchema.execute(query, context: { current_user: unauthorized_user }).as_json }
+
+      it 'returns nil' do
+        expect(filters).to be_nil
+      end
+    end
+
+    context 'when user is authorized', :enable_admin_mode do
+      context 'when runners are deleted' do
+        let!(:deleted_runner_id) { runner2.id }
+
+        before do
+          runner2.destroy!
+        end
+
+        it 'returns runner IDs that exist in usage but not in the database' do
+          deleted_runner_ids = filters.dig('deletedRunners', 'nodes').pluck('id')
+          expected_id = Gitlab::GlobalId.build(model_name: Ci::Runner.name, id: deleted_runner_id).to_s
+
+          expect(deleted_runner_ids).to contain_exactly(expected_id)
+        end
+      end
+
+      context 'when all runners exist' do
+        it 'returns an empty array' do
+          deleted_runner_ids = filters.dig('deletedRunners', 'nodes')
+          expect(deleted_runner_ids).to be_empty
+        end
+      end
+    end
+  end
+
   describe 'years field' do
     let(:query_field) { 'years' }
 
@@ -73,7 +112,7 @@ RSpec.describe GitlabSchema.types['CiDedicatedHostedRunnerFilters'], feature_cat
       subject(:graphql_response) { GitlabSchema.execute(query, context: { current_user: unauthorized_user }).as_json }
 
       it 'returns nil' do
-        expect(filters['years']).to be_nil
+        expect(filters).to be_nil
       end
     end
 
