@@ -53,6 +53,38 @@ module ConstructSecurityPolicies
     end
   end
 
+  def construct_pipeline_execution_schedule_policies(policies)
+    policies.map do |policy|
+      warnings = []
+      {
+        name: policy[:name],
+        description: policy[:description],
+        edit_path: edit_path(policy, :pipeline_execution_schedule_policy),
+        policy_blob_file_path: policy_blob_file_path(policy, warnings),
+        enabled: policy[:enabled],
+        policy_scope: policy_scope(policy[:policy_scope]),
+        yaml: YAML.dump(
+          policy.slice(
+            :name,
+            :description,
+            :enabled,
+            :content,
+            :schedules,
+            :policy_scope,
+            :metadata
+          ).deep_stringify_keys
+        ),
+        updated_at: policy[:config].policy_last_updated_at,
+        source: {
+          project: policy[:project],
+          namespace: policy[:namespace],
+          inherited: policy[:inherited]
+        },
+        warnings: warnings
+      }
+    end
+  end
+
   def construct_scan_execution_policies(policies)
     policies.map do |policy|
       {

@@ -26,6 +26,11 @@
     },
     {
       "required": [
+        "pipeline_execution_schedule_policy"
+      ]
+    },
+    {
+      "required": [
         "ci_component_publishing_policy"
       ]
     },

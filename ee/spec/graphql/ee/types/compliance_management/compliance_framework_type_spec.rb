@@ -16,6 +16,7 @@ RSpec.describe GitlabSchema.types['ComplianceFramework'] do
     scan_result_policies
     scan_execution_policies
     pipeline_execution_policies
+    pipeline_execution_schedule_policies
     compliance_requirements
     vulnerability_management_policies
     edit_path

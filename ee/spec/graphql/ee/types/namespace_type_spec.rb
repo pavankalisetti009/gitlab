@@ -17,6 +17,7 @@ RSpec.describe GitlabSchema.types['Namespace'], feature_category: :groups_and_pr
       storage_size_limit
       compliance_frameworks
       pipeline_execution_policies
+      pipeline_execution_schedule_policies
       scan_execution_policies
       approval_policies
       vulnerability_management_policies

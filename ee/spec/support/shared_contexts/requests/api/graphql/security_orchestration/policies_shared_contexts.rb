@@ -70,7 +70,7 @@ RSpec.shared_context 'with base security policies graphql context' do
       "name" => policy[:name],
       "yaml" => YAML.dump(policy.deep_stringify_keys),
       "updatedAt" => committed_date.iso8601,
-      "editPath" => edit_group_policy_path(group, 'scan_execution_policy', policy),
+      "editPath" => edit_group_policy_path(group, policy_type, policy),
       "policyScope" => {
         "complianceFrameworks" => { "nodes" => [] },
         "includingProjects" => { "nodes" => [] },
@@ -115,6 +115,8 @@ end
 
 RSpec.shared_context 'with project level approval policies' do
   include_context 'with base security policies graphql context'
+
+  let(:policy_type) { 'merge_request_approval_policy' }
 
   let_it_be(:policy) { build(:scan_result_policy, actions: [action]) }
   let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, scan_result_policy: [policy]) }
@@ -284,6 +286,8 @@ end
 RSpec.shared_context 'with project level scan execution policies' do
   include_context 'with base security policies graphql context'
 
+  let(:policy_type) { 'scan_execution_policy' }
+
   let_it_be(:policy) { build(:scan_execution_policy, name: 'Run DAST in every pipeline') }
   let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [policy]) }
 
@@ -420,6 +424,79 @@ RSpec.shared_context 'with group level scan execution policies' do
     end
 
     post_graphql(query, current_user: user, variables: group_variables)
+  end
+end
+
+RSpec.shared_context 'with project level pipeline execution schedule policies' do
+  include_context 'with base security policies graphql context'
+
+  let(:policy_type) { 'pipeline_execution_schedule_policy' }
+
+  let_it_be(:policy) { build(:pipeline_execution_schedule_policy) }
+  let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, pipeline_execution_schedule_policy: [policy]) }
+
+  let_it_be(:query) do
+    <<~QUERY
+      query($fullPath: ID!, $relationship: SecurityPolicyRelationType!) {
+        project(fullPath: $fullPath) {
+          pipelineExecutionSchedulePolicies(relationship: $relationship) {
+            nodes{
+              name
+              description
+              enabled
+              editPath
+              updatedAt
+              yaml
+              source {
+                __typename
+                ... on ProjectSecurityPolicySource {
+                  project {
+                    id
+                  }
+                }
+                ... on GroupSecurityPolicySource {
+                  inherited
+                  namespace {
+                    id
+                  }
+                }
+              }
+              policyScope {
+                complianceFrameworks {
+                  nodes {
+                    id
+                  }
+                }
+                includingProjects {
+                  nodes {
+                    id
+                  }
+                }
+                excludingProjects {
+                  nodes {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    QUERY
+  end
+
+  before_all do
+    project.add_maintainer(user)
+  end
+
+  before do
+    stub_licensed_features(security_orchestration_policies: true)
+    allow_next_instance_of(Repository) do |repository|
+      allow(repository).to receive(:blob_data_at).and_return(policy_yaml)
+      allow(repository).to receive(:last_commit_for_path).and_return(commit)
+    end
+
+    post_graphql(query, current_user: user, variables: project_variables)
   end
 end
 

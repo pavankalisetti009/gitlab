@@ -12,6 +12,8 @@ RSpec.describe 'Query.group(fullPath).approvalPolicies', feature_category: :secu
       project: nil, namespace: group)
   end
 
+  let(:policy_type) { 'approval_policy' }
+
   subject(:query_result) { graphql_data_at(:group, :approvalPolicies, :nodes) }
 
   context 'when policy_scope is not present in policy' do

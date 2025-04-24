@@ -12,6 +12,8 @@ RSpec.describe 'Query.group(fullPath).scanExecutionPolicies', feature_category: 
       project: nil, namespace: group)
   end
 
+  let(:policy_type) { 'scan_execution_policy' }
+
   subject(:query_result) { graphql_data_at(:group, :scanExecutionPolicies, :nodes) }
 
   context 'when policy_scope is present in the policy' do

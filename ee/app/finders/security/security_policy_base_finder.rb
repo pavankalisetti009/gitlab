@@ -76,6 +76,8 @@ module Security
       case policy_type
       when :pipeline_execution_policy
         config.pipeline_execution_policy
+      when :pipeline_execution_schedule_policy
+        config.pipeline_execution_schedule_policy
       when :scan_execution_policy
         config.scan_execution_policy
       when :scan_result_policies
