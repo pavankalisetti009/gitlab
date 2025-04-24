@@ -10,7 +10,6 @@ RSpec.describe Namespaces::RemoveDormantMembersWorker, :saas, feature_category: 
 
     before do
       stub_saas_features(gitlab_com_subscriptions: true)
-      stub_feature_flags(limited_capacity_dormant_member_removal: true)
     end
 
     context 'with Groups requiring dormant member review', :freeze_time do

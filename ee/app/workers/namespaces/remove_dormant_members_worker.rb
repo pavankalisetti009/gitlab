@@ -14,7 +14,6 @@ module Namespaces
     MAX_RUNNING_JOBS = 6
 
     def perform_work
-      return unless ::Feature.enabled?(:limited_capacity_dormant_member_removal) # rubocop: disable Gitlab/FeatureFlagWithoutActor -- not required
       return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
       namespace = find_next_namespace
@@ -28,8 +27,6 @@ module Namespaces
     end
 
     def max_running_jobs
-      return 0 unless ::Feature.enabled?(:limited_capacity_dormant_member_removal) # rubocop: disable Gitlab/FeatureFlagWithoutActor -- not required
-
       MAX_RUNNING_JOBS
     end
 
