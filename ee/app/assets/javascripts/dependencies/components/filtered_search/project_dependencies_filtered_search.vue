@@ -28,7 +28,7 @@ export default {
         ...(this.glFeatures.versionFilteringOnProjectLevelDependencyList
           ? [
               {
-                type: 'component_version_ids',
+                type: 'component_versions',
                 title: __('Version'),
                 multiSelect: true,
                 unique: true,
