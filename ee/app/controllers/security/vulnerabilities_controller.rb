@@ -10,7 +10,6 @@ module Security
 
     before_action do
       push_frontend_feature_flag(:vulnerability_report_owasp_2021, current_user)
-      push_frontend_feature_flag(:vulnerability_report_vr_badge, current_user, type: :beta)
       push_frontend_feature_flag(:vulnerability_report_vr_filter, current_user, type: :beta)
       push_frontend_feature_flag(:enhanced_vulnerability_bulk_actions, current_user, type: :wip)
       push_frontend_feature_flag(:vulnerability_severity_override, current_user, type: :beta)
