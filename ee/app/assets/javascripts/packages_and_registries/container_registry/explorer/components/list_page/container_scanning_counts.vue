@@ -13,6 +13,7 @@ import {
   SEVERITY_COUNT_LIMIT,
   SEVERITIES,
 } from 'ee/vulnerabilities/constants';
+import { ERROR_POLICY_NONE } from '~/lib/graphql';
 import { s__, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
@@ -75,7 +76,7 @@ export default {
   apollo: {
     project: {
       query: vulnerabilityCountsQuery,
-      errorPolicy: 'none',
+      errorPolicy: ERROR_POLICY_NONE,
       variables() {
         return {
           fullPath: this.config.projectPath,
