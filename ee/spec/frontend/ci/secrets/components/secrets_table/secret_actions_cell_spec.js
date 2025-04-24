@@ -13,6 +13,7 @@ describe('SecretActionsCell component', () => {
     wrapper = mountExtended(SecretActionsCell, {
       propsData: {
         detailsRoute: { name: DETAILS_ROUTE_NAME, params: { key: 'secret_key' } },
+        secretName: 'SECRET_KEY',
       },
       stubs: {
         RouterLink: RouterLinkStub,
@@ -25,13 +26,13 @@ describe('SecretActionsCell component', () => {
   });
 
   it('shows the actions dropdown for the secret', () => {
-    expect(findSecretActionItems().length).toBe(3);
+    expect(findSecretActionItems().length).toBe(2);
   });
 
   it('shows the "Edit secret" action', () => {
     const action = findSecretActionItems().at(0);
 
-    expect(action.text()).toBe('Edit secret');
+    expect(action.text()).toBe('Edit');
     expect(action.findComponent(RouterLinkStub).props('to')).toMatchObject({
       name: DETAILS_ROUTE_NAME,
       params: { key: 'secret_key' },
@@ -42,11 +43,9 @@ describe('SecretActionsCell component', () => {
     const action = findSecretActionItems().at(1);
 
     expect(action.text()).toBe('Delete');
-  });
 
-  it('shows the "Revoke" action', () => {
-    const action = findSecretActionItems().at(2);
+    action.vm.$emit('action');
 
-    expect(action.text()).toBe('Revoke');
+    expect(wrapper.emitted('delete-secret')).toEqual([['SECRET_KEY']]);
   });
 });

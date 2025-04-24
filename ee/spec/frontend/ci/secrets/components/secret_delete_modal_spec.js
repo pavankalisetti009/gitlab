@@ -5,7 +5,7 @@ import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { INDEX_ROUTE_NAME } from 'ee/ci/secrets/constants';
+import { INDEX_ROUTE_NAME, DETAILS_ROUTE_NAME } from 'ee/ci/secrets/constants';
 import deleteSecretMutation from 'ee/ci/secrets/graphql/mutations/delete_secret.mutation.graphql';
 import SecretDeleteModal from 'ee/ci/secrets/components/secret_delete_modal.vue';
 import {
@@ -31,7 +31,12 @@ describe('SecretDetailsWrapper component', () => {
     showModal: true,
   };
 
-  const createComponent = ({ props = {}, stubs = { GlSprintf } } = {}) => {
+  const createComponent = ({
+    props = {},
+    stubs = { GlSprintf },
+    isRoot = true,
+    routeName = INDEX_ROUTE_NAME,
+  } = {}) => {
     mockApollo = createMockApollo([[deleteSecretMutation, mockDeleteSecretMutationResponse]]);
 
     wrapper = shallowMountExtended(SecretDeleteModal, {
@@ -46,7 +51,12 @@ describe('SecretDetailsWrapper component', () => {
       },
       mocks: {
         $router: mockRouter,
-        $route: { name: INDEX_ROUTE_NAME },
+        $route: {
+          name: routeName,
+          meta: {
+            isRoot,
+          },
+        },
       },
     });
   };
@@ -97,37 +107,76 @@ describe('SecretDetailsWrapper component', () => {
       expect(findDeleteButton().attributes.disabled).toBe(true);
     });
 
-    it.each`
+    describe.each`
       modalEvent     | emittedEvent
       ${'canceled'}  | ${'hide'}
       ${'hidden'}    | ${'hide'}
       ${'secondary'} | ${'hide'}
-    `(
-      'emits the $emittedEvent event when $modalEvent event is triggered',
-      ({ modalEvent, emittedEvent }) => {
+    `('modal events', ({ modalEvent, emittedEvent }) => {
+      it('emits the $emittedEvent event when $modalEvent event is triggered', () => {
         expect(wrapper.emitted(emittedEvent)).toBeUndefined();
 
         findModal().vm.$emit(modalEvent);
 
         expect(wrapper.emitted(emittedEvent)).toHaveLength(1);
-      },
-    );
+      });
+
+      it('resets text input', async () => {
+        findInput().vm.$emit('input', 'SECRET_KEY');
+        await nextTick();
+
+        expect(findInput().props('value')).toBe('SECRET_KEY');
+
+        findModal().vm.$emit(modalEvent);
+        await nextTick();
+
+        expect(findInput().props('value')).toBe('');
+      });
+    });
   });
 
   describe('when delete action succeeds', () => {
     beforeEach(async () => {
       await createComponent();
+    });
+
+    it('resets text input', async () => {
+      findInput().vm.$emit('input', 'SECRET_KEY');
+      await nextTick();
+
+      expect(findInput().props('value')).toBe('SECRET_KEY');
+
+      await deleteSecret();
+      await nextTick();
+
+      expect(findInput().props('value')).toBe('');
+    });
+
+    it('refetches secrets and stays on the overview page', async () => {
+      await deleteSecret();
+
+      expect(wrapper.emitted('refetch-secrets')).toHaveLength(1);
+      expect(mockRouter.push).not.toHaveBeenCalledWith({ name: INDEX_ROUTE_NAME });
+    });
+
+    it('triggers toast message', async () => {
+      await deleteSecret();
+
+      expect(wrapper.emitted('show-secrets-toast')).toEqual([
+        ['Secret SECRET_KEY has been deleted.'],
+      ]);
+    });
+  });
+
+  describe('when delete action succeeds from details page', () => {
+    beforeEach(async () => {
+      await createComponent({ isRoot: false, routeName: DETAILS_ROUTE_NAME });
       await deleteSecret();
     });
 
     it('redirects to index page', () => {
+      expect(wrapper.emitted('refetch-secrets')).toBeUndefined();
       expect(mockRouter.push).toHaveBeenCalledWith({ name: INDEX_ROUTE_NAME });
-    });
-
-    it('triggers toast message', () => {
-      expect(wrapper.emitted('show-secrets-toast')).toEqual([
-        ['Secret SECRET_KEY has been deleted.'],
-      ]);
     });
   });
 

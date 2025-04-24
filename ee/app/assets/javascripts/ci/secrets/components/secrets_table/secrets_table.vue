@@ -31,6 +31,7 @@ import {
   SECRET_MANAGER_STATUS_PROVISIONING,
   SECRET_STATUS,
 } from '../../constants';
+import SecretDeleteModal from '../secret_delete_modal.vue';
 import ActionsCell from './secret_actions_cell.vue';
 
 export default {
@@ -47,6 +48,7 @@ export default {
     GlLoadingIcon,
     GlSprintf,
     GlTableLite,
+    SecretDeleteModal,
     TimeAgo,
     UserDate,
   },
@@ -65,6 +67,8 @@ export default {
     return {
       secretManagerStatus: null,
       secrets: [],
+      secretToDelete: '',
+      showDeleteModal: false,
       endCursor: null,
       startCursor: null,
       secretsCursor: {},
@@ -150,6 +154,10 @@ export default {
     },
   },
   methods: {
+    deleteSecret(secretName) {
+      this.secretToDelete = secretName;
+      this.showDeleteModal = true;
+    },
     getDetailsRoute: (secretName) => ({ name: DETAILS_ROUTE_NAME, params: { secretName } }),
     getEditRoute: (name) => ({ name: EDIT_ROUTE_NAME, params: { name } }),
     environmentLabelText(environment) {
@@ -167,6 +175,14 @@ export default {
         after: null,
         before: this.startCursor,
       };
+    },
+    hideModal() {
+      this.secretToDelete = '';
+      this.showDeleteModal = false;
+    },
+    refetchSecrets() {
+      this.$apollo.queries.secrets.refetch();
+      this.hideModal();
     },
   },
   fields: [
@@ -278,7 +294,11 @@ export default {
           <user-date :date="createdAt" data-testid="secret-created-at" />
         </template>
         <template #cell(actions)="{ item: { name } }">
-          <actions-cell :details-route="getEditRoute(name)" />
+          <actions-cell
+            :details-route="getEditRoute(name)"
+            :secret-name="name"
+            @delete-secret="deleteSecret"
+          />
         </template>
       </gl-table-lite>
 
@@ -293,5 +313,13 @@ export default {
         />
       </template>
     </crud-component>
+    <secret-delete-modal
+      :full-path="fullPath"
+      :secret-name="secretToDelete"
+      :show-modal="showDeleteModal"
+      @hide="hideModal"
+      @refetch-secrets="refetchSecrets"
+      v-on="$listeners"
+    />
   </div>
 </template>

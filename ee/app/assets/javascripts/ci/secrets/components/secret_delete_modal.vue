@@ -60,6 +60,7 @@ export default {
       createAlert({ message });
     },
     hideModal() {
+      this.typedSecretName = '';
       this.$emit('hide');
     },
     showToastMessage() {
@@ -86,7 +87,13 @@ export default {
         }
 
         this.showToastMessage();
-        this.$router.push({ name: INDEX_ROUTE_NAME });
+        this.typedSecretName = '';
+
+        if (this.$route.meta.isRoot) {
+          this.$emit('refetch-secrets');
+        } else {
+          this.$router.push({ name: INDEX_ROUTE_NAME });
+        }
       } catch (e) {
         this.handleDeleteError(__('Something went wrong on our end. Please try again.'));
       }
