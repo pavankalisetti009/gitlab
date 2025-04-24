@@ -104,7 +104,9 @@ module Search
               work_item_type_id: { type: 'integer' },
               schema_version: { type: 'short' },
               notes: { type: :text, index_options: 'positions', analyzer: :code_analyzer },
-              notes_internal: { type: :text, index_options: 'positions', analyzer: :code_analyzer }
+              notes_internal: { type: :text, index_options: 'positions', analyzer: :code_analyzer },
+              milestone_title: { type: 'keyword' },
+              milestone_id: { type: 'long' }
             }
           end
 

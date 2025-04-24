@@ -461,6 +461,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
 
       shared_examples 'efficient preloads for work_items' do
         it 'does not have N+1 queries for work_items' do
+          group = create(:group)
           project = create(:project)
           parent_group = create(:group)
           nested_group = create(:group, parent: parent_group)
@@ -468,15 +469,16 @@ RSpec.describe Elastic::ProcessBookkeepingService,
           create(:note_on_work_item, project: work_item_with_note.project, noteable: work_item_with_note)
           work_items = [
             work_item_with_note,
-            create(:work_item, project: project),
-            create(:work_item, namespace: create(:group)),
-            create(:work_item, namespace: nested_group)
+            create(:work_item, project: project, milestone: create(:milestone, project: project)),
+            create(:work_item, namespace: group, milestone: create(:milestone, group: group)),
+            create(:work_item, namespace: nested_group, milestone: create(:milestone, group: nested_group))
           ]
 
           described_class.track!(*work_items)
 
           control = ActiveRecord::QueryRecorder.new(skip_cached: false) { described_class.new.execute }
 
+          group = create(:group)
           project = create(:project)
           parent_group = create(:group)
           nested_group = create(:group, parent: parent_group)
@@ -484,9 +486,9 @@ RSpec.describe Elastic::ProcessBookkeepingService,
           create(:note_on_work_item, project: work_item_with_note.project, noteable: work_item_with_note)
           work_items += [
             work_item_with_note,
-            create(:work_item, project: project),
-            create(:work_item, namespace: create(:group)),
-            create(:work_item, namespace: nested_group)
+            create(:work_item, project: project, milestone: create(:milestone, project: project)),
+            create(:work_item, namespace: group, milestone: create(:milestone, group: group)),
+            create(:work_item, namespace: nested_group, milestone: create(:milestone, group: nested_group))
           ]
 
           described_class.track!(*work_items)
