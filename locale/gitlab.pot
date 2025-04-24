@@ -27299,6 +27299,9 @@ msgstr ""
 msgid "Geo|Healthy"
 msgstr ""
 
+msgid "Geo|Help us improve Geo for distributed teams and disaster recovery. We aim to make it simpler to use and operate."
+msgstr ""
+
 msgid "Geo|If enabled, GitLab will handle Object Storage replication using Geo."
 msgstr ""
 
