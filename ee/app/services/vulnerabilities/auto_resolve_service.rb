@@ -14,6 +14,8 @@ module Vulnerabilities
     def execute
       return ServiceResponse.success(payload: { count: 0 }) if policies.blank?
 
+      ensure_bot_user_exists
+
       unless can_create_state_transitions?
         return error_response(reason: 'Bot user does not have permission to create state transitions')
       end
@@ -61,6 +63,10 @@ module Vulnerabilities
         .select(&:type_no_longer_detected?)
     end
     strong_memoize_attr :rules
+
+    def ensure_bot_user_exists
+      ::Security::Orchestration::CreateBotService.new(project, nil, skip_authorization: true).execute
+    end
 
     def resolve_vulnerabilities
       return if vulnerabilities_to_resolve.empty?
