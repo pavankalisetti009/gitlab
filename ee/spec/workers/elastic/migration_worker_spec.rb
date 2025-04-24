@@ -8,7 +8,7 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
   let(:logger) { ::Gitlab::Elasticsearch::Logger.build }
 
   describe '#perform' do
-    let(:migration) { Elastic::DataMigrationService.migrations.last }
+    let(:migration) { Elastic::DataMigrationService.migrations(exclude_skipped: true).last }
 
     before do
       stub_ee_application_setting(elasticsearch_indexing: true)
