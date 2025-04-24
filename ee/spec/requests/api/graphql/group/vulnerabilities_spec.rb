@@ -78,7 +78,7 @@ RSpec.describe 'Vulnerabilities through GroupQuery', feature_category: :vulnerab
           },
           {
             'id' => vulnerability_2.to_global_id.to_s,
-            'archivalInformation' => { 'aboutToBeArchived' => true, 'expectedToBeArchivedOn' => '2025-03-01' }
+            'archivalInformation' => { 'aboutToBeArchived' => true, 'expectedToBeArchivedOn' => '2025-05-01' }
           },
           {
             'id' => vulnerability_3.to_global_id.to_s,
