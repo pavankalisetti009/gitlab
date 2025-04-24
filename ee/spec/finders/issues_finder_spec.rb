@@ -471,16 +471,6 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
           expect(results).to match_array(issues)
         end
       end
-
-      context 'when custom_fields_feature is disabled' do
-        before do
-          stub_feature_flags(custom_fields_feature: false)
-        end
-
-        it 'does not apply the custom field filter' do
-          expect(results).to match_array(issues)
-        end
-      end
     end
 
     context 'filtering on a multi-select field' do

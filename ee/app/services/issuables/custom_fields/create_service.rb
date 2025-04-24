@@ -5,15 +5,11 @@ module Issuables
     class CreateService < BaseGroupService
       include Gitlab::InternalEventsTracking
 
-      FeatureNotAvailableError = ServiceResponse.error(
-        message: 'This feature is currently behind a feature flag and it is not available.'
-      )
       NotAuthorizedError = ServiceResponse.error(
         message: "You don't have permissions to create a custom field for this group."
       )
 
       def execute
-        return FeatureNotAvailableError unless Feature.enabled?(:custom_fields_feature, group)
         return NotAuthorizedError unless can?(current_user, :admin_custom_field, group)
 
         custom_field = Issuables::CustomField.new(

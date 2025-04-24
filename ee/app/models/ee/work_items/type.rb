@@ -59,10 +59,6 @@ module EE
             unavailable_widgets << ::WorkItems::Widgets::Milestone
           end
 
-          if ::Feature.disabled?(:custom_fields_feature, resource_parent.root_ancestor)
-            unavailable_widgets << ::WorkItems::Widgets::CustomFields
-          end
-
           unless resource_parent.root_ancestor.try(:work_item_status_feature_available?)
             unavailable_widgets << ::WorkItems::Widgets::Status
           end

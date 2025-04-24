@@ -167,14 +167,4 @@ RSpec.describe Issuables::CustomFieldsFinder, feature_category: :team_planning d
       expect(custom_fields).to be_empty
     end
   end
-
-  context 'when feature flag is disabled' do
-    before do
-      stub_feature_flags(custom_fields_feature: false)
-    end
-
-    it 'returns an empty result' do
-      expect(custom_fields).to be_empty
-    end
-  end
 end

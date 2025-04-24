@@ -11,7 +11,6 @@ module WorkItems
 
     def filter(issuables)
       return issuables if params[:custom_field].blank?
-      return issuables unless ::Feature.enabled?(:custom_fields_feature, @parent&.root_ancestor)
       return issuables if @parent && !@parent.licensed_feature_available?(:custom_fields)
 
       filter_select_fields(issuables, params[:custom_field])

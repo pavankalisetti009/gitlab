@@ -123,17 +123,6 @@ RSpec.describe Issuables::CustomFields::CreateService, feature_category: :team_p
     end
   end
 
-  context 'when custom_fields_feature is disabled' do
-    before do
-      stub_feature_flags(custom_fields_feature: false)
-    end
-
-    it 'returns an error' do
-      expect(response).to be_error
-      expect(response.message).to eq(described_class::FeatureNotAvailableError.message)
-    end
-  end
-
   context 'when there are model validation errors' do
     let(:params) { { name: 'a' * 256, field_type: 'text' } }
 

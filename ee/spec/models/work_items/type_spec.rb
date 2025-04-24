@@ -79,16 +79,6 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
         end
       end
 
-      context 'when custom_fields_feature is disabled' do
-        before do
-          stub_feature_flags(custom_fields_feature: false)
-        end
-
-        it 'does not return custom fields widget' do
-          expect(returned_widgets.map(&:widget_class)).not_to include(::WorkItems::Widgets::CustomFields)
-        end
-      end
-
       context 'when work_item_status_feature_flag is disabled?' do
         before do
           stub_feature_flags(work_item_status_feature_flag: false)

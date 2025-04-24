@@ -22,6 +22,7 @@ import { resolvers } from '~/graphql_shared/issuable_client';
 import {
   createWorkItemMutationResponse,
   createWorkItemQueryResponse,
+  customFieldsWidgetResponseFactory,
   namespaceWorkItemsWithoutEpicSupport,
 } from '../mock_data';
 
@@ -44,7 +45,9 @@ describe('EE Create work item component', () => {
   let mockApollo;
 
   const createWorkItemSuccessHandler = jest.fn().mockResolvedValue(createWorkItemMutationResponse);
-  const workItemQuerySuccessHandler = jest.fn().mockResolvedValue(createWorkItemQueryResponse);
+  const workItemQuerySuccessHandler = jest
+    .fn()
+    .mockResolvedValue(createWorkItemQueryResponse([customFieldsWidgetResponseFactory()]));
   const namespaceWorkItemTypesHandler = jest
     .fn()
     .mockResolvedValue(namespaceWorkItemTypesQueryResponse);
@@ -74,7 +77,6 @@ describe('EE Create work item component', () => {
     mutationHandler = createWorkItemSuccessHandler,
     namespaceHandler = namespaceWorkItemTypesHandler,
     preselectedWorkItemType = WORK_ITEM_TYPE_NAME_EPIC,
-    customFieldsFeature = false,
   } = {}) => {
     mockApollo = createMockApollo(
       [
@@ -97,9 +99,6 @@ describe('EE Create work item component', () => {
         hasIssuableHealthStatusFeature: false,
         hasIterationsFeature: true,
         hasIssueWeightsFeature: true,
-        glFeatures: {
-          customFieldsFeature,
-        },
       },
     });
   };
@@ -140,21 +139,13 @@ describe('EE Create work item component', () => {
       expect(findParentWidget().exists()).toBe(true);
     });
 
-    it('renders the work item custom field widget if flag is enabled', async () => {
+    it('renders the work item custom field widget', async () => {
       createComponent({
         preselectedWorkItemType: WORK_ITEM_TYPE_NAME_EPIC,
-        customFieldsFeature: true,
       });
       await waitForPromises();
 
       expect(findCustomFieldsWidget().exists()).toBe(true);
-    });
-
-    it('does not render the work item custom field widget if flag is disabled', async () => {
-      createComponent({ preselectedWorkItemType: WORK_ITEM_TYPE_NAME_EPIC });
-      await waitForPromises();
-
-      expect(findCustomFieldsWidget().exists()).toBe(false);
     });
   });
 
@@ -180,21 +171,13 @@ describe('EE Create work item component', () => {
       expect(findParentWidget().exists()).toBe(true);
     });
 
-    it('renders the work item custom field widget if flag is enabled', async () => {
+    it('renders the work item custom field widget', async () => {
       createComponent({
         preselectedWorkItemType: WORK_ITEM_TYPE_NAME_ISSUE,
-        customFieldsFeature: true,
       });
       await waitForPromises();
 
       expect(findCustomFieldsWidget().exists()).toBe(true);
-    });
-
-    it('does not render the work item custom field widget if flag is disabled', async () => {
-      createComponent({ preselectedWorkItemType: WORK_ITEM_TYPE_NAME_ISSUE });
-      await waitForPromises();
-
-      expect(findCustomFieldsWidget().exists()).toBe(false);
     });
   });
 
@@ -252,7 +235,6 @@ describe('EE Create work item component', () => {
 
       createComponent({
         preselectedWorkItemType: WORK_ITEM_TYPE_NAME_ISSUE,
-        customFieldsFeature: true,
         namespaceHandler: customNamespaceWorkItemTypesHandler,
       });
       await waitForPromises();

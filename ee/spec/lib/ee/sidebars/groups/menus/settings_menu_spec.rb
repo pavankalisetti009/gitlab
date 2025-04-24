@@ -356,23 +356,15 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
       describe 'Issues menu item' do
         let(:item_id) { :group_work_items_settings }
         let(:custom_fields_licensed) { true }
-        let(:feature_flag_enabled) { true }
 
         before do
           stub_licensed_features(custom_fields: custom_fields_licensed)
-          stub_feature_flags(custom_fields_feature: feature_flag_enabled)
         end
 
         it { is_expected.to be_present }
 
         context 'when custom_fields is not licensed' do
           let(:custom_fields_licensed) { false }
-
-          it { is_expected.not_to be_present }
-        end
-
-        context 'when feature flag is disabled' do
-          let(:feature_flag_enabled) { false }
 
           it { is_expected.not_to be_present }
         end

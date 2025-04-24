@@ -6,12 +6,6 @@ module EE
       extend ::ActiveSupport::Concern
       extend ::Gitlab::Utils::Override
 
-      prepended do
-        before_action do
-          push_frontend_feature_flag(:custom_fields_feature, @group&.root_ancestor)
-        end
-      end
-
       def check_group_feature_available!(feature)
         render_404 unless group.licensed_feature_available?(feature)
       end

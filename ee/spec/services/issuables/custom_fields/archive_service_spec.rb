@@ -52,15 +52,4 @@ RSpec.describe Issuables::CustomFields::ArchiveService, feature_category: :team_
       expect(response.message).to eq(described_class::NotAuthorizedError.message)
     end
   end
-
-  context 'when custom_fields_feature is disabled' do
-    before do
-      stub_feature_flags(custom_fields_feature: false)
-    end
-
-    it 'returns an error' do
-      expect(response).to be_error
-      expect(response.message).to eq(described_class::FeatureNotAvailableError.message)
-    end
-  end
 end

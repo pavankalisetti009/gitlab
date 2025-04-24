@@ -60,15 +60,5 @@ RSpec.describe WorkItems::Widgets::CustomFields, feature_category: :team_plannin
         )
       end
     end
-
-    context 'when custom_fields_feature is disabled' do
-      before do
-        stub_feature_flags(custom_fields_feature: false)
-      end
-
-      it 'returns an empty array' do
-        expect(custom_field_values).to be_empty
-      end
-    end
   end
 end

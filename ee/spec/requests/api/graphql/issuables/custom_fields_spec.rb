@@ -278,19 +278,6 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
     end
   end
 
-  context 'when feature flag is disabled' do
-    before do
-      stub_feature_flags(custom_fields_feature: false)
-    end
-
-    it 'returns an empty result' do
-      post_graphql(query, current_user: guest)
-
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(graphql_data_at(:namespace, :customFields, :nodes)).to be_blank
-    end
-  end
-
   def custom_field_attributes(field)
     a_hash_including({
       'id' => field.to_global_id.to_s,

@@ -14,11 +14,7 @@ module Resolvers
         description: 'Global ID of the custom field.'
 
       def resolve(id:)
-        custom_field = authorized_find!(id: id)
-
-        return unless Feature.enabled?(:custom_fields_feature, custom_field.namespace)
-
-        custom_field
+        authorized_find!(id: id)
       end
     end
   end
