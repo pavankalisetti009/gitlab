@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# This concern provides shared functionality to the various approval rule models like
+# ApprovalProjectRule, ApprovalGroupRule, and ApprovalMergeRequestRule.
 module ApprovalRuleLike
   extend ActiveSupport::Concern
   include EachBatch
