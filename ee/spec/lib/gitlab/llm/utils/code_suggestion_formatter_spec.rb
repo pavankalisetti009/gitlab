@@ -96,6 +96,25 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
             Some more comments
             NOTE_CONTENT
           end
+
+          context 'when from and to are the same' do
+            let(:body) do
+              <<~RESPONSE
+              First comment with suggestions
+              <from>    first offending line</from>
+              <to>    first offending line</to>
+              Some more comments
+              RESPONSE
+            end
+
+            it 'returns the comment without the suggestions' do
+              expect(parse).to eq <<~NOTE_CONTENT
+              First comment with suggestions
+
+              Some more comments
+              NOTE_CONTENT
+            end
+          end
         end
 
         context 'when the response contains a multiline suggestion' do
@@ -128,6 +147,33 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
             ```
             Some more comments
             NOTE_CONTENT
+          end
+
+          context 'when from and to are the same' do
+            let(:body) do
+              <<~RESPONSE
+              First comment with a suggestion
+              <from>
+                  first offending line
+                  second offending line
+                  third offending line
+              </from>
+              <to>
+                  first offending line
+                  second offending line
+                  third offending line
+              </to>
+              Some more comments
+              RESPONSE
+            end
+
+            it 'returns the comment without the suggestions' do
+              expect(parse).to eq <<~NOTE_CONTENT
+              First comment with a suggestion
+
+              Some more comments
+              NOTE_CONTENT
+            end
           end
         end
 
@@ -172,6 +218,44 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
             Some more comments
             NOTE_CONTENT
           end
+
+          context 'when from and to are the same' do
+            let(:body) do
+              <<~RESPONSE
+              First comment with a suggestion
+              <from>
+                  first offending line
+              </from>
+              <to>
+                  first offending line
+              </to>
+
+              Alternative suggestion
+              <from>
+                  first offending line
+                  second offending line
+              </from>
+              <to>
+                  first offending line
+                  second offending line
+              </to>
+
+              Some more comments
+              RESPONSE
+            end
+
+            it 'returns the comment without the suggestions' do
+              expect(parse).to eq <<~NOTE_CONTENT
+              First comment with a suggestion
+
+
+              Alternative suggestion
+
+
+              Some more comments
+              NOTE_CONTENT
+            end
+          end
         end
 
         context 'when the content includes other elements' do
@@ -196,6 +280,31 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
               ```
             NOTE_CONTENT
           end
+
+          context 'when from and to are the same' do
+            let(:body) do
+              <<~RESPONSE
+                Some comment
+                <from>
+                    <div>first offending line</div>
+                      <p>second offending line</p>
+                </from>
+                <to>
+                    <div>first offending line</div>
+                      <p>second offending line</p>
+                </to>
+                Some more comment
+              RESPONSE
+            end
+
+            it 'returns the comment without the suggestions' do
+              expect(parse).to eq <<~NOTE_CONTENT
+                Some comment
+
+                Some more comment
+              NOTE_CONTENT
+            end
+          end
         end
 
         context 'when the content includes <from> and <to>' do
@@ -219,6 +328,31 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
                   <to>second improved line</to>
               ```
             NOTE_CONTENT
+          end
+
+          context 'when from and to are the same' do
+            let(:body) do
+              <<~RESPONSE
+                Some comment
+                <from>
+                    <from>first offending line</from>
+                    <to>second offending line</to>
+                </from>
+                <to>
+                    <from>first offending line</from>
+                    <to>second offending line</to>
+                </to>
+                Some more comment
+              RESPONSE
+            end
+
+            it 'returns the comment without the suggestions' do
+              expect(parse).to eq <<~NOTE_CONTENT
+                Some comment
+
+                Some more comment
+              NOTE_CONTENT
+            end
           end
         end
 
@@ -249,6 +383,33 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
               ```
             NOTE_CONTENT
           end
+
+          context 'when from and to are the same' do
+            let(:body) do
+              <<~RESPONSE
+                Some comment including a <from> tag
+                <from>
+                    <from>
+                      Old
+                    </from>
+                </from>
+                <to>
+                    <from>
+                      Old
+                    </from>
+                </to>
+                Some more comment
+              RESPONSE
+            end
+
+            it 'returns the comment without the suggestions' do
+              expect(parse).to eq <<~NOTE_CONTENT
+                Some comment including a <from> tag
+
+                Some more comment
+              NOTE_CONTENT
+            end
+          end
         end
 
         context 'when the suggestion contains any reserved XML characters' do
@@ -271,6 +432,29 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
               a && b < c
             ```
             NOTE_CONTENT
+          end
+
+          context 'when from and to are the same' do
+            let(:body) do
+              <<~RESPONSE
+              First comment with suggestions
+              <from>
+                a && b
+              </from>
+              <to>
+                a && b
+              </to>
+              Some more comment
+              RESPONSE
+            end
+
+            it 'returns the comment without the suggestions' do
+              expect(parse).to eq <<~NOTE_CONTENT
+                First comment with suggestions
+
+                Some more comment
+              NOTE_CONTENT
+            end
           end
         end
 
@@ -296,6 +480,33 @@ RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :c
 
             ```
             NOTE_CONTENT
+          end
+
+          context 'when from and to are the same' do
+            let(:body) do
+              <<~RESPONSE
+              Please remove extra lines
+              <from>
+
+
+
+              </from>
+              <to>
+
+
+
+              </to>
+              Some more comment
+              RESPONSE
+            end
+
+            it 'returns the comment without the suggestions' do
+              expect(parse).to eq <<~NOTE_CONTENT
+                Please remove extra lines
+
+                Some more comment
+              NOTE_CONTENT
+            end
           end
         end
 
