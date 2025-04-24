@@ -4,6 +4,7 @@ module RemoteDevelopment
   class WorkspaceVariable < ApplicationRecord
     include Sortable
     include Enums::WorkspaceVariable
+    include Gitlab::EncryptedAttribute
 
     belongs_to :workspace, class_name: 'RemoteDevelopment::Workspace', inverse_of: :workspace_variables
 
@@ -26,7 +27,7 @@ module RemoteDevelopment
 
     attr_encrypted :value, # rubocop:disable Gitlab/Rails/AttrEncrypted -- https://gitlab.com/gitlab-org/gitlab/-/issues/525574
       mode: :per_attribute_iv,
-      key: ::Settings.attr_encrypted_db_key_base_32,
+      key: :db_key_base_32,
       algorithm: 'aes-256-gcm',
       allow_empty_value: true
   end

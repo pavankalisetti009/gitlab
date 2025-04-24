@@ -2,6 +2,8 @@
 
 module StatusPage
   class ProjectSetting < ApplicationRecord
+    include Gitlab::EncryptedAttribute
+
     # AWS validations. See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/25863#note_295772553
     AWS_BUCKET_NAME_REGEXP = /\A[a-z0-9][a-z0-9\-.]*\z/
     AWS_ACCESS_KEY_REGEXP  = /\A[A-Z0-9]{20}\z/
@@ -15,7 +17,7 @@ module StatusPage
     attr_encrypted :aws_secret_key,
       mode: :per_attribute_iv,
       algorithm: 'aes-256-gcm',
-      key: Settings.attr_encrypted_db_key_base_32
+      key: :db_key_base_32
 
     before_validation :check_secret_changes
 

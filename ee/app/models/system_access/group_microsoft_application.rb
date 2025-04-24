@@ -2,6 +2,8 @@
 
 module SystemAccess # rubocop:disable Gitlab/BoundedContexts -- Spliting existing table
   class GroupMicrosoftApplication < ApplicationRecord
+    include Gitlab::EncryptedAttribute
+
     belongs_to :group
     has_one :graph_access_token,
       class_name: '::SystemAccess::GroupMicrosoftGraphAccessToken',
@@ -27,7 +29,7 @@ module SystemAccess # rubocop:disable Gitlab/BoundedContexts -- Spliting existin
       public_url: { schemes: %w[https], enforce_sanitization: true, ascii_only: true }
 
     attr_encrypted :client_secret,
-      key: Settings.attr_encrypted_db_key_base_32,
+      key: :db_key_base_32,
       mode: :per_attribute_iv,
       algorithm: 'aes-256-gcm'
 

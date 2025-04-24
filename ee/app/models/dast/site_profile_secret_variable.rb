@@ -11,6 +11,7 @@ module Dast
 
     include Ci::HasVariable
     include Ci::Maskable
+    include Gitlab::EncryptedAttribute
 
     self.table_name = 'dast_site_profile_secret_variables'
 
@@ -22,7 +23,7 @@ module Dast
     attr_encrypted :value,
       mode: :per_attribute_iv,
       algorithm: 'aes-256-gcm',
-      key: Settings.attr_encrypted_db_key_base_32,
+      key: :db_key_base_32,
       encode: false # No need to encode for binary column https://github.com/attr-encrypted/attr_encrypted#the-encode-encode_iv-encode_salt-and-default_encoding-options
 
     validates :dast_site_profile_id, presence: true
