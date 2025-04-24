@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Duo::Developments::SetupGroupsForModelEvaluation, :saas, :gitlab_duo, :silence_stdout, feature_category: :duo_chat do
   let_it_be(:user) { create(:user, username: 'root') }
-  let(:group) { create(:group) }
-  let(:setup_evaluation) { described_class.new(group) }
+  let_it_be(:group) { create(:group, path: 'gitlab_duo') }
+  let(:setup_evaluation) { described_class.new(group: group, root_group_path: group.path) }
   let(:http_response) { instance_double(HTTParty::Response) }
   let(:file_double) { instance_double(File) }
 
@@ -248,6 +248,78 @@ RSpec.describe Gitlab::Duo::Developments::SetupGroupsForModelEvaluation, :saas, 
 
       it 'raises an error' do
         expect { setup_evaluation.execute }.to raise_error('Server is not running, please start your GitLab server')
+      end
+    end
+  end
+
+  describe '#initialize / #ensure_group' do
+    let!(:root_user) { user }
+    let(:root_group_path) { 'test-eval-group' }
+    let(:args) { { root_group_path: root_group_path } }
+
+    context 'when the root group does not exist' do
+      let(:created_org) { build_stubbed(:organization) }
+      let(:created_group) { build_stubbed(:group, path: root_group_path, organization: created_org) }
+      let(:org_create_service_instance) do
+        instance_double(::Organizations::CreateService,
+          execute: ServiceResponse.success(payload: { organization: created_org }))
+      end
+
+      let(:group_create_service_instance) do
+        instance_double(::Groups::CreateService, execute: ServiceResponse.success(payload: { group: created_group }))
+      end
+
+      before do
+        allow(::Organizations::CreateService).to receive(:new)
+          .with(current_user: user, params: hash_including(name: root_group_path, path: root_group_path))
+          .and_return(org_create_service_instance)
+        allow(org_create_service_instance).to receive(:execute)
+          .and_return(ServiceResponse.success(payload: { organization: created_org }))
+
+        allow(::Groups::CreateService).to receive(:new)
+          .with(user, hash_including(name: root_group_path, path: root_group_path, organization: created_org))
+          .and_return(group_create_service_instance)
+        allow(group_create_service_instance).to receive(:execute)
+          .and_return(ServiceResponse.success(payload: { group: created_group }))
+      end
+
+      it 'attempts to create the organization and the group' do
+        expect(::Organizations::CreateService).to receive(:new).and_return(org_create_service_instance)
+        expect(org_create_service_instance).to receive(:execute)
+        expect(::Groups::CreateService).to receive(:new).and_return(group_create_service_instance)
+        expect(group_create_service_instance).to receive(:execute)
+
+        described_class.new(args)
+      end
+    end
+
+    context 'with invalid input for root_group_path' do
+      context 'when root_group_path is blank' do
+        let(:root_group_path) { '' }
+
+        it 'raises an error' do
+          expect { described_class.new(args) }.to raise_error(RuntimeError, 'You must specify :root_group_path')
+        end
+      end
+
+      context 'when root_group_path contains a slash' do
+        let(:root_group_path) { 'parent/child' }
+
+        it 'raises an error' do
+          expect { described_class.new(args) }.to raise_error(RuntimeError, 'Provided group name must be a root group')
+        end
+      end
+    end
+
+    context 'when the root group already exists' do
+      let(:existing_group) { create(:group, path: root_group_path) }
+      let(:args) { { root_group_path: existing_group.path } }
+
+      it 'finds and uses the existing group without calling create service' do
+        expect(::Organizations::CreateService).not_to receive(:new)
+        expect(::Groups::CreateService).not_to receive(:new)
+
+        described_class.new(args)
       end
     end
   end

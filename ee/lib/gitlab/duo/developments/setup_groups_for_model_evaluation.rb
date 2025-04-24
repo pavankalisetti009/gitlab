@@ -17,8 +17,8 @@ module Gitlab
         PROJECT_IMPORT_URL = '/api/v4/projects/import'
         TIME_LIMIT = 180
 
-        def initialize(group)
-          @main_group = group
+        def initialize(args)
+          @main_group = ensure_group(args[:root_group_path])
           @current_user = User.find_by(username: 'root') # rubocop:disable CodeReuse/ActiveRecord -- we need admin user
           @errors = []
           @project_ids = []
@@ -43,6 +43,49 @@ module Gitlab
 
         attr_reader :main_group, :current_user, :token_value, :token
         attr_accessor :errors, :project_ids
+
+        def ensure_group(namespace)
+          puts "Checking the specified group exists...."
+
+          raise "You must specify :root_group_path" if namespace.blank?
+          raise "Provided group name must be a root group" if namespace.include?('/')
+
+          group = Group.find_by_full_path(namespace)
+
+          if group
+            puts "Found the group: #{group.name}"
+
+            return group
+          end
+
+          puts "The specified group is not found. Creating a new one..."
+
+          current_user = User.find_by_username('root')
+          org = create_org(current_user, namespace)
+          group_params = {
+            name: namespace,
+            path: namespace,
+            organization: org,
+            visibility_level: org.visibility_level
+          }
+          response = Groups::CreateService.new(current_user, group_params).execute
+          group = response[:group]
+
+          raise "Failed to create a group: #{group.errors.full_messages}" if response.error?
+
+          response[:group]
+        end
+
+        def create_org(current_user, namespace)
+          response = ::Organizations::CreateService.new(
+            current_user: current_user,
+            params: { name: namespace, path: namespace, visibility_level: ::Gitlab::VisibilityLevel::PUBLIC }
+          ).execute
+
+          raise "Failed to create an org: #{response.errors}" if response.error?
+
+          response[:organization]
+        end
 
         # rubocop:disable Style/GuardClause -- Keep it explicit
         def ensure_dev_mode!
