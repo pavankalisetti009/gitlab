@@ -3,5 +3,26 @@
   "description": "ActiveContext collections metadata",
   "type": "object",
   "additionalProperties": false,
-  "maxProperties": 0
+  "properties": {
+    "search_embedding_version": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "Version of the embedding model being used for search"
+    },
+    "indexing_embedding_versions": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "uniqueItems": true,
+      "description": "Versions of the embedding models being used for indexing"
+    }
+  }
 }

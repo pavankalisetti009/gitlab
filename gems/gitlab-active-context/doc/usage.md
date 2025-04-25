@@ -4,26 +4,7 @@
 
 Migrations are similiar to database migrations: they create collections, update schemas, run backfills, etc.
 
-### Migration to create a collection
-
-Create a file in `ActiveContext::Config.migrations_path`, e.g. `ee/db/active_context/migrate/20250311135734_create_merge_requests.rb`:
-
-```ruby
-# frozen_string_literal: true
-
-class CreateMergeRequests < ActiveContext::Migration[1.0]
-  milestone '17.9'
-
-  def migrate!
-    create_collection :merge_requests, number_of_partitions: 3 do |c|
-      c.bigint :issue_id, index: true
-      c.bigint :namespace_id, index: true
-      c.keyword :traversal_ids
-      c.vector :embeddings, dimensions: 768
-    end
-  end
-end
-```
+See [migrations](migrations.md) for more details.
 
 A migration worker will apply migrations for the active connection. See [Migrations](how_it_works.md#migrations).
 
