@@ -13,6 +13,10 @@ module Security
         execute(:scan_result, rules)
       end
 
+      def skip_validation?(rule)
+        rule[:branch_type].in?(%w[target_default target_protected])
+      end
+
       private
 
       delegate :default_branch, to: :project

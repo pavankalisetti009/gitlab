@@ -831,6 +831,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             :scan_execution_policy | 'all' | :error | ref(:error_message_non_existing)
             :scan_execution_policy | 'protected' | :error | ref(:error_message_non_existing)
             :scan_execution_policy | 'default' | :error | ref(:error_message_non_existing)
+            :scan_execution_policy | 'target_protected' | :success | nil
+            :scan_execution_policy | 'target_default' | :success | nil
             :scan_result_policy | 'protected' | :error | ref(:error_message_non_existing)
             :scan_result_policy | 'default' | :error | ref(:error_message_non_existing)
             :approval_policy | 'protected' | :error | ref(:error_message_non_existing)
@@ -864,6 +866,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             :scan_execution_policy | 'all' | :success
             :scan_execution_policy | 'protected' | :success
             :scan_execution_policy | 'default' | :success
+            :scan_execution_policy | 'target_protected' | :success
+            :scan_execution_policy | 'target_default' | :success
             :scan_result_policy | 'protected' | :success
             :scan_result_policy | 'default' | :success
             :approval_policy | 'protected' | :success
@@ -895,6 +899,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             :scan_execution_policy | 'all' | :success | nil
             :scan_execution_policy | 'protected' | :success | nil
             :scan_execution_policy | 'default' | :success | nil
+            :scan_execution_policy | 'target_protected' | :success | nil
+            :scan_execution_policy | 'target_default' | :success | nil
             :scan_result_policy | 'protected' | :success | nil
             :scan_result_policy | 'default' | :error | ref(:error_message_default_unprotected)
             :approval_policy | 'protected' | :success | nil
@@ -919,6 +925,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             :scan_execution_policy | 'all' | :success | nil
             :scan_execution_policy | 'protected' | :error | ref(:error_message_non_existing)
             :scan_execution_policy | 'default' | :success | nil
+            :scan_execution_policy | 'target_protected' | :success | nil
+            :scan_execution_policy | 'target_default' | :success | nil
             :scan_result_policy | 'protected' | :error | ref(:error_message_non_existing)
             :scan_result_policy | 'default' | :error | ref(:error_message_default_unprotected)
             :approval_policy | 'protected' | :error | ref(:error_message_non_existing)
