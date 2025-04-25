@@ -4,9 +4,10 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import RolesCrud from './roles_table/roles_crud.vue';
+import LdapSyncCrud from './ldap_sync/ldap_sync_crud.vue';
 
 export default {
-  components: { PageHeading, GlTabs, GlTab, RolesCrud, GlSprintf, GlLink },
+  components: { PageHeading, GlTabs, GlTab, RolesCrud, GlSprintf, GlLink, LdapSyncCrud },
   mixins: [glFeatureFlagsMixin()],
   props: {
     isLdapEnabled: {
@@ -42,10 +43,12 @@ export default {
     </page-heading>
 
     <gl-tabs v-if="showTabs" sync-active-tab-with-query-params>
-      <gl-tab :title="__('Roles')" query-param-value="roles">
+      <gl-tab :title="__('Roles')" query-param-value="roles" lazy>
         <roles-crud class="gl-mt-5" />
       </gl-tab>
-      <gl-tab :title="__('LDAP Synchronization')" query-param-value="ldap" />
+      <gl-tab :title="__('LDAP Synchronization')" query-param-value="ldap" lazy>
+        <ldap-sync-crud class="gl-mt-5" />
+      </gl-tab>
     </gl-tabs>
 
     <roles-crud v-else />

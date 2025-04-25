@@ -37050,6 +37050,9 @@ msgstr ""
 msgid "MemberRole|Are you sure you want to delete this role?"
 msgstr ""
 
+msgid "MemberRole|Automatically sync your LDAP directory to custom admin roles."
+msgstr ""
+
 msgid "MemberRole|Base role"
 msgstr ""
 
@@ -37063,6 +37066,9 @@ msgid "MemberRole|Change role"
 msgstr ""
 
 msgid "MemberRole|Could not fetch available permissions."
+msgstr ""
+
+msgid "MemberRole|Could not load LDAP synchronizations. Please refresh the page to try again."
 msgstr ""
 
 msgid "MemberRole|Could not update role."
@@ -37084,6 +37090,9 @@ msgid "MemberRole|Create role"
 msgstr ""
 
 msgid "MemberRole|Custom admin role"
+msgstr ""
+
+msgid "MemberRole|Custom admin role:"
 msgstr ""
 
 msgid "MemberRole|Custom member role"
@@ -37164,6 +37173,9 @@ msgstr ""
 msgid "MemberRole|Failed to save role: %{error}"
 msgstr ""
 
+msgid "MemberRole|Group cn:"
+msgstr ""
+
 msgid "MemberRole|Learn more about %{linkStart}available custom permissions%{linkEnd}."
 msgstr ""
 
@@ -37188,6 +37200,9 @@ msgstr ""
 msgid "MemberRole|New role"
 msgstr ""
 
+msgid "MemberRole|No active LDAP synchronizations. Add synchronization to connect your LDAP directory with custom admin roles."
+msgstr ""
+
 msgid "MemberRole|No description"
 msgstr ""
 
@@ -37195,6 +37210,9 @@ msgid "MemberRole|Overridden"
 msgstr ""
 
 msgid "MemberRole|Permission"
+msgstr ""
+
+msgid "MemberRole|Remove sync"
 msgstr ""
 
 msgid "MemberRole|Reverted to LDAP group sync settings. The role will be updated after the next LDAP sync."
@@ -37243,6 +37261,12 @@ msgid "MemberRole|Select a role"
 msgstr ""
 
 msgid "MemberRole|Select at least one permission."
+msgstr ""
+
+msgid "MemberRole|Server:"
+msgstr ""
+
+msgid "MemberRole|Sync all"
 msgstr ""
 
 msgid "MemberRole|The CSV report contains a list of users, assigned role and access in all groups, subgroups, and projects. When the export is completed, it will be sent as an attachment to %{email}."
@@ -37297,6 +37321,12 @@ msgid "MemberRole|Update role"
 msgstr ""
 
 msgid "MemberRole|Use LDAP sync role"
+msgstr ""
+
+msgid "MemberRole|User filter:"
+msgstr ""
+
+msgid "MemberRole|View LDAP synced users"
 msgstr ""
 
 msgid "MemberRole|View permissions"

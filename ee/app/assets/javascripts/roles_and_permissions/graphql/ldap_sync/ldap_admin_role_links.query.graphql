@@ -1,0 +1,14 @@
+query ldapAdminRoleLinks {
+  ldapAdminRoleLinks {
+    nodes {
+      id
+      provider
+      filter
+      cn
+      adminMemberRole {
+        id
+        name
+      }
+    }
+  }
+}
