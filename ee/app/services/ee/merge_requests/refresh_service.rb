@@ -142,6 +142,19 @@ module EE
             update_reviewer_service.execute(merge_request, 'unreviewed')
           end
       end
+
+      override :schedule_duo_code_review
+      def schedule_duo_code_review(merge_request)
+        return unless merge_request.project.auto_duo_code_review_enabled
+        return if merge_request.draft?
+
+        previous_diff = merge_request.previous_diff
+
+        return unless previous_diff && previous_diff.empty?
+        return unless merge_request.reviewers.duo_code_review_bot.any?
+
+        request_duo_code_review(merge_request)
+      end
     end
   end
 end
