@@ -27,7 +27,8 @@ module EE
         global_search_commits_enabled: [:boolean, { default: true }],
         global_search_epics_enabled: [:boolean, { default: true }],
         global_search_wiki_enabled: [:boolean, { default: true }],
-        global_search_limited_indexing_enabled: [:boolean, { default: false }]
+        global_search_limited_indexing_enabled: [:boolean, { default: false }],
+        elastic_migration_worker_enabled: [:boolean, { default: true }]
 
       jsonb_accessor :zoekt_settings,
         zoekt_auto_delete_lost_nodes: [:boolean, { default: true }],
