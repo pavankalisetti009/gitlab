@@ -51,8 +51,8 @@ describe('UnconfiguredSecurityRules component', () => {
     ${true}          | ${true}
   `('while approvalsLoading is $approvalsLoading', ({ approvalsLoading, shouldRender }) => {
     beforeEach(() => {
+      store.modules.approvals.state.isLoading = approvalsLoading;
       createWrapper();
-      store.state.approvals.isLoading = approvalsLoading;
     });
 
     it(`should ${shouldRender ? '' : 'not'} render the loading skeleton`, () => {
