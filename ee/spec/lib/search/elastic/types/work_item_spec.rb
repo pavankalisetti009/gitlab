@@ -33,7 +33,6 @@ RSpec.describe Search::Elastic::Types::WorkItem, feature_category: :global_searc
       if helper.vectors_supported?(:elasticsearch)
         expect(mappings.keys).to include(:embedding_0, :embedding_1)
 
-        mappings = described_class.mappings.to_hash[:properties]
         expect(mappings[:embedding_0][:dims]).to eq(expected_dimensions)
         expect(mappings[:embedding_1][:dims]).to eq(expected_dimensions)
       end
@@ -41,7 +40,6 @@ RSpec.describe Search::Elastic::Types::WorkItem, feature_category: :global_searc
       if helper.vectors_supported?(:opensearch)
         expect(mappings.keys).to include(:embedding_0, :embedding_1)
 
-        mappings = described_class.mappings.to_hash[:properties]
         expect(mappings[:embedding_0][:dimension]).to eq(expected_dimensions)
         expect(mappings[:embedding_1][:dimension]).to eq(expected_dimensions)
       end
