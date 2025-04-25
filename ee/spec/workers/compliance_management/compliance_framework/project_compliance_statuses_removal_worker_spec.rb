@@ -47,7 +47,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectComplianceStatu
         it_behaves_like 'returns early without processing'
 
         context 'when skip_framework_check is true' do
-          subject(:perform) { worker.perform(project.id, framework.id, { skip_framework_check: true }) }
+          subject(:perform) { worker.perform(project.id, framework.id, { "skip_framework_check" => true }) }
 
           it 'calls BulkDestroyService to remove statuses' do
             expect(ComplianceManagement::ComplianceFramework::ProjectRequirementStatuses::BulkDestroyService)
