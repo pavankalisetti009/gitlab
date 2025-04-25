@@ -4,42 +4,6 @@ require 'spec_helper'
 
 RSpec.describe Admin::ProjectsController, :geo, feature_category: :groups_and_projects do
   let_it_be(:admin) { create(:admin) }
-  let_it_be(:user) { create(:user) }
-  let_it_be(:role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
-
-  describe 'GET /projects' do
-    subject(:get_admin_projects) { get :index }
-
-    context 'when using custom permissions' do
-      before do
-        sign_in(user)
-      end
-
-      context 'when custom_roles feature is available' do
-        before do
-          stub_licensed_features(custom_roles: true)
-        end
-
-        it 'responds with success' do
-          get_admin_projects
-
-          expect(response).to have_gitlab_http_status(:ok)
-        end
-      end
-
-      context 'when custom_roles feature is not available' do
-        before do
-          stub_licensed_features(custom_roles: false)
-        end
-
-        it 'responds with not found' do
-          get_admin_projects
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-      end
-    end
-  end
 
   describe 'GET /projects/:id' do
     let_it_be(:project) { create(:project) }
@@ -90,36 +54,6 @@ RSpec.describe Admin::ProjectsController, :geo, feature_category: :groups_and_pr
 
           expect(subject.body).not_to match('You may be able to make a limited amount of changes or perform a limited amount of actions on this page')
           expect(subject.body).not_to include(primary.url)
-        end
-      end
-    end
-
-    context 'when using custom permissions' do
-      before do
-        sign_in(user)
-      end
-
-      context 'when custom_roles feature is available' do
-        before do
-          stub_licensed_features(custom_roles: true)
-        end
-
-        it 'responds with success' do
-          subject
-
-          expect(response).to have_gitlab_http_status(:ok)
-        end
-      end
-
-      context 'when custom_roles feature is not available' do
-        before do
-          stub_licensed_features(custom_roles: false)
-        end
-
-        it 'responds with not found' do
-          subject
-
-          expect(response).to have_gitlab_http_status(:not_found)
         end
       end
     end
