@@ -9,6 +9,11 @@ query getDedicatedInstanceRunnerFilters {
         status
       }
     }
+    deletedRunners {
+      nodes {
+        id
+      }
+    }
     years
   }
 }

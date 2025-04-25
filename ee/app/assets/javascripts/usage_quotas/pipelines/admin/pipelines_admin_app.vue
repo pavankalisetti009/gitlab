@@ -33,6 +33,7 @@ export default {
       error: '',
       year,
       selectedMonth: month, // 0-based month index
+      currentMonth: month, // This is to separate the one from the dropdown and the one from the single stat
       ciDedicatedInstanceRunnerUsage: [],
       dedicatedInstanceRunnerUsageMonth: [],
       runnerFilters: null,
@@ -85,12 +86,19 @@ export default {
     runnerFilters: {
       query: getDedicatedInstanceRunnerFilters,
       update(res) {
-        this.selectedRunnerForMonth = res?.ciDedicatedHostedRunnerFilters?.runners.nodes[0].id;
-        this.selectedRunnerNamespace = res?.ciDedicatedHostedRunnerFilters?.runners.nodes[0].id;
+        const allRunners = [
+          ...(res?.ciDedicatedHostedRunnerFilters?.runners.nodes || []),
+          ...(res?.ciDedicatedHostedRunnerFilters?.deletedRunners.nodes || []),
+        ];
+
+        if (allRunners.length >= 0) {
+          this.selectedRunnerForMonth = allRunners[0].id;
+          this.selectedRunnerNamespace = allRunners[0].id;
+        }
 
         return {
           years: res?.ciDedicatedHostedRunnerFilters?.years || [],
-          runners: res?.ciDedicatedHostedRunnerFilters?.runners.nodes || [],
+          runners: allRunners || [],
         };
       },
       error(error) {
@@ -134,7 +142,7 @@ export default {
       return this.$apollo.queries.dedicatedInstanceRunnerUsageMonth.loading;
     },
     monthlyUsage() {
-      return this.dedicatedInstanceRunnerUsageMonth[0]?.computeMinutes || 0;
+      return this.dedicatedInstanceRunnerUsageMonth[this.currentMonth]?.computeMinutes || 0;
     },
   },
   methods: {
