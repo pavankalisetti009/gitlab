@@ -14,13 +14,16 @@ export function initGitLabDuoHome() {
     name: 'GitlabDuoHome',
     apolloProvider,
     provide() {
+      const data = el.dataset;
+
       return {
         ...parseProvideData(el),
-        duoSeatUtilizationPath: el.dataset.duoSeatUtilizationPath,
-        duoConfigurationPath: el.dataset.duoConfigurationPath,
-        duoAvailability: el.dataset.duoAvailability,
-        experimentFeaturesEnabled: parseBoolean(el.dataset.experimentFeaturesEnabled),
-        areExperimentSettingsAllowed: parseBoolean(el.dataset.areExperimentSettingsAllowed),
+        duoSeatUtilizationPath: data.duoSeatUtilizationPath,
+        duoConfigurationPath: data.duoConfigurationPath,
+        duoAvailability: data.duoAvailability,
+        experimentFeaturesEnabled: parseBoolean(data.experimentFeaturesEnabled),
+        areExperimentSettingsAllowed: parseBoolean(data.areExperimentSettingsAllowed),
+        areDuoCoreFeaturesEnabled: parseBoolean(data.areDuoCoreFeaturesEnabled),
       };
     },
     render(createElement) {

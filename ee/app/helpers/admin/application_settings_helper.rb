@@ -10,7 +10,7 @@ module Admin
       to: :current_application_settings
 
     def admin_display_duo_addon_settings?
-      GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_pro_or_duo_enterprise.active.any?
+      GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_core_pro_or_enterprise.active.any?
     end
 
     def admin_duo_home_app_data
@@ -45,7 +45,8 @@ module Admin
 
       {
         duo_add_on_start_date: duo_purchase&.started_at,
-        duo_add_on_end_date: duo_purchase&.expires_on
+        duo_add_on_end_date: duo_purchase&.expires_on,
+        are_duo_core_features_enabled: ::Ai::Setting.instance.duo_core_features_enabled?.to_s
       }
     end
 

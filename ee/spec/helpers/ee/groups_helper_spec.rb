@@ -355,7 +355,8 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     it 'returns a hash with expected values and merges the result of code_suggestions_usage_app_data' do
       namespace_settings.update!(
         duo_availability: 'default_on',
-        experiment_features_enabled: true
+        experiment_features_enabled: true,
+        duo_nano_features_enabled: true
       )
 
       expect(helper.duo_home_app_data(group)).to eq({
@@ -365,7 +366,8 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         duo_configuration_path: '/groups/my-group/-/settings/gitlab_duo/configuration',
         code_suggestions: 'data',
         are_experiment_settings_allowed: 'true',
-        is_duo_base_access_allowed: 'true'
+        is_duo_base_access_allowed: 'true',
+        are_duo_core_features_enabled: 'true'
       })
     end
 
@@ -376,6 +378,16 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
 
       it 'sets is_duo_base_access_allowed to false' do
         expect(helper.duo_home_app_data(group)).to include(is_duo_base_access_allowed: 'false')
+      end
+    end
+
+    context 'with disabled duo_nano_features_enabled' do
+      before do
+        namespace_settings.update!(duo_nano_features_enabled: false)
+      end
+
+      it 'sets Duo Core flag to false' do
+        expect(helper.duo_home_app_data(group)).to include(are_duo_core_features_enabled: 'false')
       end
     end
   end

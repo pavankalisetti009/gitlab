@@ -15,7 +15,7 @@ import CodeSuggestionsUsageLoader from 'ee/usage_quotas/code_suggestions/compone
 import DuoAmazonQInfoCard from 'ee/ai/settings/components/duo_amazon_q_info_card.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
 import {
   ADD_ON_ERROR_DICTIONARY,
   ADD_ON_PURCHASE_FETCH_ERROR_CODE,
@@ -285,7 +285,7 @@ describe('GitLab Duo Usage', () => {
             expect(findCodeSuggestionsIntro().exists()).toBe(true);
           });
 
-          it('hides everything eles', () => {
+          it('hides everything else', () => {
             expect(findCodeSuggestionsTitle().exists()).toBe(false);
             expect(findCodeSuggestionsSubtitle().exists()).toBe(false);
             expect(findCodeSuggestionsInfo().exists()).toBe(false);
@@ -394,35 +394,18 @@ describe('GitLab Duo Usage', () => {
         beforeEach(() => {
           return createComponent({
             addOnPurchasesHandler: noAssignedDuoAddOnsDataHandler,
-            provideProps: { isStandalonePage: true, groupId: 289561 },
+            provideProps: { isStandalonePage: true, isSaaS: false, groupId: 289561 },
           });
         });
 
-        it('renders add-on user list for Duo with Amazon Q', () => {
-          expect(findSaasAddOnEligibleUserList().props()).toEqual({
-            addOnPurchaseId: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/5',
-            duoTier: DUO_AMAZON_Q,
-          });
+        it('selects the highest Duo tier', () => {
+          expect(findCodeSuggestionsSubtitle().text()).toBe(
+            'Manage seat assignments for GitLab Duo with Amazon Q.',
+          );
         });
 
-        it('renders code suggestions statistics card for Duo with Amazon Q', () => {
-          expect(findCodeSuggestionsStatistics().props()).toEqual({
-            usageValue: 0,
-            totalValue: 20,
-            duoTier: DUO_AMAZON_Q,
-          });
-        });
-
-        it('renders code suggestions info card for Duo with Amazon Q', () => {
-          expect(findCodeSuggestionsInfo().exists()).toBe(true);
-          expect(findCodeSuggestionsInfo().props()).toEqual({
-            groupId: 289561,
-            duoTier: DUO_AMAZON_Q,
-          });
-        });
-
-        it('does not render amazon Q info card', () => {
-          expect(findAmazonQInfoCard().exists()).toBe(false);
+        it('does render amazon Q info card', () => {
+          expect(findAmazonQInfoCard().exists()).toBe(true);
         });
       });
     });
@@ -469,7 +452,7 @@ describe('GitLab Duo Usage', () => {
           expect(findCodeSuggestionsIntro().exists()).toBe(true);
         });
 
-        it('hides everything eles', () => {
+        it('hides everything else', () => {
           expect(findCodeSuggestionsTitle().exists()).toBe(false);
           expect(findCodeSuggestionsSubtitle().exists()).toBe(false);
           expect(findCodeSuggestionsInfo().exists()).toBe(false);

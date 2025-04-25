@@ -3,22 +3,28 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 import DuoConfigurationSettingsInfoCard from 'ee/ai/settings/components/duo_configuration_settings_info_card.vue';
 import DuoConfigurationSettingsRow from 'ee/ai/settings/components/duo_configuration_settings_row.vue';
+import { DUO_CORE, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
 
 jest.mock('~/lib/utils/url_utility');
 
 describe('DuoConfigurationSettingsInfoCard', () => {
   let wrapper;
 
-  const createComponent = ({
-    duoConfigurationPath = '/gitlab_duo/configuration',
-    isSaaS = false,
-    isStandalonePage = false,
-    duoAvailability = AVAILABILITY_OPTIONS.DEFAULT_ON,
-    directCodeSuggestionsEnabled = true,
-    experimentFeaturesEnabled = true,
-    betaSelfHostedModelsEnabled = true,
-    areExperimentSettingsAllowed = true,
-  } = {}) => {
+  const createComponent = (
+    {
+      duoConfigurationPath = '/gitlab_duo/configuration',
+      isSaaS = false,
+      isStandalonePage = false,
+      duoAvailability = AVAILABILITY_OPTIONS.DEFAULT_ON,
+      directCodeSuggestionsEnabled = true,
+      experimentFeaturesEnabled = true,
+      betaSelfHostedModelsEnabled = true,
+      areExperimentSettingsAllowed = true,
+      areDuoCoreFeaturesEnabled = true,
+      isDuoBaseAccessAllowed = true,
+    } = {},
+    props = {},
+  ) => {
     wrapper = shallowMountExtended(DuoConfigurationSettingsInfoCard, {
       provide: {
         duoConfigurationPath,
@@ -29,6 +35,12 @@ describe('DuoConfigurationSettingsInfoCard', () => {
         experimentFeaturesEnabled,
         betaSelfHostedModelsEnabled,
         areExperimentSettingsAllowed,
+        areDuoCoreFeaturesEnabled,
+        isDuoBaseAccessAllowed,
+      },
+      propsData: {
+        duoTier: DUO_ENTERPRISE,
+        ...props,
       },
     });
   };
@@ -52,7 +64,7 @@ describe('DuoConfigurationSettingsInfoCard', () => {
     });
 
     it('renders the title correctly', () => {
-      expect(findDuoConfigurationSettingsInfo().text()).toBe('GitLab Duo');
+      expect(findDuoConfigurationSettingsInfo().text()).toBe('GitLab Duo Enterprise');
     });
 
     it('renders the configuration button with correct href', () => {
@@ -77,10 +89,13 @@ describe('DuoConfigurationSettingsInfoCard', () => {
     it('renders all rows for self-managed instance', () => {
       createComponent({ isSaaS: false });
 
-      expect(findDuoConfigurationRows()).toHaveLength(3);
-      expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toBe('Experiment and beta features');
-      expect(findDuoConfigurationRowTitlePropByRowIdx(1)).toBe('Direct connections');
-      expect(findDuoConfigurationRowTitlePropByRowIdx(2)).toBe(
+      expect(findDuoConfigurationRows()).toHaveLength(4);
+      expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toBe(
+        'GitLab Duo Core available to all users',
+      );
+      expect(findDuoConfigurationRowTitlePropByRowIdx(1)).toBe('Experiment and beta features');
+      expect(findDuoConfigurationRowTitlePropByRowIdx(2)).toBe('Direct connections');
+      expect(findDuoConfigurationRowTitlePropByRowIdx(3)).toBe(
         'Self-hosted beta models and features',
       );
     });
@@ -88,8 +103,11 @@ describe('DuoConfigurationSettingsInfoCard', () => {
     it('renders fewer rows for SaaS instance', () => {
       createComponent({ isSaaS: true });
 
-      expect(findDuoConfigurationRows()).toHaveLength(1);
-      expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toBe('Experiment and beta features');
+      expect(findDuoConfigurationRows()).toHaveLength(2);
+      expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toBe(
+        'GitLab Duo Core available to all users',
+      );
+      expect(findDuoConfigurationRowTitlePropByRowIdx(1)).toBe('Experiment and beta features');
     });
 
     it('passes correct props to configuration rows', () => {
@@ -97,6 +115,47 @@ describe('DuoConfigurationSettingsInfoCard', () => {
       expect(findDuoConfigurationRows().at(0).props('isEnabled')).toBe(true);
       expect(findDuoConfigurationRows().at(1).props('isEnabled')).toBe(true);
       expect(findDuoConfigurationRows().at(2).props('isEnabled')).toBe(true);
+      expect(findDuoConfigurationRows().at(3).props('isEnabled')).toBe(true);
+    });
+
+    describe('with disabled FF allow_duo_base_access', () => {
+      it('hides Duo Core activation state information', () => {
+        createComponent(
+          { areDuoCoreFeaturesEnabled: true, isDuoBaseAccessAllowed: false },
+          { duoTier: DUO_ENTERPRISE },
+        );
+
+        expect(findDuoConfigurationRows()).toHaveLength(3);
+        expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toBe('Experiment and beta features');
+        expect(findDuoConfigurationRowTitlePropByRowIdx(1)).toBe('Direct connections');
+        expect(findDuoConfigurationRowTitlePropByRowIdx(2)).toBe(
+          'Self-hosted beta models and features',
+        );
+      });
+    });
+
+    describe('with Duo Core', () => {
+      it('renders the title correctly', () => {
+        createComponent({}, { duoTier: DUO_CORE });
+        expect(findDuoConfigurationSettingsInfo().text()).toBe('GitLab Duo Core');
+      });
+
+      it('renders add-on activation status', () => {
+        createComponent({ areDuoCoreFeaturesEnabled: true }, { duoTier: DUO_CORE });
+        expect(findConfigurationStatus().text()).toContain('Enabled');
+
+        createComponent({ areDuoCoreFeaturesEnabled: false }, { duoTier: DUO_CORE });
+        expect(findConfigurationStatus().text()).toContain('Not enabled');
+      });
+    });
+  });
+
+  describe('with Duo Core', () => {
+    it('hides Duo Core settings row', () => {
+      createComponent({ isSaaS: true }, { duoTier: DUO_CORE });
+
+      expect(findDuoConfigurationRows()).toHaveLength(1);
+      expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toBe('Experiment and beta features');
     });
   });
 });

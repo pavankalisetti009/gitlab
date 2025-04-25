@@ -49,6 +49,7 @@ module GitlabSubscriptions
     scope :for_seat_assignable_duo_add_ons, -> do
       where(subscription_add_on_id: AddOn.seat_assignable_duo_add_ons.select(:id))
     end
+    scope :for_duo_core_pro_or_enterprise, -> { for_duo_core.or(for_duo_pro_or_duo_enterprise) }
     scope :for_user, ->(user) { by_namespace(user.billable_gitlab_duo_pro_root_group_ids) }
     scope :assigned_to_user, ->(user) do
       active.joins(:assigned_users).merge(UserAddOnAssignment.by_user(user))
