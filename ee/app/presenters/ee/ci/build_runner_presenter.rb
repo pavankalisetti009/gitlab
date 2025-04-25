@@ -43,14 +43,14 @@ module EE
 
       def vault_server(secret)
         @vault_server ||= {
-          'url' => variable_value('VAULT_SERVER_URL'),
-          'namespace' => variable_value('VAULT_NAMESPACE'),
+          'url' => variables['VAULT_SERVER_URL']&.value,
+          'namespace' => variables['VAULT_NAMESPACE']&.value,
           'auth' => {
             'name' => 'jwt',
-            'path' => variable_value('VAULT_AUTH_PATH', 'jwt'),
+            'path' => variables['VAULT_AUTH_PATH']&.value || 'jwt',
             'data' => {
               'jwt' => vault_jwt(secret),
-              'role' => variable_value('VAULT_AUTH_ROLE')
+              'role' => variables['VAULT_AUTH_ROLE']&.value
             }.compact
           }
         }
@@ -84,16 +84,17 @@ module EE
 
       def gcp_secret_manager_server(secret)
         @gcp_secret_manager_server ||= {
-          'project_number' => variable_value('GCP_PROJECT_NUMBER'),
-          'workload_identity_federation_pool_id' => variable_value('GCP_WORKLOAD_IDENTITY_FEDERATION_POOL_ID'),
-          'workload_identity_federation_provider_id' => variable_value('GCP_WORKLOAD_IDENTITY_FEDERATION_PROVIDER_ID'),
+          'project_number' => variables['GCP_PROJECT_NUMBER']&.value,
+          'workload_identity_federation_pool_id' => variables['GCP_WORKLOAD_IDENTITY_FEDERATION_POOL_ID']&.value,
+          'workload_identity_federation_provider_id' =>
+            variables['GCP_WORKLOAD_IDENTITY_FEDERATION_PROVIDER_ID']&.value,
           'jwt' => secret['token']
         }
       end
 
       def akeyless_server(secret)
         @akeyless_server ||= {
-          'access_id' => variable_value('AKEYLESS_ACCESS_ID'),
+          'access_id' => variables['AKEYLESS_ACCESS_ID']&.value,
           'access_key' => secret.dig('akeyless', 'akeyless_access_key'),
           'akeyless_api_url' => secret.dig('akeyless', 'akeyless_api_url') || "https://api.akeyless.io",
           'akeyless_access_type' => secret.dig('akeyless', 'akeyless_access_type') || "jwt",
@@ -110,9 +111,9 @@ module EE
 
       def azure_key_vault_server(secret)
         @azure_key_vault_server ||= {
-          'url' => variable_value('AZURE_KEY_VAULT_SERVER_URL'),
-          'client_id' => variable_value('AZURE_CLIENT_ID'),
-          'tenant_id' => variable_value('AZURE_TENANT_ID'),
+          'url' => variables['AZURE_KEY_VAULT_SERVER_URL']&.value,
+          'client_id' => variables['AZURE_CLIENT_ID']&.value,
+          'tenant_id' => variables['AZURE_TENANT_ID']&.value,
           'jwt' => azure_vault_jwt(secret)
         }
       end

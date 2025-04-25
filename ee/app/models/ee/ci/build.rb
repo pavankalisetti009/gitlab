@@ -44,7 +44,6 @@ module EE
         after_commit :track_ci_secrets_management_usage, on: :create
         delegate :service_specification, to: :runner_session, allow_nil: true
         delegate :secrets_provider?, to: :secrets_integration
-        delegate :variable_value, to: :secrets_integration
 
         scope :license_scan, -> { joins(:job_artifacts).merge(::Ci::JobArtifact.of_report_type(:license_scanning)) }
         scope :with_reports_of_type, ->(report_type) do
