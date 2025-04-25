@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Profile > Account', feature_category: :user_profile do
+  include Spec::Support::Helpers::ModalHelpers
+
   let(:user) { create(:user) }
 
   before do
@@ -26,6 +28,24 @@ RSpec.describe 'Profile > Account', feature_category: :user_profile do
       identity_linker.link
     end
 
+    def expect_disconnect
+      expect(page).to have_content unlink_label
+
+      click_link "Disconnect SAML for Test Group"
+
+      within_modal do
+        modal_message = s_('Profiles|Disconnecting your SAML provider will remove your access from groups, ' \
+          'subgroups and projects which require SAML authentication. Are your sure?')
+        expect(page).to have_content(modal_message)
+        click_button "Disconnect SAML for Test Group"
+      end
+
+      wait_for_requests
+
+      expect(page).to have_current_path profile_account_path, ignore_query: true
+      expect(page).not_to have_content(unlink_label)
+    end
+
     before do
       enable_group_saml
       create_linked_identity
@@ -34,17 +54,13 @@ RSpec.describe 'Profile > Account', feature_category: :user_profile do
     it 'unlinks account' do
       visit profile_account_path
 
-      expect(page).to have_content unlink_label
-      click_link "Disconnect"
-
-      expect(page).to have_current_path profile_account_path, ignore_query: true
-      expect(page).not_to have_content(unlink_label)
+      expect_disconnect
     end
 
     it 'removes access to the group' do
       visit profile_account_path
 
-      click_link "Disconnect"
+      expect_disconnect
 
       visit group_path(group)
       expect(page).to have_content('Page not found')
@@ -58,11 +74,7 @@ RSpec.describe 'Profile > Account', feature_category: :user_profile do
       it 'lets members distrust and unlink authentication' do
         visit profile_account_path
 
-        expect(page).to have_content unlink_label
-        click_link "Disconnect"
-
-        expect(page).to have_current_path profile_account_path, ignore_query: true
-        expect(page).not_to have_content(unlink_label)
+        expect_disconnect
       end
     end
 
@@ -74,11 +86,7 @@ RSpec.describe 'Profile > Account', feature_category: :user_profile do
       it 'lets members distrust and unlink authentication' do
         visit profile_account_path
 
-        expect(page).to have_content unlink_label
-        click_link "Disconnect"
-
-        expect(page).to have_current_path profile_account_path, ignore_query: true
-        expect(page).not_to have_content(unlink_label)
+        expect_disconnect
       end
     end
   end
