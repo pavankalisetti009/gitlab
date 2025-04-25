@@ -1,8 +1,9 @@
 <script>
 import { __, s__ } from '~/locale';
-import { DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_CORE, DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
 import CodeSuggestionsUsage from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage.vue';
 import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
+import DuoCoreUpgradeCard from 'ee/ai/settings/components/duo_core_upgrade_card.vue';
 import DuoSeatUtilizationInfoCard from '../components/duo_seat_utilization_info_card.vue';
 import DuoConfigurationSettingsInfoCard from '../components/duo_configuration_settings_info_card.vue';
 import DuoSelfHostedInfoCard from '../components/duo_self_hosted_info_card.vue';
@@ -13,6 +14,7 @@ export default {
     CodeSuggestionsUsage,
     HealthCheckList,
     DuoConfigurationSettingsInfoCard,
+    DuoCoreUpgradeCard,
     DuoSeatUtilizationInfoCard,
     DuoSelfHostedInfoCard,
   },
@@ -24,6 +26,9 @@ export default {
     ),
   },
   methods: {
+    shouldShowDuoCoreUpgradeCard(duoTier) {
+      return duoTier === DUO_CORE;
+    },
     shouldShowSeatUtilizationInfoCard(duoTier) {
       return duoTier === DUO_PRO || duoTier === DUO_ENTERPRISE;
     },
@@ -43,6 +48,7 @@ export default {
     </template>
     <template #duo-card="{ totalValue, usageValue, duoTier }">
       <section class="gl-grid gl-gap-5 gl-pb-5 md:gl-grid-cols-2">
+        <duo-core-upgrade-card v-if="shouldShowDuoCoreUpgradeCard(duoTier)" />
         <duo-seat-utilization-info-card
           v-if="shouldShowSeatUtilizationInfoCard(duoTier)"
           :total-value="totalValue"

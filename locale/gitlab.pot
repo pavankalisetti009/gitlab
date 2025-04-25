@@ -5723,6 +5723,9 @@ msgstr ""
 msgid "AiPowered|Connection method"
 msgstr ""
 
+msgid "AiPowered|Contact sales for Duo Enterprise"
+msgstr ""
+
 msgid "AiPowered|Direct connections"
 msgstr ""
 
@@ -5771,6 +5774,9 @@ msgstr ""
 msgid "AiPowered|GitLab Duo Core available to all users"
 msgstr ""
 
+msgid "AiPowered|GitLab Duo Pro or Enterprise"
+msgstr ""
+
 msgid "AiPowered|GitLab Duo Self-Hosted"
 msgstr ""
 
@@ -5810,6 +5816,9 @@ msgstr ""
 msgid "AiPowered|Participate in the Early Access Program and help make GitLab better"
 msgstr ""
 
+msgid "AiPowered|Purchase Duo Pro seats"
+msgstr ""
+
 msgid "AiPowered|Seat assignment for GitLab Duo has moved"
 msgstr ""
 
@@ -5825,7 +5834,16 @@ msgstr ""
 msgid "AiPowered|Start date: %{startDate}"
 msgstr ""
 
+msgid "AiPowered|Tanuki AI icon"
+msgstr ""
+
 msgid "AiPowered|Turn on experiment and beta GitLab Duo features"
+msgstr ""
+
+msgid "AiPowered|Unlock advanced AI-powered capabilities with the Premium or Ultimate tier designed for your development needs."
+msgstr ""
+
+msgid "AiPowered|Upgrade to"
 msgstr ""
 
 msgid "AiPowered|Use beta models and features in GitLab Duo Self-Hosted"

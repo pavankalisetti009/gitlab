@@ -4,6 +4,7 @@ import CodeSuggestionsUsage from 'ee/usage_quotas/code_suggestions/components/co
 import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
 import DuoSeatUtilizationInfoCard from 'ee/ai/settings/components/duo_seat_utilization_info_card.vue';
 import DuoSelfHostedInfoCard from 'ee/ai/settings/components/duo_self_hosted_info_card.vue';
+import DuoCoreUpgradeCard from 'ee/ai/settings/components/duo_core_upgrade_card.vue';
 import GitlabDuoHome from 'ee/ai/settings/pages/gitlab_duo_home.vue';
 import { DUO_CORE, DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
 
@@ -48,6 +49,7 @@ describe('GitLab Duo Home', () => {
   const findHealthCheckList = () => wrapper.findComponent(HealthCheckList);
   const findDuoSeatUtilizationInfoCard = () => wrapper.findComponent(DuoSeatUtilizationInfoCard);
   const findDuoSelfHostedInfoCard = () => wrapper.findComponent(DuoSelfHostedInfoCard);
+  const findDuoCoreUpgradeCard = () => wrapper.findComponent(DuoCoreUpgradeCard);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -100,18 +102,21 @@ describe('GitLab Duo Home', () => {
     });
 
     describe('template rendering', () => {
-      it('renders the DuoSeatUtilizationInfoCard for Duo Pro', () => {
+      it('renders the correct cards for Duo Pro', () => {
         createComponent({ customSlotProps: { duoTier: DUO_PRO } });
+        expect(findDuoCoreUpgradeCard().exists()).toBe(false);
         expect(findDuoSeatUtilizationInfoCard().exists()).toBe(true);
       });
 
-      it('renders the DuoSeatUtilizationInfoCard for Duo Enterprise', () => {
+      it('renders the correct cards for Duo Enterprise', () => {
         createComponent({ customSlotProps: { duoTier: DUO_ENTERPRISE } });
+        expect(findDuoCoreUpgradeCard().exists()).toBe(false);
         expect(findDuoSeatUtilizationInfoCard().exists()).toBe(true);
       });
 
-      it('does not render the DuoSeatUtilizationInfoCard for Duo Core', () => {
+      it('renders the correct cards for Duo Core', () => {
         createComponent({ customSlotProps: { duoTier: DUO_CORE } });
+        expect(findDuoCoreUpgradeCard().exists()).toBe(true);
         expect(findDuoSeatUtilizationInfoCard().exists()).toBe(false);
       });
     });
