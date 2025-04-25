@@ -127,6 +127,10 @@ module EE
         end
       end
 
+      condition(:duo_core_features_available) do
+        License.duo_core_features_available?
+      end
+
       rule { ~anonymous & remote_development_feature_licensed }.policy do
         enable :access_workspaces_feature
       end
@@ -232,6 +236,10 @@ module EE
       end
 
       rule { custom_role_enables_read_admin_users }.enable :read_admin_users
+
+      rule { admin & duo_core_features_available }.policy do
+        enable :manage_duo_core_settings
+      end
     end
 
     def duo_chat

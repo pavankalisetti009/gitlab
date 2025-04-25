@@ -10,6 +10,10 @@ module Ai
     validate :validate_ai_gateway_url
     validate :validates_singleton
 
+    validates :duo_nano_features_enabled,
+      inclusion: { in: [true, false] },
+      if: :will_save_change_to_duo_nano_features_enabled?
+
     belongs_to :amazon_q_oauth_application, class_name: 'Doorkeeper::Application', optional: true
     belongs_to :amazon_q_service_account_user, class_name: 'User', optional: true
 

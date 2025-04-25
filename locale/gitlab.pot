@@ -70059,6 +70059,9 @@ msgstr ""
 msgid "You don't have permission to manage this issue."
 msgstr ""
 
+msgid "You don't have permission to update the setting %{attribute}."
+msgstr ""
+
 msgid "You don't have permission to view this epic"
 msgstr ""
 
