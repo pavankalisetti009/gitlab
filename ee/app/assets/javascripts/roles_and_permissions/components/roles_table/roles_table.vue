@@ -17,7 +17,7 @@ export const TABLE_FIELDS = [
     key: 'actions',
     label: s__('MemberRole|Actions'),
     thClass: 'gl-w-12',
-    tdClass: 'gl-text-right !gl-p-3',
+    tdClass: 'gl-text-right',
   },
 ];
 
@@ -45,9 +45,7 @@ export default {
     </template>
 
     <template #cell(name)="{ item }">
-      <div
-        class="gl-flex gl-flex-wrap gl-items-center gl-justify-end gl-gap-3 gl-whitespace-nowrap md:gl-flex-nowrap md:gl-justify-start"
-      >
+      <div class="gl-flex gl-flex-wrap gl-items-center gl-justify-end gl-gap-3 md:gl-justify-start">
         <gl-link :href="item.detailsPath">{{ item.name }}</gl-link>
         <gl-badge v-if="isCustomRole(item)">
           {{ s__('MemberRole|Custom member role') }}
@@ -64,7 +62,7 @@ export default {
     </template>
 
     <template #cell(actions)="{ item }">
-      <role-actions :role="item" @delete="$emit('delete-role', item)" />
+      <role-actions class="-gl-m-3" :role="item" @delete="$emit('delete-role', item)" />
     </template>
   </gl-table>
 </template>
