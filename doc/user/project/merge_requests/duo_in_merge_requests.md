@@ -98,13 +98,28 @@ Interactions with GitLab Duo can help to improve the suggestions and feedback as
 
 ### Automatic reviews from GitLab Duo
 
-To enable `@GitLabDuo` to automatically review merge requests, edit your
-[merge request template](../description_templates.md#create-a-merge-request-template)
-and add the line `/assign_reviewer @GitLabDuo`. Add this line to your default template,
-and any other templates in your project where you want `@GitLabDuo` to perform a review.
+{{< history >}}
 
-Additional settings and configuration are planned. To that work, see
-[issue 506537](https://gitlab.com/gitlab-org/gitlab/-/issues/506537).
+- [Changed](https://gitlab.com/gitlab-org/gitlab/-/issues/506537) to a UI setting in GitLab 18.0.
+
+{{< /history >}}
+
+Automatic reviews from GitLab Duo ensure that all merge requests in your project receive an initial review.
+After a merge request is created, GitLab Duo reviews it unless:
+
+- It's marked as draft. For GitLab Duo to review the merge request, mark it ready.
+- It contains no changes. For GitLab Duo to review the merge request, add changes to it.
+
+Prerequisites:
+
+- You must have the at least the [Maintainer role](../../permissions.md) in a project.
+
+To enable `@GitLabDuo` to automatically review merge requests:
+
+1. On the left sidebar, select **Search or go to** and find your project.
+1. Select **Settings > Merge requests**.
+1. In the **GitLab Duo Code Review** section, select **Enable automatic reviews by GitLab Duo**.
+1. Select **Save changes**.
 
 ## Summarize a code review
 
