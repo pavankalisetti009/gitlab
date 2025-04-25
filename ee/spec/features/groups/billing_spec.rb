@@ -7,7 +7,8 @@ RSpec.describe 'Groups > Billing', :js, :saas, feature_category: :subscription_m
   include SubscriptionPortalHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group, owners: user) }
+  let_it_be(:auditor) { create(:auditor) }
+  let_it_be(:group) { create(:group, owners: user, guests: auditor) }
   let_it_be(:bronze_plan) { create(:bronze_plan) }
 
   def formatted_date(date)
@@ -57,6 +58,38 @@ RSpec.describe 'Groups > Billing', :js, :saas, feature_category: :subscription_m
         expect(page).not_to have_link("Manage")
         expect(page).not_to have_link("Add seats")
         expect(page).not_to have_link("Renew")
+      end
+
+      context 'with targeted message' do
+        before do
+          create(:targeted_message_namespace, namespace: group)
+        end
+
+        it 'is not shown to non-owner' do
+          sign_in(auditor)
+          visit group_billings_path(group)
+
+          expect(page).not_to have_content("Get access to both GitLab Premium and Duo Pro")
+        end
+
+        it 'is shown to owner' do
+          visit group_billings_path(group)
+
+          expect(page).to have_content("Get access to both GitLab Premium and Duo Pro")
+        end
+      end
+
+      context 'with disabled targeted message' do
+        before do
+          stub_feature_flags(targeted_messages_admin_ui: false)
+          create(:targeted_message_namespace, namespace: group)
+        end
+
+        it 'is not shown' do
+          visit group_billings_path(group)
+
+          expect(page).not_to have_content("Get access to both GitLab Premium and Duo Pro")
+        end
       end
     end
 

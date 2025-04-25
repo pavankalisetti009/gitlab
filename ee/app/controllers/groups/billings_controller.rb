@@ -27,6 +27,7 @@ class Groups::BillingsController < Groups::ApplicationController
     @plans_data = GitlabSubscriptions::FetchSubscriptionPlansService
       .new(plan: current_plan, namespace_id: relevant_group.id)
       .execute
+    @show_targetted_message = show_targetted_message?
 
     unless @plans_data
       render 'shared/billings/customers_dot_unavailable'
@@ -58,5 +59,12 @@ class Groups::BillingsController < Groups::ApplicationController
 
   def verify_authorization
     authorize_billings_page!
+  end
+
+  def show_targetted_message?
+    return false unless Feature.enabled?(:targeted_messages_admin_ui, :instance) &&
+      ::Gitlab::Saas.feature_available?(:targeted_messages)
+
+    @group.owned_by?(current_user) && Notifications::TargetedMessageNamespace.by_namespace(@group).exists?
   end
 end
