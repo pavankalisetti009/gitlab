@@ -6,6 +6,10 @@ require File.expand_path('ee/elastic/migrate/20250409130602_remove_embedding0_fr
 RSpec.describe RemoveEmbedding0FromWorkItems, :elastic_delete_by_query, :sidekiq_inline, feature_category: :global_search do
   let(:version) { 20250409130602 }
 
+  before do
+    skip 'migration is skipped' unless Gitlab::Elastic::Helper.default.vectors_supported?(:elasticsearch)
+  end
+
   include_examples 'migration removes field' do
     let(:expected_throttle_delay) { 1.minute }
     let(:objects) { create_list(:work_item, 6) }
