@@ -19,6 +19,15 @@
     - if current_plan
       = render 'top_level_billing_plan_header', namespace: @group, current_plan: current_plan
 
+      - if @show_targetted_message
+        = render Pajamas::BannerComponent.new(banner_options: { class: 'gl-mt-7'}, close_options: { class: '!gl-hidden'},
+          button_text: s_('TargettedMessages|Get in Touch'),
+          button_link: "#{ApplicationHelper.promo_url}/pricing/smb-promo/") do |c|
+          - c.with_title do
+            = s_('TargettedMessages|Get access to both GitLab Premium and Duo Pro for %{strike}$48%{end_strike} $19 a month for a year!').html_safe % { strike: '<s>'.html_safe, end_strike: '</s>'.html_safe }
+          %p
+            = s_('TargettedMessages|With GitLab Premium and Duo Pro, you’ll be able to stay ahead of the competition by shortening cycle times and increasing developer productivity. To take advantage of the offer, get in touch with our team today!')
+
     = render GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent.new(namespace: @group, user: current_user)
     = render GitlabSubscriptions::DuoEnterpriseAlert::UltimateComponent.new(namespace: @group, user: current_user)
 

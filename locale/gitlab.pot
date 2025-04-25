@@ -59883,6 +59883,15 @@ msgstr ""
 msgid "TargetedMessages|the following namespace ids were invalid and have been ignored: %{invalid_ids_message}"
 msgstr ""
 
+msgid "TargettedMessages|Get access to both GitLab Premium and Duo Pro for %{strike}$48%{end_strike} $19 a month for a year!"
+msgstr ""
+
+msgid "TargettedMessages|Get in Touch"
+msgstr ""
+
+msgid "TargettedMessages|With GitLab Premium and Duo Pro, you’ll be able to stay ahead of the competition by shortening cycle times and increasing developer productivity. To take advantage of the offer, get in touch with our team today!"
+msgstr ""
+
 msgid "Task"
 msgstr ""
 
