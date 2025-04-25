@@ -294,7 +294,7 @@ controls:
     enum_value: 37
 
   gitlab_license_level_ultimate:
-    name: Gitlab License Level Ultimate
+    name: GitLab License Level Ultimate
     type: boolean
     compliant_value: true
     compliant_operator: '='
