@@ -86,7 +86,7 @@ Instance methods required:
 
 - `init`: reads from `serialized_args`
 - `as_indexed_json` or `as_indexed_jsons`: a hash or array of hashes containing the data representation of the object
-- `operation`: determines the operation which can be one of `upsert` or `delete`
+- `operation`: determines the operation which can be one of `upsert`, `update` or `delete`. See [operation types](#operation-types) for more details.
 - `identifier`: unique identifier
 
 Optional methods:
@@ -150,6 +150,24 @@ def title_and_description
   "Title: #{database_record.title}\n\nDescription: #{database_record.description}"
 end
 ```
+
+### Operation types
+
+#### `upsert`
+
+Creates or updates documents, handling cases where a single reference has less documents than before by performing a delete cleanup operation.
+
+The document content can be full or partial json.
+
+#### `update`
+
+Updates documents that already exist.
+
+The document content can be full or partial json.
+
+#### `delete`
+
+Deletes all documents belonging to a reference.
 
 ### Examples
 
