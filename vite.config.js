@@ -23,6 +23,7 @@ import { FixedRubyPlugin } from './config/helpers/vite_plugin_ruby_fixed.mjs';
 import { StylePlugin } from './config/helpers/vite_plugin_style.mjs';
 import { IconsPlugin } from './config/helpers/vite_plugin_icons.mjs';
 import { ImagesPlugin } from './config/helpers/vite_plugin_images.mjs';
+import { CrossOriginWorkerPlugin } from './config/helpers/vite_plugin_cross_origin_worker';
 
 let viteGDKConfig;
 try {
@@ -110,6 +111,7 @@ export default defineConfig({
     viteCommonjs({
       include: [path.resolve(javascriptsPath, 'locale/ensure_single_line.cjs')],
     }),
+    CrossOriginWorkerPlugin(),
   ],
   define: {
     // window can be undefined in a Web Worker
