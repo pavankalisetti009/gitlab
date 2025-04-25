@@ -20,7 +20,8 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
       zoekt_auto_delete_lost_nodes: true,
       zoekt_auto_index_root_namespace: true,
       zoekt_cpu_to_tasks_ratio: 1.5,
-      zoekt_rollout_batch_size: 32
+      zoekt_rollout_batch_size: 32,
+      zoekt_rollout_retry_interval: '1d'
     )
     allow(Gitlab).to receive(:version_info).and_return(version_info)
     allow(Feature).to receive_messages(

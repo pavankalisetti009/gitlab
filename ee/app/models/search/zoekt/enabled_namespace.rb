@@ -27,12 +27,6 @@ module Search
       scope :search_disabled, -> { where(search: false) }
       scope :with_limit, ->(maximum) { limit(maximum) }
       scope :with_missing_indices, -> { left_joins(:indices).where(zoekt_indices: { zoekt_enabled_namespace_id: nil }) }
-      scope :with_rollout_blocked, -> do
-        where("zoekt_enabled_namespaces.metadata->>'last_rollout_failed_at' IS NOT NULL")
-      end
-      scope :with_rollout_allowed, -> do
-        where("zoekt_enabled_namespaces.metadata->>'last_rollout_failed_at' IS NULL")
-      end
       scope :with_all_ready_indices, -> do
         raw_sql = 'min(zoekt_indices.state) = :state AND max(zoekt_indices.state) = :state'
         joins(:indices).group(:id).having(raw_sql, state: Search::Zoekt::Index.states[:ready])
@@ -41,7 +35,7 @@ module Search
       validates :metadata, json_schema: { filename: 'zoekt_enabled_namespaces_metadata' }
 
       def self.destroy_namespaces_with_expired_subscriptions!
-        before_date = Date.today - Search::Zoekt::EXPIRED_SUBSCRIPTION_GRACE_PERIOD
+        before_date = Time.zone.today - Search::Zoekt::EXPIRED_SUBSCRIPTION_GRACE_PERIOD
 
         each_batch(column: :root_namespace_id) do |batch|
           namespace_ids = batch.pluck(:root_namespace_id) # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- it is limited by each_batch already
@@ -60,6 +54,19 @@ module Search
 
       def self.update_last_used_storage_bytes!
         find_each(&:update_last_used_storage_bytes!)
+      end
+
+      def self.with_rollout_blocked
+        return where.not(last_rollout_failed_at: nil) if Search::Zoekt::Settings.rollout_retry_interval.nil?
+
+        where(last_rollout_failed_at: Search::Zoekt::Settings.rollout_retry_interval.ago..)
+      end
+
+      def self.with_rollout_allowed
+        scope = where(last_rollout_failed_at: nil)
+        return scope if Search::Zoekt::Settings.rollout_retry_interval.nil?
+
+        scope.or(where(last_rollout_failed_at: ...Search::Zoekt::Settings.rollout_retry_interval.ago))
       end
 
       def update_last_used_storage_bytes!

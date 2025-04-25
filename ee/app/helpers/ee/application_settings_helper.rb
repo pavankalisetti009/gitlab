@@ -315,15 +315,16 @@ module EE
     end
 
     def zoekt_settings_inputs(form)
-      ::Search::Zoekt::Settings.numeric_settings.flat_map do |setting_name, config|
+      ::Search::Zoekt::Settings.input_settings.flat_map do |setting_name, config|
         options = {
           value: @application_setting.public_send(setting_name), # rubocop:disable GitlabSecurity/PublicSend -- we control `setting_name` in source code
           class: 'form-control gl-form-input'
         }.merge(config[:input_options] || {})
-
         input_field = case config[:input_type]
                       when :number_field
                         form.number_field(setting_name, options)
+                      when :text_field
+                        form.text_field(setting_name, options)
                       else
                         raise ArgumentError, "Unknown input_type: #{config[:input_type]}"
                       end

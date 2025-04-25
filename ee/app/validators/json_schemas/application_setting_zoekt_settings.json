@@ -30,7 +30,11 @@
     },
     "zoekt_rollout_batch_size": {
       "type": "number",
-      "description": "Batch size of namespaces for initial indexing"
+      "description": "Number of namespaces per indexing rollout"
+    },
+    "zoekt_rollout_retry_interval": {
+      "type": "string",
+      "description": "Retry interval for the namespaces which could not be rollout in first attempt"
     }
   }
 }

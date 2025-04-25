@@ -6,6 +6,7 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
   describe '.execute' do
     subject(:resource_pool) { described_class.execute }
 
+    let_it_be(:_) { create(:application_setting) }
     let_it_be(:ns_1) { create(:group) }
     let_it_be(:ns_2) { create(:group) }
 
@@ -21,7 +22,12 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
       let_it_be(:ineligible_namespace) { create(:zoekt_enabled_namespace, namespace: ns_2) }
       let_it_be(:ns_3) { create(:group) }
       let_it_be(:ineligible_namespace2) do
-        create(:zoekt_enabled_namespace, namespace: ns_3, metadata: { last_rollout_failed_at: Time.current.iso8601 })
+        create(:zoekt_enabled_namespace, namespace: ns_3, last_rollout_failed_at: Time.current.iso8601)
+      end
+
+      let_it_be(:ns_4) { create(:group) }
+      let_it_be(:eligible_namespace2) do
+        create(:zoekt_enabled_namespace, namespace: ns_4, last_rollout_failed_at: 2.days.ago.iso8601)
       end
 
       before do
@@ -31,6 +37,10 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
         allow(::Namespace).to receive(:by_root_id)
           .with(eligible_namespace.root_namespace_id)
           .and_return(::Namespace.where(id: eligible_namespace.root_namespace_id))
+
+        allow(::Namespace).to receive(:by_root_id)
+          .with(eligible_namespace2.root_namespace_id)
+          .and_return(::Namespace.where(id: eligible_namespace2.root_namespace_id))
 
         allow(::Namespace).to receive(:by_root_id)
           .with(ineligible_namespace.root_namespace_id)
@@ -45,7 +55,9 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
           .and_return(ineligible_namespace.namespace.root_ancestor)
       end
 
-      it 'includes only namespaces which are never tried before, and with a project count within the limit' do
+      # eligible namespaces are for which last_rollout_failed_at is nil or older than zoekt_rollout_retry_interval
+      # project_count is less than the allowed limit (default 20_000)
+      it 'includes all eligible namespaces' do
         expect(resource_pool.enabled_namespaces).to include(eligible_namespace)
         expect(resource_pool.enabled_namespaces).not_to include(ineligible_namespace, ineligible_namespace2)
       end

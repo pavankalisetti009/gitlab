@@ -16,18 +16,20 @@ module Search
       end
 
       def execute
-        plan[:failures].each { |failed_nanespace_plan| update_enabled_namespace_metadata!(failed_nanespace_plan) }
+        plan[:failures].each { |failed_nanespace_plan| update_enabled_namespace(failed_nanespace_plan) }
         plan[:namespaces].each do |namespace_plan|
-          next if namespace_plan[:errors].present?
-
           ApplicationRecord.transaction do
-            process_namespace(namespace_plan)
+            # result will either be nil or an array of replicas. If it is an array of replicas, that means we
+            # successfully provisioned all replicas for the namespace. In such a case, we reset the metadata.
+            result = process_namespace(namespace_plan)
+            update_enabled_namespace(namespace_plan, reset: result.present?)
           end
         rescue NodeStorageError => e
-          update_enabled_namespace_metadata!(namespace_plan)
+          update_enabled_namespace(namespace_plan)
           json = Gitlab::Json.parse(e.message, symbolize_names: true)
           aggregate_error(json[:message], failed_namespace_id: json[:namespace_id], node_id: json[:node_id])
         rescue StandardError => e
+          update_enabled_namespace(namespace_plan)
           aggregate_error(e.message)
         end
         { errors: @errors, success: @success }
@@ -85,7 +87,7 @@ module Search
             metadata: index_plan[:projects].compact
           } # Workaround: we remove nil project_namespace_id_to since it is not a valid property in json validator.
         end
-        Index.insert_all(zoekt_indices) if zoekt_indices.present?
+        Index.insert_all(zoekt_indices)
         aggregate_success(replica)
       end
 
@@ -97,13 +99,18 @@ module Search
         @success << { namespace_id: replica.namespace_id, replica_id: replica.id }
       end
 
-      def update_enabled_namespace_metadata!(namespace_plan)
-        enabled_namespace = EnabledNamespace.for_root_namespace_id(namespace_plan[:namespace_id]).with_limit(1)[0]
-        return unless enabled_namespace
+      def update_enabled_namespace(namespace_plan, reset: false)
+        enabled_ns = EnabledNamespace.for_root_namespace_id(namespace_plan[:namespace_id]).with_limit(1).first
+        return unless enabled_ns
 
-        enabled_namespace.metadata['last_rollout_failed_at'] = Time.current.iso8601
-        enabled_namespace.metadata['rollout_required_storage_bytes'] = namespace_plan[:namespace_required_storage_bytes]
-        enabled_namespace.save!
+        if reset
+          enabled_ns.last_rollout_failed_at = nil
+        else
+          enabled_ns.last_rollout_failed_at = Time.current.iso8601
+          enabled_ns.metadata['rollout_required_storage_bytes'] = namespace_plan[:namespace_required_storage_bytes]
+        end
+
+        enabled_ns.save!
       end
     end
 

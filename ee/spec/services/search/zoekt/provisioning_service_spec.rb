@@ -4,7 +4,10 @@ require 'spec_helper'
 
 RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_search do
   let_it_be(:namespace) { create(:group) }
-  let_it_be(:enabled_namespace) { create(:zoekt_enabled_namespace, namespace: namespace) }
+  let_it_be(:enabled_namespace) do
+    create(:zoekt_enabled_namespace, namespace: namespace, last_rollout_failed_at: 1.day.ago.iso8601)
+  end
+
   let_it_be(:namespace2) { create(:group) }
   let_it_be(:enabled_namespace2) { create(:zoekt_enabled_namespace, namespace: namespace2) }
   let_it_be(:nodes) { create_list(:zoekt_node, 5, total_bytes: 100.gigabytes, used_bytes: 90.gigabytes) }
@@ -106,30 +109,31 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         result = provisioning_result
         # Ensure there are no errors
         expect(result[:errors]).to be_empty
-        expect(enabled_namespace.replicas.count).to eq(2)
+        expect(enabled_namespace.reload.replicas.count).to eq(2)
         expect(enabled_namespace.indices.count).to eq(4)
-        expect(enabled_namespace2.replicas.count).to eq(2)
+        expect(enabled_namespace2.reload.replicas.count).to eq(2)
         expect(enabled_namespace2.indices.count).to eq(4)
 
-        metadata = enabled_namespace.replicas.first.indices.find_by_zoekt_node_id(nodes.first).metadata
-        expect(metadata).to eq({ 'project_namespace_id_to' => 5, 'project_namespace_id_from' => 1 })
-        metadata2 = enabled_namespace.replicas.first.indices.find_by_zoekt_node_id(nodes.second).metadata
-        expect(metadata2).to eq({ 'project_namespace_id_from' => 6 })
-        metadata3 = enabled_namespace.replicas.second.indices.find_by_zoekt_node_id(nodes.third).metadata
-        expect(metadata3).to eq({ 'project_namespace_id_to' => 5, 'project_namespace_id_from' => 1 })
-        metadata4 = enabled_namespace.replicas.second.indices.find_by_zoekt_node_id(nodes.fourth).metadata
-        expect(metadata4).to eq({ 'project_namespace_id_from' => 6 })
-        metadata5 = enabled_namespace2.replicas.first.indices.find_by_zoekt_node_id(nodes.first).metadata
-        expect(metadata5).to eq({ 'project_namespace_id_to' => 3, 'project_namespace_id_from' => 1 })
-        metadata6 = enabled_namespace2.replicas.first.indices.find_by_zoekt_node_id(nodes.second).metadata
-        expect(metadata6).to eq({ 'project_namespace_id_from' => 4 })
-        metadata7 = enabled_namespace2.replicas.second.indices.find_by_zoekt_node_id(nodes.third).metadata
-        expect(metadata7).to eq({ 'project_namespace_id_to' => 3, 'project_namespace_id_from' => 1 })
+        idx_metadata = enabled_namespace.replicas.first.indices.find_by_zoekt_node_id(nodes.first).metadata
+        expect(idx_metadata).to eq({ 'project_namespace_id_to' => 5, 'project_namespace_id_from' => 1 })
+        idx_metadata2 = enabled_namespace.replicas.first.indices.find_by_zoekt_node_id(nodes.second).metadata
+        expect(idx_metadata2).to eq({ 'project_namespace_id_from' => 6 })
+        idx_metadata3 = enabled_namespace.replicas.second.indices.find_by_zoekt_node_id(nodes.third).metadata
+        expect(idx_metadata3).to eq({ 'project_namespace_id_to' => 5, 'project_namespace_id_from' => 1 })
+        idx_metadata4 = enabled_namespace.replicas.second.indices.find_by_zoekt_node_id(nodes.fourth).metadata
+        expect(idx_metadata4).to eq({ 'project_namespace_id_from' => 6 })
+        idx_metadata5 = enabled_namespace2.replicas.first.indices.find_by_zoekt_node_id(nodes.first).metadata
+        expect(idx_metadata5).to eq({ 'project_namespace_id_to' => 3, 'project_namespace_id_from' => 1 })
+        idx_metadata6 = enabled_namespace2.replicas.first.indices.find_by_zoekt_node_id(nodes.second).metadata
+        expect(idx_metadata6).to eq({ 'project_namespace_id_from' => 4 })
+        idx_metadata7 = enabled_namespace2.replicas.second.indices.find_by_zoekt_node_id(nodes.third).metadata
+        expect(idx_metadata7).to eq({ 'project_namespace_id_to' => 3, 'project_namespace_id_from' => 1 })
         index = enabled_namespace2.replicas.second.indices.find_by_zoekt_node_id(nodes.fourth)
-        metadata8 = index.metadata
-        expect(metadata8).to eq({ 'project_namespace_id_from' => 4 })
+        idx_metadata8 = index.metadata
+        expect(idx_metadata8).to eq({ 'project_namespace_id_from' => 4 })
         expect(index.reserved_storage_bytes).to eq(1.gigabyte)
         expect(result[:success].size).to eq(4)
+        expect(enabled_namespace.last_rollout_failed_at).to be_nil
       end
     end
 
@@ -138,7 +142,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         nodes.second.update!(used_bytes: 99.gigabytes) # Simulate node being near full
       end
 
-      it 'accumulates the error and does not provision indices on that node' do
+      it 'accumulates the error and does not provision indices on that node', :freeze_time do
         result = provisioning_result
         expect(result[:errors]).to include(
           a_hash_including(
@@ -147,11 +151,12 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
             node_id: nodes.second.id
           )
         )
+        expect(enabled_namespace.reload.last_rollout_failed_at).to eq(Time.current.iso8601)
       end
     end
 
     context 'when there is an error initializing a replica' do
-      it 'accumulates the error and does not creates anything' do
+      it 'accumulates the error and does not creates anything', :freeze_time do
         allow(::Search::Zoekt::Replica).to receive(:new).and_raise(StandardError, 'Replica initialization failed')
 
         result = provisioning_result
@@ -160,6 +165,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         expect(Search::Zoekt::Replica.count).to be_zero
         expect(Search::Zoekt::Index.count).to be_zero
         expect(result[:success]).to be_empty
+        expect(enabled_namespace.reload.last_rollout_failed_at).to eq(Time.current.iso8601)
       end
     end
 
@@ -253,11 +259,12 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         }
       end
 
-      it 'is atomic, per namespace' do
+      it 'is atomic, per namespace', :freeze_time do
         result = provisioning_result
         expect(result[:errors]).to include(a_hash_including(message: /Couldn't find Search::Zoekt::Node with/))
         expect(result[:success]).to include(a_hash_including(namespace_id: namespace2.id))
         expect(enabled_namespace.replicas).to be_empty
+        expect(enabled_namespace.reload.last_rollout_failed_at).to eq(Time.current.iso8601)
         expect(enabled_namespace2.replicas).not_to be_empty
         expect(enabled_namespace.indices).to be_empty
         expect(enabled_namespace2.indices).not_to be_empty
@@ -364,7 +371,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
             node_id: nodes.first.id
           )
         )
-        expect(enabled_namespace.reload.metadata['last_rollout_failed_at']).to eq(Time.current.iso8601)
+        expect(enabled_namespace.reload.last_rollout_failed_at).to eq(Time.current.iso8601)
         expect(enabled_namespace.metadata['rollout_required_storage_bytes']).to eq(16.gigabytes)
         expect(result[:success]).to include(a_hash_including(namespace_id: namespace2.id))
         expect(enabled_namespace.replicas).to be_empty
@@ -472,7 +479,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         expect(result[:errors]).to be_empty
         expect(enabled_namespace.replicas).to be_empty
         expect(enabled_namespace.indices).to be_empty
-        expect(enabled_namespace.reload.metadata['last_rollout_failed_at']).to eq(Time.current.iso8601)
+        expect(enabled_namespace.reload.last_rollout_failed_at).to eq(Time.current.iso8601)
         expect(enabled_namespace.metadata['rollout_required_storage_bytes']).to eq(10.gigabytes)
         expect(enabled_namespace2.replicas.count).to eq(2)
         expect(enabled_namespace2.indices.count).to eq(4)
@@ -534,7 +541,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         }
       end
 
-      it 'skips that non existing enabled_namespace and continues with the rest' do
+      it 'skips that non existing enabled_namespace and continues with the rest', :freeze_time do
         result = provisioning_result
         expect(result[:errors]).to include(
           a_hash_including(
@@ -546,6 +553,7 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
     end
 
     context 'when index is already present for a namespace' do
+      let_it_be(:index) { create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace) }
       let(:plan) do
         {
           namespaces: [
@@ -591,11 +599,10 @@ RSpec.describe Search::Zoekt::ProvisioningService, feature_category: :global_sea
         }
       end
 
-      let_it_be(:index) { create(:zoekt_index, zoekt_enabled_namespace: enabled_namespace) }
-
-      it 'skips that non existing enabled_namespace and continues with the rest' do
+      it 'skips the namespace which already has index and continues with the rest', :freeze_time do
         result = provisioning_result
         expect(result[:errors]).to include(a_hash_including(message: :index_already_exists))
+        expect(enabled_namespace.reload.last_rollout_failed_at).to eq(Time.current.iso8601)
         expect(result[:success]).to include(a_hash_including(namespace_id: namespace2.id))
       end
     end
