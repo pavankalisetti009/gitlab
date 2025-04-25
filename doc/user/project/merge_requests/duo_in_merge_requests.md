@@ -44,7 +44,7 @@ The description is inserted where your cursor was.
 
 Provide feedback on this feature in [issue 443236](https://gitlab.com/gitlab-org/gitlab/-/issues/443236).
 
-**Data usage**: The diff of changes between the source branch's head and the target branch is sent to the large language model.
+Data usage: The diff of changes between the source branch's head and the target branch is sent to the large language model.
 
 ## Have GitLab Duo review your code
 
@@ -85,7 +85,7 @@ Provide feedback on this feature in issue [517386](https://gitlab.com/gitlab-org
 
 {{< /alert >}}
 
-**Data usage**: When you use this feature, the following data is sent to the large language model:
+Data usage: When you use this feature, the following data is sent to the large language model:
 
 - Contents of the file
 - The filename
@@ -136,7 +136,7 @@ The summary is displayed in the comment box. You can edit and refine the summary
 
 Provide feedback on this experimental feature in [issue 408991](https://gitlab.com/gitlab-org/gitlab/-/issues/408991).
 
-**Data usage**: When you use this feature, the following data is sent to the large language model referenced above:
+Data usage: When you use this feature, the following data is sent to the large language model referenced above:
 
 - Draft comment's text
 
@@ -168,7 +168,7 @@ by using GitLab Duo Merge Commit Message Generation.
 1. Select **Generate commit message**.
 1. Review the commit message provided and choose **Insert** to add it to the commit.
 
-**Data usage**: When you use this feature, the following data is sent to the large language model:
+Data usage: When you use this feature, the following data is sent to the large language model:
 
 - Contents of the file
 - The filename
