@@ -58,55 +58,41 @@ RSpec.describe Elastic::Latest::MergeRequestClassProxy, :elastic, :sidekiq_inlin
     end
 
     describe 'search on basis of hidden attribute' do
-      context 'when feature_flag hide_merge_requests_from_banned_users is disabled' do
+      context 'when current_user is non admin' do
         let(:current_user) { user }
 
+        it 'does not include merge_requests from the banned authors' do
+          expect(elasticsearch_hit_ids(result)).to match_array([active_user_mr.id])
+        end
+
+        it 'has the correct named queries' do
+          result.response
+
+          assert_named_queries(
+            'merge_request:match:search_terms',
+            'filters:non_archived'
+          )
+        end
+      end
+
+      context 'when current_user is anonymous' do
+        let(:current_user) { nil }
+
+        it 'does not include merge_requests from the banned authors' do
+          expect(elasticsearch_hit_ids(result)).to match_array([active_user_mr.id])
+        end
+      end
+
+      context 'when current_user is admin' do
+        let_it_be(:admin) { create(:user, :admin) }
+        let(:current_user) { admin }
+
         before do
-          stub_feature_flags(hide_merge_requests_from_banned_users: false)
+          allow(admin).to receive(:can_admin_all_resources?).and_return(true)
         end
 
         it 'includes merge_requests from the banned authors' do
           expect(elasticsearch_hit_ids(result)).to match_array([active_user_mr.id, banned_user_mr.id])
-        end
-      end
-
-      context 'when feature_flag hide_merge_requests_from_banned_users is enabled' do
-        context 'when current_user is non admin' do
-          let(:current_user) { user }
-
-          it 'does not include merge_requests from the banned authors' do
-            expect(elasticsearch_hit_ids(result)).to match_array([active_user_mr.id])
-          end
-
-          it 'has the correct named queries' do
-            result.response
-
-            assert_named_queries(
-              'merge_request:match:search_terms',
-              'filters:non_archived'
-            )
-          end
-        end
-
-        context 'when current_user is anonymous' do
-          let(:current_user) { nil }
-
-          it 'does not include merge_requests from the banned authors' do
-            expect(elasticsearch_hit_ids(result)).to match_array([active_user_mr.id])
-          end
-        end
-
-        context 'when current_user is admin' do
-          let_it_be(:admin) { create(:user, :admin) }
-          let(:current_user) { admin }
-
-          before do
-            allow(admin).to receive(:can_admin_all_resources?).and_return(true)
-          end
-
-          it 'includes merge_requests from the banned authors' do
-            expect(elasticsearch_hit_ids(result)).to match_array([active_user_mr.id, banned_user_mr.id])
-          end
         end
       end
     end
