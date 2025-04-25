@@ -18,7 +18,9 @@ module Vulnerabilities
 
     SEVERITY_COUNT_LIMIT = 1001
     OWASP_TOP_10_DEFAULT = -1
-    ELASTICSEARCH_TRACKED_FIELDS = %w[id vulnerability_id project_id scanner_id report_type severity state has_issues resolved_on_default_branch uuid location_image casted_cluster_agent_id dismissal_reason has_merge_request has_remediations traversal_ids archived has_vulnerability_resolution auto_resolved identifier_names].freeze
+
+    ELASTICSEARCH_TRACKED_FIELDS = ::Search::Elastic::References::Vulnerability::DIRECT_FIELDS +
+      ::Search::Elastic::References::Vulnerability::DIRECT_TYPECAST_FIELDS + %w[traversal_ids]
 
     self.table_name = "vulnerability_reads"
     self.primary_key = :vulnerability_id
