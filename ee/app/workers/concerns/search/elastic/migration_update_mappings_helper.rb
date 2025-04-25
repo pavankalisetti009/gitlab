@@ -3,6 +3,8 @@
 module Search
   module Elastic
     module MigrationUpdateMappingsHelper
+      include Search::Elastic::IndexName
+
       def migrate
         if completed?
           log "Skipping updating #{index_name} mapping migration since it is already applied"
@@ -23,12 +25,6 @@ module Search
       end
 
       private
-
-      def index_name
-        return self.class::DOCUMENT_TYPE.__elasticsearch__.index_name if self.class.const_defined?(:DOCUMENT_TYPE)
-
-        raise NotImplementedError
-      end
 
       def new_mappings
         raise NotImplementedError

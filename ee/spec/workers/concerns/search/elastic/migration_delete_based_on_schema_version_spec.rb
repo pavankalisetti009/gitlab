@@ -12,12 +12,6 @@ RSpec.describe Search::Elastic::MigrationDeleteBasedOnSchemaVersion, :elastic, f
 
     subject(:migration) { migration_class.new }
 
-    describe '#index_name' do
-      it 'raises a NotImplementedError' do
-        expect { migration.index_name }.to raise_error(NotImplementedError)
-      end
-    end
-
     describe '#schema_version' do
       it 'raises a NotImplementedError' do
         expect { migration.schema_version }.to raise_error(NotImplementedError)
