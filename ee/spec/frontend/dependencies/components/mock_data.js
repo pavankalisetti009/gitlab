@@ -20,50 +20,6 @@ export const withoutFilePath = {
   path: 'package.json',
 };
 
-export const longPath = {
-  ancestors: [
-    {
-      name: 'swell',
-      version: '1.2',
-    },
-    {
-      name: 'emmajsq',
-      version: '10.11',
-    },
-    {
-      name: 'zeb',
-      version: '12.1',
-    },
-    {
-      name: 'post',
-      version: '2.5',
-    },
-    {
-      name: 'core',
-      version: '1.0',
-    },
-  ],
-  topLevel: false,
-  blobPath: 'test.link',
-  path: 'package.json',
-};
-
-export const shortPath = {
-  ancestors: [
-    {
-      name: 'swell',
-      version: '1.2',
-    },
-    {
-      name: 'emmajsq',
-      version: '10.11',
-    },
-  ],
-  topLevel: false,
-  blobPath: 'test.link',
-  path: 'package.json',
-};
-
 export const noPath = {
   ancestors: [],
   topLevel: false,

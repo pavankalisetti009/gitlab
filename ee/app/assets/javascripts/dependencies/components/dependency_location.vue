@@ -111,10 +111,13 @@ export default {
         <span v-if="isTopLevelDependency">{{ s__('Dependencies|(top level)') }}</span>
       </span>
 
-      <direct-descendant-viewer v-if="hasAncestors" :dependencies="visibleDependencies" />
+      <direct-descendant-viewer
+        v-if="hasAncestors && !glFeatures.dependencyPaths"
+        :dependencies="visibleDependencies"
+      />
 
       <!-- We need to put an extra span to avoid separator between link & popover -->
-      <span v-if="showMoreLink">
+      <span v-if="showMoreLink && !glFeatures.dependencyPaths">
         <gl-link ref="moreLink" class="gl-whitespace-nowrap">{{ nMoreMessage }}</gl-link>
 
         <gl-popover :target="target" placement="top" :title="s__('Dependencies|Direct dependents')">

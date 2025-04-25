@@ -35,8 +35,6 @@ describe('Dependency Location component', () => {
     ${'container image path'} | ${Paths.containerImagePath} | ${Paths.containerImagePath.image}
     ${'no path'}              | ${Paths.noPath}             | ${Paths.noPath.path}
     ${'top level path'}       | ${Paths.topLevelPath}       | ${'package.json (top level)'}
-    ${'short path'}           | ${Paths.shortPath}          | ${'package.json / swell 1.2 / emmajsq 10.11'}
-    ${'long path'}            | ${Paths.longPath}           | ${'package.json / swell 1.2 / emmajsq 10.11 / 3 more'}
   `('shows dependency path for $name', ({ location, path }) => {
     createComponent({
       propsData: {
@@ -45,26 +43,6 @@ describe('Dependency Location component', () => {
     });
 
     expect(trimText(wrapper.text())).toContain(path);
-  });
-
-  describe('popover', () => {
-    beforeEach(() => {
-      createComponent({
-        propsData: {
-          location: Paths.longPath,
-        },
-      });
-    });
-
-    it('should render the popover', () => {
-      expect(findPopover().exists()).toBe(true);
-    });
-
-    it('should have the complete path', () => {
-      expect(trimText(findPopover().text())).toBe(
-        'swell 1.2 / emmajsq 10.11 / zeb 12.1 / post 2.5 / core 1.0',
-      );
-    });
   });
 
   describe('with dependency path', () => {
@@ -88,50 +66,6 @@ describe('Dependency Location component', () => {
       findButton().vm.$emit('click');
       expect(wrapper.emitted('click-dependency-path').length).toBe(1);
     });
-
-    it('when the feature flag "dependencyPaths" is disabled', () => {
-      createComponent({
-        propsData: {
-          location: Paths.dependencyPaths,
-        },
-        provide: {
-          glFeatures: {
-            dependencyPaths: false,
-          },
-        },
-      });
-
-      expect(findButton().exists()).toBe(false);
-    });
-  });
-
-  describe('dependency with no dependency path', () => {
-    beforeEach(() => {
-      createComponent({
-        propsData: {
-          location: Paths.noPath,
-        },
-      });
-    });
-
-    it('should show the dependency name and link', () => {
-      const locationLink = findPathLink();
-      expect(locationLink.attributes().href).toBe('test.link');
-      expect(locationLink.text()).toBe('package.json');
-    });
-
-    it('should not render dependency path', () => {
-      const pathViewer = wrapper.findComponent(DirectDescendantViewer);
-      expect(pathViewer.exists()).toBe(false);
-    });
-
-    it('should not render the popover', () => {
-      expect(findPopover().exists()).toBe(false);
-    });
-
-    it('should render the icon', () => {
-      expect(findIcon().exists()).toBe(true);
-    });
   });
 
   describe('dependency with container image dependency path', () => {
@@ -153,6 +87,151 @@ describe('Dependency Location component', () => {
       const icon = findIcon();
       expect(icon.exists()).toBe(true);
       expect(icon.props('name')).toBe('container-image');
+    });
+  });
+
+  describe('when the feature flag "dependencyPaths" is disabled', () => {
+    const mockShortPath = {
+      ancestors: [
+        {
+          name: 'swell',
+          version: '1.2',
+        },
+        {
+          name: 'emmajsq',
+          version: '10.11',
+        },
+      ],
+      topLevel: false,
+      blobPath: 'test.link',
+      path: 'package.json',
+    };
+
+    const mockLongPath = {
+      ancestors: [
+        {
+          name: 'swell',
+          version: '1.2',
+        },
+        {
+          name: 'emmajsq',
+          version: '10.11',
+        },
+        {
+          name: 'zeb',
+          version: '12.1',
+        },
+        {
+          name: 'post',
+          version: '2.5',
+        },
+        {
+          name: 'core',
+          version: '1.0',
+        },
+      ],
+      topLevel: false,
+      blobPath: 'test.link',
+      path: 'package.json',
+    };
+
+    describe('dependency path', () => {
+      beforeEach(() => {
+        createComponent({
+          propsData: {
+            location: Paths.dependencyPaths,
+          },
+          provide: {
+            glFeatures: {
+              dependencyPaths: false,
+            },
+          },
+        });
+      });
+
+      it('does not display button', () => {
+        expect(findButton().exists()).toBe(false);
+      });
+    });
+
+    describe('direct descendant', () => {
+      it.each`
+        name            | location         | path
+        ${'short path'} | ${mockShortPath} | ${'package.json / swell 1.2 / emmajsq 10.11'}
+        ${'long path'}  | ${mockLongPath}  | ${'package.json / swell 1.2 / emmajsq 10.11 / 3 more'}
+      `('shows dependency path for $name', ({ location, path }) => {
+        createComponent({
+          propsData: {
+            location,
+          },
+          provide: {
+            glFeatures: {
+              dependencyPaths: false,
+            },
+          },
+        });
+
+        expect(trimText(wrapper.text())).toContain(path);
+      });
+
+      describe('with no ancestors', () => {
+        beforeEach(() => {
+          createComponent({
+            propsData: {
+              location: Paths.noPath,
+            },
+            provide: {
+              glFeatures: {
+                dependencyPaths: false,
+              },
+            },
+          });
+        });
+
+        it('should show the dependency name and link', () => {
+          const locationLink = findPathLink();
+          expect(locationLink.attributes().href).toBe('test.link');
+          expect(locationLink.text()).toBe('package.json');
+        });
+
+        it('should not render dependency path', () => {
+          const pathViewer = wrapper.findComponent(DirectDescendantViewer);
+          expect(pathViewer.exists()).toBe(false);
+        });
+
+        it('should not render the popover', () => {
+          expect(findPopover().exists()).toBe(false);
+        });
+
+        it('should render the icon', () => {
+          expect(findIcon().exists()).toBe(true);
+        });
+      });
+
+      describe('popover', () => {
+        beforeEach(() => {
+          createComponent({
+            propsData: {
+              location: mockLongPath,
+            },
+            provide: {
+              glFeatures: {
+                dependencyPaths: false,
+              },
+            },
+          });
+        });
+
+        it('should render the popover', () => {
+          expect(findPopover().exists()).toBe(true);
+        });
+
+        it('should have the complete path', () => {
+          expect(trimText(findPopover().text())).toBe(
+            'swell 1.2 / emmajsq 10.11 / zeb 12.1 / post 2.5 / core 1.0',
+          );
+        });
+      });
     });
   });
 });
