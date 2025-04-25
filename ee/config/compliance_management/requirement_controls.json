@@ -343,7 +343,7 @@
   },
   {
     "id": "gitlab_license_level_ultimate",
-    "name": "Gitlab License Level Ultimate",
+    "name": "GitLab License Level Ultimate",
     "expression": {
       "field": "gitlab_license_level_ultimate",
       "operator": "=",
