@@ -73,56 +73,30 @@ RSpec.describe '1_settings', feature_category: :shared do
     end
 
     after do
+      Settings.duo_workflow = {}
       stub_env("CLOUD_CONNECTOR_BASE_URL", default_base_url)
       load_settings
+    end
+
+    it 'provides default config' do
+      expect(Settings.duo_workflow.service_url).to be_nil
+      expect(Settings.duo_workflow.secure).to eq(true)
+      expect(Settings.duo_workflow.debug).to eq(false)
     end
 
     context 'when service_url is set' do
       let(:config) do
         {
           service_url: "duo-workflow-service.example.com:50052",
-          secure: false
+          secure: false,
+          debug: true
         }
       end
 
       it 'uses provided config' do
         expect(Settings.duo_workflow.service_url).to eq('duo-workflow-service.example.com:50052')
         expect(Settings.duo_workflow.secure).to eq(false)
-      end
-    end
-
-    context 'when service_url is not set' do
-      let(:config) do
-        {
-          service_url: ""
-        }
-      end
-
-      context 'with https cloud connector' do
-        let(:base_url) { 'https://www.cloud.example.com' }
-
-        it 'defaults to cloud connector config' do
-          expect(Settings.duo_workflow.service_url).to eq('duo-workflow.runway.gitlab.net:443')
-          expect(Settings.duo_workflow.secure).to eq(true)
-        end
-      end
-
-      context 'with staging cloud connector' do
-        let(:base_url) { 'https://www.cloud.staging.example.com' }
-
-        it 'defaults to cloud connector config' do
-          expect(Settings.duo_workflow.service_url).to eq('duo-workflow.staging.runway.gitlab.net:443')
-          expect(Settings.duo_workflow.secure).to eq(true)
-        end
-      end
-
-      context 'with http cloud connector' do
-        let(:base_url) { 'http://www.cloud.example.com' }
-
-        it 'infers secure and port from scheme' do
-          expect(Settings.duo_workflow.service_url).to eq('duo-workflow.runway.gitlab.net:80')
-          expect(Settings.duo_workflow.secure).to eq(false)
-        end
+        expect(Settings.duo_workflow.debug).to eq(true)
       end
     end
 
