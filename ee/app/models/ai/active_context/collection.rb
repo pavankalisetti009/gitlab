@@ -5,6 +5,11 @@ module Ai
     class Collection < ApplicationRecord
       self.table_name = :ai_active_context_collections
 
+      jsonb_accessor :metadata,
+        indexing_embedding_versions: [:integer, { array: true }],
+        search_embedding_version: :integer,
+        collection_class: :string
+
       belongs_to :connection, class_name: 'Ai::ActiveContext::Connection'
 
       validates :name, presence: true, length: { maximum: 255 }
