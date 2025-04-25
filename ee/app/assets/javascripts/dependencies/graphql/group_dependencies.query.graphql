@@ -1,22 +1,14 @@
-query getProjectDependencies(
+query getGroupDependencies(
   $fullPath: ID!
   $first: Int
   $last: Int
   $after: String
   $before: String
   $sort: DependencySort
-  $componentNames: [String!]
 ) {
-  namespace: project(fullPath: $fullPath) {
+  namespace: group(fullPath: $fullPath) {
     id
-    dependencies(
-      first: $first
-      last: $last
-      after: $after
-      before: $before
-      sort: $sort
-      componentNames: $componentNames
-    ) {
+    dependencies(first: $first, last: $last, after: $after, before: $before, sort: $sort) {
       pageInfo {
         hasNextPage
         hasPreviousPage

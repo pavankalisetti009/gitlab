@@ -9,7 +9,7 @@ import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_erro
 import DependencyExportDropdown from 'ee/dependencies/components/dependency_export_dropdown.vue';
 import PaginatedDependenciesTable from 'ee/dependencies/components/paginated_dependencies_table.vue';
 import createStore from 'ee/dependencies/store';
-import { NAMESPACE_ORGANIZATION, NAMESPACE_GROUP } from 'ee/dependencies/constants';
+import { NAMESPACE_ORGANIZATION } from 'ee/dependencies/constants';
 import { TEST_HOST } from 'helpers/test_constants';
 import { getDateInPast } from '~/lib/utils/datetime_utility';
 import axios from '~/lib/utils/axios_utils';
@@ -37,7 +37,11 @@ describe('DependenciesApp component', () => {
     sbomReportsErrors: [],
   };
 
-  const factory = ({ provide, props, glFeatures = { projectDependenciesGraphql: true } } = {}) => {
+  const factory = ({
+    provide,
+    props,
+    glFeatures = { projectDependenciesGraphql: true, groupDependenciesGraphQL: true },
+  } = {}) => {
     store = createStore();
     jest.spyOn(store, 'dispatch').mockImplementation();
 
@@ -131,15 +135,12 @@ describe('DependenciesApp component', () => {
       ]);
     });
 
-    it.each([NAMESPACE_GROUP, NAMESPACE_ORGANIZATION])(
-      'always fetches dependencies via REST when the given namespace is %s',
-      (namespaceType) => {
-        factory({ provide: { namespaceType } });
+    it(`always fetches dependencies via REST when the given namespace is "${NAMESPACE_ORGANIZATION}"`, () => {
+      factory({ provide: { namespaceType: NAMESPACE_ORGANIZATION } });
 
-        expect(store.dispatch).toHaveBeenCalledWith('fetchDependencies', { page: 1 });
-        expect(store.dispatch).not.toHaveBeenCalledWith('fetchDependenciesViaGraphQL');
-      },
-    );
+      expect(store.dispatch).toHaveBeenCalledWith('fetchDependencies', { page: 1 });
+      expect(store.dispatch).not.toHaveBeenCalledWith('fetchDependenciesViaGraphQL');
+    });
 
     describe('without export endpoint', () => {
       beforeEach(async () => {
@@ -303,22 +304,25 @@ describe('DependenciesApp component', () => {
     });
   });
 
-  describe('with "projectDependenciesGraphQL" feature flag disabled', () => {
-    beforeEach(() => {
-      mock = new MockAdapter(axios);
-      factory({ glFeatures: { projectDependenciesGraphql: false } });
-    });
+  describe.each(['projectDependenciesGraphQL', 'groupDependenciesGraphQL'])(
+    'with "%s" feature flag disabled',
+    (featureFlagName) => {
+      beforeEach(() => {
+        mock = new MockAdapter(axios);
+        factory({ glFeatures: { [featureFlagName]: false } });
+      });
 
-    it('dispatches the correct initial actions', () => {
-      expect(store.dispatch.mock.calls).toEqual([
-        ['setFullPath', basicAppProvides.fullPath],
-        ['setDependenciesEndpoint', basicAppProvides.endpoint],
-        ['setExportDependenciesEndpoint', basicAppProvides.exportEndpoint],
-        ['setNamespaceType', basicAppProvides.namespaceType],
-        ['setPageInfo', expect.anything()],
-        ['setSortField', 'severity'],
-        ['fetchDependencies', { page: 1 }],
-      ]);
-    });
-  });
+      it('dispatches the correct initial actions', () => {
+        expect(store.dispatch.mock.calls).toEqual([
+          ['setFullPath', basicAppProvides.fullPath],
+          ['setDependenciesEndpoint', basicAppProvides.endpoint],
+          ['setExportDependenciesEndpoint', basicAppProvides.exportEndpoint],
+          ['setNamespaceType', basicAppProvides.namespaceType],
+          ['setPageInfo', expect.anything()],
+          ['setSortField', 'severity'],
+          ['fetchDependencies', { page: 1 }],
+        ]);
+      });
+    },
+  );
 });

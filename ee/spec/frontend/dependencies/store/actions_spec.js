@@ -3,6 +3,7 @@ import { sortBy } from 'lodash';
 import axios from '~/lib/utils/axios_utils';
 import * as actions from 'ee/dependencies/store/actions';
 import projectDependencies from 'ee/dependencies/graphql/project_dependencies.query.graphql';
+import groupDependencies from 'ee/dependencies/graphql/group_dependencies.query.graphql';
 import {
   EXPORT_STARTED_MESSAGE,
   FETCH_ERROR_MESSAGE,
@@ -838,9 +839,13 @@ describe('Dependencies actions', () => {
 
     describe('on success', () => {
       const expectedDependencies =
-        mockGraphQLDependenciesResponse.data.project.dependencies.nodes.map((dependency) => ({
+        mockGraphQLDependenciesResponse.data.namespace.dependencies.nodes.map((dependency) => ({
           ...dependency,
           occurrenceId: 'extracted-from-get-id-from-graphql-id-util',
+          componentId: 'extracted-from-get-id-from-graphql-id-util',
+          // Note: This will be mapped to an actual value, once the field has been added to the GraphQL query
+          // Related issue: https://gitlab.com/gitlab-org/gitlab/-/issues/532226
+          projectCount: 1,
         }));
 
       beforeEach(() => {
@@ -873,7 +878,7 @@ describe('Dependencies actions', () => {
                   type: types.RECEIVE_DEPENDENCIES_SUCCESS,
                   payload: {
                     dependencies: expectedDependencies,
-                    pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                    pageInfo: mockGraphQLDependenciesResponse.data.namespace.dependencies.pageInfo,
                   },
                 },
               ],
@@ -912,7 +917,7 @@ describe('Dependencies actions', () => {
                   type: types.RECEIVE_DEPENDENCIES_SUCCESS,
                   payload: {
                     dependencies: expectedDependencies,
-                    pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                    pageInfo: mockGraphQLDependenciesResponse.data.namespace.dependencies.pageInfo,
                   },
                 },
               ],
@@ -950,7 +955,7 @@ describe('Dependencies actions', () => {
                 type: types.RECEIVE_DEPENDENCIES_SUCCESS,
                 payload: {
                   dependencies: expectedDependencies,
-                  pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                  pageInfo: mockGraphQLDependenciesResponse.data.namespace.dependencies.pageInfo,
                 },
               },
             ],
@@ -981,7 +986,7 @@ describe('Dependencies actions', () => {
                 type: types.RECEIVE_DEPENDENCIES_SUCCESS,
                 payload: {
                   dependencies: expectedDependencies,
-                  pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                  pageInfo: mockGraphQLDependenciesResponse.data.namespace.dependencies.pageInfo,
                 },
               },
             ],
@@ -990,6 +995,34 @@ describe('Dependencies actions', () => {
 
           expect(graphQLClient.query).toHaveBeenCalledWith({
             query: projectDependencies,
+            variables: {
+              first: 20,
+              fullPath: state.fullPath,
+            },
+          });
+        });
+
+        it('uses the group query when namespaceType is "group"', async () => {
+          state.namespaceType = 'group';
+
+          await testAction(
+            actions.fetchDependenciesViaGraphQL,
+            undefined,
+            state,
+            [
+              {
+                type: types.RECEIVE_DEPENDENCIES_SUCCESS,
+                payload: {
+                  dependencies: expectedDependencies,
+                  pageInfo: mockGraphQLDependenciesResponse.data.namespace.dependencies.pageInfo,
+                },
+              },
+            ],
+            [{ type: 'requestDependencies' }],
+          );
+
+          expect(graphQLClient.query).toHaveBeenCalledWith({
+            query: groupDependencies,
             variables: {
               first: 20,
               fullPath: state.fullPath,
@@ -1009,7 +1042,7 @@ describe('Dependencies actions', () => {
                 type: types.RECEIVE_DEPENDENCIES_SUCCESS,
                 payload: {
                   dependencies: expectedDependencies,
-                  pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                  pageInfo: mockGraphQLDependenciesResponse.data.namespace.dependencies.pageInfo,
                 },
               },
             ],
@@ -1045,7 +1078,7 @@ describe('Dependencies actions', () => {
                 type: types.RECEIVE_DEPENDENCIES_SUCCESS,
                 payload: {
                   dependencies: expectedDependencies,
-                  pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                  pageInfo: mockGraphQLDependenciesResponse.data.namespace.dependencies.pageInfo,
                 },
               },
             ],
@@ -1074,7 +1107,7 @@ describe('Dependencies actions', () => {
                 type: types.RECEIVE_DEPENDENCIES_SUCCESS,
                 payload: {
                   dependencies: expectedDependencies,
-                  pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                  pageInfo: mockGraphQLDependenciesResponse.data.namespace.dependencies.pageInfo,
                 },
               },
             ],

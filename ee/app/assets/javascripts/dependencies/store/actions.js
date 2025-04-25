@@ -10,6 +10,7 @@ import { HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { OPERATOR_NOT } from '~/vue_shared/components/filtered_search_bar/constants';
 import projectDependencies from '../graphql/project_dependencies.query.graphql';
+import groupDependencies from '../graphql/group_dependencies.query.graphql';
 import {
   EXPORT_STARTED_MESSAGE,
   FETCH_ERROR_MESSAGE,
@@ -165,11 +166,23 @@ const buildGraphQLSortOptions = (sortField = '', sortOrder = '') => {
   };
 };
 
+const mapGraphQLDependencyToStore = (dependency) => ({
+  ...dependency,
+  occurrenceId: getIdFromGraphQLId(dependency.id),
+  // the componentId is needed to fetch related vulnerabilities
+  componentId: getIdFromGraphQLId(dependency.id),
+  // Note: This will be mapped to an actual value, once the field has been added to the GraphQL query
+  // Related issue: https://gitlab.com/gitlab-org/gitlab/-/issues/532226
+  projectCount: 1,
+});
+
 export const fetchDependenciesViaGraphQL = ({ state, dispatch, commit }, params = {}) => {
   dispatch('requestDependencies');
 
   const { cursor, pageSize } = params;
-  const { fullPath, pageInfo, sortField, sortOrder, searchFilterParameters } = state;
+  const { fullPath, namespaceType, pageInfo, sortField, sortOrder, searchFilterParameters } = state;
+
+  const query = namespaceType === 'group' ? groupDependencies : projectDependencies;
 
   const variables = {
     fullPath,
@@ -184,17 +197,13 @@ export const fetchDependenciesViaGraphQL = ({ state, dispatch, commit }, params 
 
   graphQLClient
     .query({
-      query: projectDependencies,
+      query,
       variables,
     })
     .then(({ data }) => {
-      const { nodes: dependenciesData, pageInfo: responsePageInfo } = data.project.dependencies;
+      const { nodes: dependenciesData, pageInfo: responsePageInfo } = data.namespace.dependencies;
 
-      // Extract the numeric ID from the GraphQL ID and add it as occurrenceId
-      const dependencies = dependenciesData.map((dependency) => ({
-        ...dependency,
-        occurrenceId: getIdFromGraphQLId(dependency.id),
-      }));
+      const dependencies = dependenciesData.map(mapGraphQLDependencyToStore);
 
       commit(types.RECEIVE_DEPENDENCIES_SUCCESS, {
         dependencies,
