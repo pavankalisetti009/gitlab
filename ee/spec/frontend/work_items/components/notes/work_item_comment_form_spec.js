@@ -49,6 +49,7 @@ describe('WorkItemCommentForm', () => {
         workItemIid: '1',
         markdownPreviewPath: '/group/project/preview_markdown?target_type=WorkItem',
         fullPath: 'group/project',
+        uploadsPath: 'http://127.0.0.1:3000/test-project-path/uploads',
         ariaLabel: 'test-aria-label',
         autosaveKey: mockAutosaveKey,
         ...props,
