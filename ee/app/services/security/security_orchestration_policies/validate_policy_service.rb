@@ -236,7 +236,7 @@ module Security
                       .any? do |rule|
           if scan_result_policy?
             service.scan_result_branches([rule]).empty?
-          elsif scan_execution_policy?
+          elsif scan_execution_policy? && !service.skip_validation?(rule)
             service.scan_execution_branches([rule]).empty?
           end
         end

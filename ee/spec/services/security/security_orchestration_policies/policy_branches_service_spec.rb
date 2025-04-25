@@ -296,4 +296,36 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyBranchesService, f
       end
     end
   end
+
+  describe '#skip_validation?' do
+    let(:service) { described_class.new(project: project) }
+
+    where(:branch_type, :expected_result) do
+      'target_default'   | true
+      'target_protected' | true
+      'default'          | false
+      'protected'        | false
+      'all'              | false
+      nil                | false
+      ''                 | false
+    end
+
+    with_them do
+      let(:rule) { { branch_type: branch_type } }
+
+      subject(:result) { service.skip_validation?(rule) }
+
+      it 'returns the expected result' do
+        expect(result).to eq(expected_result)
+      end
+    end
+
+    context 'when branch_type is not present in the rule' do
+      let(:rule) { { other_key: 'value' } }
+
+      it 'returns false' do
+        expect(service.skip_validation?(rule)).to be false
+      end
+    end
+  end
 end
