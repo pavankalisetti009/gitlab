@@ -423,6 +423,22 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       end
     end
 
+    describe '.for_duo_core_pro_or_enterprise' do
+      subject(:add_on_purchases) { described_class.for_duo_core_pro_or_enterprise }
+
+      let!(:duo_amazon_q_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_amazon_q) }
+      let!(:duo_enterprise_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
+      let!(:duo_pro_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_pro) }
+      let!(:duo_core_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core) }
+      let!(:product_analytics_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :product_analytics) }
+
+      it 'returns Duo Core, Pro and Enterprise' do
+        expect(add_on_purchases).to contain_exactly(
+          duo_core_add_on_purchase, duo_pro_add_on_purchase, duo_enterprise_add_on_purchase
+        )
+      end
+    end
+
     describe '.for_duo_add_ons' do
       subject(:duo_add_ons_purchases) { described_class.for_duo_add_ons }
 

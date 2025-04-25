@@ -37,6 +37,11 @@ module Ai
       ::Ai::SelfHostedModel.any?
     end
 
+    # Define duo_core_features_enabled as an alias to duo_nano_features_enabled till we renamed the column
+    def duo_core_features_enabled?
+      duo_nano_features_enabled?
+    end
+
     private
 
     def validates_singleton

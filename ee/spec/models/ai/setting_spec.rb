@@ -174,4 +174,20 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
       expect(described_class.instance.enabled_instance_verbose_ai_logs).to be true
     end
   end
+
+  describe "#duo_core_features_enabled?" do
+    subject(:settings) { described_class.new(duo_nano_features_enabled: duo_nano_features_enabled) }
+
+    context 'with truthy duo_nano_features_enabled' do
+      let(:duo_nano_features_enabled) { true }
+
+      it { expect(settings).to be_duo_core_features_enabled }
+    end
+
+    context 'with falsy duo_nano_features_enabled' do
+      let(:duo_nano_features_enabled) { false }
+
+      it { expect(settings).not_to be_duo_core_features_enabled }
+    end
+  end
 end

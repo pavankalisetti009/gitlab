@@ -31,6 +31,7 @@ export function mountGitlabDuoHomeApp() {
     amazonQAutoReviewEnabled,
     amazonQConfigurationPath,
     canManageSelfHostedModels,
+    areDuoCoreFeaturesEnabled,
   } = el.dataset;
 
   return new Vue({
@@ -59,6 +60,7 @@ export function mountGitlabDuoHomeApp() {
       amazonQAutoReviewEnabled: parseBoolean(amazonQAutoReviewEnabled),
       amazonQConfigurationPath,
       canManageSelfHostedModels,
+      areDuoCoreFeaturesEnabled: parseBoolean(areDuoCoreFeaturesEnabled),
     },
     render: (h) => h(GitlabDuoHome),
   });

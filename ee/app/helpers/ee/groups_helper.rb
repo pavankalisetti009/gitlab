@@ -68,12 +68,15 @@ module EE
     end
 
     def duo_home_app_data(group)
+      settings = group.namespace_settings
+
       {
         duo_seat_utilization_path: group_settings_gitlab_duo_seat_utilization_index_path(group),
-        duo_availability: group.namespace_settings.duo_availability.to_s,
-        experiment_features_enabled: group.namespace_settings.experiment_features_enabled.to_s,
+        duo_availability: settings.duo_availability.to_s,
+        experiment_features_enabled: settings.experiment_features_enabled.to_s,
         are_experiment_settings_allowed: group.experiment_settings_allowed?.to_s,
         duo_configuration_path: group_settings_gitlab_duo_configuration_index_path(group),
+        are_duo_core_features_enabled: settings.duo_core_features_enabled.to_s,
         is_duo_base_access_allowed: ::Feature.enabled?(:allow_duo_base_access, group).to_s
       }.merge(code_suggestions_usage_app_data(group))
     end

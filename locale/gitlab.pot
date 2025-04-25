@@ -5732,6 +5732,9 @@ msgstr ""
 msgid "AiPowered|Enable AI logs"
 msgstr ""
 
+msgid "AiPowered|Enabled"
+msgstr ""
+
 msgid "AiPowered|Enabling self-hosted beta models and features is your acceptance of the %{linkStart}GitLab Testing Agreement%{linkEnd}."
 msgstr ""
 
@@ -5765,6 +5768,9 @@ msgstr ""
 msgid "AiPowered|GitLab Duo Chat conversation expiration"
 msgstr ""
 
+msgid "AiPowered|GitLab Duo Core available to all users"
+msgstr ""
+
 msgid "AiPowered|GitLab Duo Self-Hosted"
 msgstr ""
 
@@ -5790,6 +5796,9 @@ msgid "AiPowered|Might result in requests having higher latency."
 msgstr ""
 
 msgid "AiPowered|Monitor, manage, and customize AI features to ensure efficient utilization and alignment."
+msgstr ""
+
+msgid "AiPowered|Not enabled"
 msgstr ""
 
 msgid "AiPowered|Off by default"

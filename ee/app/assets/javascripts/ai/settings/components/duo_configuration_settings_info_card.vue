@@ -1,13 +1,13 @@
 <script>
 import { GlCard, GlButton } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
+import { DUO_CORE, DUO_IDENTIFIERS, DUO_TITLES } from 'ee/usage_quotas/code_suggestions/constants';
 import { AVAILABILITY_OPTIONS } from '../constants';
 import DuoConfigurationSettingsRow from './duo_configuration_settings_row.vue';
 
 export default {
   name: 'DuoConfigurationSettingsInfoCard',
   i18n: {
-    duoConfigurationSettingsTitle: __('GitLab Duo'),
     duoChangeConfigurationButtonText: s__('AiPowered|Change configuration'),
     experimentAndBetaFeaturesText: s__('AiPowered|Experiment and beta features'),
     betaSelfHostedModelsText: s__('AiPowered|Self-hosted beta models and features'),
@@ -16,6 +16,9 @@ export default {
     defaultOnText: s__('AiPowered|On by default'),
     defaultOffText: s__('AiPowered|Off by default'),
     alwaysOffText: s__('AiPowered|Always off'),
+    enabled: s__('AiPowered|Enabled'),
+    disabled: s__('AiPowered|Not enabled'),
+    duoCoreAvailabilityText: s__('AiPowered|GitLab Duo Core available to all users'),
   },
   components: {
     GlCard,
@@ -30,8 +33,20 @@ export default {
     experimentFeaturesEnabled: {},
     betaSelfHostedModelsEnabled: { default: false },
     areExperimentSettingsAllowed: {},
+    areDuoCoreFeaturesEnabled: { default: false },
+    isDuoBaseAccessAllowed: { default: false },
+  },
+  props: {
+    duoTier: {
+      type: String,
+      required: true,
+      validator: (val) => DUO_IDENTIFIERS.includes(val),
+    },
   },
   computed: {
+    isDuoCoreTier() {
+      return this.duoTier === DUO_CORE;
+    },
     onSelfManaged() {
       return !this.isSaaS;
     },
@@ -47,6 +62,16 @@ export default {
           return null;
       }
     },
+    activationStatus() {
+      if (this.areDuoCoreFeaturesEnabled) {
+        return this.$options.i18n.enabled;
+      }
+
+      return this.$options.i18n.disabled;
+    },
+    title() {
+      return DUO_TITLES[this.duoTier];
+    },
   },
 };
 </script>
@@ -59,11 +84,20 @@ export default {
     <template #default>
       <section class="gl-flex gl-flex-col">
         <h2 class="gl-m-0 gl-text-lg" data-testid="duo-configuration-settings-info">
-          {{ $options.i18n.duoConfigurationSettingsTitle }}
+          {{ title }}
         </h2>
-        <p class="gl-mb-3 gl-text-size-h-display gl-font-bold">
+        <p v-if="isDuoCoreTier" class="gl-mb-3 gl-text-size-h-display gl-font-bold">
+          <span data-testid="configuration-status">{{ activationStatus }}</span>
+        </p>
+        <p v-else class="gl-mb-3 gl-text-size-h-display gl-font-bold">
           <span data-testid="configuration-status">{{ getAvailabilityStatus }}</span>
         </p>
+      </section>
+      <section v-if="isDuoBaseAccessAllowed && !isDuoCoreTier">
+        <duo-configuration-settings-row
+          :duo-configuration-settings-row-type-title="$options.i18n.duoCoreAvailabilityText"
+          :is-enabled="areDuoCoreFeaturesEnabled"
+        />
       </section>
       <section v-if="areExperimentSettingsAllowed">
         <duo-configuration-settings-row

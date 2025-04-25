@@ -143,22 +143,22 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
   describe '#admin_display_duo_addon_settings?' do
     subject(:display_duo_pro_settings) { helper.admin_display_duo_addon_settings? }
 
-    let(:duo_addon_purchased) { false }
+    let(:duo_add_on_purchased) { false }
 
     before do
       allow(GitlabSubscriptions::AddOnPurchase)
-        .to receive_message_chain(:for_self_managed, :for_duo_pro_or_duo_enterprise, :active, :any?)
-        .and_return(duo_addon_purchased)
+        .to receive_message_chain(:for_self_managed, :for_duo_core_pro_or_enterprise, :active, :any?)
+        .and_return(duo_add_on_purchased)
     end
 
-    context 'when a self-managed duo_pro or duo_enterprise purchase exists' do
-      let(:duo_addon_purchased) { true }
+    context 'when a self-managed Duo Core, Duo Pro or Duo Enterprise purchase exists' do
+      let(:duo_add_on_purchased) { true }
 
       it { is_expected.to be true }
     end
 
-    context 'when no self-managed duo_pro or duo_enterprise purchase exists' do
-      let(:duo_addon_purchased) { false }
+    context 'when no self-managed Duo Core, Duo Pro or Duo Enterprise purchase exists' do
+      let(:duo_add_on_purchased) { false }
 
       it { is_expected.to be false }
     end
@@ -173,6 +173,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
     let(:duo_workflow_enabled) { false }
     let(:duo_workflow_service_account) { nil }
     let(:is_saas) { false }
+    let(:duo_core_features_enabled) { true }
 
     before do
       allow(License).to receive(:current).and_return(license)
@@ -203,6 +204,9 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
       allow(::Ai::DuoWorkflow).to receive(:available?).and_return(duo_workflow_enabled)
       allow(::Gitlab).to receive(:com?).and_return(is_saas)
+
+      allow(::Ai::Setting).to receive_message_chain(:instance, :duo_core_features_enabled?)
+        .and_return(duo_core_features_enabled)
     end
 
     it 'returns a hash with all required keys and correct values' do
@@ -229,8 +233,17 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         redirect_path: '/admin/gitlab_duo',
         can_manage_self_hosted_models: 'false',
         duo_add_on_start_date: nil,
-        duo_add_on_end_date: nil
+        duo_add_on_end_date: nil,
+        are_duo_core_features_enabled: 'true'
       })
+    end
+
+    context 'with disabled duo_core_features_enabled' do
+      let(:duo_core_features_enabled) { false }
+
+      it 'sets Duo Core flag to false' do
+        expect(helper.admin_duo_home_app_data).to include(are_duo_core_features_enabled: 'false')
+      end
     end
 
     context 'when the instance is SaaS' do
@@ -298,7 +311,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
         it 'includes the related data' do
           allow(::Integrations::AmazonQ).to receive(:for_instance).and_return([integration])
-          ::Ai::Setting.instance.update!(amazon_q_ready: amazon_q_ready)
+          allow(::Ai::Setting.instance).to receive(:amazon_q_ready).and_return(amazon_q_ready)
 
           expect(helper.admin_duo_home_app_data).to include(
             amazon_q_ready: amazon_q_ready.to_s,
@@ -313,7 +326,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       let(:duo_workflow_enabled) { true }
       let(:service_account) { build_stubbed(:user, id: 123, username: 'duo_service', name: 'Duo Service') }
       let(:user_data) { { id: 123, username: 'duo_service', name: 'Duo Service', avatar_url: 'avatar.png' } }
-      let(:ai_setting) { instance_double(Ai::Setting) }
+      let(:ai_setting) { instance_double(Ai::Setting, duo_core_features_enabled?: true) }
 
       before do
         allow(helper).to receive(:duo_workflow_service_account).and_call_original

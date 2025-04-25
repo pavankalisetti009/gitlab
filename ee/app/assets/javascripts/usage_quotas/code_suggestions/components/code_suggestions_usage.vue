@@ -128,6 +128,9 @@ export default {
     isDuoCoreTier() {
       return this.duoTier === DUO_CORE;
     },
+    areSeatsAssignable() {
+      return this.duoTier === DUO_PRO || this.duoTier === DUO_ENTERPRISE;
+    },
     ignoreAddOnPurchase() {
       return this.isDuoCoreTier && !this.isDuoBaseAccessAllowed;
     },
@@ -317,7 +320,7 @@ export default {
       </template>
 
       <duo-amazon-q-info-card v-if="isDuoTierAmazonQ" />
-      <section v-else-if="hasAddOnPurchase && !isDuoCoreTier">
+      <section v-else-if="hasAddOnPurchase && !ignoreAddOnPurchase">
         <slot name="duo-card" v-bind="{ totalValue, usageValue, duoTier }">
           <template v-if="isSaaS && !isStandalonePage && duoPagePath">
             <gl-alert
@@ -332,7 +335,7 @@ export default {
               {{ $options.i18n.movedUsageAlertDescription }}
             </gl-alert>
           </template>
-          <template v-else>
+          <template v-else-if="areSeatsAssignable">
             <section class="gl-grid gl-gap-5 md:gl-grid-cols-2">
               <code-suggestions-statistics-card
                 :total-value="totalValue"
