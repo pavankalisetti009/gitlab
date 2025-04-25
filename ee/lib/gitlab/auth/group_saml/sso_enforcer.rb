@@ -16,7 +16,7 @@ module Gitlab
             end
           end
 
-          def access_restricted?(user:, resource:, session_timeout: DEFAULT_SESSION_TIMEOUT)
+          def access_restricted?(user:, resource:, session_timeout: DEFAULT_SESSION_TIMEOUT, skip_owner_check: false)
             group = resource.is_a?(::Group) ? resource : resource.group
 
             return false unless group
@@ -24,7 +24,8 @@ module Gitlab
             saml_provider = group.root_saml_provider
 
             return false unless saml_provider
-            return false if user_authorized?(user, resource)
+
+            return false if user_authorized?(user, resource, skip_owner_check)
 
             new(saml_provider, user: user, session_timeout: session_timeout).access_restricted?
           end
@@ -44,9 +45,9 @@ module Gitlab
 
           private
 
-          def user_authorized?(user, resource)
+          def user_authorized?(user, resource, skip_owner_check)
             return true if resource.public? && !resource_member?(resource, user)
-            return true if resource.is_a?(::Group) && resource.root? && resource.owned_by?(user)
+            return true if resource.is_a?(::Group) && resource.root? && resource.owned_by?(user) && !skip_owner_check
 
             false
           end

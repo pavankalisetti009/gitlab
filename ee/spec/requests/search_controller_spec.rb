@@ -45,7 +45,8 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
 
     describe 'SSO enforcement' do
       before do
-        allow(::Gitlab::Auth::GroupSaml::SsoEnforcer).to receive(:access_restricted?).and_return(true)
+        # this is required to allow ability checks, example: can?(:read_project)
+        allow(::Gitlab::Auth::GroupSaml::SsoEnforcer).to receive(:access_restricted?).and_return(false)
       end
 
       context 'for global level search' do
@@ -65,8 +66,8 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
           # this mock handles multiple calls
           # 1. loading `@group` from params[:group_id]
           # 2. in the sso_enforcement_redirect method
-          allow(::Gitlab::Auth::GroupSaml::SsoEnforcer).to receive(:access_restricted?)
-            .with(resource: group, user: user).and_return(false, true)
+          expect(::Gitlab::Auth::GroupSaml::SsoEnforcer).to receive(:access_restricted?)
+            .with(resource: group, user: user, skip_owner_check: true).and_return(true)
 
           send_search_request(params)
 
@@ -79,8 +80,8 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
           let(:subgroup) { create(:group, parent: group) }
 
           it 'redirects user to sso sign-in' do
-            allow(::Gitlab::Auth::GroupSaml::SsoEnforcer).to receive(:access_restricted?)
-              .with(resource: subgroup, user: user).and_return(false, true)
+            expect(::Gitlab::Auth::GroupSaml::SsoEnforcer).to receive(:access_restricted?)
+              .with(resource: subgroup, user: user, skip_owner_check: true).and_return(true)
 
             send_search_request(params)
 

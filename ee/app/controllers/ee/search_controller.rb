@@ -144,12 +144,13 @@ module EE
 
     def sso_enforcement_redirect
       # redirection should occur for group searches only
-      return unless search_service.level == 'group'
+      return unless search_service.level.to_sym == :group
 
       search_group = search_service.group
       return unless search_group
 
-      redirect = ::Gitlab::Auth::GroupSaml::SsoEnforcer.access_restricted?(resource: search_group, user: current_user)
+      params = { user: current_user, resource: search_group, skip_owner_check: true }
+      redirect = ::Gitlab::Auth::GroupSaml::SsoEnforcer.access_restricted?(**params)
       return unless redirect
 
       redirect_to sso_group_saml_providers_url(search_group.root_ancestor, { redirect: request.fullpath })
