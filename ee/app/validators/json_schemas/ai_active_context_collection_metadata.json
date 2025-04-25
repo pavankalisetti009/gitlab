@@ -23,6 +23,13 @@
       },
       "uniqueItems": true,
       "description": "Versions of the embedding models being used for indexing"
+    },
+    "collection_class": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The name of the collection class"
     }
   }
 }

@@ -75,6 +75,11 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
       expect(collection).to be_valid
     end
 
+    it 'is valid with collection_class as a string' do
+      collection.metadata = { collection_class: 'A string' }
+      expect(collection).to be_valid
+    end
+
     it 'is invalid with arbitrary properties' do
       collection.metadata = { key: 'value' }
       expect(collection).not_to be_valid
@@ -165,6 +170,14 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
         expect { collection.update_metadata!(search_embedding_version: -1) }.to raise_error(ActiveRecord::RecordInvalid)
         expect(collection.reload.metadata).to eq({ 'search_embedding_version' => 5 })
       end
+    end
+  end
+
+  describe 'jsonb_accessor' do
+    it 'defines accessor methods for metadata fields' do
+      expect(collection).to respond_to(:indexing_embedding_versions)
+      expect(collection).to respond_to(:search_embedding_version)
+      expect(collection).to respond_to(:collection_class)
     end
   end
 end
