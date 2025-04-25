@@ -108,18 +108,6 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
     def customizable_permissions_exempt_from_consuming_seat
       MemberRole.all_customizable_permissions.select { |_k, v| v[:skip_seat_consumption] }.keys
     end
-
-    def permission_enabled?(permission, user)
-      return true unless ::Feature::Definition.get("custom_ability_#{permission}")
-
-      ::Feature.enabled?("custom_ability_#{permission}", user)
-    end
-  end
-
-  def enabled_permissions(user)
-    MemberRole.all_customizable_permissions.filter do |permission|
-      attributes[permission.to_s] && self.class.permission_enabled?(permission, user)
-    end
   end
 
   def dependent_security_policies
