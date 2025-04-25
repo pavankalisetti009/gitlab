@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Admin::PushRulesController, feature_category: :source_code_management do
   include StubENV
 
-  let!(:organization) { create(:organization, :default) }
+  let!(:organization) { create(:organization) }
   let(:admin) { create(:admin) }
 
   before do
@@ -35,7 +35,7 @@ RSpec.describe Admin::PushRulesController, feature_category: :source_code_manage
       expect_next_instance_of(PushRule) do |instance|
         expect(instance).to receive(:update).with(
           ActionController::Parameters.new(
-            params.merge(organization_id: Organizations::Organization::DEFAULT_ORGANIZATION_ID)
+            params.merge(organization_id: Organizations::Organization.first.id)
           ).permit!
         ).and_call_original
       end
