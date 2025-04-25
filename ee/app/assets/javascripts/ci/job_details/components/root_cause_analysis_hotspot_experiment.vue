@@ -69,7 +69,7 @@ export default {
     onDuoCalled() {
       this.track('click_troubleshoot');
       this.showPopover = false;
-      this.showHotspot = false;
+      this.dismissHotspot();
     },
     onHotspotClick() {
       this.track('click_hotspot');
@@ -142,19 +142,23 @@ export default {
         >
           <template #title>
             <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
-              <strong>{{ __('Root Cause Analysis') }}</strong>
+              <strong>{{ __('Troubleshoot failed jobs with Root Cause Analysis') }}</strong>
             </div>
           </template>
           <p>
-            {{ __('Quickly identify the root cause of an incident using AI-assisted analysis.') }}
+            {{
+              __(
+                'Use AI to quickly identify the cause of job failures and get example fixes to get your pipeline running.',
+              )
+            }}
             <gl-link
               :href="$options.helpPageLink"
               target="_blank"
               rel="noopener noreferrer"
               tabindex="0"
-              :aria-label="__('Learn more about Root Cause Analysis in new tab')"
+              :aria-label="__('How does it work?')"
             >
-              {{ __('Learn more about Root Cause Analysis') }}
+              {{ __('How does it work?') }}
             </gl-link>
           </p>
         </gl-popover>
