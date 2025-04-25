@@ -299,6 +299,9 @@ export default {
         '!gl-px-3 gl-pb-3 gl-pt-2': !this.hasAllChildItemsHidden,
       };
     },
+    shouldShowTreeWidget() {
+      return this.children.length > 0 || this.canUpdateChildren;
+    },
   },
   watch: {
     'workItem.id': {
@@ -402,6 +405,7 @@ export default {
 
 <template>
   <crud-component
+    v-if="shouldShowTreeWidget"
     ref="workItemTree"
     :title="s__('WorkItem|Child items')"
     :anchor-id="widgetName"
