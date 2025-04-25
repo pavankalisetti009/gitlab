@@ -32,7 +32,7 @@ RSpec.describe Gitlab::StatusPage::Storage::S3MultipartUpload, :aws_s3 do
     before do
       stub_responses(
         :create_multipart_upload,
-        instance_double(Aws::S3::Types::CreateMultipartUploadOutput, { to_h: { upload_id: upload_id } })
+        { upload_id: upload_id }
       )
     end
 
@@ -44,7 +44,7 @@ RSpec.describe Gitlab::StatusPage::Storage::S3MultipartUpload, :aws_s3 do
       before do
         stub_responses(
           :upload_part,
-          instance_double(Aws::S3::Types::UploadPartOutput, to_h: {})
+          {}
         )
       end
 
