@@ -1,10 +1,10 @@
 import { shallowMount } from '@vue/test-utils';
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import timezoneMock from 'timezone-mock';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlSegmentedControl } from '@gitlab/ui';
+import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import BurnupQueryIteration from 'shared_queries/burndown_chart/burnup.iteration.query.graphql';
 import BurnupQueryMilestone from 'shared_queries/burndown_chart/burnup.milestone.query.graphql';

@@ -1,9 +1,9 @@
 import MockAxiosAdapter from 'axios-mock-adapter';
-import axios from 'axios';
 import { cloneDeep } from 'lodash';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import axios from '~/lib/utils/axios_utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RoleUpdater from 'ee/members/components/table/drawer/role_updater.vue';
 import {

@@ -1,5 +1,5 @@
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import axios from '~/lib/utils/axios_utils';
 import * as actions from 'ee/analytics/code_review_analytics/store/modules/merge_requests/actions';
 import * as types from 'ee/analytics/code_review_analytics/store/modules/merge_requests/mutation_types';
 import getInitialState from 'ee/analytics/code_review_analytics/store/modules/merge_requests/state';

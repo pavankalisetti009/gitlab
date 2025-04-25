@@ -1,6 +1,6 @@
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { noop } from 'lodash';
+import axios from '~/lib/utils/axios_utils';
 import {
   showDisableTwoFactorModal,
   hideDisableTwoFactorModal,

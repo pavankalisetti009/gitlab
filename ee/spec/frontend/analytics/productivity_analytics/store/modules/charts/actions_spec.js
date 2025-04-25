@@ -1,5 +1,5 @@
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import { chartKeys } from 'ee/analytics/productivity_analytics/constants';
 import * as actions from 'ee/analytics/productivity_analytics/store/modules/charts/actions';

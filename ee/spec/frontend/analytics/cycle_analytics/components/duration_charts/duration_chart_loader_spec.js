@@ -1,9 +1,9 @@
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { shallowMount } from '@vue/test-utils';
+import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK, HTTP_STATUS_NOT_FOUND } from '~/lib/utils/http_status';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createdAfter, createdBefore } from 'jest/analytics/cycle_analytics/mock_data';

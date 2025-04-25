@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '~/lib/utils/axios_utils';
 import { refreshCurrentPage } from '~/lib/utils/url_utility';
 import { subscriptionSyncStatus } from '../constants';
 import * as types from './mutation_types';

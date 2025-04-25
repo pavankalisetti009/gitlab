@@ -1,5 +1,5 @@
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import axios from '~/lib/utils/axios_utils';
 import { OVERVIEW_STAGE_CONFIG } from 'ee/analytics/cycle_analytics/constants';
 import * as actions from 'ee/analytics/cycle_analytics/store/actions/stages';
 import * as getters from 'ee/analytics/cycle_analytics/store/getters';
