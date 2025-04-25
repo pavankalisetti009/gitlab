@@ -1,3 +1,4 @@
+import { uniq } from 'lodash';
 import {
   SAST_SHORT_NAME,
   DAST_SHORT_NAME,
@@ -145,3 +146,5 @@ export const OPTIONS = {
     'SECRET_DETECTION_RULESET_GIT_REFERENCE',
   ],
 };
+
+export const FLAT_LIST_OPTIONS = uniq(Object.values(OPTIONS).flat());

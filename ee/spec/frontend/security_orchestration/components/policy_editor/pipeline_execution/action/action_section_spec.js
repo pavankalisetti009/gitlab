@@ -5,6 +5,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import ActionSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/action_section.vue';
 import CodeBlockFilePath from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_file_path.vue';
+import VariablesOverrideList from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/variables_override_list.vue';
 import {
   DEPRECATED_INJECT,
   INJECT,
@@ -68,6 +69,7 @@ describe('ActionSection', () => {
   };
 
   const findCodeBlockFilePath = () => wrapper.findComponent(CodeBlockFilePath);
+  const findVariablesOverrideList = () => wrapper.findComponent(VariablesOverrideList);
 
   describe('rendering', () => {
     it('renders code block file path component correctly', async () => {
@@ -76,6 +78,7 @@ describe('ActionSection', () => {
       await nextTick();
 
       expect(findCodeBlockFilePath().exists()).toBe(true);
+      expect(findVariablesOverrideList().exists()).toBe(false);
       expect(requestHandler).toHaveBeenCalledWith({ fullPath });
 
       expect(findCodeBlockFilePath().props()).toEqual(
@@ -182,6 +185,32 @@ describe('ActionSection', () => {
       factory({ propsData: { suffix: SUFFIX_NEVER } });
 
       expect(findCodeBlockFilePath().props('suffix')).toBe(SUFFIX_NEVER);
+    });
+  });
+
+  describe('variable override', () => {
+    const variablesOverride = { allowed: true, exceptions: ['test'] };
+
+    it('renders override list option', () => {
+      factory({ provide: { glFeatures: { securityPoliciesOptionalVariablesControl: true } } });
+
+      expect(findVariablesOverrideList().exists()).toBe(true);
+    });
+
+    it('renders existing override variables options', () => {
+      factory({
+        propsData: { variablesOverride },
+        provide: { glFeatures: { securityPoliciesOptionalVariablesControl: true } },
+      });
+
+      expect(findVariablesOverrideList().props('variablesOverride')).toEqual(variablesOverride);
+    });
+
+    it('emits variables override change', async () => {
+      factory({ provide: { glFeatures: { securityPoliciesOptionalVariablesControl: true } } });
+      await findVariablesOverrideList().vm.$emit('select', variablesOverride);
+
+      expect(wrapper.emitted('changed')).toEqual([['variables_override', variablesOverride]]);
     });
   });
 });

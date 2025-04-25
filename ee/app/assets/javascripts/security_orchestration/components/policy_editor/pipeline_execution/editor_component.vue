@@ -260,6 +260,7 @@ export default {
           :does-file-exist="!disableSubmit"
           :strategy="strategy"
           :suffix="policy.suffix"
+          :variables-override="policy.variables_override"
           @changed="handleUpdateProperty"
           @update-strategy="handleUpdateStrategy"
         />
