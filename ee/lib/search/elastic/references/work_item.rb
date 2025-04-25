@@ -6,7 +6,7 @@ module Search
       class WorkItem < Reference
         include Search::Elastic::Concerns::DatabaseReference
 
-        SCHEMA_VERSION = 25_15
+        SCHEMA_VERSION = 25_08
         NOTES_MAXIMUM_BYTES = 512.kilobytes
         DEFAULT_INDEX_ATTRIBUTES = %i[
           id
