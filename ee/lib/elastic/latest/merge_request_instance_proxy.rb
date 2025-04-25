@@ -33,9 +33,7 @@ module Elastic
         data['merge_requests_access_level'] = safely_read_project_feature_for_elasticsearch(:merge_requests)
         data['hashed_root_namespace_id'] = target_project.namespace.hashed_root_namespace_id
 
-        # Use target.hidden? once the FF hide_merge_requests_from_banned_users is fully rolled out
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/410671
-        data['hidden'] = target.author&.banned?
+        data['hidden'] = target.hidden?
         data['archived'] = target.project.archived?
 
         # Schema version. The format is Date.today.strftime('%y_%w')
