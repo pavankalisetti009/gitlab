@@ -14,7 +14,7 @@ import ComparisonChart from 'ee/analytics/dashboards/components/comparison_chart
 import ComparisonTable from 'ee/analytics/dashboards/components/comparison_table.vue';
 import VulnerabilitiesQuery from 'ee/analytics/dashboards/graphql/vulnerabilities.query.graphql';
 import MergeRequestsQuery from 'ee/analytics/dashboards/graphql/merge_requests.query.graphql';
-import GroupContributorCountQuery from 'ee/analytics/dashboards/graphql/group_contributor_count.query.graphql';
+import ContributorCountQuery from 'ee/analytics/dashboards/graphql/contributor_count.query.graphql';
 import { VULNERABILITY_METRICS } from '~/analytics/shared/constants';
 import FlowMetricsQuery from '~/analytics/shared/graphql/flow_metrics.query.graphql';
 import DoraMetricsQuery from '~/analytics/shared/graphql/dora_metrics.query.graphql';
@@ -103,7 +103,7 @@ describe('Comparison chart', () => {
         [DoraMetricsQuery, doraMetricsRequest],
         [VulnerabilitiesQuery, vulnerabilityRequest],
         [MergeRequestsQuery, mergeRequestsRequest],
-        [GroupContributorCountQuery, contributorCountRequest],
+        [ContributorCountQuery, contributorCountRequest],
       ],
       {},
       {
@@ -458,8 +458,8 @@ describe('Comparison chart', () => {
       expectVulnerabilityRequests(allTimePeriods, { fullPath: fakeProjectPath });
     });
 
-    it('will not request contributor count data for the table and sparklines', () => {
-      expect(contributorCountRequestHandler).not.toHaveBeenCalled();
+    it('will request project contributor count data for the table and sparklines', () => {
+      expectContributorCountRequests(allTimePeriods, { fullPath: fakeProjectPath });
     });
   });
 

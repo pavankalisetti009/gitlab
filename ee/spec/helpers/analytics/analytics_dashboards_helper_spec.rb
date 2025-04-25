@@ -85,7 +85,8 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
             is_instance_configured_with_self_managed_analytics_provider: 'true',
             default_use_instance_configuration: 'true',
             overview_counts_aggregation_enabled: "false",
-            has_scoped_labels_feature: licensed_feature_enabled.to_s
+            has_scoped_labels_feature: licensed_feature_enabled.to_s,
+            data_source_clickhouse: 'false'
           }
         end
 
@@ -114,6 +115,16 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
           it 'returns the pointer target project in the expected data' do
             expect(data).to eq(expected_data(false, pointer.target_project))
+          end
+        end
+
+        context 'when ClickHouse is enabled for analytics', :saas do
+          before do
+            allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+          end
+
+          it 'returns the expected data' do
+            expect(data).to include({ data_source_clickhouse: "true" })
           end
         end
       end
@@ -147,7 +158,8 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           is_instance_configured_with_self_managed_analytics_provider: 'true',
           default_use_instance_configuration: 'true',
           overview_counts_aggregation_enabled: "false",
-          has_scoped_labels_feature: 'false'
+          has_scoped_labels_feature: 'false',
+          data_source_clickhouse: 'false'
         }
       end
 
@@ -190,6 +202,16 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           expect(data).to eq(expected_data(true))
         end
       end
+
+      context 'when ClickHouse is enabled for analytics', :saas do
+        before do
+          allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+        end
+
+        it 'returns the expected data' do
+          expect(data).to include({ data_source_clickhouse: "true" })
+        end
+      end
     end
 
     context 'for group' do
@@ -223,7 +245,8 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           is_instance_configured_with_self_managed_analytics_provider: 'true',
           default_use_instance_configuration: 'true',
           overview_counts_aggregation_enabled: "false",
-          has_scoped_labels_feature: 'false'
+          has_scoped_labels_feature: 'false',
+          data_source_clickhouse: 'false'
         }
       end
 
@@ -264,6 +287,16 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
         it 'returns the expected data' do
           expect(data).to eq(expected_data(true))
+        end
+      end
+
+      context 'when ClickHouse is enabled for analytics', :saas do
+        before do
+          allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+        end
+
+        it 'returns the expected data' do
+          expect(data).to include({ data_source_clickhouse: "true" })
         end
       end
     end
