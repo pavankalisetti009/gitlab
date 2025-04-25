@@ -92,6 +92,7 @@ describe('License Report MR Widget', () => {
   };
 
   const findAllReportItems = () => wrapper.findAllComponents(ReportItem);
+  const findLicenseComplianceHelpLink = () => wrapper.findByTestId('security-approval-help-link');
 
   describe('computed', () => {
     describe('hasLicenseReportIssues', () => {
@@ -130,7 +131,7 @@ describe('License Report MR Widget', () => {
       it('tracks users_visiting_testing_license_compliance_full_report', () => {
         const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
 
-        wrapper.find('[data-testid="full-report-button"]').vm.$emit('click');
+        wrapper.findByTestId('full-report-button').vm.$emit('click');
 
         expect(trackUserEventSpy).toHaveBeenCalledWith(
           'users_visiting_testing_license_compliance_full_report',
@@ -144,7 +145,7 @@ describe('License Report MR Widget', () => {
       });
 
       it('tracks users_visiting_testing_manage_license_compliance', () => {
-        wrapper.find('[data-testid="manage-licenses-button"]').vm.$emit('click');
+        wrapper.findByTestId('manage-licenses-button').vm.$emit('click');
 
         expect(trackUserEventSpy).toHaveBeenCalledWith(
           'users_visiting_testing_manage_license_compliance',
@@ -398,9 +399,6 @@ describe('License Report MR Widget', () => {
   });
 
   describe('approval status', () => {
-    const findLicenseComplianceHelpLink = () =>
-      wrapper.find('[data-testid="security-approval-help-link"]');
-
     it('does not show a link to security approval help page if report does not contain denied licenses', () => {
       mountComponent();
 

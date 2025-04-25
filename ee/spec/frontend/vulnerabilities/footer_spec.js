@@ -334,7 +334,7 @@ describe('Vulnerability Footer', () => {
   });
 
   describe('detection note', () => {
-    const detectionNote = () => wrapper.find('[data-testid="detection-note"]');
+    const detectionNote = () => wrapper.findByTestId('detection-note');
     const statusDescription = () => wrapper.findComponent(StatusDescription);
     const vulnerabilityStates = Object.keys(VULNERABILITY_STATES);
 

@@ -109,7 +109,7 @@ describe('ReadyToMerge', () => {
     wrapper.findComponent(MergeImmediatelyConfirmationDialog);
   const findMergeTrainRestartTrainConfirmationDialog = () =>
     wrapper.findComponent(MergeTrainRestartTrainConfirmationDialog);
-  const findMergeHelperText = () => wrapper.find('[data-testid="auto-merge-helper-text"]');
+  const findMergeHelperText = () => wrapper.findByTestId('auto-merge-helper-text');
 
   describe('Merge Immediately Dropdown', () => {
     it('should return false if auto merge is not available', () => {

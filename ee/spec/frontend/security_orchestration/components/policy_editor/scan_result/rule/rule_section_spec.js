@@ -65,7 +65,7 @@ describe('RuleSection', () => {
   const findEmptyScanRuleBuilder = () => wrapper.findComponent(DefaultRuleBuilder);
   const findSecurityScanRule = () => wrapper.findComponent(SecurityScanRuleBuilder);
   const findLicenseScanRule = () => wrapper.findComponent(LicenseScanRuleBuilder);
-  const findRuleSeparator = () => wrapper.find('[data-testid="rule-separator"]');
+  const findRuleSeparator = () => wrapper.findByTestId('rule-separator');
 
   describe('when a rule type is selected', () => {
     it.each`

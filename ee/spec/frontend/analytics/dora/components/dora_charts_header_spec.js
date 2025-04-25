@@ -42,7 +42,7 @@ describe('dora_chart_header.vue', () => {
   });
 
   it('renders the chart description/help text', () => {
-    const helpText = wrapper.find('[data-testid="help-text"]');
+    const helpText = wrapper.findByTestId('help-text');
 
     expect(helpText.text()).toMatchInterpolatedText(
       'The chart displays the median time between a merge request being merged and deployed to production environment(s) that are based on the deployment_tier value. Learn more.',

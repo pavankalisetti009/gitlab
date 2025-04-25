@@ -1,7 +1,7 @@
 import { GlTokenSelector, GlFormGroup, GlToggle } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
 import { cloneDeep, merge } from 'lodash';
 import { nextTick } from 'vue';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AddEditRotationForm from 'ee/oncall_schedules/components/rotations/components/add_edit_rotation_form.vue';
 import { formEmptyState } from 'ee/oncall_schedules/components/rotations/components/add_edit_rotation_modal.vue';
 import { LENGTH_ENUM } from 'ee/oncall_schedules/constants';
@@ -15,7 +15,7 @@ describe('AddEditRotationForm', () => {
   let wrapper;
 
   const createComponent = ({ data = {}, props = {} } = {}) => {
-    wrapper = shallowMount(AddEditRotationForm, {
+    wrapper = shallowMountExtended(AddEditRotationForm, {
       data() {
         return {
           ...data,
@@ -42,18 +42,16 @@ describe('AddEditRotationForm', () => {
   };
 
   const findRotationLength = () => wrapper.find('[id="rotation-length"]');
-  const findRotationStartTime = () => wrapper.find('[data-testid="rotation-start-time"]');
-  const findRotationEndsContainer = () => wrapper.find('[data-testid="rotation-ends-on"]');
+  const findRotationStartTime = () => wrapper.findByTestId('rotation-start-time');
+  const findRotationEndTime = () => wrapper.findByTestId('rotation-end-time');
+  const findRotationEndsContainer = () => wrapper.findByTestId('rotation-ends-on');
   const findEndDateToggle = () => wrapper.findComponent(GlToggle);
-  const findRotationEndTime = () => wrapper.find('[data-testid="rotation-end-time"]');
   const findUserSelector = () => wrapper.findComponent(GlTokenSelector);
   const findRotationFormGroups = () => wrapper.findAllComponents(GlFormGroup);
-  const findStartsOnTimeListbox = () => wrapper.find('[data-testid="rotation-start-time"]');
-  const findEndsOnTimeListbox = () => wrapper.find('[data-testid="rotation-end-time"]');
-  const findRestrictedToToggle = () => wrapper.find('[data-testid="restricted-to-toggle"]');
-  const findRestrictedToContainer = () => wrapper.find('[data-testid="restricted-to-time"]');
-  const findRestrictedFromListbox = () => wrapper.find('[data-testid="restricted-from"]');
-  const findRestrictedToListbox = () => wrapper.find('[data-testid="restricted-to"]');
+  const findRestrictedToToggle = () => wrapper.findByTestId('restricted-to-toggle');
+  const findRestrictedToContainer = () => wrapper.findByTestId('restricted-to-time');
+  const findRestrictedFromListbox = () => wrapper.findByTestId('restricted-from');
+  const findRestrictedToListbox = () => wrapper.findByTestId('restricted-to');
 
   describe('Rotation form validation', () => {
     beforeEach(() => {
@@ -116,7 +114,7 @@ describe('AddEditRotationForm', () => {
         },
       });
       await nextTick();
-      expect(findStartsOnTimeListbox().props('selected')).toBe(time);
+      expect(findRotationStartTime().props('selected')).toBe(time);
     });
   });
 
@@ -177,7 +175,7 @@ describe('AddEditRotationForm', () => {
         },
       });
       await nextTick();
-      expect(findEndsOnTimeListbox().props('selected')).toBe(time);
+      expect(findRotationEndTime().props('selected')).toBe(time);
     });
   });
 

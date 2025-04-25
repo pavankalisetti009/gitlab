@@ -1,5 +1,5 @@
 import { GlFormGroup, GlFormInput } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DefaultStageFields from 'ee/analytics/cycle_analytics/vsa_settings/components/default_stage_fields.vue';
 import StageFieldActions from 'ee/analytics/cycle_analytics/vsa_settings/components/stage_field_actions.vue';
 import { customStageEvents as stageEvents } from '../../mock_data';
@@ -21,7 +21,7 @@ const defaultStage = {
 
 describe('DefaultStageFields', () => {
   function createComponent({ stage = defaultStage, errors = {} } = {}) {
-    return shallowMount(DefaultStageFields, {
+    return shallowMountExtended(DefaultStageFields, {
       provide: { stageEvents },
       propsData: {
         index: defaultStageIndex,
@@ -38,8 +38,8 @@ describe('DefaultStageFields', () => {
 
   const findStageFieldName = () => wrapper.find('[name="create-value-stream-stage-0"]');
   const findStageFieldNameInput = () => findStageFieldName().findComponent(GlFormInput);
-  const findStartEvent = () => wrapper.find('[data-testid="stage-start-event-0"]');
-  const findEndEvent = () => wrapper.find('[data-testid="stage-end-event-0"]');
+  const findStartEvent = () => wrapper.findByTestId('stage-start-event-0');
+  const findEndEvent = () => wrapper.findByTestId('stage-end-event-0');
   const findFormGroup = () => wrapper.findComponent(GlFormGroup);
   const findFieldActions = () => wrapper.findComponent(StageFieldActions);
 

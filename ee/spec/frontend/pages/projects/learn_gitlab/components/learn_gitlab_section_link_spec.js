@@ -33,7 +33,9 @@ describe('Learn GitLab Section Link', () => {
     );
   };
 
-  const findUncompletedLink = () => wrapper.find('[data-testid="uncompleted-learn-gitlab-link"]');
+  const findCompletedIcon = () => wrapper.findByTestId('completed-icon');
+  const findTrialOnly = () => wrapper.findByTestId('trial-only');
+  const findUncompletedLink = () => wrapper.findByTestId('uncompleted-learn-gitlab-link');
   const findDisabledLink = () => wrapper.findByTestId('disabled-learn-gitlab-link');
   const findPopoverTrigger = () => wrapper.findByTestId('contact-admin-popover-trigger');
   const findPopover = () => wrapper.findComponent(GlPopover);
@@ -42,25 +44,25 @@ describe('Learn GitLab Section Link', () => {
   it('renders no icon when not completed', () => {
     createWrapper(undefined, { completed: false });
 
-    expect(wrapper.find('[data-testid="completed-icon"]').exists()).toBe(false);
+    expect(findCompletedIcon().exists()).toBe(false);
   });
 
   it('renders the completion icon when completed', () => {
     createWrapper(undefined, { completed: true });
 
-    expect(wrapper.find('[data-testid="completed-icon"]').exists()).toBe(true);
+    expect(findCompletedIcon().exists()).toBe(true);
   });
 
   it('renders no trial only when it is not required', () => {
     createWrapper();
 
-    expect(wrapper.find('[data-testid="trial-only"]').exists()).toBe(false);
+    expect(findTrialOnly().exists()).toBe(false);
   });
 
   it('renders trial only when trial is required', () => {
     createWrapper('codeOwnersEnabled');
 
-    expect(wrapper.find('[data-testid="trial-only"]').exists()).toBe(true);
+    expect(findTrialOnly().exists()).toBe(true);
   });
 
   describe('disabled links', () => {

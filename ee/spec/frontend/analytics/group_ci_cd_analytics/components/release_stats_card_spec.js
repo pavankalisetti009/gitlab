@@ -1,8 +1,8 @@
 import { GlSkeletonLoader, GlCard } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
 import { merge } from 'lodash';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ReleaseStatsCard from 'ee/analytics/group_ci_cd_analytics/components/release_stats_card.vue';
 import groupReleaseStatsQuery from 'ee/analytics/group_ci_cd_analytics/graphql/group_release_stats.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -15,7 +15,7 @@ describe('Release stats card', () => {
   let wrapper;
 
   const createComponent = ({ apolloProvider }) => {
-    wrapper = shallowMount(ReleaseStatsCard, {
+    wrapper = shallowMountExtended(ReleaseStatsCard, {
       apolloProvider,
       stubs: {
         GlCard,
@@ -24,7 +24,7 @@ describe('Release stats card', () => {
   };
 
   const findLoadingIndicators = () => wrapper.findAllComponents(GlSkeletonLoader);
-  const findStats = () => wrapper.find('[data-testid="stats-container"]');
+  const findStats = () => wrapper.findByTestId('stats-container');
 
   const expectLoadingIndicators = () => {
     expect(findLoadingIndicators()).toHaveLength(2);

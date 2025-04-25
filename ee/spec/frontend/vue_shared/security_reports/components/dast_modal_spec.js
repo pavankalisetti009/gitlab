@@ -1,5 +1,5 @@
 import { GlModal, GlSprintf } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import Component from 'ee/vue_shared/security_reports/components/dast_modal.vue';
 
 describe('DAST Modal', () => {
@@ -11,10 +11,10 @@ describe('DAST Modal', () => {
     downloadLink: 'https://gitlab.com',
   };
 
-  const findDownloadLink = () => wrapper.find('[data-testid="download-link"]');
+  const findDownloadLink = () => wrapper.findByTestId('download-link');
 
   const createWrapper = (propsData) => {
-    wrapper = shallowMount(Component, {
+    wrapper = shallowMountExtended(Component, {
       propsData: {
         ...defaultProps,
         ...propsData,
@@ -52,6 +52,6 @@ describe('DAST Modal', () => {
     createWrapper({
       scannedUrls: Array(20).fill(defaultProps.scannedUrls[0]),
     });
-    expect(wrapper.findAll('[data-testid="dast-scanned-url"]')).toHaveLength(15);
+    expect(wrapper.findAllByTestId('dast-scanned-url')).toHaveLength(15);
   });
 });
