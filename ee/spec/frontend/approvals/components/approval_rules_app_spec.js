@@ -41,8 +41,8 @@ describe('EE Approvals App', () => {
     });
   };
 
-  const findAddButton = () => wrapper.find('[data-testid="add-approval-rule"]');
-  const findResetButton = () => wrapper.find('[data-testid="reset-to-defaults"]');
+  const findAddButton = () => wrapper.findByTestId('add-approval-rule');
+  const findResetButton = () => wrapper.findByTestId('reset-to-defaults');
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findRules = () => wrapper.find(`.${TEST_RULES_CLASS}`);
   const findRulesCount = () => wrapper.findByTestId('crud-count');

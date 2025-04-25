@@ -1,9 +1,9 @@
-import { mount } from '@vue/test-utils';
 import MockAdapter from 'axios-mock-adapter';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import axios from '~/lib/utils/axios_utils';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
 import MREditApp from 'ee/approvals/mr_edit/app.vue';
 import MRRules from 'ee/approvals/mr_edit/mr_rules.vue';
 import MRRulesHiddenInputs from 'ee/approvals/mr_edit/mr_rules_hidden_inputs.vue';
@@ -18,7 +18,7 @@ describe('EE Approvals MREditApp', () => {
   let axiosMock;
 
   const factory = (mrCollapsedApprovalRules = false) => {
-    wrapper = mount(MREditApp, {
+    wrapper = mountExtended(MREditApp, {
       store: new Vuex.Store(store),
       provide: {
         glFeatures: {
@@ -31,8 +31,9 @@ describe('EE Approvals MREditApp', () => {
   const findAllApprovalsTableNames = () =>
     wrapper.findComponent(MRRules).findAll('[data-testid="approvals-table-name"]');
   const findHiddenInputs = () =>
-    wrapper.find('[data-testid="mr-approval-rules"]').findComponent(MRRulesHiddenInputs);
-  const findSummaryText = () => wrapper.find('[data-testid="collapsedSummaryText"]');
+    wrapper.findByTestId('mr-approval-rules').findComponent(MRRulesHiddenInputs);
+  const findSummaryText = () => wrapper.findByTestId('collapsedSummaryText');
+  const findCodeownersTip = () => wrapper.findByTestId('codeowners-tip');
 
   beforeEach(() => {
     axiosMock = new MockAdapter(axios);
@@ -52,7 +53,7 @@ describe('EE Approvals MREditApp', () => {
 
     factory(true);
 
-    expect(wrapper.find('[data-testid="codeowners-tip"]').exists()).toBe(true);
+    expect(findCodeownersTip().exists()).toBe(true);
   });
 
   describe('with empty rules', () => {

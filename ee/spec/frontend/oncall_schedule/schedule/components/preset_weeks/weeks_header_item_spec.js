@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import WeeksHeaderItemComponent from 'ee/oncall_schedules/components/schedule/components/preset_weeks/weeks_header_item.vue';
 import { getTimeframeForWeeksView } from 'ee/oncall_schedules/components/schedule/utils';
 import { useFakeDate } from 'helpers/fake_date';
@@ -16,7 +16,7 @@ describe('WeeksHeaderItemComponent', () => {
     timeframeItem = mockTimeframeWeeks[mockTimeframeIndex],
     timeframe = mockTimeframeWeeks,
   } = {}) {
-    wrapper = shallowMount(WeeksHeaderItemComponent, {
+    wrapper = shallowMountExtended(WeeksHeaderItemComponent, {
       propsData: {
         timeframeIndex,
         timeframeItem,
@@ -29,7 +29,7 @@ describe('WeeksHeaderItemComponent', () => {
     mountComponent();
   });
 
-  const findHeaderLabel = () => wrapper.find('[data-testid="timeline-header-label"]');
+  const findHeaderLabel = () => wrapper.findByTestId('timeline-header-label');
 
   describe('lastDayOfCurrentWeek', () => {
     it('returns date object representing last day of the week as set in `timeframeItem`', () => {

@@ -1,9 +1,9 @@
 import { GlModal } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { createMockSubscription } from 'mock-apollo-client';
 import '~/lib/utils/autosave';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import aiActionMutation from 'ee/graphql_shared/mutations/ai_action.mutation.graphql';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
@@ -27,7 +27,7 @@ describe('Convert description', () => {
 
   const findModal = () => wrapper.findComponent(GlModal);
   const clickSubmit = () => findModal().vm.$emit('primary', mockEvent);
-  const findError = () => wrapper.find('[data-testid="convert-description-modal-error"]');
+  const findError = () => wrapper.findByTestId('convert-description-modal-error');
 
   function openModalAndEnterDescription() {
     wrapper.find('textarea').setValue(content);
@@ -50,7 +50,7 @@ describe('Convert description', () => {
       `<select class="js-issuable-selector">${descriptionTemplateName}</select><div class="js-attach-to"></div>`,
     );
 
-    wrapper = shallowMount(ConvertDescriptionModal, {
+    wrapper = shallowMountExtended(ConvertDescriptionModal, {
       apolloProvider: mockApollo,
       propsData: {
         resourceId,
