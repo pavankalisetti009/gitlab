@@ -1,13 +1,17 @@
 <script>
 import { parseCustomFileConfiguration } from 'ee/security_orchestration/components/policy_editor/utils';
 import getProjectId from 'ee/security_orchestration/graphql/queries/get_project_id.query.graphql';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { SUFFIX_ON_CONFLICT } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import CodeBlockFilePath from './code_block_file_path.vue';
+import VariablesOverrideList from './variables_override_list.vue';
 
 export default {
   components: {
     CodeBlockFilePath,
+    VariablesOverrideList,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     action: {
       type: Object,
@@ -27,6 +31,11 @@ export default {
       required: false,
       default: SUFFIX_ON_CONFLICT,
     },
+    variablesOverride: {
+      type: Object,
+      required: false,
+      default: () => {},
+    },
   },
   data() {
     return {
@@ -34,6 +43,9 @@ export default {
     };
   },
   computed: {
+    hasVariablesControl() {
+      return this.glFeatures.securityPoliciesOptionalVariablesControl;
+    },
     ciConfigurationPath() {
       return this.action?.include?.[0] || {};
     },
@@ -96,28 +108,37 @@ export default {
 
       this.setCiConfigurationPath({ ...configuration, ...(path ? { file: path } : {}) });
     },
-    updateSuffix(suffix) {
-      this.$emit('changed', 'suffix', suffix);
-    },
     setCiConfigurationPath(pathConfig) {
-      this.$emit('changed', 'content', { include: [pathConfig] });
+      this.updateProperty('content', { include: [pathConfig] });
+    },
+    updateProperty(property, value) {
+      this.$emit('changed', property, value);
     },
   },
 };
 </script>
 
 <template>
-  <code-block-file-path
-    :file-path="filePath"
-    :strategy="strategy"
-    :selected-ref="selectedRef"
-    :selected-project="selectedProject"
-    :does-file-exist="doesFileExist"
-    :suffix="suffix"
-    @select-strategy="setStrategy"
-    @select-ref="setSelectedRef"
-    @select-project="setSelectedProject"
-    @update-file-path="updatedFilePath"
-    @update-suffix="updateSuffix"
-  />
+  <div>
+    <code-block-file-path
+      :file-path="filePath"
+      :strategy="strategy"
+      :selected-ref="selectedRef"
+      :selected-project="selectedProject"
+      :does-file-exist="doesFileExist"
+      :suffix="suffix"
+      @select-strategy="setStrategy"
+      @select-ref="setSelectedRef"
+      @select-project="setSelectedProject"
+      @update-file-path="updatedFilePath"
+      @update-suffix="updateProperty('suffix', $event)"
+    />
+
+    <variables-override-list
+      v-if="hasVariablesControl"
+      class="gl-mt-4"
+      :variables-override="variablesOverride"
+      @select="updateProperty('variables_override', $event)"
+    />
+  </div>
 </template>

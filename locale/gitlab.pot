@@ -54309,6 +54309,9 @@ msgstr ""
 msgid "SecurityOrchestration|%{frameworkName} has %{projectLength} %{projects}"
 msgstr ""
 
+msgid "SecurityOrchestration|%{listType} attempts from %{linkStart}other settings%{linkEnd} to override variables when the policy runs, except the variables defined in the %{list}."
+msgstr ""
+
 msgid "SecurityOrchestration|%{pageSize}+ projects which have compliance framework:"
 msgstr ""
 
@@ -54360,6 +54363,9 @@ msgid "SecurityOrchestration|Actions"
 msgstr ""
 
 msgid "SecurityOrchestration|Add a numeric suffix to ensure unique job names."
+msgstr ""
+
+msgid "SecurityOrchestration|Add another variable"
 msgstr ""
 
 msgid "SecurityOrchestration|Add job name suffix %{suffixEditor} %{suffixIcon}"
@@ -54575,6 +54581,18 @@ msgstr ""
 msgid "SecurityOrchestration|Edge case settings"
 msgstr ""
 
+msgid "SecurityOrchestration|Edit allowlist"
+msgstr ""
+
+msgid "SecurityOrchestration|Edit allowlist (%{variablesCount} %{variables})"
+msgstr ""
+
+msgid "SecurityOrchestration|Edit denylist"
+msgstr ""
+
+msgid "SecurityOrchestration|Edit denylist (%{variablesCount} %{variables})"
+msgstr ""
+
 msgid "SecurityOrchestration|Edit merge request approval policy"
 msgstr ""
 
@@ -54726,6 +54744,9 @@ msgid "SecurityOrchestration|Invalid policy type"
 msgstr ""
 
 msgid "SecurityOrchestration|Invalid syntax"
+msgstr ""
+
+msgid "SecurityOrchestration|Key"
 msgstr ""
 
 msgid "SecurityOrchestration|Latest scan run against %{agent}"
@@ -54952,6 +54973,12 @@ msgstr ""
 msgid "SecurityOrchestration|Run a %{scannerStart}%{scanner}%{scannerEnd} scan with the following options:"
 msgstr ""
 
+msgid "SecurityOrchestration|Save allowlist"
+msgstr ""
+
+msgid "SecurityOrchestration|Save denylist"
+msgstr ""
+
 msgid "SecurityOrchestration|Scan actions exceed the limit of %{maxScanExecutionPolicyActions} actions per policy."
 msgstr ""
 
@@ -55012,10 +55039,16 @@ msgstr ""
 msgid "SecurityOrchestration|Select a project to store your security policies in. %{linkStart}More information.%{linkEnd}"
 msgstr ""
 
+msgid "SecurityOrchestration|Select a variable"
+msgstr ""
+
 msgid "SecurityOrchestration|Select days"
 msgstr ""
 
 msgid "SecurityOrchestration|Select frameworks"
+msgstr ""
+
+msgid "SecurityOrchestration|Select list type"
 msgstr ""
 
 msgid "SecurityOrchestration|Select policy"
@@ -55210,6 +55243,15 @@ msgstr ""
 msgid "SecurityOrchestration|Validating branch names, which might take a while."
 msgstr ""
 
+msgid "SecurityOrchestration|Variable option"
+msgstr ""
+
+msgid "SecurityOrchestration|Variables that can be overridden:"
+msgstr ""
+
+msgid "SecurityOrchestration|Variables that cannot be overriden:"
+msgstr ""
+
 msgid "SecurityOrchestration|View policy project"
 msgstr ""
 
@@ -55327,6 +55369,9 @@ msgstr ""
 msgid "SecurityOrchestration|all projects in this group"
 msgstr ""
 
+msgid "SecurityOrchestration|allowlist"
+msgstr ""
+
 msgid "SecurityOrchestration|and run for %{hours}"
 msgstr ""
 
@@ -55379,6 +55424,9 @@ msgid "SecurityOrchestration|compliance frameworks"
 msgstr ""
 
 msgid "SecurityOrchestration|default"
+msgstr ""
+
+msgid "SecurityOrchestration|denylist"
 msgstr ""
 
 msgid "SecurityOrchestration|except for:"
@@ -73200,6 +73248,11 @@ msgstr ""
 
 msgid "value: %{value} must be a string"
 msgstr ""
+
+msgid "variable"
+msgid_plural "variables"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "verify ownership"
 msgstr ""

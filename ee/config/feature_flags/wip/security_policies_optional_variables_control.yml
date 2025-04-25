@@ -1,0 +1,9 @@
+---
+name: security_policies_optional_variables_control
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/525084
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/issues/525084
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/535928
+milestone: '18.0'
+group: group::security policies
+type: wip
+default_enabled: false

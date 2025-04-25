@@ -10,6 +10,7 @@ import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/s
 import {
   DEFAULT_PIPELINE_EXECUTION_POLICY,
   DEFAULT_SCHEDULE,
+  DEFAULT_VARIABLES_OVERRIDE_STATE,
   INJECT,
   PIPELINE_EXECUTION_SCHEDULE_POLICY,
   SCHEDULE,
@@ -194,6 +195,24 @@ describe('EditorComponent', () => {
       factoryWithExistingPolicy({ policy: mockInvalidPipelineExecutionObject });
       expect(findActionSection().exists()).toBe(true);
       expect(findDisabledAction().props()).toEqual({ disabled: true, error });
+      expect(findActionSection().props('variablesOverride')).toEqual(undefined);
+    });
+
+    it('passes variables override to action section', () => {
+      const mockWithVariablesOverrides = {
+        ...mockWithoutRefPipelineExecutionObject,
+        variables_override: DEFAULT_VARIABLES_OVERRIDE_STATE,
+      };
+
+      factory({
+        propsData: {
+          existingPolicy: { ...mockWithVariablesOverrides },
+        },
+      });
+
+      expect(findActionSection().props('variablesOverride')).toEqual(
+        DEFAULT_VARIABLES_OVERRIDE_STATE,
+      );
     });
   });
 

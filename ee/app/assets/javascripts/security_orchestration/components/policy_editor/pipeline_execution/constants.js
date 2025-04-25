@@ -1,4 +1,4 @@
-import { s__ } from '~/locale';
+import { s__, __ } from '~/locale';
 import { mapToListboxItems } from 'ee/security_orchestration/utils';
 
 export const DEFAULT_PIPELINE_EXECUTION_POLICY = `pipeline_execution_policy:
@@ -106,3 +106,15 @@ export const SUFFIX_LIST_BOX_ITEMS = Object.keys(SUFFIX_ITEMS).map((key) => ({
 }));
 
 export const PIPELINE_EXECUTION_SCHEDULE_POLICY = 'pipeline_execution_schedule_policy';
+
+export const DEFAULT_VARIABLES_OVERRIDE_STATE = { allowed: false, exceptions: [] };
+
+export const DENY = 'deny';
+export const ALLOW = 'allow';
+
+export const ALLOW_DENY_OPTIONS = {
+  [ALLOW]: __('Allow'),
+  [DENY]: __('Deny'),
+};
+
+export const ALLOW_DENY_LISTBOX_ITEMS = mapToListboxItems(ALLOW_DENY_OPTIONS);
