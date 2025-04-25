@@ -26,7 +26,7 @@ RSpec.describe 'ArkoseLabs content security policy', feature_category: :system_a
     context 'when there is no global CSP config' do
       before do
         csp = ActionDispatch::ContentSecurityPolicy.new
-        setup_csp_for_controller(controller_class, csp, any_time: true)
+        stub_csp_for_controller(controller_class, csp)
       end
 
       it 'does not add ArkoseLabs URL to Content Security Policy headers' do

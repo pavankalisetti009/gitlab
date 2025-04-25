@@ -22,7 +22,7 @@ RSpec.describe 'Pipelines Content Security', feature_category: :continuous_integ
 
   context 'when there is no global config' do
     before do
-      setup_csp_for_controller(::Projects::PipelinesController, ActionDispatch::ContentSecurityPolicy.new, times: 2)
+      stub_csp_for_controller(::Projects::PipelinesController, ActionDispatch::ContentSecurityPolicy.new)
 
       visit project_pipeline_path(project, pipeline)
     end
@@ -36,7 +36,7 @@ RSpec.describe 'Pipelines Content Security', feature_category: :continuous_integ
         p.script_src :self, 'https://some-cdn.test'
       end
 
-      setup_csp_for_controller(::Projects::PipelinesController, csp, times: 2)
+      stub_csp_for_controller(::Projects::PipelinesController, csp)
 
       visit project_pipeline_path(project, pipeline)
     end
