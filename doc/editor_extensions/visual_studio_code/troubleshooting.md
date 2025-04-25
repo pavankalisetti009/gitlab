@@ -217,9 +217,9 @@ Gather this information from affected users, and provide it in your bug report:
 1. Describe the scope of impact. How many users are affected?
 1. Describe how to reproduce the error. Include a screen recording, if possible.
 1. Describe how other GitLab Duo features are affected:
-   - Is **GitLab Quick Chat** functional?
-   - Is **Code Suggestions** working?
-   - Does **Web IDE Duo Chat** return responses?
+   - Is GitLab Quick Chat functional?
+   - Is Code Suggestions working?
+   - Does Web IDE Duo Chat return responses?
 1. Perform extension isolation testing as described in the
    [GitLab Workflow Extension Isolation Guide](https://gitlab.com/gitlab-org/editor-extensions/gitlab-lsp/-/issues/814#step-2-extension-isolation-testing).
    Try disabling (or uninstalling) all other extensions to determine if another extension is causing
