@@ -3,7 +3,6 @@ import { GlSorting } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { __ } from '~/locale';
-import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { NAMESPACE_PROJECT, NAMESPACE_GROUP } from '../constants';
 import { SORT_FIELDS, SORT_ASCENDING } from '../store/constants';
@@ -50,21 +49,23 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['fetchDependencies']),
+    ...mapActions(['fetchDependencies', 'fetchDependenciesViaGraphQL']),
     ...mapActions({
       setSortField(dispatch, field) {
-        this.clearCursorParam();
         dispatch(`setSortField`, field);
-        this.fetchDependencies();
+        this.fetchDependenciesWithFeatureFlag();
       },
       toggleSortOrder(dispatch) {
-        this.clearCursorParam();
         dispatch(`toggleSortOrder`);
-        this.fetchDependencies();
+        this.fetchDependenciesWithFeatureFlag();
       },
     }),
-    clearCursorParam() {
-      updateHistory({ url: setUrlParams({ cursor: null }) });
+    fetchDependenciesWithFeatureFlag() {
+      if (this.glFeatures.projectDependenciesGraphql) {
+        this.fetchDependenciesViaGraphQL();
+      } else {
+        this.fetchDependencies();
+      }
     },
   },
 };

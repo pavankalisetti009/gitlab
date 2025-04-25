@@ -847,6 +847,91 @@ describe('Dependencies actions', () => {
         graphQLClient.query.mockResolvedValue(mockGraphQLDependenciesResponse);
       });
 
+      describe('sorting', () => {
+        it.each`
+          sortField     | sortOrder | expectedEnum
+          ${'name'}     | ${'asc'}  | ${'NAME_ASC'}
+          ${'name'}     | ${'desc'} | ${'NAME_DESC'}
+          ${'packager'} | ${'asc'}  | ${'PACKAGER_ASC'}
+          ${'packager'} | ${'desc'} | ${'PACKAGER_DESC'}
+          ${'severity'} | ${'asc'}  | ${'SEVERITY_ASC'}
+          ${'severity'} | ${'desc'} | ${'SEVERITY_DESC'}
+          ${'license'}  | ${'asc'}  | ${'LICENSE_ASC'}
+          ${'license'}  | ${'desc'} | ${'LICENSE_DESC'}
+        `(
+          'includes sort parameter in GraphQL variables when sortField is "$sortField" and sortOrder is "$sortOrder"',
+          async ({ sortField, sortOrder, expectedEnum }) => {
+            state.sortField = sortField;
+            state.sortOrder = sortOrder;
+
+            await testAction(
+              actions.fetchDependenciesViaGraphQL,
+              undefined,
+              state,
+              [
+                {
+                  type: types.RECEIVE_DEPENDENCIES_SUCCESS,
+                  payload: {
+                    dependencies: expectedDependencies,
+                    pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                  },
+                },
+              ],
+              [{ type: 'requestDependencies' }],
+            );
+
+            const expectedVariables = {
+              first: 20,
+              fullPath: state.fullPath,
+              sort: expectedEnum,
+            };
+
+            expect(graphQLClient.query).toHaveBeenCalledWith({
+              query: projectDependencies,
+              variables: expectedVariables,
+            });
+          },
+        );
+
+        it.each`
+          sortField    | sortOrder
+          ${undefined} | ${'asc'}
+          ${'name'}    | ${undefined}
+        `(
+          'does not include sort parameter in GraphQL variables when sortField or sortOrder is undefined',
+          async ({ sortField, sortOrder }) => {
+            state.sortField = sortField;
+            state.sortOrder = sortOrder;
+
+            await testAction(
+              actions.fetchDependenciesViaGraphQL,
+              undefined,
+              state,
+              [
+                {
+                  type: types.RECEIVE_DEPENDENCIES_SUCCESS,
+                  payload: {
+                    dependencies: expectedDependencies,
+                    pageInfo: mockGraphQLDependenciesResponse.data.project.dependencies.pageInfo,
+                  },
+                },
+              ],
+              [{ type: 'requestDependencies' }],
+            );
+
+            const expectedVariables = {
+              first: 20,
+              fullPath: state.fullPath,
+            };
+
+            expect(graphQLClient.query).toHaveBeenCalledWith({
+              query: projectDependencies,
+              variables: expectedVariables,
+            });
+          },
+        );
+      });
+
       describe('pagination', () => {
         it('uses "first" query-parameter when no cursor is provided (initial page)', async () => {
           await testAction(

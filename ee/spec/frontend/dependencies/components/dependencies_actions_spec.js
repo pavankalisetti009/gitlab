@@ -11,7 +11,11 @@ describe('DependenciesActions component', () => {
   let store;
   let wrapper;
 
-  const factory = ({ propsData, provide } = {}) => {
+  const factory = ({
+    propsData,
+    provide,
+    glFeatures = { projectDependenciesGraphql: true },
+  } = {}) => {
     store = createStore();
     jest.spyOn(store, 'dispatch').mockImplementation();
 
@@ -23,6 +27,7 @@ describe('DependenciesActions component', () => {
       provide: {
         namespaceType: 'group',
         ...provide,
+        glFeatures,
       },
       stubs: {
         GroupDependenciesFilteredSearch: true,
@@ -69,7 +74,7 @@ describe('DependenciesActions component', () => {
 
         expect(store.dispatch.mock.calls).toEqual([
           ['setSortField', sortOrder],
-          ['fetchDependencies'],
+          ['fetchDependenciesViaGraphQL'],
         ]);
       },
     );
@@ -77,10 +82,40 @@ describe('DependenciesActions component', () => {
     it('dispatches the toggleSortOrder action and re-fetches dependencies on clicking the sort order button', () => {
       findSorting().vm.$emit('sortDirectionChange');
 
-      expect(store.dispatch.mock.calls).toEqual([['toggleSortOrder'], ['fetchDependencies']]);
-      expect(urlUtility.updateHistory).toHaveBeenCalledTimes(1);
-      expect(urlUtility.updateHistory).toHaveBeenCalledWith({
-        url: `${TEST_HOST}/`,
+      expect(store.dispatch.mock.calls).toEqual([
+        ['toggleSortOrder'],
+        ['fetchDependenciesViaGraphQL'],
+      ]);
+    });
+  });
+
+  describe('with "projectDependenciesGraphql" feature flag disabled', () => {
+    describe('Sorting', () => {
+      beforeEach(async () => {
+        factory({ glFeatures: { projectDependenciesGraphql: false } });
+
+        store.state.endpoint = `${TEST_HOST}/dependencies.json`;
+        jest.spyOn(urlUtility, 'updateHistory');
+
+        await nextTick();
+      });
+
+      it.each(Object.keys(SORT_FIELDS))(
+        'dispatches the "%s" sort-order and falls back to fetchDependencies',
+        (sortOrder) => {
+          emitSortByChange(sortOrder);
+
+          expect(store.dispatch.mock.calls).toEqual([
+            ['setSortField', sortOrder],
+            ['fetchDependencies'],
+          ]);
+        },
+      );
+
+      it('dispatches the toggleSortOrder action and falls back to fetchDependencies on clicking the sort order button', () => {
+        findSorting().vm.$emit('sortDirectionChange');
+
+        expect(store.dispatch.mock.calls).toEqual([['toggleSortOrder'], ['fetchDependencies']]);
       });
     });
   });
