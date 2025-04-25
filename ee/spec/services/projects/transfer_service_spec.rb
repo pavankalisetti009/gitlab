@@ -348,4 +348,64 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
       expect(project.reload.compliance_standards_adherence.first.namespace_id).to eq(group.id)
     end
   end
+
+  describe 'deleting compliance statuses' do
+    let_it_be(:subgroup1) { create(:group, parent: group) }
+    let_it_be(:project) { create(:project, group: subgroup1) }
+    let_it_be(:subgroup2) { create(:group, parent: group) }
+    let_it_be(:other_group) { create(:group) }
+    let_it_be(:framework1) { create(:compliance_framework, :first, namespace: group) }
+    let_it_be(:framework2) { create(:compliance_framework, :second, namespace: group) }
+
+    before_all do
+      create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework1)
+      create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework2)
+
+      subgroup1.add_owner(user)
+      subgroup2.add_owner(user)
+      other_group.add_owner(user)
+    end
+
+    context 'when transferring to same top-level group' do
+      it 'enqueues project compliance statuses removal for the framework' do
+        expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
+          .to receive(:perform_async)
+                .with(project.id, framework1.id, { "skip_framework_check" => true }).once.ordered
+
+        expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
+          .to receive(:perform_async)
+                .with(project.id, framework2.id, { "skip_framework_check" => true }).once.ordered
+
+        subject.execute(group)
+      end
+    end
+
+    context 'when transferring to subgroup of same top level group' do
+      it 'enqueues project compliance statuses removal for the framework' do
+        expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
+          .to receive(:perform_async)
+                .with(project.id, framework1.id, { "skip_framework_check" => true }).once.ordered
+
+        expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
+          .to receive(:perform_async)
+                .with(project.id, framework2.id, { "skip_framework_check" => true }).once.ordered
+
+        subject.execute(subgroup2)
+      end
+    end
+
+    context 'when transferring to other group' do
+      it 'enqueues project compliance statuses removal for the framework' do
+        expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
+          .to receive(:perform_async)
+                .with(project.id, framework1.id, { "skip_framework_check" => true }).once.ordered
+
+        expect(ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker)
+          .to receive(:perform_async)
+                .with(project.id, framework2.id, { "skip_framework_check" => true }).once.ordered
+
+        subject.execute(other_group)
+      end
+    end
+  end
 end

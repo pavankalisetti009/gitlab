@@ -20,7 +20,7 @@ module ComplianceManagement
 
         # In case the framework was reapplied to the project till the time this job started,
         # don't delete any of the compliance statuses
-        return if !params[:skip_framework_check] &&
+        return if !params["skip_framework_check"] &&
           ComplianceManagement::ComplianceFramework::ProjectSettings.by_framework_and_project(project_id,
             framework_id).exists?
 

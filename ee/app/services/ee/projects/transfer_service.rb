@@ -39,6 +39,7 @@ module EE
         create_security_policy_bot
         delete_compliance_framework_setting(old_group)
         update_compliance_standards_adherence
+        delete_compliance_statuses
       end
 
       override :remove_paid_features
@@ -94,6 +95,18 @@ module EE
 
       def update_compliance_standards_adherence
         project.compliance_standards_adherence.update_all(namespace_id: new_namespace.id)
+      end
+
+      def delete_compliance_statuses
+        project.compliance_framework_settings.each do |framework_setting|
+          enqueue_project_compliance_status_removal(framework_setting.framework_id)
+        end
+      end
+
+      def enqueue_project_compliance_status_removal(framework_id)
+        ComplianceManagement::ComplianceFramework::ProjectComplianceStatusesRemovalWorker.perform_async(
+          project.id, framework_id, { "skip_framework_check" => true }
+        )
       end
     end
   end
