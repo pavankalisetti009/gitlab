@@ -13,8 +13,6 @@ module Groups
         [:read_dora4_analytics, :read_cycle_analytics, :read_security_resource].each do |ability|
           push_frontend_ability(ability: ability, resource: @group, user: current_user)
         end
-
-        @data_source_clickhouse = ::Gitlab::ClickHouse.enabled_for_analytics?(@group)
       end
 
       layout 'group'

@@ -9,7 +9,7 @@ import DoraMetricsQuery from '~/analytics/shared/graphql/dora_metrics.query.grap
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import VulnerabilitiesQuery from '../graphql/vulnerabilities.query.graphql';
 import MergeRequestsQuery from '../graphql/merge_requests.query.graphql';
-import GroupContributorCountQuery from '../graphql/group_contributor_count.query.graphql';
+import ContributorCountQuery from '../graphql/contributor_count.query.graphql';
 import { MERGE_REQUESTS_STATE_MERGED } from '../graphql/constants';
 import {
   DASHBOARD_LOADING_FAILURE,
@@ -101,13 +101,9 @@ export default {
     restrictedMetrics() {
       return getRestrictedTableMetrics(this.excludeMetrics, this.glAbilities);
     },
-    shouldRenderContributorsCountMetric() {
-      // Contributors count metric is not supported at the project level or when the Clickhouse data store is disabled
-      return !this.isProject && this.dataSourceClickhouse;
-    },
     skippedMetrics() {
       return uniq([
-        ...(!this.shouldRenderContributorsCountMetric ? [CONTRIBUTOR_METRICS.COUNT] : []),
+        ...(!this.dataSourceClickhouse ? [CONTRIBUTOR_METRICS.COUNT] : []),
         ...this.restrictedMetrics,
         ...this.excludeMetrics,
       ]);
@@ -249,7 +245,7 @@ export default {
     },
     async fetchContributorsCountQuery({ startDate, endDate }, timePeriod) {
       const result = await this.$apollo.query({
-        query: GroupContributorCountQuery,
+        query: ContributorCountQuery,
         variables: {
           fullPath: this.requestPath,
           startDate: toYmd(startDate),

@@ -66232,7 +66232,7 @@ msgstr ""
 msgid "ValueStreamAnalytics|Number of merge requests merged by month."
 msgstr ""
 
-msgid "ValueStreamAnalytics|Number of monthly unique users with contributions in the group."
+msgid "ValueStreamAnalytics|Number of monthly unique users with contributions."
 msgstr ""
 
 msgid "ValueStreamAnalytics|Number of new issues created."

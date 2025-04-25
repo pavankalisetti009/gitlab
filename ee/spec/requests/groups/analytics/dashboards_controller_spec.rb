@@ -82,32 +82,6 @@ RSpec.describe Groups::Analytics::DashboardsController, feature_category: :group
     end
   end
 
-  shared_examples 'sets data source instance variable correctly' do
-    context 'when clickhouse data collection is enabled for group' do
-      before do
-        allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
-      end
-
-      specify do
-        request
-
-        expect(assigns[:data_source_clickhouse]).to eq(true)
-      end
-    end
-
-    context 'when clickhouse data collection is not enabled' do
-      before do
-        allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(false)
-      end
-
-      specify do
-        request
-
-        expect(assigns[:data_source_clickhouse]).to eq(false)
-      end
-    end
-  end
-
   describe 'GET index' do
     let(:request) { get(group_analytics_dashboards_path(group)) }
     let_it_be(:projects, refind: true) { create_list(:project, 4, :public, group: group) }
@@ -151,7 +125,6 @@ RSpec.describe Groups::Analytics::DashboardsController, feature_category: :group
           expect(response).to be_successful
         end
 
-        it_behaves_like 'sets data source instance variable correctly'
         it_behaves_like 'shared analytics value streams dashboard'
       end
     end
@@ -215,7 +188,6 @@ RSpec.describe Groups::Analytics::DashboardsController, feature_category: :group
           expect(response).to be_successful
         end
 
-        it_behaves_like 'sets data source instance variable correctly'
         it_behaves_like 'shared analytics value streams dashboard'
       end
     end

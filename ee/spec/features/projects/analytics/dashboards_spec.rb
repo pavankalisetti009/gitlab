@@ -87,8 +87,6 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
 
           it_behaves_like 'VSD renders as an analytics dashboard'
 
-          it_behaves_like 'does not render contributor count'
-
           it 'does not render dora performers score panel' do
             # Currently does not support project namespaces
             expect(page).not_to have_selector("[data-testid='panel-dora-performers-score']")
@@ -110,13 +108,34 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
             create_mock_dora_chart_metrics(environment)
           end
 
-          before do
-            Analytics::CycleAnalytics::DataLoaderService.new(namespace: group, model: Issue).execute
-            visit_project_value_streams_dashboard(project)
+          context 'when ClickHouse is enabled for analytics', :saas do
+            before do
+              allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+              Analytics::CycleAnalytics::DataLoaderService.new(namespace: group, model: Issue).execute
+
+              visit_project_value_streams_dashboard(project)
+            end
+
+            it_behaves_like 'renders metrics comparison tables' do
+              let(:panel_title) { "#{project.name} project" }
+            end
+
+            it_behaves_like 'renders contributor count'
           end
 
-          it_behaves_like 'renders metrics comparison tables' do
-            let(:panel_title) { "#{project.name} project" }
+          context 'when ClickHouse is disabled for analytics', :saas do
+            before do
+              allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(false)
+              Analytics::CycleAnalytics::DataLoaderService.new(namespace: group, model: Issue).execute
+
+              visit_project_value_streams_dashboard(project)
+            end
+
+            it_behaves_like 'renders metrics comparison tables' do
+              let(:panel_title) { "#{project.name} project" }
+            end
+
+            it_behaves_like 'does not render contributor count'
           end
         end
 

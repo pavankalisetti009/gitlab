@@ -17,12 +17,12 @@ panels:
       yPos: 1
       xPos: 0
       width: 12
-      height: 4
+      height: 5
     options: {}
   - visualization: vsd_dora_metrics_table
     title: 'DORA metrics for the %{namespaceName} %{namespaceType}'
     gridAttributes:
-      yPos: 5
+      yPos: 6
       xPos: 0
       width: 12
       height: 3
@@ -30,7 +30,7 @@ panels:
   - visualization: vsd_security_metrics_table
     title: 'Security metrics for the %{namespaceName} %{namespaceType}'
     gridAttributes:
-      yPos: 8
+      yPos: 9
       xPos: 0
       width: 12
       height: 2
