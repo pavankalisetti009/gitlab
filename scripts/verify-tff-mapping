@@ -846,7 +846,7 @@ class MappingTest
     @explanation = explanation
     @changed_file = changed_file
     @strategy = strategy
-    @expected_set = Set.new(expected)
+    @expected_set = Set.new(Dir[*expected])
     @actual_set = Set.new(actual)
   end
 
