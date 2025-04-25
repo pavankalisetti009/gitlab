@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-require 'fast_spec_helper'
-require_relative '../../../../app/models/search/zoekt/settings'
+require 'spec_helper'
 
 RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
   describe 'SETTINGS' do
@@ -77,17 +76,39 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
     end
   end
 
-  describe '.numeric_settings' do
-    it 'returns only numeric settings' do
-      numeric_settings = described_class.numeric_settings
+  describe '.input_settings' do
+    it 'returns only input_settings settings' do
+      input_settings = described_class.input_settings
 
-      expect(numeric_settings.keys).to contain_exactly(
-        :zoekt_cpu_to_tasks_ratio,
-        :zoekt_rollout_batch_size
-      )
+      expected_list = %i[zoekt_cpu_to_tasks_ratio zoekt_rollout_batch_size zoekt_rollout_retry_interval]
+      expect(input_settings.keys).to match_array(expected_list)
 
-      numeric_settings.each_value do |config|
-        expect(config[:type]).to be_in([:float, :integer])
+      input_settings.each_value do |config|
+        expect(config[:type]).to be_in(%i[float integer text])
+      end
+    end
+  end
+
+  describe '.rollout_retry_interval' do
+    let_it_be(:_) { create(:application_setting) }
+
+    before do
+      stub_ee_application_setting(zoekt_rollout_retry_interval: interval)
+    end
+
+    using RSpec::Parameterized::TableSyntax
+
+    where(:interval, :duration_interval) do
+      '0'   | nil # nil for 0 means retry is disabled
+      '1x'  | 1.day # default for invalid interval
+      '5m'  | 5.minutes
+      '2h'  | 2.hours
+      '3d'  | 3.days
+    end
+
+    with_them do
+      it 'returns the correct duration_interval' do
+        expect(described_class.rollout_retry_interval).to eq(duration_interval)
       end
     end
   end

@@ -862,6 +862,34 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         it { is_expected.not_to allow_value(nil).for(attribute) }
       end
     end
+
+    describe 'zoekt_rollout_retry_interval' do
+      where(:zoekt_rollout_retry_interval, :is_valid) do
+        '1m'  | true
+        '2h'  | true
+        '30d' | true
+        '0'   | true
+        '00'  | false
+        '30D' | false
+        '5x'  | false
+        '5mm' | false
+        '5md' | false
+        '0m'  | false
+        '01d' | false
+        '5'   | false
+        'm'   | false
+        '1m ' | false
+        ' 1m' | false
+      end
+
+      with_them do
+        specify do
+          setting.zoekt_rollout_retry_interval = zoekt_rollout_retry_interval
+
+          expect(setting.valid?).to eq(is_valid)
+        end
+      end
+    end
   end
 
   describe 'search curation settings after .create_from_defaults', feature_category: :global_search do

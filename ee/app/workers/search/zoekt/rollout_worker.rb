@@ -28,10 +28,7 @@ module Search
         return false unless Feature.enabled?(:zoekt_rollout_worker, Feature.current_request)
 
         in_lock(self.class.name.underscore, ttl: 10.minutes, retries: 10, sleep_sec: 1) do
-          result = ::Search::Zoekt::RolloutService.execute(
-            dry_run: false,
-            batch_size: Gitlab::CurrentSettings.zoekt_rollout_batch_size
-          )
+          result = RolloutService.execute(dry_run: false, batch_size: Gitlab::CurrentSettings.zoekt_rollout_batch_size)
           logger.info(build_structured_payload(**{ message: result.message, changes: result.changes }))
 
           if result.re_enqueue

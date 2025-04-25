@@ -36,7 +36,8 @@ module EE
         zoekt_search_enabled: [:boolean, { default: false }],
         zoekt_auto_index_root_namespace: [:boolean, { default: false }],
         zoekt_cpu_to_tasks_ratio: [:float, { default: 1.0 }],
-        zoekt_rollout_batch_size: [:integer, { default: 32 }]
+        zoekt_rollout_batch_size: [:integer, { default: 32 }],
+        zoekt_rollout_retry_interval: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL }]
 
       jsonb_accessor :code_creation, disabled_direct_code_suggestions: [:boolean, { default: false }]
 
@@ -307,6 +308,10 @@ module EE
       validates :zoekt_settings, json_schema: { filename: 'application_setting_zoekt_settings' }
       validates :zoekt_cpu_to_tasks_ratio, numericality: { greater_than: 0.0 }
       validates :zoekt_rollout_batch_size, numericality: { greater_than: 0 }
+      validates :zoekt_rollout_retry_interval, format: {
+        with: ::Search::Zoekt::Settings::ROLLOUT_RETRY_INTERVAL_REGEX,
+        message: N_('Must be in the following format: `30m`, `2h`, or `1d`')
+      }
 
       validates :code_creation, json_schema: { filename: 'application_setting_code_creation' }
 

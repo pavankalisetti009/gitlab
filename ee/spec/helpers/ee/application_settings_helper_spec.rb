@@ -330,15 +330,19 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         expect(result[0]).to have_selector('label', text: 'Indexing CPU to tasks multiplier')
         expect(result[1])
           .to have_selector('input[type="number"][name="application_setting[zoekt_cpu_to_tasks_ratio]"][value="1.5"]')
-        expect(result[2]).to have_selector('label', text: 'Batch size of namespaces for initial indexing')
+        expect(result[2]).to have_selector('label', text: _('Number of namespaces per indexing rollout'))
         expect(result[3])
           .to have_selector('input[type="number"][name="application_setting[zoekt_rollout_batch_size]"][value="100"]')
+        expect(result[4]).to have_selector('label', text: _('Retry interval for failed namespaces'))
+        selector = 'input[type="text"][name="application_setting[zoekt_rollout_retry_interval]"]' \
+          "[value=\"#{Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL}\"]"
+        expect(result[5]).to have_selector(selector)
       end
     end
 
     context 'with custom input options' do
       before do
-        allow(::Search::Zoekt::Settings).to receive(:numeric_settings).and_return({
+        allow(::Search::Zoekt::Settings).to receive(:input_settings).and_return({
           zoekt_cpu_to_tasks_ratio: {
             label: -> { 'Custom Label' },
             input_type: :number_field,
@@ -359,7 +363,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     context 'with an unknown input type' do
       before do
         # Mock Search::Zoekt::Settings to return our test configuration
-        allow(::Search::Zoekt::Settings).to receive(:numeric_settings).and_return({
+        allow(::Search::Zoekt::Settings).to receive(:input_settings).and_return({
           zoekt_test_setting: {
             label: -> { "Test Setting" },
             input_type: :unknown_type

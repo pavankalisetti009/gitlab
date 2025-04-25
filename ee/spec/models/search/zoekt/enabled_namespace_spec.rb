@@ -100,44 +100,10 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
       end
     end
 
-    describe '.with_rollout_blocked' do
-      let_it_be(:namespace_with_rollout_blocked) do
-        create(:zoekt_enabled_namespace, metadata: { last_rollout_failed_at: Time.current.iso8601 })
-      end
-
-      let_it_be(:namespace_without_rollout_blocked) { create(:zoekt_enabled_namespace) }
-      let_it_be(:namespace_with_other_metadata) do
-        create(:zoekt_enabled_namespace, metadata: { some_key: 'some_value' })
-      end
-
-      it 'returns namespaces with last_rollout_failed_at set in metadata' do
-        expect(described_class.with_rollout_blocked).to include(namespace_with_rollout_blocked)
-        expect(described_class.with_rollout_blocked).not_to include(namespace_without_rollout_blocked)
-        expect(described_class.with_rollout_blocked).not_to include(namespace_with_other_metadata)
-      end
-    end
-
-    describe '.with_rollout_allowed' do
-      let_it_be(:namespace_with_rollout_blocked) do
-        create(:zoekt_enabled_namespace, metadata: { last_rollout_failed_at: Time.current.iso8601 })
-      end
-
-      let_it_be(:namespace_without_rollout_blocked) { create(:zoekt_enabled_namespace) }
-      let_it_be(:namespace_with_other_metadata) do
-        create(:zoekt_enabled_namespace, metadata: { some_key: 'some_value' })
-      end
-
-      it 'returns namespaces without last_rollout_failed_at in metadata' do
-        expect(described_class.with_rollout_allowed).not_to include(namespace_with_rollout_blocked)
-        expect(described_class.with_rollout_allowed).to include(namespace_without_rollout_blocked)
-        expect(described_class.with_rollout_allowed).to include(namespace_with_other_metadata)
-      end
-    end
-
     describe '.destroy_namespaces_with_expired_subscriptions!', :saas do
       subject(:destroy_namespaces) { described_class.destroy_namespaces_with_expired_subscriptions! }
 
-      let_it_be(:expired_date) { Date.today - Search::Zoekt::EXPIRED_SUBSCRIPTION_GRACE_PERIOD }
+      let_it_be(:expired_date) { Time.zone.today - Search::Zoekt::EXPIRED_SUBSCRIPTION_GRACE_PERIOD }
       let_it_be(:expired_subscription) { create(:gitlab_subscription, :ultimate, end_date: expired_date - 1.day) }
       let_it_be(:grace_period_subscription) { create(:gitlab_subscription, :ultimate, end_date: expired_date + 1.day) }
       let_it_be(:ultimate_subscription) { create(:gitlab_subscription, :ultimate) }
@@ -241,6 +207,52 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
 
         expect(enabled_namespace.metadata['other_key']).to eq('value')
       end
+    end
+  end
+
+  describe '.with_rollout_blocked', :freeze_time do
+    let_it_be(:setting) { create(:application_setting) }
+    let_it_be(:new_failed) { create(:zoekt_enabled_namespace, last_rollout_failed_at: Time.current.iso8601) }
+    let_it_be(:old_failed) { create(:zoekt_enabled_namespace, last_rollout_failed_at: 2.days.ago.iso8601) }
+    let_it_be(:never_failed) { create(:zoekt_enabled_namespace) }
+
+    context 'when setting zoekt_rollout_retry_interval is set to 0' do # retry disabled
+      before do
+        stub_ee_application_setting(zoekt_rollout_retry_interval: '0')
+      end
+
+      it 'returns records with last_rollout_failed_at is set' do
+        expect(described_class.with_rollout_blocked).to include(new_failed, old_failed)
+        expect(described_class.with_rollout_blocked).not_to include(never_failed)
+      end
+    end
+
+    it 'returns records with last_rollout_failed_at set newer than DEFAULT_ROLLOUT_RETRY_INTERVAL' do
+      expect(described_class.with_rollout_blocked).to include(new_failed)
+      expect(described_class.with_rollout_blocked).not_to include(*[old_failed, never_failed])
+    end
+  end
+
+  describe '.with_rollout_allowed' do
+    let_it_be(:setting) { create(:application_setting) }
+    let_it_be(:new_failed) { create(:zoekt_enabled_namespace, last_rollout_failed_at: Time.current.iso8601) }
+    let_it_be(:old_failed) { create(:zoekt_enabled_namespace, last_rollout_failed_at: 2.days.ago.iso8601) }
+    let_it_be(:never_failed) { create(:zoekt_enabled_namespace) }
+
+    context 'when setting zoekt_rollout_retry_interval is set to 0' do # retry disabled
+      before do
+        allow(ApplicationSetting).to receive_message_chain(:current, :zoekt_rollout_retry_interval).and_return('0')
+      end
+
+      it 'returns records with last_rollout_failed_at is not set' do
+        expect(described_class.with_rollout_allowed).to include(never_failed)
+        expect(described_class.with_rollout_allowed).not_to include(*[old_failed, new_failed])
+      end
+    end
+
+    it 'returns with last_rollout_failed_at is nil or set to older than DEFAULT_ROLLOUT_RETRY_INTERVAL' do
+      expect(described_class.with_rollout_allowed).to include(*[never_failed, old_failed])
+      expect(described_class.with_rollout_allowed).not_to include(new_failed)
     end
   end
 end

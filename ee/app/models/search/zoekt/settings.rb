@@ -15,6 +15,10 @@ module Search
     # 1. Add it to the SETTINGS hash with appropriate configuration
     # 2. The setting will automatically appear in all relevant places
     module Settings
+      DEFAULT_ROLLOUT_RETRY_INTERVAL = '1d'
+      ROLLOUT_RETRY_DISABLED_VALUE = '0'
+      ROLLOUT_RETRY_INTERVAL_REGEX = %r{\A(?:0|([1-9]\d*)([mhd]))\z}
+
       SETTINGS = {
         zoekt_indexing_enabled: {
           type: :boolean,
@@ -54,8 +58,19 @@ module Search
         zoekt_rollout_batch_size: {
           type: :integer,
           default: 32,
-          label: -> { _('Batch size of namespaces for initial indexing') },
+          label: -> { _('Number of namespaces per indexing rollout') },
           input_type: :number_field
+        },
+        zoekt_rollout_retry_interval: {
+          type: :text,
+          default: DEFAULT_ROLLOUT_RETRY_INTERVAL,
+          label: -> { _('Retry interval for failed namespaces') },
+          input_options: {
+            placeholder: format(
+              N_("Must be in the following format: `30m`, `2h`, or `1d`. Set to `%{val}` for no retries."),
+              val: ROLLOUT_RETRY_DISABLED_VALUE)
+          },
+          input_type: :text_field
         }
       }.freeze
 
@@ -67,9 +82,25 @@ module Search
         SETTINGS.select { |_, config| config[:type] == :boolean }
       end
 
-      def self.numeric_settings
-        type_values = [:float, :integer]
+      def self.input_settings
+        type_values = %i[float integer text]
         SETTINGS.select { |_, config| type_values.include?(config[:type]) }
+      end
+
+      def self.rollout_retry_interval
+        return if ApplicationSetting.current.zoekt_rollout_retry_interval == ROLLOUT_RETRY_DISABLED_VALUE
+
+        match = ApplicationSetting.current.zoekt_rollout_retry_interval.match(ROLLOUT_RETRY_INTERVAL_REGEX)
+        match ||= DEFAULT_ROLLOUT_RETRY_INTERVAL.match(ROLLOUT_RETRY_INTERVAL_REGEX)
+
+        value = match[1].to_i
+        unit = match[2]
+
+        case unit
+        when 'm' then value.minute
+        when 'h' then value.hour
+        when 'd' then value.day
+        end
       end
     end
   end
