@@ -1,9 +1,9 @@
 import { shallowMount } from '@vue/test-utils';
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import axios from '~/lib/utils/axios_utils';
 import FilterBar from 'ee/analytics/code_review_analytics/components/filter_bar.vue';
 import storeConfig from 'ee/analytics/code_review_analytics/store';
 import {

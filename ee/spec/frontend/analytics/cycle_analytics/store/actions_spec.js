@@ -1,5 +1,5 @@
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import axios from '~/lib/utils/axios_utils';
 import * as actions from 'ee/analytics/cycle_analytics/store/actions';
 import * as getters from 'ee/analytics/cycle_analytics/store/getters';
 import * as types from 'ee/analytics/cycle_analytics/store/mutation_types';

@@ -1,6 +1,6 @@
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { sortBy } from 'lodash';
+import axios from '~/lib/utils/axios_utils';
 import * as actions from 'ee/dependencies/store/actions';
 import projectDependencies from 'ee/dependencies/graphql/project_dependencies.query.graphql';
 import {

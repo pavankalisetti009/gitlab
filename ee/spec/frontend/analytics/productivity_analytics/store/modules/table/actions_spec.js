@@ -1,5 +1,5 @@
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import * as actions from 'ee/analytics/productivity_analytics/store/modules/table/actions';
 import * as types from 'ee/analytics/productivity_analytics/store/modules/table/mutation_types';

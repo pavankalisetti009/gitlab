@@ -1,10 +1,10 @@
 import { GlSprintf, GlLink } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import axios from '~/lib/utils/axios_utils';
 
 import ApprovalSettings from 'ee/approvals/components/approval_settings/approval_settings.vue';
 import GroupSettingsApp from 'ee/approvals/group_settings/app.vue';

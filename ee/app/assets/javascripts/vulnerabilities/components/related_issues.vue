@@ -1,6 +1,6 @@
 <script>
 import { GlButton } from '@gitlab/ui';
-import axios from 'axios';
+import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 import { TYPE_ISSUE } from '~/issues/constants';
 import { joinPaths, visitUrl } from '~/lib/utils/url_utility';

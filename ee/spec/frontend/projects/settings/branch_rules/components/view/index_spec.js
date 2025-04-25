@@ -2,8 +2,8 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import axios from '~/lib/utils/axios_utils';
 import RuleView from 'ee/projects/settings/branch_rules/components/view/index.vue';
 import ApprovalRulesApp from 'ee/approvals/components/approval_rules_app.vue';
 import ProjectRules from 'ee/approvals/project_settings/project_rules.vue';

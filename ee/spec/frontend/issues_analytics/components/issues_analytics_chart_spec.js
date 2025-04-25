@@ -1,10 +1,10 @@
 import { GlLoadingIcon } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import { GlColumnChart } from '@gitlab/ui/dist/charts';
+import axios from '~/lib/utils/axios_utils';
 import IssuesAnalyticsChart from 'ee/issues_analytics/components/issues_analytics_chart.vue';
 import IssuesAnalyticsEmptyState from 'ee/issues_analytics/components/issues_analytics_empty_state.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';

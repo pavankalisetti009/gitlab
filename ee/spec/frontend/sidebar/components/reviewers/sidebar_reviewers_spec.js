@@ -1,10 +1,10 @@
 import Vue from 'vue';
-import axios from 'axios';
 import AxiosMockAdapter from 'axios-mock-adapter';
 import VueApollo from 'vue-apollo';
 import { createMockSubscription as createMockApolloSubscription } from 'mock-apollo-client';
 import { PiniaVuePlugin } from 'pinia';
 import { createTestingPinia } from '@pinia/testing';
+import axios from '~/lib/utils/axios_utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import stubChildren from 'helpers/stub_children';
 import { mountExtended } from 'helpers/vue_test_utils_helper';

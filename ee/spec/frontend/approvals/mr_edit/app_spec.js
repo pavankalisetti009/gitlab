@@ -1,9 +1,9 @@
 import { mount } from '@vue/test-utils';
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import axios from '~/lib/utils/axios_utils';
 import MREditApp from 'ee/approvals/mr_edit/app.vue';
 import MRRules from 'ee/approvals/mr_edit/mr_rules.vue';
 import MRRulesHiddenInputs from 'ee/approvals/mr_edit/mr_rules_hidden_inputs.vue';

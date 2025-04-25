@@ -1,8 +1,8 @@
 import { GlForm, GlSprintf } from '@gitlab/ui';
 import { nextTick } from 'vue';
 
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import axios from '~/lib/utils/axios_utils';
 import GlCountdown from '~/vue_shared/components/gl_countdown.vue';
 import { sprintf } from '~/locale';
 

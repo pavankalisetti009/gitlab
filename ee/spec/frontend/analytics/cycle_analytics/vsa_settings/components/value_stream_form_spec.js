@@ -1,6 +1,6 @@
 import { GlLoadingIcon, GlAlert } from '@gitlab/ui';
-import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK, HTTP_STATUS_NOT_FOUND } from '~/lib/utils/http_status';
 import waitForPromises from 'helpers/wait_for_promises';
 import ValueStreamForm from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form.vue';
