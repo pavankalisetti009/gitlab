@@ -24776,7 +24776,8 @@ CREATE TABLE vs_code_settings (
     CONSTRAINT check_4680ca265d CHECK ((uuid IS NOT NULL)),
     CONSTRAINT check_5da3b2910b CHECK ((char_length(content) <= 524288)),
     CONSTRAINT check_6d5f15039b CHECK ((char_length(settings_context_hash) <= 255)),
-    CONSTRAINT check_994c503fc4 CHECK ((char_length(setting_type) <= 256))
+    CONSTRAINT check_994c503fc4 CHECK ((char_length(setting_type) <= 256)),
+    CONSTRAINT check_vs_code_settings_settings_context_hash_nullable CHECK ((((setting_type = 'extensions'::text) AND (settings_context_hash IS NOT NULL)) OR ((setting_type <> 'extensions'::text) AND (settings_context_hash IS NULL))))
 );
 
 CREATE SEQUENCE vs_code_settings_id_seq
