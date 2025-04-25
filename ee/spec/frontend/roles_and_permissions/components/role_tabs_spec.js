@@ -3,6 +3,7 @@ import RoleTabs from 'ee/roles_and_permissions/components/role_tabs.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import RolesCrud from 'ee/roles_and_permissions/components/roles_table/roles_crud.vue';
+import LdapSyncCrud from 'ee/roles_and_permissions/components/ldap_sync/ldap_sync_crud.vue';
 
 describe('RoleTabs component', () => {
   let wrapper;
@@ -22,6 +23,7 @@ describe('RoleTabs component', () => {
   const findRolesCrud = () => wrapper.findComponent(RolesCrud);
   const findTabs = () => wrapper.findComponent(GlTabs);
   const findTabAt = (index) => wrapper.findAllComponents(GlTab).at(index);
+  const findLdapSyncCrud = () => wrapper.findComponent(LdapSyncCrud);
 
   describe('page heading', () => {
     beforeEach(() => createWrapper());
@@ -59,6 +61,10 @@ describe('RoleTabs component', () => {
     it('does not show tabs', () => {
       expect(findTabs().exists()).toBe(false);
     });
+
+    it('does not show ldap sync crud', () => {
+      expect(findLdapSyncCrud().exists()).toBe(false);
+    });
   });
 
   describe('when ldap is enabled', () => {
@@ -80,6 +86,10 @@ describe('RoleTabs component', () => {
 
     it('shows roles crud in roles tab', () => {
       expect(findTabAt(0).findComponent(RolesCrud).exists()).toBe(true);
+    });
+
+    it('shows ldap sync crud in ldap tab', () => {
+      expect(findTabAt(1).findComponent(LdapSyncCrud).exists()).toBe(true);
     });
   });
 });
