@@ -187,6 +187,8 @@ describe('RootCauseAnalysisHotspotExperiment component', () => {
           'click_troubleshoot',
           expect.any(Object),
         );
+        await nextTick();
+
         expect(findPopover().props('show')).toBe(false);
         // Per design requirements, clicking troubleshoot should dismiss hotspot as well
         expect(findHotspot().exists()).toBe(false);
@@ -208,7 +210,7 @@ describe('RootCauseAnalysisHotspotExperiment component', () => {
         );
       });
 
-      it('does not set cookie when troubleshoot button is clicked', async () => {
+      it('sets cookie when troubleshoot button is clicked', async () => {
         findHotspot().trigger('click.stop');
         await nextTick();
 
@@ -216,7 +218,7 @@ describe('RootCauseAnalysisHotspotExperiment component', () => {
         findRootCauseAnalysisButton().vm.$emit('duo-called');
         await nextTick();
 
-        expect(setCookie).not.toHaveBeenCalled();
+        expect(setCookie).toHaveBeenCalled();
       });
     });
 
