@@ -499,8 +499,7 @@ describe('DependenciesTable component', () => {
         expect(findDependencyPathDrawer().props()).toMatchObject({
           showDrawer: true,
           component: { name, version },
-          project: emittedItem.project,
-          dependencyPaths: emittedItem.location.dependency_paths,
+          locations: emittedItem,
         });
       });
     });

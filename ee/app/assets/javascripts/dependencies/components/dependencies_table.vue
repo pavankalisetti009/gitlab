@@ -151,23 +151,12 @@ export default {
       } = item;
 
       const drawerId = occurrenceId;
-      const drawerItem = { dependencyPaths, component: { name, version }, project: {} };
+      const drawerItem = { dependencyPaths, component: { name, version } };
       this.toggleDrawer(drawerId, drawerItem);
     },
     toggleDrawerGroup(item, emittedItem) {
-      // On group level, occurrenceId isn't unique, so we use project and location
-      // from emittedItem to create a unique ID and pass that extra data to the drawer.
-      const { name, version, occurrenceId } = item;
-      const {
-        project,
-        location: { dependency_paths: dependencyPaths, path },
-      } = emittedItem;
-      const drawerId = occurrenceId + project.name + path;
-      const drawerItem = {
-        dependencyPaths,
-        project,
-        component: { name, version },
-      };
+      const { name, version, occurrenceId: drawerId } = item;
+      const drawerItem = { component: { name, version }, locations: emittedItem };
       this.toggleDrawer(drawerId, drawerItem);
     },
     openDrawer(drawerId, drawerItem) {
@@ -201,8 +190,8 @@ export default {
     <dependency-path-drawer
       v-if="showDrawer"
       :component="drawerDependency.component"
-      :project="drawerDependency.project"
       :dependency-paths="drawerDependency.dependencyPaths"
+      :locations="drawerDependency.locations"
       :show-drawer="showDrawer"
       @close="closeDrawer"
     />

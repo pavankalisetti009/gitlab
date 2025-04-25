@@ -225,10 +225,7 @@ describe('Dependency Location Count component', () => {
       const dependencyPathsLocationsData = {
         locations: [
           {
-            location: {
-              path: 'yarn.lock',
-              dependency_paths: [{ path: [{ name: 'eslint', version: '9.17.0' }] }],
-            },
+            location: { dependency_paths: [{ path: [{ name: 'eslint', version: '9.17.0' }] }] },
             project: { name: projectName },
           },
         ],
@@ -238,7 +235,7 @@ describe('Dependency Location Count component', () => {
         mockAxios.onGet(endpoint).reply(HTTP_STATUS_OK, dependencyPathsLocationsData);
       });
 
-      it('shows the dependency path', async () => {
+      it('shows the dependency path button', async () => {
         await clickLocationList();
         expect(findDependencyPathButton().exists()).toBe(true);
       });
@@ -250,10 +247,29 @@ describe('Dependency Location Count component', () => {
         await waitForPromises();
 
         const emittedData = wrapper.emitted('click-dependency-path')[0][0];
-        const { location } = dependencyPathsLocationsData.locations[0];
+        const index = 0;
+        const { location, project } = dependencyPathsLocationsData.locations[index];
 
-        expect(emittedData.location.dependency_paths).toEqual(location.dependency_paths);
-        expect(emittedData.location.path).toEqual(location.path);
+        expect(emittedData).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              location,
+              project,
+              value: index,
+            }),
+          ]),
+        );
+      });
+
+      it('does not show the dependency path button', async () => {
+        const noDependencyPathsLocationsData = {
+          locations: [{ location: { dependency_paths: [] }, project: { name: projectName } }],
+        };
+
+        mockAxios.onGet(endpoint).reply(HTTP_STATUS_OK, noDependencyPathsLocationsData);
+        await clickLocationList();
+
+        expect(findDependencyPathButton().exists()).toBe(false);
       });
 
       describe('when feature flag "dependencyPaths" is disabled', () => {
