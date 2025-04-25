@@ -45,7 +45,9 @@ module Security
           db_value = db_policy_hash[key]
           yaml_value = yaml_policy[key]
 
-          diff.add_policy_field(key, db_value, yaml_value) if db_value != yaml_value
+          next if db_value == yaml_value || (db_value.blank? && yaml_value.blank?)
+
+          diff.add_policy_field(key, db_value, yaml_value)
         end
       end
 

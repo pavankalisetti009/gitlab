@@ -135,6 +135,30 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyComparer, feature_
         expect(rules_diff.deleted).to be_empty
       end
     end
+
+    context 'when policy fields are blank' do
+      let_it_be(:yaml_policy) do
+        {
+          name: 'New Policy',
+          description: 'Description',
+          metadata: nil,
+          policy_scope: nil
+        }
+      end
+
+      let_it_be(:db_policy) do
+        create(:security_policy, name: 'Old Policy', description: 'Description', metadata: {}, scope: {})
+      end
+
+      it 'considers blank values equal and does not create a diff' do
+        diff = policy_diffs.diff
+
+        expect(diff[:name]).to have_attributes(from: 'Old Policy', to: 'New Policy')
+        expect(diff[:description]).to be_nil
+        expect(diff[:metadata]).to be_nil
+        expect(diff[:policy_scope]).to be_nil
+      end
+    end
   end
 
   describe '#event_payload' do
