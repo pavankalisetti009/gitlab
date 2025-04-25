@@ -151,6 +151,31 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
       end
     end
 
+    context 'when validating the duo_nano_features_enabled value' do
+      describe 'new record' do
+        it 'returns nil as the default value' do
+          setting = described_class.new
+
+          expect(setting.duo_nano_features_enabled).to be_nil
+        end
+      end
+
+      describe 'existing record' do
+        it 'accepts only boolean values for the update' do
+          setting = create(:ai_settings)
+
+          setting.update!(duo_nano_features_enabled: true)
+          expect(setting).to be_valid
+
+          setting.update!(duo_nano_features_enabled: false)
+          expect(setting).to be_valid
+
+          setting.duo_nano_features_enabled = nil
+          expect(setting).to be_invalid
+        end
+      end
+    end
+
     it { is_expected.to validate_length_of(:amazon_q_role_arn).is_at_most(2048).allow_nil }
   end
 

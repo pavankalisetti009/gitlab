@@ -142,6 +142,12 @@ class License < ApplicationRecord
     end
     # rubocop: enable Gitlab/FeatureAvailableUsage
 
+    # rubocop: disable Gitlab/FeatureAvailableUsage -- `License.feature_available?` is allowed, but the cop doesn't detect that we're inside the `License` class itself.
+    def duo_core_features_available?
+      feature_available?(:code_suggestions) || feature_available?(:ai_chat)
+    end
+    # rubocop: enable Gitlab/FeatureAvailableUsage
+
     private
 
     def load_future_dated

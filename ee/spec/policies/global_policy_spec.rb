@@ -874,4 +874,33 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       end
     end
   end
+
+  describe 'manage duo core features' do
+    let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+    let(:current_user) { admin }
+
+    context 'when Duo Core features are not available', :enable_admin_mode do
+      before do
+        stub_licensed_features(code_suggestions: false, ai_chat: false)
+      end
+
+      it { is_expected.to be_disallowed(:manage_duo_core_settings) }
+    end
+
+    context 'when Duo Core features are available' do
+      context 'when user is not an admin' do
+        let(:current_user) { user }
+
+        it { is_expected.to be_disallowed(:manage_duo_core_settings) }
+      end
+
+      context 'with admin mode disabled' do
+        it { is_expected.to be_disallowed(:manage_duo_core_settings) }
+      end
+
+      context 'with admin mode enabled', :enable_admin_mode do
+        it { is_expected.to be_allowed(:manage_duo_core_settings) }
+      end
+    end
+  end
 end

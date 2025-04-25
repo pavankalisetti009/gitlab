@@ -6,7 +6,7 @@ RSpec.describe Ai::DuoSettings::UpdateService, feature_category: :"self-hosted_m
   let_it_be(:user) { create(:user) }
   let_it_be(:duo_settings) { create(:ai_settings) }
 
-  let(:params) { { ai_gateway_url: "http://new-ai-gateway-url" } }
+  let(:params) { { ai_gateway_url: "http://new-ai-gateway-url", duo_nano_features_enabled: true } }
 
   subject(:service_result) { described_class.new(params).execute }
 
@@ -14,6 +14,7 @@ RSpec.describe Ai::DuoSettings::UpdateService, feature_category: :"self-hosted_m
     context 'when update succeeds' do
       it 'returns a success response' do
         expect { service_result }.to change { duo_settings.reload.ai_gateway_url }.to("http://new-ai-gateway-url")
+          .and change { duo_settings.reload.duo_nano_features_enabled }.to(true)
 
         expect(service_result).to be_success
         expect(service_result.payload).to eq(duo_settings)
@@ -21,10 +22,10 @@ RSpec.describe Ai::DuoSettings::UpdateService, feature_category: :"self-hosted_m
     end
 
     context 'when update fails' do
-      let(:params) { { ai_gateway_url: 'invalid-url' } }
+      let(:params) { { ai_gateway_url: 'invalid-url', duo_nano_features_enabled: true } }
 
       it 'returns an error response' do
-        expect { service_result }.not_to change { duo_settings.reload.ai_gateway_url }
+        expect { service_result }.not_to change { duo_settings.reload }
 
         expect(service_result).to be_error
         expect(service_result.errors).to match_array(

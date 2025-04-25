@@ -1203,6 +1203,26 @@ RSpec.describe License, feature_category: :plan_provisioning do
     end
   end
 
+  describe '.duo_core_features_available?' do
+    using RSpec::Parameterized::TableSyntax
+
+    subject { described_class.duo_core_features_available? }
+
+    where(:plan, :ai_features_available) do
+      License::STARTER_PLAN | false
+      License::PREMIUM_PLAN | true
+      License::ULTIMATE_PLAN | true
+    end
+
+    with_them do
+      before do
+        create_license(plan: plan)
+      end
+
+      it { is_expected.to be(ai_features_available) }
+    end
+  end
+
   describe '#subscription_id' do
     it 'has correct subscription_id' do
       gl_license = build(:gitlab_license, restrictions: { subscription_id: "1111" })
