@@ -1,0 +1,10 @@
+---
+name: reveal_duo_core_feature
+description: Guard duo core features for Growth
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/534708
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/189379
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/537797
+milestone: '18.0'
+group: group::acquisition
+type: gitlab_com_derisk
+default_enabled: false

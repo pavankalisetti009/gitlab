@@ -32,8 +32,8 @@ module Billing
       plan.free
     end
 
-    def trial?
-      current_plan.code == ::Plan::ULTIMATE_TRIAL
+    def current_trial_and_free_component?
+      current_plan.code == ::Plan::ULTIMATE_TRIAL && free?
     end
 
     def card_classes
@@ -45,13 +45,13 @@ module Billing
     end
 
     def header_classes
-      return "gl-border-none gl-p-0 gl-h-0\!" if trial?
+      return "gl-border-none gl-p-0 gl-h-0\!" if current_trial_and_free_component?
 
       "gl-text-center gl-border-none gl-p-0 gl-leading-28 #{plan.header_classes}"
     end
 
     def header_text
-      return if trial?
+      return if current_trial_and_free_component?
 
       plan.header_text
     end
@@ -59,7 +59,7 @@ module Billing
     def body_classes
       base = "gl-bg-subtle gl-p-7 gl-border"
 
-      return "#{base} gl-rounded-base" if trial?
+      return "#{base} gl-rounded-base" if current_trial_and_free_component?
 
       "#{base} gl-rounded-br-base gl-rounded-bl-base " \
         "#{plan.card_body_border_classes}"
@@ -111,7 +111,7 @@ module Billing
     end
 
     def cta_category
-      trial? ? plan.cta_category.trial : plan.cta_category.free
+      plan.cta_category
     end
 
     def cta_data
@@ -127,6 +127,86 @@ module Billing
     end
 
     def plans_data
+      premium_features = [
+        {
+          title: s_("BillingPlans|Code Ownership and Protected Branches")
+        },
+        {
+          title: s_("BillingPlans|Merge Request Approval Rules")
+        },
+        {
+          title: s_("BillingPlans|Enterprise Agile Planning")
+        },
+        {
+          title: s_("BillingPlans|Advanced CI/CD")
+        },
+        {
+          title: s_("BillingPlans|Support")
+        },
+        {
+          title: s_("BillingPlans|Enterprise User and Incident Management")
+        },
+        {
+          title: s_("BillingPlans|10,000 CI/CD minutes per month")
+        }
+      ]
+
+      ultimate_features = [
+        {
+          title: s_("BillingPlans|Suggested Reviewers")
+        },
+        {
+          title: s_("BillingPlans|Dynamic Application Security Testing")
+        },
+        {
+          title: s_("BillingPlans|Security Dashboards")
+        },
+        {
+          title: s_("BillingPlans|Vulnerability Management")
+        },
+        {
+          title: s_("BillingPlans|Dependency Scanning")
+        },
+        {
+          title: s_("BillingPlans|Container Scanning")
+        },
+        {
+          title: s_("BillingPlans|Static Application Security Testing")
+        },
+        {
+          title: s_("BillingPlans|Multi-Level Epics")
+        },
+        {
+          title: s_("BillingPlans|Portfolio Management")
+        },
+        {
+          title: s_("BillingPlans|Custom Roles")
+        },
+        {
+          title: s_("BillingPlans|Value Stream Management")
+        },
+        {
+          title: s_("BillingPlans|50,000 CI/CD minutes per month")
+        },
+        {
+          title: s_("BillingPlans|Free guest users")
+        }
+      ]
+
+      if ::Feature.enabled?(:reveal_duo_core_feature, namespace)
+        duo_core_features = [
+          {
+            title: s_("BillingPlans|AI Chat in the IDE")
+          },
+          {
+            title: s_("BillingPlans|AI Code Suggestions in the IDE")
+          }
+        ]
+
+        premium_features.unshift(*duo_core_features)
+        ultimate_features.unshift(*duo_core_features)
+      end
+
       {
         'free' => {
           header_text: s_("BillingPlans|Your current plan"),
@@ -148,34 +228,9 @@ module Billing
           header_classes: "gl-text-white gl-bg-purple-500",
           elevator_pitch: s_("BillingPlans|For scaling organizations and multi-team usage"),
           features_elevator_pitch: s_("BillingPlans|Everything from Free, plus:"),
-          features: [
-            {
-              title: s_("BillingPlans|Code Ownership and Protected Branches")
-            },
-            {
-              title: s_("BillingPlans|Merge Request Approval Rules")
-            },
-            {
-              title: s_("BillingPlans|Enterprise Agile Planning")
-            },
-            {
-              title: s_("BillingPlans|Advanced CI/CD")
-            },
-            {
-              title: s_("BillingPlans|Support")
-            },
-            {
-              title: s_("BillingPlans|Enterprise User and Incident Management")
-            },
-            {
-              title: s_("BillingPlans|10,000 CI/CD minutes per month")
-            }
-          ],
+          features: premium_features,
           cta_text: s_("BillingPlans|Upgrade to Premium"),
-          cta_category: {
-            free: "primary",
-            trial: 'secondary'
-          },
+          cta_category: 'primary',
           cta_data: {
             testid: "upgrade-to-premium"
           }
@@ -184,52 +239,9 @@ module Billing
           card_body_border_classes: "gl-rounded-tr-base gl-rounded-tl-base",
           elevator_pitch: s_("BillingPlans|For enterprises looking to deliver software faster"),
           features_elevator_pitch: s_("BillingPlans|Everything from Premium, plus:"),
-          features: [
-            {
-              title: s_("BillingPlans|Suggested Reviewers")
-            },
-            {
-              title: s_("BillingPlans|Dynamic Application Security Testing")
-            },
-            {
-              title: s_("BillingPlans|Security Dashboards")
-            },
-            {
-              title: s_("BillingPlans|Vulnerability Management")
-            },
-            {
-              title: s_("BillingPlans|Dependency Scanning")
-            },
-            {
-              title: s_("BillingPlans|Container Scanning")
-            },
-            {
-              title: s_("BillingPlans|Static Application Security Testing")
-            },
-            {
-              title: s_("BillingPlans|Multi-Level Epics")
-            },
-            {
-              title: s_("BillingPlans|Portfolio Management")
-            },
-            {
-              title: s_("BillingPlans|Custom Roles")
-            },
-            {
-              title: s_("BillingPlans|Value Stream Management")
-            },
-            {
-              title: s_("BillingPlans|50,000 CI/CD minutes per month")
-            },
-            {
-              title: s_("BillingPlans|Free guest users")
-            }
-          ],
+          features: ultimate_features,
           cta_text: s_("BillingPlans|Upgrade to Ultimate"),
-          cta_category: {
-            free: "secondary",
-            trial: 'primary'
-          },
+          cta_category: 'secondary',
           cta_data: {
             testid: "upgrade-to-ultimate"
           }
