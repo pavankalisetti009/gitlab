@@ -27,7 +27,11 @@ describe('DependenciesFilteredSearch', () => {
     jest.spyOn(store, 'dispatch').mockImplementation();
   };
 
-  const createComponent = ({ props = {}, slot = '' } = {}) => {
+  const createComponent = ({
+    props = {},
+    slot = '',
+    glFeatures = { projectDependenciesGraphql: true },
+  } = {}) => {
     wrapper = shallowMount(DependenciesFilteredSearch, {
       store,
       propsData: {
@@ -36,6 +40,7 @@ describe('DependenciesFilteredSearch', () => {
       },
       provide: {
         belowGroupLimit: true,
+        glFeatures,
       },
       scopedSlots: { default: slot },
     });
@@ -76,9 +81,18 @@ describe('DependenciesFilteredSearch', () => {
     });
 
     describe('submit', () => {
-      beforeEach(createComponent);
+      it('dispatches the "fetchDependenciesViaGraphQL" Vuex action', () => {
+        createComponent();
+        expect(store.dispatch).not.toHaveBeenCalled();
 
-      it('dispatches the "fetchDependencies" Vuex action and resets the pagination', () => {
+        const filterPayload = [{ type: 'license', value: { data: ['MIT'] } }];
+        findFilteredSearch().vm.$emit('submit', filterPayload);
+
+        expect(store.dispatch).toHaveBeenCalledWith('fetchDependenciesViaGraphQL');
+      });
+
+      it('dispatches the "fetchDependencies" Vuex action when feature flag is disabled', () => {
+        createComponent({ glFeatures: { projectDependenciesGraphql: false } });
         expect(store.dispatch).not.toHaveBeenCalled();
 
         const filterPayload = [{ type: 'license', value: { data: ['MIT'] } }];

@@ -61,28 +61,6 @@ const parsePagination = (headers) => {
   return parseOffsetPagination(headers);
 };
 
-const buildGraphQLPaginationVariables = ({ cursor, pageInfo = {}, pageSize = 20 }) => {
-  const isInitialPage = !cursor;
-  const isNavigatingBackward = cursor === pageInfo.startCursor;
-
-  if (isInitialPage) {
-    return { first: pageSize };
-  }
-
-  if (isNavigatingBackward) {
-    return {
-      last: pageSize,
-      before: cursor,
-    };
-  }
-
-  // Default to forward navigation for all other cases
-  return {
-    first: pageSize,
-    after: cursor,
-  };
-};
-
 export const receiveDependenciesSuccess = ({ commit }, { headers, data }) => {
   const pageInfo = parsePagination(normalizeHeaders(headers));
   const { dependencies } = data;
@@ -143,14 +121,56 @@ export const fetchDependencies = ({ state, dispatch }, params) => {
     });
 };
 
+const buildGraphQLPaginationVariables = ({ cursor, pageInfo = {}, pageSize = 20 }) => {
+  const isInitialPage = !cursor;
+  const isNavigatingBackward = cursor === pageInfo.startCursor;
+
+  if (isInitialPage) {
+    return { first: pageSize };
+  }
+
+  if (isNavigatingBackward) {
+    return {
+      last: pageSize,
+      before: cursor,
+    };
+  }
+
+  // Default to forward navigation for all other cases
+  return {
+    first: pageSize,
+    after: cursor,
+  };
+};
+
+const buildGraphQLFilterOptions = (searchFilterParameters) => {
+  const { component_names: componentNamesFilters } = searchFilterParameters;
+
+  const filterOptions = {};
+
+  if (componentNamesFilters?.length > 0) {
+    filterOptions.componentNames = componentNamesFilters;
+  }
+
+  return filterOptions;
+};
+
+const buildGraphQLSortOptions = (sortField = '', sortOrder = '') => {
+  if (!sortField || !sortOrder) {
+    return {};
+  }
+
+  return {
+    sort: `${sortField.toUpperCase()}_${sortOrder.toUpperCase()}`,
+  };
+};
+
 export const fetchDependenciesViaGraphQL = ({ state, dispatch, commit }, params = {}) => {
   dispatch('requestDependencies');
 
   const { cursor, pageSize } = params;
-  const { fullPath, pageInfo, sortField, sortOrder } = state;
+  const { fullPath, pageInfo, sortField, sortOrder, searchFilterParameters } = state;
 
-  const sortOptions =
-    sortField && sortOrder ? { sort: `${sortField.toUpperCase()}_${sortOrder.toUpperCase()}` } : {};
   const variables = {
     fullPath,
     ...buildGraphQLPaginationVariables({
@@ -158,7 +178,8 @@ export const fetchDependenciesViaGraphQL = ({ state, dispatch, commit }, params 
       pageInfo,
       pageSize,
     }),
-    ...sortOptions,
+    ...buildGraphQLFilterOptions(searchFilterParameters),
+    ...buildGraphQLSortOptions(sortField, sortOrder),
   };
 
   graphQLClient
