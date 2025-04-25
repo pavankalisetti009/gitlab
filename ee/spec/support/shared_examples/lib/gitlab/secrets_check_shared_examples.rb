@@ -2,13 +2,8 @@
 
 RSpec.shared_examples 'skips the push check' do
   include_context 'secrets check context'
-
   it "does not call format_response on the next instance" do
-    # Instead of expecting `validate!` to return nil to be sure the check was skipped,
-    # we check the next instance of the class will not receive `format_response` method.
-    expect_next_instance_of(described_class) do |instance|
-      expect(instance).not_to receive(:format_response)
-    end
+    expect(Gitlab::Checks::SecretPushProtection::ResponseHandler).not_to receive(:new)
 
     secrets_check.validate!
   end
@@ -20,7 +15,7 @@ RSpec.shared_examples 'skips sending requests to the SDS' do
   it 'does not create the SDS client' do
     expect(::Gitlab::SecretDetection::GRPC::Client).not_to receive(:new)
 
-    msg = format(log_messages[:sds_disabled],
+    msg = format(described_class::LOG_MESSAGES[:sds_disabled],
       {
         sds_ff_enabled: sds_ff_enabled,
         saas_feature_enabled: saas_feature_enabled,
@@ -36,7 +31,7 @@ RSpec.shared_examples 'skips sending requests to the SDS' do
       ),
       hash_including(
         "message" => log_messages[:secrets_not_found],
-        "class" => "Gitlab::Checks::SecretsCheck"
+        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
       )
     )
   end
@@ -56,7 +51,7 @@ RSpec.shared_examples 'sends requests to the SDS' do
       expect(logged_messages[:info]).to include(
         hash_including(
           "message" => log_messages[:secrets_not_found],
-          "class" => "Gitlab::Checks::SecretsCheck"
+          "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
         )
       )
     end
@@ -99,7 +94,7 @@ RSpec.shared_examples 'sends requests to the SDS' do
         expect(logged_messages[:info]).to include(
           hash_including(
             "message" => log_messages[:secrets_not_found],
-            "class" => "Gitlab::Checks::SecretsCheck"
+            "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
           )
         )
       end
@@ -120,7 +115,7 @@ RSpec.shared_examples 'sends requests to the SDS' do
         expect(logged_messages[:info]).to include(
           hash_including(
             "message" => log_messages[:secrets_not_found],
-            "class" => "Gitlab::Checks::SecretsCheck"
+            "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
           )
         )
       end
@@ -141,7 +136,7 @@ RSpec.shared_examples 'sends requests to the SDS' do
         expect(logged_messages[:info]).to include(
           hash_including(
             "message" => log_messages[:secrets_not_found],
-            "class" => "Gitlab::Checks::SecretsCheck"
+            "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
           )
         )
       end
@@ -207,7 +202,7 @@ RSpec.shared_examples 'diff scan passed' do
     expect(logged_messages[:info]).to include(
       hash_including(
         "message" => log_messages[:secrets_not_found],
-        "class" => "Gitlab::Checks::SecretsCheck"
+        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
       )
     )
   end
@@ -225,7 +220,7 @@ RSpec.shared_examples 'diff scan passed' do
         .and_call_original
     end
 
-    expect_next_instance_of(described_class) do |instance|
+    expect_next_instance_of(Gitlab::Checks::SecretPushProtection::ResponseHandler) do |instance|
       expect(instance).to receive(:format_response)
         .with(passed_scan_response)
         .once
@@ -237,7 +232,7 @@ RSpec.shared_examples 'diff scan passed' do
     expect(logged_messages[:info]).to include(
       hash_including(
         "message" => log_messages[:secrets_not_found],
-        "class" => "Gitlab::Checks::SecretsCheck"
+        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
       )
     )
   end
@@ -297,7 +292,7 @@ RSpec.shared_examples 'processes hunk headers' do
         expect(logged_messages[:info]).to include(
           hash_including(
             "message" => log_messages[:secrets_not_found],
-            "class" => "Gitlab::Checks::SecretsCheck"
+            "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
           )
         )
       end
@@ -346,7 +341,7 @@ RSpec.shared_examples 'processes hunk headers' do
           ),
           hash_including(
             "message" => error_messages[:invalid_input_error],
-            "class" => "Gitlab::Checks::SecretsCheck"
+            "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
           )
         )
       end
@@ -387,7 +382,7 @@ RSpec.shared_examples 'processes hunk headers' do
         ),
         hash_including(
           "message" => error_messages[:invalid_input_error],
-          "class" => "Gitlab::Checks::SecretsCheck"
+          "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
         )
       )
     end
@@ -448,7 +443,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
     expect(logged_messages[:info]).to include(
       hash_including(
         "message" => log_messages[:found_secrets],
-        "class" => "Gitlab::Checks::SecretsCheck"
+        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
       )
     )
   end
@@ -480,7 +475,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
     expect(logged_messages[:info]).to include(
       hash_including(
         "message" => log_messages[:found_secrets],
-        "class" => "Gitlab::Checks::SecretsCheck"
+        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
       )
     )
   end
@@ -563,7 +558,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
         expect(logged_messages[:info]).to include(
           hash_including(
             "message" => log_messages[:found_secrets],
-            "class" => "Gitlab::Checks::SecretsCheck"
+            "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
           )
         )
       end
@@ -600,7 +595,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
         expect(logged_messages[:info]).to include(
           hash_including(
             "message" => log_messages[:found_secrets],
-            "class" => "Gitlab::Checks::SecretsCheck"
+            "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
           )
         )
       end
@@ -630,7 +625,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
         expect(logged_messages[:info]).to include(
           hash_including(
             "message" => log_messages[:found_secrets],
-            "class" => "Gitlab::Checks::SecretsCheck"
+            "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
           )
         )
       end
@@ -667,7 +662,7 @@ RSpec.shared_examples 'scan detected secrets in diffs' do
         expect(logged_messages[:info]).to include(
           hash_including(
             "message" => log_messages[:found_secrets],
-            "class" => "Gitlab::Checks::SecretsCheck"
+            "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
           )
         )
       end
@@ -777,7 +772,7 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
       expect(logged_messages[:info]).to include(
         hash_including(
           "message" => log_messages[:found_secrets_with_errors],
-          "class" => "Gitlab::Checks::SecretsCheck"
+          "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
         )
       )
     end
@@ -795,7 +790,7 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
         .and_return(successful_scan_with_errors_response)
     end
 
-    expect_next_instance_of(described_class) do |instance|
+    expect_next_instance_of(Gitlab::Checks::SecretPushProtection::ResponseHandler) do |instance|
       expect(instance).to receive(:format_response)
         .with(successful_scan_with_errors_response)
         .once
@@ -819,7 +814,7 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
     expect(logged_messages[:info]).to include(
       hash_including(
         "message" => log_messages[:found_secrets_with_errors],
-        "class" => "Gitlab::Checks::SecretsCheck"
+        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
       )
     )
   end
@@ -871,7 +866,7 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
     expect(logged_messages[:info]).to include(
       hash_including(
         "message" => log_messages[:found_secrets_with_errors],
-        "class" => "Gitlab::Checks::SecretsCheck"
+        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
       )
     )
   end
@@ -933,7 +928,7 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
           .and_return(successful_scan_with_multiple_findings_and_errors_response)
       end
 
-      expect_next_instance_of(described_class) do |instance|
+      expect_next_instance_of(Gitlab::Checks::SecretPushProtection::ResponseHandler) do |instance|
         expect(instance).to receive(:format_response)
           .with(successful_scan_with_multiple_findings_and_errors_response)
           .once
@@ -956,7 +951,7 @@ RSpec.shared_examples 'scan detected secrets but some errors occured' do
       expect(logged_messages[:info]).to include(
         hash_including(
           "message" => log_messages[:found_secrets_with_errors],
-          "class" => "Gitlab::Checks::SecretsCheck"
+          "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
         )
       )
     end
@@ -983,7 +978,7 @@ RSpec.shared_examples 'scan timed out' do
     expect(logged_messages[:error]).to include(
       hash_including(
         "message" => error_messages[:scan_timeout_error],
-        "class" => "Gitlab::Checks::SecretsCheck"
+        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
       )
     )
   end
@@ -1007,7 +1002,7 @@ RSpec.shared_examples 'scan failed to initialize' do
 
     error_msg = "No such file or directory @ rb_sysopen - gitleaks.toml"
     error_string = "Failed to parse local secret detection ruleset: #{error_msg}"
-    msg = format(error_messages[:scan_initialization_error], { error_msg: error_msg })
+    msg = format(described_class::ERROR_MESSAGES[:scan_initialization_error], { error_msg: error_msg })
 
     # File parsing error is written to the logger.
     # Then, error bubbles up from scan class and is handled in secrets check.
@@ -1043,7 +1038,7 @@ RSpec.shared_examples 'scan failed with invalid input' do
     expect(logged_messages[:error]).to include(
       hash_including(
         "message" => error_messages[:invalid_input_error],
-        "class" => "Gitlab::Checks::SecretsCheck"
+        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
       )
     )
   end
@@ -1072,7 +1067,7 @@ RSpec.shared_examples 'scan skipped due to invalid status' do
     expect(logged_messages[:error]).to include(
       hash_including(
         "message" => error_messages[:invalid_scan_status_code_error],
-        "class" => "Gitlab::Checks::SecretsCheck"
+        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
       )
     )
   end
@@ -1268,7 +1263,7 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
         expect(logged_messages[:info]).to include(
           hash_including(
             "message" => log_messages[:found_secrets],
-            "class" => "Gitlab::Checks::SecretsCheck"
+            "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
           )
         )
       end
@@ -1335,7 +1330,7 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
         expect(logged_messages[:info]).to include(
           hash_including(
             "message" => log_messages[:found_secrets],
-            "class" => "Gitlab::Checks::SecretsCheck"
+            "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
           )
         )
       end
@@ -1381,7 +1376,7 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
       expect(logged_messages[:info]).to include(
         hash_including(
           "message" => log_messages[:found_secrets],
-          "class" => "Gitlab::Checks::SecretsCheck"
+          "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
         )
       )
     end
@@ -1432,7 +1427,7 @@ RSpec.shared_examples 'scan discarded secrets because they match exclusions' do
       expect(logged_messages[:info]).to include(
         hash_including(
           "message" => log_messages[:found_secrets],
-          "class" => "Gitlab::Checks::SecretsCheck"
+          "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
         )
       )
     end
@@ -1488,7 +1483,7 @@ RSpec.shared_examples 'detects secrets with special characters in diffs' do
       expect(logged_messages[:info]).to include(
         hash_including(
           "message" => log_messages[:found_secrets],
-          "class" => "Gitlab::Checks::SecretsCheck"
+          "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
         )
       )
     end

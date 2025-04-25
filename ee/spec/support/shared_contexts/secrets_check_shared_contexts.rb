@@ -197,8 +197,8 @@ RSpec.shared_context 'secrets check context' do
 end
 
 RSpec.shared_context 'secret detection error and log messages context' do
-  let(:error_messages) { ::Gitlab::Checks::SecretsCheck::ERROR_MESSAGES }
-  let(:log_messages) { ::Gitlab::Checks::SecretsCheck::LOG_MESSAGES }
+  let(:error_messages) { ::Gitlab::Checks::SecretPushProtection::ResponseHandler::ERROR_MESSAGES }
+  let(:log_messages) { ::Gitlab::Checks::SecretPushProtection::ResponseHandler::LOG_MESSAGES }
 
   # Error messsages with formatting
   let(:failed_to_scan_regex_error) do

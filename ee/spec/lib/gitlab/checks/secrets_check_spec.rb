@@ -108,7 +108,12 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
               expect(::Gitlab::ErrorTracking).to receive(:track_exception).with(instance_of(::GRPC::InvalidArgument))
               expect(secret_detection_logger).to receive(:error)
                 .once
-                .with({ "message" => error_messages[:invalid_input_error], "class" => "Gitlab::Checks::SecretsCheck" })
+                .with(
+                  hash_including(
+                    "message" => error_messages[:invalid_input_error],
+                    "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
+                  )
+                )
 
               allow(secret_detection_logger).to receive(:info)
               expect { secrets_check.validate! }.not_to raise_error
