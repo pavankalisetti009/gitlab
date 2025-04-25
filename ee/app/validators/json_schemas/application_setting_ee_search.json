@@ -43,6 +43,10 @@
     "global_search_limited_indexing_enabled": {
       "type": "boolean",
       "description": "Enable global search for limited indexing"
+    },
+    "elastic_migration_worker_enabled": {
+      "type": "boolean",
+      "description": "Enable migration worker setting to apply advanced search migrations"
     }
   }
 }

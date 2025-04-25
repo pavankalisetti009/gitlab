@@ -58,6 +58,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.global_search_block_anonymous_searches_enabled).to be(false) }
     it { expect(setting.global_search_limited_indexing_enabled).to be(false) }
     it { expect(setting.virtual_registries_endpoints_api_limit).to eq(1000) }
+    it { expect(setting.elastic_migration_worker_enabled).to be(true) }
   end
 
   describe 'validations' do
