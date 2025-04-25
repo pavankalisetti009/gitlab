@@ -96,7 +96,7 @@ class GeoNode < ApplicationRecord
       query = status_table[:id].eq(nil)
         .or(status_table[:cursor_last_event_id].eq(nil))
         .or(status_table[:last_successful_status_check_at].eq(nil))
-        .or(status_table[:last_successful_status_check_at].lt(10.minutes.ago))
+        .or(status_table[:last_successful_status_check_at].lt(1.hour.ago))
 
       left_join_status.where(query)
     end

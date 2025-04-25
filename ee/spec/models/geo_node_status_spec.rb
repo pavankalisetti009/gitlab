@@ -89,7 +89,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
     context 'takes outdated? into consideration' do
       it 'return false' do
         subject.status_message = GeoNodeStatus::HEALTHY_STATUS
-        subject.updated_at = 11.minutes.ago
+        subject.updated_at = 61.minutes.ago
 
         expect(subject.healthy?).to be false
       end
@@ -105,7 +105,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
 
   describe '#outdated?' do
     it 'return true' do
-      subject.updated_at = 11.minutes.ago
+      subject.updated_at = 61.minutes.ago
 
       expect(subject.outdated?).to be true
     end
@@ -128,7 +128,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
   describe '#health' do
     it 'returns status message' do
       subject.status_message = 'something went wrong'
-      subject.updated_at = 11.minutes.ago
+      subject.updated_at = 61.minutes.ago
 
       expect(subject.health).to eq 'something went wrong'
     end

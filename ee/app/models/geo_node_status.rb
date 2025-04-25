@@ -84,7 +84,7 @@ class GeoNodeStatus < ApplicationRecord
     container_repositories_replication_enabled: 'Boolean denoting if replication is enabled for Container Repositories'
   }.merge(replicator_class_prometheus_metrics).freeze
 
-  EXPIRATION_IN_MINUTES = 10
+  EXPIRATION_IN_MINUTES = 60
   HEALTHY_STATUS = 'Healthy'
   UNHEALTHY_STATUS = 'Unhealthy'
 

@@ -122,7 +122,7 @@ RSpec.describe Geo::PruneEventLogWorker, :geo, feature_category: :geo_replicatio
 
         it 'aborts when there is a node with an old status' do
           create(:geo_node_status, :healthy, cursor_last_event_id: events.last.id, geo_node_id: secondary.id)
-          create(:geo_node_status, :healthy, geo_node_id: secondary2.id, last_successful_status_check_at: 12.minutes.ago)
+          create(:geo_node_status, :healthy, geo_node_id: secondary2.id, last_successful_status_check_at: 61.minutes.ago)
 
           expect(worker).to receive(:log_info).with(/^Some nodes are not healthy/, unhealthy_node_count: 1)
 

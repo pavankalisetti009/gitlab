@@ -321,7 +321,7 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
     end
 
     it 'returns a node with an old status check timestamp' do
-      geo_node_status = create(:geo_node_status, :healthy, last_successful_status_check_at: 16.minutes.ago)
+      geo_node_status = create(:geo_node_status, :healthy, last_successful_status_check_at: 61.minutes.ago)
 
       expect(unhealthy_nodes).to contain_exactly(geo_node_status.geo_node)
     end
