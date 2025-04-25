@@ -1490,7 +1490,7 @@ Parameters:
 | `project_keys` | array of strings | no | Keys of Jira projects. When `issues_enabled` is `true`, this setting specifies which Jira projects to view issues from in GitLab. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/267015) in GitLab 17.0. |
 | `use_inherited_settings` | boolean | no | Indicates whether to inherit the default settings. Defaults to `false`. |
 | `vulnerabilities_enabled` | boolean | no | If set to `true`, creates Jira issues for GitLab vulnerabilities. |
-| `vulnerabilities_issuetype` | string | no | Jira issue type to use when creating issues from vulnerabilities. |
+| `vulnerabilities_issuetype` | number | no | ID of the Jira issue type to use when creating issues from vulnerabilities. |
 
 ### Disable Jira
 
