@@ -46471,9 +46471,6 @@ msgstr ""
 msgid "Profiles|Achievements"
 msgstr ""
 
-msgid "Profiles|Active"
-msgstr ""
-
 msgid "Profiles|Add email address"
 msgstr ""
 
@@ -46552,10 +46549,13 @@ msgstr ""
 msgid "Profiles|Deleting an account has the following effects:"
 msgstr ""
 
-msgid "Profiles|Disconnect"
+msgid "Profiles|Disconnect %{provider}"
 msgstr ""
 
-msgid "Profiles|Disconnect %{provider}"
+msgid "Profiles|Disconnect SAML for %{group_name}"
+msgstr ""
+
+msgid "Profiles|Disconnecting your SAML provider will remove your access from groups, subgroups and projects which require SAML authentication. Are your sure?"
 msgstr ""
 
 msgid "Profiles|Discord ID is too long (maximum is %{max_length} characters)."
@@ -46733,6 +46733,9 @@ msgid "Profiles|Remove avatar"
 msgstr ""
 
 msgid "Profiles|Resend confirmation email"
+msgstr ""
+
+msgid "Profiles|SAML for %{group_name} Active"
 msgstr ""
 
 msgid "Profiles|SSH Key: %{title}"
@@ -52586,9 +52589,6 @@ msgid "SAML SSO"
 msgstr ""
 
 msgid "SAML discovery tokens"
-msgstr ""
-
-msgid "SAML for %{group_name}"
 msgstr ""
 
 msgid "SAML group membership settings"
