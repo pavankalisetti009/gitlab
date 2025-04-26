@@ -412,8 +412,7 @@ class IssuableFinder
     strong_memoize(:label_filter) do
       Issuables::LabelFilter.new(
         params: original_params,
-        project: params.project,
-        group: params.group
+        parent: params.parent
       )
     end
   end

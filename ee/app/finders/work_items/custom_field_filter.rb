@@ -2,8 +2,7 @@
 
 module WorkItems
   class CustomFieldFilter < ::Issuables::BaseFilter
-    def initialize(parent:, work_item_id_column: :id, **kwargs)
-      @parent = parent
+    def initialize(work_item_id_column: :id, **kwargs)
       @work_item_id_column = work_item_id_column
 
       super(**kwargs)
@@ -11,7 +10,7 @@ module WorkItems
 
     def filter(issuables)
       return issuables if params[:custom_field].blank?
-      return issuables if @parent && !@parent.licensed_feature_available?(:custom_fields)
+      return issuables if parent && !parent.licensed_feature_available?(:custom_fields)
 
       filter_select_fields(issuables, params[:custom_field])
     end
