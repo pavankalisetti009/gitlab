@@ -17,7 +17,7 @@ export const subgroupsAndProjects = {
             fullPath: 'flightjs/test-subgroup',
             avatarUrl: '/avatar.png',
             webUrl: 'http://gdk.test:3000/groups/flightjs/test-subgroup',
-            vulnerabilitySeveritiesCount: {
+            vulnerabilityNamespaceStatistic: {
               critical: 10,
               high: 10,
               low: 10,
@@ -38,7 +38,7 @@ export const subgroupsAndProjects = {
             fullPath: 'flightjs/security-reports-example',
             avatarUrl: null,
             webUrl: 'http://gdk.test:3000/flightjs/security-reports-example',
-            vulnerabilitySeveritiesCount: {
+            vulnerabilityStatistic: {
               critical: 10,
               high: 5,
               low: 4,
@@ -59,7 +59,7 @@ export const subgroupsAndProjects = {
             fullPath: 'flightjs/Flight',
             avatarUrl: null,
             webUrl: 'http://gdk.test:3000/flightjs/Flight',
-            vulnerabilitySeveritiesCount: {
+            vulnerabilityStatistic: {
               critical: 10,
               high: 0,
               low: 0,
