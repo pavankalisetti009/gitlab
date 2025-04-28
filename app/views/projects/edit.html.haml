@@ -106,8 +106,7 @@
         = render_if_exists 'shared/groups_projects/settings/restore', context: @project
         = render 'delete'
 - else
-  - if can?(current_user, :archive_project, @project)
-    = render 'projects/settings/archive'
+  = render 'projects/settings/archive'
   - if can?(current_user, :remove_project, @project)
     = render 'delete'
 
