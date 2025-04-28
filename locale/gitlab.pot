@@ -47785,7 +47785,7 @@ msgstr ""
 msgid "ProjectSettings|GitLab Duo"
 msgstr ""
 
-msgid "ProjectSettings|GitLab Duo reviews new merge requests immediately, and when a draft is marked ready."
+msgid "ProjectSettings|GitLab Duo reviews new merge requests immediately, unless they are drafts or contain no changes."
 msgstr ""
 
 msgid "ProjectSettings|Global"
