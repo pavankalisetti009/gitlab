@@ -92,11 +92,7 @@ describe('MembersFilteredSearchBar', () => {
     });
   });
 
-  describe('when `service_accounts` feature flag is enabled', () => {
-    beforeEach(() => {
-      gon.features = { serviceAccountsCrud: true };
-    });
-
+  describe('`Account` type filter', () => {
     describe('when `canManageMembers` is `true`', () => {
       it('includes `user_type` token in `filteredSearchBar.tokens`', () => {
         createComponent();
@@ -130,14 +126,6 @@ describe('MembersFilteredSearchBar', () => {
 
         expect(findFilteredSearchBar().props('tokens')).not.toContain(FILTERED_SEARCH_USER_TYPE);
       });
-    });
-  });
-
-  describe('when `service_accounts` feature flag is disabled', () => {
-    it('does not include `user_type` token in `filteredSearchBar.tokens`', () => {
-      createComponent();
-
-      expect(findFilteredSearchBar().props('tokens')).not.toContain(FILTERED_SEARCH_USER_TYPE);
     });
   });
 });

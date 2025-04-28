@@ -47,14 +47,6 @@ RSpec.describe Groups::Settings::ServiceAccountsController, feature_category: :u
         it_behaves_like 'page is found'
       end
 
-      context 'when `service_accounts_crud` feature flag is disabled' do
-        before do
-          stub_feature_flags(service_accounts_crud: false)
-        end
-
-        it_behaves_like 'page is not found'
-      end
-
       context 'when accessing a subgroup' do
         let_it_be(:group) { create(:group, parent: group) }
 

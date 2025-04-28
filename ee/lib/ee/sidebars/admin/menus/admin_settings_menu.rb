@@ -51,8 +51,7 @@ module EE
           end
 
           def service_accounts_available?
-            ::Feature.enabled?(:service_accounts_crud, current_user) && can?(current_user, :admin_service_accounts) &&
-              !gitlab_com_subscription?
+            can?(current_user, :admin_service_accounts) && !gitlab_com_subscription?
           end
 
           def templates_menu_item
