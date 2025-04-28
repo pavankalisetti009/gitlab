@@ -3,7 +3,7 @@ import projects from 'test_fixtures/api/users/projects/get.json';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import ProjectListItemDelayedDeletionModalFooter from 'ee/vue_shared/components/projects_list/project_list_item_delayed_deletion_modal_footer.vue';
+import ProjectListItemDelayedDeletionModalFooter from '~/vue_shared/components/projects_list/project_list_item_delayed_deletion_modal_footer.vue';
 
 describe('ProjectListItemDelayedDeletionModalFooterEE', () => {
   let wrapper;
