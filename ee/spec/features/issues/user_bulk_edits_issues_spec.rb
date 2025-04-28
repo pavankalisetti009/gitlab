@@ -19,6 +19,13 @@ RSpec.describe 'Issues > Bulk edit issues', feature_category: :team_planning do
   let!(:issue2) { create(:issue, project: project, title: "Issue 2") }
   let!(:issue3) { create(:issue, project: project_without_group, title: "Issue 3") }
 
+  before do
+    # TODO: When removing the feature flag,
+    # we won't need the tests for the issues listing page, since we'll be using
+    # the work items listing page.
+    stub_feature_flags(work_item_planning_view: false)
+  end
+
   shared_examples 'bulk edit option in sidebar' do |context|
     it 'is present when bulk edit is enabled' do
       enable_bulk_update(context)

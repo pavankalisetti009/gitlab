@@ -11,6 +11,11 @@ RSpec.describe 'Blocking issues count', feature_category: :team_planning do
   let_it_be(:issue2) { build(:issue, project: project, created_at: 3.days.ago, title: 'blocks two issues') }
 
   before do
+    # TODO: When removing the feature flag,
+    # we won't need the tests for the issues listing page, since we'll be using
+    # the work items listing page.
+    stub_feature_flags(work_item_planning_view: false)
+
     visit project_issues_path(project)
   end
 

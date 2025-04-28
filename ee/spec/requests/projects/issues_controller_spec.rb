@@ -120,60 +120,67 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
   end
 
   describe 'GET #index' do
-    context 'when viewing all issues' do
-      include_examples 'seat count alert' do
-        subject { get project_issues_path(project, params: {}) }
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:project) { create(:project, group: group, developers: [user]) }
+    let_it_be(:issues) { create_list(:issue, 5, project: project, due_date: Date.current) }
+    let(:params) { {} }
 
-        let(:namespace) { project }
+    subject(:get_index) { get project_issues_path(project, params: params) }
+
+    context 'when work_item_planning_view is disabled' do
+      before do
+        stub_feature_flags(work_item_planning_view: false)
+      end
+
+      context 'when viewing all issues' do
+        include_examples 'seat count alert' do
+          let(:namespace) { project }
+
+          before do
+            project.add_developer(user)
+          end
+        end
+      end
+
+      context 'when filtering by custom field' do
+        include_context 'with group configured with custom fields'
+
+        before_all do
+          create(:work_item_select_field_value, work_item_id: issues[0].id, custom_field: select_field,
+            custom_field_select_option: select_option_1)
+          create(:work_item_select_field_value, work_item_id: issues[1].id, custom_field: select_field,
+            custom_field_select_option: select_option_2)
+          create(:work_item_select_field_value, work_item_id: issues[2].id, custom_field: select_field,
+            custom_field_select_option: select_option_2)
+        end
 
         before do
-          project.add_developer(user)
+          stub_licensed_features(custom_fields: true)
         end
-      end
-    end
 
-    context 'when filtering by custom field' do
-      include_context 'with group configured with custom fields'
+        context 'when requesting RSS feed' do
+          it 'returns issues filtered by the custom field value' do
+            get project_issues_path(project, format: :atom, custom_field: { select_field.id => select_option_2.id })
 
-      let_it_be(:current_user) { create(:user) }
-      let_it_be(:project) { create(:project, group: group, developers: [user]) }
-      let_it_be(:issues) { create_list(:issue, 5, project: project, due_date: Date.current) }
+            expect(response).to have_gitlab_http_status(:ok)
 
-      before_all do
-        create(:work_item_select_field_value, work_item_id: issues[0].id, custom_field: select_field,
-          custom_field_select_option: select_option_1)
-        create(:work_item_select_field_value, work_item_id: issues[1].id, custom_field: select_field,
-          custom_field_select_option: select_option_2)
-        create(:work_item_select_field_value, work_item_id: issues[2].id, custom_field: select_field,
-          custom_field_select_option: select_option_2)
-      end
-
-      before do
-        stub_licensed_features(custom_fields: true)
-      end
-
-      context 'when requesting RSS feed' do
-        it 'returns issues filtered by the custom field value' do
-          get project_issues_path(project, format: :atom, custom_field: { select_field.id => select_option_2.id })
-
-          expect(response).to have_gitlab_http_status(:ok)
-
-          issue_titles = Nokogiri::XML(response.body).css('feed entry title').map(&:text)
-          expect(issue_titles).to contain_exactly(issues[1].title, issues[2].title)
+            issue_titles = Nokogiri::XML(response.body).css('feed entry title').map(&:text)
+            expect(issue_titles).to contain_exactly(issues[1].title, issues[2].title)
+          end
         end
-      end
 
-      context 'when requesting calendar feed' do
-        it 'returns issues filtered by the custom field value' do
-          get project_issues_path(project, format: :ics, custom_field: { select_field.id => select_option_2.id })
+        context 'when requesting calendar feed' do
+          it 'returns issues filtered by the custom field value' do
+            get project_issues_path(project, format: :ics, custom_field: { select_field.id => select_option_2.id })
 
-          expect(response).to have_gitlab_http_status(:ok)
+            expect(response).to have_gitlab_http_status(:ok)
 
-          event_titles = response.body.split("\r\n").filter { |s| s.start_with?('SUMMARY:') }
-          expect(event_titles).to contain_exactly(
-            "SUMMARY:#{issues[1].title} (in #{project.full_path})",
-            "SUMMARY:#{issues[2].title} (in #{project.full_path})"
-          )
+            event_titles = response.body.split("\r\n").filter { |s| s.start_with?('SUMMARY:') }
+            expect(event_titles).to contain_exactly(
+              "SUMMARY:#{issues[1].title} (in #{project.full_path})",
+              "SUMMARY:#{issues[2].title} (in #{project.full_path})"
+            )
+          end
         end
       end
     end

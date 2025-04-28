@@ -26,6 +26,11 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
 
     stub_licensed_features(okrs: true, issuable_health_status: true)
     stub_feature_flags(work_items: true, okrs_mvc: true)
+
+    # TODO: When removing the feature flag,
+    # we won't need the tests for the issues listing page, since we'll be using
+    # the work items listing page.
+    stub_feature_flags(work_item_planning_view: false)
   end
 
   describe 'creating objective from issues list' do

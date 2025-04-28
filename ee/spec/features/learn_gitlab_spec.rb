@@ -10,6 +10,13 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
     let_it_be(:namespace) { create(:group, owners: user) }
     let_it_be(:project) { create(:project, namespace: namespace) }
 
+    before do
+      # TODO: When removing the feature flag,
+      # we won't need the tests for the issues listing page, since we'll be using
+      # the work items listing page.
+      stub_feature_flags(work_item_planning_view: false)
+    end
+
     context 'with completed links' do
       before do
         yesterday = Date.yesterday
