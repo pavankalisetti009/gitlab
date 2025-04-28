@@ -275,7 +275,7 @@ export default {
           v-if="item.vulnerabilityCount"
           variant="warning"
           href="#"
-          @click.native="rowExpanded(toggleDetails, item)"
+          @click="rowExpanded(toggleDetails, item)"
         >
           <gl-icon name="warning" class="mr-1" variant="warning" />
           {{
