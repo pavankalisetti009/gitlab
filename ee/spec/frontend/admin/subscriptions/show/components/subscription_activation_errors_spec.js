@@ -10,6 +10,7 @@ import {
   CONNECTIVITY_ERROR,
   EXPIRED_LICENSE_SERVER_ERROR,
   INVALID_CODE_ERROR,
+  SILENT_MODE_ENABLED_ERROR,
   SUBSCRIPTION_NOT_FOUND_SERVER_ERROR,
   SUBSCRIPTION_OVERAGES_SERVER_ERROR_REGEX,
   SUBSCRIPTION_INSUFFICIENT_TRUE_UP_SERVER_ERROR_REGEX,
@@ -116,6 +117,13 @@ describe('SubscriptionActivationErrors', () => {
         text: i18n.INVALID_ACTIVATION_CODE,
         helpLinks: [links.subscriptionActivationHelpLink],
         testId: testIds.INVALID_ACTIVATION_ERROR_ALERT,
+      },
+      {
+        error: SILENT_MODE_ENABLED_ERROR,
+        title: i18n.SILENT_MODE_ENABLED_ERROR_TITLE,
+        text: i18n.SILENT_MODE_ENABLED_ERROR_MESSAGE,
+        helpLinks: [links.silentModeDocsLink],
+        testId: testIds.SILENT_MODE_ENABLED_ALERT,
       },
       {
         error: GENERAL_ERROR_MESSAGE,

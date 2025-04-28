@@ -59529,6 +59529,9 @@ msgstr ""
 msgid "SuperSonics|Cannot activate instance due to a connectivity issue"
 msgstr ""
 
+msgid "SuperSonics|Could not activate subscription"
+msgstr ""
+
 msgid "SuperSonics|Customers Portal"
 msgstr ""
 
@@ -59569,6 +59572,9 @@ msgid "SuperSonics|Select that you agree before activating the subscription."
 msgstr ""
 
 msgid "SuperSonics|Start free trial"
+msgstr ""
+
+msgid "SuperSonics|Subscription cannot be activated if %{silentModeDocsLinkStart}Silent Mode%{silentModeDocsLinkEnd} is enabled. Disable Silent Mode and try again."
 msgstr ""
 
 msgid "SuperSonics|Subscription detail synchronization has started and will complete soon."

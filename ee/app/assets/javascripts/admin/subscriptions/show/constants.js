@@ -105,6 +105,8 @@ export const SUBSCRIPTION_ACTIVATION_FINALIZED_EVENT = 'subscription-activation-
 // Server-sent error messages (or regexes to match those messages) to detect error type
 export const INVALID_ACTIVATION_CODE_SERVER_ERROR = 'invalid activation code';
 export const EXPIRED_LICENSE_SERVER_ERROR = 'This license has already expired.';
+export const SILENT_MODE_ENABLED_ERROR =
+  'only get, head, options, and trace methods are allowed in silent mode';
 export const SUBSCRIPTION_NOT_FOUND_SERVER_ERROR = 'without cloud compatible subscription';
 export const SUBSCRIPTION_OVERAGES_SERVER_ERROR_REGEX =
   /(This GitLab installation currently has|During the year before this license started, this GitLab installation had) (\d+) active users?, exceeding this license's limit of (\d+) by (\d+) users?\. Please add a license for at least (\d+) users? or contact sales at https:\/\/about\.gitlab\.com\/sales\//;
