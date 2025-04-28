@@ -46,9 +46,6 @@ export default {
     isEditMode() {
       return this.popoverMode === 'edit';
     },
-    isDetailsMode() {
-      return this.popoverMode === 'details';
-    },
     isDisabled() {
       return this.popoverMode === 'disabled';
     },
@@ -100,6 +97,7 @@ export default {
   },
 };
 </script>
+
 <template>
   <div ref="badge">
     <gl-popover

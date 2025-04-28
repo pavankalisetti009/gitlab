@@ -85,16 +85,12 @@ export default {
       // Search is not supported for project frameworks
       return !this.projectPath;
     },
-
     selectedFramework() {
       return this.$route.query.id
         ? this.frameworks.find(
             (framework) => framework.id === convertFrameworkIdToGraphQl(this.$route.query.id),
           )
         : null;
-    },
-    showDrawer() {
-      return this.selectedFramework !== null;
     },
     showNoFrameworksAlert() {
       return !this.frameworks.length && !this.isLoading && !this.isTopLevelGroup;
@@ -241,15 +237,12 @@ export default {
       }
       return '';
     },
-
     remainingProjectsCount(projects) {
       return projects.count - projects.nodes.length;
     },
-
     remainingRequirementsCount(requirements) {
       return requirements.nodes.length - this.policyDisplayLimit;
     },
-
     lastVisiblePolicyIndex(requirements) {
       return Math.min(requirements.length, this.policyDisplayLimit) - 1;
     },

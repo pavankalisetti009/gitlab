@@ -123,9 +123,6 @@ export default {
     getContentWrapperHeight() {
       return getContentWrapperHeight();
     },
-    frameworkSettingsPath() {
-      return this.framework.webUrl;
-    },
     defaultFramework() {
       return Boolean(this.framework.default);
     },
@@ -181,25 +178,20 @@ export default {
 
       return `${this.groupSecurityPoliciesPath}/${policy.name}/edit?type=${urlParameter}`;
     },
-
     loadMoreProjects() {
       this.after = this.projects.pageInfo.endCursor;
     },
-
     copyFrameworkIdToClipboard() {
       navigator?.clipboard?.writeText(this.normalisedFrameworkId);
       this.$toast.show(this.$options.i18n.copyFrameworkIdToastText);
     },
-
     copyControlIdToClipboard(control) {
       navigator?.clipboard?.writeText(getIdFromGraphQLId(control.id));
       this.$toast.show(this.$options.i18n.copyControlIdToastText);
     },
-
     getControls(expression) {
       return getControls(expression, this.controls);
     },
-
     isExternalControl(control) {
       return control.controlType === this.$options.CONTROL_TYPE_EXTERNAL;
     },

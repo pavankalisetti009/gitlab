@@ -64,7 +64,6 @@ export default () => {
     .map(([route]) => route);
 
   const router = createRouter(basePath, {
-    mergeCommitsCsvExportPath,
     projectPath,
     projectId,
     groupPath,

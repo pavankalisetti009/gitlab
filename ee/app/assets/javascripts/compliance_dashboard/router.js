@@ -26,7 +26,6 @@ import NewFrameworkSuccess from './components/frameworks_report/edit_framework/n
 
 export function createRouter(basePath, props) {
   const {
-    mergeCommitsCsvExportPath,
     groupPath,
     groupName,
     groupComplianceCenterPath,
@@ -55,7 +54,6 @@ export function createRouter(basePath, props) {
       name: ROUTE_VIOLATIONS,
       component: ViolationsReport,
       props: {
-        mergeCommitsCsvExportPath,
         groupPath,
         projectPath,
       },

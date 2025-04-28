@@ -90,9 +90,6 @@ export default {
         .map(({ id, name }) => ({ value: id, text: name }))
         .sort((a, b) => a.text.localeCompare(b.text));
     },
-    isFormValid() {
-      return Object.values(this.validation).every(Boolean);
-    },
     modalButtonProps() {
       const { createButtonText, editText, existingFrameworkButtonText } = this.$options.i18n;
 
@@ -130,6 +127,7 @@ export default {
     },
   },
   methods: {
+    // eslint-disable-next-line vue/no-unused-properties -- show() is part of the component's public API.
     show() {
       this.$refs.modal.show();
     },
@@ -176,26 +174,6 @@ export default {
         this.showExternalControlSummary(control) ||
         control.secretToken?.trim()
       );
-    },
-    validateField(key) {
-      if (key === 'externalUrl') {
-        const hasValidUrl = this.controls.every((control) => {
-          if (control?.controlType === 'external') {
-            return this.showExternalControlSummary(control) || isValidURL(control.externalUrl);
-          }
-          return true;
-        });
-        this.validation.externalUrl = hasValidUrl;
-        return;
-      }
-
-      if (key === 'secretToken') {
-        const hasValidToken = this.controls.every((control) => this.isValidSecretToken(control));
-        this.validation.secretToken = hasValidToken;
-        return;
-      }
-
-      this.validation[key] = Boolean(this.requirementData[key]);
     },
     validateControl(control) {
       if (!control) return true;
@@ -258,10 +236,6 @@ export default {
       };
 
       return Object.values(this.validation).every(Boolean);
-    },
-    removeTypename(obj) {
-      const { __typename, ...rest } = obj;
-      return rest;
     },
     handleSubmit(event) {
       if (!this.validationWatchersRegistered) {
