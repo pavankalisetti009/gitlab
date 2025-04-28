@@ -6,6 +6,8 @@
 module Search
   module Elastic
     module MigrationDeleteBasedOnSchemaVersion
+      include Search::Elastic::IndexName
+
       def migrate
         task_id = migration_state[:task_id]
         if task_id
@@ -44,12 +46,6 @@ module Search
         log 'Checking the number of documents left with old schema_version', remaining_count: doc_count
 
         doc_count == 0
-      end
-
-      def index_name
-        return self.class::DOCUMENT_TYPE.__elasticsearch__.index_name if self.class.const_defined?(:DOCUMENT_TYPE)
-
-        raise NotImplementedError
       end
 
       def schema_version

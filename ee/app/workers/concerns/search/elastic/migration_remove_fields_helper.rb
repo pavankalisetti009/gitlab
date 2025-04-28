@@ -3,6 +3,8 @@
 module Search
   module Elastic
     module MigrationRemoveFieldsHelper
+      include Search::Elastic::IndexName
+
       DEFAULT_BATCH_SIZE = 10_000
 
       def migrate
@@ -81,11 +83,9 @@ module Search
         doc_count && doc_count == 0
       end
 
-      def index_name
-        raise NotImplementedError
-      end
-
       def document_type
+        return self.class::DOCUMENT_TYPE if self.class.const_defined?(:DOCUMENT_TYPE)
+
         raise NotImplementedError
       end
 

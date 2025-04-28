@@ -6,6 +6,8 @@
 module Search
   module Elastic
     module MigrationReindexBasedOnSchemaVersion
+      include Search::Elastic::IndexName
+
       UPDATE_BATCH_SIZE = 100
 
       def migrate
@@ -33,10 +35,6 @@ module Search
       end
 
       private
-
-      def index_name
-        self.class::DOCUMENT_TYPE.__elasticsearch__.index_name
-      end
 
       def remaining_documents_count
         helper.refresh_index(index_name: index_name)

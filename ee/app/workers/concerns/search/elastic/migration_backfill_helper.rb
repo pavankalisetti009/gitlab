@@ -3,6 +3,8 @@
 module Search
   module Elastic
     module MigrationBackfillHelper
+      include Search::Elastic::IndexName
+
       UPDATE_BATCH_SIZE = 100
 
       def migrate
@@ -31,12 +33,6 @@ module Search
       end
 
       private
-
-      def index_name
-        return self.class::DOCUMENT_TYPE.__elasticsearch__.index_name if self.class.const_defined?(:DOCUMENT_TYPE)
-
-        raise NotImplementedError
-      end
 
       def remaining_documents_count
         helper.refresh_index(index_name: index_name)
