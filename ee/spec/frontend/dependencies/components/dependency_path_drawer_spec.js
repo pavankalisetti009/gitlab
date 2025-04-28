@@ -86,49 +86,61 @@ describe('DependencyPathDrawer component', () => {
   });
 
   describe('with project dropdown', () => {
-    const locationOne = {
-      name: 'Project 1',
-      value: 100,
-      dependencyPaths: [{ name: 'one', version: 'v1' }],
-    };
-
-    const locationTwo = {
-      name: 'Project 2',
-      value: 200,
-      dependencyPaths: [{ name: 'two', version: 'v2' }],
-    };
-
-    const createLocation = ({ name, value, dependencyPaths }) => ({
-      project: { name },
-      value,
-      location: {
-        dependency_paths: dependencyPaths.map((dependency) => ({
-          is_cyclic: true,
-          path: [{ name: dependency.name, version: dependency.version }],
-        })),
+    const locations = [
+      {
+        name: 'Project 1',
+        value: 100,
+        dependencyPaths: [{ name: 'one', version: 'v1' }],
       },
-    });
+      {
+        name: 'Project 2',
+        value: 200,
+        dependencyPaths: [{ name: 'two', version: 'v2' }],
+      },
+      {
+        name: 'Project 3',
+        value: 300,
+        dependencyPaths: [],
+      },
+    ];
+
+    const createLocations = (locationsData) =>
+      locationsData.map(({ name, value, dependencyPaths }) => ({
+        project: { name },
+        value,
+        location: {
+          dependency_paths: dependencyPaths.map((dependency) => ({
+            is_cyclic: true,
+            path: [{ name: dependency.name, version: dependency.version }],
+          })),
+        },
+      }));
 
     beforeEach(() => {
       createComponent({
         showDrawer: true,
-        locations: [createLocation(locationOne), createLocation(locationTwo)],
+        locations: createLocations(locations),
       });
     });
 
     it('renders the first selected project and its path', () => {
-      const {
-        value,
-        dependencyPaths: [{ name, version }],
-      } = locationOne;
+      const { value, dependencyPaths } = locations[0];
+      const { name, version } = dependencyPaths[0];
 
       expect(findProjectList().props('selected')).toBe(value);
       expect(wrapper.text()).toContain(`${name} @${version}`);
-      expect(findAllListItem()).toHaveLength(locationOne.dependencyPaths.length);
+      expect(findAllListItem()).toHaveLength(dependencyPaths.length);
+    });
+
+    it('does not render for projects with empty dependency paths', () => {
+      const locationsWithDependencyPaths = locations.filter(
+        (location) => location.dependencyPaths.length > 0,
+      );
+      expect(findProjectList().props('items')).toHaveLength(locationsWithDependencyPaths.length);
     });
 
     it('displays loading on change', async () => {
-      const { value } = locationOne;
+      const { value } = locations[0];
       expect(wrapper.findComponent(GlSkeletonLoader).exists()).toBe(false);
 
       findProjectList().vm.$emit('select', value);
@@ -138,10 +150,13 @@ describe('DependencyPathDrawer component', () => {
     });
 
     it('updates the dependency path list', async () => {
+      const locationOne = locations[0];
       const {
         value,
         dependencyPaths: [{ name, version }],
-      } = locationTwo;
+      } = locations[1];
+
+      expect(findProjectList().props('selected')).toBe(locationOne.value);
 
       findProjectList().vm.$emit('select', value);
       jest.advanceTimersByTime(300);
@@ -149,7 +164,6 @@ describe('DependencyPathDrawer component', () => {
 
       expect(findProjectList().props('selected')).toBe(value);
       expect(wrapper.text()).toContain(`${name} @${version}`);
-      expect(findAllListItem()).toHaveLength(locationOne.dependencyPaths.length);
     });
   });
 
