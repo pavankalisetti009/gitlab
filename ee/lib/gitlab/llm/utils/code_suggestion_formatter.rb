@@ -28,7 +28,7 @@ module Gitlab
         #   Also, sometimes LLM returns tags inline like `<to>  some text</to>` for single line suggestions which
         #   we need to handle as well just in case.
         CODE_SUGGESTION_REGEX =
-          %r{(.*?)^(?:<from>\n(.*?)^</from>\n<to>(.*?)^</to>|<from>(.+?)</from>\n<to>(.+?)</to>)(.*?)(?=<from>|\z)}m
+          %r{(.*?)^(?:<from>\n(.*?)^</from>\n<to>\n(.*?)^</to>|<from>(.+?)</from>\n<to>(.+?)</to>)(.*?)(?=<from>|\z)}m
 
         def self.append_prompt(body)
           return '' if body.blank?
@@ -42,6 +42,8 @@ module Gitlab
           body_with_suggestions = body
             .scan(CODE_SUGGESTION_REGEX)
             .map do |header, multiline_from, multiline_to, inline_from, inline_to, footer|
+              next "#{header}#{footer}" if (multiline_from || inline_from) == (multiline_to || inline_to)
+
               # NOTE: We're just interested in counting the existing lines as LLM doesn't
               #   seem to be able to reliably set this by itself.
               #   Also, since we have two optional matching pairs so either `multiline_from` and `multiline_to` or
@@ -49,7 +51,7 @@ module Gitlab
               line_offset_below = (multiline_from || inline_from).lines.count - 1
 
               # NOTE: Inline code suggestion needs to be wrapped in new lines to format it correctly.
-              comment = inline_to.nil? ? multiline_to : "\n#{inline_to}\n"
+              comment = inline_to.nil? ? "\n#{multiline_to}" : "\n#{inline_to}\n"
 
               "#{header}```suggestion:-0+#{line_offset_below}#{comment}```#{footer}"
             end
