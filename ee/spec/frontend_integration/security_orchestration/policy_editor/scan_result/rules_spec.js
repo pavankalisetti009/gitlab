@@ -4,6 +4,7 @@ import DefaultRuleBuilder from 'ee/security_orchestration/components/policy_edit
 import ScanTypeSelect from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_type_select.vue';
 import AnyMergeRequestRuleBuilder from 'ee/security_orchestration/components/policy_editor/scan_result/rule/any_merge_request_rule_builder.vue';
 import LicenseScanRuleBuilder from 'ee/security_orchestration/components/policy_editor/scan_result/rule/license_scan_rule_builder.vue';
+import DenyAllowList from 'ee/security_orchestration/components/policy_editor/scan_result/rule/deny_allow_list.vue';
 import SecurityScanRuleBuilder from 'ee/security_orchestration/components/policy_editor/scan_result/rule/security_scan_rule_builder.vue';
 import SettingsItem from 'ee/security_orchestration/components/policy_editor/scan_result/settings/settings_item.vue';
 import SettingsSection from 'ee/security_orchestration/components/policy_editor/scan_result/settings/settings_section.vue';
@@ -21,6 +22,7 @@ import {
   mockSecurityApprovalManifest,
   mockLicenseApprovalManifest,
   mockAnyMergeRequestApprovalManifest,
+  mockLicenseApprovalWithLicenseExceptionsManifest,
 } from './mocks';
 
 describe('Scan result policy rules', () => {
@@ -60,6 +62,7 @@ describe('Scan result policy rules', () => {
   const findAnyMergeRequestRuleBuilder = () => wrapper.findComponent(AnyMergeRequestRuleBuilder);
   const findSettingsSection = () => wrapper.findComponent(SettingsSection);
   const findAllSettingsItem = () => wrapper.findAllComponents(SettingsItem);
+  const findDenyAllowList = () => wrapper.findComponent(DenyAllowList);
 
   describe('security scan', () => {
     beforeEach(() => {
@@ -96,6 +99,62 @@ describe('Scan result policy rules', () => {
     it('should select license rule', async () => {
       await findScanTypeSelect().vm.$emit('select', LICENSE_FINDING);
       await verify({ manifest: mockLicenseApprovalManifest, verifyRuleMode, wrapper });
+    });
+  });
+
+  describe('license rule with exceptions', () => {
+    const verifyRuleMode = () => {
+      expect(findDefaultRuleBuilder().exists()).toBe(false);
+      expect(findLicenseScanRuleBuilder().exists()).toBe(true);
+    };
+
+    /**
+     * Test would help not to forget to remove
+     * the feature flag when it is cleaned up
+     */
+    it('does not render license allow deny list when ff is off', async () => {
+      createWrapper();
+
+      await findScanTypeSelect().vm.$emit('select', LICENSE_FINDING);
+
+      expect(findDenyAllowList().exists()).toBe(false);
+    });
+
+    it('should select license rule', async () => {
+      createWrapper({
+        provide: {
+          glFeatures: {
+            excludeLicensePackages: true,
+          },
+        },
+      });
+
+      window.gon = { features: { excludeLicensePackages: true } };
+
+      await findScanTypeSelect().vm.$emit('select', LICENSE_FINDING);
+
+      await findDenyAllowList().vm.$emit('select-licenses', [
+        {
+          exceptions: ['path:to-purl@12.1.2', 'path:to-purl@12.1.3'],
+          license: {
+            text: 'Apache License 1.0',
+            value: 'Apache License 1.0',
+          },
+        },
+        {
+          exceptions: ['path:to-purl@12.1.2'],
+          license: {
+            text: 'Japan Network Information Center License',
+            value: 'Japan Network Information Center License',
+          },
+        },
+      ]);
+
+      await verify({
+        manifest: mockLicenseApprovalWithLicenseExceptionsManifest,
+        verifyRuleMode,
+        wrapper,
+      });
     });
   });
 
