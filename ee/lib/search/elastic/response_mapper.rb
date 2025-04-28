@@ -16,11 +16,12 @@ module Search
         preload_method = options[:preload_method]
         klass = options[:klass]
         sql_records = klass.id_in(ids)
-        sql_records = sql_records.preload_search_data
+        sql_records = sql_records.preload_search_data if sql_records.respond_to?(:preload_search_data)
+        sql_records = sql_records.preload(*options[:preloads]) if options[:preloads].present? # rubocop:disable CodeReuse/ActiveRecord -- This is an abstraction
         sql_records = sql_records.public_send(preload_method) if preload_method # rubocop:disable GitlabSecurity/PublicSend -- needed for generic preload method
         # sorted in memory because database sort is not faster due to querying by id only
         # and the records will always be a small set of data (< 100 records)
-        sql_records.sort_by { |record| results.index { |hit| hit['_source']['id'].to_s == record.id.to_s } }
+        sql_records.sort_by { |record| results.index { |hit| hit[:_source][primary_key].to_s == record.id.to_s } }
       end
 
       def highlight_map
@@ -61,7 +62,11 @@ module Search
 
       def ids
         # the _source: id will always contain an integer
-        @ids ||= results.map { |result| result[:_source][:id] }
+        @ids ||= results.map { |result| result[:_source][primary_key] }
+      end
+
+      def primary_key
+        options[:primary_key] || :id
       end
     end
   end
