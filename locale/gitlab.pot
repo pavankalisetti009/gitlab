@@ -42223,6 +42223,9 @@ msgstr ""
 msgid "Open in Web IDE"
 msgstr ""
 
+msgid "Open in Workspace"
+msgstr ""
+
 msgid "Open in file view"
 msgstr ""
 
