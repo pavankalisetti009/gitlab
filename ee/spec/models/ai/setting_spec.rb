@@ -191,6 +191,68 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
     end
   end
 
+  describe 'after_commit' do
+    context 'for trigger_todo_creation' do
+      context 'on update' do
+        let_it_be(:setting, reload: true) { create(:ai_settings) }
+
+        it 'triggers the todo creation' do
+          expect(GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker).to receive(:perform_in).with(7.days)
+
+          setting.update!(duo_nano_features_enabled: true)
+        end
+
+        context 'when duo core features are disabled' do
+          it 'does not trigger the todo creation for nil update' do
+            expect(GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
+
+            setting.update!(duo_nano_features_enabled: false)
+          end
+
+          context 'when changed from true to false' do
+            before do
+              setting.update!(duo_nano_features_enabled: true)
+            end
+
+            it 'does not trigger the todo creation' do
+              expect(GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
+
+              setting.update!(duo_nano_features_enabled: false)
+            end
+          end
+        end
+
+        context 'when gitlab_duo_saas_only feature is available' do
+          before do
+            stub_saas_features(gitlab_duo_saas_only: true)
+          end
+
+          it 'does not trigger the todo creation' do
+            expect(GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
+
+            setting.update!(duo_nano_features_enabled: true)
+          end
+        end
+
+        context 'when it is a different column update' do
+          it 'does not trigger the todo creation' do
+            expect(GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
+
+            setting.update!(ai_gateway_url: 'https://new-url.example.com')
+          end
+        end
+      end
+
+      context 'on create' do
+        it 'does not trigger the todo creation' do
+          expect(GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
+
+          create(:ai_settings, duo_nano_features_enabled: true)
+        end
+      end
+    end
+  end
+
   describe '.self_hosted?' do
     subject(:setting) { described_class.self_hosted? }
 

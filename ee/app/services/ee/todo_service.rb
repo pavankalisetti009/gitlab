@@ -4,6 +4,20 @@ module EE
   module TodoService
     extend ::Gitlab::Utils::Override
 
+    def duo_core_access_granted(users)
+      attributes = {
+        target_type: ::User,
+        action: ::Todo::DUO_CORE_ACCESS_GRANTED
+      }
+
+      excluded_user_ids = excluded_user_ids(users, attributes)
+      users.reject! { |user| excluded_user_ids.include?(user.id) }
+
+      bulk_insert_todos_for_user_target_type(users, attributes)
+
+      ::Users::UpdateTodoCountCacheService.new(users.map(&:id)).execute
+    end
+
     def duo_pro_access_granted(user)
       attributes = {
         target_id: user.id,
@@ -88,6 +102,12 @@ module EE
       project = merge_request.project
       attributes = attributes_for_todo(project, merge_request, user, ::Todo::MERGE_TRAIN_REMOVED)
       create_todos(user, attributes, project.namespace, project)
+    end
+
+    def bulk_insert_todos_for_user_target_type(users, attributes)
+      bulk_insert_todos(users, attributes) do |user, attrs|
+        attrs.merge(user_id: user.id, target_id: user.id, author_id: user.id)
+      end
     end
   end
 end

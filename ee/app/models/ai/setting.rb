@@ -22,6 +22,8 @@ module Ai
 
     alias_attribute :duo_core_features_enabled, :duo_nano_features_enabled
 
+    after_commit :trigger_todo_creation, on: :update, if: :saved_change_to_duo_nano_features_enabled?
+
     def self.instance
       # rubocop:disable Performance/ActiveRecordSubtransactionMethods -- only
       # uses a subtransaction if creating a record, which should only happen
@@ -53,6 +55,14 @@ module Ai
     end
 
     private
+
+    def trigger_todo_creation
+      return if ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
+      return unless duo_core_features_enabled?
+
+      GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker
+        .perform_in(GitlabSubscriptions::DuoCore::DELAY_TODO_NOTIFICATION)
+    end
 
     def validates_singleton
       return unless self.class.count > 0 && self != self.class.first
