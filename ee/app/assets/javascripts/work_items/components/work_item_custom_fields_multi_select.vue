@@ -53,11 +53,6 @@ export default {
       type: String,
       required: true,
     },
-    isGroup: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   data() {
     return {
@@ -131,11 +126,6 @@ export default {
     },
     isLoadingOptionsList() {
       return this.$apollo.queries.selectOptions.loading;
-    },
-    groupPath() {
-      return this.isGroup
-        ? this.fullPath
-        : this.fullPath.substring(0, this.fullPath.lastIndexOf('/'));
     },
   },
   watch: {
