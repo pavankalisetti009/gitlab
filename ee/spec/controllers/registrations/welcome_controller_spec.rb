@@ -46,9 +46,9 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
       end
 
       context 'when completed welcome step' do
-        context 'when setup_for_company is set to false' do
+        context 'when onboarding_status_setup_for_company is set to false' do
           before do
-            user.update!(setup_for_company: false)
+            user.update!(onboarding_status_setup_for_company: false)
             sign_in(user)
           end
 
@@ -67,7 +67,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
 
       context 'when welcome step is completed' do
         before do
-          user.update!(setup_for_company: true)
+          user.update!(onboarding_status_setup_for_company: true)
         end
 
         context 'when user is confirmed' do
@@ -102,7 +102,6 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
   end
 
   describe '#update' do
-    let(:setup_for_company) { 'false' }
     let(:joining_project) { 'false' }
 
     let(:onboarding_status_setup_for_company) { 'false' }
@@ -113,7 +112,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
     let(:update_params) do
       {
         user: {
-          setup_for_company: setup_for_company,
+          registration_objective: 'code_storage',
           onboarding_status_joining_project: joining_project,
           onboarding_status_role: onboarding_status_role,
           onboarding_status_setup_for_company: onboarding_status_setup_for_company,
@@ -145,8 +144,8 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
       end
 
       context 'with email updates' do
-        context 'when onboarding_status_registration_objective field is provided' do
-          it 'sets the onboarding_status_registration_objective' do
+        context 'when registration_objective field is provided' do
+          it 'sets the registration_objective' do
             patch_update
 
             expect(controller.current_user.onboarding_status_registration_objective).to eq(2)
@@ -163,7 +162,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
         end
       end
 
-      context 'with onboarding_status_registration_objective updates' do
+      context 'with registration_objective updates' do
         before do
           patch_update
         end
@@ -173,17 +172,13 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
         end
       end
 
-      context 'with setup_for_company updates' do
+      context 'with onboarding_status_setup_for_company updates' do
         using RSpec::Parameterized::TableSyntax
 
-        where(:setup_for_company, :onboarding_status_setup_for_company,
-          :expected_setup_value, :expected_status_value) do
-          'true'  | nil     | true  | true
-          'false' | nil     | false | false
-          nil     | 'true'  | true  | true
-          nil     | 'false' | false | false
-          'true'  | 'false' | true  | true
-          'false' | 'true'  | false | false
+        where(:onboarding_status_setup_for_company, :expected_status_value) do
+          'true'  | true
+          'false' | false
+          nil     | false
         end
 
         with_them do
@@ -192,8 +187,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             user.reset
           end
 
-          it 'sets the expected values for setup_for_company fields' do
-            expect(user.setup_for_company).to be expected_setup_value
+          it 'sets the expected values for onboarding_status_setup_for_company field' do
             expect(user.onboarding_status_setup_for_company).to be expected_status_value
           end
         end
@@ -271,8 +265,8 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             let(:update_params) do
               {
                 user: {
-                  setup_for_company: setup_for_company,
-                  onboarding_status_role: onboarding_status_role
+                  onboarding_status_role: onboarding_status_role,
+                  onboarding_status_setup_for_company: onboarding_status_setup_for_company
                 }
               }
             end
@@ -299,7 +293,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
           end
 
           context 'when setup_for_company is "true"' do
-            let(:setup_for_company) { 'true' }
+            let(:onboarding_status_setup_for_company) { 'true' }
             let(:trial_concerns) { {} }
             let(:redirect_path) { new_users_sign_up_company_path(expected_params) }
             let(:expected_params) do
@@ -311,7 +305,8 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             context 'when it is a trial registration' do
               before do
                 user.update!(
-                  onboarding_status_initial_registration_type: 'trial', onboarding_status_registration_type: 'trial'
+                  onboarding_status_initial_registration_type: 'trial',
+                  onboarding_status_registration_type: 'trial'
                 )
               end
 
@@ -374,7 +369,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
           end
 
           context 'when setup_for_company is "false"' do
-            let(:setup_for_company) { 'false' }
+            let(:onboarding_status_setup_for_company) { 'false' }
 
             specify do
               patch_update

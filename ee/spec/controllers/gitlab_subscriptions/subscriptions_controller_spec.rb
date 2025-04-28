@@ -399,8 +399,8 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
       end
 
       context 'when setting up for a company' do
-        it 'updates the setup_for_company attribute of the current user' do
-          expect { subject }.to change { user.reload.setup_for_company }.from(nil).to(true)
+        it 'updates the onboarding_status_setup_for_company attribute of the current user' do
+          expect { subject }.to change { user.reload.onboarding_status_setup_for_company }.from(nil).to(true)
         end
 
         it 'creates a group based on the company' do
@@ -450,7 +450,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionsController, feature_category: :
         let(:setup_for_company) { false }
 
         it 'does not update the setup_for_company attribute of the current user' do
-          expect { subject }.not_to change { user.reload.setup_for_company }
+          expect { subject }.not_to change { user.reload.onboarding_status_setup_for_company }
         end
 
         it 'creates a group based on the user' do

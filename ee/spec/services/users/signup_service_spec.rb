@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Users::SignupService, feature_category: :system_access do
-  let_it_be(:user) { create(:user, setup_for_company: true) }
+  let_it_be(:user) { create(:user, onboarding_status_setup_for_company: true) }
   let(:params) { {} }
   let(:update_params) { { onboarding_status_role: 0 }.merge(params) }
   let(:user_return_to) { nil }
@@ -72,20 +72,19 @@ RSpec.describe Users::SignupService, feature_category: :system_access do
     end
 
     context 'when updating setup_for_company' do
-      let(:params) { { setup_for_company: 'false' } }
+      let(:params) { { onboarding_status_setup_for_company: 'true' } }
 
       it 'updates the setup_for_company attribute' do
         expect(execute).to be_success
-        expect(updated_user.setup_for_company).to be(false)
+        expect(updated_user.onboarding_status_setup_for_company).to be(true)
       end
 
-      context 'when setup_for_company is missing' do
-        let(:params) { { setup_for_company: '' } }
+      context 'when onboarding_status_setup_for_company is missing' do
+        let(:params) { { onboarding_status_setup_for_company: '' } }
 
-        it 'returns an error result' do
-          expect(updated_user.setup_for_company).not_to be_blank
-          expect(execute).to be_error
-          expect(execute.message).to eq("Setup for company can't be blank")
+        it 'returns a successful result and sets onboarding_status_setup_for_company to false' do
+          expect(execute).to be_success
+          expect(updated_user.onboarding_status_setup_for_company).to be false
         end
       end
     end
@@ -94,8 +93,8 @@ RSpec.describe Users::SignupService, feature_category: :system_access do
       context 'when eligible for iterable trigger' do
         let(:params) do
           {
-            setup_for_company: 'false',
             onboarding_status_registration_objective: 2,
+            onboarding_status_setup_for_company: 'false',
             jobs_to_be_done_other: '_jobs_to_be_done_other_'
           }
         end

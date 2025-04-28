@@ -27,7 +27,7 @@ module Features
         "product_interaction" => product_interaction,
         "work_email" => user.email,
         "uid" => user.id,
-        "setup_for_company" => user.setup_for_company,
+        "setup_for_company" => user.onboarding_status_setup_for_company,
         "provider" => "gitlab",
         "existing_plan" => namespace.actual_plan.name,
         "glm_source" => 'gitlab.com'

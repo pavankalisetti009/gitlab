@@ -147,6 +147,32 @@ RSpec.describe UserDetail, feature_category: :system_access do
     end
   end
 
+  describe '#onboarding_status_setup_for_company=' do
+    let(:user_detail) { build(:user_detail) }
+
+    context 'when given valid values' do
+      it 'correctly handles true' do
+        value = 'true'
+        user_detail.onboarding_status_setup_for_company = value
+
+        expect(user_detail.onboarding_status_setup_for_company).to be(true)
+      end
+
+      it 'correctly handles false' do
+        value = 'false'
+        user_detail.onboarding_status_setup_for_company = value
+
+        expect(user_detail.onboarding_status_setup_for_company).to be(false)
+      end
+    end
+
+    it 'is false when value is nil' do
+      user_detail.onboarding_status_setup_for_company = nil
+
+      expect(user_detail.onboarding_status_setup_for_company).to be(false)
+    end
+  end
+
   context 'when reading onboarding_status_role' do
     using RSpec::Parameterized::TableSyntax
 

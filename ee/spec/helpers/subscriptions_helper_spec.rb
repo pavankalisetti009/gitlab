@@ -31,7 +31,7 @@ RSpec.describe SubscriptionsHelper, feature_category: :subscription_management d
   end
 
   describe '#subscription_data' do
-    let_it_be(:user) { create(:user, setup_for_company: nil, name: 'First Last') }
+    let_it_be(:user) { create(:user, onboarding_status_setup_for_company: false, name: 'First Last') }
     let_it_be(:user2) { create(:user) }
     let_it_be(:group) { create(:group, name: 'My Namespace') }
 
@@ -44,7 +44,7 @@ RSpec.describe SubscriptionsHelper, feature_category: :subscription_management d
 
     subject { helper.subscription_data([group]) }
 
-    it { is_expected.to include(setup_for_company: '') }
+    it { is_expected.to include(setup_for_company: 'false') }
     it { is_expected.to include(full_name: 'First Last') }
     it { is_expected.to include(available_plans: '[{"id":"bronze_id","code":"bronze","price_per_year":48.0,"name":"Bronze Plan"}]') }
     it { is_expected.to include(plan_id: 'bronze_id') }

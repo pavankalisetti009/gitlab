@@ -83,7 +83,7 @@ module GitlabSubscriptions
         attrs = {
           work_email: user.email,
           uid: user.id,
-          setup_for_company: user.setup_for_company,
+          setup_for_company: user.onboarding_status_setup_for_company,
           skip_email_confirmation: true,
           gitlab_com_trial: true,
           provider: PROVIDER

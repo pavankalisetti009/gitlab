@@ -76,7 +76,7 @@ RSpec.describe ApplicationController, type: :request, feature_category: :shared 
           let(:onboarding_status_step_url) { users_sign_up_welcome_path }
 
           before do
-            user.update!(setup_for_company: true)
+            user.update!(onboarding_status_setup_for_company: true)
           end
 
           it 'does not redirect for a request away from onboarding and tracks the error' do

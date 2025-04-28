@@ -73,9 +73,17 @@ module EE
       EE::User::DEFAULT_GROUP_VIEW
     end
 
+    def update_user_setup_for_company
+      return if group.setup_for_company.nil? || current_user.onboarding_status_setup_for_company.present?
+
+      ::Users::UpdateService.new(current_user,
+        { onboarding_status_setup_for_company: group.setup_for_company }.merge(user: current_user)).execute
+    end
+
     override :successful_creation_hooks
     def successful_creation_hooks
       super
+      update_user_setup_for_company
 
       invite_members(group, invite_source: 'group-creation-page')
     end

@@ -32,20 +32,27 @@ RSpec.describe Onboarding, feature_category: :onboarding do
   describe '.completed_welcome_step?' do
     let(:user) { build(:user) }
 
-    where(:setup_for_company, :expected_result) do
-      true  | true
-      false | true
-      nil   | false
+    context 'with a user who has never set the value' do
+      it 'returns false' do
+        expect(described_class.completed_welcome_step?(user)).to be false
+      end
     end
 
-    with_them do
-      before do
-        user.setup_for_company = setup_for_company
+    context 'when value has been explicitly set' do
+      where(:value_to_set, :expected_result) do
+        true  | true
+        false | true
       end
 
-      subject { described_class.completed_welcome_step?(user) }
+      with_them do
+        before do
+          user.onboarding_status_setup_for_company = value_to_set
+        end
 
-      it { is_expected.to be expected_result }
+        it 'returns true indicating step was completed' do
+          expect(described_class.completed_welcome_step?(user)).to be true
+        end
+      end
     end
   end
 

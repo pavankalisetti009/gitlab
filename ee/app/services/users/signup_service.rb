@@ -67,7 +67,7 @@ module Users
         product_interaction: onboarding_user_status.product_interaction,
         opt_in: user.onboarding_status_email_opt_in,
         preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
-        setup_for_company: user.setup_for_company,
+        setup_for_company: user.onboarding_status_setup_for_company,
         role: user.onboarding_status_role_name
       }.merge(onboarding_user_status.existing_plan)
     end
@@ -81,12 +81,9 @@ module Users
     end
 
     def inject_validators
-      class << @user
-        validates :setup_for_company, inclusion: { in: [true, false], message: :blank }
-      end
-
       class << @user.user_detail
         validates :onboarding_status_role, presence: true
+        validates :onboarding_status_setup_for_company, inclusion: { in: [true, false], message: :blank }
       end
     end
   end

@@ -95,7 +95,7 @@ module GitlabSubscriptions
     end
 
     def create
-      current_user.update(setup_for_company: true) if params[:setup_for_company]
+      current_user.update(onboarding_status_setup_for_company: true) if params[:setup_for_company]
       group = params[:selected_group] ? current_group : create_group
 
       return not_found if group.nil?

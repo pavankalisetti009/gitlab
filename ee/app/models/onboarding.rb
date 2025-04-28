@@ -21,7 +21,7 @@ module Onboarding
   end
 
   def self.completed_welcome_step?(user)
-    !user.setup_for_company.nil?
+    !user.onboarding_status_setup_for_company.nil?
   end
 
   def self.add_on_seat_assignment_iterable_params(user, product_interaction, namespace)

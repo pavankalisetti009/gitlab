@@ -38,7 +38,7 @@ RSpec.describe 'Standard flow for user picking company and joining a project', :
     page.within(welcome_form_selector) do
       expect(page).to have_content('Role')
       expect(page).to have_field('user_onboarding_status_role', valid: false)
-      expect(page).to have_field('user_setup_for_company_true', valid: false)
+      expect(page).to have_field('user_onboarding_status_setup_for_company_true', valid: false)
       expect(page).to have_content('I\'m signing up for GitLab because:')
       expect(page).to have_content('Who will be using GitLab?')
       expect(page)

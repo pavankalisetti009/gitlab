@@ -257,9 +257,9 @@ RSpec.describe Onboarding::StatusPresenter, feature_category: :onboarding do
 
   describe '#setup_for_company?' do
     where(:params, :expected_result) do
-      { setup_for_company: true }   | true
-      { setup_for_company: false }  | false
-      {}                            | false
+      { onboarding_status_setup_for_company: true }   | true
+      { onboarding_status_setup_for_company: false }  | false
+      {} | false
     end
 
     with_them do

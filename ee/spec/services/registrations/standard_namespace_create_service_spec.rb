@@ -49,7 +49,8 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
 
       it 'passes group_params with setup_for_company to the Groups::CreateService' do
         expect(Groups::CreateService)
-          .to receive(:new).with(user, group_params.merge(setup_for_company: user.setup_for_company)).and_call_original
+          .to receive(:new).with(user,
+            group_params.merge(setup_for_company: user.onboarding_status_setup_for_company)).and_call_original
 
         expect(execute).to be_success
       end
