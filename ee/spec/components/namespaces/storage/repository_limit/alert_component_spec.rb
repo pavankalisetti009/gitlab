@@ -18,21 +18,19 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
   let(:alert_title_free_tier) { "You have reached the free storage limit of 10 GiB on 1 project" }
 
   let(:alert_message_below_limit) do
-    "If a project reaches 100% of the storage quota (10 GiB) the project will be in a read-only state, " \
-      "and you won't be able to push to your repository or add large files. To reduce storage usage, " \
+    "When a project reaches 100% of the allocated storage (10 GiB) it will be placed in a read-only state. " \
+      "You won't be able to push and add large files to your repository. To reduce storage usage, " \
       "reduce git repository and git LFS storage."
   end
 
-  let(:alert_message_above_limit_no_purchased_storage) do
-    "You have consumed all available storage and you can't push or add large files to projects over the " \
-      "free tier limit (10 GiB). To remove the read-only state, reduce git repository and git LFS storage, " \
-      "or purchase more storage."
+  let(:alert_message_above_limit) do
+    "You have consumed all available storage and can't push or add large files to projects over the " \
+      "included storage (10 GiB). To remove the read-only state, manage your storage usage or purchase more storage."
   end
 
-  let(:alert_message_above_limit_with_purchased_storage) do
-    "You have consumed all available storage and you can't push or add large files to projects over the " \
-      "free tier limit (10 GiB). To remove the read-only state, reduce git repository and git LFS storage, " \
-      "or purchase more storage."
+  let(:alert_message_above_limit_with_high_limit) do
+    "You have consumed all available storage and can't push or add large files to projects over the " \
+      "included storage (10 GiB). To remove the read-only state, manage your storage usage or contact support."
   end
 
   let(:alert_message_non_owner_copy) do
@@ -76,7 +74,7 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
 
       it 'renders the alert message' do
         render_inline(component)
-        expect(page).to have_content(alert_message_above_limit_no_purchased_storage)
+        expect(page).to have_content(alert_message_above_limit)
       end
 
       context 'when group is paid' do
@@ -90,6 +88,29 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
         it 'renders the default alert title' do
           render_inline(component)
           expect(page).to have_content(alert_title_default)
+        end
+
+        it 'renders the alert message' do
+          render_inline(component)
+          expect(page).to have_content(alert_message_above_limit)
+        end
+
+        context 'when group is subject to high limit' do
+          before do
+            allow_next_instance_of(::Namespaces::Storage::RepositoryLimit::Enforcement) do |size_checker|
+              allow(size_checker).to receive_messages(
+                usage_ratio: 1,
+                above_size_limit?: true,
+                subject_to_high_limit?: true,
+                has_projects_over_high_limit_warning_threshold?: true
+              )
+            end
+          end
+
+          it 'renders the alert message' do
+            render_inline(component)
+            expect(page).to have_content(alert_message_above_limit_with_high_limit)
+          end
         end
       end
     end
@@ -142,7 +163,7 @@ RSpec.describe Namespaces::Storage::RepositoryLimit::AlertComponent, :saas, type
 
         it 'renders the alert message' do
           render_inline(component)
-          expect(page).to have_content(alert_message_above_limit_with_purchased_storage)
+          expect(page).to have_content(alert_message_above_limit)
         end
       end
     end
