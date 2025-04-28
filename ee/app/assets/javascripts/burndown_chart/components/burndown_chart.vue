@@ -3,12 +3,14 @@ import { GlLineChart } from '@gitlab/ui/dist/charts';
 import { merge } from 'lodash';
 import dateFormat from '~/lib/dateformat';
 import { __, n__, s__, sprintf } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import commonChartOptions from './common_chart_options';
 
 export default {
   components: {
     GlLineChart,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     startDate: {
       type: String,
@@ -91,6 +93,9 @@ export default {
 
       return series;
     },
+    yAxisTitle() {
+      return this.glFeatures.workItemsAlpha ? __('Work items') : __('Issues');
+    },
     options() {
       return merge({}, commonChartOptions, {
         xAxis: {
@@ -98,7 +103,7 @@ export default {
           max: this.dueDate,
         },
         yAxis: {
-          name: this.issuesSelected ? __('Issues') : __('Weight'),
+          name: this.issuesSelected ? this.yAxisTitle : __('Weight'),
         },
       });
     },
@@ -117,6 +122,10 @@ export default {
 
       if (this.issuesSelected) {
         this.tooltip.content = n__('%d remaining', '%d remaining', seriesData.value[1]);
+      } else if (this.glFeatures.workItemsAlpha) {
+        this.tooltip.content = sprintf(__('%{total} remaining weight'), {
+          total: seriesData.value[1],
+        });
       } else {
         this.tooltip.content = sprintf(__('%{total} remaining issue weight'), {
           total: seriesData.value[1],

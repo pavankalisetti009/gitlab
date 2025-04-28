@@ -9,6 +9,7 @@ import dateFormat from '~/lib/dateformat';
 import axios from '~/lib/utils/axios_utils';
 import { getDayDifference, nDaysAfter, newDate } from '~/lib/utils/datetime_utility';
 import { __ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import BurndownChartData from '../burn_chart_data';
 import BurndownChart from './burndown_chart.vue';
 import BurnupChart from './burnup_chart.vue';
@@ -29,6 +30,7 @@ export default {
     OpenTimeboxSummary,
     TimeboxSummaryCards,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     startDate: {
       type: String,
@@ -183,6 +185,22 @@ export default {
     filterBySelectedValue() {
       return this.issuesSelected ? FILTER_BY_ISSUES : FILTER_BY_ISSUE_WEIGHT;
     },
+    filterByOptions() {
+      const countFilterText = this.glFeatures.workItemsAlpha ? __('Count') : __('Issue count');
+      const weightFilterText = this.glFeatures.workItemsAlpha ? __('Weight') : __('Issue weight');
+      return [
+        {
+          value: FILTER_BY_ISSUES,
+          text: countFilterText,
+          props: { 'data-testid': 'issue-button' },
+        },
+        {
+          value: FILTER_BY_ISSUE_WEIGHT,
+          text: weightFilterText,
+          props: { 'data-testid': 'weight-button' },
+        },
+      ];
+    },
   },
   methods: {
     fetchLegacyBurndownEvents() {
@@ -303,14 +321,6 @@ export default {
       this.setIssueSelected(value === FILTER_BY_ISSUES);
     },
   },
-  filterByOptions: [
-    { value: FILTER_BY_ISSUES, text: __('Issue count'), props: { 'data-testid': 'issue-button' } },
-    {
-      value: FILTER_BY_ISSUE_WEIGHT,
-      text: __('Issue weight'),
-      props: { 'data-testid': 'weight-button' },
-    },
-  ],
 };
 </script>
 
@@ -320,7 +330,7 @@ export default {
       <strong ref="filterLabel">{{ __('Display by') }}</strong>
       <gl-segmented-control
         :value="filterBySelectedValue"
-        :options="$options.filterByOptions"
+        :options="filterByOptions"
         @input="handleFilterByChanged"
       />
 
