@@ -22,9 +22,8 @@ import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.grap
 import workItemParticipantsQuery from '~/work_items/graphql/work_item_participants.query.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import workItemUpdatedSubscription from '~/work_items/graphql/work_item_updated.subscription.graphql';
-import workItemStatusQuery from 'ee/work_items/graphql/work_item_status.query.graphql';
 import getAllowedWorkItemParentTypes from '~/work_items/graphql/work_item_allowed_parent_types.query.graphql';
-import { workItemResponseFactory, mockWorkItemStatusResponse } from '../mock_data';
+import { workItemResponseFactory } from '../mock_data';
 
 describe('EE WorkItemAttributesWrapper component', () => {
   let wrapper;
@@ -57,7 +56,6 @@ describe('EE WorkItemAttributesWrapper component', () => {
     .fn()
     .mockResolvedValue({ data: { workItemUpdated: null } });
   const allowedParentTypesHandler = jest.fn().mockResolvedValue(allowedParentTypesResponse);
-  const workItemStatusResponse = jest.fn().mockResolvedValue(mockWorkItemStatusResponse);
 
   const findWorkItemIteration = () => wrapper.findComponent(WorkItemIteration);
   const findWorkItemWeight = () => wrapper.findComponent(WorkItemWeight);
@@ -81,7 +79,6 @@ describe('EE WorkItemAttributesWrapper component', () => {
       apolloProvider: createMockApollo([
         [workItemByIidQuery, handler],
         [workItemUpdatedSubscription, workItemUpdatedSubscriptionHandler],
-        [workItemStatusQuery, workItemStatusResponse],
         [workItemParticipantsQuery, workItemParticipantsQueryHandler],
         [getAllowedWorkItemParentTypes, allowedParentTypesHandler],
         confidentialityMock,
@@ -323,8 +320,10 @@ describe('EE WorkItemAttributesWrapper component', () => {
   });
 
   describe('status widget', () => {
-    it('renders when flag `workItemStatusFeatureFlag` is enabled', async () => {
+    it('renders when flag `workItemStatusFeatureFlag` is enabled and widget is present', async () => {
+      const response = workItemResponseFactory({ statusWidgetPresent: true });
       createComponent({
+        workItem: response.data.workItem,
         featureFlags: { workItemStatusFeatureFlag: true },
       });
       await waitForPromises();
@@ -332,8 +331,28 @@ describe('EE WorkItemAttributesWrapper component', () => {
       expect(findWorkItemCustomStatus().exists()).toBe(true);
     });
 
-    it('does not render when flag `workItemStatusFeatureFlag` is disabled', async () => {
+    it('does not render when flag `workItemStatusFeatureFlag` is enabled and widget is not present', async () => {
       createComponent({
+        featureFlags: { workItemStatusFeatureFlag: true },
+      });
+      await waitForPromises();
+
+      expect(findWorkItemCustomStatus().exists()).toBe(false);
+    });
+
+    it('does not render when flag `workItemStatusFeatureFlag` is disabled and widget is not present', async () => {
+      createComponent({
+        featureFlags: { workItemStatusFeatureFlag: false },
+      });
+      await waitForPromises();
+
+      expect(findWorkItemCustomStatus().exists()).toBe(false);
+    });
+
+    it('does not render when flag `workItemStatusFeatureFlag` is disabled and the status widget is present', async () => {
+      const response = workItemResponseFactory({ statusWidgetPresent: true });
+      createComponent({
+        workItem: response.data.workItem,
         featureFlags: { workItemStatusFeatureFlag: false },
       });
       await waitForPromises();

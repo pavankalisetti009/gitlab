@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import namespaceWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/group_namespace_work_item_types.query.graphql.json';
-import workItemStatusQuery from 'ee/work_items/graphql/work_item_status.query.graphql';
+import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import WorkItemStatus from 'ee/work_items/components/work_item_status.vue';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -11,9 +11,9 @@ import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutati
 import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import {
-  mockWorkItemStatusResponse,
-  mockWorkItemNoStatusResponse,
-  updateWorkItemMutationResponse,
+  mockWorkItemStatus,
+  updateWorkItemMutationResponseFactory,
+  workItemByIidResponseFactory,
 } from '../mock_data';
 
 describe('WorkItemStatus component', () => {
@@ -36,23 +36,35 @@ describe('WorkItemStatus component', () => {
     findSidebarDropdownWidget().vm.$emit('dropdownShown');
   };
 
-  const successUpdateWorkItemMutationHandler = jest
-    .fn()
-    .mockResolvedValue(updateWorkItemMutationResponse);
+  const successUpdateWorkItemMutationHandler = jest.fn().mockResolvedValue(
+    updateWorkItemMutationResponseFactory({
+      statusWidgetPresent: true,
+      statusWidgetValues: {
+        ...mockWorkItemStatus,
+        id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
+        name: 'To do',
+      },
+    }),
+  );
 
   const createComponent = ({
     mountFn = shallowMountExtended,
     canUpdate = true,
-    status = mockWorkItemStatusResponse,
+    status = mockWorkItemStatus,
     workItemTypesHandler = jest.fn().mockResolvedValue(namespaceWorkItemTypesQueryResponse),
     mutationHandler = successUpdateWorkItemMutationHandler,
   } = {}) => {
-    const workItemStatusResponseHandler = jest.fn().mockResolvedValue(status);
+    const workItemResponse = workItemByIidResponseFactory({
+      statusWidgetPresent: true,
+      statusWidgetValues: status,
+      canUpdate,
+    });
+    const workItemByIidSuccessHandler = jest.fn().mockResolvedValue(workItemResponse);
 
     wrapper = mountFn(WorkItemStatus, {
       apolloProvider: createMockApollo([
         [namespaceWorkItemTypesQuery, workItemTypesHandler],
-        [workItemStatusQuery, workItemStatusResponseHandler],
+        [workItemByIidQuery, workItemByIidSuccessHandler],
         [updateWorkItemMutation, mutationHandler],
       ]),
       propsData: {
@@ -83,7 +95,7 @@ describe('WorkItemStatus component', () => {
       createComponent({
         mountFn: mountExtended,
         canUpdate: false,
-        status: mockWorkItemNoStatusResponse,
+        status: null,
       });
       await waitForPromises();
 
@@ -95,7 +107,7 @@ describe('WorkItemStatus component', () => {
       createComponent({
         mountFn: mountExtended,
         canUpdate: false,
-        status: mockWorkItemStatusResponse,
+        status: mockWorkItemStatus,
       });
       await waitForPromises();
 
@@ -161,8 +173,7 @@ describe('WorkItemStatus component', () => {
     });
 
     it('changes the status to the selected status', async () => {
-      const mutationHandler = jest.fn().mockResolvedValue(updateWorkItemMutationResponse);
-      createComponent({ mutationHandler });
+      createComponent();
       await waitForPromises();
 
       showDropdown();
@@ -174,7 +185,7 @@ describe('WorkItemStatus component', () => {
       await nextTick();
       await waitForPromises();
 
-      expect(mutationHandler).toHaveBeenCalledWith({
+      expect(successUpdateWorkItemMutationHandler).toHaveBeenCalledWith({
         input: {
           id: workItemId,
           statusWidget: {
