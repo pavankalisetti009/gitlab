@@ -28487,6 +28487,9 @@ msgstr ""
 msgid "GlobalSearch|Groups"
 msgstr ""
 
+msgid "GlobalSearch|Groups I'm a member of"
+msgstr ""
+
 msgid "GlobalSearch|Help"
 msgstr ""
 
@@ -28596,6 +28599,9 @@ msgid "GlobalSearch|Project"
 msgstr ""
 
 msgid "GlobalSearch|Projects"
+msgstr ""
+
+msgid "GlobalSearch|Projects I'm a member of"
 msgstr ""
 
 msgid "GlobalSearch|Projects not indexed"
