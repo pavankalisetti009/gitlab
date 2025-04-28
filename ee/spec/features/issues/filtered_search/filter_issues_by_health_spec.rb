@@ -51,6 +51,11 @@ RSpec.describe 'Filter issues health status', :js, feature_category: :team_plann
   end
 
   before do
+    # TODO: When removing the feature flag,
+    # we won't need the tests for the issues listing page, since we'll be using
+    # the work items listing page.
+    stub_feature_flags(work_item_planning_view: false)
+
     stub_licensed_features(issuable_health_status: true)
     project.add_maintainer(user)
     sign_in(user)

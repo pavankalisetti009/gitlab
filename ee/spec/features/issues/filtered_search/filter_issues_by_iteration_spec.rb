@@ -20,6 +20,13 @@ RSpec.describe 'Filter issues by iteration', :js, feature_category: :team_planni
   let_it_be(:iteration_2_issue) { create(:issue, project: project, iteration: iteration_2) }
   let_it_be(:no_iteration_issue) { create(:issue, project: project) }
 
+  before do
+    # TODO: When removing the feature flag,
+    # we won't need the tests for the issues listing page, since we'll be using
+    # the work items listing page.
+    stub_feature_flags(work_item_planning_view: false)
+  end
+
   shared_examples 'filters by iteration' do
     context 'when iterations are not available' do
       before do

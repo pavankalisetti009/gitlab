@@ -62,6 +62,11 @@ RSpec.describe 'Filter issues by epic', :js, feature_category: :team_planning do
 
   context 'when project issues list page' do
     before do
+      # TODO: When removing the feature flag,
+      # we won't need the tests for the issues listing page, since we'll be using
+      # the work items listing page.
+      stub_feature_flags(work_item_planning_view: false)
+
       visit project_issues_path(project)
     end
 
