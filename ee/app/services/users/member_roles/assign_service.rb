@@ -45,7 +45,8 @@ module Users
       end
 
       def create_or_update_record
-        record = Users::UserMemberRole.create_or_update(user: user_to_be_assigned, member_role: admin_role)
+        record = Authz::UserAdminRole.klass(current_user).create_or_update(user: user_to_be_assigned,
+          member_role: admin_role)
 
         if record.valid?
           log_audit_event(
@@ -59,7 +60,7 @@ module Users
       end
 
       def destroy_record
-        record = Users::UserMemberRole.find_by_user_id(user_to_be_assigned.id)
+        record = Authz::UserAdminRole.klass(current_user).find_by_user_id(user_to_be_assigned.id)
 
         return success(nil) unless record
 
