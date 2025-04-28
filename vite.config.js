@@ -130,6 +130,8 @@ export default defineConfig({
     'process.env.PDF_JS_CMAPS_UBLIC_PATH': JSON.stringify(PDF_JS_CMAPS_PUBLIC_PATH),
   },
   server: {
+    // this fixes Vite server being unreachable on some configurations
+    host: '0.0.0.0',
     cors: true,
     warmup: {
       clientFiles: ['javascripts/entrypoints/main.js', 'javascripts/entrypoints/super_sidebar.js'],
