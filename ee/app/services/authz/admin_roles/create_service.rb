@@ -8,7 +8,7 @@ module Authz
       private
 
       def build_role
-        Authz::AdminRole.new(params)
+        role_class.new(params)
       end
 
       def allowed?

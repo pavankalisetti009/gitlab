@@ -17,7 +17,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
     end
 
     let(:role_name) { 'new name' }
-    let(:role_klass) { MemberRole }
+    let(:role_class) { MemberRole }
 
     subject(:create_role) { described_class.new(user, params).execute }
 
@@ -26,8 +26,6 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
     end
 
     context 'for group member roles' do
-      let(:audit_entity_id) { group.id }
-      let(:audit_entity_type) { 'Group' }
       let(:fail_condition!) do
         allow(group).to receive(:custom_roles_enabled?).and_return(false)
       end
@@ -39,7 +37,10 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
 
         let(:error_message) { 'Operation not allowed' }
 
-        it_behaves_like 'custom role create service returns error'
+        it_behaves_like 'custom role create service returns error' do
+          let(:audit_entity_id) { group.id }
+          let(:audit_entity_type) { 'Group' }
+        end
       end
 
       context 'with authorized user' do
@@ -49,7 +50,10 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
 
         context 'with root group' do
           context 'when on SaaS', :saas do
-            it_behaves_like 'custom role creation', 'member_role_created', 'Member role was created'
+            it_behaves_like 'custom role creation', 'member_role_created', 'Member role was created' do
+              let(:audit_entity_id) { group.id }
+              let(:audit_entity_type) { 'Group' }
+            end
 
             context 'with a missing param' do
               before do
@@ -90,8 +94,6 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
     end
 
     context 'for instance-level member roles' do
-      let(:audit_entity_type) { 'Gitlab::Audit::InstanceScope' }
-      let(:audit_entity_id) { Gitlab::Audit::InstanceScope.new.id }
       let(:fail_condition!) do
         allow(Gitlab::Saas).to receive(:feature_available?).and_return(true)
       end
