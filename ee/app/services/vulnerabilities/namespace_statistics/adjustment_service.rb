@@ -66,7 +66,7 @@ module Vulnerabilities
           namespace_data = with_namespace_data(namespace_ids_batch)
           next if namespace_data.blank?
 
-          Gitlab::Database::SecApplicationRecord.connection.execute(upsert_sql(namespace_data))
+          SecApplicationRecord.connection.execute(upsert_sql(namespace_data))
         end
       end
 

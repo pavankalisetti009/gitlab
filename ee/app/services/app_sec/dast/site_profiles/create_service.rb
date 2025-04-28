@@ -17,7 +17,7 @@ module AppSec
         def execute(name:, target_url:, **params)
           return ServiceResponse.error(message: _('Insufficient permissions')) unless allowed?
 
-          Gitlab::Database::SecApplicationRecord.transaction do
+          SecApplicationRecord.transaction do
             @dast_site = ::AppSec::Dast::Sites::FindOrCreateService.new(project,
               current_user).execute!(url: target_url)
             params.merge!(project: project, dast_site: dast_site, name: name).compact!

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class Remediation < Gitlab::Database::SecApplicationRecord
+  class Remediation < ::SecApplicationRecord
     include EachBatch
     include FileStoreMounter
     include ShaAttribute

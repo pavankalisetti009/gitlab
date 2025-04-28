@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class Flag < Gitlab::Database::SecApplicationRecord
+  class Flag < ::SecApplicationRecord
     self.table_name = 'vulnerability_flags'
 
     belongs_to :finding, class_name: 'Vulnerabilities::Finding', foreign_key: 'vulnerability_occurrence_id', inverse_of: :vulnerability_flags, optional: false

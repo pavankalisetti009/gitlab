@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Dast::ProfileSchedule < ::Gitlab::Database::SecApplicationRecord
+class Dast::ProfileSchedule < ::SecApplicationRecord
   include CronSchedulable
   include Limitable
 

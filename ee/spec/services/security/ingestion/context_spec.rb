@@ -13,7 +13,7 @@ RSpec.describe Security::Ingestion::Context, feature_category: :vulnerability_ma
     it 'does not execute work until run_sec_after_commit_tasks is called' do
       allow(Vulnerabilities::MarkDroppedAsResolvedWorker).to receive(:perform_async).and_call_original
 
-      Gitlab::Database::SecApplicationRecord.transaction do
+      SecApplicationRecord.transaction do
         context.run_after_sec_commit { Vulnerabilities::MarkDroppedAsResolvedWorker.perform_async(1, [1]) }
       end
 

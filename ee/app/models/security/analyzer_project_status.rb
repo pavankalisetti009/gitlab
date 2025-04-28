@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Security
-  class AnalyzerProjectStatus < ::Gitlab::Database::SecApplicationRecord
+  class AnalyzerProjectStatus < ::SecApplicationRecord
     self.table_name = 'analyzer_project_statuses'
 
     belongs_to :project

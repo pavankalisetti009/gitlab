@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Dast
-  class SiteProfilesBuild < Gitlab::Database::SecApplicationRecord
+  class SiteProfilesBuild < ::SecApplicationRecord
     include AppSec::Dast::Buildable
 
     self.table_name = 'dast_site_profiles_builds'

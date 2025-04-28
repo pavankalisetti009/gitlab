@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Security
-  class AnalyzerNamespaceStatus < ::Gitlab::Database::SecApplicationRecord
+  class AnalyzerNamespaceStatus < ::SecApplicationRecord
     self.table_name = 'analyzer_namespace_statuses'
 
     belongs_to :namespace

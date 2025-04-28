@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class ArchivedRecord < Gitlab::Database::SecApplicationRecord
+  class ArchivedRecord < ::SecApplicationRecord
     include BulkInsertSafe
     include EachBatch
     include PartitionedTable

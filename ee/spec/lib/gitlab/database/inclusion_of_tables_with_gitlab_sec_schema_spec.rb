@@ -11,14 +11,14 @@ RSpec.describe 'inclusion of tables with gitlab_sec schema', feature_category: :
     gitlab_sec_schema_tables.each do |table|
       table.classes.each do |klass|
         expect(klass.constantize.ancestors).to include(
-          Gitlab::Database::SecApplicationRecord
+          SecApplicationRecord
         ), error_message(table.table_name)
       end
     end
   end
 
   it 'ensures models inheriting from `SecApplicationRecord` belong to `gitlab_sec` schema' do
-    Gitlab::Database::SecApplicationRecord.descendants.each do |klass|
+    SecApplicationRecord.descendants.each do |klass|
       dictionary_entry = db_dictionary_entries.find_by_table_name(klass.table_name)
       expect(dictionary_entry.gitlab_schema).to eq('gitlab_sec'), error_message(klass.table_name)
     end

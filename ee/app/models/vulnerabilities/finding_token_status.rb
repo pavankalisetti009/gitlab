@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class FindingTokenStatus < Gitlab::Database::SecApplicationRecord
+  class FindingTokenStatus < ::SecApplicationRecord
     self.table_name = 'secret_detection_token_statuses'
     self.primary_key = 'vulnerability_occurrence_id'
 

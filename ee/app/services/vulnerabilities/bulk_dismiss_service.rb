@@ -18,7 +18,7 @@ module Vulnerabilities
 
       db_attributes = db_attributes_for(vulnerability_attrs)
 
-      Gitlab::Database::SecApplicationRecord.transaction do
+      SecApplicationRecord.transaction do
         update_support_tables(vulnerabilities, db_attributes)
         vulnerabilities.update_all(db_attributes[:vulnerabilities])
       end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Security
-  class ProjectSecurityExclusion < Gitlab::Database::SecApplicationRecord
+  class ProjectSecurityExclusion < ::SecApplicationRecord
     self.inheritance_column = :_type_disabled
 
     # Maximum number of path-based exclusions per project. This is an arbitrary limit aimed to

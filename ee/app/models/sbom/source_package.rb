@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Sbom
-  class SourcePackage < ::Gitlab::Database::SecApplicationRecord
+  class SourcePackage < ::SecApplicationRecord
     include SafelyChangeColumnDefault
 
     columns_changing_default :organization_id

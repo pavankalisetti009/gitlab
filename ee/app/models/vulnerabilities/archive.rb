@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class Archive < Gitlab::Database::SecApplicationRecord
+  class Archive < ::SecApplicationRecord
     include PartitionedTable
 
     self.table_name = 'vulnerability_archives'

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Dast
-  class PreScanVerificationStep < Gitlab::Database::SecApplicationRecord
+  class PreScanVerificationStep < ::SecApplicationRecord
     self.table_name = 'dast_pre_scan_verification_steps'
 
     ignore_column :name, remove_with: '16.0', remove_after: '2023-05-17'

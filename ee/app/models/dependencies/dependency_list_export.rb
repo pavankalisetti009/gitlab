@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 module Dependencies
-  class DependencyListExport < Gitlab::Database::SecApplicationRecord
+  class DependencyListExport < ::SecApplicationRecord
     include FileStoreMounter
     include EachBatch
 

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class RepresentationInformation < Gitlab::Database::SecApplicationRecord
+  class RepresentationInformation < ::SecApplicationRecord
     include ShaAttribute
 
     self.table_name = 'vulnerability_representation_information'

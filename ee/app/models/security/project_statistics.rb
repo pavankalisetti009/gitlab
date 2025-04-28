@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Security
-  class ProjectStatistics < Gitlab::Database::SecApplicationRecord
+  class ProjectStatistics < ::SecApplicationRecord
     self.primary_key = :project_id
     self.table_name = 'project_security_statistics'
 
