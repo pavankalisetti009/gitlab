@@ -13,6 +13,7 @@ describe('MinutesUsageByNamespace', () => {
   const findDuration = () => wrapper.findByTestId('runner-duration');
   const findComputeMinutes = () => wrapper.findByTestId('compute-minutes');
   const findNoMinutesAlertComponent = () => wrapper.findComponent(NoMinutesAlert);
+  const findRunnerNamespaces = () => wrapper.findAllByTestId('runner-namespace');
 
   const createComponent = (props = {}) => {
     wrapper = mountExtended(MinutesUsageByNamespace, {
@@ -45,6 +46,12 @@ describe('MinutesUsageByNamespace', () => {
 
     it('renders compute minutes', () => {
       expect(findComputeMinutes().text()).toBe('200');
+    });
+
+    it('renders "Deleted Namespace" for deleted namespaces for their name', () => {
+      const missingNamespace = findRunnerNamespaces().at(2);
+
+      expect(missingNamespace.text()).toBe('Deleted Namespace #34');
     });
   });
 

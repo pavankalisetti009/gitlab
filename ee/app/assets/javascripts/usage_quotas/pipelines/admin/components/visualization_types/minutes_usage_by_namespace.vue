@@ -1,6 +1,7 @@
 <script>
 import { GlAvatar, GlTable } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { s__, sprintf } from '~/locale';
 import NoMinutesAlert from '../shared/no_minutes_alert.vue';
 
 export default {
@@ -42,6 +43,15 @@ export default {
       return this.usageData.length === 0;
     },
   },
+  methods: {
+    formatDeletedNamespaceName(id) {
+      return sprintf(
+        s__('UsageQuota|Deleted Namespace #%{id}'),
+        { id: getIdFromGraphQLId(id) },
+        false,
+      );
+    },
+  },
 };
 </script>
 <template>
@@ -58,13 +68,15 @@ export default {
       <template
         #cell(namespace)="{
           item: {
-            rootNamespace: { avatarUrl, name },
+            rootNamespace: { avatarUrl, name, id },
           },
         }"
       >
         <div class="gl-flex gl-items-center">
           <gl-avatar :src="avatarUrl" :size="32" />
-          <span class="gl-ml-4">{{ name }}</span>
+          <span class="gl-ml-4" data-testid="runner-namespace">{{
+            name || formatDeletedNamespaceName(id)
+          }}</span>
         </div>
       </template>
       <template #cell(hostedRunnerDuration)="{ item: { durationSeconds } }">

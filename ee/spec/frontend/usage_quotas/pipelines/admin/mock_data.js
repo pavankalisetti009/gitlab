@@ -19,8 +19,8 @@ export const usageDataInstanceAggregated = [
 
 export const usageDataNamespaceAggregated = [
   {
-    billingMonth: 'February 2025',
-    billingMonthIso8601: '2025-02-01',
+    billingMonth: 'January 2025',
+    billingMonthIso8601: '2025-01-01',
     computeMinutes: 200,
     durationSeconds: 12000,
     rootNamespace: {
@@ -39,6 +39,19 @@ export const usageDataNamespaceAggregated = [
     rootNamespace: {
       id: 'gid://gitlab/Group/33',
       name: 'Flightjs',
+      avatarUrl:
+        'https://secure.gravatar.com/avatar/258d8dc916db8cea2cafb6c3cd0cb0246efe061421dbd83ec3a350428cabda4f?s=80&d=identicon',
+      __typename: 'Namespace',
+    },
+  },
+  {
+    billingMonth: 'March 2025',
+    billingMonthIso8601: '2025-03-01',
+    computeMinutes: 100,
+    durationSeconds: 6000,
+    rootNamespace: {
+      id: 'gid://gitlab/Group/34',
+      name: '',
       avatarUrl:
         'https://secure.gravatar.com/avatar/258d8dc916db8cea2cafb6c3cd0cb0246efe061421dbd83ec3a350428cabda4f?s=80&d=identicon',
       __typename: 'Namespace',
@@ -80,6 +93,16 @@ export const mockRunnerFilters = {
             description: 'My other runner',
             adminUrl: 'https://gdk.test:3443/admin/runners/60',
             status: 'ONLINE',
+          },
+        ],
+      },
+      deletedRunners: {
+        nodes: [
+          {
+            id: 'gid://gitlab/Ci::Runner/70',
+          },
+          {
+            id: 'gid://gitlab/Ci::Runner/71',
           },
         ],
       },

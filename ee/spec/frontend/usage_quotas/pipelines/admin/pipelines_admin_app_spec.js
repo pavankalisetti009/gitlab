@@ -6,6 +6,7 @@ import getDedicatedInstanceUsageByMonthQuery from 'ee/usage_quotas/pipelines/adm
 import getDedicatedInstanceRunnerFiltersQuery from 'ee/usage_quotas/pipelines/admin/graphql/queries/dedicated_instance_runner_filters.query.graphql';
 import MinutesUsageByNamespace from 'ee/usage_quotas/pipelines/admin/components/visualization_types/minutes_usage_by_namespace.vue';
 import MinutesUsagePerMonth from 'ee/usage_quotas/pipelines/admin/components/visualization_types/minutes_usage_per_month.vue';
+import RunnerUsageHeader from 'ee/usage_quotas/pipelines/admin/components/runner_usage_header.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -35,6 +36,7 @@ describe('Pipelines Admin App', () => {
   const findMinutesUsePerMonth = () => wrapper.findComponent(MinutesUsagePerMonth);
   const findRunnerYearFilter = () => wrapper.findByTestId('runner-year-filter');
   const findRunnerFilterDropdown = () => wrapper.findByTestId('runner-filter');
+  const findRunnerUsageHeader = () => wrapper.findComponent(RunnerUsageHeader);
 
   const createComponent = ({ props = {} } = {}) => {
     wrapper = mountExtended(PipelinesAdminApp, {
@@ -58,6 +60,27 @@ describe('Pipelines Admin App', () => {
 
     it('renders a MinutesUsageByMonth component', () => {
       expect(findMinutesUsePerMonth().exists()).toBe(true);
+    });
+  });
+
+  describe('Compute minutes by month', () => {
+    const mockedMonth = 1; // Select February using 0 index representation from the getUTCMonth method
+
+    beforeEach(async () => {
+      jest.spyOn(Date.prototype, 'getUTCMonth').mockImplementation(() => mockedMonth);
+
+      createComponent();
+
+      await waitForPromises();
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('Should display the compute minutes from february', () => {
+      const currentMonthMinutes = `${mockInstanceNamespaceUsage.data.ciDedicatedHostedRunnerUsage.nodes[mockedMonth].computeMinutes}`;
+      expect(findRunnerUsageHeader().text()).toContain(currentMonthMinutes);
     });
   });
 

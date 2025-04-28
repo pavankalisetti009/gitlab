@@ -64917,6 +64917,9 @@ msgstr ""
 msgid "UsageQuota|Container registry"
 msgstr ""
 
+msgid "UsageQuota|Deleted Namespace #%{id}"
+msgstr ""
+
 msgid "UsageQuota|Dependency proxy"
 msgstr ""
 
