@@ -78,7 +78,6 @@ export default {
     <mr-widget-migrate-jenkins
       v-if="showRenderMigrateFromJenkins"
       class="mr-widget-workflow"
-      :human-access="formattedHumanAccess"
       @dismiss="dismissMigrateFromJenkins"
     />
     <mr-widget-pipeline-container
