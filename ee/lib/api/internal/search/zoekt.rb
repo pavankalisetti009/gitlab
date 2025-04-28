@@ -37,9 +37,10 @@ module API
                   if node.save_debounce
                     { id: node.id, truncate: new_node }.tap do |resp|
                       resp[:tasks] = ::Search::Zoekt::TaskPresenterService.execute(node)
-                      resp[:optimized_performance] = Feature.enabled?(:zoekt_optimized_performance_indexing)
+                      resp[:optimized_performance] =
+                        Feature.enabled?(:zoekt_optimized_performance_indexing, Feature.current_request)
                       resp[:pull_frequency] = node.task_pull_frequency
-                      if Feature.enabled?(:zoekt_critical_watermark_stop_indexing)
+                      if Feature.enabled?(:zoekt_critical_watermark_stop_indexing, Feature.current_request)
                         resp[:stop_indexing] = node.watermark_exceeded_critical?
                       end
                     end
@@ -72,6 +73,36 @@ module API
 
                   ::Search::Zoekt::CallbackService.execute(node, params.except(:uuid))
                   accepted!
+                end
+
+                desc 'Fetch tasks for a zoekt indexer node' do
+                  detail 'This feature was introduced in GitLab 18.0'
+                end
+                params do
+                  requires 'node.url', type: String, desc: 'Location where indexer can be reached'
+                  requires 'disk.all', type: Integer, desc: 'Total disk space'
+                  requires 'disk.used', type: Integer, desc: 'Total disk space utilized'
+                  requires 'node.name', type: String, desc: 'Name of indexer node'
+                  optional 'disk.indexed', type: Integer, desc: 'Total indexed space'
+                end
+                post 'heartbeat' do
+                  node = ::Search::Zoekt::Node.find_or_initialize_by_task_request(params)
+                  new_node = node.new_record?
+
+                  if node.save_debounce
+                    status :ok
+                    { id: node.id, truncate: new_node }.tap do |resp|
+                      resp[:tasks] = ::Search::Zoekt::TaskPresenterService.execute(node)
+                      resp[:optimized_performance] =
+                        Feature.enabled?(:zoekt_optimized_performance_indexing, Feature.current_request)
+                      resp[:pull_frequency] = node.task_pull_frequency
+                      if Feature.enabled?(:zoekt_critical_watermark_stop_indexing, Feature.current_request)
+                        resp[:stop_indexing] = node.watermark_exceeded_critical?
+                      end
+                    end
+                  else
+                    unprocessable_entity!
+                  end
                 end
               end
             end
