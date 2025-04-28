@@ -2,6 +2,7 @@
 #import "~/graphql_shared/fragments/user.fragment.graphql"
 #import "~/work_items/graphql/milestone.fragment.graphql"
 #import "~/work_items/graphql/timelog.fragment.graphql"
+#import "./work_item_status.fragment.graphql"
 
 fragment WorkItemWidgets on WorkItemWidget {
   type
@@ -186,6 +187,13 @@ fragment WorkItemWidgets on WorkItemWidget {
           value
         }
       }
+    }
+  }
+
+  ... on WorkItemWidgetStatus {
+    type
+    status {
+      ...WorkItemStatusFragment
     }
   }
 }

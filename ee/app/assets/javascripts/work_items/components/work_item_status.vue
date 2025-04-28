@@ -12,9 +12,9 @@ import {
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
+import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import { findStatusWidget } from '~/work_items/utils';
-import workItemStatusQuery from '../graphql/work_item_status.query.graphql';
 import WorkItemStatusBadge from './shared/work_item_status_badge.vue';
 
 export default {
@@ -119,7 +119,7 @@ export default {
   },
   apollo: {
     workItem: {
-      query: workItemStatusQuery,
+      query: workItemByIidQuery,
       variables() {
         return {
           fullPath: this.fullPath,
@@ -212,7 +212,6 @@ export default {
 
 <template>
   <work-item-sidebar-dropdown-widget
-    v-if="workItemStatus"
     :dropdown-label="$options.i18n.status"
     :can-update="canUpdate"
     dropdown-name="status"
