@@ -8,6 +8,7 @@ import {
   CONNECTIVITY_ERROR,
   howToActivateSubscription,
   INVALID_CODE_ERROR,
+  SILENT_MODE_ENABLED_ERROR,
   SUBSCRIPTION_NOT_FOUND_SERVER_ERROR,
   SUBSCRIPTION_OVERAGES_SERVER_ERROR_REGEX,
   SUBSCRIPTION_INSUFFICIENT_TRUE_UP_SERVER_ERROR_REGEX,
@@ -18,6 +19,7 @@ import {
 export const testIds = Object.freeze({
   SUBSCRIPTION_ACTIVATION_ROOT: 'SUBSCRIPTION_ACTIVATION_ROOT',
   CONNECTIVITY_ERROR_ALERT: 'CONNECTIVITY_ERROR_ALERT',
+  SILENT_MODE_ENABLED_ALERT: 'SILENT_MODE_ENABLED_ALERT',
   SUBSCRIPTION_NOT_FOUND_ERROR_ALERT: 'SUBSCRIPTION_NOT_FOUND_ERROR_ALERT',
   SUBSCRIPTION_OVERAGES_ERROR_ALERT: 'SUBSCRIPTION_OVERAGES_ERROR_ALERT',
   TRUE_UP_OVERAGES_ERROR_ALERT: 'TRUE_UP_OVERAGES_ERROR_ALERT',
@@ -59,6 +61,10 @@ export const i18n = Object.freeze({
   INVALID_ACTIVATION_CODE: s__(
     'SuperSonics|The activation code is not valid. Please make sure to copy it exactly from the Customers Portal or confirmation email. Learn more about %{linkStart}activating your subscription%{linkEnd}.',
   ),
+  SILENT_MODE_ENABLED_ERROR_TITLE: s__('SuperSonics|Could not activate subscription'),
+  SILENT_MODE_ENABLED_ERROR_MESSAGE: s__(
+    'SuperSonics|Subscription cannot be activated if %{silentModeDocsLinkStart}Silent Mode%{silentModeDocsLinkEnd} is enabled. Disable Silent Mode and try again.',
+  ),
 });
 
 export const links = Object.freeze({
@@ -66,6 +72,7 @@ export const links = Object.freeze({
   supportLink,
   licenseSupportLink:
     'https://support.gitlab.com/hc/en-us/requests/new?ticket_form_id=360000071293',
+  silentModeDocsLink: `${DOCS_URL_IN_EE_DIR}/ee/administration/silent_mode`,
   subscriptionActivationHelpLink: helpPagePath('administration/license.html'),
   troubleshootingHelpLink: helpPagePath('/administration/license.html', {
     anchor: 'cannot-activate-instance-due-to-connectivity-error',
@@ -100,6 +107,9 @@ export default {
     hasInvalidCodeError() {
       return this.error === INVALID_CODE_ERROR;
     },
+    hasSilentModeEnabledError() {
+      return this.error === SILENT_MODE_ENABLED_ERROR;
+    },
     hasSubscriptionNotFoundError() {
       return this.error === SUBSCRIPTION_NOT_FOUND_SERVER_ERROR;
     },
@@ -128,6 +138,7 @@ export default {
         !this.hasConnectivityIssueError &&
         !this.hasInvalidCodeError &&
         !this.hasExpiredLicenseError &&
+        !this.hasSilentModeEnabledError &&
         !this.hasSubscriptionNotFoundError &&
         !this.hasSubscriptionOveragesError &&
         !this.hasTrueUpOveragesError
@@ -292,6 +303,19 @@ export default {
           <gl-link :href="$options.links.subscriptionActivationHelpLink" target="_blank">{{
             content
           }}</gl-link>
+        </template>
+      </gl-sprintf>
+    </gl-alert>
+    <gl-alert
+      v-if="hasSilentModeEnabledError"
+      variant="danger"
+      :title="$options.i18n.SILENT_MODE_ENABLED_ERROR_TITLE"
+      :dismissible="false"
+      :data-testid="$options.testIds.SILENT_MODE_ENABLED_ALERT"
+    >
+      <gl-sprintf :message="$options.i18n.SILENT_MODE_ENABLED_ERROR_MESSAGE">
+        <template #silentModeDocsLink="{ content }">
+          <gl-link :href="$options.links.silentModeDocsLink" target="_blank">{{ content }}</gl-link>
         </template>
       </gl-sprintf>
     </gl-alert>
