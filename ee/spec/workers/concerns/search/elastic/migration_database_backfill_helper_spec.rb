@@ -23,12 +23,6 @@ RSpec.describe Search::Elastic::MigrationDatabaseBackfillHelper, :elastic, featu
         expect { migration.item_to_preload }.to raise_error(NotImplementedError)
       end
     end
-
-    describe '#document_type' do
-      it 'raises a NotImplementedError' do
-        expect { migration.document_type }.to raise_error(NotImplementedError)
-      end
-    end
   end
 
   context 'when respect_limited_indexing? is false' do

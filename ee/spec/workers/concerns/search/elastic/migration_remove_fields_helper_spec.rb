@@ -11,12 +11,6 @@ RSpec.describe ::Search::Elastic::MigrationRemoveFieldsHelper, feature_category:
 
   subject(:migration) { migration_class.new }
 
-  describe '#document_type' do
-    it 'raises a NotImplementedError' do
-      expect { migration.document_type }.to raise_error(NotImplementedError)
-    end
-  end
-
   describe '#fields_to_remove' do
     it 'raises a NotImplementedError' do
       expect { migration.fields_to_remove }.to raise_error(NotImplementedError)

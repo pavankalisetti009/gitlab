@@ -3,6 +3,7 @@
 module Search
   module Elastic
     module MigrationCreateIndexHelper
+      include ::Search::Elastic::DocumentType
       include ::Search::Elastic::MigrationHelper
 
       def migrate
@@ -21,10 +22,6 @@ module Search
       end
 
       def target_class
-        raise NotImplementedError
-      end
-
-      def document_type
         raise NotImplementedError
       end
     end

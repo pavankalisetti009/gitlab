@@ -3,6 +3,7 @@
 module Search
   module Elastic
     module MigrationRemoveFieldsHelper
+      include Search::Elastic::DocumentType
       include Search::Elastic::IndexName
 
       DEFAULT_BATCH_SIZE = 10_000
@@ -81,12 +82,6 @@ module Search
         log "Migration has #{doc_count} documents remaining" if doc_count
 
         doc_count && doc_count == 0
-      end
-
-      def document_type
-        return self.class::DOCUMENT_TYPE if self.class.const_defined?(:DOCUMENT_TYPE)
-
-        raise NotImplementedError
       end
 
       def field_to_remove
