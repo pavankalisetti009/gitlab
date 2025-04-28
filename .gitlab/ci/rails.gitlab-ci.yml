@@ -650,9 +650,15 @@ rspec:merge-auto-explain-logs:
   script:
     - scripts/merge-auto-explain-logs
     - |
-      if [[ -f "$RSPEC_AUTO_EXPLAIN_LOG_PATH" ]] && [[ "$CI_PROJECT_PATH" == "gitlab-org/gitlab" ]] && [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
-        source scripts/gitlab_component_helpers.sh
-        extract_and_upload_fingerprints
+      if [[ -f "$RSPEC_AUTO_EXPLAIN_LOG_PATH" ]] && [[ "$CI_PROJECT_PATH" == "gitlab-org/gitlab" ]]; then
+        if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+          # For the default branch (e.g., master), extract and upload fingerprints
+          source scripts/gitlab_component_helpers.sh
+          extract_and_upload_fingerprints
+        else
+          # For MRs, compare against master fingerprints and generate a report
+          scripts/merge_request_query_differ.rb "$RSPEC_AUTO_EXPLAIN_LOG_PATH"
+        fi
       fi
   artifacts:
     name: auto-explain-logs
