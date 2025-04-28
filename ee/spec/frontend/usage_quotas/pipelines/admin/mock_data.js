@@ -5,6 +5,7 @@ export const usageDataInstanceAggregated = [
     computeMinutes: 300,
     durationSeconds: 18000,
     rootNamespace: null,
+    __typename: 'CiDedicatedHostedRunnerUsage',
   },
   {
     billingMonth: 'January 2025',
@@ -12,6 +13,7 @@ export const usageDataInstanceAggregated = [
     computeMinutes: 200,
     durationSeconds: 12000,
     rootNamespace: null,
+    __typename: 'CiDedicatedHostedRunnerUsage',
   },
 ];
 
@@ -26,6 +28,7 @@ export const usageDataNamespaceAggregated = [
       name: 'Administrator',
       avatarUrl:
         'https://secure.gravatar.com/avatar/258d8dc916db8cea2cafb6c3cd0cb0246efe061421dbd83ec3a350428cabda4f?s=80&d=identicon',
+      __typename: 'Namespace',
     },
   },
   {
@@ -38,6 +41,7 @@ export const usageDataNamespaceAggregated = [
       name: 'Flightjs',
       avatarUrl:
         'https://secure.gravatar.com/avatar/258d8dc916db8cea2cafb6c3cd0cb0246efe061421dbd83ec3a350428cabda4f?s=80&d=identicon',
+      __typename: 'Namespace',
     },
   },
 ];

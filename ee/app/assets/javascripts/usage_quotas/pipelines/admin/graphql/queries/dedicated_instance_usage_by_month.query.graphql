@@ -10,9 +10,15 @@ query getDedicatedInstanceUsageByMonth(
       computeMinutes
       durationSeconds
       rootNamespace {
-        id
-        avatarUrl
-        name
+        __typename
+        ... on Namespace {
+          id
+          avatarUrl
+          name
+        }
+        ... on CiDeletedNamespace {
+          id
+        }
       }
     }
   }
