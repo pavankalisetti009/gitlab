@@ -192,12 +192,28 @@ module Integrations
       api_only: true,
       description: -> { s_('JiraIntegration|Jira issue type to use when creating issues from vulnerabilities.') }
 
+    field :project_key,
+      required: false,
+      type: :text,
+      api_only: true,
+      description: -> {
+        s_('JiraIntegration|Key of the project to use when creating issues from vulnerabilities.' \
+            'This parameter is required if using the integration to create issues from vulnerabilities.')
+      }
+
+    field :customize_jira_issue_enabled,
+      required: false,
+      type: :checkbox,
+      api_only: true,
+      description: -> {
+        s_('JiraIntegration|When set to `true`, will navigate to a prefilled form on the Jira instance' \
+        'when creating a Jira issue from a vulnerability.')
+      }
+
     # TODO: we can probably just delegate as part of
     # https://gitlab.com/gitlab-org/gitlab/issues/29404
     # These fields are API only, so no field definition is required.
     data_field :jira_issue_transition_automatic
-    data_field :project_key
-    data_field :customize_jira_issue_enabled
 
     # When these are false GitLab does not create cross reference
     # comments on Jira except when an issue gets transitioned.

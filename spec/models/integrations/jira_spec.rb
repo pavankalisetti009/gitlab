@@ -237,6 +237,8 @@ RSpec.describe Integrations::Jira, feature_category: :integrations do
           project_keys
           vulnerabilities_enabled
           vulnerabilities_issuetype
+          project_key
+          customize_jira_issue_enabled
         ]
       )
     end

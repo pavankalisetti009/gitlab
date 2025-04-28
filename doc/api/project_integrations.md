@@ -1491,6 +1491,8 @@ Parameters:
 | `use_inherited_settings` | boolean | no | Indicates whether to inherit the default settings. Defaults to `false`. |
 | `vulnerabilities_enabled` | boolean | no | If set to `true`, creates Jira issues for GitLab vulnerabilities. |
 | `vulnerabilities_issuetype` | number | no | ID of the Jira issue type to use when creating issues from vulnerabilities. |
+| `project_key` | string | no | Key of the project to use when creating issues from vulnerabilities. This parameter is required if using the integration to create issues from vulnerabilities. |
+| `customize_jira_issue_enabled` | boolean | no | When set to `true`, will navigate to a prefilled form on the Jira instance when creating a Jira issue from a vulnerability. |
 
 ### Disable Jira
 
