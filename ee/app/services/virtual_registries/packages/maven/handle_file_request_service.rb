@@ -3,21 +3,13 @@
 module VirtualRegistries
   module Packages
     module Maven
-      class HandleFileRequestService < ::BaseContainerService
-        alias_method :registry, :container
-
-        TIMEOUT = 5
+      class HandleFileRequestService < ::VirtualRegistries::BaseService
         DIGEST_EXTENSIONS = %w[.sha1 .md5].freeze
         PERMISSIONS_CACHE_TTL = 5.minutes
 
-        ERRORS = {
-          path_not_present: ServiceResponse.error(message: 'Path not present', reason: :path_not_present),
+        ERRORS = BASE_ERRORS.merge(
           unauthorized: ServiceResponse.error(message: 'Unauthorized', reason: :unauthorized),
           no_upstreams: ServiceResponse.error(message: 'No upstreams set', reason: :no_upstreams),
-          file_not_found_on_upstreams: ServiceResponse.error(
-            message: 'File not found on any upstream',
-            reason: :file_not_found_on_upstreams
-          ),
           digest_not_found: ServiceResponse.error(
             message: 'File of the requested digest not found in cache entries',
             reason: :digest_not_found_in_cache_entries
@@ -30,11 +22,7 @@ module VirtualRegistries
             message: 'Upstream not available',
             reason: :upstream_not_available
           )
-        }.freeze
-
-        def initialize(registry:, current_user: nil, params: {})
-          super(container: registry, current_user: current_user, params: params)
-        end
+        ).freeze
 
         def execute
           return ERRORS[:path_not_present] unless path.present?
@@ -46,9 +34,7 @@ module VirtualRegistries
           elsif cache_response_still_valid?
             download_cache_entry
           else
-            # TODO change this to support multiple upstreams
-            # https://gitlab.com/gitlab-org/gitlab/-/issues/480461
-            check_upstream(registry.upstreams.first)
+            check_registry_upstreams
           end
 
         rescue *::Gitlab::HTTP::HTTP_ERRORS
@@ -83,21 +69,27 @@ module VirtualRegistries
         end
         strong_memoize_attr :cache_entry
 
-        def check_upstream(upstream)
-          response = head_upstream(upstream: upstream)
+        def check_registry_upstreams
+          service = ::VirtualRegistries::CheckUpstreamsService.new(
+            registry: registry,
+            params: { path: path }
+          )
+          response = service.execute
+          return response unless response.success?
 
-          return ERRORS[:file_not_found_on_upstreams] unless response.success?
-
-          workhorse_upload_url_response(upstream: upstream)
+          workhorse_upload_url_response(upstream: response.payload[:upstream])
         end
 
         def head_upstream(upstream:)
-          strong_memoize_with(:head_upstream, upstream) do
-            url = upstream.url_for(path)
-            headers = upstream.headers
+          url = upstream.url_for(path)
+          headers = upstream.headers
 
-            ::Gitlab::HTTP.head(url, headers: headers, follow_redirects: true, timeout: TIMEOUT)
-          end
+          ::Gitlab::HTTP.head(
+            url,
+            headers: headers,
+            follow_redirects: true,
+            timeout: NETWORK_TIMEOUT
+          )
         end
 
         def download_cache_entry_digest
