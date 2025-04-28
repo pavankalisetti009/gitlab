@@ -459,19 +459,6 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
             visit edit_group_path(group)
           end
 
-          context "when feature flag is disabled" do
-            before do
-              stub_feature_flags(group_remove_dormant_members: false)
-              visit edit_group_path(group)
-            end
-
-            it 'does not expose the setting section' do
-              expect(page).not_to have_content('Dormant members')
-              expect(page).not_to have_field('Remove dormant members after a period of inactivity')
-              expect(page).not_to have_field('Days of inactivity before removal', disabled: true)
-            end
-          end
-
           it 'exposes the setting section' do
             expect(page).to have_content('Dormant members')
             expect(page).to have_content('Read these instructions to understand the implications of enabling this setting. Removed members no longer have access to this top-level group, its subgroups, and their projects.')
