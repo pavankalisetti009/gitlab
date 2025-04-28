@@ -121,9 +121,9 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
 
   context 'default values' do
     where(:attribute, :value) do
-      :repos_max_capacity                  | 25
+      :repos_max_capacity                  | 10
       :files_max_capacity                  | 10
-      :container_repositories_max_capacity | 10
+      :container_repositories_max_capacity | 2
       :sync_object_storage                 | false
     end
 
