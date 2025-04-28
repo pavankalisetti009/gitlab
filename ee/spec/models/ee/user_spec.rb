@@ -49,6 +49,9 @@ RSpec.describe User, feature_category: :system_access do
     it { is_expected.to delegate_method(:onboarding_status_registration_type).to(:user_detail).allow_nil }
     it { is_expected.to delegate_method(:onboarding_status_initial_registration_type).to(:user_detail).allow_nil }
 
+    it { is_expected.to delegate_method(:onboarding_status_setup_for_company).to(:user_detail).allow_nil }
+    it { is_expected.to delegate_method(:onboarding_status_setup_for_company=).to(:user_detail).with_arguments(:args).allow_nil }
+
     it do
       is_expected
         .to delegate_method(:onboarding_status_initial_registration_type=)

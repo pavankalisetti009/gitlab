@@ -73,6 +73,10 @@ module EE
       def onboarding_status_joining_project=(value)
         super(::Gitlab::Utils.to_boolean(value, default: false))
       end
+
+      def onboarding_status_setup_for_company=(value)
+        super(::Gitlab::Utils.to_boolean(value, default: false))
+      end
     end
   end
 end

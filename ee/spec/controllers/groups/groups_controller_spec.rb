@@ -12,6 +12,46 @@ RSpec.describe GroupsController, feature_category: :groups_and_projects do
     sign_in(user)
   end
 
+  describe 'POST #create', :with_current_organization do
+    let_it_be(:group_organization) { current_organization }
+
+    before_all do
+      group_organization.users = User.all
+    end
+
+    before do
+      enable_external_authorization_service_check
+    end
+
+    context 'when creating a group with the `setup_for_company` attribute present' do
+      subject(:post_create) do
+        post :create, params: { group: { name: 'new_group', path: 'new_group', setup_for_company: 'false' } }
+      end
+
+      it 'sets the group `setup_for_company` value' do
+        post_create
+
+        expect(Group.last.setup_for_company).to be(false)
+      end
+
+      context 'when the user already has a value for `setup_for_company`' do
+        before do
+          user.update!(onboarding_status_setup_for_company: true)
+        end
+
+        it 'does not change the users `setup_for_company` value' do
+          expect { post_create }.not_to change { user.reload.onboarding_status_setup_for_company }.from(true)
+        end
+      end
+
+      context 'when the user has no value for `setup_for_company`' do
+        it 'changes the users `setup_for_company` value' do
+          expect { post_create }.to change { user.reload.onboarding_status_setup_for_company }.to(false)
+        end
+      end
+    end
+  end
+
   describe 'external authorization' do
     before_all do
       group.add_owner(user)

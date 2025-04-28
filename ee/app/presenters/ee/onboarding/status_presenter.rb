@@ -93,7 +93,7 @@ module EE
       end
 
       def setup_for_company?
-        ::Gitlab::Utils.to_boolean(params[:setup_for_company], default: false)
+        ::Gitlab::Utils.to_boolean(params[:onboarding_status_setup_for_company], default: false)
       end
 
       override :registration_omniauth_params

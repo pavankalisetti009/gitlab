@@ -20,7 +20,7 @@ RSpec.describe 'Group or Project invitations', :with_current_organization, :js, 
     it 'bypasses the setup_for_company question' do
       fill_in_sign_up_form(new_user, invite: true)
 
-      expect(find('input[name="user[setup_for_company]"]', visible: :hidden).value).to eq 'true'
+      expect(find('input[name="user[onboarding_status_setup_for_company]"]', visible: :hidden).value).to eq 'true'
       expect(page).not_to have_content('My company or team')
     end
   end
@@ -28,7 +28,7 @@ RSpec.describe 'Group or Project invitations', :with_current_organization, :js, 
   context 'when not on .com' do
     let(:com) { false }
 
-    it 'bypasses the setup_for_company question' do
+    it 'bypasses the onboarding_status_setup_for_company question' do
       fill_in_sign_up_form(new_user, invite: true)
 
       expect(page).not_to have_content('My company or team')

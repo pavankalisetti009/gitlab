@@ -25,7 +25,7 @@ RSpec.describe 'Trial lead form submission and validation', :saas, :js, feature_
         "country" => form_data.dig(:country, :id),
         "work_email" => user.email,
         "uid" => user.id,
-        "setup_for_company" => user.setup_for_company,
+        "setup_for_company" => user.onboarding_status_setup_for_company,
         "skip_email_confirmation" => true,
         "state" => "",
         "gitlab_com_trial" => true,

@@ -49,7 +49,7 @@ RSpec.describe 'Hand Raise Leads', :saas, feature_category: :subscription_manage
             work_email: user.email,
             uid: user.id,
             provider: 'gitlab',
-            setup_for_company: user.setup_for_company,
+            setup_for_company: user.onboarding_status_setup_for_company,
             existing_plan: namespace.actual_plan_name,
             glm_source: 'gitlab.com'
           }

@@ -33,8 +33,8 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
 
     it { is_expected.to have_tracking(action: 'render', label: 'free_registration') }
 
-    it 'the text for the :setup_for_company label' do
-      is_expected.to have_selector('label[for="user_setup_for_company"]', text: '_text_')
+    it 'the text for the :onboarding_status_setup_for_company label' do
+      is_expected.to have_selector('label[for="user_onboarding_status_setup_for_company"]', text: '_text_')
     end
 
     it 'shows the text for the submit button' do
@@ -55,16 +55,16 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
   context 'when setup for company field should be hidden' do
     let(:hide_setup_for_company_field?) { true }
 
-    it 'does not have setup_for_company label' do
-      is_expected.not_to have_selector('label[for="user_setup_for_company"]')
+    it 'does not have _onboarding_status_setup_for_company label' do
+      is_expected.not_to have_selector('label[for="user_onboarding_status_setup_for_company"]')
     end
 
-    it 'the text for the :setup_for_company help text' do
+    it 'the text for the :_onboarding_status_setup_for_company help text' do
       is_expected.not_to have_text('_help_text_')
     end
 
-    it 'has a hidden input for setup_for_company' do
-      is_expected.to have_field('user[setup_for_company]', type: :hidden)
+    it 'has a hidden input for onboarding_status_setup_for_company' do
+      is_expected.to have_field('user[onboarding_status_setup_for_company]', type: :hidden)
     end
   end
 
@@ -79,11 +79,11 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
   context 'when setup for company field is not hidden' do
     let(:hide_setup_for_company_field?) { false }
 
-    it 'has setup_for_company label' do
-      is_expected.to have_selector('label[for="user_setup_for_company"]')
+    it 'has onboarding_status_setup_for_company label' do
+      is_expected.to have_selector('label[for="user_onboarding_status_setup_for_company"]')
     end
 
-    it 'the text for the :setup_for_company help text' do
+    it 'the text for the :onboarding_status_setup_for_company help text' do
       is_expected.to have_text('_help_text_')
     end
   end

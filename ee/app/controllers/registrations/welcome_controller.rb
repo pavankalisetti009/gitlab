@@ -63,10 +63,9 @@ module Registrations
     end
 
     def update_params
-      base_params = params
+      params
                       .require(:user)
                       .permit(
-                        :setup_for_company,
                         :onboarding_status_joining_project,
                         :onboarding_status_role,
                         :onboarding_status_setup_for_company,
@@ -75,9 +74,6 @@ module Registrations
                       .merge(params.permit(:jobs_to_be_done_other))
                       .merge(onboarding_registration_type_params)
                       .merge(onboarding_in_progress: onboarding_status_presenter.continue_full_onboarding?)
-
-      sync_setup_for_company_params(base_params)
-      base_params
     end
 
     def onboarding_registration_type_params
@@ -90,18 +86,6 @@ module Registrations
 
     def passed_through_params
       update_params.slice(*::Onboarding::StatusPresenter::PASSED_THROUGH_PARAMS)
-    end
-
-    def sync_setup_for_company_params(base_params)
-      # Dup setup_for_company for setup_for_company and onboarding_status_setup_for_company fields
-      setup_for_company_param = base_params[:setup_for_company].presence ||
-        base_params[:onboarding_status_setup_for_company].presence
-
-      return unless setup_for_company_param.present?
-
-      setup_for_company_value = ::Gitlab::Utils.to_boolean(setup_for_company_param)
-      base_params[:setup_for_company] = setup_for_company_value
-      base_params[:onboarding_status_setup_for_company] = setup_for_company_value
     end
 
     def update_success_path
@@ -160,7 +144,8 @@ module Registrations
     strong_memoize_attr :onboarding_status_presenter
 
     def set_update_onboarding_status_params
-      @onboarding_status_params = params.require(:user).permit(:setup_for_company).to_h.deep_symbolize_keys
+      @onboarding_status_params = params.require(:user).permit(:onboarding_status_setup_for_company)
+                                        .merge(params.permit(:joining_project)).to_h.deep_symbolize_keys
     end
   end
 end

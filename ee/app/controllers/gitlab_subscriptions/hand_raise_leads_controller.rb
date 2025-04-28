@@ -34,7 +34,7 @@ module GitlabSubscriptions
         work_email: current_user.email,
         uid: current_user.id,
         provider: 'gitlab',
-        setup_for_company: current_user.setup_for_company,
+        setup_for_company: current_user.onboarding_status_setup_for_company,
         existing_plan: namespace.actual_plan_name,
         glm_source: 'gitlab.com'
       }

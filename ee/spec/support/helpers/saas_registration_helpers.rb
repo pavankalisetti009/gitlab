@@ -345,7 +345,7 @@ module SaasRegistrationHelpers
     page.within(welcome_form_selector) do
       expect(page).to have_content('Role')
       expect(page).to have_field('user_onboarding_status_role', valid: false)
-      expect(page).to have_field('user_setup_for_company_true', valid: false)
+      expect(page).to have_field('user_onboarding_status_setup_for_company_true', valid: false)
       expect(page).to have_content('I\'m signing up for GitLab because:')
       expect(page).to have_content('Who will be using this GitLab subscription?')
       expect(page).to have_content('What would you like to do?')
@@ -462,7 +462,7 @@ module SaasRegistrationHelpers
   end
 
   def customer_params
-    company = user.setup_for_company ? 'Test company' : nil
+    company = user.onboarding_status_setup_for_company ? 'Test company' : nil
 
     ActionController::Parameters.new(
       country: 'US',

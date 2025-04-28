@@ -23,7 +23,7 @@ module Registrations
     end
 
     def modified_group_params
-      @group_params[:setup_for_company] = user.setup_for_company
+      @group_params[:setup_for_company] = user.onboarding_status_setup_for_company
 
       return group_params unless group_needs_path_added?
 
