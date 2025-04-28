@@ -43,6 +43,33 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
     it 'returns the file contents and create the cache entry' do
       expect { request }.to change { upstream.cache_entries.count }.by(1)
     end
+
+    context 'with multiple upstreams' do
+      let_it_be(:upstream2) { create(:virtual_registries_packages_maven_upstream, registry: registry) }
+      let_it_be(:external_server2) do
+        handler = ->(env) do
+          if env['REQUEST_PATH'] == '/file2' # rubocop:disable RSpec/AvoidConditionalStatements -- This is a lambda for the external server
+            [200, { 'Content-Type' => 'text/plain', 'ETag' => '"etag"' }, ['File contents 2']]
+          else
+            [404, {}, []]
+          end
+        end
+
+        run_server(handler)
+      end
+
+      let(:api_path) { "/virtual_registries/packages/maven/#{registry.id}/file2" }
+
+      before do
+        upstream2.update_column(:url, external_server2.base_url) # avoids guard that rejects local urls
+      end
+
+      it 'returns the file contents and create the cache entry' do
+        expect { request }.to change { upstream2.cache_entries.count }.by(1)
+          .and not_change { upstream.cache_entries.count }
+        expect(request.body).to eq('File contents 2')
+      end
+    end
   end
 
   context 'with a cache entry' do
