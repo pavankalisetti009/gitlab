@@ -21,6 +21,8 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
 
   def send_request(params: {}, headers: agent_token_headers)
     case method
+    when :get
+      get api(api_url), headers: headers.reverse_merge(jwt_auth_headers)
     when :post
       post api(api_url), params: params, headers: headers.reverse_merge(jwt_auth_headers)
     when :put
@@ -124,10 +126,9 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
     end
   end
 
-  describe 'POST /internal/kubernetes/modules/remote_development/prerequisites' do
-    let(:method) { :post }
+  describe 'GET /internal/kubernetes/modules/remote_development/prerequisites' do
+    let(:method) { :get }
     let(:api_url) { '/internal/kubernetes/modules/remote_development/prerequisites' }
-    let(:params) { { some_param: "" } }
     let(:expected_service_args) do
       {
         domain_main_class: ::RemoteDevelopment::AgentPrerequisitesOperations::Main,
@@ -157,9 +158,9 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
           stub_service_response
         end
 
-        send_request(params: params)
+        send_request
 
-        expect(response).to have_gitlab_http_status(:created)
+        expect(response).to have_gitlab_http_status(:ok)
         expect(json_response).to eq(stub_service_payload)
       end
     end
@@ -172,7 +173,7 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
           stub_service_response
         end
 
-        send_request(params: params)
+        send_request
 
         expect(response).to have_gitlab_http_status(:internal_server_error)
       end
@@ -184,7 +185,7 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
       end
 
       it 'returns service response with payload' do
-        send_request(params: params)
+        send_request
 
         expect(response).to have_gitlab_http_status(:forbidden)
       end
@@ -444,9 +445,8 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
   end
 
   describe 'GET /internal/kubernetes/modules/starboard_vulnerability/policies_configuration' do
-    def send_request(headers: {})
-      get api('/internal/kubernetes/modules/starboard_vulnerability/policies_configuration'), headers: headers.reverse_merge(jwt_auth_headers)
-    end
+    let(:method) { :get }
+    let(:api_url) { '/internal/kubernetes/modules/starboard_vulnerability/policies_configuration' }
 
     let_it_be(:agent_token) { create(:cluster_agent_token) }
 
@@ -461,7 +461,7 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
       end
 
       it 'returns 402' do
-        send_request(headers: { 'Authorization' => "Bearer #{agent_token.token}" })
+        send_request
 
         expect(response).to have_gitlab_http_status(:payment_required)
       end
@@ -493,7 +493,7 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
         end
 
         it 'returns expected data', :aggregate_failures do
-          send_request(headers: { 'Authorization' => "Bearer #{agent_token.token}" })
+          send_request
 
           expect(response).to have_gitlab_http_status(:success)
           expect(json_response['configurations']).to match_array(
@@ -509,7 +509,7 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
 
       context 'when policies are empty' do
         it 'returns empty array', :aggregate_failures do
-          send_request(headers: { 'Authorization' => "Bearer #{agent_token.token}" })
+          send_request
 
           expect(response).to have_gitlab_http_status(:success)
           expect(json_response['configurations']).to be_empty
@@ -519,6 +519,9 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
   end
 
   describe 'GET /internal/kubernetes/receptive_agents' do
+    let(:method) { :get }
+    let(:api_url) { '/internal/kubernetes/receptive_agents' }
+
     let_it_be(:project) { create(:project) }
     let_it_be(:receptive_agent1) do
       agent = create(:cluster_agent, project: project, is_receptive: true)
@@ -536,10 +539,6 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
 
     before do
       stub_licensed_features(cluster_receptive_agents: true)
-    end
-
-    def send_request(headers: {})
-      get api('/internal/kubernetes/receptive_agents'), headers: headers.reverse_merge(jwt_auth_headers)
     end
 
     include_examples 'authorization'
