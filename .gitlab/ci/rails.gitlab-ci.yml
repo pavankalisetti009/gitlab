@@ -1214,6 +1214,35 @@ rspec-ee system pg17:
 #####################################
 
 ##################################################
+# EE: default branch weekly scheduled jobs #
+# Integration tests with latest OpenSearch versions
+# and the actual PG production version (PG16)
+
+rspec-ee unit pg16 opensearch-latest:
+  extends:
+    - .rspec-base-pg16
+    - .rspec-ee-base-pg16-opensearch-latest
+    - .rspec-ee-unit-parallel
+    - .rails:rules:default-branch-schedule-weekly--code-backstage-ee-only
+
+rspec-ee integration pg16 opensearch-latest:
+  extends:
+    - .rspec-base-pg16
+    - .rspec-ee-base-pg16-opensearch-latest
+    - .rspec-ee-integration-parallel
+    - .rails:rules:default-branch-schedule-weekly--code-backstage-ee-only
+
+rspec-ee system pg16 opensearch-latest:
+  extends:
+    - .rspec-base-pg16
+    - .rspec-ee-base-pg16-opensearch-latest
+    - .rspec-ee-system-parallel
+    - .rails:rules:default-branch-schedule-weekly--code-backstage-ee-only
+
+# EE: default branch weekly scheduled jobs #
+##################################################
+
+##################################################
 # EE: Canonical MR pipelines
 .rspec-fail-fast:
   extends:
