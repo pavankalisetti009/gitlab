@@ -23,6 +23,9 @@ module Resolvers
       end
 
       def category_enabled?(category)
+        already_enabled_context = %w[file].freeze
+        return true if already_enabled_context.include?(category)
+
         Feature.enabled?(:"duo_include_context_#{category}", current_user)
       end
     end
