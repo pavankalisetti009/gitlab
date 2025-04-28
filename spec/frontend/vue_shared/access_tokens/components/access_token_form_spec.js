@@ -8,9 +8,8 @@ import {
 import { createTestingPinia } from '@pinia/testing';
 import Vue, { nextTick } from 'vue';
 import { PiniaVuePlugin } from 'pinia';
-import MaxExpirationDateMessage from 'ee/access_tokens/components/max_expiration_date_message.vue';
-import AccessTokenForm from 'ee/service_accounts/components/access_tokens/access_token_form.vue';
-import { useAccessTokens } from 'ee/service_accounts/stores/access_tokens';
+import AccessTokenForm from '~/vue_shared/access_tokens/components/access_token_form.vue';
+import { useAccessTokens } from '~/vue_shared/access_tokens/stores/access_tokens';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 
 Vue.use(PiniaVuePlugin);
@@ -39,7 +38,6 @@ describe('AccessTokenForm', () => {
   const findDatepicker = () => wrapper.findComponent(GlDatepicker);
   const findForm = () => wrapper.find('form');
   const findFormFields = () => wrapper.findComponent(GlFormFields);
-  const findMaxExpirationDateMessage = () => wrapper.findComponent(MaxExpirationDateMessage);
   const findInput = () => wrapper.findComponent(GlFormInput);
   const findTextArea = () => wrapper.findComponent(GlFormTextarea);
 
@@ -65,14 +63,6 @@ describe('AccessTokenForm', () => {
         minDate: new Date(accessTokenMinDate),
         maxDate: new Date(accessTokenMaxDate),
       });
-    });
-
-    it('shows a description', () => {
-      createComponent();
-
-      expect(findMaxExpirationDateMessage().props('maxDate').getTime()).toBe(
-        new Date(accessTokenMaxDate).getTime(),
-      );
     });
 
     it('removes the expiration date when the datepicker is cleared', async () => {

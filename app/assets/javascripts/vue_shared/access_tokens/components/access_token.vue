@@ -2,7 +2,7 @@
 import { GlAlert } from '@gitlab/ui';
 import { mapActions, mapState } from 'pinia';
 import InputCopyToggleVisibility from '~/vue_shared/components/input_copy_toggle_visibility/input_copy_toggle_visibility.vue';
-import { useAccessTokens } from '../../stores/access_tokens';
+import { useAccessTokens } from '../stores/access_tokens';
 
 export default {
   components: { GlAlert, InputCopyToggleVisibility },

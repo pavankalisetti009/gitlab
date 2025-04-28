@@ -1,7 +1,7 @@
 import MockAdapter from 'axios-mock-adapter';
 import { setActivePinia, createPinia } from 'pinia';
-import { useAccessTokens } from 'ee/service_accounts/stores/access_tokens';
-import { update2WeekFromNow } from 'ee/service_accounts/utils';
+import { useAccessTokens } from '~/vue_shared/access_tokens/stores/access_tokens';
+import { update2WeekFromNow } from '~/vue_shared/access_tokens/utils';
 import { createAlert } from '~/alert';
 import { smoothScrollTop } from '~/behaviors/smooth_scroll';
 import axios from '~/lib/utils/axios_utils';
@@ -19,8 +19,8 @@ jest.mock('~/alert', () => ({
   })),
 }));
 
-jest.mock('ee/service_accounts/utils', () => ({
-  ...jest.requireActual('ee/service_accounts/utils'),
+jest.mock('~/vue_shared/access_tokens/utils', () => ({
+  ...jest.requireActual('~/vue_shared/access_tokens/utils'),
   update2WeekFromNow: jest.fn(),
 }));
 

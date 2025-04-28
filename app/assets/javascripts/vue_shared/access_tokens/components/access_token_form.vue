@@ -12,13 +12,12 @@ import {
 } from '@gitlab/ui';
 import { formValidators } from '@gitlab/ui/dist/utils';
 import { mapActions, mapState } from 'pinia';
-import MaxExpirationDateMessage from 'ee/access_tokens/components/max_expiration_date_message.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { toISODateFormat } from '~/lib/utils/datetime_utility';
 import { __, s__ } from '~/locale';
 
-import { useAccessTokens } from '../../stores/access_tokens';
-import { defaultDate } from '../../utils';
+import { useAccessTokens } from '../stores/access_tokens';
+import { defaultDate } from '../utils';
 
 export default {
   components: {
@@ -31,7 +30,8 @@ export default {
     GlFormTextarea,
     GlLink,
     GlSprintf,
-    MaxExpirationDateMessage,
+    MaxExpirationDateMessage: () =>
+      import('ee_component/vue_shared/components/access_tokens/max_expiration_date_message.vue'),
   },
   inject: ['accessTokenMaxDate', 'accessTokenMinDate'],
   data() {

@@ -5,9 +5,9 @@ import { createTestingPinia } from '@pinia/testing';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 
 import { useServiceAccounts } from 'ee/service_accounts/stores/service_accounts';
-import CreateEditServiceAccountModal from 'ee/service_accounts/components/service_accounts/create_edit_service_account_modal.vue';
-import DeleteServiceAccountModal from 'ee/service_accounts/components/service_accounts/delete_service_account_modal.vue';
-import ServiceAccounts from 'ee/service_accounts/components/service_accounts/service_accounts.vue';
+import CreateEditServiceAccountModal from 'ee/service_accounts/components/create_edit_service_account_modal.vue';
+import DeleteServiceAccountModal from 'ee/service_accounts/components/delete_service_account_modal.vue';
+import ServiceAccounts from 'ee/service_accounts/components/service_accounts.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { TEST_HOST } from 'helpers/test_constants';
 

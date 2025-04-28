@@ -17,7 +17,7 @@ import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 
-import { useAccessTokens } from '../../stores/access_tokens';
+import { useAccessTokens } from '../stores/access_tokens';
 
 const REVOKE = 'revoke';
 const ROTATE = 'rotate';

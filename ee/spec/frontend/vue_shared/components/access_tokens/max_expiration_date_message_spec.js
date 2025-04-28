@@ -1,4 +1,4 @@
-import MaxExpirationDateMessage from 'ee/access_tokens/components/max_expiration_date_message.vue';
+import MaxExpirationDateMessage from 'ee/vue_shared/components/access_tokens/max_expiration_date_message.vue';
 
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 

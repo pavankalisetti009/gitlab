@@ -2,7 +2,7 @@
 import { GlButton, GlCard } from '@gitlab/ui';
 import { GlSingleStat } from '@gitlab/ui/dist/charts';
 import { mapActions, mapState } from 'pinia';
-import { useAccessTokens } from '../../stores/access_tokens';
+import { useAccessTokens } from '../stores/access_tokens';
 
 export default {
   components: {

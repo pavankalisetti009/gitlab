@@ -1,8 +1,8 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 
-import ServiceAccounts from './components/service_accounts/service_accounts.vue';
-import AccessTokens from './components/access_tokens/access_tokens.vue';
+import AccessTokens from '~/vue_shared/access_tokens/components/access_tokens.vue';
+import ServiceAccounts from './components/service_accounts.vue';
 
 Vue.use(VueRouter);
 

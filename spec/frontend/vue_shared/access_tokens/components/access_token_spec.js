@@ -2,8 +2,8 @@ import { GlAlert } from '@gitlab/ui';
 import { createTestingPinia } from '@pinia/testing';
 import Vue from 'vue';
 import { PiniaVuePlugin } from 'pinia';
-import AccessToken from 'ee/service_accounts/components/access_tokens/access_token.vue';
-import { useAccessTokens } from 'ee/service_accounts/stores/access_tokens';
+import AccessToken from '~/vue_shared/access_tokens/components/access_token.vue';
+import { useAccessTokens } from '~/vue_shared/access_tokens/stores/access_tokens';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import InputCopyToggleVisibility from '~/vue_shared/components/input_copy_toggle_visibility/input_copy_toggle_visibility.vue';
 

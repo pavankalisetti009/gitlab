@@ -3,8 +3,8 @@ import { createTestingPinia } from '@pinia/testing';
 import Vue from 'vue';
 import { PiniaVuePlugin } from 'pinia';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import { useAccessTokens } from 'ee/service_accounts/stores/access_tokens';
-import AccessTokenStatistics from 'ee/service_accounts/components/access_tokens/access_token_statistics.vue';
+import { useAccessTokens } from '~/vue_shared/access_tokens/stores/access_tokens';
+import AccessTokenStatistics from '~/vue_shared/access_tokens/components/access_token_statistics.vue';
 
 Vue.use(PiniaVuePlugin);
 
