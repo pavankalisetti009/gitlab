@@ -3,13 +3,23 @@ import { GlButton, GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { getTimeago } from '~/lib/utils/datetime_utility';
 import { __ } from '~/locale';
+import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import ldapAdminRoleLinksQuery from '../../graphql/ldap_sync/ldap_admin_role_links.query.graphql';
+import ldapAdminRoleLinkDestroyMutation from '../../graphql/ldap_sync/ldap_admin_role_link_destroy.mutation.graphql';
 
 export default {
-  components: { CrudComponent, GlButton, GlAlert, GlSprintf, GlLink },
+  components: {
+    CrudComponent,
+    GlButton,
+    GlAlert,
+    GlSprintf,
+    GlLink,
+    ConfirmActionModal,
+  },
   data() {
     return {
       ldapAdminRoleLinks: [],
+      linkToDelete: null,
     };
   },
   apollo: {
@@ -34,6 +44,20 @@ export default {
   methods: {
     getTimeAgo(timestamp) {
       return timestamp ? getTimeago().format(timestamp) : __('Never');
+    },
+    async deleteLink() {
+      const response = await this.$apollo.mutate({
+        mutation: ldapAdminRoleLinkDestroyMutation,
+        variables: { id: this.linkToDelete.id },
+      });
+
+      const error = response.data.ldapAdminRoleLinkDestroy.errors[0];
+      if (error) {
+        return Promise.reject(error);
+      }
+
+      this.$apollo.queries.ldapAdminRoleLinks.refetch();
+      return Promise.resolve();
     },
   },
 };
@@ -62,6 +86,28 @@ export default {
           <gl-button variant="confirm">{{ s__('LDAP|Add synchronization') }}</gl-button>
         </div>
       </div>
+
+      <confirm-action-modal
+        v-if="linkToDelete"
+        modal-id="remove-ldap-sync-modal"
+        :title="s__('MemberRole|Remove LDAP synchronization')"
+        :action-text="s__('MemberRole|Remove sync')"
+        variant="confirm"
+        :action-fn="deleteLink"
+        @close="linkToDelete = null"
+      >
+        <gl-sprintf
+          :message="
+            s__(
+              'MemberRole|This removes automatic syncing with your LDAP server. Users will keep their current role but future changes will require manual updates. %{confirmStart}Are you sure you want to remove LDAP synchronization?%{confirmEnd}',
+            )
+          "
+        >
+          <template #confirm="{ content }">
+            <p class="gl-mb-0 gl-mt-4">{{ content }}</p>
+          </template>
+        </gl-sprintf>
+      </confirm-action-modal>
     </template>
 
     <ul v-if="ldapAdminRoleLinks.length" class="content-list">
@@ -93,6 +139,7 @@ export default {
               category="secondary"
               icon="remove"
               :aria-label="s__('MemberRole|Remove sync')"
+              @click="linkToDelete = link"
             />
             <span class="gl-text-subtle">
               <gl-sprintf :message="s__('Geo|Last synced: %{timeAgo}')">

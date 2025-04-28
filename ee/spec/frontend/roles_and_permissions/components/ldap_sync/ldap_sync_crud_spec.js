@@ -1,12 +1,14 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlLink, GlButton, GlSprintf } from '@gitlab/ui';
+import { GlAlert, GlLink, GlButton, GlSprintf, GlModal } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import ldapAdminRoleLinksQuery from 'ee/roles_and_permissions/graphql/ldap_sync/ldap_admin_role_links.query.graphql';
+import ldapAdminRoleLinkDestroyMutation from 'ee/roles_and_permissions/graphql/ldap_sync/ldap_admin_role_link_destroy.mutation.graphql';
 import LdapSyncCrud from 'ee/roles_and_permissions/components/ldap_sync/ldap_sync_crud.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
+import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import { ldapAdminRoleLinks } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -20,10 +22,24 @@ describe('LdapSyncCrud component', () => {
     jest.fn().mockResolvedValue({ data: { ldapAdminRoleLinks: { nodes } } });
   const defaultRoleLinksHandler = getRoleLinksHandler();
 
-  const createWrapper = ({ roleLinksHandler = defaultRoleLinksHandler } = {}) => {
+  const getDestroyHandler = (error) =>
+    jest.fn().mockResolvedValue({
+      data: {
+        ldapAdminRoleLinkDestroy: { errors: error ? [error] : [] },
+      },
+    });
+  const defaultDestroyHandler = getDestroyHandler();
+
+  const createWrapper = ({
+    roleLinksHandler = defaultRoleLinksHandler,
+    destroyHandler = defaultDestroyHandler,
+  } = {}) => {
     wrapper = shallowMountExtended(LdapSyncCrud, {
-      apolloProvider: createMockApollo([[ldapAdminRoleLinksQuery, roleLinksHandler]]),
-      stubs: { CrudComponent, GlSprintf },
+      apolloProvider: createMockApollo([
+        [ldapAdminRoleLinksQuery, roleLinksHandler],
+        [ldapAdminRoleLinkDestroyMutation, destroyHandler],
+      ]),
+      stubs: { CrudComponent, GlSprintf, ConfirmActionModal },
     });
 
     return waitForPromises();
@@ -37,6 +53,17 @@ describe('LdapSyncCrud component', () => {
   const findActionButtons = () => findCrudActions().findAllComponents(GlButton);
   const findRoleLinksList = () => findCrudBody().find('ul');
   const findRoleLinkItems = () => findRoleLinksList().findAll('li');
+  const findDeleteModal = () => wrapper.findComponent(ConfirmActionModal);
+
+  const openDeleteModal = () => {
+    findRoleLinkItems().at(0).findComponent(GlButton).vm.$emit('click');
+    return nextTick();
+  };
+
+  const confirmDeleteModal = () => {
+    findDeleteModal().findComponent(GlModal).vm.$emit('primary', { preventDefault: jest.fn() });
+    return waitForPromises();
+  };
 
   describe('crud component', () => {
     beforeEach(() => createWrapper());
@@ -235,6 +262,64 @@ describe('LdapSyncCrud component', () => {
           expect(actionsDiv.find('span').text()).toBe('Last synced: Never');
         });
       });
+    });
+  });
+
+  describe('delete confirmation modal', () => {
+    describe('common behavior', () => {
+      beforeEach(async () => {
+        await createWrapper();
+        return openDeleteModal();
+      });
+
+      it('shows modal', () => {
+        expect(findDeleteModal().props()).toMatchObject({
+          title: 'Remove LDAP synchronization',
+          variant: 'confirm',
+          actionText: 'Remove sync',
+          modalId: 'remove-ldap-sync-modal',
+        });
+      });
+
+      it('shows message in modal body', () => {
+        expect(findDeleteModal().text()).toBe(
+          'This removes automatic syncing with your LDAP server. Users will keep their current role but future changes will require manual updates. Are you sure you want to remove LDAP synchronization?',
+        );
+      });
+
+      it('hides modal when modal is closed', async () => {
+        findDeleteModal().vm.$emit('close');
+        await nextTick();
+
+        expect(findDeleteModal().exists()).toBe(false);
+      });
+
+      describe('when modal is confirmed', () => {
+        beforeEach(() => confirmDeleteModal());
+
+        it('calls delete mutation', () => {
+          expect(defaultDestroyHandler).toHaveBeenCalledTimes(1);
+          expect(defaultDestroyHandler).toHaveBeenCalledWith({
+            id: 'gid://gitlab/Authz::LdapAdminRoleLink/1',
+          });
+        });
+
+        it('refreshes sync list', () => {
+          expect(defaultRoleLinksHandler).toHaveBeenCalledTimes(2);
+        });
+      });
+    });
+
+    it.each`
+      phrase                                        | destroyHandler                                              | error
+      ${'mutation throws error'}                    | ${jest.fn().mockRejectedValue(new Error('mutation error'))} | ${'mutation error'}
+      ${'mutation succeeds but response has error'} | ${getDestroyHandler('response error')}                      | ${'response error'}
+    `('shows error when $phrase', async ({ destroyHandler, error }) => {
+      await createWrapper({ destroyHandler });
+      await openDeleteModal();
+      await confirmDeleteModal();
+
+      expect(findDeleteModal().findComponent(GlAlert).text()).toBe(error);
     });
   });
 });
