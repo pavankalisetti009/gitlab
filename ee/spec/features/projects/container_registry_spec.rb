@@ -28,7 +28,7 @@ RSpec.describe 'Container Registry', :js, feature_category: :container_registry 
       visit_container_registry
 
       within_testid('container-scanning-metadata') do
-        content = s_('ContainerRegistry|Container Scanning for Registry: Off')
+        content = s_('ContainerRegistry|Container scanning for registry: Off')
         expect(page).to have_content(content)
       end
 
@@ -52,7 +52,7 @@ RSpec.describe 'Container Registry', :js, feature_category: :container_registry 
     it 'does not have container scanning for registry metadata' do
       visit_container_registry
 
-      expect(page).to have_no_content s_('ContainerRegistry|Container Scanning for Registry: Off')
+      expect(page).to have_no_content s_('ContainerRegistry|Container scanning for registry: Off')
     end
   end
 

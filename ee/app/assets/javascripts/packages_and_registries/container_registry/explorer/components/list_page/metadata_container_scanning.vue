@@ -44,8 +44,8 @@ export default {
     },
     metaText() {
       return this.containerScanningData?.isEnabled
-        ? s__('ContainerRegistry|Container Scanning for Registry: On')
-        : s__('ContainerRegistry|Container Scanning for Registry: Off');
+        ? s__('ContainerRegistry|Container scanning for registry: On')
+        : s__('ContainerRegistry|Container scanning for registry: Off');
     },
   },
   containerScanningForRegistryHelpUrl: helpPagePath(
@@ -60,7 +60,7 @@ export default {
     <template v-if="isMetaVisible">
       <div id="popover-target" data-testid="container-scanning-metadata">
         <gl-icon name="shield" class="gl-mr-3 gl-min-w-5" variant="subtle" /><span
-          class="gl-inline-flex gl-font-bold"
+          class="gl-inline-flex"
           >{{ metaText }}</span
         >
       </div>
