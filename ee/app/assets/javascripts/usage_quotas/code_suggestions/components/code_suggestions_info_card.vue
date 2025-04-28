@@ -113,11 +113,6 @@ export default {
         ? this.$options.i18n.trialTitle
         : this.$options.i18n.subscriptionTitle;
     },
-    subscriptionEndDateText() {
-      return this.duoAddOnIsTrial
-        ? this.$options.i18n.trialEndDate
-        : this.$options.i18n.subscriptionEndDate;
-    },
     startDate() {
       const date = this.duoAddOnStartDate;
       return date ? this.formattedDate(date) : this.$options.i18n.notAvailable;
