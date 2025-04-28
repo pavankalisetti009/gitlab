@@ -7,7 +7,7 @@ module MemberRoles
     private
 
     def build_role
-      MemberRole.new(params.merge(namespace: group))
+      role_class.new(params.merge(namespace: group))
     end
 
     def allowed?

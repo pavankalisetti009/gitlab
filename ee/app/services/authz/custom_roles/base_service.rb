@@ -2,10 +2,8 @@
 
 module Authz
   module CustomRoles
-    class BaseService < ::BaseService
+    class BaseService
       include Gitlab::Allowable
-
-      attr_accessor :current_user, :params, :member_role
 
       def initialize(current_user, params = {})
         @current_user = current_user
@@ -13,6 +11,8 @@ module Authz
       end
 
       private
+
+      attr_reader :current_user, :params, :role
 
       def authorized_error
         ::ServiceResponse.error(message: _('Operation not allowed'), reason: :unauthorized)
@@ -25,7 +25,7 @@ module Authz
           target_details: {
             name: role.name,
             description: role.description,
-            abilities: role.enabled_permissions(current_user).keys.join(', ')
+            abilities: role.enabled_permissions(current_user).keys.sort.join(', ')
           },
           **audit_event_attributes(role, action)
         }

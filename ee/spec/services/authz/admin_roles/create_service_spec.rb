@@ -15,10 +15,7 @@ RSpec.describe Authz::AdminRoles::CreateService, feature_category: :permissions 
     end
 
     let(:role_name) { 'doggfather' }
-    let(:role_klass) { Authz::AdminRole }
-
-    let(:audit_entity_type) { 'Gitlab::Audit::InstanceScope' }
-    let(:audit_entity_id) { Gitlab::Audit::InstanceScope.new.id }
+    let(:role_class) { Authz::AdminRole }
 
     subject(:create_role) { described_class.new(user, params).execute }
 
