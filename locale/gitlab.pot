@@ -25298,6 +25298,9 @@ msgstr ""
 msgid "Everything you need to create a GitLab Pages site using Middleman"
 msgstr ""
 
+msgid "Everything you need to create a GitLab Pages site using Next.js"
+msgstr ""
+
 msgid "Everything you need to create a GitLab Pages site using Nuxt"
 msgstr ""
 
@@ -48281,6 +48284,9 @@ msgid "ProjectTemplates|Pages/Jekyll"
 msgstr ""
 
 msgid "ProjectTemplates|Pages/Middleman"
+msgstr ""
+
+msgid "ProjectTemplates|Pages/Next.js"
 msgstr ""
 
 msgid "ProjectTemplates|Pages/Nuxt"
