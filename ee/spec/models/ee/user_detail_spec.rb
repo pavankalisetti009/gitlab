@@ -67,42 +67,6 @@ RSpec.describe UserDetail, feature_category: :system_access do
     end
   end
 
-  describe '#onboarding_status_registration_objective=' do
-    let(:user_detail) { build(:user_detail) }
-
-    context 'when given valid values' do
-      it 'correctly handles string values' do
-        value = 'basics'
-        user_detail.onboarding_status_registration_objective = value
-
-        expect(user_detail.onboarding_status_registration_objective).to eq(value)
-      end
-
-      it 'correctly handles integer values' do
-        value = 0
-        user_detail.onboarding_status_registration_objective = value
-
-        expect(user_detail.onboarding_status_registration_objective).to eq('basics')
-      end
-    end
-
-    context 'when given invalid values' do
-      it 'returns nil for an invalid string value' do
-        value = "something_invalid"
-        user_detail.onboarding_status_registration_objective = value
-
-        expect(user_detail.onboarding_status_registration_objective).to be_nil
-      end
-
-      it 'returns nil for an invalid integer value' do
-        value = 100
-        user_detail.onboarding_status_registration_objective = value
-
-        expect(user_detail.onboarding_status_registration_objective).to be_nil
-      end
-    end
-  end
-
   describe '#onboarding_status_role=' do
     let(:user_detail) { build(:user_detail) }
 
@@ -127,6 +91,33 @@ RSpec.describe UserDetail, feature_category: :system_access do
       user_detail.onboarding_status_role = value
 
       expect(user_detail.onboarding_status_role).to be_nil
+    end
+  end
+
+  describe '#onboarding_status_registration_objective=' do
+    let(:user_detail) { build(:user_detail) }
+
+    context 'when given valid values' do
+      it 'correctly handles string values' do
+        value = '0'
+        user_detail.onboarding_status_registration_objective = value
+
+        expect(user_detail.onboarding_status_registration_objective).to eq(0)
+      end
+
+      it 'correctly handles integer values' do
+        value = 0
+        user_detail.onboarding_status_registration_objective = value
+
+        expect(user_detail.onboarding_status_registration_objective).to eq(0)
+      end
+    end
+
+    it 'passes nil to super when value is not present' do
+      value = ''
+      user_detail.onboarding_status_registration_objective = value
+
+      expect(user_detail.onboarding_status_registration_objective).to be_nil
     end
   end
 
@@ -182,6 +173,43 @@ RSpec.describe UserDetail, feature_category: :system_access do
       with_them do
         it 'returns nil' do
           expect(user_detail.onboarding_status_role_name).to be_nil
+        end
+      end
+    end
+  end
+
+  context 'when reading onboarding_status_registration_objective' do
+    using RSpec::Parameterized::TableSyntax
+
+    let(:user_detail) do
+      build(:user_detail,
+        onboarding_status: { 'registration_objective' => onboarding_status_registration_objective_enum })
+    end
+
+    context 'with valid values' do
+      where(
+        onboarding_status_registration_objective_enum: described_class.onboarding_status_registration_objectives.values
+      )
+
+      with_them do
+        it 'returns the string corresponding to the enum value' do
+          expect(user_detail.onboarding_status_registration_objective_name)
+            .to eq(
+              described_class.onboarding_status_registration_objectives
+                             .key(onboarding_status_registration_objective_enum)
+            )
+        end
+      end
+    end
+
+    context 'with invalid values' do
+      where(
+        onboarding_status_registration_objective_enum: [nil, 9]
+      )
+
+      with_them do
+        it 'returns nil' do
+          expect(user_detail.onboarding_status_registration_objective_name).to be_nil
         end
       end
     end

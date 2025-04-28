@@ -18,7 +18,15 @@ module EE
       )
 
       def self.onboarding_status_registration_objectives
-        ::UserDetail::REGISTRATION_OBJECTIVE_PAIRS.transform_keys(&:to_s)
+        {
+          'basics' => 0,
+          'move_repository' => 1,
+          'code_storage' => 2,
+          'exploring' => 3,
+          'ci' => 4,
+          'other' => 5,
+          'joining_team' => 6
+        }
       end
 
       # Values here should match the role enums in app/validators/json_schemas/user_detail_onboarding_status.json
@@ -49,19 +57,16 @@ module EE
         end
       end
 
-      def onboarding_status_registration_objective
-        value = super
-        return unless value
-
-        self.class.onboarding_status_registration_objectives.key(value.to_i)
+      def onboarding_status_registration_objective_name
+        self.class.onboarding_status_registration_objectives.key(onboarding_status_registration_objective)
       end
 
       def onboarding_status_registration_objective=(value)
-        # Handle both string keys and integer values
-        if value.is_a?(String)
-          super(self.class.onboarding_status_registration_objectives[value])
+        if value.present?
+          int_value = value.is_a?(String) ? value.to_i : value
+          super(int_value)
         else
-          super
+          super(nil)
         end
       end
 

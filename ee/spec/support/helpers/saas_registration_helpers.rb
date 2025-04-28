@@ -432,7 +432,6 @@ module SaasRegistrationHelpers
       state: 'FL',
       website_url: 'https://gitlab.com',
       # these are the passed through params
-      registration_objective: 'other',
       jobs_to_be_done_other: 'My reason'
     ).permit!
   end

@@ -63,7 +63,7 @@ module Users
         work_email: user.email,
         uid: user.id,
         comment: params[:jobs_to_be_done_other],
-        jtbd: user.registration_objective,
+        jtbd: user.onboarding_status_registration_objective_name,
         product_interaction: onboarding_user_status.product_interaction,
         opt_in: user.onboarding_status_email_opt_in,
         preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),

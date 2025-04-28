@@ -67,7 +67,6 @@ module Registrations
                       .require(:user)
                       .permit(
                         :setup_for_company,
-                        :registration_objective,
                         :onboarding_status_joining_project,
                         :onboarding_status_role,
                         :onboarding_status_setup_for_company,
@@ -76,13 +75,6 @@ module Registrations
                       .merge(params.permit(:jobs_to_be_done_other))
                       .merge(onboarding_registration_type_params)
                       .merge(onboarding_in_progress: onboarding_status_presenter.continue_full_onboarding?)
-
-      # Dup registration_objective info for registration_objective and onboarding_status_registration_objective
-      if base_params[:registration_objective].present?
-        base_params[:onboarding_status_registration_objective] = base_params[:registration_objective]
-      elsif base_params[:onboarding_status_registration_objective].present?
-        base_params[:registration_objective] = base_params[:onboarding_status_registration_objective]
-      end
 
       sync_setup_for_company_params(base_params)
       base_params

@@ -32,7 +32,7 @@ RSpec.describe GitlabSubscriptions::CreateCompanyLeadService, feature_category: 
         gitlab_com_trial: true,
         with_add_on: true,
         add_on_name: 'duo_enterprise',
-        jtbd: '_jtbd_',
+        jtbd: nil,
         comment: '_comment_'
       }
     end
@@ -111,7 +111,7 @@ RSpec.describe GitlabSubscriptions::CreateCompanyLeadService, feature_category: 
         first_name: user.first_name,
         last_name: user.last_name,
         jobs_to_be_done_other: '_comment_',
-        registration_objective: '_jtbd_'
+        jtbd: '_jtbd_'
       }).execute
 
       expect(result.success?).to be true
