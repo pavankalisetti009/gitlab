@@ -95,7 +95,7 @@ RSpec.describe Users::SignupService, feature_category: :system_access do
         let(:params) do
           {
             setup_for_company: 'false',
-            registration_objective: 'code_storage',
+            onboarding_status_registration_objective: 2,
             jobs_to_be_done_other: '_jobs_to_be_done_other_'
           }
         end

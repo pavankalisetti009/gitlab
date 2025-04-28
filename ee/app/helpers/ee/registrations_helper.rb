@@ -8,7 +8,11 @@ module EE
     def shuffled_registration_objective_options
       options = registration_objective_options
       other = options.extract!(:other).to_a.flatten
-      options.to_a.shuffle.append(other).map { |option| option.reverse }
+      status_values = ::UserDetail.onboarding_status_registration_objectives
+
+      options.to_a.shuffle.append(other).map do |key, label|
+        [label, status_values[key]]
+      end
     end
 
     def arkose_labs_data

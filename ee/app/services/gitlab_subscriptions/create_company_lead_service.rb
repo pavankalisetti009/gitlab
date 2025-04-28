@@ -36,6 +36,7 @@ module GitlabSubscriptions
         preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
         opt_in: user.onboarding_status_email_opt_in,
         role: user.onboarding_status_role_name,
+        jtbd: user.onboarding_status_registration_objective_name,
         **glm_params
       }
     end
@@ -45,7 +46,6 @@ module GitlabSubscriptions
     end
 
     def remapping_for_api(params)
-      params[:jtbd] = params.delete(:registration_objective)
       params[:comment] ||= params.delete(:jobs_to_be_done_other)
       params
     end

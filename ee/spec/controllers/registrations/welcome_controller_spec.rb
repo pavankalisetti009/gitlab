@@ -107,14 +107,13 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
 
     let(:onboarding_status_setup_for_company) { 'false' }
     let(:onboarding_status_role) { 0 }
-    let(:onboarding_status_registration_objective) { nil }
+    let(:onboarding_status_registration_objective) { 2 }
 
     let(:extra_params) { {} }
     let(:update_params) do
       {
         user: {
           setup_for_company: setup_for_company,
-          registration_objective: 'code_storage',
           onboarding_status_joining_project: joining_project,
           onboarding_status_role: onboarding_status_role,
           onboarding_status_setup_for_company: onboarding_status_setup_for_company,
@@ -146,12 +145,12 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
       end
 
       context 'with email updates' do
-        context 'when registration_objective field is provided' do
-          it 'sets the registration_objective' do
+        context 'when onboarding_status_registration_objective field is provided' do
+          it 'sets the onboarding_status_registration_objective' do
             patch_update
 
-            expect(controller.current_user.registration_objective).to eq('code_storage')
-            expect(controller.current_user.onboarding_status_registration_objective).to eq('code_storage')
+            expect(controller.current_user.onboarding_status_registration_objective).to eq(2)
+            expect(controller.current_user.onboarding_status_registration_objective_name).to eq("code_storage")
           end
         end
       end
@@ -164,27 +163,13 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
         end
       end
 
-      context 'with registration_objective updates' do
+      context 'with onboarding_status_registration_objective updates' do
         before do
           patch_update
-          user.reset
         end
 
-        context 'when registration_objective field is provided' do
-          it 'sets registration_objective and onboarding_status_registration_objective' do
-            expect(user.registration_objective).to eq('code_storage')
-            expect(user.onboarding_status_registration_objective).to eq('code_storage')
-          end
-        end
-
-        context 'when onboarding_status_registration_objective field is provided' do
-          let(:registration_objective) { nil }
-          let(:onboarding_status_registration_objective) { 2 }
-
-          it 'sets onboarding_status_registration_objective and registration_objective' do
-            expect(user.registration_objective).to eq('code_storage')
-            expect(user.onboarding_status_registration_objective).to eq('code_storage')
-          end
+        it 'sets onboarding_status_registration_objective' do
+          expect(user.onboarding_status_registration_objective_name).to eq('code_storage')
         end
       end
 
@@ -298,7 +283,6 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
               path = new_users_sign_up_group_path
 
               expect(user.onboarding_in_progress).to be(true)
-              expect(user.onboarding_status_joining_project).to be_nil
               expect(response).to redirect_to path
             end
 
@@ -320,7 +304,6 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             let(:redirect_path) { new_users_sign_up_company_path(expected_params) }
             let(:expected_params) do
               {
-                registration_objective: 'code_storage',
                 jobs_to_be_done_other: '_jobs_to_be_done_other_'
               }
             end
@@ -417,7 +400,6 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
 
                 it 'redirects to the company path with expected db values' do
                   expected_params = {
-                    registration_objective: 'code_storage',
                     jobs_to_be_done_other: '_jobs_to_be_done_other_'
                   }
 
