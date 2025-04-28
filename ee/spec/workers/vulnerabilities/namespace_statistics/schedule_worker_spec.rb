@@ -5,48 +5,106 @@ require 'spec_helper'
 RSpec.describe Vulnerabilities::NamespaceStatistics::ScheduleWorker, feature_category: :security_asset_inventories do
   let(:worker) { described_class.new }
 
-  let_it_be(:user_namespace) { create(:user_namespace) }
-  let_it_be(:group) { create(:group) }
-  let_it_be(:another_group) { create(:group) }
-  let_it_be(:group_without_vulnerabilities) { create(:group) }
+  let_it_be(:group1) { create(:group) }
+  let_it_be(:group2) { create(:group) }
+  let_it_be(:group3) { create(:group) }
+  let_it_be(:group4) { create(:group) }
+  let_it_be(:group5) { create(:group) }
   let_it_be(:deleted_group) { create(:group) }
+  let_it_be(:user_namespace) { create(:user_namespace) }
 
-  let_it_be(:user_project) { create(:project, namespace: user_namespace) }
-  let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:project_namespace) { project.project_namespace }
-  let_it_be(:another_project) { create(:project, group: another_group) }
-  let_it_be(:project_without_vulnerabilities) { create(:project, group: group_without_vulnerabilities) }
-  let_it_be(:deleted_group_project) { create(:project, group: deleted_group) }
+  before do
+    deleted_group.namespace_details.update!(deleted_at: Time.current)
+    allow(Vulnerabilities::NamespaceStatistics::AdjustmentWorker).to receive(:perform_in)
+    stub_const("Vulnerabilities::NamespaceStatistics::ScheduleWorker::BATCH_SIZE", 3)
+  end
 
   describe "#perform" do
-    before do
-      deleted_group.namespace_details.update!(deleted_at: Time.current)
-      allow(Vulnerabilities::NamespaceStatistics::AdjustmentWorker).to receive(:perform_in)
-      stub_const("Vulnerabilities::NamespaceStatistics::ScheduleWorker::BATCH_SIZE", 2)
-    end
+    context 'when deleted groups and user namespaces exist' do
+      let(:passed_ids) { [] }
 
-    context 'when there are no vulnerability_statistics records' do
-      it 'doesnt schedule an AdjustmentWorker' do
+      before do
+        allow(Vulnerabilities::NamespaceStatistics::FindVulnerableNamespacesService)
+          .to receive(:execute) do |values|
+          passed_ids.concat(values.map(&:first)) # take namespace_id
+          []
+        end
+      end
+
+      it 'does not pass deleted groups or user namespaces to FindVulnerableNamespacesService' do
         worker.perform
 
+        expect(passed_ids).not_to include(deleted_group.id)
+        expect(passed_ids).not_to include(user_namespace.id)
+        expect(passed_ids).to include(group1.id, group2.id, group3.id, group4.id, group5.id)
+      end
+    end
+
+    context 'when no namespaces have vulnerabilities' do
+      before do
+        allow(Vulnerabilities::NamespaceStatistics::FindVulnerableNamespacesService)
+          .to receive(:execute).and_return([])
+      end
+
+      it 'does not schedule an AdjustmentWorker' do
+        worker.perform
+
+        expect(Vulnerabilities::NamespaceStatistics::FindVulnerableNamespacesService)
+          .to have_received(:execute).at_least(:once)
         expect(Vulnerabilities::NamespaceStatistics::AdjustmentWorker)
           .not_to have_received(:perform_in)
       end
     end
 
-    context 'when there are vulnerability_statistics records' do
-      let_it_be(:vulnerability_statistic_1) { create(:vulnerability_statistic, project: user_project) }
-      let_it_be(:vulnerability_statistic_2) { create(:vulnerability_statistic, project: project) }
-      let_it_be(:vulnerability_statistic_3) { create(:vulnerability_statistic, project: another_project) }
-      let_it_be(:vulnerability_statistic_4) { create(:vulnerability_statistic, project: deleted_group_project) }
+    context 'when some namespaces have vulnerabilities but fewer than batch size' do
+      before do
+        allow(Vulnerabilities::NamespaceStatistics::FindVulnerableNamespacesService)
+          .to receive(:execute).and_return([group1.id, group3.id], [])
+      end
 
-      it 'schedules an AdjustmentWorker with the correct namespace_ids' do
+      it 'schedules an AdjustmentWorker with all vulnerable namespace IDs' do
         worker.perform
 
-        # without deleted, user project namespaces. Without namespaces not in `vulnerability_statistic`
-        namespace_ids = [group.id, another_group.id]
+        expect(Vulnerabilities::NamespaceStatistics::FindVulnerableNamespacesService)
+          .to have_received(:execute).at_least(:once)
         expect(Vulnerabilities::NamespaceStatistics::AdjustmentWorker)
-          .to have_received(:perform_in).with(0, namespace_ids)
+          .to have_received(:perform_in).with(0, [group1.id, group3.id])
+      end
+    end
+
+    context 'when number of vulnerable namespaces equals batch size' do
+      before do
+        allow(Vulnerabilities::NamespaceStatistics::FindVulnerableNamespacesService)
+          .to receive(:execute).and_return([group1.id, group2.id, group3.id], [])
+      end
+
+      it 'schedules an AdjustmentWorker with all vulnerable namespace ids in one batch' do
+        worker.perform
+
+        expect(Vulnerabilities::NamespaceStatistics::FindVulnerableNamespacesService)
+          .to have_received(:execute).at_least(:once)
+        expect(Vulnerabilities::NamespaceStatistics::AdjustmentWorker)
+          .to have_received(:perform_in).with(0, [group1.id, group2.id, group3.id])
+      end
+    end
+
+    context 'when processing multiple batches' do
+      before do
+        stub_const("Vulnerabilities::NamespaceStatistics::ScheduleWorker::BATCH_SIZE", 2)
+
+        allow(Vulnerabilities::NamespaceStatistics::FindVulnerableNamespacesService)
+          .to receive(:execute).and_return([group1.id], [group3.id, group4.id], [])
+      end
+
+      it 'accumulates vulnerable ids across batches and schedules correctly' do
+        worker.perform
+
+        expect(Vulnerabilities::NamespaceStatistics::FindVulnerableNamespacesService)
+          .to have_received(:execute).exactly(3).times
+        expect(Vulnerabilities::NamespaceStatistics::AdjustmentWorker)
+          .to have_received(:perform_in).with(0, [group1.id, group3.id]).once
+        expect(Vulnerabilities::NamespaceStatistics::AdjustmentWorker)
+          .to have_received(:perform_in).with(described_class::DELAY_INTERVAL, [group4.id]).once
       end
     end
   end

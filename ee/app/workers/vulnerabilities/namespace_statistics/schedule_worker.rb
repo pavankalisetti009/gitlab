@@ -25,37 +25,23 @@ module Vulnerabilities
 
         Namespace.group_namespaces.each_batch(of: BATCH_SIZE) do |relation|
           # rubocop:disable CodeReuse/ActiveRecord -- Specific order and use case
-          namespace_map = relation.without_deleted.pluck(:id, :traversal_ids).to_h
-          traversal_arrays = format_for_sql_query(namespace_map.values)
-
-          # rubocop:disable Rails/WhereEquals -- Hash syntax treats array as one value
-          vulnerable_traversals = Vulnerabilities::Statistic.unarchived
-            .where('traversal_ids IN (?)', traversal_arrays).pluck(:traversal_ids).uniq
-          # rubocop:enable Rails/WhereEquals
+          namespace_values = relation.without_deleted.pluck(:id, :traversal_ids)
           # rubocop:enable CodeReuse/ActiveRecord
 
-          matching_ids = extract_matching_namespace_ids(namespace_map, vulnerable_traversals)
-          pending_ids.concat(matching_ids)
+          namespace_ids = FindVulnerableNamespacesService.execute(namespace_values)
+          next unless namespace_ids.present?
+
+          pending_ids.concat(namespace_ids)
           next unless pending_ids.length >= BATCH_SIZE
 
           schedule_batch_processing(index, pending_ids.shift(BATCH_SIZE))
           index += 1
         end
 
-        schedule_batch_processing(1, pending_ids) unless pending_ids.empty?
+        schedule_batch_processing(index, pending_ids) unless pending_ids.empty?
       end
 
-      def format_for_sql_query(traversal_ids_collection)
-        traversal_ids_collection.map do |traversal_ids|
-          "{#{traversal_ids.join(',')}}"
-        end
-      end
-
-      def extract_matching_namespace_ids(namespace_map, vulnerable_traversals)
-        namespace_map.select do |_, traversal_ids|
-          vulnerable_traversals.include?(traversal_ids)
-        end.keys
-      end
+      private
 
       def schedule_batch_processing(index, batch_ids)
         NamespaceStatistics::AdjustmentWorker.perform_in(index * DELAY_INTERVAL, batch_ids)
