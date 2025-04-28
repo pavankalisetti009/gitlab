@@ -232,4 +232,123 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
       end
     end
   end
+
+  describe 'POST /internal/search/zoekt/:uuid/heartbeat' do
+    let(:endpoint) { "/internal/search/zoekt/#{uuid}/heartbeat" }
+    let(:uuid) { '3869fe21-36d1-4612-9676-0b783ef2dcd7' }
+    let(:valid_params) do
+      {
+        'uuid' => uuid,
+        'node.url' => 'http://localhost:6090',
+        'node.name' => 'm1.local',
+        'disk.all' => 994662584320,
+        'disk.indexed' => 2416879,
+        'disk.used' => 532673712128
+      }
+    end
+
+    context 'with invalid auth' do
+      it 'returns 401' do
+        post api(endpoint), params: valid_params,
+          headers: gitlab_shell_internal_api_request_header(issuer: 'gitlab-workhorse')
+        expect(response).to have_gitlab_http_status(:unauthorized)
+      end
+    end
+
+    context 'with valid auth' do
+      subject(:request) { post api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header }
+
+      let(:node) { build(:zoekt_node) }
+
+      before do
+        allow(::Search::Zoekt::Node).to receive(:find_or_initialize_by_task_request).with(valid_params).and_return(node)
+      end
+
+      context 'when a heartbeat request is received with valid params' do
+        let(:node) { build(:zoekt_node, id: 123) }
+        let(:tasks) { %w[task1 task2] }
+
+        before do
+          allow(::Search::Zoekt::TaskPresenterService).to receive(:execute).and_return(tasks)
+        end
+
+        it 'returns node ID and tasks for task request' do
+          expect(node).to receive(:save).and_return(true)
+
+          post api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).to eq(
+            {
+              'id' => node.id, 'tasks' => tasks, 'pull_frequency' => Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT,
+              'truncate' => true, 'stop_indexing' => false, 'optimized_performance' => true
+            }
+          )
+        end
+
+        context 'when zoekt_optimized_performance_indexing is disabled' do
+          before do
+            stub_feature_flags(zoekt_optimized_performance_indexing: false)
+          end
+
+          it 'sends optimized_performance as false' do
+            expect(node).to receive(:save).and_return(true)
+
+            post api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
+
+            expect(::Search::Zoekt::TaskPresenterService).not_to receive(:execute)
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to eq(
+              {
+                'id' => node.id, 'tasks' => tasks, 'truncate' => true,
+                'pull_frequency' => Search::Zoekt::Node::TASK_PULL_FREQUENCY_DEFAULT,
+                'optimized_performance' => false, 'stop_indexing' => false
+              }
+            )
+          end
+        end
+
+        context 'when node is over critical watermark' do
+          before do
+            allow(::Search::Zoekt::TaskPresenterService).to receive(:execute).with(node).and_return([])
+            allow(node).to receive_messages(save_debouce: true, watermark_exceeded_critical?: true)
+          end
+
+          it 'sets stop_indexing attribute in response to true' do
+            post api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to include('stop_indexing' => true)
+          end
+
+          context 'when zoekt_critical_watermark_stop_indexing is disabled' do
+            before do
+              stub_feature_flags(zoekt_critical_watermark_stop_indexing: false)
+            end
+
+            it 'does not add stop_indexing in the response' do
+              post api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response).not_to have_key('stop_indexing')
+            end
+          end
+        end
+      end
+
+      context 'when a heartbeat has valid params but a node validation error occurs' do
+        let(:node) { build(:zoekt_node, id: 123, search_base_url: nil) }
+
+        it 'returns 422' do
+          post api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
+          expect(response).to have_gitlab_http_status(:unprocessable_entity)
+        end
+      end
+
+      context 'when a heartbeat is received with invalid params' do
+        it 'returns 400' do
+          post api(endpoint), params: { 'foo' => 'bar' }, headers: gitlab_shell_internal_api_request_header
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+    end
+  end
 end
