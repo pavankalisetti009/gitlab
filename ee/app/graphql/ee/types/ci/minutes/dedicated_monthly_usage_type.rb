@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# rubocop:disable Gitlab/EeOnlyClass -- This is only used in GitLab dedicated that comes under ultimate tier only.
+# rubocop:disable Gitlab/EeOnlyClass -- TODO: move to ee/app/graphql/types/ci/minutes/dedicated_monthly_usage_type.rb
 module EE
   module Types
     module Ci
@@ -24,8 +24,19 @@ module EE
           field :duration_seconds, GraphQL::Types::Int, null: false,
             description: 'Total duration in seconds of runner usage.'
 
-          field :root_namespace, ::Types::NamespaceType, null: true,
+          field :root_namespace, ::Types::Ci::Minutes::NamespaceUnionType, null: true,
             description: 'Namespace associated with the usage data. Null for instance aggregate data.'
+
+          def root_namespace
+            return unless object.root_namespace_id.present?
+
+            existing_namespace = object.root_namespace
+            return existing_namespace if existing_namespace.present?
+
+            ::Types::Ci::Minutes::DeletedNamespaceType::DeletedNamespace.new(
+              object.root_namespace_id
+            )
+          end
         end
       end
     end

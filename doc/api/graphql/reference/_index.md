@@ -22587,7 +22587,17 @@ Compute usage data for hosted runners on GitLab Dedicated.
 | <a id="cidedicatedhostedrunnerusagebillingmonthiso8601"></a>`billingMonthIso8601` | [`ISO8601Date!`](#iso8601date) | Timestamp of the billing month in ISO 8601 format. |
 | <a id="cidedicatedhostedrunnerusagecomputeminutes"></a>`computeMinutes` | [`Int!`](#int) | Total compute minutes used across all namespaces. |
 | <a id="cidedicatedhostedrunnerusagedurationseconds"></a>`durationSeconds` | [`Int!`](#int) | Total duration in seconds of runner usage. |
-| <a id="cidedicatedhostedrunnerusagerootnamespace"></a>`rootNamespace` | [`Namespace`](#namespace) | Namespace associated with the usage data. Null for instance aggregate data. |
+| <a id="cidedicatedhostedrunnerusagerootnamespace"></a>`rootNamespace` | [`NamespaceUnion`](#namespaceunion) | Namespace associated with the usage data. Null for instance aggregate data. |
+
+### `CiDeletedNamespace`
+
+Reference to a namespace that no longer exists.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cideletednamespaceid"></a>`id` | [`NamespaceID`](#namespaceid) | ID of the deleted namespace. |
 
 ### `CiDeletedRunner`
 
@@ -47180,6 +47190,15 @@ One of:
 
 - [`CiBuildNeed`](#cibuildneed)
 - [`CiJob`](#cijob)
+
+#### `NamespaceUnion`
+
+Represents either a namespace or a reference to a deleted namespace.
+
+One of:
+
+- [`CiDeletedNamespace`](#cideletednamespace)
+- [`Namespace`](#namespace)
 
 #### `NoteableType`
 

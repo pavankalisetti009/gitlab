@@ -6,8 +6,14 @@ query getDedicatedInstanceUsageByYear($grouping: GroupingEnum, $year: Int, $runn
       computeMinutes
       durationSeconds
       rootNamespace {
-        id
-        name
+        __typename
+        ... on Namespace {
+          id
+          name
+        }
+        ... on CiDeletedNamespace {
+          id
+        }
       }
     }
   }

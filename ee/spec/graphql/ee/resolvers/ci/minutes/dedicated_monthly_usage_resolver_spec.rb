@@ -139,29 +139,31 @@ RSpec.describe EE::Resolvers::Ci::Minutes::DedicatedMonthlyUsageResolver, featur
       end
     end
 
-    context 'when user is not on GitLab Dedicated', :enable_admin_mode do
-      let(:grouping) { 'INSTANCE_AGGREGATE' }
-      let(:billing_month_arg) { billing_month }
+    describe 'auth' do
+      context 'when user is not on GitLab Dedicated', :enable_admin_mode do
+        let(:grouping) { 'INSTANCE_AGGREGATE' }
+        let(:billing_month_arg) { billing_month }
 
-      before do
-        stub_application_setting(gitlab_dedicated_instance: false)
+        before do
+          stub_application_setting(gitlab_dedicated_instance: false)
+        end
+
+        it 'returns no data' do
+          result = resolve_usage(admin)
+
+          expect(result).to be_empty
+        end
       end
 
-      it 'returns no data' do
-        result = resolve_usage(admin)
+      context 'when user is not an admin' do
+        let(:grouping) { 'INSTANCE_AGGREGATE' }
+        let(:billing_month_arg) { billing_month }
 
-        expect(result).to be_empty
-      end
-    end
+        it 'returns no data' do
+          result = resolve_usage(user)
 
-    context 'when user is not an admin' do
-      let(:grouping) { 'INSTANCE_AGGREGATE' }
-      let(:billing_month_arg) { billing_month }
-
-      it 'returns no data' do
-        result = resolve_usage(user)
-
-        expect(result).to be_empty
+          expect(result).to be_empty
+        end
       end
     end
 
