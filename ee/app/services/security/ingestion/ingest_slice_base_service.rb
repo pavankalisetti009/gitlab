@@ -29,7 +29,7 @@ module Security
       attr_reader :pipeline, :finding_maps
 
       def run_tasks_in_sec_db
-        ::Gitlab::Database::SecApplicationRecord.transaction do
+        ::SecApplicationRecord.transaction do
           self.class::SEC_DB_TASKS.each { |task| execute_task(task) }
         end
       end

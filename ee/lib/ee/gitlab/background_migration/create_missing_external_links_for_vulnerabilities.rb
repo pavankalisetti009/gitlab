@@ -21,7 +21,7 @@ module EE
           self.table_name = 'projects'
         end
 
-        class Vulnerability < ::Gitlab::Database::SecApplicationRecord
+        class Vulnerability < ::SecApplicationRecord
           self.table_name = 'vulnerabilities'
         end
 
@@ -29,7 +29,7 @@ module EE
           self.table_name = "users"
         end
 
-        class ExternalIssueLink < ::Gitlab::Database::SecApplicationRecord
+        class ExternalIssueLink < ::SecApplicationRecord
           self.table_name = 'vulnerability_external_issue_links'
         end
 

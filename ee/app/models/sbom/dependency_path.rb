@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Sbom
-  class DependencyPath < ::Gitlab::Database::SecApplicationRecord
+  class DependencyPath < ::SecApplicationRecord
     include IgnorableColumns
 
     self.table_name = 'sbom_occurrences'

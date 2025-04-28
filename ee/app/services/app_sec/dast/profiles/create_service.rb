@@ -9,7 +9,7 @@ module AppSec
 
           return error(_('Invalid tags')) unless valid_tags?
 
-          Gitlab::Database::SecApplicationRecord.transaction do
+          SecApplicationRecord.transaction do
             @dast_profile = create_profile
             @schedule = create_schedule(@dast_profile) if params.dig(:dast_profile_schedule, :active)
           end

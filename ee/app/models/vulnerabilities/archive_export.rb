@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class ArchiveExport < Gitlab::Database::SecApplicationRecord
+  class ArchiveExport < ::SecApplicationRecord
     include FileStoreMounter
     include PartitionedTable
 

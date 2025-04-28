@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class Statistic < Gitlab::Database::SecApplicationRecord
+  class Statistic < ::SecApplicationRecord
     include EachBatch
     self.table_name = 'vulnerability_statistics'
 

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class Identifier < ::Gitlab::Database::SecApplicationRecord
+  class Identifier < ::SecApplicationRecord
     include EachBatch
     include ShaAttribute
 

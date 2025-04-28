@@ -11,7 +11,7 @@ module Vulnerabilities
       raise Gitlab::Access::AccessDeniedError unless authorized?
 
       if can_transition?
-        Gitlab::Database::SecApplicationRecord.transaction do
+        SecApplicationRecord.transaction do
           Vulnerabilities::StateTransition.create!(
             vulnerability: @vulnerability,
             from_state: @vulnerability.state,

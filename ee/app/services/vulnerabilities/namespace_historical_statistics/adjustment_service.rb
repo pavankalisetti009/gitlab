@@ -97,7 +97,7 @@ module Vulnerabilities
 
           joined_project_ids = project_ids_batch.map { |id| Integer(id) }.join(', ')
 
-          Gitlab::Database::SecApplicationRecord.connection.execute(upsert_sql(joined_project_ids, with_project_info))
+          SecApplicationRecord.connection.execute(upsert_sql(joined_project_ids, with_project_info))
         end
       end
 

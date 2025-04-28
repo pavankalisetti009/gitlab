@@ -8,7 +8,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountSecurePipelinesMet
   let_it_be(:user) { create(:user, group_view: :security_dashboard, created_at: 3.days.ago) }
 
   before do
-    allow(Gitlab::Database::SecApplicationRecord.connection).to receive(:transaction_open?).and_return(false)
+    allow(SecApplicationRecord.connection).to receive(:transaction_open?).and_return(false)
   end
 
   before_all do

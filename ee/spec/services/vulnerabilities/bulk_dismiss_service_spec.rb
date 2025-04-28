@@ -101,7 +101,7 @@ RSpec.describe Vulnerabilities::BulkDismissService, feature_category: :vulnerabi
 
       context 'when an error occurs' do
         before do
-          allow(Gitlab::Database::SecApplicationRecord).to receive(:transaction)
+          allow(SecApplicationRecord).to receive(:transaction)
                                                              .and_raise(ActiveRecord::RecordNotUnique)
         end
 

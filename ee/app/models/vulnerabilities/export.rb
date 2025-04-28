@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class Export < Gitlab::Database::SecApplicationRecord
+  class Export < ::SecApplicationRecord
     include Gitlab::Utils::StrongMemoize
     include FileStoreMounter
     include SafelyChangeColumnDefault

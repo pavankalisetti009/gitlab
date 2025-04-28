@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Sbom
-  class Occurrence < Gitlab::Database::SecApplicationRecord
+  class Occurrence < ::SecApplicationRecord
     LICENSE_COLUMNS = [:spdx_identifier, :name, :url].freeze
     include EachBatch
 

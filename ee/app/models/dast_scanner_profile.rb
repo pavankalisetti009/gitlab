@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class DastScannerProfile < ::Gitlab::Database::SecApplicationRecord
+class DastScannerProfile < ::SecApplicationRecord
   include Sanitizable
 
   belongs_to :project

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class DastSiteProfile < Gitlab::Database::SecApplicationRecord
+class DastSiteProfile < ::SecApplicationRecord
   API_SECRETS_KEYS = [Dast::SiteProfileSecretVariable::PASSWORD,
     Dast::SiteProfileSecretVariable::REQUEST_HEADERS].freeze
 

@@ -2,7 +2,7 @@
 
 module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an existing module
   class DependencyListExport
-    class Part < Gitlab::Database::SecApplicationRecord
+    class Part < ::SecApplicationRecord
       include FileStoreMounter
       include SafelyChangeColumnDefault
 

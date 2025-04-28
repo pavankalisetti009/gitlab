@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class NamespaceStatistic < Gitlab::Database::SecApplicationRecord
+  class NamespaceStatistic < ::SecApplicationRecord
     self.table_name = 'vulnerability_namespace_statistics'
 
     belongs_to :group, foreign_key: :namespace_id, inverse_of: :vulnerability_namespace_statistic, optional: false

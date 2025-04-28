@@ -20,9 +20,9 @@ module EE
             project_id = $2
         SQL
 
-        class ProjectSecurityStatistics < ::Gitlab::Database::SecApplicationRecord; end
+        class ProjectSecurityStatistics < ::SecApplicationRecord; end
 
-        class VulnerabilityRead < ::Gitlab::Database::SecApplicationRecord
+        class VulnerabilityRead < ::SecApplicationRecord
           include EachBatch
 
           self.primary_key = :vulnerability_id

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class SeverityOverride < Gitlab::Database::SecApplicationRecord
+  class SeverityOverride < ::SecApplicationRecord
     self.table_name = 'vulnerability_severity_overrides'
 
     belongs_to :vulnerability, class_name: 'Vulnerability', inverse_of: :severity_overrides

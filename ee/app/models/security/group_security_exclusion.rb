@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Security
-  class GroupSecurityExclusion < Gitlab::Database::SecApplicationRecord
+  class GroupSecurityExclusion < ::SecApplicationRecord
     self.inheritance_column = :_type_disabled
 
     belongs_to :group

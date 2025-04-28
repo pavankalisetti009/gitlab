@@ -2,7 +2,7 @@
 
 module Vulnerabilities
   class Export
-    class Part < Gitlab::Database::SecApplicationRecord
+    class Part < ::SecApplicationRecord
       include FileStoreMounter
       include SafelyChangeColumnDefault
 

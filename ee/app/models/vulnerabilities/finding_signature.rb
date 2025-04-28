@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class FindingSignature < Gitlab::Database::SecApplicationRecord
+  class FindingSignature < ::SecApplicationRecord
     include BulkInsertSafe
     include VulnerabilityFindingSignatureHelpers
 

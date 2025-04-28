@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class NamespaceHistoricalStatistic < Gitlab::Database::SecApplicationRecord
+  class NamespaceHistoricalStatistic < ::SecApplicationRecord
     include EachBatch
 
     self.table_name = 'vulnerability_namespace_historical_statistics'
