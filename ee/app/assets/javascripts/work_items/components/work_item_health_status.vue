@@ -3,8 +3,6 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
 import {
   HEALTH_STATUS_I18N_HEALTH_STATUS,
-  HEALTH_STATUS_I18N_NO_STATUS,
-  HEALTH_STATUS_I18N_NONE,
   HEALTH_STATUS_I18N_SELECT_HEALTH_STATUS,
   healthStatusDropdownOptions,
 } from 'ee/sidebar/constants';
@@ -23,8 +21,6 @@ import Tracking from '~/tracking';
 
 export default {
   HEALTH_STATUS_I18N_HEALTH_STATUS,
-  HEALTH_STATUS_I18N_NO_STATUS,
-  HEALTH_STATUS_I18N_NONE,
   HEALTH_STATUS_I18N_SELECT_HEALTH_STATUS,
   healthStatusDropdownOptions,
   components: {
@@ -57,19 +53,13 @@ export default {
     };
   },
   computed: {
+    // eslint-disable-next-line vue/no-unused-properties
     tracking() {
       return {
         category: TRACKING_CATEGORY_SHOW,
         label: 'item_health_status',
         property: `type_${this.workItemType}`,
       };
-    },
-    dropdownItems() {
-      const emptyItem = {
-        text: this.$options.HEALTH_STATUS_I18N_NO_STATUS,
-        value: null,
-      };
-      return [emptyItem, ...healthStatusDropdownOptions];
     },
     selectedHealthStatus() {
       return this.healthStatus || null;

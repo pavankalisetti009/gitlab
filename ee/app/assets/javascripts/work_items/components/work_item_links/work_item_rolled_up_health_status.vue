@@ -68,9 +68,6 @@ export default {
     statusIcon(healthStatus) {
       return healthStatusIconMap[healthStatus];
     },
-    statusColor(healthStatus) {
-      return healthStatusColorMap[healthStatus];
-    },
   },
   HEALTH_STATUS_ON_TRACK,
   HEALTH_STATUS_NEEDS_ATTENTION,
