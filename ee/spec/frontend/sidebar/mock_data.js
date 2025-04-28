@@ -464,6 +464,7 @@ export const mockGetMergeRequestReviewers = {
               webUrl: 'https://example.com/username',
               webPath: '/username',
               status: null,
+              type: 'human',
               mergeRequestInteraction: {
                 canMerge: true,
                 canUpdate: true,
