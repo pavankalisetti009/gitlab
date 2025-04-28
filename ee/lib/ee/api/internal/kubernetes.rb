@@ -73,12 +73,12 @@ module EE
               before { check_agent_token }
 
               namespace 'modules/remote_development' do
-                desc 'POST remote development work request' do
-                  detail 'Remote development work request'
+                desc 'GET remote development prerequisites request' do
+                  detail 'Remote development prerequisites request'
                 end
 
                 route_setting :authentication, cluster_agent_token_allowed: true
-                post '/prerequisites', urgency: :low, feature_category: :workspaces do
+                get '/prerequisites', urgency: :low, feature_category: :workspaces do
                   unless ::License.feature_available?(:remote_development)
                     forbidden!('"remote_development" licensed feature is not available')
                   end
@@ -97,6 +97,10 @@ module EE
                   else
                     render_api_error!({ error: response.message }, response.http_status)
                   end
+                end
+
+                desc 'POST remote development reconciliation request' do
+                  detail 'Remote development reconciliation request'
                 end
 
                 route_setting :authentication, cluster_agent_token_allowed: true
