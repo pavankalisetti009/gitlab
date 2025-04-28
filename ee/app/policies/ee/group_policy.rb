@@ -9,6 +9,7 @@ module EE
       include ::Gitlab::Utils::StrongMemoize
       include CrudPolicyHelpers
       include RemoteDevelopment::GroupPolicy
+      include Vulnerabilities::AdvancedVulnerabilityManagementPolicy
 
       condition(:ldap_synced, scope: :subject) { @subject.ldap_synced? }
       condition(:saml_group_links_exists, scope: :subject) do
