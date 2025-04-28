@@ -9,12 +9,12 @@ module Resolvers
 
       description 'Software dependency versions, filtered by component'
 
-      argument :component_id, ::Types::GlobalIDType[::Sbom::Component],
+      argument :component_name, ::GraphQL::Types::String,
         required: true,
-        description: 'Global ID of the SBoM component.'
+        description: 'Name of the SBoM component.'
 
-      def resolve(component_id: nil)
-        ::Sbom::ComponentVersionsFinder.new(object, component_id.model_id).execute
+      def resolve(component_name: nil)
+        ::Sbom::ComponentVersionsFinder.new(object, component_name).execute
       end
     end
   end

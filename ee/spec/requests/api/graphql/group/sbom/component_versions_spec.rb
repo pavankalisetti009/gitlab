@@ -2,13 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Query.project(fullPath).component_versions', feature_category: :dependency_management do
+RSpec.describe 'Query.group(fullPath).component_versions', feature_category: :dependency_management do
   include ApiHelpers
   include GraphqlHelpers
 
-  let_it_be(:project) { create(:project) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, namespace: group) }
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:variables) { { full_path: project.full_path } }
   let_it_be(:sbom_component) { create(:sbom_component) }
   let_it_be(:component_version_1) { create(:sbom_component_version, component: sbom_component) }
   let_it_be(:component_version_2) { create(:sbom_component_version, component: sbom_component) }
@@ -21,13 +21,13 @@ RSpec.describe 'Query.project(fullPath).component_versions', feature_category: :
     create(:sbom_occurrence, project: project, component: sbom_component, component_version: component_version_2)
   end
 
-  let(:component_versions) { graphql_data_at(:project, :component_versions, :nodes) }
-  let(:page_info) { graphql_data_at(:project, :component_versions, :page_info) }
+  let(:component_versions) { graphql_data_at(:group, :component_versions, :nodes) }
+  let(:page_info) { graphql_data_at(:group, :component_versions, :page_info) }
 
   let(:query) do
     %(
       query {
-        project(fullPath: "#{project.full_path}") {
+        group(fullPath: "#{project.namespace.full_path}") {
           name
           componentVersions(componentName: "#{sbom_component.name}") {
             nodes {
@@ -48,10 +48,6 @@ RSpec.describe 'Query.project(fullPath).component_versions', feature_category: :
     stub_licensed_features(security_dashboard: true, dependency_scanning: true)
   end
 
-  subject(:results) do
-    post_graphql(query, current_user: current_user)
-  end
-
   context 'when current user is not authorized' do
     it 'returns nil' do
       post_graphql(query, current_user: current_user)
@@ -62,7 +58,7 @@ RSpec.describe 'Query.project(fullPath).component_versions', feature_category: :
 
   context 'when current user is an authorized user' do
     it 'returns the expected component versions data when performing a well-formed query' do
-      project.add_maintainer(current_user)
+      group.add_maintainer(current_user)
 
       post_graphql(query, current_user: current_user)
 

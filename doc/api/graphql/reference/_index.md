@@ -27731,6 +27731,27 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupcomplianceframeworksids"></a>`ids` | [`[ComplianceManagementFrameworkID!]`](#compliancemanagementframeworkid) | List of Global IDs of compliance frameworks to return. |
 | <a id="groupcomplianceframeworkssearch"></a>`search` | [`String`](#string) | Search framework with most similar names. |
 
+##### `Group.componentVersions`
+
+Find software dependency versions by component name.
+
+{{< details >}}
+**Introduced** in GitLab 18.0.
+**Status**: Experiment.
+{{< /details >}}
+
+Returns [`ComponentVersionConnection!`](#componentversionconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupcomponentversionscomponentname"></a>`componentName` | [`String!`](#string) | Name of the SBoM component. |
+
 ##### `Group.components`
 
 Find software dependencies by name.
@@ -35337,7 +35358,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ##### `Project.componentVersions`
 
-Find software dependency versions by component.
+Find software dependency versions by component name.
 
 {{< details >}}
 **Introduced** in GitLab 17.10.
@@ -35354,7 +35375,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="projectcomponentversionscomponentid"></a>`componentId` | [`SbomComponentID!`](#sbomcomponentid) | Global ID of the SBoM component. |
+| <a id="projectcomponentversionscomponentname"></a>`componentName` | [`String!`](#string) | Name of the SBoM component. |
 
 ##### `Project.components`
 
