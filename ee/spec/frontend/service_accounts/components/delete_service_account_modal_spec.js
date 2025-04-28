@@ -3,7 +3,7 @@ import { createTestingPinia } from '@pinia/testing';
 import Vue, { nextTick } from 'vue';
 import { PiniaVuePlugin } from 'pinia';
 
-import DeleteServiceAccountModal from 'ee/service_accounts/components/service_accounts/delete_service_account_modal.vue';
+import DeleteServiceAccountModal from 'ee/service_accounts/components/delete_service_account_modal.vue';
 import { useServiceAccounts } from 'ee/service_accounts/stores/service_accounts';
 import { stubComponent } from 'helpers/stub_component';
 import { mountExtended } from 'helpers/vue_test_utils_helper';

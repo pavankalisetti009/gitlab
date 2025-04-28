@@ -2,9 +2,9 @@ import { GlFilteredSearch, GlPagination, GlSorting } from '@gitlab/ui';
 import { createTestingPinia } from '@pinia/testing';
 import Vue, { nextTick } from 'vue';
 import { PiniaVuePlugin } from 'pinia';
-import AccessTokens from 'ee/service_accounts/components/access_tokens/access_tokens.vue';
-import AccessTokenForm from 'ee/service_accounts/components/access_tokens/access_token_form.vue';
-import { useAccessTokens } from 'ee/service_accounts/stores/access_tokens';
+import AccessTokens from '~/vue_shared/access_tokens/components/access_tokens.vue';
+import AccessTokenForm from '~/vue_shared/access_tokens/components/access_token_form.vue';
+import { useAccessTokens } from '~/vue_shared/access_tokens/stores/access_tokens';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 

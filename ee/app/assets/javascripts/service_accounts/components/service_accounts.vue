@@ -15,7 +15,7 @@ import { s__ } from '~/locale';
 
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 
-import { useServiceAccounts } from '../../stores/service_accounts';
+import { useServiceAccounts } from '../stores/service_accounts';
 
 import DeleteServiceAccountModal from './delete_service_account_modal.vue';
 import CreateEditServiceAccountModal from './create_edit_service_account_modal.vue';

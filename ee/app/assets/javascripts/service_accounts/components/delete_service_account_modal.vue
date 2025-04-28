@@ -3,7 +3,7 @@ import { mapState } from 'pinia';
 import { GlModal, GlButton, GlForm, GlFormFields, GlSprintf } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 
-import { useServiceAccounts } from '../../stores/service_accounts';
+import { useServiceAccounts } from '../stores/service_accounts';
 
 export default {
   components: {

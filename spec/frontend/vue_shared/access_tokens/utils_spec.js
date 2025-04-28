@@ -1,4 +1,4 @@
-import { defaultDate, serializeParams, update2WeekFromNow } from 'ee/service_accounts/utils';
+import { defaultDate, serializeParams, update2WeekFromNow } from '~/vue_shared/access_tokens/utils';
 
 // Current date, `new Date()`, for these tests is 2020-07-06
 describe('defaultDate', () => {

@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils';
 import { GlDatepicker } from '@gitlab/ui';
 
 import ExpiresAtField from '~/access_tokens/components/expires_at_field.vue';
-import MaxExpirationDateMessage from 'ee/access_tokens/components/max_expiration_date_message.vue';
+import MaxExpirationDateMessage from 'ee/vue_shared/components/access_tokens/max_expiration_date_message.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 
 describe('~/access_tokens/components/expires_at_field', () => {
