@@ -77,6 +77,13 @@ module Ai
       end
       # rubocop:enable Gitlab/FeatureFlagWithoutActor
 
+      if ::License.current&.premium?
+        allowed_features.except!(
+          :duo_chat_explain_vulnerability,
+          :resolve_vulnerability
+        )
+      end
+
       allowed_features.stringify_keys
     end
 
