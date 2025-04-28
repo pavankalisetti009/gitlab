@@ -71,6 +71,7 @@ module EE
         #   they are generated asynchronously.
         #   Duo code review will then be triggered in AfterCreateService after diffs are created.
         return unless merge_request.merge_request_diff.persisted?
+        return if merge_request.merge_request_diff.empty?
         return unless merge_request.ai_review_merge_request_allowed?(current_user)
 
         ::Llm::ReviewMergeRequestService.new(current_user, merge_request).execute
