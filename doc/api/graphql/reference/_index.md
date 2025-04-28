@@ -80,24 +80,6 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="queryabusereportlabelssearchterm"></a>`searchTerm` | [`String`](#string) | Search term to find labels with. |
 
-### `Query.addOnPurchase`
-
-Retrieve the active add-on purchase. This query can be used in GitLab SaaS and self-managed environments.
-
-{{< details >}}
-**Deprecated** in GitLab 17.4.
-Use [addOnPurchases](#queryaddonpurchases) instead.
-{{< /details >}}
-
-Returns [`AddOnPurchase`](#addonpurchase).
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="queryaddonpurchaseaddontype"></a>`addOnType` | [`GitlabSubscriptionsAddOnType!`](#gitlabsubscriptionsaddontype) | Type of add-on for the add-on purchase. |
-| <a id="queryaddonpurchasenamespaceid"></a>`namespaceId` | [`NamespaceID`](#namespaceid) | ID of namespace that the add-on was purchased for. |
-
 ### `Query.addOnPurchases`
 
 Retrieve all active add-on purchases. This query can be used in GitLab.com and self-managed environments.

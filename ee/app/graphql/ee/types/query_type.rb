@@ -5,13 +5,6 @@ module EE
     module QueryType
       extend ActiveSupport::Concern
       prepended do
-        field :add_on_purchase,
-          ::Types::GitlabSubscriptions::AddOnPurchaseType,
-          null: true,
-          description: 'Retrieve the active add-on purchase. ' \
-                       'This query can be used in GitLab SaaS and self-managed environments.',
-          deprecated: { reason: 'Use [addOnPurchases](#queryaddonpurchases) instead', milestone: '17.4' },
-          resolver: ::Resolvers::GitlabSubscriptions::AddOnPurchaseResolver
         field :add_on_purchases,
           [::Types::GitlabSubscriptions::AddOnPurchaseType],
           null: true,
