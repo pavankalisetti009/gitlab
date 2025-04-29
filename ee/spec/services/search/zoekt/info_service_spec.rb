@@ -18,6 +18,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
       zoekt_search_enabled: true,
       zoekt_indexing_paused: false,
       zoekt_auto_delete_lost_nodes: true,
+      zoekt_cache_response: true,
       zoekt_auto_index_root_namespace: true,
       zoekt_cpu_to_tasks_ratio: 1.5,
       zoekt_rollout_batch_size: 32,

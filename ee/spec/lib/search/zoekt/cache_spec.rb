@@ -77,6 +77,16 @@ RSpec.describe Search::Zoekt::Cache, :clean_gitlab_redis_cache, feature_category
       expect(cache.enabled?).to be true
     end
 
+    context 'when application setting zoekt_cache_response is disabled' do
+      before do
+        stub_ee_application_setting(zoekt_cache_response: false)
+      end
+
+      it 'returns false' do
+        expect(cache.enabled?).to be false
+      end
+    end
+
     context 'when per_page is more than max_per_page' do
       let(:default_options) do
         { per_page: 40, max_per_page: 20, search_mode: :regex }

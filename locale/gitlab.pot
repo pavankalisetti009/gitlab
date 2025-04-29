@@ -11884,6 +11884,9 @@ msgstr ""
 msgid "CVS|Only a project maintainer or owner can toggle this feature."
 msgstr ""
 
+msgid "Cache search results for %{label}"
+msgstr ""
+
 msgid "Cadence"
 msgstr ""
 
@@ -32384,6 +32387,9 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "Input host keys manually"
+msgstr ""
+
+msgid "Input must be an integer between 0 and 9"
 msgstr ""
 
 msgid "Input the remote repository URL"

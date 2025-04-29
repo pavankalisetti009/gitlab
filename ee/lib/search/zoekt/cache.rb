@@ -3,11 +3,20 @@
 module Search
   module Zoekt
     class Cache
+      extend NumbersHelper
+
       MAX_PAGES = 10
       EXPIRES_IN = 5.minutes
 
       attr_reader :current_user, :query, :project_ids, :per_page, :current_page, :max_per_page, :search_mode,
         :multi_match
+
+      def self.humanize_expires_in
+        parts = EXPIRES_IN.parts
+        unit = parts.each_key.first
+        number = parts.each_value.first
+        "#{number_in_words(number)} #{unit}"
+      end
 
       def initialize(
         query, current_user:, project_ids:, per_page:, page:, max_per_page:, search_mode:,
@@ -23,6 +32,8 @@ module Search
       end
 
       def enabled?
+        return false unless Gitlab::CurrentSettings.zoekt_cache_response?
+
         project_ids.is_a?(Array) && project_ids.present? && per_page <= max_per_page
       end
 

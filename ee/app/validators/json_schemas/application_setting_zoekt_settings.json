@@ -12,6 +12,10 @@
       "type": "boolean",
       "description": "If all root namespaces need to be indexed automatically for the instance"
     },
+    "zoekt_cache_response": {
+      "type": "boolean",
+      "description": "If the results needs to be cached"
+    },
     "zoekt_indexing_enabled": {
       "type": "boolean",
       "description": "If zoekt indexing is enabled for the instance"
