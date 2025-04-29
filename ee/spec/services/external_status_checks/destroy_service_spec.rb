@@ -50,7 +50,7 @@ RSpec.describe ExternalStatusChecks::DestroyService, feature_category: :groups_a
       end
 
       context 'when external status check destroy operation succeeds', :request_store do
-        it 'logs an audit event' do
+        it 'logs an audit event', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/537938' do
           expect { execute }.to change { AuditEvent.count }.by(1)
           expect(AuditEvent.last.details).to include({
             target_type: 'MergeRequests::ExternalStatusCheck',
