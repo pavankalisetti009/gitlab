@@ -6,7 +6,6 @@ export const sendHandRaiseLead = async (createHandRaiseLeadPath, params) => {
   const formParams = {
     namespace_id: params.namespaceId,
     company_name: params.companyName,
-    company_size: params.companySize,
     first_name: params.firstName,
     last_name: params.lastName,
     phone_number: params.phoneNumber,

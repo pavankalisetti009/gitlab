@@ -43,7 +43,6 @@ describe('CompanyForm', () => {
       ${'first_name'}
       ${'last_name'}
       ${'company_name'}
-      ${'company_size'}
       ${'country'}
       ${'phone_number'}
     `('has the correct form input in the form content', ({ testid }) => {

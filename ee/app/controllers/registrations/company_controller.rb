@@ -59,7 +59,6 @@ module Registrations
       params.permit(
         *::Onboarding::StatusPresenter::PASSED_THROUGH_PARAMS,
         :company_name,
-        :company_size,
         :first_name,
         :last_name,
         :phone_number,

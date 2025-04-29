@@ -9,7 +9,6 @@ RSpec.describe GitlabSubscriptions::Trials::CreateAddOnLeadService, feature_cate
     let(:expected_params) do
       {
         company_name: 'Gitlab',
-        company_size: '1-99',
         first_name: user.first_name,
         last_name: user.last_name,
         phone_number: '1111111111',

@@ -1,19 +1,16 @@
 <script>
-import { GlForm, GlButton, GlFormGroup, GlFormInput, GlFormSelect } from '@gitlab/ui';
+import { GlForm, GlButton, GlFormGroup, GlFormInput } from '@gitlab/ui';
 import {
   LEADS_COMPANY_NAME_LABEL,
-  LEADS_COMPANY_SIZE_LABEL,
   LEADS_FIRST_NAME_LABEL,
   LEADS_LAST_NAME_LABEL,
   LEADS_PHONE_NUMBER_LABEL,
-  companySizes,
 } from 'ee/vue_shared/leads/constants';
 import csrf from '~/lib/utils/csrf';
 import { __ } from '~/locale';
 import FormErrorTracker from '~/pages/shared/form_error_tracker';
 import CountryOrRegionSelector from 'ee/trials/components/country_or_region_selector.vue';
 import {
-  TRIAL_COMPANY_SIZE_PROMPT,
   TRIAL_PHONE_DESCRIPTION,
   GENERIC_TRIAL_FORM_SUBMIT_TEXT,
   ULTIMATE_TRIAL_FOOTER_DESCRIPTION,
@@ -29,7 +26,6 @@ export default {
     GlButton,
     GlFormGroup,
     GlFormInput,
-    GlFormSelect,
     CountryOrRegionSelector,
   },
   inject: {
@@ -52,22 +48,10 @@ export default {
     return {
       ...this.user,
       companyName: '',
-      companySize: null,
       phoneNumber: null,
       country: '',
       state: '',
     };
-  },
-  computed: {
-    companySizeOptionsWithDefault() {
-      return [
-        {
-          name: this.$options.i18n.companySizeSelectPrompt,
-          id: null,
-        },
-        ...companySizes,
-      ];
-    },
   },
   mounted() {
     new FormErrorTracker(); // eslint-disable-line no-new
@@ -81,8 +65,6 @@ export default {
     firstNameLabel: LEADS_FIRST_NAME_LABEL,
     lastNameLabel: LEADS_LAST_NAME_LABEL,
     companyNameLabel: LEADS_COMPANY_NAME_LABEL,
-    companySizeLabel: LEADS_COMPANY_SIZE_LABEL,
-    companySizeSelectPrompt: TRIAL_COMPANY_SIZE_PROMPT,
     phoneNumberLabel: LEADS_PHONE_NUMBER_LABEL,
     phoneNumberDescription: TRIAL_PHONE_DESCRIPTION,
     optional: __('(optional)'),
@@ -154,25 +136,6 @@ export default {
           name="company_name"
           class="js-track-error"
           data-testid="company_name"
-          :data-track-action-for-errors="trackActionForErrors"
-          required
-        />
-      </gl-form-group>
-      <gl-form-group
-        :label="$options.i18n.companySizeLabel"
-        label-size="sm"
-        label-for="company_size"
-      >
-        <gl-form-select
-          id="company_size"
-          class="gl-field-error-anchor"
-          :value="companySize"
-          name="company_size"
-          select-class="js-track-error"
-          :options="companySizeOptionsWithDefault"
-          value-field="id"
-          text-field="name"
-          data-testid="company_size"
           :data-track-action-for-errors="trackActionForErrors"
           required
         />

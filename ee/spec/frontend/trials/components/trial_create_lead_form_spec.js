@@ -54,7 +54,6 @@ describe('TrialCreateLeadForm', () => {
       'first-name-field',
       'last-name-field',
       'company-name-field',
-      'company-size-dropdown',
       'phone-number-field',
     ];
 
@@ -64,12 +63,11 @@ describe('TrialCreateLeadForm', () => {
       });
 
       it.each`
-        testid                     | value
-        ${'first-name-field'}      | ${'Joe'}
-        ${'last-name-field'}       | ${''}
-        ${'company-name-field'}    | ${'ACME'}
-        ${'phone-number-field'}    | ${'192919'}
-        ${'company-size-dropdown'} | ${'1-99'}
+        testid                  | value
+        ${'first-name-field'}   | ${'Joe'}
+        ${'last-name-field'}    | ${''}
+        ${'company-name-field'} | ${'ACME'}
+        ${'phone-number-field'} | ${'192919'}
       `('has the default injected value for $testid', ({ testid, value }) => {
         expect(findFormInput(testid).attributes('value')).toBe(value);
       });
@@ -90,12 +88,11 @@ describe('TrialCreateLeadForm', () => {
       });
 
       it.each`
-        testid                     | value
-        ${'first-name-field'}      | ${'Joe'}
-        ${'last-name-field'}       | ${'Doe'}
-        ${'company-name-field'}    | ${'ACME'}
-        ${'phone-number-field'}    | ${'192919'}
-        ${'company-size-dropdown'} | ${'1-99'}
+        testid                  | value
+        ${'first-name-field'}   | ${'Joe'}
+        ${'last-name-field'}    | ${'Doe'}
+        ${'company-name-field'} | ${'ACME'}
+        ${'phone-number-field'} | ${'192919'}
       `('has the default injected value for $testid', ({ testid, value }) => {
         expect(findFormInput(testid).attributes('value')).toBe(value);
       });

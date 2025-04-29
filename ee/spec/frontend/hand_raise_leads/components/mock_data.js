@@ -34,7 +34,6 @@ export const FORM_DATA = {
   firstName: 'Joe',
   lastName: 'Doe',
   companyName: 'ACME',
-  companySize: '1-99',
   phoneNumber: '192919',
   country: COUNTRY_WITH_STATES,
   state: STATE,

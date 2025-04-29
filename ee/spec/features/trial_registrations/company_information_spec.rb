@@ -13,7 +13,6 @@ RSpec.describe 'Company Information', :js, feature_category: :activation do
   let_it_be(:fields) do
     [
       'Company name',
-      'Number of employees',
       'Country',
       'Telephone number (optional)'
     ]
@@ -39,7 +38,6 @@ RSpec.describe 'Company Information', :js, feature_category: :activation do
         first_name: user.first_name,
         last_name: user.last_name,
         company_name: 'Test Company',
-        company_size: '1-99',
         phone_number: '+1234567890',
         country: 'US',
         state: 'FL'

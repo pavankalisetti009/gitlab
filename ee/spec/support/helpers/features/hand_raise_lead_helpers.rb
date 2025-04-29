@@ -7,7 +7,6 @@ module Features
         first_name: user.first_name,
         last_name: user.last_name,
         phone_number: '+1 23 456-78-90',
-        company_size: '1 - 99',
         company_name: user.organization,
         country: { id: 'US', name: 'United States of America' },
         state: { id: 'CA', name: 'California' }
@@ -17,7 +16,6 @@ module Features
         "first_name" => form_data[:first_name],
         "last_name" => form_data[:last_name],
         "company_name" => form_data[:company_name],
-        "company_size" => form_data[:company_size].delete(' '),
         "phone_number" => form_data[:phone_number],
         "country" => form_data.dig(:country, :id),
         "state" => form_data.dig(:state, :id),
@@ -51,7 +49,6 @@ module Features
           expect(page).to have_field('Company name', with: form_data[:company_name])
         end
 
-        select form_data[:company_size], from: 'company-size'
         fill_in 'phone-number', with: form_data[:phone_number]
         select form_data.dig(:country, :name), from: 'country'
         select form_data.dig(:state, :name), from: 'state'

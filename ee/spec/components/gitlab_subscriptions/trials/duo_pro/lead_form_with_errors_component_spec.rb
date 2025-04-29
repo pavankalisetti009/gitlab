@@ -17,7 +17,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro::LeadFormWithErrorsComponent,
           last_name: 'bar',
           email_domain: 'baz',
           company_name: 'qux',
-          company_size: 'quux',
           phone_number: 'quuz',
           country: 'corge',
           state: 'grault'

@@ -41304,9 +41304,6 @@ msgstr ""
 msgid "Number of commits per MR"
 msgstr ""
 
-msgid "Number of employees"
-msgstr ""
-
 msgid "Number of files touched"
 msgstr ""
 
@@ -63854,9 +63851,6 @@ msgid "Trial|Please provide the following information to start your trial."
 msgstr ""
 
 msgid "Trial|Privacy Statement"
-msgstr ""
-
-msgid "Trial|Select number of employees"
 msgstr ""
 
 msgid "Trial|Select state or province"

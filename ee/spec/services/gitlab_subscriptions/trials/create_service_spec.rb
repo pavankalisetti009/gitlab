@@ -211,7 +211,6 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
   def lead_params(user, extra_lead_params)
     {
       company_name: 'GitLab',
-      company_size: '1-99',
       first_name: user.first_name,
       last_name: user.last_name,
       phone_number: '+1 23 456-78-90',
