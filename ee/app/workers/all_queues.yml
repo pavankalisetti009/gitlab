@@ -1103,16 +1103,6 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :geo
-- :name: geo:geo_verification
-  :worker_name: Geo::VerificationWorker
-  :feature_category: :geo_replication
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-  :queue_namespace: :geo
 - :name: geo:geo_verification_batch
   :worker_name: Geo::VerificationBatchWorker
   :feature_category: :geo_replication
