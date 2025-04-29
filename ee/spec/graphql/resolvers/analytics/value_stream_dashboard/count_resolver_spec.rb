@@ -34,26 +34,53 @@ RSpec.describe Resolvers::Analytics::ValueStreamDashboard::CountResolver, featur
       end
 
       context 'when requesting the contributors metric', :click_house do
-        before do
-          allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+        context 'when fetch_contributions_data_from_new_tables FF is enabled' do
+          before do
+            allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
 
-          arguments[:identifier] = 'contributors'
+            arguments[:identifier] = 'contributors'
 
-          clickhouse_fixture(:events, [
-            # push event
-            { id: 1, path: "#{group.id}/", author_id: 100, target_id: 0, target_type: '', action: 5,
-              created_at: '2023-05-10', updated_at: '2023-05-10' },
-            # push event, different user
-            { id: 2, path: "#{group.id}/", author_id: 200, target_id: 0, target_type: '', action: 5,
-              created_at: '2023-05-15', updated_at: '2023-05-15' },
-            # otside of the date range
-            { id: 3, path: "#{group.id}/", author_id: 300, target_id: 0, target_type: '', action: 5,
-              created_at: '2023-06-15', updated_at: '2023-06-15' }
-          ])
+            clickhouse_fixture(:events_new, [
+              # push event
+              { id: 1, path: "#{group.organization_id}/#{group.id}/", author_id: 100, target_id: 0,
+                target_type: '', action: 5, created_at: '2023-05-10', updated_at: '2023-05-10' },
+              # push event, different user
+              { id: 2, path: "#{group.organization_id}/#{group.id}/", author_id: 200, target_id: 0,
+                target_type: '', action: 5, created_at: '2023-05-15', updated_at: '2023-05-15' },
+              # otside of the date range
+              { id: 3, path: "#{group.organization_id}/#{group.id}/", author_id: 300, target_id: 0,
+                target_type: '', action: 5, created_at: '2023-06-15', updated_at: '2023-06-15' }
+            ])
+          end
+
+          it 'returns the correct count' do
+            expect(result[:count]).to eq(2)
+          end
         end
 
-        it 'returns the correct count' do
-          expect(result[:count]).to eq(2)
+        context 'when fetch_contributions_data_from_new_tables FF is disabled' do
+          before do
+            stub_feature_flags(fetch_contributions_data_from_new_tables: false)
+            allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+
+            arguments[:identifier] = 'contributors'
+
+            clickhouse_fixture(:events, [
+              # push event
+              { id: 1, path: "#{group.id}/", author_id: 100, target_id: 0, target_type: '', action: 5,
+                created_at: '2023-05-10', updated_at: '2023-05-10' },
+              # push event, different user
+              { id: 2, path: "#{group.id}/", author_id: 200, target_id: 0, target_type: '', action: 5,
+                created_at: '2023-05-15', updated_at: '2023-05-15' },
+              # otside of the date range
+              { id: 3, path: "#{group.id}/", author_id: 300, target_id: 0, target_type: '', action: 5,
+                created_at: '2023-06-15', updated_at: '2023-06-15' }
+            ])
+          end
+
+          it 'returns the correct count' do
+            expect(result[:count]).to eq(2)
+          end
         end
       end
 
