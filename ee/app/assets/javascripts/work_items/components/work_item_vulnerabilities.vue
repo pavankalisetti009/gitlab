@@ -1,17 +1,22 @@
 <script>
 import { GlBadge } from '@gitlab/ui';
-import { n__, sprintf } from '~/locale';
+import { n__, s__, sprintf } from '~/locale';
+import { createAlert } from '~/alert';
 import { VULNERABILITIES_ITEMS_ANCHOR } from '~/work_items/constants';
-import { findVulnerabilitiesWidget } from '~/work_items/utils';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
+import WorkItemChildrenLoadMore from '~/work_items/components/shared/work_item_children_load_more.vue';
+import { findVulnerabilitiesWidget } from '~/work_items/utils';
 import workItemVulnerabilitiesQuery from '../graphql/work_item_vulnerabilities.query.graphql';
 import WorkItemVulnerabilityItem from './work_item_vulnerability_item.vue';
+
+const FETCH_MORE_ITEMS = 50;
 
 export default {
   components: {
     CrudComponent,
     GlBadge,
     WorkItemVulnerabilityItem,
+    WorkItemChildrenLoadMore,
   },
   props: {
     workItemFullPath: {
@@ -26,13 +31,12 @@ export default {
   },
   data() {
     return {
-      workItemVulnerabilities: {},
+      relatedVulnerabilities: [],
+      pageInfo: {},
+      fetchNextPageInProgress: false,
     };
   },
   computed: {
-    relatedVulnerabilities() {
-      return this.workItemVulnerabilities.relatedVulnerabilities?.nodes || [];
-    },
     relatedVulnerabilitiesCount() {
       return this.relatedVulnerabilities.length;
     },
@@ -49,9 +53,12 @@ export default {
         { itemCount: this.relatedVulnerabilitiesCount },
       );
     },
+    hasNextPage() {
+      return this.pageInfo.hasNextPage;
+    },
   },
   apollo: {
-    workItemVulnerabilities: {
+    relatedVulnerabilities: {
       query: workItemVulnerabilitiesQuery,
       variables() {
         return {
@@ -60,11 +67,53 @@ export default {
         };
       },
       update(data) {
-        return findVulnerabilitiesWidget(data.workspace?.workItem) || {};
+        const relatedVulnerabilities = this.getRelatedVulnerabilities(data);
+        this.pageInfo = relatedVulnerabilities?.pageInfo || {};
+
+        return relatedVulnerabilities?.nodes || [];
+      },
+      error(error) {
+        createAlert({
+          message: s__('WorkItem|Something went wrong while fetching related vulnerabilities.'),
+          captureError: true,
+          error,
+        });
       },
       skip() {
         return !this.workItemIid;
       },
+    },
+  },
+  methods: {
+    getRelatedVulnerabilities(data) {
+      const workItemVulnerabilities = findVulnerabilitiesWidget(data.workspace?.workItem) || {};
+      return workItemVulnerabilities.relatedVulnerabilities;
+    },
+    async fetchNextPage() {
+      if (!this.hasNextPage || this.fetchNextPageInProgress) {
+        return;
+      }
+
+      this.fetchNextPageInProgress = true;
+
+      try {
+        await this.$apollo.queries.relatedVulnerabilities.fetchMore({
+          variables: {
+            after: this.pageInfo.endCursor,
+            first: FETCH_MORE_ITEMS,
+          },
+        });
+      } catch (error) {
+        createAlert({
+          message: s__(
+            'WorkItem|Something went wrong while fetching more related vulnerabilities.',
+          ),
+          captureError: true,
+          error,
+        });
+      } finally {
+        this.fetchNextPageInProgress = false;
+      }
     },
   },
   VULNERABILITIES_ITEMS_ANCHOR,
@@ -90,5 +139,13 @@ export default {
         <work-item-vulnerability-item :item="item" />
       </li>
     </ul>
+
+    <div v-if="hasNextPage" class="border-top !gl-px-2 gl-pb-2 gl-pt-2">
+      <work-item-children-load-more
+        :fetch-next-page-in-progress="fetchNextPageInProgress"
+        data-testid="work-item-vulnerabilities-load-more"
+        @fetch-next-page="fetchNextPage"
+      />
+    </div>
   </crud-component>
 </template>
