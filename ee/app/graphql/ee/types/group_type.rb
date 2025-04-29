@@ -322,6 +322,13 @@ module EE
           resolver: ::Resolvers::Sbom::DependenciesResolver,
           description: 'Software dependencies used by projects under this group.'
 
+        field :dependency_aggregations, ::Types::Sbom::DependencyAggregationType.connection_type,
+          null: true,
+          experiment: { milestone: '18.0' },
+          authorize: :read_dependency,
+          resolver: ::Resolvers::Sbom::DependencyAggregationResolver,
+          description: 'Software dependencies used by projects under this group.'
+
         field :components,
           [::Types::Sbom::ComponentType],
           null: true,
