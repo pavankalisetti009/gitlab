@@ -68968,9 +68968,6 @@ msgstr ""
 msgid "WorkItem|Requirement"
 msgstr ""
 
-msgid "WorkItem|Requirements"
-msgstr ""
-
 msgid "WorkItem|Reset template"
 msgstr ""
 
