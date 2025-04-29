@@ -23,7 +23,6 @@ describe('DependenciesTable component', () => {
     namespaceType: 'project',
     endpoint: 'endpoint',
     locationsEndpoint: 'endpoint',
-    belowGroupLimit: true,
   };
 
   const createComponent = ({ propsData, provide } = {}) => {

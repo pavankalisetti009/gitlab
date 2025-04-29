@@ -18,15 +18,12 @@ module Groups
     urgency :low
     track_govern_activity 'dependencies', :index
 
-    # More details on https://gitlab.com/gitlab-org/gitlab/-/issues/411257#note_1508315283
-    GROUP_COUNT_LIMIT = 600
     PROJECT_IDS_LIMIT = 10
     COMPONENT_NAMES_LIMIT_FOR_VERSION_FILTERING = 1
 
     def index
       respond_to do |format|
         format.html do
-          set_below_group_limit
           track_internal_event(
             "visit_dependency_list",
             user: current_user,
@@ -58,8 +55,6 @@ module Groups
     end
 
     def licenses
-      return render_not_authorized unless below_group_limit?
-
       catalogue = Gitlab::SPDX::Catalogue.latest
 
       licenses = catalogue
@@ -123,24 +118,20 @@ module Groups
     end
 
     def dependencies_finder_params
-      finder_params = if below_group_limit?
-                        params.permit(
-                          :cursor,
-                          :page,
-                          :per_page,
-                          :sort,
-                          :sort_by,
-                          licenses: [],
-                          package_managers: [],
-                          project_ids: [],
-                          component_ids: [],
-                          component_names: [],
-                          component_versions: [],
-                          not: { component_versions: [] }
-                        )
-                      else
-                        params.permit(:cursor, :page, :per_page, :sort, :sort_by)
-                      end
+      finder_params = params.permit(
+        :cursor,
+        :page,
+        :per_page,
+        :sort,
+        :sort_by,
+        licenses: [],
+        package_managers: [],
+        project_ids: [],
+        component_ids: [],
+        component_names: [],
+        component_versions: [],
+        not: { component_versions: [] }
+      )
 
       finder_params[:sort_by] = map_sort_by(finder_params[:sort_by]) if using_new_query?
 
@@ -197,14 +188,6 @@ module Groups
 
     def per_page
       params[:per_page]&.to_i || Sbom::AggregationsFinder::DEFAULT_PAGE_SIZE
-    end
-
-    def set_below_group_limit
-      @below_group_limit = below_group_limit?
-    end
-
-    def below_group_limit?
-      group.count_within_namespaces <= GROUP_COUNT_LIMIT
     end
 
     def using_new_query?
