@@ -52,8 +52,8 @@ RSpec.shared_examples 'a query that is paginated' do
   end
 end
 
-RSpec.shared_examples 'a query that sets source_fields' do
+RSpec.shared_examples 'a query that sets source_fields' do |source_fields = ['id']|
   it 'applies the source field' do
-    expect(subject).to include(_source: ['id'])
+    expect(subject).to include(_source: source_fields)
   end
 end
