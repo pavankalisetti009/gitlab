@@ -29,7 +29,7 @@ RSpec.describe GitlabSubscriptions::ActivateService, feature_category: :plan_pro
   context 'when CustomerDot returns success' do
     let(:future_subscriptions) { [] }
     let(:customer_dot_response) do
-      { success: true, license_key: license_key, future_subscriptions: future_subscriptions }
+      { success: true, license_key: license_key, future_subscriptions: future_subscriptions, new_subscription: false }
     end
 
     before do
@@ -97,7 +97,8 @@ RSpec.describe GitlabSubscriptions::ActivateService, feature_category: :plan_pro
         it 'logs error and returns an empty future_subscriptions array' do
           result = nil
 
-          allow(Gitlab::CurrentSettings.current_application_settings).to receive(:update!).and_raise('saving fails')
+          allow(Gitlab::CurrentSettings.current_application_settings).to receive(:update!)
+            .and_raise(ActiveRecord::ActiveRecordError)
 
           expect(application_settings.future_subscriptions).to eq([])
           expect(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception)
@@ -132,7 +133,69 @@ RSpec.describe GitlabSubscriptions::ActivateService, feature_category: :plan_pro
           expect(sync_link_data).to receive(:sync)
         end
 
-        subject
+        execute_service
+      end
+    end
+
+    context 'when the activated subscription is a new subscription' do
+      let(:customer_dot_response) do
+        super().merge(new_subscription: true)
+      end
+
+      context 'when the subscription does not contain Duo Core' do
+        let(:license_key) { build(:gitlab_license, :cloud).export }
+
+        it 'does not auto enable the Duo Core features setting' do
+          expect { execute_service }.to not_change(Ai::Setting.instance, :duo_nano_features_enabled)
+        end
+      end
+
+      context 'when the subscription contains Duo Core' do
+        let(:license_key) do
+          build(
+            :gitlab_license,
+            :cloud,
+            restrictions: {
+              add_on_products: {
+                'duo_core' => [
+                  {
+                    'quantity' => 10,
+                    'started_on' => Date.current.to_s,
+                    'expires_on' => (Date.current + 11.months).to_s,
+                    'purchase_xid' => 'A-S00000001',
+                    'trial' => false
+                  }
+                ]
+              }
+            }
+          ).export
+        end
+
+        context 'when auto enabling the Duo Core features setting fails' do
+          before do
+            allow_next_instance_of(Ai::Setting) do |ai_setting|
+              allow(ai_setting).to receive(:update!).and_raise(ActiveRecord::ActiveRecordError)
+            end
+          end
+
+          it 'logs an error about it' do
+            result = nil
+
+            expect(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception)
+
+            expect { result = execute_service }.not_to raise_error
+
+            created_license = License.current
+
+            expect(result).to eq({ success: true, license: created_license, future_subscriptions: [] })
+          end
+        end
+
+        it 'auto enables the Duo Core features setting' do
+          ai_setting = Ai::Setting.instance
+
+          expect { execute_service }.to change { ai_setting.reload.duo_nano_features_enabled }.from(nil).to(true)
+        end
       end
     end
 

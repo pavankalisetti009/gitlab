@@ -56,6 +56,7 @@ module Gitlab
                     expiresAt
                     usersInLicenseCount
                   }
+                  newSubscription
                   errors
                 }
               }
@@ -77,7 +78,8 @@ module Gitlab
               {
                 success: true,
                 license_key: response['licenseKey'],
-                future_subscriptions: future_subscriptions
+                future_subscriptions: future_subscriptions,
+                new_subscription: response['newSubscription']
               }
             else
               error(response['errors'])

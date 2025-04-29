@@ -47,6 +47,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
               "cloudActivationActivate" => {
                 "licenseKey" => license_key,
                 "errors" => [],
+                "newSubscription" => true,
                 "futureSubscriptions" => []
               }
             }
@@ -56,7 +57,14 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
 
       result = client.activate('activation_code_abc', automated: false)
 
-      expect(result).to eq({ license_key: license_key, success: true, future_subscriptions: [] })
+      expect(result).to eq(
+        {
+          license_key: license_key,
+          success: true,
+          future_subscriptions: [],
+          new_subscription: true
+        }
+      )
     end
 
     context 'when there are future subscriptions' do
@@ -83,7 +91,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
                       "expiresAt" => (future_date + 1.year).to_s,
                       "usersInLicenseCount" => 10
                     }
-                  ]
+                  ],
+                  "newSubscription" => false
                 }
               }
             }
@@ -107,7 +116,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
               "expires_at" => (future_date + 1.year).to_s,
               "users_in_license_count" => 10
             }
-          ]
+          ],
+          new_subscription: false
         }
 
         expect(result).to eq(expected_result)
@@ -124,7 +134,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
                 "cloudActivationActivate" => {
                   "licenseKey" => nil,
                   "errors" => ["invalid activation code"],
-                  "futureSubscriptions" => []
+                  "futureSubscriptions" => [],
+                  "newSubscription" => nil
                 }
               }
             }
