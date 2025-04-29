@@ -9,10 +9,11 @@ RSpec.describe Security::PipelineAnalyzersStatusUpdateWorker, feature_category: 
   describe '#perform' do
     subject(:run_worker) { described_class.new.perform(pipeline.id) }
 
-    let(:analyzer_status_service) { instance_double(Security::AnalyzersStatusUpdateService) }
+    let(:analyzer_status_service) { instance_double(Security::AnalyzersStatus::UpdateService) }
 
     before do
-      allow(Security::AnalyzersStatusUpdateService).to receive(:new).with(pipeline).and_return(analyzer_status_service)
+      allow(Security::AnalyzersStatus::UpdateService).to receive(:new).with(pipeline)
+        .and_return(analyzer_status_service)
       allow(analyzer_status_service).to receive(:execute)
     end
 
@@ -20,7 +21,7 @@ RSpec.describe Security::PipelineAnalyzersStatusUpdateWorker, feature_category: 
       it 'does not call `Security::AnalyzerStatusUpdateService`' do
         described_class.new.perform(-1)
 
-        expect(Security::AnalyzersStatusUpdateService).not_to have_received(:new)
+        expect(Security::AnalyzersStatus::UpdateService).not_to have_received(:new)
       end
     end
 
@@ -28,7 +29,7 @@ RSpec.describe Security::PipelineAnalyzersStatusUpdateWorker, feature_category: 
       it 'does not call `Security::AnalyzerStatusUpdateService`' do
         run_worker
 
-        expect(Security::AnalyzersStatusUpdateService).not_to have_received(:new)
+        expect(Security::AnalyzersStatus::UpdateService).not_to have_received(:new)
       end
     end
 
@@ -40,7 +41,7 @@ RSpec.describe Security::PipelineAnalyzersStatusUpdateWorker, feature_category: 
       it 'calls `Security::AnalyzerStatusUpdateService`' do
         run_worker
 
-        expect(Security::AnalyzersStatusUpdateService).to have_received(:new).with(pipeline)
+        expect(Security::AnalyzersStatus::UpdateService).to have_received(:new).with(pipeline)
         expect(analyzer_status_service).to have_received(:execute)
       end
     end

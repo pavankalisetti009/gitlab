@@ -1,0 +1,165 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Security::AnalyzersStatus::AncestorsUpdateService, feature_category: :vulnerability_management do
+  let_it_be(:root_group) { create(:group) }
+  let_it_be(:subgroup1) { create(:group, parent: root_group) }
+  let_it_be(:subgroup2) { create(:group, parent: subgroup1) }
+  let_it_be(:project) { create(:project, namespace: subgroup2) }
+  let_it_be(:number_of_groups) { 3 }
+
+  describe '.execute' do
+    let(:mock_service_object) { instance_double(described_class, execute: true) }
+
+    before do
+      allow(described_class).to receive(:new).and_return(mock_service_object)
+    end
+
+    it 'instantiates the service object and calls `execute`' do
+      described_class.execute(project, nil)
+
+      expect(mock_service_object).to have_received(:execute)
+    end
+  end
+
+  describe '#execute' do
+    context 'when diffs are not provided' do
+      context 'when diffs is nil' do
+        let(:diffs) { nil }
+
+        subject(:namespace_update_service) { described_class.execute(project, diffs) }
+
+        it 'does not change the db' do
+          expect { namespace_update_service }
+            .to not_change { Security::AnalyzerNamespaceStatus.count }.from(0)
+        end
+      end
+
+      context 'when diffs are an empty hash' do
+        let(:diffs) { {} }
+
+        subject(:namespace_update_service) { described_class.execute(project, diffs) }
+
+        it 'does not change the db' do
+          expect { namespace_update_service }
+            .to not_change { Security::AnalyzerNamespaceStatus.count }.from(0)
+        end
+      end
+    end
+
+    context 'when diffs are provided' do
+      let(:diffs) do
+        {
+          sast: { "success" => 2, "failed" => 1 },
+          dast: { "success" => 1, "failed" => 2 }
+        }
+      end
+
+      subject(:namespace_update_service) { described_class.execute(project, diffs) }
+
+      context 'when there are no statistics in the table' do
+        it 'inserts new rows to the table' do
+          expect { namespace_update_service }.to change { Security::AnalyzerNamespaceStatus.count }
+            .from(0).to(number_of_groups * diffs.keys.length)
+
+          expect(Security::AnalyzerNamespaceStatus.find_by(namespace_id: root_group.id, analyzer_type: "sast")
+            .attributes).to include({ "success" => 2, "failure" => 1 })
+          expect(Security::AnalyzerNamespaceStatus.find_by(namespace_id: root_group.id, analyzer_type: "dast")
+            .attributes).to include({ "success" => 1, "failure" => 2 })
+
+          expect(Security::AnalyzerNamespaceStatus.find_by(namespace_id: subgroup1.id, analyzer_type: "sast")
+            .attributes).to include({ "success" => 2, "failure" => 1 })
+          expect(Security::AnalyzerNamespaceStatus.find_by(namespace_id: subgroup1.id, analyzer_type: "dast")
+            .attributes).to include({ "success" => 1, "failure" => 2 })
+
+          expect(Security::AnalyzerNamespaceStatus.find_by(namespace_id: subgroup2.id, analyzer_type: "sast")
+            .attributes).to include({ "success" => 2, "failure" => 1 })
+          expect(Security::AnalyzerNamespaceStatus.find_by(namespace_id: subgroup2.id, analyzer_type: "dast")
+            .attributes).to include({ "success" => 1, "failure" => 2 })
+        end
+      end
+
+      context 'when all statistics exists in the table' do
+        let_it_be(:subgroup2_sast_status) do
+          create(:analyzer_namespace_status, namespace: subgroup2, analyzer_type: "sast", success: 1, failure: 0)
+        end
+
+        let_it_be(:subgroup2_dast_status) do
+          create(:analyzer_namespace_status, namespace: subgroup2, analyzer_type: "dast", success: 0, failure: 3)
+        end
+
+        let_it_be(:subgroup1_sast_status) do
+          create(:analyzer_namespace_status, namespace: subgroup1, analyzer_type: "sast", success: 1, failure: 2)
+        end
+
+        let_it_be(:subgroup1_dast_status) do
+          create(:analyzer_namespace_status, namespace: subgroup1, analyzer_type: "dast", success: 3, failure: 3)
+        end
+
+        let_it_be(:root_group_sast_status) do
+          create(:analyzer_namespace_status, namespace: root_group, analyzer_type: "sast", success: 3, failure: 4)
+        end
+
+        let_it_be(:root_group_dast_status) do
+          create(:analyzer_namespace_status, namespace: root_group, analyzer_type: "dast", success: 4, failure: 3)
+        end
+
+        it 'upserts new counts to the table' do
+          expect { namespace_update_service }.to not_change { Security::AnalyzerNamespaceStatus.count }
+            .from(number_of_groups * diffs.keys.length)
+
+          expect(subgroup2_sast_status.reload.attributes).to include({ "success" => 3, "failure" => 1 })
+          expect(subgroup2_dast_status.reload.attributes).to include({ "success" => 1, "failure" => 5 })
+          expect(subgroup1_sast_status.reload.attributes).to include({ "success" => 3, "failure" => 3 })
+          expect(subgroup1_dast_status.reload.attributes).to include({ "success" => 4, "failure" => 5 })
+          expect(root_group_sast_status.reload.attributes).to include({ "success" => 5, "failure" => 5 })
+          expect(root_group_dast_status.reload.attributes).to include({ "success" => 5, "failure" => 5 })
+        end
+      end
+
+      context 'when some statistics exists in the table' do
+        let_it_be(:root_group_sast_status) do
+          create(:analyzer_namespace_status, namespace: root_group, analyzer_type: "sast", success: 1, failure: 1)
+        end
+
+        let_it_be(:subgroup1_dast_status) do
+          create(:analyzer_namespace_status, namespace: subgroup1, analyzer_type: "dast", success: 3, failure: 1)
+        end
+
+        it 'inserts missing statistics and upserts new counts to the table' do
+          expect { namespace_update_service }.to change { Security::AnalyzerNamespaceStatus.count }.from(2)
+            .to(number_of_groups * diffs.keys.length)
+
+          expect(root_group_sast_status.reload.attributes).to include({ "success" => 3, "failure" => 2 })
+          expect(Security::AnalyzerNamespaceStatus.find_by(namespace_id: root_group.id, analyzer_type: "dast")
+            .attributes).to include({ "success" => 1, "failure" => 2 })
+          expect(Security::AnalyzerNamespaceStatus.find_by(namespace_id: subgroup1.id, analyzer_type: "sast")
+            .attributes).to include({ "success" => 2, "failure" => 1 })
+
+          expect(subgroup1_dast_status.reload.attributes).to include({ "success" => 4, "failure" => 3 })
+          expect(Security::AnalyzerNamespaceStatus.find_by(namespace_id: subgroup2.id, analyzer_type: "sast")
+            .attributes).to include({ "success" => 2, "failure" => 1 })
+          expect(Security::AnalyzerNamespaceStatus.find_by(namespace_id: subgroup2.id, analyzer_type: "dast")
+            .attributes).to include({ "success" => 1, "failure" => 2 })
+        end
+      end
+
+      context 'when diffs contain entries with zero success and zero failure' do
+        let(:diffs) do
+          {
+            sast: { "success" => 2, "failed" => 1 },
+            dast: { "success" => 0, "failed" => 0 },
+            secret_detection: { "success" => 1, "failed" => 1 }
+          }
+        end
+
+        it 'ignores entries with zero success and zero failure' do
+          expect { namespace_update_service }.to change { Security::AnalyzerNamespaceStatus.count }.from(0).to(6)
+
+          expect(Security::AnalyzerNamespaceStatus.where(analyzer_type: "dast").count).to eq(0)
+        end
+      end
+    end
+  end
+end

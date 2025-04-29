@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::AnalyzersStatusUpdateService, feature_category: :vulnerability_management do
+RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vulnerability_management do
   let_it_be(:root_group) { create(:group) }
   let_it_be(:group) { create(:group, parent: root_group) }
   let_it_be(:project) { create(:project, group: group) }
@@ -10,6 +10,30 @@ RSpec.describe Security::AnalyzersStatusUpdateService, feature_category: :vulner
   let_it_be(:traversal_ids) { group.traversal_ids }
 
   let(:service) { described_class.new(pipeline) }
+  let(:diff_service) { instance_double(Security::AnalyzersStatus::DiffService) }
+  let(:ancestors_update_service) { class_double(Security::AnalyzersStatus::AncestorsUpdateService) }
+  let(:status_diff) { { sast: { 'success' => 1 }, dast: { 'failed' => 1 } } }
+
+  before do
+    allow(Security::AnalyzersStatus::DiffService).to receive(:new).and_return(diff_service)
+    allow(diff_service).to receive(:execute).and_return(status_diff)
+
+    stub_const('Security::AnalyzersStatus::AncestorsUpdateService', ancestors_update_service)
+    allow(ancestors_update_service).to receive(:execute)
+  end
+
+  shared_examples 'calls namespace related services' do
+    it 'calls DiffService and passes diffs to NamespaceUpdateService' do
+      execute
+
+      expect(Security::AnalyzersStatus::DiffService).to have_received(:new).with(
+        project,
+        kind_of(Hash)
+      )
+      expect(diff_service).to have_received(:execute)
+      expect(ancestors_update_service).to have_received(:execute).with(project, status_diff)
+    end
+  end
 
   describe '#execute' do
     subject(:execute) { service.execute }
@@ -95,6 +119,8 @@ RSpec.describe Security::AnalyzersStatusUpdateService, feature_category: :vulner
 
             expect { execute }.to change { existing_dast_status.reload.status }.from('success').to('not_configured')
           end
+
+          include_examples 'calls namespace related services'
         end
 
         context 'with multiple jobs of the same analyzer group type' do
@@ -113,6 +139,8 @@ RSpec.describe Security::AnalyzersStatusUpdateService, feature_category: :vulner
             expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast_advanced).status)
               .to eq('failed')
           end
+
+          include_examples 'calls namespace related services'
         end
 
         context 'with a build that has multiple security report types' do
@@ -135,6 +163,8 @@ RSpec.describe Security::AnalyzersStatusUpdateService, feature_category: :vulner
             expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :dependency_scanning)
               .status).to eq('success')
           end
+
+          include_examples 'calls namespace related services'
         end
 
         context 'when no security jobs are found' do
@@ -147,6 +177,8 @@ RSpec.describe Security::AnalyzersStatusUpdateService, feature_category: :vulner
             expect { execute }.to change { sast_status.reload.status }.from('success').to('not_configured')
               .and change { dast_status.reload.status }.from('failed').to('not_configured')
           end
+
+          include_examples 'calls namespace related services'
         end
 
         context 'when an exception occurs' do
@@ -159,6 +191,12 @@ RSpec.describe Security::AnalyzersStatusUpdateService, feature_category: :vulner
               .with(an_instance_of(StandardError), hash_including(project_id: project.id, pipeline_id: pipeline.id))
 
             execute
+          end
+
+          it 'doesnt call NamespaceUpdateService' do
+            execute
+
+            expect(ancestors_update_service).not_to have_received(:execute)
           end
         end
       end
