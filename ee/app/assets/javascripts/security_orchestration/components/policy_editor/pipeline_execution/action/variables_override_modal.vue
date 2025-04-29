@@ -65,6 +65,12 @@ export default {
     selectedExceptions() {
       return this.items.length > 0 ? this.items : [''];
     },
+    duplicatesCounter() {
+      return this.selectedExceptions.reduce((acc, current) => {
+        acc[current] = (acc[current] || 0) + 1;
+        return acc;
+      }, {});
+    },
   },
   watch: {
     exceptions(exceptions) {
@@ -72,6 +78,9 @@ export default {
     },
   },
   methods: {
+    isDuplicate(variable) {
+      return this.duplicatesCounter[variable] > 1;
+    },
     addVariableSelector() {
       this.items.push('');
     },
@@ -127,6 +136,7 @@ export default {
         v-for="(variable, index) of selectedExceptions"
         :key="index"
         :already-selected-items="getAlreadySelectedItems(variable)"
+        :has-validation-error="isDuplicate(variable)"
         class="gl-mb-3"
         :selected="variable"
         @remove="removeException(index)"

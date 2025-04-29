@@ -1,4 +1,5 @@
 <script>
+import { isEqual } from 'lodash';
 import {
   GlAccordion,
   GlAccordionItem,
@@ -48,6 +49,11 @@ export default {
       required: false,
       default: () => DEFAULT_VARIABLES_OVERRIDE_STATE,
     },
+  },
+  data() {
+    return {
+      accordionVisible: !isEqual(this.variablesOverride, DEFAULT_VARIABLES_OVERRIDE_STATE),
+    };
   },
   computed: {
     buttonText() {
@@ -99,7 +105,7 @@ export default {
 
 <template>
   <gl-accordion :header-level="3">
-    <gl-accordion-item :title="$options.i18n.header">
+    <gl-accordion-item :title="$options.i18n.header" :visible="accordionVisible">
       <p class="gl-my-4">
         <gl-sprintf :message="$options.i18n.message">
           <template #listType>
