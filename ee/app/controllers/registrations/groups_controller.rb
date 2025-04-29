@@ -71,7 +71,9 @@ module Registrations
       else
         track_project_registration_submission(payload[:project])
 
-        cookies[:confetti_post_signup] = true
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/537444 - Commenting out this cookie for now, we may re-enable
+        # it later, see the above issue for context
+        # cookies[:confetti_post_signup] = true
 
         redirect_to project_learn_gitlab_path(payload[:project])
       end

@@ -259,10 +259,12 @@ module SaasRegistrationHelpers
   def expect_to_be_in_learn_gitlab
     expect(page).to have_content('Learn GitLab')
 
-    page.within('[data-testid="invite-modal"]') do
-      expect(page).to have_content('GitLab is better with colleagues!')
-      expect(page).to have_content('Congratulations on creating your project')
-    end
+    # Commenting out as we've removed the cookie that toggles that modal
+    # See: https://gitlab.com/gitlab-org/gitlab/-/issues/537444
+    # page.within('[data-testid="invite-modal"]') do
+    #   expect(page).to have_content('GitLab is better with colleagues!')
+    #   expect(page).to have_content('Congratulations on creating your project')
+    # end
   end
 
   def expect_to_see_group_and_project_creation_form
