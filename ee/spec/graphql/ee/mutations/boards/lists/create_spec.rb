@@ -16,7 +16,12 @@ RSpec.describe Mutations::Boards::Lists::Create do
   let(:list_create_params) { {} }
 
   before do
-    stub_licensed_features(board_assignee_lists: true, board_milestone_lists: true, board_iteration_lists: true)
+    stub_licensed_features(
+      board_assignee_lists: true,
+      board_milestone_lists: true,
+      board_iteration_lists: true,
+      board_status_lists: true
+    )
   end
 
   subject { mutation.resolve(board_id: board.to_global_id, **list_create_params) }
@@ -25,13 +30,13 @@ RSpec.describe Mutations::Boards::Lists::Create do
     it 'raises an error if required arguments are missing' do
       expect { mutation.ready?(board_id: 'some id') }
         .to raise_error(Gitlab::Graphql::Errors::ArgumentError,
-          'one and only one of backlog or labelId or milestoneId or iterationId or assigneeId is required')
+          'one and only one of backlog or labelId or milestoneId or iterationId or assigneeId or statusId is required')
     end
 
     it 'raises an error if too many required arguments are specified' do
       expect { mutation.ready?(board_id: 'some id', milestone_id: 'some milestone', assignee_id: 'some label') }
         .to raise_error(Gitlab::Graphql::Errors::ArgumentError,
-          'one and only one of backlog or labelId or milestoneId or iterationId or assigneeId is required')
+          'one and only one of backlog or labelId or milestoneId or iterationId or assigneeId or statusId is required')
     end
   end
 
@@ -124,6 +129,40 @@ RSpec.describe Mutations::Boards::Lists::Create do
 
           it 'returns an error' do
             expect(subject[:errors]).to include 'Iteration not found'
+          end
+        end
+      end
+
+      describe 'status list' do
+        let_it_be(:status_id) { ::WorkItems::Statuses::SystemDefined::Status.find(1).to_global_id }
+        let(:list_create_params) { { status_id: status_id } }
+
+        context 'when feature unavailable' do
+          it 'returns an error' do
+            stub_licensed_features(board_status_lists: false)
+
+            expect(subject[:errors]).to include 'Status lists not available with your current license'
+          end
+        end
+
+        # Prevent list creation until board lists support statuses
+        # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/532474
+        it 'does not create a new issue board list' do
+          expect { subject }.not_to change { board.lists.count }
+
+          list = subject[:list]
+          expect(list).to be_nil
+
+          expect(subject[:errors]).to be_empty
+        end
+
+        context 'when status not found' do
+          let_it_be(:status_id) { "gid://gitlab/WorkItems::Statuses::SystemDefined::Status/10" }
+
+          # Prevent raising errors until board lists support statuses
+          # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/532474
+          it 'does not raise an error' do
+            expect(subject[:errors]).to be_empty
           end
         end
       end

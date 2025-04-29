@@ -197,6 +197,7 @@ module GitlabSubscriptions
       generate_description
       summarize_comments
       review_merge_request
+      board_status_lists
     ].freeze
 
     ULTIMATE_FEATURES = %i[
