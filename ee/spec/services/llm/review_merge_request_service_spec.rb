@@ -32,6 +32,31 @@ RSpec.describe Llm::ReviewMergeRequestService, :saas, feature_category: :code_re
 
     subject { described_class.new(current_user, resource, options).execute }
 
+    context 'when duo_code_review_system_note feature flag is disabled' do
+      it_behaves_like 'schedules completion worker' do
+        let(:note) { instance_double Note, id: 123 }
+
+        before do
+          stub_feature_flags(duo_code_review_system_note: false)
+
+          allow_next_instance_of(
+            ::Notes::CreateService,
+            project,
+            Users::Internal.duo_code_review_bot,
+            noteable: resource,
+            note: Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest.review_queued_msg,
+            system: false
+          ) do |create_service|
+            allow(create_service).to receive(:execute).and_return(note)
+          end
+        end
+
+        let(:expected_options) { { progress_note_id: note.id } }
+
+        subject { described_class.new(current_user, resource, options) }
+      end
+    end
+
     it_behaves_like 'schedules completion worker' do
       let(:note) { instance_double Note, id: 123 }
 
@@ -41,7 +66,8 @@ RSpec.describe Llm::ReviewMergeRequestService, :saas, feature_category: :code_re
           project,
           Users::Internal.duo_code_review_bot,
           noteable: resource,
-          note: Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest.review_queued_msg
+          note: "is reviewing your merge request and will let you know when it's finished",
+          system: true
         ) do |create_service|
           allow(create_service).to receive(:execute).and_return(note)
         end

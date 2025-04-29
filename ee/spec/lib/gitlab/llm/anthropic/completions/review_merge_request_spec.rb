@@ -48,7 +48,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       note: 'progress note',
       project: project,
       noteable: merge_request,
-      author: Users::Internal.duo_code_review_bot
+      author: Users::Internal.duo_code_review_bot,
+      system: true
     )
   end
 
@@ -114,7 +115,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         allow(merge_request).to receive(:ai_reviewable_diff_files).and_return([])
       end
 
-      it 'updates progress note with nothing to review message' do
+      it 'creates a note with nothing to review message' do
         expect(completion).to receive(:update_progress_note).with(described_class.nothing_to_review_msg)
 
         completion.send(:perform_review)
@@ -210,13 +211,19 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         })
       end
 
-      it 'performs review and update progress note' do
+      it 'destroys progress note' do
+        completion.execute
+
+        expect(Note.exists?(progress_note.id)).to be_falsey
+      end
+
+      it 'performs review and creates a note' do
         expect do
           completion.execute
         end.to change { merge_request.notes.diff_notes.count }.by(3)
-          .and not_change { merge_request.notes.non_diff_notes.count } # review summary just gets updated
+          .and not_change { merge_request.notes.non_diff_notes.count }
 
-        expect(progress_note.reload.note).to eq(summary_answer)
+        expect(merge_request.notes.non_diff_notes.last.note).to eq(summary_answer)
       end
 
       context 'when review note already exists on the same position' do
@@ -226,7 +233,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
             note: 'progress note 2',
             project: project,
             noteable: merge_request,
-            author: Users::Internal.duo_code_review_bot
+            author: Users::Internal.duo_code_review_bot,
+            system: true
           )
         end
 
@@ -237,9 +245,9 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         it 'does not add more notes to the same position' do
           expect { completion.execute }
             .to not_change { merge_request.notes.diff_notes.count }
-            .and not_change { merge_request.notes.non_diff_notes.count } # review summary just gets updated
+            .and not_change { merge_request.notes.non_diff_notes.count }
 
-          expect(progress_note.reload.note).to eq(described_class.no_comment_msg)
+          expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.no_comment_msg)
         end
       end
 
@@ -248,13 +256,13 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           build(:ai_message, :review_merge_request, user: user, resource: nil, request_id: 'uuid')
         end
 
-        it 'updates progress note and return' do
+        it 'creates a note and return' do
           expect do
             described_class.new(review_prompt_message, review_prompt_class, options).execute
           end.to not_change { merge_request.notes.diff_notes.count }
             .and not_change { merge_request.notes.non_diff_notes.count }
 
-          expect(progress_note.reload.note).to eq(described_class.resource_not_found_msg)
+          expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.resource_not_found_msg)
         end
       end
 
@@ -265,7 +273,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           expect do
             completion.execute
           end.to change { merge_request.notes.diff_notes.count }.by(3)
-            .and change { merge_request.notes.non_diff_notes.count }.by(1) # review summary gets created
+            .and change { merge_request.notes.non_diff_notes.count }.by(1)
 
           expect(merge_request.notes.non_diff_notes.last.note).to eq(summary_answer)
         end
@@ -354,7 +362,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       context 'when there were no comments' do
         let(:combined_review_response) { {} }
 
-        it 'updates progress note with a success message' do
+        it 'creates a note with a success message' do
           completion.execute
 
           expect(merge_request.notes.count).to eq 1
@@ -365,7 +373,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       context 'when review response is nil' do
         let(:combined_review_response) { nil }
 
-        it 'updates progress note with a success message' do
+        it 'creates a note with a success message' do
           completion.execute
 
           expect(merge_request.notes.count).to eq 1
@@ -379,7 +387,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
             allow(DraftNote).to receive(:new).and_raise('error')
           end
 
-          it 'updates progress note with an error message' do
+          it 'creates a note with an error message' do
             completion.execute
 
             expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.error_msg)
@@ -396,7 +404,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
             }
           end
 
-          it 'updates progress note with an error message' do
+          it 'creates a note with an error message' do
             completion.execute
 
             expect(merge_request.notes.count).to eq 4
@@ -408,7 +416,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         context 'when summary returned no result' do
           let(:summary_answer) { '' }
 
-          it 'updates progress note with an error message' do
+          it 'creates a note with an error message' do
             completion.execute
 
             expect(merge_request.notes.count).to eq 4
@@ -420,7 +428,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         context 'when summary response is nil' do
           let(:summary_response) { nil }
 
-          it 'updates progress note with an error message' do
+          it 'creates a note with an error message' do
             completion.execute
 
             expect(merge_request.notes.count).to eq 4

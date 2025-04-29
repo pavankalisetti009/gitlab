@@ -23035,9 +23035,6 @@ msgstr ""
 msgid "DuoCodeReview|GitLab Duo Code Review"
 msgstr ""
 
-msgid "DuoCodeReview|Hey :wave: I'm reviewing your merge request now. I will let you know when I'm finished."
-msgstr ""
-
 msgid "DuoCodeReview|I encountered some problems while responding to your query. Please try again later."
 msgstr ""
 
@@ -23048,6 +23045,9 @@ msgid "DuoCodeReview|I have encountered some problems while I was reviewing. Ple
 msgstr ""
 
 msgid "DuoCodeReview|I've received your Duo Code Review request, and will review your code shortly."
+msgstr ""
+
+msgid "DuoCodeReview|is reviewing your merge request and will let you know when it's finished"
 msgstr ""
 
 msgid "DuoEnterpriseDiscover|AI Impact Dashboard measures the ROI of AI"
