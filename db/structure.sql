@@ -16053,6 +16053,7 @@ CREATE TABLE integrations (
     incident_events boolean DEFAULT false NOT NULL,
     group_mention_events boolean DEFAULT false NOT NULL,
     group_confidential_mention_events boolean DEFAULT false NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_a948a0aa7e CHECK ((char_length(type_new) <= 255))
 );
 
@@ -35514,6 +35515,8 @@ CREATE INDEX index_insights_on_project_id ON insights USING btree (project_id);
 
 CREATE INDEX index_integrations_on_inherit_from_id ON integrations USING btree (inherit_from_id);
 
+CREATE INDEX index_integrations_on_organization_id ON integrations USING btree (organization_id);
+
 CREATE INDEX index_integrations_on_project_and_type_new_where_inherit_null ON integrations USING btree (project_id, type_new) WHERE (inherit_from_id IS NULL);
 
 CREATE UNIQUE INDEX index_integrations_on_project_id_and_type_new_unique ON integrations USING btree (project_id, type_new);
@@ -42780,6 +42783,9 @@ ALTER TABLE ONLY cluster_agent_tokens
 
 ALTER TABLE ONLY protected_tag_create_access_levels
     ADD CONSTRAINT fk_7537413f9d FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY integrations
+    ADD CONSTRAINT fk_755d734f25 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE NOT VALID;
 
 ALTER TABLE ONLY resource_link_events
     ADD CONSTRAINT fk_75961aea6b FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;

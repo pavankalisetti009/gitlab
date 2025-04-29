@@ -56,7 +56,12 @@ module Ai
       end
 
       def update_integration(params)
-        integration = Integration.find_or_initialize_non_project_specific_integration('amazon_q', instance: true)
+        integration = Integration.find_or_initialize_non_project_specific_integration(
+          'amazon_q',
+          instance: true
+        )
+
+        integration.organization_id = params[:organization_id] if integration&.new_record?
 
         unless integration
           ai_settings.errors.add(:base,

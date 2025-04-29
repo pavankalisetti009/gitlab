@@ -104,7 +104,15 @@ RSpec.describe Admin::Ai::AmazonQSettingsController, :enable_admin_mode, feature
   describe 'POST #create' do
     using RSpec::Parameterized::TableSyntax
 
-    let(:params) { { role_arn: 'a', availability: 'default_off', auto_review_enabled: 'false' } }
+    let(:params) do
+      {
+        role_arn: 'a',
+        availability: 'default_off',
+        auto_review_enabled: 'false',
+        organization_id: organization.id
+      }
+    end
+
     let(:perform_request) { post admin_ai_amazon_q_settings_path, params: params }
 
     it_behaves_like 'returns 404 when feature is unavailable'
