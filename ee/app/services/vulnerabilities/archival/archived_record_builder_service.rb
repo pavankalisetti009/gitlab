@@ -49,7 +49,7 @@ module Vulnerabilities
           notes_summary: vulnerability.notes_summary,
           full_path: vulnerability.full_path,
           cvss: vulnerability.cvss,
-          dismissal_reason: vulnerability_read.dismissal_reason
+          dismissal_reason: vulnerability_read&.dismissal_reason
         }.merge!(
           dismissal_information,
           confirm_information,
