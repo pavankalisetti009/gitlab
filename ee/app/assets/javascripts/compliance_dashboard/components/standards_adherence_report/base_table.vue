@@ -64,7 +64,6 @@ export default {
     return {
       hasStandardsAdherenceFetchError: false,
       customErrorText: null,
-      hasFilterValueError: false,
       drawerId: null,
       drawerAdherence: {},
       adherences: {

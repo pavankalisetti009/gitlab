@@ -23,11 +23,6 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      pageSizes: [20, 50, 100],
-    };
-  },
   computed: {
     previousLink() {
       return setUrlParams({ before: this.pageInfo.startCursor, after: null }, window.location.href);

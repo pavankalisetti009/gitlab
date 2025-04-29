@@ -20,12 +20,12 @@ export default {
     },
   },
   methods: {
+    // eslint-disable-next-line vue/no-unused-properties -- show() is part of the component's public API.
     show() {
       this.$refs.modal.show();
     },
   },
   i18n,
-
   buttonProps: {
     primary: {
       text: i18n.deleteButtonText,

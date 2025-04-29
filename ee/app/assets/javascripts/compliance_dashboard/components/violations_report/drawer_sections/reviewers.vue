@@ -43,12 +43,6 @@ export default {
         this.approvers.length - DRAWER_MAXIMUM_AVATARS,
       );
     },
-    hasCommenters() {
-      return this.commenters.length > 0;
-    },
-    hasApprovers() {
-      return this.approvers.length > 0;
-    },
   },
   i18n: {
     header: __('Peer review by'),

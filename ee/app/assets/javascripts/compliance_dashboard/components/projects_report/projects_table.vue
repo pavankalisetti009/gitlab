@@ -112,7 +112,6 @@ export default {
         isTopLevelGroup(this.groupPath, this.rootAncestor.path) && this.canAdminComplianceFrameworks
       );
     },
-
     tableFields() {
       const selectionField = {
         key: 'selected',
@@ -125,15 +124,9 @@ export default {
 
       return [...(shouldIncludeSelection ? [selectionField] : []), ...this.$options.fields];
     },
-
-    hasProjects() {
-      return this.projects.length > 0;
-    },
-
     hasSelectedProjects() {
       return this.selectedRows.length > 0;
     },
-
     hasSelectedAllProjects() {
       return this.selectedRows.length === this.projects.length;
     },
@@ -159,7 +152,6 @@ export default {
     updateSelectedRows(selection) {
       this.selectedRows = selection;
     },
-
     qaRowAttributes(project, type) {
       if (type === 'row') {
         return {
@@ -170,7 +162,6 @@ export default {
 
       return {};
     },
-
     async applyOperations(operations) {
       const isBulkAction = operations.length > 1;
       try {
@@ -224,7 +215,6 @@ export default {
         this.$emit('updated');
       }
     },
-
     async applySingleItemOperation(operation) {
       try {
         this.projectsPendindSingleOperation.push(operation.projectId);
@@ -235,22 +225,18 @@ export default {
         );
       }
     },
-
     hasPendingSingleOperation(projectId) {
       return this.projectsPendindSingleOperation.indexOf(projectId) > -1;
     },
-
     createComplianceFramework(projectId, frameworks = []) {
       this.projectWhichInvokedModal = projectId;
       this.selectedFrameworkIds = frameworks.map((f) => f.id);
       this.$refs.createModal.show();
     },
-
     getFrameworkIdsToApply(frameworks, idsToDelete) {
       const frameworkIds = frameworks.map((f) => f.id);
       return frameworkIds.filter((id) => !idsToDelete.includes(id));
     },
-
     handleItemDelete(projectId, frameworkId, frameworks = []) {
       const frameworksToApply = this.getFrameworkIdsToApply(frameworks, [frameworkId]);
       this.applySingleItemOperation({
@@ -258,7 +244,6 @@ export default {
         frameworkIds: frameworksToApply,
       });
     },
-
     selectNewlyCreatedFramework({ framework }) {
       const projectId = this.projectWhichInvokedModal;
       const frameworkIds = this.selectedFrameworkIds;
@@ -272,13 +257,11 @@ export default {
         });
       }
     },
-
     resetCreateModal() {
       this.projectWhichInvokedModal = null;
       this.selectedFrameworkIds = [];
       this.$refs.createModal.hide();
     },
-
     resetEditModal() {
       this.frameworkSelectedForEdit = null;
       this.$refs.editModal.hide();

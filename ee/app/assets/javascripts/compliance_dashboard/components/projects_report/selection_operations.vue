@@ -37,33 +37,26 @@ export default {
       default: false,
     },
   },
-
   emits: ['change', 'create'],
   data() {
     return {
       selectedOperation: null,
       selectedFrameworks: this.defaultFramework ? [this.defaultFramework.id] : [],
-      frameworkSearchQuery: '',
     };
   },
-
   computed: {
     hasSelection() {
       return this.selection.length > 0;
     },
-
     isRemoveOperation() {
       return this.selectedOperation === this.$options.operations.REMOVE_OPERATION;
     },
-
     isSubmitButtonDisabled() {
       return !this.isSelectionValid || this.isApplyInProgress || !this.hasSelection;
     },
-
     isSubmitButtonLoading() {
       return !this.isSubmitButtonDisabled && this.isApplyInProgress;
     },
-
     operationsDropdownItems() {
       return [
         {
@@ -76,11 +69,9 @@ export default {
         },
       ];
     },
-
     isSelectionValid() {
       return this.selectedOperation && this.selectedFrameworks.length;
     },
-
     actionButtonText() {
       if (this.isRemoveOperation) {
         return __('Remove');
@@ -88,7 +79,6 @@ export default {
 
       return __('Apply');
     },
-
     actionButtonVariant() {
       if (this.isRemoveOperation) {
         return 'danger';
@@ -97,25 +87,21 @@ export default {
       return 'confirm';
     },
   },
-
   watch: {
     selectedOperation() {
       this.selectedFrameworks = [];
     },
-
     defaultFramework(newValue) {
       if (newValue) {
         this.selectedFrameworks = [...this.selectedFrameworks, newValue.id];
       }
     },
   },
-
   methods: {
     reset() {
       this.selectedOperation = null;
       this.selectedFrameworks = [];
     },
-
     async apply() {
       const operations = this.selection.map((project) => ({
         projectId: project.id,
@@ -125,7 +111,6 @@ export default {
       this.$emit('change', operations);
       this.reset();
     },
-
     getFrameworkIds(project) {
       const previousFrameworkIds = this.getPreviousFrameworkIds(project);
       if (this.isRemoveOperation) {
@@ -140,17 +125,14 @@ export default {
         : [];
     },
   },
-
   i18n: {
     dropdownActionPlaceholder: s__('ComplianceReport|Choose one bulk action'),
     applyFramework: s__('ComplianceReport|Apply frameworks to selected projects'),
     removeFramework: s__('ComplianceReport|Remove frameworks from selected projects'),
-
     operationSelectionTooltip: s__(
       'ComplianceReport|Select at least one project to apply the bulk action',
     ),
   },
-
   operations: {
     APPLY_OPERATION: 'apply',
     REMOVE_OPERATION: 'remove',

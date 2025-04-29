@@ -45,11 +45,6 @@ export default {
   mixins: [InternalEvents.mixin()],
   inject: ['rootAncestorPath'],
   props: {
-    mergeCommitsCsvExportPath: {
-      type: String,
-      required: false,
-      default: '',
-    },
     groupPath: {
       type: String,
       required: false,
@@ -130,9 +125,6 @@ export default {
     },
     isLoading() {
       return this.$apollo.queries.violations.loading;
-    },
-    hasMergeCommitsCsvExportPath() {
-      return this.mergeCommitsCsvExportPath !== '';
     },
     showPagination() {
       const { hasPreviousPage, hasNextPage } = this.violations.pageInfo || {};

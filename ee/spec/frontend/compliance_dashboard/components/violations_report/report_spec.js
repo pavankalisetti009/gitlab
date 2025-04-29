@@ -34,7 +34,6 @@ describe('ComplianceViolationsReport component', () => {
   let wrapper;
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
-  const mergeCommitsCsvExportPath = '/csv';
   const groupPath = 'group-path';
   const mergedAfter = '2021-11-16';
   const mergedBefore = '2021-12-15';
@@ -106,7 +105,6 @@ describe('ComplianceViolationsReport component', () => {
           rootAncestorPath: groupPath,
         },
         propsData: {
-          mergeCommitsCsvExportPath,
           groupPath,
           ...props,
         },
