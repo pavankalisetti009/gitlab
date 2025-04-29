@@ -74,7 +74,66 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
     end
 
     shared_examples 'performing a Duo Code Review chat request' do
-      it 'creates note based on chat response' do
+      context 'when the feature flag duo_code_review_system_note is disabled' do
+        before do
+          stub_feature_flags(duo_code_review_system_note: false)
+        end
+
+        it 'creates note based on chat response without progress note' do
+          expect(Gitlab::Llm::ChatMessage)
+            .to receive(:new)
+            .with(
+              chat_message_params(
+                ::Gitlab::Llm::AiMessage::ROLE_ASSISTANT,
+                merge_request,
+                first_discussion_note.note
+              )
+            )
+            .and_call_original
+
+          expect(Gitlab::Llm::ChatMessage)
+            .not_to receive(:new)
+            .with(
+              chat_message_params(
+                ::Gitlab::Llm::AiMessage::ROLE_USER,
+                merge_request,
+                excluded_note.note
+              )
+            )
+
+          expect(Gitlab::Llm::ChatMessage)
+            .to receive(:new)
+            .with(
+              chat_message_params(
+                ::Gitlab::Llm::AiMessage::ROLE_USER,
+                merge_request,
+                expected_note_content
+              )
+            )
+            .and_call_original
+
+          expect(Notes::CreateService)
+            .to receive(:new)
+            .with(
+              project,
+              ::Users::Internal.duo_code_review_bot,
+              hash_including(
+                noteable: merge_request,
+                note: response_modifier.response_body,
+                in_reply_to_discussion_id: note.discussion_id,
+                type: note.type,
+                system: false
+              )
+            )
+            .and_call_original
+
+          worker.perform(note)
+
+          expect(Note.last.note).to eq(response_modifier.response_body)
+        end
+      end
+
+      it 'creates progress note and then note based on chat response' do
         expect(Gitlab::Llm::ChatMessage)
           .to receive(:new)
           .with(
@@ -107,9 +166,44 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
           )
           .and_call_original
 
-        worker.perform(note)
+        progress_note_service = instance_double(Notes::CreateService)
+        progress_note = instance_double(Note, destroy: true)
 
-        expect(Note.last.note).to eq(response_modifier.response_body)
+        expect(Notes::CreateService)
+          .to receive(:new)
+          .with(
+            project,
+            ::Users::Internal.duo_code_review_bot,
+            hash_including(
+              noteable: merge_request,
+              note: s_("DuoCodeReview|is working on a reply"),
+              in_reply_to_discussion_id: note.discussion_id,
+              type: note.type,
+              system: true
+            )
+          )
+          .and_return(progress_note_service)
+          .ordered
+
+        expect(progress_note_service).to receive(:execute).and_return(progress_note)
+
+        expect(Notes::CreateService)
+          .to receive(:new)
+          .with(
+            project,
+            ::Users::Internal.duo_code_review_bot,
+            hash_including(
+              noteable: merge_request,
+              note: response_modifier.response_body,
+              in_reply_to_discussion_id: note.discussion_id,
+              type: note.type,
+              system: false
+            )
+          )
+          .and_call_original
+          .ordered
+
+        worker.perform(note)
       end
 
       context 'when an error gets raised' do
@@ -121,10 +215,72 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
           allow(::Gitlab::Llm::ChatMessage).to receive(:new).and_raise('error')
         end
 
-        it 'creates note with an error message' do
-          worker.perform(note)
+        context 'when the feature flag duo_code_review_system_note is disabled' do
+          before do
+            stub_feature_flags(duo_code_review_system_note: false)
+          end
 
-          expect(Note.last.note).to eq(error_note)
+          it 'creates note with an error message' do
+            expect(Notes::CreateService)
+              .to receive(:new)
+              .with(
+                project,
+                ::Users::Internal.duo_code_review_bot,
+                hash_including(
+                  noteable: merge_request,
+                  note: error_note,
+                  in_reply_to_discussion_id: note.discussion_id,
+                  type: note.type,
+                  system: false
+                )
+              )
+              .and_call_original
+
+            worker.perform(note)
+
+            expect(Note.last.note).to eq(error_note)
+          end
+        end
+
+        it 'creates progress note and error note' do
+          progress_note_service = instance_double(Notes::CreateService)
+          progress_note = instance_double(Note, destroy: true)
+
+          expect(Notes::CreateService)
+            .to receive(:new)
+            .with(
+              project,
+              ::Users::Internal.duo_code_review_bot,
+              hash_including(
+                noteable: merge_request,
+                note: s_("DuoCodeReview|is working on a reply"),
+                in_reply_to_discussion_id: note.discussion_id,
+                type: note.type,
+                system: true
+              )
+            )
+            .and_return(progress_note_service)
+            .ordered
+
+          expect(progress_note_service).to receive(:execute).and_return(progress_note)
+
+          expect(Notes::CreateService)
+            .to receive(:new)
+            .with(
+              project,
+              ::Users::Internal.duo_code_review_bot,
+              hash_including(
+                noteable: merge_request,
+                note: error_note,
+                in_reply_to_discussion_id: note.discussion_id,
+                type: note.type,
+                system: false
+              )
+            )
+            .and_call_original
+            .ordered
+
+          worker.perform(note)
         end
       end
 
@@ -154,8 +310,38 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
           )
         end
 
-        it 'does not create note' do
-          expect(Notes::CreateService).not_to receive(:new)
+        context 'when the feature flag duo_code_review_system_note is disabled' do
+          before do
+            stub_feature_flags(duo_code_review_system_note: false)
+          end
+
+          it 'does not create note' do
+            expect(Notes::CreateService).not_to receive(:new)
+
+            worker.perform(note.id)
+          end
+        end
+
+        it 'creates progress note but no response note' do
+          progress_note_service = instance_double(Notes::CreateService)
+          progress_note = instance_double(Note, destroy: true)
+
+          expect(Notes::CreateService)
+            .to receive(:new)
+            .with(
+              project,
+              ::Users::Internal.duo_code_review_bot,
+              hash_including(
+                noteable: merge_request,
+                note: s_("DuoCodeReview|is working on a reply"),
+                in_reply_to_discussion_id: note.discussion_id,
+                type: note.type,
+                system: true
+              )
+            )
+            .and_return(progress_note_service)
+
+          expect(progress_note_service).to receive(:execute).and_return(progress_note)
 
           worker.perform(note.id)
         end
@@ -187,7 +373,62 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
         RESPONSE
       end
 
-      it 'parses code suggestions' do
+      context 'when the feature flag duo_code_review_system_note is disabled' do
+        before do
+          stub_feature_flags(duo_code_review_system_note: false)
+        end
+
+        it 'parses code suggestions' do
+          worker.perform(note.id)
+
+          expect(Note.last.note).to eq <<~NOTE_CONTENT
+          Comment with suggestions
+          ```suggestion:-0+1
+            first improved line
+              second improved line
+          ```
+          Some more comments
+          NOTE_CONTENT
+        end
+      end
+
+      it 'creates progress note and then parses code suggestions' do
+        progress_note_service = instance_double(Notes::CreateService)
+        progress_note = instance_double(Note, destroy: true)
+
+        expect(Notes::CreateService)
+          .to receive(:new)
+          .with(
+            project,
+            ::Users::Internal.duo_code_review_bot,
+            hash_including(
+              noteable: merge_request,
+              note: s_("DuoCodeReview|is working on a reply"),
+              in_reply_to_discussion_id: note.discussion_id,
+              type: note.type,
+              system: true
+            )
+          )
+          .and_return(progress_note_service)
+          .ordered
+
+        expect(progress_note_service).to receive(:execute).and_return(progress_note)
+
+        expect(Notes::CreateService)
+          .to receive(:new)
+          .with(
+            project,
+            ::Users::Internal.duo_code_review_bot,
+            hash_including(
+              noteable: merge_request,
+              in_reply_to_discussion_id: note.discussion_id,
+              type: note.type,
+              system: false
+            )
+          )
+          .and_call_original
+          .ordered
+
         worker.perform(note.id)
 
         expect(Note.last.note).to eq <<~NOTE_CONTENT

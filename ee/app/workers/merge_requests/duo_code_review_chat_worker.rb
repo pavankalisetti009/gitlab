@@ -17,6 +17,8 @@ module MergeRequests
       return unless note
       return unless note.duo_bot_mentioned?
 
+      progress_note = create_progress_note(note)
+
       prompt_message = prepare_prompt_message(note)
       response = execute_chat_request(prompt_message, note)
       create_note_on(note, parse_response(note, response.response_body))
@@ -24,6 +26,8 @@ module MergeRequests
       Gitlab::ErrorTracking.track_exception(error)
 
       create_note_on(note, error_note)
+    ensure
+      progress_note.destroy if progress_note
     end
 
     private
@@ -118,7 +122,7 @@ module MergeRequests
       end
     end
 
-    def create_note_on(note, content)
+    def create_note_on(note, content, system_note: false)
       return if content.blank?
 
       merge_request = note.noteable
@@ -129,12 +133,19 @@ module MergeRequests
         noteable: merge_request,
         note: content,
         in_reply_to_discussion_id: note.discussion_id,
-        type: note.type
+        type: note.type,
+        system: system_note
       ).execute
     end
 
     def error_note
       s_("DuoCodeReview|I encountered some problems while responding to your query. Please try again later.")
+    end
+
+    def create_progress_note(note)
+      return unless ::Feature.enabled?(:duo_code_review_system_note, note.project)
+
+      create_note_on(note, s_("DuoCodeReview|is working on a reply"), system_note: true)
     end
   end
 end

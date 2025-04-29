@@ -23050,6 +23050,9 @@ msgstr ""
 msgid "DuoCodeReview|is reviewing your merge request and will let you know when it's finished"
 msgstr ""
 
+msgid "DuoCodeReview|is working on a reply"
+msgstr ""
+
 msgid "DuoEnterpriseDiscover|AI Impact Dashboard measures the ROI of AI"
 msgstr ""
 
