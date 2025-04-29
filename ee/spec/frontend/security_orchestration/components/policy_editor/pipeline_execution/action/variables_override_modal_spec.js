@@ -128,4 +128,18 @@ describe('VariablesOverrideModal', () => {
       expect(wrapper.emitted('select-exceptions')).toEqual([[[FLAT_LIST_OPTIONS[0]]]]);
     });
   });
+
+  describe('validation', () => {
+    it('identifies duplicate validation error', async () => {
+      createComponent({
+        propsData: { exceptions: FLAT_LIST_OPTIONS.slice(0, 3) },
+      });
+
+      await findVariablesSelectors().at(1).vm.$emit('select', FLAT_LIST_OPTIONS[0]);
+
+      expect(findVariablesSelectors().at(0).props('hasValidationError')).toBe(true);
+      expect(findVariablesSelectors().at(1).props('hasValidationError')).toBe(true);
+      expect(findVariablesSelectors().at(2).props('hasValidationError')).toBe(false);
+    });
+  });
 });

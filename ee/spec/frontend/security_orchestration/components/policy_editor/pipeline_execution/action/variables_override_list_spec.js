@@ -87,6 +87,7 @@ describe('VariablesOverrideList', () => {
     });
 
     it('renders collapsible listbox with allowed value', () => {
+      expect(findAccordionItem().props('visible')).toBe(true);
       expect(findCollapsibleListbox().props('selected')).toBe(ALLOW);
     });
 
