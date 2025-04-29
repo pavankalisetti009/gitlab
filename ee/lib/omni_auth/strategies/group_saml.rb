@@ -85,6 +85,11 @@ module OmniAuth
                            end
       end
 
+      override :callback_url
+      def callback_url
+        original_callback_url
+      end
+
       private
 
       def metadata_phase?
