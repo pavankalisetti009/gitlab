@@ -6,6 +6,7 @@ import { __ } from '~/locale';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import ldapAdminRoleLinksQuery from '../../graphql/ldap_sync/ldap_admin_role_links.query.graphql';
 import ldapAdminRoleLinkDestroyMutation from '../../graphql/ldap_sync/ldap_admin_role_link_destroy.mutation.graphql';
+import CreateSyncForm from './create_sync_form.vue';
 
 export default {
   components: {
@@ -15,6 +16,7 @@ export default {
     GlSprintf,
     GlLink,
     ConfirmActionModal,
+    CreateSyncForm,
   },
   data() {
     return {
@@ -75,15 +77,19 @@ export default {
     :count="roleLinksCount"
     :is-loading="isRoleLinksLoading"
   >
-    <template #actions>
+    <template #actions="{ showForm }">
       <div v-if="!isRoleLinksLoading" class="gl-flex gl-flex-wrap">
         <gl-link v-if="roleLinksCount" class="gl-my-3 gl-mr-4">
           {{ s__('MemberRole|View LDAP synced users') }}
         </gl-link>
 
         <div class="gl-flex gl-flex-wrap gl-gap-3">
-          <gl-button v-if="roleLinksCount" icon="retry">{{ s__('MemberRole|Sync all') }}</gl-button>
-          <gl-button variant="confirm">{{ s__('LDAP|Add synchronization') }}</gl-button>
+          <gl-button v-if="roleLinksCount" icon="retry">
+            {{ s__('MemberRole|Sync all') }}
+          </gl-button>
+          <gl-button variant="confirm" @click="showForm">
+            {{ s__('LDAP|Add synchronization') }}
+          </gl-button>
         </div>
       </div>
 
@@ -108,6 +114,10 @@ export default {
           </template>
         </gl-sprintf>
       </confirm-action-modal>
+    </template>
+
+    <template #form="{ hideForm }">
+      <create-sync-form @cancel="hideForm" />
     </template>
 
     <ul v-if="ldapAdminRoleLinks.length" class="content-list">
