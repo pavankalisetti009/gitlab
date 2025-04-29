@@ -126,7 +126,8 @@ module Search
         project = task.zoekt_repository&.project
         return :orphaned unless project
 
-        return :skipped if task.zoekt_repository.failed?
+        zoekt_repository = task.zoekt_repository
+        return :skipped unless Repository::INDEXABLE_STATES.include?(zoekt_repository.state.to_sym)
 
         # Mark tasks as done since we have nothing to index
         return :done unless project.repo_exists?

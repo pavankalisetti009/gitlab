@@ -5,6 +5,7 @@ module Search
     class Repository < ApplicationRecord
       include EachBatch
 
+      INDEXABLE_STATES = %i[pending initializing ready].freeze
       SEARCHABLE_STATES = %i[ready].freeze
 
       self.table_name = 'zoekt_repositories'
@@ -52,13 +53,14 @@ module Search
 
       scope :for_zoekt_indices, ->(indices) { where(zoekt_index: indices) }
 
+      scope :indexable, -> { where(state: INDEXABLE_STATES) }
       scope :searchable, -> { where(state: SEARCHABLE_STATES) }
 
       def self.create_bulk_tasks(task_type: :index_repo, perform_at: Time.zone.now)
         scope = self
         unless task_type.to_sym == :delete_repo
-          # Reject the failed repos for non delete_repo task_type
-          scope = scope.where.not(state: :failed)
+          # Only allow indexable repos for index_repo tasks
+          scope = scope.indexable
         end
         # Reject the repo_ids which already have the pending tasks for the given task_type
         scope = scope.where.not(

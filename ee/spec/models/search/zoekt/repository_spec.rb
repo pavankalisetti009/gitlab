@@ -70,6 +70,22 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
       end
     end
 
+    describe '.indexable' do
+      let_it_be(:ready) { create(:zoekt_repository, state: :ready) }
+      let_it_be(:pending) { create(:zoekt_repository, state: :pending) }
+      let_it_be(:initializing) { create(:zoekt_repository, state: :initializing) }
+      let_it_be(:orphaned) { create(:zoekt_repository, state: :orphaned) }
+      let_it_be(:pending_deletion) { create(:zoekt_repository, state: :pending_deletion) }
+      let_it_be(:failed) { create(:zoekt_repository, state: :failed) }
+
+      subject(:records) { described_class.indexable }
+
+      it 'returns all repositories with state includes in INDEXABLE_STATES' do
+        expect(records).to include pending, initializing, ready
+        expect(records).not_to include orphaned, pending_deletion, failed
+      end
+    end
+
     describe '.searchable' do
       let_it_be(:ready) { create(:zoekt_repository, state: :ready) }
       let_it_be(:pending) { create(:zoekt_repository, state: :pending) }
