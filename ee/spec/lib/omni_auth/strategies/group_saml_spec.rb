@@ -40,6 +40,20 @@ RSpec.describe OmniAuth::Strategies::GroupSaml, feature_category: :system_access
     end
   end
 
+  describe 'callback_url option' do
+    let(:base_url) { 'https://example.com' }
+
+    it 'calls callback_url in the original strategy' do
+      strategy = described_class.new({})
+
+      allow(strategy).to receive(:full_host) { base_url }
+      allow(strategy).to receive(:callback_path).and_return('/v1/users/auth/group_saml/callback')
+      allow(strategy).to receive(:query_string).and_return("?group_path=#{group.name}")
+
+      expect(strategy.callback_url).to eq("#{base_url}/v1/users/auth/group_saml/callback?group_path=#{group.name}")
+    end
+  end
+
   describe 'POST /groups/:group_path/-/saml/callback' do
     context 'with valid SAMLResponse' do
       before do
