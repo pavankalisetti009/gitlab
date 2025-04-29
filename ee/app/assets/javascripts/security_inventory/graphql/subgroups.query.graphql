@@ -1,0 +1,18 @@
+query Subgroups($fullPath: ID!) {
+  group(fullPath: $fullPath) {
+    id
+    name
+    fullPath
+    avatarUrl
+    descendantGroups(includeParentDescendants: false, first: 10) {
+      nodes {
+        __typename
+        id
+        name
+        projectsCount
+        descendantGroupsCount
+        fullPath
+      }
+    }
+  }
+}

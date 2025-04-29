@@ -77,3 +77,50 @@ export const subgroupsAndProjects = {
     },
   },
 };
+
+export const groupWithSubgroups = {
+  data: {
+    group: {
+      id: 'gid://gitlab/Group/3',
+      name: 'A group',
+      fullPath: 'a-group',
+      avatarUrl: 'a_group_avatar.png',
+      descendantGroups: {
+        nodes: [
+          {
+            __typename: 'Group',
+            id: 'gid://gitlab/Group/31',
+            name: 'Subgroup with projects and subgroups',
+            projectsCount: 3,
+            descendantGroupsCount: 2,
+            fullPath: 'a-group/subgroup-with-projects-and-subgroups',
+          },
+          {
+            __typename: 'Group',
+            id: 'gid://gitlab/Group/32',
+            name: 'Subgroup with projects',
+            projectsCount: 2,
+            descendantGroupsCount: 0,
+            fullPath: 'a-group/subgroup-with-projects',
+          },
+          {
+            __typename: 'Group',
+            id: 'gid://gitlab/Group/33',
+            name: 'Subgroup with subgroups',
+            projectsCount: 0,
+            descendantGroupsCount: 3,
+            fullPath: 'a-group/subgroup-with-subgroups',
+          },
+          {
+            __typename: 'Group',
+            id: 'gid://gitlab/Group/34',
+            name: 'Empty subgroup',
+            projectsCount: 0,
+            descendantGroupsCount: 0,
+            fullPath: 'a-group/empty-subgroup',
+          },
+        ],
+      },
+    },
+  },
+};

@@ -49,7 +49,7 @@ export default {
     :href="linkHref"
     :aria-label="isSubGroup(item) ? `Open subgroup ${item.name}` : undefined"
   >
-    <gl-icon :name="iconName(item)" variant="subtle" class="gl-mr-4" />
+    <gl-icon :name="iconName(item)" variant="subtle" class="gl-mr-4 gl-shrink-0" />
     <project-avatar
       class="gl-mr-4"
       :project-id="item.id"
