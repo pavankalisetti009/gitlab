@@ -82,7 +82,8 @@ RSpec.describe Elastic::MaintainElasticsearchOnGroupUpdate, feature_category: :g
           allow(group).to receive(:use_elasticsearch?).and_return true
         end
 
-        it 'calls Search::Wiki::ElasticDeleteGroupWikiWorker' do
+        it 'calls Search::Wiki::ElasticDeleteGroupWikiWorker',
+          quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/537941' do
           expect(Search::Wiki::ElasticDeleteGroupWikiWorker).to receive(:perform_async).with(group.id,
             'namespace_routing_id' => group.root_ancestor.id)
           group.destroy!
