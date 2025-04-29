@@ -546,75 +546,68 @@ export const mockWorkItemStatus = {
   __typename: 'WorkItemStatus',
 };
 
-export const vulnerabilitiesWidgetResponse = {
-  data: {
-    workspace: {
-      __typename: 'Namespace',
-      id: 'gid://gitlab/Namespaces::ProjectNamespace/1',
-      workItem: {
-        __typename: 'WorkItem',
-        id: 'gid://gitlab/WorkItem/1',
-        iid: '1',
-        namespace: {
-          __typename: 'Project',
-          id: '1',
-        },
-        widgets: [
-          {
-            type: 'VULNERABILITIES',
-            relatedVulnerabilities: {
-              nodes: [
-                {
-                  id: 'gid://gitlab/Vulnerability/727',
-                  state: 'DETECTED',
-                  severity: 'MEDIUM',
-                  name: "Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
-                  webUrl: '/vulnerabilities/727',
-                  __typename: 'Vulnerability',
-                },
-                {
-                  id: 'gid://gitlab/Vulnerability/688',
-                  state: 'CONFIRMED',
-                  severity: 'INFO',
-                  name: 'Loop with Unreachable Exit Condition (Infinite Loop)',
-                  webUrl: '/vulnerabilities/688',
-                  __typename: 'Vulnerability',
-                },
-              ],
-              __typename: 'VulnerabilityConnection',
-            },
-            __typename: 'WorkItemWidgetVulnerabilities',
+const relatedVulnerabilitiesNodes = [
+  {
+    id: 'gid://gitlab/Vulnerability/727',
+    state: 'DETECTED',
+    severity: 'MEDIUM',
+    name: "Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
+    webUrl: '/vulnerabilities/727',
+    __typename: 'Vulnerability',
+  },
+  {
+    id: 'gid://gitlab/Vulnerability/688',
+    state: 'CONFIRMED',
+    severity: 'INFO',
+    name: 'Loop with Unreachable Exit Condition (Infinite Loop)',
+    webUrl: '/vulnerabilities/688',
+    __typename: 'Vulnerability',
+  },
+];
+
+export const getVulnerabilitiesWidgetResponse = (
+  nodes = relatedVulnerabilitiesNodes,
+  hasNextPage = false,
+) => {
+  return {
+    data: {
+      workspace: {
+        __typename: 'Namespace',
+        id: 'gid://gitlab/Namespaces::ProjectNamespace/1',
+        workItem: {
+          __typename: 'WorkItem',
+          id: 'gid://gitlab/WorkItem/1',
+          iid: '1',
+          namespace: {
+            __typename: 'Project',
+            id: '1',
           },
-        ],
+          widgets: [
+            {
+              type: 'VULNERABILITIES',
+              relatedVulnerabilities: {
+                nodes,
+                pageInfo: {
+                  hasPreviousPage: false,
+                  hasNextPage,
+                  endCursor: hasNextPage ? 'XYZ' : null,
+                  startCursor: null,
+                  __typename: 'PageInfo',
+                },
+                __typename: 'VulnerabilityConnection',
+              },
+              __typename: 'WorkItemWidgetVulnerabilities',
+            },
+          ],
+        },
       },
     },
-  },
+  };
 };
 
-export const emptyVulnerabilitiesWidgetResponse = {
-  data: {
-    workspace: {
-      __typename: 'Namespace',
-      id: 'gid://gitlab/Namespaces::ProjectNamespace/1',
-      workItem: {
-        __typename: 'WorkItem',
-        id: 'gid://gitlab/WorkItem/1',
-        iid: '1',
-        namespace: {
-          __typename: 'Project',
-          id: '1',
-        },
-        widgets: [
-          {
-            type: 'VULNERABILITIES',
-            relatedVulnerabilities: {
-              nodes: [],
-              __typename: 'VulnerabilityConnection',
-            },
-            __typename: 'WorkItemWidgetVulnerabilities',
-          },
-        ],
-      },
-    },
-  },
-};
+export const vulnerabilitiesWidgetResponse = getVulnerabilitiesWidgetResponse();
+export const emptyVulnerabilitiesWidgetResponse = getVulnerabilitiesWidgetResponse([]);
+export const paginatedVulnerabilitiesWidgetResponse = getVulnerabilitiesWidgetResponse(
+  relatedVulnerabilitiesNodes,
+  true,
+);

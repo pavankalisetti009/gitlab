@@ -69157,6 +69157,12 @@ msgstr ""
 msgid "WorkItem|Something went wrong while fetching milestones. Please try again."
 msgstr ""
 
+msgid "WorkItem|Something went wrong while fetching more related vulnerabilities."
+msgstr ""
+
+msgid "WorkItem|Something went wrong while fetching related vulnerabilities."
+msgstr ""
+
 msgid "WorkItem|Something went wrong while fetching the %{workItemType}. Please try again."
 msgstr ""
 
