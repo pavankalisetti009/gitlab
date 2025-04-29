@@ -55,11 +55,6 @@ export default {
       required: false,
       default: null,
     },
-    purchaseButtonText: {
-      type: String,
-      required: false,
-      default: null,
-    },
     hasFreePlan: {
       type: Boolean,
       required: false,

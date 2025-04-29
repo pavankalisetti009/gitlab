@@ -26,11 +26,6 @@ export default {
       required: false,
     },
   },
-  data() {
-    return {
-      search: undefined,
-    };
-  },
   methods: {
     handleFilter(filterOptions) {
       const {
