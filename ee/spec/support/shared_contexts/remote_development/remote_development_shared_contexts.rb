@@ -744,11 +744,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 resources: {
                   limits: {
                     cpu: "500m",
-                    memory: "512Mi"
+                    memory: "1000Mi"
                   },
                   requests: {
                     cpu: "100m",
-                    memory: "256Mi"
+                    memory: "500Mi"
                   }
                 },
                 volumeMounts: [

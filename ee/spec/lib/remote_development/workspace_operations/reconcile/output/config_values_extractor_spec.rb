@@ -44,7 +44,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
   let_it_be(:default_resources_per_workspace_container) do
     {
       requests: {
-        memory: "500Mi",
+        memory: "600Mi",
         cpu: "0.5"
       },
       limits: {
