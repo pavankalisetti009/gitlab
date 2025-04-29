@@ -317,4 +317,4 @@ export const propsMock = { path: 'some_file.js', projectPath: 'some/path' };
 
 export const axiosMockResponse = { html: 'text', binary: true };
 
-export const FILE_SIZE_3MB = 3000000;
+export const FILE_SIZE_3MB = `3000000`;
