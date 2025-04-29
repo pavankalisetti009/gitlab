@@ -157,7 +157,9 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
       it 'sets the cookie for confetti for learn gitlab' do
         post_create
 
-        expect(cookies[:confetti_post_signup]).to be(true)
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/537444 - Cookie is disabled for now, it may be re-enabled later
+        # See the linked issue for details
+        expect(cookies[:confetti_post_signup]).to be_nil
       end
 
       context 'when form is successfully submitted' do

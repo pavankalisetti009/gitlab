@@ -95,6 +95,10 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
         it 'launches invite modal when invite is clicked' do
           click_link('Invite your colleagues')
 
+          # Setting this cookie to true manually since we've commented out the cookie in the groups_controller, but
+          # still want this functioanlity in case we want to re-enable it
+          set_cookie('confetti_post_signup', 'true')
+
           page.within invite_modal_selector do
             expect(page).to have_content("You're inviting members to the #{project.name} project")
           end
