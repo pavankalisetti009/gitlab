@@ -36,6 +36,11 @@ export default {
       required: false,
       default: () => {},
     },
+    isNewPolicy: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   data() {
     return {
@@ -137,6 +142,7 @@ export default {
     <variables-override-list
       v-if="hasVariablesControl"
       class="gl-mt-4"
+      :is-new-policy="isNewPolicy"
       :variables-override="variablesOverride"
       @select="updateProperty('variables_override', $event)"
     />
