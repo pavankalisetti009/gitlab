@@ -3,6 +3,8 @@
 module Analytics
   module AiAnalytics
     module CommonUsageService
+      include Gitlab::Utils::StrongMemoize
+
       def initialize(current_user, namespace:, from:, to:, fields: nil)
         @current_user = current_user
         @namespace = namespace
@@ -22,6 +24,11 @@ module Analytics
 
       attr_reader :current_user, :namespace, :from, :to, :fields
 
+      def fetch_contributions_from_new_table?
+        Feature.enabled?(:fetch_contributions_data_from_new_tables, namespace)
+      end
+      strong_memoize_attr :fetch_contributions_from_new_table?
+
       def feature_unavailable_error
         ServiceResponse.error(
           message: s_('AiAnalytics|the ClickHouse data store is not available')
@@ -30,7 +37,7 @@ module Analytics
 
       def placeholders
         {
-          traversal_path: namespace.traversal_path,
+          traversal_path: namespace.traversal_path(with_organization: fetch_contributions_from_new_table?),
           from: from.to_date.iso8601,
           to: to.to_date.iso8601
         }
@@ -46,7 +53,15 @@ module Analytics
           "(#{self.class::FIELDS_SUBQUERIES[field]}) as #{field}"
         end.join(',')
 
-        format(self.class::QUERY, fields: raw_fields)
+        format(base_query, fields: raw_fields)
+      end
+
+      def base_query
+        if fetch_contributions_from_new_table?
+          self.class::QUERY.gsub('"contributions"', '"contributions_new"')
+        else
+          self.class::QUERY
+        end
       end
     end
   end

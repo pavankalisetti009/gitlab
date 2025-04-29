@@ -69,17 +69,17 @@ RSpec.describe Analytics::ValueStreamDashboard::ContributorCountService, :freeze
   end
 
   context 'when a project namespace is given' do
-    let_it_be(:project) { create(:project, namespace: group) }
+    let_it_be(:project) { create(:project, group: group) }
 
-    let(:namespace) { project.reload.project_namespace }
-    let(:path) { "#{group.id}/#{namespace.id}/" }
+    let!(:namespace) { project.reload.project_namespace }
+    let!(:path) { "#{group.organization_id}/#{group.id}/#{namespace.id}/" }
 
     context 'when data present', :click_house do
       before do
         allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
         stub_licensed_features(combined_project_analytics_dashboards: true)
 
-        clickhouse_fixture(:events, [
+        clickhouse_fixture(:events_new, [
           # push event
           { id: 1, path: path, author_id: 100, target_id: 0, target_type: '', action: 5,
             created_at: from + 5.days, updated_at: from + 5.days },
@@ -92,6 +92,28 @@ RSpec.describe Analytics::ValueStreamDashboard::ContributorCountService, :freeze
       it 'returns distinct contributor count from ClickHouse' do
         expect(service_response).to be_success
         expect(service_response.payload[:count]).to eq(2)
+      end
+
+      context 'when fetch_contributions_data_from_new_tables is disabled' do
+        let(:path) { "#{group.id}/#{namespace.id}/" }
+
+        before do
+          stub_feature_flags(fetch_contributions_data_from_new_tables: false)
+
+          clickhouse_fixture(:events, [
+            # push event
+            { id: 1, path: path, author_id: 100, target_id: 0, target_type: '', action: 5,
+              created_at: from + 5.days, updated_at: from + 5.days },
+            # issue creation event, different user
+            { id: 2, path: path, author_id: 200, target_id: 0, target_type: 'Issue', action: 1,
+              created_at: from + 9.days, updated_at: from + 9.days }
+          ])
+        end
+
+        it 'returns distinct contributor count from ClickHouse' do
+          expect(service_response).to be_success
+          expect(service_response.payload[:count]).to eq(2)
+        end
       end
     end
 
@@ -134,19 +156,52 @@ RSpec.describe Analytics::ValueStreamDashboard::ContributorCountService, :freeze
     end
 
     context 'when data present' do
+      let(:path) { "#{group.organization_id}/#{group.id}/" }
+
       before do
-        clickhouse_fixture(:events, [
+        clickhouse_fixture(:events_new, [
           # push event
-          { id: 1, path: "#{group.id}/", author_id: 100, target_id: 0, target_type: '', action: 5,
+          { id: 1, path: path, author_id: 100, target_id: 0, target_type: '', action: 5,
             created_at: from + 5.days, updated_at: from + 5.days },
           # push event same user
-          { id: 2, path: "#{group.id}/", author_id: 100, target_id: 0, target_type: '', action: 5,
+          { id: 2, path: path, author_id: 100, target_id: 0, target_type: '', action: 5,
             created_at: from + 8.days, updated_at: from + 8.days },
           # issue creation event, different user
-          { id: 3, path: "#{group.id}/", author_id: 200, target_id: 0, target_type: 'Issue', action: 1,
+          { id: 3, path: path, author_id: 200, target_id: 0, target_type: 'Issue', action: 1,
             created_at: from + 9.days, updated_at: from + 9.days },
           # issue creation event, outside of the date range
-          { id: 4, path: "#{group.id}/", author_id: 200, target_id: 0, target_type: 'Issue', action: 1,
+          { id: 4, path: path, author_id: 200, target_id: 0, target_type: 'Issue', action: 1,
+            created_at: from + 5.years, updated_at: from + 5.years },
+          # issue creation event, for a different group
+          { id: 5, path: "0/", author_id: 200, target_id: 0, target_type: 'Issue', action: 1, created_at: from + 2.days,
+            updated_at: from + 2.days }
+        ])
+      end
+
+      it 'returns distinct contributor count from ClickHouse' do
+        expect(service_response).to be_success
+        expect(service_response.payload[:count]).to eq(2)
+      end
+    end
+
+    context 'when fetch_contributions_data_from_new_tables is disabled' do
+      let(:path) { "#{group.id}/" }
+
+      before do
+        stub_feature_flags(fetch_contributions_data_from_new_tables: false)
+
+        clickhouse_fixture(:events, [
+          # push event
+          { id: 1, path: path, author_id: 100, target_id: 0, target_type: '', action: 5,
+            created_at: from + 5.days, updated_at: from + 5.days },
+          # push event same user
+          { id: 2, path: path, author_id: 100, target_id: 0, target_type: '', action: 5,
+            created_at: from + 8.days, updated_at: from + 8.days },
+          # issue creation event, different user
+          { id: 3, path: path, author_id: 200, target_id: 0, target_type: 'Issue', action: 1,
+            created_at: from + 9.days, updated_at: from + 9.days },
+          # issue creation event, outside of the date range
+          { id: 4, path: path, author_id: 200, target_id: 0, target_type: 'Issue', action: 1,
             created_at: from + 5.years, updated_at: from + 5.years },
           # issue creation event, for a different group
           { id: 5, path: "0/", author_id: 200, target_id: 0, target_type: 'Issue', action: 1, created_at: from + 2.days,

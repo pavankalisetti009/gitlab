@@ -47,12 +47,12 @@ RSpec.describe Resolvers::Projects::Analytics::ValueStreamDashboard::CountResolv
 
           arguments[:identifier] = 'contributors'
 
-          clickhouse_fixture(:events, [
+          clickhouse_fixture(:events_new, [
             # push event
-            { id: 1, path: "#{group.id}/#{project.project_namespace.id}/", author_id: 100,
+            { id: 1, path: "#{group.organization_id}/#{group.id}/#{project.project_namespace.id}/", author_id: 100,
               target_id: 0, target_type: '', action: 5, created_at: '2023-06-10', updated_at: '2023-06-10' },
             # push event, different user
-            { id: 2, path: "#{group.id}/#{project.project_namespace.id}/", author_id: 200,
+            { id: 2, path: "#{group.organization_id}/#{group.id}/#{project.project_namespace.id}/", author_id: 200,
               target_id: 0, target_type: '', action: 5, created_at: '2023-06-15', updated_at: '2023-06-15' }
           ])
         end

@@ -5,11 +5,13 @@ module Analytics
     class DuoChatUsageService
       include CommonUsageService
 
+      # TODO - Replace with namespace_traversal_path filter
+      # after https://gitlab.com/gitlab-org/gitlab/-/issues/531491
       QUERY = <<~SQL
         -- cte to load code contributors
         WITH contributors AS (
           SELECT DISTINCT author_id
-          FROM contributions
+          FROM "contributions"
           WHERE startsWith(path, {traversal_path:String})
           AND "contributions"."created_at" >= {from:Date}
           AND "contributions"."created_at" <= {to:Date}

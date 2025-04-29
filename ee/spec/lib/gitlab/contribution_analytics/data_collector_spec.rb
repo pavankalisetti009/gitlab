@@ -14,7 +14,11 @@ RSpec.describe Gitlab::ContributionAnalytics::DataCollector, feature_category: :
     it { is_expected.to delegate_method(:users).to(:data_formatter) }
   end
 
-  shared_examples 'filters and groups data properly' do
+  shared_examples 'filters and groups data properly' do |flag_enabled|
+    before do
+      stub_feature_flags(fetch_contributions_data_from_new_tables: flag_enabled)
+    end
+
     describe 'date range filters' do
       it 'filters the date range' do
         # before the range
@@ -72,7 +76,11 @@ RSpec.describe Gitlab::ContributionAnalytics::DataCollector, feature_category: :
         insert_events_into_click_house
       end
 
-      it_behaves_like 'filters and groups data properly'
+      it_behaves_like 'filters and groups data properly', true
+
+      context 'when fetch_contributions_data_from_new_tables is disabled' do
+        it_behaves_like 'filters and groups data properly', false
+      end
 
       it 'uses the Clickhouse data collector' do
         args = { group: group, from: 14.months.ago, to: 5.months.ago }
@@ -92,7 +100,11 @@ RSpec.describe Gitlab::ContributionAnalytics::DataCollector, feature_category: :
 
       def prepare_data; end
 
-      it_behaves_like 'filters and groups data properly'
+      it_behaves_like 'filters and groups data properly', true
+
+      context 'when fetch_contributions_data_from_new_tables is disabled' do
+        it_behaves_like 'filters and groups data properly', false
+      end
 
       it 'uses the postgres data collector' do
         args = { group: group, from: 14.months.ago, to: 5.months.ago }

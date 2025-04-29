@@ -3,38 +3,7 @@
 module Gitlab
   module ContributionAnalytics
     class ClickHouseDataCollector
-      QUERY = <<~CH
-        SELECT count(*) AS count,
-          "contributions"."author_id" AS author_id,
-          "contributions"."target_type" AS target_type,
-          "contributions"."action" AS action
-        FROM (
-          SELECT
-            id,
-            argMax(author_id, contributions.updated_at) AS author_id,
-            CASE
-              WHEN argMax(target_type, contributions.updated_at) IN ('Issue', 'WorkItem') THEN 'Issue'
-              ELSE argMax(target_type, contributions.updated_at)
-            END AS target_type,
-            argMax(action, contributions.updated_at) AS action
-          FROM contributions
-            WHERE startsWith(path, {group_path:String})
-            AND "contributions"."created_at" >= {from:Date}
-            AND "contributions"."created_at" <= {to:Date}
-            AND (
-              (
-                "contributions"."action" = 5 AND "contributions"."target_type" = ''
-              )
-              OR
-              (
-                "contributions"."action" IN (1, 3, 7, 12)
-                AND "contributions"."target_type" IN ('MergeRequest', 'Issue', 'WorkItem')
-              )
-            )
-          GROUP BY id
-        ) contributions
-        GROUP BY "contributions"."action","contributions"."target_type","contributions"."author_id"
-      CH
+      include Gitlab::Utils::StrongMemoize
 
       attr_reader :group, :from, :to
 
@@ -45,7 +14,7 @@ module Gitlab
       end
 
       def totals_by_author_target_type_action
-        query = ::ClickHouse::Client::Query.new(raw_query: QUERY, placeholders: placeholders)
+        query = ::ClickHouse::Client::Query.new(raw_query: clickhouse_query, placeholders: placeholders)
         ::ClickHouse::Client.select(query, :main).each_with_object({}) do |row, hash|
           hash[[row['author_id'], row['target_type'].presence, row['action']]] = row['count']
         end
@@ -56,11 +25,60 @@ module Gitlab
       def group_path
         # trailing slash required to denote end of path because we use startsWith
         # to get self and descendants
-        @group_path ||= group.traversal_path
+        group.traversal_path(with_organization: fetch_data_from_new_table)
       end
 
       def format_date(date)
         date.utc.to_date.iso8601
+      end
+
+      def contributions_table
+        if fetch_data_from_new_table
+          'contributions_new'
+        else
+          'contributions'
+        end
+      end
+      strong_memoize_attr :contributions_table
+
+      def fetch_data_from_new_table
+        Feature.enabled?(:fetch_contributions_data_from_new_tables, group)
+      end
+      strong_memoize_attr :fetch_data_from_new_table
+
+      def clickhouse_query
+        <<~CH
+          SELECT count(*) AS count,
+            "#{contributions_table}"."author_id" AS author_id,
+            "#{contributions_table}"."target_type" AS target_type,
+            "#{contributions_table}"."action" AS action
+          FROM (
+            SELECT
+              id,
+              argMax(author_id, #{contributions_table}.updated_at) AS author_id,
+              CASE
+                WHEN argMax(target_type, #{contributions_table}.updated_at) IN ('Issue', 'WorkItem') THEN 'Issue'
+                ELSE argMax(target_type, #{contributions_table}.updated_at)
+              END AS target_type,
+              argMax(action, #{contributions_table}.updated_at) AS action
+            FROM #{contributions_table}
+              WHERE startsWith(path, {group_path:String})
+              AND "#{contributions_table}"."created_at" >= {from:Date}
+              AND "#{contributions_table}"."created_at" <= {to:Date}
+              AND (
+                (
+                  "#{contributions_table}"."action" = 5 AND "#{contributions_table}"."target_type" = ''
+                )
+                OR
+                (
+                  "#{contributions_table}"."action" IN (1, 3, 7, 12)
+                  AND "#{contributions_table}"."target_type" IN ('MergeRequest', 'Issue', 'WorkItem')
+                )
+              )
+            GROUP BY id
+          ) #{contributions_table}
+          GROUP BY "#{contributions_table}"."action","#{contributions_table}"."target_type","#{contributions_table}"."author_id"
+        CH
       end
 
       def placeholders

@@ -23,9 +23,11 @@ RSpec.describe Analytics::AiAnalytics::DuoUsageService, feature_category: :value
     allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
   end
 
-  shared_examples 'common duo usage service' do
+  shared_examples 'common duo usage service' do |flag_enabled|
     context 'when the clickhouse is not available for analytics' do
       before do
+        stub_feature_flags(fetch_contributions_data_from_new_tables: flag_enabled)
+
         allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).with(container).and_return(false)
       end
 
@@ -106,12 +108,20 @@ RSpec.describe Analytics::AiAnalytics::DuoUsageService, feature_category: :value
   context 'for group' do
     let_it_be(:container) { group }
 
-    it_behaves_like 'common duo usage service'
+    it_behaves_like 'common duo usage service', true
+
+    context 'when fetch_contributions_data_from_new_tables feature flag is disabled' do
+      it_behaves_like 'common duo usage service', false
+    end
   end
 
   context 'for project' do
     let_it_be(:container) { project.project_namespace.reload }
 
-    it_behaves_like 'common duo usage service'
+    it_behaves_like 'common duo usage service', true
+
+    context 'when fetch_contributions_data_from_new_tables feature flag is disabled' do
+      it_behaves_like 'common duo usage service', false
+    end
   end
 end

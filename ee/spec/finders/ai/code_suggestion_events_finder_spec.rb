@@ -54,7 +54,11 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
         group.add_reporter(user)
       end
 
-      shared_examples 'fetch code suggestion events' do
+      shared_examples 'fetch code suggestion events' do |flag_enabled|
+        before do
+          stub_feature_flags(fetch_contributions_data_from_new_tables: flag_enabled)
+        end
+
         it 'returns correct results' do
           if Gitlab::ClickHouse.enabled_for_analytics?
             expect(ClickHouse::Client).to receive(:select).and_call_original
@@ -72,10 +76,14 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
           insert_events_into_click_house
         end
 
-        it_behaves_like 'fetch code suggestion events' do
-          let(:expected_suggestion_events) do
-            [code_suggestion_event_1, code_suggestion_event_2, code_suggestion_event_4]
-          end
+        let(:expected_suggestion_events) do
+          [code_suggestion_event_1, code_suggestion_event_2, code_suggestion_event_4]
+        end
+
+        it_behaves_like 'fetch code suggestion events', true
+
+        context 'when fetch_contributions_data_from_new_tables is disabled' do
+          it_behaves_like 'fetch code suggestion events', false
         end
       end
 

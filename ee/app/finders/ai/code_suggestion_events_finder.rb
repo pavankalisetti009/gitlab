@@ -2,8 +2,12 @@
 
 module Ai
   class CodeSuggestionEventsFinder
+    include Gitlab::Utils::StrongMemoize
+
     attr_reader :resource, :current_user
 
+    # TODO - Replace with namespace_traversal_path filter
+    # after https://gitlab.com/gitlab-org/gitlab/-/issues/531491
     CONTRIBUTORS_IDS_QUERY = <<~SQL
       SELECT DISTINCT author_id
       FROM contributions
@@ -52,14 +56,19 @@ module Ai
         .select('DISTINCT author_id')
     end
 
+    def fetch_contributions_from_new_table?
+      Feature.enabled?(:fetch_contributions_data_from_new_tables, resource)
+    end
+    strong_memoize_attr :fetch_contributions_from_new_table?
+
     def contributors_ids_from_ch
       variables =
         {
-          traversal_path: resource.traversal_path
+          traversal_path: resource.traversal_path(with_organization: fetch_contributions_from_new_table?)
         }
 
       query =
-        ClickHouse::Client::Query.new(raw_query: CONTRIBUTORS_IDS_QUERY, placeholders: variables)
+        ClickHouse::Client::Query.new(raw_query: ch_contributors_ids_query, placeholders: variables)
 
       contributors = ClickHouse::Client.select(query, :main)
 
@@ -67,6 +76,14 @@ module Ai
       contributors.pluck('author_id')
       # rubocop: enable Database/AvoidUsingPluckWithoutLimit
       # rubocop: enable CodeReuse/ActiveRecord
+    end
+
+    def ch_contributors_ids_query
+      if fetch_contributions_from_new_table?
+        CONTRIBUTORS_IDS_QUERY.gsub('contributions', 'contributions_new')
+      else
+        CONTRIBUTORS_IDS_QUERY
+      end
     end
   end
 end
