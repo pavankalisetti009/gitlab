@@ -80,7 +80,7 @@ Broadcast messages are publicly accessible through the API regardless of targeti
 To add a broadcast message:
 
 1. On the left sidebar, at the bottom, select **Admin**.
-1. On the left sidebar, select **Messages**.
+1. Select **Messages**.
 1. On the right, select **Add new message**.
 1. Add your **Message** text:
    - Message contents can include Markdown, emoji, and the `a` and `br` HTML tags.
