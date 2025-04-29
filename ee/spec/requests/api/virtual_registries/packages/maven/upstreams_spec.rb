@@ -80,7 +80,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
   describe 'POST /api/v4/virtual_registries/packages/maven/registries/:id/upstreams' do
     let(:registry_id) { registry.id }
     let(:url) { "/virtual_registries/packages/maven/registries/#{registry_id}/upstreams" }
-    let(:params) { { url: 'http://example.com' } }
+    let(:params) { { url: 'http://example.com', name: 'foo' } }
 
     subject(:api_request) { post api(url), headers: headers, params: params }
 
@@ -142,13 +142,15 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     end
 
     context 'for params' do
+      # rubocop:disable Layout/LineLength -- splitting the table syntax affects readability
       where(:params, :status) do
-        { url: 'http://example.com', username: 'test', password: 'test', cache_validity_hours: 3 } | :created
-        { url: 'http://example.com', username: 'test', password: 'test' }                          | :created
-        { url: '', username: 'test', password: 'test' }                                            | :bad_request
-        { url: 'http://example.com', username: 'test' }                                            | :bad_request
-        {}                                                                                         | :bad_request
+        { name: 'foo', description: 'bar', url: 'http://example.com', username: 'test', password: 'test', cache_validity_hours: 3 } | :created
+        { name: 'foo', url: 'http://example.com', username: 'test', password: 'test' }                                              | :created
+        { url: '', username: 'test', password: 'test' }                                                                             | :bad_request
+        { url: 'http://example.com', username: 'test' }                                                                             | :bad_request
+        {}                                                                                                                          | :bad_request
       end
+      # rubocop:enable Layout/LineLength
 
       before do
         registry.upstreams.each(&:destroy!)
@@ -295,7 +297,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     subject(:api_request) { patch api(url), params: params, headers: headers }
 
     context 'with valid params' do
-      let(:params) { { url: 'http://example.com', username: 'test', password: 'test' } }
+      let(:params) { { name: 'foo', description: 'description', url: 'http://example.com', username: 'test', password: 'test' } }
 
       it { is_expected.to have_request_urgency(:low) }
 
@@ -345,21 +347,26 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
       end
 
       let(:params) do
-        { url: param_url, username: username, password: password, cache_validity_hours: cache_validity_hours }.compact
+        { name: name, description: description, url: param_url, username: username, password: password,
+          cache_validity_hours: cache_validity_hours }.compact
       end
 
-      where(:param_url, :username, :password, :cache_validity_hours, :status) do
-        nil                  | 'test' | 'test' | 3   | :ok
-        'http://example.com' | nil    | 'test' | 3   | :ok
-        'http://example.com' | 'test' | nil    | 3   | :ok
-        'http://example.com' | 'test' | 'test' | nil | :ok
-        nil                  | nil    | nil    | 3   | :ok
-        'http://example.com' | 'test' | 'test' | 3   | :ok
-        ''                   | 'test' | 'test' | 3   | :bad_request
-        'http://example.com' | ''     | 'test' | 3   | :bad_request
-        'http://example.com' | 'test' | ''     | 3   | :bad_request
-        'http://example.com' | 'test' | 'test' | -1  | :bad_request
-        nil                  | nil    | nil    | nil | :bad_request
+      where(:name, :description, :param_url, :username, :password, :cache_validity_hours, :status) do
+        nil   | 'bar' | 'http://example.com' | 'test' | 'test' | 3   | :ok
+        'foo' | nil   | 'http://example.com' | 'test' | 'test' | 3   | :ok
+        'foo' | 'bar' | nil                  | 'test' | 'test' | 3   | :ok
+        'foo' | 'bar' | 'http://example.com' | nil    | 'test' | 3   | :ok
+        'foo' | 'bar' | 'http://example.com' | 'test' | nil    | 3   | :ok
+        'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | nil | :ok
+        nil   | nil   | nil                  | nil    | nil    | 3   | :ok
+        'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | 3   | :ok
+        ''    | 'bar' | 'http://example.com' | 'test' | 'test' | 3   | :bad_request
+        'foo' | ''    | 'http://example.com' | 'test' | 'test' | 3   | :bad_request
+        'foo' | 'bar' | ''                   | 'test' | 'test' | 3   | :bad_request
+        'foo' | 'bar' | 'http://example.com' | ''     | 'test' | 3   | :bad_request
+        'foo' | 'bar' | 'http://example.com' | 'test' | ''     | 3   | :bad_request
+        'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | -1  | :bad_request
+        nil   | nil   | nil                  | nil    | nil    | nil | :bad_request
       end
 
       with_them do

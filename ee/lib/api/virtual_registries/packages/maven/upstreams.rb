@@ -69,6 +69,9 @@ module API
                   params do
                     requires :url, type: String, desc: 'The URL of the maven virtual registry upstream',
                       allow_blank: false
+                    requires :name, type: String, desc: 'The name of the maven virtual registry upstream',
+                      allow_blank: false
+                    optional :description, type: String, desc: 'The description of the maven virtual registry upstream'
                     optional :username, type: String, desc: 'The username of the maven virtual registry upstream'
                     optional :password, type: String, desc: 'The password of the maven virtual registry upstream'
                     optional :cache_validity_hours, type: Integer, desc: 'The cache validity in hours. Defaults to 24'
@@ -127,13 +130,15 @@ module API
                 end
                 params do
                   with(allow_blank: false) do
+                    optional :name, type: String, desc: 'The name of the maven virtual registry upstream'
+                    optional :description, type: String, desc: 'The description of the maven virtual registry upstream'
                     optional :url, type: String, desc: 'The URL of the maven virtual registry upstream'
                     optional :username, type: String, desc: 'The username of the maven virtual registry upstream'
                     optional :password, type: String, desc: 'The password of the maven virtual registry upstream'
                     optional :cache_validity_hours, type: Integer, desc: 'The validity of the cache in hours'
                   end
 
-                  at_least_one_of :url, :username, :password, :cache_validity_hours
+                  at_least_one_of :name, :description, :url, :username, :password, :cache_validity_hours
                 end
                 patch do
                   authorize! :update_virtual_registry, upstream

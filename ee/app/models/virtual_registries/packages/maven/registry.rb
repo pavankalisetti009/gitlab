@@ -14,6 +14,8 @@ module VirtualRegistries
           through: :registry_upstreams
 
         validates :group, top_level_group: true, presence: true, uniqueness: true
+        validates :name, presence: true, length: { maximum: 255 }
+        validates :description, length: { maximum: 1024 }
 
         scope :for_group, ->(group) { where(group: group) }
 

@@ -73,10 +73,16 @@ module API
                 hidden true
               end
 
+              params do
+                requires :name, type: String, desc: 'The name of the maven virtual registry',
+                  allow_blank: false
+                optional :description, type: String, desc: 'The description of the maven virtual registry'
+              end
               post do
                 authorize! :create_virtual_registry, policy_subject
 
-                new_reg = ::VirtualRegistries::Packages::Maven::Registry.new(group:)
+                new_reg = ::VirtualRegistries::Packages::Maven::Registry
+                            .new(declared_params(include_missing: false).merge(group:))
 
                 render_validation_error!(new_reg) unless new_reg.save
 
@@ -105,6 +111,37 @@ module API
                 authorize! :read_virtual_registry, registry
 
                 present registry, with: ::API::Entities::VirtualRegistries::Packages::Maven::Registry
+              end
+
+              desc 'Update a specific maven virtual registry' do
+                detail 'This feature was introduced in GitLab 18.0. \
+                        This feature is currently in experiment state. \
+                        This feature behind the `virtual_registry_maven` feature flag.'
+                success code: 200
+                failure [
+                  { code: 400, message: 'Bad Request' },
+                  { code: 401, message: 'Unauthorized' },
+                  { code: 403, message: 'Forbidden' },
+                  { code: 404, message: 'Not found' }
+                ]
+                tags %w[maven_virtual_registries]
+                hidden true
+              end
+
+              params do
+                with(allow_blank: false) do
+                  optional :name, type: String, desc: 'The name of the maven virtual registry'
+                  optional :description, type: String, desc: 'The description of the maven virtual registry'
+                end
+
+                at_least_one_of :name, :description
+              end
+              patch do
+                authorize! :update_virtual_registry, registry
+
+                render_validation_error!(registry) unless registry.update(declared_params(include_missing: false))
+
+                status :ok
               end
 
               desc 'Delete a specific maven virtual registry' do
