@@ -36,6 +36,13 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
           expect(assigns(:group).visibility_level).to eq(Gitlab::CurrentSettings.default_group_visibility)
         end
 
+        it 'assigns the group and project variables with default names', :aggregate_failures do
+          get_new
+
+          expect(assigns(:group).name).to eq("#{user.username}-group")
+          expect(assigns(:project).name).to eq("#{user.username}-project")
+        end
+
         it 'builds a project object' do
           get_new
 
