@@ -86,7 +86,9 @@ module Admin
       end
 
       def permitted_params
-        params.permit(:role_arn, :availability, :auto_review_enabled)
+        params
+          .permit(:role_arn, :availability, :auto_review_enabled)
+          .merge(organization_id: Current.organization.id)
       end
     end
   end
