@@ -14,9 +14,9 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
       stub_ee_application_setting(elasticsearch_indexing: true)
     end
 
-    context 'when Feature Flag `elastic_migration_worker` is disabled' do
+    context 'when application setting `elastic_migration_worker_enabled` is false' do
       before do
-        stub_feature_flags(elastic_migration_worker: false)
+        stub_ee_application_setting(elastic_migration_worker_enabled: false)
       end
 
       it 'returns with no execution' do
