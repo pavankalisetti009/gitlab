@@ -53838,9 +53838,6 @@ msgstr ""
 msgid "Secrets|Delete secret"
 msgstr ""
 
-msgid "Secrets|Description must be 200 characters or less."
-msgstr ""
-
 msgid "Secrets|Edit %{id}"
 msgstr ""
 
@@ -53908,6 +53905,9 @@ msgid "Secrets|Stored secrets"
 msgstr ""
 
 msgid "Secrets|The name should be unique within this project."
+msgstr ""
+
+msgid "Secrets|This field is required and must be 200 characters or less."
 msgstr ""
 
 msgid "Secrets|To confirm, enter %{secretName}:"

@@ -81,6 +81,7 @@ describe('SecretForm component', () => {
   const inputRequiredFields = async () => {
     findNameField().vm.$emit('input', 'SECRET_KEY');
     findValueField().vm.$emit('input', 'SECRET_VALUE');
+    findDescriptionField().vm.$emit('input', 'This is a secret');
     findBranchField().vm.$emit('select-branch', 'main');
     findEnvironmentsDropdown().vm.$emit('select-environment', '*');
 
@@ -137,10 +138,6 @@ describe('SecretForm component', () => {
       await nextTick();
 
       expect(findEnvironmentsDropdown().props('selectedEnvironmentScope')).toBe('staging');
-    });
-
-    it('does not require environment (shows Not Applicable option)', () => {
-      expect(findEnvironmentsDropdown().props('isEnvironmentRequired')).toBe(false);
     });
 
     it('bubbles up the search event', async () => {
@@ -207,7 +204,7 @@ describe('SecretForm component', () => {
       await nextTick();
 
       expect(findNameField().attributes('state')).toBeUndefined();
-      expect(findNameFieldGroup().attributes('invalid-feedback')).toBe('This field is required');
+      expect(findNameFieldGroup().attributes('invalid-feedback')).toBe('This field is required.');
 
       findNameField().vm.$emit('input', 'SECRET_KEY');
       await nextTick();
@@ -222,7 +219,7 @@ describe('SecretForm component', () => {
       await nextTick();
 
       expect(findValueField().attributes('state')).toBeUndefined();
-      expect(findValueFieldGroup().attributes('invalid-feedback')).toBe('This field is required');
+      expect(findValueFieldGroup().attributes('invalid-feedback')).toBe('This field is required.');
 
       findValueField().vm.$emit('input', 'SECRET_VALUE');
       await nextTick();
@@ -242,7 +239,7 @@ describe('SecretForm component', () => {
 
       expect(findDescriptionField().attributes('state')).toBeUndefined();
       expect(findDescriptionFieldGroup().attributes('invalid-feedback')).toBe(
-        'Description must be 200 characters or less.',
+        'This field is required and must be 200 characters or less.',
       );
 
       findDescriptionField().vm.$emit('input', 'This is a short description of the secret.');
@@ -250,11 +247,11 @@ describe('SecretForm component', () => {
 
       expect(findDescriptionField().attributes('state')).toBe('true');
 
-      // description can be empty
+      // description cannot be empty
       findDescriptionField().vm.$emit('input', '');
       await nextTick();
 
-      expect(findDescriptionField().attributes('state')).toBe('true');
+      expect(findDescriptionField().attributes('state')).toBeUndefined();
     });
 
     it('submit button is enabled when required fields have input', async () => {
