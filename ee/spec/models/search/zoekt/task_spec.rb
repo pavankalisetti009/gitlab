@@ -147,6 +147,35 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
       end
     end
 
+    context 'with pending_deletion repo task' do
+      let_it_be(:pending_deletion_repo_indexing_task) { create(:zoekt_task, project: project_with_repo_1) }
+      let_it_be(:pending_deletion_repo_delete_task) do
+        create(:zoekt_task, task_type: :delete_repo, project: project_with_repo_2)
+      end
+
+      before do
+        pending_deletion_repo_indexing_task.zoekt_repository.pending_deletion!
+        pending_deletion_repo_delete_task.zoekt_repository.pending_deletion!
+      end
+
+      it 'marks indexing tasks as skipped and processes delete tasks' do
+        expect do
+          described_class.each_task_for_processing(limit: 10) { |t| t }
+        end.to change { pending_deletion_repo_indexing_task.reload.state }.from('pending').to('skipped')
+        expect(pending_deletion_repo_delete_task.reload).to be_processing
+      end
+
+      it 'updates repository states correctly' do
+        # Repository state should remain pending_deletion for indexing task since it's skipped
+        # Delete task repository state should not be changed here since it's processed normally
+        expect do
+          described_class.each_task_for_processing(limit: 10) { |t| t }
+        end.not_to change { pending_deletion_repo_indexing_task.zoekt_repository.reload.state }
+
+        expect(pending_deletion_repo_indexing_task.zoekt_repository.reload).to be_pending_deletion
+      end
+    end
+
     context 'with failed zoekt task' do
       it 'does not mark tasks as processing even with retries left' do
         # Create a failed task that still has retries left
@@ -190,6 +219,111 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
         end.to change { task_with_invalid_repo.reload.state }.from('pending').to('done')
         expect(delete_task_with_invalid_repo.reload).to be_processing
         expect(task_with_invalid_repo.zoekt_repository.reload).to be_ready
+      end
+    end
+  end
+
+  describe '.update_task_states' do
+    let_it_be(:skipped_tasks) { create_list(:zoekt_task, 3, :pending) }
+    let_it_be(:orphaned_tasks) { create_list(:zoekt_task, 2, :pending) }
+    let_it_be(:valid_tasks) { create_list(:zoekt_task, 4, :pending) }
+    let_it_be(:done_tasks) { create_list(:zoekt_task, 2, :pending) }
+
+    let(:states) do
+      {
+        skipped: skipped_tasks.map(&:id),
+        orphaned: orphaned_tasks.map(&:id),
+        valid: valid_tasks.map(&:id),
+        done: done_tasks.map(&:id)
+      }
+    end
+
+    it 'updates tasks to their appropriate states' do
+      freeze_time do
+        expect do
+          described_class.update_task_states(states: states)
+        end.to change { skipped_tasks.map { |t| t.reload.skipped? }.all? }.from(false).to(true)
+          .and change { orphaned_tasks.map { |t| t.reload.orphaned? }.all? }.from(false).to(true)
+          .and change { valid_tasks.map { |t| t.reload.processing? }.all? }.from(false).to(true)
+          .and change { done_tasks.map { |t| t.reload.done? }.all? }.from(false).to(true)
+
+        # Check that updated_at was set for all tasks
+        skipped_tasks.each { |t| expect(t.reload.updated_at).to eq(Time.current) }
+        orphaned_tasks.each { |t| expect(t.reload.updated_at).to eq(Time.current) }
+        valid_tasks.each { |t| expect(t.reload.updated_at).to eq(Time.current) }
+        done_tasks.each { |t| expect(t.reload.updated_at).to eq(Time.current) }
+
+        # Only done tasks should cause their repositories to be marked as ready
+        done_repo_ids = done_tasks.map { |t| t.zoekt_repository.id }
+        expect(Search::Zoekt::Repository.id_in(done_repo_ids).all?(&:ready?)).to be true
+      end
+    end
+  end
+
+  describe '.determine_task_state' do
+    let_it_be(:project) { create(:project, :repository) }
+
+    context 'for delete_repo task' do
+      let(:task) { create(:zoekt_task, task_type: :delete_repo, project: project) }
+
+      it 'returns :valid regardless of repository state' do
+        task.zoekt_repository.pending_deletion!
+        expect(described_class.determine_task_state(task)).to eq(:valid)
+      end
+    end
+
+    context 'for index_repo task' do
+      let(:task) { create(:zoekt_task, project: project) }
+
+      context 'when repository is pending_deletion' do
+        before do
+          task.zoekt_repository.pending_deletion!
+        end
+
+        it 'returns :skipped' do
+          expect(described_class.determine_task_state(task)).to eq(:skipped)
+        end
+      end
+
+      context 'when repository is failed' do
+        before do
+          task.zoekt_repository.failed!
+        end
+
+        it 'returns :skipped' do
+          expect(described_class.determine_task_state(task)).to eq(:skipped)
+        end
+      end
+
+      context 'when project does not exist' do
+        before do
+          allow(task.zoekt_repository).to receive(:project).and_return(nil)
+        end
+
+        it 'returns :orphaned' do
+          expect(described_class.determine_task_state(task)).to eq(:orphaned)
+        end
+      end
+
+      context 'when project repo does not exist' do
+        before do
+          allow(project).to receive(:repo_exists?).and_return(false)
+        end
+
+        it 'returns :done' do
+          expect(described_class.determine_task_state(task)).to eq(:done)
+        end
+      end
+
+      context 'when project repo exists and repository is ready' do
+        before do
+          task.zoekt_repository.ready!
+          allow(project).to receive(:repo_exists?).and_return(true)
+        end
+
+        it 'returns :valid' do
+          expect(described_class.determine_task_state(task)).to eq(:valid)
+        end
       end
     end
   end
