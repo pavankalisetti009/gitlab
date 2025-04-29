@@ -1,9 +1,10 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlTableLite, GlSkeletonLoader, GlBreadcrumb } from '@gitlab/ui';
+import { GlTableLite, GlSkeletonLoader, GlBreadcrumb, GlButton } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { stubComponent } from 'helpers/stub_component';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import InventoryDashboard from 'ee/security_inventory/components/inventory_dashboard.vue';
@@ -11,6 +12,7 @@ import VulnerabilityIndicator from 'ee/security_inventory/components/vulnerabili
 import GroupToolCoverageIndicator from 'ee/security_inventory/components/group_tool_coverage_indicator.vue';
 import ProjectToolCoverageIndicator from 'ee/security_inventory/components/project_tool_coverage_indicator.vue';
 import SubgroupsAndProjectsQuery from 'ee/security_inventory/graphql/subgroups_and_projects.query.graphql';
+import SubgroupSidebar from 'ee/security_inventory/components/sidebar/subgroup_sidebar.vue';
 import EmptyState from 'ee/security_inventory/components/empty_state.vue';
 import NameCell from 'ee/security_inventory/components/name_cell.vue';
 import vulnerabilityCell from 'ee/security_inventory/components/vulnerability_cell.vue';
@@ -45,6 +47,9 @@ describe('InventoryDashboard', () => {
       wrapper = mountFn(InventoryDashboard, {
         apolloProvider,
         provide: defaultProvide,
+        stubs: {
+          SubgroupSidebar: stubComponent(SubgroupSidebar),
+        },
       });
       await waitForPromises();
     };
@@ -57,6 +62,8 @@ describe('InventoryDashboard', () => {
   const findTableRows = () => findTable().findAll('tbody tr');
   const findNthTableRow = (n) => findTableRows().at(n);
   const findBreadcrumb = () => wrapper.findComponent(GlBreadcrumb);
+  const findSidebar = () => wrapper.findComponent(SubgroupSidebar);
+  const findSidebarToggleButton = () => wrapper.findComponent(GlButton);
 
   /* eslint-disable no-underscore-dangle */
   const getIndexByType = (children, type) => {
@@ -177,6 +184,34 @@ describe('InventoryDashboard', () => {
       expect(findNthTableRow(groupIndex).findComponent(GroupToolCoverageIndicator).exists()).toBe(
         true,
       );
+    });
+  });
+
+  describe('Subgroup sidebar', () => {
+    it('can be toggled with the sidebar button', async () => {
+      await createComponent();
+
+      expect(findSidebar().exists()).toBe(true);
+
+      findSidebarToggleButton().vm.$emit('click');
+      await nextTick();
+
+      expect(findSidebar().exists()).toBe(false);
+    });
+
+    it('persists visible state through page reloads', async () => {
+      createFullComponent();
+
+      findSidebarToggleButton().vm.$emit('click');
+      await nextTick();
+
+      expect(findSidebar().exists()).toBe(false);
+
+      wrapper.destroy();
+      createFullComponent();
+      await nextTick();
+
+      expect(findSidebar().exists()).toBe(false);
     });
   });
 

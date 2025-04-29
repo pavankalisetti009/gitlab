@@ -1,17 +1,23 @@
 <script>
-import { GlSkeletonLoader, GlBreadcrumb } from '@gitlab/ui';
+import { GlSkeletonLoader, GlBreadcrumb, GlButton } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { getLocationHash, PATH_SEPARATOR } from '~/lib/utils/url_utility';
+import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
+import { SIDEBAR_VISIBLE_STORAGE_KEY } from '../constants';
 import SubgroupsAndProjectsQuery from '../graphql/subgroups_and_projects.query.graphql';
+import SubgroupSidebar from './sidebar/subgroup_sidebar.vue';
 import EmptyState from './empty_state.vue';
 import SecurityInventoryTable from './security_inventory_table.vue';
 
 export default {
   components: {
+    SubgroupSidebar,
+    LocalStorageSync,
     GlSkeletonLoader,
     GlBreadcrumb,
+    GlButton,
     EmptyState,
     SecurityInventoryTable,
   },
@@ -25,6 +31,7 @@ export default {
     return {
       children: [],
       activeFullPath: this.groupFullPath,
+      sidebarVisible: true,
     };
   },
   apollo: {
@@ -94,17 +101,34 @@ export default {
       }
       this.activeFullPath = hash;
     },
+    toggleSidebar(value = !this.sidebarVisible) {
+      this.sidebarVisible = value;
+    },
   },
+  SIDEBAR_VISIBLE_STORAGE_KEY,
 };
 </script>
 
 <template>
   <div class="gl-mt-5">
-    <gl-breadcrumb :items="crumbs" :auto-resize="true" size="md" class="gl-mb-5" />
-    <template v-if="isLoading">
-      <gl-skeleton-loader />
-    </template>
-    <template v-else-if="!hasChildren"><empty-state /></template>
-    <security-inventory-table v-else :items="children" />
+    <div
+      class="gl-w-full gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-bg-neutral-10 gl-border-b-solid gl-border-t-solid"
+    >
+      <gl-button icon="sidebar" icon-only class="gl-m-3" @click="toggleSidebar()" />
+    </div>
+    <local-storage-sync
+      v-model="sidebarVisible"
+      :storage-key="$options.SIDEBAR_VISIBLE_STORAGE_KEY"
+      @input="toggleSidebar"
+    />
+    <div class="gl-flex">
+      <subgroup-sidebar v-if="sidebarVisible" :active-full-path="activeFullPath" />
+      <div class="gl-w-auto gl-grow" :class="{ 'gl-pl-5': sidebarVisible }">
+        <gl-breadcrumb :items="crumbs" :auto-resize="true" size="md" class="gl-my-5" />
+        <template v-if="isLoading"><gl-skeleton-loader /></template>
+        <template v-else-if="!hasChildren"><empty-state /></template>
+        <security-inventory-table v-else :items="children" class="gl-mb-0" />
+      </div>
+    </div>
   </div>
 </template>

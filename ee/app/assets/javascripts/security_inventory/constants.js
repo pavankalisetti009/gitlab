@@ -11,6 +11,12 @@ const CONTAINER_SCANNING_FOR_REGISTRY_KEY = 'CONTAINER_SCANNING_FOR_REGISTRY';
 const DAST_KEY = 'DAST';
 const SAST_IAC_KEY = 'SAST_IAC';
 
+export const SIDEBAR_WIDTH_INITIAL = 300;
+export const SIDEBAR_WIDTH_MINIMUM = 200;
+export const SIDEBAR_WIDTH_STORAGE_KEY = 'security_inventory_sidebar_width';
+export const SIDEBAR_VISIBLE_STORAGE_KEY = 'security_inventory_sidebar_visible';
+export const SIDEBAR_INDENTATION_INCREMENT = 20; // pixels
+
 const SAST_LABEL = s__('SecurityInventory|SAST');
 const DAST_LABEL = s__('SecurityInventory|DAST');
 const SAST_IAC_LABEL = s__('SecurityInventory|IaC');
