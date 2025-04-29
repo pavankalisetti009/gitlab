@@ -20,6 +20,8 @@ module Ai
     belongs_to :duo_workflow_oauth_application, class_name: 'Doorkeeper::Application', optional: true
     belongs_to :duo_workflow_service_account_user, class_name: 'User', optional: true
 
+    alias_attribute :duo_core_features_enabled, :duo_nano_features_enabled
+
     def self.instance
       # rubocop:disable Performance/ActiveRecordSubtransactionMethods -- only
       # uses a subtransaction if creating a record, which should only happen
@@ -39,6 +41,10 @@ module Ai
 
     def self.self_hosted?
       ::Ai::SelfHostedModel.any?
+    end
+
+    def self.duo_core_features_enabled?
+      !!instance.duo_core_features_enabled
     end
 
     # Define duo_core_features_enabled as an alias to duo_nano_features_enabled till we renamed the column

@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
+  using RSpec::Parameterized::TableSyntax
+
   describe 'associations', :aggregate_failures do
     it 'has expected associations' do
       is_expected.to belong_to(:amazon_q_oauth_application).class_name('Doorkeeper::Application').optional
@@ -179,6 +181,16 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
     it { is_expected.to validate_length_of(:amazon_q_role_arn).is_at_most(2048).allow_nil }
   end
 
+  describe 'Alias attributes' do
+    subject(:setting) { described_class.instance }
+
+    describe '#duo_core_features_enabled' do
+      it 'returns the value of duo_nano_features_enabled' do
+        expect(setting.duo_core_features_enabled).to eq(setting.duo_nano_features_enabled)
+      end
+    end
+  end
+
   describe '.self_hosted?' do
     subject(:setting) { described_class.self_hosted? }
 
@@ -213,6 +225,26 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
       let(:duo_nano_features_enabled) { false }
 
       it { expect(settings).not_to be_duo_core_features_enabled }
+    end
+  end
+
+  describe '.duo_core_features_enabled?' do
+    subject(:setting) { described_class.duo_core_features_enabled? }
+
+    where(:duo_core_features_enabled, :expected_result) do
+      true  | true
+      false | false
+      nil   | false
+    end
+
+    with_them do
+      before do
+        create(:ai_settings, duo_core_features_enabled: duo_core_features_enabled)
+      end
+
+      it 'returns the expected result' do
+        expect(setting).to eq(expected_result)
+      end
     end
   end
 end
