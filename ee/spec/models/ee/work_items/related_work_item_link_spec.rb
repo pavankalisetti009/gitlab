@@ -60,7 +60,7 @@ RSpec.describe ::WorkItems::RelatedWorkItemLink, feature_category: :portfolio_ma
         if all_types
           %i[ticket requirement incident test_case task issue epic objective key_result]
         elsif with_unsupported_types
-          type_names + %i[requirement incident test_case ticket]
+          type_names + %i[requirement test_case ticket]
         else
           type_names
         end
@@ -107,7 +107,7 @@ RSpec.describe ::WorkItems::RelatedWorkItemLink, feature_category: :portfolio_ma
       context 'when validating ability to block other items' do
         where(:source_type_sym, :target_types, :valid) do
           :requirement | get_items(all_types: true)                                   | false
-          :incident    | get_items(all_types: true)                                   | false
+          :incident    | get_items(with_unsupported_types: true)                      | false
           :test_case   | get_items(all_types: true)                                   | false
           :ticket      | get_items(all_types: true)                                   | false
           :issue       | get_items(with_unsupported_types: true)                      | false
@@ -143,7 +143,7 @@ RSpec.describe ::WorkItems::RelatedWorkItemLink, feature_category: :portfolio_ma
       context 'when validating ability to be blocked by other items' do
         where(:source_type_sym, :target_types, :valid) do
           :requirement | get_items(all_types: true)                                        | false
-          :incident    | get_items(all_types: true)                                        | false
+          :incident    | get_items(with_unsupported_types: true)                           | false
           :test_case   | get_items(all_types: true)                                        | false
           :ticket      | get_items(all_types: true)                                        | false
           :issue       | get_items(%i[objective key_result], with_unsupported_types: true) | false
