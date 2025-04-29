@@ -43,8 +43,16 @@ module MergeRequests
       enum :origin, { group: 0, project: 1, merge_request: 2 }, prefix: :originates_from
     end
 
+    def self.declarative_policy_class
+      'ApprovalMergeRequestRulePolicy'
+    end
+
     def approvers
       []
+    end
+
+    def user_defined?
+      regular? || any_approver?
     end
 
     def from_scan_result_policy?

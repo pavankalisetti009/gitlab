@@ -9,6 +9,32 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
 
   subject(:rule) { build(:merge_requests_approval_rule, attributes) }
 
+  describe 'policy' do
+    it 'uses the v1 policy class' do
+      expect(described_class.declarative_policy_class)
+        .to eq('ApprovalMergeRequestRulePolicy')
+    end
+  end
+
+  describe 'user_defined?' do
+    using RSpec::Parameterized::TableSyntax
+
+    where(:rule_type, :expected_result) do
+      :regular        | true
+      :any_approver   | true
+      :code_owner     | false
+      :report_approver | false
+    end
+
+    with_them do
+      subject(:user_defined) { build(:merge_requests_approval_rule, rule_type: rule_type).user_defined? }
+
+      it "returns #{params[:expected_result]} for #{params[:rule_type]} rule type" do
+        expect(user_defined).to eq(expected_result)
+      end
+    end
+  end
+
   describe 'validations' do
     describe 'sharding key validation' do
       context 'with group_id' do
