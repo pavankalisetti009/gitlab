@@ -12718,8 +12718,8 @@ Input type: `WorkItemDeleteInput`
 ### `Mutation.workItemExport`
 
 {{< details >}}
-**Introduced** in GitLab 15.10.
-**Status**: Experiment.
+**Deprecated** in GitLab 18.0.
+Use WorkItemsCsvExport.
 {{< /details >}}
 
 Input type: `WorkItemExportInput`
@@ -12893,6 +12893,55 @@ Input type: `WorkItemUserPreferenceUpdateInput`
 | <a id="mutationworkitemuserpreferenceupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationworkitemuserpreferenceupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationworkitemuserpreferenceupdateuserpreferences"></a>`userPreferences` | [`WorkItemTypesUserPreference`](#workitemtypesuserpreference) | User preferences. |
+
+### `Mutation.workItemsCsvExport`
+
+{{< details >}}
+**Introduced** in GitLab 15.10.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `WorkItemsCsvExportInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationworkitemscsvexportassigneeusernames"></a>`assigneeUsernames` | [`[String!]`](#string) | Usernames of users assigned to the work item. |
+| <a id="mutationworkitemscsvexportassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee wildcard. Incompatible with `assigneeUsernames`. |
+| <a id="mutationworkitemscsvexportauthorusername"></a>`authorUsername` | [`String`](#string) | Filter work items by author username. |
+| <a id="mutationworkitemscsvexportclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationworkitemscsvexportclosedafter"></a>`closedAfter` | [`Time`](#time) | Work items closed after the date. |
+| <a id="mutationworkitemscsvexportclosedbefore"></a>`closedBefore` | [`Time`](#time) | Work items closed before the date. |
+| <a id="mutationworkitemscsvexportconfidential"></a>`confidential` | [`Boolean`](#boolean) | Filter for confidential work items. If `false`, excludes confidential work items. If `true`, returns only confidential work items. |
+| <a id="mutationworkitemscsvexportcreatedafter"></a>`createdAfter` | [`Time`](#time) | Work items created after the timestamp. |
+| <a id="mutationworkitemscsvexportcreatedbefore"></a>`createdBefore` | [`Time`](#time) | Work items created before the timestamp. |
+| <a id="mutationworkitemscsvexportdueafter"></a>`dueAfter` | [`Time`](#time) | Work items due after the timestamp. |
+| <a id="mutationworkitemscsvexportduebefore"></a>`dueBefore` | [`Time`](#time) | Work items due before the timestamp. |
+| <a id="mutationworkitemscsvexportiids"></a>`iids` | [`[String!]`](#string) | List of IIDs of work items. For example, `["1", "2"]`. |
+| <a id="mutationworkitemscsvexportin"></a>`in` | [`[IssuableSearchableField!]`](#issuablesearchablefield) | Specify the fields to perform the search in. Defaults to `[TITLE, DESCRIPTION]`. Requires the `search` argument.'. |
+| <a id="mutationworkitemscsvexportlabelname"></a>`labelName` | [`[String!]`](#string) | Labels applied to the work item. |
+| <a id="mutationworkitemscsvexportmilestonetitle"></a>`milestoneTitle` | [`[String!]`](#string) | Milestone applied to the work item. |
+| <a id="mutationworkitemscsvexportmilestonewildcardid"></a>`milestoneWildcardId` | [`MilestoneWildcardId`](#milestonewildcardid) | Filter by milestone ID wildcard. Incompatible with `milestoneTitle`. |
+| <a id="mutationworkitemscsvexportmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
+| <a id="mutationworkitemscsvexportnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
+| <a id="mutationworkitemscsvexportor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="mutationworkitemscsvexportprojectpath"></a>`projectPath` | [`ID!`](#id) | Full project path. |
+| <a id="mutationworkitemscsvexportsearch"></a>`search` | [`String`](#string) | Search query for title or description. |
+| <a id="mutationworkitemscsvexportselectedfields"></a>`selectedFields` | [`[AvailableExportFields!]`](#availableexportfields) | List of selected fields to be exported. Omit to export all available fields. |
+| <a id="mutationworkitemscsvexportstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the work item. |
+| <a id="mutationworkitemscsvexportsubscribed"></a>`subscribed` | [`SubscriptionStatus`](#subscriptionstatus) | Work items the current user is subscribed to. |
+| <a id="mutationworkitemscsvexporttypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filter work items by the given work item types. |
+| <a id="mutationworkitemscsvexportupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Work items updated after the timestamp. |
+| <a id="mutationworkitemscsvexportupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Work items updated before the timestamp. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationworkitemscsvexportclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationworkitemscsvexporterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationworkitemscsvexportmessage"></a>`message` | [`String`](#string) | Export request result message. |
 
 ### `Mutation.workItemsHierarchyReorder`
 
@@ -42368,13 +42417,31 @@ Available fields to be exported as CSV.
 
 | Value | Description |
 | ----- | ----------- |
-| <a id="availableexportfieldsauthor"></a>`AUTHOR` | Author name. |
-| <a id="availableexportfieldsauthor_username"></a>`AUTHOR_USERNAME` | Author username. |
-| <a id="availableexportfieldscreated_at"></a>`CREATED_AT` | Date of creation. |
-| <a id="availableexportfieldsdescription"></a>`DESCRIPTION` | Description. |
-| <a id="availableexportfieldsid"></a>`ID` | Unique identifier. |
-| <a id="availableexportfieldstitle"></a>`TITLE` | Title. |
+| <a id="availableexportfieldsassignee"></a>`ASSIGNEE` | Assignee(s) name of the work item. |
+| <a id="availableexportfieldsassignee_username"></a>`ASSIGNEE_USERNAME` | Assignee(s) username of the work item. |
+| <a id="availableexportfieldsauthor"></a>`AUTHOR` | Author name of the work item. |
+| <a id="availableexportfieldsauthor_username"></a>`AUTHOR_USERNAME` | Author username of the work item. |
+| <a id="availableexportfieldsclosed_at"></a>`CLOSED_AT` | Closed at (UTC) date of the work item. |
+| <a id="availableexportfieldsconfidential"></a>`CONFIDENTIAL` | Confidentiality flag of the work item. |
+| <a id="availableexportfieldscreated_at"></a>`CREATED_AT` | Crated at (UTC) date of the work item. |
+| <a id="availableexportfieldsdescription"></a>`DESCRIPTION` | Description of the work item. |
+| <a id="availableexportfieldsdue_date"></a>`DUE_DATE` | Due date (UTC) of the work item. |
+| <a id="availableexportfieldsid"></a>`ID` | Unique identifier of the work item. |
+| <a id="availableexportfieldsiid"></a>`IID` | IID identifier of the work item. |
+| <a id="availableexportfieldslocked"></a>`LOCKED` | Locked discussions flag of the work item. |
+| <a id="availableexportfieldsmilestone"></a>`MILESTONE` | Milestone of the work item. |
+| <a id="availableexportfieldsparent_id"></a>`PARENT_ID` | Parent ID of the work item. |
+| <a id="availableexportfieldsparent_iid"></a>`PARENT_IID` | Parent IID of the work item. |
+| <a id="availableexportfieldsparent_title"></a>`PARENT_TITLE` | Parent title of the work item. |
+| <a id="availableexportfieldsstart_date"></a>`START_DATE` | Start date (UTC) of the work item. |
+| <a id="availableexportfieldsstate"></a>`STATE` | State of the work item. |
+| <a id="availableexportfieldstime_estimate"></a>`TIME_ESTIMATE` | Time estimate of the work item. |
+| <a id="availableexportfieldstime_spent"></a>`TIME_SPENT` | Time spent of the work item. |
+| <a id="availableexportfieldstitle"></a>`TITLE` | Title of the work item. |
 | <a id="availableexportfieldstype"></a>`TYPE` | Type of the work item. |
+| <a id="availableexportfieldsupdated_at"></a>`UPDATED_AT` | Updated at (UTC) date of the work item. |
+| <a id="availableexportfieldsurl"></a>`URL` | Web URL to the work item. |
+| <a id="availableexportfieldsweight"></a>`WEIGHT` | Weight of the work item. |
 
 ### `BlobViewersType`
 
