@@ -176,6 +176,10 @@ module Vulnerabilities
         .or(where(id_as_text.matches("%#{sanitize_sql_like(query.squish)}%")))
     end
 
+    scope :by_ids_desc, ->(ids) do
+      by_vulnerability(ids).order_id_desc
+    end
+
     def self.arel_grouping_by_traversal_ids_and_vulnerability_id
       arel_table.grouping([arel_table['traversal_ids'], arel_table['vulnerability_id']])
     end

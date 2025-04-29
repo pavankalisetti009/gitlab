@@ -962,6 +962,17 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
     end
   end
 
+  describe '.by_ids_desc' do
+    let_it_be(:vulnerability_read) { create(:vulnerability_read) }
+    let_it_be(:other_vulnerability_read) { create(:vulnerability_read) }
+
+    it 'returns vulnerabilities for given vulnerability ids sorted by vulnerability_id' do
+      results = described_class.by_ids_desc([vulnerability_read.vulnerability_id, other_vulnerability_read.vulnerability_id])
+
+      expect(results).to match_array([vulnerability_read, other_vulnerability_read].sort_by(&:vulnerability_id).reverse)
+    end
+  end
+
   describe '.arel_grouping_by_traversal_ids_and_vulnerability_id' do
     subject { described_class.arel_grouping_by_traversal_ids_and_vulnerability_id.to_sql }
 
