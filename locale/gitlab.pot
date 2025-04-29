@@ -58800,6 +58800,9 @@ msgstr ""
 msgid "Status checks must pass."
 msgstr ""
 
+msgid "Status lists not available with your current license"
+msgstr ""
+
 msgid "Status not supported"
 msgstr ""
 

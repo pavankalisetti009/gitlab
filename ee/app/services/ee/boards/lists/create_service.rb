@@ -12,6 +12,10 @@ module EE
         def execute(board)
           return license_validation_error unless valid_license?(board.resource_parent)
 
+          # Prevent list creation until board lists support statuses
+          # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/532474
+          return ServiceResponse.success(payload: { list: nil }) if type == :status
+
           super
         end
 
@@ -29,6 +33,8 @@ module EE
                       _('Milestone lists not available with your current license')
                     when :iteration
                       _('Iteration lists not available with your current license')
+                    when :status
+                      _('Status lists not available with your current license')
                     end
 
           ServiceResponse.error(message: message)
@@ -44,6 +50,8 @@ module EE
             :milestone
           elsif params.key?('iteration_id')
             :iteration
+          elsif params.key?('status_id')
+            :status
           else
             super
           end
@@ -59,6 +67,9 @@ module EE
               find_milestone(board)
             when :iteration
               find_iteration(board)
+            when :status
+              # Return nil until board lists support statuses
+              # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/532474
             else
               super
             end

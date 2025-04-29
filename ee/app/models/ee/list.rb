@@ -10,7 +10,7 @@ module EE
 
     # When adding a new licensed type, make sure to also add
     # it on license.rb with the pattern "board_<list_type>_lists"
-    LICENSED_LIST_TYPES = %i[assignee milestone iteration].freeze
+    LICENSED_LIST_TYPES = %i[assignee milestone iteration status].freeze
 
     # ActiveSupport::Concern does not prepend the ClassMethods,
     # so we cannot call `super` if we use it.
