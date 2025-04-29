@@ -4,7 +4,9 @@ module Search
   module Zoekt
     class TaskSerializerService
       INDEXING_TIMEOUT_S = 1.5.hours.to_i
-
+      # Single thread to minimize CPU load.
+      # Concurrency will be controlled by node's metadata.concurrency
+      PARALLELISM_FACTOR = 1
       attr_reader :task
 
       def initialize(task)
@@ -52,7 +54,7 @@ module Search
           address = "unix:#{Rails.root.join(path)}"
         end
 
-        {
+        payload = {
           GitalyConnectionInfo: {
             Address: address,
             Token: connection_info['token'],
@@ -64,6 +66,12 @@ module Search
           FileSizeLimit: Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes,
           Timeout: "#{INDEXING_TIMEOUT_S}s"
         }
+
+        if Feature.enabled?(:zoekt_reduce_parallelism, Feature.current_request)
+          payload[:Parallelism] = PARALLELISM_FACTOR
+        end
+
+        payload
       end
 
       def force_index_repo_payload
