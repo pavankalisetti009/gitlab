@@ -39,7 +39,6 @@ describe('WorkItemRolledUpData', () => {
         fullPath: 'test/project',
         workItemType,
         workItemIid,
-        workItemId: 'gid://gitlab/WorkItem/2',
         rolledUpHealthStatus,
       },
       apolloProvider: createMockApollo([[workItemByIidQuery, workItemQueryHandler]]),
