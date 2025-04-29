@@ -14,7 +14,7 @@ module Security
 
       return unless pipeline.project.licensed_feature_available?(:security_dashboard)
 
-      AnalyzersStatusUpdateService.new(pipeline).execute
+      AnalyzersStatus::UpdateService.new(pipeline).execute
     end
   end
 end
