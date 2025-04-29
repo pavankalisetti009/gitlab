@@ -657,12 +657,6 @@ RSpec.shared_examples 'a verifiable replicator' do
 
         replicator.verify_async
       end
-
-      it 'does not enqueue Geo::VerificationWorker' do
-        expect(Geo::VerificationWorker).not_to receive(:perform_async).with(replicator.replicable_name, model_record.id)
-
-        replicator.verify_async
-      end
     end
   end
 
@@ -936,14 +930,6 @@ RSpec.shared_examples 'a verifiable replicator' do
           end.to change { model_record.reload.verification_succeeded? }.from(false).to(true)
         end
       end
-
-      describe 'triggered by events' do
-        it 'verifies model records' do
-          expect do
-            Geo::VerificationWorker.new.perform(replicator.replicable_name, replicator.model_record_id)
-          end.to change { model_record.reload.verification_succeeded? }.from(false).to(true)
-        end
-      end
     end
 
     context 'on a secondary' do
@@ -962,17 +948,6 @@ RSpec.shared_examples 'a verifiable replicator' do
 
           expect do
             Geo::VerificationBatchWorker.new.perform(replicator.replicable_name)
-          end.to change { registry.reload.verification_succeeded? }.from(false).to(true)
-        end
-      end
-
-      describe 'triggered by events' do
-        it 'verifies registries' do
-          registry = replicator.registry
-          registry.save!
-
-          expect do
-            Geo::VerificationWorker.new.perform(replicator.replicable_name, replicator.model_record_id)
           end.to change { registry.reload.verification_succeeded? }.from(false).to(true)
         end
       end

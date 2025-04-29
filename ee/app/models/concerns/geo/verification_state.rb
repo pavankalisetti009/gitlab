@@ -277,9 +277,11 @@ module Geo
     #
     # @yieldreturn [String] calculated checksum value
     def track_checksum_attempt!(&block)
-      # This line only applies to Geo::VerificationWorker, not
-      # Geo::VerificationBatchWorker, since the latter sets the whole batch to
-      # "verification_started" in the same DB query that fetches the batch.
+      # "Geo::VerificationBatchWorker" sets the whole batch to "verification_started"
+      # so this check is redundant. This check and update minimizes race conditions
+      # when "verify" is called without claiming the row first, for example, when
+      # a sysadmin calls "verify" directly. Ideally this check and update would be
+      # atomic, but that would cause a redundant update query on all verify calls.
       verification_started! unless verification_started?
 
       calculation_started_at = Time.current
