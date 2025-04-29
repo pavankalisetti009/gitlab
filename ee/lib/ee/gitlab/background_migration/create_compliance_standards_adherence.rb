@@ -31,6 +31,7 @@ module EE
           include ::Namespaces::Traversal::Recursive
           include ::Namespaces::Traversal::Linear
           include ::Gitlab::Utils::StrongMemoize
+
           self.table_name = 'namespaces'
           self.inheritance_column = :_type_disabled
           has_many :projects, class_name: '::EE::Gitlab::BackgroundMigration::CreateComplianceStandardsAdherence::Project'

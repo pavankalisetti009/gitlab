@@ -13,6 +13,7 @@
 module Explore
   class DependenciesController < ::Explore::ApplicationController
     include GovernUsageTracking
+
     track_govern_activity 'dependencies', :index
     feature_category :dependency_management
     urgency :low

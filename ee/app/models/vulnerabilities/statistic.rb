@@ -3,6 +3,7 @@
 module Vulnerabilities
   class Statistic < ::SecApplicationRecord
     include EachBatch
+
     self.table_name = 'vulnerability_statistics'
 
     belongs_to :project, optional: false, inverse_of: :vulnerability_statistic
