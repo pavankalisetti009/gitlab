@@ -72848,6 +72848,9 @@ msgstr ""
 msgid "repositories"
 msgstr ""
 
+msgid "repositories (Gitaly server-side)"
+msgstr ""
+
 msgid "repository"
 msgid_plural "repositories"
 msgstr[0] ""
