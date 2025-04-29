@@ -1,6 +1,6 @@
 <script>
 import { isEmpty } from 'lodash';
-import { GlAlert, GlTooltipDirective, GlEmptyState, GlButton } from '@gitlab/ui';
+import { GlAlert, GlCollapse, GlTooltipDirective, GlEmptyState, GlButton } from '@gitlab/ui';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { setUrlFragment } from '~/lib/utils/url_utility';
 import { __, s__, n__, sprintf } from '~/locale';
@@ -67,6 +67,7 @@ export default {
     PARSING_ERROR_MESSAGE,
     RULE_SECTION_DISABLE_ERROR,
     SETTING_SECTION_DISABLE_ERROR,
+    accordionTitle: __('Advanced'),
     filterHeaderText: s__('SecurityOrchestration|Choose an action'),
     notOwnerButtonText: __('Learn more'),
     notOwnerDescription: s__(
@@ -102,6 +103,7 @@ export default {
     FallbackAndEdgeCasesSection,
     GlAlert,
     GlButton,
+    GlCollapse,
     GlEmptyState,
     EditorLayout,
     RuleSection,
@@ -188,6 +190,7 @@ export default {
 
     return {
       errors: { action: [] },
+      isExpanded: false,
       invalidBranches: [],
       linkedSppGroups: [],
       parsingError,
@@ -242,6 +245,9 @@ export default {
     },
     hasNewSplitView() {
       return this.glFeatures.securityPoliciesSplitView;
+    },
+    icon() {
+      return this.isExpanded ? 'chevron-down' : 'chevron-right';
     },
     isProject() {
       return isProject(this.namespaceType);
@@ -505,6 +511,9 @@ export default {
         !this.hasWarnAction && this.approversActions.length >= MAX_ALLOWED_APPROVER_ACTION_LENGTH
       );
     },
+    toggleCollapse() {
+      this.isExpanded = !this.isExpanded;
+    },
     customFilterSelectorTooltip(filter) {
       if (filter.value === BOT_MESSAGE_TYPE) {
         return this.$options.i18n.botActionTooltip;
@@ -642,22 +651,33 @@ export default {
       </disabled-section>
     </template>
     <template #settings>
-      <disabled-section
-        :disabled="parsingError.settings"
-        :error="$options.i18n.SETTING_SECTION_DISABLE_ERROR"
-        data-testid="disabled-settings"
+      <gl-button
+        class="gl-mt-5"
+        variant="link"
+        :icon="icon"
+        data-testid="collapse-button"
+        @click="toggleCollapse"
       >
-        <template #title>
-          <h4>{{ $options.i18n.settingsTitle }}</h4>
-        </template>
+        <h4 class="gl-mr-3">{{ $options.i18n.accordionTitle }}</h4>
+      </gl-button>
+      <gl-collapse v-model="isExpanded" class="gl-ml-7 gl-mt-0">
+        <disabled-section
+          :disabled="parsingError.settings"
+          :error="$options.i18n.SETTING_SECTION_DISABLE_ERROR"
+          data-testid="disabled-settings"
+        >
+          <template #title>
+            <h4>{{ $options.i18n.settingsTitle }}</h4>
+          </template>
 
-        <settings-section :rules="policy.rules" :settings="settings" @changed="updateSettings" />
-      </disabled-section>
-      <fallback-and-edge-cases-section
-        :has-error="parsingError.fallback"
-        :policy="policy"
-        @changed="updateFallbackAndEdgeCases"
-      />
+          <settings-section :rules="policy.rules" :settings="settings" @changed="updateSettings" />
+        </disabled-section>
+        <fallback-and-edge-cases-section
+          :has-error="parsingError.fallback"
+          :policy="policy"
+          @changed="updateFallbackAndEdgeCases"
+        />
+      </gl-collapse>
       <gl-alert
         v-if="showAlert"
         data-testid="empty-actions-alert"

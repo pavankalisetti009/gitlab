@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlEmptyState } from '@gitlab/ui';
+import { GlCollapse, GlEmptyState } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
@@ -170,6 +170,8 @@ describe('EditorComponent', () => {
   const findBotCommentAction = () => wrapper.findComponent(BotCommentAction);
   const findBotCommentActions = () => wrapper.findAllComponents(BotCommentAction);
   const findWarnAction = () => wrapper.findByTestId('warn-action');
+  const findAdvancedSectionButton = () => wrapper.findByTestId('collapse-button');
+  const findCollapseSection = () => wrapper.findComponent(GlCollapse);
 
   beforeEach(() => {
     getInvalidBranches.mockClear();
@@ -297,6 +299,33 @@ describe('EditorComponent', () => {
         expect(findBotCommentAction().exists()).toBe(false);
         expect(findAllActionSections()).toHaveLength(1);
         expect(findWarnAction().exists()).toBe(true);
+      });
+    });
+
+    describe('advanced section', () => {
+      beforeEach(async () => {
+        await factory();
+      });
+
+      it('renders the collapse button with the correct text', () => {
+        const collapseButton = findAdvancedSectionButton();
+        expect(collapseButton.exists()).toBe(true);
+        expect(collapseButton.text()).toContain('Advanced');
+      });
+
+      it('initializes with the collapse section closed', () => {
+        expect(findCollapseSection().props('visible')).toBe(false);
+        expect(findAdvancedSectionButton().props('icon')).toBe('chevron-right');
+      });
+
+      it('toggles the collapse section when the button is clicked', async () => {
+        const collapseButton = findAdvancedSectionButton();
+        await collapseButton.vm.$emit('click');
+        expect(findCollapseSection().props('visible')).toBe(true);
+        expect(collapseButton.props('icon')).toBe('chevron-down');
+        await collapseButton.vm.$emit('click');
+        expect(findCollapseSection().props('visible')).toBe(false);
+        expect(collapseButton.props('icon')).toBe('chevron-right');
       });
     });
   });
