@@ -23,7 +23,11 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
         expect(execute).to be_success
 
         pipeline_id = execute.payload[:pipeline_id]
-        expect(pipeline_id).not_to be_nil
+
+        expect(execute.payload).to eq(
+          pipeline_id: pipeline_id,
+          pipeline_path: Gitlab::Application.routes.url_helpers.project_pipeline_path(project, pipeline_id)
+        )
 
         ci_pipeline = Ci::Pipeline.find_by_id([pipeline_id])
         expect(ci_pipeline.ref).to start_with('workloads/')

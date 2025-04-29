@@ -170,11 +170,12 @@ module API
                   ).execute
 
                   pipeline_id = response.payload && response.payload[:pipeline_id]
+                  pipeline_path = response.payload && response.payload[:pipeline_path]
                   message = response.message
                 end
 
                 present result[:workflow], with: ::API::Entities::Ai::DuoWorkflows::Workflow,
-                  pipeline: { id: pipeline_id, message: message }
+                  pipeline: { id: pipeline_id, path: pipeline_path, message: message }
               end
 
               desc 'Get all possible agent privileges and descriptions' do

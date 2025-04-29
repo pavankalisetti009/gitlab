@@ -90,8 +90,68 @@ RSpec.describe BlobHelper, feature_category: :source_code_management do
       expect(helper.vue_blob_app_data(project, blob, ref)).to include({
         user_id: '',
         explain_code_available: 'false',
-        new_workspace_path: new_remote_development_workspace_path
+        new_workspace_path: new_remote_development_workspace_path,
+        show_duo_workflow_action: 'false',
+        duo_workflow_invoke_path: '/api/v4/ai/duo_workflows/workflows'
       })
+    end
+
+    context 'when the blob is a Jenkinsfile' do
+      let(:blob) { fake_blob(path: 'Jenkinsfile') }
+      let(:user) { build_stubbed(:user) }
+
+      it 'includes duo workflow action data' do
+        allow(helper).to receive(:show_duo_workflow_action?).with(blob).and_return(true)
+        allow(helper).to receive_messages(current_user: user, selected_branch: ref)
+
+        expect(helper.vue_blob_app_data(project, blob, ref)).to include(
+          show_duo_workflow_action: 'true',
+          duo_workflow_invoke_path: '/api/v4/ai/duo_workflows/workflows'
+        )
+      end
+    end
+  end
+
+  describe '#show_duo_workflow_action?' do
+    let_it_be(:user) { build_stubbed(:user) }
+    let_it_be(:project) { create(:project) }
+
+    before do
+      allow(helper).to receive(:current_user).and_return(user)
+      allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
+    end
+
+    context 'when blob name is Jenkinsfile' do
+      let(:blob) { fake_blob(path: 'Jenkinsfile') }
+
+      it 'returns true when user is present' do
+        expect(helper.show_duo_workflow_action?(blob)).to be true
+      end
+
+      it 'returns false when user is not present' do
+        allow(helper).to receive(:current_user).and_return(nil)
+        expect(helper.show_duo_workflow_action?(blob)).to be false
+      end
+    end
+
+    context 'when blob name is not Jenkinsfile' do
+      let(:blob) { fake_blob(path: 'not_jenkinsfile.rb') }
+
+      it 'returns false even when user is present' do
+        expect(helper.show_duo_workflow_action?(blob)).to be false
+      end
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(duo_workflow_in_ci: false)
+      end
+
+      let(:blob) { fake_blob(path: 'Jenkinsfile') }
+
+      it 'returns false even when user is present' do
+        expect(helper.show_duo_workflow_action?(blob)).to be false
+      end
     end
   end
 end

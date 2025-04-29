@@ -216,7 +216,10 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
         post api(path, user), params: params
         expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
-        expect(json_response.dig('pipeline', 'id')).not_to be_nil
+        pipeline_id = json_response.dig('pipeline', 'id')
+
+        expect(pipeline_id).not_to be_nil
+        expect(json_response.dig('pipeline', 'path')).to eq("/#{project.full_path}/-/pipelines/#{pipeline_id}")
       end
 
       context 'when Feature flag is disabled' do
@@ -228,6 +231,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           post api(path, user), params: params
 
           expect(json_response.dig('pipeline', 'id')).to eq(nil)
+          expect(json_response.dig('pipeline', 'path')).to eq(nil)
           expect(json_response.dig('pipeline', 'message')).to eq('Can not execute workflow in CI')
         end
       end
@@ -249,6 +253,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           post api(path, user), params: params
           expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
           expect(json_response.dig('pipeline', 'id')).to eq(nil)
+          expect(json_response.dig('pipeline', 'path')).to eq(nil)
           expect(json_response.dig('pipeline', 'message')).to eq('Error in creating pipeline')
         end
       end

@@ -30,7 +30,10 @@ module Ai
 
         pipeline = response.payload
         if response.success?
-          ServiceResponse.success(payload: { pipeline_id: pipeline.id })
+          ServiceResponse.success(payload: {
+            pipeline_id: pipeline.id,
+            pipeline_path: Gitlab::Application.routes.url_helpers.project_pipeline_path(@project, pipeline)
+          })
         else
           ServiceResponse.error(message: response.message, reason: :workload_failure)
         end
