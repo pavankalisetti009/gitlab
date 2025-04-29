@@ -18,6 +18,8 @@ module WorkItems
         private
 
         def matching_iteration
+          return unless work_item.sprint_id.present?
+
           iteration = IterationsFinder.new(current_user, iteration_finder_params).execute.first
 
           return unless iteration && current_user.can?(:read_iteration, iteration)

@@ -7,7 +7,7 @@ RSpec.describe WorkItems::DataSync::Widgets::Iteration, feature_category: :team_
   let_it_be(:current_user) { create(:user, developer_of: group) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:cadence) { create(:iterations_cadence, group: group) }
-  let_it_be(:iteration) { create(:iteration, iterations_cadence: cadence) }
+  let_it_be(:iteration) { create(:iteration, iterations_cadence: cadence, group: group) }
   let_it_be_with_reload(:work_item) { create(:work_item, project: project, iteration: iteration) }
   let_it_be_with_reload(:target_work_item) { create(:work_item, project: project) }
 
@@ -41,6 +41,16 @@ RSpec.describe WorkItems::DataSync::Widgets::Iteration, feature_category: :team_
     end
 
     context 'when target work item has iteration widget' do
+      context 'and original work item does not have an iteration set' do
+        before do
+          work_item.update_column(:sprint_id, nil)
+        end
+
+        it 'does not copy iteration data' do
+          expect { callback.before_create }.not_to change { target_work_item.iteration }
+        end
+      end
+
       context 'and is within same project as original work item' do
         it 'copies the iteration data' do
           expect { callback.before_create }.to change { target_work_item.iteration }.from(nil).to(iteration)
