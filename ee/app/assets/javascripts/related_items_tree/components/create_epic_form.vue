@@ -31,12 +31,7 @@ export default {
     };
   },
   computed: {
-    ...mapState([
-      'descendantGroupsFetchInProgress',
-      'itemCreateInProgress',
-      'descendantGroups',
-      'parentItem',
-    ]),
+    ...mapState(['descendantGroupsFetchInProgress', 'descendantGroups', 'parentItem']),
     isSubmitButtonDisabled() {
       return this.inputValue.length === 0 || this.isSubmitting;
     },

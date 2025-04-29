@@ -422,9 +422,6 @@ export default {
     canUpdate() {
       return this.workItem?.userPermissions?.updateWorkItem;
     },
-    workItemType() {
-      return this.workItem?.workItemType?.name;
-    },
     workItemParticipantNodes() {
       return this.workItemParticipants?.participants?.nodes ?? [];
     },

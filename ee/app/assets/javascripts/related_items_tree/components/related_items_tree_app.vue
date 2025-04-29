@@ -8,13 +8,7 @@ import { __, s__, sprintf } from '~/locale';
 import AddItemForm from '~/related_issues/components/add_issuable_form.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
-import {
-  ITEM_TABS,
-  OVERFLOW_AFTER,
-  i18nConfidentialParent,
-  treeTitle,
-  ParentType,
-} from '../constants';
+import { ITEM_TABS, OVERFLOW_AFTER, i18nConfidentialParent, treeTitle } from '../constants';
 import CreateEpicForm from './create_epic_form.vue';
 import CreateIssueForm from './create_issue_form.vue';
 import RelatedItemsTreeBody from './related_items_tree_body.vue';
@@ -64,7 +58,6 @@ export default {
   data() {
     return {
       activeTab: ITEM_TABS.TREE,
-      isOpen: true,
     };
   },
   computed: {
@@ -85,8 +78,6 @@ export default {
       'pendingReferences',
       'itemInputValue',
       'issuableType',
-      'epicsEndpoint',
-      'issuesEndpoint',
       'allowSubEpics',
     ]),
     ...mapGetters(['itemAutoCompleteSources', 'itemPathIdSeparator', 'directChildren']),
@@ -137,9 +128,6 @@ export default {
         anchor: 'manage-issues-assigned-to-an-epic',
       });
     },
-    parentIsEpic() {
-      return this.parentItem.type === ParentType.Epic;
-    },
   },
   mounted() {
     this.fetchItems({
@@ -164,7 +152,6 @@ export default {
       'addItem',
       'createItem',
       'createNewIssue',
-      'fetchProjects',
     ]),
     getRawRefs(value) {
       return value.split(/\s+/).filter((ref) => ref.trim().length > 0);
