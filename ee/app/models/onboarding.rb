@@ -14,10 +14,28 @@ module Onboarding
     ::Gitlab::Saas.feature_available?(:onboarding)
   end
 
-  def self.user_onboarding_in_progress?(user)
-    user.present? &&
-      user.onboarding_in_progress? &&
-      enabled?
+  def self.user_onboarding_in_progress?(user, use_cache: false)
+    return false unless user.present?
+    return false unless enabled?
+
+    return user.onboarding_in_progress? unless use_cache
+
+    if user.onboarding_in_progress?
+      # read from Rails cache if present
+      cached_result = fetch_onboarding_in_progress(user)
+
+      return cached_result unless cached_result.nil?
+    end
+
+    user.onboarding_in_progress?
+  end
+
+  def self.fetch_onboarding_in_progress(user)
+    Rails.cache.fetch("user_onboarding_in_progress:#{user.id}")
+  end
+
+  def self.cache_onboarding_in_progress(user)
+    Rails.cache.write("user_onboarding_in_progress:#{user.id}", user.onboarding_in_progress)
   end
 
   def self.completed_welcome_step?(user)

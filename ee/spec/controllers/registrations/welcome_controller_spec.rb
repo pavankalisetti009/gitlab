@@ -212,6 +212,12 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             patch_update
           end
 
+          it 'writes onboarding_in_progress to cache', :use_clean_rails_memory_store_caching do
+            expect do
+              patch_update
+            end.to change { Rails.cache.read("user_onboarding_in_progress:#{user.id}") }.from(nil).to(true)
+          end
+
           context 'when joining_project is "true"' do
             let(:joining_project) { 'true' }
 
