@@ -3922,4 +3922,16 @@ RSpec.describe User, feature_category: :system_access do
       let(:entity) { user }
     end
   end
+
+  describe '.filter_items' do
+    context 'with auditors filter' do
+      it 'returns only auditor users' do
+        regular_user = create(:user)
+        auditor_user = create(:user, :auditor)
+
+        expect(described_class.filter_items('auditors')).to include(auditor_user)
+        expect(described_class.filter_items('auditors')).not_to include(regular_user)
+      end
+    end
+  end
 end

@@ -304,6 +304,15 @@ module EE
       def use_separate_indices?
         true
       end
+
+      def filter_items(filter_name)
+        case filter_name
+        when 'auditors'
+          auditors
+        else
+          super
+        end
+      end
     end
 
     def should_use_security_policy_bot_avatar?
