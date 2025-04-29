@@ -23,6 +23,7 @@ module GitlabSubscriptions
       if license.save
         save_future_subscriptions(response[:future_subscriptions])
         update_add_on_purchases
+        auto_enable_duo_core_features(response[:new_subscription])
         sync_service_token
 
         {
@@ -61,7 +62,7 @@ module GitlabSubscriptions
       future_subscriptions = future_subscriptions.presence || []
 
       application_settings.update!(future_subscriptions: future_subscriptions)
-    rescue StandardError => err
+    rescue ActiveRecord::ActiveRecordError => err
       Gitlab::ErrorTracking.track_and_raise_for_dev_exception(err)
     end
 
@@ -74,6 +75,15 @@ module GitlabSubscriptions
     def update_add_on_purchases
       ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoExclusive.new.execute
       ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoCore.new.execute
+    end
+
+    def auto_enable_duo_core_features(new_subscription)
+      return unless new_subscription
+      return unless GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_core.active.exists?
+
+      Ai::Setting.instance.update!(duo_nano_features_enabled: true)
+    rescue ActiveRecord::ActiveRecordError => err
+      Gitlab::ErrorTracking.track_and_raise_for_dev_exception(err)
     end
   end
 end
