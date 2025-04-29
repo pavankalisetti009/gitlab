@@ -67,7 +67,8 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         :zoekt_search_enabled,
         :zoekt_indexing_paused,
         :zoekt_auto_index_root_namespace,
-        :zoekt_auto_delete_lost_nodes
+        :zoekt_auto_delete_lost_nodes,
+        :zoekt_cache_response
       )
 
       boolean_settings.each_value do |config|

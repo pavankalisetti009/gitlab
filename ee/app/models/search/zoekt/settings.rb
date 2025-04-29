@@ -48,6 +48,13 @@ module Search
               label: ::Search::Zoekt::Node::LOST_DURATION_THRESHOLD.inspect)
           }
         },
+        zoekt_cache_response: {
+          type: :boolean,
+          default: true,
+          label: -> {
+            format(_("Cache search results for %{label}"), label: ::Search::Zoekt::Cache.humanize_expires_in)
+          }
+        },
         zoekt_cpu_to_tasks_ratio: {
           type: :float,
           default: 1.0,

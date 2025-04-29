@@ -312,6 +312,9 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         expect(result[3]).not_to have_checked_field('Index root namespaces automatically', with: 1)
         expect(result[4]).to have_checked_field(
           "Delete offline nodes after #{::Search::Zoekt::Node::LOST_DURATION_THRESHOLD.inspect}", with: 1)
+        expect(result[5]).to have_checked_field(
+          format(_("Cache search results for %{label}"), label: ::Search::Zoekt::Cache.humanize_expires_in), with: 1
+        )
       end
     end
   end
