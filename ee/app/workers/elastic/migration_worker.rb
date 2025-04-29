@@ -100,7 +100,7 @@ module Elastic
     end
 
     def preflight_check_successful?
-      return false if Feature.disabled?(:elastic_migration_worker, type: :ops) # rubocop:disable Gitlab/ FeatureFlagWithoutActor -- this is an ops flag that should be on or off
+      return false unless ::Gitlab::CurrentSettings.elastic_migration_worker_enabled?
       return false unless Gitlab::CurrentSettings.elasticsearch_indexing?
       return false unless helper.alias_exists?
       return false if Search::Elastic::ReindexingTask.current
