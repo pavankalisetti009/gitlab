@@ -55,7 +55,7 @@
   },
   {
     "id": "auth_sso_enabled",
-    "name": "Auth SSO Enabled",
+    "name": "Auth SSO enabled",
     "expression": {
       "field": "auth_sso_enabled",
       "operator": "=",
@@ -73,7 +73,7 @@
   },
   {
     "id": "scanner_dep_scanning_running",
-    "name": "Dependency Scanning Running",
+    "name": "Dependency scanning running",
     "expression": {
       "field": "scanner_dep_scanning_running",
       "operator": "=",
@@ -82,7 +82,7 @@
   },
   {
     "id": "scanner_container_scanning_running",
-    "name": "Container Scanning Running",
+    "name": "Container scanning running",
     "expression": {
       "field": "scanner_container_scanning_running",
       "operator": "=",
@@ -100,7 +100,7 @@
   },
   {
     "id": "scanner_dast_running",
-    "name": "DAST Running",
+    "name": "DAST running",
     "expression": {
       "field": "scanner_dast_running",
       "operator": "=",
@@ -109,7 +109,7 @@
   },
   {
     "id": "scanner_api_security_running",
-    "name": "API Security Running",
+    "name": "API security running",
     "expression": {
       "field": "scanner_api_security_running",
       "operator": "=",
@@ -118,7 +118,7 @@
   },
   {
     "id": "scanner_fuzz_testing_running",
-    "name": "Fuzz Testing Running",
+    "name": "Fuzz testing running",
     "expression": {
       "field": "scanner_fuzz_testing_running",
       "operator": "=",
@@ -127,7 +127,7 @@
   },
   {
     "id": "scanner_code_quality_running",
-    "name": "Code Quality Running",
+    "name": "Code quality running",
     "expression": {
       "field": "scanner_code_quality_running",
       "operator": "=",
@@ -136,7 +136,7 @@
   },
   {
     "id": "scanner_iac_running",
-    "name": "IaC Scanning Running",
+    "name": "IaC scanning running",
     "expression": {
       "field": "scanner_iac_running",
       "operator": "=",
@@ -145,7 +145,7 @@
   },
   {
     "id": "code_changes_requires_code_owners",
-    "name": "Code Changes Requires Code Owners",
+    "name": "Code changes requires code owners",
     "expression": {
       "field": "code_changes_requires_code_owners",
       "operator": "=",
@@ -208,7 +208,7 @@
   },
   {
     "id": "force_push_disabled",
-    "name": "Force Push Disabled",
+    "name": "Force push disabled",
     "expression": {
       "field": "force_push_disabled",
       "operator": "=",
@@ -253,7 +253,7 @@
   },
   {
     "id": "branch_deletion_disabled",
-    "name": "Branch Deletion Disabled",
+    "name": "Branch deletion disabled",
     "expression": {
       "field": "branch_deletion_disabled",
       "operator": "=",
@@ -307,7 +307,7 @@
   },
   {
     "id": "ensure_2_admins_per_repo",
-    "name": "Ensure 2 Admins per Repository",
+    "name": "Ensure two administrators per repository",
     "expression": {
       "field": "ensure_2_admins_per_repo",
       "operator": "=",
@@ -343,7 +343,7 @@
   },
   {
     "id": "gitlab_license_level_ultimate",
-    "name": "GitLab License Level Ultimate",
+    "name": "GitLab license level Ultimate",
     "expression": {
       "field": "gitlab_license_level_ultimate",
       "operator": "=",
@@ -361,7 +361,7 @@
   },
   {
     "id": "has_valid_ci_config",
-    "name": "Has Valid Ci Config",
+    "name": "Has valid CI/CD configuration",
     "expression": {
       "field": "has_valid_ci_config",
       "operator": "=",
@@ -370,7 +370,7 @@
   },
   {
     "id": "error_tracking_enabled",
-    "name": "Error Tracking Enabled",
+    "name": "Error tracking enabled",
     "expression": {
       "field": "error_tracking_enabled",
       "operator": "=",
@@ -379,7 +379,7 @@
   },
   {
     "id": "default_branch_users_can_push",
-    "name": "Default Branch Users Can Push",
+    "name": "Default branch users can push",
     "expression": {
       "field": "default_branch_users_can_push",
       "operator": "=",
@@ -388,7 +388,7 @@
   },
   {
     "id": "default_branch_protected_from_direct_push",
-    "name": "Default Branch Protected From Direct Push",
+    "name": "Default branch protected from direct push",
     "expression": {
       "field": "default_branch_protected_from_direct_push",
       "operator": "=",
@@ -424,7 +424,7 @@
   },
   {
     "id": "default_branch_users_can_merge",
-    "name": "Default Branch Users Can Merge",
+    "name": "Default branch users can merge",
     "expression": {
       "field": "default_branch_users_can_merge",
       "operator": "=",
@@ -505,7 +505,7 @@
   },
   {
     "id": "cicd_job_token_scope_enabled",
-    "name": "CICD Job Token Scope Enabled",
+    "name": "CI/CD job token scope enabled",
     "expression": {
       "field": "cicd_job_token_scope_enabled",
       "operator": "=",
