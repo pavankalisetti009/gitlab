@@ -74,4 +74,20 @@ RSpec.describe GroupChildEntity, feature_category: :groups_and_projects do
       end
     end
   end
+
+  context 'when group is linked to a subscription', :saas do
+    let(:object) { create(:group_with_plan, plan: :ultimate_plan) }
+
+    it 'returns is_linked_to_subscription as true' do
+      expect(json[:is_linked_to_subscription]).to be(true)
+    end
+  end
+
+  context 'when group is not linked to a subscription', :saas do
+    let(:object) { group }
+
+    it 'returns is_linked_to_subscription as false' do
+      expect(json[:is_linked_to_subscription]).to be(false)
+    end
+  end
 end
