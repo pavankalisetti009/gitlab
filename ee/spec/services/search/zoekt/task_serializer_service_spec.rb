@@ -27,8 +27,25 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
         :Callback,
         :RepoId,
         :FileSizeLimit,
-        :Timeout
+        :Timeout,
+        :Parallelism
       )
+    end
+
+    context 'when feature flag zoekt_reduce_parallelism is disabled' do
+      before do
+        stub_feature_flags(zoekt_reduce_parallelism: false)
+      end
+
+      it 'serializes the task without Parallelism' do
+        expect(execute_task[:payload].keys).to contain_exactly(
+          :GitalyConnectionInfo,
+          :Callback,
+          :RepoId,
+          :FileSizeLimit,
+          :Timeout
+        )
+      end
     end
 
     context 'when local socket is used' do
@@ -55,7 +72,8 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
           :RepoId,
           :FileSizeLimit,
           :Timeout,
-          :Force
+          :Force,
+          :Parallelism
         )
       end
     end
