@@ -12,6 +12,7 @@ import { logError } from '~/lib/logger';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import userWorkspacesListQuery from '../../common/graphql/queries/user_workspaces_list.query.graphql';
 import {
   WORKSPACES_DROPDOWN_GROUP_POLL_INTERVAL,
@@ -49,6 +50,7 @@ export default {
     WorkspaceDropdownItem,
     UpdateWorkspaceMutation,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     projectId: {
       type: Number,
@@ -159,7 +161,10 @@ export default {
         data-testid="workspaces-dropdown-group"
       >
         <template #group-label>
-          <span class="gl-mb-2 gl-flex gl-text-base gl-leading-1">{{
+          <template v-if="glFeatures.directoryCodeDropdownUpdates">{{
+            $options.i18n.workspacesGroupLabel
+          }}</template>
+          <span v-else class="gl-mb-2 gl-flex gl-text-base gl-leading-1">{{
             $options.i18n.workspacesGroupLabel
           }}</span>
         </template>
