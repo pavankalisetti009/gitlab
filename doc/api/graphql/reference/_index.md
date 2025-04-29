@@ -15392,6 +15392,29 @@ The edge type for [`DastSiteValidation`](#dastsitevalidation).
 | <a id="dastsitevalidationedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="dastsitevalidationedgenode"></a>`node` | [`DastSiteValidation`](#dastsitevalidation) | The item at the end of the edge. |
 
+#### `DependencyAggregationConnection`
+
+The connection type for [`DependencyAggregation`](#dependencyaggregation).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="dependencyaggregationconnectionedges"></a>`edges` | [`[DependencyAggregationEdge]`](#dependencyaggregationedge) | A list of edges. |
+| <a id="dependencyaggregationconnectionnodes"></a>`nodes` | [`[DependencyAggregation]`](#dependencyaggregation) | A list of nodes. |
+| <a id="dependencyaggregationconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `DependencyAggregationEdge`
+
+The edge type for [`DependencyAggregation`](#dependencyaggregation).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="dependencyaggregationedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="dependencyaggregationedgenode"></a>`node` | [`DependencyAggregation`](#dependencyaggregation) | The item at the end of the edge. |
+
 #### `DependencyConnection`
 
 The connection type for [`Dependency`](#dependency).
@@ -25228,7 +25251,6 @@ A software dependency used by a project.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="dependencycomponent"></a>`component` | [`Component!`](#component) | Information about the component associated to the dependency. |
 | <a id="dependencyid"></a>`id` | [`GlobalID!`](#globalid) | ID of the dependency. |
 | <a id="dependencylicenses"></a>`licenses` | [`[License!]`](#license) | Licenses associated to the dependency. |
 | <a id="dependencylocation"></a>`location` | [`Location`](#location) | Information about where the dependency is located. |
@@ -25237,6 +25259,24 @@ A software dependency used by a project.
 | <a id="dependencyreachability"></a>`reachability` | [`ReachabilityType`](#reachabilitytype) | Information about reachability of a dependency. |
 | <a id="dependencyversion"></a>`version` | [`String`](#string) | Version of the dependency. |
 | <a id="dependencyvulnerabilitycount"></a>`vulnerabilityCount` | [`Int!`](#int) | Number of vulnerabilities within the dependency. |
+
+### `DependencyAggregation`
+
+A software dependency aggregation used by a group.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="dependencyaggregationid"></a>`id` | [`GlobalID!`](#globalid) | ID of the dependency. |
+| <a id="dependencyaggregationlicenses"></a>`licenses` | [`[License!]`](#license) | Licenses associated to the dependency. |
+| <a id="dependencyaggregationlocation"></a>`location` | [`Location`](#location) | Information about where the dependency is located. |
+| <a id="dependencyaggregationname"></a>`name` | [`String!`](#string) | Name of the dependency. |
+| <a id="dependencyaggregationoccurrencecount"></a>`occurrenceCount` | [`Int!`](#int) | Number of occurrences of the dependency across projects. |
+| <a id="dependencyaggregationpackager"></a>`packager` | [`PackageManager`](#packagemanager) | Description of the tool used to manage the dependency. |
+| <a id="dependencyaggregationreachability"></a>`reachability` | [`ReachabilityType`](#reachabilitytype) | Information about reachability of a dependency. |
+| <a id="dependencyaggregationversion"></a>`version` | [`String`](#string) | Version of the dependency. |
+| <a id="dependencyaggregationvulnerabilitycount"></a>`vulnerabilityCount` | [`Int!`](#int) | Number of vulnerabilities within the dependency. |
 
 ### `DependencyPath`
 
@@ -27957,6 +27997,33 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupdependenciespackagemanagers"></a>`packageManagers` | [`[PackageManager!]`](#packagemanager) | Filter dependencies by package managers. |
 | <a id="groupdependenciessort"></a>`sort` | [`DependencySort`](#dependencysort) | Sort dependencies by given criteria. |
 | <a id="groupdependenciessourcetypes"></a>`sourceTypes` | [`[SbomSourceType!]`](#sbomsourcetype) | Filter dependencies by source type. |
+
+##### `Group.dependencyAggregations`
+
+Software dependencies used by projects under this group.
+
+{{< details >}}
+**Introduced** in GitLab 18.0.
+**Status**: Experiment.
+{{< /details >}}
+
+Returns [`DependencyAggregationConnection`](#dependencyaggregationconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupdependencyaggregationscomponentids"></a>`componentIds` | [`[SbomComponentID!]`](#sbomcomponentid) | Filter dependencies by component IDs. |
+| <a id="groupdependencyaggregationscomponentnames"></a>`componentNames` | [`[String!]`](#string) | Filter dependencies by component names. |
+| <a id="groupdependencyaggregationspackagemanagers"></a>`packageManagers` | [`[PackageManager!]`](#packagemanager) | Filter dependencies by package managers. |
+| <a id="groupdependencyaggregationsprojectcountmax"></a>`projectCountMax` | [`Int`](#int) | Filter dependencies by maximum project count. |
+| <a id="groupdependencyaggregationsprojectcountmin"></a>`projectCountMin` | [`Int`](#int) | Filter dependencies by minimum project count. |
+| <a id="groupdependencyaggregationssort"></a>`sort` | [`DependencySort`](#dependencysort) | Sort dependencies by given criteria. |
+| <a id="groupdependencyaggregationssourcetypes"></a>`sourceTypes` | [`[SbomSourceType!]`](#sbomsourcetype) | Filter dependencies by source type. |
 
 ##### `Group.descendantGroups`
 
@@ -47567,6 +47634,26 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="currentusertodoscurrentusertodosstate"></a>`state` | [`TodoStateEnum`](#todostateenum) | State of the to-do items. |
+
+#### `DependencyInterface`
+
+Implementations:
+
+- [`Dependency`](#dependency)
+- [`DependencyAggregation`](#dependencyaggregation)
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="dependencyinterfaceid"></a>`id` | [`GlobalID!`](#globalid) | ID of the dependency. |
+| <a id="dependencyinterfacelicenses"></a>`licenses` | [`[License!]`](#license) | Licenses associated to the dependency. |
+| <a id="dependencyinterfacelocation"></a>`location` | [`Location`](#location) | Information about where the dependency is located. |
+| <a id="dependencyinterfacename"></a>`name` | [`String!`](#string) | Name of the dependency. |
+| <a id="dependencyinterfacepackager"></a>`packager` | [`PackageManager`](#packagemanager) | Description of the tool used to manage the dependency. |
+| <a id="dependencyinterfacereachability"></a>`reachability` | [`ReachabilityType`](#reachabilitytype) | Information about reachability of a dependency. |
+| <a id="dependencyinterfaceversion"></a>`version` | [`String`](#string) | Version of the dependency. |
+| <a id="dependencyinterfacevulnerabilitycount"></a>`vulnerabilityCount` | [`Int!`](#int) | Number of vulnerabilities within the dependency. |
 
 #### `DesignFields`
 
