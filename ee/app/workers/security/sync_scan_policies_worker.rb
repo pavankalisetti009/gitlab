@@ -9,7 +9,7 @@ module Security
 
     sidekiq_options retry: true
 
-    deduplicate :until_executed
+    deduplicate :until_executed, if_deduplicated: :reschedule_once
     idempotent!
 
     feature_category :security_policy_management
