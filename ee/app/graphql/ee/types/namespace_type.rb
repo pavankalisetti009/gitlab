@@ -14,14 +14,6 @@ module EE
           resolver: ::Resolvers::GitlabSubscriptions::AddOnEligibleUsersResolver,
           experiment: { milestone: '16.5' }
 
-        field :add_on_purchase,
-          ::Types::GitlabSubscriptions::AddOnPurchaseType,
-          null: true,
-          description: 'AddOnPurchase associated with the namespace',
-          resolver: ::Resolvers::GitlabSubscriptions::Namespaces::AddOnPurchaseResolver,
-          authorize: :read_namespace_via_membership,
-          deprecated: { reason: 'Use root addOnPurchases instead', milestone: '17.5' }
-
         field :additional_purchased_storage_size,
           GraphQL::Types::Float,
           null: true,

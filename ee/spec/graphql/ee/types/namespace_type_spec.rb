@@ -6,7 +6,6 @@ RSpec.describe GitlabSchema.types['Namespace'], feature_category: :groups_and_pr
   it 'has specific fields' do
     expected_fields = %w[
       add_on_eligible_users
-      add_on_purchase
       additional_purchased_storage_size
       total_repository_size_excess
       total_repository_size
