@@ -1503,6 +1503,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: authz_ldap_admin_role
+  :worker_name: Authz::LdapAdminRoleWorker
+  :feature_category: :permissions
+  :has_external_dependencies: true
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: ci_runners_export_usage_csv
   :worker_name: Ci::Runners::ExportUsageCsvWorker
   :feature_category: :fleet_visibility
