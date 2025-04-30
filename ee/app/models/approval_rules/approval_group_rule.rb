@@ -3,6 +3,7 @@
 module ApprovalRules
   class ApprovalGroupRule < ApplicationRecord
     include ApprovalRuleLike
+
     attribute :applies_to_all_protected_branches, :boolean, default: true
 
     enum rule_type: {

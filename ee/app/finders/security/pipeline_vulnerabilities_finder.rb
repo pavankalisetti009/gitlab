@@ -17,6 +17,7 @@
 module Security
   class PipelineVulnerabilitiesFinder
     include Gitlab::Utils::StrongMemoize
+
     ParseError = Class.new(Gitlab::Ci::Parsers::ParserError)
 
     attr_accessor :params

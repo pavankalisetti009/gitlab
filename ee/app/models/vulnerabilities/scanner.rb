@@ -3,6 +3,7 @@
 module Vulnerabilities
   class Scanner < ::SecApplicationRecord
     include EachBatch
+
     self.table_name = "vulnerability_scanners"
 
     attr_accessor :scan_type

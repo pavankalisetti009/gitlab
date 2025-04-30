@@ -3,6 +3,7 @@
 # Model for join table between ApprovalProjectRule and ProtectedBranch
 class ApprovalProjectRulesProtectedBranch < ApplicationRecord
   extend SuppressCompositePrimaryKeyWarning
+
   belongs_to :protected_branch
   belongs_to :approval_project_rule
 

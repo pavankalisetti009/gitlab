@@ -4,6 +4,7 @@
 module ApprovalRules
   class ApprovalGroupRulesProtectedBranch < ApplicationRecord
     extend SuppressCompositePrimaryKeyWarning
+
     belongs_to :protected_branch
     belongs_to :approval_group_rule, class_name: 'ApprovalRules::ApprovalGroupRule'
 
