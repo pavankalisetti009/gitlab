@@ -16,6 +16,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ComplianceFrameworks::Sy
   end
 
   let_it_be(:policy_diff) { nil }
+  let_it_be(:all_records) { ComplianceManagement::ComplianceFramework::SecurityPolicy.all }
 
   subject(:execute) { described_class.new(security_policy: security_policy, policy_diff: policy_diff).execute }
 
@@ -51,7 +52,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ComplianceFrameworks::Sy
       ).to be_empty
 
       # Verify new records are created
-      all_records = ComplianceManagement::ComplianceFramework::SecurityPolicy.all
       expect(all_records.count).to eq(2)
       expect(all_records.map(&:framework_id)).to contain_exactly(framework1.id, framework2.id)
     end
@@ -86,7 +86,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ComplianceFrameworks::Sy
         security_policy_id: security_policy.id,
         configuration_id: policy_configuration.id,
         configuration_source_id: policy_configuration.source.id,
-        root_namespace_ids: [namespace.id],
+        root_namespace_id: namespace.id,
         policy_framework_ids: [inaccessible_framework.id],
         inaccessible_framework_ids_count: 1
       ).and_call_original
@@ -106,7 +106,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ComplianceFrameworks::Sy
         security_policy_id: security_policy.id,
         configuration_id: policy_configuration.id,
         configuration_source_id: policy_configuration.source.id,
-        root_namespace_ids: [namespace.id],
+        root_namespace_id: namespace.id,
         policy_framework_ids: [non_existing_record_id],
         inaccessible_framework_ids_count: 1
       ).and_call_original
@@ -124,82 +124,5 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ComplianceFrameworks::Sy
     end
 
     it_behaves_like 'creates ComplianceFramework::SecurityPolicy'
-  end
-
-  context 'when multiple compliance frameworks from different groups are linked to different policies' do
-    let_it_be(:namespace2) { create(:group) }
-    let_it_be(:policy_configuration2) do
-      create(:security_orchestration_policy_configuration,
-        namespace: namespace2,
-        project: nil,
-        security_policy_management_project: policy_configuration.security_policy_management_project)
-    end
-
-    let_it_be(:framework3) { create(:compliance_framework, namespace: namespace2, name: 'SOX2') }
-
-    let_it_be(:framework_ids) { [framework1.id, framework2.id, framework3.id] }
-
-    it 'creates ComplianceFramework::SecurityPolicy' do
-      execute
-
-      all_records = ComplianceManagement::ComplianceFramework::SecurityPolicy.all
-      expect(all_records.count).to eq(3)
-      expect(all_records.map(&:policy_configuration_id)).to contain_exactly(
-        policy_configuration.id, policy_configuration.id, policy_configuration.id
-      )
-      expect(all_records.map(&:framework_id)).to contain_exactly(framework1.id, framework2.id, framework3.id)
-    end
-
-    context 'when frameworks are linked to different policy configurations' do
-      let_it_be(:namespace3) { create(:group) }
-      let_it_be(:framework4) { create(:compliance_framework, namespace: namespace3, name: 'HIPAA') }
-      let_it_be(:framework_ids) { [framework1.id, framework2.id, framework4.id] }
-
-      it 'logs details about inaccessible frameworks' do
-        expect(::Gitlab::AppJsonLogger).to receive(:info).once.with(
-          message: 'inaccessible compliance_framework_ids found in policy',
-          security_policy_id: security_policy.id,
-          configuration_id: policy_configuration.id,
-          configuration_source_id: policy_configuration.source.id,
-          root_namespace_ids: [namespace.id, namespace2.id],
-          policy_framework_ids: [framework1.id, framework2.id, framework4.id],
-          inaccessible_framework_ids_count: 1
-        ).and_call_original
-
-        execute
-      end
-
-      it 'does not create ComplianceFramework::SecurityPolicy' do
-        expect { execute }.not_to change { ComplianceManagement::ComplianceFramework::SecurityPolicy.count }
-      end
-    end
-
-    context 'when gitlab_com_subscription is true' do
-      before do
-        stub_saas_features(gitlab_com_subscriptions: false)
-      end
-
-      let_it_be(:namespace3) { create(:group) }
-      let_it_be(:framework4) { create(:compliance_framework, namespace: namespace3, name: 'HIPAA') }
-      let_it_be(:framework_ids) { [framework1.id, framework2.id, framework4.id] }
-
-      it 'logs details about inaccessible frameworks with only configuration container root namespace' do
-        expect(::Gitlab::AppJsonLogger).to receive(:info).once.with(
-          message: 'inaccessible compliance_framework_ids found in policy',
-          security_policy_id: security_policy.id,
-          configuration_id: policy_configuration.id,
-          configuration_source_id: policy_configuration.source.id,
-          root_namespace_ids: [namespace.id, namespace2.id],
-          policy_framework_ids: [framework1.id, framework2.id, framework4.id],
-          inaccessible_framework_ids_count: 1
-        ).and_call_original
-
-        execute
-      end
-
-      it 'does not create ComplianceFramework::SecurityPolicy' do
-        expect { execute }.not_to change { ComplianceManagement::ComplianceFramework::SecurityPolicy.count }
-      end
-    end
   end
 end
