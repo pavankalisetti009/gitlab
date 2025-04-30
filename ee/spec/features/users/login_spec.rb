@@ -18,7 +18,7 @@ RSpec.describe 'Login', feature_category: :system_access do
       .to change { AuditEvent.where(entity_type: 'Gitlab::Audit::InstanceScope').count }.from(0).to(1)
   end
 
-  it 'creates a security event for an invalid OAuth login' do
+  it 'creates a security event for an invalid OAuth login', :with_current_organization do
     stub_omniauth_saml_config(
       enabled: true,
       auto_link_saml_user: false,
