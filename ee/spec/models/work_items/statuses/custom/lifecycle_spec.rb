@@ -43,6 +43,48 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
       it { is_expected.to validate_uniqueness_of(:name).scoped_to(:namespace_id) }
     end
 
+    describe 'status limit validations' do
+      let_it_be(:one_more_status) { create(:work_item_custom_status, namespace: namespace) }
+
+      before do
+        stub_const('WorkItems::Statuses::Custom::Lifecycle::MAX_STATUSES_PER_LIFECYCLE', 3)
+      end
+
+      it 'is invalid when exceeding maximum allowed statuses' do
+        custom_lifecycle.statuses << one_more_status
+
+        expect(custom_lifecycle).not_to be_valid
+        expect(custom_lifecycle.errors[:base]).to include('Lifecycle can only have a maximum of 3 statuses.')
+      end
+    end
+
+    describe 'lifecycle per namespace limit validations' do
+      let_it_be(:existing_lifecycle) do
+        create(:work_item_custom_lifecycle,
+          namespace: namespace,
+          default_open_status: open_status,
+          default_closed_status: closed_status,
+          default_duplicate_status: duplicate_status
+        )
+      end
+
+      before do
+        stub_const('WorkItems::Statuses::Custom::Lifecycle::MAX_LIFECYCLES_PER_NAMESPACE', 1)
+      end
+
+      it 'is invalid when exceeding maximum allowed lifecycles' do
+        expect(custom_lifecycle).not_to be_valid
+
+        expect(custom_lifecycle.errors[:namespace]).to include('can only have a maximum of 1 lifecycles.')
+      end
+
+      it 'allows updating attributes of an existing lifecycle when limit is reached' do
+        existing_lifecycle.name = 'Updated Name'
+
+        expect(existing_lifecycle).to be_valid
+      end
+    end
+
     describe '#validate_default_status_categories' do
       context 'with invalid category combinations' do
         it 'is invalid when default_open_status has wrong category' do
