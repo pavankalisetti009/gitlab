@@ -304,7 +304,7 @@ describe('DependenciesTable component', () => {
         const dependency = dependencies[rowIndexWithVulnerabilities];
         const vulnerabilities = vulnerabilityInfo[dependency.occurrenceId];
         const badge = findTableRows().at(rowIndexWithVulnerabilities).findComponent(GlBadge);
-        badge.trigger('click');
+        badge.vm.$emit('click');
 
         return nextTick().then(() => {
           expect(findDependencyVulnerabilities().props()).toEqual({
