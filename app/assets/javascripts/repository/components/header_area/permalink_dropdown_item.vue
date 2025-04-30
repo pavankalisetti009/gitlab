@@ -21,6 +21,11 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      mousetrap: null,
+    };
+  },
   computed: {
     permalinkShortcutKey() {
       return keysFor(PROJECT_FILES_GO_TO_PERMALINK)[0];
@@ -42,10 +47,11 @@ export default {
     },
   },
   mounted() {
-    Mousetrap.bind(keysFor(PROJECT_FILES_GO_TO_PERMALINK), this.triggerCopyPermalink);
+    this.mousetrap = new Mousetrap();
+    this.mousetrap.bind(keysFor(PROJECT_FILES_GO_TO_PERMALINK), this.triggerCopyPermalink);
   },
   beforeDestroy() {
-    Mousetrap.unbind(keysFor(PROJECT_FILES_GO_TO_PERMALINK));
+    this.mousetrap.unbind(keysFor(PROJECT_FILES_GO_TO_PERMALINK));
   },
   methods: {
     triggerCopyPermalink() {
