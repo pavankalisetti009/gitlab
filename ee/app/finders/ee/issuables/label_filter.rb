@@ -20,7 +20,7 @@ module EE
 
       override :target_label_links_query
       def target_label_links_query(target_model, base_target_model, label_ids)
-        return super if project.present?
+        return super if parent.is_a?(Project)
         # Note that this is only correct for as long as we do not show issues/work items of type Epic
         # in issues list pages, otherwise this will resul in returning incomplete results when filtering by labels as
         # for Epic WorkItems labels can be linked either to legacy Epic records or Epic WorkItem records, by the

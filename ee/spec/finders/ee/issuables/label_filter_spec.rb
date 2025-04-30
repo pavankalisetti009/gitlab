@@ -9,7 +9,7 @@ RSpec.describe Issuables::LabelFilter, feature_category: :team_planning do
   describe '#label_link_query' do
     shared_examples 'does not run a labels union query' do
       it 'does not run a union query' do
-        labels_filter = described_class.new(project: context_project, group: context_group, params: {})
+        labels_filter = described_class.new(parent: context_parent, params: {})
 
         expect(labels_filter).not_to receive(:multi_target_label_links_query)
 
@@ -19,7 +19,7 @@ RSpec.describe Issuables::LabelFilter, feature_category: :team_planning do
 
     shared_examples 'runs a labels union query' do
       it 'does not run a union query' do
-        labels_filter = described_class.new(project: context_project, group: context_group, params: {})
+        labels_filter = described_class.new(parent: context_parent, params: {})
 
         expect(labels_filter).to receive(:multi_target_label_links_query)
 
@@ -31,15 +31,13 @@ RSpec.describe Issuables::LabelFilter, feature_category: :team_planning do
       let(:issuables) { Issue.all }
 
       context 'when at project level' do
-        let(:context_project) { project }
-        let(:context_group) { nil }
+        let(:context_parent) { project }
 
         it_behaves_like 'does not run a labels union query'
       end
 
       context 'when at group level' do
-        let(:context_project) { nil }
-        let(:context_group) { group }
+        let(:context_parent) { group }
 
         it_behaves_like 'does not run a labels union query'
       end
@@ -49,15 +47,13 @@ RSpec.describe Issuables::LabelFilter, feature_category: :team_planning do
       let(:issuables) { WorkItem.all }
 
       context 'when at project level' do
-        let(:context_project) { project }
-        let(:context_group) { nil }
+        let(:context_parent) { project }
 
         it_behaves_like 'does not run a labels union query'
       end
 
       context 'when at group level' do
-        let(:context_project) { nil }
-        let(:context_group) { group }
+        let(:context_parent) { group }
 
         it_behaves_like 'runs a labels union query'
       end
@@ -67,8 +63,7 @@ RSpec.describe Issuables::LabelFilter, feature_category: :team_planning do
       let(:issuables) { Epic.all }
 
       context 'when at group level' do
-        let(:context_project) { nil }
-        let(:context_group) { group }
+        let(:context_parent) { group }
 
         it_behaves_like 'runs a labels union query'
       end

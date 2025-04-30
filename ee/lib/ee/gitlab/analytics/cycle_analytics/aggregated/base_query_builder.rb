@@ -98,8 +98,7 @@ module EE::Gitlab::Analytics::CycleAnalytics::Aggregated::BaseQueryBuilder
     ::Gitlab::Analytics::CycleAnalytics::Aggregated::LabelFilter.new(
       stage: stage,
       params: { not: { label_name: params[:not][:label_name] } },
-      project: nil,
-      group: root_ancestor
+      parent: root_ancestor
     ).filter(query)
   end
 
