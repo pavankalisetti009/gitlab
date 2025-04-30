@@ -29,6 +29,11 @@ module AuditEvents
         return
       end
 
+      audit_root_group_entity = audit_event.root_group_entity
+      if audit_root_group_entity && Feature.enabled?(:disable_audit_event_streaming, audit_root_group_entity)
+        return
+      end
+
       AuditEvents::ExternalDestinationStreamer.new(audit_operation, audit_event).stream_to_destinations
 
       log_extra_metadata_on_done(:audit_event_type, audit_operation)

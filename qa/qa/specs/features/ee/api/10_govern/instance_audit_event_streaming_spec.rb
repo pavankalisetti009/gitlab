@@ -5,7 +5,8 @@ module QA
     'Govern',
     :requires_admin,
     :skip_live_env, # We need to enable local requests to use a local mock streaming server
-    product_group: :compliance
+    product_group: :compliance,
+    feature_flag: { name: :disable_audit_event_streaming }
   ) do
     describe 'Instance audit event streaming' do
       include_context 'with streamed events mock setup'
@@ -27,6 +28,7 @@ module QA
       before do
         stream_destination.add_headers(headers)
         stream_destination.add_filters(event_types)
+        Runtime::Feature.disable(:disable_audit_event_streaming)
 
         mock_service.wait_for_streaming_to_start(event_type: 'remove_ssh_key', entity_type: 'User') do
           Resource::SSHKey.fabricate_via_api!.remove_via_api!
