@@ -18,7 +18,8 @@ module CloudConnector
         end
 
         def access_record
-          @access_record ||= CloudConnector::Access.last
+          # TODO: replace to `.last_catalog` when we deprecate the `data`
+          @access_record ||= CloudConnector::Access.with_data.last
         end
 
         def check_access_data

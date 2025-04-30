@@ -296,6 +296,7 @@ module Gitlab
                   serviceStartTime
                   bundledWith
                 }
+                catalog
               }
             }
             GQL
@@ -315,11 +316,13 @@ module Gitlab
               token = response.dig('data', 'cloudConnectorAccess', 'serviceToken', 'token')
               expires_at = response.dig('data', 'cloudConnectorAccess', 'serviceToken', 'expiresAt')
               available_services = response.dig('data', 'cloudConnectorAccess', 'availableServices')
+              catalog = response.dig('data', 'cloudConnectorAccess', 'catalog')
               {
                 success: true,
                 token: token,
                 expires_at: expires_at,
-                available_services: available_services
+                available_services: available_services,
+                catalog: catalog
               }
             else
               track_error(query, response)

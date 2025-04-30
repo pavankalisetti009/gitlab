@@ -34,7 +34,10 @@ RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, fe
       end
 
       context 'when graphql query response is successful' do
-        let(:response) { { success: true, token: token, expires_at: expires_at, available_services: service_data } }
+        let(:response) do
+          { success: true, token: token, expires_at: expires_at, available_services: service_data, catalog: catalog }
+        end
+
         let(:token_storage_service_response) { ServiceResponse.success }
         let(:access_data_storage_service_response) { ServiceResponse.success }
         let(:token) { 'token' }
@@ -46,13 +49,44 @@ RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, fe
           ]
         end
 
+        let(:catalog) do
+          {
+            "backend_services" => [
+              {
+                "name" => "ai_gateway_agent",
+                "project_url" => "unknown",
+                "group" => "group::ai framework",
+                "jwt_aud" => "gitlab-ai-gateway-agent"
+              }
+            ],
+            "unit_primitives" => [
+              {
+                "name" => "agent_quick_actions",
+                "description" => "Quick actions for agent.",
+                "group" => "group::duo_chat",
+                "feature_category" => "duo_chat",
+                "backend_services" => ["ai_gateway_agent"],
+                "license_types" => ["ultimate"]
+              }
+            ],
+            "add_ons" => [
+              { "name" => "duo_enterprise" },
+              { "name" => "duo_pro" }
+            ],
+            "license_types" => [
+              { "name" => "premium" },
+              { "name" => "ultimate" }
+            ]
+          }
+        end
+
         before do
           allow_next_instance_of(CloudConnector::ServiceAccessTokensStorageService, token, expires_at) do |service|
             allow(service).to receive(:execute).and_return(token_storage_service_response)
           end
 
-          allow_next_instance_of(CloudConnector::AccessDataStorageService,
-            { available_services: service_data }) do |service|
+          allow_next_instance_of(CloudConnector::AccessDataAndCatalogStorageService,
+            { data: { available_services: service_data }, catalog: catalog }) do |service|
             allow(service).to receive(:execute).and_return(access_data_storage_service_response)
           end
         end

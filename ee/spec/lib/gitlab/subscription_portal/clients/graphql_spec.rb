@@ -821,19 +821,20 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
       {
         variables: { licenseKey: license_key, gitlabVersion: Gitlab::VERSION },
         query: <<~GQL
-            query cloudConnectorAccess($licenseKey: String!, $gitlabVersion: String!) {
-              cloudConnectorAccess(licenseKey: $licenseKey, gitlabVersion: $gitlabVersion) {
-                serviceToken {
-                  token
-                  expiresAt
-                }
-                availableServices {
-                  name
-                  serviceStartTime
-                  bundledWith
-                }
+          query cloudConnectorAccess($licenseKey: String!, $gitlabVersion: String!) {
+            cloudConnectorAccess(licenseKey: $licenseKey, gitlabVersion: $gitlabVersion) {
+              serviceToken {
+                token
+                expiresAt
               }
+              availableServices {
+                name
+                serviceStartTime
+                bundledWith
+              }
+              catalog
             }
+          }
         GQL
       }
     end
@@ -841,6 +842,52 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
     subject { client.get_cloud_connector_access_data(license_key) }
 
     context 'when the request is successful' do
+      let_it_be(:available_services) do
+        [
+          {
+            "name" => "code_suggestions",
+            "serviceStartTime" => "2024-02-15T00:00:00Z",
+            "bundledWith" => ['duo_pro']
+          },
+          {
+            "name" => "duo_chat",
+            "serviceStartTime" => nil,
+            "bundledWith" => ['duo_pro']
+          }
+        ]
+      end
+
+      let_it_be(:catalog) do
+        {
+          "backend_services" => [
+            {
+              "name" => "ai_gateway_agent",
+              "project_url" => "unknown",
+              "group" => "group::ai framework",
+              "jwt_aud" => "gitlab-ai-gateway-agent"
+            }
+          ],
+          "unit_primitives" => [
+            {
+              "name" => "agent_quick_actions",
+              "description" => "Quick actions for agent.",
+              "group" => "group::duo_chat",
+              "feature_category" => "duo_chat",
+              "backend_services" => ["ai_gateway_agent"],
+              "license_types" => ["ultimate"]
+            }
+          ],
+          "add_ons" => [
+            { "name" => "duo_enterprise" },
+            { "name" => "duo_pro" }
+          ],
+          "license_types" => [
+            { "name" => "premium" },
+            { "name" => "ultimate" }
+          ]
+        }
+      end
+
       it 'returns the data' do
         response = {
           success: true,
@@ -851,18 +898,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
                   'token' => token,
                   'expiresAt' => expires_at
                 },
-                'availableServices' => [
-                  {
-                    "name" => "code_suggestions",
-                    "serviceStartTime" => "2024-02-15T00:00:00Z",
-                    "bundledWith" => ['duo_pro']
-                  },
-                  {
-                    "name" => "duo_chat",
-                    "serviceStartTime" => nil,
-                    "bundledWith" => ['duo_pro']
-                  }
-                ]
+                'availableServices' => available_services,
+                'catalog' => catalog
               }
             }
           }
@@ -870,10 +907,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
 
         expect(client).to receive(:http_post).with('graphql', headers, params).and_return(response)
 
-        expect(subject).to eq(success: true, token: token, expires_at: expires_at, available_services: [
-          { "name" => "code_suggestions", "serviceStartTime" => "2024-02-15T00:00:00Z", "bundledWith" => ['duo_pro'] },
-          { "name" => "duo_chat", "serviceStartTime" => nil, "bundledWith" => ['duo_pro'] }
-        ])
+        expect(subject).to eq(success: true, token: token, expires_at: expires_at,
+          available_services: available_services, catalog: catalog)
       end
     end
 
