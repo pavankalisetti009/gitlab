@@ -7,7 +7,7 @@ module EE
       include SecurityOrchestrationHelper
 
       override :execute
-      def execute(*)
+      def execute
         return success if project.marked_for_deletion_at?
 
         if reject_security_policy_project_deletion?
@@ -16,7 +16,7 @@ module EE
           )
         end
 
-        super(licensed: License.feature_available?(:adjourned_deletion_for_projects_and_groups))
+        super
       end
 
       private
@@ -40,21 +40,8 @@ module EE
         ::Gitlab::Audit::Auditor.audit(audit_context)
       end
 
-      override :project_update_service_params
-      def project_update_service_params
-        hide_project? ? super.merge(hidden: true) : super
-      end
-
       def reject_security_policy_project_deletion?
         security_configurations_preventing_project_deletion(project).exists?
-      end
-
-      # We hide unlicensed projects on a licensed instance, such as SaaS. This ensures that delayed deletion
-      # is only exposed to premium users while still performing a delayed delete behind the scenes.
-      def hide_project?
-        return false if project.licensed_feature_available?(:adjourned_deletion_for_projects_and_groups)
-
-        !feature_downtiered?
       end
     end
   end

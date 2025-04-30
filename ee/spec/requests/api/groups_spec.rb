@@ -1453,293 +1453,43 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
   end
 
   describe "DELETE /groups/:id" do
-    let(:params) { {} }
+    subject { delete api("/groups/#{group.id}", user) }
 
-    subject { delete api("/groups/#{group.id}", user), params: params }
+    it 'does not mark the group for deletion when the group has a paid gitlab.com subscription', :saas do
+      create(:gitlab_subscription, :ultimate, namespace: group)
 
-    before do
-      stub_feature_flags(downtier_delayed_deletion: false)
+      subject
+
+      expect(response).to have_gitlab_http_status(:bad_request)
+      expect(json_response['message']).to eq("This group can't be removed because it is linked to a subscription.")
+      expect(group.marked_for_deletion_on).to be_nil
+      expect(group.deleting_user).to be_nil
     end
 
-    shared_examples_for 'immediately enqueues the job to delete the group' do
-      it 'immediately enqueues the job to delete the group', :clean_gitlab_redis_queues do
-        Sidekiq::Testing.fake! do
-          expect { subject }.to change(GroupDestroyWorker.jobs, :size).by(1)
-        end
+    it 'marks for deletion a subgroup of a group with a paid gitlab.com subscription', :saas do
+      create(:gitlab_subscription, :ultimate, namespace: group)
+      subgroup = create(:group, parent: group)
 
-        expect(response).to have_gitlab_http_status(:accepted)
-      end
+      delete api("/groups/#{subgroup.id}", user)
+
+      expect(response).to have_gitlab_http_status(:accepted)
+      expect(subgroup.marked_for_deletion_on).to eq(Date.current)
+      expect(subgroup.deleting_user).to eq(user)
     end
 
-    shared_examples_for 'does not immediately enqueues the job to delete the group' do |error_message|
-      it 'does not immediately enqueues the job to delete the group', :clean_gitlab_redis_queues do
-        Sidekiq::Testing.fake! do
-          expect { subject }.not_to change(GroupDestroyWorker.jobs, :size)
-        end
+    it 'marks for deletion of a group with a trial plan', :saas do
+      create(
+        :gitlab_subscription,
+        :ultimate_trial,
+        :active_trial,
+        namespace: group
+      )
 
-        expect(response).to have_gitlab_http_status(:bad_request)
-        expect(json_response['message']).to eq(error_message)
-      end
-    end
+      subject
 
-    shared_examples_for 'marks group for delayed deletion' do
-      it 'marks group for delayed deletion', :clean_gitlab_redis_queues do
-        Sidekiq::Testing.fake! do
-          expect { subject }.not_to change(GroupDestroyWorker.jobs, :size)
-        end
-
-        group.reload
-
-        expect(response).to have_gitlab_http_status(:accepted)
-        expect(group.marked_for_deletion_on).to eq(Date.current)
-        expect(group.deleting_user).to eq(user)
-      end
-    end
-
-    context 'feature is available' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-      end
-
-      context 'when delayed group deletion is enabled' do
-        before do
-          stub_application_setting(delayed_group_deletion: true)
-        end
-
-        context 'success' do
-          it_behaves_like 'marks group for delayed deletion'
-        end
-
-        context 'when deletion adjourned period is 0' do
-          before do
-            stub_application_setting(deletion_adjourned_period: 0)
-          end
-
-          it_behaves_like 'immediately enqueues the job to delete the group'
-        end
-
-        context 'when permanently_remove param is sent' do
-          before do
-            stub_application_setting(delayed_group_deletion: true)
-          end
-
-          context 'if permanently_remove is true' do
-            let(:params) { { permanently_remove: true } }
-
-            context 'if group is a subgroup' do
-              let(:subgroup) { create(:group, parent: group) }
-
-              subject { delete api("/groups/#{subgroup.id}", user), params: params }
-
-              context 'when group is already marked for deletion' do
-                before do
-                  create(:group_deletion_schedule, group: subgroup, marked_for_deletion_on: Date.current)
-                end
-
-                context 'when full_path param is not passed' do
-                  it_behaves_like 'does not immediately enqueues the job to delete the group',
-                    '`full_path` is incorrect. You must enter the complete path for the subgroup.'
-                end
-
-                context 'when full_path param is not equal to full_path' do
-                  let(:params) { { permanently_remove: true, full_path: subgroup.path } }
-
-                  it_behaves_like 'does not immediately enqueues the job to delete the group',
-                    '`full_path` is incorrect. You must enter the complete path for the subgroup.'
-                end
-
-                context 'when the full_path param is passed and it matches the full path of subgroup' do
-                  let(:params) { { permanently_remove: true, full_path: subgroup.full_path } }
-
-                  it_behaves_like 'immediately enqueues the job to delete the group'
-                end
-              end
-
-              context 'when group is not marked for deletion' do
-                it_behaves_like 'does not immediately enqueues the job to delete the group', 'Group must be marked for deletion first.'
-              end
-            end
-
-            context 'if group is not a subgroup' do
-              subject { delete api("/groups/#{group.id}", user), params: params }
-
-              it_behaves_like 'does not immediately enqueues the job to delete the group', '`permanently_remove` option is only available for subgroups.'
-            end
-          end
-
-          context 'if permanently_remove is not true' do
-            context 'when it is false' do
-              let(:params) { { permanently_remove: false } }
-
-              it_behaves_like 'marks group for delayed deletion'
-            end
-
-            context 'when it is non boolean' do
-              let(:params) { { permanently_remove: 'something_random' } }
-
-              it_behaves_like 'marks group for delayed deletion'
-            end
-          end
-        end
-      end
-
-      context 'when delayed group deletion is disabled' do
-        before do
-          stub_application_setting(delayed_group_deletion: false)
-        end
-
-        it_behaves_like 'marks group for delayed deletion'
-      end
-
-      context 'failure' do
-        before do
-          allow(::Groups::MarkForDeletionService).to receive_message_chain(:new, :execute).and_return({ status: :error, message: 'error' })
-        end
-
-        it 'returns error' do
-          subject
-
-          expect(response).to have_gitlab_http_status(:bad_request)
-          expect(json_response['message']).to eq('error')
-        end
-      end
-
-      it 'does not mark the group for deletion when the group has a paid gitlab.com subscription', :saas do
-        create(:gitlab_subscription, :ultimate, namespace: group)
-
-        subject
-
-        expect(response).to have_gitlab_http_status(:bad_request)
-        expect(json_response['message']).to eq("This group can't be removed because it is linked to a subscription.")
-        expect(group.marked_for_deletion_on).to be_nil
-        expect(group.deleting_user).to be_nil
-      end
-
-      it 'marks for deletion a subgroup of a group with a paid gitlab.com subscription', :saas do
-        create(:gitlab_subscription, :ultimate, namespace: group)
-        subgroup = create(:group, parent: group)
-
-        delete api("/groups/#{subgroup.id}", user)
-
-        expect(response).to have_gitlab_http_status(:accepted)
-        expect(subgroup.marked_for_deletion_on).to eq(Date.current)
-        expect(subgroup.deleting_user).to eq(user)
-      end
-
-      it 'marks for deletion of a group with a trial plan', :saas do
-        create(
-          :gitlab_subscription,
-          :ultimate_trial,
-          :active_trial,
-          namespace: group
-        )
-
-        delete api("/groups/#{group.id}", user)
-
-        expect(response).to have_gitlab_http_status(:accepted)
-        expect(group.marked_for_deletion_on).to eq(Date.current)
-        expect(group.deleting_user).to eq(user)
-      end
-    end
-
-    context 'feature is not available', :clean_gitlab_redis_queues_metadata do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
-      end
-
-      it_behaves_like 'immediately enqueues the job to delete the group'
-
-      it 'does not delete the group when the group has a paid gitlab.com subscription', :saas do
-        create(:gitlab_subscription, :ultimate, namespace: group)
-
-        expect { subject }.not_to change(GroupDestroyWorker.jobs, :size)
-        expect(response).to have_gitlab_http_status(:bad_request)
-        expect(json_response['message']).to eq("This group can't be removed because it is linked to a subscription.")
-      end
-
-      it 'deletes a subgroup of a group with a paid gitlab.com subscription', :saas do
-        create(:gitlab_subscription, :ultimate, namespace: group)
-        subgroup = create(:group, parent: group)
-
-        expect { delete api("/groups/#{subgroup.id}", user) }.to change(GroupDestroyWorker.jobs, :size).by(1)
-        expect(response).to have_gitlab_http_status(:accepted)
-      end
-
-      it 'deletes a group with a trial plan', :saas do
-        create(
-          :gitlab_subscription,
-          :ultimate_trial,
-          :active_trial,
-          namespace: group
-        )
-
-        expect { delete api("/groups/#{group.id}", user) }.to change(GroupDestroyWorker.jobs, :size).by(1)
-        expect(response).to have_gitlab_http_status(:accepted)
-      end
-    end
-  end
-
-  describe "POST /groups/:id/restore" do
-    let_it_be(:group) do
-      create(:group_with_deletion_schedule, marked_for_deletion_on: 1.day.ago, deleting_user: user)
-    end
-
-    subject { post api("/groups/#{group.id}/restore", user) }
-
-    before do
-      stub_feature_flags(downtier_delayed_deletion: false)
-    end
-
-    context 'when the feature is available' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-      end
-
-      context 'when authenticated as owner' do
-        context 'when restoring is successful' do
-          it 'restores the group to original state' do
-            subject
-
-            expect(response).to have_gitlab_http_status(:created)
-            expect(json_response['marked_for_deletion_on']).to be_falsey
-          end
-        end
-
-        context 'when restoring fails' do
-          before do
-            allow(::Groups::RestoreService).to receive_message_chain(:new, :execute).and_return({ status: :error, message: 'error' })
-          end
-
-          it 'returns error' do
-            subject
-
-            expect(response).to have_gitlab_http_status(:bad_request)
-            expect(json_response['message']).to eq('error')
-          end
-        end
-      end
-
-      context 'when authenticated as user without access to the group' do
-        subject { post api("/groups/#{group.id}/restore", another_user) }
-
-        it 'returns 403' do
-          subject
-
-          expect(response).to have_gitlab_http_status(:forbidden)
-        end
-      end
-    end
-
-    context 'feature is not available' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
-      end
-
-      it 'returns 404' do
-        subject
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
+      expect(response).to have_gitlab_http_status(:accepted)
+      expect(group.marked_for_deletion_on).to eq(Date.current)
+      expect(group.deleting_user).to eq(user)
     end
   end
 

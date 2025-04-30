@@ -6,10 +6,6 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
   let(:user) { create(:user) }
   let(:group) { create(:group) }
 
-  before do
-    stub_feature_flags(downtier_delayed_deletion: false)
-  end
-
   describe 'PUT update' do
     before do
       group.add_owner(user)
@@ -615,48 +611,16 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
     it 'does not delete a group with a gitlab.com subscription', :saas do
       create(:gitlab_subscription, :ultimate, namespace: group)
 
-      Sidekiq::Testing.fake! do
-        expect { delete(group_path(group)) }.not_to change(GroupDestroyWorker.jobs, :size)
-        expect(response).to redirect_to(edit_group_path(group))
-      end
+      expect { delete(group_path(group)) }.not_to change { group.reload.marked_for_deletion? }
+      expect(response).to redirect_to(edit_group_path(group))
     end
 
     it 'deletes a subgroup with a parent group with a gitlab.com subscription', :saas do
       create(:gitlab_subscription, :ultimate, namespace: group)
       subgroup = create(:group, parent: group)
 
-      Sidekiq::Testing.fake! do
-        expect { delete(group_path(subgroup)) }.to change(GroupDestroyWorker.jobs, :size).by(1)
-        expect(response).to redirect_to(root_path)
-      end
-    end
-
-    context 'delayed deletion feature is enabled' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-      end
-
-      it 'deletes a group with trial plan', :saas do
-        create(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: group)
-
-        Sidekiq::Testing.fake! do
-          expect { delete(group_path(group)) }.to change { group.reload.marked_for_deletion? }.from(false).to(true)
-        end
-      end
-    end
-
-    context 'delayed deletion feature is disabled' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
-      end
-
-      it 'immediately schedules a group destroy', :saas do
-        create(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: group)
-
-        Sidekiq::Testing.fake! do
-          expect { delete(group_path(group)) }.to change(GroupDestroyWorker.jobs, :size).by(1)
-        end
-      end
+      expect { delete(group_path(subgroup)) }.to change { subgroup.reload.marked_for_deletion? }.from(false).to(true)
+      expect(response).to redirect_to(group_path(subgroup))
     end
   end
 end

@@ -305,55 +305,6 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
     end
 
-    context 'project soft-deletion' do
-      let_it_be(:group) { create(:group) }
-      let_it_be_with_reload(:project) do
-        create(:project, :public, archived: true, marked_for_deletion_at: 1.day.ago, group: group, deleting_user: user)
-      end
-
-      before do
-        stub_feature_flags(downtier_delayed_deletion: false)
-      end
-
-      describe 'marked_for_deletion_at attribute' do
-        it 'exposed when the feature is available' do
-          stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-
-          subject
-
-          expect(json_response).to have_key 'marked_for_deletion_at'
-          expect(Date.parse(json_response['marked_for_deletion_at'])).to eq(project.marked_for_deletion_at)
-        end
-
-        it 'not exposed when the feature is not available' do
-          stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
-
-          subject
-
-          expect(json_response).not_to have_key 'marked_for_deletion_at'
-        end
-      end
-
-      describe 'marked_for_deletion_on attribute' do
-        it 'exposed when the feature is available' do
-          stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-
-          subject
-
-          expect(json_response).to have_key 'marked_for_deletion_on'
-          expect(Date.parse(json_response['marked_for_deletion_on'])).to eq(project.marked_for_deletion_at)
-        end
-
-        it 'not exposed when the feature is not available' do
-          stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
-
-          subject
-
-          expect(json_response).not_to have_key 'marked_for_deletion_on'
-        end
-      end
-    end
-
     context 'issuable default templates' do
       let(:project) { create(:project, :public) }
 
@@ -1979,190 +1930,24 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     end
   end
 
-  describe 'POST /projects/:id/restore' do
-    let_it_be(:group) { create(:group, owners: user) }
-    let_it_be_with_reload(:project) { create(:project, group: group) }
-
-    context 'feature is available' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-        stub_feature_flags(downtier_delayed_deletion: false)
-      end
-
-      it 'restores project' do
-        project.update!(archived: true, marked_for_deletion_at: 1.day.ago, deleting_user: user)
-
-        post api("/projects/#{project.id}/restore", user)
-
-        expect(response).to have_gitlab_http_status(:created)
-        expect(json_response['archived']).to be_falsey
-        expect(json_response['marked_for_deletion_at']).to be_falsey
-        expect(json_response['marked_for_deletion_on']).to be_falsey
-      end
-
-      it 'returns error if project is already being deleted' do
-        message = 'Error'
-        expect(::Projects::RestoreService).to receive_message_chain(:new, :execute).and_return({ status: :error, message: message })
-
-        post api("/projects/#{project.id}/restore", user)
-
-        expect(response).to have_gitlab_http_status(:bad_request)
-        expect(json_response["message"]).to eq(message)
-      end
-    end
-
-    context 'feature is not available' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
-        stub_feature_flags(downtier_delayed_deletion: false)
-      end
-
-      it 'returns error' do
-        post api("/projects/#{project.id}/restore", user)
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
-    end
-  end
-
   describe 'DELETE /projects/:id' do
-    let(:group) { create(:group) }
+    let(:group) { create(:group, owners: user) }
     let(:project) { create(:project, group: group) }
     let(:params) { {} }
 
-    before do
-      group.add_member(user, Gitlab::Access::OWNER)
-      stub_feature_flags(downtier_delayed_deletion: false)
-    end
+    context 'when attempting to delete security policy project' do
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
 
-    shared_examples 'deletes project immediately' do
-      it :aggregate_failures do
-        expect { delete api("/projects/#{project.id}", user), params: params }
-          .to change { ProjectDestroyWorker.jobs.size }.by(1)
-        expect(response).to have_gitlab_http_status(:accepted)
+        create(:security_orchestration_policy_configuration, security_policy_management_project: project)
       end
-    end
 
-    shared_examples 'immediately delete project error' do
-      it :aggregate_failures do
-        expect { delete api("/projects/#{project.id}", user), params: params }
-          .not_to change { ProjectDestroyWorker.jobs.size }
-
-        expect(response).to have_gitlab_http_status(:bad_request)
-        expect(Gitlab::Json.parse(response.body)['message']).to eq(error_message)
-      end
-    end
-
-    shared_examples 'marks project for deletion' do
-      it :aggregate_failures do
+      it 'returns error' do
         delete api("/projects/#{project.id}", user)
 
-        expect(response).to have_gitlab_http_status(:accepted)
-        expect(project.reload.marked_for_deletion?).to be_truthy
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response["message"]).to eq('Project cannot be deleted because it is linked as a security policy project')
       end
-    end
-
-    context 'when feature is available' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-      end
-
-      context 'delayed project deletion is enabled for group' do
-        let(:group) { create(:group) }
-
-        it_behaves_like 'marks project for deletion'
-
-        context 'when permanently_remove param is true' do
-          before do
-            params.merge!(permanently_remove: true)
-          end
-
-          context 'when project is already marked for deletion' do
-            before do
-              project.update!(archived: true, marked_for_deletion_at: 1.day.ago, deleting_user: user)
-            end
-
-            context 'with correct project full path' do
-              before do
-                params.merge!(full_path: project.full_path)
-              end
-
-              it_behaves_like 'deletes project immediately'
-            end
-
-            context 'with incorrect project full path' do
-              let(:error_message) { '`full_path` is incorrect. You must enter the complete path for the project.' }
-
-              before do
-                params.merge!(full_path: "#{project.full_path}-wrong-path")
-              end
-
-              it_behaves_like 'immediately delete project error'
-            end
-          end
-
-          context 'when project is not marked for deletion' do
-            let(:error_message) { 'Project must be marked for deletion first.' }
-
-            it_behaves_like 'immediately delete project error'
-          end
-        end
-
-        it 'returns error if project cannot be marked for deletion' do
-          message = 'Error'
-          expect(::Projects::MarkForDeletionService).to receive_message_chain(:new, :execute).and_return({ status: :error, message: message })
-
-          delete api("/projects/#{project.id}", user)
-
-          expect(response).to have_gitlab_http_status(:bad_request)
-          expect(json_response["message"]).to eq(message)
-        end
-
-        context 'when deletion adjourned period is 0' do
-          before do
-            stub_application_setting(deletion_adjourned_period: 0)
-          end
-
-          it_behaves_like 'deletes project immediately'
-        end
-
-        context 'when attempting to delete security policy project' do
-          before do
-            stub_licensed_features(
-              adjourned_deletion_for_projects_and_groups: true,
-              security_orchestration_policies: true)
-
-            create(
-              :security_orchestration_policy_configuration,
-              security_policy_management_project: project)
-          end
-
-          it 'returns error' do
-            delete api("/projects/#{project.id}", user)
-
-            expect(response).to have_gitlab_http_status(:bad_request)
-            expect(json_response["message"]).to eq('Project cannot be deleted because it is linked as a security policy project')
-          end
-        end
-      end
-
-      context 'delayed project deletion is disabled for group' do
-        it_behaves_like 'marks project for deletion'
-      end
-
-      context 'for projects in user namespace' do
-        let(:project) { create(:project, namespace: user.namespace) }
-
-        it_behaves_like 'marks project for deletion'
-      end
-    end
-
-    context 'when feature is not available' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
-      end
-
-      it_behaves_like 'deletes project immediately'
     end
   end
 

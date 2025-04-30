@@ -5,11 +5,6 @@ module EE
     module MarkForDeletionService
       extend ::Gitlab::Utils::Override
 
-      override :execute
-      def execute(*)
-        super(licensed: License.feature_available?(:adjourned_deletion_for_projects_and_groups))
-      end
-
       private
 
       override :log_event
