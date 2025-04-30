@@ -26,13 +26,9 @@ module Resolvers
           open_tabs_enabled?
         when :repository_xray
           repository_xray_enabled?
-        else
-          additional_context_ff_enabled?(context_key)
+        when :imports
+          imports_enabled?
         end
-      end
-
-      def additional_context_ff_enabled?(context_key)
-        Feature.enabled?(:"code_suggestions_include_context_#{context_key}", current_user, type: :beta)
       end
 
       def open_tabs_enabled?
@@ -55,6 +51,12 @@ module Resolvers
 
       def repository_xray_enabled?
         # The repository_xray additional context is enabled as long as
+        #   the user has access to code suggestions.
+        true
+      end
+
+      def imports_enabled?
+        # The imports additional context is enabled as long as
         #   the user has access to code suggestions.
         true
       end

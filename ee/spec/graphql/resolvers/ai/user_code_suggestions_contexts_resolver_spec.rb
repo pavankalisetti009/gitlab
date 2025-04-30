@@ -48,18 +48,6 @@ RSpec.describe Resolvers::Ai::UserCodeSuggestionsContextsResolver, feature_categ
         it 'returns the expected additional contexts' do
           expect(result).to eq(expected_additional_contexts)
         end
-
-        context 'when imports additional context is disabled' do
-          before do
-            stub_feature_flags(code_suggestions_include_context_imports: false)
-          end
-
-          let(:expected_additional_contexts) { all_additional_contexts - ['imports'] }
-
-          it 'returns the expected additional contexts' do
-            expect(result).to eq(expected_additional_contexts)
-          end
-        end
       end
     end
   end
