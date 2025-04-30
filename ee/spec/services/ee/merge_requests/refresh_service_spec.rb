@@ -819,6 +819,107 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
         end
       end
     end
+
+    describe 'schedule_duo_code_review' do
+      let(:ai_review_allowed) { true }
+
+      before do
+        allow(project)
+          .to receive(:auto_duo_code_review_enabled)
+          .and_return(auto_duo_code_review)
+
+        allow_next_found_instance_of(MergeRequest) do |mr|
+          allow(mr)
+            .to receive(:ai_review_merge_request_allowed?)
+            .and_return(ai_review_allowed)
+        end
+      end
+
+      context 'when auto_duo_code_review_enabled is false' do
+        let(:auto_duo_code_review) { false }
+
+        it 'does not call ::Llm::ReviewMergeRequestService' do
+          expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+          subject
+        end
+      end
+
+      context 'when auto_duo_code_review_enabled is true' do
+        let(:auto_duo_code_review) { true }
+
+        before do
+          create(:merge_request_diff, merge_request: merge_request, state: :empty)
+        end
+
+        context 'when merge request is a draft' do
+          let(:merge_request) do
+            create(
+              :merge_request,
+              :draft_merge_request,
+              source_project: project,
+              source_branch: source_branch,
+              target_branch: 'master',
+              target_project: project
+            )
+          end
+
+          it 'does not call ::Llm::ReviewMergeRequestService' do
+            expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+            subject
+          end
+        end
+
+        context 'when previous diff is not empty' do
+          before do
+            create(:merge_request_diff, merge_request: merge_request)
+          end
+
+          it 'does not call ::Llm::ReviewMergeRequestService' do
+            expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+            subject
+          end
+        end
+
+        context 'when Duo Code Review bot is not assigned as a reviewer' do
+          it 'does not call ::Llm::ReviewMergeRequestService' do
+            expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+            subject
+          end
+        end
+
+        context 'when Duo Code Review bot is assigned as a reviewer' do
+          before do
+            merge_request.reviewers = [::Users::Internal.duo_code_review_bot]
+          end
+
+          context 'when AI review feature is not allowed' do
+            let(:ai_review_allowed) { false }
+
+            it 'does not call ::Llm::ReviewMergeRequestService' do
+              expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+              subject
+            end
+          end
+
+          context 'when AI review feature is allowed' do
+            let(:ai_review_allowed) { true }
+
+            it 'calls ::Llm::ReviewMergeRequestService' do
+              expect_next_instance_of(Llm::ReviewMergeRequestService, current_user, merge_request) do |svc|
+                expect(svc).to receive(:execute)
+              end
+
+              subject
+            end
+          end
+        end
+      end
+    end
   end
 
   describe '#abort_ff_merge_requests_with_when_pipeline_succeeds' do
