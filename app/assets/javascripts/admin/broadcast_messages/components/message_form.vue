@@ -90,7 +90,7 @@ export default {
     confirm: {
       title: s__('BroadcastMessages|Security Notice'),
       text: s__(
-        'BroadcastMessages|Please note: All broadcast messages are publicly accessible through the REST API, regardless of path or role scoping. These messages are not private and should not contain sensitive information. Broadcasting should not be used as a method to share confidential content with specific groups or projects only.',
+        'BroadcastMessages|Broadcast messages must not contain sensitive information. All broadcast messages are publicly accessible through the API, regardless of path or role scoping.',
       ),
     },
   },

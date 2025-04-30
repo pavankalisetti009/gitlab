@@ -11030,6 +11030,9 @@ msgstr ""
 msgid "BroadcastMessages|Blue"
 msgstr ""
 
+msgid "BroadcastMessages|Broadcast messages must not contain sensitive information. All broadcast messages are publicly accessible through the API, regardless of path or role scoping."
+msgstr ""
+
 msgid "BroadcastMessages|Dark"
 msgstr ""
 
@@ -11094,9 +11097,6 @@ msgid "BroadcastMessages|One or more roles is required."
 msgstr ""
 
 msgid "BroadcastMessages|Paths can contain wildcards, like */welcome."
-msgstr ""
-
-msgid "BroadcastMessages|Please note: All broadcast messages are publicly accessible through the REST API, regardless of path or role scoping. These messages are not private and should not contain sensitive information. Broadcasting should not be used as a method to share confidential content with specific groups or projects only."
 msgstr ""
 
 msgid "BroadcastMessages|Red"
