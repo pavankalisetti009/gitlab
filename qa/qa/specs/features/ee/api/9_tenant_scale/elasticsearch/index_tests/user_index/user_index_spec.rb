@@ -32,14 +32,13 @@ module QA
           sleep_interval: Runtime::Search::RETRY_SLEEP_INTERVAL
         ) do
           response = Support::API.get(Runtime::Search.create_search_request(api_client, 'users', user.username).url)
+
+          expect(response.code).to eq(QA::Support::API::HTTP_STATUS_OK)
           response_body = parse_body(response)
 
-          aggregate_failures do
-            expect(response.code).to eq(QA::Support::API::HTTP_STATUS_OK)
-            expect(response_body).not_to be_empty
-            expect(response_body[0][:name]).to eq(user.name)
-            expect(response_body[0][:username]).to eq(user.username)
-          end
+          expect(response_body).not_to be_empty, "Expected a user to be returned from request to /search"
+          expect(response_body[0][:name]).to eq(user.name)
+          expect(response_body[0][:username]).to eq(user.username)
         end
       end
     end
