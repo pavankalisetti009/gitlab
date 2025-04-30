@@ -4,7 +4,7 @@ import PermalinkDropdownItem from '~/repository/components/header_area/permalink
 import { keysFor, PROJECT_FILES_GO_TO_PERMALINK } from '~/behaviors/shortcuts/keybindings';
 import { shouldDisableShortcuts } from '~/behaviors/shortcuts/shortcuts_toggle';
 import { Mousetrap } from '~/lib/mousetrap';
-import { lineState } from '~/blob/state';
+import { hashState } from '~/blob/state';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 jest.mock('~/behaviors/shortcuts/shortcuts_toggle');
@@ -35,7 +35,7 @@ describe('PermalinkDropdownItem', () => {
   const findPermalinkLinkDropdown = () => wrapper.findComponent(GlDisclosureDropdownItem);
 
   beforeEach(() => {
-    lineState.currentLineNumber = null;
+    hashState.currentHash = null;
     createComponent();
   });
 
@@ -51,11 +51,29 @@ describe('PermalinkDropdownItem', () => {
     });
 
     it('returns updated path with line number when set', () => {
-      lineState.currentLineNumber = '10';
+      hashState.currentHash = 10;
       createComponent();
 
       expect(findPermalinkLinkDropdown().attributes('data-clipboard-text')).toBe(
         `http://test.host/flightjs/Flight/-/blob/46ca9ebd5a43ec240ee8d64e2bb829169dff744e/bower.json#L10`,
+      );
+    });
+
+    it('returns updated path with line number range when set', () => {
+      hashState.currentHash = '#L5-10';
+      createComponent();
+
+      expect(findPermalinkLinkDropdown().attributes('data-clipboard-text')).toBe(
+        `http://test.host/flightjs/Flight/-/blob/46ca9ebd5a43ec240ee8d64e2bb829169dff744e/bower.json#L5-10`,
+      );
+    });
+
+    it('returns updated path with anchors when set', () => {
+      hashState.currentHash = '#something-wonderful';
+      createComponent();
+
+      expect(findPermalinkLinkDropdown().attributes('data-clipboard-text')).toBe(
+        `http://test.host/flightjs/Flight/-/blob/46ca9ebd5a43ec240ee8d64e2bb829169dff744e/bower.json#something-wonderful`,
       );
     });
   });
