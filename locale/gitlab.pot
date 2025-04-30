@@ -66875,6 +66875,9 @@ msgstr ""
 msgid "Vulnerability|A solution is available for this vulnerability"
 msgstr ""
 
+msgid "Vulnerability|Active secret"
+msgstr ""
+
 msgid "Vulnerability|Activity"
 msgstr ""
 
@@ -66992,6 +66995,9 @@ msgstr ""
 msgid "Vulnerability|Image: %{linkStart}%{image}%{linkEnd}"
 msgstr ""
 
+msgid "Vulnerability|Inactive secret"
+msgstr ""
+
 msgid "Vulnerability|Information related to how the vulnerability was discovered and its impact on the system."
 msgstr ""
 
@@ -67002,6 +67008,9 @@ msgid "Vulnerability|Location"
 msgstr ""
 
 msgid "Vulnerability|Namespace:"
+msgstr ""
+
+msgid "Vulnerability|Possibly active secret"
 msgstr ""
 
 msgid "Vulnerability|Project"
