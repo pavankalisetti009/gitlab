@@ -30504,7 +30504,18 @@ Represents an instance-level LDAP link.
 | <a id="ldapadminrolelinkcn"></a>`cn` | [`String`](#string) | Common Name (CN) of the LDAP group. |
 | <a id="ldapadminrolelinkfilter"></a>`filter` | [`String`](#string) | Search filter for the LDAP group. |
 | <a id="ldapadminrolelinkid"></a>`id` | [`ID!`](#id) | ID of the LDAP link. |
-| <a id="ldapadminrolelinkprovider"></a>`provider` | [`String!`](#string) | LDAP provider for the LDAP link. |
+| <a id="ldapadminrolelinkprovider"></a>`provider` | [`LdapProvider!`](#ldapprovider) | LDAP provider for the LDAP link. |
+
+### `LdapProvider`
+
+Represents a LDAP provider.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="ldapproviderid"></a>`id` | [`String`](#string) | ID of the LDAP provider. |
+| <a id="ldapproviderlabel"></a>`label` | [`String`](#string) | Display name of the LDAP provider. |
 
 ### `LfsObjectRegistry`
 

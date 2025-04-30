@@ -117,7 +117,7 @@ export default {
             class="gl-mb-0 gl-grid gl-flex-1 gl-grid-cols-[auto_1fr] gl-gap-x-5 gl-whitespace-nowrap"
           >
             <dt>{{ s__('MemberRole|Server:') }}</dt>
-            <dd class="gl-text-subtle">{{ link.provider }}</dd>
+            <dd class="gl-text-subtle">{{ link.provider.label }}</dd>
 
             <template v-if="link.filter">
               <dt>{{ s__('MemberRole|User filter:') }}</dt>
