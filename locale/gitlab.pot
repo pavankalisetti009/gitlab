@@ -9584,6 +9584,12 @@ msgstr ""
 msgid "BillingPlans|@%{user_name} you are currently using the %{plan_name}."
 msgstr ""
 
+msgid "BillingPlans|AI Chat in the IDE"
+msgstr ""
+
+msgid "BillingPlans|AI Code Suggestions in the IDE"
+msgstr ""
+
 msgid "BillingPlans|Advanced CI/CD"
 msgstr ""
 

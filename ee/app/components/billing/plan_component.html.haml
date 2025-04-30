@@ -29,7 +29,7 @@
   - c.with_footer do
     .gl-font-bold.gl-text-lg.gl-mb-4
       = features_elevator_pitch
-    %ul.gl-px-0.gl-list-none
+    %ul.gl-px-0.gl-list-none{ data: { testid: 'feature-list' } }
       - features.each do |feature|
         %li.gl-text-subtle.gl-leading-20.gl-mb-4
           = sprite_icon('check', css_class: 'gl-text-purple-500 gl-mr-2')
