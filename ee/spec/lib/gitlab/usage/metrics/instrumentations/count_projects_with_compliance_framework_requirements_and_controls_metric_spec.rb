@@ -20,7 +20,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountProjectsWithCompli
     let(:expected_value) { 1 }
     let(:expected_query) do
       <<~SQL.squish
-        SELECT DISTINCT COUNT(DISTINCT "projects"."id")#{' '}
+        SELECT COUNT(DISTINCT "projects"."id")#{' '}
         FROM "projects"
         INNER JOIN "project_compliance_framework_settings"#{' '}
           ON "project_compliance_framework_settings"."project_id" = "projects"."id"

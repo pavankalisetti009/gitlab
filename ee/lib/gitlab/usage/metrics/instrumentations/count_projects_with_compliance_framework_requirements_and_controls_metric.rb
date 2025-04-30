@@ -10,7 +10,6 @@ module Gitlab
           relation do
             ::Project
               .joins(compliance_management_frameworks: { compliance_requirements: :compliance_requirements_controls })
-              .distinct
           end
 
           start { ::Project.minimum(:id) }
