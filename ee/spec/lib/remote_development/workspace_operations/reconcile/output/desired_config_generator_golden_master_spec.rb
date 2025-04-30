@@ -193,8 +193,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             command:
               - "/bin/sh"
               - "-c"
-            memoryLimit: 512Mi
-            memoryRequest: 256Mi
+            memoryLimit: 1000Mi
+            memoryRequest: 500Mi
             cpuLimit: 500m
             cpuRequest: 100m
         - name: gl-workspace-data
@@ -445,11 +445,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                     resources: {
                       limits: {
                         cpu: "500m",
-                        memory: "512Mi"
+                        memory: "1000Mi"
                       },
                       requests: {
                         cpu: "100m",
-                        memory: "256Mi"
+                        memory: "500Mi"
                       }
                     },
                     securityContext: {
@@ -966,11 +966,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                     resources: {
                       limits: {
                         cpu: "500m",
-                        memory: "512Mi"
+                        memory: "1000Mi"
                       },
                       requests: {
                         cpu: "100m",
-                        memory: "256Mi"
+                        memory: "500Mi"
                       }
                     },
                     securityContext: {
