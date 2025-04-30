@@ -17,6 +17,16 @@ module Projects
       @get_started_presenter = ::Onboarding::GetStartedPresenter.new(current_user, project, onboarding_progress)
     end
 
+    def end_tutorial
+      if onboarding_progress.update(ended_at: Time.current)
+        redirect_to project_path(project)
+        flash[:success] = s_("GetStarted|You've ended the tutorial.")
+      else
+        flash[:danger] =
+          s_("GetStarted|There was a problem trying to end the tutorial. Please try again.")
+      end
+    end
+
     private
 
     def onboarding_progress
@@ -27,7 +37,7 @@ module Projects
     end
 
     def verify_available!
-      unless ::Feature.enabled?(:learn_gitlab_redesign, @project.namespace) &&
+      unless ::Feature.enabled?(:learn_gitlab_redesign, project.namespace) &&
           ::Onboarding::LearnGitlab.available?(project.namespace, current_user)
         access_denied!
       end
