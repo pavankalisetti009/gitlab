@@ -30,12 +30,6 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
         create(:namespace_ban, namespace: group, user: banned_member.user)
       end
 
-      it 'pushes feature flag to frontend' do
-        get_group_members
-
-        expect(response.body).to have_pushed_frontend_feature_flags(limitUniqueProjectDownloadsPerNamespaceUser: true)
-      end
-
       it 'sets @banned to include banned group members' do
         get_group_members
 
@@ -64,14 +58,6 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
 
       context 'when licensed feature is not available' do
         let(:licensed_feature_available) { false }
-
-        it_behaves_like 'assigns @banned and @members correctly'
-      end
-
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(limit_unique_project_downloads_per_namespace_user: false)
-        end
 
         it_behaves_like 'assigns @banned and @members correctly'
       end
@@ -159,7 +145,6 @@ RSpec.describe Groups::GroupMembersController, feature_category: :groups_and_pro
     end
 
     before do
-      stub_feature_flags(limit_unique_project_downloads_per_namespace_user: true)
       stub_licensed_features(unique_project_download_limit: true)
     end
 

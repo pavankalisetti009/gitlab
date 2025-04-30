@@ -28,7 +28,6 @@ RSpec.describe Users::Abuse::ProjectsDownloadBanCheckService, feature_category: 
     end
 
     context 'when application-level OR namespace-level projects download throttling is configured' do
-      let(:feature_flag_state) { true }
       let(:licensed_feature_state) { true }
       let(:service_response) { { banned: true } }
 
@@ -77,18 +76,11 @@ RSpec.describe Users::Abuse::ProjectsDownloadBanCheckService, feature_category: 
 
       context 'when namespace-level projects download throttling is configured' do
         before do
-          stub_feature_flags(limit_unique_project_downloads_per_namespace_user: feature_flag_state)
           stub_licensed_features(unique_project_download_limit: licensed_feature_state)
 
           allow_next_instance_of(Users::Abuse::GitAbuse::NamespaceThrottleService, project, user) do |service|
             allow(service).to receive(:execute).and_return(service_response)
           end
-        end
-
-        context 'when feature flag is disabled' do
-          let(:feature_flag_state) { false }
-
-          it { is_expected.to be_success }
         end
 
         it_behaves_like 'uses the result of the configured projects download throttle service'

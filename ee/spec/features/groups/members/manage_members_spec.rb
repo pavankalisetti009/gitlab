@@ -317,18 +317,6 @@ RSpec.describe 'Groups > Members > Manage members', :js, feature_category: :grou
       expect(page).not_to have_content('Banned')
     end
 
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(limit_unique_project_downloads_per_namespace_user: false)
-      end
-
-      it 'owner cannot see banned users' do
-        visit group_group_members_path(group)
-
-        expect(page).not_to have_content('Banned')
-      end
-    end
-
     context 'when licensed feature is not available' do
       let(:licensed_feature_available) { false }
 
@@ -382,14 +370,6 @@ RSpec.describe 'Groups > Members > Manage members', :js, feature_category: :grou
 
     context 'when non-owner' do
       let(:current_user) { group_member }
-
-      it_behaves_like 'action is not available'
-    end
-
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(limit_unique_project_downloads_per_namespace_user: false)
-      end
 
       it_behaves_like 'action is not available'
     end

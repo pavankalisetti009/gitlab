@@ -3598,23 +3598,15 @@ RSpec.describe Group, feature_category: :groups_and_projects do
   describe '#unique_project_download_limit_enabled?' do
     let_it_be(:group) { create(:group) }
 
-    let(:feature_flag_enabled) { true }
     let(:licensed_feature_available) { true }
 
     before do
-      stub_feature_flags(limit_unique_project_downloads_per_namespace_user: feature_flag_enabled)
       stub_licensed_features(unique_project_download_limit: licensed_feature_available)
     end
 
     subject { group.unique_project_download_limit_enabled? }
 
     it { is_expected.to eq true }
-
-    context 'when feature flag is disabled' do
-      let(:feature_flag_enabled) { false }
-
-      it { is_expected.to eq false }
-    end
 
     context 'when licensed feature is not available' do
       let(:licensed_feature_available) { false }

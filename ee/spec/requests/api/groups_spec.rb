@@ -485,16 +485,12 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         end
 
         before do
-          stub_feature_flags(limit_unique_project_downloads_per_namespace_user: flag_enabled)
           stub_licensed_features(unique_project_download_limit: feature_available)
-
           group.add_owner(user)
-
           subject
         end
 
-        context 'when feature flag enabled and feature available' do
-          let(:flag_enabled) { true }
+        context 'when feature is available' do
           let(:feature_available) { true }
 
           it 'updates the attributes as expected' do
@@ -509,15 +505,9 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
           end
         end
 
-        using RSpec::Parameterized::TableSyntax
+        context 'when feature is not available' do
+          let(:feature_available) { false }
 
-        where(:flag_enabled, :feature_available) do
-          true  | false
-          false | true
-          false | false
-        end
-
-        with_them do
           it 'does not update the attributes' do
             settings = group.namespace_settings.reload
 

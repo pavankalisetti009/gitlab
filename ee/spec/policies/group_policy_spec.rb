@@ -3291,14 +3291,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         it { is_expected.to be_disallowed(:read_group) }
       end
 
-      context 'when the limit_unique_project_downloads_per_namespace_user feature flag is disabled' do
-        before do
-          stub_feature_flags(limit_unique_project_downloads_per_namespace_user: false)
-        end
-
-        it { is_expected.to be_allowed(:read_group) }
-      end
-
       context 'when licensed feature unique_project_download_limit is not available' do
         before do
           stub_licensed_features(unique_project_download_limit: false)

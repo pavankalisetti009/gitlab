@@ -6,11 +6,9 @@ RSpec.describe Groups::Settings::ReportingController, type: :request, feature_ca
   let_it_be(:user) { create(:user) }
 
   let(:group) { create(:group) }
-  let(:feature_flag_enabled) { true }
   let(:licensed_feature_available) { true }
 
   before do
-    stub_feature_flags(limit_unique_project_downloads_per_namespace_user: feature_flag_enabled)
     stub_licensed_features(unique_project_download_limit: licensed_feature_available)
 
     sign_in(user)
@@ -25,12 +23,6 @@ RSpec.describe Groups::Settings::ReportingController, type: :request, feature_ca
   shared_examples '404 when feature is unavailable' do
     before do
       subject
-    end
-
-    context 'when feature flag is disabled' do
-      let(:feature_flag_enabled) { false }
-
-      it_behaves_like 'renders 404'
     end
 
     context 'when licensed feature is not available' do
