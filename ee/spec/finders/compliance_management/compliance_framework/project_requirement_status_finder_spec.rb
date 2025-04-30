@@ -150,6 +150,74 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
             expect(finder_response.to_a).to eq([requirement_status3])
           end
         end
+
+        context 'with order_by parameter' do
+          context 'when order_by is project' do
+            let(:params) { { order_by: 'project' } }
+
+            it 'returns requirement statuses ordered by project_id' do
+              expect(finder_response).to eq([
+                requirement_status1,
+                requirement_status2,
+                requirement_status3,
+                requirement_status4,
+                requirement_status5,
+                requirement_status6,
+                requirement_status7
+              ])
+            end
+          end
+
+          context 'when order_by is requirement' do
+            let(:params) { { order_by: 'requirement' } }
+
+            it 'returns requirement statuses ordered by requirement_id' do
+              expect(finder_response).to eq([
+                requirement_status1,
+                requirement_status3,
+                requirement_status5,
+                requirement_status2,
+                requirement_status4,
+                requirement_status6,
+                requirement_status7
+              ])
+            end
+          end
+
+          context 'when order_by is framework' do
+            let(:params) { { order_by: 'framework' } }
+
+            it 'returns requirement statuses ordered by framework_id' do
+              expect(finder_response).to eq([
+                requirement_status1,
+                requirement_status2,
+                requirement_status3,
+                requirement_status4,
+                requirement_status5,
+                requirement_status6,
+                requirement_status7
+              ])
+            end
+          end
+
+          context 'with no order_by parameter' do
+            let(:params) { {} }
+
+            it 'returns requirement statuses ordered by updated_at and id descending (default)' do
+              expect(finder_response.to_a).to eq([requirement_status7, requirement_status5, requirement_status4,
+                requirement_status3, requirement_status2, requirement_status1, requirement_status6])
+            end
+          end
+
+          context 'with invalid order_by parameter' do
+            let(:params) { { order_by: 'invalid' } }
+
+            it 'falls back to default ordering by updated_at and id descending' do
+              expect(finder_response.to_a).to eq([requirement_status7, requirement_status5, requirement_status4,
+                requirement_status3, requirement_status2, requirement_status1, requirement_status6])
+            end
+          end
+        end
       end
     end
   end

@@ -25,6 +25,13 @@ module ComplianceManagement
       validate :validate_associations
 
       scope :order_by_updated_at_and_id, ->(direction = :asc) { order(updated_at: direction, id: direction) }
+      scope :order_by_project_and_id, ->(direction = :asc) { order(project_id: direction, id: direction) }
+      scope :order_by_requirement_and_id, ->(direction = :asc) {
+        order(compliance_requirement_id: direction, id: direction)
+      }
+      scope :order_by_framework_and_id, ->(direction = :asc) {
+        order(compliance_framework_id: direction, id: direction)
+      }
 
       scope :in_optimization_array_mapping_scope, ->(id_expression) {
         where(arel_table[:namespace_id].eq(id_expression))

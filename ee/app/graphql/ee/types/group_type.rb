@@ -353,7 +353,7 @@ module EE
         field :project_compliance_requirements_status,
           ::Types::ComplianceManagement::ComplianceFramework::ProjectRequirementStatusType.connection_type,
           null: true,
-          description: 'Compliance standards adherence for the projects in a group and its subgroups.',
+          description: 'Compliance statuses for the projects in a group and its subgroups.',
           resolver: ::Resolvers::ComplianceManagement::ComplianceFramework::GroupProjectRequirementStatusResolver,
           authorize: :read_compliance_adherence_report,
           experiment: { milestone: '17.10' }
