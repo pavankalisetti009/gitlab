@@ -19,7 +19,7 @@
 
   .btn {
     padding: $gl-vert-padding $gl-btn-padding;
-    border-radius: $gl-border-radius-base;
+    @apply gl-rounded-base;
     display: block;
     line-height: $line-height-base;
   }

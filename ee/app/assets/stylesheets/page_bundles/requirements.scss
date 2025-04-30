@@ -76,7 +76,7 @@
 #export-requirements {
   .scrollbox {
     border: 1px solid var(--gray-200, $gray-200);
-    border-radius: $gl-border-radius-base;
+    @apply gl-rounded-base;
     position: relative;
 
     .scrollbox-header {
@@ -95,7 +95,7 @@
       width: 100%;
       background-image: linear-gradient(180deg, transparent 0%, $white 100%);
       z-index: 1;
-      border-radius: $gl-border-radius-base;
+      @apply gl-rounded-base;
     }
   }
 

@@ -16,7 +16,7 @@
     background-color: var(--timeline-entry-draft-note-background-color) !important;
     padding: $gl-spacing-scale-2 $gl-spacing-scale-3;
     margin-left: $gl-spacing-scale-8;
-    border-radius: $gl-border-radius-base;
+    @apply gl-rounded-base;
   }
 }
 
