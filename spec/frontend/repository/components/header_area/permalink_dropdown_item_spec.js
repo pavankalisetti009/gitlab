@@ -71,9 +71,14 @@ describe('PermalinkDropdownItem', () => {
     it('triggers copy permalink when shortcut is used', async () => {
       const clickSpy = jest.spyOn(findPermalinkLinkDropdown().element, 'click');
 
-      Mousetrap.trigger('y');
+      const mousetrapInstance = wrapper.vm.mousetrap;
+
+      const triggerSpy = jest.spyOn(mousetrapInstance, 'trigger');
+      mousetrapInstance.trigger('y');
+
       await nextTick();
 
+      expect(triggerSpy).toHaveBeenCalledWith('y');
       expect(clickSpy).toHaveBeenCalled();
       expect(mockToastShow).toHaveBeenCalledWith('Permalink copied to clipboard.');
     });
@@ -81,8 +86,8 @@ describe('PermalinkDropdownItem', () => {
 
   describe('lifecycle hooks', () => {
     it('binds and unbinds Mousetrap shortcuts', () => {
-      const bindSpy = jest.spyOn(Mousetrap, 'bind');
-      const unbindSpy = jest.spyOn(Mousetrap, 'unbind');
+      const bindSpy = jest.spyOn(Mousetrap.prototype, 'bind');
+      const unbindSpy = jest.spyOn(Mousetrap.prototype, 'unbind');
 
       createComponent();
       expect(bindSpy).toHaveBeenCalledWith(
