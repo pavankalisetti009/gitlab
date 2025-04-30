@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'groups/settings/_permissions.html.haml', :saas, feature_category: :code_suggestions do
+RSpec.describe 'groups/settings/_permissions.html.haml', :aggregate_failures, :saas, feature_category: :code_suggestions do
   let_it_be(:group) { build(:group, namespace_settings: build(:namespace_settings)) }
 
   before do
@@ -115,32 +115,6 @@ RSpec.describe 'groups/settings/_permissions.html.haml', :saas, feature_category
           s_('GroupSettings|Add additional webhook triggers for group access token expiration')
         )
         expect(rendered).to have_unchecked_field(checkbox_label, type: 'checkbox')
-      end
-    end
-  end
-
-  context 'for require dpop for manage api endpoint setting' do
-    let_it_be(:checkbox_label) { s_('GroupSettings|Enforce DPoP authentication for manage API endpoints for group') }
-
-    it 'renders checkbox', :aggregate_failures do
-      render
-
-      expect(rendered).to render_template('groups/settings/_require_dpop_for_manage_api_endpoints')
-      expect(rendered).to have_content(checkbox_label)
-      expect(rendered).to have_checked_field(checkbox_label, type: 'checkbox')
-    end
-
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(manage_pat_by_group_owners_ready: false)
-      end
-
-      it 'renders nothing', :aggregate_failures do
-        render
-
-        expect(rendered).to render_template('groups/settings/_require_dpop_for_manage_api_endpoints')
-        expect(rendered).not_to have_content(checkbox_label)
-        expect(rendered).not_to have_checked_field(checkbox_label, type: 'checkbox')
       end
     end
   end
