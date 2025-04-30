@@ -35,14 +35,6 @@ module Types
       field :workspaces_per_user_quota, GraphQL::Types::Int, # rubocop:disable GraphQL/ExtractType -- We don't want to extract this to a type, it's just an integer field
         null: false, description: 'Maximum number of workspaces per user.'
 
-      field :default_max_hours_before_termination, GraphQL::Types::Int, null: false,
-        description: 'Default max hours before workspace termination of the workspaces agent config.',
-        deprecated: { reason: 'Field is not used', milestone: '17.9' }
-
-      field :max_hours_before_termination_limit, GraphQL::Types::Int, null: false,
-        description: 'Max hours before workspace termination limit of the workspaces agent config.',
-        deprecated: { reason: 'Field is not used', milestone: '17.9' }
-
       field :allow_privilege_escalation, GraphQL::Types::Boolean,
         null: false, description: 'Allow privilege escalation.'
 
@@ -79,16 +71,6 @@ module Types
 
       field :updated_at, Types::TimeType, null: false,
         description: 'Timestamp of the last update to any mutable workspaces agent config property.'
-
-      # @return [Integer]
-      def max_hours_before_termination_limit
-        120
-      end
-
-      # @return [Integer]
-      def default_max_hours_before_termination
-        24
-      end
     end
   end
 end
