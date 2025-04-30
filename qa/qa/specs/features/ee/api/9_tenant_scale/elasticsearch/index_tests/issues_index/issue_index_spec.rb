@@ -30,14 +30,13 @@ module QA
         ) do
           response = Support::API.get(Runtime::Search.create_search_request(api_client, 'issues',
             issue.description).url)
+
+          expect(response.code).to eq(QA::Support::API::HTTP_STATUS_OK)
           response_body = parse_body(response)
 
-          aggregate_failures do
-            expect(response.code).to eq(QA::Support::API::HTTP_STATUS_OK)
-            expect(response_body).not_to be_empty
-            expect(response_body[0][:description]).to eq(issue.description)
-            expect(response_body[0][:project_id]).to equal(issue.project.id)
-          end
+          expect(response_body).not_to be_empty, "Expected an issue to be returned from request to /search"
+          expect(response_body[0][:description]).to eq(issue.description)
+          expect(response_body[0][:project_id]).to equal(issue.project.id)
         end
       end
     end

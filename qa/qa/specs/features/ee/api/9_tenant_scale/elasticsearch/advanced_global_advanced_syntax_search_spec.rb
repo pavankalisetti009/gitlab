@@ -55,11 +55,8 @@ module QA
           expect(response.code).to eq(Support::API::HTTP_STATUS_OK)
           response_body = parse_body(response)
 
-          aggregate_failures do
-            expect(response.code).to eq(QA::Support::API::HTTP_STATUS_OK)
-            expect(response_body).not_to be_empty
-            expect(response_body[0][:name]).to eq(project.name)
-          end
+          expect(response_body).not_to be_empty, "Expected a project to be returned from request to /search"
+          expect(response_body[0][:name]).to eq(project.name)
         end
       end
     end
