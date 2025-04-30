@@ -15,7 +15,7 @@ RSpec.shared_examples 'skips sending requests to the SDS' do
   it 'does not create the SDS client' do
     expect(::Gitlab::SecretDetection::GRPC::Client).not_to receive(:new)
 
-    msg = format(described_class::LOG_MESSAGES[:sds_disabled],
+    msg = format(::Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClient::LOG_MESSAGES[:sds_disabled],
       {
         sds_ff_enabled: sds_ff_enabled,
         saas_feature_enabled: saas_feature_enabled,
@@ -27,7 +27,7 @@ RSpec.shared_examples 'skips sending requests to the SDS' do
     expect(logged_messages[:info]).to include(
       hash_including(
         "message" => msg,
-        "class" => "Gitlab::Checks::SecretsCheck"
+        "class" => "Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClient"
       ),
       hash_including(
         "message" => log_messages[:secrets_not_found],

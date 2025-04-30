@@ -13,12 +13,9 @@ module Gitlab
 
       LOG_MESSAGES = {
         secrets_check: 'Detecting secrets...',
-        invalid_encoding: "Could not convert data to UTF-8 from %{encoding}",
-        sds_disabled: "SDS is disabled: FF: %{sds_ff_enabled}, SaaS: %{saas_feature_enabled}, " \
-                      "Non-Dedicated: %{is_not_dedicated}"
+        invalid_encoding: "Could not convert data to UTF-8 from %{encoding}"
       }.freeze
 
-      # rubocop:disable Metrics/AbcSize -- This will be refactored in this epic (https://gitlab.com/groups/gitlab-org/-/epics/16376)
       def validate!
         eligibility_checker = Gitlab::Checks::SecretPushProtection::EligibilityChecker.new(
           project: project,
@@ -30,24 +27,9 @@ module Gitlab
 
         return unless use_diff_scan?
 
-        if use_secret_detection_service?
-          sds_host = ::Gitlab::CurrentSettings.current_application_settings.secret_detection_service_url
-          @sds_auth_token = ::Gitlab::CurrentSettings.current_application_settings.secret_detection_service_auth_token
-
-          unless sds_host.blank?
-            begin
-              @sds_client =
-                ::Gitlab::SecretDetection::GRPC::Client.new(
-                  sds_host,
-                  secure: !sds_auth_token.blank?,
-                  logger: secret_detection_logger
-                )
-            rescue StandardError => e # Currently we want to catch and simply log errors
-              @sds_client = nil
-              ::Gitlab::ErrorTracking.track_exception(e)
-            end
-          end
-        end
+        sds_service = Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClient.new(
+          project: project
+        )
 
         thread = nil
 
@@ -59,17 +41,15 @@ module Gitlab
           )
           payloads = processor.standardize_payloads
 
-          if use_secret_detection_service?
-            thread = Thread.new do
-              # This is to help identify the thread in case of a crash
-              Thread.current.name = "secrets_check"
+          thread = Thread.new do
+            Thread.current.name = "secrets_check"
+            Thread.current.abort_on_exception = false
+            Thread.current.report_on_exception = false
 
-              # All the code run in the thread handles exceptions so we can leave these off
-              Thread.current.abort_on_exception = false
-              Thread.current.report_on_exception = false
-
-              send_request_to_sds(payloads, exclusions: exclusions_manager.active_exclusions)
-            end
+            sds_service.send_request_to_sds(
+              payloads,
+              exclusions: exclusions_manager.active_exclusions
+            )
           end
 
           # Pass payloads to gem for scanning.
@@ -107,11 +87,8 @@ module Gitlab
           thread&.exit
         end
       end
-      # rubocop:enable Metrics/AbcSize
 
       private
-
-      attr_reader :sds_client, :sds_auth_token
 
       ##############################
       # Helpers
@@ -123,26 +100,6 @@ module Gitlab
       end
 
       strong_memoize_attr :ruleset
-
-      ##############################
-      # Project Eligibility Checks
-
-      def use_secret_detection_service?
-        return @should_use_sds unless @should_use_sds.nil?
-
-        sds_ff_enabled = Feature.enabled?(:use_secret_detection_service, project)
-        saas_feature_enabled = ::Gitlab::Saas.feature_available?(:secret_detection_service)
-        is_not_dedicated = !::Gitlab::CurrentSettings.gitlab_dedicated_instance
-
-        @should_use_sds = sds_ff_enabled && saas_feature_enabled && is_not_dedicated
-
-        unless @should_use_sds
-          msg = format(LOG_MESSAGES[:sds_disabled], { sds_ff_enabled:, saas_feature_enabled:, is_not_dedicated: })
-          secret_detection_logger.info(build_structured_payload(message: msg))
-        end
-
-        @should_use_sds
-      end
 
       ###############
       # Scan Checks
@@ -193,53 +150,6 @@ module Gitlab
         @exclusions_manager ||= ::Gitlab::Checks::SecretPushProtection::ExclusionsManager.new(
           project: project,
           audit_logger: audit_logger
-        )
-      end
-
-      ##############
-      # GRPC Client Helpers
-
-      def send_request_to_sds(payloads, exclusions: {})
-        return if sds_client.nil?
-
-        request = build_sds_request(payloads, exclusions: exclusions)
-
-        # ignore the response for now
-        _ = sds_client.run_scan(request: request, auth_token: sds_auth_token)
-      rescue StandardError => e # Currently we want to catch and simply log errors
-        ::Gitlab::ErrorTracking.track_exception(e)
-      end
-
-      # Build the list of gRPC Exclusion objects
-      def build_exclusions(exclusions: {})
-        exclusion_ary = []
-
-        # exclusions are a hash of {string, array} pairs where the keys
-        # are exclusion types like raw_value or path
-        exclusions.each_key do |key|
-          exclusions[key].inject(exclusion_ary) do |array, exclusion|
-            type = ::Gitlab::Checks::SecretPushProtection::ExclusionsManager::EXCLUSION_TYPE_MAP.fetch(
-              exclusion.type.to_sym,
-              ::Gitlab::Checks::SecretPushProtection::ExclusionsManager::EXCLUSION_TYPE_MAP[:unknown])
-
-            array << ::Gitlab::SecretDetection::GRPC::Exclusion.new(
-              exclusion_type: type,
-              value: exclusion.value
-            )
-          end
-        end
-
-        exclusion_ary
-      end
-
-      # Puts the entire gRPC request object together
-      def build_sds_request(payloads, exclusions: {}, tags: [])
-        exclusion_ary = build_exclusions(exclusions:)
-
-        ::Gitlab::SecretDetection::GRPC::ScanRequest.new(
-          payloads: payloads,
-          exclusions: exclusion_ary,
-          tags: tags
         )
       end
     end
