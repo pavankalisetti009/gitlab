@@ -132,14 +132,9 @@ export default {
     bottomReached() {
       if (this.isLoading) return;
 
-      const variables = {
-        after: this.pageInfo.endCursor,
-        ...this.queryVariables,
-      };
-
       this.$apollo.queries.versions
         .fetchMore({
-          variables,
+          variables: { after: this.pageInfo.endCursor },
           updateQuery(previousResult, { fetchMoreResult }) {
             return produce(fetchMoreResult, (draftData) => {
               draftData.namespace.componentVersions.nodes = [
