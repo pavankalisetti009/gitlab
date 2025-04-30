@@ -21,7 +21,7 @@ Broadcast messages can be managed using the [broadcast messages API](../api/broa
 
 {{< alert type="warning" >}}
 
-All broadcast messages are publicly accessible through the REST API, regardless of path or role scoping. Do not include sensitive or confidential information in broadcast messages.
+Broadcast messages are publicly accessible through the API regardless of targeting settings. Do not include sensitive or confidential information, and do not use broadcast messages to communicate private information to specific groups or projects.
 
 {{< /alert >}}
 
