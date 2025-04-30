@@ -56,9 +56,7 @@
     "created_at": {
       "type": "date-time"
     },
-    "location": {
-      "type": "object"
-    },
+    "location": true,
     "related_issues": {
       "type": "array",
       "items": {
