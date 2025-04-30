@@ -75,7 +75,7 @@ export default {
     data-testid="panel"
   >
     <div
-      class="gl-relative gl-h-full gl-border-r-1 gl-border-gray-100 gl-pr-5 gl-pt-5 gl-border-r-solid"
+      class="gl-relative gl-h-full gl-border-r-1 gl-border-gray-100 gl-pr-2 gl-pt-5 gl-border-r-solid"
     >
       <local-storage-sync
         v-model="panelWidth"
@@ -89,29 +89,31 @@ export default {
         @update:size="onSizeUpdate"
       />
 
-      <div
-        class="gl-flex gl-h-8 gl-cursor-pointer gl-items-center gl-gap-4 gl-rounded-base gl-px-3 hover:!gl-bg-gray-100"
-        :class="{ 'gl-bg-neutral-50': isActiveGroup }"
-        @click="selectSubgroup(group.fullPath)"
-      >
-        <project-avatar
-          :project-name="group.name"
-          :project-avatar-url="group.avatarUrl"
-          :size="24"
-        />
+      <div class="gl-h-screen gl-overflow-auto gl-pr-3">
         <div
-          v-tooltip-on-truncate="group.name"
-          class="gl-grow gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
+          class="gl-flex gl-h-8 gl-cursor-pointer gl-items-center gl-gap-4 gl-rounded-base gl-px-3 hover:!gl-bg-gray-100"
+          :class="{ 'gl-bg-neutral-50': isActiveGroup }"
+          @click="selectSubgroup(group.fullPath)"
         >
-          {{ group.name }}
+          <project-avatar
+            :project-name="group.name"
+            :project-avatar-url="group.avatarUrl"
+            :size="24"
+          />
+          <div
+            v-tooltip-on-truncate="group.name"
+            class="gl-grow gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
+          >
+            {{ group.name }}
+          </div>
         </div>
-      </div>
 
-      <group-list
-        :group-full-path="groupFullPath"
-        :active-full-path="activeFullPath"
-        @selectSubgroup="selectSubgroup"
-      />
+        <group-list
+          :group-full-path="groupFullPath"
+          :active-full-path="activeFullPath"
+          @selectSubgroup="selectSubgroup"
+        />
+      </div>
     </div>
   </div>
 </template>

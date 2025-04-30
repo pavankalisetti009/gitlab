@@ -120,6 +120,10 @@ export const groupWithSubgroups = {
             fullPath: 'a-group/empty-subgroup',
           },
         ],
+        pageInfo: {
+          hasNextPage: true,
+          endCursor: 'END_CURSOR',
+        },
       },
     },
   },

@@ -114,7 +114,7 @@ export default {
 <template>
   <div class="gl-mt-5">
     <div
-      class="gl-w-full gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-bg-neutral-10 gl-border-b-solid gl-border-t-solid"
+      class="gl-w-full gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-bg-subtle gl-border-b-solid gl-border-t-solid"
     >
       <gl-button icon="sidebar" icon-only class="gl-m-3" @click="toggleSidebar()" />
     </div>

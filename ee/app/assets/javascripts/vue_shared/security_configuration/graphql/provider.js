@@ -31,11 +31,53 @@ export const typePolicies = {
   },
 };
 
+const appendGroupsTypePolicies = {
+  Group: {
+    fields: {
+      descendantGroups: {
+        read(cachedData) {
+          return cachedData;
+        },
+        merge(existing, incoming) {
+          if (!incoming) return existing;
+          if (!existing) return incoming;
+
+          return {
+            ...incoming,
+            nodes: [
+              ...existing.nodes,
+              ...incoming.nodes.filter(
+                (incomingNode) =>
+                  // eslint-disable-next-line no-underscore-dangle
+                  !existing.nodes.find((existingNode) => existingNode.__ref === incomingNode.__ref),
+              ),
+            ],
+          };
+        },
+      },
+    },
+  },
+};
+
 export const defaultClient = createDefaultClient(resolvers, {
   cacheConfig: { typePolicies },
   typeDefs,
 });
 
+const appendGroupsClient = createDefaultClient(resolvers, {
+  cacheConfig: {
+    typePolicies: {
+      ...typePolicies,
+      ...appendGroupsTypePolicies,
+    },
+    typeDefs,
+  },
+});
+
 export default new VueApollo({
+  clients: {
+    defaultClient,
+    appendGroupsClient,
+  },
   defaultClient,
 });

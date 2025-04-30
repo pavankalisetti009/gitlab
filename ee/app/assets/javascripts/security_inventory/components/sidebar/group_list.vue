@@ -1,10 +1,13 @@
 <script>
+import { GlIntersectionObserver, GlLoadingIcon } from '@gitlab/ui';
 import SubgroupsQuery from '../../graphql/subgroups.query.graphql';
 import ExpandableGroup from './expandable_group.vue';
 
 export default {
   components: {
     ExpandableGroup,
+    GlIntersectionObserver,
+    GlLoadingIcon,
   },
   props: {
     groupFullPath: {
@@ -29,11 +32,14 @@ export default {
           nodes: [],
         },
       },
+      loading: false,
+      scrolledToEndWithNextPage: false,
     };
   },
   apollo: {
     group: {
       query: SubgroupsQuery,
+      client: 'appendGroupsClient',
       variables() {
         return {
           fullPath: this.groupFullPath,
@@ -41,9 +47,31 @@ export default {
       },
     },
   },
+  computed: {
+    hasNextPage() {
+      return this.group.descendantGroups.pageInfo?.hasNextPage;
+    },
+  },
   methods: {
     selectSubgroup(subgroupFullPath) {
       this.$emit('selectSubgroup', subgroupFullPath);
+    },
+    async fetchMoreSubgroups() {
+      if (!this.hasNextPage) return;
+      this.loading = true;
+      await this.$apollo.queries.group.fetchMore({
+        variables: {
+          after: this.group.descendantGroups.pageInfo?.endCursor,
+        },
+      });
+      this.loading = false;
+
+      if (this.scrolledToEndWithNextPage) {
+        this.fetchMoreSubgroups();
+      }
+    },
+    checkScrolledToEnd(observer) {
+      this.scrolledToEndWithNextPage = this.hasNextPage && observer.isIntersecting;
     },
   },
 };
@@ -58,5 +86,8 @@ export default {
       :indentation="indentation"
       @selectSubgroup="selectSubgroup"
     />
+    <gl-intersection-observer @appear="fetchMoreSubgroups" @update="checkScrolledToEnd">
+      <gl-loading-icon v-if="loading" />
+    </gl-intersection-observer>
   </div>
 </template>
