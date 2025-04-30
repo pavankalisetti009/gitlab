@@ -8,6 +8,7 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
   before do
     stub_licensed_features(external_audit_events: true)
     stub_feature_flags(stream_audit_events_from_new_tables: false)
+    stub_feature_flags(disable_audit_event_streaming: false)
   end
 
   shared_context 'a successful audit event stream' do
@@ -291,6 +292,20 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
     end
   end
 
+  shared_examples 'audit event streaming is disabled' do
+    before do
+      stub_feature_flags(disable_audit_event_streaming: true)
+    end
+
+    subject { worker.perform('audit_operation', audit_event.id) }
+
+    it 'does not create ExternalDestinationStreamer object' do
+      expect(AuditEvents::ExternalDestinationStreamer).not_to receive(:new)
+
+      subject
+    end
+  end
+
   describe "#perform" do
     context 'when the entity type is a group' do
       it_behaves_like 'a successful audit event stream' do
@@ -303,6 +318,10 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
         let_it_be(:audit_event) { create(:audit_event, :group_event) }
 
         let(:group) { audit_event.entity }
+      end
+
+      it_behaves_like 'audit event streaming is disabled' do
+        let_it_be(:audit_event) { create(:audit_event, :group_event) }
       end
     end
 
@@ -318,12 +337,32 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
         let_it_be(:project) { create(:project, group: group) }
         let_it_be(:audit_event) { create(:audit_event, :project_event, target_project: project) }
       end
+
+      it_behaves_like 'audit event streaming is disabled' do
+        let_it_be(:group) { create(:group) }
+        let_it_be(:project) { create(:project, group: group) }
+        let_it_be(:audit_event) { create(:audit_event, :project_event, target_project: project) }
+      end
     end
 
     context 'when the entity type is a project at a root namespace level' do
       let_it_be(:audit_event) { create(:audit_event, :project_event) }
 
       it_behaves_like 'no HTTP calls are made'
+
+      context 'when feature flag disable_audit_event_streaming is enabled' do
+        before do
+          stub_feature_flags(disable_audit_event_streaming: true)
+        end
+
+        subject { worker.perform('audit_operation', audit_event.id) }
+
+        it 'creates ExternalDestinationStreamer object' do
+          expect(AuditEvents::ExternalDestinationStreamer).to receive(:new).and_call_original
+
+          subject
+        end
+      end
     end
 
     context 'when the entity is a NullEntity' do
@@ -334,6 +373,20 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
       end
 
       it_behaves_like 'no HTTP calls are made'
+
+      context 'when feature flag disable_audit_event_streaming is enabled' do
+        before do
+          stub_feature_flags(disable_audit_event_streaming: true)
+        end
+
+        subject { worker.perform('audit_operation', audit_event.id) }
+
+        it 'creates ExternalDestinationStreamer object' do
+          expect(AuditEvents::ExternalDestinationStreamer).to receive(:new).and_call_original
+
+          subject
+        end
+      end
 
       context 'when root_group_entity_id is passed in audit event json' do
         let(:group) { create(:group) }
@@ -348,6 +401,8 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
         subject { worker.perform(event_name, nil, audit_event.to_json(methods: [:root_group_entity_id])) }
 
         include_context 'audit event stream'
+
+        it_behaves_like 'audit event streaming is disabled'
       end
     end
 
@@ -372,6 +427,20 @@ RSpec.describe AuditEvents::AuditEventStreamingWorker, feature_category: :audit_
         subject { worker.perform('audit_operation', nil, audit_event.to_json) }
 
         it_behaves_like 'no HTTP calls are made'
+      end
+
+      context 'when feature flag disable_audit_event_streaming is enabled' do
+        before do
+          stub_feature_flags(disable_audit_event_streaming: true)
+        end
+
+        subject { worker.perform('audit_operation', audit_event.id) }
+
+        it 'creates ExternalDestinationStreamer object' do
+          expect(AuditEvents::ExternalDestinationStreamer).to receive(:new).and_call_original
+
+          subject
+        end
       end
     end
 

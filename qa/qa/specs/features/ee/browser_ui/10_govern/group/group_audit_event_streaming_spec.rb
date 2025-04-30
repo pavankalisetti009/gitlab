@@ -23,6 +23,10 @@ module QA
         Runtime::ApplicationSettings.enable_local_requests
       end
 
+      before do
+        Runtime::Feature.disable(:disable_audit_event_streaming)
+      end
+
       context 'with no destination' do
         let(:event_types) { %w[create_compliance_framework] }
         let(:headers) do
