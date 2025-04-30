@@ -254,35 +254,32 @@ export default {
 
 <template>
   <div>
-    <div class="gl-flex gl-flex-wrap gl-justify-between gl-py-3 sm:gl-flex-nowrap">
-      <div class="gl-min-w-0 gl-grow gl-flex-col">
-        <title-area :title="title">
-          <template #metadata-versions-count>
-            <div
-              v-if="showCreatedDetail"
-              class="detail-page-header-body gl-flex-wrap gl-gap-x-2"
-              data-testid="metadata"
-            >
-              <gl-icon name="machine-learning" />
-              <gl-sprintf :message="createdMessage">
-                <template #timeAgo>
-                  <time-ago-tooltip :time="modelVersion.createdAt" />
-                </template>
-                <template #author>
-                  <gl-link
-                    class="js-user-link gl-font-bold !gl-text-subtle"
-                    :href="author.webUrl"
-                    :data-user-id="authorId"
-                  >
-                    <span class="sm:gl-inline">{{ author.name }}</span>
-                  </gl-link>
-                </template>
-              </gl-sprintf>
-            </div>
-          </template>
-        </title-area>
-      </div>
-      <div class="gl-mt-3 gl-flex gl-items-start gl-gap-3">
+    <title-area :title="title">
+      <template #metadata-versions-count>
+        <div
+          v-if="showCreatedDetail"
+          class="detail-page-header-body gl-flex-wrap gl-gap-x-2"
+          data-testid="metadata"
+        >
+          <gl-icon name="machine-learning" />
+          <gl-sprintf :message="createdMessage">
+            <template #timeAgo>
+              <time-ago-tooltip :time="modelVersion.createdAt" />
+            </template>
+            <template #author>
+              <gl-link
+                class="js-user-link gl-font-bold !gl-text-subtle"
+                :href="author.webUrl"
+                :data-user-id="authorId"
+              >
+                <span class="sm:gl-inline">{{ author.name }}</span>
+              </gl-link>
+            </template>
+          </gl-sprintf>
+        </div>
+      </template>
+
+      <template #right-actions>
         <gl-button
           v-if="canWriteModelRegistry"
           data-testid="edit-model-version-button"
@@ -294,8 +291,8 @@ export default {
           :model-version="modelWithModelVersion"
           @delete-model-version="deleteModelVersion"
         />
-      </div>
-    </div>
+      </template>
+    </title-area>
 
     <div class="gl-grid gl-gap-3 md:gl-grid-cols-4">
       <div class="md:gl-col-span-3 md:gl-pr-8">
