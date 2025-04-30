@@ -9,7 +9,10 @@ describe('VariablesSelector', () => {
 
   const createComponent = ({ propsData, stubs = {} } = {}) => {
     wrapper = shallowMountExtended(VariablesSelector, {
-      propsData,
+      propsData: {
+        items: FLAT_LIST_OPTIONS,
+        ...propsData,
+      },
       stubs,
     });
   };
@@ -36,26 +39,6 @@ describe('VariablesSelector', () => {
       createComponent({ propsData: { selected: FLAT_LIST_OPTIONS[0] } });
 
       expect(findListBox().props('selected')).toBe(FLAT_LIST_OPTIONS[0]);
-    });
-
-    it('renders reduced list when variable is already selected', () => {
-      createComponent({
-        propsData: { alreadySelectedItems: [FLAT_LIST_OPTIONS[0], FLAT_LIST_OPTIONS[1]] },
-      });
-
-      expect(findListBox().props('items')).toEqual(listBoxItems.slice(2));
-      expect(findListBox().props('items')).not.toContain(FLAT_LIST_OPTIONS[0]);
-      expect(findListBox().props('items')).not.toContain(FLAT_LIST_OPTIONS[1]);
-    });
-
-    it('does not render default variables as custom', () => {
-      createComponent({
-        propsData: {
-          selected: FLAT_LIST_OPTIONS[0],
-        },
-      });
-
-      expect(findCustomVariableInput().exists()).toBe(false);
     });
   });
 
@@ -108,6 +91,7 @@ describe('VariablesSelector', () => {
       createComponent({
         propsData: {
           selected: CUSTOM_VARIABLE,
+          isCustom: true,
         },
       });
 
@@ -120,6 +104,7 @@ describe('VariablesSelector', () => {
         propsData: {
           hasValidationError: true,
           selected: CUSTOM_VARIABLE,
+          isCustom: true,
         },
       });
 
@@ -132,6 +117,7 @@ describe('VariablesSelector', () => {
           hasValidationError: true,
           errorMessage: 'custom message',
           selected: CUSTOM_VARIABLE,
+          isCustom: true,
         },
       });
 

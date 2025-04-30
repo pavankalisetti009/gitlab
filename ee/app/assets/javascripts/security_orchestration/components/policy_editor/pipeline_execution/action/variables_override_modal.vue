@@ -1,7 +1,9 @@
 <script>
+import { difference } from 'lodash';
 import { GlButton, GlModal } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import VariablesSelector from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/variables_selector.vue';
+import { FLAT_LIST_OPTIONS } from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/ci_variable_constants';
 
 export default {
   ACTION_CANCEL: { text: __('Cancel') },
@@ -39,6 +41,9 @@ export default {
     };
   },
   computed: {
+    unselectedItems() {
+      return difference(FLAT_LIST_OPTIONS, this.items);
+    },
     tableHeader() {
       return this.isVariablesOverrideAllowed
         ? this.$options.i18n.tableHeaderDenyList
@@ -90,8 +95,11 @@ export default {
     selectExceptions() {
       this.$emit('select-exceptions', this.items?.filter(Boolean));
     },
-    getAlreadySelectedItems(variable) {
-      return this.selectedExceptions.filter((item) => item !== variable);
+    getItems(variable) {
+      return [variable, ...this.unselectedItems].filter(Boolean);
+    },
+    isCustomVariable(variable) {
+      return Boolean(variable) && !FLAT_LIST_OPTIONS.includes(variable);
     },
     selectException(variable, index) {
       this.items.splice(index, 1, variable);
@@ -135,7 +143,8 @@ export default {
       <variables-selector
         v-for="(variable, index) of selectedExceptions"
         :key="index"
-        :already-selected-items="getAlreadySelectedItems(variable)"
+        :items="getItems(variable)"
+        :is-custom="isCustomVariable(variable)"
         :has-validation-error="isDuplicate(variable)"
         class="gl-mb-3"
         :selected="variable"

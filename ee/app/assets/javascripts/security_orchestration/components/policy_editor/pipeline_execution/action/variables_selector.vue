@@ -1,7 +1,6 @@
 <script>
 import { debounce } from 'lodash';
 import { GlDropdownDivider, GlDropdownItem, GlCollapsibleListbox, GlFormInput } from '@gitlab/ui';
-import { FLAT_LIST_OPTIONS } from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/ci_variable_constants';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import { s__ } from '~/locale';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
@@ -27,10 +26,15 @@ export default {
       required: false,
       default: '',
     },
-    alreadySelectedItems: {
+    items: {
       type: Array,
       required: false,
       default: () => [],
+    },
+    isCustom: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
     hasValidationError: {
       type: Boolean,
@@ -45,28 +49,23 @@ export default {
   },
   data() {
     return {
-      isCustomVariable: Boolean(this.selected) && !FLAT_LIST_OPTIONS.includes(this.selected),
+      isCustomVariable: this.isCustom,
       searchTerm: '',
     };
   },
   computed: {
-    items() {
-      const items = FLAT_LIST_OPTIONS.filter(
-        (value) => !this.alreadySelectedItems.includes(value),
-      ).map((item) => ({ text: item, value: item }));
-
+    listBoxItems() {
+      return this.items.map((item) => ({ text: item, value: item }));
+    },
+    filteredItems() {
       return searchInItemsProperties({
-        items,
+        items: this.listBoxItems,
         properties: ['value'],
         searchQuery: this.searchTerm,
       });
     },
     toggleText() {
-      if (!FLAT_LIST_OPTIONS.includes(this.selected)) {
-        return this.$options.i18n.defaultText;
-      }
-
-      return this.selected;
+      return this.selected || this.$options.i18n.defaultText;
     },
   },
   created() {
@@ -108,7 +107,7 @@ export default {
         fluid-width
         searchable
         class="gl-w-48"
-        :items="items"
+        :items="filteredItems"
         :header-text="$options.i18n.defaultText"
         :selected="selected"
         :toggle-text="toggleText"

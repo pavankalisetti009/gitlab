@@ -87,12 +87,13 @@ describe('VariablesOverrideModal', () => {
 
       expect(findVariablesSelectors()).toHaveLength(2);
       expect(findVariablesSelectors().at(0).props('selected')).toBe(FLAT_LIST_OPTIONS[0]);
-      expect(findVariablesSelectors().at(0).props('alreadySelectedItems')).toEqual([
-        FLAT_LIST_OPTIONS[1],
+      expect(findVariablesSelectors().at(0).props('items')).toEqual([
+        FLAT_LIST_OPTIONS[0],
+        ...FLAT_LIST_OPTIONS.slice(2),
       ]);
       expect(findVariablesSelectors().at(1).props('selected')).toBe(FLAT_LIST_OPTIONS[1]);
-      expect(findVariablesSelectors().at(1).props('alreadySelectedItems')).toEqual([
-        FLAT_LIST_OPTIONS[0],
+      expect(findVariablesSelectors().at(1).props('items')).toEqual([
+        ...FLAT_LIST_OPTIONS.slice(1),
       ]);
     });
 
