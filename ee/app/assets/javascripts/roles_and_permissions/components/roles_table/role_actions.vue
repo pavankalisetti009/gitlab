@@ -142,7 +142,7 @@ export default {
         {{ $options.i18n.deletePopoverText }}
         <ul class="gl-pl-5">
           <li v-for="policy in role.dependentSecurityPolicies" :key="policy.name">
-            <gl-link :href="policy.editPath" target="_blank">
+            <gl-link :href="policy.editPath" target="_blank" data-testid="policy-name">
               {{ policy.name }}
             </gl-link>
           </li>

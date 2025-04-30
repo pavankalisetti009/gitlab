@@ -1,4 +1,4 @@
-import { GlDisclosureDropdown, GlIcon, GlLink, GlPopover, GlTooltip } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlIcon, GlPopover, GlTooltip } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import RoleActions from 'ee/roles_and_permissions/components/roles_table/role_actions.vue';
@@ -36,7 +36,7 @@ describe('Role actions', () => {
   const findDeleteRoleItem = () => wrapper.findByTestId('delete-role-item');
   const findDeleteRoleItemTooltip = () => wrapper.findComponent(GlTooltip);
   const findPopover = () => wrapper.findComponent(GlPopover);
-  const findLink = () => wrapper.findComponent(GlLink);
+  const findPolicyName = () => wrapper.findByTestId('policy-name');
 
   describe('common behavior', () => {
     beforeEach(() => createComponent());
@@ -174,8 +174,8 @@ describe('Role actions', () => {
         });
 
         it('renders the policy name as a link', () => {
-          expect(findLink().attributes('href')).toBe(dependentSecurityPolicy.editPath);
-          expect(findLink().text()).toBe(dependentSecurityPolicy.name);
+          expect(findPolicyName().attributes('href')).toBe(dependentSecurityPolicy.editPath);
+          expect(findPolicyName().text()).toBe(dependentSecurityPolicy.name);
         });
       });
     });

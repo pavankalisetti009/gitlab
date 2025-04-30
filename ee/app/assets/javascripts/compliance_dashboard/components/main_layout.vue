@@ -137,7 +137,12 @@ export default {
       <template #description>
         <gl-sprintf :message="$options.i18n.subheading">
           <template #link="{ content }">
-            <gl-link :href="$options.documentationPath" target="_blank">{{ content }}</gl-link>
+            <gl-link
+              :href="$options.documentationPath"
+              target="_blank"
+              data-testid="subheading-docs-link"
+              >{{ content }}</gl-link
+            >
           </template>
         </gl-sprintf>
       </template>

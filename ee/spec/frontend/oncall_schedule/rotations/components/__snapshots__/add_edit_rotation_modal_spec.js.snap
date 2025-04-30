@@ -8,6 +8,7 @@ exports[`AddEditRotationModal renders rotation modal layout 1`] = `
     <gl-alert-stub
       dismissible="true"
       dismisslabel="Dismiss"
+      politeness="polite"
       primarybuttonlink=""
       primarybuttontext=""
       secondarybuttonlink=""
