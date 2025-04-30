@@ -37850,6 +37850,8 @@ CREATE INDEX index_vuln_namespace_hist_statistics_for_traversal_ids_update ON vu
 
 CREATE UNIQUE INDEX index_vuln_namespace_historical_statistics_traversal_ids_date ON vulnerability_namespace_historical_statistics USING btree (traversal_ids, date);
 
+CREATE UNIQUE INDEX index_vuln_namespace_statistics_btree_traversal_ids ON vulnerability_namespace_statistics USING btree (traversal_ids);
+
 CREATE INDEX index_vuln_namespace_statistics_gin_traversal_ids ON vulnerability_namespace_statistics USING gin (traversal_ids);
 
 CREATE UNIQUE INDEX index_vuln_namespace_statistics_on_namespace_id ON vulnerability_namespace_statistics USING btree (namespace_id);

@@ -3673,6 +3673,26 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: vulnerabilities_namespace_statistics_process_group_transfer_events
+  :worker_name: Vulnerabilities::NamespaceStatistics::ProcessGroupTransferEventsWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: vulnerabilities_namespace_statistics_process_project_transfer_events
+  :worker_name: Vulnerabilities::NamespaceStatistics::ProcessProjectTransferEventsWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: vulnerabilities_process_archived_events
   :worker_name: Vulnerabilities::ProcessArchivedEventsWorker
   :feature_category: :vulnerability_management
