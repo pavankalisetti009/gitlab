@@ -6,6 +6,7 @@ module Gitlab
       # Implements multipart upload in s3
       class S3MultipartUpload
         include Gitlab::StatusPage::Storage::WrapsStorageErrors
+
         # 5 megabytes is the minimum part size specified in the amazon SDK
         MULTIPART_UPLOAD_PART_SIZE = 5.megabytes
 

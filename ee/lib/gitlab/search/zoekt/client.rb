@@ -5,6 +5,7 @@ module Gitlab
     module Zoekt
       class Client # rubocop:disable Search/NamespacedClass
         include ::Gitlab::Loggable
+
         INDEXING_TIMEOUT_S = 30.minutes.to_i
         MAXIMUM_THREADS = 16
         CONTEXT_LINES_COUNT = 1
