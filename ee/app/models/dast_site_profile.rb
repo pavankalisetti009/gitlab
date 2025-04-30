@@ -32,9 +32,9 @@ class DastSiteProfile < ::SecApplicationRecord
   before_save :ensure_scan_file_path
   after_destroy :cleanup_dast_site
 
-  enum target_type: { website: 0, api: 1 }
+  enum :target_type, { website: 0, api: 1 }
 
-  enum scan_method: { site: 0, openapi: 1, har: 2, postman: 3, graphql: 4 }, _prefix: true
+  enum :scan_method, { site: 0, openapi: 1, har: 2, postman: 3, graphql: 4 }, prefix: true
 
   delegate :dast_site_validation, to: :dast_site, allow_nil: true
 

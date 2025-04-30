@@ -4,8 +4,8 @@ module IncidentManagement
   class OncallParticipant < ApplicationRecord
     self.table_name = 'incident_management_oncall_participants'
 
-    enum color_palette: Enums::DataVisualizationPalette.colors
-    enum color_weight: Enums::DataVisualizationPalette.weights
+    enum :color_palette, Enums::DataVisualizationPalette.colors
+    enum :color_weight, Enums::DataVisualizationPalette.weights
 
     belongs_to :rotation, class_name: 'OncallRotation', foreign_key: :oncall_rotation_id
     belongs_to :user, class_name: 'User', foreign_key: :user_id

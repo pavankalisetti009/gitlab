@@ -17,8 +17,8 @@ module Ai
 
       alias_attribute :correlation_id, :correlation_id_value
 
-      enum event_type: { pause: 0, resume: 1, stop: 2, message: 3, response: 4, require_input: 5 }
-      enum event_status: { queued: 0, delivered: 1 }
+      enum :event_type, { pause: 0, resume: 1, stop: 2, message: 3, response: 4, require_input: 5 }
+      enum :event_status, { queued: 0, delivered: 1 }
 
       scope :queued, -> { where(event_status: event_statuses[:queued]) }
       scope :delivered, -> { where(event_status: event_statuses[:delivered]) }

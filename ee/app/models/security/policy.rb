@@ -36,13 +36,13 @@ module Security
     has_many :security_pipeline_execution_project_schedules, class_name: 'Security::PipelineExecutionProjectSchedule',
       foreign_key: :security_policy_id, inverse_of: :security_policy
 
-    enum type: {
+    enum :type, {
       approval_policy: 0,
       scan_execution_policy: 1,
       pipeline_execution_policy: 2,
       vulnerability_management_policy: 3,
       pipeline_execution_schedule_policy: 4
-    }, _prefix: true
+    }, prefix: true
 
     validates :security_orchestration_policy_configuration_id,
       uniqueness: { scope: %i[type policy_index] }

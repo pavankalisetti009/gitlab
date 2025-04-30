@@ -9,7 +9,7 @@ module GitlabSubscriptions
 
       self.table_name = 'member_approvals'
 
-      enum status: { pending: 0, approved: 1, denied: 2 }
+      enum :status, { pending: 0, approved: 1, denied: 2 }
 
       belongs_to :user
       belongs_to :member, optional: true

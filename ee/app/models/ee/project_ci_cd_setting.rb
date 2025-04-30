@@ -5,11 +5,11 @@ module EE
     extend ActiveSupport::Concern
 
     prepended do
-      enum restrict_pipeline_cancellation_role: {
+      enum :restrict_pipeline_cancellation_role, {
         developer: 0,
         maintainer: 1,
         no_one: 2
-      }, _prefix: true
+      }, prefix: true
     end
 
     def merge_pipelines_enabled?

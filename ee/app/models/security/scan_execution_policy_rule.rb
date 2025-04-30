@@ -7,7 +7,7 @@ module Security
 
     self.table_name = 'scan_execution_policy_rules'
 
-    enum type: { pipeline: 0, schedule: 1 }, _prefix: true
+    enum :type, { pipeline: 0, schedule: 1 }, prefix: true
 
     belongs_to :security_policy, class_name: 'Security::Policy', inverse_of: :scan_execution_policy_rules
 

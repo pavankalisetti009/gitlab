@@ -26,7 +26,7 @@ module Vulnerabilities
 
     mount_file_store_uploader AttachmentUploader
 
-    enum format: {
+    enum :format, {
       csv: 0,
       pdf: 1
     }

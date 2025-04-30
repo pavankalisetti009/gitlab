@@ -13,7 +13,7 @@ module Ai
 
     attribute :timestamp, :datetime, default: -> { DateTime.current }
 
-    enum event: { troubleshoot_job: 1 }
+    enum :event, { troubleshoot_job: 1 }
 
     belongs_to :user, optional: false
     belongs_to :project, optional: false

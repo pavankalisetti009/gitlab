@@ -15,9 +15,9 @@ module Security
 
     alias_attribute :match_on_inclusion_license, :match_on_inclusion
 
-    enum age_operator: { greater_than: 0, less_than: 1 }
-    enum age_interval: { day: 0, week: 1, month: 2, year: 3 }
-    enum commits: { any: 0, unsigned: 1 }, _prefix: true
+    enum :age_operator, { greater_than: 0, less_than: 1 }
+    enum :age_interval, { day: 0, week: 1, month: 2, year: 3 }
+    enum :commits, { any: 0, unsigned: 1 }, prefix: true
 
     belongs_to :security_orchestration_policy_configuration, class_name: 'Security::OrchestrationPolicyConfiguration'
     belongs_to :project, optional: true

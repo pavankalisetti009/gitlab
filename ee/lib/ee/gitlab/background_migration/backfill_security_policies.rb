@@ -315,12 +315,12 @@ module EE
           self.table_name = 'security_policies'
           self.inheritance_column = :_type_disabled
 
-          enum type: {
+          enum :type, {
             approval_policy: 0,
             scan_execution_policy: 1,
             pipeline_execution_policy: 2,
             vulnerability_management_policy: 3
-          }, _prefix: true
+          }, prefix: true
 
           has_many :approval_policy_rules, class_name: 'ApprovalPolicyRule'
           has_many :scan_execution_policy_rules, class_name: 'ScanExecutionPolicyRule'
@@ -386,21 +386,21 @@ module EE
           self.table_name = 'approval_policy_rules'
           self.inheritance_column = :_type_disabled
 
-          enum type: { scan_finding: 0, license_finding: 1, any_merge_request: 2 }, _prefix: true
+          enum :type, { scan_finding: 0, license_finding: 1, any_merge_request: 2 }, prefix: true
         end
 
         class ScanExecutionPolicyRule < ::ApplicationRecord
           self.table_name = 'scan_execution_policy_rules'
           self.inheritance_column = :_type_disabled
 
-          enum type: { pipeline: 0, schedule: 1 }, _prefix: true
+          enum :type, { pipeline: 0, schedule: 1 }, prefix: true
         end
 
         class VulnerabilityManagementPolicyRule < ::ApplicationRecord
           self.table_name = 'vulnerability_management_policy_rules'
           self.inheritance_column = :_type_disabled
 
-          enum type: { no_longer_detected: 0 }, _prefix: true
+          enum :type, { no_longer_detected: 0 }, prefix: true
         end
 
         class ApprovalPolicyRuleProjectLink < ::ApplicationRecord

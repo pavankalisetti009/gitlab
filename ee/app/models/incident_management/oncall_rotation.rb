@@ -25,7 +25,7 @@ module IncidentManagement
 
     self.table_name = 'incident_management_oncall_rotations'
 
-    enum length_unit: {
+    enum :length_unit, {
       hours: 0,
       days: 1,
       weeks: 2

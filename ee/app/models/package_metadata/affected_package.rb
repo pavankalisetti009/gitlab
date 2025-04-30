@@ -9,7 +9,7 @@ module PackageMetadata
     belongs_to :advisory, class_name: 'PackageMetadata::Advisory', optional: false, foreign_key: :pm_advisory_id,
       inverse_of: :affected_packages
 
-    enum purl_type: ::Enums::Sbom.purl_types
+    enum :purl_type, ::Enums::Sbom.purl_types
 
     validates :purl_type, presence: true
     validates :package_name, presence: true, length: { maximum: 256 }

@@ -6,7 +6,7 @@ module ApprovalRules
 
     attribute :applies_to_all_protected_branches, :boolean, default: true
 
-    enum rule_type: {
+    enum :rule_type, {
       regular: 1,
       code_owner: 2,
       report_approver: 3,

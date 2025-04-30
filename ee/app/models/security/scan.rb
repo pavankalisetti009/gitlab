@@ -16,7 +16,7 @@ module Security
 
     has_many :findings, inverse_of: :scan
 
-    enum scan_type: {
+    enum :scan_type, {
       sast: 1,
       dependency_scanning: 2,
       container_scanning: 3,

@@ -12,7 +12,7 @@ module WorkItems
 
     after_commit :update_all_parent_objectives_progress
 
-    enum reminder_frequency: {
+    enum :reminder_frequency, {
       weekly: 1,
       twice_monthly: 2,
       monthly: 3,

@@ -16,7 +16,7 @@ module AuditEvents
       before_validation :assign_secret_token_for_http
       before_validation :assign_default_log_id, if: :gcp?
 
-      enum category: {
+      enum :category, {
         http: 0,
         gcp: 1,
         aws: 2

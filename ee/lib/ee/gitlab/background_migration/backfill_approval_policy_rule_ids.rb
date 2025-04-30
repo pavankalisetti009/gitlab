@@ -330,7 +330,7 @@ module EE
           self.table_name = 'approval_policy_rules'
           self.inheritance_column = :_type_disabled
 
-          enum type: { scan_finding: 0, license_finding: 1, any_merge_request: 2 }, _prefix: true
+          enum :type, { scan_finding: 0, license_finding: 1, any_merge_request: 2 }, prefix: true
 
           belongs_to :security_policy,
             class_name: '::EE::Gitlab::BackgroundMigration::BackfillApprovalPolicyRuleIds::SecurityPolicy'

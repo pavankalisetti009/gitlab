@@ -13,7 +13,7 @@ module Vulnerabilities
 
     has_one :author, through: :issue, class_name: 'User'
 
-    enum link_type: { related: 1, created: 2 } # 'related' is the default value
+    enum :link_type, { related: 1, created: 2 } # 'related' is the default value
 
     validates :vulnerability, :issue, presence: true
     validates :issue_id, uniqueness: { scope: :vulnerability_id, message: N_('has already been linked to another vulnerability') }

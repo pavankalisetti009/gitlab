@@ -43,13 +43,13 @@ module Ai
     scope :find_or_initialize_by_feature, ->(feature) { find_or_initialize_by(feature: feature) }
     scope :for_self_hosted_model, ->(self_hosted_model_id) { where(ai_self_hosted_model_id: self_hosted_model_id) }
 
-    enum provider: {
+    enum :provider, {
       disabled: 0,
       vendored: 1,
       self_hosted: 2
-    }, _default: :vendored
+    }, default: :vendored
 
-    enum feature: STABLE_FEATURES.merge(FLAGGED_FEATURES)
+    enum :feature, STABLE_FEATURES.merge(FLAGGED_FEATURES)
 
     delegate :title, :main_feature, :compatible_llms, :release_state, to: :metadata, allow_nil: true
 

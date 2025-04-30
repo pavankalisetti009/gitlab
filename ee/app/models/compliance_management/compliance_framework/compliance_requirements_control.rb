@@ -24,9 +24,9 @@ module ComplianceManagement
       has_many :project_control_compliance_statuses,
         class_name: 'ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus'
 
-      enum name: ComplianceManagement::ComplianceFramework::Controls::Registry.enum_definitions
+      enum :name, ComplianceManagement::ComplianceFramework::Controls::Registry.enum_definitions
 
-      enum control_type: {
+      enum :control_type, {
         internal: 0,
         external: 1
       }

@@ -13,8 +13,8 @@ module Vulnerabilities
     validates :vulnerability_id, :from_state, :to_state, presence: true
     validate :to_state_and_from_state_differ
 
-    enum from_state: ::Enums::Vulnerability.vulnerability_states, _prefix: true
-    enum to_state: ::Enums::Vulnerability.vulnerability_states, _prefix: true
+    enum :from_state, ::Enums::Vulnerability.vulnerability_states, prefix: true
+    enum :to_state, ::Enums::Vulnerability.vulnerability_states, prefix: true
 
     declarative_enum DismissalReasonEnum
 

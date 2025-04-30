@@ -6,9 +6,9 @@ module Projects
       self.table_name = 'project_compliance_standards_adherence'
       include EachBatch
 
-      enum status: ::Enums::Projects::ComplianceStandards::Adherence.status
-      enum check_name: ::Enums::Projects::ComplianceStandards::Adherence.check_name
-      enum standard: ::Enums::Projects::ComplianceStandards::Adherence.standard
+      enum :status, ::Enums::Projects::ComplianceStandards::Adherence.status
+      enum :check_name, ::Enums::Projects::ComplianceStandards::Adherence.check_name
+      enum :standard, ::Enums::Projects::ComplianceStandards::Adherence.standard
 
       belongs_to :project
       belongs_to :namespace

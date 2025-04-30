@@ -15,8 +15,8 @@ module Vulnerabilities
       inclusion: { in: ::Enums::Vulnerability.severity_levels.keys }
     validate :original_and_new_severity_differ?
 
-    enum original_severity: ::Enums::Vulnerability.severity_levels, _prefix: true
-    enum new_severity: ::Enums::Vulnerability.severity_levels, _prefix: true
+    enum :original_severity, ::Enums::Vulnerability.severity_levels, prefix: true
+    enum :new_severity, ::Enums::Vulnerability.severity_levels, prefix: true
 
     scope :latest, -> do
       joins(<<~SQL)

@@ -10,7 +10,7 @@ module Vulnerabilities
     validates :description, length: { maximum: 1024 }
     validates :flag_type, presence: true, uniqueness: { scope: [:vulnerability_occurrence_id, :origin] }
 
-    enum flag_type: {
+    enum :flag_type, {
       false_positive: 0
     }
 

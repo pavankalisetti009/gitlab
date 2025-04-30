@@ -19,8 +19,8 @@ module Sbom
 
     has_many :vulnerabilities, through: :occurrences_vulnerabilities
 
-    enum highest_severity: ::Enums::Vulnerability.severity_levels
-    enum reachability: ::Enums::Sbom.reachability_types, _suffix: true
+    enum :highest_severity, ::Enums::Vulnerability.severity_levels
+    enum :reachability, ::Enums::Sbom.reachability_types, suffix: true
 
     validates :commit_sha, presence: true
     validates :uuid, presence: true, uniqueness: { case_sensitive: false }

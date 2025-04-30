@@ -26,7 +26,7 @@ module Search
 
       validates :metadata, json_schema: { filename: 'zoekt_indices_metadata' }
 
-      enum state: {
+      enum :state, {
         pending: 0,
         in_progress: 1,
         initializing: 2,
@@ -38,7 +38,7 @@ module Search
         pending_deletion: 240
       }
 
-      enum watermark_level: {
+      enum :watermark_level, {
         healthy: 0,
         overprovisioned: 10,
         low_watermark_exceeded: 30,

@@ -8,8 +8,8 @@ module Sbom
 
     has_many :occurrences, inverse_of: :component
 
-    enum component_type: ::Enums::Sbom.component_types
-    enum purl_type: ::Enums::Sbom.purl_types
+    enum :component_type, ::Enums::Sbom.component_types
+    enum :purl_type, ::Enums::Sbom.purl_types
 
     belongs_to :organization, class_name: 'Organizations::Organization'
 

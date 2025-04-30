@@ -39,7 +39,7 @@ module Clusters
         encode: false,
         encode_iv: false
 
-      enum status: {
+      enum :status, {
         active: 0,
         revoked: 1
       }

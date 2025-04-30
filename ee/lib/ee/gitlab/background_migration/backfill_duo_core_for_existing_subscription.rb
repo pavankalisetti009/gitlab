@@ -26,7 +26,7 @@ module EE
         class MigrationAddOn < ::ApplicationRecord
           self.table_name = :subscription_add_ons
 
-          enum name: {
+          enum :name, {
             duo_core: 5
           }
         end

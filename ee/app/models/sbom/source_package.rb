@@ -8,7 +8,7 @@ module Sbom
 
     has_many :occurrences, inverse_of: :source_package
 
-    enum purl_type: ::Enums::Sbom.purl_types
+    enum :purl_type, ::Enums::Sbom.purl_types
 
     belongs_to :organization, class_name: 'Organizations::Organization'
 

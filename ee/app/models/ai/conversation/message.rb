@@ -25,7 +25,7 @@ module Ai
       end
       scope :ordered, -> { order(id: :asc) }
 
-      enum role: { user: 1, assistant: 2 }
+      enum :role, { user: 1, assistant: 2 }
 
       before_create :populate_organization
 

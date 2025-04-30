@@ -130,12 +130,12 @@ module EE
           self.table_name = 'security_policies'
           self.inheritance_column = :_type_disabled
 
-          enum type: {
+          enum :type, {
             approval_policy: 0,
             scan_execution_policy: 1,
             pipeline_execution_policy: 2,
             vulnerability_management_policy: 3
-          }, _prefix: true
+          }, prefix: true
 
           has_one :security_pipeline_execution_policy_config_link,
             class_name: '::EE::Gitlab::BackgroundMigration::BackfillPipelineExecutionPoliciesConfigLinks::PipelineExecutionPolicyConfigLink',

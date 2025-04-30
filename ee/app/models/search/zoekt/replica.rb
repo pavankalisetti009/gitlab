@@ -8,7 +8,7 @@ module Search
 
       self.table_name = 'zoekt_replicas'
 
-      enum state: {
+      enum :state, {
         pending: 0,
         ready: 10
       }

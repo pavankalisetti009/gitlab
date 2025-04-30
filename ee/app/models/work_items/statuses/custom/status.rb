@@ -11,7 +11,7 @@ module WorkItems
 
         MAX_STATUSES_PER_NAMESPACE = 70
 
-        enum category: CATEGORIES
+        enum :category, CATEGORIES
 
         belongs_to :namespace
 

@@ -8,7 +8,7 @@ module Dast
 
     belongs_to :dast_pre_scan_verification, class_name: 'Dast::PreScanVerification', optional: false
 
-    enum check_type: { connection: 0, authentication: 1, crawling: 2 }, _prefix: true
+    enum :check_type, { connection: 0, authentication: 1, crawling: 2 }, prefix: true
 
     def success?
       verification_errors.blank?

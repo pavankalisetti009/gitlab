@@ -20,7 +20,7 @@ module GitlabSubscriptions
         .includes(:user)
     }
 
-    enum seat_type: {
+    enum :seat_type, {
       base: 0,
       free: 1,
       plan: 2,

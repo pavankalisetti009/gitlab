@@ -19,7 +19,7 @@ module Ai
       scope :for_conversation_type, ->(conversation_type) { where(conversation_type: conversation_type) }
       scope :ordered, -> { order(last_updated_at: :desc) }
 
-      enum conversation_type: {
+      enum :conversation_type, {
         duo_chat_legacy: 1,
         duo_code_review: 2,
         duo_quick_chat: 3,

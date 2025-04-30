@@ -5,7 +5,7 @@ module HealthStatus
   extend ::Gitlab::Utils::Override
 
   included do
-    enum health_status: {
+    enum :health_status, {
       on_track: 1,
       needs_attention: 2,
       at_risk: 3

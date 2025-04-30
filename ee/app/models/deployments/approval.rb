@@ -20,7 +20,7 @@ module Deployments
     validates :status, presence: true
     validates :comment, length: { maximum: 255 }
 
-    enum status: {
+    enum :status, {
       approved: 0,
       rejected: 1
     }

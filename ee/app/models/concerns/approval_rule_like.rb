@@ -40,7 +40,7 @@ module ApprovalRuleLike
 
     belongs_to :approval_policy_rule, class_name: 'Security::ApprovalPolicyRule', optional: true
 
-    enum report_type: {
+    enum :report_type, {
       vulnerability: 1, # To be removed after all MRs (related to https://gitlab.com/gitlab-org/gitlab/-/issues/356996) get merged
       license_scanning: 2,
       code_coverage: 3,

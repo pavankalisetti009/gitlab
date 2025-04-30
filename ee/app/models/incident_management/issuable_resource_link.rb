@@ -9,7 +9,7 @@ module IncidentManagement
 
     belongs_to :issue, inverse_of: :issuable_resource_links
 
-    enum link_type: { general: 0, zoom: 1, slack: 2, pagerduty: 3 } # 'general' is the default type
+    enum :link_type, { general: 0, zoom: 1, slack: 2, pagerduty: 3 } # 'general' is the default type
 
     validates :issue, presence: true
     validates :link,

@@ -40,7 +40,7 @@ module EE
           has_one :approval_merge_request_rule_source
           has_one :approval_project_rule, through: :approval_merge_request_rule_source
 
-          enum rule_type: {
+          enum :rule_type, {
             regular: 1,
             code_owner: 2,
             report_approver: 3,

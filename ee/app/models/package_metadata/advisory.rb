@@ -12,7 +12,7 @@ module PackageMetadata
     # the position of this line is important - it needs to be after the has_many declaration
     include BulkInsertSafe
 
-    enum source_xid: ::Enums::PackageMetadata.advisory_sources
+    enum :source_xid, ::Enums::PackageMetadata.advisory_sources
 
     attribute :cvss_v2, Gitlab::Database::Type::CvssVector.new
     attribute :cvss_v3, Gitlab::Database::Type::CvssVector.new

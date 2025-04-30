@@ -13,7 +13,7 @@ module RequirementsManagement
     validates :requirement_issue, presence: true
     validate :only_requirement_type_issue
 
-    enum state: { passed: 1, failed: 2 }
+    enum :state, { passed: 1, failed: 2 }
 
     scope :without_build, -> { where(build_id: nil) }
     scope :with_build, -> { where.not(build_id: nil) }

@@ -9,7 +9,7 @@ module Issuables
     MAX_ACTIVE_FIELDS_PER_TYPE = 10
     MAX_SELECT_OPTIONS = 50
 
-    enum field_type: { single_select: 0, multi_select: 1, number: 2, text: 3 }, _prefix: true
+    enum :field_type, { single_select: 0, multi_select: 1, number: 2, text: 3 }, prefix: true
 
     belongs_to :namespace
     belongs_to :created_by, class_name: 'User', optional: true

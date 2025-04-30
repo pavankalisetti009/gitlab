@@ -30,7 +30,7 @@ module Search
       scope :pending_or_processing, -> { where(state: %i[pending processing]) }
       scope :processing_queue, -> { perform_now.pending_or_processing }
 
-      enum state: {
+      enum :state, {
         pending: 0,
         processing: 1,
         done: 10,
@@ -39,7 +39,7 @@ module Search
         orphaned: 256
       }
 
-      enum task_type: {
+      enum :task_type, {
         index_repo: 0,
         force_index_repo: 1,
         delete_repo: 50
