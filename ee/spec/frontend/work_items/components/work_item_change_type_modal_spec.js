@@ -115,6 +115,9 @@ describe('WorkItemChangeTypeModal component', () => {
         workItemIid: '1',
         getEpicWidgetDefinitions: typesQuerySuccessHandler,
       },
+      provide: {
+        hasSubepicsFeature: false,
+      },
       stubs: {
         GlModal: stubComponent(GlModal, {
           template:
