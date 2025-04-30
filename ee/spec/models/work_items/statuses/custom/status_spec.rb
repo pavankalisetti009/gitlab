@@ -26,6 +26,28 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
       it { is_expected.to validate_uniqueness_of(:name).scoped_to(:namespace_id) }
     end
 
+    describe 'status per namespace limit validations' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:existing_status) { create(:work_item_custom_status, namespace: group) }
+
+      before do
+        stub_const('WorkItems::Statuses::Custom::Status::MAX_STATUSES_PER_NAMESPACE', 1)
+      end
+
+      it 'is invalid when exceeding maximum allowed statuses' do
+        new_status = build(:work_item_custom_status, namespace: group)
+
+        expect(new_status).not_to be_valid
+        expect(new_status.errors[:namespace]).to include('can only have a maximum of 1 statuses.')
+      end
+
+      it 'allows updating attributes of an existing status when limit is reached' do
+        existing_status.name = 'Updated Name'
+
+        expect(existing_status).to be_valid
+      end
+    end
+
     context 'with invalid color' do
       it 'is invalid' do
         custom_status.color = '000000'

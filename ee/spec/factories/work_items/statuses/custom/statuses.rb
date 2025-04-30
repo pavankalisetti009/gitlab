@@ -2,6 +2,8 @@
 
 FactoryBot.define do
   factory :work_item_custom_status, class: 'WorkItems::Statuses::Custom::Status' do
+    sequence(:name) { |n| "Custom Status #{n}" }
+
     association :namespace
     open
 
