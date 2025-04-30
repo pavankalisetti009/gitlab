@@ -19,8 +19,7 @@ module Gitlab
 
         override :preconditions_met?
         def preconditions_met?
-          Feature.enabled?(:saml_groups_duo_add_on_assignment, group) &&
-            any_duo_group_links?
+          any_duo_group_links?
         end
 
         override :assign_duo_seat
