@@ -1,7 +1,7 @@
-import { GlButton } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import MockAdapter from 'axios-mock-adapter';
+import { visitUrl } from '~/lib/utils/url_utility';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -46,7 +46,6 @@ describe('IdentityVerificationWizard', () => {
   const findSteps = () => wrapper.findAllComponents(VerificationStep);
   const findHeader = () => wrapper.find('h2');
   const findDescription = () => wrapper.find('p');
-  const findNextButton = () => wrapper.findComponent(GlButton);
 
   const buildVerificationStateResponse = (mockState) => ({
     verification_methods: Object.keys(mockState),
@@ -188,12 +187,14 @@ describe('IdentityVerificationWizard', () => {
     });
 
     it('goes from first to last one step at a time and redirects after all are completed', async () => {
-      expect(findNextButton().exists()).toBe(false);
+      const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
 
       expectMethodToBeActive(1, findSteps().wrappers);
 
       findSteps().at(0).findComponent(CreditCardVerification).vm.$emit('completed');
       await nextTick();
+
+      expect(setTimeoutSpy).not.toHaveBeenCalled();
 
       expectMethodToBeActive(2, findSteps().wrappers);
 
@@ -205,9 +206,12 @@ describe('IdentityVerificationWizard', () => {
       findSteps().at(2).findComponent(EmailVerification).vm.$emit('completed');
       await nextTick();
 
-      expect(findNextButton().exists()).toBe(true);
-
       expectAllMethodsToBeCompleted(findSteps().wrappers);
+
+      jest.runAllTimers();
+
+      expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
+      expect(visitUrl).toHaveBeenCalledWith(DEFAULT_PROVIDE.successfulVerificationPath);
     });
   });
 

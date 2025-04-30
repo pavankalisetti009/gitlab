@@ -34,9 +34,6 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
     verify_phone_number(solve_arkose_challenge: true)
 
     expect(page).to have_content(_('Completed'))
-    expect(page).to have_content(_('Next'))
-
-    click_link 'Next'
 
     wait_for_requests
 
@@ -89,8 +86,6 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       expect(page).to have_content(_('Completed'))
 
       verify_phone_number
-
-      click_link 'Next'
 
       wait_for_requests
 

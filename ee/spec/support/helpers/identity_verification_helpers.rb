@@ -177,9 +177,6 @@ module IdentityVerificationHelpers
 
   def expect_verification_completed
     expect(page).to have_content(_('Completed'))
-    expect(page).to have_content(_('Next'))
-
-    click_link 'Next'
 
     wait_for_requests
 
