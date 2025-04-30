@@ -7,10 +7,9 @@ RSpec.describe GitlabSchema.types['WorkspacesAgentConfig'], feature_category: :w
   let(:fields) do
     %i[
       id cluster_agent project_id enabled dns_zone network_policy_enabled gitlab_workspaces_proxy_namespace
-      workspaces_quota workspaces_per_user_quota default_max_hours_before_termination max_hours_before_termination_limit
-      allow_privilege_escalation use_kubernetes_user_namespaces default_runtime_class annotations labels
-      default_resources_per_workspace_container max_resources_per_workspace network_policy_egress
-      image_pull_secrets created_at updated_at
+      workspaces_quota workspaces_per_user_quota allow_privilege_escalation use_kubernetes_user_namespaces
+      default_runtime_class annotations labels default_resources_per_workspace_container
+      max_resources_per_workspace network_policy_egress image_pull_secrets created_at updated_at
     ]
   end
 
@@ -30,7 +29,7 @@ RSpec.describe GitlabSchema.types['WorkspacesAgentConfig'], feature_category: :w
             remoteDevelopmentClusterAgents(filter: AVAILABLE) {
               nodes {
                 workspacesAgentConfig {
-                  defaultMaxHoursBeforeTermination
+                  workspacesPerUserQuota
                 }
               }
             }

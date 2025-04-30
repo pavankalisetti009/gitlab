@@ -1216,8 +1216,8 @@ allow them to be specified as a new field in the defaults declaration:
         # third/last field is "sources to read from and their order"
         {
           default_branch_name: [UNDEFINED, String, [:env, :current_settings]], # reads ENV var first, which can be overridden by CurrentSettings
-          default_max_hours_before_termination: [24, Integer, [:current_settings, :env]], # reads CurrentSettings first, which can be overridden by ENV var
-          max_hours_before_termination_limit: [120, Integer] # Uses default precedence
+          max_stopped_hours_before_termination: [744, Integer, [:current_settings, :env]], # reads CurrentSettings first, which can be overridden by ENV var
+          max_active_hours_before_stop: [36, Integer] # Uses default precedence
         }
       end
 ```
