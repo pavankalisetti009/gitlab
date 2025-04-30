@@ -29,6 +29,12 @@ RSpec.describe 'Registration group and project creation flow', :with_current_org
   end
 
   it 'A user can create a group and project' do
+    expect(find_by_testid('group-name').value).to eq("#{user.username}-group")
+    expect(find_by_testid('project-name').value).to eq("#{user.username}-project")
+
+    fill_in 'group_name', with: ''
+    fill_in 'blank_project_name', with: ''
+
     within_testid('url-group-path') do
       expect(page).to have_content('{group}')
     end
@@ -66,8 +72,10 @@ RSpec.describe 'Registration group and project creation flow', :with_current_org
   it 'a user can create a group and import a project' do
     click_on 'Import'
 
+    fill_in 'import_group_name', with: ''
+
     within_testid('url-group-path') do
-      expect(page).to have_content('{group}')
+      expect(page).to have_content("{group}")
     end
 
     click_on 'GitHub'

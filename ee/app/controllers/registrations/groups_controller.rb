@@ -22,8 +22,9 @@ module Registrations
     helper_method :tracking_label
 
     def new
-      @group = Group.new(visibility_level: Gitlab::CurrentSettings.default_group_visibility)
-      @project = Project.new(namespace: @group)
+      @group = Group.new(visibility_level: Gitlab::CurrentSettings.default_group_visibility,
+        name: "#{current_user.username}-group")
+      @project = Project.new(namespace: @group, name: "#{current_user.username}-project")
       @initialize_with_readme = true
 
       track_event('view_new_group_action', tracking_label)
