@@ -25892,6 +25892,7 @@ Details of the import status of a project.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="detailedstatusaction"></a>`action` | [`StatusAction`](#statusaction) | Action information for the status. This includes method, button title, icon, path, and title. |
+| <a id="detailedstatusdeploymentdetailspath"></a>`deploymentDetailsPath` | [`String`](#string) | Path of the deployment details for the status. |
 | <a id="detailedstatusdetailspath"></a>`detailsPath` | [`String`](#string) | Path of the details for the status. |
 | <a id="detailedstatusfavicon"></a>`favicon` | [`String`](#string) | Favicon of the status. |
 | <a id="detailedstatusgroup"></a>`group` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 16.4. The `group` attribute is deprecated. Use `name` instead. |
