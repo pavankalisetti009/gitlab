@@ -139,7 +139,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         expect(json_response['username']).to start_with("service_account_group_#{group_id}")
         expect(json_response['name']).to eq('Service account user')
         expect(json_response['email']).to start_with("service_account_group_#{group_id}")
-        expect(json_response.keys).to match_array(%w[id name username email])
+        expect(json_response.keys).to match_array(%w[id name username email public_email])
       end
 
       it 'creates the user with the correct attributes' do
@@ -168,7 +168,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
           expect(json_response['username']).to eq(params[:username])
           expect(json_response['name']).to eq(params[:name])
           expect(json_response['email']).to eq(params[:email])
-          expect(json_response.keys).to match_array(%w[id name username email])
+          expect(json_response.keys).to match_array(%w[id name username email public_email])
         end
 
         it 'creates the user with the correct attributes' do
@@ -251,7 +251,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
         perform_request
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(json_response.keys).to match_array(%w[id name username email])
+        expect(json_response.keys).to match_array(%w[id name username email public_email])
         expect(json_response['name']).to eq(params[:name])
         expect(json_response['username']).to eq(params[:username])
       end
