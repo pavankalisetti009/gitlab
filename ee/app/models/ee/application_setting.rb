@@ -11,7 +11,6 @@ module EE
 
     prepended do
       EMAIL_ADDITIONAL_TEXT_CHARACTER_LIMIT = 10_000
-      DEFAULT_NUMBER_OF_DAYS_BEFORE_REMOVAL = 7
       MASK_PASSWORD = '*****'
       ELASTIC_REQUEST_TIMEOUT = 30
       SEAT_CONTROL_OFF = 0
@@ -121,10 +120,6 @@ module EE
         numericality: { only_integer: true, greater_than: :mirror_max_delay_in_minutes }
 
       validate :mirror_capacity_threshold_less_than
-
-      validates :deletion_adjourned_period,
-        presence: true,
-        numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 90 }
 
       jsonb_accessor :observability_settings,
         fetch_observability_alerts_from_cloud: [:boolean, { default: true }]
@@ -337,7 +332,6 @@ module EE
           dashboard_limit_enabled: false,
           dashboard_limit: 0,
           default_project_deletion_protection: false,
-          deletion_adjourned_period: DEFAULT_NUMBER_OF_DAYS_BEFORE_REMOVAL,
           disable_personal_access_tokens: false,
           elasticsearch_aws_region: ENV['ELASTIC_REGION'] || 'us-east-1',
           elasticsearch_aws: false,

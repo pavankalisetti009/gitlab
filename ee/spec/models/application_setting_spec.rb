@@ -345,11 +345,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           is_expected.to validate_numericality_of(:max_ssh_key_lifetime)
             .is_greater_than(0).is_less_than_or_equal_to(400).allow_nil
         end
-
-        it 'validates deletion_adjourned_period' do
-          is_expected.to validate_numericality_of(:deletion_adjourned_period)
-            .is_greater_than(0).is_less_than_or_equal_to(90)
-        end
       end
 
       context 'when extended lifetime is not selected' do
@@ -360,11 +355,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         it 'validates max_ssh_key_lifetime' do
           is_expected.to validate_numericality_of(:max_ssh_key_lifetime)
             .is_greater_than(0).is_less_than_or_equal_to(365).allow_nil
-        end
-
-        it 'validates deletion_adjourned_period' do
-          is_expected.to validate_numericality_of(:deletion_adjourned_period)
-            .is_greater_than(0).is_less_than_or_equal_to(90)
         end
       end
     end
