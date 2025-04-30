@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Trial lead form submission and validation', :saas, :js, feature_category: :acquisition do
+RSpec.describe 'Trial lead form submission and validation', :with_current_organization, :saas, :js, feature_category: :acquisition do
   let_it_be(:user) { create(:user) }
 
   context 'with valid company information and without state' do

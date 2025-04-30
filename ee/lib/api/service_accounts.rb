@@ -29,7 +29,7 @@ module API
 
       post feature_category: :user_management do
         response = ::Users::ServiceAccounts::CreateService.new(
-          current_user, declared_params.merge(organization_id: Current.organization&.id)
+          current_user, declared_params.merge(organization_id: Current.organization.id)
         ).execute
 
         if response.status == :success
