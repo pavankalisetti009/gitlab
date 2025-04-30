@@ -13753,7 +13753,8 @@ CREATE TABLE design_management_versions (
     issue_id bigint,
     created_at timestamp with time zone NOT NULL,
     author_id bigint,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_1d0291f47a CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE design_management_versions_id_seq
