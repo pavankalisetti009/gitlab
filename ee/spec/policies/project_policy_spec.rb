@@ -4824,7 +4824,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           allow(project).to receive(:duo_features_enabled).and_return(duo_features_enabled)
 
           allow(current_user).to receive(:allowed_to_use?)
-            .with(:review_merge_request, licensed_feature: :ai_review_mr).and_return(allowed_to_use)
+            .with(:review_merge_request, licensed_feature: :review_merge_request).and_return(allowed_to_use)
         end
 
         it { is_expected.to enabled_for_user }

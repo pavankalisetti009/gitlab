@@ -204,7 +204,6 @@ module GitlabSubscriptions
       ai_agents
       ai_config_chat
       ai_features
-      ai_review_mr
       ai_workflows
       amazon_q
       api_discovery

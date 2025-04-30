@@ -15,7 +15,7 @@ RSpec.describe Projects::AiFeatures, feature_category: :code_review_workflow do
     subject(:ai_review_merge_request_allowed?) { ai_features.review_merge_request_allowed?(current_user) }
 
     before do
-      stub_licensed_features(ai_review_mr: true)
+      stub_licensed_features(review_merge_request: true)
       allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
     end
 
@@ -44,7 +44,7 @@ RSpec.describe Projects::AiFeatures, feature_category: :code_review_workflow do
 
       context 'when license is not set' do
         before do
-          stub_licensed_features(ai_review_mr: false)
+          stub_licensed_features(review_merge_request: false)
         end
 
         it { is_expected.to be(false) }

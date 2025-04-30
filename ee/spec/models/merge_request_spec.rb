@@ -3190,7 +3190,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     subject(:ai_review_merge_request_allowed?) { merge_request.ai_review_merge_request_allowed?(current_user) }
 
     before do
-      stub_licensed_features(ai_review_mr: true)
+      stub_licensed_features(review_merge_request: true)
       allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
     end
 
@@ -3198,7 +3198,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       before do
         allow(project).to receive(:duo_features_enabled).and_return(false)
         allow(current_user).to receive(:allowed_to_use?)
-          .with(:review_merge_request, licensed_feature: :ai_review_mr).and_return(false)
+          .with(:review_merge_request, licensed_feature: :review_merge_request).and_return(false)
       end
 
       it { is_expected.to eq(false) }
@@ -3209,7 +3209,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         allow(authorizer).to receive(:allowed?).and_return(true)
         allow(project).to receive(:duo_features_enabled).and_return(true)
         allow(current_user).to receive(:allowed_to_use?)
-          .with(:review_merge_request, licensed_feature: :ai_review_mr).and_return(true)
+          .with(:review_merge_request, licensed_feature: :review_merge_request).and_return(true)
       end
 
       it { is_expected.to eq(true) }
@@ -3224,9 +3224,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
       context 'when license is not set' do
         before do
-          stub_licensed_features(ai_review_mr: false)
+          stub_licensed_features(review_merge_request: false)
           allow(current_user).to receive(:allowed_to_use?)
-            .with(:review_merge_request, licensed_feature: :ai_review_mr).and_return(false)
+            .with(:review_merge_request, licensed_feature: :review_merge_request).and_return(false)
         end
 
         it { is_expected.to eq(false) }

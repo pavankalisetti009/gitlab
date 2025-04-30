@@ -410,7 +410,7 @@ module EE
       end
 
       condition(:user_allowed_to_use_ai_review_mr) do
-        @user&.allowed_to_use?(:review_merge_request, licensed_feature: :ai_review_mr)
+        @user&.allowed_to_use?(:review_merge_request, licensed_feature: :review_merge_request)
       end
 
       rule do
