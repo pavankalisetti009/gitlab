@@ -231,6 +231,235 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementComp
     end
   end
 
+  describe '.order_by_project_and_id' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:framework) { create(:compliance_framework, namespace: group) }
+    let_it_be(:requirement) { create(:compliance_requirement, namespace: group, framework: framework) }
+
+    let_it_be(:project1) { create(:project, namespace: group, path: 'project1') }
+    let_it_be(:project2) { create(:project, namespace: group, path: 'project2') }
+    let_it_be(:project3) { create(:project, namespace: group, path: 'project3') }
+
+    let_it_be(:requirement_status1) do
+      create(:project_requirement_compliance_status, project: project2, compliance_requirement: requirement)
+    end
+
+    let_it_be(:requirement_status2) do
+      create(:project_requirement_compliance_status, project: project3, compliance_requirement: requirement)
+    end
+
+    let_it_be(:requirement_status3) do
+      create(:project_requirement_compliance_status, project: project1, compliance_requirement: requirement)
+    end
+
+    context 'when direction is not provided' do
+      it 'sorts by project_id in ascending order by default' do
+        expect(described_class.order_by_project_and_id).to eq(
+          [
+            requirement_status3, # project1
+            requirement_status1, # project2
+            requirement_status2  # project3
+          ]
+        )
+      end
+    end
+
+    context 'when direction is asc' do
+      it 'sorts by project_id in ascending order' do
+        expect(described_class.order_by_project_and_id(:asc)).to eq(
+          [
+            requirement_status3, # project1
+            requirement_status1, # project2
+            requirement_status2  # project3
+          ]
+        )
+      end
+    end
+
+    context 'when direction is desc' do
+      it 'sorts in descending order' do
+        expect(described_class.order_by_project_and_id(:desc)).to eq(
+          [
+            requirement_status2, # project3
+            requirement_status1, # project2
+            requirement_status3  # project1
+          ]
+        )
+      end
+    end
+
+    context 'when direction is invalid' do
+      it 'raises error' do
+        expect do
+          described_class.order_by_project_and_id(:invalid)
+        end.to raise_error(ArgumentError, /Direction "invalid" is invalid/)
+      end
+    end
+  end
+
+  describe '.order_by_requirement_and_id' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:framework) { create(:compliance_framework, namespace: group) }
+    let_it_be(:project) { create(:project, namespace: group) }
+
+    let_it_be(:requirement1) do
+      create(:compliance_requirement, namespace: group, framework: framework, name: 'requirement1')
+    end
+
+    let_it_be(:requirement2) do
+      create(:compliance_requirement, namespace: group, framework: framework, name: 'requirement2')
+    end
+
+    let_it_be(:requirement3) do
+      create(:compliance_requirement, namespace: group, framework: framework, name: 'requirement3')
+    end
+
+    let_it_be(:requirement_status1) do
+      create(:project_requirement_compliance_status, project: project, compliance_requirement: requirement2)
+    end
+
+    let_it_be(:requirement_status2) do
+      create(:project_requirement_compliance_status, project: project, compliance_requirement: requirement3)
+    end
+
+    let_it_be(:requirement_status3) do
+      create(:project_requirement_compliance_status, project: project, compliance_requirement: requirement1)
+    end
+
+    context 'when direction is not provided' do
+      it 'sorts by compliance_requirement_id in ascending order by default' do
+        expect(described_class.order_by_requirement_and_id).to eq(
+          [
+            requirement_status3, # requirement1
+            requirement_status1, # requirement2
+            requirement_status2  # requirement3
+          ]
+        )
+      end
+    end
+
+    context 'when direction is asc' do
+      it 'sorts by compliance_requirement_id in ascending order' do
+        expect(described_class.order_by_requirement_and_id(:asc)).to eq(
+          [
+            requirement_status3, # requirement1
+            requirement_status1, # requirement2
+            requirement_status2  # requirement3
+          ]
+        )
+      end
+    end
+
+    context 'when direction is desc' do
+      it 'sorts in descending order' do
+        expect(described_class.order_by_requirement_and_id(:desc)).to eq(
+          [
+            requirement_status2, # requirement3
+            requirement_status1, # requirement2
+            requirement_status3  # requirement1
+          ]
+        )
+      end
+    end
+
+    context 'when direction is invalid' do
+      it 'raises error' do
+        expect do
+          described_class.order_by_requirement_and_id(:invalid)
+        end.to raise_error(ArgumentError, /Direction "invalid" is invalid/)
+      end
+    end
+  end
+
+  describe '.order_by_framework_and_id' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, namespace: group) }
+
+    let_it_be(:framework1) do
+      create(:compliance_framework, namespace: group, name: 'framework1', color: '#00ffaa')
+    end
+
+    let_it_be(:framework2) do
+      create(:compliance_framework, namespace: group, name: 'framework2', color: '#00ffab')
+    end
+
+    let_it_be(:framework3) do
+      create(:compliance_framework, namespace: group, name: 'framework3', color: '#00ffac')
+    end
+
+    let_it_be(:requirement1) { create(:compliance_requirement, framework: framework2, namespace: group) }
+    let_it_be(:requirement2) { create(:compliance_requirement, framework: framework3, namespace: group) }
+    let_it_be(:requirement3) { create(:compliance_requirement, framework: framework1, namespace: group) }
+
+    let_it_be(:requirement_status1) do
+      create(:project_requirement_compliance_status,
+        project: project,
+        compliance_requirement: requirement1,
+        compliance_framework: framework2
+      )
+    end
+
+    let_it_be(:requirement_status2) do
+      create(:project_requirement_compliance_status,
+        project: project,
+        compliance_requirement: requirement2,
+        compliance_framework: framework3
+      )
+    end
+
+    let_it_be(:requirement_status3) do
+      create(:project_requirement_compliance_status,
+        project: project,
+        compliance_requirement: requirement3,
+        compliance_framework: framework1
+      )
+    end
+
+    context 'when direction is not provided' do
+      it 'sorts by compliance_framework_id in ascending order by default' do
+        expect(described_class.order_by_framework_and_id).to eq(
+          [
+            requirement_status3, # framework1
+            requirement_status1, # framework2
+            requirement_status2  # framework3
+          ]
+        )
+      end
+    end
+
+    context 'when direction is asc' do
+      it 'sorts by compliance_framework_id in ascending order' do
+        expect(described_class.order_by_framework_and_id(:asc)).to eq(
+          [
+            requirement_status3, # framework1
+            requirement_status1, # framework2
+            requirement_status2  # framework3
+          ]
+        )
+      end
+    end
+
+    context 'when direction is desc' do
+      it 'sorts in descending order' do
+        expect(described_class.order_by_framework_and_id(:desc)).to eq(
+          [
+            requirement_status2, # framework3
+            requirement_status1, # framework2
+            requirement_status3  # framework1
+          ]
+        )
+      end
+    end
+
+    context 'when direction is invalid' do
+      it 'raises error' do
+        expect do
+          described_class.order_by_framework_and_id(:invalid)
+        end.to raise_error(ArgumentError, /Direction "invalid" is invalid/)
+      end
+    end
+  end
+
   describe '.delete_all_project_statuses' do
     context 'when project has associated compliance requirement statuses' do
       let_it_be(:group) { create(:group) }

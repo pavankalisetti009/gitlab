@@ -20,11 +20,15 @@ module Resolvers
           default_value: {},
           description: 'Filters applied when retrieving compliance requirement statuses.'
 
+        argument :order_by, Types::ComplianceManagement::ComplianceFramework::ProjectRequirementStatusOrderByEnum,
+          required: false,
+          description: 'Field used to sort compliance requirement statuses.'
+
         def resolve(**args)
           requirement_status_records = ::ComplianceManagement::ComplianceFramework::ProjectRequirementStatusFinder.new(
             group,
             current_user,
-            args[:filters].to_h
+            args[:filters].to_h.merge(order_by: args[:order_by])
           ).execute
 
           offset_pagination(requirement_status_records)

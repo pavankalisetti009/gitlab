@@ -40,7 +40,20 @@ module ComplianceManagement
         base_scope = filter_by_requirement(base_scope)
         base_scope = filter_by_framework(base_scope)
 
-        base_scope.order_by_updated_at_and_id(:desc)
+        order_by_scope(base_scope)
+      end
+
+      def order_by_scope(base_scope)
+        case params[:order_by]
+        when 'project'
+          base_scope.order_by_project_and_id
+        when 'requirement'
+          base_scope.order_by_requirement_and_id
+        when 'framework'
+          base_scope.order_by_framework_and_id
+        else
+          base_scope.order_by_updated_at_and_id(:desc)
+        end
       end
 
       def filter_by_project(status_records)

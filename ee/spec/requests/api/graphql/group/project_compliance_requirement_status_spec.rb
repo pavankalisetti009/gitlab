@@ -2,10 +2,9 @@
 
 require 'spec_helper'
 
+# rubocop:disable RSpec/MultipleMemoizedHelpers -- We need extra helpers for checking all scenarios of requirement statuses
 RSpec.describe 'getting the project compliance requirement statuses for a group',
   feature_category: :compliance_management do
-  using RSpec::Parameterized::TableSyntax
-
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }
@@ -18,6 +17,7 @@ RSpec.describe 'getting the project compliance requirement statuses for a group'
   let_it_be(:other_project) { create(:project, group: other_group) }
 
   let_it_be(:framework1) { create(:compliance_framework, namespace: group, name: 'framework1', color: '#ff00aa') }
+  let_it_be(:framework2) { create(:compliance_framework, namespace: group, name: 'framework2', color: '#ff00ab') }
   let_it_be(:other_framework) do
     create(:compliance_framework, namespace: other_group, name: 'other_framework', color: '#ff00ac')
   end
@@ -28,6 +28,10 @@ RSpec.describe 'getting the project compliance requirement statuses for a group'
 
   let_it_be(:requirement2) do
     create(:compliance_requirement, namespace: group, framework: framework1, name: 'requirement2')
+  end
+
+  let_it_be(:requirement3) do
+    create(:compliance_requirement, namespace: group, framework: framework2, name: 'requirement3')
   end
 
   let_it_be(:other_requirement) do
@@ -48,6 +52,14 @@ RSpec.describe 'getting the project compliance requirement statuses for a group'
 
   let_it_be(:requirement_status4) do
     create(:project_requirement_compliance_status, compliance_requirement: requirement2, project: project1)
+  end
+
+  let_it_be(:requirement_status5) do
+    create(:project_requirement_compliance_status, compliance_requirement: requirement3, project: root_group_project)
+  end
+
+  let_it_be(:requirement_status6) do
+    create(:project_requirement_compliance_status, compliance_requirement: requirement3, project: project1)
   end
 
   let_it_be(:other_requirement_status) do
@@ -94,6 +106,14 @@ RSpec.describe 'getting the project compliance requirement statuses for a group'
 
   let(:requirement_status4_output) do
     get_requirement_status_output(requirement_status4)
+  end
+
+  let(:requirement_status5_output) do
+    get_requirement_status_output(requirement_status5)
+  end
+
+  let(:requirement_status6_output) do
+    get_requirement_status_output(requirement_status6)
   end
 
   let(:requirement_statuses) { graphql_data_at(:group, :project_compliance_requirements_status, :nodes) }
@@ -175,8 +195,8 @@ RSpec.describe 'getting the project compliance requirement statuses for a group'
         post_graphql(query, current_user: current_user)
 
         expect(requirement_statuses).to eq(
-          [requirement_status4_output, requirement_status3_output,
-            requirement_status2_output, requirement_status1_output]
+          [requirement_status6_output, requirement_status5_output, requirement_status4_output,
+            requirement_status3_output, requirement_status2_output, requirement_status1_output]
         )
       end
     end
@@ -188,7 +208,8 @@ RSpec.describe 'getting the project compliance requirement statuses for a group'
             post_graphql(query({ filters: { projectId: root_group_project.to_global_id.to_s } }),
               current_user: current_user)
 
-            expect(requirement_statuses).to match_array([requirement_status2_output, requirement_status1_output])
+            expect(requirement_statuses).to match_array([requirement_status5_output, requirement_status2_output,
+              requirement_status1_output])
           end
         end
 
@@ -285,5 +306,48 @@ RSpec.describe 'getting the project compliance requirement statuses for a group'
         end
       end
     end
+
+    context 'with ordering' do
+      context 'when ordered by projects' do
+        it 'returns requirement statuses ordered by projects' do
+          post_graphql(query({ orderBy: :PROJECT }), current_user: current_user)
+
+          expect(requirement_statuses).to eq([requirement_status1_output, requirement_status2_output,
+            requirement_status5_output, requirement_status3_output, requirement_status4_output,
+            requirement_status6_output])
+        end
+      end
+
+      context 'when ordered by requirements' do
+        it 'returns requirement statuses ordered by requirements' do
+          post_graphql(query({ orderBy: :REQUIREMENT }), current_user: current_user)
+
+          expect(requirement_statuses).to eq([requirement_status1_output, requirement_status3_output,
+            requirement_status2_output, requirement_status4_output, requirement_status5_output,
+            requirement_status6_output])
+        end
+      end
+
+      context 'when ordered by frameworks' do
+        it 'returns requirement statuses ordered by frameworks' do
+          post_graphql(query({ orderBy: :FRAMEWORK }), current_user: current_user)
+
+          expect(requirement_statuses).to eq([requirement_status1_output, requirement_status2_output,
+            requirement_status3_output, requirement_status4_output, requirement_status5_output,
+            requirement_status6_output])
+        end
+      end
+
+      context 'when order_by is invalid' do
+        it 'returns requirement statuses ordered by frameworks' do
+          post_graphql(query({ orderBy: :INVALID }), current_user: current_user)
+
+          expect_graphql_errors_to_include(
+            "Argument 'orderBy' on Field 'projectComplianceRequirementsStatus' has an invalid value (INVALID). " \
+              "Expected type 'ProjectComplianceRequirementStatusOrderBy'.")
+        end
+      end
+    end
   end
 end
+# rubocop:enable RSpec/MultipleMemoizedHelpers

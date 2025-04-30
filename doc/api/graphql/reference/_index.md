@@ -28697,7 +28697,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ##### `Group.projectComplianceRequirementsStatus`
 
-Compliance standards adherence for the projects in a group and its subgroups.
+Compliance statuses for the projects in a group and its subgroups.
 
 {{< details >}}
 **Introduced** in GitLab 17.10.
@@ -28715,6 +28715,7 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="groupprojectcompliancerequirementsstatusfilters"></a>`filters` | [`GroupProjectRequirementComplianceStatusInput`](#groupprojectrequirementcompliancestatusinput) | Filters applied when retrieving compliance requirement statuses. |
+| <a id="groupprojectcompliancerequirementsstatusorderby"></a>`orderBy` | [`ProjectComplianceRequirementStatusOrderBy`](#projectcompliancerequirementstatusorderby) | Field used to sort compliance requirement statuses. |
 
 ##### `Group.projectComplianceStandardsAdherence`
 
@@ -44994,6 +44995,16 @@ Compliance status of the project control.
 | <a id="projectcompliancecontrolstatusfail"></a>`FAIL` | Fail. |
 | <a id="projectcompliancecontrolstatuspass"></a>`PASS` | Pass. |
 | <a id="projectcompliancecontrolstatuspending"></a>`PENDING` | Pending. |
+
+### `ProjectComplianceRequirementStatusOrderBy`
+
+Values for order_by field for project requirement statuses.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="projectcompliancerequirementstatusorderbyframework"></a>`FRAMEWORK` | Order by frameworks. |
+| <a id="projectcompliancerequirementstatusorderbyproject"></a>`PROJECT` | Order by projects. |
+| <a id="projectcompliancerequirementstatusorderbyrequirement"></a>`REQUIREMENT` | Order by requirements. |
 
 ### `ProjectFeatureAccessLevel`
 
