@@ -275,8 +275,10 @@ module RemoteDevelopment
           devfile.fetch(:events, {}).each do |event_type, event_type_events|
             # Ensure no event type other than "preStart" are allowed
 
-            unless SUPPORTED_EVENTS.include?(event_type)
-              return err(format(_("Event type '%{type}' is not yet supported"), type: event_type))
+            if SUPPORTED_EVENTS.exclude?(event_type) && event_type_events.present?
+              err_msg = format(_("Event type '%{type}' is not yet supported"), type: event_type)
+              # The entries for unsupported events may be defined, but they must be blank.
+              return err(err_msg)
             end
 
             # Ensure no event starts with restricted_prefix

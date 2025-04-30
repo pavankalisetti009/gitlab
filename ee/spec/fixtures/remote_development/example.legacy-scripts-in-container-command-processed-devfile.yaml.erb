@@ -13,6 +13,9 @@ components:
       command:
         - "/bin/sh"
         - "-c"
+      volumeMounts:
+        - name: gl-workspace-data
+          path: /projects
       env:
         - name: GL_TOOLS_DIR
           value: "/projects/.gl-tools"
@@ -39,6 +42,9 @@ components:
   - name: database-container
     container:
       image: mysql
+      volumeMounts:
+        - name: gl-workspace-data
+          path: /projects
       env:
         - name: MYSQL_ROOT_PASSWORD
           value: "my-secret-pw"
@@ -47,6 +53,9 @@ components:
   - name: gl-tools-injector
     container:
       image: <%= WORKSPACE_TOOLS_IMAGE %>
+      volumeMounts:
+        - name: gl-workspace-data
+          path: /projects
       env:
         - name: GL_TOOLS_DIR
           value: "/projects/.gl-tools"
@@ -57,21 +66,22 @@ components:
   - name: gl-project-cloner
     container:
       image: alpine/git:2.45.2
+      volumeMounts:
+        - name: gl-workspace-data
+          path: "/projects"
       args:
         - |
           <%= indent_yaml_literal(PROJECTS_CLONER_COMPONENT_INSERTER_CONTAINER_ARGS, 10) %>
       command:
         - "/bin/sh"
         - "-c"
-      memoryLimit: 1000Mi
-      memoryRequest: 500Mi
+      memoryLimit: 512Mi
+      memoryRequest: 256Mi
       cpuLimit: 500m
       cpuRequest: 100m
-events:
-  preStart:
-    - gl-tools-injector-command
-    - gl-project-cloner-command
-  postStart: []
+  - name: gl-workspace-data
+    volume:
+      size: 50Gi
 commands:
   - id: gl-tools-injector-command
     apply:
@@ -79,4 +89,8 @@ commands:
   - id: gl-project-cloner-command
     apply:
       component: gl-project-cloner
+events:
+  preStart:
+    - gl-tools-injector-command
+    - gl-project-cloner-command
 variables: {}

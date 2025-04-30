@@ -6,6 +6,8 @@ require 'spec_helper'
 RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Update::Updater, feature_category: :workspaces do
   include ResultMatchers
 
+  include_context "with constant modules"
+
   subject(:result) do
     described_class.update(workspace: workspace, params: params) # rubocop:disable Rails/SaveBang -- This is not an ActiveRecord method
   end
@@ -16,12 +18,12 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Update::Updater, featur
     create(
       :workspace,
       user: user,
-      desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
+      desired_state: states_module::RUNNING,
       personal_access_token: personal_access_token
     )
   end
 
-  let(:new_desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+  let(:new_desired_state) { states_module::STOPPED }
   let(:params) do
     {
       desired_state: new_desired_state
@@ -61,7 +63,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Update::Updater, featur
     end
 
     context 'when personal access token revocation fails' do
-      let(:new_desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+      let(:new_desired_state) { states_module::TERMINATED }
       let(:errors) { instance_double(ActiveModel::Errors) }
       let(:exception) { ActiveRecord::ActiveRecordError.new }
       let(:mock_personal_access_token) { instance_double(PersonalAccessToken) }

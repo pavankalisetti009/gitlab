@@ -12,11 +12,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ProjectClonerComp
   end
 
   let(:input_processed_devfile) do
-    yaml_safe_load_symbolized(read_devfile_yaml("example.main-container-updated-devfile.yaml.erb"))
+    read_devfile("example.main-container-updated-devfile.yaml.erb")
   end
 
   let(:expected_processed_devfile) do
-    yaml_safe_load_symbolized(read_devfile_yaml("example.project-cloner-inserted-devfile.yaml.erb"))
+    read_devfile("example.project-cloner-inserted-devfile.yaml.erb")
   end
 
   let(:context) do
@@ -28,7 +28,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ProjectClonerComp
       processed_devfile: input_processed_devfile,
       volume_mounts: {
         data_volume: {
-          path: "/projects"
+          path: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
         }
       },
       settings: {

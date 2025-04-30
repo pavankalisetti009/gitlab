@@ -6,21 +6,21 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::VolumeComponentIn
   include_context 'with remote development shared fixtures'
 
   let(:input_processed_devfile) do
-    yaml_safe_load_symbolized(read_devfile_yaml("example.project-cloner-inserted-devfile.yaml.erb"))
+    read_devfile("example.project-cloner-inserted-devfile.yaml.erb")
   end
 
   let(:expected_processed_devfile) do
-    yaml_safe_load_symbolized(read_devfile_yaml("example.processed-devfile.yaml.erb"))
+    read_devfile("example.processed-devfile.yaml.erb")
   end
 
-  let(:volume_name) { RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::WORKSPACE_DATA_VOLUME_NAME }
+  let(:volume_name) { create_constants_module::WORKSPACE_DATA_VOLUME_NAME }
   let(:context) do
     {
       processed_devfile: input_processed_devfile,
       volume_mounts: {
         data_volume: {
-          name: volume_name,
-          path: "/projects"
+          name: create_constants_module::WORKSPACE_DATA_VOLUME_NAME,
+          path: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
         }
       }
     }

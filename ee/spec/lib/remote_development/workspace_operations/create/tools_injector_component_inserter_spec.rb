@@ -6,15 +6,15 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComp
   include_context 'with remote development shared fixtures'
 
   let(:input_processed_devfile) do
-    yaml_safe_load_symbolized(read_devfile_yaml("example.flattened-devfile.yaml.erb"))
+    read_devfile("example.flattened-devfile.yaml.erb")
   end
 
   let(:expected_processed_devfile) do
-    yaml_safe_load_symbolized(read_devfile_yaml("example.tools-injector-inserted-devfile.yaml.erb"))
+    read_devfile("example.tools-injector-inserted-devfile.yaml.erb")
   end
 
   let(:tools_injector_image_from_settings) do
-    RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants::WORKSPACE_TOOLS_IMAGE
+    workspace_operations_constants_module::WORKSPACE_TOOLS_IMAGE
   end
 
   let(:settings) do
@@ -28,8 +28,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComp
   let(:context) do
     {
       processed_devfile: input_processed_devfile,
-      tools_dir: "#{RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::WORKSPACE_DATA_VOLUME_PATH}/" \
-        "#{RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOOLS_DIR_NAME}",
+      tools_dir: "#{workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH}/" \
+        "#{create_constants_module::TOOLS_DIR_NAME}",
       settings: settings,
       vscode_extension_marketplace_metadata: { enabled: vscode_extension_marketplace_metadata_enabled }
     }

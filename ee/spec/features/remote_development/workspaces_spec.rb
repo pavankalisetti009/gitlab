@@ -7,11 +7,12 @@ require_relative "../../support/helpers/remote_development/integration_spec_help
 RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature_category: :workspaces do
   include RemoteDevelopment::IntegrationSpecHelpers
 
+  include_context "with constant modules"
+
   include_context 'with remote development shared fixtures'
   include_context 'file upload requests helpers'
   include_context 'with kubernetes agent service'
 
-  let(:states) { RemoteDevelopment::WorkspaceOperations::States }
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, name: 'test-group', developers: user, owners: user) }
   let_it_be(:devfile_path) { '.devfile.yaml' }
@@ -182,7 +183,7 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_first_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        actual_state: states::CREATION_REQUESTED,
+        actual_state: states_module::CREATION_REQUESTED,
         **additional_args_for_expected_config_to_apply
       )
 
@@ -190,12 +191,12 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_second_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        actual_state: states::RUNNING,
+        actual_state: states_module::RUNNING,
         **additional_args_for_expected_config_to_apply
       )
 
       # ASSERT WORKSPACE SHOWS RUNNING STATE IN UI AND UPDATES URL
-      expect_workspace_state_indicator(states::RUNNING)
+      expect_workspace_state_indicator(states_module::RUNNING)
       expect(find_open_workspace_button).to have_text('Open workspace')
       expect(find_open_workspace_button[:href]).to eq(workspace.url)
 
@@ -211,7 +212,7 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_third_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        actual_state: states::RUNNING,
+        actual_state: states_module::RUNNING,
         **additional_args_for_expected_config_to_apply
       )
 
@@ -219,12 +220,12 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_fourth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        actual_state: states::STOPPING,
+        actual_state: states_module::STOPPING,
         **additional_args_for_expected_config_to_apply
       )
 
       # ASSERT WORKSPACE SHOWS STOPPING STATE IN UI
-      expect_workspace_state_indicator(states::STOPPING)
+      expect_workspace_state_indicator(states_module::STOPPING)
 
       # ASSERT ACTION BUTTONS ARE CORRECT FOR STOPPING STATE
       click_button 'Actions'
@@ -234,12 +235,12 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_fifth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        actual_state: states::STOPPED,
+        actual_state: states_module::STOPPED,
         **additional_args_for_expected_config_to_apply
       )
 
       # ASSERT WORKSPACE SHOWS STOPPED STATE IN UI
-      expect_workspace_state_indicator(states::STOPPED)
+      expect_workspace_state_indicator(states_module::STOPPED)
 
       # ASSERT ACTION BUTTONS ARE CORRECT FOR STOPPED STATE
       expect(page).to have_button('Start')
@@ -252,7 +253,7 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_seventh_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        actual_state: states::STOPPED,
+        actual_state: states_module::STOPPED,
         **additional_args_for_expected_config_to_apply
       )
 
@@ -263,7 +264,7 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_eighth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        actual_state: states::STOPPED,
+        actual_state: states_module::STOPPED,
         **additional_args_for_expected_config_to_apply
       )
 
@@ -271,20 +272,20 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_ninth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        actual_state: states::RUNNING,
+        actual_state: states_module::RUNNING,
         # TRAVEL FORWARD IN TIME MAX_ACTIVE_HOURS_BEFORE_STOP HOURS
         time_to_travel_after_poll: workspace.workspaces_agent_config.max_active_hours_before_stop.hours,
         **additional_args_for_expected_config_to_apply
       )
 
       # ASSERT WORKSPACE SHOWS RUNNING STATE IN UI AND UPDATES URL
-      expect_workspace_state_indicator(states::RUNNING)
+      expect_workspace_state_indicator(states_module::RUNNING)
 
       # SIMULATE RECONCILE RESPONSE TO AGENTK UPDATING WORKSPACE TO STOPPED DESIRED_STATE
       simulate_tenth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        actual_state: states::RUNNING,
+        actual_state: states_module::RUNNING,
         **additional_args_for_expected_config_to_apply
       )
 
@@ -292,31 +293,31 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_eleventh_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        actual_state: states::STOPPING,
+        actual_state: states_module::STOPPING,
         **additional_args_for_expected_config_to_apply
       )
 
       # ASSERT WORKSPACE SHOWS STOPPING STATE IN UI
-      expect_workspace_state_indicator(states::STOPPING)
+      expect_workspace_state_indicator(states_module::STOPPING)
 
       # SIMULATE RECONCILE REQUEST FROM AGENTK UPDATING WORKSPACE TO STOPPED ACTUAL_STATE
       simulate_twelfth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        actual_state: states::STOPPED,
+        actual_state: states_module::STOPPED,
         # TRAVEL FORWARD IN TIME MAX_STOPPED_HOURS_BEFORE_TERMINATION HOURS
         time_to_travel_after_poll: workspace.workspaces_agent_config.max_stopped_hours_before_termination.hours,
         **additional_args_for_expected_config_to_apply
       )
 
       # ASSERT WORKSPACE SHOWS STOPPED STATE IN UI
-      expect_workspace_state_indicator(states::STOPPED)
+      expect_workspace_state_indicator(states_module::STOPPED)
 
       # SIMULATE RECONCILE RESPONSE TO AGENTK UPDATING WORKSPACE TO TERMINATED DESIRED_STATE
       simulate_thirteenth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        actual_state: states::TERMINATED,
+        actual_state: states_module::TERMINATED,
         **additional_args_for_expected_config_to_apply
       )
 
@@ -324,7 +325,7 @@ RSpec.describe 'Remote Development workspaces', :freeze_time, :api, :js, feature
       simulate_fourteenth_poll(
         workspace: workspace.reload,
         agent_token: agent_token,
-        actual_state: states::TERMINATING,
+        actual_state: states_module::TERMINATING,
         **additional_args_for_expected_config_to_apply
       )
 

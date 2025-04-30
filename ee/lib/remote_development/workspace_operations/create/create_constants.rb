@@ -14,18 +14,19 @@ module RemoteDevelopment
 
         # Please keep alphabetized
         GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME = "gl_git_credential_store.sh"
-        GIT_CREDENTIAL_STORE_SCRIPT_FILE_PATH = "#{VARIABLES_FILE_DIR}/#{GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME}".freeze
+        GIT_CREDENTIAL_STORE_SCRIPT_FILE_PATH =
+          "#{VARIABLES_VOLUME_PATH}/#{GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME}".freeze
         MAIN_COMPONENT_INDICATOR_ATTRIBUTE = "gl/inject-editor"
         NAMESPACE_PREFIX = "gl-rd-ns"
-        PROJECT_CLONING_SUCCESSFUL_FILENAME = ".gl_project_cloning_successful"
+        PROJECT_CLONING_SUCCESSFUL_FILE_NAME = ".gl_project_cloning_successful"
         TOKEN_FILE_NAME = "gl_token"
-        TOKEN_FILE_PATH = "#{VARIABLES_FILE_DIR}/#{TOKEN_FILE_NAME}".freeze
+        TOKEN_FILE_PATH = "#{VARIABLES_VOLUME_PATH}/#{TOKEN_FILE_NAME}".freeze
         TOOLS_DIR_NAME = ".gl-tools"
         TOOLS_DIR_ENV_VAR = "GL_TOOLS_DIR"
         TOOLS_INJECTOR_COMPONENT_NAME = "gl-tools-injector"
         WORKSPACE_DATA_VOLUME_NAME = "gl-workspace-data"
-        WORKSPACE_DATA_VOLUME_PATH = "/projects"
         WORKSPACE_EDITOR_PORT = 60001
+        WORKSPACE_SSH_PORT = 60022
       end
     end
   end

@@ -26,9 +26,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener,
   end
 
   context "when devfile has no elements" do
-    let(:devfile_yaml) { read_devfile_yaml('example.no-elements-devfile.yaml.erb') }
+    let(:devfile_yaml) { read_devfile_yaml('example.invalid-no-elements-devfile.yaml.erb') }
     let(:expected_processed_devfile) do
-      yaml_safe_load_symbolized(read_devfile_yaml("example.no-elements-flattened-devfile.yaml.erb"))
+      read_devfile("example.invalid-no-elements-flattened-devfile.yaml.erb")
     end
 
     it "adds empty elements" do

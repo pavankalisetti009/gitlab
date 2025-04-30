@@ -9,8 +9,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
   let_it_be(:user) { create(:user) }
   let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
 
-  let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
-  let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STARTING }
+  let(:desired_state) { states_module::RUNNING }
+  let(:actual_state) { states_module::STARTING }
 
   let(:workspace) do
     create(
@@ -53,12 +53,12 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
   end
 
   context "when persisted workspace desired_state is RESTART_REQUESTED and actual_state is STOPPED" do
-    let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RESTART_REQUESTED }
-    let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+    let(:desired_state) { states_module::RESTART_REQUESTED }
+    let(:actual_state) { states_module::STOPPED }
 
     it "sets persisted workspace desired state to RUNNING" do
       expect(returned_value).to eq(context.merge(workspaces_from_agent_infos: [workspace]))
-      expect(workspace.reload.desired_state).to eq(RemoteDevelopment::WorkspaceOperations::States::RUNNING)
+      expect(workspace.reload.desired_state).to eq(states_module::RUNNING)
     end
   end
 end

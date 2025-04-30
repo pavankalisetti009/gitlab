@@ -5,7 +5,8 @@ require_relative "../../../../support/fast_spec/remote_development/fast_spec_hel
 
 # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::CreatorBootstrapper, feature_category: :workspaces do
-  let(:namespace_prefix) { "gl-rd-ns" }
+  include_context "with constant modules"
+
   let(:workspaces_agent_config) do
     instance_double("RemoteDevelopment::WorkspacesAgentConfig", shared_namespace: shared_namespace)
   end
@@ -50,7 +51,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::CreatorBootstrapp
 
       it "is set in context" do
         expect(returned_value.fetch(:workspace_namespace))
-          .to eq("#{namespace_prefix}-#{agent.id}-#{user.id}-#{random_string}")
+          .to eq("#{create_constants_module::NAMESPACE_PREFIX}-#{agent.id}-#{user.id}-#{random_string}")
       end
     end
 

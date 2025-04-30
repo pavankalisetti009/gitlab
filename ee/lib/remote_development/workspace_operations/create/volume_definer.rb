@@ -12,9 +12,9 @@ module RemoteDevelopment
         # @param [Hash] context
         # @return [Hash]
         def self.define(context)
-          # workspace_root is set to /projects as devfile parser uses this value when setting env vars
-          # PROJECTS_ROOT and PROJECT_SOURCE that are available within the spawned containers
-          # hence, workspace_root will be used across containers/initContainers as the place for user data
+          # volume_mounts.data_volume.path is set to WORKSPACE_DATA_VOLUME_PATH, as DevfileParser gem uses this value
+          # when setting env vars PROJECTS_ROOT and PROJECT_SOURCE that are available within the spawned containers.
+          # Hence, workspace_data_volume_path will be used across containers/initContainers as the place for user data.
           #
           # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/408450
           #       explore in depth implications of PROJECTS_ROOT and PROJECT_SOURCE env vars with devfile team

@@ -12,7 +12,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
 
     context 'with cases parameterized from shared fixtures' do
       where(:previous_actual_state, :current_actual_state, :workspace_exists) do
-        # rubocop:disable Layout/LineLength -- Keep table rows on single lines for readability
         [
           # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/409783
           #       These are currently taken from only the currently supported cases in
@@ -21,26 +20,25 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
           #       realistic coverage of all possible relevant states.
           #       Note that `nil` is passed when the argument will not be used by
           #       remote_development_shared_contexts.rb
-          [RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED, RemoteDevelopment::WorkspaceOperations::States::STARTING, nil],
-          [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::STARTING, false],
-          [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::RUNNING, false],
-          [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::FAILED, false],
-          [RemoteDevelopment::WorkspaceOperations::States::FAILED, RemoteDevelopment::WorkspaceOperations::States::STARTING, false],
-          [RemoteDevelopment::WorkspaceOperations::States::RUNNING, RemoteDevelopment::WorkspaceOperations::States::FAILED, nil],
-          [RemoteDevelopment::WorkspaceOperations::States::RUNNING, RemoteDevelopment::WorkspaceOperations::States::STOPPING, nil],
-          [RemoteDevelopment::WorkspaceOperations::States::STOPPING, RemoteDevelopment::WorkspaceOperations::States::STOPPED, nil],
-          [RemoteDevelopment::WorkspaceOperations::States::STOPPING, RemoteDevelopment::WorkspaceOperations::States::FAILED, nil],
-          [RemoteDevelopment::WorkspaceOperations::States::STOPPED, RemoteDevelopment::WorkspaceOperations::States::STARTING, nil],
-          [RemoteDevelopment::WorkspaceOperations::States::STOPPED, RemoteDevelopment::WorkspaceOperations::States::STOPPED, true],
-          [RemoteDevelopment::WorkspaceOperations::States::STOPPED, RemoteDevelopment::WorkspaceOperations::States::FAILED, nil],
-          [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::STARTING, true],
-          [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::RUNNING, true],
-          [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::FAILED, true],
-          [RemoteDevelopment::WorkspaceOperations::States::FAILED, RemoteDevelopment::WorkspaceOperations::States::STARTING, true],
-          [RemoteDevelopment::WorkspaceOperations::States::FAILED, RemoteDevelopment::WorkspaceOperations::States::STOPPING, nil],
-          [nil, RemoteDevelopment::WorkspaceOperations::States::FAILED, nil]
+          [states_module::CREATION_REQUESTED, states_module::STARTING, nil],
+          [states_module::STARTING, states_module::STARTING, false],
+          [states_module::STARTING, states_module::RUNNING, false],
+          [states_module::STARTING, states_module::FAILED, false],
+          [states_module::FAILED, states_module::STARTING, false],
+          [states_module::RUNNING, states_module::FAILED, nil],
+          [states_module::RUNNING, states_module::STOPPING, nil],
+          [states_module::STOPPING, states_module::STOPPED, nil],
+          [states_module::STOPPING, states_module::FAILED, nil],
+          [states_module::STOPPED, states_module::STARTING, nil],
+          [states_module::STOPPED, states_module::STOPPED, true],
+          [states_module::STOPPED, states_module::FAILED, nil],
+          [states_module::STARTING, states_module::STARTING, true],
+          [states_module::STARTING, states_module::RUNNING, true],
+          [states_module::STARTING, states_module::FAILED, true],
+          [states_module::FAILED, states_module::STARTING, true],
+          [states_module::FAILED, states_module::STOPPING, nil],
+          [nil, states_module::FAILED, nil]
         ]
-        # rubocop:enable Layout/LineLength
       end
 
       with_them do
@@ -91,7 +89,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
 
     context 'when the deployment is completed successfully' do
       context 'when new workspace has been created or existing workspace has been scaled up' do
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+        let(:expected_actual_state) { states_module::RUNNING }
         let(:latest_k8s_deployment_info) do
           yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
@@ -115,7 +113,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       end
 
       context 'when existing workspace has been scaled down' do
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+        let(:expected_actual_state) { states_module::STOPPED }
         let(:latest_k8s_deployment_info) do
           yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
@@ -138,7 +136,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       end
 
       context 'when status does not contain required information' do
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::UNKNOWN }
+        let(:expected_actual_state) { states_module::UNKNOWN }
         let(:latest_k8s_deployment_info) do
           yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
@@ -163,7 +161,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
 
     context 'when the deployment is in progress' do
       context 'when new workspace has been created' do
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::STARTING }
+        let(:expected_actual_state) { states_module::STARTING }
         let(:latest_k8s_deployment_info) do
           yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
@@ -184,7 +182,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       end
 
       context 'when existing workspace has been updated' do
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::STARTING }
+        let(:expected_actual_state) { states_module::STARTING }
         let(:latest_k8s_deployment_info) do
           yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
@@ -205,7 +203,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       end
 
       context 'when existing workspace has been scaled up' do
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::STARTING }
+        let(:expected_actual_state) { states_module::STARTING }
         let(:latest_k8s_deployment_info) do
           yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
@@ -226,7 +224,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       end
 
       context 'when existing workspace has been scaled down' do
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPING }
+        let(:expected_actual_state) { states_module::STOPPING }
         let(:latest_k8s_deployment_info) do
           yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
@@ -247,7 +245,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       end
 
       context 'when spec replicas is more than 1' do
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::UNKNOWN }
+        let(:expected_actual_state) { states_module::UNKNOWN }
         let(:latest_k8s_deployment_info) do
           yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
@@ -268,7 +266,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       end
 
       context 'when status does not contain required information' do
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::UNKNOWN }
+        let(:expected_actual_state) { states_module::UNKNOWN }
         let(:latest_k8s_deployment_info) do
           yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
@@ -291,7 +289,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
 
     context 'when the deployment is failed' do
       context 'when new workspace has been created or existing workspace has been scaled up' do
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::FAILED }
+        let(:expected_actual_state) { states_module::FAILED }
         let(:latest_k8s_deployment_info) do
           yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
@@ -315,7 +313,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       end
 
       context 'when existing scaled down workspace which was failing has been scaled up' do
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::FAILED }
+        let(:expected_actual_state) { states_module::FAILED }
         let(:latest_k8s_deployment_info) do
           yaml_safe_load_symbolized(
             <<~WORKSPACE_STATUS_YAML
@@ -341,7 +339,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
     end
 
     context 'when the deployment status is unknown' do
-      let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::UNKNOWN }
+      let(:expected_actual_state) { states_module::UNKNOWN }
 
       context 'when spec is missing' do
         let(:latest_k8s_deployment_info) do
@@ -462,7 +460,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
     end
 
     context 'when termination_progress is Terminating' do
-      let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATING }
+      let(:expected_actual_state) { states_module::TERMINATING }
       let(:termination_progress) do
         RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualStateCalculator::TERMINATING
       end
@@ -478,7 +476,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
     end
 
     context 'when termination_progress is Terminated' do
-      let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+      let(:expected_actual_state) { states_module::TERMINATED }
       let(:termination_progress) do
         RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualStateCalculator::TERMINATED
       end
@@ -505,7 +503,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
 
       context "and termination_progress is missing" do
         let(:termination_progress) { nil }
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::ERROR }
+        let(:expected_actual_state) { states_module::ERROR }
 
         it 'returns the expected actual state' do
           expect(
@@ -518,7 +516,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       end
 
       context "and termination_progress is Terminated" do
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+        let(:expected_actual_state) { states_module::TERMINATED }
 
         it 'returns the expected actual state' do
           expect(
@@ -533,7 +531,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualS
       end
 
       context "and termination_progress is Terminating" do
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::ERROR }
+        let(:expected_actual_state) { states_module::ERROR }
 
         it 'returns the expected actual state' do
           expect(

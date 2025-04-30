@@ -31,7 +31,7 @@ module RemoteDevelopment
         # @param [String] image
         # @return [void]
         def self.insert_tools_injector_component(processed_devfile:, tools_dir:, image:)
-          processed_devfile[:components] << {
+          processed_devfile.fetch(:components) << {
             name: TOOLS_INJECTOR_COMPONENT_NAME,
             container: {
               image: image,
@@ -48,15 +48,15 @@ module RemoteDevelopment
             }
           }
 
-          command_name = "#{TOOLS_INJECTOR_COMPONENT_NAME}-command"
+          command_id = "#{TOOLS_INJECTOR_COMPONENT_NAME}-command"
           processed_devfile[:commands] << {
-            id: command_name,
+            id: command_id,
             apply: {
               component: TOOLS_INJECTOR_COMPONENT_NAME
             }
           }
 
-          (processed_devfile.fetch(:events)[:preStart] ||= []) << command_name
+          processed_devfile.fetch(:events)[:preStart] << command_id
 
           nil
         end

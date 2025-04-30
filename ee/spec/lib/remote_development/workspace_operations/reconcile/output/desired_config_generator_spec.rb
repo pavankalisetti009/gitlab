@@ -10,8 +10,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     let(:logger) { instance_double(Logger) }
     let(:user) { create(:user) }
     let_it_be(:agent, reload: true) { create(:ee_cluster_agent) }
-    let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
-    let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+    let(:desired_state) { states_module::RUNNING }
+    let(:actual_state) { states_module::STOPPED }
     let(:started) { true }
     let(:desired_state_is_terminated) { false }
     let(:include_all_resources) { false }
@@ -79,7 +79,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
 
     context 'when desired_state terminated' do
       let(:desired_state_is_terminated) { true }
-      let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+      let(:desired_state) { states_module::TERMINATED }
 
       it 'returns expected config with only inventory config maps', :unlimited_max_formatted_output_length do
         actual = workspace_resources
@@ -121,7 +121,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     end
 
     context 'when desired_state results in started=false' do
-      let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+      let(:desired_state) { states_module::STOPPED }
       let(:started) { false }
 
       it 'returns expected config with the replicas set to zero' do

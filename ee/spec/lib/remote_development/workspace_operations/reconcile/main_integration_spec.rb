@@ -16,8 +16,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
     agent.reload
   end
 
-  let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
-  let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+  let(:desired_state) { states_module::STOPPED }
+  let(:actual_state) { states_module::STOPPED }
   let(:force_include_all_resources) { false }
   let(:workspace_fixture_common_args) do
     {
@@ -267,10 +267,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
     let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::PARTIAL }
 
     context 'when receiving agent updates for a workspace which exists in the db' do
-      let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+      let(:desired_state) { states_module::STOPPED }
       let(:actual_state) { current_actual_state }
-      let(:previous_actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPING }
-      let(:current_actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+      let(:previous_actual_state) { states_module::STOPPING }
+      let(:current_actual_state) { states_module::STOPPED }
       let(:workspace_exists) { false }
       let(:deployment_resource_version_from_agent) { '2' }
       let(:expected_deployment_resource_version) { deployment_resource_version_from_agent }
@@ -295,8 +295,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
         end
 
         context 'when max_active_hours_before_stop has passed' do
-          let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
-          let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+          let(:desired_state) { states_module::RUNNING }
+          let(:actual_state) { states_module::RUNNING }
           let(:created_at) { max_hours_before_termination.hours.ago + 1.minute }
           let(:desired_state_updated_at) do
             unversioned_latest_workspaces_agent_config.max_active_hours_before_stop.hours.ago - 70.seconds
@@ -311,8 +311,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
         end
 
         context 'when max_stopped_hours_before_termination has passed' do
-          let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
-          let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+          let(:desired_state) { states_module::STOPPED }
+          let(:actual_state) { states_module::STOPPED }
           let(:created_at) { max_hours_before_termination.hours.ago + 1.minute }
           let(:desired_state_updated_at) do
             unversioned_latest_workspaces_agent_config.max_stopped_hours_before_termination.hours.ago - 70.seconds
@@ -328,9 +328,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
       end
 
       context "when the agent encounters an error while starting the workspace" do
-        let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STARTING }
-        let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
-        let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::ERROR }
+        let(:actual_state) { states_module::STARTING }
+        let(:desired_state) { states_module::RUNNING }
+        let(:expected_actual_state) { states_module::ERROR }
         let(:expected_config_to_apply_include_all_resources) { true }
         let(:error_from_agent) do
           {
@@ -463,7 +463,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
           context 'when state is Stopped' do
             let(:expected_config_to_apply_yaml_stream) { "" }
-            let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+            let(:desired_state) { states_module::STOPPED }
 
             it 'updates workspace record and returns proper workspace_rails_info entry' do
               # verify initial states in db (sanity check of match between factory and fixtures)
@@ -485,9 +485,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           end
 
           context 'when state is Terminated' do
-            let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
-            let(:previous_actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
-            let(:current_actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+            let(:desired_state) { states_module::TERMINATED }
+            let(:previous_actual_state) { states_module::TERMINATED }
+            let(:current_actual_state) { states_module::TERMINATED }
             let(:expected_config_to_apply_yaml_stream) { "" }
             let(:expected_deployment_resource_version) { workspace.deployment_resource_version }
 
@@ -523,7 +523,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           # rubocop:enable RSpec/ExpectInHook
 
           context 'when desired_state is Running' do
-            let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+            let(:desired_state) { states_module::RUNNING }
 
             it 'returns proper workspace_rails_info entry with config_to_apply' do
               # verify initial states in db (sanity check of match between factory and fixtures)
@@ -553,7 +553,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           end
 
           context 'when desired_state is Terminated' do
-            let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+            let(:desired_state) { states_module::TERMINATED }
             let(:expected_started) { false }
             let(:expected_desired_state_is_terminated) { true }
 
@@ -584,8 +584,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           end
 
           context 'when desired_state is RestartRequested and actual_state is Stopped' do
-            let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RESTART_REQUESTED }
-            let(:expected_desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+            let(:desired_state) { states_module::RESTART_REQUESTED }
+            let(:expected_desired_state) { states_module::RUNNING }
 
             it 'changes desired_state to Running' do
               # verify initial states in db (sanity check of match between factory and fixtures)
@@ -611,8 +611,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
           end
 
           context 'when actual_state is Unknown' do
-            let(:current_actual_state) { RemoteDevelopment::WorkspaceOperations::States::UNKNOWN }
-            let(:expected_actual_state) { RemoteDevelopment::WorkspaceOperations::States::UNKNOWN }
+            let(:current_actual_state) { states_module::UNKNOWN }
+            let(:expected_actual_state) { states_module::UNKNOWN }
             let(:expected_started) { false }
 
             it 'returns the proper response' do
@@ -652,8 +652,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
       let(:workspace_agent_info) do
         create_workspace_agent_info_hash(
           workspace: nonexistent_workspace,
-          previous_actual_state: RemoteDevelopment::WorkspaceOperations::States::STOPPING,
-          current_actual_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED,
+          previous_actual_state: states_module::STOPPING,
+          current_actual_state: states_module::STOPPED,
           workspace_exists: false,
           workspace_variables_environment: {},
           workspace_variables_file: {},

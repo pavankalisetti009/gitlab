@@ -3,10 +3,12 @@
 require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::ResponsePayloadObserver, feature_category: :workspaces do
+  include_context "with constant modules"
+
   let(:agent) { instance_double("Clusters::Agent", id: 1) } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::PARTIAL }
-  let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
-  let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+  let(:desired_state) { states_module::RUNNING }
+  let(:actual_state) { states_module::STOPPED }
   let(:logger) { instance_double(::Logger) }
 
   let(:workspace1_rails_info_without_config_to_apply) do

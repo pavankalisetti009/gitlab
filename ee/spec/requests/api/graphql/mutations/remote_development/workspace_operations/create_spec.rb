@@ -6,6 +6,8 @@ require 'spec_helper'
 RSpec.describe 'Creating a workspace', feature_category: :workspaces do
   include GraphqlHelpers
 
+  include_context "with constant modules"
+
   let_it_be(:user) { create(:user) }
   let_it_be(:current_user) { user } # NOTE: Some graphql spec helper methods rely on current_user to be set
   let_it_be(:root_namespace) { create(:group) }
@@ -36,7 +38,7 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
     create(:workspace, user: user, project: workspace_project)
   end
 
-  let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+  let(:desired_state) { states_module::RUNNING }
   let(:devfile_path) { '.devfile.yaml' }
 
   let(:variables) do

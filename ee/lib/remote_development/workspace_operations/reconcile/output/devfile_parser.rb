@@ -213,34 +213,31 @@ module RemoteDevelopment
             workspace_resources.each do |workspace_resource|
               next unless workspace_resource.fetch(:kind) == 'Deployment'
 
-              volume_name = 'gl-workspace-variables'
-              volumes = [
-                {
-                  name: volume_name,
-                  projected: {
-                    defaultMode: 0o774,
-                    sources: file_secret_names.map { |name| { secret: { name: name } } }
-                  }
+              volume = {
+                name: VARIABLES_VOLUME_NAME,
+                projected: {
+                  defaultMode: 0o774,
+                  sources: file_secret_names.map { |name| { secret: { name: name } } }
                 }
-              ]
-              volume_mounts = [
-                {
-                  name: volume_name,
-                  mountPath: VARIABLES_FILE_DIR
-                }
-              ]
+              }
+
+              volume_mount = {
+                name: VARIABLES_VOLUME_NAME,
+                mountPath: VARIABLES_VOLUME_PATH
+              }
+
               env_from = env_secret_names.map { |v| { secretRef: { name: v } } }
 
               pod_spec = workspace_resource.fetch(:spec).fetch(:template).fetch(:spec)
-              pod_spec.fetch(:volumes).concat(volumes) unless file_secret_names.empty?
+              pod_spec.fetch(:volumes) << volume unless file_secret_names.empty?
 
               pod_spec.fetch(:initContainers).each do |init_container|
-                init_container.fetch(:volumeMounts).concat(volume_mounts) unless file_secret_names.empty?
+                init_container.fetch(:volumeMounts) << volume_mount unless file_secret_names.empty?
                 init_container[:envFrom] = env_from unless env_secret_names.empty?
               end
 
               pod_spec.fetch(:containers).each do |container|
-                container.fetch(:volumeMounts).concat(volume_mounts) unless file_secret_names.empty?
+                container.fetch(:volumeMounts) << volume_mount unless file_secret_names.empty?
                 container[:envFrom] = env_from unless env_secret_names.empty?
               end
             end

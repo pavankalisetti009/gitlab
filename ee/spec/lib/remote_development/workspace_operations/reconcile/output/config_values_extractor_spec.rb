@@ -4,12 +4,13 @@ require "spec_helper"
 
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::ConfigValuesExtractor, feature_category: :workspaces do
-  let_it_be(:states) { RemoteDevelopment::WorkspaceOperations::States }
+  include_context "with constant modules"
+
   let_it_be(:user) { create(:user) }
   let_it_be(:agent, reload: true) { create(:ee_cluster_agent) }
   let_it_be(:workspace_name) { "workspace-name" }
-  let(:desired_state) { states::STOPPED }
-  let_it_be(:actual_state) { states::STOPPED }
+  let(:desired_state) { states_module::STOPPED }
+  let_it_be(:actual_state) { states_module::STOPPED }
   let_it_be(:dns_zone) { "my.dns-zone.me" }
   let_it_be(:labels) { { "some-label": "value", "other-label": "other-value" } }
   let_it_be(:started) { true }
@@ -193,14 +194,14 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
     subject(:replicas) { extractor.extract(workspace: workspace).fetch(:replicas) }
 
     context "when desired_state is Running" do
-      let(:desired_state) { states::RUNNING }
+      let(:desired_state) { states_module::RUNNING }
       let(:expected_replicas) { 1 }
 
       it { is_expected.to eq(expected_replicas) }
     end
 
     context "when desired_state is not CreationRequested nor Running" do
-      let(:desired_state) { states::STOPPED }
+      let(:desired_state) { states_module::STOPPED }
       let(:expected_replicas) { 0 }
 
       it { is_expected.to eq(expected_replicas) }

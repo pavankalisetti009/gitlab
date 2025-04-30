@@ -5,12 +5,14 @@ require "spec_helper"
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
 RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :workspaces do
+  include_context "with constant modules"
+
   let(:workspaces_agent_config_enabled) { true }
   let(:workspaces_per_user_quota) { 10 }
   let(:workspaces_quota) { 10 }
   let(:dns_zone) { "workspace.me" }
-  let(:desired_state) { ::RemoteDevelopment::WorkspaceOperations::States::STOPPED }
-  let(:actual_state) { ::RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+  let(:desired_state) { states_module::STOPPED }
+  let(:actual_state) { states_module::STOPPED }
 
   let_it_be(:agent, reload: true) { create(:ee_cluster_agent) }
   let_it_be(:agent_config, reload: true) { create(:workspaces_agent_config, agent: agent) }
@@ -76,7 +78,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
         expect(workspace.agent).to eq(agent)
         expect(workspace.personal_access_token).to eq(personal_access_token)
         expect(agent.unversioned_latest_workspaces_agent_config.workspaces.first).to eq(workspace)
-        expect(workspace.url_prefix).to eq("60001-#{workspace.name}")
+        expect(workspace.url_prefix).to eq("#{create_constants_module::WORKSPACE_EDITOR_PORT}-#{workspace.name}")
         expect(workspace.url_query_string).to eq("folder=dir%2Ffile")
       end
 
@@ -103,9 +105,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
 
       describe "when updating desired_state" do
         it "sets desired_state_updated_at" do
-          # rubocop:todo Layout/LineLength -- this line will not be too long once we rename RemoteDevelopment namespace to Workspaces
-          expect { workspace.update!(desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING) }.to change {
-            # rubocop:enable Layout/LineLength
+          expect { workspace.update!(desired_state: states_module::RUNNING) }.to change {
             workspace.desired_state_updated_at
           }
         end
@@ -113,9 +113,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
 
       describe "when updating actual_state" do
         it "sets desired_state_updated_at" do
-          # rubocop:todo Layout/LineLength -- this line will not be too long once we rename RemoteDevelopment namespace to Workspaces
-          expect { workspace.update!(actual_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING) }.to change {
-            # rubocop:enable Layout/LineLength
+          expect { workspace.update!(actual_state: states_module::RUNNING) }.to change {
             workspace.actual_state_updated_at
           }
         end
@@ -124,18 +122,14 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       describe "when updating a field other than desired_state" do
         it "does not set desired_state_updated_at" do
           workspace.save!
-          # rubocop:todo Layout/LineLength -- this line will not be too long once we rename RemoteDevelopment namespace to Workspaces
-          expect { workspace.update!(actual_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING) }.not_to change {
-            # rubocop:enable Layout/LineLength
+          expect { workspace.update!(actual_state: states_module::RUNNING) }.not_to change {
             workspace.desired_state_updated_at
           }
         end
 
         it "does not set actual_state_updated_at" do
           workspace.save!
-          # rubocop:todo Layout/LineLength -- this line will not be too long once we rename RemoteDevelopment namespace to Workspaces
-          expect { workspace.update!(actual_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING) }.not_to change {
-            # rubocop:enable Layout/LineLength
+          expect { workspace.update!(actual_state: states_module::RUNNING) }.not_to change {
             workspace.actual_state_updated_at
           }
         end
@@ -238,11 +232,11 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
 
     context "on desired_state" do
       context "when desired_state is Terminated" do
-        let(:desired_state) { ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+        let(:desired_state) { states_module::TERMINATED }
 
         it "prevents changes to desired_state" do
           workspace.save!
-          updated = workspace.update(desired_state: ::RemoteDevelopment::WorkspaceOperations::States::STOPPED)
+          updated = workspace.update(desired_state: states_module::STOPPED)
           expect(updated).to be(false)
           expect(workspace).not_to be_valid
           expect(workspace.errors[:desired_state])
@@ -568,8 +562,8 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
 
     describe "with_desired_state_or_actual_state_not_terminated" do
       context "when desired_state is terminated but actual_state is not terminated" do
-        let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
-        let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATING }
+        let(:desired_state) { states_module::TERMINATED }
+        let(:actual_state) { states_module::TERMINATING }
 
         it "returns workspace" do
           workspace.save!
@@ -579,8 +573,8 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       end
 
       context "when both actual_state and desired_state are not terminated" do
-        let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
-        let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+        let(:desired_state) { states_module::RUNNING }
+        let(:actual_state) { states_module::RUNNING }
 
         it "returns workspace" do
           workspace.save!
@@ -590,8 +584,8 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       end
 
       context "when both actual_state and desired_state are terminated" do
-        let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
-        let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+        let(:desired_state) { states_module::TERMINATED }
+        let(:actual_state) { states_module::TERMINATED }
 
         it "does not returns workspace" do
           workspace.save!
@@ -603,10 +597,10 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
 
     describe "with_desired_state_terminated_and_actual_state_not_terminated" do
       context "when workspace desired_state is not terminated" do
-        let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+        let(:desired_state) { states_module::STOPPED }
 
         context "when workspace actual_state is not terminated" do
-          let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+          let(:actual_state) { states_module::STOPPED }
 
           it "returns workspace" do
             workspace.save!
@@ -616,7 +610,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
         end
 
         context "when workspace actual_state is terminated" do
-          let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+          let(:actual_state) { states_module::TERMINATED }
 
           it "returns workspace" do
             workspace.save!
@@ -627,10 +621,10 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       end
 
       context "when workspace desired_state is terminated" do
-        let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+        let(:desired_state) { states_module::TERMINATED }
 
         context "when workspace actual_state is not terminated" do
-          let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+          let(:actual_state) { states_module::STOPPED }
 
           it "returns workspace" do
             workspace.save!
@@ -639,7 +633,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
         end
 
         context "when workspace actual_state is terminated" do
-          let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+          let(:actual_state) { states_module::TERMINATED }
 
           it "returns workspace" do
             workspace.save!
@@ -652,7 +646,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
 
     describe "desired_state_not_terminated" do
       context "when workspace desired_state is not terminated" do
-        let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+        let(:desired_state) { states_module::STOPPED }
 
         it "returns workspace" do
           workspace.save!
@@ -661,7 +655,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       end
 
       context "when workspace desired_state is terminated" do
-        let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+        let(:desired_state) { states_module::TERMINATED }
 
         it "returns workspace" do
           workspace.save!
@@ -672,7 +666,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
 
     describe "actual_state_not_terminated" do
       context "when workspace actual_state is not terminated" do
-        let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+        let(:actual_state) { states_module::STOPPED }
 
         it "returns workspace" do
           workspace.save!
@@ -681,7 +675,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       end
 
       context "when workspace actual_state is terminated" do
-        let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+        let(:actual_state) { states_module::TERMINATED }
 
         it "when workspace actual_state is terminated" do
           workspace.save!
@@ -693,7 +687,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
 
   describe "methods" do
     describe "#desired_state_running?" do
-      let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+      let(:desired_state) { states_module::RUNNING }
 
       it "returns true if desired state is terminated" do
         expect(workspace.desired_state_running?).to be true
@@ -701,7 +695,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
     end
 
     describe "#desired_state_terminated?" do
-      let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+      let(:desired_state) { states_module::TERMINATED }
 
       it "returns true if desired state is terminated" do
         expect(workspace.desired_state_terminated?).to be true
@@ -714,14 +708,16 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       end
 
       it "returns calculated url" do
-        expect(workspace.url).to eq("https://60001-#{workspace.name}.#{dns_zone}/?folder=dir%2Ffile")
+        expect(workspace.url).to eq("https://#{create_constants_module::WORKSPACE_EDITOR_PORT}-#{workspace.name}." \
+          "#{dns_zone}/?folder=dir%2Ffile")
       end
     end
 
     describe "#devfile_web_url" do
       it "returns web url to devfile" do
         # noinspection HttpUrlsUsage - suppress RubyMine warning for insecure http link.
-        expect(workspace.devfile_web_url).to eq("http://#{Gitlab.config.gitlab.host}/#{workspace.project.path_with_namespace}/-/blob/main/.devfile.yaml")
+        expect(workspace.devfile_web_url)
+          .to eq("http://#{Gitlab.config.gitlab.host}/#{workspace.project.path_with_namespace}/-/blob/main/.devfile.yaml")
       end
 
       context "when devfile_path is nil" do
@@ -745,31 +741,31 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       let_it_be(:workspace1) do
         create(
           :workspace, user: user1, agent: agent1,
-          desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING)
+          desired_state: states_module::RUNNING)
       end
 
       let_it_be(:workspace2) do
         create(
           :workspace, user: user2, agent: agent1,
-          desired_state: ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED)
+          desired_state: states_module::TERMINATED)
       end
 
       let_it_be(:workspace3) do
         create(
           :workspace, user: user1, agent: agent1,
-          desired_state: ::RemoteDevelopment::WorkspaceOperations::States::STOPPED)
+          desired_state: states_module::STOPPED)
       end
 
       let_it_be(:workspace4) do
         create(
           :workspace, user: user2, agent: agent2,
-          desired_state: ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED)
+          desired_state: states_module::TERMINATED)
       end
 
       let_it_be(:workspace5) do
         create(
           :workspace, user: user3, agent: agent2,
-          desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING)
+          desired_state: states_module::RUNNING)
       end
 
       it "returns the correct count for the current user and agent" do
@@ -785,23 +781,23 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       let_it_be(:agent1, reload: true) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
       let_it_be(:agent2, reload: true) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
       let_it_be(:workspace1) do
-        create(:workspace, agent: agent1, desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING)
+        create(:workspace, agent: agent1, desired_state: states_module::RUNNING)
       end
 
       let_it_be(:workspace2) do
-        create(:workspace, agent: agent1, desired_state: ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED)
+        create(:workspace, agent: agent1, desired_state: states_module::TERMINATED)
       end
 
       let_it_be(:workspace3) do
-        create(:workspace, agent: agent1, desired_state: ::RemoteDevelopment::WorkspaceOperations::States::STOPPED)
+        create(:workspace, agent: agent1, desired_state: states_module::STOPPED)
       end
 
       let_it_be(:workspace4) do
-        create(:workspace, agent: agent2, desired_state: ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED)
+        create(:workspace, agent: agent2, desired_state: states_module::TERMINATED)
       end
 
       let_it_be(:workspace5) do
-        create(:workspace, agent: agent2, desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING)
+        create(:workspace, agent: agent2, desired_state: states_module::RUNNING)
       end
 
       it "returns the correct count for the current agent" do

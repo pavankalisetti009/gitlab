@@ -3,11 +3,13 @@
 require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfo, feature_category: :workspaces do
+  include_context "with constant modules"
+
   let(:agent_info_constructor_args) do
     {
       name: 'name',
       namespace: 'namespace',
-      actual_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING,
+      actual_state: states_module::RUNNING,
       deployment_resource_version: '1'
     }
   end

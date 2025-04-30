@@ -3,6 +3,8 @@
 require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesLifecycleManager, feature_category: :workspaces do
+  include_context "with constant modules"
+
   let(:year) { 2021 }
 
   let!(:now) do
@@ -20,9 +22,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
 
   let(:max_allowable_workspace_age) { now - max_hours_before_termination.hours }
 
-  let(:running) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
-  let(:stopped) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
-  let(:terminated) { RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+  let(:running) { states_module::RUNNING }
+  let(:stopped) { states_module::STOPPED }
+  let(:terminated) { states_module::TERMINATED }
 
   let(:workspaces_from_agent_infos) { [workspace] }
 

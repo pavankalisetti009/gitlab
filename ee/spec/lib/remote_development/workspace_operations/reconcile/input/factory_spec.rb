@@ -53,8 +53,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::Factory
 
   describe '#build' do
     context 'when current actual state is not Terminated or Unknown' do
-      let(:previous_actual_state) { ::RemoteDevelopment::WorkspaceOperations::States::STARTING }
-      let(:current_actual_state) { ::RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+      let(:previous_actual_state) { states_module::STARTING }
+      let(:current_actual_state) { states_module::RUNNING }
       let(:termination_progress) { nil }
 
       it 'returns an AgentInfo object with namespace and deployment_resource_version populated' do
@@ -63,8 +63,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::Factory
     end
 
     context 'when current actual state is Terminating' do
-      let(:previous_actual_state) { ::RemoteDevelopment::WorkspaceOperations::States::RUNNING }
-      let(:current_actual_state) { ::RemoteDevelopment::WorkspaceOperations::States::TERMINATING }
+      let(:previous_actual_state) { states_module::RUNNING }
+      let(:current_actual_state) { states_module::TERMINATING }
       let(:expected_deployment_resource_version) { nil }
       let(:termination_progress) do
         RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualStateCalculator::TERMINATING
@@ -76,8 +76,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::Factory
     end
 
     context 'when current actual state is Terminated' do
-      let(:previous_actual_state) { ::RemoteDevelopment::WorkspaceOperations::States::TERMINATING }
-      let(:current_actual_state) { ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
+      let(:previous_actual_state) { states_module::TERMINATING }
+      let(:current_actual_state) { states_module::TERMINATED }
       let(:expected_deployment_resource_version) { nil }
       let(:termination_progress) do
         RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualStateCalculator::TERMINATED
@@ -92,8 +92,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::Factory
     # - https://gitlab.com/gitlab-org/gitlab/-/merge_requests/126127#note_1492911475
     # - https://gitlab.com/gitlab-org/gitlab/-/issues/420709
     context "when namespace is missing in the payload" do
-      let(:previous_actual_state) { ::RemoteDevelopment::WorkspaceOperations::States::STARTING }
-      let(:current_actual_state) { ::RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+      let(:previous_actual_state) { states_module::STARTING }
+      let(:current_actual_state) { states_module::RUNNING }
       let(:termination_progress) { nil }
       let(:namespace) { nil }
       let(:expected_namespace) { nil }

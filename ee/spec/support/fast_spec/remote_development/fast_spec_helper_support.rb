@@ -13,4 +13,5 @@ require_relative '../../../../lib/remote_development/workspace_operations/worksp
 require_relative '../../../support/helpers/remote_development/fixture_file_erb_binding'
 require_relative '../../../support/helpers/remote_development/fixture_file_helpers'
 require_relative '../../../support/shared_contexts/remote_development/agent_info_status_fixture_not_implemented_error'
+require_relative '../../../support/shared_contexts/remote_development/constant_modules_context'
 require_relative '../../../support/shared_contexts/remote_development/remote_development_shared_contexts'

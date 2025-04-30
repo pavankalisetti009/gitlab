@@ -22,7 +22,7 @@ module RemoteDevelopment
           }
           volume_mounts => { data_volume: Hash => data_volume }
           data_volume => {
-            path: String => workspace_root,
+            path: String => workspace_data_volume_path,
           }
           params => {
             desired_state: String => desired_state,
@@ -32,7 +32,7 @@ module RemoteDevelopment
             user: User => user,
             project: Project => project,
           }
-          project_dir = "#{workspace_root}/#{project.path}"
+          project_dir = "#{workspace_data_volume_path}/#{project.path}"
 
           workspace = RemoteDevelopment::Workspace.new
           workspace.name = workspace_name

@@ -5,6 +5,8 @@ require 'spec_helper'
 # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesToBeReturnedFinder, feature_category: :workspaces do
+  include_context "with constant modules"
+
   let_it_be(:user) { create(:user) }
   let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
 
@@ -25,8 +27,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
       :workspace,
       :without_realistic_after_create_timestamp_updates,
       name: "workspace_that_is_terminated",
-      desired_state: RemoteDevelopment::WorkspaceOperations::States::TERMINATED,
-      actual_state: RemoteDevelopment::WorkspaceOperations::States::TERMINATED,
+      desired_state: states_module::TERMINATED,
+      actual_state: states_module::TERMINATED,
       agent: agent,
       user: user,
       force_include_all_resources: false,
@@ -39,8 +41,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
       :workspace,
       :without_realistic_after_create_timestamp_updates,
       name: "workspace_desired_is_terminated_actual_is_terminating",
-      desired_state: RemoteDevelopment::WorkspaceOperations::States::TERMINATED,
-      actual_state: RemoteDevelopment::WorkspaceOperations::States::TERMINATING,
+      desired_state: states_module::TERMINATED,
+      actual_state: states_module::TERMINATING,
       agent: agent,
       user: user,
       force_include_all_resources: false,
@@ -53,8 +55,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::W
       :workspace,
       :without_realistic_after_create_timestamp_updates,
       name: "workspace_desired_state_and_actual_state_are_not_terminated",
-      desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
-      actual_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
+      desired_state: states_module::RUNNING,
+      actual_state: states_module::RUNNING,
       agent: agent,
       user: user,
       force_include_all_resources: false,

@@ -633,7 +633,7 @@ The files themselves should ideally be placed close to the code which uses them,
 shows them right next to the code that uses them.
 
 For example, the file with the shell script injected into the main container is located at
-`ee/lib/remote_development/workspace_operations/create/workspace_variables_git_credential_store_script.sh`, and named
+`ee/lib/remote_development/workspace_operations/create/workspace_variables_git_credential_store.sh`, and named
 with the `workspace_variables_` prefix, because it is used in`ee/lib/remote_development/workspace_operations/create/devfile_fetcher.rb`.
 
 ## Railway Oriented Programming and the Result class

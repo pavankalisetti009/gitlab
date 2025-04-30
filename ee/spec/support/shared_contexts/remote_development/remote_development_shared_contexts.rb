@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-# NOTE: These fixtures act somewhat as a "Golden Master" source of truth, so we do not use the constant values from
-#       RemoteDevelopment::.*Constants, but instead hardcode the corresponding values here.
-#       However, some values that change frequently, such as WORKSPACE_TOOLS_IMAGE, may directly use the constants.
 RSpec.shared_context 'with remote development shared fixtures' do
   include RemoteDevelopment::FixtureFileHelpers
+
+  include_context "with constant modules"
 
   # rubocop:todo Metrics/ParameterLists, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
 
@@ -39,27 +38,27 @@ RSpec.shared_context 'with remote development shared fixtures' do
       namespace: workspace.namespace
     }
 
-    if current_actual_state == RemoteDevelopment::WorkspaceOperations::States::TERMINATED
+    if current_actual_state == states_module::TERMINATED
       info[:termination_progress] =
-        RemoteDevelopment::WorkspaceOperations::States::TERMINATED
+        states_module::TERMINATED
     end
 
-    if current_actual_state == RemoteDevelopment::WorkspaceOperations::States::TERMINATING
+    if current_actual_state == states_module::TERMINATING
       info[:termination_progress] =
-        RemoteDevelopment::WorkspaceOperations::States::TERMINATING
+        states_module::TERMINATING
     end
 
     if [
-      RemoteDevelopment::WorkspaceOperations::States::TERMINATING,
-      RemoteDevelopment::WorkspaceOperations::States::TERMINATED,
-      RemoteDevelopment::WorkspaceOperations::States::UNKNOWN
+      states_module::TERMINATING,
+      states_module::TERMINATED,
+      states_module::UNKNOWN
     ].include?(current_actual_state)
       return info
     end
 
     # rubocop:disable Layout/LineLength -- Keep the individual 'in' cases on single lines for readability
     spec_replicas =
-      if [RemoteDevelopment::WorkspaceOperations::States::STOPPED, RemoteDevelopment::WorkspaceOperations::States::STOPPING]
+      if [states_module::STOPPED, states_module::STOPPING]
            .include?(current_actual_state)
         0
       else
@@ -302,6 +301,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     latest_k8s_deployment_info[:metadata][:resourceVersion] = resource_version
     latest_k8s_deployment_info[:status] = yaml_safe_load_symbolized(status)
 
+    # noinspection RubyMismatchedArgumentType -- For some reason it thinks a Hash key must have a String type?
     info[:latest_k8s_deployment_info] = latest_k8s_deployment_info
     info[:error_details] = error_details
     info
@@ -357,7 +357,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @return [Array<Hash>]
   def create_config_to_apply_v3(
     workspace:,
-    started:,
+    started: true,
     desired_state_is_terminated: false,
     workspace_variables_environment: nil,
     workspace_variables_file: nil,
@@ -382,7 +382,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     image_pull_secrets: [],
     core_resources_only: false
   )
-    spec_replicas = started == true ? 1 : 0
+    spec_replicas = started ? 1 : 0
     host_template_annotation = get_workspace_host_template_annotation(workspace.name, dns_zone)
 
     # NOTE: The deep_symbolize_keys here is likely redundant, but it's included so that we exactly match
@@ -392,7 +392,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     common_annotations =
       Gitlab::Utils.deep_sort_hashes(
         agent_annotations.merge({
-          "workspaces.gitlab.com/host-template": host_template_annotation.to_s,
+          "workspaces.gitlab.com/host-template": host_template_annotation,
           "workspaces.gitlab.com/id": workspace.id.to_s,
           "workspaces.gitlab.com/max-resources-per-workspace-sha256":
             Digest::SHA256.hexdigest(max_resources_per_workspace_with_legacy_sorting)
@@ -437,9 +437,17 @@ RSpec.shared_context 'with remote development shared fixtures' do
       annotations: workspace_inventory_annotations
     )
 
-    workspace_pvc = workspace_pvc(
+    workspace_data_pvc = pvc(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
+      labels: labels,
+      annotations: workspace_inventory_annotations
+    )
+
+    workspace_service_account = workspace_service_account(
+      name: workspace.name,
+      namespace: workspace.namespace,
+      image_pull_secrets: image_pull_secrets,
       labels: labels,
       annotations: workspace_inventory_annotations
     )
@@ -469,8 +477,6 @@ RSpec.shared_context 'with remote development shared fixtures' do
       )
     )
 
-    workspace_reconciled_actual_state_file_name =
-      RemoteDevelopment::WorkspaceOperations::Reconcile::ReconcileConstants::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME
     secret_file = secret_file(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
@@ -479,7 +485,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
       workspace_variables_file: workspace_variables_file ||
         get_workspace_variables_file(workspace_variables: workspace.workspace_variables),
       additional_data: workspace_variables_additional_data ||
-        { "#{workspace_reconciled_actual_state_file_name}": workspace.actual_state }
+        { "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": workspace.actual_state }
     )
 
     if max_resources_per_workspace.present?
@@ -492,14 +498,6 @@ RSpec.shared_context 'with remote development shared fixtures' do
       )
     end
 
-    workspace_service_account = workspace_service_account(
-      name: workspace.name,
-      namespace: workspace.namespace,
-      image_pull_secrets: image_pull_secrets,
-      labels: labels,
-      annotations: workspace_inventory_annotations
-    )
-
     resources = []
     resources << workspace_inventory_config_map if include_inventory
 
@@ -510,7 +508,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
     resources << workspace_deployment
     resources << workspace_service
-    resources << workspace_pvc
+    resources << workspace_data_pvc
 
     unless core_resources_only
       resources << workspace_service_account
@@ -548,12 +546,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
           )
         ),
         name: "#{workspace_name}-workspace-inventory",
-        namespace: workspace_namespace.to_s
+        namespace: workspace_namespace
       }
     }
   end
 
-  # rubocop:disable Metrics/ParameterLists -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
+  # rubocop:disable Metrics/ParameterLists,Metrics/AbcSize -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
 
   # @param [String] workspace_name
   # @param [String] workspace_namespace
@@ -576,15 +574,14 @@ RSpec.shared_context 'with remote development shared fixtures' do
     use_kubernetes_user_namespaces:,
     default_runtime_class:
   )
-    variables_file_mount_path = RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants::VARIABLES_FILE_DIR
     container_security_context = {
       'allowPrivilegeEscalation' => allow_privilege_escalation,
       'privileged' => false,
       'runAsNonRoot' => true,
-      'runAsUser' => RemoteDevelopment::WorkspaceOperations::Reconcile::ReconcileConstants::RUN_AS_USER
+      'runAsUser' => reconcile_constants_module::RUN_AS_USER
     }
 
-    project_cloner_script_content = RemoteDevelopment::Files::PROJECTS_CLONER_COMPONENT_INSERTER_CONTAINER_ARGS.dup
+    project_cloner_script_content = files_module::PROJECTS_CLONER_COMPONENT_INSERTER_CONTAINER_ARGS.dup
     format_project_cloner_script!(project_cloner_script_content)
 
     deployment = {
@@ -594,8 +591,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
         annotations: annotations,
         creationTimestamp: nil,
         labels: labels,
-        name: workspace_name.to_s,
-        namespace: workspace_namespace.to_s
+        name: workspace_name,
+        namespace: workspace_namespace
       },
       spec: {
         replicas: spec_replicas,
@@ -610,20 +607,21 @@ RSpec.shared_context 'with remote development shared fixtures' do
             annotations: annotations,
             creationTimestamp: nil,
             labels: labels,
-            name: workspace_name.to_s,
-            namespace: workspace_namespace.to_s
+            name: workspace_name,
+            namespace: workspace_namespace
           },
           spec: {
             hostUsers: use_kubernetes_user_namespaces,
             runtimeClassName: default_runtime_class,
             containers: [
               {
-                args: [RemoteDevelopment::Files::MAIN_COMPONENT_UPDATER_CONTAINER_ARGS],
+                args: [files_module::MAIN_COMPONENT_UPDATER_CONTAINER_ARGS],
                 command: %w[/bin/sh -c],
                 env: [
                   {
-                    name: "GL_TOOLS_DIR",
-                    value: "/projects/.gl-tools"
+                    name: create_constants_module::TOOLS_DIR_ENV_VAR,
+                    value: "#{workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH}/" \
+                      "#{create_constants_module::TOOLS_DIR_NAME}"
                   },
                   {
                     name: "GL_EDITOR_LOG_LEVEL",
@@ -631,11 +629,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
                   },
                   {
                     name: "GL_EDITOR_PORT",
-                    value: "60001"
+                    value: create_constants_module::WORKSPACE_EDITOR_PORT.to_s
                   },
                   {
                     name: "GL_SSH_PORT",
-                    value: "60022"
+                    value: create_constants_module::WORKSPACE_SSH_PORT.to_s
                   },
                   {
                     name: "GL_EDITOR_ENABLE_MARKETPLACE",
@@ -643,11 +641,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
                   },
                   {
                     name: "PROJECTS_ROOT",
-                    value: "/projects"
+                    value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
                   },
                   {
                     name: "PROJECT_SOURCE",
-                    value: "/projects"
+                    value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
                   }
                 ],
                 image: "quay.io/mloriedo/universal-developer-image:ubi8-dw-demo",
@@ -655,12 +653,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 name: "tooling-container",
                 ports: [
                   {
-                    containerPort: 60001,
+                    containerPort: create_constants_module::WORKSPACE_EDITOR_PORT,
                     name: "editor-server",
                     protocol: "TCP"
                   },
                   {
-                    containerPort: 60022,
+                    containerPort: create_constants_module::WORKSPACE_SSH_PORT,
                     name: "ssh-server",
                     protocol: "TCP"
                   }
@@ -668,12 +666,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 resources: default_resources_per_workspace_container,
                 volumeMounts: [
                   {
-                    mountPath: "/projects",
-                    name: "gl-workspace-data"
+                    mountPath: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH,
+                    name: create_constants_module::WORKSPACE_DATA_VOLUME_NAME
                   },
                   {
-                    name: "gl-workspace-variables",
-                    mountPath: variables_file_mount_path.to_s
+                    mountPath: workspace_operations_constants_module::VARIABLES_VOLUME_PATH,
+                    name: workspace_operations_constants_module::VARIABLES_VOLUME_NAME
                   }
                 ],
                 securityContext: container_security_context,
@@ -693,11 +691,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
                   },
                   {
                     name: "PROJECTS_ROOT",
-                    value: "/projects"
+                    value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
                   },
                   {
                     name: "PROJECT_SOURCE",
-                    value: "/projects"
+                    value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
                   }
                 ],
                 image: "mysql",
@@ -706,12 +704,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 resources: default_resources_per_workspace_container,
                 volumeMounts: [
                   {
-                    mountPath: "/projects",
-                    name: "gl-workspace-data"
+                    mountPath: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH,
+                    name: create_constants_module::WORKSPACE_DATA_VOLUME_NAME
                   },
                   {
-                    name: "gl-workspace-variables",
-                    mountPath: variables_file_mount_path.to_s
+                    mountPath: workspace_operations_constants_module::VARIABLES_VOLUME_PATH,
+                    name: workspace_operations_constants_module::VARIABLES_VOLUME_NAME
                   }
                 ],
                 securityContext: container_security_context,
@@ -731,11 +729,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 env: [
                   {
                     name: "PROJECTS_ROOT",
-                    value: "/projects"
+                    value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
                   },
                   {
                     name: "PROJECT_SOURCE",
-                    value: "/projects"
+                    value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
                   }
                 ],
                 image: "alpine/git:2.45.2",
@@ -753,12 +751,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 },
                 volumeMounts: [
                   {
-                    mountPath: "/projects",
-                    name: "gl-workspace-data"
+                    mountPath: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH,
+                    name: create_constants_module::WORKSPACE_DATA_VOLUME_NAME
                   },
                   {
-                    name: "gl-workspace-variables",
-                    mountPath: variables_file_mount_path.to_s
+                    mountPath: workspace_operations_constants_module::VARIABLES_VOLUME_PATH,
+                    name: workspace_operations_constants_module::VARIABLES_VOLUME_NAME
                   }
                 ],
                 securityContext: container_security_context,
@@ -773,19 +771,20 @@ RSpec.shared_context 'with remote development shared fixtures' do
               {
                 env: [
                   {
-                    name: "GL_TOOLS_DIR",
-                    value: "/projects/.gl-tools"
+                    name: create_constants_module::TOOLS_DIR_ENV_VAR,
+                    value: "#{workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH}/" \
+                      "#{create_constants_module::TOOLS_DIR_NAME}"
                   },
                   {
                     name: "PROJECTS_ROOT",
-                    value: "/projects"
+                    value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
                   },
                   {
                     name: "PROJECT_SOURCE",
-                    value: "/projects"
+                    value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
                   }
                 ],
-                image: RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants::WORKSPACE_TOOLS_IMAGE,
+                image: workspace_operations_constants_module::WORKSPACE_TOOLS_IMAGE,
                 imagePullPolicy: "Always",
                 name: "gl-tools-injector-gl-tools-injector-command-2",
                 resources: {
@@ -800,12 +799,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 },
                 volumeMounts: [
                   {
-                    mountPath: "/projects",
-                    name: "gl-workspace-data"
+                    mountPath: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH,
+                    name: create_constants_module::WORKSPACE_DATA_VOLUME_NAME
                   },
                   {
-                    name: "gl-workspace-variables",
-                    mountPath: variables_file_mount_path.to_s
+                    mountPath: workspace_operations_constants_module::VARIABLES_VOLUME_PATH,
+                    name: workspace_operations_constants_module::VARIABLES_VOLUME_NAME
                   }
                 ],
                 securityContext: container_security_context,
@@ -818,16 +817,16 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 ]
               }
             ],
-            serviceAccountName: workspace_name.to_s,
+            serviceAccountName: workspace_name,
             volumes: [
               {
-                name: "gl-workspace-data",
+                name: create_constants_module::WORKSPACE_DATA_VOLUME_NAME,
                 persistentVolumeClaim: {
-                  claimName: "#{workspace_name}-gl-workspace-data"
+                  claimName: "#{workspace_name}-#{create_constants_module::WORKSPACE_DATA_VOLUME_NAME}"
                 }
               },
               {
-                name: "gl-workspace-variables",
+                name: workspace_operations_constants_module::VARIABLES_VOLUME_NAME,
                 projected: {
                   defaultMode: 508,
                   sources: [
@@ -842,7 +841,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
             ],
             securityContext: {
               runAsNonRoot: true,
-              runAsUser: RemoteDevelopment::WorkspaceOperations::Reconcile::ReconcileConstants::RUN_AS_USER,
+              runAsUser: reconcile_constants_module::RUN_AS_USER,
               fsGroup: 0,
               fsGroupChangePolicy: "OnRootMismatch"
             }
@@ -858,7 +857,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     deployment
   end
 
-  # rubocop:enable Metrics/ParameterLists
+  # rubocop:enable Metrics/ParameterLists,Metrics/AbcSize
 
   # @param [String] workspace_name
   # @param [String] workspace_namespace
@@ -878,20 +877,20 @@ RSpec.shared_context 'with remote development shared fixtures' do
         annotations: annotations,
         creationTimestamp: nil,
         labels: labels,
-        name: workspace_name.to_s,
-        namespace: workspace_namespace.to_s
+        name: workspace_name,
+        namespace: workspace_namespace
       },
       spec: {
         ports: [
           {
             name: "editor-server",
-            port: 60001,
-            targetPort: 60001
+            port: create_constants_module::WORKSPACE_EDITOR_PORT,
+            targetPort: create_constants_module::WORKSPACE_EDITOR_PORT
           },
           {
             name: "ssh-server",
-            port: 60022,
-            targetPort: 60022
+            port: create_constants_module::WORKSPACE_SSH_PORT,
+            targetPort: create_constants_module::WORKSPACE_SSH_PORT
           }
         ],
         selector: labels
@@ -907,7 +906,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Hash] labels
   # @param [Hash] annotations
   # @return [Hash]
-  def workspace_pvc(
+  def pvc(
     workspace_name:,
     workspace_namespace:,
     labels:,
@@ -921,7 +920,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
         creationTimestamp: nil,
         labels: labels,
         name: "#{workspace_name}-gl-workspace-data",
-        namespace: workspace_namespace.to_s
+        namespace: workspace_namespace
       },
       spec: {
         accessModes: [
@@ -934,6 +933,34 @@ RSpec.shared_context 'with remote development shared fixtures' do
         }
       },
       status: {}
+    }
+  end
+
+  # @param [String] name
+  # @param [String] namespace
+  # @param [Array<Hash>] image_pull_secrets
+  # @param [Hash] labels
+  # @param [Hash] annotations
+  # @return [Hash]
+  def workspace_service_account(
+    name:,
+    namespace:,
+    image_pull_secrets:,
+    labels:,
+    annotations:
+  )
+    image_pull_secrets_names = image_pull_secrets.map { |secret| { name: secret.symbolize_keys.fetch(:name) } }
+    {
+      kind: 'ServiceAccount',
+      apiVersion: 'v1',
+      metadata: {
+        name: name,
+        namespace: namespace,
+        annotations: annotations,
+        labels: labels
+      },
+      automountServiceAccountToken: false,
+      imagePullSecrets: image_pull_secrets_names
     }
   end
 
@@ -976,8 +1003,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
       metadata: {
         annotations: annotations,
         labels: labels,
-        name: workspace_name.to_s,
-        namespace: workspace_namespace.to_s
+        name: workspace_name,
+        namespace: workspace_namespace
       },
       spec: {
         egress: egress,
@@ -1035,8 +1062,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
       metadata: {
         annotations: annotations,
         labels: labels,
-        name: workspace_name.to_s,
-        namespace: workspace_namespace.to_s
+        name: workspace_name,
+        namespace: workspace_namespace
       },
       spec: {
         hard: {
@@ -1046,34 +1073,6 @@ RSpec.shared_context 'with remote development shared fixtures' do
           "requests.memory": requests_memory
         }
       }
-    }
-  end
-
-  # @param [String] name
-  # @param [String] namespace
-  # @param [Array<Hash>] image_pull_secrets
-  # @param [Hash] labels
-  # @param [Hash] annotations
-  # @return [Hash]
-  def workspace_service_account(
-    name:,
-    namespace:,
-    image_pull_secrets:,
-    labels:,
-    annotations:
-  )
-    image_pull_secrets_names = image_pull_secrets.map { |secret| { name: secret.symbolize_keys.fetch(:name) } }
-    {
-      kind: 'ServiceAccount',
-      apiVersion: 'v1',
-      metadata: {
-        name: name,
-        namespace: namespace,
-        annotations: annotations,
-        labels: labels
-      },
-      automountServiceAccountToken: false,
-      imagePullSecrets: image_pull_secrets_names
     }
   end
 
@@ -1093,7 +1092,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
             labels.merge({ "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-secrets-inventory" })
           ),
         name: "#{workspace_name}-secrets-inventory",
-        namespace: workspace_namespace.to_s
+        namespace: workspace_namespace
       }
     }
   end
@@ -1117,11 +1116,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
       apiVersion: "v1",
       metadata: {
         name: "#{workspace_name}-env-var",
-        namespace: workspace_namespace.to_s,
+        namespace: workspace_namespace,
         labels: labels,
         annotations: annotations
       },
-      data: workspace_variables_environment.transform_values { |v| Base64.strict_encode64(v).to_s }
+      data: workspace_variables_environment.transform_values { |v| Base64.strict_encode64(v) }
     }
   end
 
@@ -1147,11 +1146,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
       apiVersion: "v1",
       metadata: {
         name: "#{workspace_name}-file",
-        namespace: workspace_namespace.to_s,
+        namespace: workspace_namespace,
         labels: labels,
         annotations: annotations
       },
-      data: data.transform_values { |v| Base64.strict_encode64(v).to_s }
+      data: data.transform_values { |v| Base64.strict_encode64(v) }
     }
   end
 
@@ -1269,6 +1268,16 @@ RSpec.shared_context 'with remote development shared fixtures' do
   def example_processed_devfile(project_name: "test-project", namespace_path: "test-group")
     yaml_safe_load_symbolized(
       example_processed_devfile_yaml(project_name: project_name, namespace_path: namespace_path)
+    )
+  end
+
+  # @param [String] filename
+  # @param [String] project_name
+  # @param [String] namespace_path
+  # @return [Hash]
+  def read_devfile(filename, project_name: "test-project", namespace_path: "test-group")
+    yaml_safe_load_symbolized(
+      read_devfile_yaml(filename, project_name: project_name, namespace_path: namespace_path)
     )
   end
 

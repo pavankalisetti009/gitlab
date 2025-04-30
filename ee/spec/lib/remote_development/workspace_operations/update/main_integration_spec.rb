@@ -4,12 +4,14 @@ require 'spec_helper'
 
 # noinspection RubyArgCount -- Rubymine detecting wrong types, it thinks some #create are from Minitest, not FactoryBot
 RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Update::Main, "Integration", feature_category: :workspaces do
+  include_context "with constant modules"
+
   let_it_be(:user) { create(:user) }
   let_it_be(:workspace, refind: true) do
-    create(:workspace, user: user, desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING)
+    create(:workspace, user: user, desired_state: states_module::RUNNING)
   end
 
-  let(:new_desired_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+  let(:new_desired_state) { states_module::STOPPED }
   let(:params) { { desired_state: new_desired_state } }
   let(:context) { { workspace: workspace, user: user, params: params } }
 

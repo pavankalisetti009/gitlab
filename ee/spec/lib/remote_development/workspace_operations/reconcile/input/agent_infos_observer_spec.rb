@@ -3,6 +3,8 @@
 require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfosObserver, feature_category: :workspaces do
+  include_context "with constant modules"
+
   let(:agent) { instance_double("Clusters::Agent", id: 1) } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
   let(:update_type) { RemoteDevelopment::WorkspaceOperations::Reconcile::UpdateTypes::PARTIAL }
   let(:logger) { instance_double(::Logger) }
@@ -10,7 +12,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentIn
     RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfo.new(
       name: "normal_workspace",
       namespace: "namespace",
-      actual_state: RemoteDevelopment::WorkspaceOperations::States::STARTING,
+      actual_state: states_module::STARTING,
       deployment_resource_version: "1"
     )
   end
@@ -19,7 +21,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentIn
     RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfo.new(
       name: "abnormal_workspace1",
       namespace: "namespace",
-      actual_state: RemoteDevelopment::WorkspaceOperations::States::ERROR,
+      actual_state: states_module::ERROR,
       deployment_resource_version: "1"
     )
   end
@@ -28,7 +30,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentIn
     RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfo.new(
       name: "abnormal_workspace2",
       namespace: "namespace",
-      actual_state: RemoteDevelopment::WorkspaceOperations::States::UNKNOWN,
+      actual_state: states_module::UNKNOWN,
       deployment_resource_version: "1"
     )
   end
@@ -74,7 +76,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentIn
           {
             name: "normal_workspace",
             namespace: "namespace",
-            actual_state: RemoteDevelopment::WorkspaceOperations::States::STARTING,
+            actual_state: states_module::STARTING,
             deployment_resource_version: "1"
           }
         ],
@@ -82,13 +84,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentIn
           {
             name: "abnormal_workspace1",
             namespace: "namespace",
-            actual_state: RemoteDevelopment::WorkspaceOperations::States::ERROR,
+            actual_state: states_module::ERROR,
             deployment_resource_version: "1"
           },
           {
             name: "abnormal_workspace2",
             namespace: "namespace",
-            actual_state: RemoteDevelopment::WorkspaceOperations::States::UNKNOWN,
+            actual_state: states_module::UNKNOWN,
             deployment_resource_version: "1"
           }
         ]
@@ -111,13 +113,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentIn
           {
             name: "abnormal_workspace1",
             namespace: "namespace",
-            actual_state: RemoteDevelopment::WorkspaceOperations::States::ERROR,
+            actual_state: states_module::ERROR,
             deployment_resource_version: "1"
           },
           {
             name: "abnormal_workspace2",
             namespace: "namespace",
-            actual_state: RemoteDevelopment::WorkspaceOperations::States::UNKNOWN,
+            actual_state: states_module::UNKNOWN,
             deployment_resource_version: "1"
           }
         ]
@@ -148,7 +150,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentIn
           {
             name: "normal_workspace",
             namespace: "namespace",
-            actual_state: RemoteDevelopment::WorkspaceOperations::States::STARTING,
+            actual_state: states_module::STARTING,
             deployment_resource_version: "1"
           }
         ],
@@ -187,13 +189,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentIn
           {
             name: "abnormal_workspace1",
             namespace: "namespace",
-            actual_state: RemoteDevelopment::WorkspaceOperations::States::ERROR,
+            actual_state: states_module::ERROR,
             deployment_resource_version: "1"
           },
           {
             name: "abnormal_workspace2",
             namespace: "namespace",
-            actual_state: RemoteDevelopment::WorkspaceOperations::States::UNKNOWN,
+            actual_state: states_module::UNKNOWN,
             deployment_resource_version: "1"
           }
         ]
@@ -216,13 +218,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentIn
           {
             name: "abnormal_workspace1",
             namespace: "namespace",
-            actual_state: RemoteDevelopment::WorkspaceOperations::States::ERROR,
+            actual_state: states_module::ERROR,
             deployment_resource_version: "1"
           },
           {
             name: "abnormal_workspace2",
             namespace: "namespace",
-            actual_state: RemoteDevelopment::WorkspaceOperations::States::UNKNOWN,
+            actual_state: states_module::UNKNOWN,
             deployment_resource_version: "1"
           }
         ]

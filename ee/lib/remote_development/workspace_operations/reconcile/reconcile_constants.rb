@@ -16,7 +16,7 @@ module RemoteDevelopment
         RUN_AS_USER = 5001
         WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME = "gl_workspace_reconciled_actual_state.txt"
         WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH =
-          "#{VARIABLES_FILE_DIR}/#{WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}".freeze
+          "#{VARIABLES_VOLUME_PATH}/#{WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}".freeze
       end
     end
   end

@@ -4,6 +4,9 @@ module RemoteDevelopment
   # NOTE: These methods must be in a module, instead of directly in an RSpec shared context, because we
   #       need to call them from within FactoryBot factories
   module FixtureFileHelpers
+    include WorkspaceOperations::WorkspaceOperationsConstants
+    include WorkspaceOperations::Create::CreateConstants
+
     extend self # This makes the instance methods available as class methods, for use in FactoryBot factories
 
     # @param [String] filename
@@ -46,10 +49,16 @@ module RemoteDevelopment
       namespace_path: "test-group"
     )
       # NOTE: These replacements correspond to the `format` command in `project_cloner_component_inserter.rb`
-      content.gsub!("%<project_cloning_successful_file>s", "/projects/.gl_project_cloning_successful")
+      content.gsub!(
+        "%<project_cloning_successful_file>s",
+        "#{WORKSPACE_DATA_VOLUME_PATH}/#{PROJECT_CLONING_SUCCESSFUL_FILE_NAME}"
+      )
       content.gsub!("%<project_ref>s", "master")
       content.gsub!("%<project_url>s", "#{root_url}#{namespace_path}/#{project_name}.git")
-      content.gsub!("%<clone_dir>s", "/projects/#{project_name}")
+      content.gsub!(
+        "%<clone_dir>s",
+        "#{WORKSPACE_DATA_VOLUME_PATH}/#{project_name}"
+      )
 
       nil
     end

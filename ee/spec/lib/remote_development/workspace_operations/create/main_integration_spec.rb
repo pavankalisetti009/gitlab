@@ -19,7 +19,6 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   let(:devfile_fixture_name) { 'example.devfile.yaml.erb' }
   let(:devfile_yaml) { read_devfile_yaml(devfile_fixture_name) }
   let(:expected_processed_devfile) { example_processed_devfile }
-  let(:workspace_root) { '/projects' }
   let(:variables) do
     [
       { key: 'VAR1', value: 'value 1', type: 'ENVIRONMENT' },
@@ -45,7 +44,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
       agent: agent,
       user: user,
       project: project,
-      desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
+      desired_state: states_module::RUNNING,
       project_ref: project_ref,
       devfile_path: devfile_path,
       variables: variables
@@ -53,7 +52,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   end
 
   let(:tools_injector_image_from_settings) do
-    RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants::WORKSPACE_TOOLS_IMAGE
+    workspace_operations_constants_module::WORKSPACE_TOOLS_IMAGE
   end
 
   let(:vscode_extension_marketplace) do
@@ -113,19 +112,20 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         workspace = response.fetch(:payload).fetch(:workspace)
         expect(workspace.user).to eq(user)
         expect(workspace.agent).to eq(agent)
-        expect(workspace.desired_state).to eq(RemoteDevelopment::WorkspaceOperations::States::RUNNING)
+        expect(workspace.desired_state).to eq(states_module::RUNNING)
         # noinspection RubyResolve
         expect(workspace.desired_state_updated_at).to eq(Time.current)
-        expect(workspace.actual_state).to eq(RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED)
+        expect(workspace.actual_state).to eq(states_module::CREATION_REQUESTED)
         expect(workspace.actual_state_updated_at).to eq(Time.current)
         expect(workspace.name).to eq("workspace-#{agent.id}-#{user.id}-#{random_string}")
         expect(workspace.namespace).to eq("my-shared-namespace")
         expect(workspace.workspaces_agent_config_version).to eq(expected_workspaces_agent_config_version)
         expect(workspace.url).to eq(URI::HTTPS.build({
-          host: "60001-#{workspace.name}.#{agent.unversioned_latest_workspaces_agent_config.dns_zone}",
+          host: "#{create_constants_module::WORKSPACE_EDITOR_PORT}-#{workspace.name}." \
+            "#{agent.unversioned_latest_workspaces_agent_config.dns_zone}",
           path: '/',
           query: {
-            folder: "#{workspace_root}/#{project.path}"
+            folder: "#{workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH}/#{project.path}"
           }.to_query
         }).to_s)
         # noinspection RubyResolve
@@ -160,15 +160,14 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
       end
 
       context "without shared namespace" do
-        namespace_prefix = RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::NAMESPACE_PREFIX
-
         before do
           agent.unversioned_latest_workspaces_agent_config.update!(shared_namespace: "")
         end
 
         it 'uses a unique namespace', :aggregate_failures do
           workspace = response.fetch(:payload).fetch(:workspace)
-          expect(workspace.namespace).to eq("#{namespace_prefix}-#{agent.id}-#{user.id}-#{random_string}")
+          expect(workspace.namespace)
+            .to eq("#{create_constants_module::NAMESPACE_PREFIX}-#{agent.id}-#{user.id}-#{random_string}")
         end
       end
     end
@@ -211,9 +210,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
         expect(response).to eq({
           status: :error,
-          message:
-            "Workspace create devfile load failed: Devfile path '#{devfile_path}' at ref '#{project_ref}' " \
-              "does not exist in the project repository", # rubocop:disable Layout/LineEndStringConcatenationIndentation -- RubyMine formatting conflict. See https://gitlab.com/gitlab-org/gitlab/-/issues/442626
+          message: "Workspace create devfile load failed: Devfile path '#{devfile_path}' at ref '#{project_ref}' " \
+            "does not exist in the project repository",
           reason: :bad_request
         })
       end
@@ -243,13 +241,13 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
     it 'uses image override' do
       tools_injector_component_name =
-        RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOOLS_INJECTOR_COMPONENT_NAME
+        create_constants_module::TOOLS_INJECTOR_COMPONENT_NAME
       workspace = response.fetch(:payload).fetch(:workspace)
       processed_devfile = yaml_safe_load_symbolized(workspace.processed_devfile)
       image_from_processed_devfile =
         processed_devfile.fetch(:components)
-          .find { |component| component.fetch(:name) == tools_injector_component_name }
-          .dig(:container, :image)
+                         .find { |component| component.fetch(:name) == tools_injector_component_name }
+                         .dig(:container, :image)
       expect(image_from_processed_devfile).to eq(tools_injector_image_from_settings)
     end
   end

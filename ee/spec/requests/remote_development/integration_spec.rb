@@ -9,18 +9,18 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   include RemoteDevelopment::IntegrationSpecHelpers
   include_context "with remote development shared fixtures"
 
-  let(:token_file_name) { RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOKEN_FILE_NAME }
-  let(:token_file_path) { RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::TOKEN_FILE_PATH }
-  let(:git_credential_store_script) { RemoteDevelopment::Files::GIT_CREDENTIAL_STORE_SCRIPT }
+  let(:token_file_name) { create_constants_module::TOKEN_FILE_NAME }
+  let(:token_file_path) { create_constants_module::TOKEN_FILE_PATH }
+  let(:git_credential_store_script) { files_module::GIT_CREDENTIAL_STORE_SCRIPT }
   let(:git_credential_store_script_file_name) do
-    RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME
+    create_constants_module::GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME
   end
 
   let(:git_credential_store_script_file_path) do
-    RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::GIT_CREDENTIAL_STORE_SCRIPT_FILE_PATH
+    create_constants_module::GIT_CREDENTIAL_STORE_SCRIPT_FILE_PATH
   end
 
-  let(:states) { ::RemoteDevelopment::WorkspaceOperations::States }
+  let(:states) { states_module }
   let(:agent_admin_user) { create(:user, name: "Agent Admin User") }
   # Agent setup
   let(:jwt_secret) { SecureRandom.random_bytes(Gitlab::Kas::SECRET_LENGTH) }
@@ -88,7 +88,6 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   end
 
   let(:expected_processed_devfile) { yaml_safe_load_symbolized(expected_processed_devfile_yaml) }
-  let(:workspace_root) { "/projects" }
   let(:user_provided_variables) do
     [
       { key: "VAR1", value: "value 1", type: :environment },
@@ -99,7 +98,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   let(:expected_internal_variables) do
     # rubocop:disable Layout/LineLength -- keep them on one line for easier readability and editability
     [
-      { key: "gl_token", type: :file, value: /glpat-.+/ },
+      { key: create_constants_module::TOKEN_FILE_NAME, type: :file, value: /glpat-.+/ },
       { key: "GL_TOKEN_FILE_PATH", type: :environment, value: token_file_path },
       { key: git_credential_store_script_file_name, type: :file, value: git_credential_store_script },
       { key: "GIT_CONFIG_COUNT", type: :environment, value: "3" },
@@ -236,13 +235,13 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     # noinspection RubyResolve
     expect(workspace.desired_state_updated_at).to eq(Time.current)
     expect(workspace.name).to eq("workspace-#{agent.id}-#{user.id}-#{random_string}")
-    namespace_prefix = RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::NAMESPACE_PREFIX
+    namespace_prefix = create_constants_module::NAMESPACE_PREFIX
     expect(workspace.namespace).to eq("#{namespace_prefix}-#{agent.id}-#{user.id}-#{random_string}")
     expect(workspace.url).to eq(URI::HTTPS.build({
-      host: "60001-#{workspace.name}.#{dns_zone}",
+      host: "#{create_constants_module::WORKSPACE_EDITOR_PORT}-#{workspace.name}.#{dns_zone}",
       path: "/",
       query: {
-        folder: "#{workspace_root}/#{workspace_project.path}"
+        folder: "#{workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH}/#{workspace_project.path}"
       }.to_query
     }).to_s)
     # noinspection RubyResolve
