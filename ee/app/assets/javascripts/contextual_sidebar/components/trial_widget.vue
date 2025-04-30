@@ -15,14 +15,14 @@ import {
   HAND_RAISE_LEAD_ATTRIBUTES,
   TRIAL_TYPES_CONFIG,
 } from './constants';
-import TrialWidgetButton from './trial_widget_button.vue';
+import TrialWidgetButtons from './trial_widget_buttons.vue';
 
 export default {
   name: 'TrialWidget',
   components: {
     GlProgressBar,
     GlButton,
-    TrialWidgetButton,
+    TrialWidgetButtons,
   },
 
   mixins: [InternalEvents.mixin()],
@@ -123,8 +123,8 @@ export default {
             <span class="gl-text-sm gl-text-neutral-700">
               {{ widgetRemainingDays }}
             </span>
-            <trial-widget-button data-testid="widget-cta" />
           </div>
+          <trial-widget-buttons data-testid="widget-cta" />
         </div>
       </div>
       <div v-else class="gl-flex gl-w-full gl-gap-4 gl-px-2">
@@ -138,7 +138,7 @@ export default {
               class="custom-gradient-progress gl-mb-4"
               aria-hidden="true"
             />
-            <trial-widget-button data-testid="widget-cta" />
+            <trial-widget-buttons data-testid="widget-cta" />
           </div>
         </div>
       </div>

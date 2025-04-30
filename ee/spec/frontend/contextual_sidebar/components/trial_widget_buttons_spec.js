@@ -1,5 +1,5 @@
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
-import TrialWidgetButton from 'ee/contextual_sidebar/components/trial_widget_button.vue';
+import TrialWidgetButtons from 'ee/contextual_sidebar/components/trial_widget_buttons.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 describe('TrialWidgetButton component', () => {
@@ -7,7 +7,6 @@ describe('TrialWidgetButton component', () => {
 
   const findLearnAboutFeaturesButton = () => wrapper.findByTestId('learn-about-features-btn');
   const findUpgradeButton = () => wrapper.findByTestId('upgrade-options-btn');
-  const findHandRaiseLeadButton = () => wrapper.findByTestId('cta-hand-raise-lead-btn');
 
   const provide = {
     trialType: 'duo_enterprise',
@@ -19,12 +18,12 @@ describe('TrialWidgetButton component', () => {
 
   const createComponent = (providers = {}) => {
     const options = { provide: { ...provide, ...providers } };
-    wrapper = shallowMountExtended(TrialWidgetButton, options);
+    wrapper = shallowMountExtended(TrialWidgetButtons, options);
   };
 
   const createDeepComponent = (providers = {}) => {
     const options = { provide: { ...provide, ...providers } };
-    wrapper = mountExtended(TrialWidgetButton, options);
+    wrapper = mountExtended(TrialWidgetButtons, options);
   };
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
@@ -45,30 +44,24 @@ describe('TrialWidgetButton component', () => {
     it('renders the upgrade options text', () => {
       createComponent({ daysRemaining: 1, percentageComplete: 98 });
 
-      expect(findHandRaiseLeadButton().attributes('buttontext')).toBe('Upgrade');
+      expect(findUpgradeButton().text()).toBe('Upgrade');
+      expect(findUpgradeButton().attributes('href')).toBe('#purchase');
     });
   });
 
   describe('when trial has expired or past upgrade threshold', () => {
     it.each([
-      ['duo_pro', false, 0],
-      ['duo_pro', false, 10],
-      ['duo_enterprise', true, -1],
-      ['legacy_ultimate', true, 5],
-      ['ultimate', true, 1],
-    ])(
-      'uses correct upgrade text and destination for %s',
-      (trialType, showHandRaiseLead, daysRemaining) => {
-        createComponent({ trialType, daysRemaining });
+      ['duo_pro', 0],
+      ['duo_pro', 10],
+      ['duo_enterprise', -1],
+      ['legacy_ultimate', 5],
+      ['ultimate', 1],
+    ])('uses correct upgrade text and destination for %s', (trialType, daysRemaining) => {
+      createComponent({ trialType, daysRemaining });
 
-        if (showHandRaiseLead) {
-          expect(findHandRaiseLeadButton().attributes('buttontext')).toBe('Upgrade');
-        } else {
-          expect(findUpgradeButton().text()).toBe('Upgrade');
-          expect(findUpgradeButton().attributes('href')).toBe('#purchase');
-        }
-      },
-    );
+      expect(findUpgradeButton().text()).toBe('Upgrade');
+      expect(findUpgradeButton().attributes('href')).toBe('#purchase');
+    });
   });
 
   it('for duo enterprise the learn more button should track click event', async () => {
