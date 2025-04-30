@@ -1,3 +1,25 @@
+import { isBoolean } from 'lodash';
 import { CUSTOM_STRATEGY_OPTIONS_KEYS } from '../constants';
 
 export const validateStrategyValues = (value) => CUSTOM_STRATEGY_OPTIONS_KEYS.includes(value);
+
+/**
+ * Validate keys and value types
+ * of variables configuration
+ * @param variablesOverride
+ * @returns {arg is any[]|boolean}
+ */
+export const doesVariablesOverrideHasValidStructure = (variablesOverride = {}) => {
+  const allowedKeys = ['allowed', 'exceptions'];
+  const hasValidKeys = Object.keys(variablesOverride).every((key) => allowedKeys.includes(key));
+
+  if (!hasValidKeys) {
+    return false;
+  }
+
+  if (!isBoolean(variablesOverride.allowed)) {
+    return false;
+  }
+
+  return Array.isArray(variablesOverride.exceptions);
+};

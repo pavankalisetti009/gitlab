@@ -4,6 +4,7 @@ import {
   GlButton,
   GlCollapsibleListbox,
   GlLink,
+  GlIcon,
   GlSprintf,
 } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -41,6 +42,8 @@ describe('VariablesOverrideList', () => {
   const findLink = () => wrapper.findComponent(GlLink);
   const findButton = () => wrapper.findComponent(GlButton);
   const findModal = () => wrapper.findComponent(VariablesOverrideModal);
+  const findIcon = () => wrapper.findComponent(GlIcon);
+  const findValidationMessage = () => wrapper.findByTestId('validation-message');
 
   describe('default rendering', () => {
     beforeEach(() => {
@@ -51,6 +54,8 @@ describe('VariablesOverrideList', () => {
       expect(findAccordion().exists()).toBe(true);
       expect(findAccordionItem().props('title')).toBe('Variable option');
       expect(findAccordionItem().props('visible')).toBe(false);
+      expect(findValidationMessage().exists()).toBe(false);
+      expect(findIcon().exists()).toBe(false);
     });
 
     it('renders collapsible listbox with default values', () => {
@@ -74,6 +79,19 @@ describe('VariablesOverrideList', () => {
       expect(findModal().props('exceptions')).toEqual(['']);
       expect(findModal().props('isVariablesOverrideAllowed')).toBe(false);
     });
+
+    it.each`
+      'visible' | 'expectedPayload'
+      ${false}  | ${undefined}
+      ${true}   | ${[[DEFAULT_VARIABLES_OVERRIDE_STATE]]}
+    `(
+      'sets default variable configuration when initially opened',
+      async ({ visible, expectedPayload }) => {
+        await findAccordionItem().vm.$emit('input', visible);
+
+        expect(wrapper.emitted('select')).toEqual(expectedPayload);
+      },
+    );
   });
 
   describe('with provided variables override', () => {
@@ -139,9 +157,36 @@ describe('VariablesOverrideList', () => {
       const exceptions = ['CI_VARIABLE_1'];
       findModal().vm.$emit('select-exceptions', exceptions);
 
-      expect(wrapper.emitted('select')).toEqual([
-        [{ ...DEFAULT_VARIABLES_OVERRIDE_STATE, exceptions }],
-      ]);
+      expect(wrapper.emitted('select')).toEqual([[{ exceptions }]]);
     });
+  });
+
+  describe('validation of structure', () => {
+    const invalidKeyVariablesOverride = {
+      invalid_key: false,
+      exceptions: [],
+    };
+
+    const invalidValueVariablesOverride = {
+      allowed: 'invalid_value',
+      exceptions: [],
+    };
+
+    it.each([invalidKeyVariablesOverride, invalidValueVariablesOverride])(
+      'renders validation message when variables configuration is invalid',
+      (variablesOverride) => {
+        createComponent({
+          propsData: {
+            variablesOverride,
+          },
+        });
+
+        expect(findIcon().props('name')).toBe('error');
+        expect(findValidationMessage().exists()).toBe(true);
+        expect(findValidationMessage().text()).toBe(
+          'Variables override configuration has invalid structure.',
+        );
+      },
+    );
   });
 });
