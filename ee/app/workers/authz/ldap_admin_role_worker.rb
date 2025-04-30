@@ -11,8 +11,13 @@ module Authz
     data_consistency :sticky
 
     feature_category :permissions
-    def perform(provider = nil)
-      # TO BE IMPLEMENTED: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/187526
+
+    def perform
+      ldap_sync_class.execute_all_providers
+    end
+
+    def ldap_sync_class
+      ::Gitlab::Authz::Ldap::Sync::AdminRole
     end
   end
 end

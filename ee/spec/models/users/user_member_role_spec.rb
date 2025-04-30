@@ -16,36 +16,16 @@ RSpec.describe Users::UserMemberRole, feature_category: :system_access do
     it { is_expected.to validate_uniqueness_of(:user) }
   end
 
-  describe '.create_or_update' do
-    let_it_be(:user) { create(:user) }
-    let_it_be(:admin_role) { create(:member_role, :admin, name: 'Admin role') }
+  describe '.ldap_synced' do
+    let_it_be(:user_member_role) { create(:user_member_role) }
+    let_it_be(:user_member_role_ldap) { create(:user_member_role, ldap: true) }
 
-    subject(:create_or_update) do
-      described_class.create_or_update(user: user, member_role: admin_role)
+    subject(:ldap_synced_user_roles) do
+      described_class.ldap_synced
     end
 
-    context 'when user member role record does not exist' do
-      it 'creates the record' do
-        expect { create_or_update }.to change { described_class.count }.by(1)
-
-        result = described_class.last
-
-        expect(result.user).to eq(user)
-        expect(result.member_role).to eq(admin_role)
-      end
-    end
-
-    context 'when user member role record exists' do
-      let_it_be(:user_member_role) { create(:user_member_role, user: user) }
-
-      it 'updates the record' do
-        create_or_update
-
-        result = user_member_role.reload
-
-        expect(result.user).to eq(user)
-        expect(result.member_role).to eq(admin_role)
-      end
+    it 'returns only records with ldap true' do
+      expect(ldap_synced_user_roles).to eq([user_member_role_ldap])
     end
   end
 end

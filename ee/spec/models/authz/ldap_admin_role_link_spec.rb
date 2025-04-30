@@ -67,4 +67,15 @@ RSpec.describe Authz::LdapAdminRoleLink, feature_category: :system_access do
       end
     end
   end
+
+  describe 'scopes' do
+    describe '.with_provider' do
+      it 'returns ldap admin role links for the specified provider' do
+        links = [create(:ldap_admin_role_link, provider: 'ldapmain'),
+          create(:ldap_admin_role_link, provider: 'ldapother')]
+
+        expect(described_class.with_provider('ldapmain')).to eq([links.first])
+      end
+    end
+  end
 end

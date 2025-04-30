@@ -23,5 +23,7 @@ module Authz
     end
 
     nullify_if_blank :cn, :filter
+
+    scope :with_provider, ->(provider) { where(provider: provider) }
   end
 end
