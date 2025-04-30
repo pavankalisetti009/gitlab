@@ -520,6 +520,162 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           expect(diff_notes.map { |n| n.position.new_path }).to contain_exactly('UPDATED.md', 'NEW.md')
         end
       end
+
+      context 'when logging LLM response metrics' do
+        context 'with a successful response containing comments' do
+          let(:combined_review_response) do
+            {
+              "id" => "msg_01NnknffDsPVts8FAQ6tyh47",
+              "type" => "message",
+              "role" => "assistant",
+              "model" => "claude-3-5-sonnet-20240620",
+              "content" => [{
+                "type" => "text",
+                "text" => "<review>
+                  <comment file=\"file.rb\" priority=\"3\" old_line=\"\" new_line=\"10\">
+                  This is a comment
+                  </comment>
+                  </review>"
+              }],
+              "stop_reason" => "end_turn",
+              "stop_sequence" => nil,
+              "usage" => {
+                "input_tokens" => 4087,
+                "cache_creation_input_tokens" => 0,
+                "cache_read_input_tokens" => 0,
+                "output_tokens" => 420
+              }
+            }
+          end
+
+          it 'logs metrics with complete data' do
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              hash_including(
+                message: "LLM response metrics",
+                event: "review_merge_request_llm_response_received",
+                merge_request_id: merge_request.id,
+                response_id: "msg_01NnknffDsPVts8FAQ6tyh47",
+                stop_reason: "end_turn",
+                input_tokens: 4087,
+                output_tokens: 420
+              )
+            )
+
+            completion.execute
+          end
+        end
+
+        context 'with a nil response' do
+          let(:combined_review_response) { nil }
+
+          it 'logs metrics with minimal data' do
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              hash_including(
+                message: "LLM response metrics",
+                event: "review_merge_request_llm_response_received",
+                merge_request_id: merge_request.id
+              )
+            )
+
+            completion.execute
+          end
+        end
+
+        context 'with an error response' do
+          let(:combined_review_response) do
+            {
+              "id" => "err_01NnknffDsPVts8FAQ6tyh48",
+              "error" => { "message" => "Some error occurred" }
+            }
+          end
+
+          it 'logs metrics with error data' do
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              hash_including(
+                message: "LLM response metrics",
+                event: "review_merge_request_llm_response_received",
+                merge_request_id: merge_request.id,
+                response_id: "err_01NnknffDsPVts8FAQ6tyh48"
+              )
+            )
+
+            completion.execute
+          end
+        end
+
+        context 'with a response containing no comments' do
+          let(:combined_review_response) do
+            {
+              "id" => "msg_01NnknffDsPVts8FAQ6tyh49",
+              "type" => "message",
+              "role" => "assistant",
+              "model" => "claude-3-5-sonnet-20240620",
+              "content" => [{ "type" => "text", "text" => "<review></review>" }],
+              "stop_reason" => "end_turn",
+              "stop_sequence" => nil,
+              "usage" => {
+                "input_tokens" => 2000,
+                "cache_creation_input_tokens" => 0,
+                "cache_read_input_tokens" => 0,
+                "output_tokens" => 50
+              }
+            }
+          end
+
+          it 'logs metrics when no comments were generated' do
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              hash_including(
+                message: "LLM response metrics",
+                event: "review_merge_request_llm_response_received",
+                merge_request_id: merge_request.id,
+                response_id: "msg_01NnknffDsPVts8FAQ6tyh49",
+                stop_reason: "end_turn",
+                input_tokens: 2000,
+                output_tokens: 50
+              )
+            )
+
+            completion.execute
+          end
+        end
+
+        context 'when duo_code_review_response_logging feature flag is disabled' do
+          before do
+            stub_feature_flags(duo_code_review_response_logging: false)
+          end
+
+          let(:combined_review_response) do
+            {
+              "id" => "test-id",
+              "type" => "message",
+              "role" => "assistant",
+              "model" => "claude-3-5-sonnet-20240620",
+              "content" => [{
+                "type" => "text",
+                "text" => "<review></review>"
+              }],
+              "stop_reason" => "end_turn",
+              "usage" => {
+                "input_tokens" => 100,
+                "output_tokens" => 50
+              }
+            }
+          end
+
+          it 'does not log response metrics' do
+            expect(Gitlab::AppLogger).not_to receive(:info).with(
+              hash_including(
+                message: "LLM response metrics",
+                event: "review_merge_request_llm_response_received"
+              )
+            )
+
+            allow(Gitlab::AppLogger).to receive(:info)
+
+            completion.execute
+          end
+        end
+      end
     end
 
     context 'when the AI response is <review></review>' do

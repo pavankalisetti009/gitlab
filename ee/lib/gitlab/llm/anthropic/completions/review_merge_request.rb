@@ -188,6 +188,8 @@ module Gitlab
           def review_response_for(prompt)
             response = ai_client.messages_complete(**prompt)
 
+            log_llm_response_metrics(response)
+
             ::Gitlab::Llm::Anthropic::ResponseModifiers::ReviewMergeRequest.new(response)
           end
 
@@ -197,6 +199,20 @@ module Gitlab
             response = ai_client.messages_complete(**summary_prompt)
 
             ::Gitlab::Llm::Anthropic::ResponseModifiers::ReviewMergeRequest.new(response)
+          end
+
+          def log_llm_response_metrics(response)
+            return unless Feature.enabled?(:duo_code_review_response_logging, user)
+
+            Gitlab::AppLogger.info(
+              message: "LLM response metrics",
+              event: "review_merge_request_llm_response_received",
+              merge_request_id: merge_request&.id,
+              response_id: response&.[]("id"),
+              stop_reason: response&.[]("stop_reason"),
+              input_tokens: response&.dig("usage", "input_tokens"),
+              output_tokens: response&.dig("usage", "output_tokens")
+            )
           end
 
           def note_not_required?(response_modifier)
