@@ -13,7 +13,7 @@ module Types
       field :admin_member_role, ::Types::Members::AdminMemberRoleType,
         null: false, description: 'Custom admin member role.', method: :member_role
 
-      field :provider, GraphQL::Types::String,
+      field :provider, ::Types::Authz::LdapProviderType,
         null: false, description: 'LDAP provider for the LDAP link.'
 
       field :cn, GraphQL::Types::String,

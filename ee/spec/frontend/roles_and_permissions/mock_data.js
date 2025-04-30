@@ -217,14 +217,20 @@ export const getMemberRoleQueryResponse = (memberRole = mockMemberRole) => ({
 export const ldapAdminRoleLinks = [
   {
     id: 'gid://gitlab/Authz::LdapAdminRoleLink/1',
-    provider: 'LDAP',
+    provider: {
+      id: 'ldap',
+      label: 'LDAP',
+    },
     cn: null,
     filter: 'cn=group1,ou=groups,dc=example,dc=com',
     adminMemberRole: { id: 'gid://gitlab/MemberRole/1', name: 'Custom admin role 1' },
   },
   {
     id: 'gid://gitlab/Authz::LdapAdminRoleLink/2',
-    provider: 'LDAP alt',
+    provider: {
+      id: 'ldapalt',
+      label: 'LDAP alt',
+    },
     cn: 'group2',
     filter: null,
     adminMemberRole: { id: 'gid://gitlab/MemberRole/2', name: 'Custom admin role 2' },

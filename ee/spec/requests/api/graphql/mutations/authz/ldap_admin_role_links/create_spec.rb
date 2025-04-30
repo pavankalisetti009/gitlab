@@ -21,7 +21,9 @@ RSpec.describe 'creating LDAP admin role link', feature_category: :permissions d
     <<~FIELDS
       errors
       ldapAdminRoleLink {
-        provider
+        provider {
+          id
+        }
         cn
         filter
         adminMemberRole {
@@ -62,7 +64,7 @@ RSpec.describe 'creating LDAP admin role link', feature_category: :permissions d
       expect(create_admin_link['errors']).to be_empty
 
       expect(create_admin_link['ldapAdminRoleLink']).to eq({
-        'provider' => 'ldap',
+        'provider' => { 'id' => 'ldap' },
         'cn' => 'cn',
         'filter' => nil,
         'adminMemberRole' => { 'name' => 'Admin role' }

@@ -41,7 +41,13 @@ RSpec.describe 'Destroying an LDAP admin role link', feature_category: :permissi
       expect(mutation_result['errors']).to be_empty
       expect(
         graphql_data_at(:ldap_admin_role_link_destroy, :ldap_admin_role_link)
-      ).to match(a_graphql_entity_for(ldap_admin_role_link, :provider, :cn, :filter))
+      ).to match(
+        a_graphql_entity_for(
+          ldap_admin_role_link,
+          :cn, :filter,
+          provider: { 'id' => ldap_admin_role_link.provider, 'label' => nil }
+        )
+      )
     end
 
     it 'destroys the target LDAP admin role link' do

@@ -2,7 +2,10 @@ query ldapAdminRoleLinks {
   ldapAdminRoleLinks {
     nodes {
       id
-      provider
+      provider {
+        id
+        label
+      }
       filter
       cn
       adminMemberRole {

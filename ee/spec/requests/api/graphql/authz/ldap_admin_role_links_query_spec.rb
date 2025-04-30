@@ -17,7 +17,10 @@ RSpec.describe 'Query LDAP admin links', feature_category: :permissions do
     <<~GRAPHQL
       nodes {
         id
-        provider
+        provider {
+          id
+          label
+        }
         filter
         cn
         adminMemberRole {
@@ -34,7 +37,13 @@ RSpec.describe 'Query LDAP admin links', feature_category: :permissions do
   subject(:ldap_admin_role_links) { graphql_data['ldapAdminRoleLinks'] }
 
   context 'when custom roles licensed feature is available' do
+    let_it_be(:ldap_server_config) do
+      GitlabSettings::Options.new(provider_name: ldap_admin_link.provider, label: 'LDAP Provider')
+    end
+
     before do
+      allow(::Gitlab::Auth::Ldap::Config).to receive_messages(enabled?: true, available_servers: [ldap_server_config])
+
       stub_licensed_features(custom_roles: true)
 
       post_graphql(query, current_user: current_user)
@@ -45,7 +54,7 @@ RSpec.describe 'Query LDAP admin links', feature_category: :permissions do
     it 'returns all ldap admin links' do
       expect(ldap_admin_role_links['nodes']).to eq([{
         'id' => ldap_admin_link.to_global_id.to_s,
-        'provider' => 'ldapmain',
+        'provider' => { 'id' => ldap_server_config.provider_name, 'label' => ldap_server_config.label },
         'filter' => nil,
         'cn' => 'group1',
         'adminMemberRole' => { 'name' => 'Admin role' }
