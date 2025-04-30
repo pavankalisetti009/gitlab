@@ -34563,9 +34563,6 @@ msgstr ""
 msgid "JobSource|Pipeline Execution Policy"
 msgstr ""
 
-msgid "JobSource|Pipeline Execution Policy Schedule"
-msgstr ""
-
 msgid "JobSource|Push"
 msgstr ""
 
@@ -34575,7 +34572,10 @@ msgstr ""
 msgid "JobSource|Schedule"
 msgstr ""
 
-msgid "JobSource|Security Orchestration Policy"
+msgid "JobSource|Scheduled Pipeline Execution Policy"
+msgstr ""
+
+msgid "JobSource|Scheduled Scan Execution Policy"
 msgstr ""
 
 msgid "JobSource|Trigger"
@@ -44607,16 +44607,16 @@ msgstr ""
 msgid "PipelineSource|Pipeline"
 msgstr ""
 
-msgid "PipelineSource|Pipeline Execution Policy Schedule"
-msgstr ""
-
 msgid "PipelineSource|Push"
 msgstr ""
 
 msgid "PipelineSource|Schedule"
 msgstr ""
 
-msgid "PipelineSource|Security Orchestration Policy"
+msgid "PipelineSource|Scheduled Pipeline Execution Policy"
+msgstr ""
+
+msgid "PipelineSource|Scheduled Scan Execution Policy"
 msgstr ""
 
 msgid "PipelineSource|Trigger"
