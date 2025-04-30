@@ -25,7 +25,6 @@ module EE
         before_action :authorize_update_group_member!, only: [:update, :override]
 
         before_action do
-          push_frontend_feature_flag(:limit_unique_project_downloads_per_namespace_user, @group)
           push_frontend_feature_flag(:show_overage_on_role_promotion)
           push_licensed_feature(:unique_project_download_limit, @group)
           push_frontend_feature_flag(:show_role_details_in_drawer, @group)

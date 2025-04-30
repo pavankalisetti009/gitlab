@@ -6,13 +6,11 @@ RSpec.describe 'Group reporting settings', :js, feature_category: :insider_threa
   let_it_be(:user) { create(:user) }
 
   let(:group) { create(:group) }
-  let(:feature_flag_enabled) { true }
   let(:licensed_feature_available) { true }
   let(:current_limit) { 1 }
   let(:current_interval) { 9 }
 
   before do
-    stub_feature_flags(limit_unique_project_downloads_per_namespace_user: feature_flag_enabled)
     stub_licensed_features(unique_project_download_limit: licensed_feature_available)
 
     sign_in(user)

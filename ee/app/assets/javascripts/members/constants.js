@@ -76,9 +76,7 @@ const APP_OPTIONS_BASE = {
   [MEMBERS_TAB_TYPES.promotionRequest]: true,
 };
 
-const uniqueProjectDownloadLimitEnabled =
-  gon.features?.limitUniqueProjectDownloadsPerNamespaceUser &&
-  gon.licensed_features?.uniqueProjectDownloadLimit;
+const uniqueProjectDownloadLimitEnabled = gon.licensed_features?.uniqueProjectDownloadLimit;
 
 // eslint-disable-next-line import/export
 export const GROUPS_APP_OPTIONS = uniqueProjectDownloadLimitEnabled
