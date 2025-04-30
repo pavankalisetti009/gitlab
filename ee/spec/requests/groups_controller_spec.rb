@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GroupsController, type: :request, feature_category: :groups_and_projects do
+RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_category: :groups_and_projects do
   let(:user) { create(:user) }
   let(:group) { create(:group) }
 
@@ -367,8 +367,8 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
       end
     end
 
-    context 'when settings require_dpop_for_manage_api_endpoints' do
-      let(:params) { { group: { require_dpop_for_manage_api_endpoints: false } } }
+    context 'when setting the require_dpop_for_manage_api_endpoints param (default disabled)' do
+      let(:params) { { group: { require_dpop_for_manage_api_endpoints: true } } }
 
       context 'when feature flag is enabled' do
         before do
@@ -384,18 +384,23 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
           end
 
           it 'does not change the column and returns not_found' do
-            expect(group.require_dpop_for_manage_api_endpoints?).to be(true)
+            expect(group.require_dpop_for_manage_api_endpoints?).to be(false)
 
             request
 
             expect(response).to have_gitlab_http_status(:not_found)
-            expect(group.reload.require_dpop_for_manage_api_endpoints?).to be(true)
+            expect(group.reload.require_dpop_for_manage_api_endpoints?).to be(false)
           end
         end
 
-        it 'successfully changes the column' do
-          expect { request }.to change { group.reload.require_dpop_for_manage_api_endpoints? }
-          expect(response).to have_gitlab_http_status(:found)
+        context 'when a group owner' do
+          it 'successfully changes the column`s value' do
+            expect { request }
+              .to change { group.reload.require_dpop_for_manage_api_endpoints? }
+              .from(false).to(true)
+
+            expect(response).to have_gitlab_http_status(:found)
+          end
         end
       end
 

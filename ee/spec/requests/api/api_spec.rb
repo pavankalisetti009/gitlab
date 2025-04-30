@@ -61,36 +61,129 @@ RSpec.describe API::API, feature_category: :system_access do
       end
     end
 
-    context 'when :dpop_authentication FF is enabled' do
+    shared_examples "valid manage endpoint request" do
+      it 'returns :success' do
+        get api(request_path, personal_access_token: personal_access_token)
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
+    shared_examples "invalid `/manage` endpoint request" do
+      it 'returns 404 not found' do
+        get api(request_path, personal_access_token: personal_access_token)
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'when :dpop_authentication FF is disabled' do
+      let(:user) { create(:user) }
+      let(:personal_access_token) { create(:personal_access_token, user: user, scopes: [:api]) }
+      let(:group) { create(:group) }
+      let(:request_path) { "/groups/#{group.id}/manage/personal_access_tokens" }
+
       before do
+        group.add_owner(user)
+
+        stub_feature_flags(dpop_authentication: false)
+      end
+
+      context "when the :manage_pat_by_group_owners_ready FF is disabled" do
+        before do
+          stub_feature_flags(manage_pat_by_group_owners_ready: false)
+        end
+
+        context "when its a request to a `/manage` endpoint" do
+          it_behaves_like "invalid `/manage` endpoint request"
+        end
+      end
+
+      context "when the :manage_pat_by_group_owners_ready FF is enabled" do
+        before do
+          stub_feature_flags(manage_pat_by_group_owners_ready: true)
+        end
+
+        context "when its a request to a `/manage` endpoint" do
+          context "when the Group-level DPoP setting is disabled (default)" do
+            before do
+              group.update!(require_dpop_for_manage_api_endpoints: false)
+            end
+
+            it_behaves_like "valid manage endpoint request"
+          end
+
+          context "when the Group-level DPoP setting is enabled" do
+            before do
+              group.update!(require_dpop_for_manage_api_endpoints: true)
+            end
+
+            it_behaves_like "valid manage endpoint request"
+          end
+        end
+      end
+    end
+
+    context 'when :dpop_authentication FF is enabled' do
+      let(:user) { create(:user) }
+      let(:personal_access_token) { create(:personal_access_token, user: user, scopes: [:api]) }
+      let(:group) { create(:group) }
+      let(:request_path) { "/groups/#{group.id}/manage/personal_access_tokens" }
+
+      before do
+        group.add_owner(user)
+
         stub_feature_flags(dpop_authentication: true)
       end
 
-      context 'when DPoP is disabled for the user' do
-        let(:user) { create(:user) }
-
-        context 'when endpoint is groups/manage' do
-          let(:group) { create(:group) }
-          let(:personal_access_token) { create(:personal_access_token, user: user, scopes: [:api]) }
-          let(:request_path) { "/groups/#{group.id}/manage/personal_access_tokens" }
-
+      context 'when user-level DPoP is disabled' do
+        context "when the :manage_pat_by_group_owners_ready FF is disabled" do
           before do
-            group.add_owner(user)
+            stub_feature_flags(manage_pat_by_group_owners_ready: false)
           end
 
-          it_behaves_like "checks for dpop token"
+          context "when its a request to a `/manage` endpoint" do
+            it_behaves_like "invalid `/manage` endpoint request"
+          end
+        end
 
-          context 'when feature flag manage_pat_by_group_owners_ready is set false' do
-            before do
-              stub_feature_flags(manage_pat_by_group_owners_ready: false)
+        context "when the :manage_pat_by_group_owners_ready FF is enabled" do
+          before do
+            stub_feature_flags(manage_pat_by_group_owners_ready: true)
+          end
+
+          context "when its a request to a `/manage` endpoint" do
+            context "when the Group-level DPoP setting is disabled (default)" do
+              before do
+                group.update!(require_dpop_for_manage_api_endpoints: false)
+              end
+
+              it_behaves_like "valid manage endpoint request"
             end
 
-            it 'does not check for DPoP token' do
-              get api('/groups')
-              expect(response).to have_gitlab_http_status(:ok)
+            context "when the Group-level DPoP setting is enabled" do
+              before do
+                group.update!(require_dpop_for_manage_api_endpoints: true)
+              end
+
+              it_behaves_like "checks for dpop token"
             end
           end
         end
+      end
+
+      context 'when user-level DPoP is enabled' do
+        let(:user) { create(:user, dpop_enabled: true) }
+        let(:oauth_token) { create(:oauth_access_token, user: user, scopes: [:api]) }
+
+        context 'when API is called with an OAuth token' do
+          it 'does not invoke DPoP' do
+            get api('/groups', oauth_access_token: oauth_token)
+            expect(response).to have_gitlab_http_status(:ok)
+          end
+        end
+
+        it_behaves_like "checks for dpop token"
       end
     end
   end
