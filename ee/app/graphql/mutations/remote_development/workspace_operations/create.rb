@@ -67,6 +67,14 @@ module Mutations
           required: false,
           default_value: [],
           replace_null_with_default: true,
+          description: 'Variables to inject into the workspace.',
+          deprecated: { reason: 'Argument is renamed to workspace_variables', milestone: '18.0' }
+
+        argument :workspace_variables, [::Types::RemoteDevelopment::WorkspaceVariableInput],
+          required: false,
+          default_value: [],
+          replace_null_with_default: true,
+          experiment: { milestone: '18.0' },
           description: 'Variables to inject into the workspace.'
 
         # @param [Hash] args
@@ -92,6 +100,12 @@ module Mutations
           # If 'project_ref' is not specified, assign 'devfile_ref' to 'project_ref' for backward compatibility.
           devfile_ref = args.delete(:devfile_ref)
           args[:project_ref] = devfile_ref if args[:project_ref].nil?
+
+          # If 'workspace_variables' is not specified, use 'variables' arg for backward compatibility.
+          workspace_variables = args.delete(:workspace_variables)
+          variables_array = workspace_variables.presence || args.fetch(:variables, [])
+
+          variables = variables_array.map(&:to_h)
 
           # NOTE: What the following line actually does - the agent is delegating to the project to check that the user
           # has the :create_workspace ability on the _agent's_ project, which will be true if the user is a developer
@@ -123,7 +137,6 @@ module Mutations
           # noinspection RubyNilAnalysis - This is because the superclass #current_user uses #[], which can return nil
           track_usage_event(:users_creating_workspaces, current_user.id)
 
-          variables = args.fetch(:variables, []).map(&:to_h)
           params = args.merge(
             agent: agent,
             user: current_user,
