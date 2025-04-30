@@ -22,6 +22,7 @@ module RemoteDevelopment
               end
             )
 
+        # noinspection RubyMismatchedReturnType -- Expects hash, but Result implements #to_h, so should not be an error
         case result
         in { ok: AgentPrerequisitesSuccessful => message }
           # Type-check the payload before returning it
@@ -29,8 +30,14 @@ module RemoteDevelopment
             shared_namespace: String
           }
           { status: :success, payload: message.content }
-        else
-          raise Gitlab::Fp::UnmatchedResultError.new(result: result)
+
+          # NOTE: This ROP chain currently consists of only `map` steps, there are no `and_then` steps. Therefore it
+          #       is not possible for anything other than the AgentPrerequisitesSuccessful message from the last lambda
+          #       step to be returned. If we ever add an `and_then` step, we should uncomment the else case below, and
+          #       add an appropriate spec example named: "when an unmatched error is returned, an exception is raised"
+          #
+          # else
+          #   raise Gitlab::Fp::UnmatchedResultError.new(result: result)
         end
       end
     end
