@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Sidebars::Projects::Panel, feature_category: :navigation do
-  let_it_be(:project) { create(:project) }
+  let_it_be(:project, reload: true) { create(:project) }
 
   let(:context) { Sidebars::Projects::Context.new(current_user: nil, container: project) }
 
@@ -36,6 +36,33 @@ RSpec.describe Sidebars::Projects::Panel, feature_category: :navigation do
   context 'with learn gitlab menu' do
     it 'contains the menu' do
       expect(panel).to include_menu(Sidebars::Projects::Menus::LearnGitlabMenu)
+    end
+
+    context 'when the project namespace is on a trial', :saas do
+      before_all do
+        group = create(
+          :group_with_plan,
+          plan: :ultimate_trial_plan,
+          trial_starts_on: Date.current,
+          trial_ends_on: Date.current.advance(days: 60),
+          trial: true
+        )
+        project.update!(namespace: group)
+      end
+
+      it 'contains the menu' do
+        expect(panel).to include_menu(Sidebars::Projects::Menus::GetStartedMenu)
+      end
+
+      context 'when learn_gitlab_redesign feature flag is disabled' do
+        before do
+          stub_feature_flags(learn_gitlab_redesign: false)
+        end
+
+        it 'contains the menu' do
+          expect(panel).to include_menu(Sidebars::Projects::Menus::LearnGitlabMenu)
+        end
+      end
     end
   end
 end
