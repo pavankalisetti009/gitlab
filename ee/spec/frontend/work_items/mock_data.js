@@ -52,6 +52,15 @@ const applyEEWorkItemPermissions = (obj, blockedWorkItemsValue = false) => {
   return result;
 };
 
+export const mockWorkItemStatus = {
+  id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/2',
+  name: 'In progress',
+  iconName: 'status-running',
+  color: '#1f75cb',
+  position: 0,
+  __typename: 'WorkItemStatus',
+};
+
 export const workItemObjectiveMetadataWidgetsEE = {
   HEALTH_STATUS: {
     type: 'HEALTH_STATUS',
@@ -100,6 +109,13 @@ export const workItemObjectiveMetadataWidgetsEE = {
     startDate: '2024-01-01',
     __typename: 'WorkItemWidgetStartAndDueDate',
   },
+  STATUS: {
+    type: 'STATUS',
+    status: {
+      ...mockWorkItemStatus,
+    },
+    __typename: 'WorkItemWidgetStatus',
+  },
 };
 
 export const workItemTaskEE = {
@@ -128,6 +144,7 @@ export const workItemTaskEE = {
     workItemObjectiveMetadataWidgetsEE.WEIGHT,
     workItemObjectiveMetadataWidgetsEE.ITERATION,
     workItemObjectiveMetadataWidgetsEE.START_AND_DUE_DATE,
+    workItemObjectiveMetadataWidgetsEE.STATUS,
   ],
   __typename: 'WorkItem',
 };
@@ -536,15 +553,6 @@ export const workItemChangeTypeWidgets = {
   },
 };
 /* eslint-enable import/export */
-
-export const mockWorkItemStatus = {
-  id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/2',
-  name: 'In progress',
-  iconName: 'status-running',
-  color: '#1f75cb',
-  position: 0,
-  __typename: 'WorkItemStatus',
-};
 
 const relatedVulnerabilitiesNodes = [
   {
