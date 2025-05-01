@@ -23,7 +23,12 @@ export default {
     ),
     configurationPageTitle: s__('AiPowered|Configuration'),
   },
-  inject: ['duoAvailability', 'experimentFeaturesEnabled', 'onGeneralSettingsPage'],
+  inject: [
+    'duoAvailability',
+    'experimentFeaturesEnabled',
+    'duoCoreFeaturesEnabled',
+    'onGeneralSettingsPage',
+  ],
   props: {
     hasParentFormChanged: {
       type: Boolean,
@@ -35,6 +40,7 @@ export default {
     return {
       availability: this.duoAvailability,
       experimentsEnabled: this.experimentFeaturesEnabled,
+      duoCoreEnabled: this.duoCoreFeaturesEnabled,
     };
   },
   methods: {
@@ -42,13 +48,17 @@ export default {
       this.$emit('submit', {
         duoAvailability: this.availability,
         experimentFeaturesEnabled: this.experimentsEnabled,
+        duoCoreFeaturesEnabled: this.duoCoreEnabled,
       });
     },
     onRadioChanged(value) {
       this.availability = value;
     },
-    onCheckboxChanged(value) {
+    experimentCheckboxChanged(value) {
       this.experimentsEnabled = value;
+    },
+    duoCoreCheckboxChanged(value) {
+      this.duoCoreEnabled = value;
     },
   },
   aiFeaturesHelpPath: helpPagePath('user/ai_features'),
@@ -76,10 +86,12 @@ export default {
           <ai-common-settings-form
             :duo-availability="duoAvailability"
             :experiment-features-enabled="experimentFeaturesEnabled"
+            :duo-core-features-enabled="duoCoreFeaturesEnabled"
             :has-parent-form-changed="hasParentFormChanged"
             @submit="submitForm"
             @radio-changed="onRadioChanged"
-            @checkbox-changed="onCheckboxChanged"
+            @experiment-checkbox-changed="experimentCheckboxChanged"
+            @duo-core-checkbox-changed="duoCoreCheckboxChanged"
           >
             <template #ai-common-settings-top>
               <slot name="ai-common-settings-top"></slot>
@@ -103,10 +115,12 @@ export default {
       <ai-common-settings-form
         :duo-availability="duoAvailability"
         :experiment-features-enabled="experimentFeaturesEnabled"
+        :duo-core-features-enabled="duoCoreFeaturesEnabled"
         :has-parent-form-changed="hasParentFormChanged"
         @submit="submitForm"
         @radio-changed="onRadioChanged"
-        @checkbox-changed="onCheckboxChanged"
+        @experiment-checkbox-changed="experimentCheckboxChanged"
+        @duo-core-checkbox-changed="duoCoreCheckboxChanged"
       >
         <template #ai-common-settings-top>
           <slot name="ai-common-settings-top"></slot>

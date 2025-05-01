@@ -66,11 +66,13 @@ describe('AiGroupSettings', () => {
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experimentFeaturesEnabled: true,
+        duoCoreFeaturesEnabled: true,
       });
       expect(updateGroupSettings).toHaveBeenCalledTimes(1);
       expect(updateGroupSettings).toHaveBeenCalledWith('100', {
         duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experiment_features_enabled: true,
+        duo_core_features_enabled: true,
       });
     });
 
@@ -79,6 +81,7 @@ describe('AiGroupSettings', () => {
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experimentFeaturesEnabled: false,
+        duoCoreFeaturesEnabled: false,
       });
       await waitForPromises();
       expect(visitUrlWithAlerts).toHaveBeenCalledWith(
@@ -97,6 +100,7 @@ describe('AiGroupSettings', () => {
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experimentFeaturesEnabled: false,
+        duoCoreFeaturesEnabled: false,
       });
       await waitForPromises();
       expect(createAlert).toHaveBeenCalledWith(
