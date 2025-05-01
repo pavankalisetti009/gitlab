@@ -1,27 +1,27 @@
 # frozen_string_literal: true
 
-module Sidebars
+module Sidebars # rubocop:todo Gitlab/BoundedContexts -- Existing namespace that should change as a coordinated effort.
   module Projects
     module Menus
-      class LearnGitlabMenu < ::Sidebars::Menu
+      class GetStartedMenu < ::Sidebars::Menu
         override :link
         def link
-          project_learn_gitlab_path(context.project)
+          project_get_started_path(context.project)
         end
 
         override :active_routes
         def active_routes
-          { controller: :learn_gitlab }
+          { controller: :get_started }
         end
 
         override :title
         def title
-          _('Learn GitLab')
+          _('Get started')
         end
 
         override :has_pill?
         def has_pill?
-          context.learn_gitlab_enabled
+          true # since render checks if enabled, we can always set this as true
         end
 
         override :pill_count
@@ -51,7 +51,7 @@ module Sidebars
             pill_count: pill_count,
             has_pill: has_pill?,
             super_sidebar_parent: ::Sidebars::StaticMenu,
-            item_id: :learn_gitlab
+            item_id: :get_started
           })
         end
       end
