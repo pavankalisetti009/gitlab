@@ -1149,7 +1149,7 @@ module EE
     def adjourned_deletion_configured?
       return super unless License.feature_available?(:adjourned_deletion_for_projects_and_groups)
 
-      ::Gitlab::CurrentSettings.deletion_adjourned_period > 0 && !personal?
+      deletion_adjourned_period > 0
     end
 
     override :marked_for_deletion?

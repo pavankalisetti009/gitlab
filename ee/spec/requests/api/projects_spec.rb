@@ -2153,7 +2153,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       context 'for projects in user namespace' do
         let(:project) { create(:project, namespace: user.namespace) }
 
-        it_behaves_like 'deletes project immediately'
+        it_behaves_like 'marks project for deletion'
       end
     end
 

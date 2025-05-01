@@ -3807,20 +3807,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
       it { is_expected.to be result }
     end
-
-    context 'when project belongs to user namespace' do
-      let_it_be(:user) { create(:user) }
-      let_it_be(:user_project) { create(:project, namespace: user.namespace) }
-
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-        stub_application_setting(deletion_adjourned_period: 7)
-      end
-
-      it 'deletes immediately' do
-        expect(user_project.adjourned_deletion?).to be_falsey
-      end
-    end
   end
 
   describe '#adjourned_deletion_configured?' do
@@ -3841,20 +3827,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
 
       it { is_expected.to be result }
-    end
-
-    context 'when project belongs to user namespace' do
-      let_it_be(:user) { create(:user) }
-      let_it_be(:user_project) { create(:project, namespace: user.namespace) }
-
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-        stub_application_setting(deletion_adjourned_period: 7)
-      end
-
-      it 'deletes immediately' do
-        expect(subject).to eq(false)
-      end
     end
   end
 
