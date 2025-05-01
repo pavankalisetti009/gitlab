@@ -65,6 +65,7 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
   end
 
   it_behaves_like 'when dependencies graphql query sorted paginated'
+  it_behaves_like 'when dependencies graphql query sorted by license'
 
   context 'when dependencies have no source data' do
     let!(:occurrences) { create_list(:sbom_occurrence, 5, project: project, source: nil) }

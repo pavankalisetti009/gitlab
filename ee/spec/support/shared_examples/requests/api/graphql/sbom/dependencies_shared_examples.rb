@@ -71,6 +71,27 @@ RSpec.shared_examples 'when dependencies graphql query sorted by severity' do
   end
 end
 
+RSpec.shared_examples 'when dependencies graphql query sorted by license' do
+  context 'with sort as an argument' do
+    let(:asc_query) { pagination_query({ sort: :LICENSE_ASC }) }
+    let(:desc_query) { pagination_query({ sort: :LICENSE_DESC }) }
+
+    it 'sorts by license ascending' do
+      post_graphql(asc_query, current_user: current_user)
+
+      licenses = graphql_data_at(*nodes_path).pluck('license')
+      expect(licenses).to eq(licenses.sort)
+    end
+
+    it 'sorts by license descending' do
+      post_graphql(desc_query, current_user: current_user)
+
+      licenses = graphql_data_at(*nodes_path).pluck('license')
+      expect(licenses).to eq(licenses.sort.reverse)
+    end
+  end
+end
+
 RSpec.shared_examples 'when dependencies graphql query filtered by package manager' do
   it 'returns only matching package manager results' do
     post_graphql(query, current_user: current_user)
