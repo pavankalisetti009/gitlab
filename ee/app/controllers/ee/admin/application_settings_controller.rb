@@ -11,22 +11,25 @@ module EE
       UNINDEXED_PROJECT_DISPLAY_LIMIT = 50
 
       prepended do
+        # check es_helper.ping? if before_action reaches out to Elasticsearch
         before_action :elasticsearch_reindexing_task, only: [:search]
         before_action :elasticsearch_reindexing_state, only: [:search]
         before_action :elasticsearch_index_settings, only: [:search]
-        before_action :elasticsearch_warn_if_not_using_aliases, only: [:search]
-        before_action :elasticsearch_warn_if_obsolete_migrations, only: [:search]
-        before_action :elasticsearch_pending_obsolete_migrations, only: [:search]
-        before_action :search_error_if_version_incompatible, only: [:search]
-        before_action :search_outdated_code_analyzer_detected, only: [:search]
+        before_action :elasticsearch_warn_if_not_using_aliases, only: [:search], if: -> { es_helper.ping? }
+        before_action :elasticsearch_warn_if_obsolete_migrations, only: [:search], if: -> { es_helper.ping? }
+        before_action :elasticsearch_pending_obsolete_migrations, only: [:search], if: -> { es_helper.ping? }
+        before_action :indexing_status, only: [:search]
+        before_action :search_error_if_version_incompatible, only: [:search], if: -> { es_helper.ping? }
+        before_action :search_outdated_code_analyzer_detected, only: [:search], if: -> { es_helper.ping? }
+
         before_action :new_license, only: [:general]
         before_action :scim_token, only: [:general]
+        before_action :push_frontend_license_features, only: [:general]
+
         before_action :check_microsoft_group_sync_available, only: [:update_microsoft_application]
         before_action :find_or_initialize_microsoft_application, only: [:general, :update_microsoft_application]
-        before_action :verify_namespace_plan_check_enabled, only: [:namespace_storage]
-        before_action :indexing_status, only: [:search]
 
-        before_action :push_frontend_license_features, only: [:general]
+        before_action :verify_namespace_plan_check_enabled, only: [:namespace_storage]
 
         feature_category :plan_provisioning, [:seat_link_payload]
         feature_category :source_code_management, [:templates]
@@ -56,15 +59,13 @@ module EE
         end
 
         def elasticsearch_warn_if_not_using_aliases
-          @elasticsearch_warn_if_not_using_aliases = ::Gitlab::Elastic::Helper.default.alias_missing? &&
-            ::Gitlab::Elastic::Helper.default.index_exists?
+          @elasticsearch_warn_if_not_using_aliases = es_helper.alias_missing? && es_helper.index_exists?
         rescue StandardError => e
           log_exception(e)
         end
 
         def elasticsearch_warn_if_obsolete_migrations
-          @elasticsearch_warn_if_obsolete_migrations = ::Gitlab::Elastic::Helper.default.ping? &&
-            elasticsearch_pending_obsolete_migrations.any?
+          @elasticsearch_warn_if_obsolete_migrations = elasticsearch_pending_obsolete_migrations.any?
         end
 
         def elasticsearch_pending_obsolete_migrations
@@ -73,12 +74,12 @@ module EE
         end
 
         def search_error_if_version_incompatible
-          @search_error_if_version_incompatible = !::Gitlab::Elastic::Helper.default.supported_version?
+          @search_error_if_version_incompatible = !es_helper.supported_version?
         end
 
         def search_outdated_code_analyzer_detected
           @search_outdated_code_analyzer_detected = begin
-            current_index_version = ::Gitlab::Elastic::Helper.default.get_meta&.dig('created_by')
+            current_index_version = es_helper.get_meta&.dig('created_by')
             version_info = ::Gitlab::VersionInfo.parse(current_index_version)
 
             if version_info.valid?
@@ -276,6 +277,10 @@ module EE
 
       def microsoft_group_sync_enabled?
         ::Gitlab::Auth::Saml::Config.microsoft_group_sync_enabled?
+      end
+
+      def es_helper
+        @es_helper ||= ::Gitlab::Elastic::Helper.default
       end
     end
   end
