@@ -15,7 +15,8 @@ module EE
           progress: :progress,
           test_reports: :test_reports,
           feature_flags: { feature_flags: :project },
-          iteration: { iteration: :group }
+          iteration: { iteration: :group },
+          status: { current_status: :custom_status }
         )
       end
 

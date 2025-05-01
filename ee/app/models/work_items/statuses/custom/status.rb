@@ -31,6 +31,15 @@ module WorkItems
         # because you won't be able to change the namespace through the API.
         validate :validate_statuses_per_namespace_limit, on: :create
 
+        def icon_name
+          CATEGORY_ICONS[category.to_sym]
+        end
+
+        def position
+          # Temporarily default to 0 as it is not meaningful without lifecycle context
+          0
+        end
+
         private
 
         def validate_statuses_per_namespace_limit

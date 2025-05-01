@@ -67,4 +67,16 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
     it { is_expected.to include(WorkItems::Statuses::SharedConstants) }
     it { is_expected.to include(WorkItems::Statuses::Status) }
   end
+
+  describe '#icon_name' do
+    it 'returns the icon name based on the category' do
+      expect(custom_status.icon_name).to eq('status-waiting')
+    end
+  end
+
+  describe '#position' do
+    it 'returns 0 as the default position' do
+      expect(custom_status.position).to eq(0)
+    end
+  end
 end

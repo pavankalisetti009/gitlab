@@ -342,8 +342,10 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
     end
 
     context 'with status widget' do
+      let_it_be(:namespace) { group }
       let_it_be(:work_item_1) { create(:work_item, :task, project: project) }
       let_it_be(:work_item_2) { create(:work_item, :task, project: project) }
+      let_it_be(:work_item_3) { create(:work_item, :task, project: project) }
 
       let(:fields) do
         <<~QUERY
@@ -372,6 +374,12 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
             post_graphql(query, current_user: current_user)
           end
 
+          additional_work_item_1 = create(:work_item, :task, project: project)
+          additional_work_item_2 = create(:work_item, :task, project: project)
+
+          create(:work_item_current_status, :system_defined, work_item: additional_work_item_1)
+          create(:work_item_current_status, :system_defined, work_item: additional_work_item_2)
+
           expect do
             post_graphql(query, current_user: current_user)
           end.not_to exceed_query_limit(control)
@@ -384,25 +392,112 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
         end
 
         context 'with current statuses' do
-          let_it_be(:current_status) { create(:work_item_current_status, work_item: work_item_1) }
+          let_it_be(:work_item_type) { create(:work_item_type, :task) }
+          let_it_be(:custom_status) { create(:work_item_custom_status) }
 
-          it 'returns status data' do
-            post_graphql(query, current_user: current_user)
-
-            expect(widgets_data).to include(
-              hash_including(
-                'status' => {
-                  'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
-                  'name' => 'To do',
-                  'iconName' => 'status-waiting',
-                  'color' => "#737278",
-                  'position' => 0
-                }
-              )
-            )
+          let_it_be(:lifecycle) do
+            create(:work_item_custom_lifecycle, namespace: namespace, default_open_status: custom_status)
           end
 
-          it_behaves_like 'checks for N+1 queries'
+          context 'with system-defined status' do
+            let_it_be(:current_status) { create(:work_item_current_status, :system_defined, work_item: work_item_1) }
+
+            it 'returns status data' do
+              post_graphql(query, current_user: current_user)
+
+              expect(widgets_data).to include(
+                hash_including(
+                  'status' => {
+                    'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
+                    'name' => 'To do',
+                    'iconName' => 'status-waiting',
+                    'color' => "#737278",
+                    'position' => 0
+                  }
+                )
+              )
+            end
+          end
+
+          context 'with custom status' do
+            it 'returns status data' do
+              create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item_type,
+                namespace: namespace)
+
+              current_status = create(:work_item_current_status, :custom, custom_status: custom_status,
+                work_item: work_item_1)
+
+              post_graphql(query, current_user: current_user)
+
+              expect(widgets_data).to include(
+                hash_including(
+                  'status' => {
+                    'id' => "gid://gitlab/WorkItems::Statuses::Custom::Status/#{current_status.custom_status_id}",
+                    'name' => custom_status.name,
+                    'iconName' => 'status-waiting',
+                    'color' => "#737278",
+                    'position' => 0
+                  }
+                )
+              )
+            end
+          end
+
+          context 'with mixed statuses' do
+            it 'returns correct status data for each work item' do
+              create(:work_item_current_status, :system_defined, work_item: work_item_1)
+
+              create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item_type,
+                namespace: namespace)
+
+              current_status_2 = create(:work_item_current_status, :custom, custom_status: custom_status,
+                work_item: work_item_2)
+
+              post_graphql(query, current_user: current_user)
+
+              expect(widgets_data).to include(
+                hash_including(
+                  'status' => hash_including(
+                    'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1'
+                  )
+                ),
+                hash_including(
+                  'status' => hash_including(
+                    'id' => "gid://gitlab/WorkItems::Statuses::Custom::Status/#{current_status_2.custom_status_id}"
+                  )
+                ),
+                hash_including(
+                  'status' => nil
+                )
+              )
+            end
+
+            it 'avoids N+1 queries', :use_sql_query_cache do
+              create(:work_item_current_status, :system_defined, work_item: work_item_1)
+
+              create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item_type,
+                namespace: namespace)
+
+              create(:work_item_current_status, :custom, custom_status: custom_status,
+                work_item: work_item_2)
+
+              control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+                post_graphql(query, current_user: current_user)
+              end
+
+              additional_work_item_1 = create(:work_item, :task, project: project)
+              additional_work_item_2 = create(:work_item, :task, project: project)
+
+              create(:work_item_current_status, :custom, custom_status: custom_status,
+                work_item: additional_work_item_1)
+              create(:work_item_current_status, :custom, custom_status: custom_status,
+                work_item: additional_work_item_2)
+
+              expect do
+                post_graphql(query, current_user: current_user)
+              end.not_to exceed_query_limit(control)
+            end
+          end
         end
 
         context 'without current statuses' do

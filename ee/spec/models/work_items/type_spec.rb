@@ -398,6 +398,72 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
     end
   end
 
+  describe '#custom_status_enabled_for?' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:work_item_type) { create(:work_item_type, :task) }
+
+    subject { work_item_type.custom_status_enabled_for?(namespace.id) }
+
+    before do
+      stub_licensed_features(work_item_status: true)
+    end
+
+    context 'when custom status is enabled for the type in the namespace' do
+      before do
+        create(:work_item_type_custom_lifecycle,
+          work_item_type: work_item_type,
+          namespace: namespace
+        )
+      end
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when custom status is not enabled for the type in the namespace' do
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when namespace_id is nil' do
+      subject { work_item_type.custom_status_enabled_for?(nil) }
+
+      it { is_expected.to be_falsey }
+    end
+  end
+
+  describe '#custom_lifecycle_for' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:work_item_type) { create(:work_item_type, :task) }
+
+    subject(:custom_lifecycle_result) { work_item_type.custom_lifecycle_for(namespace.id) }
+
+    before do
+      stub_licensed_features(work_item_status: true)
+    end
+
+    context 'when custom lifecycle exists for the type and namespace' do
+      it 'returns the lifecycle' do
+        type_custom_lifecycle = create(:work_item_type_custom_lifecycle, work_item_type: work_item_type,
+          namespace: namespace)
+
+        expect(custom_lifecycle_result).to eq(type_custom_lifecycle.lifecycle)
+      end
+    end
+
+    context 'when no custom lifecycle exists for the type and namespace' do
+      it 'returns nil' do
+        expect(custom_lifecycle_result).to be_nil
+      end
+    end
+
+    context 'when namespace_id is nil' do
+      subject(:custom_lifecycle_result) { work_item_type.custom_lifecycle_for(nil) }
+
+      it 'returns nil' do
+        expect(custom_lifecycle_result).to be_nil
+      end
+    end
+  end
+
   def feature_hash
     available_features = licensed_features - disabled_features
 
