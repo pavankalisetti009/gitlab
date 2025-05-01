@@ -46,6 +46,8 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
 
         resources :subscriptions, only: [:create, :destroy]
 
+        resource :get_started, only: :show, controller: :get_started, param: :project_id
+
         resource :learn_gitlab, only: :show, controller: :learn_gitlab, param: :project_id do
           get :end_tutorial, on: :member
         end
