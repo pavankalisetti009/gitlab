@@ -12,58 +12,39 @@ RSpec.describe 'User comments on epic', :js, feature_category: :portfolio_manage
 
   before do
     stub_licensed_features(epics: true)
-    stub_feature_flags(namespace_level_work_items: false, work_item_epics: false)
     sign_in(user)
 
     visit group_epic_path(group, epic)
   end
 
   context 'when adding comments' do
-    it 'adds comment' do
-      content = 'XML attached'
+    it 'adds comment which is updated in real-time by other users' do
+      using_session :other_session do
+        visit group_epic_path(group, epic)
+        expect(page).not_to have_content('XML attached')
+      end
 
-      add_note(content)
+      fill_in('Add a reply', with: 'XML attached')
+      click_button 'Comment'
 
-      page.within('.note') do
-        expect(page).to have_content(content)
+      page.within('.work-item-notes') do
+        expect(page).to have_content('XML attached')
         expect(page).to be_axe_clean.within '.note'
       end
 
-      page.within('.js-main-target-form') do
-        find('.error-alert', visible: false)
+      using_session :other_session do
+        expect(page).to have_content('XML attached')
       end
     end
 
     it 'links an issuable' do
-      fill_in 'Comment', with: "#{epic2.to_reference(full: true)}+"
+      fill_in 'Add a reply', with: "#{epic2.to_reference(full: true)}+"
+      click_button 'Comment'
 
-      page.within('.new-note') do
-        click_button("Preview")
-        wait_for_requests
-
-        within('.md-preview-holder') do
-          expect(page).to have_link(
-            epic2.title,
-            href: /#{epic_path(epic2)}/
-          )
-          expect(page).to be_axe_clean.within '.md-preview-holder'
-        end
+      page.within('.work-item-notes') do
+        expect(page).to have_link(epic2.title, href: /#{epic_path(epic2)}/)
+        expect(page).to be_axe_clean.within '.md-preview-holder'
       end
-    end
-  end
-
-  context 'when someone else adds a comment' do
-    it 'displays the new comment in real-time' do
-      wait_for_requests
-
-      content = 'A new note from someone else'
-
-      expect(page).not_to have_content(content)
-
-      create(:note, noteable: epic, author: epic.author, note: content)
-
-      expect(page).to have_content(content)
-      expect(page).to be_axe_clean.within '.note'
     end
   end
 end

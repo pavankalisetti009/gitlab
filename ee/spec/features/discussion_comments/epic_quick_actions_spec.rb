@@ -6,32 +6,31 @@ RSpec.describe 'Epic quick actions', :js, feature_category: :team_planning do
   include Features::NotesHelpers
 
   let(:user) { create(:user) }
-  let(:group) { create(:group) }
+  let(:group) { create(:group, developers: user) }
   let(:epic) { create(:epic, group: group) }
 
   before do
     stub_licensed_features(epics: true)
-    stub_feature_flags(namespace_level_work_items: false, work_item_epics: false)
-    group.add_developer(user)
-
     sign_in(user)
+
     visit group_epic_path(group, epic)
   end
 
   context 'note with a quick action' do
     it 'previews a note with quick action' do
-      preview_note('/title New Title')
+      fill_in('Add a reply', with: '/title New Title')
+      click_button 'Preview'
 
       expect(page).to have_content('Changes the title to "New Title".')
     end
 
     it 'executes the quick action' do
-      add_note('/title New Title')
+      fill_in('Add a reply', with: '/title New Title')
+      click_button 'Comment'
 
       expect(page).to have_content('Changed the title to "New Title".')
-      expect(epic.reload.title).to eq('New Title')
 
-      visit group_epic_path(group, epic)
+      page.refresh
 
       expect(page).to have_content('New Title')
     end
