@@ -743,7 +743,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     shared_context 'with active add-on' do
       before do
         allow(::GitlabSubscriptions::AddOnPurchase)
-          .to receive_message_chain(:for_duo_enterprise, :active, :exists?).and_return(true)
+          .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?).and_return(true)
       end
     end
 

@@ -103,7 +103,7 @@ module EE
           ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
         (::License.current&.ultimate? || ::License.current&.premium?) &&
-          ::GitlabSubscriptions::AddOnPurchase.for_duo_enterprise.active.exists?
+          ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.exists?
       end
 
       condition(:x_ray_available) do

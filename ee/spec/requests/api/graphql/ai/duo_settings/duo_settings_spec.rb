@@ -26,7 +26,7 @@ RSpec.describe 'GitLab Duo settings.', feature_category: :'self-hosted_models' d
 
     context 'when user is not authorized to manage Duo self-hosted settings' do
       let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired)
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired, :self_managed)
       end
 
       it 'returns nil for the Duo self-hosted setting' do
@@ -43,7 +43,7 @@ RSpec.describe 'GitLab Duo settings.', feature_category: :'self-hosted_models' d
 
     context 'when user is not authorized for Duo Core features' do
       let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active)
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, :self_managed)
       end
 
       before do
@@ -64,7 +64,7 @@ RSpec.describe 'GitLab Duo settings.', feature_category: :'self-hosted_models' d
 
     context 'when user is authorized for everything' do
       let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active)
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, :self_managed)
       end
 
       it 'returns the expected response' do

@@ -8,7 +8,7 @@ RSpec.describe 'Deleting a self-hosted model', feature_category: :"self-hosted_m
   let_it_be(:current_user) { create(:admin) }
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
   let_it_be(:add_on_purchase) do
-    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active)
+    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, :self_managed)
   end
 
   let_it_be(:self_hosted_model) do
