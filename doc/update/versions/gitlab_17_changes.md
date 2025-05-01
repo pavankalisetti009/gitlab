@@ -854,53 +854,53 @@ If you have a multi-node configuration, you must ensure these secrets are the sa
 
       On GitLab >= 18.0.0, >= 17.11.2, >= 17.10.6, or >= 17.9.8, run:
 
-         ```shell
-         gitlab-rake gitlab:doctor:encryption_keys
-         ```
+      ```shell
+      gitlab-rake gitlab:doctor:encryption_keys
+      ```
 
-      If you're using other versions:
+      If you're using other versions, run:
 
-         ```shell
-         gitlab-rails runner 'require_relative Pathname(Dir.pwd).join("encryption_keys.rb"); Gitlab::Doctor::EncryptionKeys.new(Logger.new($stdout)).run!'
-         ```
+      ```shell
+      gitlab-rails runner 'require_relative Pathname(Dir.pwd).join("encryption_keys.rb"); Gitlab::Doctor::EncryptionKeys.new(Logger.new($stdout)).run!'
+      ```
 
       All reported keys usage are for the same key ID. For example, on node 1:
 
-         ```shell
-         Gathering existing encryption keys:
-         - active_record_encryption_primary_key: ID => `bb32`; truncated secret => `bEt...eBU`
-         - active_record_encryption_deterministic_key: ID => `445f`; truncated secret => `MJo...yg5`
+      ```shell
+      Gathering existing encryption keys:
+      - active_record_encryption_primary_key: ID => `bb32`; truncated secret => `bEt...eBU`
+      - active_record_encryption_deterministic_key: ID => `445f`; truncated secret => `MJo...yg5`
 
-         [... snipped for brevity ...]
+      [... snipped for brevity ...]
 
-         Encryption keys usage for VirtualRegistries::Packages::Maven::Upstream: NONE
-         Encryption keys usage for Ai::ActiveContext::Connection: NONE
-         Encryption keys usage for CloudConnector::Keys:
-         - `bb32` => 1
-         Encryption keys usage for DependencyProxy::GroupSetting:
-         - `bb32` => 8
-         Encryption keys usage for Ci::PipelineScheduleInput:
-         - `bb32` => 1
-         ```
+      Encryption keys usage for VirtualRegistries::Packages::Maven::Upstream: NONE
+      Encryption keys usage for Ai::ActiveContext::Connection: NONE
+      Encryption keys usage for CloudConnector::Keys:
+      - `bb32` => 1
+      Encryption keys usage for DependencyProxy::GroupSetting:
+      - `bb32` => 8
+      Encryption keys usage for Ci::PipelineScheduleInput:
+      - `bb32` => 1
+      ```
 
-         And for example, on node 2 (you should not see any `(UNKNOWN KEY!)` this time):
+      And for example, on node 2 (you should not see any `(UNKNOWN KEY!)` this time):
 
-         ```shell
-         Gathering existing encryption keys:
-         - active_record_encryption_primary_key: ID => `bb32`; truncated secret => `bEt...eBU`
-         - active_record_encryption_deterministic_key: ID => `445f`; truncated secret => `MJo...yg5`
+      ```shell
+      Gathering existing encryption keys:
+      - active_record_encryption_primary_key: ID => `bb32`; truncated secret => `bEt...eBU`
+      - active_record_encryption_deterministic_key: ID => `445f`; truncated secret => `MJo...yg5`
 
-         [... snipped for brevity ...]
+      [... snipped for brevity ...]
 
-         Encryption keys usage for VirtualRegistries::Packages::Maven::Upstream: NONE
-         Encryption keys usage for Ai::ActiveContext::Connection: NONE
-         Encryption keys usage for CloudConnector::Keys:
-         - `bb32` => 1
-         Encryption keys usage for DependencyProxy::GroupSetting:
-         - `bb32` => 8
-         Encryption keys usage for Ci::PipelineScheduleInput:
-         - `bb32` => 1
-         ```
+      Encryption keys usage for VirtualRegistries::Packages::Maven::Upstream: NONE
+      Encryption keys usage for Ai::ActiveContext::Connection: NONE
+      Encryption keys usage for CloudConnector::Keys:
+      - `bb32` => 1
+      Encryption keys usage for DependencyProxy::GroupSetting:
+      - `bb32` => 8
+      Encryption keys usage for Ci::PipelineScheduleInput:
+      - `bb32` => 1
+      ```
 
    1. Remove the `encryption_keys.rb` file if you downloaded it previously:
 
@@ -912,15 +912,15 @@ If you have a multi-node configuration, you must ensure these secrets are the sa
 
    For GitLab >= 17.10:
 
-      ```shell
-      gitlab-rake cloud_connector:keys:create
-      ```
+   ```shell
+   gitlab-rake cloud_connector:keys:create
+   ```
 
    For GitLab 17.9:
 
-      ```shell
-      gitlab-rails runner 'CloudConnector::Keys.create!(secret_key: OpenSSL::PKey::RSA.new(2048).to_pem)'
-      ```
+   ```shell
+   gitlab-rails runner 'CloudConnector::Keys.create!(secret_key: OpenSSL::PKey::RSA.new(2048).to_pem)'
+   ```
 
 1. [Disable maintenance mode](../../administration/maintenance_mode/_index.md#disable-maintenance-mode).
 
