@@ -26,7 +26,7 @@ module EE
           required: false,
           type: :checkbox,
           api_only: true,
-          description: -> { s_('JiraIntegration|Enable creating Jira issues for GitLab vulnerabilities.') }
+          description: -> { s_('JiraIntegration|Turn on Jira issue creation for GitLab vulnerabilities.') }
 
         field :vulnerabilities_issuetype,
           required: false,
@@ -40,7 +40,7 @@ module EE
           api_only: true,
           description: -> {
             s_('JiraIntegration|Key of the project to use when creating issues from vulnerabilities.' \
-              'This parameter is required if using the integration to create issues from vulnerabilities.')
+              'This parameter is required if using the integration to create Jira issues from vulnerabilities.')
           }
 
         field :customize_jira_issue_enabled,
@@ -48,7 +48,7 @@ module EE
           type: :checkbox,
           api_only: true,
           description: -> {
-            s_('JiraIntegration|When set to `true`, will navigate to a prefilled form on the Jira instance' \
+            s_('JiraIntegration|When set to `true`, opens a prefilled form on the Jira instance' \
               'when creating a Jira issue from a vulnerability.')
           }
       end
