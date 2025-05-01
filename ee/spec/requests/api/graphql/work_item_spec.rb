@@ -347,9 +347,11 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
       end
 
       describe 'status widget' do
+        let_it_be(:namespace) { group }
         let_it_be(:work_item) { create(:work_item, :task, project: project) }
+        let_it_be(:work_item_type) { create(:work_item_type, :task) }
+        let_it_be(:custom_status) { create(:work_item_custom_status) }
         let_it_be(:global_id) { work_item.to_global_id }
-        let_it_be(:system_defined_status) { WorkItems::Statuses::SystemDefined::Status.find(1) }
 
         let(:work_item_fields) do
           <<~GRAPHQL
@@ -372,36 +374,70 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         context 'when feature is licensed' do
           before do
             stub_licensed_features(work_item_status: true)
-
-            post_graphql(query, current_user: current_user)
           end
 
           context 'with current status' do
-            let_it_be(:current_status) do
-              create(:work_item_current_status, work_item: work_item, system_defined_status: system_defined_status)
-            end
+            context 'with system-defined status' do
+              let_it_be(:current_status) { create(:work_item_current_status, :system_defined, work_item: work_item) }
 
-            it 'returns status data' do
-              expect(work_item_data).to include(
-                'id' => work_item.to_gid.to_s,
-                'widgets' => include(
-                  hash_including(
-                    'type' => 'STATUS',
-                    'status' => {
-                      'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
-                      'name' => 'To do',
-                      'iconName' => 'status-waiting',
-                      'color' => "#737278",
-                      'position' => 0
-                    }
+              it 'returns system-defined status data' do
+                post_graphql(query, current_user: current_user)
+
+                expect(work_item_data).to include(
+                  'id' => work_item.to_gid.to_s,
+                  'widgets' => include(
+                    hash_including(
+                      'type' => 'STATUS',
+                      'status' => {
+                        'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
+                        'name' => 'To do',
+                        'iconName' => 'status-waiting',
+                        'color' => "#737278",
+                        'position' => 0
+                      }
+                    )
                   )
                 )
-              )
+              end
+            end
+
+            context 'with custom status' do
+              let_it_be(:lifecycle) do
+                create(:work_item_custom_lifecycle, namespace: namespace, default_open_status: custom_status)
+              end
+
+              it 'returns custom status data' do
+                create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item_type,
+                  namespace: namespace)
+
+                current_status = create(:work_item_current_status, :custom, custom_status: custom_status,
+                  work_item: work_item)
+
+                post_graphql(query, current_user: current_user)
+
+                expect(work_item_data).to include(
+                  'id' => work_item.to_gid.to_s,
+                  'widgets' => include(
+                    hash_including(
+                      'type' => 'STATUS',
+                      'status' => {
+                        'id' => "gid://gitlab/WorkItems::Statuses::Custom::Status/#{current_status.custom_status_id}",
+                        'name' => custom_status.name,
+                        'iconName' => 'status-waiting',
+                        'color' => "#737278",
+                        'position' => 0
+                      }
+                    )
+                  )
+                )
+              end
             end
           end
 
           context 'without current status' do
             it 'does not return status data' do
+              post_graphql(query, current_user: current_user)
+
               expect(work_item_data).to include(
                 'id' => work_item.to_gid.to_s,
                 'widgets' => include(

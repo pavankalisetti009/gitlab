@@ -64,6 +64,30 @@ module EE
         end
       end
 
+      def custom_status_enabled_for?(namespace_id)
+        return false unless namespace_id
+
+        ::WorkItems::TypeCustomLifecycle.exists?(
+          work_item_type_id: id,
+          namespace_id: namespace_id
+        )
+      end
+
+      def custom_lifecycle_for(namespace_id)
+        return unless namespace_id
+
+        lifecycle = ::WorkItems::TypeCustomLifecycle.find_by(
+          work_item_type_id: id,
+          namespace_id: namespace_id
+        )&.lifecycle
+
+        return unless lifecycle
+
+        ::WorkItems::Statuses::Custom::Lifecycle
+          .includes(lifecycle_statuses: :status)
+          .find_by(id: lifecycle.id)
+      end
+
       private
 
       def unlicensed_widget_classes(resource_parent)
