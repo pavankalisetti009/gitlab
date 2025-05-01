@@ -67,6 +67,21 @@ RSpec.describe Integrations::Jira, feature_category: :integrations do
     end
   end
 
+  describe '#fields' do
+    let(:integration) { jira_integration }
+
+    subject(:fields) { integration.fields }
+
+    it 'returns custom fields' do
+      expect(fields.pluck(:name)).to include(
+        'vulnerabilities_enabled',
+        'vulnerabilities_issuetype',
+        'project_key',
+        'customize_jira_issue_enabled'
+      )
+    end
+  end
+
   describe 'jira_vulnerabilities_integration_enabled?' do
     subject(:jira_vulnerabilities_integration_enabled) { jira_integration.jira_vulnerabilities_integration_enabled? }
 
