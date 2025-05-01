@@ -7,6 +7,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
   describe '#allowed_to_use' do
     let(:ai_feature) { :my_feature }
+    let(:duo_nano_features_enabled) { true }
     let(:service_name) { ai_feature }
     let(:maturity) { :ga }
     let(:free_access) { true }
@@ -71,6 +72,50 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         it { is_expected.to eq expected_response }
       end
 
+      context 'when the user has a Duo Core subscription' do
+        let_it_be_with_reload(:active_gitlab_purchase) do
+          create(:gitlab_subscription_add_on_purchase, :duo_core)
+        end
+
+        let(:expected_allowed) { true }
+        let(:expected_enablement_type) { 'add_on' }
+        let(:expected_namespace_ids) { allowed_by_namespace_ids }
+        let(:free_access) { false }
+        let(:service) { CloudConnector::BaseAvailableServiceData.new(service_name, nil, %w[duo_pro duo_core]) }
+
+        it { is_expected.to eq expected_response }
+
+        context 'when duo_core_saas feature flag is disabled' do
+          let(:allowed_by_namespace_ids) { [] }
+          let(:expected_allowed) { !feature_flag_blocks_access }
+          let(:expected_enablement_type) { 'add_on' unless feature_flag_blocks_access }
+
+          before do
+            stub_feature_flags(duo_core_saas: false)
+          end
+
+          it { is_expected.to eq expected_response }
+        end
+
+        context 'when access is denied' do
+          let(:allowed_by_namespace_ids) { [] }
+          let(:expected_allowed) { false }
+          let(:expected_enablement_type) { nil }
+
+          context 'when duo_nano_features_enabled is false' do
+            let(:duo_nano_features_enabled) { false }
+
+            it { is_expected.to eq expected_response }
+          end
+
+          context 'when the Duo service is not available through Duo Core' do
+            let(:service) { CloudConnector::BaseAvailableServiceData.new(service_name, nil, %w[duo_pro]) }
+
+            it { is_expected.to eq expected_response }
+          end
+        end
+      end
+
       context "when the user doesn't have an active assigned seat and free access is not available" do
         let(:free_access) { false }
         let(:expected_allowed) { false }
@@ -92,12 +137,20 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     end
 
     context 'when on Gitlab.com instance', :saas do
+      let(:allowed_by_namespace_ids) { [active_gitlab_purchase.namespace.id] }
+
       before do
         active_gitlab_purchase.namespace.add_owner(user)
       end
 
       include_examples 'checking assigned seats' do
-        let(:allowed_by_namespace_ids) { [active_gitlab_purchase.namespace.id] }
+        let(:feature_flag_blocks_access) { true }
+
+        before do
+          active_gitlab_purchase.namespace.namespace_settings.update!(
+            duo_nano_features_enabled: duo_nano_features_enabled
+          )
+        end
       end
 
       context "when the user doesn't have a seat but the service has free access" do
@@ -126,7 +179,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           before do
             allow(Gitlab).to receive(:org_or_com?).and_return(true)
             stub_ee_application_setting(should_check_namespace_plan: true)
-            allow(group.namespace_settings).to receive(:experiment_settings_allowed?).and_return(true)
             stub_licensed_features(
               ai_features: true,
               glab_ask_git_command: true,
@@ -197,6 +249,15 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
       include_examples 'checking assigned seats' do
         let(:allowed_by_namespace_ids) { [] }
+        let(:feature_flag_blocks_access) { false }
+
+        before do
+          # AddOnPurchase.for_user scope (used for Duo Core)
+          # returns nil in SM instances if add-on
+          # purchases are associated with namespaces
+          active_gitlab_purchase.update!(namespace: nil)
+          ::Ai::Setting.instance.update!(duo_nano_features_enabled: duo_nano_features_enabled)
+        end
       end
 
       context "when the user doesn't have a seat but the service has free access" do
