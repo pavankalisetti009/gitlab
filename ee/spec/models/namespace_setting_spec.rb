@@ -297,6 +297,73 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
     end
   end
 
+  describe 'after_commit' do
+    context 'for trigger_todo_creation' do
+      let(:gitlab_duo_saas_only_enabled) { true }
+
+      before do
+        stub_saas_features(gitlab_duo_saas_only: gitlab_duo_saas_only_enabled)
+      end
+
+      context 'on update' do
+        let_it_be(:setting, reload: true) { create(:namespace_settings, namespace: build(:group)) }
+
+        it 'triggers the todo creation' do
+          expect(GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker)
+            .to receive(:perform_in).with(7.days, setting.namespace_id)
+
+          setting.update!(duo_nano_features_enabled: true)
+        end
+
+        context 'when duo core features are disabled' do
+          it 'does not trigger the todo creation for nil update' do
+            expect(GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
+
+            setting.update!(duo_nano_features_enabled: false)
+          end
+
+          context 'when changed from true to false' do
+            before do
+              setting.update!(duo_nano_features_enabled: true)
+            end
+
+            it 'does not trigger the todo creation' do
+              expect(GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
+
+              setting.update!(duo_nano_features_enabled: false)
+            end
+          end
+        end
+
+        context 'when gitlab_duo_saas_only feature is not available' do
+          let(:gitlab_duo_saas_only_enabled) { false }
+
+          it 'does not trigger the todo creation' do
+            expect(GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
+
+            setting.update!(duo_nano_features_enabled: true)
+          end
+        end
+
+        context 'when it is a different column update' do
+          it 'does not trigger the todo creation' do
+            expect(GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
+
+            setting.update!(default_branch_name: 'foo')
+          end
+        end
+      end
+
+      context 'on create' do
+        it 'does not trigger the todo creation' do
+          expect(GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
+
+          create(:namespace_settings, namespace: build(:group), duo_nano_features_enabled: true)
+        end
+      end
+    end
+  end
+
   describe '.duo_features_set' do
     let_it_be(:setting_1) { create(:namespace_settings, duo_features_enabled: true) }
     let_it_be(:setting_2) { create(:namespace_settings, duo_features_enabled: false) }

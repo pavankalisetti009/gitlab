@@ -20,11 +20,11 @@ module GitlabSubscriptions
         # seat utilization page.
         users = GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder.new(add_on_type: :duo_core).execute
 
-        users.find_in_batches do |users|
+        users.find_in_batches do |batch|
           # Short circuit this potentially long-running job if the setting is changed
           break unless ::Ai::Setting.duo_core_features_enabled?
 
-          todo_service.duo_core_access_granted(users)
+          todo_service.duo_core_access_granted(batch)
         end
       end
     end

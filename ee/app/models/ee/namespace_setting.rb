@@ -73,6 +73,8 @@ module EE
       before_save :set_prevent_sharing_groups_outside_hierarchy
       after_save :disable_project_sharing!, if: -> { user_cap_enabled? || seat_control_block_overages? }
 
+      after_commit :trigger_todo_creation, on: :update, if: :saved_change_to_duo_nano_features_enabled?
+
       delegate :root_ancestor, to: :namespace
 
       def enterprise_users_extensions_marketplace_enabled=(value)
@@ -168,6 +170,14 @@ module EE
       end
 
       private
+
+      def trigger_todo_creation
+        return unless ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
+        return unless duo_nano_features_enabled
+
+        GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker
+          .perform_in(GitlabSubscriptions::DuoCore::DELAY_TODO_NOTIFICATION, namespace_id)
+      end
 
       def enabling_user_cap?
         return false unless persisted? && seat_control_changed?
