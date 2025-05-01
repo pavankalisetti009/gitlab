@@ -1028,12 +1028,6 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
 
         it_behaves_like 'marks free project for deletion'
       end
-
-      context 'for projects in user namespace' do
-        let(:project) { create(:project, namespace: user.namespace) }
-
-        it_behaves_like 'deletes project right away'
-      end
     end
 
     context 'feature is not available' do
