@@ -32,7 +32,7 @@ RSpec.describe Todo, feature_category: :notifications do
 
     context 'when todo is for Duo Pro access being granted' do
       let(:todo) do
-        build(:todo, target: current_user, action: Todo::DUO_ENTERPRISE_ACCESS_GRANTED, user: current_user)
+        build(:todo, target: current_user, action: Todo::DUO_PRO_ACCESS_GRANTED, user: current_user)
       end
 
       it "uses getting started path" do
@@ -42,11 +42,21 @@ RSpec.describe Todo, feature_category: :notifications do
 
     context 'when todo is for Duo Enterprise access being granted' do
       let(:todo) do
-        build(:todo, target: current_user, action: Todo::DUO_PRO_ACCESS_GRANTED, group: nil, project: nil,
+        build(:todo, target: current_user, action: Todo::DUO_ENTERPRISE_ACCESS_GRANTED, group: nil, project: nil,
           user: current_user)
       end
 
       it "uses getting started path" do
+        is_expected.to eq ::Gitlab::Routing.url_helpers.help_page_path('user/get_started/getting_started_gitlab_duo.md')
+      end
+    end
+
+    context 'when todo is for Duo Core access being granted' do
+      let(:todo) do
+        build(:todo, :duo_core_access)
+      end
+
+      it 'uses getting started path' do
         is_expected.to eq ::Gitlab::Routing.url_helpers.help_page_path('user/get_started/getting_started_gitlab_duo.md')
       end
     end

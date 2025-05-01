@@ -45470,6 +45470,7 @@ Values for sorting timelogs.
 | <a id="todoactionenumassigned"></a>`assigned` | User was assigned. |
 | <a id="todoactionenumbuild_failed"></a>`build_failed` | Build triggered by the user failed. |
 | <a id="todoactionenumdirectly_addressed"></a>`directly_addressed` | User was directly addressed. |
+| <a id="todoactionenumduo_core_access_granted"></a>`duo_core_access_granted` | Access to Duo Core has been granted to the user. |
 | <a id="todoactionenumduo_enterprise_access_granted"></a>`duo_enterprise_access_granted` | Access to Duo Enterprise has been granted to the user. |
 | <a id="todoactionenumduo_pro_access_granted"></a>`duo_pro_access_granted` | Access to Duo Pro has been granted to the user. |
 | <a id="todoactionenummarked"></a>`marked` | User added a to-do item. |
