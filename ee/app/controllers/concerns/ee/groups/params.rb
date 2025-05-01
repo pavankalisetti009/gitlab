@@ -69,7 +69,7 @@ module EE
           end
 
           if licensed_ai_features_available?
-            params_ee.push(%i[duo_features_enabled lock_duo_features_enabled
+            params_ee.push(%i[duo_features_enabled duo_core_features_enabled lock_duo_features_enabled
               duo_availability])
           end
 
