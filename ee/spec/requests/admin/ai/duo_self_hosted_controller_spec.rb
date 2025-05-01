@@ -7,7 +7,7 @@ RSpec.describe Admin::Ai::DuoSelfHostedController, :enable_admin_mode, feature_c
   let(:duo_features_enabled) { true }
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
   let_it_be(:add_on_purchase) do
-    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active)
+    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, :self_managed)
   end
 
   before do

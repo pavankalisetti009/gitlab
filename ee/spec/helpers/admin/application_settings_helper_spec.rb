@@ -108,7 +108,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
           allow(License).to receive_message_chain(:current, :premium?).and_return(premium)
 
           allow(::GitlabSubscriptions::AddOnPurchase)
-            .to receive_message_chain(:for_duo_enterprise, :active, :exists?)
+            .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?)
             .and_return(duo_ent_purchased)
 
           allow(::Ai::Setting).to receive_message_chain(:instance, :ai_gateway_url).and_return(ai_gateway_url)
@@ -279,6 +279,10 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
           :for_self_managed, :for_duo_pro_or_duo_enterprise, :last
         ).and_return(duo_purchase)
+
+        allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
+          :for_self_managed, :for_duo_enterprise, :active, :exists?
+        ).and_return(true)
       end
 
       it 'includes the correct values' do

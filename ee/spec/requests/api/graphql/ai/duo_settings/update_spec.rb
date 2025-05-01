@@ -7,7 +7,9 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
   let_it_be_with_reload(:current_user) { create(:admin) }
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
-  let_it_be_with_reload(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active) }
+  let_it_be_with_reload(:add_on_purchase) do
+    create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, :self_managed)
+  end
 
   let!(:duo_settings) { create(:ai_settings, duo_nano_features_enabled: false) }
 

@@ -9,7 +9,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
   let_it_be(:self_hosted_model) { create(:ai_self_hosted_model) }
   let_it_be(:feature_setting) { create(:ai_feature_setting, provider: :vendored, self_hosted_model: nil) }
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
-  let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active) }
+  let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, :self_managed) }
 
   let(:mutation_name) { :ai_feature_setting_update }
   let(:mutation_params) do

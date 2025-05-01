@@ -59,7 +59,7 @@ export function mountGitlabDuoHomeApp() {
       amazonQReady: parseBoolean(amazonQReady),
       amazonQAutoReviewEnabled: parseBoolean(amazonQAutoReviewEnabled),
       amazonQConfigurationPath,
-      canManageSelfHostedModels,
+      canManageSelfHostedModels: parseBoolean(canManageSelfHostedModels),
       areDuoCoreFeaturesEnabled: parseBoolean(areDuoCoreFeaturesEnabled),
     },
     render: (h) => h(GitlabDuoHome),
