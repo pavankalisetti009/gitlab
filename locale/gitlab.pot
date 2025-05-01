@@ -49660,6 +49660,15 @@ msgstr ""
 msgid "RapidDiffs|Original line number"
 msgstr ""
 
+msgid "RapidDiffs|Show hidden lines"
+msgstr ""
+
+msgid "RapidDiffs|Show lines after"
+msgstr ""
+
+msgid "RapidDiffs|Show lines before"
+msgstr ""
+
 msgid "Rate Limits"
 msgstr ""
 
