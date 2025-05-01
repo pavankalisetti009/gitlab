@@ -41,6 +41,12 @@ module VirtualRegistries
 
         prevent_from_serialization(:username, :password) if respond_to?(:prevent_from_serialization)
 
+        scope :eager_load_registry_upstream, ->(registry:) {
+          eager_load(:registry_upstream)
+            .where(registry_upstream: { registry: })
+            .order('registry_upstream.position ASC')
+        }
+
         def url_for(path)
           full_url = File.join(url, path)
           Addressable::URI.parse(full_url).to_s

@@ -84,6 +84,7 @@ module EE
         mount ::API::ComplianceExternalControls
         mount ::API::VirtualRegistries::Packages::Maven::Registries
         mount ::API::VirtualRegistries::Packages::Maven::Upstreams
+        mount ::API::VirtualRegistries::Packages::Maven::RegistryUpstreams
         mount ::API::VirtualRegistries::Packages::Maven::Cache::Entries
         mount ::API::VirtualRegistries::Packages::Maven::Endpoints
 

@@ -173,6 +173,25 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
     end
   end
 
+  describe 'scopes' do
+    describe '.eager_load_registry_upstream' do
+      let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, :with_upstreams, upstreams_count: 2) }
+      let_it_be(:other_registry) { create(:virtual_registries_packages_maven_registry, :with_upstreams) }
+
+      subject(:upstreams) { described_class.eager_load_registry_upstream(registry:) }
+
+      it { is_expected.to eq(registry.upstreams) }
+
+      it { is_expected.not_to include(other_registry.upstreams) }
+
+      it 'eager loads the registry_upstream association' do
+        recorder = ActiveRecord::QueryRecorder.new { upstreams.each(&:registry_upstream) }
+
+        expect(recorder.count).to eq(1)
+      end
+    end
+  end
+
   context 'for credentials persistence' do
     it 'persists and reads back credentials properly' do
       upstream.username = 'test'

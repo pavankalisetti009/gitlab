@@ -7,11 +7,15 @@ FactoryBot.define do
     name { 'name' }
     description { 'description' }
 
-    trait :with_upstream do
+    transient do
+      upstreams_count { 1 }
+    end
+
+    trait :with_upstreams do
       registry_upstreams do
-        [
-          association(:virtual_registries_packages_maven_registry_upstream, group: group)
-        ]
+        Array.new(upstreams_count) do
+          association(:virtual_registries_packages_maven_registry_upstream, registry: instance)
+        end
       end
 
       after(:create) do |entry, _|

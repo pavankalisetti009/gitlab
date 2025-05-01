@@ -9,6 +9,9 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
   describe 'GET /api/v4/virtual_registries/packages/maven/registries/:id/upstreams' do
     let(:registry_id) { registry.id }
     let(:url) { "/virtual_registries/packages/maven/registries/#{registry_id}/upstreams" }
+    let(:upstream_as_json) do
+      upstream.as_json.merge(registry_upstream: upstream.registry_upstream.slice(:id, :position)).as_json
+    end
 
     subject(:api_request) { get api(url), headers: headers }
 
@@ -17,7 +20,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         api_request
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(Gitlab::Json.parse(response.body)).to contain_exactly(upstream.as_json)
+        expect(Gitlab::Json.parse(response.body)).to contain_exactly(upstream_as_json)
       end
     end
 
@@ -81,6 +84,11 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     let(:registry_id) { registry.id }
     let(:url) { "/virtual_registries/packages/maven/registries/#{registry_id}/upstreams" }
     let(:params) { { url: 'http://example.com', name: 'foo' } }
+    let(:upstream_as_json) do
+      upstream_model.last.as_json.merge(
+        registry_upstream: upstream_model.last.registry_upstream.slice(:id, :position)
+      ).as_json
+    end
 
     subject(:api_request) { post api(url), headers: headers, params: params }
 
@@ -92,7 +100,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
           .and change { ::VirtualRegistries::Packages::Maven::RegistryUpstream.count }.by(1)
 
         expect(response).to have_gitlab_http_status(:created)
-        expect(Gitlab::Json.parse(response.body)).to eq(upstream_model.last.as_json)
+        expect(Gitlab::Json.parse(response.body)).to eq(upstream_as_json)
         expect(upstream_model.last.cache_validity_hours).to eq(
           params[:cache_validity_hours] || upstream_model.new.cache_validity_hours
         )
@@ -172,38 +180,17 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     context 'with a full registry' do
       before_all do
         group.add_maintainer(user)
-
-        # inserting upstreams and registry upstreams
-        # we can't create_list registry upstreams as the position column get set to 0
-        # for all records which violates a unique constraint.
-        # Therefore, we manually insert_all rows.
-        attributes = Array.new(VirtualRegistries::Packages::Maven::RegistryUpstream::MAX_UPSTREAMS_COUNT).map do |i|
-          {
-            group_id: registry.group_id,
-            url: "http://test.org/#{i}"
-          }
-        end
-
-        upstream_ids = VirtualRegistries::Packages::Maven::Upstream.insert_all(
-          attributes,
-          returning: :id
-        ).pluck("id")
-
-        VirtualRegistries::Packages::Maven::RegistryUpstream.insert_all(
-          upstream_ids.each_with_index.map do |upstream_id, i|
-            {
-              group_id: registry.group_id,
-              registry_id: registry.id,
-              upstream_id: upstream_id,
-              position: i + 1
-            }
-          end
-        )
+        registry.upstreams.delete_all
+        build_list(
+          :virtual_registries_packages_maven_registry_upstream,
+          VirtualRegistries::Packages::Maven::RegistryUpstream::MAX_UPSTREAMS_COUNT,
+          registry:
+        ).each(&:save!)
       end
 
       it_behaves_like 'returning response status with message',
         status: :bad_request,
-        message: { "registry_upstream.position" => ["must be less than or equal to 20"] }
+        message: { 'registry_upstream.position' => ['must be less than or equal to 20'] }
     end
 
     context 'for authentication' do
