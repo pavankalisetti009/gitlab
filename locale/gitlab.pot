@@ -64438,6 +64438,9 @@ msgstr ""
 msgid "Unauthorized to create an environment"
 msgstr ""
 
+msgid "Unauthorized to create an immutable protection rule for container image tags"
+msgstr ""
+
 msgid "Unauthorized to delete a container registry protection rule"
 msgstr ""
 
