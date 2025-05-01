@@ -2254,6 +2254,54 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       end
     end
 
+    shared_examples_for "pipeline_execution_policy_content" do |policy_type|
+      context 'without content' do
+        let(:content) { {} }
+
+        it do
+          expect(errors).to contain_exactly(
+            "property '/#{policy_type}/0/content' is missing required keys: include"
+          )
+        end
+      end
+
+      context 'when include is missing required properties' do
+        let(:content) { { include: [{}] } }
+
+        it do
+          expect(errors).to contain_exactly(
+            "property '/#{policy_type}/0/content/include/0' is missing required keys: project, file"
+          )
+        end
+      end
+
+      context 'when include is an empty array' do
+        let(:content) { { include: [] } }
+
+        it do
+          expect(errors).to contain_exactly(
+            "property '/#{policy_type}/0/content/include' is invalid: error_type=minItems"
+          )
+        end
+      end
+
+      context 'when include is contains more than 1 item' do
+        let(:content) do
+          {
+            include: [
+              { project: '', file: '' }, { project: '', file: '' }
+            ]
+          }
+        end
+
+        it do
+          expect(errors).to contain_exactly(
+            "property '/#{policy_type}/0/content/include' is invalid: error_type=maxItems"
+          )
+        end
+      end
+    end
+
     describe "pipeline execution policies" do
       let(:pipeline_execution_policy) { build(:pipeline_execution_policy, policy_scope: policy_scope) }
       let(:policy_scope) { {} }
@@ -2261,6 +2309,10 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       it { expect(errors).to be_empty }
 
       it_behaves_like "policy_scope"
+
+      it_behaves_like "pipeline_execution_policy_content", 'pipeline_execution_policy' do
+        let(:pipeline_execution_policy) { build(:pipeline_execution_policy, content: content) }
+      end
 
       describe 'max items' do
         let(:policy_yaml) do
@@ -2275,56 +2327,6 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           end
 
           it { expect(errors).to be_empty }
-        end
-      end
-
-      describe 'content' do
-        context 'without content' do
-          let(:pipeline_execution_policy) { build(:pipeline_execution_policy, content: {}) }
-
-          it do
-            expect(errors).to contain_exactly(
-              "property '/pipeline_execution_policy/0/content' is missing required keys: include"
-            )
-          end
-        end
-
-        context 'when include is missing required properties' do
-          let(:pipeline_execution_policy) { build(:pipeline_execution_policy, content: { include: [{}] }) }
-
-          it do
-            expect(errors).to contain_exactly(
-              "property '/pipeline_execution_policy/0/content/include/0' is missing required keys: project, file"
-            )
-          end
-        end
-
-        context 'when include is an empty array' do
-          let(:pipeline_execution_policy) do
-            build(:pipeline_execution_policy, content: { include: [] })
-          end
-
-          it do
-            expect(errors).to contain_exactly(
-              "property '/pipeline_execution_policy/0/content/include' is invalid: error_type=minItems"
-            )
-          end
-        end
-
-        context 'when include is contains more than 1 item' do
-          let(:pipeline_execution_policy) do
-            build(:pipeline_execution_policy, content: {
-              include: [
-                { project: '', file: '' }, { project: '', file: '' }
-              ]
-            })
-          end
-
-          it do
-            expect(errors).to contain_exactly(
-              "property '/pipeline_execution_policy/0/content/include' is invalid: error_type=maxItems"
-            )
-          end
         end
       end
 
@@ -2425,7 +2427,16 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
 
     describe "pipeline execution schedule policies" do
-      let(:pipeline_execution_schedule_policy) { build(:pipeline_execution_schedule_policy) }
+      let(:pipeline_execution_schedule_policy) { build(:pipeline_execution_schedule_policy, policy_scope: policy_scope) }
+      let(:policy_scope) { {} }
+
+      it { expect(errors).to be_empty }
+
+      it_behaves_like "policy_scope"
+
+      it_behaves_like "pipeline_execution_policy_content", 'pipeline_execution_schedule_policy' do
+        let(:pipeline_execution_schedule_policy) { build(:pipeline_execution_schedule_policy, content: content) }
+      end
 
       describe "schedules" do
         context "when empty" do
