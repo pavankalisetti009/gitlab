@@ -22,6 +22,7 @@ module ComplianceManagement
             name: params[:name],
             expression: params[:expression],
             control_type: params[:control_type] || DEFAULT_CONTROL_TYPE,
+            external_control_name: params[:external_control_name],
             external_url: params[:external_url],
             secret_token: params[:secret_token]
           )

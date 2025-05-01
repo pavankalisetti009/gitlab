@@ -57,6 +57,7 @@ FactoryBot.define do
 
     trait :external do
       name { 'external_control' }
+      external_control_name { 'external_control_name' }
       external_url { FFaker::Internet.unique.http_url }
       control_type { 'external' }
       secret_token { 'token' }

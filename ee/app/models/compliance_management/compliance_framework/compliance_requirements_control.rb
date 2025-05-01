@@ -47,6 +47,12 @@ module ComplianceManagement
       validates :name, uniqueness: { scope: :compliance_requirement_id }, if: :internal?
       validates :secret_token, presence: true, if: :external?
 
+      validates :external_control_name, length: { maximum: 255 }
+      validates :external_control_name,
+        uniqueness: { scope: :compliance_requirement_id },
+        allow_nil: true,
+        if: -> { external_control_name.present? }
+
       scope :for_framework, ->(framework_id) {
         joins(compliance_requirement: :framework)
           .where(compliance_management_frameworks: { id: framework_id })

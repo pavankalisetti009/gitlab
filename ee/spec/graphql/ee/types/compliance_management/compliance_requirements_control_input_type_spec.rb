@@ -6,6 +6,8 @@ RSpec.describe ::Types::ComplianceManagement::ComplianceRequirementsControlInput
   it { expect(described_class.graphql_name).to eq('ComplianceRequirementsControlInput') }
 
   it 'defines the expected input arguments' do
-    expect(described_class.arguments.keys).to match_array(%w[name expression externalUrl controlType secretToken])
+    expect(described_class.arguments.keys).to match_array(
+      %w[name expression externalControlName externalUrl controlType secretToken]
+    )
   end
 end
