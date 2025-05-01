@@ -16,7 +16,7 @@ module Types
           null: true,
           experiment: { milestone: '17.11' },
           description: 'Status assigned to work item.',
-          resolver: Resolvers::WorkItems::Statuses::BulkStatusResolver
+          resolver: Resolvers::WorkItems::Statuses::StatusResolver
       end
       # rubocop:enable Graphql/AuthorizeTypes
     end

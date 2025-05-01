@@ -71,7 +71,7 @@ module EE
           null: true,
           description: 'Status of the issue.',
           experiment: { milestone: '18.0' },
-          resolver: ::Resolvers::WorkItems::Statuses::BulkStatusResolver
+          resolver: ::Resolvers::WorkItems::Statuses::StatusResolver
 
         def iteration
           ::Gitlab::Graphql::Loaders::BatchModelLoader.new(::Iteration, object.sprint_id).find
