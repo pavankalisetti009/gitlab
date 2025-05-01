@@ -1,9 +1,11 @@
 <script>
 import { GlTabs, GlTab, GlLink } from '@gitlab/ui';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import DeploymentFrequencyCharts from 'ee/analytics/dora/components/deployment_frequency_charts.vue';
 import LeadTimeCharts from 'ee/analytics/dora/components/lead_time_charts.vue';
 import TimeToRestoreServiceCharts from 'ee/analytics/dora/components/time_to_restore_service_charts.vue';
 import ChangeFailureRateCharts from 'ee/analytics/dora/components/change_failure_rate_charts.vue';
+import MigrationAlert from 'ee/analytics/dora/components/migration_alert.vue';
 import { mergeUrlParams, updateHistory, getParameterValues } from '~/lib/utils/url_utility';
 import API from '~/api';
 import ReleaseStatsCard from './release_stats_card.vue';
@@ -19,13 +21,19 @@ export default {
     LeadTimeCharts,
     TimeToRestoreServiceCharts,
     ChangeFailureRateCharts,
+    MigrationAlert,
   },
   releaseStatisticsTabEvent: 'g_analytics_ci_cd_release_statistics',
   deploymentFrequencyTabEvent: 'g_analytics_ci_cd_deployment_frequency',
   leadTimeTabEvent: 'g_analytics_ci_cd_lead_time',
   timeToRestoreServiceTabEvent: 'g_analytics_ci_cd_time_to_restore_service',
   changeFailureRateTabEvent: 'g_analytics_ci_cd_change_failure_rate',
+  mixins: [glFeatureFlagsMixin()],
   inject: {
+    groupPath: {
+      type: String,
+      default: '',
+    },
     shouldRenderDoraCharts: {
       type: Boolean,
       default: false,
@@ -45,10 +53,16 @@ export default {
     };
   },
   computed: {
+    showDoraMetricsTabs() {
+      return this.shouldRenderDoraCharts && !this.glFeatures.doraMetricsDashboard;
+    },
+    showDoraMetricsMigrationAlert() {
+      return this.shouldRenderDoraCharts && this.glFeatures.doraMetricsDashboard;
+    },
     tabs() {
       const tabsToShow = ['release-statistics'];
 
-      if (this.shouldRenderDoraCharts) {
+      if (this.showDoraMetricsTabs) {
         tabsToShow.push(
           'deployment-frequency',
           'lead-time',
@@ -90,6 +104,8 @@ export default {
 </script>
 <template>
   <div>
+    <migration-alert v-if="showDoraMetricsMigrationAlert" :namespace-path="groupPath" />
+
     <gl-tabs v-if="tabs.length > 1" :value="selectedTabIndex" @input="onTabChange">
       <gl-tab
         :title="s__('CICDAnalytics|Release statistics')"
@@ -98,7 +114,7 @@ export default {
       >
         <release-stats-card :class="releaseStatsCardClasses" />
       </gl-tab>
-      <template v-if="shouldRenderDoraCharts">
+      <template v-if="showDoraMetricsTabs">
         <gl-tab
           :title="s__('CICDAnalytics|Deployment frequency')"
           data-testid="deployment-frequency-tab"

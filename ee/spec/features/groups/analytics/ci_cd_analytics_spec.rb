@@ -19,6 +19,7 @@ RSpec.describe 'Group CI/CD Analytics', :js, feature_category: :value_stream_man
   vsa_metrics_selector = '[data-testid="vsa-metrics"]'
 
   before do
+    stub_feature_flags(dora_metrics_dashboard: false)
     stub_licensed_features(group_ci_cd_analytics: true, dora4_analytics: true, cycle_analytics_for_groups: true)
     group.add_reporter(user)
     sign_in(user)

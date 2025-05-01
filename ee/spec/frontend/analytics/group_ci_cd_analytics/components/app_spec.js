@@ -7,6 +7,7 @@ import DeploymentFrequencyCharts from 'ee/analytics/dora/components/deployment_f
 import LeadTimeCharts from 'ee/analytics/dora/components/lead_time_charts.vue';
 import TimeToRestoreServiceCharts from 'ee/analytics/dora/components/time_to_restore_service_charts.vue';
 import ChangeFailureRateCharts from 'ee/analytics/dora/components/change_failure_rate_charts.vue';
+import MigrationAlert from 'ee_component/analytics/dora/components/migration_alert.vue';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { TEST_HOST } from 'helpers/test_constants';
 import { getParameterValues } from '~/lib/utils/url_utility';
@@ -21,6 +22,7 @@ describe('ee/analytics/group_ci_cd_analytics/components/app.vue', () => {
     getParameterValues.mockReturnValue([]);
   });
 
+  const groupPath = 'funkys/flightjs';
   const quotaPath = '/groups/my-awesome-group/-/usage_quotas#pipelines-quota-tab';
 
   const createComponent = (mountOptions = {}, canView = true) => {
@@ -29,9 +31,13 @@ describe('ee/analytics/group_ci_cd_analytics/components/app.vue', () => {
       merge(
         {
           provide: {
+            groupPath,
             shouldRenderDoraCharts: true,
             pipelineGroupUsageQuotaPath: quotaPath,
             canViewGroupUsageQuotaBoolean: canView,
+            glFeatures: {
+              doraMetricsDashboard: false,
+            },
           },
         },
         mountOptions,
@@ -43,45 +49,77 @@ describe('ee/analytics/group_ci_cd_analytics/components/app.vue', () => {
   const findUsageQuotaLink = () => wrapper.findComponent(GlLink);
   const findAllGlTabs = () => wrapper.findAllComponents(GlTab);
   const findGlTabAtIndex = (index) => findAllGlTabs().at(index);
+  const findDoraMetricsMigrationAlert = () => wrapper.findComponent(MigrationAlert);
 
   describe('tabs', () => {
     describe('when the DORA charts are available', () => {
-      beforeEach(() => {
-        createComponent();
+      describe('when doraMetricsDashboard is disabled', () => {
+        beforeEach(() => {
+          createComponent();
+        });
+
+        it('does not show migration alert', () => {
+          expect(findDoraMetricsMigrationAlert().exists()).toBe(false);
+        });
+
+        it('renders tabs in the correct order', () => {
+          [
+            'Release statistics',
+            'Deployment frequency',
+            'Lead time',
+            'Time to restore service',
+            'Change failure rate',
+          ].forEach((tabName, index) => {
+            expect(findGlTabAtIndex(index).attributes('title')).toBe(tabName);
+          });
+        });
+
+        describe('event tracking', () => {
+          [
+            'release statistics',
+            'deployment frequency',
+            'lead time',
+            'time to restore service',
+            'change failure rate',
+          ].forEach((tabName) => {
+            it(`tracks visits to ${tabName} tab`, () => {
+              const testId = `${tabName.replace(/\s/g, '-')}-tab`;
+              const eventName = `g_analytics_ci_cd_${tabName.replace(/\s/g, '_')}`;
+
+              jest.spyOn(API, 'trackRedisHllUserEvent');
+
+              expect(API.trackRedisHllUserEvent).not.toHaveBeenCalled();
+
+              wrapper.findByTestId(testId).vm.$emit('click');
+
+              expect(API.trackRedisHllUserEvent).toHaveBeenCalledWith(eventName);
+            });
+          });
+        });
       });
 
-      it('renders tabs in the correct order', () => {
-        [
-          'Release statistics',
+      describe('when doraMetricsDashboard is enabled', () => {
+        beforeEach(() => {
+          createComponent({
+            provide: {
+              glFeatures: {
+                doraMetricsDashboard: true,
+              },
+            },
+          });
+        });
+
+        it.each([
           'Deployment frequency',
           'Lead time',
           'Time to restore service',
           'Change failure rate',
-        ].forEach((tabName, index) => {
-          expect(findGlTabAtIndex(index).attributes('title')).toBe(tabName);
+        ])('does not render a tab for %s', (title) => {
+          expect(findAllGlTabs().filter((tab) => tab.attributes('title') === title).length).toBe(0);
         });
-      });
 
-      describe('event tracking', () => {
-        [
-          'release statistics',
-          'deployment frequency',
-          'lead time',
-          'time to restore service',
-          'change failure rate',
-        ].forEach((tabName) => {
-          it(`tracks visits to ${tabName} tab`, () => {
-            const testId = `${tabName.replace(/\s/g, '-')}-tab`;
-            const eventName = `g_analytics_ci_cd_${tabName.replace(/\s/g, '_')}`;
-
-            jest.spyOn(API, 'trackRedisHllUserEvent');
-
-            expect(API.trackRedisHllUserEvent).not.toHaveBeenCalled();
-
-            wrapper.findByTestId(testId).vm.$emit('click');
-
-            expect(API.trackRedisHllUserEvent).toHaveBeenCalledWith(eventName);
-          });
+        it('shows migration alert', () => {
+          expect(findDoraMetricsMigrationAlert().props().namespacePath).toBe(groupPath);
         });
       });
     });

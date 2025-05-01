@@ -14,6 +14,10 @@ module EE
           push_frontend_feature_flag(:vulnerability_report_type_scanner_filter)
         end
 
+        before_action only: [:charts] do
+          push_frontend_feature_flag(:dora_metrics_dashboard, project.group)
+        end
+
         before_action only: [:index] do
           experiment(:root_cause_analysis_hotspot, actor: current_user, group: project.root_ancestor).publish
         end
