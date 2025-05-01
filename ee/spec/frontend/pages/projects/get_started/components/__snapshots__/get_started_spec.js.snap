@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GetStarted component rendering renders correctly 1`] = `
+<div
+  class="row"
+>
+  <div
+    class="col-lg-9 col-mb-9 col-sm-12"
+  >
+    <h1
+      class="gl-text-size-h1"
+    >
+      Quick start
+    </h1>
+    <p
+      class="gl-mb-0 gl-text-subtle"
+    >
+      Follow these steps to get familiar with the GitLab workflow.
+    </p>
+  </div>
+</div>
+`;
