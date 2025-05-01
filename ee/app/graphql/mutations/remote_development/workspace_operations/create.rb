@@ -113,26 +113,6 @@ module Mutations
           agent = authorized_find!(id: cluster_agent_id)
           # noinspection RubyNilAnalysis - RubyMine thinks project or agent may be nil, but this is not possible
           #                                because authorized_find! would have thrown an exception.
-          relevant_mappings =
-            ::RemoteDevelopment::NamespaceClusterAgentMapping
-              .for_namespaces(project.project_namespace.traversal_ids)
-              .for_agents([agent.id])
-
-          unless relevant_mappings.present?
-            raise ::Gitlab::Graphql::Errors::ArgumentError,
-              "The provided agent provided must be mapped to an ancestor namespace of the workspace's project."
-          end
-
-          valid_relevant_mappings =
-            ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Validations
-              .filter_valid_namespace_cluster_agent_mappings(namespace_cluster_agent_mappings: relevant_mappings.to_a)
-
-          unless valid_relevant_mappings.present?
-            raise ::Gitlab::Graphql::Errors::ArgumentError,
-              "#{relevant_mappings.size} mapping(s) exist between the provided agent and the ancestor namespaces " \
-                "of the workspaces's project, but the agent does not reside within the hierarchy of any of the " \
-                "mapped ancestor namespaces."
-          end
 
           # noinspection RubyNilAnalysis - This is because the superclass #current_user uses #[], which can return nil
           track_usage_event(:users_creating_workspaces, current_user.id)

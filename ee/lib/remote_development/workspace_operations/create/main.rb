@@ -15,6 +15,7 @@ module RemoteDevelopment
 
           result =
             initial_result
+              .and_then(AgentValidator.method(:validate))
               .and_then(DevfileFetcher.method(:fetch))
               # NOTE: DevfileValidator is called before DevfileFlattener to ensure a sanitized devfile is flattened.
               .and_then(DevfileValidator.method(:validate))

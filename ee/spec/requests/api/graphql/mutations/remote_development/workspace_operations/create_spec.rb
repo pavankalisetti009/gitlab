@@ -12,26 +12,22 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
   let_it_be(:current_user) { user } # NOTE: Some graphql spec helper methods rely on current_user to be set
   let_it_be(:root_namespace) { create(:group) }
   let_it_be(:workspace_ancestor_namespace) { create(:group, parent: root_namespace) }
-  let_it_be(:workspace_project, reload: true) do
+  let_it_be(:workspace_project) do
     create(:project, :public, :repository, developers: user, group: workspace_ancestor_namespace)
       .tap do |project|
       project.add_developer(user)
     end
   end
 
-  let_it_be(:agent_project, reload: true) do
+  let_it_be(:agent_project) do
     create(:project, :public, :repository, developers: user, group: workspace_ancestor_namespace)
       .tap do |project|
       project.add_developer(user)
     end
   end
 
-  let_it_be(:agent, reload: true) do
+  let_it_be(:agent) do
     create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: agent_project)
-  end
-
-  let_it_be(:agent_project_in_different_root_namespace, reload: true) do
-    create(:project, :public, :in_group, developers: user)
   end
 
   let_it_be(:created_workspace, refind: true) do
@@ -135,119 +131,92 @@ RSpec.describe 'Creating a workspace', feature_category: :workspaces do
     agent_project.reload
   end
 
-  context 'when workspace project and agent project ARE mapped' do
-    before_all do
-      create(
-        :namespace_cluster_agent_mapping,
-        user: user,
-        agent: agent,
-        namespace: workspace_ancestor_namespace
-      )
+  context 'when correct arguments are provided' do
+    shared_examples 'successful create' do
+      it 'creates the workspace with expected args' do
+        expect(RemoteDevelopment::CommonService).to receive(:execute).with(expected_service_args) do
+          stub_service_response
+        end
+
+        post_graphql_mutation(mutation, current_user: user)
+
+        expect_graphql_errors_to_be_empty
+
+        expect(mutation_response.fetch('workspace')['name']).to eq(created_workspace['name'])
+      end
     end
 
-    context 'when workspace project and agent project ARE in the same root namespace' do
-      shared_examples 'successful create' do
-        it 'creates the workspace with expected args' do
-          expect(RemoteDevelopment::CommonService).to receive(:execute).with(expected_service_args) do
-            stub_service_response
-          end
+    context 'when all required arguments are present' do
+      it_behaves_like 'successful create'
+    end
 
-          post_graphql_mutation(mutation, current_user: user)
+    describe 'devfile_path behavior' do
+      context 'when devfile_path is nil' do
+        let(:devfile_path) { nil }
 
-          expect_graphql_errors_to_be_empty
-
-          expect(mutation_response.fetch('workspace')['name']).to eq(created_workspace['name'])
-        end
-      end
-
-      context 'when all required arguments are present' do
         it_behaves_like 'successful create'
       end
 
-      describe 'devfile_path behavior' do
-        context 'when devfile_path is nil' do
-          let(:devfile_path) { nil }
+      context 'when devfile_path is not present' do
+        let(:devfile_path) { nil }
+        let(:mutation_args) { base_mutation_args.except(:devfile_path) }
 
-          it_behaves_like 'successful create'
-        end
-
-        context 'when devfile_path is not present' do
-          let(:devfile_path) { nil }
-          let(:mutation_args) { base_mutation_args.except(:devfile_path) }
-
-          it_behaves_like 'successful create'
-        end
-      end
-
-      context "when the agent project no longer exists under the namespace it is mapped to" do
-        before do
-          agent_project.project_namespace.update!(parent: root_namespace)
-        end
-
-        it_behaves_like 'a mutation that returns top-level errors' do
-          let(:match_errors) do
-            include(/1 mapping\(s\) exist.*but the agent does not reside within the hierarchy/)
-          end
-        end
-      end
-
-      context 'when there are service errors' do
-        let(:stub_service_response) { ::ServiceResponse.error(message: 'some error', reason: :bad_request) }
-
-        before do
-          allow(RemoteDevelopment::CommonService).to receive(:execute).with(expected_service_args) do
-            stub_service_response
-          end
-        end
-
-        it_behaves_like 'a mutation that returns errors in the response', errors: ['some error']
-      end
-
-      describe 'deprecated fields behavior' do
-        context 'when project_ref is not present and devfile_ref is present' do
-          let(:mutation_args) do
-            base_mutation_args.except(:project_ref).merge(devfile_ref: 'main')
-          end
-
-          it_behaves_like 'successful create'
-        end
-
-        context 'when project_ref and devfile_ref are both present' do
-          let(:mutation_args) { base_mutation_args.merge(devfile_ref: 'main1') }
-
-          it_behaves_like 'successful create'
-        end
-
-        context 'when workspace_variables is not present and variables is present' do
-          let(:mutation_args) { base_mutation_args.except(:workspace_variables).merge(variables: variables) }
-
-          it_behaves_like 'successful create'
-        end
-
-        context 'when workspace_variables and variables are both present' do
-          let(:mutation_args) { base_mutation_args.merge(variables: variables) }
-
-          it_behaves_like 'successful create'
-        end
+        it_behaves_like 'successful create'
       end
     end
 
-    context 'when workspace project and agent project are NOT in the same root namespace' do
+    context 'when project_ref is not present and devfile_ref is present' do
+      let(:mutation_args) do
+        base_mutation_args.except(:project_ref).merge(devfile_ref: 'main')
+      end
+
+      it_behaves_like 'successful create'
+    end
+
+    context 'when project_ref and devfile_ref are both present' do
+      let(:mutation_args) { base_mutation_args.merge(devfile_ref: 'main1') }
+
+      it_behaves_like 'successful create'
+    end
+
+    describe 'deprecated fields behavior' do
+      context 'when project_ref is not present and devfile_ref is present' do
+        let(:mutation_args) do
+          base_mutation_args.except(:project_ref).merge(devfile_ref: 'main')
+        end
+
+        it_behaves_like 'successful create'
+      end
+
+      context 'when project_ref and devfile_ref are both present' do
+        let(:mutation_args) { base_mutation_args.merge(devfile_ref: 'main1') }
+
+        it_behaves_like 'successful create'
+      end
+
+      context 'when workspace_variables is not present and variables is present' do
+        let(:mutation_args) { base_mutation_args.except(:workspace_variables).merge(variables: variables) }
+
+        it_behaves_like 'successful create'
+      end
+
+      context 'when workspace_variables and variables are both present' do
+        let(:mutation_args) { base_mutation_args.merge(variables: variables) }
+
+        it_behaves_like 'successful create'
+      end
+    end
+
+    context 'when there are service errors' do
+      let(:stub_service_response) { ::ServiceResponse.error(message: 'some error', reason: :bad_request) }
+
       before do
-        agent.update!(project: agent_project_in_different_root_namespace)
-      end
-
-      it_behaves_like 'a mutation that returns top-level errors' do
-        let(:match_errors) do
-          include(/1 mapping\(s\) exist.*but the agent does not reside within the hierarchy/)
+        allow(RemoteDevelopment::CommonService).to receive(:execute).with(expected_service_args) do
+          stub_service_response
         end
       end
-    end
-  end
 
-  context 'when workspace project and agent project are NOT mapped' do
-    it_behaves_like 'a mutation that returns top-level errors' do
-      let(:match_errors) { include(/provided agent provided must be mapped to an ancestor namespace/) }
+      it_behaves_like 'a mutation that returns errors in the response', errors: ['some error']
     end
   end
 

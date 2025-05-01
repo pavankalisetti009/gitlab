@@ -36,6 +36,12 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   let(:agent) do
     agent = create(:cluster_agent, project: project, created_by_user: user)
     create(:workspaces_agent_config, :with_overrides_for_all_possible_config_values, agent: agent)
+    create(
+      :organization_cluster_agent_mapping,
+      user: user,
+      agent: agent,
+      organization: project.organization
+    )
     agent.reload
   end
 
@@ -218,7 +224,16 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     end
 
     context 'when agent has no associated config' do
-      let(:agent) { create(:cluster_agent, name: "007") }
+      let(:agent) do
+        agent = create(:cluster_agent, name: "007")
+        create(
+          :organization_cluster_agent_mapping,
+          user: user,
+          agent: agent,
+          organization: project.organization
+        )
+        agent
+      end
 
       it 'does not create the workspace and returns error' do
         # confirm fixture value
