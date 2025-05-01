@@ -32,6 +32,31 @@ RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :so
         allow(License).to receive(:current).and_return(license)
       end
 
+      describe "Analyzer images" do
+        # Add necessary files to enable all analyzers jobs
+        include_context 'when project has files', %w[Gemfile.lock pom.xml poetry.lock Cargo.lock]
+        include_context 'with default branch pipeline setup'
+
+        include_examples 'uses SECURE_ANALYZERS_PREFIX',
+          %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning
+            dependency-scanning]
+        include_examples 'has expected image tag', '6',
+          %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
+        include_examples 'has expected image tag', 'v0', %w[dependency-scanning]
+
+        context "with static reachability enabled" do
+          include_context 'when project has files', %w[main.py poetry.lock]
+          include_context 'with default branch pipeline setup'
+          include_context 'with CI variables',
+            { 'DS_ENFORCE_NEW_ANALYZER' => 'true', 'DS_STATIC_REACHABILITY_ENABLED' => 'true' }
+
+          include_examples 'uses SECURE_ANALYZERS_PREFIX',
+            %w[dependency-scanning-with-reachability gitlab-static-reachability]
+          include_examples 'has expected image tag', '1', %w[gitlab-static-reachability]
+          include_examples 'has expected image tag', 'v0', %w[dependency-scanning-with-reachability]
+        end
+      end
+
       describe "DS_EXCLUDED_ANALYZERS" do
         using RSpec::Parameterized::TableSyntax
         # Add necessary files to enable all analyzers jobs
