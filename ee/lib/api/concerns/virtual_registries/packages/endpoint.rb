@@ -7,8 +7,17 @@ module API
         module Endpoint
           extend ActiveSupport::Concern
 
-          NO_BROWSER_EXECUTION_RESPONSE_HEADERS = { 'Content-Security-Policy' => "default-src 'none'" }.freeze
-          MAJOR_BROWSERS = %i[webkit firefox ie edge opera chrome].freeze
+          EXTRA_RESPONSE_HEADERS = {
+            'Content-Security-Policy' => "sandbox; default-src 'none'; require-trusted-types-for 'script'",
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Disposition' => 'attachment'
+          }.freeze
+          ALLOWED_RESPONSE_HEADERS = %w[
+            Content-Length
+            Content-Type
+            X-Checksum-Md5
+            X-Checksum-Sha1
+          ].freeze
           WEB_BROWSER_ERROR_MESSAGE = 'This endpoint is not meant to be accessed by a web browser.'
           UPSTREAM_GID_HEADER = 'X-Gitlab-Virtual-Registry-Upstream-Global-Id'
           MAX_FILE_SIZE = 5.gigabytes
@@ -17,7 +26,7 @@ module API
             helpers do
               def require_non_web_browser!
                 browser = ::Browser.new(request.user_agent)
-                bad_request!(WEB_BROWSER_ERROR_MESSAGE) if MAJOR_BROWSERS.any? { |b| browser.method(:"#{b}?").call }
+                bad_request!(WEB_BROWSER_ERROR_MESSAGE) if browser.known?
               end
 
               def send_successful_response_from(service_response:)
@@ -27,12 +36,19 @@ module API
                   workhorse_upload_url(**action_params.slice(:url, :upstream))
                 when :download_file
                   extra_response_headers = download_file_extra_response_headers(action_params: action_params)
+                    .merge(EXTRA_RESPONSE_HEADERS)
                   present_carrierwave_file!(
                     action_params[:file],
-                    supports_direct_download: extra_response_headers.blank?,
+                    supports_direct_download: false,
                     content_type: action_params[:content_type],
-                    content_disposition: 'inline',
-                    extra_response_headers: extra_response_headers
+                    content_disposition: 'attachment',
+                    extra_response_headers: extra_response_headers,
+                    extra_send_url_params: {
+                      restrict_forwarded_response_headers: {
+                        enabled: true,
+                        allow_list: ALLOWED_RESPONSE_HEADERS
+                      }
+                    }
                   )
                 when :download_digest
                   content_type 'text/plain'
@@ -60,13 +76,17 @@ module API
                   Gitlab::Workhorse.send_dependency(
                     upstream.headers,
                     url,
-                    response_headers: NO_BROWSER_EXECUTION_RESPONSE_HEADERS,
+                    response_headers: EXTRA_RESPONSE_HEADERS,
                     allow_localhost: allow_localhost,
                     allowed_uris: allowed_uris,
                     ssrf_filter: true,
                     upload_config: {
                       headers: { UPSTREAM_GID_HEADER => upstream.to_global_id.to_s },
                       authorized_upload_response: authorized_upload_response(upstream)
+                    },
+                    restrict_forwarded_response_headers: {
+                      enabled: true,
+                      allow_list: ALLOWED_RESPONSE_HEADERS
                     }
                   )
                 )
