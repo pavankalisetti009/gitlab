@@ -68,8 +68,8 @@ RSpec.describe VirtualRegistries::Packages::Maven::Registry, type: :model, featu
 
     it 'deletes the upstream and the registry_upstream' do
       expect { destroy_registry }.to change { described_class.count }.by(-1)
-       .and change { VirtualRegistries::Packages::Maven::Upstream.count }.by(-1)
-       .and change { VirtualRegistries::Packages::Maven::RegistryUpstream.count }.by(-1)
+        .and change { VirtualRegistries::Packages::Maven::Upstream.count }.by(-1)
+        .and change { VirtualRegistries::Packages::Maven::RegistryUpstream.count }.by(-1)
     end
   end
 end

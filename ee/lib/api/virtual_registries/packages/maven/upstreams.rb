@@ -48,7 +48,8 @@ module API
                   get do
                     authorize! :read_virtual_registry, registry
 
-                    present registry.upstreams, with: Entities::VirtualRegistries::Packages::Maven::Upstream
+                    present ::VirtualRegistries::Packages::Maven::Upstream.eager_load_registry_upstream(registry:),
+                      with: Entities::VirtualRegistries::Packages::Maven::Upstream, with_registry_upstream: true
                   end
 
                   desc 'Add a maven virtual registry upstream' do
@@ -86,7 +87,8 @@ module API
 
                     render_validation_error!(new_upstream) unless new_upstream.save
 
-                    present new_upstream, with: Entities::VirtualRegistries::Packages::Maven::Upstream
+                    present new_upstream, with: Entities::VirtualRegistries::Packages::Maven::Upstream,
+                      with_registry_upstream: true
                   end
                 end
               end

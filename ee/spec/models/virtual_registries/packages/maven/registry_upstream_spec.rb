@@ -16,8 +16,8 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
 
     it 'belongs to an upstream' do
       is_expected.to belong_to(:upstream)
-       .class_name('VirtualRegistries::Packages::Maven::Upstream')
-      .inverse_of(:registry_upstream)
+        .class_name('VirtualRegistries::Packages::Maven::Upstream')
+        .inverse_of(:registry_upstream)
     end
   end
 
@@ -46,6 +46,110 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
         expect(other_registry_upstream.valid?).to be_falsey
         expect(other_registry_upstream.errors[:registry_id].first).to eq('has already been taken')
       end
+    end
+  end
+
+  describe '#update_position' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group:) }
+
+    let_it_be(:registry_upstreams) do
+      create_list(:virtual_registries_packages_maven_registry_upstream, 4, registry: registry)
+    end
+
+    context 'when position is unchanged' do
+      it 'does not update any positions' do
+        expect { registry_upstreams[0].update_position(1) }.not_to change { reload_positions }
+      end
+    end
+
+    context 'when moving to a lower position' do
+      it 'updates the position of the target and increments positions of items in between' do
+        registry_upstreams[0].update_position(3)
+
+        expect(reload_positions).to eq({
+          registry_upstreams[0].id => 3,
+          registry_upstreams[1].id => 1,
+          registry_upstreams[2].id => 2,
+          registry_upstreams[3].id => 4
+        })
+      end
+
+      it 'handles moving to the lowest position' do
+        registry_upstreams[0].update_position(4)
+
+        expect(reload_positions).to eq({
+          registry_upstreams[0].id => 4,
+          registry_upstreams[1].id => 1,
+          registry_upstreams[2].id => 2,
+          registry_upstreams[3].id => 3
+        })
+      end
+    end
+
+    context 'when moving to a higher position' do
+      it 'updates the position of the target and decrements positions of items in between' do
+        registry_upstreams[3].update_position(2)
+
+        expect(reload_positions).to eq({
+          registry_upstreams[0].id => 1,
+          registry_upstreams[1].id => 3,
+          registry_upstreams[2].id => 4,
+          registry_upstreams[3].id => 2
+        })
+      end
+
+      it 'handles moving to the highest position' do
+        registry_upstreams[3].update_position(1)
+
+        expect(reload_positions).to eq({
+          registry_upstreams[0].id => 2,
+          registry_upstreams[1].id => 3,
+          registry_upstreams[2].id => 4,
+          registry_upstreams[3].id => 1
+        })
+      end
+    end
+
+    context 'when moving to a position beyond the maximum' do
+      it 'caps the position at the maximum existing position' do
+        registry_upstreams[1].update_position(10)
+
+        expect(reload_positions).to eq({
+          registry_upstreams[0].id => 1,
+          registry_upstreams[1].id => 4,
+          registry_upstreams[2].id => 2,
+          registry_upstreams[3].id => 3
+        })
+      end
+    end
+
+    context 'when there are multiple registries' do
+      let_it_be(:other_group) { create(:group) }
+      let_it_be(:other_registry) { create(:virtual_registries_packages_maven_registry, group: other_group) }
+      let_it_be_with_reload(:other_registry_upstreams) do
+        create_list(:virtual_registries_packages_maven_registry_upstream, 2, registry: other_registry)
+      end
+
+      it 'only updates positions within the same registry' do
+        registry_upstreams[0].update_position(3)
+
+        # Positions in the original registry should be updated
+        expect(reload_positions).to eq({
+          registry_upstreams[0].id => 3,
+          registry_upstreams[1].id => 1,
+          registry_upstreams[2].id => 2,
+          registry_upstreams[3].id => 4
+        })
+
+        # Positions in the other registry should remain unchanged
+        expect(other_registry_upstreams[0].position).to eq(1)
+        expect(other_registry_upstreams[1].position).to eq(2)
+      end
+    end
+
+    def reload_positions
+      described_class.where(registry:).pluck(:id, :position).to_h
     end
   end
 end

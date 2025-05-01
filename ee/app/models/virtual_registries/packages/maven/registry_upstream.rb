@@ -24,6 +24,29 @@ module VirtualRegistries
 
         before_validation :set_position, on: :create
 
+        def update_position(new_position)
+          return if position == new_position
+
+          relation = self.class.where(registry_id:)
+
+          capped_pos = [new_position, relation.maximum(:position)].min
+
+          return if position == capped_pos
+
+          arel_id = self.class.arel_table[:id]
+          arel_pos = self.class.arel_table[:position]
+
+          case_clause = Arel::Nodes::Case.new.when(arel_id.eq(id)).then(capped_pos)
+
+          case_clause = if capped_pos > position
+                          case_clause.when(arel_pos.between((position + 1)..capped_pos)).then(arel_pos - 1)
+                        else
+                          case_clause.when(arel_pos.between(capped_pos..(position - 1))).then(arel_pos + 1)
+                        end.else(arel_pos)
+
+          relation.update_all(position: case_clause)
+        end
+
         private
 
         def set_position
