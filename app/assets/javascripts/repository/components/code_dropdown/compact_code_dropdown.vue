@@ -91,6 +91,7 @@ export default {
           action: 'click_consolidated_edit',
           label: 'web_ide',
         },
+        testId: 'webide-menu-item',
         href: this.webIdeUrl,
         extraAttrs: {
           target: '_blank',
