@@ -57,6 +57,7 @@ RSpec.describe 'Query.group(fullPath).dependencyAggregations', feature_category:
   end
 
   it_behaves_like 'when dependencies graphql query sorted paginated'
+  it_behaves_like 'when dependencies graphql query sorted by license'
   it_behaves_like 'when dependencies graphql query filtered by package manager' do
     let(:query) { pagination_query({ package_managers: [:BUNDLER] }) }
     let(:expected_packager) { 'BUNDLER' }
