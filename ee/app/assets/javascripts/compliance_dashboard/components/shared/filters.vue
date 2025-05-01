@@ -9,8 +9,10 @@ import {
   FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
   FRAMEWORKS_FILTER_TYPE_PROJECT,
   FRAMEWORKS_FILTER_TYPE_GROUP,
+  FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS,
 } from '../../constants';
 import ProjectSearchToken from './filter_tokens/project_search_token.vue';
+import ProjectStatusToken from './filter_tokens/project_status_token.vue';
 import ComplianceFrameworkToken from './filter_tokens/compliance_framework_token.vue';
 
 export default {
@@ -65,6 +67,15 @@ export default {
           fullPath: this.groupPath,
           skipIdPrefix: true,
           operators: [{ value: 'matches', description: 'matches' }],
+        },
+        {
+          unique: true,
+          icon: 'archive',
+          title: __('Project Status'),
+          type: FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS,
+          entityType: 'project_status',
+          token: ProjectStatusToken,
+          fullPath: this.groupPath,
         },
       ];
     },

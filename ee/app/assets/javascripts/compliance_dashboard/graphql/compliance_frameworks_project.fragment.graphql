@@ -11,6 +11,7 @@ fragment ComplianceFrameworksProjectFragment on Project {
     webUrl
     fullName
   }
+  archived
   complianceFrameworks {
     nodes {
       id

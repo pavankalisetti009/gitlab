@@ -9,6 +9,7 @@ import {
   FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
   FRAMEWORKS_FILTER_TYPE_PROJECT,
   FRAMEWORKS_FILTER_TYPE_GROUP,
+  FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS,
   GRAPHQL_FRAMEWORK_TYPE,
   EXTERNAL_CONTROL_URL_LABEL,
   UNKNOWN_CONTROL_LABEL,
@@ -76,6 +77,14 @@ export function mapFiltersToUrlParams(filters) {
     urlParams.group = normalizedFilters.group;
   }
 
+  const projectStatusFilter = filters.find(
+    (filter) => filter.type === FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS,
+  );
+
+  if (projectStatusFilter) {
+    urlParams.project_status = projectStatusFilter.value.data;
+  }
+
   if (normalizedFilters.frameworks?.length > 0) {
     urlParams['framework[]'] = normalizedFilters.frameworks;
   }
@@ -92,6 +101,7 @@ export function mapQueryToFilters(queryParams) {
   const { project, group } = queryParams;
   const frameworks = queryParams['framework[]'];
   const notFrameworks = queryParams['not[framework][]'];
+  const projectStatus = queryParams.project_status;
 
   const getFrameworkFilters = (params, operator) => {
     const frameworksArray = Array.isArray(params) ? params : [params];
@@ -125,13 +135,20 @@ export function mapQueryToFilters(queryParams) {
     });
   }
 
+  if (projectStatus) {
+    filters.push({
+      type: FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS,
+      value: { data: projectStatus, operator: '=' },
+    });
+  }
+
   return filters;
 }
 
 export const checkFilterForChange = ({
   currentFilters = {},
   newFilters = {},
-  filterKeys = ['project', 'framework[]', 'not[framework][]', 'group'],
+  filterKeys = ['project', 'framework[]', 'not[framework][]', 'group', 'project_status'],
 }) => {
   return filterKeys.some((key) => !isEqual(currentFilters[key], newFilters[key]));
 };

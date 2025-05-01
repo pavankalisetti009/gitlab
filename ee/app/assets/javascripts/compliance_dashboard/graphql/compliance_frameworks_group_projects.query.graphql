@@ -9,6 +9,8 @@ query complianceFrameworksGroupProjects(
   $last: Int
   $project: String
   $ids: [ID!]
+  $includeArchived: Boolean
+  $archivedOnly: Boolean
   $frameworks: [ComplianceManagementFrameworkID!]!
   $frameworksNot: [ComplianceManagementFrameworkID!]!
   $presenceFilter: ComplianceFrameworkPresenceFilter
@@ -24,6 +26,8 @@ query complianceFrameworksGroupProjects(
       search: $project
       ids: $ids
       sort: FULL_PATH_ASC
+      includeArchived: $includeArchived
+      archivedOnly: $archivedOnly
       complianceFrameworkFilters: {
         ids: $frameworks
         not: { ids: $frameworksNot }

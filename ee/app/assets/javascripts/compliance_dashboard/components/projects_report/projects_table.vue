@@ -3,6 +3,7 @@ import Vue from 'vue';
 import {
   GlFormCheckbox,
   GlButton,
+  GlBadge,
   GlLink,
   GlAlert,
   GlLoadingIcon,
@@ -39,6 +40,7 @@ export default {
     SelectionOperations,
 
     GlButton,
+    GlBadge,
     GlFormCheckbox,
     GlLink,
     GlLoadingIcon,
@@ -300,6 +302,7 @@ export default {
     },
   ],
   i18n: {
+    archived: __('Archived'),
     addTitle: s__('ComplianceFrameworks|New compliance framework'),
     editTitle: s__('ComplianceFrameworks|Edit compliance framework'),
 
@@ -402,6 +405,9 @@ export default {
       </template>
       <template #cell(projectName)="{ item }">
         <gl-link :href="item.webUrl" data-testid="project-name-link">{{ item.name }} </gl-link>
+        <gl-badge v-if="item.archived" variant="info" class="gl-mr-2">{{
+          $options.i18n.archived
+        }}</gl-badge>
       </template>
       <template #cell(projectPath)="{ item: { fullPath } }">
         {{ fullPath }}

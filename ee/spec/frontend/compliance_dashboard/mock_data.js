@@ -205,13 +205,14 @@ export const createComplianceFrameworkMutationResponse = (
   },
 });
 
-export const createProject = ({ id, groupPath } = {}) => ({
+export const createProject = ({ id, groupPath, archived = false } = {}) => ({
   id: `gid://gitlab/Project/${id}`,
   name: `Project ${id}`,
   description: `Project description ${id}`,
   webUrl: `${groupPath}/project${id}`,
   visibility: 'public',
   fullPath: `${groupPath}/project${id}`,
+  archived,
   namespace: {
     webUrl: `${groupPath}`,
     fullName: `Project ${id} group`,
@@ -238,6 +239,7 @@ export const createComplianceFrameworksResponse = ({
   count = 1,
   pageInfo = {},
   groupPath = 'foo',
+  archivedProject = null,
 } = {}) => {
   return {
     data: {
@@ -246,7 +248,7 @@ export const createComplianceFrameworksResponse = ({
         projects: {
           nodes: Array(count)
             .fill(null)
-            .map((_, id) => createProject({ id, groupPath })),
+            .map((_, id) => createProject({ id, groupPath, archived: id === archivedProject })),
           pageInfo: {
             hasNextPage: true,
             hasPreviousPage: false,

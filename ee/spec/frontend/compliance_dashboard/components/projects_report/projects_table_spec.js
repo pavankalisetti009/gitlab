@@ -154,7 +154,7 @@ describe('ProjectsTable component', () => {
     });
   });
 
-  describe('when filters are aplied and no projects are found', () => {
+  describe('when filters are applied and no projects are found', () => {
     it('renders the empty state with updated text', () => {
       wrapper = createComponent({ projects: [], isLoading: false, hasFilters: true });
 
@@ -167,7 +167,11 @@ describe('ProjectsTable component', () => {
   });
 
   describe('when there are projects', () => {
-    const projectsResponse = createComplianceFrameworksResponse({ count: 2, groupPath });
+    const projectsResponse = createComplianceFrameworksResponse({
+      count: 3,
+      groupPath,
+      archivedProject: 1,
+    });
     projectsResponse.data.group.projects.nodes[1].complianceFrameworks.nodes = [];
 
     const projects = mapProjects(projectsResponse.data.group.projects.nodes);
@@ -277,7 +281,12 @@ describe('ProjectsTable component', () => {
       );
       const expectedFrameworkName = projects[idx].complianceFrameworks[0]?.name ?? 'No frameworks';
 
-      expect(projectName).toBe(`Project ${idx}`);
+      const isProjectArchived = projects[idx].archived === true;
+      if (isProjectArchived) {
+        expect(projectName).toContain('Archived');
+      } else {
+        expect(projectName).toBe(`Project ${idx}`);
+      }
       expect(projectPath).toBe(`${groupPath}/project${idx}`);
       expect(framework).toContain(expectedFrameworkName);
     });
