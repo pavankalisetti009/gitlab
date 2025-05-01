@@ -36,6 +36,8 @@ module MergeRequests
     has_many :approval_rules_approver_groups
     has_many :approver_groups, through: :approval_rules_approver_groups, source: :group
 
+    has_many :group_users, -> { distinct }, through: :approver_groups, source: :users, disable_joins: true
+
     validate :ensure_single_sharding_key
 
     with_options validate: true do
