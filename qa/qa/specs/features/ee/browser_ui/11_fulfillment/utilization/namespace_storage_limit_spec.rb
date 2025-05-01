@@ -92,7 +92,11 @@ module QA
       context 'when namespace storage usage hits the limit' do
         it(
           'puts the namespace into read-only mode and reverts back to full-access mode after making space',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/437807'
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/437807',
+          quarantine: {
+            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/537025',
+            type: :investigating
+          }
         ) do
           expect_storage_limit_message(storage_limit_reached_message, 'Alert for storage limit exceeded not shown')
 
