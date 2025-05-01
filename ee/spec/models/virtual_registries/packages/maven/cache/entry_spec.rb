@@ -88,10 +88,10 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entry, type: :model, f
       it { is_expected.to contain_exactly(cache_entry1, cache_entry2) }
     end
 
-    describe '.for_upstreams' do
+    describe '.for_upstream' do
       let(:upstreams) { [cache_entry1.upstream, cache_entry2.upstream] }
 
-      subject { described_class.for_upstreams(upstreams) }
+      subject { described_class.for_upstream(upstreams) }
 
       it { is_expected.to contain_exactly(cache_entry1, cache_entry2) }
     end
