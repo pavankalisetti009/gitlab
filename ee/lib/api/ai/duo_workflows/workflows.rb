@@ -33,6 +33,7 @@ module API
           def start_workflow_params(workflow_id)
             {
               goal: params[:goal],
+              workflow_definition: params[:workflow_definition],
               workflow_id: workflow_id,
               workflow_oauth_token: gitlab_oauth_token,
               workflow_service_token: duo_workflow_token
