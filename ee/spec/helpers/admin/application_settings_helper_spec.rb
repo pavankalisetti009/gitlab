@@ -82,7 +82,8 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             can_manage_self_hosted_models: expected_can_manage_self_hosted_models.to_s,
             ai_gateway_url: ai_gateway_url,
             duo_chat_expiration_column: duo_chat_expiration_column,
-            duo_chat_expiration_days: duo_chat_expiration_days.to_s
+            duo_chat_expiration_days: duo_chat_expiration_days.to_s,
+            is_duo_base_access_allowed: 'true'
           }
         end
 
@@ -120,6 +121,16 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
         it "returns the expected data" do
           is_expected.to eq(expected_settings_helper_data)
+        end
+
+        context 'with feature flag allow_duo_base_access set to false' do
+          before do
+            stub_feature_flags(allow_duo_base_access: false)
+          end
+
+          it 'sets is_duo_base_access_allowed to false' do
+            expect(helper.ai_settings_helper_data).to include(is_duo_base_access_allowed: 'false')
+          end
         end
       end
 
