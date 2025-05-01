@@ -14,7 +14,7 @@ export default {
     title: s__('SecurityReports|No vulnerabilities to report'),
     primaryButtonText: s__('SecurityReports|Learn more about security configuration'),
     description: s__(
-      `SecurityReports|If you were expecting vulnerabilities to be shown here, check that you've completed the %{linkStart}security scanning prerequisites%{linkEnd}, or check the other vulnerability types in the tabs above.`,
+      `SecurityReports|If you were expecting vulnerabilities to be shown here, check that you've completed the %{linkStart}security scanning prerequisites%{linkEnd}.`,
     ),
     descriptionLinkText: s__('SecurityReports|security scanning prerequisites'),
   },

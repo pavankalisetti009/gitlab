@@ -55723,7 +55723,7 @@ msgstr ""
 msgid "SecurityReports|Identifier"
 msgstr ""
 
-msgid "SecurityReports|If you were expecting vulnerabilities to be shown here, check that you've completed the %{linkStart}security scanning prerequisites%{linkEnd}, or check the other vulnerability types in the tabs above."
+msgid "SecurityReports|If you were expecting vulnerabilities to be shown here, check that you've completed the %{linkStart}security scanning prerequisites%{linkEnd}."
 msgstr ""
 
 msgid "SecurityReports|Image"
