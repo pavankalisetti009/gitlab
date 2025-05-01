@@ -30162,7 +30162,10 @@ msgstr ""
 msgid "GroupsNew|e.g. h8d3f016698e…"
 msgstr ""
 
-msgid "GroupsTree|Are you sure you want to leave the \"%{fullName}\" group?"
+msgid "GroupsTree|An error occurred while leaving the group. Please refresh the page to try again."
+msgstr ""
+
+msgid "GroupsTree|Are you sure you want to leave \"%{fullName}\"?"
 msgstr ""
 
 msgid "GroupsTree|Delete"
@@ -30181,6 +30184,18 @@ msgid "GroupsTree|Loading groups"
 msgstr ""
 
 msgid "GroupsTree|Options"
+msgstr ""
+
+msgid "GroupsTree|When you leave this group:"
+msgstr ""
+
+msgid "GroupsTree|You lose access to all projects within this group"
+msgstr ""
+
+msgid "GroupsTree|You need an invitation to rejoin"
+msgstr ""
+
+msgid "GroupsTree|Your assigned issues and merge requests remain, but you cannot view or modify them"
 msgstr ""
 
 msgid "Groups|An error occurred updating this group. Please try again."
@@ -35624,6 +35639,9 @@ msgid "Leave group"
 msgstr ""
 
 msgid "Leave project"
+msgstr ""
+
+msgid "Left the '%{group_name}' group successfully."
 msgstr ""
 
 msgid "Legacy Prometheus integrations cannot currently be removed"
