@@ -18,6 +18,7 @@ describe('AiCommonSettings', () => {
       provide: {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
         experimentFeaturesEnabled: false,
+        duoCoreFeaturesEnabled: false,
         onGeneralSettingsPage: false,
         ...provide,
       },
@@ -57,7 +58,8 @@ describe('AiCommonSettings', () => {
 
   it('emits submit event with correct data when form is submitted via AiCommonSettingsForm component', async () => {
     await findForm().vm.$emit('radio-changed', AVAILABILITY_OPTIONS.DEFAULT_OFF);
-    await findForm().vm.$emit('checkbox-changed', true);
+    await findForm().vm.$emit('experiment-checkbox-changed', true);
+    await findForm().vm.$emit('duo-core-checkbox-changed', true);
     findForm().vm.$emit('submit', {
       preventDefault: jest.fn(),
     });
@@ -65,6 +67,7 @@ describe('AiCommonSettings', () => {
     expect(emittedData).toEqual({
       duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
       experimentFeaturesEnabled: true,
+      duoCoreFeaturesEnabled: true,
     });
   });
 

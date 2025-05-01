@@ -55,7 +55,9 @@ module EE
           duo_availability: @group.namespace_settings.duo_availability.to_s,
           are_duo_settings_locked: @group.namespace_settings.duo_features_enabled_locked?.to_s,
           experiment_features_enabled: @group.namespace_settings.experiment_features_enabled.to_s,
+          duo_core_features_enabled: @group.namespace_settings.duo_core_features_enabled.to_s,
           are_experiment_settings_allowed: (@group.experiment_settings_allowed? && gitlab_com_subscription?).to_s,
+          is_duo_base_access_allowed: ::Feature.enabled?(:allow_duo_base_access, @group).to_s,
           show_early_access_banner: show_early_access_program_banner?.to_s,
           early_access_path: group_early_access_opt_in_path(@group),
           update_id: @group.id

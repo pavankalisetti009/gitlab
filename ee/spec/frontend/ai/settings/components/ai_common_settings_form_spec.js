@@ -3,12 +3,13 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCommonSettingsForm from 'ee/ai/settings/components/ai_common_settings_form.vue';
 import DuoAvailabilityForm from 'ee/ai/settings/components/duo_availability_form.vue';
 import DuoExperimentBetaFeaturesForm from 'ee/ai/settings/components/duo_experiment_beta_features_form.vue';
+import DuoCoreFeaturesForm from 'ee/ai/settings/components/duo_core_features_form.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 
 describe('AiCommonSettingsForm', () => {
   let wrapper;
 
-  const createComponent = (props = {}) => {
+  const createComponent = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(AiCommonSettingsForm, {
       propsData: {
         availability: AVAILABILITY_OPTIONS.DEFAULT_ON,
@@ -18,17 +19,22 @@ describe('AiCommonSettingsForm', () => {
         hasFormChanged: false,
         ...props,
       },
+      provide: {
+        isDuoBaseAccessAllowed: false,
+        ...provide,
+      },
     });
   };
 
   const findForm = () => wrapper.findComponent(GlForm);
   const findDuoAvailability = () => wrapper.findComponent(DuoAvailabilityForm);
   const findDuoExperimentBetaFeatures = () => wrapper.findComponent(DuoExperimentBetaFeaturesForm);
+  const findDuoCoreFeaturesForm = () => wrapper.findComponent(DuoCoreFeaturesForm);
   const findDuoSettingsWarningAlert = () => wrapper.findByTestId('duo-settings-show-warning-alert');
   const findSaveButton = () => wrapper.findComponent(GlButton);
 
   beforeEach(() => {
-    createComponent();
+    createComponent({ provide: { isDuoBaseAccessAllowed: true } });
   });
 
   describe('component rendering', () => {
@@ -38,6 +44,20 @@ describe('AiCommonSettingsForm', () => {
 
     it('renders DuoAvailability component', () => {
       expect(findDuoAvailability().exists()).toBe(true);
+    });
+
+    describe('when isDuoBaseAccessAllowed is false', () => {
+      it('does not render the duo core features form', () => {
+        createComponent({ provide: { isDuoBaseAccessAllowed: false } });
+        expect(findDuoCoreFeaturesForm().exists()).toBe(false);
+      });
+    });
+
+    describe('when isDuoBaseAccessAllowed is true', () => {
+      it('renders the duo core features form', () => {
+        createComponent({ provide: { isDuoBaseAccessAllowed: true } });
+        expect(findDuoCoreFeaturesForm().exists()).toBe(true);
+      });
     });
 
     it('renders DuoExperimentBetaFeatures component', () => {
@@ -51,11 +71,15 @@ describe('AiCommonSettingsForm', () => {
     it('enables save button when changes are made', async () => {
       await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.DEFAULT_OFF);
       await findDuoExperimentBetaFeatures().vm.$emit('change', true);
+      await findDuoCoreFeaturesForm().vm.$emit('change', true);
       expect(findSaveButton().props('disabled')).toBe(false);
     });
 
     it('enables save button when parent form changes are made', () => {
-      createComponent({ hasParentFormChanged: true }, { onGeneralSettingsPage: false });
+      createComponent({
+        props: { hasParentFormChanged: true },
+        provide: { onGeneralSettingsPage: false },
+      });
       expect(findSaveButton().props('disabled')).toBe(false);
     });
 

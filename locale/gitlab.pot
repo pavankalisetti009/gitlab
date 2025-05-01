@@ -5855,6 +5855,12 @@ msgstr ""
 msgid "AiPowered|Tanuki AI icon"
 msgstr ""
 
+msgid "AiPowered|This settings applies Namespace/Instance-wide, Subgroup and project access controls are coming soon.%{br}By turning this on, you accept the %{linkStart}GitLab AI functionality terms%{linkEnd}."
+msgstr ""
+
+msgid "AiPowered|Turn on IDE features"
+msgstr ""
+
 msgid "AiPowered|Turn on experiment and beta GitLab Duo features"
 msgstr ""
 
@@ -28209,6 +28215,9 @@ msgid "GithubIntegration|Static status check names (optional)"
 msgstr ""
 
 msgid "GithubIntegration|This requires mirroring your GitHub repository to this project. %{docs_link}"
+msgstr ""
+
+msgid "Gitlab Duo Core"
 msgstr ""
 
 msgid "Gitpod"

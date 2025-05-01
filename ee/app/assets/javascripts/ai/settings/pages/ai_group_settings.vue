@@ -33,13 +33,14 @@ export default {
   },
   data: () => ({ isLoading: false }),
   methods: {
-    async updateSettings({ duoAvailability, experimentFeaturesEnabled }) {
+    async updateSettings({ duoAvailability, experimentFeaturesEnabled, duoCoreFeaturesEnabled }) {
       try {
         this.isLoading = true;
 
         await updateGroupSettings(this.updateId, {
           duo_availability: duoAvailability,
           experiment_features_enabled: experimentFeaturesEnabled,
+          duo_core_features_enabled: duoCoreFeaturesEnabled,
         });
 
         visitUrlWithAlerts(this.redirectPath, [
