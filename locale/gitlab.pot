@@ -34023,16 +34023,13 @@ msgstr ""
 msgid "JiraConnect|Your browser is not supported"
 msgstr ""
 
-msgid "JiraIntegration|Enable creating Jira issues for GitLab vulnerabilities."
-msgstr ""
-
 msgid "JiraIntegration|Enable viewing Jira issues in GitLab."
 msgstr ""
 
 msgid "JiraIntegration|Jira issue type to use when creating issues from vulnerabilities."
 msgstr ""
 
-msgid "JiraIntegration|Key of the project to use when creating issues from vulnerabilities.This parameter is required if using the integration to create issues from vulnerabilities."
+msgid "JiraIntegration|Key of the project to use when creating issues from vulnerabilities.This parameter is required if using the integration to create Jira issues from vulnerabilities."
 msgstr ""
 
 msgid "JiraIntegration|Keys of Jira projects. When `issues_enabled` is `true`, this setting specifies which Jira projects to view issues from in GitLab."
@@ -34062,7 +34059,10 @@ msgstr ""
 msgid "JiraIntegration|The email or username to use with Jira. Use an email for Jira Cloud, and a username for Jira Data Center and Jira Server. Required when using Basic Authentication (`jira_auth_type` is `0`)."
 msgstr ""
 
-msgid "JiraIntegration|When set to `true`, will navigate to a prefilled form on the Jira instancewhen creating a Jira issue from a vulnerability."
+msgid "JiraIntegration|Turn on Jira issue creation for GitLab vulnerabilities."
+msgstr ""
+
+msgid "JiraIntegration|When set to `true`, opens a prefilled form on the Jira instancewhen creating a Jira issue from a vulnerability."
 msgstr ""
 
 msgid "JiraRequest|A connection error occurred while connecting to Jira. Try your request again."
