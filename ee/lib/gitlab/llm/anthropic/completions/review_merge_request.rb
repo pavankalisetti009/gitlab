@@ -21,11 +21,6 @@ module Gitlab
                 "review from the GitLab UI instead.")
             end
 
-            def review_starting_msg
-              s_("DuoCodeReview|Hey :wave: I'm reviewing your merge request now. " \
-                "I will let you know when I'm finished.")
-            end
-
             def nothing_to_review_msg
               s_("DuoCodeReview|:wave: There's nothing for me to review.")
             end
@@ -60,8 +55,6 @@ module Gitlab
             if merge_request.ai_reviewable_diff_files.blank?
               update_progress_note(self.class.nothing_to_review_msg)
             else
-              update_progress_note(self.class.review_starting_msg)
-
               perform_review
             end
 
@@ -72,6 +65,8 @@ module Gitlab
 
           ensure
             update_review_state('reviewed') if merge_request.present?
+
+            @progress_note&.destroy if duo_code_review_system_note_enabled?
           end
 
           private
@@ -254,20 +249,36 @@ module Gitlab
           def create_progress_note
             return unless merge_request.present?
 
+            note = if duo_code_review_system_note_enabled?
+                     s_("DuoCodeReview|is reviewing your merge request and will let you know when it's finished")
+                   else
+                     self.class.review_queued_msg
+                   end
+
             ::Notes::CreateService.new(
               merge_request.project,
               review_bot,
               noteable: merge_request,
-              note: self.class.review_queued_msg
+              note: note,
+              system: duo_code_review_system_note_enabled?
             ).execute
           end
 
           def update_progress_note(note)
-            Notes::UpdateService.new(
-              progress_note.project,
-              review_bot,
-              note: note
-            ).execute(progress_note)
+            if duo_code_review_system_note_enabled?
+              ::Notes::CreateService.new(
+                merge_request.project,
+                review_bot,
+                noteable: merge_request,
+                note: note
+              ).execute
+            else
+              Notes::UpdateService.new(
+                progress_note.project,
+                review_bot,
+                note: note
+              ).execute(progress_note)
+            end
           end
 
           def find_progress_note
@@ -310,6 +321,8 @@ module Gitlab
 
             DraftNote.bulk_insert!(draft_notes, batch_size: 20)
 
+            update_progress_note(summary_note(draft_notes))
+
             # We set `executing_user` as the user who executed the duo code
             # review action as we only want to publish duo code review bot's review
             # if the executing user is allowed to create notes on the MR.
@@ -318,8 +331,6 @@ module Gitlab
                 merge_request,
                 review_bot
               ).execute(executing_user: user)
-
-            update_progress_note(summary_note(draft_notes))
           end
 
           def update_review_state_service
@@ -330,6 +341,10 @@ module Gitlab
 
           def update_review_state(state)
             update_review_state_service.execute(merge_request, state)
+          end
+
+          def duo_code_review_system_note_enabled?
+            ::Feature.enabled?(:duo_code_review_system_note, merge_request&.project)
           end
         end
       end
