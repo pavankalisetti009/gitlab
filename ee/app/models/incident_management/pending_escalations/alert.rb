@@ -7,9 +7,8 @@ module IncidentManagement
 
       self.table_name = 'incident_management_pending_alert_escalations'
 
-      alias_attribute :target, :alert
-
       belongs_to :alert, class_name: 'AlertManagement::Alert', foreign_key: 'alert_id', inverse_of: :pending_escalations
+      alias_method :target, :alert
 
       validates :rule_id, uniqueness: { scope: [:alert_id] }
 

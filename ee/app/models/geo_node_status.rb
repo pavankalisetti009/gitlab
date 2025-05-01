@@ -17,8 +17,6 @@ class GeoNodeStatus < ApplicationRecord
 
   sha_attribute :storage_configuration_digest
 
-  alias_attribute :repositories_count, :project_repositories_count
-
   attribute_method_suffix '_timestamp', '_timestamp='
 
   alias_attribute :last_successful_status_check, :last_successful_status_check_at
@@ -109,6 +107,8 @@ class GeoNodeStatus < ApplicationRecord
   end
 
   alternative_status_store_accessor RESOURCE_STATUS_FIELDS
+  alias_method :repositories_count, :project_repositories_count
+  alias_method :repositories_count=, :project_repositories_count=
 
   def self.current_node_status(timeout: nil)
     current_node = Gitlab::Geo.current_node

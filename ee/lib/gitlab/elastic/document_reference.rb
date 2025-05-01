@@ -84,7 +84,7 @@ module Gitlab
       attr_reader :klass, :db_id, :es_id, :es_parent
 
       alias_attribute :identifier, :es_id
-      alias_attribute :routing, :es_parent
+      alias_method :routing, :es_parent
       alias_attribute :database_id, :db_id
 
       def initialize(klass_or_name, db_id, es_id, es_parent = nil)

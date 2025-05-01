@@ -199,7 +199,7 @@ module Security
 
     # Following alias attributes as used by `Vulnerabilities::FindingEntity`
     alias_attribute :raw_metadata, :finding_data
-    alias_attribute :report_type, :scan_type
+    alias_method :report_type, :scan_type
 
     def dismissal_feedback
       feedbacks.find(&:for_dismissal?)

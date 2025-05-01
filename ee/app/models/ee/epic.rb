@@ -105,7 +105,7 @@ module EE
 
       alias_attribute :parent_ids, :parent_id
       alias_attribute :issuing_parent_id, :group_id
-      alias_attribute :issue, :work_item
+      alias_method :issue, :work_item
       alias_method :issuing_parent, :group
       alias_method :namespace, :group
 
