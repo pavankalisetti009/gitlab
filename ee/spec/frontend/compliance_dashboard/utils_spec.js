@@ -133,7 +133,6 @@ describe('compliance report utils', () => {
       ];
       expect(utils.mapFiltersToUrlParams(filters)).toEqual({
         project: 'my-project',
-        group: 'my-group',
         'framework[]': ['my-framework1', 'my-framework2'],
       });
     });
@@ -456,7 +455,7 @@ describe('compliance report utils', () => {
       ];
 
       expect(utils.mapFiltersToGraphQLVariables(filters)).toStrictEqual({
-        group: 'group-1',
+        groupPath: 'group-1',
       });
     });
 
@@ -534,7 +533,7 @@ describe('compliance report utils', () => {
 
       expect(utils.mapFiltersToGraphQLVariables(filters)).toStrictEqual({
         project: 'project-1',
-        group: 'group-1',
+        groupPath: 'group-1',
         frameworks: ['framework-1'],
         frameworksNot: ['framework-2'],
       });

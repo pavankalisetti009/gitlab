@@ -51,7 +51,7 @@ export function mapFiltersToGraphQLVariables(filters) {
     if (type === FRAMEWORKS_FILTER_TYPE_PROJECT) {
       updatedResult.project = value.data;
     } else if (type === FRAMEWORKS_FILTER_TYPE_GROUP) {
-      updatedResult.group = value.data;
+      updatedResult.groupPath = value.data;
     } else if (type === FRAMEWORKS_FILTER_TYPE_FRAMEWORK) {
       if (value.operator === '!=') {
         updatedResult.frameworksNot = [...(updatedResult.frameworksNot || []), value.data];
@@ -142,6 +142,7 @@ export const checkGraphQLFilterForChange = ({ currentFilters = {}, newFilters = 
     'frameworks',
     'frameworksNot',
     FRAMEWORKS_FILTER_TYPE_GROUP,
+    'groupPath',
   ];
 
   return checkFilterForChange({ currentFilters, newFilters, filterKeys });

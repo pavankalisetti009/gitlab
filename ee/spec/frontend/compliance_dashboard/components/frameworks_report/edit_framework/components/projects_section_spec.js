@@ -1019,11 +1019,10 @@ describe('Projects section', () => {
       await nextTick();
 
       expect(wrapper.vm.queryVariables).toEqual({
-        groupPath: 'gitlab-org',
+        groupPath: 'test-group',
         first: 20,
         frameworks: [],
         frameworksNot: [],
-        group: 'test-group',
       });
     });
 
@@ -1051,12 +1050,11 @@ describe('Projects section', () => {
       await nextTick();
 
       expect(wrapper.vm.queryVariables).toEqual({
-        groupPath: 'gitlab-org',
+        groupPath: 'test-group',
         first: 20,
         frameworks: ['included-framework'],
         frameworksNot: ['excluded-framework'],
         project: 'test-project',
-        group: 'test-group',
       });
     });
   });
