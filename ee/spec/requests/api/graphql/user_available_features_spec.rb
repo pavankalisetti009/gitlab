@@ -29,8 +29,10 @@ RSpec.describe 'Querying user available features', :clean_gitlab_redis_cache, fe
 
   context 'when user is logged in' do
     let_it_be(:current_user) { create(:user) }
-    let(:service) { instance_double(::CloudConnector::BaseAvailableServiceData, name: :any_name) }
-    let(:service_not_available) { instance_double(::CloudConnector::BaseAvailableServiceData, name: :any_name) }
+    let(:service) { instance_double(::CloudConnector::BaseAvailableServiceData, name: :any_name, add_on_names: []) }
+    let(:service_not_available) do
+      instance_double(::CloudConnector::BaseAvailableServiceData, name: :any_name, add_on_names: [])
+    end
 
     before do
       allow(Ability).to receive(:allowed?).and_call_original

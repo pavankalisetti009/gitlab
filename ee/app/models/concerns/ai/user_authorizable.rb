@@ -99,35 +99,86 @@ module Ai
       end
 
       def allowed_to_use(ai_feature, service_name: nil, licensed_feature: :ai_features)
+        # Check if feature and service are valid and available
         feature_data = Gitlab::Llm::Utils::AiFeaturesCatalogue.search_by_name(ai_feature)
-        return Response.new(allowed?: false, namespace_ids: []) unless feature_data
+        return denied_response unless feature_data
 
         service = CloudConnector::AvailableServices.find_by_name(service_name || ai_feature)
-        return Response.new(allowed?: false, namespace_ids: []) if service.name == :missing_service
+        return denied_response if service.name == :missing_service
 
-        # If the user has any relevant add-on purchase, they always have access to this service
-        purchases = service.add_on_purchases.assigned_to_user(self)
+        # Access through Duo Pro and Duo Enterprise
+        add_on_response = check_add_on_purchases(service)
+        return add_on_response if add_on_response
 
-        if purchases.any?
-          return Response.new(allowed?: true, namespace_ids: purchases.uniq_namespace_ids, enablement_type: 'add_on')
-        end
+        # Access through Duo Core
+        duo_core_response = check_duo_core_features(service)
+        return duo_core_response if duo_core_response
 
-        # If the user doesn't have add-on purchases and the service isn't free, they don't have access
-        return Response.new(allowed?: false, namespace_ids: []) unless service.free_access?
+        # If the user doesn't have access through Duo add-ons
+        # and the service isn't free, they don't have access
+        return denied_response unless service.free_access?
 
-        if Gitlab::Saas.feature_available?(:duo_chat_on_saas)
-          seats = namespaces_allowed_in_com(feature_data[:maturity])
-          if seats.any?
-            Response.new(allowed?: true, namespace_ids: seats, enablement_type: 'tier')
-          else
-            Response.new(allowed?: false, namespace_ids: [])
-          end
-        else
-          Response.new(allowed?: licensed_to_use_in_sm?(licensed_feature), namespace_ids: [])
-        end
+        check_free_access(feature_data, licensed_feature)
       end
 
       private
+
+      def check_add_on_purchases(service)
+        purchases = service.add_on_purchases.assigned_to_user(self)
+        return unless purchases.any?
+
+        Response.new(allowed?: true, namespace_ids: purchases.uniq_namespace_ids, enablement_type: 'add_on')
+      end
+
+      def check_duo_core_features(service)
+        return unless service.add_on_names.include?("duo_core") && duo_core_add_on?
+
+        if saas? && Feature.enabled?(:duo_core_saas, self)
+          groups = groups_with_duo_core_enabled
+          return unless groups.any?
+
+          Response.new(allowed?: true, namespace_ids: groups.ids, enablement_type: 'add_on')
+        elsif !saas? && ::Ai::Setting.instance.duo_nano_features_enabled?
+          Response.new(allowed?: true, namespace_ids: [], enablement_type: 'add_on')
+        end
+      end
+
+      def check_free_access(feature_data, licensed_feature)
+        if saas?
+          check_saas_free_access(feature_data)
+        else
+          check_sm_free_access(licensed_feature)
+        end
+      end
+
+      def check_saas_free_access(feature_data)
+        seats = namespaces_allowed_in_com(feature_data[:maturity])
+
+        if seats.any?
+          Response.new(allowed?: true, namespace_ids: seats, enablement_type: 'tier')
+        else
+          denied_response
+        end
+      end
+
+      def check_sm_free_access(licensed_feature)
+        Response.new(allowed?: licensed_to_use_in_sm?(licensed_feature), namespace_ids: [])
+      end
+
+      def denied_response
+        Response.new(allowed?: false, namespace_ids: [])
+      end
+
+      def groups_with_duo_core_enabled
+        Namespace.where(id: billable_gitlab_duo_pro_root_group_ids)
+          .namespace_settings_with_duo_core_features_enabled
+      end
+
+      def duo_core_add_on?
+        # Duo Core doesn't use seats, so this checks if the user has access to the add-on through the instance
+        # or a root group membership
+        GitlabSubscriptions::AddOnPurchase.for_duo_core.for_user(self).active.any?
+      end
 
       def amazon_q_connected?(ai_feature)
         ::Ai::AmazonQ.connected? && AMAZON_Q_FEATURES.include?(ai_feature)
@@ -141,6 +192,10 @@ module Ai
 
       def licensed_to_use_in_sm?(licensed_feature)
         License.feature_available?(licensed_feature)
+      end
+
+      def saas?
+        Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
       end
     end
 
