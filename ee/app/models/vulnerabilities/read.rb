@@ -262,12 +262,16 @@ module Vulnerabilities
       pluck(:uuid)
     end
 
+    def self.generate_es_parent(project)
+      "group_#{project.namespace.root_ancestor.id}"
+    end
+
     def arel_grouping_by_traversal_ids_and_id
       self.class.arel_table.grouping([database_serialized_traversal_ids, id])
     end
 
     def es_parent
-      "group_#{project.namespace.root_ancestor.id}"
+      self.class.generate_es_parent(project)
     end
 
     def elastic_reference
