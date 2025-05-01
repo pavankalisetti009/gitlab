@@ -3,7 +3,7 @@
 module Resolvers
   module WorkItems
     module Statuses
-      class BulkStatusResolver < Resolvers::WorkItems::BaseResolver
+      class StatusResolver < Resolvers::WorkItems::BaseResolver
         type Types::WorkItems::StatusType, null: true
 
         def resolve
