@@ -67,7 +67,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
           [value]
         end
 
-        expected_resp_headers = described_class::NO_BROWSER_EXECUTION_RESPONSE_HEADERS.deep_transform_values do |value|
+        expected_resp_headers = described_class::EXTRA_RESPONSE_HEADERS.deep_transform_values do |value|
           [value]
         end
 
@@ -76,11 +76,17 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
           'AuthorizedUploadResponse' => a_kind_of(Hash)
         }
 
+        expected_restrict_forwarded_response_headers = {
+          'Enabled' => true,
+          'AllowList' => described_class::ALLOWED_RESPONSE_HEADERS
+        }
+
         expect(send_data_type).to eq('send-dependency')
         expect(send_data['Url']).to be_present
         expect(send_data['Headers']).to eq(expected_headers)
         expect(send_data['ResponseHeaders']).to eq(expected_resp_headers)
         expect(send_data['UploadConfig']).to include(expected_upload_config)
+        expect(send_data['RestrictForwardedResponseHeaders']).to include(expected_restrict_forwarded_response_headers)
       end
     end
 
@@ -158,21 +164,17 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
       end
 
       context 'with a web browser' do
-        described_class::MAJOR_BROWSERS.each do |browser|
-          context "when accessing with a #{browser} browser" do
-            before do
-              allow_next_instance_of(::Browser) do |b|
-                allow(b).to receive("#{browser}?").and_return(true)
-              end
-            end
-
-            it 'returns a bad request response' do
-              request
-
-              expect(response).to have_gitlab_http_status(:bad_request)
-              expect(response.body).to include(described_class::WEB_BROWSER_ERROR_MESSAGE)
-            end
+        before do
+          allow_next_instance_of(::Browser) do |b|
+            allow(b).to receive(:known?).and_return(true)
           end
+        end
+
+        it 'returns a bad request response' do
+          request
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(response.body).to include(described_class::WEB_BROWSER_ERROR_MESSAGE)
         end
       end
 

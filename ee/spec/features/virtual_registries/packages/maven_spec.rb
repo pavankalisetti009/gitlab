@@ -42,6 +42,7 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
   context 'with no cache entry' do
     it 'returns the file contents and create the cache entry' do
       expect { request }.to change { upstream.cache_entries.count }.by(1)
+      expect_headers(request)
     end
 
     context 'with multiple upstreams' do
@@ -68,6 +69,7 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
         expect { request }.to change { upstream2.cache_entries.count }.by(1)
           .and not_change { upstream.cache_entries.count }
         expect(request.body).to eq('File contents 2')
+        expect_headers(request)
       end
     end
   end
@@ -91,6 +93,7 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
         .to be_an_instance_of(String)
       expect(request.headers[::API::VirtualRegistries::Packages::Maven::Endpoints::MD5_CHECKSUM_HEADER])
         .to be_an_instance_of(String)
+      expect_headers(request)
     end
 
     context 'with a stale cache entry' do
@@ -103,6 +106,7 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
 
         expect { request }.to not_change { upstream.cache_entries.count }
           .and change { cache_entry.reload.upstream_checked_at }
+        expect_headers(request)
       end
 
       context 'with a wrong etag' do
@@ -116,8 +120,16 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
           expect { request }.to not_change { upstream.cache_entries.count }
             .and change { cache_entry.reload.upstream_checked_at }
             .and change { cache_entry.reload.upstream_etag }.from('wrong').to('"etag"')
+          expect_headers(request)
         end
       end
     end
+  end
+
+  def expect_headers(request)
+    expect(request.headers['Content-Security-Policy'])
+      .to eq("sandbox; default-src 'none'; require-trusted-types-for 'script'")
+    expect(request.headers['X-Content-Type-Options']).to eq('nosniff')
+    expect(request.headers['Content-Disposition']).to include('attachment')
   end
 end
