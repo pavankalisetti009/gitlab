@@ -2,6 +2,7 @@ import Vue from 'vue';
 import { parseBoolean } from '~/lib/utils/common_utils';
 import apolloProvider from 'ee/usage_quotas/shared/provider';
 import GitlabDuoHome from 'ee/ai/settings/pages/gitlab_duo_home.vue';
+import initEnableDuoBannerSM from 'ee/ai/init_enable_duo_banner_sm';
 
 export function mountGitlabDuoHomeApp() {
   const el = document.getElementById('js-gitlab-duo-admin-page');
@@ -71,3 +72,4 @@ export function mountGitlabDuoHomeApp() {
 }
 
 mountGitlabDuoHomeApp();
+initEnableDuoBannerSM();
