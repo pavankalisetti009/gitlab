@@ -30,10 +30,6 @@ module EE
               attrs = attrs.except(:default_project_deletion_protection)
             end
 
-            unless License.feature_available?(:adjourned_deletion_for_projects_and_groups)
-              attrs = attrs.except(:delayed_project_deletion, :delayed_group_deletion, :deletion_adjourned_period)
-            end
-
             unless License.feature_available?(:disable_name_update_for_users)
               attrs = attrs.except(:updating_name_disabled_for_users)
             end

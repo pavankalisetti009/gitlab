@@ -147,7 +147,6 @@ module EE
           group_owners_can_manage_default_branch_protection
           default_project_deletion_protection
           disable_personal_access_tokens
-          deletion_adjourned_period
           updating_name_disabled_for_users
           maven_package_requests_forwarding
           npm_package_requests_forwarding
