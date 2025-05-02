@@ -15,7 +15,6 @@ RSpec.describe 'Epics > User uses quick actions', :js, feature_category: :portfo
 
   before do
     stub_licensed_features(epics: true, subepics: true)
-    stub_feature_flags(namespace_level_work_items: false, work_item_epics: false)
     sign_in(reporter)
   end
 
@@ -28,10 +27,9 @@ RSpec.describe 'Epics > User uses quick actions', :js, feature_category: :portfo
       visit group_epic_path(group, epic_2)
       wait_for_requests
 
-      add_note("new note \n\n/parent_epic #{epic_1.to_reference}")
+      fill_in('Add a reply', with: "new note \n\n/set_parent #{epic_1.to_reference}")
+      click_button 'Comment'
 
-      wait_for_requests
-      expect(epic_2.reload.parent).to eq(epic_1)
       expect(page).to have_content("added #{epic_1.work_item.to_reference} as parent epic")
     end
   end
