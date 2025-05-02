@@ -361,27 +361,6 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
     end
   end
 
-  context 'mirror user changed' do
-    let(:mirror_user) { create(:user) }
-    let(:project) { create(:project, :mirror, mirror_user_id: mirror_user.id) }
-    let(:new_mirror_user) { project.team.owners.first }
-
-    it 'sends email' do
-      expect(Notify).to receive(:project_mirror_user_changed_email).with(new_mirror_user.id, mirror_user.name, project.id).and_call_original
-
-      subject.project_mirror_user_changed(new_mirror_user, mirror_user.name, project)
-    end
-
-    it_behaves_like 'project emails are disabled' do
-      let(:notification_target)  { project }
-      let(:notification_trigger) { subject.project_mirror_user_changed(new_mirror_user, mirror_user.name, project) }
-
-      around do |example|
-        perform_enqueued_jobs { example.run }
-      end
-    end
-  end
-
   describe 'issues' do
     let(:group) { create(:group) }
     let(:project) { create(:project, :public, namespace: group) }

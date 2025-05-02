@@ -38,10 +38,6 @@ module EE
       create_todos(user, attributes, nil, nil)
     end
 
-    def new_epic(epic, current_user)
-      create_mention_todos(nil, epic, current_user)
-    end
-
     def update_epic(epic, current_user, skip_users = [])
       update_issuable(epic, current_user, skip_users)
     end
