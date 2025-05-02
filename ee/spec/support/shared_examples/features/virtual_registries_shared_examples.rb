@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'disallowed access to virtual registries' do
+RSpec.shared_examples 'virtual registry is unavailable' do
   context 'when dependency proxy feature is not available' do
     before do
       stub_config(dependency_proxy: { enabled: false })

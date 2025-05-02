@@ -28,7 +28,7 @@ RSpec.describe 'Maven virtual registries', feature_category: :virtual_registry d
         group.add_guest(user)
       end
 
-      it_behaves_like 'disallowed access to virtual registries'
+      it_behaves_like 'virtual registry is unavailable'
 
       it 'renders maven virtual registries page' do
         visit url
@@ -66,7 +66,7 @@ RSpec.describe 'Maven virtual registries', feature_category: :virtual_registry d
         group.add_maintainer(user)
       end
 
-      it_behaves_like 'disallowed access to virtual registries'
+      it_behaves_like 'virtual registry is unavailable'
 
       it 'renders new maven virtual registry page' do
         visit url

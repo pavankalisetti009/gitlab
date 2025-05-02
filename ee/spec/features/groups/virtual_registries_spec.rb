@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Virtual registries', feature_category: :virtual_registry do
+RSpec.describe 'Virtual registry', feature_category: :virtual_registry do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :private) }
 
@@ -28,9 +28,9 @@ RSpec.describe 'Virtual registries', feature_category: :virtual_registry do
         group.add_guest(user)
       end
 
-      it_behaves_like 'disallowed access to virtual registries'
+      it_behaves_like 'virtual registry is unavailable'
 
-      it 'renders virtual registries page' do
+      it 'renders virtual registry page' do
         visit url
 
         expect(page).to have_selector('h1', text: 'Virtual registries')
