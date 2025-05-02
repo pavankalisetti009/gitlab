@@ -3,6 +3,8 @@
 module Search
   module Elastic
     module MigrationHelper
+      include ::Search::Elastic::DocumentType
+
       def get_number_of_shards(index_name: new_index_name)
         helper.get_settings(index_name: index_name)['number_of_shards'].to_i
       end
@@ -14,18 +16,6 @@ module Search
       end
 
       private
-
-      def document_type
-        raise NotImplementedError
-      end
-
-      def document_type_fields
-        raise NotImplementedError
-      end
-
-      def document_type_plural
-        document_type.to_s.pluralize
-      end
 
       def default_index_name
         helper.target_name

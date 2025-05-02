@@ -3,6 +3,8 @@
 module Search
   module Elastic
     module MigrationDatabaseBackfillHelper
+      include Search::Elastic::DocumentType
+
       DEFAULT_LIMIT_PER_ITERATION = 1_000
 
       def migrate
@@ -29,12 +31,6 @@ module Search
         end
 
         completed
-      end
-
-      def document_type
-        return self.class::DOCUMENT_TYPE if self.class.const_defined?(:DOCUMENT_TYPE)
-
-        raise NotImplementedError
       end
 
       def respect_limited_indexing?
