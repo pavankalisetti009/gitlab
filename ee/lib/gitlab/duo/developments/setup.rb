@@ -15,7 +15,61 @@ module Gitlab
         end
       end
 
-      class SelfManagedStrategy
+      class BaseStrategy
+        def initialize(namespace, args)
+          @namespace = namespace
+          @args = args
+        end
+
+        private
+
+        def create_add_on_purchases!
+          group = Group.find_by_full_path(@namespace) # will be nil for self-managed mode
+
+          ::GitlabSubscriptions::AddOnPurchase.by_namespace(group).delete_all
+
+          if @args[:add_on] == 'duo_pro'
+            create_duo_pro_purchase!(group)
+          else
+            create_enterprise_purchase!(group)
+          end
+        end
+
+        def create_duo_pro_purchase!(group)
+          add_on = ::GitlabSubscriptions::AddOn.find_or_create_by_name(:code_suggestions)
+
+          response = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(group, add_on, {
+            quantity: 100,
+            started_on: Time.current,
+            expires_on: 1.year.from_now,
+            purchase_xid: 'C-12345'
+          }).execute
+
+          raise response.message unless response.success?
+
+          response.payload[:add_on_purchase].update!(users: [User.find_by_username('root')])
+
+          puts "Code suggestions add-on added..."
+        end
+
+        def create_enterprise_purchase!(group)
+          add_on = ::GitlabSubscriptions::AddOn.find_or_create_by_name(:duo_enterprise)
+
+          response = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(group, add_on, {
+            quantity: 100,
+            started_on: Time.current,
+            expires_on: 1.year.from_now,
+            purchase_xid: 'C-98766'
+          }).execute
+
+          raise response.message unless response.success?
+
+          response.payload[:add_on_purchase].update!(users: [User.find_by_username('root')])
+          puts "Duo enterprise add-on added..."
+        end
+      end
+
+      class SelfManagedStrategy < BaseStrategy
         def execute
           puts <<~TXT.strip
           ================================================================================
@@ -27,6 +81,7 @@ module Gitlab
           require_self_managed!
 
           Developments.seed_data
+          create_add_on_purchases!
         end
 
         private
@@ -43,11 +98,7 @@ module Gitlab
         # rubocop:enable Style/GuardClause
       end
 
-      class GitlabComStrategy
-        def initialize(namespace)
-          @namespace = namespace
-        end
-
+      class GitlabComStrategy < BaseStrategy
         def execute
           puts <<~TXT.strip
           ================================================================================
@@ -64,6 +115,7 @@ module Gitlab
           ensure_group_subscription!(group)
           ensure_group_settings!(group)
           ensure_group_membership!(group)
+          create_add_on_purchases!
         end
 
         private
@@ -165,16 +217,15 @@ module Gitlab
 
         def execute
           setup_strategy = if ::Gitlab::Utils.to_boolean(ENV['GITLAB_SIMULATE_SAAS'])
-                             GitlabComStrategy.new(@namespace)
+                             GitlabComStrategy.new(@namespace, @args)
                            else
-                             SelfManagedStrategy.new
+                             SelfManagedStrategy.new(nil, @args)
                            end
 
           ensure_dev_mode!
           ensure_feature_flags!
           ensure_license!
           setup_strategy.execute
-          create_add_on_purchases!
 
           print_result
         end
@@ -203,51 +254,6 @@ module Gitlab
         def ensure_license!
           license = ::License.current
           raise 'No license found' unless license
-        end
-
-        def create_add_on_purchases!
-          group = Group.find_by_full_path(@namespace) # will be nil for self-managed mode
-
-          ::GitlabSubscriptions::AddOnPurchase.by_namespace(group).delete_all
-
-          if args[:add_on] == 'duo_pro'
-            create_duo_pro_purchase!(group)
-          else
-            create_enterprise_purchase!(group)
-          end
-        end
-
-        def create_duo_pro_purchase!(group)
-          add_on = ::GitlabSubscriptions::AddOn.find_or_create_by_name(:code_suggestions)
-
-          response = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(group, add_on, {
-            quantity: 100,
-            started_on: Time.current,
-            expires_on: 1.year.from_now,
-            purchase_xid: 'C-12345'
-          }).execute
-
-          raise response.message unless response.success?
-
-          response.payload[:add_on_purchase].update!(users: [User.find_by_username('root')])
-
-          puts "Code suggestions add-on added..."
-        end
-
-        def create_enterprise_purchase!(group)
-          add_on = ::GitlabSubscriptions::AddOn.find_or_create_by_name(:duo_enterprise)
-
-          response = ::GitlabSubscriptions::AddOnPurchases::CreateService.new(group, add_on, {
-            quantity: 100,
-            started_on: Time.current,
-            expires_on: 1.year.from_now,
-            purchase_xid: 'C-98766'
-          }).execute
-
-          raise response.message unless response.success?
-
-          response.payload[:add_on_purchase].update!(users: [User.find_by_username('root')])
-          puts "Duo enterprise add-on added..."
         end
 
         def print_result

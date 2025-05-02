@@ -118,6 +118,13 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
     it_behaves_like 'errors when there is no license'
     it_behaves_like 'creates add-on purchases'
 
+    it 'creates add on purchases for the right group, and not for the entire instance' do
+      setup
+
+      expect(::GitlabSubscriptions::AddOnPurchase.by_namespace(group).count).to eq(1)
+      expect(::GitlabSubscriptions::AddOnPurchase.by_namespace(nil).count).to eq(0)
+    end
+
     context 'when updating application setting' do
       it 'changes application settings' do
         expect { setup }.to change {
@@ -150,6 +157,13 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
     it_behaves_like 'enables all necessary feature flags'
     it_behaves_like 'errors when there is no license'
     it_behaves_like 'creates add-on purchases'
+
+    it 'sets up add on purchases for the entire instance, and not for a specific group' do
+      setup
+
+      expect(::GitlabSubscriptions::AddOnPurchase.by_namespace(nil).count).to eq(1)
+      expect(::GitlabSubscriptions::AddOnPurchase.by_namespace(group).count).to eq(0)
+    end
   end
 
   context 'when seeding Gitlab Duo data' do
