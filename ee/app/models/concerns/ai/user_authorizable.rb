@@ -78,11 +78,6 @@ module Ai
       end
       # rubocop: enable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's groups
 
-      def any_root_namespace_with_duo_core_add_on?
-        # Duo Core doesn't use seats, so this checks if the user is a member of a root namespace with the add-on
-        GitlabSubscriptions::AddOnPurchase.for_duo_core.for_user(self).active.any?
-      end
-
       def any_group_with_ai_available?
         Rails.cache.fetch(
           ['users', id, GROUP_WITH_AI_ENABLED_CACHE_KEY],
