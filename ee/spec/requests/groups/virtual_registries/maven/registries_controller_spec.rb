@@ -36,7 +36,7 @@ RSpec.describe Groups::VirtualRegistries::Maven::RegistriesController, feature_c
 
         it_behaves_like 'returning response status', :ok
 
-        it_behaves_like 'disallowed access to virtual regsitries'
+        it_behaves_like 'disallowed access to virtual registry'
       end
     end
   end
@@ -74,7 +74,7 @@ RSpec.describe Groups::VirtualRegistries::Maven::RegistriesController, feature_c
 
         it_behaves_like 'returning response status', :ok
 
-        it_behaves_like 'disallowed access to virtual regsitries'
+        it_behaves_like 'disallowed access to virtual registry'
       end
     end
   end

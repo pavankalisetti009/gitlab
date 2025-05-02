@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'disallowed access to virtual regsitries' do
+RSpec.shared_examples 'disallowed access to virtual registry' do
   context 'when group is not root group' do
     let(:group) { create(:group, :private, parent: super()) }
 

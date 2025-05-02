@@ -36,7 +36,7 @@ RSpec.describe Groups::VirtualRegistriesController, feature_category: :virtual_r
 
         it_behaves_like 'returning response status', :ok
 
-        it_behaves_like 'disallowed access to virtual regsitries'
+        it_behaves_like 'disallowed access to virtual registry'
       end
     end
   end
