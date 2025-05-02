@@ -181,7 +181,7 @@ module EE
       end
 
       scope :subscribed_for_admin_email, -> { where(admin_email_unsubscribed_at: nil) }
-      scope :ldap, -> { joins(:identities).where('identities.provider LIKE ?', 'ldap%') }
+
       scope :with_provider, ->(provider) do
         joins(:identities).where(identities: { provider: provider })
       end
