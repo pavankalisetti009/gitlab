@@ -1,6 +1,16 @@
 <script>
 import VueRouter from 'vue-router';
-import { GlAvatar, GlTab, GlTabs, GlBadge, GlButton, GlSprintf, GlIcon, GlLink } from '@gitlab/ui';
+import {
+  GlAvatar,
+  GlTab,
+  GlTabs,
+  GlBadge,
+  GlButton,
+  GlSprintf,
+  GlIcon,
+  GlLink,
+  GlTooltipDirective,
+} from '@gitlab/ui';
 import TitleArea from '~/vue_shared/components/registry/title_area.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { createAlert, VARIANT_DANGER } from '~/alert';
@@ -9,6 +19,7 @@ import { setUrlFragment, visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import getModelVersionQuery from '~/ml/model_registry/graphql/queries/get_model_version.query.graphql';
 import deleteModelVersionMutation from '~/ml/model_registry/graphql/mutations/delete_model_version.mutation.graphql';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { convertCandidateFromGraphql } from '~/ml/model_registry/utils';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
 import ModelVersionDetail from '../components/model_version_detail.vue';
@@ -16,6 +27,7 @@ import ModelVersionPerformance from '../components/model_version_performance.vue
 import LoadOrErrorOrShow from '../components/load_or_error_or_show.vue';
 import ModelVersionActionsDropdown from '../components/model_version_actions_dropdown.vue';
 import ModelVersionArtifacts from '../components/model_version_artifacts.vue';
+import SidebarItem from '../components/model_sidebar_item.vue';
 import { ROUTE_DETAILS, ROUTE_PERFORMANCE, ROUTE_ARTIFACTS } from '../constants';
 
 const routes = [
@@ -52,10 +64,14 @@ export default {
     GlLink,
     GlSprintf,
     TimeAgoTooltip,
+    SidebarItem,
   },
   router: new VueRouter({
     routes,
   }),
+  directives: {
+    GlTooltip: GlTooltipDirective,
+  },
   mixins: [timeagoMixin],
   provide() {
     return {
@@ -182,6 +198,11 @@ export default {
     artifactsCount() {
       return this.modelVersion.artifactsCount;
     },
+    candidate() {
+      return this.modelVersion?.candidate
+        ? convertCandidateFromGraphql(this.modelVersion.candidate)
+        : null;
+    },
   },
   methods: {
     handleError(error) {
@@ -233,6 +254,9 @@ export default {
       if (name !== this.$route.name) {
         this.$router.push({ name });
       }
+    },
+    copyMlflowId() {
+      navigator.clipboard.writeText(this.candidate.info.eid);
     },
   },
   i18n: {
@@ -318,20 +342,42 @@ export default {
         </load-or-error-or-show>
       </div>
 
-      <div class="gl-pt-4 md:gl-col-span-1">
-        <div class="gl-text-lg gl-font-bold">{{ $options.i18n.authorTitle }}</div>
-        <div class="gl-mt-3 gl-text-subtle" data-testid="sidebar-author">
-          <gl-link
-            v-if="showAuthor"
-            data-testid="sidebar-author-link"
-            class="js-user-link gl-font-bold !gl-text-subtle"
-            :href="author.webUrl"
-          >
-            <gl-avatar :label="author.name" :src="author.avatarUrl" :size="24" />
-            {{ author.name }}
+      <div class="gl-flex gl-flex-col gl-gap-5 md:gl-col-span-1">
+        <sidebar-item :title="$options.i18n.authorTitle" class="gl-border-t-0">
+          <div class="gl-mt-2" data-testid="sidebar-author">
+            <gl-link
+              v-if="showAuthor"
+              data-testid="sidebar-author-link"
+              class="js-user-link gl-font-bold !gl-text-subtle"
+              :href="author.webUrl"
+            >
+              <gl-avatar :label="author.name" :src="author.avatarUrl" :size="24" />
+              {{ author.name }}
+            </gl-link>
+            <span v-else>{{ $options.i18n.noneText }}</span>
+          </div>
+        </sidebar-item>
+
+        <sidebar-item
+          v-if="candidate"
+          :title="s__('MlModelRegistry|MLflow run ID')"
+          data-testid="mlflow-id"
+        >
+          <gl-link :href="candidate.info.path" data-testid="mlflow-id-link">
+            {{ candidate.info.eid }}
           </gl-link>
-          <span v-else>{{ $options.i18n.noneText }}</span>
-        </div>
+          <gl-button
+            v-gl-tooltip
+            variant="default"
+            category="tertiary"
+            size="small"
+            :aria-label="__('Copy MLflow run ID')"
+            :title="__('Copy MLflow run ID')"
+            icon="copy-to-clipboard"
+            data-testid="mlflow-id-button"
+            @click="copyMlflowId"
+          />
+        </sidebar-item>
       </div>
     </div>
   </div>
