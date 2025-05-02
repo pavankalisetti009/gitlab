@@ -5,6 +5,27 @@ require 'spec_helper'
 RSpec.describe Gitlab::Tracking::EventEligibilityChecker, feature_category: :service_ping do
   using RSpec::Parameterized::TableSyntax
 
+  describe '.internal_duo_events' do
+    around do |example|
+      described_class.instance_variable_set(:@internal_duo_events, nil)
+      example.run
+      described_class.instance_variable_set(:@internal_duo_events, nil)
+    end
+
+    it 'contains the same values that would be filtered from event definitions' do
+      duo_event1 = instance_double(Gitlab::Tracking::EventDefinition, action: 'duo_event1', duo_event?: true)
+      duo_event2 = instance_double(Gitlab::Tracking::EventDefinition, action: 'duo_event2', duo_event?: true)
+      non_duo_event = instance_double(Gitlab::Tracking::EventDefinition, action: 'regular_event', duo_event?: false)
+
+      allow(Gitlab::Tracking::EventDefinition).to receive(:definitions)
+        .and_return([duo_event1, duo_event2, non_duo_event])
+
+      result = described_class.internal_duo_events
+
+      expect(result).to match_array %w[duo_event1 duo_event2]
+    end
+  end
+
   describe '#eligible?' do
     let(:checker) { described_class.new }
 
