@@ -5,6 +5,7 @@ module EE
     module Tracking
       module EventEligibilityChecker
         extend ::Gitlab::Utils::Override
+        extend ActiveSupport::Concern
 
         EXTERNAL_DUO_EVENTS = {
           'gitlab_ide_extension' => %w[
@@ -26,9 +27,16 @@ module EE
           ]
         }.freeze
 
-        INTERNAL_DUO_EVENTS = ::Gitlab::Tracking::EventDefinition.definitions.filter_map do |definition|
-          definition.action if definition.duo_event?
-        end.to_set.freeze
+        class_methods do
+          extend ::Gitlab::Utils::Override
+
+          override :internal_duo_events
+          def internal_duo_events
+            @internal_duo_events ||= ::Gitlab::Tracking::EventDefinition.definitions.filter_map do |definition|
+              definition.action if definition.duo_event?
+            end.to_set + super
+          end
+        end
 
         override :eligible?
         def eligible?(event, app_id = nil)
@@ -45,7 +53,7 @@ module EE
           duo_event = if external_service?(app_id)
                         external_duo_event?(event_name, app_id)
                       else
-                        INTERNAL_DUO_EVENTS.include?(event_name)
+                        self.class.internal_duo_events.include?(event_name)
                       end
 
           duo_event && !::Ai::Setting.self_hosted?
