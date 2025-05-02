@@ -33,12 +33,6 @@ module EE
       epic_status_change_email(epic, current_user, 'reopened')
     end
 
-    def project_mirror_user_changed(new_mirror_user, deleted_user_name, project)
-      return if project.emails_disabled?
-
-      mailer.project_mirror_user_changed_email(new_mirror_user.id, deleted_user_name, project.id).deliver_later
-    end
-
     def removed_iteration_issue(issue, current_user)
       removed_iteration_resource_email(issue, current_user)
     end

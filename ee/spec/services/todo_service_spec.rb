@@ -67,88 +67,6 @@ RSpec.describe TodoService, feature_category: :notifications do
     end
 
     context 'Epics' do
-      describe '#new_epic' do
-        let(:execute) { service.new_epic(epic, author) }
-
-        context 'when an epic belongs to a public group' do
-          context 'for mentioned users' do
-            let(:todo_params) { { action: Todo::MENTIONED } }
-            let(:todos_for) { users }
-
-            include_examples 'todos creation'
-          end
-
-          context 'for directly addressed users' do
-            before do
-              epic.update!(description: description_directly_addressed)
-            end
-
-            let(:todo_params) { { action: Todo::DIRECTLY_ADDRESSED } }
-            let(:todos_for) { users }
-
-            include_examples 'todos creation'
-          end
-
-          context 'combined' do
-            before do
-              epic.update!(description: combined_mentions)
-            end
-
-            context 'mentioned users' do
-              let(:todo_params) { { action: Todo::MENTIONED } }
-              let(:todos_for) { [guest, admin, skipped] }
-
-              include_examples 'todos creation'
-            end
-
-            context 'directly addressed users' do
-              let(:todo_params) { { action: Todo::DIRECTLY_ADDRESSED } }
-              let(:todos_for) { [member] }
-
-              include_examples 'todos creation'
-            end
-          end
-        end
-
-        context 'when an epic belongs to a private group' do
-          before do
-            group.update!(visibility: Gitlab::VisibilityLevel::PRIVATE)
-          end
-
-          context 'for mentioned users' do
-            let(:todo_params) { { action: Todo::MENTIONED } }
-            let(:todos_for) { [member, author, guest] }
-            let(:todos_not_for) { [non_member, john_doe, skipped] }
-
-            include_examples 'todos creation'
-          end
-
-          context 'for directly addressed users' do
-            before do
-              epic.update!(description: description_directly_addressed)
-            end
-
-            let(:todo_params) { { action: Todo::DIRECTLY_ADDRESSED } }
-            let(:todos_for) { [member, author, guest] }
-            let(:todos_not_for) { [non_member, john_doe, skipped] }
-
-            include_examples 'todos creation'
-          end
-        end
-
-        context 'creates todos for group members when a group is mentioned' do
-          before do
-            epic.update!(description: group.to_reference)
-          end
-
-          let(:todo_params) { { action: Todo::DIRECTLY_ADDRESSED } }
-          let(:todos_for) { [member, guest, author] }
-          let(:todos_not_for) { [non_member, admin, john_doe] }
-
-          include_examples 'todos creation'
-        end
-      end
-
       describe '#update_epic' do
         let(:execute) { service.update_epic(epic, author, skip_users) }
 
@@ -336,26 +254,6 @@ RSpec.describe TodoService, feature_category: :notifications do
 
         merge_participants.each do |participant|
           should_create_todo(user: participant, author: participant, target: merge_request, action: Todo::MERGE_TRAIN_REMOVED)
-        end
-      end
-    end
-
-    describe '#review_submitted' do
-      let(:review) { create(:review, merge_request: merge_request) }
-
-      before do
-        service.review_submitted(review)
-      end
-
-      it 'creates a pending todo for reviewed merge request author' do
-        should_create_todo(user: merge_request.author, author: review.author, target: merge_request, action: Todo::REVIEW_SUBMITTED)
-      end
-
-      context 'when merge request author is the review author' do
-        let(:review) { create(:review, merge_request: merge_request, author: merge_request.author) }
-
-        it 'does not create a pending todo for reviewed merge request author' do
-          should_not_create_todo(user: merge_request.author, author: review.author, target: merge_request, action: Todo::REVIEW_SUBMITTED)
         end
       end
     end

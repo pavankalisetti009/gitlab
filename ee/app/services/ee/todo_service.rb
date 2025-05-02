@@ -24,10 +24,6 @@ module EE
       create_todos(user, attributes, nil, nil)
     end
 
-    def new_epic(epic, current_user)
-      create_mention_todos(nil, epic, current_user)
-    end
-
     def update_epic(epic, current_user, skip_users = [])
       update_issuable(epic, current_user, skip_users)
     end
@@ -40,18 +36,6 @@ module EE
       merge_request.merge_participants.each do |user|
         create_merge_train_removed_todo(merge_request, user)
       end
-    end
-
-    def review_submitted(review)
-      merge_request = review.merge_request
-
-      # We don't need to create a To-Do for the review author if they added a
-      # review for their own merge request.
-      return if merge_request.author == review.author
-
-      project = merge_request.project
-      attributes = attributes_for_todo(project, merge_request, review.author, ::Todo::REVIEW_SUBMITTED)
-      create_todos(merge_request.author, attributes, project.namespace, project)
     end
 
     def request_okr_checkin(work_item, assignee)
