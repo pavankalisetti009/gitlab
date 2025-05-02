@@ -25,7 +25,10 @@ export default {
     ),
     confirmButtonText: __('Save changes'),
   },
-  inject: ['isDuoBaseAccessAllowed'],
+  inject: {
+    isDuoBaseAccessAllowed: { default: false },
+    duoProOrDuoEnterpriseTier: { default: null },
+  },
   props: {
     duoAvailability: {
       type: String,
@@ -93,6 +96,9 @@ export default {
     disableExperimentCheckbox() {
       return this.availability === AVAILABILITY_OPTIONS.NEVER_ON;
     },
+    shouldShowDuoAvailability() {
+      return Boolean(this.duoProOrDuoEnterpriseTier);
+    },
   },
   methods: {
     submitForm() {
@@ -117,7 +123,11 @@ export default {
 <template>
   <gl-form @submit.prevent="submitForm">
     <slot name="ai-common-settings-top"></slot>
-    <duo-availability :duo-availability="availability" @change="onRadioChanged" />
+    <duo-availability
+      v-if="shouldShowDuoAvailability"
+      :duo-availability="availability"
+      @change="onRadioChanged"
+    />
 
     <duo-core-features-form
       v-if="isDuoBaseAccessAllowed"

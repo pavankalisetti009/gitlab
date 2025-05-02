@@ -18,6 +18,8 @@ RSpec.describe EE::Groups::SettingsHelper do
     helper.instance_variable_set(:@group, group)
     allow(helper).to receive(:current_user).and_return(current_user)
     allow(helper).to receive(:instance_variable_get).with(:@current_user).and_return(current_user)
+    allow(::GitlabSubscriptions::AddOnPurchase)
+      .to receive_message_chain(:for_self_managed, :for_duo_pro_or_duo_enterprise, :active, :first)
   end
 
   describe '.unique_project_download_limit_settings_data', feature_category: :insider_threat do
@@ -83,9 +85,38 @@ RSpec.describe EE::Groups::SettingsHelper do
           are_experiment_settings_allowed: (group.experiment_settings_allowed? && gitlab_com_subscription?).to_s,
           show_early_access_banner: "true",
           early_access_path: group_early_access_opt_in_path(group),
-          update_id: group.id
+          update_id: group.id,
+          duo_pro_or_duo_enterprise_tier: nil
         }
       )
+    end
+
+    context 'with Duo Pro' do
+      before do
+        allow(::GitlabSubscriptions::AddOnPurchase)
+          .to receive_message_chain(:by_namespace, :for_duo_pro_or_duo_enterprise, :active, :first)
+          .and_return(
+            build(:gitlab_subscription_add_on_purchase, :duo_pro, :active)
+          )
+      end
+
+      it 'returns Duo Pro' do
+        is_expected.to include(duo_pro_or_duo_enterprise_tier: 'CODE_SUGGESTIONS')
+      end
+    end
+
+    context 'with Duo Enterprise' do
+      before do
+        allow(::GitlabSubscriptions::AddOnPurchase)
+          .to receive_message_chain(:by_namespace, :for_duo_pro_or_duo_enterprise, :active, :first)
+          .and_return(
+            build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active)
+          )
+      end
+
+      it 'returns Duo Enterprise' do
+        is_expected.to include(duo_pro_or_duo_enterprise_tier: 'DUO_ENTERPRISE')
+      end
     end
   end
 

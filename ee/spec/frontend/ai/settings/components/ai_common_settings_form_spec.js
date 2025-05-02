@@ -5,6 +5,7 @@ import DuoAvailabilityForm from 'ee/ai/settings/components/duo_availability_form
 import DuoExperimentBetaFeaturesForm from 'ee/ai/settings/components/duo_experiment_beta_features_form.vue';
 import DuoCoreFeaturesForm from 'ee/ai/settings/components/duo_core_features_form.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
+import { DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
 
 describe('AiCommonSettingsForm', () => {
   let wrapper;
@@ -19,6 +20,7 @@ describe('AiCommonSettingsForm', () => {
         ...props,
       },
       provide: {
+        duoProOrDuoEnterpriseTier: DUO_ENTERPRISE,
         isDuoBaseAccessAllowed: false,
         ...provide,
       },
@@ -39,10 +41,6 @@ describe('AiCommonSettingsForm', () => {
   describe('component rendering', () => {
     it('renders GlForm component', () => {
       expect(findForm().exists()).toBe(true);
-    });
-
-    it('renders DuoAvailability component', () => {
-      expect(findDuoAvailability().exists()).toBe(true);
     });
 
     describe('when isDuoBaseAccessAllowed is false', () => {
@@ -75,10 +73,7 @@ describe('AiCommonSettingsForm', () => {
     });
 
     it('enables save button when parent form changes are made', () => {
-      createComponent({
-        props: { hasParentFormChanged: true },
-        provide: { onGeneralSettingsPage: false },
-      });
+      createComponent({ props: { hasParentFormChanged: true } });
       expect(findSaveButton().props('disabled')).toBe(false);
     });
 
@@ -105,6 +100,30 @@ describe('AiCommonSettingsForm', () => {
       expect(findDuoSettingsWarningAlert().text()).toContain(
         'When you save, GitLab Duo will be turned for all groups, subgroups, and projects.',
       );
+    });
+
+    describe('without Duo Pro or Duo Enterprise', () => {
+      it('hides the Duo availability form', () => {
+        createComponent({ provide: { duoProOrDuoEnterpriseTier: '' } });
+
+        expect(findDuoAvailability().exists()).toBe(false);
+      });
+    });
+
+    describe('with Duo Pro', () => {
+      it('display the Duo availability form', () => {
+        createComponent({ provide: { duoProOrDuoEnterpriseTier: DUO_PRO } });
+
+        expect(findDuoAvailability().exists()).toBe(true);
+      });
+    });
+
+    describe('with Duo Enterprise', () => {
+      it('display the Duo availability form', () => {
+        createComponent({ provide: { duoProOrDuoEnterpriseTier: DUO_ENTERPRISE } });
+
+        expect(findDuoAvailability().exists()).toBe(true);
+      });
     });
   });
 });
