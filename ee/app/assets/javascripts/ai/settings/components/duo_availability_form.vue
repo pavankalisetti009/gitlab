@@ -1,6 +1,7 @@
 <script>
 import { GlSprintf, GlFormRadioGroup, GlFormRadio } from '@gitlab/ui';
-import { s__, __ } from '~/locale';
+import { s__ } from '~/locale';
+import { DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
 import CascadingLockIcon from '~/namespaces/cascading_settings/components/cascading_lock_icon.vue';
 import { AVAILABILITY_OPTIONS } from '../constants';
 
@@ -13,7 +14,11 @@ export default {
   },
 
   i18n: {
-    sectionTitle: __('Availability'),
+    sectionTitle: {
+      [DUO_PRO]: s__('AiPowered|GitLab Duo Pro availability'),
+      [DUO_ENTERPRISE]: s__('AiPowered|GitLab Duo Enterprise availability'),
+      default: s__('AiPowered|Availability'),
+    },
     defaultOnText: s__('AiPowered|On by default'),
     defaultOnHelpText: s__(
       'AiPowered|Features are available. However, any group, subgroup, or project can turn them off.',
@@ -33,7 +38,11 @@ export default {
     GlFormRadio,
     CascadingLockIcon,
   },
-  inject: ['areDuoSettingsLocked', 'cascadingSettingsData'],
+  inject: {
+    areDuoSettingsLocked: { required: true },
+    cascadingSettingsData: { required: true },
+    duoProOrDuoEnterpriseTier: { default: null },
+  },
   props: {
     duoAvailability: {
       type: String,
@@ -46,6 +55,12 @@ export default {
     };
   },
   computed: {
+    title() {
+      return (
+        this.$options.i18n.sectionTitle[this.duoProOrDuoEnterpriseTier] ||
+        this.$options.i18n.sectionTitle.default
+      );
+    },
     showCascadingButton() {
       return (
         this.areDuoSettingsLocked &&
@@ -64,7 +79,7 @@ export default {
 </script>
 <template>
   <div>
-    <h5>{{ $options.i18n.sectionTitle }}</h5>
+    <h5>{{ title }}</h5>
     <gl-form-radio-group v-model="duoAvailabilityState">
       <gl-form-radio
         :value="$options.availabilityOptions.defaultOn"
