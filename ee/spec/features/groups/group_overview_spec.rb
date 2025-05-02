@@ -162,29 +162,4 @@ RSpec.describe 'Group information', :js, :aggregate_failures, feature_category: 
       end
     end
   end
-
-  context 'when group is pending deletion' do
-    let_it_be(:subgroup) { create(:group, name: 'subgroup', parent: group) }
-
-    before do
-      stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-      stub_application_setting(deletion_adjourned_period: 14)
-    end
-
-    before_all do
-      create(:group_deletion_schedule, group: group, marked_for_deletion_on: Time.zone.today, deleting_user: user)
-    end
-
-    it 'shows pending deletion badge' do
-      visit_page
-
-      expect(page).to have_content 'Pending deletion'
-    end
-
-    it 'shows pending deletion badge on subgroups' do
-      visit group_path(subgroup)
-
-      expect(page).to have_content 'Pending deletion'
-    end
-  end
 end

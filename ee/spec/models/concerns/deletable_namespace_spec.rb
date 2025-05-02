@@ -82,23 +82,6 @@ RSpec.describe DeletableNamespace, feature_category: :groups_and_projects do
       end
     end
 
-    describe '#delayed_deletion_available?' do
-      shared_examples 'delayed deletion available check' do |feature_available|
-        context "when License.feature_available? is #{feature_available}" do
-          before do
-            stub_licensed_features(adjourned_deletion_for_projects_and_groups: feature_available)
-          end
-
-          it "returns #{feature_available}" do
-            expect(project.delayed_deletion_available?).to be(feature_available)
-          end
-        end
-      end
-
-      it_behaves_like 'delayed deletion available check', true
-      it_behaves_like 'delayed deletion available check', false
-    end
-
     describe '#delayed_deletion_configured?' do
       subject { project.delayed_deletion_configured? }
 

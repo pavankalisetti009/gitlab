@@ -85,8 +85,6 @@ RSpec.describe Security::OrchestrationPolicyRuleScheduleWorker, feature_category
 
         context 'when project is marked for deletion' do
           before do
-            stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-
             security_orchestration_policy_configuration.project.update!(marked_for_deletion_at: Time.zone.now)
           end
 

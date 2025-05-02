@@ -36,23 +36,5 @@ RSpec.describe Resolvers::ProjectsResolver, feature_category: :groups_and_projec
 
       it { is_expected.to contain_exactly(project, project_marked_for_deletion) }
     end
-
-    context 'when markedForDeletion is available' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-      end
-
-      context 'and a project has been marked for deletion on the given date' do
-        let(:filters) { { marked_for_deletion_on: marked_for_deletion_on } }
-
-        it { is_expected.to contain_exactly(project_marked_for_deletion) }
-      end
-
-      context 'and no projects have been marked for deletion on the given date' do
-        let(:filters) { { marked_for_deletion_on: (marked_for_deletion_on - 2.days) } }
-
-        it { is_expected.to be_empty }
-      end
-    end
   end
 end
