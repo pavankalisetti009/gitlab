@@ -20,7 +20,7 @@ module API
               end
 
               after_validation do
-                not_found! unless ::Feature.enabled?(:virtual_registry_maven, current_user)
+                unauthorized! unless ::Feature.enabled?(:virtual_registry_maven, current_user)
                 not_found! unless ::Gitlab.config.dependency_proxy.enabled
                 not_found! unless target_group.licensed_feature_available?(:packages_virtual_registry)
 
