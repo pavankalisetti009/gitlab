@@ -170,6 +170,23 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
               end
             end
 
+            context 'when filtered by component_versions' do
+              let(:params) do
+                {
+                  component_names: [occurrences.last.component.name],
+                  component_versions: [occurrences.last.component_version.version]
+                }
+              end
+
+              it 'tracks filter_dependency_list_by_version action' do
+                expect { get project_dependencies_path(project, **params, format: :json) }.to trigger_internal_events(
+                  'filter_dependency_list_by_version').with(
+                    user: user,
+                    project: project
+                  ).and increment_usage_metrics('counts.count_total_filter_dependency_list_by_version')
+              end
+            end
+
             it_behaves_like 'it can filter dependencies' do
               let(:expected_results) { [occurrences.last] }
 

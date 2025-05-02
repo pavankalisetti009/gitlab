@@ -116,13 +116,19 @@ module Projects
       return unless dependency_list_params[:component_versions] || (
         dependency_list_params[:not] && dependency_list_params[:not][:component_versions])
 
-      return if dependency_list_params.fetch(:component_names, [])
+      if dependency_list_params.fetch(:component_names, [])
         .size == COMPONENT_NAMES_LIMIT_FOR_VERSION_FILTERING
-
-      render_error(
-        :unprocessable_entity,
-        format(_('Single component can be selected for component filter to be able to filter by version.'))
-      )
+        track_internal_event(
+          "filter_dependency_list_by_version",
+          user: current_user,
+          project: project
+        )
+      else
+        render_error(
+          :unprocessable_entity,
+          format(_('Single component can be selected for component filter to be able to filter by version.'))
+        )
+      end
     end
 
     def render_error(status, message)

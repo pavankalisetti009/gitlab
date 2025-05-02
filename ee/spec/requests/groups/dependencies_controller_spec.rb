@@ -557,6 +557,13 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
                   }
                 end
 
+                it "triggers an internal event" do
+                  expect { subject }.to trigger_internal_events('filter_dependency_list_by_version').with(
+                    user: user,
+                    namespace: group
+                  ).and increment_usage_metrics('counts.count_total_filter_dependency_list_by_version')
+                end
+
                 it 'returns a filtered list' do
                   subject
 
@@ -573,6 +580,13 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
                     component_names: [component_2.name],
                     not: { component_versions: [sbom_occurrence_bundler.component_version.version] }
                   }
+                end
+
+                it "triggers an internal event" do
+                  expect { subject }.to trigger_internal_events('filter_dependency_list_by_version').with(
+                    user: user,
+                    namespace: group
+                  ).and increment_usage_metrics('counts.count_total_filter_dependency_list_by_version')
                 end
 
                 it 'returns a filtered list' do

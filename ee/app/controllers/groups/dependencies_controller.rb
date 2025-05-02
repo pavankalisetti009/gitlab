@@ -89,12 +89,19 @@ module Groups
 
     def validate_component_versions!
       return unless params[:component_versions] || (params[:not] && params[:not][:component_versions])
-      return if params.fetch(:component_names, []).size == COMPONENT_NAMES_LIMIT_FOR_VERSION_FILTERING
 
-      render_error(
-        :unprocessable_entity,
-        format(_('Single component can be selected for component filter to be able to filter by version.'))
-      )
+      if params.fetch(:component_names, []).size == COMPONENT_NAMES_LIMIT_FOR_VERSION_FILTERING
+        track_internal_event(
+          "filter_dependency_list_by_version",
+          user: current_user,
+          namespace: group
+        )
+      else
+        render_error(
+          :unprocessable_entity,
+          format(_('Single component can be selected for component filter to be able to filter by version.'))
+        )
+      end
     end
 
     def dependencies
