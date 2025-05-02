@@ -15,6 +15,7 @@ RSpec.describe Namespaces::FreeUserCap::UnlimitedMembersDuringTrialAlertComponen
   subject(:component) { described_class.new(**params) }
 
   before do
+    stub_feature_flags(streamlined_first_product_experience: false)
     ::Onboarding::Progress.onboard(namespace)
     build(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: namespace, trial: trial?)
     stub_ee_application_setting(dashboard_limit_enabled: dashboard_limit_enabled?)
@@ -46,6 +47,14 @@ RSpec.describe Namespaces::FreeUserCap::UnlimitedMembersDuringTrialAlertComponen
           expect(page).not_to have_css("[data-testid='unlimited-members-during-trial-alert']")
           expect(page).not_to have_css('.js-unlimited-members-during-trial-alert')
         end
+      end
+
+      context 'when feature flag `streamlined_first_product_experience` is enabled' do
+        before do
+          stub_feature_flags(streamlined_first_product_experience: true)
+        end
+
+        it_behaves_like 'not rendering the alert'
       end
 
       context 'when the namespace is not qualified' do
