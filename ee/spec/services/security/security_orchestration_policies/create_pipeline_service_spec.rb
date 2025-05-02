@@ -475,15 +475,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
         before do
           project.update_attribute(:namespace_id, compliance_group.id)
           compliance_project.add_maintainer(current_user)
+
           stub_licensed_features(cluster_image_scanning: true, container_scanning: true, evaluate_group_level_compliance_pipeline: true)
-          allow_next(Repository).to receive(:blob_data_at).with(ref_sha, '.compliance-gitlab-ci.yml').and_return(compliance_config)
         end
 
         it 'does not include the compliance definition' do
-          execute
+          expect(::Gitlab::Ci::Config::External::Processor).to receive(:new).twice.with(
+            hash_not_including(:include),
+            an_instance_of(::Gitlab::Ci::Config::External::Context)
+          ).and_call_original
 
-          yaml = YAML.safe_load(pipeline_scan_pipeline.pipeline_config.content, permitted_classes: [Symbol])
-          expect(yaml).not_to eq("include" => [{ "file" => ".compliance-gitlab-ci.yml", "project" => "compliance/hippa" }])
+          execute
         end
       end
     end

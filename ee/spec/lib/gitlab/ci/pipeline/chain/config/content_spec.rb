@@ -26,7 +26,6 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
       step.perform!
 
       expect(pipeline.config_source).not_to eq 'compliance_source'
-      expect(pipeline.pipeline_config.content).not_to eq(content_result)
       expect(command.config_content).not_to eq(content_result)
     end
   end
@@ -36,7 +35,6 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
       step.perform!
 
       expect(pipeline.config_source).to eq 'compliance_source'
-      expect(pipeline.pipeline_config.content).to eq(content_result)
       expect(command.config_content).to eq(content_result)
       expect(command.pipeline_config.internal_include_prepended?).to eq(true)
     end
@@ -151,7 +149,6 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
       step.perform!
 
       expect(pipeline.config_source).to eq 'pipeline_execution_policy_forced'
-      expect(pipeline.pipeline_config.content).to eq(config_content_result)
       expect(command.config_content).to eq(config_content_result)
       expect(command.pipeline_config.internal_include_prepended?).to eq(false)
     end
@@ -179,7 +176,6 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
       it 'does not include the project CI/CD configuration' do
         step.perform!
 
-        expect(pipeline.pipeline_config.content).to eq(config_content_result)
         expect(command.config_content).to eq(config_content_result)
       end
 
