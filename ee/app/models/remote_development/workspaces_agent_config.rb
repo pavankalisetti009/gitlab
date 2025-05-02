@@ -63,6 +63,8 @@ module RemoteDevelopment
 
     validate :validate_allow_privilege_escalation
 
+    validate :validate_image_pull_secrets_namespace
+
     scope :by_cluster_agent_ids, ->(ids) { where(cluster_agent_id: ids) }
 
     private
@@ -93,6 +95,27 @@ module RemoteDevelopment
       msg = 'can be true only if either use_kubernetes_user_namespaces is true or default_runtime_class is non-empty'
       errors.add(:allow_privilege_escalation, format(_(msg)))
 
+      nil
+    end
+
+    # image_pull_secrets should all have the same namespace when shared_namespace is specified
+    # The value should be the same as shared_namespace in such a case.
+    # @return [void]
+    def validate_image_pull_secrets_namespace
+      return if shared_namespace.blank? || image_pull_secrets.blank?
+
+      invalid_secrets = image_pull_secrets.select do |secret|
+        secret['namespace'].present? && secret['namespace'] != shared_namespace
+      end
+
+      return if invalid_secrets.empty?
+
+      errors.add(
+        :image_pull_secrets,
+        format(
+          _("image_pull_secrets.namespace and shared_namespace must match if shared_namespace is specified")
+        )
+      )
       nil
     end
   end

@@ -71875,6 +71875,9 @@ msgstr ""
 msgid "image diff"
 msgstr ""
 
+msgid "image_pull_secrets.namespace and shared_namespace must match if shared_namespace is specified"
+msgstr ""
+
 msgid "impersonation token"
 msgstr ""
 
