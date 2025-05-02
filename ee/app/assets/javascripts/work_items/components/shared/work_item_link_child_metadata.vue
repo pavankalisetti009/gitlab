@@ -4,6 +4,7 @@ import { __ } from '~/locale';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
 import WorkItemLinkChildMetadata from '~/work_items/components/shared/work_item_link_child_metadata.vue';
 import WorkItemRolledUpHealthStatus from 'ee/work_items/components/work_item_links/work_item_rolled_up_health_status.vue';
+import WorkItemIterationAttribute from 'ee/work_items/components/shared/work_item_iteration_attribute.vue';
 import {
   WIDGET_TYPE_HEALTH_STATUS,
   WIDGET_TYPE_PROGRESS,
@@ -14,7 +15,6 @@ import {
 } from '~/work_items/constants';
 import { humanTimeframe, isInPast, localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
-import { getIterationPeriod } from 'ee/iterations/utils';
 import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 
 export default {
@@ -26,11 +26,13 @@ export default {
     WorkItemLinkChildMetadata,
     WorkItemRolledUpHealthStatus,
     WorkItemAttribute,
+    WorkItemIterationAttribute,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
   },
   mixins: [timeagoMixin],
+  inject: ['hasIterationsFeature'],
   props: {
     reference: {
       type: String,
@@ -91,16 +93,7 @@ export default {
       return this.showWeight && Boolean(this.workItemWeight);
     },
     iteration() {
-      return this.metadataWidgets[WIDGET_TYPE_ITERATION]?.iteration;
-    },
-    iterationTitle() {
-      return this.metadataWidgets[WIDGET_TYPE_ITERATION]?.iteration?.title;
-    },
-    iterationCadenceTitle() {
-      return this.metadataWidgets[WIDGET_TYPE_ITERATION]?.iteration?.iterationCadence?.title;
-    },
-    iterationPeriod() {
-      return getIterationPeriod(this.iteration);
+      return this.hasIterationsFeature && this.metadataWidgets[WIDGET_TYPE_ITERATION]?.iteration;
     },
     startDate() {
       return this.metadataWidgets[WIDGET_TYPE_START_AND_DUE_DATE]?.startDate;
@@ -159,29 +152,7 @@ export default {
           </span>
         </template>
       </work-item-attribute>
-      <div
-        v-if="iteration"
-        ref="iterationData"
-        data-testid="item-iteration"
-        class="gl-flex gl-cursor-help gl-items-center gl-gap-2"
-      >
-        <gl-icon name="iteration" />
-        <span data-testid="iteration-value">{{ iterationPeriod }}</span>
-        <gl-tooltip :target="() => $refs.iterationData">
-          <div data-testid="iteration-title" class="gl-font-bold">
-            {{ __('Iteration') }}
-          </div>
-          <div v-if="iterationCadenceTitle" data-testid="iteration-cadence-text">
-            {{ iterationCadenceTitle }}
-          </div>
-          <div v-if="iterationPeriod" data-testid="iteration-period-text">
-            {{ iterationPeriod }}
-          </div>
-          <div v-if="iterationTitle" data-testid="iteration-title-text">
-            {{ iterationTitle }}
-          </div>
-        </gl-tooltip>
-      </div>
+      <work-item-iteration-attribute v-if="iteration" :iteration="iteration" />
       <work-item-attribute
         v-if="showDate"
         anchor-id="item-dates"

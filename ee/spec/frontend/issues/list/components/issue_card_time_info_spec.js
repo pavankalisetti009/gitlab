@@ -1,15 +1,33 @@
-import { shallowMount } from '@vue/test-utils';
-import IssueCardTimeInfo from 'ee/issues/list/components/issue_card_time_info.vue';
-import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import IssueCardTimeInfoEE from 'ee/issues/list/components/issue_card_time_info.vue';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
-import { WIDGET_TYPE_HEALTH_STATUS, WIDGET_TYPE_WEIGHT } from '~/work_items/constants';
+import WorkItemIterationAttribute from 'ee/work_items/components/shared/work_item_iteration_attribute.vue';
+import IssueCardTimeInfo from '~/issues/list/components/issue_card_time_info.vue';
+import { stubComponent } from 'helpers/stub_component';
+import {
+  WIDGET_TYPE_HEALTH_STATUS,
+  WIDGET_TYPE_WEIGHT,
+  WIDGET_TYPE_ITERATION,
+} from '~/work_items/constants';
 
 describe('EE IssueCardTimeInfo component', () => {
   let wrapper;
 
+  const mockIteration = {
+    id: 'gid://gitlab/Iteration/1',
+    title: 'Iteration 1',
+    startDate: '2023-01-01',
+    dueDate: '2023-01-14',
+    iterationCadence: {
+      id: 'gid://gitlab/Iterations::Cadence/1',
+      title: 'Monthly Cadence',
+    },
+  };
+
   const issueObject = {
     weight: 2,
     healthStatus: 'onTrack',
+    iteration: mockIteration,
   };
 
   const workItemObject = {
@@ -22,21 +40,29 @@ describe('EE IssueCardTimeInfo component', () => {
         type: WIDGET_TYPE_WEIGHT,
         weight: 2,
       },
+      {
+        type: WIDGET_TYPE_ITERATION,
+        iteration: mockIteration,
+      },
     ],
   };
 
-  const findWeightCount = () => wrapper.findComponent(WorkItemAttribute);
+  const findWeightCount = () => wrapper.findByTestId('weight-attribute');
   const findIssueHealthStatus = () => wrapper.findComponent(IssueHealthStatus);
+  const findIteration = () => wrapper.findComponent(WorkItemIterationAttribute);
 
   const mountComponent = ({
     issue,
     hasIssuableHealthStatusFeature = false,
     hasIssueWeightsFeature = false,
+    hasIterationsFeature = false,
     isWorkItemList = false,
+    issueCardTimeInfoStub,
   } = {}) =>
-    shallowMount(IssueCardTimeInfo, {
-      provide: { hasIssuableHealthStatusFeature, hasIssueWeightsFeature },
+    shallowMountExtended(IssueCardTimeInfoEE, {
+      provide: { hasIssuableHealthStatusFeature, hasIssueWeightsFeature, hasIterationsFeature },
       propsData: { issue, isWorkItemList },
+      stubs: issueCardTimeInfoStub,
     });
 
   describe.each`
@@ -46,7 +72,15 @@ describe('EE IssueCardTimeInfo component', () => {
   `('with $type object', ({ obj }) => {
     describe('weight', () => {
       it('renders', () => {
-        wrapper = mountComponent({ issue: obj, hasIssueWeightsFeature: true });
+        wrapper = mountComponent({
+          issue: obj,
+          hasIssueWeightsFeature: true,
+          issueCardTimeInfoStub: {
+            IssueCardTimeInfo: stubComponent(IssueCardTimeInfo, {
+              template: `<div><slot name="weight"></slot></div>`,
+            }),
+          },
+        });
 
         expect(findWeightCount().props('title')).toBe('2');
       });
@@ -92,6 +126,41 @@ describe('EE IssueCardTimeInfo component', () => {
           expect(findIssueHealthStatus().exists()).toBe(false);
         });
       });
+    });
+  });
+
+  describe('iteration', () => {
+    it('renders', () => {
+      wrapper = mountComponent({
+        issue: workItemObject,
+        hasIterationsFeature: true,
+        issueCardTimeInfoStub: {
+          IssueCardTimeInfo: stubComponent(IssueCardTimeInfo, {
+            template: `<div><slot name="iteration"></slot></div>`,
+          }),
+        },
+      });
+
+      expect(findIteration().exists()).toBe(true);
+    });
+
+    it('does not render when iteration feature is disabled', () => {
+      wrapper = mountComponent({ issue: workItemObject, hasIterationsFeature: false });
+
+      expect(findIteration().exists()).toBe(false);
+    });
+
+    it('does not render when iteration data is not present', () => {
+      wrapper = mountComponent({
+        issue: {
+          workItemObject: {
+            ...workItemObject.widgets.slice(0, -1),
+          },
+        },
+        hasIterationsFeature: true,
+      });
+
+      expect(findIteration().exists()).toBe(false);
     });
   });
 });

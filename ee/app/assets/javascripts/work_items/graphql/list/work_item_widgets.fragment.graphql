@@ -20,6 +20,9 @@ fragment WorkItemWidgets on WorkItemWidget {
   ... on WorkItemWidgetIteration {
     iteration {
       id
+      title
+      startDate
+      dueDate
       iterationCadence {
         id
         title

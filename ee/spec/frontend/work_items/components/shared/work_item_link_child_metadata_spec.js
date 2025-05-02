@@ -4,6 +4,7 @@ import { localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
 import WorkItemRolledUpHealthStatus from 'ee/work_items/components/work_item_links/work_item_rolled_up_health_status.vue';
 import WorkItemLinkChildMetadata from 'ee/work_items/components/shared/work_item_link_child_metadata.vue';
+import WorkItemIterationAttribute from 'ee/work_items/components/shared/work_item_iteration_attribute.vue';
 import WorkItemAttribute from '~/vue_shared/components/work_item_attribute.vue';
 import { workItemObjectiveMetadataWidgetsEE } from '../../mock_data';
 
@@ -17,8 +18,12 @@ describe('WorkItemLinkChildMetadataEE', () => {
     showWeight = true,
     workItemType = 'Task',
     isChildItemOpen = true,
+    hasIterationsFeature = false,
   } = {}) => {
     wrapper = shallowMountExtended(WorkItemLinkChildMetadata, {
+      provide: {
+        hasIterationsFeature,
+      },
       propsData: {
         iid: '1',
         reference: 'test-project-path#1',
@@ -218,36 +223,33 @@ describe('WorkItemLinkChildMetadataEE', () => {
   });
 
   describe('iteration', () => {
-    it('renders item iteration icon and name', () => {
-      const iterationEl = wrapper.findByTestId('item-iteration');
+    const findIteration = () => wrapper.findComponent(WorkItemIterationAttribute);
 
-      expect(iterationEl.exists()).toBe(true);
-      expect(iterationEl.findComponent(GlIcon).props('name')).toBe('iteration');
-      expect(wrapper.findByTestId('iteration-value').text().trim()).toBe(
-        'Dec 19, 2023 – Jan 15, 2024',
-      );
+    it('renders iteration', () => {
+      createComponent({
+        hasIterationsFeature: true,
+      });
+
+      expect(findIteration().exists()).toBe(true);
     });
 
-    it('renders gl-tooltip', () => {
-      const iterationEl = wrapper.findByTestId('item-iteration');
-
-      expect(iterationEl.findComponent(GlTooltip).isVisible()).toBe(true);
+    it('does not render iteration when iteration data is not present', () => {
+      createComponent({
+        metadataWidgets: {
+          ...ITERATION,
+          iteration: null,
+        },
+        hasIterationsFeature: false,
+      });
+      expect(findIteration().exists()).toBe(false);
     });
 
-    it('renders iteration title in bold', () => {
-      expect(wrapper.findByTestId('iteration-title').text().trim()).toBe('Iteration');
-    });
+    it('does not render when iteration feature is disabled', () => {
+      createComponent({
+        hasIterationsFeature: false,
+      });
 
-    it('renders iteration tooltip text', () => {
-      expect(wrapper.findByTestId('iteration-cadence-text').text().trim()).toBe(
-        `${ITERATION.iteration.iterationCadence.title}`,
-      );
-      expect(wrapper.findByTestId('iteration-title-text').text().trim()).toBe(
-        `${ITERATION.iteration.title}`,
-      );
-      expect(wrapper.findByTestId('iteration-period-text').text().trim()).toBe(
-        'Dec 19, 2023 – Jan 15, 2024',
-      );
+      expect(findIteration().exists()).toBe(false);
     });
   });
 
