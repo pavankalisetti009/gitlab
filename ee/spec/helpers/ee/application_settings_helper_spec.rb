@@ -27,6 +27,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         global_search_block_anonymous_searches_enabled
         global_search_limited_indexing_enabled
         elastic_migration_worker_enabled
+        anonymous_searches_allowed
       ]
       expect(helper.visible_attributes).to include(*expected_fields)
     end

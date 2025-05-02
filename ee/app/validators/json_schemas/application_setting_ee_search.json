@@ -47,6 +47,10 @@
     "elastic_migration_worker_enabled": {
       "type": "boolean",
       "description": "Enable migration worker setting to apply advanced search migrations"
+    },
+    "anonymous_searches_allowed": {
+      "type": "boolean",
+      "description": "Allow anonymous searches"
     }
   }
 }
