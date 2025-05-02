@@ -20,7 +20,7 @@ module VirtualRegistries
             inverse_of: :cache_entries,
             optional: false
 
-          alias_attribute :namespace, :group
+          alias_method :namespace, :group
 
           update_namespace_statistics namespace_statistics_name: :dependency_proxy_size
 
@@ -57,7 +57,7 @@ module VirtualRegistries
           end
           scope :for_group, ->(group) { where(group: group) }
           scope :order_created_desc, -> { reorder(arel_table['created_at'].desc) }
-          scope :for_upstreams, ->(upstreams) { where(upstreams:) }
+          scope :for_upstream, ->(upstream) { where(upstream:) }
 
           def self.next_pending_destruction
             pending_destruction.lock('FOR UPDATE SKIP LOCKED').take

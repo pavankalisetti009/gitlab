@@ -64,7 +64,7 @@ module VirtualRegistries
           VirtualRegistries::Packages::Maven::Cache::Entry
             .default
             .for_group(registry.group)
-            .for_upstreams(registry.upstreams)
+            .for_upstream(registry.upstreams)
             .find_by_relative_path(relative_path)
         end
         strong_memoize_attr :cache_entry
