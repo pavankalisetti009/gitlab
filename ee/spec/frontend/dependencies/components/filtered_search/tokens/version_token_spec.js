@@ -40,6 +40,7 @@ const DEFAULT_PAGE_INFO = {
   startCursor: null,
   endCursor: null,
 };
+const END_CURSOR = 'ABC';
 const FULL_PATH = 'gitlab-org/project-1';
 const TEST_CONFIG = {
   multiSelect: true,
@@ -62,7 +63,11 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
           id: '1',
           componentVersions: {
             nodes,
-            pageInfo: { ...DEFAULT_PAGE_INFO, hasNextPage },
+            pageInfo: {
+              ...DEFAULT_PAGE_INFO,
+              hasNextPage,
+              endCursor: hasNextPage ? END_CURSOR : null,
+            },
           },
         },
       },
@@ -277,9 +282,11 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
   });
 
   describe('when there is a next page', () => {
+    const componentNames = ['git'];
+
     beforeEach(async () => {
       createComponent(mockApolloHandlers([], true));
-      setComponentNames(['git']);
+      setComponentNames(componentNames);
       await waitForPromises();
     });
 
@@ -289,6 +296,11 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
       wrapper.findComponent(GlIntersectionObserver).vm.$emit('appear');
 
       expect(requestHandlers.projectHandler).toHaveBeenCalledTimes(2);
+      expect(requestHandlers.projectHandler).toHaveBeenNthCalledWith(2, {
+        after: END_CURSOR,
+        fullPath: FULL_PATH,
+        componentName: componentNames[0],
+      });
     });
   });
 });
