@@ -6,6 +6,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { stubComponent } from 'helpers/stub_component';
 import PermissionsSelector from 'ee/roles_and_permissions/components/manage_role/permissions_selector.vue';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { mockMemberRole } from '../../mock_data';
 
 const mockAlertDismiss = jest.fn();
@@ -38,7 +39,6 @@ describe('RoleForm', () => {
     return waitForPromises();
   };
 
-  const findTitle = () => wrapper.find('h2');
   const findSubmitButton = () => wrapper.findByTestId('submit-button');
   const findCancelButton = () => wrapper.findByTestId('cancel-button');
   const findNameField = () => wrapper.findAllComponents(GlFormInput).at(0);
@@ -65,7 +65,7 @@ describe('RoleForm', () => {
   it('shows the title', () => {
     createComponent({ title: 'My custom title' });
 
-    expect(findTitle().text()).toBe('My custom title');
+    expect(wrapper.findComponent(PageHeading).props('heading')).toBe('My custom title');
   });
 
   it('shows the submit text on the save button', () => {

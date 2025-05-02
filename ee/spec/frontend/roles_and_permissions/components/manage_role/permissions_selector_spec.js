@@ -10,6 +10,7 @@ import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
 import memberPermissionsQuery from 'ee/roles_and_permissions/graphql/member_role_permissions.query.graphql';
 import adminPermissionsQuery from 'ee/roles_and_permissions/graphql/admin_role/role_permissions.query.graphql';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { mockPermissionsResponse, mockDefaultPermissions } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -36,6 +37,7 @@ describe('Permissions Selector component', () => {
       stubs: {
         GlSprintf,
         ...(mountFn === shallowMountExtended ? { GlTable: glTableStub } : {}),
+        CrudComponent,
       },
     });
 
