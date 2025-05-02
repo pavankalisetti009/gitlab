@@ -94,7 +94,7 @@ module Search
 
       BUFFER_FACTOR = 3
 
-      INITIAL_INDEXING_LIMIT = 10
+      INITIAL_INDEXING_LIMIT = 1
 
       attr_reader :task
 
