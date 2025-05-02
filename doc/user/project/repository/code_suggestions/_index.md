@@ -277,10 +277,8 @@ Use the imported files in your IDE to provide context about your code project. I
 Because of LLM limits and performance reasons, the content of the currently
 opened file is truncated:
 
-- For code completion:
-  - In GitLab 17.5 and earlier, to 2,048 tokens (roughly 8,192 characters).
-  - In GitLab 17.6 and later, to 32,000 tokens (roughly 128,000 characters).
-- For code generation: to 142,856 tokens (roughly 500,000 characters).
+- For code completion: to 32,000 tokens (roughly 128,000 characters).
+- For code generation: to 200,000 tokens (roughly 800,000 characters).
 
 Content above the cursor is prioritized over content below the cursor. The content
 above the cursor is truncated from the left side, and content below the cursor
