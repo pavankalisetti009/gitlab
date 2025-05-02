@@ -56,7 +56,7 @@ controls:
     field_method: default_branch_protected?
     enum_value: 5
   auth_sso_enabled:
-    name: Auth SSO Enabled
+    name: Auth SSO enabled
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -70,14 +70,14 @@ controls:
     field_method: scanner_secret_detection_running?
     enum_value: 7
   scanner_dep_scanning_running:
-    name: Dependency Scanning Running
+    name: Dependency scanning running
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: scanner_dep_scanning_running?
     enum_value: 8
   scanner_container_scanning_running:
-    name: Container Scanning Running
+    name: Container scanning running
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -91,42 +91,42 @@ controls:
     field_method: scanner_license_compliance_running?
     enum_value: 10
   scanner_dast_running:
-    name: DAST Running
+    name: DAST running
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: scanner_dast_running?
     enum_value: 11
   scanner_api_security_running:
-    name: API Security Running
+    name: API security running
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: scanner_api_security_running?
     enum_value: 12
   scanner_fuzz_testing_running:
-    name: Fuzz Testing Running
+    name: Fuzz testing running
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: scanner_fuzz_testing_running?
     enum_value: 13
   scanner_code_quality_running:
-    name: Code Quality Running
+    name: Code quality running
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: scanner_code_quality_running?
     enum_value: 14
   scanner_iac_running:
-    name: IaC Scanning Running
+    name: IaC scanning running
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: scanner_iac_running?
     enum_value: 15
   code_changes_requires_code_owners:
-    name: Code Changes Requires Code Owners
+    name: Code changes requires code owners
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -175,7 +175,7 @@ controls:
     field_method: restrict_push_merge_access?
     enum_value: 22
   force_push_disabled:
-    name: Force Push Disabled
+    name: Force push disabled
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -214,7 +214,7 @@ controls:
     enum_value: 27
 
   branch_deletion_disabled:
-    name: 'Branch Deletion Disabled'
+    name: 'Branch deletion disabled'
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -262,7 +262,7 @@ controls:
     enum_value: 33
 
   ensure_2_admins_per_repo:
-    name: 'Ensure 2 Admins per Repository'
+    name: 'Ensure two administrators per repository'
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -294,7 +294,7 @@ controls:
     enum_value: 37
 
   gitlab_license_level_ultimate:
-    name: GitLab License Level Ultimate
+    name: GitLab license level Ultimate
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -310,7 +310,7 @@ controls:
     enum_value: 39
 
   has_valid_ci_config:
-    name: Has Valid Ci Config
+    name: Has valid CI/CD configuration
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -318,7 +318,7 @@ controls:
     enum_value: 40
 
   error_tracking_enabled:
-    name: Error Tracking Enabled
+    name: Error tracking enabled
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -326,7 +326,7 @@ controls:
     enum_value: 41
 
   default_branch_users_can_push:
-    name: Default Branch Users Can Push
+    name: Default branch users can push
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -334,7 +334,7 @@ controls:
     enum_value: 42
 
   default_branch_protected_from_direct_push:
-    name: Default Branch Protected From Direct Push
+    name: Default branch protected from direct push
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -362,7 +362,7 @@ controls:
     field_method: project_archived?
     enum_value: 46
   default_branch_users_can_merge:
-    name: Default Branch Users Can Merge
+    name: Default branch users can merge
     type: boolean
     compliant_value: true
     compliant_operator: "="
@@ -425,7 +425,7 @@ controls:
     field_method: merge_requests_require_code_owner_approval?
     enum_value: 55
   cicd_job_token_scope_enabled:
-    name: CICD Job Token Scope Enabled
+    name: CI/CD job token scope enabled
     type: boolean
     compliant_value: true
     compliant_operator: "="
