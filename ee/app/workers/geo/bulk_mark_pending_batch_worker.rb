@@ -35,7 +35,7 @@ module Geo
     end
 
     def perform_work(...)
-      ::Geo::BulkMarkPendingService.new(...).bulk_mark_update_one_batch!
+      ::Geo::BulkMarkPendingService.new(...).mark_one_batch_to_update_with_lease!
     end
 
     # Number of remaining jobs that this worker needs to perform
