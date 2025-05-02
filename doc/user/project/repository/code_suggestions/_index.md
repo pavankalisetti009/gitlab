@@ -328,6 +328,36 @@ To learn about the code that builds the prompt, see these files:
   [`ai_gateway/code_suggestions/processing/completions.py`](https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist/-/blob/fcb3f485a8f047a86a8166aad81f93b6d82106a7/ai_gateway/code_suggestions/processing/completions.py#L273)
   in the `modelops` repository.
 
+## Prompt caching
+
+{{< history >}}
+
+- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/535651) in GitLab 18.0.
+
+{{< /history >}}
+
+Prompt caching is enabled by default to improve Code Suggestions latency. When prompt caching is enabled, code completion prompt data is temporarily stored in memory by the model vendor. Prompt caching significantly improves latency by avoiding the re-processing of cached prompt and input data. The cached data is never logged to any persistent storage.
+
+### Disable prompt caching
+
+You can disable prompt caching for top-level groups in the GitLab Duo settings.
+
+On GitLab.com:
+
+1. On the left sidebar, select **Search or go to** and find your group.
+1. Select **Settings > GitLab Duo**.
+1. Select **Change configuration**.
+1. Disable the **Prompt caching** toggle.
+1. Select **Save changes**.
+
+On GitLab Self-Managed:
+
+1. On the left sidebar, select **Search or go to** and find your group.
+1. Select **Settings > General**.
+1. Expand **GitLab Duo features**.
+1. Disable the **Prompt caching** toggle.
+1. Select **Save changes**.
+
 ## Response time
 
 Code Suggestions is powered by a generative AI model.
