@@ -33,27 +33,57 @@ RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :so
       end
 
       describe "Analyzer images" do
+        using RSpec::Parameterized::TableSyntax
+
         # Add necessary files to enable all analyzers jobs
         include_context 'when project has files', %w[Gemfile.lock pom.xml poetry.lock Cargo.lock]
         include_context 'with default branch pipeline setup'
 
-        include_examples 'uses SECURE_ANALYZERS_PREFIX',
-          %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning
-            dependency-scanning]
-        include_examples 'has expected image tag', '6',
-          %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning]
-        include_examples 'has expected image tag', 'v0', %w[dependency-scanning]
+        context "with default config" do
+          where(:job, :image) do
+            'gemnasium-dependency_scanning'         | 'registry.gitlab.com/security-products/gemnasium:6'
+            'gemnasium-maven-dependency_scanning'   | 'registry.gitlab.com/security-products/gemnasium-maven:6'
+            'gemnasium-python-dependency_scanning'  | 'registry.gitlab.com/security-products/gemnasium-python:6'
+            'dependency-scanning'                   | 'registry.gitlab.com/security-products/dependency-scanning:v0'
+          end
 
-        context "with static reachability enabled" do
-          include_context 'when project has files', %w[main.py poetry.lock]
-          include_context 'with default branch pipeline setup'
-          include_context 'with CI variables',
-            { 'DS_ENFORCE_NEW_ANALYZER' => 'true', 'DS_STATIC_REACHABILITY_ENABLED' => 'true' }
+          with_them do
+            include_examples 'has expected image', params[:job], params[:image]
+          end
+
+          context "with static reachability enabled" do
+            include_context 'when project has files', %w[main.py poetry.lock]
+            include_context 'with default branch pipeline setup'
+            include_context 'with CI variables',
+              { 'DS_ENFORCE_NEW_ANALYZER' => 'true', 'DS_STATIC_REACHABILITY_ENABLED' => 'true' }
+
+            where(:job, :image) do
+              'gitlab-static-reachability'            | 'registry.gitlab.com/security-products/gitlab-advanced-sast:1'
+              'dependency-scanning-with-reachability' | 'registry.gitlab.com/security-products/dependency-scanning:v0'
+            end
+
+            with_them do
+              include_examples 'has expected image', params[:job], params[:image]
+            end
+          end
+        end
+
+        context 'when SECURE_ANALYZERS_PREFIX is set' do
+          include_context 'with CI variables', { 'SECURE_ANALYZERS_PREFIX' => 'my.custom-registry' }
 
           include_examples 'uses SECURE_ANALYZERS_PREFIX',
-            %w[dependency-scanning-with-reachability gitlab-static-reachability]
-          include_examples 'has expected image tag', '1', %w[gitlab-static-reachability]
-          include_examples 'has expected image tag', 'v0', %w[dependency-scanning-with-reachability]
+            %w[gemnasium-dependency_scanning gemnasium-maven-dependency_scanning gemnasium-python-dependency_scanning
+              dependency-scanning]
+
+          context "with static reachability enabled" do
+            include_context 'when project has files', %w[main.py poetry.lock]
+            include_context 'with default branch pipeline setup'
+            include_context 'with CI variables',
+              { 'DS_ENFORCE_NEW_ANALYZER' => 'true', 'DS_STATIC_REACHABILITY_ENABLED' => 'true' }
+
+            include_examples 'uses SECURE_ANALYZERS_PREFIX',
+              %w[dependency-scanning-with-reachability gitlab-static-reachability]
+          end
         end
       end
 
