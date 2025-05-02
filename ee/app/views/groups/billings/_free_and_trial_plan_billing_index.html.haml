@@ -24,7 +24,9 @@
     = render GitlabSubscriptions::DuoEnterpriseAlert::FreeComponent.new(namespace: namespace, user: current_user)
 
   .gl-flex-row.gl-flex.gl-flex-wrap.gl-justify-center.gl-mb-7.gl-ml-7{ data: { track_action: 'render', testid: 'billing-plans' } }
-    = render Billing::PlanComponent.with_collection(plans_data, namespace: namespace, current_plan: current_plan)
+    = render Billing::FreePlanComponent.new(plans_data: plans_data, namespace: namespace, current_plan: current_plan)
+    = render Billing::PremiumPlanComponent.new(plans_data: plans_data, namespace: namespace, current_plan: current_plan)
+    = render Billing::UltimatePlanComponent.new(plans_data: plans_data, namespace: namespace, current_plan: current_plan)
 
   - if namespace.trial_active?
     .gl-mb-9.gl-mx-auto.billing-plan-divider
