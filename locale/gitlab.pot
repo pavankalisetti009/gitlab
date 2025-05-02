@@ -67685,7 +67685,13 @@ msgstr ""
 msgid "Webhooks help"
 msgstr ""
 
+msgid "Webhooks|+ Add URL masking"
+msgstr ""
+
 msgid "Webhooks|+ Mask another portion of URL"
+msgstr ""
+
+msgid "Webhooks|A URL is required."
 msgstr ""
 
 msgid "Webhooks|A comment is made or edited on a confidential issue."
@@ -67784,9 +67790,6 @@ msgstr ""
 msgid "Webhooks|Disabled"
 msgstr ""
 
-msgid "Webhooks|Do not show sensitive data such as tokens in the UI."
-msgstr ""
-
 msgid "Webhooks|Edit group hook"
 msgstr ""
 
@@ -67814,6 +67817,9 @@ msgstr ""
 msgid "Webhooks|Header value"
 msgstr ""
 
+msgid "Webhooks|Hide sensitive data such as tokens in the UI."
+msgstr ""
+
 msgid "Webhooks|How it looks in the UI"
 msgstr ""
 
@@ -67824,9 +67830,6 @@ msgid "Webhooks|Issue events"
 msgstr ""
 
 msgid "Webhooks|Job events"
-msgstr ""
-
-msgid "Webhooks|Mask portions of URL"
 msgstr ""
 
 msgid "Webhooks|Member approval events"
@@ -67871,6 +67874,9 @@ msgstr ""
 msgid "Webhooks|Releases events"
 msgstr ""
 
+msgid "Webhooks|Remove item %{index}"
+msgstr ""
+
 msgid "Webhooks|Response body is empty"
 msgstr ""
 
@@ -67884,9 +67890,6 @@ msgid "Webhooks|Secret token"
 msgstr ""
 
 msgid "Webhooks|Sensitive portion of URL"
-msgstr ""
-
-msgid "Webhooks|Show full URL"
 msgstr ""
 
 msgid "Webhooks|Subgroup events"
