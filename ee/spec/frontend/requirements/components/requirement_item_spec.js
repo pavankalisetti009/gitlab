@@ -14,10 +14,11 @@ import {
   requirement1 as mockRequirement,
 } from '../mock_data';
 
-const createComponent = (requirement = requirement1) =>
+const createComponent = (requirement = requirement1, propsData = {}) =>
   shallowMountExtended(RequirementItem, {
     propsData: {
       requirement,
+      ...propsData,
     },
   });
 
@@ -70,9 +71,7 @@ describe('RequirementItem', () => {
     });
 
     it('renders component container element with class `disabled-content` when `stateChangeRequestActive` prop is true', async () => {
-      wrapper.setProps({
-        stateChangeRequestActive: true,
-      });
+      wrapper = createComponent(requirement1, { stateChangeRequestActive: true });
 
       await nextTick();
       expect(wrapper.classes()).toContain('disabled-content');
