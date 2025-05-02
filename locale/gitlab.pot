@@ -6912,6 +6912,9 @@ msgstr ""
 msgid "An error occurred while editing lock information, please try again."
 msgstr ""
 
+msgid "An error occurred while enabling GitLab Duo Core. Reload the page to try again."
+msgstr ""
+
 msgid "An error occurred while enabling Service Desk."
 msgstr ""
 

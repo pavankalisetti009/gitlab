@@ -117,4 +117,13 @@ RSpec.describe 'Admin Dashboard', feature_category: :shared do
   end
 
   include_examples 'manual quarterly co-term banner', path_to_visit: :admin_subscription_path
+
+  describe 'enable duo banner', :js, time_travel_to: '2025-05-15' do
+    before do
+      create(:license, plan: License::ULTIMATE_PLAN)
+      visit admin_root_path
+    end
+
+    it_behaves_like 'admin interacts with enable duo banner sm'
+  end
 end

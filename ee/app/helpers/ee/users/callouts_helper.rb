@@ -15,6 +15,7 @@ module EE
       PROFILE_PERSONAL_ACCESS_TOKEN_EXPIRY = 'profile_personal_access_token_expiry'
       JOINING_A_PROJECT_ALERT = 'joining_a_project_alert'
       PIPL_COMPLIANCE_ALERT = 'pipl_compliance_alert'
+      DUO_CORE_RELEASE_DATE = Date.new(2025, 5, 15)
 
       override :render_dashboard_ultimate_trial
       def render_dashboard_ultimate_trial(user)
@@ -70,6 +71,18 @@ module EE
       override :show_transition_to_jihu_callout?
       def show_transition_to_jihu_callout?
         !gitlab_com_subscription? && !has_active_license? && super
+      end
+
+      def show_enable_duo_banner_sm?(callouts_feature_name)
+        !::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) &&
+          Date.current >= DUO_CORE_RELEASE_DATE &&
+          ::Feature.enabled?(:allow_duo_base_access, :instance) &&
+          ::Feature.enabled?(:show_enable_duo_banner_sm, :instance) &&
+          current_user.can_admin_all_resources? &&
+          License.duo_core_features_available? &&
+          ::Ai::Setting.instance.duo_core_features_enabled.nil? &&
+          !::Ai::AmazonQ.enabled? &&
+          !user_dismissed?(callouts_feature_name)
       end
 
       private
