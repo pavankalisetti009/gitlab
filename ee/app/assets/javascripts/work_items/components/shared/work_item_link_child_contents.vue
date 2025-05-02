@@ -1,5 +1,6 @@
 <script>
 import { GlTooltipDirective } from '@gitlab/ui';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import WorkItemLinkChildContents from '~/work_items/components/shared/work_item_link_child_contents.vue';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import { WIDGET_TYPE_STATUS } from '~/work_items/constants';
@@ -13,6 +14,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     childItem: {
       type: Object,
@@ -47,6 +49,9 @@ export default {
         return metadataWidgets;
       }, {});
     },
+    showCustomStatus() {
+      return this.glFeatures.workItemStatusFeatureFlag && this.customStatus;
+    },
     customStatus() {
       return this.metadataWidgets[WIDGET_TYPE_STATUS]?.status;
     },
@@ -75,7 +80,7 @@ export default {
   >
     <template #child-contents>
       <work-item-status-badge
-        v-if="customStatus"
+        v-if="showCustomStatus"
         :name="name"
         :icon-name="iconName"
         :color="color"
