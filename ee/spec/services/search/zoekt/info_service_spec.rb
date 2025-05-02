@@ -150,6 +150,133 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
       end
     end
 
+    context 'when displaying node details' do
+      let(:node1) do
+        instance_double(Search::Zoekt::Node,
+          id: 1,
+          metadata: { 'name' => 'zoekt-node-01', 'version' => 'v1.2.1' },
+          last_seen_at: current_time - 30.seconds,
+          storage_percent_used: 0.953, # 95.3%
+          unclaimed_storage_bytes: 22_000_000_000, # 22 GB
+          watermark_exceeded_critical?: true,
+          watermark_exceeded_high?: true,
+          watermark_exceeded_low?: true
+        )
+      end
+
+      let(:node2) do
+        instance_double(Search::Zoekt::Node,
+          id: 2,
+          metadata: { 'name' => 'zoekt-node-02', 'version' => 'v1.2.2' },
+          last_seen_at: current_time - 31.seconds,
+          storage_percent_used: 0.821, # 82.1%
+          unclaimed_storage_bytes: 19_000_000_000, # 19 GB
+          watermark_exceeded_critical?: false,
+          watermark_exceeded_high?: true,
+          watermark_exceeded_low?: true
+        )
+      end
+
+      let(:node3) do
+        instance_double(Search::Zoekt::Node,
+          id: 3,
+          metadata: { 'name' => 'zoekt-node-03', 'version' => 'v1.2.3' },
+          last_seen_at: current_time - 32.seconds,
+          storage_percent_used: 0.68, # 68%
+          unclaimed_storage_bytes: 45_000_000_000, # 45 GB
+          watermark_exceeded_critical?: false,
+          watermark_exceeded_high?: false,
+          watermark_exceeded_low?: true
+        )
+      end
+
+      let(:node4) do
+        instance_double(Search::Zoekt::Node,
+          id: 4,
+          metadata: { 'name' => 'zoekt-node-04', 'version' => 'v1.2.5' },
+          last_seen_at: current_time - 2.minutes, # Offline
+          storage_percent_used: 0.45, # 45%
+          unclaimed_storage_bytes: 70_000_000_000, # 70 GB
+          watermark_exceeded_critical?: false,
+          watermark_exceeded_high?: false,
+          watermark_exceeded_low?: false
+        )
+      end
+
+      let(:online_nodes) { [node1, node2, node3, node4] }
+      let(:nodes_online_relation) { instance_double(ActiveRecord::Relation, count: 4, to_a: online_nodes) }
+      let(:nodes_ordered_relation) { instance_double(ActiveRecord::Relation, to_a: online_nodes) }
+
+      before do
+        stub_const("Search::Zoekt::Node::ONLINE_DURATION_THRESHOLD", 1.minute)
+
+        allow(Search::Zoekt::Node).to receive_messages(
+          online: nodes_online_relation,
+          count: 4,
+          maximum: current_time
+        )
+
+        # Add mock for order(:id) to support log_node_details
+        allow(Search::Zoekt::Node).to receive(:order).with(:id).and_return(nodes_ordered_relation)
+
+        # Mock number_to_human_size to return predictable output for testing
+        allow(service).to receive(:number_to_human_size) do |bytes|
+          if bytes >= 1_000_000_000_000 # 1 TB
+            "#{(bytes.to_f / 1_000_000_000_000).round(2)} TB"
+          elsif bytes >= 1_000_000_000 # 1 GB
+            "#{(bytes.to_f / 1_000_000_000).round(1)} GB"
+          elsif bytes >= 1_000_000 # 1 MB
+            "#{(bytes.to_f / 1_000_000).round(1)} MB"
+          elsif bytes >= 1_000 # 1 KB
+            "#{(bytes.to_f / 1_000).round(1)} KB"
+          else
+            "#{bytes} Bytes"
+          end
+        end
+      end
+
+      it 'displays detailed information for each node' do
+        travel_to(current_time) do
+          service.execute
+
+          # Verify Node Details header is displayed
+          expect(logger).to have_received(:info).with("\n#{Rainbow('Node Details').bright.yellow.underline}")
+
+          # Node 1 - Critical watermark, Online
+          expect(logger).to have_received(:info).with("Node 1 - zoekt-node-01:   ")
+          expect(logger).to have_received(:info).with(/  Status:.+#{Rainbow('Online').green}/).at_least(:once)
+          expect(logger).to have_received(:info).with(/  Last seen at:.+#{(current_time - 30.seconds).utc}/)
+          expect(logger).to have_received(:info).with(/  Disk utilization:.+#{Rainbow('95.3%').red.bright}/)
+          expect(logger).to have_received(:info).with(/  Unclaimed storage:.+22.0 GB/)
+          expect(logger).to have_received(:info).with(/  Zoekt version:.+v1.2.1/)
+
+          # Node 2 - High watermark, Online
+          expect(logger).to have_received(:info).with("Node 2 - zoekt-node-02:   ")
+          expect(logger).to have_received(:info).with(/  Status:.+#{Rainbow('Online').green}/).at_least(:once)
+          expect(logger).to have_received(:info).with(/  Last seen at:.+#{(current_time - 31.seconds).utc}/)
+          expect(logger).to have_received(:info).with(/  Disk utilization:.+#{Rainbow('82.1%').red}/)
+          expect(logger).to have_received(:info).with(/  Unclaimed storage:.+19.0 GB/)
+          expect(logger).to have_received(:info).with(/  Zoekt version:.+v1.2.2/)
+
+          # Node 3 - Low watermark, Online
+          expect(logger).to have_received(:info).with("Node 3 - zoekt-node-03:   ")
+          expect(logger).to have_received(:info).with(/  Status:.+#{Rainbow('Online').green}/).at_least(:once)
+          expect(logger).to have_received(:info).with(/  Last seen at:.+#{(current_time - 32.seconds).utc}/)
+          expect(logger).to have_received(:info).with(/  Disk utilization:.+#{Rainbow('68.0%').yellow}/)
+          expect(logger).to have_received(:info).with(/  Unclaimed storage:.+45.0 GB/)
+          expect(logger).to have_received(:info).with(/  Zoekt version:.+v1.2.3/)
+
+          # Node 4 - Normal watermark, Offline
+          expect(logger).to have_received(:info).with("Node 4 - zoekt-node-04:   ")
+          expect(logger).to have_received(:info).with(/  Status:.+#{Rainbow('Offline').red}/)
+          expect(logger).to have_received(:info).with(/  Last seen at:.+#{(current_time - 2.minutes).utc}/)
+          expect(logger).to have_received(:info).with(/  Disk utilization:.+#{Rainbow('45.0%').green}/)
+          expect(logger).to have_received(:info).with(/  Unclaimed storage:.+70.0 GB/)
+          expect(logger).to have_received(:info).with(/  Zoekt version:.+v1.2.5/)
+        end
+      end
+    end
+
     context 'when displaying indexing status' do
       before do
         allow(Group).to receive_message_chain(:top_level, :count).and_return(10)

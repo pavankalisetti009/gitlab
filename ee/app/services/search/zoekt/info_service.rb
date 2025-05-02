@@ -17,9 +17,9 @@ module Search
 
       def execute
         display_settings_section
-        display_nodes_section
         display_indexing_status_section
         display_feature_flags_sections
+        display_nodes_section
       end
 
       private
@@ -120,6 +120,7 @@ module Search
         log_indexed_data
         log_node_watermark_levels
         display_entries
+        log_node_details
       end
 
       def display_indexing_status_section
@@ -164,6 +165,55 @@ module Search
         else
           log("Online node watermark levels", value: Rainbow('(none)').yellow)
         end
+      end
+
+      def log_node_details
+        log_header("Node Details")
+
+        # rubocop: disable CodeReuse/ActiveRecord -- temporary exemption in this rake task
+        nodes = Search::Zoekt::Node.order(:id).to_a
+        # rubocop: enable CodeReuse/ActiveRecord
+        return if nodes.empty?
+
+        nodes.each do |node|
+          # Get hostname from metadata
+          hostname = node.metadata["name"] || Rainbow("unnamed").yellow
+
+          # Determine online/offline status
+          online = node.last_seen_at > Search::Zoekt::Node::ONLINE_DURATION_THRESHOLD.ago
+          status = online ? Rainbow("Online").green : Rainbow("Offline").red
+
+          # Format disk utilization percentage with appropriate color
+          disk_percent = (node.storage_percent_used * 100).round(2)
+          disk_percent_str = "#{disk_percent}%"
+          disk_percent_colored = if node.watermark_exceeded_critical?
+                                   Rainbow(disk_percent_str).red.bright
+                                 elsif node.watermark_exceeded_high?
+                                   Rainbow(disk_percent_str).red
+                                 elsif node.watermark_exceeded_low?
+                                   Rainbow(disk_percent_str).yellow
+                                 else
+                                   Rainbow(disk_percent_str).green
+                                 end
+
+          # Format unclaimed storage bytes
+          unclaimed_bytes = number_to_human_size(node.unclaimed_storage_bytes)
+
+          # Get version from metadata
+          version = node.metadata["version"] || Rainbow("unknown").yellow
+
+          # Format last_seen_at timestamp
+          last_seen = node.last_seen_at.nil? ? Rainbow("(unknown)").yellow : format_value(node.last_seen_at)
+
+          log("Node #{node.id} - #{hostname}", value: ' ')
+          log("  Status", value: status)
+          log("  Last seen at", value: last_seen)
+          log("  Disk utilization", value: disk_percent_colored)
+          log("  Unclaimed storage", value: unclaimed_bytes)
+          log("  Zoekt version", value: version)
+        end
+
+        display_entries
       end
 
       def log_indexed_data
