@@ -3,10 +3,13 @@
 module Authz
   class LdapAdminRoleWorker
     include ApplicationWorker
+    include CronjobQueue # rubocop:disable Scalability/CronWorkerContext -- no context needed
 
     idempotent!
 
     worker_has_external_dependencies!
+
+    deduplicate :until_executed, if_deduplicated: :reschedule_once
 
     data_consistency :sticky
 

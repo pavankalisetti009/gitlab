@@ -153,6 +153,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:authz_ldap_admin_role
+  :worker_name: Authz::LdapAdminRoleWorker
+  :feature_category: :permissions
+  :has_external_dependencies: true
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:ci_runners_stale_group_runners_prune_cron
   :worker_name: Ci::Runners::StaleGroupRunnersPruneCronWorker
   :feature_category: :fleet_visibility
@@ -1497,16 +1507,6 @@
   :worker_name: Authn::SyncScimTokenRecordWorker
   :feature_category: :system_access
   :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-  :queue_namespace:
-- :name: authz_ldap_admin_role
-  :worker_name: Authz::LdapAdminRoleWorker
-  :feature_category: :permissions
-  :has_external_dependencies: true
   :urgency: :low
   :resource_boundary: :unknown
   :weight: 1
