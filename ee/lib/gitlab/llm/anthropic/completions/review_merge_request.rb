@@ -61,7 +61,7 @@ module Gitlab
           rescue StandardError => error
             Gitlab::ErrorTracking.track_exception(error)
 
-            update_progress_note(self.class.error_msg) if progress_note.present?
+            update_progress_note(self.class.error_msg, with_todo: true) if progress_note.present?
 
           ensure
             update_review_state('reviewed') if merge_request.present?
@@ -81,6 +81,7 @@ module Gitlab
 
             if diff_files.blank?
               update_progress_note(self.class.nothing_to_review_msg)
+
               return
             end
 
@@ -93,7 +94,7 @@ module Gitlab
             end
 
             if @draft_notes_by_priority.empty?
-              update_progress_note(self.class.no_comment_msg)
+              update_progress_note(self.class.no_comment_msg, with_todo: true)
             else
               publish_draft_notes
             end
@@ -285,7 +286,9 @@ module Gitlab
             ).execute
           end
 
-          def update_progress_note(note)
+          def update_progress_note(note, with_todo: false)
+            todo_service.new_review(merge_request, review_bot) if with_todo
+
             if duo_code_review_system_note_enabled?
               ::Notes::CreateService.new(
                 merge_request.project,
@@ -335,7 +338,7 @@ module Gitlab
             end
 
             if draft_notes.empty?
-              update_progress_note(self.class.no_comment_msg)
+              update_progress_note(self.class.no_comment_msg, with_todo: true)
 
               return
             end
@@ -367,6 +370,11 @@ module Gitlab
           def duo_code_review_system_note_enabled?
             ::Feature.enabled?(:duo_code_review_system_note, merge_request&.project)
           end
+
+          def todo_service
+            TodoService.new
+          end
+          strong_memoize_attr :todo_service
         end
       end
     end
