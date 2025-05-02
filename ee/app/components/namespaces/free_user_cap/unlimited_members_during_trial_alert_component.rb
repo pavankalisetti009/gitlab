@@ -26,7 +26,8 @@ module Namespaces
       end
 
       def show_unlimited_members_during_trial_alert?
-        ::Namespaces::FreeUserCap::Enforcement.new(namespace).qualified_namespace? &&
+        !Feature.enabled?(:streamlined_first_product_experience, :instance) &&
+          ::Namespaces::FreeUserCap::Enforcement.new(namespace).qualified_namespace? &&
           ::Namespaces::FreeUserCap.owner_access?(user: user, namespace: namespace) &&
           namespace.trial_active? &&
           !dismissed_for_namespace &&

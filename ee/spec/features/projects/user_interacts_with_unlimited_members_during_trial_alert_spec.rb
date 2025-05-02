@@ -12,6 +12,8 @@ RSpec.describe 'Project > Unlimited members alert', :js, :saas, feature_category
 
   before do
     stub_get_billing_account_details
+
+    stub_feature_flags(streamlined_first_product_experience: false)
   end
 
   context 'when group not in trial' do
