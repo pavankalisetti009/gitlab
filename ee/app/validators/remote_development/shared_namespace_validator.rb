@@ -4,7 +4,7 @@ module RemoteDevelopment
   class SharedNamespaceValidator < ActiveModel::EachValidator
     ALPHA_NUMERIC_CHARACTERS = ('a'..'z').to_set + ('0'..'9').to_set
     MAX_LENGTH = 63
-    VALID_CHARACTERS = ALPHA_NUMERIC_CHARACTERS + %w[- .].to_set
+    VALID_CHARACTERS = ALPHA_NUMERIC_CHARACTERS + %w[-].to_set
 
     # @param [RemoteDevelopment::WorkspacesAgentConfig] record
     # @param [Symbol] attribute
@@ -23,7 +23,7 @@ module RemoteDevelopment
 
       return if valid_characters?(value)
 
-      record.errors.add(attribute, "must contain only lowercase alphanumeric characters, '-', and '.'")
+      record.errors.add(attribute, "must contain only lowercase alphanumeric characters or '-'")
 
       nil
     end

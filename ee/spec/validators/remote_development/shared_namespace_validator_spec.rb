@@ -23,13 +23,13 @@ RSpec.describe RemoteDevelopment::SharedNamespaceValidator, feature_category: :w
     ("a" * 64) | false | { shared_namespace: ["must be 63 characters or less"] }
     "-a"         | false | { shared_namespace: ["must start and end with an alphanumeric character"] }
     "a-"         | false | { shared_namespace: ["must start and end with an alphanumeric character"] }
-    "a-.=a"      | false | { shared_namespace: ["must contain only lowercase alphanumeric characters, '-', and '.'"] }
+    "a-.=a"      | false | { shared_namespace: ["must contain only lowercase alphanumeric characters or '-'"] }
+    "a-.1"       | false | { shared_namespace: ["must contain only lowercase alphanumeric characters or '-'"] }
     ""           | true  | {}
     "example"    | true  | {}
     "1example"   | true  | {}
     "example1"   | true  | {}
     "1"          | true  | {}
-    "a-.1"       | true  | {}
   end
 
   with_them do
