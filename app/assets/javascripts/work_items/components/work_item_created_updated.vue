@@ -110,6 +110,7 @@ export default {
     />
     <locked-badge v-if="isDiscussionLocked" class="gl-align-middle" :issuable-type="workItemType" />
     <work-item-type-icon
+      v-if="workItemType"
       class="gl-align-middle"
       :work-item-type="workItemType"
       show-text

@@ -61,6 +61,7 @@ describe('WorkItemCustomFieldsText', () => {
         customField,
         workItemType: 'Task',
         workItemId: defaultWorkItemId,
+        fullPath: 'gitlab-org/gitlab',
       },
       stubs: {
         GlFormGroup: stubComponent(GlFormGroup, {
