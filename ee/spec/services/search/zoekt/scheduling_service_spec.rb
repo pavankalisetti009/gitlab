@@ -340,6 +340,10 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
 
     context 'when there are pending indices on online nodes' do
+      before do
+        stub_const "#{described_class}::INITIAL_INDEXING_LIMIT", 5
+      end
+
       it 'publishes the event Search::Zoekt::InitialIndexingEvent for pending indices on online nodes' do
         expect { execute_task }.to publish_event(Search::Zoekt::InitialIndexingEvent)
           .with({ index_id: index1.id }).and publish_event(Search::Zoekt::InitialIndexingEvent)
@@ -372,6 +376,10 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
 
     context 'with multiple nodes having pending indices' do
+      before do
+        stub_const "#{described_class}::INITIAL_INDEXING_LIMIT", 5
+      end
+
       let_it_be_with_reload(:another_online_node) { create(:zoekt_node) }
       let_it_be_with_reload(:another_index) { create(:zoekt_index, state: :pending, node: another_online_node) }
 
