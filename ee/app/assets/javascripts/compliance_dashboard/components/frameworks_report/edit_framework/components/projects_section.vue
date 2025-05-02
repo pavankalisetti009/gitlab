@@ -1,5 +1,6 @@
 <script>
 import { GlLink, GlLoadingIcon, GlTable, GlFormCheckbox, GlToggle } from '@gitlab/ui';
+import { isEqual } from 'lodash';
 import VisibilityIconButton from '~/vue_shared/components/visibility_icon_button.vue';
 import { ROUTE_PROJECTS } from 'ee/compliance_dashboard/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -212,19 +213,24 @@ export default {
       this.$apollo.queries.projectList.refetch();
     },
     onFiltersChanged(filters) {
+      if (isEqual(this.filters, filters)) {
+        return;
+      }
+      this.filters = filters;
+
       const normalizedFilters = mapFiltersToGraphQLVariables(filters);
       const filtersWithDefaults = {
         ...normalizedFilters,
         frameworks: normalizedFilters.frameworks || [],
         frameworksNot: normalizedFilters.frameworksNot || [],
       };
-      if (
-        checkGraphQLFilterForChange({
-          currentFilters: this.queryVariables,
-          newFilters: filtersWithDefaults,
-        })
-      ) {
-        this.filters = filters;
+
+      const hasChanged = checkGraphQLFilterForChange({
+        currentFilters: this.queryVariables,
+        newFilters: filtersWithDefaults,
+      });
+
+      if (hasChanged) {
         this.$apollo.queries.projectList.refetch();
       }
     },
