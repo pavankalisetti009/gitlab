@@ -71,6 +71,7 @@ Example response:
         ]
     },
   "default_preferred_language" : "en",
+  "deletion_adjourned_period": 7,
   "failed_login_attempts_unlock_period_in_minutes": 30,
   "restricted_visibility_levels" : [],
   "sign_in_restrictions": {},
@@ -179,7 +180,6 @@ these parameters:
 - `geo_node_allowed_ips`
 - `geo_status_timeout`
 - `default_project_deletion_protection`
-- `deletion_adjourned_period`
 - `disable_personal_access_tokens`
 - `security_policy_global_group_approvers_enabled`
 - `security_approval_policies_limit`
@@ -201,7 +201,6 @@ these parameters:
   "file_template_project_id": 1,
   "geo_node_allowed_ips": "0.0.0.0/0, ::/0",
   "default_project_deletion_protection": false,
-  "deletion_adjourned_period": 7,
   "disable_personal_access_tokens": false,
   "duo_features_enabled": true,
   "lock_duo_features_enabled": false,
@@ -380,7 +379,6 @@ these parameters:
 - `geo_node_allowed_ips`
 - `geo_status_timeout`
 - `default_project_deletion_protection`
-- `deletion_adjourned_period`
 - `disable_personal_access_tokens`
 - `security_policy_global_group_approvers_enabled`
 - `security_approval_policies_limit`
@@ -502,7 +500,7 @@ to configure other related settings. These requirements are
 | `default_syntax_highlighting_theme`      | integer          | no                                   | Default syntax highlighting theme for users who are new or not signed in. See [IDs of available themes](https://gitlab.com/gitlab-org/gitlab/blob/master/lib/gitlab/themes.rb#L16). |
 | `default_project_deletion_protection`    | boolean          | no                                   | Enable default project deletion protection so only administrators can delete projects. Default is `false`. GitLab Self-Managed, Premium and Ultimate only. |
 | `delete_unconfirmed_users`               | boolean          | no                                   | Specifies whether users who have not confirmed their email should be deleted. Default is `false`. When set to `true`, unconfirmed users are deleted after `unconfirmed_users_delete_after_days` days. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/352514) in GitLab 16.1. GitLab Self-Managed, Premium and Ultimate only. |
-| `deletion_adjourned_period`              | integer          | no                                   | Number of days to wait before deleting a project or group that is marked for deletion. Value must be between `1` and `90`. Defaults to `7`. GitLab Self-Managed, Premium and Ultimate only. |
+| `deletion_adjourned_period`              | integer          | no                                   | Number of days to wait before deleting a project or group that is marked for deletion. Value must be between `1` and `90`. Defaults to `7`. |
 | `diagramsnet_enabled`                    | boolean          | no                                   | (If enabled, requires `diagramsnet_url`) Enable [Diagrams.net integration](../administration/integration/diagrams_net.md). Default is `true`. |
 | `diagramsnet_url`                        | string           | required by: `diagramsnet_enabled`   | The Diagrams.net instance URL for integration. |
 | `diff_max_patch_bytes`                   | integer          | no                                   | Maximum [diff patch size](../administration/diff_limits.md), in bytes. |
