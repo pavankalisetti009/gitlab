@@ -1,5 +1,5 @@
 <script>
-import { GlSkeletonLoader, GlBreadcrumb, GlButton } from '@gitlab/ui';
+import { GlBreadcrumb, GlButton } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
@@ -15,7 +15,6 @@ export default {
   components: {
     SubgroupSidebar,
     LocalStorageSync,
-    GlSkeletonLoader,
     GlBreadcrumb,
     GlButton,
     EmptyState,
@@ -61,6 +60,9 @@ export default {
     },
     hasChildren() {
       return this.children.length > 0;
+    },
+    showEmptyState() {
+      return !this.isLoading && !this.hasChildren;
     },
     crumbs() {
       const pathParts = this.activeFullPath.split(PATH_SEPARATOR);
@@ -125,9 +127,8 @@ export default {
       <subgroup-sidebar v-if="sidebarVisible" :active-full-path="activeFullPath" />
       <div class="gl-w-auto gl-grow" :class="{ 'gl-pl-5': sidebarVisible }">
         <gl-breadcrumb :items="crumbs" :auto-resize="true" size="md" class="gl-my-5" />
-        <template v-if="isLoading"><gl-skeleton-loader /></template>
-        <template v-else-if="!hasChildren"><empty-state /></template>
-        <security-inventory-table v-else :items="children" class="gl-mb-0" />
+        <empty-state v-if="showEmptyState" />
+        <security-inventory-table v-else :items="children" :is-loading="isLoading" />
       </div>
     </div>
   </div>

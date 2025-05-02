@@ -1,5 +1,5 @@
 import { shallowMount, mount } from '@vue/test-utils';
-import { GlTableLite } from '@gitlab/ui';
+import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
 import { stubComponent } from 'helpers/stub_component';
 import SecurityInventoryTable from 'ee/security_inventory/components/security_inventory_table.vue';
 import NameCell from 'ee/security_inventory/components/name_cell.vue';
@@ -59,6 +59,22 @@ describe('SecurityInventoryTable', () => {
 
     it('passes items to GlTableLite component', () => {
       expect(findTable().props('items')).toEqual(items);
+    });
+  });
+
+  describe('loading state', () => {
+    beforeEach(() => {
+      createFullComponent({ props: { items: [], isLoading: true }, stubs: { GlTableLite: false } });
+    });
+
+    it('shows the correct number of skeleton rows when loading', () => {
+      expect(findTableRows()).toHaveLength(3);
+    });
+
+    it('shows skeleton loaders for each column in a row', () => {
+      const firstRow = findNthTableRow(0);
+      const firstRowLoaders = firstRow.findAllComponents(GlSkeletonLoader);
+      expect(firstRowLoaders.length).toBe(4);
     });
   });
 

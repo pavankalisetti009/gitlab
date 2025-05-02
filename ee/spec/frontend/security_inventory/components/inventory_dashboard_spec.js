@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlTableLite, GlSkeletonLoader, GlBreadcrumb, GlButton } from '@gitlab/ui';
+import { GlTableLite, GlBreadcrumb, GlButton } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -18,6 +18,7 @@ import NameCell from 'ee/security_inventory/components/name_cell.vue';
 import vulnerabilityCell from 'ee/security_inventory/components/vulnerability_cell.vue';
 import ToolCoverageCell from 'ee/security_inventory/components/tool_coverage_cell.vue';
 import ActionCell from 'ee/security_inventory/components/action_cell.vue';
+import SecurityInventoryTable from 'ee/security_inventory/components/security_inventory_table.vue';
 import { subgroupsAndProjects } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -57,13 +58,13 @@ describe('InventoryDashboard', () => {
   const createComponent = createComponentFactory();
   const createFullComponent = createComponentFactory(mountExtended);
   const findTable = () => wrapper.findComponent(GlTableLite);
-  const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findEmptyState = () => wrapper.findComponent(EmptyState);
   const findTableRows = () => findTable().findAll('tbody tr');
   const findNthTableRow = (n) => findTableRows().at(n);
   const findBreadcrumb = () => wrapper.findComponent(GlBreadcrumb);
   const findSidebar = () => wrapper.findComponent(SubgroupSidebar);
   const findSidebarToggleButton = () => wrapper.findComponent(GlButton);
+  const findInventoryTable = () => wrapper.findComponent(SecurityInventoryTable);
 
   /* eslint-disable no-underscore-dangle */
   const getIndexByType = (children, type) => {
@@ -75,9 +76,12 @@ describe('InventoryDashboard', () => {
     await createComponent();
   });
 
-  it('renders the component', () => {
+  it('displays default state correctly', () => {
     expect(wrapper.exists()).toBe(true);
+
     expect(findEmptyState().exists()).toBe(false);
+    expect(findInventoryTable().exists()).toBe(true);
+    expect(findInventoryTable().props('isLoading')).toBe(false);
   });
 
   describe('Loading state', () => {
@@ -86,14 +90,14 @@ describe('InventoryDashboard', () => {
       await createComponent({ resolver: mockHandler });
     });
 
-    it('shows a skeleton loader when loading', () => {
-      expect(findSkeletonLoader().exists()).toBe(true);
+    it('sets loading state correctly', () => {
+      expect(findInventoryTable().props('isLoading')).toBe(true);
       expect(findEmptyState().exists()).toBe(false);
     });
   });
 
   describe('Empty state', () => {
-    it('renders the empty component when there are no children', async () => {
+    it('displays empty state when there are no children', async () => {
       const emptyResolver = jest.fn().mockResolvedValue({
         data: { group: { descendantGroups: { nodes: [] }, projects: { nodes: [] } } },
       });
