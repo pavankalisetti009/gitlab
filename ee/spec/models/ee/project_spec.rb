@@ -110,6 +110,9 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:instance_runner_monthly_usages).class_name('Ci::Minutes::InstanceRunnerMonthlyUsage') }
     it { is_expected.to have_many(:hosted_runner_monthly_usages).class_name('Ci::Minutes::GitlabHostedRunnerMonthlyUsage') }
 
+    it { is_expected.to have_many(:workspaces).class_name('RemoteDevelopment::Workspace') }
+    it { is_expected.to have_many(:workspace_agentk_states).class_name('RemoteDevelopment::WorkspaceAgentkState') }
+
     include_examples 'ci_cd_settings delegation' do
       let(:attributes_with_prefix) do
         {
