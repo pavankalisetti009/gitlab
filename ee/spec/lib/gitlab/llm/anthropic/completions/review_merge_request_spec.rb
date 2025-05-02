@@ -76,6 +76,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         mr_title: merge_request.title,
         mr_description: merge_request.description,
         diffs_and_paths: kind_of(Hash),
+        files_content: kind_of(Hash),
         user: user
       ) do |template|
         allow(template).to receive(:to_prompt).and_return(combined_review_prompt)
@@ -98,6 +99,56 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           .to receive(:messages_complete)
           .with(summary_prompt)
           .and_return(summary_response&.to_json)
+      end
+    end
+
+    context 'when passing file contents to ai_prompt_class' do
+      let(:combined_review_response) { { content: [{ text: '<review></review>' }] } }
+      let(:summary_response) { nil }
+      let(:updated_file_content) { "existing line 1\nexisting line 2\n" }
+      let(:updated_blob) { instance_double(Blob, data: updated_file_content) }
+      let(:diff_files) do
+        [
+          instance_double(Gitlab::Diff::File,
+            new_path: 'UPDATED.md',
+            new_file?: false,
+            old_path: 'UPDATED.md',
+            old_blob: updated_blob,
+            raw_diff: '@@ -1,2 +1,2 @@ existing line'),
+          instance_double(Gitlab::Diff::File,
+            new_path: 'NEW.md',
+            new_file?: true,
+            old_path: 'NEW.md',
+            raw_diff: '@@ -0,0 +1,2 @@ new line')
+        ]
+      end
+
+      before do
+        # Setup reviewable files
+        allow(merge_request).to receive(:ai_reviewable_diff_files).and_return(diff_files)
+
+        allow_next_instance_of(Gitlab::Llm::Anthropic::Client, user,
+          unit_primitive: 'review_merge_request',
+          tracking_context: tracking_context
+        ) do |client|
+          allow(client).to receive(:messages_complete).and_return(combined_review_response)
+        end
+      end
+
+      it 'only includes original content of modified files (not new files)' do
+        expect(review_prompt_class).to receive(:new).with(
+          hash_including(
+            mr_title: merge_request.title,
+            mr_description: merge_request.description,
+            files_content: { 'UPDATED.md' => updated_file_content }
+          )
+        ) do |args|
+          expect(args[:files_content].keys).not_to include('NEW.md')
+
+          instance_double(review_prompt_class, to_prompt: combined_review_prompt)
+        end
+
+        completion.execute
       end
     end
 

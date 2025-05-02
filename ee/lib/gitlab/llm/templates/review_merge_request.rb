@@ -15,8 +15,7 @@ module Gitlab
 
         SINGLE_FILE_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_user(
           <<~PROMPT.chomp
-            First, you will be given the merge request title and description to understand the purpose of these changes, followed by a filename and a structured representation of the git diff for that file. This structured diff contains the changes made in the MR that you need to review.
-
+            First, you will be given the merge request title and description to understand the purpose of these changes, followed by a filename and a structured representation of the git diff for that file. This structured diff contains the changes made in the MR that you need to review.%{full_file_intro}
             Merge Request Title:
             <mr_title>
             %{mr_title}
@@ -38,6 +37,8 @@ module Gitlab
             <git_diff>
             %{diff_lines}
             </git_diff>
+
+            %{full_content_section}
 
             To properly review this MR, follow these steps:
 
@@ -98,7 +99,7 @@ module Gitlab
 
         MULTI_FILE_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_user(
           <<~PROMPT.chomp
-            First, you will be given the merge request title and description to understand the purpose of these changes, followed by a structured representation of the git diffs for all changed files in this merge request. These structured diffs contain the changes that you need to review.
+            First, you will be given the merge request title and description to understand the purpose of these changes, followed by a structured representation of the git diffs for all changed files in this merge request. These structured diffs contain the changes that you need to review.%{full_file_intro}
 
             Merge Request Title:
             <mr_title>
@@ -112,6 +113,8 @@ module Gitlab
 
             Here are the git diffs you need to review:
             %{diff_lines}
+
+            %{full_content_section}
 
             To properly review this MR, follow these steps:
 
@@ -173,10 +176,11 @@ module Gitlab
           PROMPT
         )
 
-        def initialize(mr_title:, mr_description:, diffs_and_paths:, user:)
+        def initialize(mr_title:, mr_description:, diffs_and_paths:, user:, files_content: {})
           @mr_title = mr_title
           @mr_description = mr_description
           @diffs_and_paths = diffs_and_paths
+          @files_content = files_content
           @user = user
         end
 
@@ -205,32 +209,63 @@ module Gitlab
         end
         strong_memoize_attr :multi_file?
 
+        def full_file?
+          Feature.enabled?(:duo_code_review_full_file, user)
+        end
+        strong_memoize_attr :full_file?
+
         def user_message
           multi_file? ? MULTI_FILE_MESSAGE : SINGLE_FILE_MESSAGE
         end
 
         def variables
-          if multi_file?
-            {
-              mr_title: mr_title,
-              mr_description: mr_description,
-              diff_lines: all_diffs_formatted
-            }
-          else
-            path, raw_diff = diffs_and_paths.first
-            {
-              mr_title: mr_title,
-              mr_description: mr_description,
-              new_path: path,
-              diff_lines: format_diff(raw_diff)
-            }
-          end
+          template_variables = if multi_file?
+                                 {
+                                   mr_title: mr_title,
+                                   mr_description: mr_description,
+                                   diff_lines: all_diffs_formatted,
+                                   full_file_intro: "",
+                                   full_content_section: ""
+                                 }
+                               else
+                                 path, raw_diff = diffs_and_paths.first
+                                 {
+                                   mr_title: mr_title,
+                                   mr_description: mr_description,
+                                   new_path: path,
+                                   diff_lines: format_diff(raw_diff),
+                                   full_file_intro: "",
+                                   full_content_section: ""
+                                 }
+                               end
+
+          # Add full file content if the feature flag is enabled
+          add_full_file_content(template_variables) if full_file? && files_content.present?
+
+          template_variables
+        end
+
+        def add_full_file_content(template_variables)
+          template_variables[:full_file_intro] =
+            " You will also be provided with the original content of modified files (before changes). " \
+              "Newly added files are not included as their full content is already in the diffs."
+
+          template_variables[:full_content_section] =
+            "Original file content (before changes):\n\n" \
+              "Check for code duplication, redundancies, and inconsistencies.\n\n" \
+              "#{all_files_content_formatted}"
         end
 
         def all_diffs_formatted
           diffs_and_paths.map do |path, raw_diff|
             formatted_diff = format_diff(raw_diff)
             %(<file_diff filename="#{path}">\n#{formatted_diff}\n</file_diff>)
+          end.join("\n\n")
+        end
+
+        def all_files_content_formatted
+          files_content.map do |path, content|
+            %(<full_file filename="#{path}">\n#{content}\n</full_file>)
           end.join("\n\n")
         end
 
@@ -261,7 +296,7 @@ module Gitlab
           end
         end
 
-        attr_reader :mr_title, :mr_description, :diffs_and_paths, :user
+        attr_reader :mr_title, :mr_description, :diffs_and_paths, :files_content, :user
       end
     end
   end

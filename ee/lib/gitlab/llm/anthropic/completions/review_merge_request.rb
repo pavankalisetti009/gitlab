@@ -100,11 +100,20 @@ module Gitlab
           end
 
           def process_all_files_together(diff_files, mr_diff_refs)
-            diffs_and_paths = diff_files.each_with_object({}) do |diff_file, result|
-              result[diff_file.new_path] = diff_file.raw_diff
+            diffs_and_paths = {}
+            files_content = {}
+
+            diff_files.each do |diff_file|
+              diffs_and_paths[diff_file.new_path] = diff_file.raw_diff
+              # Skip newly added files since their content is already in the diff
+              next if diff_file.new_file?
+              next unless include_file_content?
+
+              content = diff_file.old_blob&.data
+              files_content[diff_file.new_path] = content if content.present?
             end
 
-            review_prompt = generate_review_prompt(diffs_and_paths)
+            review_prompt = generate_review_prompt(diffs_and_paths, files_content)
             return unless review_prompt.present?
 
             response = review_response_for(review_prompt)
@@ -124,8 +133,14 @@ module Gitlab
           def process_files_individually(diff_files, mr_diff_refs)
             diff_files.each do |diff_file|
               single_file_diff = { diff_file.new_path => diff_file.raw_diff }
+              single_file_content = {}
 
-              review_prompt = generate_review_prompt(single_file_diff)
+              if !diff_file.new_file? && include_file_content?
+                content = diff_file.old_blob&.data
+                single_file_content[diff_file.new_path] = content if content.present?
+              end
+
+              review_prompt = generate_review_prompt(single_file_diff, single_file_content)
               next unless review_prompt.present?
 
               response = review_response_for(review_prompt)
@@ -137,6 +152,11 @@ module Gitlab
               process_comments(file_comments, diff_file, mr_diff_refs)
             end
           end
+
+          def include_file_content?
+            Feature.enabled?(:duo_code_review_full_file, user)
+          end
+          strong_memoize_attr :include_file_content?
 
           def process_comments(comments, diff_file, diff_refs)
             comments.each do |comment|
@@ -171,11 +191,12 @@ module Gitlab
             resource || progress_note&.noteable
           end
 
-          def generate_review_prompt(diffs_and_paths)
+          def generate_review_prompt(diffs_and_paths, files_content)
             ai_prompt_class.new(
               mr_title: merge_request.title,
               mr_description: merge_request.description,
               diffs_and_paths: diffs_and_paths,
+              files_content: files_content,
               user: user
             ).to_prompt
           end

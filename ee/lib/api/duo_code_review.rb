@@ -58,6 +58,8 @@ module API
           requires :diffs, type: String, desc: 'Raw diffs to review'
           requires :mr_title, type: String, desc: 'Title of the merge request'
           requires :mr_description, type: String, desc: 'Description of the merge request'
+          requires :file_contents, type: Hash,
+            desc: 'Full file contents, where keys are file paths and values are the file contents'
         end
 
         post do
@@ -69,6 +71,7 @@ module API
               mr_title: declared_params[:mr_title],
               mr_description: declared_params[:mr_description],
               diffs_and_paths: diffs_and_paths,
+              files_content: declared_params[:file_contents],
               user: current_user
             )
             .to_prompt
