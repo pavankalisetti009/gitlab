@@ -92,6 +92,7 @@ module Admin
         ai_gateway_url: ai_gateway_url,
         duo_chat_expiration_column: current_application_settings.duo_chat_expiration_column,
         duo_chat_expiration_days: current_application_settings.duo_chat_expiration_days.to_s,
+        duo_core_features_enabled: ::Ai::Setting.instance.duo_core_features_enabled?.to_s,
         is_duo_base_access_allowed: Feature.enabled?(:allow_duo_base_access, :instance).to_s
       }
     end

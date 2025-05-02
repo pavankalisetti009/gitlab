@@ -62,6 +62,7 @@ const createComponent = async ({
       aiGatewayUrl,
       duoChatExpirationDays: 30,
       duoChatExpirationColumn: 'last_updated_at',
+      duoCoreFeaturesEnabled: false,
       ...provide,
     },
   });
@@ -100,6 +101,7 @@ describe('AiAdminSettings', () => {
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experimentFeaturesEnabled: false,
+        duoCoreFeaturesEnabled: false,
       });
       expect(updateApplicationSettings).toHaveBeenCalledTimes(1);
       expect(updateApplicationSettings).toHaveBeenCalledWith({
@@ -112,17 +114,31 @@ describe('AiAdminSettings', () => {
       });
     });
 
-    describe('when the AI gateway url input has changed', () => {
-      it('invokes the updateAiSettings mutation', async () => {
+    describe('when AI settings have changed', () => {
+      it('updates aiGatewayUrl', async () => {
         const newAiGatewayUrl = 'http://new-ai-gateway-url.com';
 
         findAiGatewayUrlInputForm().vm.$emit('change', newAiGatewayUrl);
 
-        await findAiCommonSettings().vm.$emit('submit', {});
+        await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: false });
 
         expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
           input: {
             aiGatewayUrl: 'http://new-ai-gateway-url.com',
+            duoCoreFeaturesEnabled: false,
+          },
+        });
+      });
+
+      it('updates duoCoreFeaturesEnabled', async () => {
+        await findAiCommonSettings().vm.$emit('submit', {
+          duoCoreFeaturesEnabled: true,
+        });
+
+        expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
+          input: {
+            aiGatewayUrl: 'http://localhost:5052',
+            duoCoreFeaturesEnabled: true,
           },
         });
       });
@@ -142,7 +158,7 @@ describe('AiAdminSettings', () => {
 
       it('triggers a post request to persist the change', async () => {
         await findAiModelsForm().vm.$emit('change', false);
-        await findAiCommonSettings().vm.$emit('submit', {});
+        await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: false });
         await waitForPromises();
 
         expect(axios.post).toHaveBeenCalledWith(toggleBetaModelsPath);
@@ -154,6 +170,7 @@ describe('AiAdminSettings', () => {
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experimentFeaturesEnabled: false,
+        duoCoreFeaturesEnabled: false,
       });
       await waitForPromises();
       expect(visitUrlWithAlerts).toHaveBeenCalledWith(
@@ -172,6 +189,7 @@ describe('AiAdminSettings', () => {
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experimentFeaturesEnabled: false,
+        duoCoreFeaturesEnabled: false,
       });
       await waitForPromises();
       expect(createAlert).toHaveBeenCalledWith(

@@ -12,11 +12,10 @@ describe('AiCommonSettingsForm', () => {
   const createComponent = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(AiCommonSettingsForm, {
       propsData: {
-        availability: AVAILABILITY_OPTIONS.DEFAULT_ON,
-        experimentsEnabled: false,
-        disableExperimentCheckbox: false,
-        showWarning: false,
-        hasFormChanged: false,
+        duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
+        duoCoreFeaturesEnabled: true,
+        experimentFeaturesEnabled: true,
+        hasParentFormChanged: false,
         ...props,
       },
       provide: {

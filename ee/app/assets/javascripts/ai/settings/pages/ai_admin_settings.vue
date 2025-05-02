@@ -37,7 +37,11 @@ export default {
     'enabledExpandedLogging',
     'duoChatExpirationDays',
     'duoChatExpirationColumn',
+    'duoCoreFeaturesEnabled',
   ],
+  provide: {
+    isSaaS: false,
+  },
   props: {
     redirectPath: {
       type: String,
@@ -59,6 +63,7 @@ export default {
       expandedLogging: this.enabledExpandedLogging,
       chatExpirationDays: this.duoChatExpirationDays,
       chatExpirationColumn: this.duoChatExpirationColumn,
+      areDuoCoreFeaturesEnabled: this.duoCoreFeaturesEnabled,
     };
   },
   computed: {
@@ -66,7 +71,7 @@ export default {
       return (
         this.disabledConnection !== this.disabledDirectConnectionMethod ||
         this.hasAiModelsFormChanged ||
-        this.hasAiGatewayUrlChanged ||
+        this.haveAiSettingsChanged ||
         this.hasExpandedAiLoggingChanged ||
         this.chatExpirationDays !== this.duoChatExpirationDays ||
         this.chatExpirationColumn !== this.duoChatExpirationColumn
@@ -75,20 +80,24 @@ export default {
     hasAiModelsFormChanged() {
       return this.aiModelsEnabled !== this.betaSelfHostedModelsEnabled;
     },
-    hasAiGatewayUrlChanged() {
-      return this.aiGatewayUrlInput !== this.aiGatewayUrl;
+    haveAiSettingsChanged() {
+      return (
+        this.aiGatewayUrlInput !== this.aiGatewayUrl ||
+        this.areDuoCoreFeaturesEnabled !== this.duoCoreFeaturesEnabled
+      );
     },
     hasExpandedAiLoggingChanged() {
       return this.expandedLogging !== this.enabledExpandedLogging;
     },
   },
   methods: {
-    async updateSettings({ duoAvailability, experimentFeaturesEnabled }) {
+    async updateSettings({ duoAvailability, experimentFeaturesEnabled, duoCoreFeaturesEnabled }) {
       try {
         this.isLoading = true;
+        this.areDuoCoreFeaturesEnabled = duoCoreFeaturesEnabled;
 
-        if (this.hasAiGatewayUrlChanged) {
-          await this.updateAiGatewayUrl();
+        if (this.haveAiSettingsChanged) {
+          await this.updateAiSettings();
         }
 
         await updateApplicationSettings({
@@ -126,12 +135,13 @@ export default {
           this.isLoading = false;
         });
     },
-    async updateAiGatewayUrl() {
+    async updateAiSettings() {
       const { data } = await this.$apollo.mutate({
         mutation: updateAiSettingsMutation,
         variables: {
           input: {
             aiGatewayUrl: this.aiGatewayUrlInput,
+            duoCoreFeaturesEnabled: this.areDuoCoreFeaturesEnabled,
           },
         },
       });
