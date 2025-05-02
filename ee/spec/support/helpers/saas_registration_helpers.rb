@@ -274,7 +274,7 @@ module SaasRegistrationHelpers
   end
 
   def expect_to_see_company_form
-    expect(page).to have_content 'About your company'
+    expect(page).to have_content 'Tell us about your company'
   end
 
   def expect_to_apply_trial(glm: true)
@@ -420,7 +420,6 @@ module SaasRegistrationHelpers
     select 'United States of America', from: 'country'
     select 'Florida', from: 'state'
     fill_in 'phone_number', with: '+1234567890'
-    fill_in 'website_url', with: 'https://gitlab.com'
   end
 
   def company_params(user)
@@ -432,7 +431,6 @@ module SaasRegistrationHelpers
       phone_number: '+1234567890',
       country: 'US',
       state: 'FL',
-      website_url: 'https://gitlab.com',
       # these are the passed through params
       jobs_to_be_done_other: 'My reason'
     ).permit!

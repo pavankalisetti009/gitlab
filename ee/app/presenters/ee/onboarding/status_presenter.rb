@@ -16,7 +16,7 @@ module EE
       delegate :setup_for_company_label_text, to: :registration_type
       delegate :setup_for_company_help_text, to: :registration_type
       # predicate delegations
-      delegate :redirect_to_company_form?, :show_company_form_illustration?, to: :registration_type
+      delegate :redirect_to_company_form?, :show_company_form_side_column?, to: :registration_type
       delegate :show_joining_project?, :hide_setup_for_company_field?, to: :registration_type
       delegate :read_from_stored_user_location?, :preserve_stored_location?, to: :registration_type
 

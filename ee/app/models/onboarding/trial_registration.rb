@@ -37,8 +37,8 @@ module Onboarding
 
     # predicate methods
 
-    def self.show_company_form_illustration?
-      true
+    def self.show_company_form_side_column?
+      false
     end
 
     def self.redirect_to_company_form?

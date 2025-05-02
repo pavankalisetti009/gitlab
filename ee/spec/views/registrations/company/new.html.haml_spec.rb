@@ -4,12 +4,12 @@ require 'spec_helper'
 
 RSpec.describe 'registrations/company/new', feature_category: :onboarding do
   let(:user) { build_stubbed(:user) }
-  let(:show_company_form_illustration?) { false }
+  let(:show_company_form_side_column?) { false }
   let(:onboarding_status_presenter) do
     instance_double(
       ::Onboarding::StatusPresenter,
       company_form_type: 'registration',
-      show_company_form_illustration?: show_company_form_illustration?,
+      show_company_form_side_column?: show_company_form_side_column?,
       tracking_label: 'free_registration'
     )
   end
@@ -47,22 +47,22 @@ RSpec.describe 'registrations/company/new', feature_category: :onboarding do
 
   describe 'when page is rendered' do
     context 'when a user is coming from a trial registration' do
-      let(:show_company_form_illustration?) { true }
+      let(:show_company_form_side_column?) { false }
 
       it 'renders correctly' do
         render
 
-        expect_to_see_trial_column
+        expect_to_see_trial_form
       end
     end
 
     context 'when a user is coming from a free registration' do
-      let(:show_company_form_illustration?) { false }
+      let(:show_company_form_side_column?) { true }
 
       it 'renders correctly' do
         render
 
-        expect_to_see_registration_column
+        expect_to_see_registration_form
       end
     end
   end
@@ -71,13 +71,13 @@ RSpec.describe 'registrations/company/new', feature_category: :onboarding do
     allow(view).to receive_messages(devise_mapping: Devise.mappings[:user], resource: spy, resource_name: :user)
   end
 
-  def expect_to_see_trial_column
-    expect(rendered).to have_content(_('About your company'))
-    expect(rendered).to have_selector('[data-testid="trial-registration-column"]')
+  def expect_to_see_trial_form
+    expect(rendered).to have_content(_('Tell us about your company'))
+    expect(rendered).not_to have_selector('[data-testid="trial-reassurances-column"]')
   end
 
-  def expect_to_see_registration_column
-    expect(rendered).to have_content(_('About your company'))
+  def expect_to_see_registration_form
+    expect(rendered).to have_content(_('Tell us about your company'))
     expect(rendered).to have_selector('[data-testid="trial-reassurances-column"]')
   end
 end

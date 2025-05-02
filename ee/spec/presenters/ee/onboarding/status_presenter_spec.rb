@@ -12,7 +12,7 @@ RSpec.describe Onboarding::StatusPresenter, feature_category: :onboarding do
     it { is_expected.to delegate_method(:tracking_label).to(:registration_type) }
     it { is_expected.to delegate_method(:setup_for_company_label_text).to(:registration_type) }
     it { is_expected.to delegate_method(:setup_for_company_help_text).to(:registration_type) }
-    it { is_expected.to delegate_method(:show_company_form_illustration?).to(:registration_type) }
+    it { is_expected.to delegate_method(:show_company_form_side_column?).to(:registration_type) }
     it { is_expected.to delegate_method(:redirect_to_company_form?).to(:registration_type) }
     it { is_expected.to delegate_method(:show_joining_project?).to(:registration_type) }
     it { is_expected.to delegate_method(:hide_setup_for_company_field?).to(:registration_type) }

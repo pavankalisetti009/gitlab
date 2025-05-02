@@ -18,9 +18,9 @@ module Onboarding
 
     # predicate methods
 
-    override :show_company_form_illustration?
-    def self.show_company_form_illustration?
-      false
+    override :show_company_form_side_column?
+    def self.show_company_form_side_column?
+      true
     end
   end
 end
