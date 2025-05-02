@@ -42,12 +42,6 @@ export default {
     customField: {
       type: Object,
       required: true,
-      validator: (customField) => {
-        return (
-          customField.customField?.fieldType === CUSTOM_FIELDS_TYPE_MULTI_SELECT &&
-          (customField.selectedOptions == null || Array.isArray(customField.selectedOptions))
-        );
-      },
     },
     fullPath: {
       type: String,

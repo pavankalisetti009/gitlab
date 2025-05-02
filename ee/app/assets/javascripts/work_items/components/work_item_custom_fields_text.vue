@@ -53,12 +53,6 @@ export default {
     customField: {
       type: Object,
       required: true,
-      validator: (customField) => {
-        return (
-          customField.customField?.fieldType === CUSTOM_FIELDS_TYPE_TEXT &&
-          (customField.value == null || typeof customField.value === 'string')
-        );
-      },
     },
     fullPath: {
       type: String,

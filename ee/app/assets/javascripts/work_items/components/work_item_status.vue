@@ -66,7 +66,7 @@ export default {
       return findStatusWidget(this.workItem);
     },
     hasStatus() {
-      return this.localStatus?.id !== null;
+      return Boolean(this.localStatus?.id);
     },
     name() {
       return this.localStatus?.name;

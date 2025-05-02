@@ -57,6 +57,7 @@ describe('WorkItemCustomFieldsNumber', () => {
         customField,
         workItemType: 'Task',
         workItemId: defaultWorkItemId,
+        fullPath: 'gitlab-org/gitlab',
       },
       stubs: {
         WorkItemSidebarWidget,

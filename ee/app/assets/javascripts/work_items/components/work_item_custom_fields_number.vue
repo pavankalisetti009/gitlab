@@ -40,12 +40,6 @@ export default {
     customField: {
       type: Object,
       required: true,
-      validator: (customField) => {
-        return (
-          customField.customField?.fieldType === CUSTOM_FIELDS_TYPE_NUMBER &&
-          (customField.value == null || Number.isFinite(Number(customField.value)))
-        );
-      },
     },
     fullPath: {
       type: String,
