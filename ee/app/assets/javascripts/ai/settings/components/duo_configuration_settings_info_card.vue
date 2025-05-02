@@ -8,6 +8,8 @@ import DuoConfigurationSettingsRow from './duo_configuration_settings_row.vue';
 export default {
   name: 'DuoConfigurationSettingsInfoCard',
   i18n: {
+    aiLogsText: s__('AiPowered|AI logs'),
+    aiGatewayUrlText: s__('AiPowered|Local AI gateway URL'),
     duoChangeConfigurationButtonText: s__('AiPowered|Change configuration'),
     experimentAndBetaFeaturesText: s__('AiPowered|Experiment and beta features'),
     betaSelfHostedModelsText: s__('AiPowered|Self-hosted beta models and features'),
@@ -26,10 +28,13 @@ export default {
     DuoConfigurationSettingsRow,
   },
   inject: {
+    aiGatewayUrl: { default: '' },
+    canManageSelfHostedModels: {},
     duoConfigurationPath: {},
     isSaaS: {},
     duoAvailability: {},
     directCodeSuggestionsEnabled: { default: false },
+    expandedLoggingEnabled: { default: false },
     experimentFeaturesEnabled: {},
     betaSelfHostedModelsEnabled: { default: false },
     areExperimentSettingsAllowed: {},
@@ -96,24 +101,36 @@ export default {
       <section v-if="isDuoBaseAccessAllowed && !isDuoCoreTier">
         <duo-configuration-settings-row
           :duo-configuration-settings-row-type-title="$options.i18n.duoCoreAvailabilityText"
-          :is-enabled="areDuoCoreFeaturesEnabled"
+          :config-value="areDuoCoreFeaturesEnabled"
         />
       </section>
       <section v-if="areExperimentSettingsAllowed">
         <duo-configuration-settings-row
           :duo-configuration-settings-row-type-title="$options.i18n.experimentAndBetaFeaturesText"
-          :is-enabled="experimentFeaturesEnabled"
+          :config-value="experimentFeaturesEnabled"
         />
       </section>
       <section v-if="onSelfManaged">
         <duo-configuration-settings-row
           :duo-configuration-settings-row-type-title="$options.i18n.directConnectionsText"
-          :is-enabled="directCodeSuggestionsEnabled"
+          :config-value="directCodeSuggestionsEnabled"
         />
-        <duo-configuration-settings-row
-          :duo-configuration-settings-row-type-title="$options.i18n.betaSelfHostedModelsText"
-          :is-enabled="betaSelfHostedModelsEnabled"
-        />
+        <template v-if="canManageSelfHostedModels">
+          <duo-configuration-settings-row
+            :duo-configuration-settings-row-type-title="$options.i18n.betaSelfHostedModelsText"
+            :config-value="betaSelfHostedModelsEnabled"
+          />
+          <duo-configuration-settings-row
+            :duo-configuration-settings-row-type-title="$options.i18n.aiLogsText"
+            :config-value="expandedLoggingEnabled"
+          />
+          <template v-if="aiGatewayUrl">
+            <duo-configuration-settings-row
+              :duo-configuration-settings-row-type-title="$options.i18n.aiGatewayUrlText"
+              :config-value="aiGatewayUrl"
+            />
+          </template>
+        </template>
       </section>
     </template>
     <template #footer>

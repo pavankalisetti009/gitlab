@@ -65,11 +65,11 @@ export default {
       </section>
       <duo-configuration-settings-row
         :duo-configuration-settings-row-type-title="s__('AiPowered|Amazon Q Setup')"
-        :is-enabled="amazonQReady"
+        :config-value="amazonQReady"
       />
       <duo-configuration-settings-row
         :duo-configuration-settings-row-type-title="s__('AiPowered|Automatic Code Reviews')"
-        :is-enabled="amazonQAutoReviewEnabled"
+        :config-value="amazonQAutoReviewEnabled"
       />
     </template>
     <template #footer>

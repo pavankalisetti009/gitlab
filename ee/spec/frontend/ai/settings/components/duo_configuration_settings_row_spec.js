@@ -9,45 +9,60 @@ describe('DuoConfigurationSettingsRow', () => {
     wrapper = shallowMountExtended(DuoConfigurationSettingsRow, {
       propsData: {
         duoConfigurationSettingsRowTypeTitle: 'Duo Row Title',
-        isEnabled: false,
+        configValue: false,
         ...props,
       },
     });
   };
 
   const findIcon = () => wrapper.findComponent(GlIcon);
-  const findConfigurationStatus = () => wrapper.findByTestId('duo-configuration-row-title');
-  const findConfigurationEnabled = () => wrapper.findByTestId('duo-configuration-row-enabled-text');
-  const findConfigurationDisabled = () =>
-    wrapper.findByTestId('duo-configuration-row-disabled-text');
+  const findConfigurationTitle = () => wrapper.findByTestId('duo-configuration-row-title');
+  const findConfigurationRowValue = () => wrapper.findByTestId('duo-configuration-row-value');
 
   describe('component rendering', () => {
     it('renders the title correctly', () => {
       createComponent();
-      expect(findConfigurationStatus().text()).toBe('Duo Row Title');
+
+      expect(findConfigurationTitle().text()).toBe('Duo Row Title');
     });
 
-    describe('when enabled', () => {
-      beforeEach(() => {
-        createComponent({ isEnabled: true });
+    describe('boolean values', () => {
+      describe('when config is enabled', () => {
+        beforeEach(() => {
+          createComponent({ configValue: true });
+        });
+
+        it('displays the enabled text', () => {
+          expect(findConfigurationRowValue().text()).toBe('Enabled');
+        });
+
+        it('renders the check icon', () => {
+          expect(findIcon().exists()).toBe(true);
+        });
       });
 
-      it('displays the enabled text', () => {
-        expect(findConfigurationEnabled().text()).toBe('Enabled');
-      });
+      describe('when config is disabled', () => {
+        beforeEach(() => {
+          createComponent({ configValue: false });
+        });
 
-      it('renders the check icon', () => {
-        expect(findIcon().exists()).toBe(true);
+        it('displays the disabled text', () => {
+          expect(findConfigurationRowValue().text()).toBe('Not enabled');
+        });
+
+        it('does not render the check icon', () => {
+          expect(findIcon().exists()).toBe(false);
+        });
       });
     });
 
-    describe('when disabled', () => {
+    describe('when config value is a string', () => {
       beforeEach(() => {
-        createComponent({ isEnabled: false });
+        createComponent({ configValue: 'config value' });
       });
 
-      it('displays the disabled text', () => {
-        expect(findConfigurationDisabled().text()).toBe('Not enabled');
+      it('displays the string value', () => {
+        expect(findConfigurationRowValue().text()).toBe('config value');
       });
 
       it('does not render the check icon', () => {

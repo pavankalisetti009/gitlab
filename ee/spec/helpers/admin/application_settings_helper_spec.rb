@@ -218,12 +218,16 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
       allow(::Ai::Setting).to receive_message_chain(:instance, :duo_core_features_enabled?)
         .and_return(duo_core_features_enabled)
+      allow(::Ai::Setting).to receive_message_chain(:instance, :ai_gateway_url)
+      .and_return('http://0.0.0.0:5052')
     end
 
     it 'returns a hash with all required keys and correct values' do
       expect(helper.admin_duo_home_app_data).to eq({
+        ai_gateway_url: 'http://0.0.0.0:5052',
         duo_seat_utilization_path: '/admin/gitlab_duo/seat_utilization',
         duo_configuration_path: '/admin/gitlab_duo/configuration',
+        enabled_expanded_logging: 'true',
         add_duo_pro_seats_url: 'https://customers.staging.gitlab.com/gitlab/subscriptions/A-S00613274/duo_pro_seats',
         subscription_name: 'Test Subscription Name',
         is_bulk_add_on_assignment_enabled: 'true',
@@ -341,7 +345,9 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       let(:duo_workflow_enabled) { true }
       let(:service_account) { build_stubbed(:user, id: 123, username: 'duo_service', name: 'Duo Service') }
       let(:user_data) { { id: 123, username: 'duo_service', name: 'Duo Service', avatar_url: 'avatar.png' } }
-      let(:ai_setting) { instance_double(Ai::Setting, duo_core_features_enabled?: true) }
+      let(:ai_setting) do
+        instance_double(Ai::Setting, duo_core_features_enabled?: true, ai_gateway_url: 'http://0.0.0.0:5052')
+      end
 
       before do
         allow(helper).to receive(:duo_workflow_service_account).and_call_original

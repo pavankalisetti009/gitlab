@@ -16,8 +16,10 @@ module Admin
     def admin_duo_home_app_data
       subscription_name = License.current.subscription_name
       {
+        ai_gateway_url: ::Ai::Setting.instance.ai_gateway_url,
         duo_seat_utilization_path: admin_gitlab_duo_seat_utilization_index_path,
         duo_configuration_path: admin_gitlab_duo_configuration_index_path,
+        enabled_expanded_logging: enabled_expanded_logging.to_s,
         add_duo_pro_seats_url: add_duo_pro_seats_url(subscription_name),
         subscription_name: subscription_name,
         is_bulk_add_on_assignment_enabled: 'true',

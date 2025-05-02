@@ -5705,6 +5705,9 @@ msgstr ""
 msgid "AiImpactAnalytics|Value can't be calculated due to insufficient data."
 msgstr ""
 
+msgid "AiPowered|AI logs"
+msgstr ""
+
 msgid "AiPowered|AI-native features now available in IDEs"
 msgstr ""
 
@@ -5838,6 +5841,9 @@ msgid "AiPowered|Learn more"
 msgstr ""
 
 msgid "AiPowered|Local AI Gateway URL"
+msgstr ""
+
+msgid "AiPowered|Local AI gateway URL"
 msgstr ""
 
 msgid "AiPowered|Might result in requests having higher latency."
