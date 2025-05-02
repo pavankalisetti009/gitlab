@@ -72,8 +72,72 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
   end
 
   describe 'associations' do
+    # Multiple groups associations
+    it { is_expected.to have_many(:approval_rules_groups) }
+    it { is_expected.to have_many(:groups).through(:approval_rules_groups) }
+
+    # Single group associations
+    it { is_expected.to have_one(:approval_rules_group).inverse_of(:approval_rule) }
+    it { is_expected.to have_one(:group).through(:approval_rules_group) }
+
+    # Multiple projects associations
+    it { is_expected.to have_many(:approval_rules_projects) }
+    it { is_expected.to have_many(:projects).through(:approval_rules_projects) }
+
+    # Single project associations
+    it { is_expected.to have_one(:approval_rules_project) }
+    it { is_expected.to have_one(:project).through(:approval_rules_project) }
+
+    # Multiple merge requests associations
+    it { is_expected.to have_many(:approval_rules_merge_requests) }
+    it { is_expected.to have_many(:merge_requests).through(:approval_rules_merge_requests) }
+
+    # Single merge request associations
+    it { is_expected.to have_one(:approval_rules_merge_request).inverse_of(:approval_rule) }
+    it { is_expected.to have_one(:merge_request).through(:approval_rules_merge_request) }
+
+    # Approver users associations
     it { is_expected.to have_many(:approval_rules_approver_users) }
     it { is_expected.to have_many(:approver_users).through(:approval_rules_approver_users).source(:user) }
+
+    # Approver groups associations
+    it { is_expected.to have_many(:approval_rules_approver_groups) }
+    it { is_expected.to have_many(:approver_groups).through(:approval_rules_approver_groups).source(:group) }
+
+    # Group users association
+    it { is_expected.to have_many(:group_users).through(:approver_groups).source(:users) }
+  end
+
+  # For associations with scopes or options, we need more detailed tests
+  describe 'group_users association' do
+    let(:parent_group) { create(:group) }
+    let(:approval_rule) { create(:merge_requests_approval_rule, group_id: parent_group.id) }
+    let(:group1) { create(:group) }
+    let(:group2) { create(:group) }
+    let(:user1) { create(:user) }
+    let(:user2) { create(:user) }
+    let(:user3) { create(:user) }
+
+    before do
+      # Add groups as approver groups
+      create(:merge_requests_approval_rules_approver_group, approval_rule: approval_rule, group: group1)
+      create(:merge_requests_approval_rules_approver_group, approval_rule: approval_rule, group: group2)
+
+      # Add users to groups
+      group1.add_developer(user1)
+      group1.add_developer(user2)
+      group2.add_developer(user2) # user2 is in both groups
+      group2.add_developer(user3)
+    end
+
+    it 'returns all distinct users from all approver groups' do
+      # Verify correct content
+      expect(approval_rule.group_users).to contain_exactly(user1, user2, user3)
+
+      # Verify distinct behavior (user2 is in both groups but appears only once)
+      expect(approval_rule.group_users.count).to eq(3)
+      expect(approval_rule.group_users.where(id: user2.id).count).to eq(1)
+    end
   end
 
   describe '#approver_users' do
