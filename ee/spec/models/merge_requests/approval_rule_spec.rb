@@ -314,6 +314,36 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
     end
   end
 
+  describe '#section' do
+    it 'returns nil' do
+      expect(rule.section).to be_nil
+    end
+  end
+
+  describe '#users' do
+    it 'returns the same result as approver_users' do
+      expect(rule.users).to eq(rule.approver_users)
+    end
+  end
+
+  describe '#source_rule' do
+    it 'returns nil' do
+      expect(rule.source_rule).to be_nil
+    end
+  end
+
+  describe '#overridden?' do
+    it 'returns nil' do
+      expect(rule.overridden?).to be_nil
+    end
+  end
+
+  describe '#code_owner' do
+    it 'returns nil' do
+      expect(rule.code_owner).to be_nil
+    end
+  end
+
   describe '#from_scan_result_policy?' do
     it 'is false' do
       expect(rule.from_scan_result_policy?).to be false

@@ -53,6 +53,23 @@ module MergeRequests
 
     def scan_result_policy_read; end
 
+    def section; end
+
+    def security_orchestration_policy_configuration_id; end
+
+    # Eventually we will update callers to use approver_users, but for now
+    # this is simpler than introducing feature flag logic in all the caller
+    # locations.
+    def users
+      approver_users
+    end
+
+    def source_rule; end
+
+    def overridden?; end
+
+    def code_owner; end
+
     def user_defined?
       regular? || any_approver?
     end
@@ -95,6 +112,9 @@ module MergeRequests
       end
     end
 
+    # We are keeping the name like this to make it easier to identify where
+    # this came from in the v1 architecture, even though we don't have the role
+    # functionality brought over yet.
     def with_role_approvers
       if approver_users.loaded? && group_users.loaded?
         approver_users | group_users
