@@ -1,20 +1,21 @@
-- ultimate_trial_value_props = [s_('InProductMarketing|Invite unlimited colleagues'),
+- ultimate_trial_value_props = [s_('InProductMarketing|60-day trial period'),
+  s_('InProductMarketing|Invite unlimited colleagues'),
   s_('InProductMarketing|Free guest users'),
   s_('InProductMarketing|Ensure compliance'),
-  s_('InProductMarketing|Built-in security')]
+  s_('InProductMarketing|Build in security')]
 
-.col-md-4.gl-flex.gl-flex-col.gl-items-center.gl-justify-start{ data: { testid: 'trial-reassurances-column' } }
-  .gl-w-28
-    .gl-mb-6
-      = image_tag 'illustrations/saas-trial-illustration.svg'
+.col-md-4.gl-flex.gl-flex-col.gl-items-center.gl-justify-center{ data: { testid: 'trial-reassurances-column' } }
+  .gl-w-auto
+    .gl-mb-6.gl-text-center
+      = image_tag 'illustrations/tanuki-ai-md.svg', width: 144
 
-    %h3.gl-mb-2.gl-text-center.gl-text-default
-      = s_('InProductMarketing|Start your 60-day free trial')
+    %h3.gl-mb-3.gl-text-left.gl-text-default
+      = s_('InProductMarketing|Experience the power of Ultimate + GitLab Duo Enterprise')
 
-    %p.gl-mb-6.gl-text-center.gl-text-default= s_('InProductMarketing|No credit card required')
+    %p.gl-mb-5.gl-text-left.gl-text-default= s_('InProductMarketing|No credit card required')
 
     %ul.gl-pl-0.gl-mb-6.gl-pl-0.gl-mb-6x.gl-text-default.gl-text-sm
       - ultimate_trial_value_props.each do |value_prop|
-        %li.gl-flex.gl-mb-5
+        %li.gl-flex.gl-mb-3
           %span.gl-mr-3= sprite_icon 'check-circle', css_class: 'gl-icon gl-fill-icon-success'
           = value_prop

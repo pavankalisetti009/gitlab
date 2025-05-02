@@ -15,7 +15,7 @@ RSpec.describe 'Single sign on for signing up through sign in flow for user pick
       ensure_onboarding { expect_to_see_company_form }
 
       fill_in_company_form
-      click_on s_('Trial|Start free Ultimate + GitLab Duo Enterprise trial')
+      click_on s_('Trial|Continue with trial')
 
       ensure_onboarding { expect_to_see_group_and_project_creation_form }
 

@@ -24,7 +24,7 @@ RSpec.describe 'Standard flow for user picking company and creating a project', 
         ensure_onboarding { expect_to_see_company_form }
 
         fill_in_company_form
-        click_on s_('Trial|Start free Ultimate + GitLab Duo Enterprise trial')
+        click_on s_('Trial|Continue with trial')
 
         ensure_onboarding { expect_to_see_group_and_project_creation_form }
 
@@ -50,13 +50,13 @@ RSpec.describe 'Standard flow for user picking company and creating a project', 
 
       # failure
       fill_company_form_fields
-      click_on s_('Trial|Start free Ultimate + GitLab Duo Enterprise trial')
+      click_on s_('Trial|Continue with trial')
 
       expect(page).to have_native_text_validation_message('last_name')
 
       # success
       fill_in_company_form(with_last_name: true)
-      click_on s_('Trial|Start free Ultimate + GitLab Duo Enterprise trial')
+      click_on s_('Trial|Continue with trial')
 
       ensure_onboarding { expect_to_see_group_and_project_creation_form }
 

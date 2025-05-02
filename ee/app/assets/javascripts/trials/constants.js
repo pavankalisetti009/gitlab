@@ -1,9 +1,7 @@
 import { s__ } from '~/locale';
 import { PROMO_URL } from '~/constants';
 
-export const ULTIMATE_TRIAL_FORM_SUBMIT_TEXT = s__(
-  'Trial|Start free Ultimate + GitLab Duo Enterprise trial',
-);
+export const ULTIMATE_TRIAL_FORM_SUBMIT_TEXT = s__('Trial|Continue with trial');
 export const GENERIC_TRIAL_FORM_SUBMIT_TEXT = s__('Trial|Continue');
 export const ULTIMATE_TRIAL_FOOTER_DESCRIPTION = s__(
   'Trial|Your free Ultimate & GitLab Duo Enterprise Trial lasts for 60 days. After this period, you can maintain a GitLab Free account forever, or upgrade to a paid plan.',
@@ -13,10 +11,7 @@ export const TRIAL_PHONE_DESCRIPTION = s__('Trial|Allowed characters: +, 0-9, -,
 export const TRIAL_STATE_LABEL = s__('Trial|State or province');
 export const TRIAL_STATE_PROMPT = s__('Trial|Select state or province');
 export const TRIAL_DESCRIPTION = s__(
-  'Trial|To activate your trial, we need additional details from you.',
-);
-export const TRIAL_REGISTRATION_DESCRIPTION = s__(
-  'TrialRegistration|To complete registration, we need additional details from you.',
+  'Trial|We need a few more details from you to activate your trial.',
 );
 export const TRIAL_TERMS_TEXT = s__(
   'Trial|By clicking "%{buttonText}" you accept the %{gitlabSubscriptionAgreement} and acknowledge the %{privacyStatement} and %{cookiePolicy}',

@@ -17,6 +17,7 @@ describe('CompanyForm', () => {
         user: {
           firstName: 'Joe',
           lastName: 'Doe',
+          showNameFields: true,
           emailDomain: '_email_domain_',
         },
         trackActionForErrors: '_trackActionForErrors_',
@@ -45,7 +46,6 @@ describe('CompanyForm', () => {
       ${'company_size'}
       ${'country'}
       ${'phone_number'}
-      ${'website_url'}
     `('has the correct form input in the form content', ({ testid }) => {
       expect(findFormInput(testid).exists()).toBe(true);
     });
@@ -58,7 +58,7 @@ describe('CompanyForm', () => {
 
     it('displays correct description text', () => {
       expect(findDescription().text()).toBe(
-        'To activate your trial, we need additional details from you.',
+        'We need a few more details from you to activate your trial.',
       );
     });
 
@@ -78,12 +78,12 @@ describe('CompanyForm', () => {
 
     it('displays correct description text', () => {
       expect(findDescription().text()).toBe(
-        'To complete registration, we need additional details from you.',
+        'We need a few more details from you to activate your trial.',
       );
     });
 
     it('displays correct text on submit button', () => {
-      expect(findSubmitButton().text()).toBe('Start free Ultimate + GitLab Duo Enterprise trial');
+      expect(findSubmitButton().text()).toBe('Continue with trial');
     });
 
     it('displays correct footer text', () => {

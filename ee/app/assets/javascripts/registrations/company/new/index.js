@@ -2,11 +2,19 @@ import Vue from 'vue';
 import apolloProvider from 'ee/subscriptions/graphql/graphql';
 import CompanyForm from 'ee/registrations/components/company_form.vue';
 import GlFieldErrors from '~/gl_field_errors';
+import { parseBoolean } from '~/lib/utils/common_utils';
 
 const mountCompanyForm = () => {
   const el = document.querySelector('#js-registrations-company-form');
-  const { submitPath, firstName, lastName, emailDomain, formType, trackActionForErrors } =
-    el.dataset;
+  const {
+    submitPath,
+    firstName,
+    lastName,
+    showNameFields,
+    emailDomain,
+    formType,
+    trackActionForErrors,
+  } = el.dataset;
 
   return new Vue({
     el,
@@ -15,6 +23,7 @@ const mountCompanyForm = () => {
       user: {
         firstName,
         lastName,
+        showNameFields: parseBoolean(showNameFields),
         emailDomain,
       },
       submitPath,
