@@ -56,16 +56,26 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       let(:disabled_direct_code_suggestions) { false }
       let(:duo_chat_expiration_column) { 'created_at' }
       let(:duo_chat_expiration_days) { 30 }
+      let(:duo_core_features_enabled) { false }
 
-      where(:terms_accepted, :purchased, :ultimate, :premium, :duo_ent_purchased, :expected_duo_pro_visible_value,
-        :expected_experiments_visible_value, :expected_can_manage_self_hosted_models) do
-        true  | true  | true  | false | true  | 'true'  | 'true'  | 'true'
-        true  | true  | false | true  | true  | 'true'  | 'true'  | 'true'
-        true  | true  | true  | false | false | 'true'  | 'true'  | 'false'
-        true  | true  | false | true  | false | 'true'  | 'true'  | 'false'
-        true  | true  | false | false | true  | 'true'  | 'true'  | 'false'
-        false | false | false | false | false | 'false' | 'false' | 'false'
-        true  | nil   | true  | false | false | ''      | 'false' | 'false'
+      where(
+        :terms_accepted,
+        :purchased,
+        :ultimate,
+        :premium,
+        :duo_ent_purchased,
+        :expected_duo_pro_visible_value,
+        :expected_experiments_visible_value,
+        :expected_can_manage_self_hosted_models,
+        :expected_duo_core_features_enabled
+      ) do
+        true  | true  | true  | false | true  | 'true'  | 'true'  | 'true'  | 'true'
+        true  | true  | false | true  | true  | 'true'  | 'true'  | 'true'  | 'true'
+        true  | true  | true  | false | false | 'true'  | 'true'  | 'false' | 'true'
+        true  | true  | false | true  | false | 'true'  | 'true'  | 'false' | 'false'
+        true  | true  | false | false | true  | 'true'  | 'true'  | 'false' | 'false'
+        false | false | false | false | false | 'false' | 'false' | 'false' | 'false'
+        true  | nil   | true  | false | false | ''      | 'false' | 'false' | 'false'
       end
 
       with_them do
@@ -83,6 +93,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             ai_gateway_url: ai_gateway_url,
             duo_chat_expiration_column: duo_chat_expiration_column,
             duo_chat_expiration_days: duo_chat_expiration_days.to_s,
+            duo_core_features_enabled: expected_duo_core_features_enabled.to_s,
             is_duo_base_access_allowed: 'true'
           }
         end
@@ -117,6 +128,9 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             .and_return(enabled_expanded_logging)
 
           setup_cloud_connector_services(purchased)
+
+          allow(::Ai::Setting).to receive_message_chain(:instance, :duo_core_features_enabled?)
+            .and_return expected_duo_core_features_enabled
         end
 
         it "returns the expected data" do

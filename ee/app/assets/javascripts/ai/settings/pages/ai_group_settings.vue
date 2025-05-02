@@ -20,6 +20,9 @@ export default {
     ),
   },
   inject: ['showEarlyAccessBanner'],
+  provide: {
+    isSaaS: true,
+  },
   props: {
     redirectPath: {
       type: String,
