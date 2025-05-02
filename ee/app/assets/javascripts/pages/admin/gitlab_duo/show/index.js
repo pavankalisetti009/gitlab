@@ -12,7 +12,9 @@ export function mountGitlabDuoHomeApp() {
 
   const {
     addDuoProSeatsUrl,
+    aiGatewayUrl,
     duoSeatUtilizationPath,
+    enabledExpandedLogging,
     isBulkAddOnAssignmentEnabled,
     isDuoBaseAccessAllowed,
     subscriptionName,
@@ -39,6 +41,7 @@ export function mountGitlabDuoHomeApp() {
     name: 'GitlabDuoHome',
     apolloProvider,
     provide: {
+      aiGatewayUrl,
       isSaaS: false,
       addDuoProHref: addDuoProSeatsUrl,
       duoSeatUtilizationPath,
@@ -51,6 +54,7 @@ export function mountGitlabDuoHomeApp() {
       duoSelfHostedPath,
       duoAvailability,
       directCodeSuggestionsEnabled: parseBoolean(directCodeSuggestionsEnabled),
+      expandedLoggingEnabled: parseBoolean(enabledExpandedLogging),
       experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled),
       betaSelfHostedModelsEnabled: parseBoolean(betaSelfHostedModelsEnabled),
       areExperimentSettingsAllowed: parseBoolean(areExperimentSettingsAllowed),

@@ -75,15 +75,15 @@ describe('DuoAmazonQInfoCard', () => {
     it('disables rows when the corresponding prop is false', () => {
       createComponent({ amazonQReady: false, amazonQAutoReviewEnabled: false });
 
-      expect(findDuoConfigurationRows().at(0).props('isEnabled')).toBe(false);
-      expect(findDuoConfigurationRows().at(1).props('isEnabled')).toBe(false);
+      expect(findDuoConfigurationRows().at(0).props('configValue')).toBe(false);
+      expect(findDuoConfigurationRows().at(1).props('configValue')).toBe(false);
     });
 
     it('enables rows when the corresponding prop is true', () => {
       createComponent({ amazonQReady: true, amazonQAutoReviewEnabled: true });
 
-      expect(findDuoConfigurationRows().at(0).props('isEnabled')).toBe(true);
-      expect(findDuoConfigurationRows().at(1).props('isEnabled')).toBe(true);
+      expect(findDuoConfigurationRows().at(0).props('configValue')).toBe(true);
+      expect(findDuoConfigurationRows().at(1).props('configValue')).toBe(true);
     });
   });
 });
