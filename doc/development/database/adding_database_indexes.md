@@ -330,9 +330,9 @@ Be aware that certain factors can give the false impression that an index is unu
 
       - Run the following command in the Rails console:
 
-      ```ruby
-      Gitlab::Database::PostgresPartitionedTable.by_identifier('public.<PARENT_TABLE_NAME>').indexes
-      ```
+        ```ruby
+        Gitlab::Database::PostgresPartitionedTable.by_identifier('public.<PARENT_TABLE_NAME>').indexes
+        ```
 
 1. For GitLab.com, you can view index usage data in [Grafana](https://dashboards.gitlab.net/goto/shHCmIxHg?orgId=1).
    - Query the metric `pg_stat_user_indexes_idx_scan` filtered by the relevant index(s) for at least the last 6 months.
