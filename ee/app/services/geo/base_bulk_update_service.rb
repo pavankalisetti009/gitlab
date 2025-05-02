@@ -2,6 +2,8 @@
 
 module Geo
   class BaseBulkUpdateService
+    include ExclusiveLeaseGuard
+
     BULK_MARK_UPDATE_BATCH_SIZE = 1_000
     BULK_MARK_UPDATE_ROW_SCAN_MAX = 10_000
 
@@ -12,6 +14,12 @@ module Geo
       @params = params.with_indifferent_access
     end
 
+    def mark_one_batch_to_update_with_lease!
+      try_obtain_lease do
+        bulk_mark_update_one_batch!
+      end
+    end
+
     # @param max_batch_count [Integer] Maximum job concurrency of bulk mark update batch workers
     #                                  Avoids unnecessary counting work in Postgres
     # @return [Integer] Number of remaining batches that need to be updated, up to a specified limit
@@ -19,25 +27,6 @@ module Geo
       pending_to_update_count(limit: max_batch_count * BULK_MARK_UPDATE_BATCH_SIZE)
         .fdiv(BULK_MARK_UPDATE_BATCH_SIZE)
         .ceil
-    end
-
-    # Marks one batch of rows with the new state and updates the cursor for the next batch.
-    # This is called by workers like BulkMarkPendingBatchWorker and BulkMarkVerificationPendingBatchWorker.
-    # @return [Integer] The number of rows affected
-    def bulk_mark_update_one_batch!
-      # If you want to add concurrency, look into using a custom SQL update query with a RETURNING clause.
-      # At the moment, the worker is run one-at-a-time, and other race conditions should have minimal impact.
-      last_id = one_batch_to_bulk_update_relation.maximum(registry_class.primary_key)
-
-      rows_updated = one_batch_to_bulk_update_relation.update_all(**attributes_to_update)
-
-      # We save the latest registry ID processed in Redis so we can keep track of it
-      # to avoid updating the same batch of rows again if other jobs
-      # like Geo::RepositorySyncWorker, Geo::RegistrySyncWorker or Geo::VerificationBatchWorker change
-      # the state of those rows while the batch update was executing
-      set_bulk_mark_update_cursor(last_id)
-
-      rows_updated
     end
 
     def set_bulk_mark_update_cursor(last_id_updated)
@@ -58,6 +47,25 @@ module Geo
 
     def pending_to_update_relation
       raise NotImplementedError
+    end
+
+    # Marks one batch of rows with the new state and updates the cursor for the next batch.
+    # This is called by workers like BulkMarkPendingBatchWorker and BulkMarkVerificationPendingBatchWorker.
+    # @return [Integer] The number of rows affected
+    def bulk_mark_update_one_batch!
+      # If you want to add concurrency, look into using a custom SQL update query with a RETURNING clause.
+      # At the moment, the worker is run one-at-a-time, so other race conditions should have minimal impact.
+      last_id = one_batch_to_bulk_update_relation.maximum(registry_class.primary_key)
+
+      rows_updated = one_batch_to_bulk_update_relation.update_all(**attributes_to_update)
+
+      # We save the latest registry ID processed in Redis so we can keep track of it
+      # to avoid updating the same batch of rows again if other jobs
+      # like Geo::RepositorySyncWorker, Geo::RegistrySyncWorker or Geo::VerificationBatchWorker change
+      # the state of those rows while the batch update was executing
+      set_bulk_mark_update_cursor(last_id)
+
+      rows_updated
     end
 
     # Method that counts the number of registries that need to be updated up to a specified limit
@@ -94,6 +102,14 @@ module Geo
       end
 
       relation
+    end
+
+    def lease_timeout
+      1.hour
+    end
+
+    def lease_key
+      @lease_key ||= "geo_bulk_update_service:#{registry_class.table_name}"
     end
   end
 end

@@ -10,7 +10,9 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
     context 'when there are no options' do
       let(:service) { described_class.new(registry_class.name) }
 
-      describe '#bulk_mark_update_one_batch!' do
+      it_behaves_like 'mark_one_batch_to_update_with_lease is using an exclusive lease guard'
+
+      describe '#mark_one_batch_to_update_with_lease!' do
         before do
           # We reset the bulk mark update cursor to 0
           # so the service starts from the registry ID 0
@@ -24,7 +26,7 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
             create(registry_factory, :failed, last_synced_at: Time.current)
           ]
 
-          service.bulk_mark_update_one_batch!
+          service.mark_one_batch_to_update_with_lease!
 
           records.each do |record|
             expect(record.reload.state).to eq registry_class::STATE_VALUES[:pending]
@@ -66,7 +68,7 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
     end
 
     context 'when there are options' do
-      describe '#bulk_mark_update_one_batch!' do
+      describe '#mark_one_batch_to_update_with_lease!' do
         it 'marks replication failed registries as never attempted to sync' do
           service = described_class.new(registry_class.name, { 'replication_state' => 'failed' })
           service.set_bulk_mark_update_cursor(0)
@@ -76,7 +78,7 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
             failed: create(registry_factory, :failed, last_synced_at: Time.current)
           }
 
-          service.bulk_mark_update_one_batch!
+          service.mark_one_batch_to_update_with_lease!
 
           expect(records[:failed].reload.state).to eq registry_class::STATE_VALUES[:pending]
           expect(records[:failed].last_synced_at).to be_nil
@@ -94,7 +96,7 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
           service = described_class.new(registry_class.name, { 'ids' => [records[:started].id, records[:synced].id] })
           service.set_bulk_mark_update_cursor(0)
 
-          service.bulk_mark_update_one_batch!
+          service.mark_one_batch_to_update_with_lease!
 
           expect(records[:failed].reload.state).to eq registry_class::STATE_VALUES[:failed]
 
@@ -116,7 +118,7 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
             synced: create(registry_factory, :verification_succeeded, last_synced_at: Time.current)
           }
 
-          service.bulk_mark_update_one_batch!
+          service.mark_one_batch_to_update_with_lease!
 
           if registry_class.replicator_class.verification_enabled?
             expect(records[:fail1].reload.state).to eq registry_class::STATE_VALUES[:pending]
@@ -145,7 +147,7 @@ RSpec.describe Geo::BulkMarkPendingService, feature_category: :geo_replication d
           )
           service.set_bulk_mark_update_cursor(0)
 
-          service.bulk_mark_update_one_batch!
+          service.mark_one_batch_to_update_with_lease!
 
           expect(records[:failed].reload.state).to eq registry_class::STATE_VALUES[:pending]
           expect(records[:failed].last_synced_at).to be_nil

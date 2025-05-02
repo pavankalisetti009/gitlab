@@ -12,7 +12,9 @@ RSpec.describe Geo::BulkMarkVerificationPendingService, feature_category: :geo_r
     context 'when there are no options' do
       let(:options) { {} }
 
-      describe '#bulk_mark_update_one_batch!' do
+      it_behaves_like 'mark_one_batch_to_update_with_lease is using an exclusive lease guard'
+
+      describe '#mark_one_batch_to_update_with_lease!' do
         before do
           # We reset the bulk mark update cursor to 0
           # so the service starts from the registry ID 0
@@ -43,7 +45,7 @@ RSpec.describe Geo::BulkMarkVerificationPendingService, feature_category: :geo_r
             )
           ]
 
-          service.bulk_mark_update_one_batch!
+          service.mark_one_batch_to_update_with_lease!
 
           records.each do |record|
             expect(record.reload.verification_state)
@@ -102,7 +104,7 @@ RSpec.describe Geo::BulkMarkVerificationPendingService, feature_category: :geo_r
       let(:pending_value) { registry_class::VERIFICATION_STATE_VALUES[:verification_pending] }
       let(:failed_value) { registry_class::VERIFICATION_STATE_VALUES[:verification_failed] }
 
-      describe '#bulk_mark_update_one_batch!' do
+      describe '#mark_one_batch_to_update_with_lease!!' do
         before do
           service.set_bulk_mark_update_cursor(0)
         end
@@ -114,7 +116,7 @@ RSpec.describe Geo::BulkMarkVerificationPendingService, feature_category: :geo_r
           let(:failed) { create(registry_factory, :failed) }
 
           it 'marks registries as verification pending' do
-            service.bulk_mark_update_one_batch!
+            service.mark_one_batch_to_update_with_lease!
 
             expect(failed.reload.verification_state).to eq pending_value
 
@@ -131,7 +133,7 @@ RSpec.describe Geo::BulkMarkVerificationPendingService, feature_category: :geo_r
           let(:options) { { 'ids' => [started.id, synced.id] } }
 
           it 'marks registries as verification pending' do
-            service.bulk_mark_update_one_batch!
+            service.mark_one_batch_to_update_with_lease!
 
             expect(failed.reload.verification_state).to eq failed_value
 
@@ -153,7 +155,7 @@ RSpec.describe Geo::BulkMarkVerificationPendingService, feature_category: :geo_r
               verification_failed2 = create(registry_factory, :verification_failed)
               verification_failed3 = create(registry_factory, :verification_failed)
 
-              service.bulk_mark_update_one_batch!
+              service.mark_one_batch_to_update_with_lease!
 
               expect(verification_failed1.reload).to eq verification_failed1
               expect(verification_failed2.reload).to eq verification_failed2
@@ -171,7 +173,7 @@ RSpec.describe Geo::BulkMarkVerificationPendingService, feature_category: :geo_r
               verification_failed_agn = create(registry_factory, :verification_failed)
               replication_failed = create(registry_factory, :failed)
 
-              service.bulk_mark_update_one_batch!
+              service.mark_one_batch_to_update_with_lease!
 
               expect(verification_failed.reload.verification_state).to eq pending_value
               expect(verification_failed_agn.reload.verification_state).to eq pending_value
@@ -188,7 +190,7 @@ RSpec.describe Geo::BulkMarkVerificationPendingService, feature_category: :geo_r
           let(:options) { { 'ids' => [success.id, failed.id], 'replication_state' => 'synced' } }
 
           it 'marks registries as verification pending' do
-            service.bulk_mark_update_one_batch!
+            service.mark_one_batch_to_update_with_lease!
 
             expect(success.reload.verification_state).to eq pending_value
 
