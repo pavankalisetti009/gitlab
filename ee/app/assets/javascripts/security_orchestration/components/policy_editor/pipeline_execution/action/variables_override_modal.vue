@@ -37,7 +37,13 @@ export default {
   },
   data() {
     return {
-      items: this.exceptions,
+      /**
+       * Important to use spread
+       * Otherwise this.exceptions would
+       * be updated by reference
+       */
+      items: [...this.exceptions],
+      initialState: [...this.exceptions],
     };
   },
   computed: {
@@ -83,6 +89,9 @@ export default {
     },
   },
   methods: {
+    setInitialState() {
+      this.initialState = [...this.exceptions];
+    },
     isDuplicate(variable) {
       return this.duplicatesCounter[variable] > 1;
     },
@@ -90,6 +99,7 @@ export default {
       this.items.push('');
     },
     hideModalWindow() {
+      this.items = [...this.initialState];
       this.$refs.modal.hide();
     },
     selectExceptions() {
@@ -99,7 +109,7 @@ export default {
       return [variable, ...this.unselectedItems].filter(Boolean);
     },
     isCustomVariable(variable) {
-      return Boolean(variable) && !FLAT_LIST_OPTIONS.includes(variable);
+      return Boolean(variable) && !FLAT_LIST_OPTIONS.some((item) => item === variable);
     },
     selectException(variable, index) {
       this.items.splice(index, 1, variable);
@@ -130,6 +140,7 @@ export default {
     modal-id="deny-allow-list-modal"
     @canceled="hideModalWindow"
     @primary="selectExceptions"
+    @show="setInitialState"
   >
     <div class="gl-bg-default gl-px-4 gl-py-5">
       <p class="gl-font-bold" data-testid="table-header">

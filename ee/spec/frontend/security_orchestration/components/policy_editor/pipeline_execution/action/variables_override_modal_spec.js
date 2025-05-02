@@ -143,4 +143,28 @@ describe('VariablesOverrideModal', () => {
       expect(findVariablesSelectors().at(2).props('hasValidationError')).toBe(false);
     });
   });
+
+  describe('canceling', () => {
+    it('resets items to initial state if editing is cancelled', async () => {
+      const exceptions = FLAT_LIST_OPTIONS.slice(0, 2);
+
+      createComponent({
+        propsData: { exceptions },
+      });
+
+      await findAddButton().vm.$emit('click');
+      await findVariablesSelectors().at(2).vm.$emit('select', FLAT_LIST_OPTIONS[2]);
+
+      expect(findVariablesSelectors()).toHaveLength(3);
+
+      await findAddButton().vm.$emit('click');
+      expect(findVariablesSelectors()).toHaveLength(4);
+
+      await findModal().vm.$emit('canceled');
+
+      expect(findVariablesSelectors()).toHaveLength(exceptions.length);
+
+      expect(wrapper.emitted('select-exceptions')).toBeUndefined();
+    });
+  });
 });
