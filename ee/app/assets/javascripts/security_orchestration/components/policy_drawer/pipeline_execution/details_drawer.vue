@@ -2,6 +2,7 @@
 import { GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { joinPaths } from '~/lib/utils/url_utility';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { humanizeActions } from 'ee/security_orchestration/components/policy_drawer/pipeline_execution/utils';
 import {
   generateScheduleSummary,
@@ -16,6 +17,7 @@ import { fromYaml } from 'ee/security_orchestration/components/utils';
 import DrawerLayout from '../drawer_layout.vue';
 import InfoRow from '../info_row.vue';
 import SkipCiConfiguration from '../skip_ci_configuration.vue';
+import VariablesOverrideConfiguration from './variables_override_configuration.vue';
 
 export default {
   i18n: {
@@ -25,6 +27,7 @@ export default {
     ),
     summary: SUMMARY_TITLE,
     configuration: CONFIGURATION_TITLE,
+    variablesOverride: s__('SecurityOrchestration|Variables override configuration'),
   },
   name: 'PipelineExecutionDrawer',
   components: {
@@ -32,7 +35,9 @@ export default {
     DrawerLayout,
     GlLink,
     SkipCiConfiguration,
+    VariablesOverrideConfiguration,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     policy: {
       type: Object,
@@ -40,6 +45,12 @@ export default {
     },
   },
   computed: {
+    hasVariablesControl() {
+      return this.glFeatures.securityPoliciesOptionalVariablesControl && this.variablesOverride;
+    },
+    variablesOverride() {
+      return this.parsedYaml?.variables_override;
+    },
     hasSchedules() {
       return this.parsedYaml.schedules?.length > 0;
     },
@@ -133,6 +144,13 @@ export default {
       </info-row>
       <info-row data-testid="policy-configuration" :label="$options.i18n.configuration">
         <skip-ci-configuration :configuration="configuration" />
+      </info-row>
+      <info-row
+        v-if="hasVariablesControl"
+        data-testid="policy-variables-override"
+        :label="$options.i18n.variablesOverride"
+      >
+        <variables-override-configuration :variables-override="variablesOverride" />
       </info-row>
     </template>
   </drawer-layout>
