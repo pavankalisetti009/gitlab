@@ -1,6 +1,5 @@
 import {
   DEFAULT_PIPELINE_EXECUTION_POLICY,
-  DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT,
   DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX,
   DEFAULT_SCHEDULE,
   INJECT,
@@ -136,7 +135,6 @@ describe('createPolicyObject', () => {
   it.each`
     title                                                                                   | input                                           | output
     ${'returns the policy object and no errors for a supported manifest'}                   | ${DEFAULT_PIPELINE_EXECUTION_POLICY}            | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter }), parsingError: {} }}
-    ${'returns the policy object and no errors for a supported manifest new format'}        | ${DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT} | ${{ policy: fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter }), parsingError: {} }}
     ${'returns the policy object and no errors for a supported manifest with inject_ci'}    | ${INJECT_CI_PIPELINE_EXECUTION_POLICY}          | ${{ policy: fromYaml({ manifest: INJECT_CI_PIPELINE_EXECUTION_POLICY, type: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter }), parsingError: {} }}
     ${'returns the policy object and no errors for a supported manifest with schedule PEP'} | ${mockSchedulePipelineExecutionManifest}        | ${{ policy: fromYaml({ manifest: mockSchedulePipelineExecutionManifest, type: PIPELINE_EXECUTION_SCHEDULE_POLICY }), parsingError: {} }}
     ${'returns the error policy object and the error for an invalid strategy name'}         | ${mockInvalidStrategyPipelineExecutionManifest} | ${{ policy: mockInvalidStrategyPipelineExecutionObject, parsingError: { actions: true } }}

@@ -213,4 +213,15 @@ describe('ActionSection', () => {
       expect(wrapper.emitted('changed')).toEqual([['variables_override', variablesOverride]]);
     });
   });
+
+  describe('new policy', () => {
+    it('marks variables list for new policies', () => {
+      factory({
+        propsData: { isNewPolicy: false },
+        provide: { glFeatures: { securityPoliciesOptionalVariablesControl: true } },
+      });
+
+      expect(findVariablesOverrideList().props('isNewPolicy')).toBe(false);
+    });
+  });
 });

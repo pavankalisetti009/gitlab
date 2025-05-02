@@ -109,7 +109,7 @@ export default {
       return [variable, ...this.unselectedItems].filter(Boolean);
     },
     isCustomVariable(variable) {
-      return Boolean(variable) && !FLAT_LIST_OPTIONS.some((item) => item === variable);
+      return Boolean(variable) && !FLAT_LIST_OPTIONS.includes(variable);
     },
     selectException(variable, index) {
       this.items.splice(index, 1, variable);

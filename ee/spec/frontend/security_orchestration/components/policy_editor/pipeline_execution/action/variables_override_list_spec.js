@@ -101,7 +101,7 @@ describe('VariablesOverrideList', () => {
     };
 
     beforeEach(() => {
-      createComponent({ propsData: { variablesOverride } });
+      createComponent({ propsData: { variablesOverride, isNewPolicy: false } });
     });
 
     it('renders collapsible listbox with allowed value', () => {
@@ -116,6 +116,14 @@ describe('VariablesOverrideList', () => {
     it('passes correct props to modal', () => {
       expect(findModal().props('exceptions')).toEqual(variablesOverride.exceptions);
       expect(findModal().props('isVariablesOverrideAllowed')).toBe(true);
+    });
+
+    it('renders collapsible listbox as collapsed for new policies with default variable configuration', () => {
+      createComponent({
+        propsData: { variablesOverride: DEFAULT_VARIABLES_OVERRIDE_STATE, isNewPolicy: true },
+      });
+
+      expect(findAccordionItem().props('visible')).toBe(false);
     });
   });
 

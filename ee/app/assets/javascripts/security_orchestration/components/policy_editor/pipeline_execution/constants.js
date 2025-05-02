@@ -13,6 +13,21 @@ export const DEFAULT_PIPELINE_EXECUTION_POLICY = `pipeline_execution_policy:
       allowed: false
 `;
 
+export const DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_VARIABLES = `pipeline_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    pipeline_config_strategy: inject_policy
+    content:
+      include:
+        - project: ''
+    skip_ci:
+      allowed: false
+    variables_override:
+      allowed: false
+      exceptions: []
+`;
+
 export const INJECT_CI_PIPELINE_EXECUTION_POLICY = `pipeline_execution_policy:
   - name: ''
     description: ''
@@ -23,18 +38,6 @@ export const INJECT_CI_PIPELINE_EXECUTION_POLICY = `pipeline_execution_policy:
         - project: ''
     skip_ci:
       allowed: false
-`;
-
-export const DEFAULT_PIPELINE_EXECUTION_POLICY_NEW_FORMAT = `pipeline_execution_policy:
-- name: ''
-  description: ''
-  enabled: true
-  pipeline_config_strategy: inject_policy
-  content:
-    include:
-      - project: ''
-  skip_ci:
-    allowed: false
 `;
 
 export const DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX = `type: pipeline_execution_policy

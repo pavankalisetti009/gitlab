@@ -9,6 +9,7 @@ import EditorLayout from 'ee/security_orchestration/components/policy_editor/edi
 import SkipCiSelector from 'ee/security_orchestration/components/policy_editor/skip_ci_selector.vue';
 import {
   DEFAULT_PIPELINE_EXECUTION_POLICY,
+  DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_VARIABLES,
   DEFAULT_SCHEDULE,
   DEFAULT_VARIABLES_OVERRIDE_STATE,
   INJECT,
@@ -178,6 +179,25 @@ describe('EditorComponent', () => {
       expect(editorLayout.exists()).toBe(true);
       expect(editorLayout.props()).toEqual(
         expect.objectContaining({ yamlEditorValue: DEFAULT_PIPELINE_EXECUTION_POLICY }),
+      );
+    });
+
+    it('renders the default policy editor layout with variables when ff is on', () => {
+      factory({
+        provide: {
+          glFeatures: {
+            securityPoliciesOptionalVariablesControl: true,
+          },
+        },
+      });
+
+      expect(findActionSection().props('variablesOverride')).toEqual(
+        DEFAULT_VARIABLES_OVERRIDE_STATE,
+      );
+      expect(findPolicyEditorLayout().props()).toEqual(
+        expect.objectContaining({
+          yamlEditorValue: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_VARIABLES,
+        }),
       );
     });
 
@@ -426,6 +446,21 @@ describe('EditorComponent', () => {
           fullPath: 'GitLab.org/GitLab',
           ref: 'main',
         });
+      });
+
+      it('does not render variables control for exiting policy if it is not specified in yaml', () => {
+        factory({
+          propsData: {
+            existingPolicy: { ...mockWithoutRefPipelineExecutionObject },
+          },
+          provide: {
+            glFeatures: {
+              securityPoliciesOptionalVariablesControl: true,
+            },
+          },
+        });
+
+        expect(findActionSection().props('variablesOverride')).toEqual(undefined);
       });
 
       it.each`
