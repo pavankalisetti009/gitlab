@@ -40148,6 +40148,9 @@ msgstr ""
 msgid "No file selected"
 msgstr ""
 
+msgid "No files found"
+msgstr ""
+
 msgid "No files found."
 msgstr ""
 
@@ -50773,6 +50776,9 @@ msgid "Repository|New file"
 msgstr ""
 
 msgid "Repository|New tag"
+msgstr ""
+
+msgid "Repository|Search (e.g. *.vue) (%{modifierKey}P)"
 msgstr ""
 
 msgid "Repository|This directory"
