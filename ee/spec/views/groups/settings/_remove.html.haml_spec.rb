@@ -15,17 +15,10 @@ RSpec.describe 'groups/settings/_remove.html.haml', feature_category: :groups_an
     ]
   end
 
-  before do
-    stub_feature_flags(downtier_delayed_deletion: false)
-  end
-
   describe 'render' do
     context 'when user can :remove_group' do
       before do
         allow(view).to receive(:can?).with(anything, :remove_group, group).and_return(true)
-        allow(group).to receive(:licensed_feature_available?).and_return(false)
-        allow(view).to receive(:security_configurations_preventing_group_deletion).and_return(linked_configurations)
-        allow(linked_configurations).to receive_messages(exists?: false, any?: false)
       end
 
       it 'enables the Remove group button and does not show an alert for a group' do
@@ -76,42 +69,6 @@ RSpec.describe 'groups/settings/_remove.html.haml', feature_category: :groups_an
         expect(rendered).not_to match 'data-disabled="true"'
         expect(rendered).not_to have_selector '[data-testid="group-has-linked-subscription-alert"]'
       end
-
-      context 'when delayed deletes are enabled' do
-        before do
-          stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-        end
-
-        it 'enables the Remove group button and does not show an alert for a group without a paid gitlab.com plan' do
-          render 'groups/settings/remove', group: group
-
-          expect(rendered).to have_selector '[data-button-testid="remove-group-button"]'
-          expect(rendered).not_to match 'data-disabled="true"'
-          expect(rendered).not_to have_selector '[data-testid="group-has-linked-subscription-alert"]'
-        end
-
-        it 'disables the Remove group button and shows an alert for a group with a paid gitlab.com plan', :saas do
-          create(:gitlab_subscription, :ultimate, namespace: group)
-
-          render 'groups/settings/remove', group: group
-
-          expect(rendered).to have_selector '[data-button-testid="remove-group-button"]'
-          expect(rendered).to match 'data-disabled="true"'
-          expect(rendered).to have_selector '[data-testid="group-has-linked-subscription-alert"]'
-        end
-
-        it 'enables the Remove group button and does not show an alert for a subgroup', :saas do
-          create(:gitlab_subscription, :ultimate, namespace: group)
-          subgroup = create(:group, parent: group)
-          expect(view).to receive(:can?).with(anything, :remove_group, subgroup).and_return(true)
-
-          render 'groups/settings/remove', group: subgroup
-
-          expect(rendered).to have_selector '[data-button-testid="remove-group-button"]'
-          expect(rendered).not_to match 'data-disabled="true"'
-          expect(rendered).not_to have_selector '[data-testid="group-has-linked-subscription-alert"]'
-        end
-      end
     end
 
     context 'when user cannot :remove_group' do
@@ -129,9 +86,7 @@ RSpec.describe 'groups/settings/_remove.html.haml', feature_category: :groups_an
     context 'when group has linked security policy projects' do
       before do
         allow(view).to receive(:can?).with(anything, :remove_group, group).and_return(true)
-        allow(group).to receive(:licensed_feature_available?).and_return(true)
         allow(view).to receive(:security_configurations_preventing_group_deletion).and_return(linked_configurations)
-        allow(linked_configurations).to receive_messages(exists?: true, any?: true)
       end
 
       it 'disables the remove group button' do

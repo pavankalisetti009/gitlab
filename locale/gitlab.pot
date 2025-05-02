@@ -12082,9 +12082,6 @@ msgstr ""
 msgid "Cannot make the epic confidential if it contains non-confidential issues"
 msgstr ""
 
-msgid "Cannot mark group for deletion: feature not supported"
-msgstr ""
-
 msgid "Cannot mark the %{work_item_type} as duplicate of itself."
 msgstr ""
 

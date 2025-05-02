@@ -1138,36 +1138,6 @@ module EE
       geo_primary_http_url_to_repo(self)
     end
 
-    override :adjourned_deletion?
-    def adjourned_deletion?
-      return super unless feature_available?(:adjourned_deletion_for_projects_and_groups)
-
-      adjourned_deletion_configured?
-    end
-
-    override :adjourned_deletion_configured?
-    def adjourned_deletion_configured?
-      return super unless License.feature_available?(:adjourned_deletion_for_projects_and_groups)
-
-      deletion_adjourned_period > 0
-    end
-
-    override :marked_for_deletion?
-    def marked_for_deletion?
-      return super unless License.feature_available?(:adjourned_deletion_for_projects_and_groups)
-
-      marked_for_deletion_at.present?
-    end
-
-    override :self_or_ancestor_marked_for_deletion
-    def self_or_ancestor_marked_for_deletion
-      return super unless feature_available?(:adjourned_deletion_for_projects_and_groups)
-      return self if marked_for_deletion?
-
-      ancestors(hierarchy_order: :asc)
-        .joins(:deletion_schedule).first
-    end
-
     def disable_overriding_approvers_per_merge_request
       strong_memoize(:disable_overriding_approvers_per_merge_request) do
         super unless feature_available?(:admin_merge_request_approvers_rules)

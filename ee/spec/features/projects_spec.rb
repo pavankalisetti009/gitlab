@@ -14,114 +14,32 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
   end
 
   describe 'delete project' do
-    let_it_be(:group_settings) { create(:namespace_settings) }
-    let_it_be(:group) { create(:group, :public, namespace_settings: group_settings) }
-    let_it_be(:project) { create(:project, group: group) }
-    let_it_be(:project_2) { create(:project, group: group) }
     let_it_be(:user) { create(:user) }
+    let_it_be(:group) { create(:group, :public, owners: user) }
+    let_it_be(:project) { create(:project, group: group) }
 
     before do
       stub_application_setting(deletion_adjourned_period: 7)
-      group.add_owner(user)
+      sign_in user
+      visit edit_project_path(project)
     end
 
-    shared_examples 'delayed deletion that is restorable' do
-      it 'deletes project delayed and is restorable', :freeze_time do
-        deletion_adjourned_period = ::Gitlab::CurrentSettings.deletion_adjourned_period
+    it 'deletes project delayed and is restorable', :freeze_time do
+      deletion_adjourned_period = ::Gitlab::CurrentSettings.deletion_adjourned_period
 
-        expect(page).to have_content("This action will place this project, including all its resources, in a pending deletion state for #{deletion_adjourned_period} days, and delete it permanently on #{deletion_date}.")
+      expect(page).to have_content("This action will place this project, including all its resources, in a pending deletion state for #{deletion_adjourned_period} days, and delete it permanently on #{deletion_date}.")
 
-        click_button "Delete project"
+      click_button "Delete project"
 
-        expect(page).to have_content("This project can be restored until #{deletion_date}.")
+      expect(page).to have_content("This project can be restored until #{deletion_date}.")
 
-        confirm_deletion(project_to_delete)
+      confirm_deletion(project)
 
-        expect(page).to have_content("This project is pending deletion, and will be deleted on #{deletion_date}. Repository and other project resources are read-only.")
+      expect(page).to have_content("This project is pending deletion, and will be deleted on #{deletion_date}. Repository and other project resources are read-only.")
 
-        visit inactive_dashboard_projects_path
+      visit inactive_dashboard_projects_path
 
-        expect(page).to have_content(project_to_delete.name_with_namespace)
-      end
-    end
-
-    context 'when adjourned_deletion_for_projects_and_groups is enabled at the instance level' do
-      before do
-        stub_feature_flags(downtier_delayed_deletion: false)
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-      end
-
-      context 'when on GitLab SaaS', :saas do
-        before do
-          stub_ee_application_setting(should_check_namespace_plan: true)
-        end
-
-        context 'when adjourned_deletion_for_projects_and_groups is enabled at the namespace level' do
-          let_it_be(:ultimate_group) { create(:group_with_plan, plan: :ultimate_plan) }
-          let_it_be(:ultimate_project) { create(:project, group: ultimate_group) }
-          let(:project_to_delete) { ultimate_project }
-
-          before do
-            ultimate_group.add_owner(user)
-            sign_in user
-            visit edit_project_path(ultimate_project)
-          end
-
-          it_behaves_like 'delayed deletion that is restorable'
-        end
-
-        context 'when adjourned_deletion_for_projects_and_groups is not enabled at the namespace level (free project)' do
-          before do
-            sign_in user
-            visit edit_project_path(project)
-          end
-
-          it 'deletes project delayed and is not restorable', :freeze_time do
-            expect(page).to have_content("This action will permanently delete this project, including all its resources.")
-
-            click_button "Delete project"
-
-            expect(page).not_to have_content(/This project can be restored/)
-
-            confirm_deletion(project)
-            click_link 'Inactive'
-
-            expect(page).not_to have_content(project.name_with_namespace)
-          end
-        end
-      end
-
-      context 'when on GitLab self-managed' do
-        let(:project_to_delete) { project }
-
-        before do
-          sign_in user
-          visit edit_project_path(project)
-        end
-
-        it_behaves_like 'delayed deletion that is restorable'
-      end
-    end
-
-    context 'when adjourned_deletion_for_projects_and_groups is not enabled at the instance level' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
-        stub_feature_flags(downtier_delayed_deletion: false)
-        sign_in user
-        visit edit_project_path(project)
-      end
-
-      it 'deletes project immediately', :sidekiq_inline do
-        expect(page).to have_content("This action will permanently delete this project, including all its resources.")
-
-        click_button "Delete project"
-
-        expect(page).not_to have_content(/This project can be restored/)
-
-        confirm_deletion(project)
-
-        expect(page).not_to have_content(project.name_with_namespace)
-      end
+      expect(page).to have_content(project.name_with_namespace)
     end
   end
 

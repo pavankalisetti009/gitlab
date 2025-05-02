@@ -8,7 +8,6 @@ RSpec.describe 'projects/edit' do
   let(:user) { create(:admin) }
 
   before do
-    stub_feature_flags(downtier_delayed_deletion: false)
     assign(:project, project)
 
     allow(controller).to receive(:current_user).and_return(user)
@@ -68,62 +67,6 @@ RSpec.describe 'projects/edit' do
       let(:can_remove_projects) { true }
 
       it { is_expected.to have_text(_('Delete project')) }
-    end
-  end
-
-  context 'when restoring a project', feature_category: :groups_and_projects do
-    shared_examples_for 'renders restore project settings' do
-      it 'renders restore project card and action' do
-        render
-
-        expect(rendered).to render_template('shared/groups_projects/settings/_restore')
-        expect(rendered).to have_link('Restore project')
-      end
-    end
-
-    shared_examples_for 'does not render restore project settings' do
-      it 'does not render restore project card and action' do
-        render
-
-        expect(rendered).to render_template('shared/groups_projects/settings/_restore')
-        expect(rendered).not_to have_link('Restore project')
-      end
-    end
-
-    context 'when adjourned_deletion_for_projects_and_groups is enabled' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-      end
-
-      context 'when project is pending deletion' do
-        let_it_be(:project) do
-          build_stubbed(:project, marked_for_deletion_at: Date.current, organization: organization)
-        end
-
-        it_behaves_like 'renders restore project settings'
-      end
-
-      context 'when project is not pending deletion' do
-        it_behaves_like 'does not render restore project settings'
-      end
-    end
-
-    context 'when adjourned_deletion_for_projects_and_groups is disabled' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
-      end
-
-      context 'when project is pending deletion' do
-        let_it_be(:project) do
-          build_stubbed(:project, marked_for_deletion_at: Date.current, organization: organization)
-        end
-
-        it_behaves_like 'does not render restore project settings'
-      end
-
-      context 'when project is not pending deletion' do
-        it_behaves_like 'does not render restore project settings'
-      end
     end
   end
 end
