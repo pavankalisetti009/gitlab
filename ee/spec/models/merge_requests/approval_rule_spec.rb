@@ -308,6 +308,12 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
     end
   end
 
+  describe '#scan_result_policy_read' do
+    it 'returns nil' do
+      expect(rule.scan_result_policy_read).to be_nil
+    end
+  end
+
   describe '#from_scan_result_policy?' do
     it 'is false' do
       expect(rule.from_scan_result_policy?).to be false

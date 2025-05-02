@@ -51,6 +51,8 @@ module MergeRequests
       'ApprovalMergeRequestRulePolicy'
     end
 
+    def scan_result_policy_read; end
+
     def user_defined?
       regular? || any_approver?
     end
