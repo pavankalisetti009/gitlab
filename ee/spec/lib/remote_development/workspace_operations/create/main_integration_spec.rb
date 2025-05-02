@@ -124,7 +124,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         expect(workspace.actual_state).to eq(states_module::CREATION_REQUESTED)
         expect(workspace.actual_state_updated_at).to eq(Time.current)
         expect(workspace.name).to eq("workspace-#{agent.id}-#{user.id}-#{random_string}")
-        expect(workspace.namespace).to eq("my-shared-namespace")
+        expect(workspace.namespace).to eq("default")
         expect(workspace.workspaces_agent_config_version).to eq(expected_workspaces_agent_config_version)
         expect(workspace.url).to eq(URI::HTTPS.build({
           host: "#{create_constants_module::WORKSPACE_EDITOR_PORT}-#{workspace.name}." \

@@ -113,6 +113,32 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
       end
     end
 
+    context 'when image_pull_secrets and shared_namespace are specified' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:shared_namespace, :image_pull_secrets, :validity, :error_field, :errors) do
+        # rubocop:disable Layout/LineLength -- The RSpec table syntax often requires long lines for errors
+        ''               | []                                                         | true  | :image_pull_secrets | []
+        ''               | [{ name: 'secret-a', namespace: 'my-namespace' }]          | true  | :image_pull_secrets | []
+        'my-namespace'   | []                                                         | true  | :image_pull_secrets | []
+        'my-namespace'   | [{ name: 'secret-a', namespace: 'my-namespace' }]          | true  | :image_pull_secrets | []
+        'my-namespace'   | [{ name: 'secret-a', namespace: 'different-namespace' }]   | false | :image_pull_secrets | ["image_pull_secrets.namespace and shared_namespace must match if shared_namespace is specified"]
+        'my-namespace'   | [{ name: 'secret-a', namespace: 'my-namespace' }, { name: 'secret-b', namespace: 'different-namespace' }] | false | :image_pull_secrets | ["image_pull_secrets.namespace and shared_namespace must match if shared_namespace is specified"]
+        # rubocop:enable Layout/LineLength
+      end
+
+      with_them do
+        before do
+          config.shared_namespace = shared_namespace
+          config.image_pull_secrets = image_pull_secrets
+          config.validate
+        end
+
+        it { expect(config.valid?).to eq(validity) }
+        it { expect(config.errors[error_field]).to eq(errors) }
+      end
+    end
+
     context 'when config has allow_privilege_escalation set to true' do
       let(:allow_privilege_escalation) { true }
 

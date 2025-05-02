@@ -54,4 +54,4 @@ remote_development:
 
   max_active_hours_before_stop: 60
   max_stopped_hours_before_termination: 4332
-  shared_namespace: "my-shared-namespace"
+  shared_namespace: "default"
