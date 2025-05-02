@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import TrialCreateLeadForm from 'ee/trials/components/trial_create_lead_form.vue';
 import apolloProvider from 'ee/subscriptions/graphql/graphql';
+import { parseBoolean } from '~/lib/utils/common_utils';
 
 export const initTrialCreateLeadForm = (gtmSubmitEventLabel) => {
   const el = document.querySelector('#js-trial-create-lead-form');
@@ -13,6 +14,7 @@ export const initTrialCreateLeadForm = (gtmSubmitEventLabel) => {
     submitPath,
     firstName,
     lastName,
+    showNameFields,
     companyName,
     companySize,
     country,
@@ -29,6 +31,7 @@ export const initTrialCreateLeadForm = (gtmSubmitEventLabel) => {
       user: {
         firstName,
         lastName,
+        showNameFields: parseBoolean(showNameFields),
         companyName,
         companySize: companySize || null,
         country: country || '',

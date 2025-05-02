@@ -14,6 +14,18 @@ RSpec.shared_examples GitlabSubscriptions::Trials::DuoEnterprise::LeadFormCompon
     }.merge(additional_kwargs)
   end
 
+  let(:expected_form_data_attributes) do
+    {
+      first_name: user.first_name,
+      last_name: user.last_name,
+      show_name_fields: 'false',
+      email_domain: user.email_domain,
+      company_name: user.organization,
+      submit_button_text: 'Continue',
+      submit_path: submit_path
+    }
+  end
+
   subject { render_inline(described_class.new(**kwargs)) && page }
 
   shared_examples 'displays default trial header' do
@@ -39,23 +51,24 @@ RSpec.shared_examples GitlabSubscriptions::Trials::DuoEnterprise::LeadFormCompon
   end
 
   context 'with default content' do
-    let(:expected_form_data_attributes) do
-      {
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email_domain: user.email_domain,
-        company_name: user.organization,
-        submit_button_text: 'Continue',
-        submit_path: submit_path
-      }
-    end
-
     it_behaves_like 'displays default trial header'
 
     it 'shows trial information form message' do
       is_expected.to have_content(
         s_('DuoEnterpriseTrial|We just need some additional information to activate your trial.')
       )
+    end
+
+    it 'renders form with correct attributes' do
+      expect_form_data_attribute(expected_form_data_attributes)
+    end
+  end
+
+  context 'when user has a blank last name' do
+    let(:expected_form_data_attributes) { super().merge(show_name_fields: 'true') }
+
+    before do
+      user.last_name = ''
     end
 
     it 'renders form with correct attributes' do
