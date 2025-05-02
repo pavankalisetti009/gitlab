@@ -395,13 +395,6 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
     it_behaves_like 'settings for licensed features'
   end
 
-  context 'delayed deletion period' do
-    let(:settings) { { deletion_adjourned_period: 5 } }
-    let(:feature) { :adjourned_deletion_for_projects_and_groups }
-
-    it_behaves_like 'settings for licensed features'
-  end
-
   context 'custom file template project' do
     let(:settings) { { file_template_project_id: project.id } }
     let(:feature) { :custom_file_templates }
