@@ -56850,6 +56850,12 @@ msgstr ""
 msgid "Session ID"
 msgstr ""
 
+msgid "SessionExpire|Your session has expired"
+msgstr ""
+
+msgid "SessionExpire|Your session has expired. Please, sign in again."
+msgstr ""
+
 msgid "Session|There was a error loading the user verification challenge. Refresh to try again."
 msgstr ""
 
