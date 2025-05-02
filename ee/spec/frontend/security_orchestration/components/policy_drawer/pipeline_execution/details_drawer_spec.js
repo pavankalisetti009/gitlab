@@ -1,6 +1,7 @@
 import { GlLink } from '@gitlab/ui';
 import PipelineExecutionDrawer from 'ee/security_orchestration/components/policy_drawer/pipeline_execution/details_drawer.vue';
 import PolicyDrawerLayout from 'ee/security_orchestration/components/policy_drawer/drawer_layout.vue';
+import VariablesOverrideConfiguration from 'ee/security_orchestration/components/policy_drawer/pipeline_execution/variables_override_configuration.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { trimText } from 'helpers/text_helper';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
@@ -13,6 +14,7 @@ import {
   mockProjectPipelineExecutionWithConfigurationPolicy,
   mockProjectPipelineExecutionSchedulePolicy,
   mockSnoozePipelineExecutionSchedulePolicy,
+  mockProjectPipelineExecutionWithVariablesOverride,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 
 const addType = (policy, type = PIPELINE_EXECUTION_POLICY_TYPE_HEADER) => ({
@@ -46,6 +48,8 @@ describe('PipelineExecutionDrawer', () => {
   const findLink = (parent) => parent.findComponent(GlLink);
   const findConfigurationRow = () => wrapper.findByTestId('policy-configuration');
   const findSnoozeSummary = () => wrapper.findByTestId('snooze-summary');
+  const findVariablesOverrideConfiguration = () =>
+    wrapper.findComponent(VariablesOverrideConfiguration);
 
   const createComponent = ({ propsData = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(PipelineExecutionDrawer, {
@@ -170,6 +174,35 @@ describe('PipelineExecutionDrawer', () => {
       });
 
       expect(findConfigurationRow().exists()).toBe(true);
+    });
+  });
+
+  describe('variables override', () => {
+    it('does not render override list when ff is set to false', () => {
+      createComponent({ propsData: { policy: mockProjectPipelineExecutionPolicy } });
+
+      expect(findVariablesOverrideConfiguration().exists()).toBe(false);
+    });
+
+    it('does not render override list when ff is set to true but there is variables overwrite', () => {
+      createComponent({
+        propsData: { policy: mockProjectPipelineExecutionPolicy },
+        provide: { glFeatures: { securityPoliciesOptionalVariablesControl: true } },
+      });
+
+      expect(findVariablesOverrideConfiguration().exists()).toBe(false);
+    });
+
+    it('renders override list when ff is set to true', () => {
+      createComponent({
+        propsData: { policy: mockProjectPipelineExecutionWithVariablesOverride },
+        provide: { glFeatures: { securityPoliciesOptionalVariablesControl: true } },
+      });
+      expect(findVariablesOverrideConfiguration().exists()).toBe(true);
+      expect(findVariablesOverrideConfiguration().props('variablesOverride')).toEqual({
+        allowed: false,
+        exceptions: ['DAST_BROWSER_DEVTOOLS_LOG', 'DAST_BROWSER_DEVTOOLS'],
+      });
     });
   });
 });

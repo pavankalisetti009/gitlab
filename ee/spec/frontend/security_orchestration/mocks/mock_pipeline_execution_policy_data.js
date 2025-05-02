@@ -249,6 +249,23 @@ content:
        file: pipeline_execution_jobs.yml
 `;
 
+export const mockPipelineExecutionManifestWithVariablesOverride = `type: pipeline_execution_policy
+name: Include external file
+description: This policy enforces pipeline execution with configuration from external file
+pipeline_config_strategy: inject_policy
+enabled: false
+content:
+   include:
+     - project: gitlab-policies/js6
+       ref: main
+       file: pipeline_execution_jobs.yml
+variables_override:
+  allowed: false
+  exceptions:
+    - DAST_BROWSER_DEVTOOLS_LOG
+    - DAST_BROWSER_DEVTOOLS
+`;
+
 const mockPipelineExecutionWithSnoozeManifest = `name: ''
 description: ''
 enabled: true
@@ -304,6 +321,11 @@ export const mockProjectPipelineExecutionPolicy = {
 export const mockProjectPipelineExecutionWithConfigurationPolicy = {
   ...mockProjectPipelineExecutionPolicy,
   yaml: mockPipelineExecutionWithConfigurationManifest,
+};
+
+export const mockProjectPipelineExecutionWithVariablesOverride = {
+  ...mockProjectPipelineExecutionPolicy,
+  yaml: mockPipelineExecutionManifestWithVariablesOverride,
 };
 
 export const mockGroupPipelineExecutionPolicy = {
