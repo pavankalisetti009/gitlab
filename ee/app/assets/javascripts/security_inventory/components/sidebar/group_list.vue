@@ -1,5 +1,8 @@
 <script>
 import { GlIntersectionObserver, GlLoadingIcon } from '@gitlab/ui';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { s__ } from '~/locale';
+import { createAlert } from '~/alert';
 import SubgroupsQuery from '../../graphql/subgroups.query.graphql';
 import ExpandableGroup from './expandable_group.vue';
 
@@ -30,6 +33,9 @@ export default {
       group: {
         descendantGroups: {
           nodes: [],
+          pageInfo: {
+            hasNextPage: true,
+          },
         },
       },
       loading: false,
@@ -39,11 +45,20 @@ export default {
   apollo: {
     group: {
       query: SubgroupsQuery,
-      client: 'appendGroupsClient',
       variables() {
         return {
           fullPath: this.groupFullPath,
         };
+      },
+      error(error) {
+        createAlert({
+          message: s__(
+            'SecurityInventory|An error occurred while fetching subgroups. Please try again.',
+          ),
+          error,
+          captureError: true,
+        });
+        Sentry.captureException(error);
       },
     },
   },

@@ -1,5 +1,3 @@
-#import "~/graphql_shared/fragments/page_info.fragment.graphql"
-
 query Subgroups($fullPath: ID!, $after: String) {
   group(fullPath: $fullPath) {
     id
@@ -16,7 +14,8 @@ query Subgroups($fullPath: ID!, $after: String) {
         fullPath
       }
       pageInfo {
-        ...PageInfo
+        hasNextPage
+        endCursor
       }
     }
   }

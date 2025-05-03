@@ -54157,6 +54157,9 @@ msgstr ""
 msgid "SecurityInventory|Add projects to this group to start tracking their security posture."
 msgstr ""
 
+msgid "SecurityInventory|An error occurred while fetching subgroups. Please try again."
+msgstr ""
+
 msgid "SecurityInventory|Basic SAST"
 msgstr ""
 
