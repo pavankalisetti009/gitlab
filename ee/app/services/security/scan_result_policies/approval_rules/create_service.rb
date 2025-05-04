@@ -29,6 +29,12 @@ module Security
         end
 
         def create_rule(approval_policy_rule, action_index = 0, approval_action = nil)
+          approval_rule = project_approval_rules_map.dig(approval_policy_rule.id, action_index)
+          # TODO: Remove this once use_approval_policy_rules_for_approval_rules is enabled by default
+          # This is temporary as Security::ProcessScanResultPolicyRulesWorker will also create the approval rules
+          # when the feature flag is rolled out for percentage samples of projects.
+          return if approval_rule.present?
+
           scan_result_policy_read = create_scan_result_policy(approval_policy_rule, action_index, approval_action)
 
           return unless create_approval_rule?(approval_policy_rule)

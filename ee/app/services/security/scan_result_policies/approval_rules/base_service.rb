@@ -63,6 +63,16 @@ module Security
           ).execute
         end
 
+        def project_approval_rules_map
+          project
+            .approval_rules
+            .for_approval_policy_rules(approval_policy_rules)
+            .each_with_object({}) do |item, result|
+              result[item.approval_policy_rule_id] ||= {}
+              result[item.approval_policy_rule_id][item.approval_policy_action_idx] = item
+            end
+        end
+
         def approval_actions
           security_policy.policy_content[:actions]&.select do |action|
             action[:type] == Security::ScanResultPolicy::REQUIRE_APPROVAL

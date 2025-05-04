@@ -108,5 +108,18 @@ RSpec.describe Security::ScanResultPolicies::ApprovalRules::CreateService, featu
           .and change { project.scan_result_policy_reads.count }.by(2)
       end
     end
+
+    context 'when approval rule already exists' do
+      let_it_be(:existing_approval_rule) do
+        create(:approval_project_rule, project: project, approval_policy_rule: approval_policy_rule,
+          approval_policy_action_idx: 0)
+      end
+
+      it 'does not create duplicate approval rule' do
+        expect { execute_service }
+          .to not_change { project.scan_result_policy_reads.count }
+          .and not_change { project.approval_rules.count }
+      end
+    end
   end
 end
