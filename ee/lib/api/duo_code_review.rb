@@ -13,7 +13,7 @@ module API
 
       authenticate!
 
-      license_feature_available = ::License.feature_available?(:ai_review_mr)
+      license_feature_available = ::License.feature_available?(:review_merge_request)
       global_feature_flag_enabled = Gitlab::Llm::Utils::FlagChecker.flag_enabled_for_feature?(:review_merge_request)
       feature_flag_enabled = ::Feature.enabled?(:ai_review_merge_request, current_user)
 

@@ -65,7 +65,7 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
     end
 
     before do
-      stub_licensed_features(ai_review_mr: license_feature_available)
+      stub_licensed_features(review_merge_request: license_feature_available)
       stub_feature_flags(ai_global_switch: global_feature_flag_enabled)
       stub_feature_flags(ai_review_merge_request: feature_flag_enabled)
 

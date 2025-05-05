@@ -4305,7 +4305,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
     before do
       # Set up the "happy path" - all conditions return true by default
-      stub_licensed_features(ai_review_mr: true)
+      stub_licensed_features(review_merge_request: true)
       allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
       allow(authorizer).to receive(:allowed?).and_return(true)
       allow(Ability).to receive(:allowed?).with(current_user, :access_ai_review_mr, group).and_return(true)
