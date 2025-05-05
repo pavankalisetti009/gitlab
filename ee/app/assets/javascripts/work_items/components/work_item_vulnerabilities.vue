@@ -43,6 +43,14 @@ export default {
     hasRelatedVulnerabilities() {
       return this.relatedVulnerabilitiesCount > 0;
     },
+    badgeCount() {
+      if (this.hasNextPage) {
+        return sprintf(s__('WorkItem|%{count}+'), {
+          count: this.relatedVulnerabilitiesCount,
+        });
+      }
+      return this.relatedVulnerabilitiesCount;
+    },
     countBadgeAriaLabel() {
       return sprintf(
         n__(
@@ -50,7 +58,7 @@ export default {
           'WorkItem|Issue has %{itemCount} related vulnerabilities',
           this.relatedVulnerabilitiesCount,
         ),
-        { itemCount: this.relatedVulnerabilitiesCount },
+        { itemCount: this.badgeCount },
       );
     },
     hasNextPage() {
@@ -130,7 +138,7 @@ export default {
   >
     <template #count>
       <gl-badge :aria-label="countBadgeAriaLabel" variant="muted">
-        {{ relatedVulnerabilitiesCount }}
+        {{ badgeCount }}
       </gl-badge>
     </template>
 

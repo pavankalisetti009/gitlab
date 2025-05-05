@@ -157,5 +157,11 @@ describe('WorkItemVulnerabilities component', () => {
         message: 'Something went wrong while fetching more related vulnerabilities.',
       });
     });
+
+    it('shows "+" in count badge', () => {
+      const badge = findBadge();
+      expect(badge.attributes('aria-label')).toBe('Issue has 2+ related vulnerabilities');
+      expect(badge.text()).toBe('2+');
+    });
   });
 });
