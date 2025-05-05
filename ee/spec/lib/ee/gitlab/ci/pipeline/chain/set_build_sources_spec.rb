@@ -83,19 +83,6 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::SetBuildSources, feature_category: :
 
         perform
       end
-
-      context 'with feature flag disabled' do
-        before do
-          stub_feature_flags(populate_and_use_build_source_table: false)
-        end
-
-        it 'does not create build source records' do # -- setting mock expectations individually
-          pipeline_seed.stages.flat_map(&:statuses).each do |build|
-            expect(build).not_to receive(:build_build_source)
-          end
-          perform
-        end
-      end
     end
   end
 
