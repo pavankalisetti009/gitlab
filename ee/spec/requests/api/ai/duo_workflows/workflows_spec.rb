@@ -328,6 +328,10 @@ message: "could not generate token" })
     context 'when success' do
       before do
         allow(::CloudConnector).to receive(:ai_headers).with(user).and_return({ header_key: 'header_value' })
+        allow_next_instance_of(::Gitlab::Tracking::StandardContext) do |context|
+          allow(context).to receive(:gitlab_team_member?).and_return(false)
+          allow(context).to receive(:gitlab_team_member?).with(user.id).and_return(true)
+        end
         allow_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
           allow(service).to receive(:execute).and_return({ status: :success,
 oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token') })
@@ -350,6 +354,7 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
         expect(json_response['duo_workflow_executor']['executor_binary_url']).to eq('https://example.com/executor')
         expect(json_response['duo_workflow_executor']['version']).to eq('v1.2.3')
         expect(json_response['workflow_metadata']['extended_logging']).to eq(true)
+        expect(json_response['workflow_metadata']['is_team_member']).to eq(true)
         expect(json_response['duo_workflow_executor']['executor_binary_urls']).to eq({
           'linux/arm' => 'https://example.com/linux-arm-executor.tar.gz',
           'darwin/arm64' => 'https://example.com/darwin-arm64-executor.tar.gz'

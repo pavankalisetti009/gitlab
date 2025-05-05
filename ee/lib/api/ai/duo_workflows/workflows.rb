@@ -129,7 +129,9 @@ module API
                     version: Gitlab::DuoWorkflow::Executor.version
                   },
                   workflow_metadata: {
-                    extended_logging: Feature.enabled?(:duo_workflow_extended_logging, current_user)
+                    extended_logging: Feature.enabled?(:duo_workflow_extended_logging, current_user),
+                    is_team_member:
+                      ::Gitlab::Tracking::StandardContext.new.gitlab_team_member?(current_user&.id)
                   }
                 }
 
