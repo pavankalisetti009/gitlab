@@ -42,7 +42,7 @@ You can use the [CycloneDX Web Tool](https://cyclonedx.github.io/cyclonedx-web-t
 {{< alert type="note" >}}
 
 Although this is not mandatory for populating the dependency list, the SBOM document must include and comply with the
-[GitLab CycloneDX property taxonomy](../../../development/sec/cyclonedx_property_taxonomy.md) to provide some properties and to enable some security features.
+GitLab CycloneDX property taxonomy to provide some properties and to enable some security features.
 
 {{< /alert >}}
 
