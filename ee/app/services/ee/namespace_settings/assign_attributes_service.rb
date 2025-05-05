@@ -31,7 +31,10 @@ module EE
           param_key: :lock_duo_features_enabled,
           user_policy: :admin_group
         )
-
+        validate_settings_param_for_root_group(
+          param_key: :disable_invite_members,
+          user_policy: :owner_access
+        )
         super
       end
 

@@ -486,6 +486,28 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
     end
   end
 
+  describe "#disable_invite_members" do
+    context 'when disable_invite_members = true' do
+      before do
+        setting.disable_invite_members = true
+      end
+
+      it 'returns true' do
+        expect(setting.disable_invite_members?).to eq(true)
+      end
+    end
+
+    context 'when disable_invite_members = false' do
+      before do
+        setting.disable_invite_members = false
+      end
+
+      it 'returns false' do
+        expect(setting.disable_invite_members?).to eq(false)
+      end
+    end
+  end
+
   describe '#user_cap_enabled?', feature_category: :consumables_cost_management do
     where(:seat_control, :new_user_signups_cap, :root_namespace, :expectation) do
       :off      | nil | false | false
