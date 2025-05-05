@@ -2193,20 +2193,45 @@ RSpec.describe User, feature_category: :system_access do
   end
 
   describe '#can_access_admin_area?' do
-    let_it_be_with_refind(:user) { create(:user) }
+    let_it_be_with_refind(:user_without_admin_role) { create(:user) }
+    let_it_be_with_refind(:user_with_admin_role) { create(:user) }
 
-    context 'for user without admin custom permissions' do
-      it 'returns false' do
-        expect(user.can_access_admin_area?).to be_falsey
+    let_it_be(:admin_role) { create(:member_role, :admin) }
+    let_it_be(:user_member_role) { create(:user_member_role, member_role: admin_role, user: user_with_admin_role) }
+
+    context 'when custom_roles feature is available' do
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
+      context 'for user without admin custom permissions' do
+        it 'returns false' do
+          expect(user_without_admin_role.can_access_admin_area?).to be(false)
+        end
+      end
+
+      context 'for user with admin custom permissions' do
+        it 'returns true' do
+          expect(user_with_admin_role.can_access_admin_area?).to be(true)
+        end
       end
     end
 
-    context 'for user with admin custom permissions' do
-      let_it_be(:admin_role) { create(:member_role, :admin) }
-      let_it_be(:user_member_role) { create(:user_member_role, member_role: admin_role, user: user) }
+    context 'when custom_roles feature is not available' do
+      before do
+        stub_licensed_features(custom_roles: false)
+      end
 
-      it 'returns true' do
-        expect(user.can_access_admin_area?).to be_truthy
+      context 'for user without admin custom permissions' do
+        it 'returns false' do
+          expect(user_without_admin_role.can_access_admin_area?).to be(false)
+        end
+      end
+
+      context 'for user with admin custom permissions' do
+        it 'returns false' do
+          expect(user_with_admin_role.can_access_admin_area?).to be(false)
+        end
       end
     end
   end

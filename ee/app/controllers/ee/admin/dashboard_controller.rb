@@ -16,11 +16,9 @@ module EE
 
       private
 
-      override :authenticate_admin!
-      def authenticate_admin!
-        return if can?(current_user, :read_admin_dashboard)
-
-        super
+      override :user_is_admin?
+      def user_is_admin?
+        current_user.can_access_admin_area?
       end
     end
   end

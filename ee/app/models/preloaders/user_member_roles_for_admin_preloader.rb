@@ -22,6 +22,8 @@ module Preloaders
     private
 
     def admin_abilities_for_user
+      return { admin: [] } unless custom_roles_enabled?
+
       user_member_roles = Authz::UserAdminRole.klass(user).where(user_id: user.id).includes(:member_role)
 
       user_abilities = user_member_roles.flat_map do |user_role|
@@ -29,6 +31,10 @@ module Preloaders
       end
 
       { admin: user_abilities }
+    end
+
+    def custom_roles_enabled?
+      ::Feature.enabled?(:custom_admin_roles, :instance) && ::License.feature_available?(:custom_roles)
     end
 
     def resource_key

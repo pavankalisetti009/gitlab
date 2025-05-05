@@ -13,6 +13,8 @@ RSpec.describe Admin::SessionsController, :do_not_mock_admin_mode,
 
     context 'for regular users with admin custom role' do
       before do
+        stub_licensed_features(custom_roles: true)
+
         sign_in(user)
       end
 
