@@ -29,10 +29,17 @@ module Gitlab
       def scope_options(scope)
         # User uses group_id for namespace_query
         case scope
+        when :epics, :wiki_blobs
+          super.merge(root_ancestor_ids: [group.root_ancestor.id])
         when :users
           super.except(:group_ids) # User uses group_id for namespace_query
-        when :wiki_blobs, :work_items, :epics
-          super.merge(root_ancestor_ids: [group.root_ancestor.id])
+        when :work_items
+          options = super.merge(root_ancestor_ids: [group.root_ancestor.id])
+          if Feature.enabled?(:search_work_item_queries_notes, current_user)
+            options[:related_ids] = related_ids_for_notes(Issue.name)
+          end
+
+          options
         else
           super
         end

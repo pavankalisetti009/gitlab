@@ -44,5 +44,21 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'projects', feature_category: :gl
       expect(result.milestones_count).to eq(2)
       expect(result.projects_count).to eq(1)
     end
+
+    describe 'archived filtering' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:unarchived_result) { create(:project, :public, group: group) }
+      let_it_be(:archived_result) { create(:project, :archived, :public, group: group) }
+
+      let(:scope) { 'projects' }
+      let(:results) { described_class.new(user, '*', [unarchived_result.id, archived_result.id], filters: filters) }
+
+      it_behaves_like 'search results filtered by archived' do
+        before do
+          ::Elastic::ProcessBookkeepingService.track!(unarchived_result, archived_result)
+          ensure_elasticsearch_index!
+        end
+      end
+    end
   end
 end

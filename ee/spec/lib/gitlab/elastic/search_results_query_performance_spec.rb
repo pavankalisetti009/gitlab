@@ -16,9 +16,33 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'query performance', feature_cate
   describe 'query performance' do
     let(:results) { described_class.new(user, query, limit_project_ids) }
 
-    include_examples 'does not hit Elasticsearch twice for objects and counts',
-      %w[projects notes blobs wiki_blobs commits issues merge_requests milestones]
-    include_examples 'does not load results for count only queries',
-      %w[projects notes blobs wiki_blobs commits issues merge_requests milestones]
+    allowed_scopes = %w[projects notes blobs wiki_blobs issues commits merge_requests epics milestones notes users]
+    scopes_with_notes_query = %w[issues]
+
+    include_examples 'calls Elasticsearch the expected number of times',
+      scopes: (allowed_scopes - scopes_with_notes_query), scopes_with_multiple: scopes_with_notes_query
+
+    context 'when search_work_item_queries_notes flag is false' do
+      before do
+        stub_feature_flags(search_work_item_queries_notes: false)
+      end
+
+      include_examples 'calls Elasticsearch the expected number of times', scopes: allowed_scopes,
+        scopes_with_multiple: []
+    end
+
+    allowed_scopes_and_index_names = [
+      %W[projects #{Project.index_name}],
+      %W[notes #{Note.index_name}],
+      %W[blobs #{Repository.index_name}],
+      %W[wiki_blobs #{Wiki.index_name}],
+      %W[commits #{Elastic::Latest::CommitConfig.index_name}],
+      %W[issues #{::Search::Elastic::References::WorkItem.index}],
+      %W[merge_requests #{MergeRequest.index_name}],
+      %W[epics #{::Search::Elastic::References::WorkItem.index}],
+      %W[milestones #{Milestone.index_name}],
+      %W[users #{User.index_name}]
+    ]
+    include_examples 'does not load results for count only queries', allowed_scopes_and_index_names
   end
 end

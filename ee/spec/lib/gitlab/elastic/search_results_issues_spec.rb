@@ -4,8 +4,9 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::Elastic::SearchResults, 'issues', feature_category: :global_search do
   let(:query) { 'hello world' }
+  let(:scope) { 'issues' }
   let_it_be(:user) { create(:user) }
-  let_it_be(:project_1) { create(:project, :public, :repository, :wiki_repo) }
+  let_it_be(:project_1) { create(:project, :public, :repository, :wiki_repo, :in_group) }
   let_it_be(:project_2) { create(:project, :public, :repository, :wiki_repo) }
   let_it_be(:limit_project_ids) { [project_1.id] }
 
@@ -15,7 +16,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'issues', feature_category: :glob
   end
 
   describe 'issues', :elastic_delete_by_query do
-    let(:scope) { 'issues' }
     let_it_be(:issue_1) do
       create(:issue, project: project_1, title: 'Hello world, here I am!',
         description: '20200623170000, see details in issue 287661', iid: 1)
@@ -132,22 +132,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'issues', feature_category: :glob
           it 'returns the expected issue based on type' do
             issues = described_class.new(user, '*', [project.id], filters: { type: type }).objects('issues')
             expect(issues).to include(*expected)
-          end
-        end
-      end
-
-      context 'for projects' do
-        let_it_be(:group) { create(:group) }
-        let_it_be(:unarchived_result) { create(:project, :public, group: group) }
-        let_it_be(:archived_result) { create(:project, :archived, :public, group: group) }
-
-        let(:scope) { 'projects' }
-        let(:results) { described_class.new(user, '*', [unarchived_result.id, archived_result.id], filters: filters) }
-
-        it_behaves_like 'search results filtered by archived' do
-          before do
-            ::Elastic::ProcessBookkeepingService.track!(unarchived_result, archived_result)
-            ensure_elasticsearch_index!
           end
         end
       end
@@ -403,6 +387,47 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'issues', feature_category: :glob
             expect(results.issues_count).to eq 1
           end
         end
+      end
+    end
+  end
+
+  describe 'issues with notes', :elastic_delete_by_query do
+    let(:query) { 'Goodbye moon' }
+    let_it_be(:limit_project_ids) { user.authorized_projects.pluck_primary_key }
+    let_it_be(:issue) { create(:issue, project: project_1, title: 'Hello world, here I am!') }
+    let_it_be(:note) { create(:note_on_issue, note: 'Goodbye moon', noteable: issue, project: issue.project) }
+
+    let(:results) { described_class.new(user, query, limit_project_ids, public_and_internal_projects: true) }
+
+    before do
+      # this flag is default off and all related code will be removed and replaced by search_work_item_queries_notes
+      stub_feature_flags(advanced_search_work_item_uses_note_fields: false)
+      Elastic::ProcessInitialBookkeepingService.track!(issue, note)
+      ensure_elasticsearch_index!
+    end
+
+    subject(:issues) { results.objects('issues') }
+
+    it 'returns the issue when searching with note text' do
+      expect(issues).to contain_exactly(issue)
+      expect(results.issues_count).to eq 1
+    end
+
+    context 'when on saas', :saas do
+      it 'does not return the issue when searching with note text' do
+        expect(issues).to be_empty
+        expect(results.issues_count).to eq 0
+      end
+    end
+
+    context 'when search_work_item_queries_notes is false' do
+      before do
+        stub_feature_flags(search_work_item_queries_notes: false)
+      end
+
+      it 'does not return the issue when searching with note text' do
+        expect(issues).to be_empty
+        expect(results.issues_count).to eq 0
       end
     end
   end

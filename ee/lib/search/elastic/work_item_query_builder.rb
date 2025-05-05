@@ -12,8 +12,9 @@ module Search
       THRESHOLD_FOR_GENERATING_EMBEDDING = 10
 
       def build
-        options[:vectors_supported] = vectors_supported
         options[:fields] = fields
+        options[:related_ids] = related_ids
+        options[:vectors_supported] = vectors_supported
 
         query_hash = if hybrid_work_item_search?
                        ::Search::Elastic::Queries.by_knn(query: query, options: options)
@@ -61,6 +62,17 @@ module Search
         FIELDS + %w[notes notes_internal]
       end
 
+      def related_ids
+        return [] unless options[:related_ids].present?
+        return [] unless Feature.enabled?(:search_work_item_queries_notes, options[:current_user])
+
+        # related_ids are used to search for related notes on noteable records
+        # this is not enabled on GitLab.com for global searches
+        return [] if options[:search_level].to_sym == :global && ::Gitlab::Saas.feature_available?(:advanced_search)
+
+        options[:related_ids]
+      end
+
       def get_authorization_filter(query_hash:, options:)
         ::Search::Elastic::Filters.by_search_level_and_membership(query_hash: query_hash, options: options)
       end
@@ -99,12 +111,12 @@ module Search
         end
 
         {
-          doc_type: DOC_TYPE,
-          features: 'issues',
           authorization_use_traversal_ids: true,
-          project_visibility_level_field: :project_visibility_level,
+          doc_type: DOC_TYPE,
           embedding_field: embedding_field,
-          model: model
+          features: 'issues',
+          model: model,
+          project_visibility_level_field: :project_visibility_level
         }
       end
 

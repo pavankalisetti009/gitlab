@@ -343,8 +343,14 @@ module Gitlab
         case scope
         when :projects, :notes, :commits
           base_options.merge(filters.slice(:include_archived))
-        when :work_items
-          work_item_scope_options
+        when :work_items # issues
+          options = work_item_scope_options
+          if !::Gitlab::Saas.feature_available?(:advanced_search) &&
+              Feature.enabled?(:search_work_item_queries_notes, current_user)
+            options[:related_ids] = related_ids_for_notes(Issue.name)
+          end
+
+          options
         when :merge_requests
           base_options.merge(merge_request_scope_options)
         when :issues
@@ -419,8 +425,9 @@ module Gitlab
 
       def issues(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)
         strong_memoize(memoize_key('issues', count_only: count_only)) do
-          options = scope_options(:work_items)
-            .merge(count_only: count_only, per_page: per_page, page: page, preload_method: preload_method)
+          options = scope_options(:work_items).merge(count_only: count_only, per_page: per_page,
+            page: page, preload_method: preload_method)
+
           search_query = ::Search::Elastic::WorkItemQueryBuilder.build(query: query, options: options)
 
           ::Gitlab::Search::Client.execute_search(query: search_query, options: options) do |response|
@@ -439,6 +446,15 @@ module Gitlab
 
       def notes(count_only: false)
         scope_results :notes, Note, count_only: count_only
+      end
+
+      def related_ids_for_notes(noteable_type)
+        strong_memoize_with(:related_ids_for_notes, noteable_type) do
+          options = scope_options(:notes).merge(count_only: false, noteable_type: noteable_type)
+
+          notes_response = Note.elastic_search(query, options: options).response
+          notes_response['hits']['hits'].filter_map { |hit| hit['_source']['noteable_id'] }.uniq
+        end
       end
 
       def epics(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)

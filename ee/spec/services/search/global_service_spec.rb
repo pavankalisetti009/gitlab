@@ -53,10 +53,10 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
   end
 
   context 'for has_parent usage', :elastic do
-    shared_examples 'search does not use has_parent' do |scope|
+    shared_examples 'search does not use has_parent' do |scope, index_name|
       let(:results) { described_class.new(nil, search: '*').execute.objects(scope) }
       let(:es_host) { Gitlab::CurrentSettings.elasticsearch_url.first }
-      let(:search_url) { %r{#{es_host}/[\w-]+/_search} }
+      let(:search_url) { %r{#{es_host}/#{index_name}/_search} }
 
       it 'does not use joins to apply permissions' do
         request = a_request(:post, search_url).with do |req|
@@ -69,9 +69,9 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
       end
     end
 
-    it_behaves_like 'search does not use has_parent', 'merge_requests'
-    it_behaves_like 'search does not use has_parent', 'issues'
-    it_behaves_like 'search does not use has_parent', 'notes'
+    it_behaves_like 'search does not use has_parent', 'merge_requests', MergeRequest.index_name
+    it_behaves_like 'search does not use has_parent', 'issues', ::Search::Elastic::References::WorkItem.index
+    it_behaves_like 'search does not use has_parent', 'notes', Note.index_name
   end
 
   context 'when projects search has an empty search term', :elastic do

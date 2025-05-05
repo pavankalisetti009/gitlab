@@ -4,6 +4,7 @@ module Search
   module Elastic
     module Filters
       ALLOWED_SEARCH_LEVELS = %i[global group project].freeze
+      DEFAULT_RELATED_SIZE = 100
 
       class << self
         include ::Elastic::Latest::QueryContext::Aware
@@ -519,6 +520,27 @@ module Search
           return query_hash unless options[:traversal_ids]
 
           traversal_ids_ancestry_filter(query_hash, options[:traversal_ids], options)
+        end
+
+        def by_noteable_type(query_hash:, options:)
+          noteable_type = options[:noteable_type]
+          return query_hash unless noteable_type
+
+          context.name(:filters) do
+            query_hash[:_source] = ['noteable_id']
+            query_hash[:size] = options.fetch(:related_size, DEFAULT_RELATED_SIZE)
+
+            add_filter(query_hash, :query, :bool, :filter) do
+              {
+                term: {
+                  noteable_type: {
+                    _name: context.name(:related, noteable_type.downcase),
+                    value: noteable_type
+                  }
+                }
+              }
+            end
+          end
         end
 
         private

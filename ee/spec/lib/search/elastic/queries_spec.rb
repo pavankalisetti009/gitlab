@@ -125,6 +125,47 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
       end
     end
 
+    context 'when options[:related_ids] are provided' do
+      let(:options) { base_options.merge(related_ids: [12, 14]) }
+
+      it 'returns a simple_query_string query and an id query in should array and adds doc type as a filter' do
+        expected_should = [
+          { simple_query_string: { _name: 'my_type:match:search_terms', fields: %w[iid^3 title^2 description],
+                                   query: 'foo bar', lenient: true, default_operator: :and } },
+          { terms: { _name: 'my_type:related:ids', id: [12, 14],
+                     boost: Search::Elastic::Queries::DEFAULT_RELATED_ID_BOOST } }
+        ]
+        expected_filter = [
+          { term: { type: { _name: 'doc:is_a:my_type', value: 'my_type' } } }
+        ]
+
+        expect(by_simple_query_string[:query][:bool][:must]).to eq([])
+        expect(by_simple_query_string[:query][:bool][:must_not]).to eq([])
+        expect(by_simple_query_string[:query][:bool][:should]).to eq(expected_should)
+        expect(by_simple_query_string[:query][:bool][:filter]).to eq(expected_filter)
+      end
+
+      context 'when options[:related_ids_boost] is also provided' do
+        let(:options) { base_options.merge(related_ids: [12, 14], related_ids_boost: 12) }
+
+        it 'uses the boost in the id query' do
+          expected_should = [
+            { simple_query_string: { _name: 'my_type:match:search_terms', fields: %w[iid^3 title^2 description],
+                                     query: 'foo bar', lenient: true, default_operator: :and } },
+            { terms: { _name: 'my_type:related:ids', id: [12, 14], boost: 12 } }
+          ]
+          expected_filter = [
+            { term: { type: { _name: 'doc:is_a:my_type', value: 'my_type' } } }
+          ]
+
+          expect(by_simple_query_string[:query][:bool][:must]).to eq([])
+          expect(by_simple_query_string[:query][:bool][:must_not]).to eq([])
+          expect(by_simple_query_string[:query][:bool][:should]).to eq(expected_should)
+          expect(by_simple_query_string[:query][:bool][:filter]).to eq(expected_filter)
+        end
+      end
+    end
+
     context 'when query is provided' do
       it 'returns a simple_query_string query as a must and adds doc type as a filter' do
         expected_must = [
@@ -152,7 +193,7 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
         expect(by_simple_query_string[:query][:bool][:must_not]).to eq([])
         expect(by_simple_query_string[:query][:bool][:should]).to eq([])
         expect(by_simple_query_string[:query][:bool][:filter]).to eq([])
-        expect(by_simple_query_string[:track_scores]).to eq(true)
+        expect(by_simple_query_string[:track_scores]).to be(true)
       end
     end
 
@@ -273,7 +314,7 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
         expect(by_multi_match_query[:query][:bool][:must_not]).to eq([])
         expect(by_multi_match_query[:query][:bool][:should]).to eq([])
         expect(by_multi_match_query[:query][:bool][:filter]).to eq([])
-        expect(by_multi_match_query[:track_scores]).to eq(true)
+        expect(by_multi_match_query[:track_scores]).to be(true)
       end
     end
 
@@ -302,6 +343,61 @@ RSpec.describe ::Search::Elastic::Queries, feature_category: :global_search do
         expect(by_multi_match_query[:query][:bool][:must_not]).to eq([])
         expect(by_multi_match_query[:query][:bool][:should]).to eql(expected_should)
         expect(by_multi_match_query[:query][:bool][:filter]).to eql(expected_filter)
+      end
+    end
+
+    context 'when options[:related_ids] is provided' do
+      let(:options) { base_options.merge(related_ids: [12, 14]) }
+
+      it 'returns a by_multi_match_query query and an id query in should array and adds doc type as a filter' do
+        expected_should = [
+          { bool: { minimum_should_match: 1,
+                    should: [
+                      { multi_match: { _name: 'my_type:multi_match:and:search_terms',
+                                       fields: %w[iid^3 title^2 description],
+                                       query: 'foo bar', operator: :and, lenient: true } },
+                      { multi_match: { _name: 'my_type:multi_match_phrase:search_terms',
+                                       type: :phrase, fields: %w[iid^3 title^2 description],
+                                       query: 'foo bar', lenient: true } }
+                    ] } },
+          { terms: { _name: 'my_type:related:ids', id: [12, 14],
+                     boost: Search::Elastic::Queries::DEFAULT_RELATED_ID_BOOST } }
+        ]
+        expected_filter = [
+          { term: { type: { _name: 'doc:is_a:my_type', value: 'my_type' } } }
+        ]
+
+        expect(by_multi_match_query[:query][:bool][:must]).to be_empty
+        expect(by_multi_match_query[:query][:bool][:must_not]).to be_empty
+        expect(by_multi_match_query[:query][:bool][:should]).to eq(expected_should)
+        expect(by_multi_match_query[:query][:bool][:filter]).to eq(expected_filter)
+      end
+
+      context 'when options[:related_ids_boost] is also provided' do
+        let(:options) { base_options.merge(related_ids: [12, 14], related_ids_boost: 12) }
+
+        it 'uses the boost in the id query' do
+          expected_should = [
+            { bool: { minimum_should_match: 1,
+                      should: [
+                        { multi_match: { _name: 'my_type:multi_match:and:search_terms',
+                                         fields: %w[iid^3 title^2 description],
+                                         query: 'foo bar', operator: :and, lenient: true } },
+                        { multi_match: { _name: 'my_type:multi_match_phrase:search_terms',
+                                         type: :phrase, fields: %w[iid^3 title^2 description],
+                                         query: 'foo bar', lenient: true } }
+                      ] } },
+            { terms: { _name: 'my_type:related:ids', id: [12, 14], boost: 12 } }
+          ]
+          expected_filter = [
+            { term: { type: { _name: 'doc:is_a:my_type', value: 'my_type' } } }
+          ]
+
+          expect(by_multi_match_query[:query][:bool][:must]).to be_empty
+          expect(by_multi_match_query[:query][:bool][:must_not]).to be_empty
+          expect(by_multi_match_query[:query][:bool][:should]).to eq(expected_should)
+          expect(by_multi_match_query[:query][:bool][:filter]).to eq(expected_filter)
+        end
       end
     end
 

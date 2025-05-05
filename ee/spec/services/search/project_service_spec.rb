@@ -634,4 +634,37 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       expect(described_class.new(user, project, scope: 'notes').search_level).to eq :project
     end
   end
+
+  describe 'issues search', :elastic_delete_by_query do
+    let_it_be(:issue) { create(:issue, project: project, title: 'Hello world, here I am!') }
+    let_it_be(:note) { create(:note_on_issue, note: 'Goodbye moon', noteable: issue, project: issue.project) }
+
+    let(:service) { described_class.new(user, project, search: 'Goodbye').execute }
+
+    before do
+      # this flag is default off and all related code will be removed and replaced by search_work_item_queries_notes
+      stub_feature_flags(advanced_search_work_item_uses_note_fields: false)
+
+      Elastic::ProcessInitialBookkeepingService.track!(issue, note)
+      ensure_elasticsearch_index!
+    end
+
+    subject(:issues) { service.objects('issues') }
+
+    it 'return the issue when searching with note text' do
+      expect(issues).to contain_exactly(issue)
+      expect(service.issues_count).to eq 1
+    end
+
+    context 'when search_work_item_queries_notes is false' do
+      before do
+        stub_feature_flags(search_work_item_queries_notes: false)
+      end
+
+      it 'does not return the issue when searching with note text' do
+        expect(issues).to be_empty
+        expect(service.issues_count).to eq 0
+      end
+    end
+  end
 end

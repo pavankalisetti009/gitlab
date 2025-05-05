@@ -57,36 +57,36 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
   end
 
   describe 'group search', :elastic do
-    let_it_be(:term) { "RandomName" }
-    let_it_be(:nested_group) { create(:group, :nested) }
-
-    # These projects shouldn't be found
-    let_it_be(:outside_project) { create(:project, :public, name: "Outside #{term}") }
-    let_it_be(:private_project) do
-      create(:project, :private, namespace: nested_group, name: "Private #{term}")
-    end
-
-    let_it_be(:other_project) { create(:project, :public, namespace: nested_group, name: 'OtherProject') }
-
-    # These projects should be found
-    let_it_be(:project1) { create(:project, :internal, namespace: nested_group, name: "Inner #{term} 1") }
-    let_it_be(:project2) { create(:project, :internal, namespace: nested_group, name: "Inner #{term} 2") }
-    let_it_be(:project3) do
-      create(:project, :internal, namespace: nested_group.parent, name: "Outer #{term}")
-    end
-
     let(:results) { described_class.new(user, search_group, search: term).execute }
 
-    before do
-      # Ensure these are present when the index is refreshed
-      Elastic::ProcessInitialBookkeepingService.track!(
-        outside_project, private_project, other_project, project1, project2, project3
-      )
+    context 'for projects scope' do
+      let_it_be(:term) { "RandomName" }
+      let_it_be(:nested_group) { create(:group, :nested) }
 
-      ensure_elasticsearch_index!
-    end
+      # These projects shouldn't be found
+      let_it_be(:outside_project) { create(:project, :public, name: "Outside #{term}") }
+      let_it_be(:private_project) do
+        create(:project, :private, namespace: nested_group, name: "Private #{term}")
+      end
 
-    context 'when finding projects by name' do
+      let_it_be(:other_project) { create(:project, :public, namespace: nested_group, name: 'OtherProject') }
+
+      # These projects should be found
+      let_it_be(:project1) { create(:project, :internal, namespace: nested_group, name: "Inner #{term} 1") }
+      let_it_be(:project2) { create(:project, :internal, namespace: nested_group, name: "Inner #{term} 2") }
+      let_it_be(:project3) do
+        create(:project, :internal, namespace: nested_group.parent, name: "Outer #{term}")
+      end
+
+      before_all do
+        # Ensure these are present when the index is refreshed
+        Elastic::ProcessInitialBookkeepingService.track!(
+          outside_project, private_project, other_project, project1, project2, project3
+        )
+
+        ensure_elasticsearch_index!
+      end
+
       subject { results.objects('projects') }
 
       context 'in parent group' do
@@ -99,6 +99,40 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
         let(:search_group) { nested_group }
 
         it { is_expected.to match_array([project1, project2]) }
+      end
+    end
+
+    context 'for issues scope' do
+      let(:term) { 'Goodbye' }
+      let(:search_group) { group }
+      let_it_be(:project) { create(:project, :public, group: group) }
+      let_it_be(:issue) { create(:issue, project: project, title: 'Hello world, here I am!') }
+      let_it_be(:note) { create(:note_on_issue, note: 'Goodbye moon', noteable: issue, project: issue.project) }
+
+      before do
+        # this flag is default off and all related code will be removed and replaced by search_work_item_queries_notes
+        stub_feature_flags(advanced_search_work_item_uses_note_fields: false)
+
+        Elastic::ProcessInitialBookkeepingService.track!(issue, note)
+        ensure_elasticsearch_index!
+      end
+
+      subject(:issues) { results.objects('issues') }
+
+      it 'return the issue when searching with note text' do
+        expect(issues).to contain_exactly(issue)
+        expect(results.issues_count).to eq 1
+      end
+
+      context 'when search_work_item_queries_notes is false' do
+        before do
+          stub_feature_flags(search_work_item_queries_notes: false)
+        end
+
+        it 'does not return the issue when searching with note text' do
+          expect(issues).to be_empty
+          expect(results.issues_count).to eq 0
+        end
       end
     end
   end
