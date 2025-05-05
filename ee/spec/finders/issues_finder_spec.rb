@@ -488,4 +488,103 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
       end
     end
   end
+
+  describe 'filtering by status' do
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group, developers: [current_user]) }
+
+    let_it_be(:to_do_issue) { create(:issue, project: project) }
+    let_it_be(:to_do_issue_current_status) do
+      create(:work_item_current_status, work_item_id: to_do_issue.id, system_defined_status_id: 1)
+    end
+
+    let_it_be(:in_progress_issue) { create(:issue, project: project) }
+    let_it_be(:in_progress_issue_current_status) do
+      create(:work_item_current_status, work_item_id: in_progress_issue.id, system_defined_status_id: 2)
+    end
+
+    let(:status) { build(:work_item_system_defined_status) }
+    let(:results) { described_class.new(current_user, params).execute }
+
+    shared_examples 'an unfiltered collection' do
+      it 'does not filter by status' do
+        expect(results).to contain_exactly(to_do_issue, in_progress_issue)
+      end
+    end
+
+    shared_examples 'a filtered collection' do
+      it 'filters by status' do
+        expect(results).to contain_exactly(to_do_issue)
+      end
+    end
+
+    context 'when filtering by status id' do
+      let(:params) { { project_id: project.id, status: { id: status } } }
+
+      it_behaves_like 'an unfiltered collection'
+
+      context 'when feature is licensed' do
+        before do
+          stub_licensed_features(work_item_status: true)
+        end
+
+        it_behaves_like 'a filtered collection'
+
+        context 'when status is not found' do
+          let(:status) { nil }
+
+          it_behaves_like 'an unfiltered collection'
+        end
+
+        context 'when work_item_status_feature_flag feature flag is disabled' do
+          before do
+            stub_feature_flags(work_item_status_feature_flag: false)
+          end
+
+          it_behaves_like 'an unfiltered collection'
+        end
+      end
+    end
+
+    context 'when filtering by status name' do
+      let(:status_name) { 'to do' }
+      let(:params) { { project_id: project.id, status: { name: status_name } } }
+
+      it_behaves_like 'an unfiltered collection'
+
+      context 'when feature is licensed' do
+        before do
+          stub_licensed_features(work_item_status: true)
+        end
+
+        it_behaves_like 'a filtered collection'
+
+        context 'when status is not found' do
+          let(:status_name) { 'invalid' }
+
+          it_behaves_like 'an unfiltered collection'
+        end
+
+        context 'when work_item_status_feature_flag feature flag is disabled' do
+          before do
+            stub_feature_flags(work_item_status_feature_flag: false)
+          end
+
+          it_behaves_like 'an unfiltered collection'
+        end
+      end
+    end
+
+    context 'when filtering by both status_id and status_name' do
+      let(:status_name) { 'in progress' }
+      let(:params) { { project_id: project.id, status: { id: status, name: status_name } } }
+
+      before do
+        stub_licensed_features(work_item_status: true)
+      end
+
+      it_behaves_like 'a filtered collection' # by status id
+    end
+  end
 end

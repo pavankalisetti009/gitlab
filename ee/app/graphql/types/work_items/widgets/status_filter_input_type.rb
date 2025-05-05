@@ -3,10 +3,10 @@
 module Types
   module WorkItems
     module Widgets
-      class StatusInputType < BaseInputObject
-        graphql_name 'WorkItemWidgetStatusInput'
+      class StatusFilterInputType < BaseInputObject
+        graphql_name 'WorkItemWidgetStatusFilterInput'
 
-        argument :status, Types::GlobalIDType[::WorkItems::Statuses::Status],
+        argument :id, Types::GlobalIDType[::WorkItems::Statuses::Status],
           required: false,
           description: 'Global ID of the status.',
           prepare: ->(global_id, _) {
@@ -20,6 +20,12 @@ module Types
 
             status
           }
+
+        argument :name, GraphQL::Types::String,
+          required: false,
+          description: 'Name of the status.'
+
+        validates mutually_exclusive: [:id, :name]
       end
     end
   end

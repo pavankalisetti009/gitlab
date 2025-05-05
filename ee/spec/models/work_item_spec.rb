@@ -507,6 +507,19 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     it { is_expected.to contain_exactly(work_item_without_progress, work_item_with_stale_reminder) }
   end
 
+  describe '.with_status' do
+    let_it_be(:to_do_work_item) { create(:work_item, :task, project: reusable_project, system_defined_status_id: 1) }
+    let_it_be(:in_progress_work_item) do
+      create(:work_item, :task, project: reusable_project, system_defined_status_id: 2)
+    end
+
+    let(:status) { build(:work_item_system_defined_status) }
+
+    subject { described_class.with_status(status) }
+
+    it { is_expected.to contain_exactly(to_do_work_item) }
+  end
+
   describe 'versioned descriptions' do
     it_behaves_like 'versioned description'
 

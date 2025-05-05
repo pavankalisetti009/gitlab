@@ -24,6 +24,7 @@ RSpec.describe Issue, feature_category: :team_planning do
     it { is_expected.to have_many(:observability_metrics).class_name('Observability::MetricsIssuesConnection') }
     it { is_expected.to have_many(:observability_logs).class_name('Observability::LogsIssuesConnection') }
     it { is_expected.to have_many(:observability_traces).class_name('Observability::TracesIssuesConnection') }
+    it { is_expected.to have_one(:current_status).class_name('WorkItems::Statuses::CurrentStatus') }
 
     it 'has one `synced_epic`' do
       is_expected.to have_one(:synced_epic).class_name('Epic').with_foreign_key('issue_id').inverse_of(:work_item)
@@ -343,6 +344,22 @@ RSpec.describe Issue, feature_category: :team_planning do
         expect(described_class.all).to include(issue_without_project_id)
         expect(relation).not_to include(issue_without_project_id)
       end
+    end
+
+    describe '.with_status' do
+      let_it_be(:to_do_issue) { create(:issue) }
+      let_it_be(:to_do_current_status) { create(:work_item_current_status, work_item_id: to_do_issue.id) }
+
+      let_it_be(:in_progress_issue) { create(:issue) }
+      let_it_be(:in_progress_current_status) do
+        create(:work_item_current_status, work_item_id: in_progress_issue.id, system_defined_status_id: 2)
+      end
+
+      let(:status) { build(:work_item_system_defined_status) }
+
+      subject { described_class.with_status(status) }
+
+      it { is_expected.to contain_exactly(to_do_issue) }
     end
   end
 
