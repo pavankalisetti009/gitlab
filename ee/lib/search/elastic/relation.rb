@@ -34,6 +34,12 @@ module Search
         records.reverse
       end
 
+      def cursor_for(record)
+        hit = hit_for(record)
+
+        hit['sort']
+      end
+
       def preload(*preloads)
         @preload_values += preloads
 
@@ -62,7 +68,11 @@ module Search
       end
 
       def primary_key
-        options[:primary_key] || :id
+        @primary_key ||= options[:primary_key] || :id
+      end
+
+      def hit_for(record)
+        @response_mapper.results.find { |result| result['_id'].to_i == record.id }
       end
     end
   end

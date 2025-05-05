@@ -52,13 +52,13 @@ module Search
         response['error']
       end
 
-      private
-
-      attr_reader :options, :response
-
       def results
         @results ||= response.dig('hits', 'hits')
       end
+
+      private
+
+      attr_reader :options, :response
 
       def ids
         # the _source: id will always contain an integer
