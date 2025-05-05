@@ -2,15 +2,17 @@
 
 module Namespaces
   class BilledUsersFinder
+    CROSS_JOIN_ISSUE_URL = "https://gitlab.com/gitlab-org/gitlab/-/issues/417464"
+
     def initialize(group, exclude_guests: false)
       @group = group
-      @ids = { user_ids: Set.new }
       @exclude_guests = exclude_guests
+      @ids = { user_ids: Set.new }
     end
 
     def execute
-      METHOD_KEY_MAP.each_key do |method_name|
-        calculate_user_ids(method_name)
+      METHOD_KEY_MAP.each do |method_name, ids_hash_key|
+        calculate_user_ids(method_name, ids_hash_key)
       end
 
       ids
@@ -27,18 +29,20 @@ module Namespaces
       billed_invited_group_to_project_users: :shared_project_user_ids
     }.freeze
 
-    def calculate_user_ids(method_name)
-      cross_join_issue = "https://gitlab.com/gitlab-org/gitlab/-/issues/417464"
-      ::Gitlab::Database.allow_cross_joins_across_databases(url: cross_join_issue) do
-        @ids[METHOD_KEY_MAP[method_name]] = group.public_send(method_name, exclude_guests: @exclude_guests) # rubocop:disable GitlabSecurity/PublicSend
-                                            .pluck(:id).to_set # rubocop:disable CodeReuse/ActiveRecord
+    def calculate_user_ids(method_name, hash_key)
+      user_ids = fetch_user_ids(method_name)
 
-        append_to_user_ids(ids[METHOD_KEY_MAP[method_name]])
-      end
+      @ids[hash_key] = user_ids
+      @ids[:user_ids].merge(user_ids)
     end
 
-    def append_to_user_ids(user_ids)
-      @ids[:user_ids] += user_ids
+    def fetch_user_ids(method_name)
+      scope = group.public_send(method_name, exclude_guests: @exclude_guests) # rubocop:disable GitlabSecurity/PublicSend -- No scope of user input to be passed to this method
+
+      scope = yield(scope) if block_given?
+
+      scope = scope.allow_cross_joins_across_databases(url: CROSS_JOIN_ISSUE_URL)
+      scope.pluck(:id).to_set # rubocop:disable CodeReuse/ActiveRecord -- ids are relevant only for these records
     end
   end
 end
