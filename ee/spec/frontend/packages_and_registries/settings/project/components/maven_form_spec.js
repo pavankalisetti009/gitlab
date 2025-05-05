@@ -1,5 +1,6 @@
 import { GlFormGroup, GlFormInput, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import MavenForm from 'ee_component/packages_and_registries/settings/project/components/maven_form.vue';
 import { dependencyProxyPackagesSettingsData } from '../mock_data';
 
@@ -18,7 +19,7 @@ describe('maven form', () => {
   };
 
   const findHeader = () =>
-    wrapper.findByRole('heading', { level: 3, name: 'Configure external Maven registry' });
+    wrapper.findByRole('heading', { level: 2, name: 'Configure external Maven registry' });
 
   const findURLFieldDescription = () => wrapper.findByTestId('url-field-description');
 
@@ -28,6 +29,7 @@ describe('maven form', () => {
       stubs: {
         GlFormGroup,
         GlSprintf,
+        CrudComponent,
       },
     });
   };

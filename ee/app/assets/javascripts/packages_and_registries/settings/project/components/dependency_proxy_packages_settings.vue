@@ -1,6 +1,7 @@
 <script>
-import { GlAlert, GlCard, GlSkeletonLoader } from '@gitlab/ui';
+import { GlAlert, GlSkeletonLoader } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import SettingsSubSection from '~/vue_shared/components/settings/settings_sub_section.vue';
 import getDependencyProxyPackagesSettings from 'ee_component/packages_and_registries/settings/project/graphql/queries/get_dependency_proxy_packages_settings.query.graphql';
 import DependencyProxyPackagesSettingsForm from 'ee_component/packages_and_registries/settings/project/components/dependency_proxy_packages_settings_form.vue';
 
@@ -9,8 +10,8 @@ export default {
   components: {
     DependencyProxyPackagesSettingsForm,
     GlAlert,
-    GlCard,
     GlSkeletonLoader,
+    SettingsSubSection,
   },
   inject: {
     projectPath: {
@@ -50,29 +51,22 @@ export default {
 </script>
 
 <template>
-  <gl-card data-testid="dependency-proxy-settings">
-    <template #header>
-      <h2 class="gl-m-0 gl-inline-flex gl-items-center gl-text-base gl-font-bold gl-leading-normal">
-        {{ s__('DependencyProxy|Dependency Proxy') }}
-      </h2>
-    </template>
-    <template #default>
-      <p class="gl-text-subtle" data-testid="description">
-        {{
-          s__(
-            'DependencyProxy|Enable the Dependency Proxy for packages, and configure connection settings for external registries.',
-          )
-        }}
-      </p>
+  <settings-sub-section
+    :heading="s__('DependencyProxy|Dependency Proxy')"
+    :description="
+      s__(
+        'DependencyProxy|Enable the Dependency Proxy for packages, and configure connection settings for external registries.',
+      )
+    "
+    data-testid="dependency-proxy-settings"
+  >
+    <gl-alert v-if="fetchSettingsError" variant="warning" :dismissible="false">
+      {{
+        s__('DependencyProxy|Something went wrong while fetching the dependency proxy settings.')
+      }}
+    </gl-alert>
 
-      <gl-alert v-if="fetchSettingsError" variant="warning" :dismissible="false">
-        {{
-          s__('DependencyProxy|Something went wrong while fetching the dependency proxy settings.')
-        }}
-      </gl-alert>
-
-      <gl-skeleton-loader v-else-if="isLoading" />
-      <dependency-proxy-packages-settings-form v-else :data="dependencyProxyPackagesSettings" />
-    </template>
-  </gl-card>
+    <gl-skeleton-loader v-else-if="isLoading" />
+    <dependency-proxy-packages-settings-form v-else :data="dependencyProxyPackagesSettings" />
+  </settings-sub-section>
 </template>

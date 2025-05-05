@@ -1,5 +1,6 @@
 <script>
 import { GlFormGroup, GlFormInput, GlSprintf } from '@gitlab/ui';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 
 export default {
   name: 'MavenForm',
@@ -7,6 +8,7 @@ export default {
     GlFormGroup,
     GlFormInput,
     GlSprintf,
+    CrudComponent,
   },
   props: {
     value: {
@@ -23,10 +25,7 @@ export default {
 </script>
 
 <template>
-  <div>
-    <h3 class="gl-mt-4 gl-text-base gl-font-bold">
-      {{ s__('PackageRegistry|Configure external Maven registry') }}
-    </h3>
+  <crud-component :title="s__('PackageRegistry|Configure external Maven registry')" class="gl-mt-4">
     <div class="gl-mt-4 gl-flex gl-flex-col gl-gap-5 md:gl-flex-row md:gl-justify-between">
       <gl-form-group :label="__('URL')" label-for="maven-url" class="gl-grow gl-basis-0">
         <template #description>
@@ -79,5 +78,5 @@ export default {
         />
       </gl-form-group>
     </div>
-  </div>
+  </crud-component>
 </template>
