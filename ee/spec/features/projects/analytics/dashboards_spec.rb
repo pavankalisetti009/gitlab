@@ -211,7 +211,7 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
           it_behaves_like 'renders DORA metrics chart panels with empty states'
         end
 
-        context 'with data available', time_travel_to: '2025-04-03' do
+        context 'with data available', time_travel_to: '2025-04-15' do
           before do
             create_mock_dora_metrics(environment)
 
