@@ -26,7 +26,7 @@ RSpec.describe 'get board lists', feature_category: :team_planning do
   let(:end_cursor)        { board_data['lists']['pageInfo']['endCursor'] }
 
   before do
-    stub_licensed_features(board_assignee_lists: true, board_milestone_lists: true)
+    stub_licensed_features(board_assignee_lists: true, board_milestone_lists: true, work_item_status: true)
   end
 
   def query(list_params = params)
@@ -168,6 +168,29 @@ RSpec.describe 'get board lists', feature_category: :team_planning do
               expect(list_node['totalIssueWeight']).to eq (GraphQL::Types::Int::MAX + 1).to_s
             end
           end
+        end
+      end
+
+      describe 'status' do
+        let(:fields) do
+          <<~GQL
+          status {
+            id
+            name
+          }
+          GQL
+        end
+
+        before do
+          post_graphql(query, current_user: current_user)
+        end
+
+        # TODO: Return nil until status on board lists is supported
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/532474
+        it 'returns nil' do
+          list_node = lists_data[0]['node']
+
+          expect(list_node['status']).to be_nil
         end
       end
     end
