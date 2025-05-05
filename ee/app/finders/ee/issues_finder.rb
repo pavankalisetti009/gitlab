@@ -32,6 +32,7 @@ module EE
       issues = by_iteration(issues)
       issues = by_iteration_cadence(issues)
       issues = by_custom_field(issues)
+      issues = by_status(issues)
       by_health_status(issues)
     end
 
@@ -92,6 +93,13 @@ module EE
       ).filter(items)
     end
 
+    def by_status(items)
+      ::WorkItems::StatusFilter.new(
+        params: original_params,
+        parent: params.parent
+      ).filter(items)
+    end
+
     def by_health_status(items)
       return items unless params.by_health_status?
 
@@ -111,7 +119,7 @@ module EE
       items = by_negated_weight(items)
       items = by_negated_health_status(items)
 
-      super(items)
+      super
     end
 
     def by_negated_weight(items)
@@ -145,12 +153,11 @@ module EE
     end
 
     def get_current_iteration
-      strong_memoize(:current_iteration) do
-        next unless params.parent
+      return unless params.parent
 
-        IterationsFinder.new(current_user, iterations_finder_params).execute
-      end
+      IterationsFinder.new(current_user, iterations_finder_params).execute
     end
+    strong_memoize_attr :get_current_iteration
 
     def iterations_finder_params
       {

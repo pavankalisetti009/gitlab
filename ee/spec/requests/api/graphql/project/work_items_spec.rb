@@ -351,6 +351,7 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
         <<~QUERY
           edges {
             node {
+              id
               widgets {
                 type
                 ... on WorkItemWidgetStatus {
@@ -496,6 +497,85 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
               expect do
                 post_graphql(query, current_user: current_user)
               end.not_to exceed_query_limit(control)
+            end
+          end
+
+          context 'when filtering' do
+            let_it_be(:current_status) { create(:work_item_current_status, :system_defined, work_item: work_item_1) }
+            let_it_be(:other_current_status) do
+              create(:work_item_current_status, work_item: work_item_2, system_defined_status_id: 2)
+            end
+
+            let(:status) { build(:work_item_system_defined_status) }
+            let(:status_name) { 'to do' }
+
+            shared_examples 'a filtered list' do
+              it 'filters by status argument' do
+                post_graphql(query, current_user: current_user)
+
+                expect(response).to have_gitlab_http_status(:success)
+                expect(item_ids).to contain_exactly(work_item_1.to_global_id.to_s)
+              end
+            end
+
+            shared_examples 'an unfiltered list' do
+              it 'does not filter by status argument' do
+                post_graphql(query, current_user: current_user)
+
+                expect(response).to have_gitlab_http_status(:success)
+                expect(item_ids).to contain_exactly(
+                  work_item_1.to_global_id.to_s, work_item_2.to_global_id.to_s, work_item_3.to_global_id.to_s
+                )
+              end
+            end
+
+            context 'when filtering by status id' do
+              let(:item_filter_params) { "status: { id: \"#{status.to_global_id}\"}" }
+
+              it_behaves_like 'a filtered list'
+
+              context 'when work_item_status_feature_flag feature flag is disabled' do
+                before do
+                  stub_feature_flags(work_item_status_feature_flag: false)
+                end
+
+                it_behaves_like 'an unfiltered list'
+              end
+            end
+
+            context 'when filtering by status name' do
+              let(:item_filter_params) { "status: { name: \"#{status_name}\"}" }
+
+              it_behaves_like 'a filtered list'
+
+              context 'when status is not found' do
+                let(:status_name) { 'invalid' }
+
+                it_behaves_like 'an unfiltered list'
+              end
+
+              context 'when work_item_status_feature_flag feature flag is disabled' do
+                before do
+                  stub_feature_flags(work_item_status_feature_flag: false)
+                end
+
+                it_behaves_like 'an unfiltered list'
+              end
+            end
+
+            context 'when filtering by both status_id and status_name' do
+              let(:item_filter_params) do
+                "status: { id: \"#{status.to_global_id}\" name: \"#{status_name}\" }"
+              end
+
+              it 'returns an error' do
+                post_graphql(query, current_user: current_user)
+
+                expect(response).to have_gitlab_http_status(:success)
+                expect(graphql_errors).to contain_exactly(
+                  hash_including('message' => 'Only one of [id, name] arguments is allowed at the same time.')
+                )
+              end
             end
           end
         end

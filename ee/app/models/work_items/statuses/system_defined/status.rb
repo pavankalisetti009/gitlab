@@ -60,6 +60,10 @@ module WorkItems
             # Status is only valid if it belongs to the lifecycle of the work item type.
             Lifecycle.of_work_item_base_type(base_type)&.find_available_status_by_name(status_name)
           end
+
+          def find_by_name(status_name)
+            all.find { |status| status.matches_name?(status_name) }
+          end
         end
 
         def allowed_for_work_item?(work_item)

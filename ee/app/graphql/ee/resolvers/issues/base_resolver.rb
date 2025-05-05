@@ -43,6 +43,10 @@ module EE
           argument :health_status_filter, ::Types::HealthStatusFilterEnum,
             required: false,
             description: 'Health status of the issue, "none" and "any" values are supported.'
+          argument :status, ::Types::WorkItems::Widgets::StatusFilterInputType,
+            required: false,
+            description: 'Filter by status.',
+            experiment: { milestone: '18.0' }
 
           validates mutually_exclusive: [:weight, :weight_wildcard_id]
           validates mutually_exclusive: [:epic_id, :epic_wildcard_id]

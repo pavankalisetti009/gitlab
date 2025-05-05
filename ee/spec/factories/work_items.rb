@@ -2,6 +2,10 @@
 
 FactoryBot.modify do
   factory :work_item do
+    transient do
+      system_defined_status_id { nil }
+    end
+
     trait :requirement do
       association :work_item_type, :requirement
     end
@@ -76,6 +80,12 @@ FactoryBot.modify do
       next unless work_item.work_item_type.requirement?
 
       work_item.build_requirement(project: work_item.project)
+    end
+
+    after(:build) do |work_item, evaluator|
+      next unless evaluator.system_defined_status_id.present?
+
+      work_item.build_current_status(system_defined_status_id: evaluator.system_defined_status_id)
     end
   end
 end
