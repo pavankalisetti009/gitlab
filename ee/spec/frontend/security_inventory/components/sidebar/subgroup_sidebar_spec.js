@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import createMockApollo from 'helpers/mock_apollo_helper';
+import { createMockClient } from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import PanelResizer from '~/vue_shared/components/panel_resizer.vue';
 import SubgroupsQuery from 'ee/security_inventory/graphql/subgroups.query.graphql';
@@ -27,10 +27,19 @@ describe('SubgroupSidebar', () => {
     activeFullPath = 'a-group',
     mountFn = shallowMountExtended,
   } = {}) => {
+    const mockDefaultClient = createMockClient();
+    const mockAppendGroupsClient = createMockClient([
+      [SubgroupsQuery, jest.fn().mockResolvedValue(resolvedValue)],
+    ]);
+
     wrapper = mountFn(SubgroupSidebar, {
-      apolloProvider: createMockApollo([
-        [SubgroupsQuery, jest.fn().mockResolvedValue(resolvedValue)],
-      ]),
+      apolloProvider: new VueApollo({
+        clients: {
+          defaultClient: mockDefaultClient,
+          appendGroupsClient: mockAppendGroupsClient,
+        },
+        defaultClient: mockDefaultClient,
+      }),
       provide: {
         groupFullPath,
       },

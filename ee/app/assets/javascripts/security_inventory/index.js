@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import apolloProvider from 'ee/vue_shared/security_configuration/graphql/provider';
+import apolloProvider from './graphql/provider';
 import App from './components/app.vue';
 
 export default () => {

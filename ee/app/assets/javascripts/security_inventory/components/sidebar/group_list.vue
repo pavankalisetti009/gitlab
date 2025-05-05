@@ -45,6 +45,7 @@ export default {
   apollo: {
     group: {
       query: SubgroupsQuery,
+      client: 'appendGroupsClient',
       variables() {
         return {
           fullPath: this.groupFullPath,
@@ -101,8 +102,7 @@ export default {
       :indentation="indentation"
       @selectSubgroup="selectSubgroup"
     />
-    <gl-intersection-observer @appear="fetchMoreSubgroups" @update="checkScrolledToEnd">
-      <gl-loading-icon v-if="loading" />
-    </gl-intersection-observer>
+    <gl-intersection-observer @appear="fetchMoreSubgroups" @update="checkScrolledToEnd" />
+    <gl-loading-icon v-if="loading" />
   </div>
 </template>

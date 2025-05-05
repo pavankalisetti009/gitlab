@@ -4,7 +4,7 @@ import { GlIntersectionObserver } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import createMockApollo from 'helpers/mock_apollo_helper';
+import { createMockClient } from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import SubgroupsQuery from 'ee/security_inventory/graphql/subgroups.query.graphql';
 import GroupList from 'ee/security_inventory/components/sidebar/group_list.vue';
@@ -27,20 +27,21 @@ describe('GroupList', () => {
     indentation = 0,
     queryHandler = jest.fn().mockResolvedValue(resolvedValue),
   } = {}) => {
+    const mockDefaultClient = createMockClient();
+    const mockAppendGroupsClient = createMockClient(
+      [[SubgroupsQuery, queryHandler]],
+      {},
+      { typePolicies: { Query: { fields: { group: { merge: true } } } } },
+    );
+
     wrapper = shallowMountExtended(GroupList, {
-      apolloProvider: createMockApollo(
-        [[SubgroupsQuery, queryHandler]],
-        {},
-        {
-          typePolicies: {
-            Query: {
-              fields: {
-                group: { merge: true },
-              },
-            },
-          },
+      apolloProvider: new VueApollo({
+        clients: {
+          defaultClient: mockDefaultClient,
+          appendGroupsClient: mockAppendGroupsClient,
         },
-      ),
+        defaultClient: mockDefaultClient,
+      }),
       propsData: {
         groupFullPath,
         activeFullPath,
