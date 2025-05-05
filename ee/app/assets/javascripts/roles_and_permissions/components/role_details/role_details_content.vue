@@ -1,5 +1,5 @@
 <script>
-import { GlTab, GlButton, GlIcon, GlSprintf, GlSkeletonLoader, GlBadge } from '@gitlab/ui';
+import { GlButton, GlIcon, GlSprintf, GlSkeletonLoader, GlBadge } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -13,7 +13,7 @@ export default {
   i18n: {
     badgeText: s__('MemberRole|Added from %{role}'),
   },
-  components: { GlTab, GlButton, GlIcon, GlSprintf, GlSkeletonLoader, GlBadge, SettingsSection },
+  components: { GlButton, GlIcon, GlSprintf, GlSkeletonLoader, GlBadge, SettingsSection },
   props: {
     role: {
       type: Object,
@@ -94,12 +94,11 @@ export default {
 };
 </script>
 <template>
-  <gl-tab :title="__('Details')">
+  <div>
     <settings-section :heading="__('General')">
       <dl>
         <dt data-testid="id-header">{{ idLabel }}</dt>
         <dd class="gl-mb-6 gl-mt-3 gl-text-subtle" data-testid="id-value">{{ roleId }}</dd>
-
         <dt data-testid="type-header">{{ s__('MemberRole|Role type') }}</dt>
         <dd class="gl-mb-6 gl-mt-3 gl-text-subtle" data-testid="type-value">{{ roleType }}</dd>
 
@@ -170,5 +169,5 @@ export default {
         </template>
       </dl>
     </settings-section>
-  </gl-tab>
+  </div>
 </template>

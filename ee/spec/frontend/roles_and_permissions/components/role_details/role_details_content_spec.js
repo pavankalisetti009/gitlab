@@ -2,7 +2,7 @@ import { GlSprintf, GlSkeletonLoader, GlIcon } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import DetailsTab from 'ee/roles_and_permissions/components/role_details/details_tab.vue';
+import RoleDetailsContent from 'ee/roles_and_permissions/components/role_details/role_details_content.vue';
 import { BASE_ROLES } from '~/access_level/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import memberPermissionsQuery from 'ee/roles_and_permissions/graphql/member_role_permissions.query.graphql';
@@ -32,7 +32,7 @@ const enabledPermissions = mockDefaultPermissions.slice(0, 2);
 const disabledPermissions = mockDefaultPermissions.slice(2, 4);
 const includedPermissions = mockDefaultPermissions.slice(5);
 
-describe('Role details tab', () => {
+describe('Role details', () => {
   let wrapper;
 
   const createWrapper = ({
@@ -40,7 +40,7 @@ describe('Role details tab', () => {
     permissionsQuery = memberPermissionsQuery,
     permissionsHandler = defaultPermissionsHandler,
   } = {}) => {
-    wrapper = shallowMountExtended(DetailsTab, {
+    wrapper = shallowMountExtended(RoleDetailsContent, {
       apolloProvider: createMockApollo([[permissionsQuery, permissionsHandler]]),
       propsData: { role },
       stubs: { GlSprintf },
