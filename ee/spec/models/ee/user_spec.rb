@@ -92,7 +92,6 @@ RSpec.describe User, feature_category: :system_access do
     it { is_expected.to have_many(:country_access_logs).class_name('Users::CountryAccessLog').inverse_of(:user) }
     it { is_expected.to have_many(:group_saml_identities).class_name('::Identity') }
     it { is_expected.to have_many(:group_saml_providers).through(:group_saml_identities).source(:saml_provider) }
-    it { is_expected.to have_many(:project_deletion_schedules).class_name('::Projects::DeletionSchedule').inverse_of(:deleting_user) }
     it { is_expected.to have_many(:requested_member_approvals).class_name('::GitlabSubscriptions::MemberManagement::MemberApproval').with_foreign_key(:requested_by_id) }
     it { is_expected.to have_many(:reviewed_member_approvals).class_name('::GitlabSubscriptions::MemberManagement::MemberApproval').with_foreign_key(:reviewed_by_id) }
     it { is_expected.to have_one(:pipl_user).class_name('ComplianceManagement::PiplUser') }
