@@ -24,7 +24,6 @@ jest.mock('~/lib/logger');
 describe('workspaces/common/components/get_project_details_query', () => {
   let getProjectDetailsQueryHandler;
   let getRemoteDevelopmentClusterAgentsQueryHandler;
-  let glFeatures;
   let wrapper;
   let mockAxios;
 
@@ -43,9 +42,6 @@ describe('workspaces/common/components/get_project_details_query', () => {
     // noinspection JSCheckFunctionSignatures - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
     wrapper = shallowMountExtended(GetProjectDetailsQuery, {
       apolloProvider,
-      provide: {
-        glFeatures,
-      },
       propsData: {
         projectFullPath,
       },
