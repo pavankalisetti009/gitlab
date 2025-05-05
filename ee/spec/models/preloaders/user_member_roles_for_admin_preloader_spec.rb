@@ -34,6 +34,22 @@ RSpec.describe Preloaders::UserMemberRolesForAdminPreloader, feature_category: :
 
         it { expect(result).to eq({ admin: [] }) }
       end
+
+      context 'when feature-flag `custom_admin_roles` is disabled' do
+        before do
+          stub_feature_flags(custom_admin_roles: false)
+        end
+
+        it { expect(result).to eq({ admin: [] }) }
+      end
+    end
+
+    context 'when custom_roles license is disabled' do
+      before do
+        stub_licensed_features(custom_roles: false)
+      end
+
+      it { expect(result).to eq({ admin: [] }) }
     end
   end
 

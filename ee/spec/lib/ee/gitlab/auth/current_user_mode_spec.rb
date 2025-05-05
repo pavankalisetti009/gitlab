@@ -15,6 +15,10 @@ RSpec.describe Gitlab::Auth::CurrentUserMode, :request_store, feature_category: 
     end
 
     context 'when the user is a regular user with admin custom permission' do
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
       let_it_be(:user) { create(:user) }
       let_it_be(:admin_role) { create(:member_role, :admin) }
       let_it_be(:user_member_role) { create(:user_member_role, member_role: admin_role, user: user) }
