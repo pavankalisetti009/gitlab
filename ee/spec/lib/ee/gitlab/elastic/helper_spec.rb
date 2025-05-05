@@ -588,7 +588,6 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
           assignee_id: :all,
           hashed_root_namespace_id: :all,
           work_item_type_id: :all,
-          noteable_id: :all,
           owner_id: :all,
           cluster_agent_id: [Vulnerability],
           scanner_external_id: [Vulnerability]
