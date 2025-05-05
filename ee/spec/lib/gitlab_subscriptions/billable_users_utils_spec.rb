@@ -8,10 +8,10 @@ RSpec.describe GitlabSubscriptions::BillableUsersUtils, feature_category: :consu
   billable_roles = [Gitlab::Access::PLANNER, Gitlab::Access::REPORTER, Gitlab::Access::DEVELOPER,
     Gitlab::Access::MAINTAINER, Gitlab::Access::OWNER, Gitlab::Access::ADMIN].freeze
 
-  sm_non_billable_roles = [Gitlab::Access::NO_ACCESS].freeze
+  sm_non_billable_roles = [].freeze
   sm_excluding_guests_billable_roles = [Gitlab::Access::GUEST, Gitlab::Access::MINIMAL_ACCESS].freeze
 
-  saas_non_billable_roles = [Gitlab::Access::NO_ACCESS, Gitlab::Access::MINIMAL_ACCESS].freeze
+  saas_non_billable_roles = [Gitlab::Access::MINIMAL_ACCESS].freeze
   saas_excluding_guests_billable_roles = [Gitlab::Access::GUEST].freeze
 
   shared_examples 'billable_role_change? returns' do |expected|
@@ -125,7 +125,7 @@ RSpec.describe GitlabSubscriptions::BillableUsersUtils, feature_category: :consu
       context 'when role is MINIMAL ACCESS' do
         let(:role) { Gitlab::Access::MINIMAL_ACCESS }
 
-        it_behaves_like "billable_role_change? with member_role_id", :minimal_access, true, true
+        it_behaves_like "billable_role_change? with member_role_id", :minimal_access, false, false
       end
     end
   end
