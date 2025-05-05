@@ -68330,6 +68330,9 @@ msgstr ""
 msgid "WorkItem|%{count} more assignees"
 msgstr ""
 
+msgid "WorkItem|%{count}+"
+msgstr ""
+
 msgid "WorkItem|%{invalidWorkItemsList} cannot be added: Cannot assign a non-confidential %{childWorkItemType} to a confidential parent %{parentWorkItemType}. Make the selected %{childWorkItemType} confidential and try again."
 msgstr ""
 
