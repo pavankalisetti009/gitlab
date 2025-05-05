@@ -363,6 +363,48 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
       end
     end
 
+    context 'when setting disable_invite_members' do
+      let(:params) { { group: { disable_invite_members: true } } }
+
+      context 'when group is a top level group' do
+        context 'when user is a group owner' do
+          before do
+            group.add_owner(user)
+          end
+
+          it 'successfully changes the column' do
+            expect { request }.to change { group.reload.disable_invite_members? }
+            expect(response).to have_gitlab_http_status(:found)
+          end
+        end
+
+        context 'when user is not group owner' do
+          before do
+            group.owners.delete(user)
+            group.add_maintainer(user)
+          end
+
+          it 'does not change the column and returns not found' do
+            expect { request }.not_to change { group.reload.disable_invite_members? }
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+      end
+
+      context 'when group is not a top level group' do
+        let(:group) { create(:group, :nested) }
+
+        it 'does not change the column and returns not found' do
+          expect(group.disable_invite_members?).to be(false)
+
+          request
+
+          expect(response).to have_gitlab_http_status(:found)
+          expect(group.reload.disable_invite_members?).to be(false)
+        end
+      end
+    end
+
     context 'when setting the require_dpop_for_manage_api_endpoints param (default disabled)' do
       let(:params) { { group: { require_dpop_for_manage_api_endpoints: true } } }
 

@@ -119,6 +119,9 @@ module EE
 
       delegate :extended_grat_expiry_webhooks_execute, :extended_grat_expiry_webhooks_execute=, to: :namespace_settings
 
+      delegate :disable_invite_members, :disable_invite_members=, to: :namespace_settings
+      delegate :disable_invite_members?, to: :namespace_settings
+
       # Use +checked_file_template_project+ instead, which implements important
       # visibility checks
       private :file_template_project

@@ -9,6 +9,56 @@ RSpec.describe EE::NamespaceSettings::AssignAttributesService, feature_category:
   subject(:update_settings) { NamespaceSettings::AssignAttributesService.new(user, group, params).execute }
 
   describe '#execute' do
+    context 'when disable_invite_members param present' do
+      let(:params) { { disable_invite_members: true } }
+
+      context 'as a non-owner' do
+        it 'does not change settings' do
+          group.update!(disable_invite_members: true)
+          group.save!
+
+          update_settings
+
+          expect(group.disable_invite_members?).to eq(true)
+        end
+      end
+
+      context 'as a group owner' do
+        before_all do
+          group.add_owner(user)
+        end
+
+        it 'changes settings' do
+          update_settings
+
+          expect(group.disable_invite_members?).to eq(true)
+        end
+      end
+
+      context 'as a non-group owner' do
+        before_all do
+          group.add_maintainer(user)
+        end
+
+        it "does not change settings" do
+          expect { update_settings }
+            .not_to(change { group.disable_invite_members? })
+        end
+      end
+
+      context 'when not top-level group' do
+        before do
+          group.parent = create(:group)
+          group.save!
+        end
+
+        it 'does not change settings' do
+          expect { update_settings }
+            .not_to(change { group.disable_invite_members? })
+        end
+      end
+    end
+
     context 'when prevent_forking_outside_group param present' do
       let(:params) { { prevent_forking_outside_group: true } }
 

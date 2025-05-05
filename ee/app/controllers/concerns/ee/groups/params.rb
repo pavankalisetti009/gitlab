@@ -89,6 +89,11 @@ module EE
               can?(current_user, :admin_group, current_group)
             params_ee << :require_dpop_for_manage_api_endpoints
           end
+
+          if current_group&.root? &&
+              can?(current_user, :owner_access, current_group)
+            params_ee << :disable_invite_members
+          end
         end
       end
       # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
