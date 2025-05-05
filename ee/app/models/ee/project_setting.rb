@@ -6,7 +6,7 @@ module EE
     extend ::Gitlab::Utils::Override
 
     prepended do
-      cascading_attr :duo_features_enabled, :spp_repository_pipeline_access
+      cascading_attr :duo_features_enabled, :spp_repository_pipeline_access, :model_prompt_cache_enabled
 
       belongs_to :push_rule
 

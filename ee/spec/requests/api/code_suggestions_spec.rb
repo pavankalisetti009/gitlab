@@ -934,7 +934,9 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   end
 
   describe 'POST /code_suggestions/direct_access', :freeze_time do
-    subject(:post_api) { post api('/code_suggestions/direct_access', current_user) }
+    subject(:post_api) { post api('/code_suggestions/direct_access', current_user), params: params }
+
+    let(:params) { {} }
 
     context 'when unauthorized' do
       let(:current_user) { unauthorized_user }
@@ -1038,7 +1040,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => enabled_by_namespace_ids.join(','),
           "X-Gitlab-Feature-Enablement-Type" => enablement_type,
           'x-gitlab-enabled-feature-flags' => '',
-          "x-gitlab-enabled-instance-verbose-ai-logs" => 'false'
+          "x-gitlab-enabled-instance-verbose-ai-logs" => 'false',
+          "X-Gitlab-Model-Prompt-Cache-Enabled" => "true"
         }
       end
 
@@ -1126,7 +1129,56 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             end
           end
         end
+
+        # rubocop:disable RSpec/MultipleMemoizedHelpers -- We need extra helpers to define tables
+        # First, define the shared example outside the contexts
+        shared_examples 'model prompt cache enabled setting' do |setting_level, cache_value|
+          let(:cache) { cache_value }
+
+          it "returns direct access details with model_prompt_cache_enabled from #{setting_level}" do
+            post_api
+            expect(json_response["headers"]["X-Gitlab-Model-Prompt-Cache-Enabled"]).to eq(cache)
+          end
+        end
+
+        describe 'model_prompt_cache_enabled' do
+          # by default: enabled_application_setting.model_prompt_cache_enabled==true
+          let_it_be(:enabled_application_setting) { create(:application_setting) }
+          let_it_be(:current_user) { authorized_user }
+          let(:top_level_namespace) { create(:group) }
+          let(:group) { create(:group, parent: top_level_namespace) }
+          let(:project) { create(:project, group: group) }
+          let(:params) { { 'project_path' => project.full_path } }
+
+          before do
+            allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
+              allow(client).to receive(:direct_access_token)
+                                 .and_return({ status: :success, token: token, expires_at: expected_expiration })
+            end
+            project.add_developer(current_user)
+          end
+
+          context 'when model_prompt_cache_enabled is disabled on project setting' do
+            let(:project_setting) { create(:project_setting, model_prompt_cache_enabled: false) }
+            let(:project) { create(:project, group: group, project_setting: project_setting) }
+
+            include_examples 'model prompt cache enabled setting', 'project setting', "false"
+          end
+
+          context 'when model_prompt_cache_enabled is disabled on namespace setting' do
+            let(:top_level_namespace) { create(:group, :model_prompt_cache_disabled) }
+
+            include_examples 'model prompt cache enabled setting', 'top level namespace setting', "false"
+          end
+
+          context 'when model_prompt_cache_enabled is enabled on application setting' do
+            let(:top_level_namespace) { create(:group) }
+
+            include_examples 'model prompt cache enabled setting', 'application setting', "true"
+          end
+        end
       end
+      # rubocop:enable RSpec/MultipleMemoizedHelpers
 
       context 'when not SaaS' do
         let_it_be(:active_token) { create(:service_access_token, :active) }

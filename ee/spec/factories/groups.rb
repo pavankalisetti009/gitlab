@@ -18,6 +18,17 @@ FactoryBot.modify do
     trait(:wiki_enabled) { wiki_access_level { ProjectFeature::ENABLED } }
     trait(:wiki_disabled) { wiki_access_level { ProjectFeature::DISABLED } }
     trait(:wiki_private) { wiki_access_level { ProjectFeature::PRIVATE } }
+    trait :model_prompt_cache_enabled do
+      after(:create) do |group|
+        group.namespace_settings.update!(model_prompt_cache_enabled: true)
+      end
+    end
+
+    trait :model_prompt_cache_disabled do
+      after(:create) do |group|
+        group.namespace_settings.update!(model_prompt_cache_enabled: false)
+      end
+    end
   end
 end
 
