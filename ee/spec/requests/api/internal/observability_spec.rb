@@ -90,12 +90,10 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
       before do
         login_as(user)
         create(:project_member, sufficient_role, user: user, project: project)
-        service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:observability_all, nil, nil)
-        allow(CloudConnector::AvailableServices).to receive(:find_by_name)
-                                                      .with(:observability_all)
-                                                      .and_return(service_data)
-        allow(service_data).to receive(:access_token).with(namespace,
-          { extra_claims: { gitlab_namespace_id: namespace.id.to_s } }).and_return(gob_token)
+        allow(CloudConnector::Tokens).to receive(:get).with(
+          root_group_ids: namespace.id,
+          extra_claims: { gitlab_namespace_id: namespace.id.to_s }
+        ).and_return(gob_token)
       end
 
       it_behaves_like 'success'
