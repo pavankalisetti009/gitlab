@@ -5,7 +5,7 @@ RSpec.shared_examples 'disabled virtual_registry_maven feature flag' do
     stub_feature_flags(virtual_registry_maven: false)
   end
 
-  it_behaves_like 'returning response status', :not_found
+  it_behaves_like 'returning response status', :unauthorized
 end
 
 RSpec.shared_examples 'maven virtual registry disabled dependency proxy' do
