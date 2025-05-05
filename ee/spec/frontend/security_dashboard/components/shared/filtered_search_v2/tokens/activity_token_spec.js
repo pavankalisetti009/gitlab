@@ -6,7 +6,6 @@ import ActivityToken, {
 } from 'ee/security_dashboard/components/shared/filtered_search_v2/tokens/activity_token.vue';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search_v2/components/search_suggestion.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
-import { stubComponent } from 'helpers/stub_component';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 Vue.use(VueRouter);
@@ -78,9 +77,6 @@ describe('ActivityToken', () => {
     const createWrapperWithAbility = ({ resolveVulnerabilityWithAi } = {}) => {
       createWrapper({
         provide: {
-          glFeatures: {
-            vulnerabilityReportVrFilter: true,
-          },
           glAbilities: {
             resolveVulnerabilityWithAi,
           },
@@ -245,54 +241,6 @@ describe('ActivityToken', () => {
     it('shows "All activity" when "All activity" is selected', async () => {
       await clickDropdownItem('ALL');
       expect(findViewSlot().text()).toBe('All activity');
-    });
-  });
-
-  describe('when FF vulnerabilityReportVrFilter is off', () => {
-    beforeEach(() => {
-      createWrapper({
-        provide: {
-          glFeatures: { vulnerabilityReportVrFilter: false },
-        },
-        stubs: {
-          GlFilteredSearchToken: stubComponent(GlFilteredSearchToken, {
-            template: `
-            <div>
-                <div data-testid="slot-view">
-                    <slot name="view"></slot>
-                </div>
-                <div data-testid="slot-suggestions">
-                    <slot name="suggestions"></slot>
-                </div>
-            </div>`,
-          }),
-        },
-      });
-    });
-
-    it('does not show the "GitLab Duo" options in the dropdown', () => {
-      // All options are rendered in the #suggestions slot of GlFilteredSearchToken
-      const findDropdownOptions = () => wrapper.findByTestId('slot-suggestions');
-      const dropdownOptions = findDropdownOptions()
-        .text()
-        .split('\n')
-        .map((s) => s.trim())
-        .filter((i) => i);
-
-      expect(dropdownOptions).not.toEqual(
-        expect.arrayContaining([
-          'GitLab Duo (AI)', // group header
-          'Vulnerability Resolution available',
-          'Vulnerability Resolution unavailable',
-        ]),
-      );
-    });
-
-    it('does not show the "tanuki ai" badge in the group header', () => {
-      const findAllBadges = () => wrapper.findAllComponents(GlBadge);
-      const icons = findAllBadges().wrappers.map((component) => component.props('icon'));
-
-      expect(icons).not.toContain('tanuki-ai');
     });
   });
 });

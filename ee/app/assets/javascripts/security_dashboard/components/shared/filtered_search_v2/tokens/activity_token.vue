@@ -70,8 +70,7 @@ const setSelectedStatus = (keyWhenTrue, keyWhenFalse, selectedActivities = []) =
 export default {
   defaultValues: [ITEMS.STILL_DETECTED.value],
   transformFilters: (filters) => {
-    const showAiResolutionFilter =
-      gon?.features?.vulnerabilityReportVrFilter && gon?.features?.resolveVulnerabilityWithAi;
+    const showAiResolutionFilter = gon?.abilities?.resolveVulnerabilityWithAi;
 
     return {
       hasResolution: setSelectedStatus('NO_LONGER_DETECTED', 'STILL_DETECTED', filters),
@@ -141,9 +140,7 @@ export default {
       });
     },
     showAiResolutionFilter() {
-      return (
-        this.glFeatures.vulnerabilityReportVrFilter && this.glAbilities.resolveVulnerabilityWithAi
-      );
+      return this.glAbilities.resolveVulnerabilityWithAi;
     },
     activityTokenGroups() {
       return [
@@ -224,15 +221,16 @@ export default {
     </template>
     <template #suggestions>
       <template v-for="(group, index) in activityTokenGroups">
-        <gl-dropdown-section-header v-if="group.text" :key="group.text"
-          ><div
+        <gl-dropdown-section-header v-if="group.text" :key="group.text">
+          <div
             v-if="group.icon"
             class="gl-flex gl-items-center gl-justify-center"
             :data-testid="`header-${group.text}`"
           >
             <div class="gl-grow">{{ group.text }}</div>
-            <gl-badge :icon="group.icon" :variant="group.variant" /></div
-        ></gl-dropdown-section-header>
+            <gl-badge :icon="group.icon" :variant="group.variant" />
+          </div>
+        </gl-dropdown-section-header>
         <search-suggestion
           v-for="activity in group.options"
           :key="activity.value"

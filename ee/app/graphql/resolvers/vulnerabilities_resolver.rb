@@ -54,8 +54,7 @@ module Resolvers
 
     argument :has_ai_resolution, GraphQL::Types::Boolean,
       required: false,
-      experiment: { milestone: '17.5' },
-      description: 'Returns only the vulnerabilities which can likely be resolved by GitLab Duo Vulnerability Resolution. Requires the `vulnerability_report_vr_filter` feature flag to be enabled, otherwise the argument is ignored.'
+      description: 'Returns only the vulnerabilities which can likely be resolved by GitLab Duo Vulnerability Resolution.'
 
     argument :has_issues, GraphQL::Types::Boolean,
       required: false,
@@ -125,13 +124,8 @@ module Resolvers
 
     def vulnerabilities(params)
       finder_params = params.merge(before_severity: before_severity, after_severity: after_severity)
-      finder_params.delete(:has_ai_resolution) unless resolve_with_duo_filtering_enabled?
 
       apply_lookahead(::Security::VulnerabilityReadsFinder.new(vulnerable, finder_params).execute.as_vulnerabilities)
-    end
-
-    def resolve_with_duo_filtering_enabled?
-      Feature.enabled?(:vulnerability_report_vr_filter, vulnerable_to_actor)
     end
 
     def vulnerable_to_actor
