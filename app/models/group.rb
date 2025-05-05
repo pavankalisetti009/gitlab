@@ -22,7 +22,6 @@ class Group < Namespace
   include Importable
   include IdInOrdered
   include Members::Enumerable
-  include Namespaces::AdjournedDeletable
 
   extend ::Gitlab::Utils::Override
 
