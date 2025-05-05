@@ -9,8 +9,6 @@ module API
         verify_workhorse_api!
         content_type Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE
         authenticate!
-
-        not_found! unless enabled?
       end
 
       helpers do
@@ -20,13 +18,12 @@ module API
           @project ||= find_project(params[:id])
         end
 
-        def enabled?
-          cc_access_token.present?
-        end
-
         def cc_access_token
-          CloudConnector::AvailableServices.find_by_name(:observability_all).access_token(project.root_ancestor,
-            extra_claims: { gitlab_namespace_id: project.root_ancestor.id.to_s })
+          root_group_id = project.root_ancestor.id
+          CloudConnector::Tokens.get(
+            root_group_ids: root_group_id,
+            extra_claims: { gitlab_namespace_id: root_group_id.to_s }
+          )
         end
         strong_memoize_attr :cc_access_token
 

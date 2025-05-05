@@ -40,7 +40,7 @@ module Observability
     private
 
     def fetch_alerts
-      access_token = CloudConnector::AvailableServices.find_by_name(:observability_all).access_token
+      access_token = CloudConnector::Tokens.get
 
       result = Gitlab::HTTP.get(
         ::Gitlab::Observability.alerts_url,

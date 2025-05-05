@@ -46,8 +46,7 @@ RSpec.describe Observability::AlertQueryWorker, feature_category: :observability
         body: expected_response.to_json
       )
 
-    allow(CloudConnector::AvailableServices).to receive_message_chain(:find_by_name,
-      :access_token).and_return(expected_access_token)
+    allow(CloudConnector::Tokens).to receive(:get).and_return(expected_access_token)
 
     stub_licensed_features(observability: true, observability_alerts: true)
     stub_feature_flags(observability_features: true)
