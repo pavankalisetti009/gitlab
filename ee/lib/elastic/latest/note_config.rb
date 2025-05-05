@@ -25,7 +25,7 @@ module Elastic
         indexes :project_id, type: :long
 
         indexes :noteable_type, type: :keyword
-        indexes :noteable_id, type: :keyword
+        indexes :noteable_id, type: :long
 
         indexes :created_at, type: :date
         indexes :updated_at, type: :date
