@@ -33,7 +33,57 @@ RSpec.describe 'Virtual registry', feature_category: :virtual_registry do
       it 'renders virtual registry page' do
         visit url
 
-        expect(page).to have_selector('h1', text: 'Virtual registries')
+        expect(page).to have_selector('h1', text: 'Virtual registry')
+      end
+    end
+
+    context 'when user has permissions' do
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      it 'renders virtual registries page' do
+        visit url
+
+        expect(page).to have_selector('h1', text: 'Virtual registry')
+      end
+
+      it 'renders the empty state & button to create a new virtual registry' do
+        visit url
+
+        expect(page).to have_link('Create Maven registry',
+          href: new_group_virtual_registries_maven_registry_path(group))
+      end
+
+      it 'passes accessibility tests', :js do
+        visit url
+
+        wait_for_requests
+
+        expect(page).to be_axe_clean.skipping :'link-in-text-block'
+      end
+
+      context 'with an existing Maven virtual registry', :aggregate_failures do
+        before do
+          create(:virtual_registries_packages_maven_registry, group: group)
+        end
+
+        it 'renders virtual registries page' do
+          visit url
+
+          expect(page).to have_selector('h1', text: 'Virtual registry')
+          expect(page).to have_text('Maven')
+          expect(page).to have_link('View 1 registry', href: group_virtual_registries_maven_registries_path(group))
+          expect(page).to have_link('Create registry', href: new_group_virtual_registries_maven_registry_path(group))
+        end
+
+        it 'passes accessibility tests', :js do
+          visit url
+
+          wait_for_requests
+
+          expect(page).to be_axe_clean
+        end
       end
     end
   end

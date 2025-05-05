@@ -66400,6 +66400,11 @@ msgstr ""
 msgid "Versions"
 msgstr ""
 
+msgid "View %d registry"
+msgid_plural "View %d registries"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "View %{project} project"
 msgstr ""
 
@@ -66614,6 +66619,18 @@ msgstr ""
 msgid "VirtualRegistries|Virtual Registries"
 msgstr ""
 
+msgid "VirtualRegistry|Create Maven registry"
+msgstr ""
+
+msgid "VirtualRegistry|Create registry"
+msgstr ""
+
+msgid "VirtualRegistry|Get started with virtual registries"
+msgstr ""
+
+msgid "VirtualRegistry|Manage packages across multiple sources and streamline development workflows. %{learn_more_link}"
+msgstr ""
+
 msgid "VirtualRegistry|Maven"
 msgstr ""
 
@@ -66626,10 +66643,16 @@ msgstr ""
 msgid "VirtualRegistry|No upstreams yet"
 msgstr ""
 
+msgid "VirtualRegistry|Registry types"
+msgstr ""
+
 msgid "VirtualRegistry|Upstreams"
 msgstr ""
 
 msgid "VirtualRegistry|Virtual registries"
+msgstr ""
+
+msgid "VirtualRegistry|Virtual registry"
 msgstr ""
 
 msgid "Visibility"

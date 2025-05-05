@@ -12,7 +12,7 @@ RSpec.describe Groups::VirtualRegistriesController, feature_category: :virtual_r
   end
 
   describe 'GET #index' do
-    subject { get group_virtual_registries_path(group) }
+    subject(:api_request) { get group_virtual_registries_path(group) }
 
     it { is_expected.to have_request_urgency(:low) }
 
@@ -37,6 +37,26 @@ RSpec.describe Groups::VirtualRegistriesController, feature_category: :virtual_r
         it_behaves_like 'returning response status', :ok
 
         it_behaves_like 'disallowed access to virtual registry'
+
+        context 'when there are available registries' do
+          let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group:) }
+
+          it 'returns a successful response' do
+            api_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(assigns(:registry_types_with_counts)).to eq(maven: 1)
+          end
+        end
+
+        context 'when there are no available registries' do
+          it 'handles empty registry counts' do
+            api_request
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(assigns(:registry_types_with_counts)).to eq(maven: 0)
+          end
+        end
       end
     end
   end

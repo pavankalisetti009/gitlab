@@ -3,6 +3,8 @@
 module Groups
   module VirtualRegistries
     class BaseController < Groups::ApplicationController
+      include VirtualRegistryHelper
+
       before_action :ensure_feature!
 
       private
@@ -20,7 +22,7 @@ module Groups
       end
 
       def verify_create_virtual_registry!
-        access_denied! unless can?(current_user, :create_virtual_registry, @group.virtual_registry_policy_subject)
+        access_denied! unless can_create_virtual_registry?(@group)
       end
     end
   end
