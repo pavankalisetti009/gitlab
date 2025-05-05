@@ -22,7 +22,7 @@ RSpec.describe 'Google Syndication content security policy', feature_category: :
   subject { response_headers['Content-Security-Policy'] }
 
   before do
-    setup_csp_for_controller(SessionsController, csp, any_time: true)
+    stub_csp_for_controller(SessionsController, csp)
     stub_config(extra: extra)
     visit new_user_session_path
   end
