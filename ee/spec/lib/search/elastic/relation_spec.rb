@@ -14,7 +14,7 @@ RSpec.describe ::Search::Elastic::Relation, :elastic_helpers, :sidekiq_inline, :
   let(:fourth_vulnerability) { Vulnerability.fourth }
 
   before do
-    query_hash[:sort] = { created_at: sort_order }
+    query_hash[:sort] = { created_at: { order: sort_order } }
 
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
 
@@ -133,6 +133,20 @@ RSpec.describe ::Search::Elastic::Relation, :elastic_helpers, :sidekiq_inline, :
       expect(group_association.loaded?).to be_truthy
       expect(findings_association.loaded?).to be_truthy
       expect(vulnerability_read_association.loaded?).to be_falsey
+    end
+  end
+
+  describe '#cursor_for' do
+    let(:record) { all_vulnerabilities.first }
+
+    subject(:cursor) { relation.cursor_for(record) }
+
+    before do
+      relation.first(10)
+    end
+
+    it 'returns the cursor values for the given record' do
+      expect(cursor).to match([an_instance_of(Integer), record.id])
     end
   end
 end

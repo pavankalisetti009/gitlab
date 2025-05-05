@@ -8,7 +8,7 @@ RSpec.describe ::Search::Elastic::Pagination, feature_category: :global_search d
   let(:paginator) { described_class.new(query_hash) }
 
   before do
-    query_hash[:sort] = { created_at: :asc }
+    query_hash[:sort] = { created_at: { order: :asc } }
   end
 
   describe 'without before and after' do
@@ -26,8 +26,8 @@ RSpec.describe ::Search::Elastic::Pagination, feature_category: :global_search d
             }
           },
           sort: [
-            { created_at: :asc },
-            { id: :asc }
+            { created_at: { order: :asc } },
+            { id: { order: :asc } }
           ],
           size: 10
         })
@@ -48,8 +48,8 @@ RSpec.describe ::Search::Elastic::Pagination, feature_category: :global_search d
             }
           },
           sort: [
-            { created_at: :desc },
-            { id: :desc }
+            { created_at: { order: :desc } },
+            { id: { order: :desc } }
           ],
           size: 10
         })
@@ -104,8 +104,8 @@ RSpec.describe ::Search::Elastic::Pagination, feature_category: :global_search d
             }
           },
           sort: [
-            { created_at: :asc },
-            { id: :asc }
+            { created_at: { order: :asc } },
+            { id: { order: :asc } }
           ],
           size: 10
         })
@@ -154,8 +154,8 @@ RSpec.describe ::Search::Elastic::Pagination, feature_category: :global_search d
             }
           },
           sort: [
-            { created_at: :desc },
-            { id: :desc }
+            { created_at: { order: :desc } },
+            { id: { order: :desc } }
           ],
           size: 10
         })
@@ -210,8 +210,8 @@ RSpec.describe ::Search::Elastic::Pagination, feature_category: :global_search d
             }
           },
           sort: [
-            { created_at: :asc },
-            { id: :asc }
+            { created_at: { order: :asc } },
+            { id: { order: :asc } }
           ],
           size: 10
         })
@@ -260,8 +260,8 @@ RSpec.describe ::Search::Elastic::Pagination, feature_category: :global_search d
             }
           },
           sort: [
-            { created_at: :desc },
-            { id: :desc }
+            { created_at: { order: :desc } },
+            { id: { order: :desc } }
           ],
           size: 10
         })
@@ -313,8 +313,8 @@ RSpec.describe ::Search::Elastic::Pagination, feature_category: :global_search d
           }
         },
         sort: [
-          { created_at: :asc },
-          { vulnerability_id: :asc }
+          { created_at: { order: :asc } },
+          { vulnerability_id: { order: :asc } }
         ],
         size: 10
       })

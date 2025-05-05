@@ -99,7 +99,11 @@ module Search
       end
 
       def original_sort_direction
-        @original_sort_direction ||= original_sort.each_value.first
+        @original_sort_direction ||= original_sort_value[:order].to_sym
+      end
+
+      def original_sort_value
+        @original_sort_value ||= original_sort.each_value.first
       end
 
       def reverse_sort_direction
@@ -108,15 +112,15 @@ module Search
 
       def order
         query_hash[:sort] = [
-          { sort_property => original_sort_direction },
-          { tie_breaker_property => original_sort_direction }
+          { sort_property => original_sort_value.merge(order: original_sort_direction) },
+          { tie_breaker_property => { order: original_sort_direction } }
         ]
       end
 
       def reverse_order
         query_hash[:sort] = [
-          { sort_property => reverse_sort_direction },
-          { tie_breaker_property => reverse_sort_direction }
+          { sort_property => original_sort_value.merge(order: reverse_sort_direction) },
+          { tie_breaker_property => { order: reverse_sort_direction } }
         ]
       end
 
