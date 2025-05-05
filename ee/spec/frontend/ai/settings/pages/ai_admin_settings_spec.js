@@ -115,18 +115,36 @@ describe('AiAdminSettings', () => {
     });
 
     describe('when AI settings have changed', () => {
-      it('updates aiGatewayUrl', async () => {
-        const newAiGatewayUrl = 'http://new-ai-gateway-url.com';
+      describe('with canManageSelfHostedModels true', () => {
+        it('updates aiGatewayUrl', async () => {
+          const newAiGatewayUrl = 'http://new-ai-gateway-url.com';
 
-        findAiGatewayUrlInputForm().vm.$emit('change', newAiGatewayUrl);
+          await findAiGatewayUrlInputForm().vm.$emit('change', newAiGatewayUrl);
 
-        await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: false });
+          await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: false });
 
-        expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
-          input: {
-            aiGatewayUrl: 'http://new-ai-gateway-url.com',
-            duoCoreFeaturesEnabled: false,
-          },
+          expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
+            input: {
+              aiGatewayUrl: 'http://new-ai-gateway-url.com',
+              duoCoreFeaturesEnabled: false,
+            },
+          });
+        });
+      });
+
+      describe('with canManageSelfHostedModels false', () => {
+        beforeEach(() => {
+          createComponent({ provide: { canManageSelfHostedModels: false } });
+        });
+
+        it('does not update aiGatewayUrl', async () => {
+          await findAiCommonSettings().vm.$emit('submit', { duoCoreFeaturesEnabled: true });
+
+          expect(updateAiSettingsSuccessHandler).toHaveBeenCalledWith({
+            input: {
+              duoCoreFeaturesEnabled: true,
+            },
+          });
         });
       });
 

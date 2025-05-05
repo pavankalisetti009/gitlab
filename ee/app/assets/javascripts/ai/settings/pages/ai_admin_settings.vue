@@ -136,14 +136,15 @@ export default {
         });
     },
     async updateAiSettings() {
+      const input = { duoCoreFeaturesEnabled: this.areDuoCoreFeaturesEnabled };
+
+      if (this.canManageSelfHostedModels) {
+        input.aiGatewayUrl = this.aiGatewayUrlInput;
+      }
+
       const { data } = await this.$apollo.mutate({
         mutation: updateAiSettingsMutation,
-        variables: {
-          input: {
-            aiGatewayUrl: this.aiGatewayUrlInput,
-            duoCoreFeaturesEnabled: this.areDuoCoreFeaturesEnabled,
-          },
-        },
+        variables: { input },
       });
 
       if (data) {
