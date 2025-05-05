@@ -75,6 +75,17 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
       expect(collection).to be_valid
     end
 
+    it 'is valid with include_ref_fields as true' do
+      collection.metadata = { include_ref_fields: true }
+      expect(collection).to be_valid
+    end
+
+    it 'is invalid when include_ref_fields is null' do
+      collection.metadata = { include_ref_fields: nil }
+      expect(collection).not_to be_valid
+      expect(collection.errors[:metadata]).to include('must be a valid json schema')
+    end
+
     it 'is valid with collection_class as a string' do
       collection.metadata = { collection_class: 'A string' }
       expect(collection).to be_valid
@@ -175,9 +186,26 @@ RSpec.describe Ai::ActiveContext::Collection, feature_category: :global_search d
 
   describe 'jsonb_accessor' do
     it 'defines accessor methods for metadata fields' do
+      expect(collection).to respond_to(:include_ref_fields)
       expect(collection).to respond_to(:indexing_embedding_versions)
       expect(collection).to respond_to(:search_embedding_version)
       expect(collection).to respond_to(:collection_class)
+    end
+
+    it 'persists all accessor values to the metadata column' do
+      collection.include_ref_fields = true
+      collection.indexing_embedding_versions = [1, 2]
+      collection.search_embedding_version = 3
+      collection.collection_class = 'MyClass'
+
+      collection.save!
+
+      expect(collection.reload.metadata).to include(
+        'include_ref_fields' => true,
+        'indexing_embedding_versions' => [1, 2],
+        'search_embedding_version' => 3,
+        'collection_class' => 'MyClass'
+      )
     end
   end
 end
