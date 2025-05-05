@@ -3,6 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::Chain::Tools::BuildReader::Executor, feature_category: :duo_chat do
+  before do
+    stub_application_setting(ci_job_live_trace_enabled: true)
+  end
+
   RSpec.shared_examples 'success response' do
     it 'returns success response' do
       ai_request = double
@@ -74,8 +78,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::BuildReader::Executor, feature_categor
     end
 
     context 'when build is identified' do
-      let_it_be(:build1) { create(:ci_build,  :trace_live, project: project) }
-      let_it_be(:build2) { create(:ci_build,  :trace_live, project: project) }
+      let(:build1) { create(:ci_build,  :trace_live, project: project) }
+      let(:build2) { create(:ci_build,  :trace_live, project: project) }
       let(:context) do
         Gitlab::Llm::Chain::GitlabContext.new(
           container: project,

@@ -6,7 +6,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
   let(:ai_request_double) { instance_double(Gitlab::Llm::Chain::Requests::Anthropic) }
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project) }
-  let_it_be(:build) { create(:ci_build, :failed, :trace_live, project: project) }
+  let(:build) { create(:ci_build, :failed, :trace_live, project: project) }
   let(:stream_response_handler) { nil }
   let(:input) { 'user input' }
   let(:options) { { input: input } }
@@ -52,6 +52,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
   end
 
   before do
+    stub_application_setting(ci_job_live_trace_enabled: true)
     allow(user).to receive(:can?).and_call_original
     allow(user).to receive(:can?).with(:troubleshoot_job_with_ai, build).and_return(true)
   end

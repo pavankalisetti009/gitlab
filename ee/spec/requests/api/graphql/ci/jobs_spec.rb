@@ -114,8 +114,13 @@ RSpec.describe 'Query.jobs', feature_category: :continuous_integration do
 
     context 'when current user is an admin' do
       let_it_be(:current_user) { create(:admin) }
+      let(:job) do
+        create(:ci_build, :failed, :trace_live, :erased, runner: runner, coverage: 1, scheduled_at: Time.now)
+      end
 
       before do
+        stub_application_setting(ci_job_live_trace_enabled: true)
+        job
         post_graphql(query, current_user: current_user)
       end
 

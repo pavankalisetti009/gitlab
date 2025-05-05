@@ -100,21 +100,24 @@ RSpec.describe 'Runner EE (JavaScript fixtures)', feature_category: :fleet_visib
     describe 'runner_failed_jobs.graphql', type: :request do
       query_name = 'performance/runner_failed_jobs.graphql'
 
-      let_it_be(:query) do
+      let(:query) do
         get_graphql_query_as_string("#{query_path}#{query_name}", ee: true)
       end
 
-      let_it_be(:runner) { create(:ci_runner, :instance, description: 'Runner 1') }
-      let_it_be(:build) do
+      let(:runner) { create(:ci_runner, :instance, description: 'Runner 1') }
+      let(:build) do
         create(:ci_build, :failed, :trace_live, runner: runner, failure_reason: :runner_system_failure)
       end
 
-      let_it_be(:build2) do
+      let(:build2) do
         create(:ci_build, :failed, :trace_live, runner: runner, failure_reason: :runner_system_failure)
       end
 
       before do
         stub_licensed_features(runner_performance_insights: true)
+        stub_application_setting(ci_job_live_trace_enabled: true)
+        build
+        build2
 
         Ci::Build.all.find_each { |build| ::Ci::InstanceRunnerFailedJobs.track(build) }
       end

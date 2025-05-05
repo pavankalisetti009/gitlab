@@ -584,8 +584,14 @@ RSpec.describe 'Query.runner(id)', feature_category: :fleet_visibility do
 
     context 'when current user is an admin' do
       let_it_be(:current_user) { create(:admin) }
+      let(:build) do
+        create(:ci_build, :failed, :trace_live, :erased, runner: runner, project: project, coverage: 1,
+          scheduled_at: Time.now)
+      end
 
       before do
+        stub_application_setting(ci_job_live_trace_enabled: true)
+        build
         post_graphql(query, current_user: current_user)
       end
 
