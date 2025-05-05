@@ -188,30 +188,6 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
           is_expected.to contain_exactly(low_vulnerability, high_vulnerability)
         end
       end
-
-      context 'when vulnerability_report_vr_filter FF is disabled' do
-        let(:all_vulnerabilities) { [critical_vulnerability, low_vulnerability, high_vulnerability] }
-
-        before do
-          stub_feature_flags(vulnerability_report_vr_filter: false)
-        end
-
-        context 'with has_ai_resolution true' do
-          let(:has_ai_resolution) { true }
-
-          it 'ignores the filter and returns all vulnerabilities' do
-            is_expected.to match_array(all_vulnerabilities)
-          end
-        end
-
-        context 'with has_ai_resolution false' do
-          let(:has_ai_resolution) { false }
-
-          it 'ignores the filter and returns all vulnerabilities' do
-            is_expected.to match_array(all_vulnerabilities)
-          end
-        end
-      end
     end
 
     context 'when given project IDs' do

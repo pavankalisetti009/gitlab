@@ -119,9 +119,7 @@ export default {
       });
     },
     showAiResolutionFilter() {
-      return (
-        this.glFeatures.vulnerabilityReportVrFilter && this.glAbilities.resolveVulnerabilityWithAi
-      );
+      return this.glAbilities.resolveVulnerabilityWithAi;
     },
     activityTokenGroups() {
       return [
