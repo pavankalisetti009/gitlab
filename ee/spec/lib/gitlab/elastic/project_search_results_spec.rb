@@ -231,7 +231,7 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
     end
   end
 
-  context 'for query performance' do
+  describe 'query performance' do
     let_it_be(:project) { create(:project, :public, :repository, :wiki_repo) }
     let(:query) { '*' }
 
@@ -240,10 +240,32 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
       create(:wiki_page, wiki: project.wiki)
     end
 
-    include_examples 'does not hit Elasticsearch twice for objects and counts',
-      %w[notes blobs wiki_blobs commits issues merge_requests milestones users]
-    include_examples 'does not load results for count only queries',
-      %w[notes blobs wiki_blobs commits issues merge_requests milestones users]
+    allowed_scopes = %w[notes blobs wiki_blobs commits merge_requests milestones users]
+    scopes_with_notes_query = %w[issues]
+
+    include_examples 'calls Elasticsearch the expected number of times',
+      scopes: (allowed_scopes - scopes_with_notes_query), scopes_with_multiple: scopes_with_notes_query
+
+    context 'when search_work_item_queries_notes flag is false' do
+      before do
+        stub_feature_flags(search_work_item_queries_notes: false)
+      end
+
+      include_examples 'calls Elasticsearch the expected number of times', scopes: allowed_scopes,
+        scopes_with_multiple: []
+    end
+
+    allowed_scopes_and_index_names = [
+      %W[notes #{Note.index_name}],
+      %W[blobs #{Repository.index_name}],
+      %W[wiki_blobs #{Wiki.index_name}],
+      %W[commits #{Elastic::Latest::CommitConfig.index_name}],
+      %W[issues #{::Search::Elastic::References::WorkItem.index}],
+      %W[merge_requests #{MergeRequest.index_name}],
+      %W[milestones #{Milestone.index_name}],
+      %W[users #{User.index_name}]
+    ]
+    include_examples 'does not load results for count only queries', allowed_scopes_and_index_names
   end
 
   describe '#aggregations' do

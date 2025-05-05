@@ -4061,4 +4061,68 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       }
     end
   end
+
+  describe '.by_noteable_type' do
+    let(:query_hash) { { query: { bool: { filter: [] } } } }
+
+    context 'when search_level is global' do
+      it 'returns the original query_hash without modifications' do
+        options = { search_level: 'global' }
+
+        result = described_class.by_noteable_type(query_hash: query_hash, options: options)
+
+        expect(result).to eq(query_hash)
+        expect(result).to be(query_hash)
+      end
+    end
+
+    context 'when noteable_type is not provided' do
+      it 'returns the original query_hash without modifications' do
+        options = { search_level: 'project' }
+
+        result = described_class.by_noteable_type(query_hash: query_hash, options: options)
+
+        expect(result).to eq(query_hash)
+        expect(result).to be(query_hash)
+      end
+    end
+
+    context 'when noteable_type is provided' do
+      let(:options) { { search_level: 'project', noteable_type: 'Issue' } }
+
+      it 'sets _source to only include noteable_id' do
+        described_class.by_noteable_type(query_hash: query_hash, options: options)
+
+        expect(query_hash[:_source]).to eq(["noteable_id"])
+      end
+
+      it 'sets size to DEFAULT_RELATED_SIZE by default' do
+        described_class.by_noteable_type(query_hash: query_hash, options: options)
+
+        expect(query_hash[:size]).to eq(described_class::DEFAULT_RELATED_SIZE)
+      end
+
+      it 'uses custom related_size when provided' do
+        custom_size = 50
+        options_with_size = options.merge(related_size: custom_size)
+
+        described_class.by_noteable_type(query_hash: query_hash, options: options_with_size)
+
+        expect(query_hash[:size]).to eq(custom_size)
+      end
+
+      it 'creates a term filter with the noteable_type' do
+        result = described_class.by_noteable_type(query_hash: query_hash, options: options)
+
+        expect(result.dig(:query, :bool, :filter)).to eq([{
+          term: {
+            noteable_type: {
+              _name: 'filters:related:issue',
+              value: 'Issue'
+            }
+          }
+        }])
+      end
+    end
+  end
 end

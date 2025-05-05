@@ -4,6 +4,7 @@ module Search
   module Elastic
     module Queries
       ADVANCED_QUERY_SYNTAX_REGEX = /[+*"\-|()~\\]/
+      DEFAULT_RELATED_ID_BOOST = 0.7
       UNIT_PRIMITIVE = 'semantic_search_issue'
       KNN_K = 25
       KNN_NUM_CANDIDATES = 100
@@ -39,80 +40,22 @@ module Search
         end
 
         def by_multi_match_query(fields:, query:, options:)
-          query_fields = fields.dup
-          query_fields = ::Elastic::Latest::CustomLanguageAnalyzers.add_custom_analyzers_fields(query_fields)
-          query_fields = remove_fields_boost(query_fields) if options[:count_only]
-
-          bool_expr = ::Search::Elastic::BoolExpr.new
-
-          if query.present?
-            unless options[:no_join_project]
-              bool_expr.filter << {
-                term: {
-                  type: {
-                    _name: context.name(:doc, :is_a, options[:doc_type]),
-                    value: options[:doc_type]
-                  }
-                }
-              }
-            end
-
-            multi_match_bool = ::Search::Elastic::BoolExpr.new
-            multi_match_bool.should << multi_match_query(query_fields, query, options.merge(operator: :and))
-            multi_match_bool.should << multi_match_phrase_query(query_fields, query, options)
-            multi_match_bool.minimum_should_match = 1
-
-            if options[:count_only]
-              bool_expr.filter << { bool: multi_match_bool }
-            elsif options[:keyword_match_clause] == :should
-              bool_expr.should << { bool: multi_match_bool }
-            else
-              bool_expr.must << { bool: multi_match_bool }
-            end
-          else
-            bool_expr.must = { match_all: {} }
-          end
+          query_fields = prepare_query_fields(fields, options[:count_only])
+          bool_expr = build_multi_match_bool_expression(query, query_fields, options)
 
           query_hash = { query: { bool: bool_expr } }
           query_hash[:track_scores] = true unless query.present?
-
           query_hash[:highlight] = apply_highlight(query_fields) unless options[:count_only]
 
           query_hash
         end
 
         def by_simple_query_string(fields:, query:, options:)
-          query_fields = fields.dup
-          query_fields = ::Elastic::Latest::CustomLanguageAnalyzers.add_custom_analyzers_fields(query_fields)
-          query_fields = remove_fields_boost(query_fields) if options[:count_only]
-
-          bool_expr = ::Search::Elastic::BoolExpr.new
-          if query.present?
-            unless options[:no_join_project]
-              bool_expr.filter << {
-                term: {
-                  type: {
-                    _name: context.name(:doc, :is_a, options[:doc_type]),
-                    value: options[:doc_type]
-                  }
-                }
-              }
-            end
-
-            if options[:count_only]
-              bool_expr.filter << simple_query_string(query_fields, query, options)
-            elsif options[:keyword_match_clause] == :should
-              bool_expr.should << simple_query_string(query_fields, query, options)
-            else
-              bool_expr.must << simple_query_string(query_fields, query, options)
-            end
-          else
-            bool_expr.must = { match_all: {} }
-          end
+          query_fields = prepare_query_fields(fields, options[:count_only])
+          bool_expr = build_simple_query_string_bool_expression(query, query_fields, options)
 
           query_hash = { query: { bool: bool_expr } }
           query_hash[:track_scores] = true unless query.present?
-
           query_hash[:highlight] = apply_highlight(query_fields) unless options[:count_only]
 
           query_hash
@@ -128,6 +71,68 @@ module Search
         end
 
         private
+
+        def prepare_query_fields(fields, count_only)
+          query_fields = fields.dup
+          query_fields = ::Elastic::Latest::CustomLanguageAnalyzers.add_custom_analyzers_fields(query_fields)
+          query_fields = remove_fields_boost(query_fields) if count_only
+          query_fields
+        end
+
+        def build_simple_query_string_bool_expression(query, query_fields, options)
+          bool_expr = ::Search::Elastic::BoolExpr.new
+
+          if query.present?
+            add_doc_type_filter(bool_expr, options) unless options[:no_join_project]
+            add_query_conditions(bool_expr, simple_query_string(query_fields, query, options), options)
+          else
+            bool_expr.must = { match_all: {} }
+          end
+
+          bool_expr
+        end
+
+        def build_multi_match_bool_expression(query, query_fields, options)
+          bool_expr = ::Search::Elastic::BoolExpr.new
+
+          if query.present?
+            add_doc_type_filter(bool_expr, options) unless options[:no_join_project]
+            multi_match_bool = ::Search::Elastic::BoolExpr.new
+            multi_match_bool.should << multi_match_query(query_fields, query, options.merge(operator: :and))
+            multi_match_bool.should << multi_match_phrase_query(query_fields, query, options)
+            multi_match_bool.minimum_should_match = 1
+            multi_match_query = { bool: multi_match_bool.to_h }
+
+            add_query_conditions(bool_expr, multi_match_query, options)
+          else
+            bool_expr.must = { match_all: {} }
+          end
+
+          bool_expr
+        end
+
+        def add_doc_type_filter(bool_expr, options)
+          bool_expr.filter << {
+            term: {
+              type: {
+                _name: context.name(:doc, :is_a, options[:doc_type]),
+                value: options[:doc_type]
+              }
+            }
+          }
+        end
+
+        def add_query_conditions(bool_expr, query, options)
+          if options[:count_only]
+            bool_expr.filter << query
+          elsif options[:keyword_match_clause] == :should || options[:related_ids].present?
+            bool_expr.should << query
+            bool_expr.should << related_ids_query(options) if options[:related_ids].present?
+            bool_expr.minimum_should_match = 1
+          else
+            bool_expr.must << query
+          end
+        end
 
         def get_embedding_for_hybrid_query(query:, options:)
           return options[:embeddings] if options[:embeddings]
@@ -214,6 +219,19 @@ module Search
               query: query,
               operator: options[:operator],
               lenient: true
+            }
+          }
+        end
+
+        def related_ids_query(options)
+          related_ids = options[:related_ids]
+          return unless related_ids.present?
+
+          {
+            terms: {
+              _name: context.name(options[:doc_type], :related, :ids),
+              id: related_ids,
+              boost: options.fetch(:related_ids_boost, DEFAULT_RELATED_ID_BOOST)
             }
           }
         end

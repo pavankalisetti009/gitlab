@@ -10,7 +10,9 @@ module Gitlab
 
       attr_reader :project, :filters
 
-      def initialize(current_user, query, project:, root_ancestor_ids: nil, repository_ref: nil, order_by: nil, sort: nil, filters: {})
+      def initialize(
+        current_user, query, project:, root_ancestor_ids: nil, repository_ref: nil, order_by: nil,
+        sort: nil, filters: {})
         @project = project
         @original_repository_ref = repository_ref
 
@@ -57,7 +59,8 @@ module Gitlab
 
       def notes(count_only: false)
         strong_memoize(memoize_key(:notes, count_only: count_only)) do
-          Note.elastic_search(query, options: base_options.merge(filters.slice(:include_archived), count_only: count_only))
+          Note.elastic_search(query,
+            options: base_options.merge(filters.slice(:include_archived), count_only: count_only))
         end
       end
 
@@ -93,14 +96,18 @@ module Gitlab
       override :scope_options
       def scope_options(scope)
         case scope
+        when :blobs
+          base_options.merge(filters.slice(:language, :num_context_lines))
         when :users
           super.merge(project_id: project.id)
         when :work_items
-          super.merge(filters.slice(:hybrid_similarity, :hybrid_boost), root_ancestor_ids: [project.root_ancestor.id])
-        when :issues
-          super.merge(filters.slice(:hybrid_similarity))
-        when :blobs
-          base_options.merge(filters.slice(:language, :num_context_lines))
+          options = super.merge(filters.slice(:hybrid_similarity, :hybrid_boost))
+          options[:root_ancestor_ids] = [project.root_ancestor.id]
+          if Feature.enabled?(:search_work_item_queries_notes, current_user)
+            options[:related_ids] = related_ids_for_notes(Issue.name)
+          end
+
+          options
         else
           super
         end

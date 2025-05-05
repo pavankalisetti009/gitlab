@@ -13,7 +13,8 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       index_name: ::Search::Elastic::References::WorkItem.index,
       not_work_item_type_ids: [::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[:epic]).id],
       public_and_internal_projects: false,
-      search_level: 'global'
+      search_level: :global,
+      related_ids: [1]
     }
   end
 
@@ -44,16 +45,86 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       let(:query) { '#1' }
 
       it 'returns the expected query' do
-        assert_names_in_query(build, with: %w[work_item:related:iid doc:is_a:work_item])
+        assert_names_in_query(build,
+          with: %w[work_item:related:iid doc:is_a:work_item],
+          without: %w[work_item:multi_match:and:search_terms
+            work_item:multi_match_phrase:search_terms work_item:related:ids])
       end
     end
 
     context 'when query is text' do
       it 'returns the expected query' do
         assert_names_in_query(build,
-          with: %w[work_item:multi_match:and:search_terms
-            work_item:multi_match_phrase:search_terms],
+          with: %w[work_item:multi_match:and:search_terms work_item:multi_match_phrase:search_terms],
           without: %w[work_item:match:search_terms])
+      end
+
+      describe 'related id query' do
+        context 'for global search' do
+          context 'when search_work_item_queries_notes is false' do
+            before do
+              stub_feature_flags(search_work_item_queries_notes: false)
+            end
+
+            it 'does not contain work_item:related:ids in query' do
+              assert_names_in_query(build, without: %w[work_item:related:ids])
+            end
+          end
+
+          context 'when search_work_item_queries_notes is true' do
+            context 'when on saas', :saas do
+              it 'does not contain work_item:related:ids in query' do
+                assert_names_in_query(build, without: %w[work_item:related:ids])
+              end
+            end
+
+            context 'when not on saas' do
+              it 'contains work_item:related:ids in query' do
+                assert_names_in_query(build, with: %w[work_item:related:ids])
+              end
+            end
+          end
+        end
+
+        context 'for group search' do
+          let(:options) { base_options.merge(search_level: :group, group_ids: [1], project_ids: [1]) }
+
+          it 'contains work_item:related:ids in query' do
+            assert_names_in_query(build, with: %w[work_item:related:ids])
+          end
+        end
+
+        context 'for project search' do
+          let(:options) { base_options.merge(search_level: :project, group_ids: [], project_ids: [1]) }
+
+          it 'contains work_item:related:ids in query' do
+            assert_names_in_query(build, with: %w[work_item:related:ids])
+          end
+        end
+
+        context 'when options[:related_ids] is not sent' do
+          let(:options) do
+            base_options.tap { |hash| hash.delete(:related_ids) }
+          end
+
+          it 'returns the expected query' do
+            assert_names_in_query(build,
+              with: %w[work_item:multi_match:and:search_terms work_item:multi_match_phrase:search_terms],
+              without: %w[work_item:match:search_terms work_item:related:ids])
+          end
+        end
+
+        context 'when search_work_item_queries_notes flag is false' do
+          before do
+            stub_feature_flags(search_work_item_queries_notes: false)
+          end
+
+          it 'returns the expected query' do
+            assert_names_in_query(build,
+              with: %w[work_item:multi_match:and:search_terms work_item:multi_match_phrase:search_terms],
+              without: %w[work_item:match:search_terms work_item:related:ids])
+          end
+        end
       end
 
       context 'when advanced query syntax is used' do
@@ -96,7 +167,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     end
   end
 
-  describe 'hybrid search' do
+  describe 'hybrid search', :saas do
     using RSpec::Parameterized::TableSyntax
 
     let_it_be(:project) { create(:project) }
@@ -110,7 +181,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     let(:options) { base_options.merge(hybrid_similarity: hybrid_similarity, hybrid_boost: hybrid_boost) }
 
     before do
-      allow(Gitlab::Saas).to receive(:feature_available?).with(:ai_vertex_embeddings).and_return(true)
       allow(user).to receive(:any_group_with_ai_available?).and_return(true)
       allow(Gitlab::Llm::VertexAi::Embeddings::Text).to receive(:new).and_return(embedding_service)
       allow(embedding_service).to receive(:execute).and_return(mock_embedding)

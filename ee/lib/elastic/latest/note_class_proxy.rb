@@ -20,6 +20,7 @@ module Elastic
           query_hash = context.name(:authorized) { project_ids_filter(query_hash, options) }
           query_hash = context.name(:confidentiality) { confidentiality_filter(query_hash, options) }
           query_hash = context.name(:archived) { archived_filter(query_hash) } if archived_filter_applicable?(options)
+          query_hash = ::Search::Elastic::Filters.by_noteable_type(query_hash:, options:)
         end
 
         query_hash[:highlight] = highlight_options(options[:in]) unless options[:count_only]
