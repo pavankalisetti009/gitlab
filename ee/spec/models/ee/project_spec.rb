@@ -5139,4 +5139,50 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       expect(described_class.selective_sync_scope(node)).to be_empty
     end
   end
+
+  describe '#vulnerability_archival_enabled?' do
+    let_it_be(:root_ancestor) { create(:group) }
+    let_it_be(:group) { create(:group, parent: root_ancestor) }
+    let_it_be_with_refind(:project) { create(:project, group: group) }
+
+    subject { project.vulnerability_archival_enabled? }
+
+    it { is_expected.to be_truthy }
+
+    context 'when the feature is disabled for the direct parent' do
+      before do
+        stub_feature_flags(vulnerability_archival: false)
+      end
+
+      context 'when the feature is disabled for the root ancestor' do
+        it { is_expected.to be_falsey }
+      end
+
+      context 'when the feature is enabled for the root ancestor' do
+        before do
+          stub_feature_flags(vulnerability_archival: root_ancestor)
+        end
+
+        it { is_expected.to be_truthy }
+      end
+    end
+
+    context 'when the feature is disabled for the direct parent' do
+      before do
+        stub_feature_flags(vulnerability_archival: group)
+      end
+
+      context 'when the feature is disabled for the root ancestor' do
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when the feature is enabled for the root ancestor' do
+        before do
+          stub_feature_flags(vulnerability_archival: root_ancestor)
+        end
+
+        it { is_expected.to be_truthy }
+      end
+    end
+  end
 end
