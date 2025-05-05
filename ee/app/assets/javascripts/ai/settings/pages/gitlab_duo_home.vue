@@ -18,7 +18,10 @@ export default {
     DuoSeatUtilizationInfoCard,
     DuoSelfHostedInfoCard,
   },
-  inject: ['isSaaS', 'canManageSelfHostedModels'],
+  inject: {
+    canManageSelfHostedModels: { default: false },
+    isSaaS: {},
+  },
   i18n: {
     gitlabDuoHomeTitle: __('GitLab Duo'),
     gitlabDuoHomeSubtitle: s__(

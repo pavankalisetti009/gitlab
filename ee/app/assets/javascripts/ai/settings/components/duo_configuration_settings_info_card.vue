@@ -29,7 +29,7 @@ export default {
   },
   inject: {
     aiGatewayUrl: { default: '' },
-    canManageSelfHostedModels: {},
+    canManageSelfHostedModels: { default: false },
     duoConfigurationPath: {},
     isSaaS: {},
     duoAvailability: {},
