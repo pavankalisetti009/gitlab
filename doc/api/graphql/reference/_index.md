@@ -22362,6 +22362,7 @@ Represents a list for an issue board.
 | <a id="boardlistmaxissueweight"></a>`maxIssueWeight` | [`Int`](#int) | Maximum weight of issues in the list. |
 | <a id="boardlistmilestone"></a>`milestone` | [`Milestone`](#milestone) | Milestone of the list. |
 | <a id="boardlistposition"></a>`position` | [`Int`](#int) | Position of list within the board. |
+| <a id="boardliststatus"></a>`status` {{< icon name="warning-solid" >}} | [`WorkItemStatus`](#workitemstatus) | **Introduced** in GitLab 18.0. **Status**: Experiment. Status of the list. |
 | <a id="boardlisttitle"></a>`title` | [`String!`](#string) | Title of the list. |
 | <a id="boardlisttotalissueweight"></a>`totalIssueWeight` | [`BigInt`](#bigint) | Total weight of all issues in the list, encoded as a string. |
 
