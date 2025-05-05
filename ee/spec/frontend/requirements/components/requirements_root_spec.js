@@ -922,7 +922,7 @@ describe('RequirementsRoot', () => {
     });
 
     it('renders requirement-edit-form component', () => {
-      expect(wrapper.find('requirement-edit-form-stub').exists()).toBe(true);
+      expect(findRequirementEditForm().exists()).toBe(true);
     });
 
     it('does not render requirement-empty-state component when `showRequirementCreateDrawer` prop is `true`', async () => {
