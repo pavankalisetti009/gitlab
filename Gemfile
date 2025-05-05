@@ -391,9 +391,9 @@ gem 'gitlab-license', '~> 2.6', feature_category: :shared
 gem 'rack-attack', '~> 6.7.0', feature_category: :shared
 
 # Sentry integration
-gem 'sentry-ruby', '~> 5.22.0', feature_category: :observability
-gem 'sentry-rails', '~> 5.22.0', feature_category: :observability
-gem 'sentry-sidekiq', '~> 5.22.0', feature_category: :observability
+gem 'sentry-ruby', '~> 5.23.0', feature_category: :observability
+gem 'sentry-rails', '~> 5.23.0', feature_category: :observability
+gem 'sentry-sidekiq', '~> 5.23.0', feature_category: :observability
 
 # PostgreSQL query parsing
 #
