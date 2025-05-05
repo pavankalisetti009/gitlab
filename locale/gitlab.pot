@@ -58174,9 +58174,6 @@ msgstr ""
 msgid "Sorry, no projects matched your search"
 msgstr ""
 
-msgid "Sorry, this page doesn't exist"
-msgstr ""
-
 msgid "Sorry, you have exceeded the maximum browsable page number. Please use the API to explore further."
 msgstr ""
 
@@ -68004,6 +68001,15 @@ msgstr ""
 msgid "Wiki page was successfully deleted."
 msgstr ""
 
+msgid "Wiki404|This page doesn't exist"
+msgstr ""
+
+msgid "Wiki404|Use the sidebar to find a different page."
+msgstr ""
+
+msgid "Wiki404|Would you like to create it?"
+msgstr ""
+
 msgid "WikiClone|Clone Wiki repository"
 msgstr ""
 
@@ -68017,6 +68023,9 @@ msgid "WikiEmpty| Have a Confluence wiki already? Use that instead."
 msgstr ""
 
 msgid "WikiEmpty|Confluence is enabled"
+msgstr ""
+
+msgid "WikiEmpty|Create this page…"
 msgstr ""
 
 msgid "WikiEmpty|Create your first page"
@@ -68221,9 +68230,6 @@ msgid "Wiki|The sidebar failed to load. You can reload the page to try again."
 msgstr ""
 
 msgid "Wiki|There are no pages in this wiki yet."
-msgstr ""
-
-msgid "Wiki|Use the sidebar to find a different page."
 msgstr ""
 
 msgid "Wiki|View all pages"
