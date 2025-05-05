@@ -356,7 +356,6 @@ module EE
       project = @project.is_a?(ProjectPresenter) ? @project.project : @project
 
       super.merge(
-        is_project_marked_for_deletion: project.marked_for_deletion?.to_s,
         **compliance_framework_data_attributes(project)
       )
     end
