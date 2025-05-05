@@ -48,6 +48,7 @@ module GitlabSubscriptions
                       values: { value: ->(v) { v >= 0 }, message: 'Must be a non-negative integer if provided' }
                     optional :purchase_xid, type: String, desc: 'Add-on purchase identifier'
                     optional :trial, type: Boolean, default: false, desc: 'Whether Add-on purchase is a trial'
+                    optional :new_subscription, type: Boolean, desc: 'Whether add-on purchase is for a new subscription'
                   end
                 end
 

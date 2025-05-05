@@ -36,6 +36,7 @@ module GitlabSubscriptions
                   optional :purchase_xid, type: String,
                     desc: 'The purchase identifier  (example: the subscription name)'
                   optional :trial, type: Boolean, desc: 'Whether the add-on is a trial'
+                  optional :new_subscription, type: Boolean, desc: 'Whether add-on purchase is for a new subscription'
                 end
               end
 

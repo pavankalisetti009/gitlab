@@ -6,6 +6,7 @@ module GitlabSubscriptions
       class ProvisionService
         extend ::Gitlab::Utils::Override
 
+        DUO_CORE = :duo_core
         DUO_PRO = :duo_pro
         DUO_ENTERPRISE = :duo_enterprise
         ADD_ON_MAPPING = { duo_pro: :code_suggestions }.freeze
@@ -54,8 +55,25 @@ module GitlabSubscriptions
           add_on_purchase = add_on_purchase(name)
           return success unless executable?(add_on_purchase, product, name)
 
+          enable_duo_core_for_new_subscription(name, product)
+
           attributes = attributes(product).merge(add_on_purchase: add_on_purchase)
           service_class(add_on_purchase).new(namespace, add_on(name), attributes).execute
+        end
+
+        def enable_duo_core_for_new_subscription(name, product)
+          return unless ::Feature.enabled?(:auto_enable_duo_core_settings, namespace)
+
+          # respect customer's previous decision on this namespace
+          return unless namespace.namespace_settings.duo_nano_features_enabled.nil?
+
+          return unless duo_core_from_new_subscription?(name, product)
+
+          namespace.namespace_settings.update!(duo_nano_features_enabled: true)
+        end
+
+        def duo_core_from_new_subscription?(name, product)
+          name == DUO_CORE && product[:new_subscription]
         end
 
         def executable?(add_on_purchase, product, name)
