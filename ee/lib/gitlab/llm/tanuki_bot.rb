@@ -18,6 +18,11 @@ module Gitlab
       def self.show_breadcrumbs_entry_point?(user:, container: nil)
         return false unless chat_enabled?(user) && container
 
+        authorization_response = user.allowed_to_use(:duo_chat)
+        access_from_duo_core = authorization_response.authorized_by_duo_core
+
+        return false if access_from_duo_core
+
         Gitlab::Llm::Chain::Utils::ChatAuthorizer.user(user: user).allowed?
       end
 

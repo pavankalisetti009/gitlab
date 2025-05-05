@@ -16,7 +16,7 @@ module Ai
     AMAZON_Q_FEATURES = [:duo_chat, :code_suggestions, :troubleshoot_job, :explain_vulnerability,
       :resolve_vulnerability, :summarize_comments].freeze
 
-    Response = Struct.new(:allowed?, :namespace_ids, :enablement_type, keyword_init: true)
+    Response = Struct.new(:allowed?, :namespace_ids, :enablement_type, :authorized_by_duo_core, keyword_init: true)
 
     included do
       def duo_pro_add_on_available_namespace_ids
@@ -127,7 +127,8 @@ module Ai
         purchases = service.add_on_purchases.assigned_to_user(self)
         return unless purchases.any?
 
-        Response.new(allowed?: true, namespace_ids: purchases.uniq_namespace_ids, enablement_type: 'add_on')
+        Response.new(allowed?: true, namespace_ids: purchases.uniq_namespace_ids, enablement_type: 'add_on',
+          authorized_by_duo_core: false)
       end
 
       def check_duo_core_features(service)
@@ -137,9 +138,10 @@ module Ai
           groups = groups_with_duo_core_enabled
           return unless groups.any?
 
-          Response.new(allowed?: true, namespace_ids: groups.ids, enablement_type: 'add_on')
+          Response.new(allowed?: true, namespace_ids: groups.ids, enablement_type: 'add_on',
+            authorized_by_duo_core: true)
         elsif !saas? && ::Ai::Setting.instance.duo_nano_features_enabled?
-          Response.new(allowed?: true, namespace_ids: [], enablement_type: 'add_on')
+          Response.new(allowed?: true, namespace_ids: [], enablement_type: 'add_on', authorized_by_duo_core: true)
         end
       end
 
@@ -155,18 +157,19 @@ module Ai
         seats = namespaces_allowed_in_com(feature_data[:maturity])
 
         if seats.any?
-          Response.new(allowed?: true, namespace_ids: seats, enablement_type: 'tier')
+          Response.new(allowed?: true, namespace_ids: seats, enablement_type: 'tier', authorized_by_duo_core: false)
         else
           denied_response
         end
       end
 
       def check_sm_free_access(licensed_feature)
-        Response.new(allowed?: licensed_to_use_in_sm?(licensed_feature), namespace_ids: [])
+        Response.new(allowed?: licensed_to_use_in_sm?(licensed_feature), namespace_ids: [],
+          authorized_by_duo_core: false)
       end
 
       def denied_response
-        Response.new(allowed?: false, namespace_ids: [])
+        Response.new(allowed?: false, namespace_ids: [], authorized_by_duo_core: false)
       end
 
       def groups_with_duo_core_enabled
