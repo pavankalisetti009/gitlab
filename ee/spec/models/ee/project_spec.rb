@@ -595,6 +595,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
 
     describe '.with_feature_available', :saas do
+      let(:premium_feature) { GitlabSubscriptions::Features::PREMIUM_FEATURES.first }
       let_it_be(:user) { create(:user) }
 
       let_it_be(:ultimate_group) { create(:group_with_plan, :private, plan: :ultimate_plan) }
@@ -614,7 +615,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       let_it_be(:no_plan_private_project) { create(:project, :private, :archived, creator: user, namespace: no_plan_group) }
       let_it_be(:no_plan_subgroup_private_project) { create(:project, :private, :archived, creator: user, namespace: no_plan_subgroup) }
 
-      subject(:result) { described_class.with_feature_available(:adjourned_deletion_for_projects_and_groups) }
+      subject(:result) { described_class.with_feature_available(premium_feature) }
 
       it 'lists projects with the feature available' do
         is_expected.to contain_exactly(

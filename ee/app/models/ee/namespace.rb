@@ -232,11 +232,6 @@ module EE
       end
     end
 
-    # Only groups can be marked for deletion
-    def marked_for_deletion?
-      false
-    end
-
     def namespace_limit
       limit = has_parent? ? root_ancestor.namespace_limit : super
 

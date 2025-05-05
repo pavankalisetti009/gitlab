@@ -83,7 +83,6 @@ module GitlabSubscriptions
 
     PREMIUM_FEATURES = %i[
       ai_chat
-      adjourned_deletion_for_projects_and_groups
       admin_audit_log
       agent_managed_resources
       auditor_user

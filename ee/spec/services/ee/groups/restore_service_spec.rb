@@ -13,10 +13,6 @@ RSpec.describe Groups::RestoreService, feature_category: :groups_and_projects do
 
   subject(:execute) { described_class.new(group, user, {}).execute }
 
-  before do
-    stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-  end
-
   context 'for audit events' do
     it 'logs audit event', :aggregate_failures do
       allow(::Gitlab::Audit::Auditor).to receive(:audit).and_call_original

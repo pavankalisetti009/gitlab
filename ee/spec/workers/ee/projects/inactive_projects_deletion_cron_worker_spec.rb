@@ -58,32 +58,5 @@ RSpec.describe Projects::InactiveProjectsDeletionCronWorker, feature_category: :
       expect(AuditEvent.last.details[:custom_message])
         .to eq("Project is scheduled to be deleted on #{deletion_date} due to inactivity.")
     end
-
-    context 'when adjourned_deletion_for_projects_and_groups feature is available' do
-      before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-      end
-
-      it 'invokes Projects::MarkForDeletionService' do
-        Gitlab::Redis::SharedState.with do |redis|
-          redis.hset(
-            'inactive_projects_deletion_warning_email_notified',
-            "project:#{inactive_large_project.id}",
-            15.months.ago.to_date.to_s
-          )
-        end
-
-        worker.perform
-
-        expect(inactive_large_project.reload.pending_delete).to be(false)
-        expect(inactive_large_project.reload.marked_for_deletion_at).not_to be_nil
-
-        Gitlab::Redis::SharedState.with do |redis|
-          expect(
-            redis.hget('inactive_projects_deletion_warning_email_notified', "project:#{inactive_large_project.id}")
-          ).to be_nil
-        end
-      end
-    end
   end
 end

@@ -10,7 +10,7 @@ RSpec.describe 'User with the `remove_group` custom ability', feature_category: 
   let_it_be(:subgroup) { create(:group, parent: group) }
 
   before do
-    stub_licensed_features(custom_roles: true, adjourned_deletion_for_projects_and_groups: true)
+    stub_licensed_features(custom_roles: true)
   end
 
   describe GroupsController do

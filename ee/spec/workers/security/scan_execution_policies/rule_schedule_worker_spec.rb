@@ -51,8 +51,6 @@ RSpec.describe Security::ScanExecutionPolicies::RuleScheduleWorker, feature_cate
 
     context 'when project is marked for deletion' do
       before do
-        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
-
         project.update! marked_for_deletion_at: 1.day.ago, pending_delete: false
       end
 
