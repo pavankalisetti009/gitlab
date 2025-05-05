@@ -14,10 +14,14 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
     let(:expected_allowed) { true }
     let(:expected_namespace_ids) { [] }
     let(:expected_enablement_type) { nil }
+    let(:expected_authorized_by_duo_core) { false }
     let(:service) { CloudConnector::BaseAvailableServiceData.new(service_name, nil, %w[duo_pro]) }
     let(:expected_response) do
       described_class::Response.new(
-        allowed?: expected_allowed, namespace_ids: expected_namespace_ids, enablement_type: expected_enablement_type)
+        allowed?: expected_allowed,
+        namespace_ids: expected_namespace_ids,
+        enablement_type: expected_enablement_type,
+        authorized_by_duo_core: expected_authorized_by_duo_core)
     end
 
     let_it_be(:gitlab_add_on) { create(:gitlab_subscription_add_on) }
@@ -80,6 +84,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         let(:expected_allowed) { true }
         let(:expected_enablement_type) { 'add_on' }
         let(:expected_namespace_ids) { allowed_by_namespace_ids }
+        let(:expected_authorized_by_duo_core) { true }
         let(:free_access) { false }
         let(:service) { CloudConnector::BaseAvailableServiceData.new(service_name, nil, %w[duo_pro duo_core]) }
 
@@ -89,6 +94,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           let(:allowed_by_namespace_ids) { [] }
           let(:expected_allowed) { !feature_flag_blocks_access }
           let(:expected_enablement_type) { 'add_on' unless feature_flag_blocks_access }
+          let(:expected_authorized_by_duo_core) { !feature_flag_blocks_access }
 
           before do
             stub_feature_flags(duo_core_saas: false)
@@ -101,6 +107,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           let(:allowed_by_namespace_ids) { [] }
           let(:expected_allowed) { false }
           let(:expected_enablement_type) { nil }
+          let(:expected_authorized_by_duo_core) { false }
 
           context 'when duo_nano_features_enabled is false' do
             let(:duo_nano_features_enabled) { false }
