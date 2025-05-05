@@ -1470,6 +1470,12 @@ module EE
     end
     strong_memoize_attr :pages_domain_level_parallel_deployments_count
 
+    def vulnerability_archival_enabled?
+      ::Feature.enabled?(:vulnerability_archival, namespace) ||
+        ::Feature.enabled?(:vulnerability_archival, root_ancestor)
+    end
+    strong_memoize_attr :vulnerability_archival_enabled?
+
     private
 
     def path_locks_changed_epoch_cache_key

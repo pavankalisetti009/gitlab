@@ -21,20 +21,13 @@ module Vulnerabilities
         index = latest_index.to_i
 
         scope.each_batch(of: BATCH_SIZE) do |relation|
-          projects = Project.id_in(relation).with_group
-          groups = projects.filter_map(&:group)
-
+          projects = Project.id_in(relation).with_namespace
+          namespaces = projects.map(&:namespace)
           last_project = projects.last
 
-          next store_state(index, last_project) if groups.empty?
+          ::Namespaces::Preloaders::NamespaceRootAncestorPreloader.new(namespaces).execute
 
-          ::Namespaces::Preloaders::GroupRootAncestorPreloader.new(groups).execute
-
-          projects = projects.select do |project|
-            next unless project.group
-
-            Feature.enabled?(:vulnerability_archival, project.group.root_ancestor)
-          end
+          projects = projects.select(&:vulnerability_archival_enabled?)
 
           next store_state(index, last_project) unless projects.present?
 

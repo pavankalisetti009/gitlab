@@ -13,7 +13,7 @@ module EE
           before_action :authorize_read_security_dashboard!, except: [:show]
 
           before_action only: [:show] do
-            push_frontend_feature_flag(:vulnerability_archival, @project, type: :wip)
+            push_force_frontend_feature_flag(:vulnerability_archival, project.vulnerability_archival_enabled?)
           end
 
           feature_category :static_application_security_testing, [:show]
