@@ -11,6 +11,7 @@ RSpec.describe 'Jobs', :clean_gitlab_redis_shared_state, feature_category: :cont
   let(:job) { create(:ci_build, :trace_live, pipeline: pipeline) }
 
   before do
+    stub_application_setting(ci_job_live_trace_enabled: true)
     project.add_role(user, user_access_level)
     sign_in(user)
   end
