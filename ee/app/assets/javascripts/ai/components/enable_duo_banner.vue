@@ -8,6 +8,7 @@ import axios from '~/lib/utils/axios_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { DOCS_URL_IN_EE_DIR } from '~/constants';
 import { visitUrl } from '~/lib/utils/url_utility';
+import { updateGroupSettings } from 'ee/api/groups_api';
 
 export default {
   name: 'EnableDuoBanner',
@@ -20,6 +21,10 @@ export default {
     modalEnableButton: __('Enable'),
     modalBody: s__(
       `AiPowered|GitLab Duo Core will be available to all users in your %{plan} plan, including Chat and Code Suggestions in supported IDEs. %{eligibilityLinkStart}Eligibility requirements apply%{eligibilityLinkEnd}. By enabling GitLab Duo, you accept the %{aiLinkStart}GitLab AI functionality terms%{aiLinkEnd}.`,
+    ),
+    successMessage: __('GitLab Duo Core is now enabled.'),
+    errorMessage: __(
+      'An error occurred while trying to enable GitLab Duo Core. Reload the page to try again.',
     ),
   },
   components: {
@@ -49,25 +54,28 @@ export default {
     this.trackEvent('view_enable_duo_banner_pageload');
   },
   methods: {
-    handleEnableClick() {
+    async handleEnableClick() {
       this.trackEvent('click_enable_button_enable_duo_banner_modal');
 
       this.isClosedByPrimaryModalBtn = true;
 
-      axios
-        .put(this.enableButtonHref, {})
-        .then(() => {
-          this.isDismissed = true;
-          createAlert({
-            message: __('GitLab Duo Core is now enabled.'),
-            variant: VARIANT_INFO,
-          });
-        })
-        .catch((error) => {
-          // eslint-disable-next-line no-console
-          console.error('Failed to enable GitLab Duo Core', error);
-          Sentry.captureException(error);
+      try {
+        await updateGroupSettings(this.groupId, {
+          duo_core_features_enabled: true,
         });
+
+        this.isDismissed = true;
+        createAlert({
+          message: this.$options.i18n.successMessage,
+          variant: VARIANT_INFO,
+        });
+      } catch (error) {
+        createAlert({
+          message: this.$options.i18n.errorMessage,
+          captureError: true,
+          error,
+        });
+      }
     },
     primaryClicked() {
       this.trackEvent('click_primary_button_enable_duo_banner');
@@ -105,7 +113,7 @@ export default {
     },
   },
   learnMoreHref: `${DOCS_URL_IN_EE_DIR}/user/get_started/getting_started_gitlab_duo`,
-  eligiblityHref: `${DOCS_URL_IN_EE_DIR}/subscriptions/subscription-add-ons/#gitlab-duo-core`,
+  eligibilityHref: `${DOCS_URL_IN_EE_DIR}/subscriptions/subscription-add-ons/#gitlab-duo-core`,
 };
 </script>
 
@@ -153,7 +161,7 @@ export default {
           {{ groupPlan }}
         </template>
         <template #eligibilityLink="{ content }">
-          <gl-link :href="$options.eligiblityHref" target="_blank">{{ content }}</gl-link>
+          <gl-link :href="$options.eligibilityHref" target="_blank">{{ content }}</gl-link>
         </template>
         <template #aiLink="{ content }">
           <gl-link
