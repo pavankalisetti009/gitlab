@@ -123,4 +123,28 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
       end
     end
   end
+
+  describe 'auto_duo_code_review_enabled' do
+    context 'when project is licensed to use review_merge_request' do
+      before do
+        stub_licensed_features(review_merge_request: true)
+      end
+
+      it 'returns a boolean value' do
+        expect(subject[:auto_duo_code_review_enabled]).to be_in([true, false])
+      end
+    end
+
+    context 'when project is not licensed to use review_merge_request' do
+      let(:current_user) { developer }
+
+      before do
+        stub_licensed_features(review_merge_request: false)
+      end
+
+      it 'returns nil' do
+        expect(subject[:auto_duo_code_review_enabled]).to be_nil
+      end
+    end
+  end
 end
