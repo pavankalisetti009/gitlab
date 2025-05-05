@@ -23,6 +23,7 @@ module EE
             optional :external_authorization_classification_label, type: String, desc: 'The classification label for the project'
             optional :requirements_access_level, type: String, values: %w[disabled private enabled], desc: 'Requirements feature access level. One of `disabled`, `private` or `enabled`'
             optional :prevent_merge_without_jira_issue, type: Grape::API::Boolean, desc: 'Require an associated issue from Jira'
+            optional :auto_duo_code_review_enabled, type: Grape::API::Boolean, desc: 'Enable automatic reviews by GitLab Duo on merge requests'
           end
 
           params :optional_filter_params_ee do
@@ -63,6 +64,7 @@ module EE
           # https://gitlab.com/gitlab-org/gitlab-foss/issues/50911.
           def update_params_at_least_one_of
             super.concat [
+              :auto_duo_code_review_enabled,
               :allow_pipeline_trigger_approve_deployment,
               :only_allow_merge_if_all_status_checks_passed,
               :approvals_before_merge,
@@ -101,6 +103,8 @@ module EE
           unless ::License.feature_available?(:ci_pipeline_cancellation_restrictions)
             attrs.delete(:ci_restrict_pipeline_cancellation_role)
           end
+
+          attrs.delete(:auto_duo_code_review_enabled) unless ::License.feature_available?(:review_merge_request)
         end
       end
     end

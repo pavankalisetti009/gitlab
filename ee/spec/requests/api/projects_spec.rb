@@ -1928,6 +1928,32 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         expect(json_response['prevent_merge_without_jira_issue']).to eq(nil)
       end
     end
+
+    context 'when setting auto_duo_code_review_enabled' do
+      let(:project_params) { { auto_duo_code_review_enabled: true } }
+
+      context 'when licence is available' do
+        before do
+          stub_licensed_features(review_merge_request: true)
+        end
+
+        it 'updates the value' do
+          expect { subject }.to change { project.reload.auto_duo_code_review_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['auto_duo_code_review_enabled']).to eq true
+        end
+      end
+
+      context 'when licence is not available' do
+        it 'does not update the value' do
+          expect { subject }.not_to change { project.reload.auto_duo_code_review_enabled }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['auto_duo_code_review_enabled']).to eq nil
+        end
+      end
+    end
   end
 
   describe 'DELETE /projects/:id' do
