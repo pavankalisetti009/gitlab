@@ -12,6 +12,7 @@ RSpec.describe GitlabSubscriptions::API::Internal::Namespaces::Provision, :aggre
 
   let(:provision_path) { internal_api("namespaces/#{namespace_id}/provision") }
   let(:namespace_id) { namespace.id }
+  let(:new_subscription) { false }
 
   let(:params) do
     {
@@ -41,7 +42,8 @@ RSpec.describe GitlabSubscriptions::API::Internal::Namespaces::Provision, :aggre
             expires_on: end_date,
             purchase_xid: 'A-S00001',
             quantity: 30,
-            trial: false
+            trial: false,
+            new_subscription: new_subscription
           }],
           duo_pro: [{
             started_on: start_date,
@@ -118,6 +120,18 @@ RSpec.describe GitlabSubscriptions::API::Internal::Namespaces::Provision, :aggre
           quantity: 1,
           trial: false
         )
+      end
+
+      context 'when Duo Core params new_subscription flag is true' do
+        let(:new_subscription) { true }
+
+        it_behaves_like 'enables DuoCore automatically only if customer has not chosen DuoCore setting for namespace'
+      end
+
+      context 'when Duo Core params new_subscription flag is false' do
+        let(:new_subscription) { false }
+
+        it_behaves_like 'does not change namespace Duo Core features setting'
       end
 
       context 'when only single resource params is sent' do

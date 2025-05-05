@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_failures, :api, feature_category: :"add-on_provisioning" do
   include GitlabSubscriptions::InternalApiHelpers
 
-  let_it_be(:namespace) { create(:group, :with_organization) }
+  let_it_be_with_reload(:namespace) { create(:group, :with_organization) }
 
   let!(:add_on) { create(:gitlab_subscription_add_on, add_on_name.to_sym) }
 
@@ -184,6 +184,22 @@ RSpec.describe GitlabSubscriptions::API::Internal::AddOnPurchases, :aggregate_fa
         let(:add_on_name) { :duo_core }
 
         it_behaves_like 'successful request'
+
+        context 'when Duo Core params new_subscription flag is true' do
+          before do
+            add_on_product.merge!(new_subscription: true)
+          end
+
+          it_behaves_like 'enables DuoCore automatically only if customer has not chosen DuoCore setting for namespace'
+        end
+
+        context 'when Duo Core params new_subscription flag is false' do
+          before do
+            add_on_product.merge!(new_subscription: false)
+          end
+
+          it_behaves_like 'does not change namespace Duo Core features setting'
+        end
       end
 
       context 'with Duo Enterprise' do

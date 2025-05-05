@@ -7,7 +7,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
   describe '#execute' do
     subject(:execute_service) { described_class.new(namespace, add_on_products).execute }
 
-    let_it_be(:namespace) { create(:group) }
+    let_it_be_with_reload(:namespace) { create(:group) }
     let_it_be(:started_at) { Date.current.to_s }
     let_it_be(:expires_on) { 1.year.from_now.to_date.to_s }
     let_it_be(:yesterday) { Time.zone.yesterday }
@@ -368,6 +368,28 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::GitlabCom::ProvisionService,
           expect(GitlabSubscriptions::AddOnPurchase.second).to have_attributes(
             expected_attributes.merge(add_on: have_attributes(name: 'code_suggestions'))
           )
+        end
+
+        context 'when Duo Core params new_subscription flag is true' do
+          let(:add_on_products) do
+            {
+              'duo_core' => [add_on_product.merge(new_subscription: true)],
+              'duo_pro' => [add_on_product]
+            }
+          end
+
+          it_behaves_like 'enables DuoCore automatically only if customer has not chosen DuoCore setting for namespace'
+        end
+
+        context 'when Duo Core params new_subscription flag is false' do
+          let(:add_on_products) do
+            {
+              'duo_core' => [add_on_product.merge(new_subscription: false)],
+              'duo_pro' => [add_on_product]
+            }
+          end
+
+          it_behaves_like 'does not change namespace Duo Core features setting'
         end
       end
 

@@ -1,0 +1,9 @@
+---
+name: auto_enable_duo_core_settings
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/530705
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/189124
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/538802
+milestone: '18.0'
+group: group::provision
+type: gitlab_com_derisk
+default_enabled: false
