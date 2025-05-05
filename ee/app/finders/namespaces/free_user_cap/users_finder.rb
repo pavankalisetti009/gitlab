@@ -13,6 +13,7 @@ module Namespaces
         @group = group
         @limit = limit
         @ids = { user_ids: Set.new }
+        @exclude_guests = false
       end
 
       def count
@@ -23,14 +24,15 @@ module Namespaces
 
       attr_reader :limit
 
-      def calculate_user_ids(method_name)
+      def calculate_user_ids(method_name, hash_key)
         return if ids[:user_ids].count >= limit
 
-        @ids[METHOD_KEY_MAP[method_name]] = group.public_send(method_name).limit(limit) # rubocop:disable GitlabSecurity/PublicSend
-                                              .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/417464")
-                                              .pluck(:id).to_set # rubocop:disable CodeReuse/ActiveRecord
+        user_ids = fetch_user_ids(method_name) do |scope|
+          scope.limit(limit)
+        end
 
-        append_to_user_ids(ids[METHOD_KEY_MAP[method_name]])
+        @ids[hash_key] = user_ids
+        @ids[:user_ids].merge(user_ids)
       end
     end
   end
