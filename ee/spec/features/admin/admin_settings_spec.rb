@@ -304,6 +304,28 @@ RSpec.describe 'Admin updates EE-only settings', feature_category: :shared do
     end
   end
 
+  describe 'Disable group invite members', feature_category: :system_access do
+    it 'does not show the setting when the feature is not licensed' do
+      stub_licensed_features(disable_invite_members: false)
+
+      expect(page).not_to have_css('#application_setting_disable_invite_members')
+    end
+
+    it 'enables personal access tokens' do
+      current_settings.update_attribute(:disable_invite_members, true)
+
+      visit general_admin_application_settings_path
+
+      within_testid('admin-visibility-access-settings') do
+        uncheck _('Disable inviting new members to group or project by group/project owners or project maintainers')
+        click_button _('Save changes')
+      end
+
+      expect(page).to have_content _('Application settings saved successfully')
+      expect(current_settings.disable_personal_access_tokens).to eq(false)
+    end
+  end
+
   describe 'package registry settings', feature_category: :package_registry do
     before do
       visit ci_cd_admin_application_settings_path

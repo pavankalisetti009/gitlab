@@ -242,6 +242,13 @@ RSpec.describe Admin::ApplicationSettingsController do
       it_behaves_like 'settings for licensed features'
     end
 
+    context 'when updating disable_invite_members settings' do
+      let(:settings) { { disable_invite_members: true } }
+      let(:license_feature) { :disable_invite_members }
+
+      it_behaves_like 'settings for licensed features'
+    end
+
     context 'when updating `git_two_factor_session_expiry` setting' do
       before do
         stub_feature_flags(two_factor_for_cli: true)

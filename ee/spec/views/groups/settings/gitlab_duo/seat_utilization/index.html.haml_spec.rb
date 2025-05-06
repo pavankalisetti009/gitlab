@@ -8,7 +8,7 @@ RSpec.describe 'groups/settings/gitlab_duo/seat_utilization/index', feature_cate
   before do
     assign(:group, group)
     allow(view)
-      .to receive_messages(can_admin_group_member?: true, current_user_mode: Gitlab::Auth::CurrentUserMode.new(nil))
+      .to receive_messages(can_invite_group_member?: true, current_user_mode: Gitlab::Auth::CurrentUserMode.new(nil))
   end
 
   it 'renders the settings app root with the correct data attributes', :aggregate_failures do
