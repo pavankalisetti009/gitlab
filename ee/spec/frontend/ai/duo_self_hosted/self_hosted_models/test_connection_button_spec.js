@@ -5,8 +5,8 @@ import { shallowMount } from '@vue/test-utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
-import testSelfHostedModelConnectionMutation from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/graphql/mutations/test_self_hosted_model_connection.mutation.graphql';
-import TestConnectionButton from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/components/test_connection_button.vue';
+import testSelfHostedModelConnectionMutation from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/mutations/test_self_hosted_model_connection.mutation.graphql';
+import TestConnectionButton from 'ee/ai/duo_self_hosted/self_hosted_models/components/test_connection_button.vue';
 import { mockModelConnectionTestInput } from './mock_data';
 
 Vue.use(VueApollo);

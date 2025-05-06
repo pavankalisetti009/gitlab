@@ -4,18 +4,18 @@ import { GlAlert, GlForm } from '@gitlab/ui';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import SelfHostedModelForm from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/components/self_hosted_model_form.vue';
-import TestConnectionButton from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/components/test_connection_button.vue';
-import ModelSelectDropdown from 'ee/pages/admin/ai/duo_self_hosted/shared/model_select_dropdown.vue';
+import SelfHostedModelForm from 'ee/ai/duo_self_hosted/self_hosted_models/components/self_hosted_model_form.vue';
+import TestConnectionButton from 'ee/ai/duo_self_hosted/self_hosted_models/components/test_connection_button.vue';
+import ModelSelectDropdown from 'ee/ai/duo_self_hosted/shared/model_select_dropdown.vue';
 import InputCopyToggleVisibility from '~/vue_shared/components/input_copy_toggle_visibility/input_copy_toggle_visibility.vue';
-import createSelfHostedModelMutation from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/graphql/mutations/create_self_hosted_model.mutation.graphql';
-import updateSelfHostedModelMutation from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/graphql/mutations/update_self_hosted_model.mutation.graphql';
+import createSelfHostedModelMutation from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/mutations/create_self_hosted_model.mutation.graphql';
+import updateSelfHostedModelMutation from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/mutations/update_self_hosted_model.mutation.graphql';
 import { createAlert } from '~/alert';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import {
   SELF_HOSTED_MODEL_MUTATIONS,
   BEDROCK_DUMMY_ENDPOINT,
-} from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/constants';
+} from 'ee/ai/duo_self_hosted/self_hosted_models/constants';
 import {
   SELF_HOSTED_MODEL_OPTIONS,
   mockSelfHostedModel as mockModelData,

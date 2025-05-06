@@ -1,10 +1,10 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import { joinPaths } from '~/lib/utils/url_utility';
-import NewSelfHostedModel from './self_hosted_models/components/new_self_hosted_model.vue';
-import EditSelfHostedModel from './self_hosted_models/components/edit_self_hosted_model.vue';
-import DuoSelfHostedApp from './app.vue';
-import { SELF_HOSTED_DUO_TABS } from './constants';
+import NewSelfHostedModel from 'ee/ai/duo_self_hosted/self_hosted_models/components/new_self_hosted_model.vue';
+import EditSelfHostedModel from 'ee/ai/duo_self_hosted/self_hosted_models/components/edit_self_hosted_model.vue';
+import DuoSelfHostedApp from 'ee/ai/duo_self_hosted/app.vue';
+import { SELF_HOSTED_DUO_TABS } from 'ee/ai/duo_self_hosted/constants';
 
 Vue.use(VueRouter);
 

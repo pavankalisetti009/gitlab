@@ -3,8 +3,8 @@ import VueApollo from 'vue-apollo';
 import { GlSprintf, GlAlert, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import ExpandedChatFeatureSettingsTable from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/components/expanded_chat_feature_settings_table.vue';
-import getAiFeatureSettingsQuery from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
+import ExpandedChatFeatureSettingsTable from 'ee/ai/duo_self_hosted/feature_settings/components/expanded_chat_feature_settings_table.vue';
+import getAiFeatureSettingsQuery from 'ee/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
 import {

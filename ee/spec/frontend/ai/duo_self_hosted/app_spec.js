@@ -1,10 +1,10 @@
 import { nextTick } from 'vue';
 import { GlButton } from '@gitlab/ui';
-import DuoSelfHostedApp from 'ee/pages/admin/ai/duo_self_hosted/app.vue';
-import FeatureSettingsTable from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/components/feature_settings_table.vue';
-import ExpandedChatFeatureSettingsTable from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/components/expanded_chat_feature_settings_table.vue';
+import DuoSelfHostedApp from 'ee/ai/duo_self_hosted/app.vue';
+import FeatureSettingsTable from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings_table.vue';
+import ExpandedChatFeatureSettingsTable from 'ee/ai/duo_self_hosted/feature_settings/components/expanded_chat_feature_settings_table.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { SELF_HOSTED_DUO_TABS } from 'ee/pages/admin/ai/duo_self_hosted/constants';
+import { SELF_HOSTED_DUO_TABS } from 'ee/ai/duo_self_hosted/constants';
 
 describe('DuoSelfHostedApp', () => {
   let wrapper;

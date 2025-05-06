@@ -1,8 +1,8 @@
 import { shallowMount } from '@vue/test-utils';
-import SelfHostedModelForm from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/components/self_hosted_model_form.vue';
-import createSelfHostedModelMutation from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/graphql/mutations/create_self_hosted_model.mutation.graphql';
-import NewSelfHostedModel from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/components/new_self_hosted_model.vue';
-import { SELF_HOSTED_MODEL_MUTATIONS } from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/constants';
+import SelfHostedModelForm from 'ee/ai/duo_self_hosted/self_hosted_models/components/self_hosted_model_form.vue';
+import createSelfHostedModelMutation from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/mutations/create_self_hosted_model.mutation.graphql';
+import NewSelfHostedModel from 'ee/ai/duo_self_hosted/self_hosted_models/components/new_self_hosted_model.vue';
+import { SELF_HOSTED_MODEL_MUTATIONS } from 'ee/ai/duo_self_hosted/self_hosted_models/constants';
 
 describe('NewSelfHostedModel', () => {
   let wrapper;

@@ -7,9 +7,9 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { BV_SHOW_MODAL } from '~/lib/utils/constants';
 import { createAlert } from '~/alert';
-import deleteSelfHostedModelMutation from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/graphql/mutations/delete_self_hosted_model.mutation.graphql';
-import getSelfHostedModelsQuery from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
-import DeleteSelfHostedModelDisclosureItem from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/components/delete_self_hosted_model_disclosure_item.vue';
+import deleteSelfHostedModelMutation from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/mutations/delete_self_hosted_model.mutation.graphql';
+import getSelfHostedModelsQuery from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
+import DeleteSelfHostedModelDisclosureItem from 'ee/ai/duo_self_hosted/self_hosted_models/components/delete_self_hosted_model_disclosure_item.vue';
 import { mockSelfHostedModelsList } from './mock_data';
 
 Vue.use(VueApollo);
