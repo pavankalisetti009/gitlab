@@ -10,9 +10,7 @@ module VirtualRegistries
           include ::UpdateNamespaceStatistics
           include ShaAttribute
 
-          # we're using a composite primary key: upstream_id, relative_path and status
-          self.primary_key = :upstream_id
-          query_constraints :upstream_id, :relative_path, :status
+          self.primary_key = %i[upstream_id relative_path status]
 
           belongs_to :group
           belongs_to :upstream,
@@ -99,7 +97,8 @@ module VirtualRegistries
           def mark_as_pending_destruction
             update_columns(
               status: :pending_destruction,
-              relative_path: "#{relative_path}/deleted/#{SecureRandom.uuid}"
+              relative_path: "#{relative_path}/deleted/#{SecureRandom.uuid}",
+              updated_at: Time.current
             )
           end
 
