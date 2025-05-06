@@ -51,13 +51,15 @@ describe('ValueStreamFormContent', () => {
     name: 'Editable value stream',
   };
 
-  const createComponent = ({ props = {} } = {}) =>
+  const createComponent = ({ props = {}, provide = {} } = {}) =>
     shallowMountExtended(ValueStreamFormContent, {
       provide: {
         vsaPath: '/mockPath',
         namespaceFullPath: namespacePath,
         stageEvents,
         defaultStages,
+        isEditing: false,
+        ...provide,
       },
       propsData: props,
       stubs: {
@@ -108,7 +110,6 @@ describe('ValueStreamFormContent', () => {
     it('has the form actions', () => {
       expect(findFormActions().props()).toMatchObject({
         isLoading: false,
-        isEditing: false,
       });
     });
 
@@ -338,19 +339,17 @@ describe('ValueStreamFormContent', () => {
     const stageCount = initialData.stages.length;
     beforeEach(() => {
       wrapper = createComponent({
+        provide: {
+          isEditing: true,
+        },
         props: {
           initialData,
-          isEditing: true,
         },
       });
     });
 
     it('does not have the preset button', () => {
       expect(findPresetSelector().exists()).toBe(false);
-    });
-
-    it('passes isEditing=true to form actions', () => {
-      expect(findFormActions().props().isEditing).toBe(true);
     });
 
     it('does not display any hidden stages', () => {
@@ -392,9 +391,11 @@ describe('ValueStreamFormContent', () => {
 
       beforeEach(() => {
         wrapper = createComponent({
+          provide: {
+            isEditing: true,
+          },
           props: {
             initialData: { ...initialData, stages: [...initialData.stages, ...hiddenStages] },
-            isEditing: true,
           },
         });
       });
@@ -431,9 +432,11 @@ describe('ValueStreamFormContent', () => {
     describe('Add stage button', () => {
       beforeEach(() => {
         wrapper = createComponent({
+          provide: {
+            isEditing: true,
+          },
           props: {
             initialData,
-            isEditing: true,
           },
         });
       });
@@ -470,9 +473,11 @@ describe('ValueStreamFormContent', () => {
           mock.onPut(endpoints.valueStreamData).replyOnce(HTTP_STATUS_OK, mockValueStream);
 
           wrapper = createComponent({
+            provide: {
+              isEditing: true,
+            },
             props: {
               initialData,
-              isEditing: true,
             },
           });
 
@@ -521,9 +526,11 @@ describe('ValueStreamFormContent', () => {
           });
 
           wrapper = createComponent({
+            provide: {
+              isEditing: true,
+            },
             props: {
               initialData,
-              isEditing: true,
             },
           });
 
