@@ -46,7 +46,7 @@ module QA
         end
 
         expect(page).to have_content(epic_title)
-        expect(page).to have_content("This is a confidential epic.")
+        expect(page).to have_content("Marked as confidential.")
       end
 
       context 'when resources created via API' do
