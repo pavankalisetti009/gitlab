@@ -37817,8 +37817,6 @@ CREATE INDEX index_vulnerability_occurrences_on_location_k8s_cluster_id ON vulne
 
 CREATE INDEX index_vulnerability_occurrences_on_scanner_id ON vulnerability_occurrences USING btree (scanner_id);
 
-CREATE UNIQUE INDEX index_vulnerability_occurrences_on_uuid_1 ON vulnerability_occurrences USING btree (uuid);
-
 CREATE INDEX index_vulnerability_occurrences_on_vulnerability_id ON vulnerability_occurrences USING btree (vulnerability_id);
 
 CREATE INDEX index_vulnerability_occurrences_prim_iden_id_and_vuln_id ON vulnerability_occurrences USING btree (primary_identifier_id, vulnerability_id);
