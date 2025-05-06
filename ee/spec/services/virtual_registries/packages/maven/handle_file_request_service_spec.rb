@@ -76,7 +76,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
       end
 
       context 'with a cache entry' do
-        let_it_be_with_refind(:cache_entry) do
+        let_it_be(:cache_entry) do
           create(:virtual_registries_packages_maven_cache_entry,
             :upstream_checked,
             upstream: upstream,

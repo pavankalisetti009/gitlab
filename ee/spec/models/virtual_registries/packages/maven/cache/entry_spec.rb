@@ -278,7 +278,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entry, type: :model, f
   end
 
   describe '#mark_as_pending_destruction' do
-    let_it_be_with_refind(:cache_entry) { create(:virtual_registries_packages_maven_cache_entry, :default) }
+    let(:cache_entry) { create(:virtual_registries_packages_maven_cache_entry) }
 
     subject(:execute) { cache_entry.mark_as_pending_destruction }
 
@@ -289,15 +289,14 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entry, type: :model, f
         expect { execute }.to change { cache_entry.status }.from('default').to('pending_destruction')
           .and not_change { cache_entry.object_storage_key }
 
-        expect(cache_entry.relative_path).to start_with(previous_path)
-        expect(cache_entry.relative_path).to include('/deleted/')
+        expect(cache_entry.relative_path).to start_with("#{previous_path}/deleted/")
       end
     end
 
     it_behaves_like 'updating the status and relative_path properly'
 
     context 'with an existing pending destruction record with same relative_path and upstream_id' do
-      let_it_be(:already_pending_destruction) do
+      before do
         create(
           :virtual_registries_packages_maven_cache_entry,
           :pending_destruction,
