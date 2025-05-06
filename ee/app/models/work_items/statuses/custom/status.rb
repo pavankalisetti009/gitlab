@@ -23,6 +23,14 @@ module WorkItems
           through: :lifecycle_statuses,
           class_name: 'WorkItems::Statuses::Custom::Lifecycle'
 
+        scope :ordered_for_lifecycle, ->(lifecycle_id) {
+          joins(:lifecycle_statuses)
+            .where(work_item_custom_lifecycle_statuses: { lifecycle_id: lifecycle_id })
+            .order('work_item_custom_statuses.category ASC,
+                    work_item_custom_lifecycle_statuses.position ASC,
+                    work_item_custom_statuses.id ASC')
+        }
+
         validates :namespace, :category, presence: true
         validates :name, presence: true, length: { maximum: 255 }
         validates :name, uniqueness: { scope: :namespace_id }

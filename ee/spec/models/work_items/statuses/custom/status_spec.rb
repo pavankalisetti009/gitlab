@@ -11,6 +11,50 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
     it { is_expected.to have_many(:lifecycles).through(:lifecycle_statuses) }
   end
 
+  describe 'scopes' do
+    describe '.ordered_for_lifecycle' do
+      let_it_be(:namespace) { create(:group) }
+      let_it_be(:open_status) { create(:work_item_custom_status, :open, namespace: namespace) }
+      let_it_be(:closed_status) { create(:work_item_custom_status, :closed, namespace: namespace) }
+      let_it_be(:duplicate_status) { create(:work_item_custom_status, :duplicate, namespace: namespace) }
+      let_it_be(:in_review_status) do
+        create(:work_item_custom_status, category: :in_progress, name: 'In review', namespace: namespace)
+      end
+
+      let_it_be(:in_dev_status) do
+        create(:work_item_custom_status, category: :in_progress, name: 'In dev', namespace: namespace)
+      end
+
+      let_it_be(:custom_lifecycle) do
+        create(:work_item_custom_lifecycle,
+          namespace: namespace,
+          default_open_status: open_status,
+          default_closed_status: closed_status,
+          default_duplicate_status: duplicate_status
+        )
+      end
+
+      before do
+        create(:work_item_custom_lifecycle_status, lifecycle: custom_lifecycle, status: in_review_status, position: 2)
+        create(:work_item_custom_lifecycle_status, lifecycle: custom_lifecycle, status: in_dev_status, position: 1)
+      end
+
+      it 'returns statuses ordered by category, position, and id for a specific lifecycle' do
+        ordered_statuses = described_class.ordered_for_lifecycle(custom_lifecycle.id)
+
+        expect(ordered_statuses.map(&:name)).to eq([
+          open_status.name,
+          in_dev_status.name,
+          in_review_status.name,
+          closed_status.name,
+          duplicate_status.name
+        ])
+
+        expect(ordered_statuses.map(&:category)).to eq(%w[to_do in_progress in_progress done cancelled])
+      end
+    end
+  end
+
   describe 'validations' do
     it { is_expected.to be_valid }
     it { is_expected.to validate_presence_of(:namespace) }

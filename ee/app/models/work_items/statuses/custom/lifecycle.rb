@@ -42,6 +42,10 @@ module WorkItems
         validate :validate_lifecycles_per_namespace_limit, on: :create
         validate :validate_statuses_limit
 
+        def ordered_statuses
+          WorkItems::Statuses::Custom::Status.ordered_for_lifecycle(id)
+        end
+
         private
 
         def default_statuses
