@@ -73,7 +73,7 @@ module EE
               duo_availability])
           end
 
-          params_ee << :disable_personal_access_tokens
+          params_ee << :disable_personal_access_tokens if current_group&.disable_personal_access_tokens_available?
           params_ee << :enable_auto_assign_gitlab_duo_pro_seats if allow_update_enable_auto_assign_gitlab_duo_pro_seats?
 
           if current_group&.can_manage_extensions_marketplace_for_enterprise_users?

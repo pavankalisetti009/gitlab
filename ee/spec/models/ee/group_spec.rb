@@ -2949,6 +2949,48 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
     end
 
+    describe '#disable_personal_access_tokens?' do
+      before do
+        group.update!(disable_personal_access_tokens: true)
+      end
+
+      context 'when not licensed' do
+        it 'returns false even if the database value is true' do
+          expect(group.disable_personal_access_tokens?).to be_falsey
+        end
+      end
+
+      context 'when licensed' do
+        before do
+          stub_licensed_features(disable_personal_access_tokens: true)
+        end
+
+        it 'returns false even if the database value is true' do
+          expect(group.disable_personal_access_tokens?).to be_falsey
+        end
+
+        context 'on SaaS', :saas do
+          before do
+            stub_saas_features(disable_personal_access_tokens: true)
+          end
+
+          it 'returns true' do
+            expect(group.disable_personal_access_tokens?).to be_truthy
+          end
+
+          context 'for a subgroup' do
+            let(:subgroup) { create(:group, parent: group) }
+
+            it 'returns false even if the database value is true' do
+              subgroup.update!(disable_personal_access_tokens: true)
+
+              expect(subgroup.disable_personal_access_tokens?).to be_falsey
+            end
+          end
+        end
+      end
+    end
+
     context 'when setting extended_grat_expiry_webhooks_execute is disabled' do
       before do
         group.namespace_settings.update!(extended_grat_expiry_webhooks_execute: false)

@@ -95,6 +95,7 @@ RSpec.describe Gitlab::Auth, :use_clean_rails_memory_store_caching, feature_cate
         let!(:personal_access_token) { create(:personal_access_token, user: user) }
 
         before do
+          stub_saas_features(disable_personal_access_tokens: true)
           stub_licensed_features(disable_personal_access_tokens: true)
         end
 

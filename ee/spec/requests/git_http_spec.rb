@@ -203,6 +203,7 @@ RSpec.describe 'Git HTTP requests', feature_category: :source_code_management do
     let(:env) { { user: user.username, password: access_token.token } }
 
     before do
+      stub_saas_features(disable_personal_access_tokens: true)
       stub_licensed_features(disable_personal_access_tokens: true)
 
       project.add_developer(enterprise_user_of_the_group)

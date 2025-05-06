@@ -1067,10 +1067,15 @@ module EE
       namespace_settings.enterprise_users_extensions_marketplace_enabled?
     end
 
+    def disable_personal_access_tokens_available?
+      root? &&
+        ::Gitlab::Saas.feature_available?(:disable_personal_access_tokens) &&
+        licensed_feature_available?(:disable_personal_access_tokens)
+    end
+
     # Disable personal access tokens for enterprise users of this group
     def disable_personal_access_tokens?
-      root? &&
-        licensed_feature_available?(:disable_personal_access_tokens) &&
+      disable_personal_access_tokens_available? &&
         namespace_settings.disable_personal_access_tokens?
     end
 
