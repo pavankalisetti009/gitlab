@@ -1,9 +1,9 @@
 import { GlTableLite, GlSkeletonLoader } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import FeatureSettingsTableRows from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/components/feature_settings_table_rows.vue';
-import FeatureSettingsModelSelector from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/components/feature_settings_model_selector.vue';
-import FeatureSettingsBatchAssignmentButton from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/components/feature_settings_batch_assignment_button.vue';
-import { DUO_MAIN_FEATURES } from 'ee/pages/admin/ai/duo_self_hosted/constants';
+import FeatureSettingsTableRows from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings_table_rows.vue';
+import FeatureSettingsModelSelector from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings_model_selector.vue';
+import FeatureSettingsBatchAssignmentButton from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings_batch_assignment_button.vue';
+import { DUO_MAIN_FEATURES } from 'ee/ai/duo_self_hosted/constants';
 import { mockAiFeatureSettings } from './mock_data';
 
 describe('FeatureSettingsTableRows', () => {

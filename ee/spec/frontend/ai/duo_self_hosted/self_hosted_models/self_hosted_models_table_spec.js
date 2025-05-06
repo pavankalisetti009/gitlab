@@ -10,9 +10,9 @@ import {
 } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import getSelfHostedModelsQuery from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
-import SelfHostedModelsTable from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/components/self_hosted_models_table.vue';
-import DeleteSelfHostedModelDisclosureItem from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/components/delete_self_hosted_model_disclosure_item.vue';
+import getSelfHostedModelsQuery from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
+import SelfHostedModelsTable from 'ee/ai/duo_self_hosted/self_hosted_models/components/self_hosted_models_table.vue';
+import DeleteSelfHostedModelDisclosureItem from 'ee/ai/duo_self_hosted/self_hosted_models/components/delete_self_hosted_model_disclosure_item.vue';
 import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import waitForPromises from 'helpers/wait_for_promises';

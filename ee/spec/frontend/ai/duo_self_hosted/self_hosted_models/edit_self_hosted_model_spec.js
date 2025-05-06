@@ -3,11 +3,11 @@ import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import SelfHostedModelForm from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/components/self_hosted_model_form.vue';
-import updateSelfHostedModelMutation from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/graphql/mutations/update_self_hosted_model.mutation.graphql';
-import EditSelfHostedModel from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/components/edit_self_hosted_model.vue';
-import { SELF_HOSTED_MODEL_MUTATIONS } from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/constants';
-import getSelfHostedModelByIdQuery from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/graphql/queries/get_self_hosted_model_by_id.query.graphql';
+import SelfHostedModelForm from 'ee/ai/duo_self_hosted/self_hosted_models/components/self_hosted_model_form.vue';
+import updateSelfHostedModelMutation from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/mutations/update_self_hosted_model.mutation.graphql';
+import EditSelfHostedModel from 'ee/ai/duo_self_hosted/self_hosted_models/components/edit_self_hosted_model.vue';
+import { SELF_HOSTED_MODEL_MUTATIONS } from 'ee/ai/duo_self_hosted/self_hosted_models/constants';
+import getSelfHostedModelByIdQuery from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/queries/get_self_hosted_model_by_id.query.graphql';
 import { createAlert } from '~/alert';
 import { mockSelfHostedModel } from './mock_data';
 

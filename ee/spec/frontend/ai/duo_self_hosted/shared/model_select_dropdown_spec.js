@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import ModelSelectDropdown from 'ee/pages/admin/ai/duo_self_hosted/shared/model_select_dropdown.vue';
+import ModelSelectDropdown from 'ee/ai/duo_self_hosted/shared/model_select_dropdown.vue';
 import { listItems, featureSettingsListItems } from './mock_data';
 
 describe('ModelSelectDropdown', () => {

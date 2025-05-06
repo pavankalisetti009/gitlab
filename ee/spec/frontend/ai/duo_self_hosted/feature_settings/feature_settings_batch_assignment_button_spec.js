@@ -4,8 +4,8 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { createAlert } from '~/alert';
-import FeatureSettingsBatchAssignmentButton from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/components/feature_settings_batch_assignment_button.vue';
-import updateAiFeatureSettings from 'ee/pages/admin/ai/duo_self_hosted/feature_settings/graphql/mutations/update_ai_feature_setting.mutation.graphql';
+import FeatureSettingsBatchAssignmentButton from 'ee/ai/duo_self_hosted/feature_settings/components/feature_settings_batch_assignment_button.vue';
+import updateAiFeatureSettings from 'ee/ai/duo_self_hosted/feature_settings/graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import { mockDuoChatFeatureSettings } from './mock_data';
 
 Vue.use(VueApollo);

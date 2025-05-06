@@ -1,4 +1,4 @@
-import { BEDROCK_DUMMY_ENDPOINT } from 'ee/pages/admin/ai/duo_self_hosted/self_hosted_models/constants';
+import { BEDROCK_DUMMY_ENDPOINT } from 'ee/ai/duo_self_hosted/self_hosted_models/constants';
 
 export const mockSelfHostedModel = {
   id: 'gid://gitlab/Ai::SelfHostedModel/1',
