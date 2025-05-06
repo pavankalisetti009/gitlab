@@ -7,7 +7,6 @@ module Gitlab
         module TroubleshootJob
           class Executor < SlashCommandTool
             extend ::Gitlab::Utils::Override
-            prepend Concerns::UseAiGatewayAgentPrompt
             include Concerns::JobLoggable
 
             # We use 1 Charater per 1 Token because we can't copy the tokenizer logic easily
@@ -120,6 +119,10 @@ module Gitlab
             private
 
             def allow_blank_message?
+              true
+            end
+
+            def use_ai_gateway_agent_prompt?
               true
             end
 

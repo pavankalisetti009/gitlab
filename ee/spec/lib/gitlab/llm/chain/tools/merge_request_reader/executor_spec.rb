@@ -6,7 +6,11 @@ RSpec.describe Gitlab::Llm::Chain::Tools::MergeRequestReader::Executor, feature_
   RSpec.shared_examples 'success response' do
     it 'returns success response' do
       ai_request = double
-      allow(ai_request).to receive(:request).and_return(ai_response)
+      expect(ai_request).to receive(:request).with(
+        hash_including(options: hash_including(prompt_version: '^1.0.0')),
+        unit_primitive: 'merge_request_reader'
+      ).and_return(ai_response)
+
       allow(context).to receive(:ai_request).and_return(ai_request)
       resource_serialized = Ai::AiResource::MergeRequest.new(context.current_user, resource)
         .serialize_for_ai(
@@ -285,12 +289,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::MergeRequestReader::Executor, feature_
             response = "You already have identified the merge request #{context.resource.to_global_id}, read carefully."
             expect(tool.execute.content).to eq(response)
           end
-        end
-
-        it_behaves_like 'uses ai gateway agent prompt' do
-          let(:prompt_class) { Gitlab::Llm::Chain::Tools::MergeRequestReader::Prompts::Anthropic }
-          let(:unit_primitive) { 'merge_request_reader' }
-          let(:prompt_version) { '^1.0.0' }
         end
       end
     end

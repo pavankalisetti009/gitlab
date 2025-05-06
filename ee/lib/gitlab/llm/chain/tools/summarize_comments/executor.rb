@@ -7,7 +7,6 @@ module Gitlab
         module SummarizeComments
           class Executor < SlashCommandTool
             include Gitlab::Utils::StrongMemoize
-            prepend Concerns::UseAiGatewayAgentPrompt
 
             NAME = "SummarizeComments"
             DESCRIPTION = "This tool is useful when you need to create a summary of all notes, " \
@@ -152,6 +151,10 @@ module Gitlab
 
             def resource
               @resource ||= context.resource
+            end
+
+            def use_ai_gateway_agent_prompt?
+              true
             end
 
             def unit_primitive

@@ -146,12 +146,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Executor, feature_c
           expect(answer.error_code).to eq("M4000")
         end
       end
-
-      it_behaves_like 'uses ai gateway agent prompt' do
-        let(:prompt_class) { Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::Anthropic }
-        let(:unit_primitive) { 'summarize_comments' }
-        let(:default_unit_primitive) { unit_primitive }
-      end
     end
 
     context 'when context is not authorized' do

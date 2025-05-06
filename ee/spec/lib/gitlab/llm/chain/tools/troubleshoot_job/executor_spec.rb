@@ -208,13 +208,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
           expect(tool.execute.content).to include("I'm sorry, I can't generate a response.")
         end
       end
-
-      it_behaves_like 'uses ai gateway agent prompt' do
-        let(:prompt_class) { Gitlab::Llm::Chain::Tools::TroubleshootJob::Prompts::Anthropic }
-        let(:unit_primitive) { 'troubleshoot_job' }
-        let(:default_unit_primitive) { unit_primitive }
-        let(:prompt_version) { '0.0.1-dev' }
-      end
     end
 
     context 'when the user is not authorized' do

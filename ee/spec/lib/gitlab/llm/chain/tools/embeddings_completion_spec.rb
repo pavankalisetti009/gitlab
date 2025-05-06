@@ -70,31 +70,5 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
 
       execute
     end
-
-    context "when tool calls agent registry" do
-      let(:options) do
-        {
-          inputs: {
-            question: question,
-            content_id: "ATTRS",
-            documents: search_documents
-          },
-          use_ai_gateway_agent_prompt: true,
-          model: model,
-          max_tokens: 256
-        }
-      end
-
-      it "yields streamed response and returns correct response" do
-        expect(ai_gateway_request)
-          .to receive(:request)
-          .with({ options: options, prompt: instance_of(Array) }, unit_primitive: :documentation_search)
-          .once
-          .and_yield(answer)
-          .and_return(completion_response)
-
-        expect(execute).to be_an_instance_of(::Gitlab::Llm::Anthropic::ResponseModifiers::TanukiBot)
-      end
-    end
   end
 end
