@@ -24,13 +24,13 @@ export default {
   },
   data() {
     return {
-      dragCancelled: false,
       fetchInProgress: false,
       currentClientX: 0,
       currentClientY: 0,
     };
   },
   computed: {
+    // eslint-disable-next-line vue/no-unused-properties
     ...mapState(['childrenFlags', 'userSignedIn']),
     hasMoreChildren() {
       const flags = this.childrenFlags[this.parentItem.reference];
@@ -39,6 +39,7 @@ export default {
     },
   },
   methods: {
+    // eslint-disable-next-line vue/no-unused-properties
     ...mapActions(['fetchNextPageItems', 'reorderItem', 'moveItem', 'toggleItem']),
     handleShowMoreClick() {
       this.fetchInProgress = true;

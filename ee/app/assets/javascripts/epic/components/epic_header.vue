@@ -19,7 +19,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(['sidebarCollapsed', 'author', 'created', 'confidential', 'imported', 'state']),
+    ...mapState(['sidebarCollapsed', 'created', 'confidential', 'imported', 'state']),
     ...mapGetters(['isEpicOpen']),
     statusIcon() {
       return this.isEpicOpen ? 'issue-open-m' : 'issue-close';
