@@ -1,5 +1,8 @@
 import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import VueRouter from 'vue-router';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import SecretDetailsWrapper from 'ee/ci/secrets/components/secret_details/secret_details_wrapper.vue';
 import SecretFormWrapper from 'ee/ci/secrets/components/secret_form/secret_form_wrapper.vue';
@@ -7,8 +10,16 @@ import SecretsTable from 'ee/ci/secrets/components/secrets_table/secrets_table.v
 import createRouter from 'ee/ci/secrets/router';
 import SecretsApp from 'ee//ci/secrets/components/secrets_app.vue';
 import { getMatchedComponents } from '~/lib/utils/vue3compat/vue_router';
+import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
+import {
+  SECRET_MANAGER_STATUS_ACTIVE,
+  ENTITY_GROUP,
+  ENTITY_PROJECT,
+} from 'ee/ci/secrets/constants';
+import { secretManagerStatusResponse } from './mock_data';
 
 Vue.use(VueRouter);
+Vue.use(VueApollo);
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
   visitUrl: jest.fn().mockName('visitUrlMock'),
@@ -17,22 +28,30 @@ jest.mock('~/lib/utils/url_utility', () => ({
 describe('Secrets router', () => {
   let wrapper;
   let router;
+  let apolloProvider;
+  const mockSecretManagerStatus = jest
+    .fn()
+    .mockResolvedValue(secretManagerStatusResponse(SECRET_MANAGER_STATUS_ACTIVE));
 
   const base = '/-/secrets';
 
   const groupProps = {
-    groupId: '1',
-    groupPath: '/path/to/group',
+    entity: ENTITY_GROUP,
+    fullPath: '/path/to/group',
   };
 
   const projectProps = {
-    projectId: '2',
-    projectPath: '/path/to/project',
+    entity: ENTITY_PROJECT,
+    fullPath: '/path/to/project',
   };
 
   const editRoute = { name: 'edit', params: { secretName: 'SECRET_KEY' } };
 
   const createSecretsApp = async ({ route, props } = {}) => {
+    const handlers = [[getSecretManagerStatusQuery, mockSecretManagerStatus]];
+
+    apolloProvider = createMockApollo(handlers);
+
     router = createRouter(base, props);
     if (route) {
       await router.push(route);
@@ -46,15 +65,10 @@ describe('Secrets router', () => {
           secrets: [],
         };
       },
-      mocks: {
-        $apollo: {
-          queries: {
-            environments: { loading: true },
-            secrets: { loading: false },
-          },
-        },
-      },
+      apolloProvider,
     });
+
+    await waitForPromises();
   };
 
   it.each`
@@ -84,9 +98,9 @@ describe('Secrets router', () => {
   });
 
   describe.each`
-    entity       | props           | fullPath
-    ${'group'}   | ${groupProps}   | ${groupProps.groupPath}
-    ${'project'} | ${projectProps} | ${projectProps.projectPath}
+    entity       | props           | fullPath              | isGroup
+    ${'group'}   | ${groupProps}   | ${'/path/to/group'}   | ${true}
+    ${'project'} | ${projectProps} | ${'/path/to/project'} | ${false}
   `('$entity secrets form', ({ props, fullPath }) => {
     it('provides the correct props when visiting the index', async () => {
       await createSecretsApp({ route: '/', props });

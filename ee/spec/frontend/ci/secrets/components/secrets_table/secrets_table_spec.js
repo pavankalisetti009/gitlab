@@ -1,9 +1,7 @@
 import {
-  GlAlert,
   GlButton,
   GlDisclosureDropdownItem,
   GlEmptyState,
-  GlLoadingIcon,
   GlKeysetPagination,
   GlTableLite,
 } from '@gitlab/ui';
@@ -13,25 +11,13 @@ import { RouterLinkStub } from '@vue/test-utils';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import {
-  DETAILS_ROUTE_NAME,
-  EDIT_ROUTE_NAME,
-  NEW_ROUTE_NAME,
-  PAGE_SIZE,
-  POLL_INTERVAL,
-  SECRET_MANAGER_STATUS_ACTIVE,
-  SECRET_MANAGER_STATUS_PROVISIONING,
-} from 'ee/ci/secrets/constants';
+import { PAGE_SIZE } from 'ee/ci/secrets/constants';
 import SecretsTable from 'ee/ci/secrets/components/secrets_table/secrets_table.vue';
 import SecretActionsCell from 'ee/ci/secrets/components/secrets_table/secret_actions_cell.vue';
 import SecretDeleteModal from 'ee/ci/secrets/components/secret_delete_modal.vue';
 import getProjectSecrets from 'ee/ci/secrets/graphql/queries/get_project_secrets.query.graphql';
 import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
-import {
-  mockEmptySecrets,
-  mockProjectSecretsData,
-  secretManagerStatusResponse,
-} from '../../mock_data';
+import { mockEmptySecrets, mockProjectSecretsData } from '../../mock_data';
 
 Vue.use(VueApollo);
 
@@ -41,11 +27,9 @@ describe('SecretsTable component', () => {
   let mockProjectSecretsResponse;
   let mockSecretManagerStatus;
 
-  const findAlert = () => wrapper.findComponent(GlAlert);
   const findDeleteModal = () => wrapper.findComponent(SecretDeleteModal);
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findEmptyStateButton = () => findEmptyState().findComponent(GlButton);
-  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findNewSecretButton = () => wrapper.findByTestId('new-secret-button');
   const findSecretsTable = () => wrapper.findComponent(GlTableLite);
   const findSecretsTableRows = () => findSecretsTable().find('tbody').findAll('tr');
@@ -82,18 +66,6 @@ describe('SecretsTable component', () => {
     await waitForPromises();
   };
 
-  const advanceToNextFetch = (milliseconds) => {
-    jest.advanceTimersByTime(milliseconds);
-  };
-
-  const pollNextStatus = async (status) => {
-    mockSecretManagerStatus.mockResolvedValue(secretManagerStatusResponse(status));
-    advanceToNextFetch(POLL_INTERVAL);
-
-    await waitForPromises();
-    await nextTick();
-  };
-
   const mockPaginatedProjectSecrets = ({
     offset = 0,
     limit = PAGE_SIZE,
@@ -121,67 +93,10 @@ describe('SecretsTable component', () => {
     mockSecretManagerStatus = jest.fn();
 
     mockProjectSecretsResponse = jest.fn().mockResolvedValue(mockPaginatedProjectSecrets());
-    mockSecretManagerStatus.mockResolvedValue(
-      secretManagerStatusResponse(SECRET_MANAGER_STATUS_ACTIVE),
-    );
   });
 
   afterEach(() => {
     apolloProvider = null;
-  });
-
-  describe('Secret Manager Status', () => {
-    it('shows loading icon while status is being fetched', () => {
-      createComponent();
-
-      expect(findLoadingIcon().exists()).toBe(true);
-      expect(findSecretsTable().exists()).toBe(false);
-    });
-
-    describe('when status is PROVISIONING', () => {
-      beforeEach(async () => {
-        mockSecretManagerStatus.mockResolvedValue(
-          secretManagerStatusResponse(SECRET_MANAGER_STATUS_PROVISIONING),
-        );
-
-        await createComponent();
-      });
-
-      it('shows alert notice when status is provisioning', () => {
-        expect(findLoadingIcon().exists()).toBe(false);
-        expect(findSecretsTable().exists()).toBe(false);
-        expect(findAlert().exists()).toBe(true);
-        expect(findAlert().props('dismissible')).toBe(false);
-      });
-
-      it('polls for status while provisioning', async () => {
-        expect(mockSecretManagerStatus).toHaveBeenCalledTimes(1);
-
-        await pollNextStatus(SECRET_MANAGER_STATUS_PROVISIONING);
-
-        expect(mockSecretManagerStatus).toHaveBeenCalledTimes(2);
-      });
-    });
-
-    describe('when status is ACTIVE', () => {
-      beforeEach(async () => {
-        await createComponent();
-      });
-
-      it('shows table when status is active', () => {
-        expect(findLoadingIcon().exists()).toBe(false);
-        expect(findAlert().exists()).toBe(false);
-        expect(findSecretsTable().exists()).toBe(true);
-      });
-
-      it('stops polling for status', async () => {
-        expect(mockSecretManagerStatus).toHaveBeenCalledTimes(1);
-
-        await pollNextStatus(SECRET_MANAGER_STATUS_ACTIVE);
-
-        expect(mockSecretManagerStatus).toHaveBeenCalledTimes(1);
-      });
-    });
   });
 
   describe('project secrets table', () => {
@@ -196,7 +111,7 @@ describe('SecretsTable component', () => {
     });
 
     it('shows a link to the new secret page', () => {
-      expect(findNewSecretButton().attributes('to')).toBe(NEW_ROUTE_NAME);
+      expect(findNewSecretButton().attributes('to')).toBe('new');
     });
 
     it('renders a table of secrets', () => {
@@ -207,7 +122,7 @@ describe('SecretsTable component', () => {
     it('shows the secret name as a link to the secret details', () => {
       expect(findSecretDetailsLink().text()).toBe(secret.name);
       expect(findSecretDetailsLink().props('to')).toMatchObject({
-        name: DETAILS_ROUTE_NAME,
+        name: 'details',
         params: { secretName: secret.name },
       });
     });
@@ -216,7 +131,7 @@ describe('SecretsTable component', () => {
       expect(findSecretActionsCell().props()).toMatchObject({
         secretName: secret.name,
         detailsRoute: {
-          name: EDIT_ROUTE_NAME,
+          name: 'edit',
           params: { name: secret.name },
         },
       });
