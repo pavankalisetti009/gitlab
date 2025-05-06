@@ -54,7 +54,7 @@ module Gitlab
             "#{contributions_table}"."action" AS action
           FROM (
             SELECT
-              id,
+              id,#{select_deleted_flag}
               argMax(author_id, #{contributions_table}.updated_at) AS author_id,
               CASE
                 WHEN argMax(target_type, #{contributions_table}.updated_at) IN ('Issue', 'WorkItem') THEN 'Issue'
@@ -76,9 +76,25 @@ module Gitlab
                 )
               )
             GROUP BY id
-          ) #{contributions_table}
+          ) #{contributions_table} #{filter_deleted_flag}
           GROUP BY "#{contributions_table}"."action","#{contributions_table}"."target_type","#{contributions_table}"."author_id"
         CH
+      end
+
+      def select_deleted_flag
+        if fetch_data_from_new_table
+          %{\nargMax(deleted, #{contributions_table}.version) AS deleted,}
+        else
+          ''
+        end
+      end
+
+      def filter_deleted_flag
+        if fetch_data_from_new_table
+          %(\nWHERE deleted = false)
+        else
+          ''
+        end
       end
 
       def placeholders
