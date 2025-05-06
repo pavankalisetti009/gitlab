@@ -8,7 +8,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
   include UserHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group) }
+  let_it_be_with_reload(:group) { create(:group) }
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -540,6 +540,35 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
             expected_objects: expected_objects
           ) do |user|
             described_class.new(user, group, search: project.name).execute
+          end
+        end
+      end
+    end
+
+    context 'on epic', :sidekiq_inline do
+      # sidekiq is needed for the group association worker updates
+      include_context 'for GroupPolicyTable context'
+
+      let(:user_in_group) { create_user_from_membership(group, membership) }
+      let(:scope) { 'epics' }
+      let(:search) { 'chosen epic title' }
+      let_it_be(:epic) do
+        create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: 'chosen epic title')
+      end
+
+      where(:group_level, :membership, :admin_mode, :expected_count) do
+        permission_table_for_epics_access
+      end
+
+      with_them do
+        it 'respects visibility' do
+          enable_admin_mode!(user_in_group) if admin_mode
+
+          ::Elastic::ProcessBookkeepingService.track!(epic)
+          group.update!(visibility_level: Gitlab::VisibilityLevel.level_value(group_level.to_s))
+          ensure_elasticsearch_index!
+          expect_search_results(user_in_group, scope, expected_count: expected_count) do |user|
+            described_class.new(user, search_level, search: search).execute
           end
         end
       end

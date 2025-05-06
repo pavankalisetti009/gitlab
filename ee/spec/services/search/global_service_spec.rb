@@ -194,9 +194,11 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
     end
 
     context 'on epic', :sidekiq_inline do # sidekiq is needed for the group association worker updates
+      include_context 'for GroupPolicyTable context'
+
       let(:scope) { 'epics' }
       let(:search) { 'chosen epic title' }
-      let!(:epic) do
+      let_it_be(:epic) do
         create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: 'chosen epic title')
       end
 
@@ -208,6 +210,7 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
         it 'respects visibility' do
           enable_admin_mode!(user_in_group) if admin_mode
 
+          ::Elastic::ProcessBookkeepingService.track!(epic)
           group.update!(visibility_level: Gitlab::VisibilityLevel.level_value(group_level.to_s))
           ensure_elasticsearch_index!
           expect_search_results(user_in_group, scope, expected_count: expected_count) do |user|
