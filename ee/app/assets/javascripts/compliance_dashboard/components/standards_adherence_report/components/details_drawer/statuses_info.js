@@ -19,6 +19,22 @@ export const statusesInfo = {
       },
     ],
   },
+  minimum_approvals_required_1: {
+    description: s__(
+      'ComplianceStandardsAdherence|Ensures that merge requests require at least one approval before merging.',
+    ),
+    fixes: [
+      {
+        title: s__('ComplianceStandardsAdherence|Configure approval requirements'),
+        description: s__(
+          'ComplianceStandardsAdherence|Configure your project to require at least one approval on merge requests to improve code quality and security.',
+        ),
+        linkTitle: __('Merge request approvals'),
+        ultimate: false,
+        link: helpPagePath('user/project/merge_requests/approvals/_index.md'),
+      },
+    ],
+  },
   minimum_approvals_required_2: {
     description: s__(
       'ComplianceStandardsAdherence|Ensures that merge requests require at least two approvals before merging.',
