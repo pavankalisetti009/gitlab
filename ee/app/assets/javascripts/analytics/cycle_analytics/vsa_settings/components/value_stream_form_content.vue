@@ -59,17 +59,12 @@ export default {
     ValueStreamFormContentActions,
   },
   mixins: [Tracking.mixin()],
-  inject: ['vsaPath', 'namespaceFullPath', 'stageEvents', 'defaultStages'],
+  inject: ['vsaPath', 'namespaceFullPath', 'isEditing', 'stageEvents', 'defaultStages'],
   props: {
     initialData: {
       type: Object,
       required: false,
       default: () => ({}),
-    },
-    isEditing: {
-      type: Boolean,
-      required: false,
-      default: false,
     },
   },
   data() {
@@ -420,7 +415,6 @@ export default {
 
       <value-stream-form-content-actions
         class="gl-mt-6"
-        :is-editing="isEditing"
         :is-loading="isSubmitting"
         @clickPrimaryAction="onSubmit"
         @clickAddStageAction="onAddStage"

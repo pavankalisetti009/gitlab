@@ -37,6 +37,10 @@ RSpec.describe Onboarding::FreeRegistration, type: :undefined, feature_category:
     end
   end
 
+  describe '.learn_gitlab_redesign?' do
+    it { is_expected.not_to be_learn_gitlab_redesign }
+  end
+
   describe '.redirect_to_company_form?' do
     it { is_expected.not_to be_redirect_to_company_form }
   end

@@ -10,7 +10,9 @@ module EE
       super.merge({
         show_promotions: show_promotions?(user),
         show_discover_project_security: show_discover_project_security?(project),
-        learn_gitlab_enabled: ::Onboarding::LearnGitlab.available?(project.namespace, user)
+        learn_gitlab_enabled: ::Onboarding::LearnGitlab.available?(project.namespace, user),
+        # Used to see if we're on get_started path for redesign rollout on learn_gitlab_redesign
+        show_get_started_menu: current_path?('projects/get_started#show')
       })
     end
 

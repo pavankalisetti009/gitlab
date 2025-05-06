@@ -37,7 +37,8 @@ module EE
 
       def group_ai_general_settings_helper_data
         {
-          on_general_settings_page: 'true'
+          on_general_settings_page: 'true',
+          redirect_path: edit_group_path(@group)
         }.merge(group_ai_settings_helper_data)
       end
 

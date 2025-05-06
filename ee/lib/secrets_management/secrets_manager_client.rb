@@ -56,12 +56,11 @@ module SecretsManagement
     end
 
     def list_secrets(mount_path, secret_path)
-      result = make_request(:list, "#{mount_path}/metadata/#{secret_path}", {}, optional: true)
+      result = make_request(:list, "#{mount_path}/detailed-metadata/#{secret_path}", {}, optional: true)
       return [] unless result
 
-      # This N+1 query is temporary until https://github.com/openbao/openbao/pull/766 is merged.
       result["data"]["keys"].filter_map do |key|
-        metadata = read_secret_metadata(mount_path, "#{secret_path}/#{key}")
+        metadata = result["data"]["key_info"][key]
         next unless metadata
 
         secret_data = { "key" => key, "metadata" => metadata }

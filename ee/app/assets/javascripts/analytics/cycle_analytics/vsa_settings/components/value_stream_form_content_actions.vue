@@ -1,40 +1,26 @@
 <script>
 import { GlButton } from '@gitlab/ui';
 import { mergeUrlParams } from '~/lib/utils/url_utility';
-import { __ } from '~/locale';
-import { i18n } from '../constants';
-
-const { FORM_TITLE, EDIT_FORM_ACTION, BTN_ADD_STAGE } = i18n;
+import { s__ } from '~/locale';
 
 export default {
   name: 'ValueStreamFormContentActions',
   components: {
     GlButton,
   },
-  inject: ['vsaPath', 'valueStream'],
+  inject: ['vsaPath', 'valueStream', 'isEditing'],
   props: {
-    isEditing: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
     isLoading: {
       type: Boolean,
       required: false,
       default: false,
     },
   },
-  i18n: {
-    newValueStreamAction: FORM_TITLE,
-    saveValueStreamAction: EDIT_FORM_ACTION,
-    addStageAction: BTN_ADD_STAGE,
-    cancelAction: __('Cancel'),
-  },
   computed: {
     primaryButtonText() {
       return this.isEditing
-        ? this.$options.i18n.saveValueStreamAction
-        : this.$options.i18n.newValueStreamAction;
+        ? s__('CreateValueStreamForm|Save value stream')
+        : s__('CreateValueStreamForm|New value stream');
     },
     cancelHref() {
       return this.isEditing && this.valueStream?.id > 0
@@ -55,7 +41,7 @@ export default {
       >{{ primaryButtonText }}</gl-button
     >
     <gl-button data-testid="cancel-button" :href="cancelHref" :disabled="isLoading">{{
-      $options.i18n.cancelAction
+      __('Cancel')
     }}</gl-button>
   </div>
 </template>

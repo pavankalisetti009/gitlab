@@ -3,7 +3,11 @@
 module ComplianceManagement
   module ComplianceRequirements
     class ProjectFields
-      FIELD_MAPPINGS = ComplianceManagement::ComplianceFramework::Controls::Registry.field_mappings.freeze
+      FIELD_MAPPINGS = ComplianceManagement::ComplianceFramework::Controls::Registry.field_mappings.dup
+        .tap do |mappings|
+        mappings.delete_if { |k, _| k.start_with?('minimum_approvals_required_') }
+        mappings['minimum_approvals_required'] = :minimum_approvals_required
+      end.freeze
 
       SECURITY_SCANNERS = [
         :sast,

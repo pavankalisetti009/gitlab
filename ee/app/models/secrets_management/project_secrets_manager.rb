@@ -128,7 +128,7 @@ module SecretsManagement
         "project_#{project.id}",
         "pipelines",
         "env",
-        Base64.urlsafe_encode64(environment, padding: false)
+        environment.unpack1('H*')
       ].compact.join('/')
     end
 
@@ -137,7 +137,7 @@ module SecretsManagement
         "project_#{project.id}",
         "pipelines",
         "branch",
-        Base64.urlsafe_encode64(branch, padding: false)
+        branch.unpack1('H*')
       ].compact.join('/')
     end
 
@@ -147,9 +147,9 @@ module SecretsManagement
         "pipelines",
         "combined",
         "env",
-        Base64.urlsafe_encode64(environment, padding: false),
+        environment.unpack1('H*'),
         "branch",
-        Base64.urlsafe_encode64(branch, padding: false)
+        branch.unpack1('H*')
       ].compact.join('/')
     end
 
@@ -167,21 +167,22 @@ module SecretsManagement
     end
 
     def ci_policy_template_literal_environment
-      "{{ if ne \"\" .environment }}project_{{ .project_id }}/pipelines/env/{{ .environment | base64 }}{{ end }}"
+      "{{ if and (ne nil (index . \"environment\")) (ne \"\" .environment) }}" \
+        "project_{{ .project_id }}/pipelines/env/{{ .environment | hex }}{{ end }}"
     end
 
     def ci_policy_template_literal_branch
       "{{ if and (eq \"branch\" .ref_type) (ne \"\" .ref) }}" \
         "project_{{ .project_id }}/pipelines/" \
-        "branch/{{ .ref | base64 }}" \
+        "branch/{{ .ref | hex }}" \
         "{{ end }}"
     end
 
     def ci_policy_template_literal_combined
-      "{{ if and (eq \"branch\" .ref_type) (ne \"\" .ref) (ne \"\" .environment) }}" \
+      "{{ if and (eq \"branch\" .ref_type) (ne nil (index . \"environment\")) (ne \"\" .environment) }}" \
         "project_{{ .project_id }}/pipelines/combined/" \
-        "env/{{ .environment | base64}}/" \
-        "branch/{{ .ref | base64 }}" \
+        "env/{{ .environment | hex}}/" \
+        "branch/{{ .ref | hex }}" \
         "{{ end }}"
     end
 
@@ -212,59 +213,64 @@ module SecretsManagement
     end
 
     def ci_policy_template_glob_environment(env_glob)
-      # Because env_glob is converted to base64, we know it is safe to
+      # Because env_glob is converted to hex, we know it is safe to
       # directly embed in the template string. This is a bit more expensive
       # to evaluate but saves us from having to ensure we always have
       # consistent string escaping for text/template.
-      env_glob_b64 = Base64.urlsafe_encode64(env_glob, padding: false)
-      "{{ if and (ne \"\" .environment) (eq \"#{env_glob_b64}\" (.environment | base64)) }}" \
+      env_glob_hex = env_glob.unpack1('H*')
+      "{{ if and " \
+        "(ne nil (index . \"environment\")) " \
+        "(ne \"\" .environment) " \
+        "(eq \"#{env_glob_hex}\" (.environment | hex)) }}" \
         "#{ci_policy_name_env(env_glob)}" \
         "{{end }}"
     end
 
     def ci_policy_template_glob_branch(branch_glob)
       # See note in ci_policy_template_glob_environment.
-      branch_glob_b64 = Base64.urlsafe_encode64(branch_glob, padding: false)
+      branch_glob_hex = branch_glob.unpack1('H*')
 
-      "{{ if and (eq \"branch\" .ref_type) (ne \"\" .ref) (eq \"#{branch_glob_b64}\" (.ref | base64)) }}" \
+      "{{ if and (eq \"branch\" .ref_type) (ne \"\" .ref) (eq \"#{branch_glob_hex}\" (.ref | hex)) }}" \
         "#{ci_policy_name_branch(branch_glob)}" \
         "{{ end }}"
     end
 
     def ci_policy_template_combined_glob_environment_branch(env_glob, branch_literal)
       # See note in ci_policy_template_glob_environment.
-      env_glob_b64 = Base64.urlsafe_encode64(env_glob, padding: false)
+      env_glob_hex = env_glob.unpack1('H*')
       "{{ if and " \
         "(eq \"branch\" .ref_type) " \
         "(ne \"\" .ref) " \
+        "(ne nil (index . \"environment\")) " \
         "(ne \"\" .environment) " \
-        "(eq \"#{env_glob_b64}\" (.environment | base64)) }}" \
+        "(eq \"#{env_glob_hex}\" (.environment | hex)) }}" \
         "#{ci_policy_name_combined(env_glob, branch_literal)}" \
         "{{ end }}"
     end
 
     def ci_policy_template_combined_environment_glob_branch(env_literal, branch_glob)
       # See note in ci_policy_template_glob_environment.
-      branch_glob_b64 = Base64.urlsafe_encode64(branch_glob, padding: false)
+      branch_glob_hex = branch_glob.unpack1('H*')
       "{{ if and " \
         "(eq \"branch\" .ref_type) " \
         "(ne \"\" .ref) " \
+        "(ne nil (index . \"environment\")) " \
         "(ne \"\" .environment) " \
-        "(eq \"#{branch_glob_b64}\" (.ref | base64)) }}" \
+        "(eq \"#{branch_glob_hex}\" (.ref | hex)) }}" \
         "#{ci_policy_name_combined(env_literal, branch_glob)}" \
         "{{ end }}"
     end
 
     def ci_policy_template_combined_glob_environment_glob_branch(env_glob, branch_glob)
       # See note in ci_policy_template_glob_environment.
-      env_glob_b64 = Base64.urlsafe_encode64(env_glob, padding: false)
-      branch_glob_b64 = Base64.urlsafe_encode64(branch_glob, padding: false)
+      env_glob_hex = env_glob.unpack1('H*')
+      branch_glob_hex = branch_glob.unpack1('H*')
       "{{ if and " \
         "(eq \"branch\" .ref_type) " \
         "(ne \"\" .ref) " \
         "(ne \"\" .environment) " \
-        "(eq \"#{env_glob_b64}\" (.environment | base64)) " \
-        "(eq \"#{branch_glob_b64}\" (.ref | base64)) }}" \
+        "(eq \"#{env_glob_hex}\" (.environment | hex)) " \
+        "(eq \"#{branch_glob_hex}\" (.ref | hex)) }}" \
         "#{ci_policy_name_combined(env_glob, branch_glob)}" \
         "{{ end }}"
     end

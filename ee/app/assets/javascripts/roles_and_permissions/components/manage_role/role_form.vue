@@ -12,6 +12,8 @@ import { createAlert } from '~/alert';
 import { s__, __ } from '~/locale';
 import { BASE_ROLES_WITHOUT_OWNER } from '~/access_level/constants';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
+import SettingsSection from '~/vue_shared/components/settings/settings_section.vue';
 import PermissionsSelector from './permissions_selector.vue';
 
 export default {
@@ -40,6 +42,8 @@ export default {
     GlLink,
     GlCollapsibleListbox,
     PermissionsSelector,
+    PageHeading,
+    SettingsSection,
   },
   props: {
     title: {
@@ -125,79 +129,81 @@ export default {
 
 <template>
   <gl-form @submit.prevent="saveRole">
-    <h2 class="gl-mb-6">{{ title }}</h2>
+    <page-heading :heading="title" />
 
-    <gl-form-group
-      :label="$options.i18n.nameLabel"
-      label-for="role-name"
-      :invalid-feedback="$options.i18n.invalidFeedback"
-    >
-      <gl-form-input
-        id="role-name"
-        v-model="name"
-        :state="isNameValid"
-        trim
-        width="xl"
-        maxlength="255"
+    <settings-section>
+      <gl-form-group
+        :label="$options.i18n.nameLabel"
+        label-for="role-name"
+        :invalid-feedback="$options.i18n.invalidFeedback"
+      >
+        <gl-form-input
+          id="role-name"
+          v-model="name"
+          :state="isNameValid"
+          trim
+          width="xl"
+          maxlength="255"
+        />
+      </gl-form-group>
+
+      <gl-form-group
+        :label="$options.i18n.descriptionLabel"
+        :invalid-feedback="$options.i18n.invalidFeedback"
+        :description="$options.i18n.descriptionHelpText"
+        label-for="description"
+      >
+        <gl-form-input
+          id="description"
+          v-model="description"
+          trim
+          :state="isDescriptionValid"
+          width="xl"
+          maxlength="255"
+        />
+      </gl-form-group>
+    </settings-section>
+
+    <settings-section :heading="$options.i18n.permissionsLabel">
+      <gl-form-group
+        v-if="showBaseRole"
+        :label="$options.i18n.baseRoleLabel"
+        :invalid-feedback="$options.i18n.invalidFeedback"
+        :state="isBaseRoleValid"
+        label-for="base-role-select"
+        label-class="!gl-pb-1"
+        class="gl-mb-6"
+        data-testid="base-role-form-group"
+      >
+        <template #label-description>
+          <div class="gl-mb-3">
+            <gl-sprintf :message="$options.i18n.baseRoleHelpText">
+              <template #link="{ content }">
+                <gl-link :href="defaultRolesHelpPagePath" target="_blank">{{ content }}</gl-link>
+              </template>
+            </gl-sprintf>
+          </div>
+        </template>
+        <gl-collapsible-listbox
+          v-model="baseAccessLevel"
+          category="secondary"
+          :variant="isBaseRoleValid ? 'default' : 'danger'"
+          block
+          class="gl-w-30"
+          :items="$options.BASE_ROLES_WITHOUT_OWNER"
+          :disabled="Boolean(role)"
+          :toggle-text="roleDropdownText"
+        />
+      </gl-form-group>
+
+      <permissions-selector
+        v-model="permissions"
+        :is-valid="isPermissionsValid"
+        :selected-base-role="baseAccessLevel"
       />
-    </gl-form-group>
+    </settings-section>
 
-    <gl-form-group
-      :label="$options.i18n.descriptionLabel"
-      :invalid-feedback="$options.i18n.invalidFeedback"
-      :description="$options.i18n.descriptionHelpText"
-      label-for="description"
-    >
-      <gl-form-input
-        id="description"
-        v-model="description"
-        trim
-        :state="isDescriptionValid"
-        width="xl"
-        maxlength="255"
-      />
-    </gl-form-group>
-
-    <h3 class="gl-mb-6 gl-mt-8">{{ $options.i18n.permissionsLabel }}</h3>
-
-    <gl-form-group
-      v-if="showBaseRole"
-      :label="$options.i18n.baseRoleLabel"
-      :invalid-feedback="$options.i18n.invalidFeedback"
-      :state="isBaseRoleValid"
-      label-for="base-role-select"
-      label-class="!gl-pb-1"
-      class="gl-mb-6"
-      data-testid="base-role-form-group"
-    >
-      <template #label-description>
-        <div class="gl-mb-3">
-          <gl-sprintf :message="$options.i18n.baseRoleHelpText">
-            <template #link="{ content }">
-              <gl-link :href="defaultRolesHelpPagePath" target="_blank">{{ content }}</gl-link>
-            </template>
-          </gl-sprintf>
-        </div>
-      </template>
-      <gl-collapsible-listbox
-        v-model="baseAccessLevel"
-        category="secondary"
-        :variant="isBaseRoleValid ? 'default' : 'danger'"
-        block
-        class="gl-w-30"
-        :items="$options.BASE_ROLES_WITHOUT_OWNER"
-        :disabled="Boolean(role)"
-        :toggle-text="roleDropdownText"
-      />
-    </gl-form-group>
-
-    <permissions-selector
-      v-model="permissions"
-      :is-valid="isPermissionsValid"
-      :selected-base-role="baseAccessLevel"
-    />
-
-    <div class="gl-flex gl-flex-wrap gl-gap-3">
+    <div class="settings-sticky-footer gl-flex gl-flex-wrap gl-gap-3">
       <gl-button
         type="submit"
         :loading="busy"

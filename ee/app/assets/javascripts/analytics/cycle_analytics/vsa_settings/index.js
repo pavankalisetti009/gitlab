@@ -65,12 +65,8 @@ export default () => {
       stageEvents,
       valueStream,
       defaultStages,
+      isEditing: parseBoolean(isEditPage),
     },
-    render: (createElement) =>
-      createElement(VSASettingsApp, {
-        props: {
-          isEditing: parseBoolean(isEditPage),
-        },
-      }),
+    render: (createElement) => createElement(VSASettingsApp),
   });
 };
