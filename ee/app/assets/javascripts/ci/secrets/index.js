@@ -6,6 +6,7 @@ import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
 import createRouter from './router';
 import SecretsApp from './components/secrets_app.vue';
 import SecretsBreadcrumbs from './components/secrets_breadcrumbs.vue';
+import { ENTITY_GROUP, ENTITY_PROJECT } from './constants';
 
 Vue.use(VueApollo);
 Vue.use(GlToast);
@@ -40,9 +41,9 @@ export const initGroupSecretsApp = () => {
     return false;
   }
 
-  const { groupPath, groupId, basePath } = el.dataset;
+  const { groupPath, basePath } = el.dataset;
 
-  return initSecretsApp(el, SecretsApp, { groupPath, groupId }, basePath);
+  return initSecretsApp(el, SecretsApp, { entity: ENTITY_GROUP, fullPath: groupPath }, basePath);
 };
 
 export const initProjectSecretsApp = () => {
@@ -52,7 +53,12 @@ export const initProjectSecretsApp = () => {
     return false;
   }
 
-  const { projectPath, projectId, basePath } = el.dataset;
+  const { projectPath, basePath } = el.dataset;
 
-  return initSecretsApp(el, SecretsApp, { projectPath, projectId }, basePath);
+  return initSecretsApp(
+    el,
+    SecretsApp,
+    { entity: ENTITY_PROJECT, fullPath: projectPath },
+    basePath,
+  );
 };

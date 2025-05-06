@@ -1,11 +1,9 @@
 <script>
 import {
-  GlAlert,
   GlButton,
   GlEmptyState,
   GlIcon,
   GlLabel,
-  GlLoadingIcon,
   GlSprintf,
   GlTableLite,
   GlKeysetPagination,
@@ -18,17 +16,12 @@ import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
 import getProjectSecretsQuery from '../../graphql/queries/get_project_secrets.query.graphql';
-import getSecretManagerStatusQuery from '../../graphql/queries/get_secret_manager_status.query.graphql';
 import {
   DETAILS_ROUTE_NAME,
   EDIT_ROUTE_NAME,
   NEW_ROUTE_NAME,
   PAGE_SIZE,
-  POLL_INTERVAL,
   SCOPED_LABEL_COLOR,
-  SECRET_MANAGER_STATUS_ACTIVE,
-  SECRET_MANAGER_STATUS_INACTIVE,
-  SECRET_MANAGER_STATUS_PROVISIONING,
   SECRET_STATUS,
 } from '../../constants';
 import SecretDeleteModal from '../secret_delete_modal.vue';
@@ -39,13 +32,11 @@ export default {
   components: {
     ActionsCell,
     CrudComponent,
-    GlAlert,
     GlButton,
     GlEmptyState,
     GlIcon,
     GlKeysetPagination,
     GlLabel,
-    GlLoadingIcon,
     GlSprintf,
     GlTableLite,
     SecretDeleteModal,
@@ -65,7 +56,6 @@ export default {
   },
   data() {
     return {
-      secretManagerStatus: null,
       secrets: [],
       secretToDelete: '',
       showDeleteModal: false,
@@ -75,38 +65,8 @@ export default {
     };
   },
   apollo: {
-    secretManagerStatus: {
-      query: getSecretManagerStatusQuery,
-      variables() {
-        return {
-          projectPath: this.fullPath,
-        };
-      },
-      update({ projectSecretsManager }) {
-        const newStatus = projectSecretsManager?.status || SECRET_MANAGER_STATUS_INACTIVE;
-
-        if (newStatus !== SECRET_MANAGER_STATUS_PROVISIONING) {
-          this.$apollo.queries.secretManagerStatus.stopPolling();
-        }
-
-        return newStatus;
-      },
-      error() {
-        createAlert({
-          message: s__(
-            'Secrets|An error occurred while fetching the Secret manager status. Please try again.',
-          ),
-        });
-      },
-      pollInterval: POLL_INTERVAL,
-    },
     secrets: {
       query: getProjectSecretsQuery,
-      skip() {
-        return (
-          !this.secretManagerStatus || !this.secretManagerStatus === SECRET_MANAGER_STATUS_ACTIVE
-        );
-      },
       variables() {
         return {
           projectPath: this.fullPath,
@@ -127,9 +87,6 @@ export default {
     },
   },
   computed: {
-    isProvisioning() {
-      return this.secretManagerStatus === SECRET_MANAGER_STATUS_PROVISIONING;
-    },
     hasNextPage() {
       return this.endCursor !== null;
     },
@@ -144,13 +101,6 @@ export default {
     },
     showPagination() {
       return this.hasPreviousPage || this.hasNextPage;
-    },
-  },
-  watch: {
-    secretManagerStatus(value) {
-      if (value === SECRET_MANAGER_STATUS_ACTIVE) {
-        this.$apollo.queries.secrets.refetch();
-      }
     },
   },
   methods: {
@@ -228,21 +178,9 @@ export default {
         "
       />
     </p>
-    <gl-loading-icon v-if="!secretManagerStatus" />
-    <gl-alert
-      v-else-if="isProvisioning"
-      class="gl-mb-3"
-      :title="s__('Secrets|Provisioning in progress')"
-      :dismissible="false"
-    >
-      {{
-        s__(
-          'Secrets|Please wait while the Secrets manager is provisioned. It is safe to refresh this page.',
-        )
-      }}
-    </gl-alert>
+
     <gl-empty-state
-      v-else-if="showEmptyState"
+      v-if="showEmptyState"
       :title="s__('Secrets|Secure your sensitive information')"
       :description="
         s__(
