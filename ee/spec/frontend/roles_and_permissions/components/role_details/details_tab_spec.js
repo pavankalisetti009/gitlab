@@ -9,6 +9,7 @@ import memberPermissionsQuery from 'ee/roles_and_permissions/graphql/member_role
 import adminPermissionsQuery from 'ee/roles_and_permissions/graphql/admin_role/role_permissions.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
+import SettingsSection from '~/vue_shared/components/settings/settings_section.vue';
 import {
   mockMemberRole,
   mockAdminRole,
@@ -58,9 +59,18 @@ describe('Role details tab', () => {
   const findPermissionIconFor = (value) => findPermissionFor(value).findComponent(GlIcon);
   const findPermissionsSkeletonLoader = () =>
     wrapper.findByTestId('custom-permissions-list').findComponent(GlSkeletonLoader);
+  const findSettingsSections = () => wrapper.findAllComponents(SettingsSection);
 
   describe('for all role types', () => {
     beforeEach(() => createWrapper());
+
+    it('shows General section', () => {
+      expect(findSettingsSections().at(0).props('heading')).toBe('General');
+    });
+
+    it('shows Permissions section', () => {
+      expect(findSettingsSections().at(1).props('heading')).toBe('Permissions');
+    });
 
     it('shows role type header', () => {
       expect(findHeaderText('type')).toBe('Role type');

@@ -13,6 +13,7 @@ import { BASE_ROLES_WITHOUT_MINIMAL_ACCESS } from '~/access_level/constants';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { TYPENAME_MEMBER_ROLE } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import DeleteRoleModal from '../delete_role_modal.vue';
 import memberRoleQuery from '../../graphql/role_details/member_role.query.graphql';
 import adminRoleQuery from '../../graphql/admin_role/role.query.graphql';
@@ -29,6 +30,7 @@ export default {
     GlButton,
     GlLoadingIcon,
     DeleteRoleModal,
+    PageHeading,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -116,40 +118,38 @@ export default {
   </gl-alert>
 
   <div v-else data-testid="role-details">
-    <header class="gl-mb-4 gl-mt-6 gl-flex gl-flex-wrap gl-items-center gl-gap-3">
-      <h1 class="gl-m-0 gl-mr-auto">{{ role.name || role.text }}</h1>
+    <page-heading :heading="role.name || role.text" inline-actions>
+      <template #description>
+        <gl-sprintf :message="headerDescription">
+          <template #dateTime>{{ createdDate }}</template>
+        </gl-sprintf>
+      </template>
 
-      <div v-if="memberRole" class="gl-flex gl-items-center gl-gap-3">
-        <gl-button
-          v-gl-tooltip="s__('MemberRole|Edit role')"
-          icon="pencil"
-          :href="editRolePath"
-          class="gl-ml-2"
-          data-testid="edit-button"
-        />
-        <div v-gl-tooltip="deleteButtonTooltip" data-testid="delete-button">
+      <template v-if="memberRole" #actions>
+        <div class="gl-flex gl-gap-3">
           <gl-button
+            v-gl-tooltip="s__('MemberRole|Edit role')"
+            icon="pencil"
+            :href="editRolePath"
+            data-testid="edit-button"
+          />
+          <gl-button
+            v-gl-tooltip="deleteButtonTooltip"
             icon="remove"
             category="secondary"
             variant="danger"
             :disabled="hasAssignedUsers"
+            data-testid="delete-button"
             @click="roleToDelete = role"
           />
         </div>
-
         <delete-role-modal
           :role="roleToDelete"
           @deleted="navigateToListPage"
           @close="roleToDelete = null"
         />
-      </div>
-    </header>
-
-    <p class="gl-w-full">
-      <gl-sprintf :message="headerDescription">
-        <template #dateTime>{{ createdDate }}</template>
-      </gl-sprintf>
-    </p>
+      </template>
+    </page-heading>
 
     <gl-tabs>
       <details-tab :role="role" />
