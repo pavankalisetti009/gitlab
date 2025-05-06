@@ -34,39 +34,100 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
         stub_licensed_features(work_item_status: true)
       end
 
-      it 'returns the allowed statuses for supported namespace and work item types' do
-        post_graphql(query, current_user: current_user)
+      context 'with system-defined statuses' do
+        it 'returns system-defined statuses for supported work item types' do
+          post_graphql(query, current_user: current_user)
 
-        work_item_types.each do |work_item_type|
-          work_item_type_name = work_item_type['name']
-          status_widgets = work_item_type['widgetDefinitions'].select { |widget| widget['type'] == 'STATUS' }
+          work_item_types.each do |work_item_type|
+            status_widgets = work_item_type['widgetDefinitions'].select { |widget| widget['type'] == 'STATUS' }
 
-          status_widgets.each do |widget|
-            if widget_available_for?(work_item_type_name: work_item_type_name, widget_type: 'status') &&
-                parent&.resource_parent&.root_ancestor&.try(:work_item_status_feature_available?)
+            status_widgets.each do |widget|
+              if status_widget_supported?(work_item_type['name'])
+                allowed_statuses = widget['allowedStatuses']
 
-              allowed_statuses = widget['allowedStatuses']
-              status_names = allowed_statuses.pluck('name')
-
-              expect(allowed_statuses).to all(include('id', 'name', 'iconName', 'color', 'position'))
-              expect(status_names).to match_array(names_of_system_defined_statuses)
-            else
-              expect(widget['allowedStatuses']).to be_empty
+                expect(allowed_statuses).to all(include('id', 'name', 'iconName', 'color', 'position'))
+                expect(allowed_statuses.pluck('name')).to match_array(names_of_system_defined_statuses)
+              else
+                expect(widget['allowedStatuses']).to be_empty
+              end
             end
+          end
+        end
+
+        context 'with work_item_status_feature_flag disabled' do
+          before do
+            stub_feature_flags(work_item_status_feature_flag: false)
+            post_graphql(query, current_user: current_user)
+          end
+
+          it 'does not return status widget' do
+            status_widgets = extract_status_widgets
+
+            expect(status_widgets).to be_empty
           end
         end
       end
 
-      context 'with work_item_status_feature_flag disabled' do
-        before do
-          stub_feature_flags(work_item_status_feature_flag: false)
-          post_graphql(query, current_user: current_user)
+      context 'with custom statuses' do
+        let(:root_namespace) { parent.resource_parent&.root_ancestor }
+        let(:open_status) { create(:work_item_custom_status, :open, namespace: root_namespace) }
+        let(:closed_status) { create(:work_item_custom_status, :closed, namespace: root_namespace) }
+        let(:duplicate_status) { create(:work_item_custom_status, :duplicate, namespace: root_namespace) }
+
+        let(:lifecycle) do
+          create(:work_item_custom_lifecycle,
+            namespace: root_namespace,
+            default_open_status: open_status,
+            default_closed_status: closed_status,
+            default_duplicate_status: duplicate_status
+          )
         end
 
-        it 'does not return status widget' do
-          status_widgets = extract_status_widgets
+        let(:work_item_type) { create(:work_item_type, :task) }
 
-          expect(status_widgets).to be_empty
+        let(:type_custom_lifecycle) do
+          if status_widget_supported?(work_item_type.name)
+            create(:work_item_type_custom_lifecycle,
+              lifecycle: lifecycle,
+              work_item_type: work_item_type,
+              namespace: root_namespace)
+          end
+        end
+
+        it 'returns custom statuses for supported work item types' do
+          skip "Work item type doesn't support status widget" unless type_custom_lifecycle
+
+          post_graphql(query, current_user: current_user)
+
+          expected_names = [
+            open_status.name,
+            closed_status.name,
+            duplicate_status.name
+          ]
+
+          work_item_types.each do |work_item_type|
+            status_widgets = work_item_type['widgetDefinitions'].select { |widget| widget['type'] == 'STATUS' }
+
+            status_widgets.each do |widget|
+              allowed_statuses = widget['allowedStatuses']
+
+              expect(allowed_statuses).to all(include('id', 'name', 'iconName', 'color', 'position'))
+              expect(allowed_statuses.pluck('name')).to match_array(expected_names)
+            end
+          end
+        end
+
+        context 'with work_item_status_feature_flag disabled' do
+          before do
+            stub_feature_flags(work_item_status_feature_flag: false)
+            post_graphql(query, current_user: current_user)
+          end
+
+          it 'does not return status widget' do
+            status_widgets = extract_status_widgets
+
+            expect(status_widgets).to be_empty
+          end
         end
       end
     end
@@ -98,7 +159,7 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
       let(:widgets) { feature_widget.last }
 
       context 'when feature is available' do
-        it 'returns the associated licensesd widget' do
+        it 'returns the associated licensed widget' do
           widgets.each do |widget|
             next unless status_widget_available?(widget)
 
@@ -135,6 +196,11 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
     work_item_types.flat_map do |work_item_type|
       work_item_type['widgetDefinitions'].select { |widget| widget['type'] == 'STATUS' }
     end
+  end
+
+  def status_widget_supported?(work_item_type_name)
+    widget_available_for?(work_item_type_name: work_item_type_name, widget_type: 'status') &&
+      parent&.resource_parent&.root_ancestor&.try(:work_item_status_feature_available?)
   end
 
   def status_widget_available?(widget)

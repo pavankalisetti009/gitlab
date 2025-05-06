@@ -169,4 +169,40 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
 
     it { is_expected.to include(WorkItems::Statuses::SharedConstants) }
   end
+
+  describe '#ordered_statuses' do
+    let_it_be(:in_review_status) do
+      create(:work_item_custom_status, category: :in_progress, name: 'In review', namespace: namespace)
+    end
+
+    let_it_be(:in_dev_status) do
+      create(:work_item_custom_status, category: :in_progress, name: 'In dev', namespace: namespace)
+    end
+
+    subject(:custom_lifecycle) do
+      create(:work_item_custom_lifecycle,
+        namespace: namespace,
+        default_open_status: open_status,
+        default_closed_status: closed_status,
+        default_duplicate_status: duplicate_status
+      )
+    end
+
+    it 'returns statuses ordered by category, position, and id' do
+      create(:work_item_custom_lifecycle_status, lifecycle: custom_lifecycle, status: in_review_status, position: 2)
+      create(:work_item_custom_lifecycle_status, lifecycle: custom_lifecycle, status: in_dev_status, position: 1)
+
+      ordered_statuses = custom_lifecycle.ordered_statuses
+
+      expect(ordered_statuses.map(&:name)).to eq([
+        open_status.name,
+        in_dev_status.name,
+        in_review_status.name,
+        closed_status.name,
+        duplicate_status.name
+      ])
+
+      expect(ordered_statuses.map(&:category)).to eq(%w[to_do in_progress in_progress done cancelled])
+    end
+  end
 end
