@@ -494,7 +494,7 @@ export default {
     <div
       v-for="(control, index) in controls"
       :key="index"
-      class="gl-mb-3 gl-flex gl-items-start gl-justify-between gl-rounded-base gl-bg-gray-10 gl-p-3"
+      class="gl-mb-3 gl-flex gl-items-start gl-justify-between gl-rounded-base gl-bg-subtle gl-p-3"
     >
       <div class="gl-flex-grow-1 gl-mr-3 gl-w-full">
         <template v-if="isExternalControl(control)">
