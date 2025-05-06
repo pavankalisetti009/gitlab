@@ -33,6 +33,8 @@ module Security
       return if event.data[:container_type] != 'Project'
 
       project = Project.find_by_id(event.data[:container_id])
+
+      return unless project
       return unless project.licensed_feature_available?(:security_orchestration_policies)
       return unless use_approval_policy_rules_for_approval_rules(project)
 
