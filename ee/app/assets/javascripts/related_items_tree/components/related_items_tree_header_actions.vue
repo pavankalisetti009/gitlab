@@ -9,11 +9,6 @@ export default {
   components: {
     EpicActionsSplitButton,
   },
-  data() {
-    return {
-      isOpen: true,
-    };
-  },
   computed: {
     ...mapState(['parentItem', 'allowSubEpics']),
     parentIsEpic() {

@@ -29,9 +29,6 @@ export default {
     shouldShowRelatedFeatureFlags() {
       return this.loading || this.numberOfFeatureFlags > 0;
     },
-    cardHeaderClass() {
-      return { 'gl-border-b-0': this.numberOfFeatureFlags === 0 };
-    },
     numberOfFeatureFlags() {
       return this.featureFlags?.length ?? 0;
     },
