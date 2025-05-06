@@ -24227,7 +24227,7 @@ CREATE TABLE user_preferences (
     early_access_program_tracking boolean DEFAULT false NOT NULL,
     extensions_marketplace_opt_in_status smallint DEFAULT 0 NOT NULL,
     organization_groups_projects_sort text,
-    organization_groups_projects_display smallint DEFAULT 0 NOT NULL,
+    organization_groups_projects_display smallint DEFAULT 1 NOT NULL,
     dpop_enabled boolean DEFAULT false NOT NULL,
     use_work_items_view boolean DEFAULT false NOT NULL,
     text_editor_type smallint DEFAULT 0 NOT NULL,
