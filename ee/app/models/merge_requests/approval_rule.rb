@@ -4,6 +4,8 @@ module MergeRequests
   # This is what is referred to elsewhere as the v2 approval rule.
   # https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/rearchitect_approval_rules/
   class ApprovalRule < ApplicationRecord
+    include Gitlab::Utils::StrongMemoize
+
     self.table_name = 'merge_requests_approval_rules'
 
     # If we allow overriding in subgroups there can be multiple groups
@@ -49,13 +51,27 @@ module MergeRequests
       'ApprovalMergeRequestRulePolicy'
     end
 
-    def approvers
-      []
-    end
-
     def user_defined?
       regular? || any_approver?
     end
+
+    # Users who are eligible to approve, including specified group members.
+    # Excludes the author if 'self-approval' isn't explicitly
+    # enabled on project settings.
+    # @return [Array<User>]
+    def approvers
+      scope_or_array = filter_inactive_approvers(with_role_approvers)
+
+      return scope_or_array unless merge_request.author
+      return scope_or_array if project.merge_requests_author_approval?
+
+      if scope_or_array.respond_to?(:where)
+        scope_or_array.where.not(id: merge_request.author)
+      else
+        scope_or_array - [merge_request.author]
+      end
+    end
+    strong_memoize_attr :approvers
 
     def from_scan_result_policy?
       false
@@ -66,6 +82,24 @@ module MergeRequests
     end
 
     private
+
+    def filter_inactive_approvers(approvers)
+      strong_memoize_with(:filter_inactive_approver, approvers) do
+        if approvers.respond_to?(:with_state)
+          approvers.with_state(:active)
+        else
+          approvers.select(&:active?)
+        end
+      end
+    end
+
+    def with_role_approvers
+      if approver_users.loaded? && group_users.loaded?
+        approver_users | group_users
+      else
+        User.from_union([approver_users, group_users])
+      end
+    end
 
     def ensure_single_sharding_key
       return errors.add(:base, "Must have either `group_id` or `project_id`") if no_sharding_key?
