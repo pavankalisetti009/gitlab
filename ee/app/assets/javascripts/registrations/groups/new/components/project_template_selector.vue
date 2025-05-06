@@ -8,14 +8,37 @@ import {
   GlCollapsibleListbox,
 } from '@gitlab/ui';
 
-import EXPRESS_LOGO_SVG_URL from '@gitlab/svgs/dist/illustrations/logos/express.svg?url';
-import DOTNET_LOGO_SVG_URL from '@gitlab/svgs/dist/illustrations/third-party-logos/dotnet.svg?url';
-import GITLAB_LOGO_SVG_URL from '@gitlab/svgs/dist/illustrations/gitlab_logo.svg?url';
-import LARAVEL_LOGO_SVG_URL from '@gitlab/svgs/dist/illustrations/logos/laravel.svg?url';
-import { s__ } from '~/locale';
-import DEFAULT_PROJECT_TEMPLATES from 'ee/projects/default_project_templates';
+import express from '@gitlab/svgs/dist/illustrations/logos/express.svg';
+import android from '@gitlab/svgs/dist/illustrations/logos/android.svg';
+import spring from '@gitlab/svgs/dist/illustrations/logos/spring.svg';
+import dotnetcore from '@gitlab/svgs/dist/illustrations/third-party-logos/dotnet.svg';
+import rails from '@gitlab/svgs/dist/illustrations/logos/rails.svg';
+import hugo from '@gitlab/svgs/dist/illustrations/logos/hugo.svg';
+import astro from '@gitlab/svgs/dist/illustrations/third-party-logos/astro.svg';
+import gomicro from '@gitlab/svgs/dist/illustrations/logos/gomicro.svg';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
+import TEMPLATE_DESC from 'ee/projects/default_project_templates';
+import { s__ } from '~/locale';
 import { DEFAULT_SELECTED_LABEL } from '../constants';
+
+const NAMES = [
+  'express',
+  'android',
+  'spring',
+  'dotnetcore',
+  'rails',
+  'jsonnet',
+  'hugo',
+  'plainhtml',
+  'astro',
+  'gomicro',
+];
+const LOGOS = { express, android, spring, dotnetcore, rails, hugo, astro, gomicro };
+const TEMPLATES = NAMES.map((name) => ({
+  value: name,
+  text: TEMPLATE_DESC[name].text,
+  logoSrc: LOGOS[name],
+}));
 
 export default {
   components: {
@@ -41,33 +64,8 @@ export default {
       selectedLogo: null,
       selectedLabel: DEFAULT_SELECTED_LABEL,
       toggleIconName: 'chevron-down',
+      templates: TEMPLATES,
     };
-  },
-  computed: {
-    items() {
-      return [
-        {
-          value: 'express',
-          text: DEFAULT_PROJECT_TEMPLATES.express.text,
-          logoSrc: EXPRESS_LOGO_SVG_URL,
-        },
-        {
-          value: 'dotnetcore',
-          text: DEFAULT_PROJECT_TEMPLATES.dotnetcore.text,
-          logoSrc: DOTNET_LOGO_SVG_URL,
-        },
-        {
-          value: 'plainhtml',
-          text: DEFAULT_PROJECT_TEMPLATES.plainhtml.text,
-          logoSrc: GITLAB_LOGO_SVG_URL,
-        },
-        {
-          value: 'laravel',
-          text: DEFAULT_PROJECT_TEMPLATES.laravel.text,
-          logoSrc: LARAVEL_LOGO_SVG_URL,
-        },
-      ];
-    },
   },
   mounted() {
     if (this.selectedTemplateName.length > 0) {
@@ -78,7 +76,7 @@ export default {
     selectTemplate(value) {
       this.$emit('select', value);
 
-      const selectedItem = this.items.find((item) => item.value === value);
+      const selectedItem = this.templates.find((item) => item.value === value);
 
       this.selectedLogo = selectedItem.logoSrc;
       this.selectedLabel = selectedItem.text;
@@ -125,7 +123,7 @@ export default {
       class="gl-w-full"
       reset-button-label="Reset"
       positioning-strategy="fixed"
-      :items="items"
+      :items="templates"
       :header-text="$options.i18n.templateNameLabel"
       @select="selectTemplate"
       @reset="resetTemplate"
@@ -154,7 +152,7 @@ export default {
 
       <template #list-item="{ item }">
         <span class="gl-flex gl-items-center gl-gap-2">
-          <img class="gl-h-5 gl-w-5" :alt="item.value" :src="item.logoSrc" />
+          <img v-if="item.logoSrc" class="gl-h-5 gl-w-5" :alt="item.value" :src="item.logoSrc" />
           {{ item.text }}
         </span>
       </template>

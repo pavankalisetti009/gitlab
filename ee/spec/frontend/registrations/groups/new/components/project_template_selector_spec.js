@@ -6,7 +6,7 @@ import { DEFAULT_SELECTED_LABEL } from 'ee/registrations/groups/new/constants';
 import ProjectTemplateSelector from 'ee/registrations/groups/new/components/project_template_selector.vue';
 
 describe('ProjectTemplateSelector', () => {
-  const templateName = 'plainhtml';
+  const templateName = 'hugo';
 
   const initialProps = {
     selectedTemplateName: '',
@@ -35,9 +35,15 @@ describe('ProjectTemplateSelector', () => {
 
       expect(dropdown.props('items').map((item) => item.value)).toEqual([
         'express',
+        'android',
+        'spring',
         'dotnetcore',
+        'rails',
+        'jsonnet',
+        'hugo',
         'plainhtml',
-        'laravel',
+        'astro',
+        'gomicro',
       ]);
     });
 
@@ -63,6 +69,19 @@ describe('ProjectTemplateSelector', () => {
       expect(wrapper.text()).toEqual(DEFAULT_PROJECT_TEMPLATES[templateName].text);
       expect(listbox.props('selected')).toBe(templateName);
       expect(findSelectedLogo().exists()).toBe(true);
+    });
+
+    it('selects template that does not have logo', async () => {
+      createComponent({ selectedTemplateName: 'jsonnet' });
+
+      const listbox = findGlCollapsibleListbox();
+
+      listbox.vm.$emit('select', 'jsonnet');
+
+      await nextTick();
+
+      expect(listbox.props('selected')).toBe('jsonnet');
+      expect(findSelectedLogo().exists()).toBe(false);
     });
   });
 
