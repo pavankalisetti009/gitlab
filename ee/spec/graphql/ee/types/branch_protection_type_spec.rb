@@ -12,6 +12,7 @@ RSpec.describe GitlabSchema.types['BranchProtection'], feature_category: :source
       merge_access_levels
       push_access_levels
       unprotect_access_levels
+      modification_blocked_by_policy
     ]
   end
 
