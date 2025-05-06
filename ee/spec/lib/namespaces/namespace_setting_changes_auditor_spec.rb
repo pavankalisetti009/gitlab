@@ -126,7 +126,8 @@ RSpec.describe Namespaces::NamespaceSettingChangesAuditor, feature_category: :gr
         pipeline_variables_default_role extended_grat_expiry_webhooks_execute force_pages_access_control
         jwt_ci_cd_job_token_enabled jwt_ci_cd_job_token_opted_out require_dpop_for_manage_api_endpoints
         disable_invite_members job_token_policies_enabled security_policies duo_nano_features_enabled
-        lock_model_prompt_cache_enabled model_prompt_cache_enabled]
+        lock_model_prompt_cache_enabled model_prompt_cache_enabled lock_web_based_commit_signing_enabled
+        web_based_commit_signing_enabled]
 
       columns_to_audit = Namespaces::NamespaceSettingChangesAuditor::EVENT_NAME_PER_COLUMN.keys.map(&:to_s)
 
