@@ -597,6 +597,9 @@ export default {
     canUpdateDesign() {
       return this.workspacePermissions.updateDesign;
     },
+    canPasteDesign() {
+      return !this.isSaving && !this.isAddingNotes && !this.editMode && !this.activeChildItem;
+    },
   },
   mounted() {
     addShortcutsExtension(ShortcutsWorkItems);
@@ -1178,6 +1181,7 @@ export default {
               :is-board="isBoard"
               :can-add-design="canAddDesign"
               :can-update-design="canUpdateDesign"
+              :can-paste-design="canPasteDesign"
               @upload="onUploadDesign"
               @dismissError="designUploadError = null"
             >
