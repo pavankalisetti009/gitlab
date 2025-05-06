@@ -34,6 +34,11 @@ module EE
             experiment: { milestone: '17.10' },
             description: 'Filter by custom fields.',
             prepare: ->(custom_fields, _ctx) { Array(custom_fields).inject({}, :merge) }
+
+          argument :status, ::Types::WorkItems::Widgets::StatusFilterInputType,
+            required: false,
+            description: 'Filter by status.',
+            experiment: { milestone: '18.0' }
         end
       end
     end
