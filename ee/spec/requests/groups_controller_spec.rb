@@ -467,6 +467,40 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
       end
     end
 
+    context 'setting disable_personal_access_tokens' do
+      let(:params) { { group: { disable_personal_access_tokens: true } } }
+
+      before do
+        stub_licensed_features(disable_personal_access_tokens: true)
+      end
+
+      context 'when on self-managed' do
+        it 'does not change the setting' do
+          expect(group.disable_personal_access_tokens?).to be_falsey
+
+          request
+
+          expect(response).to have_gitlab_http_status(:found)
+          expect(group.reload.disable_personal_access_tokens?).to be_falsy
+        end
+      end
+
+      context 'when on SaaS', :saas do
+        before do
+          stub_saas_features(disable_personal_access_tokens: true)
+        end
+
+        it 'changes the setting' do
+          expect(group.disable_personal_access_tokens?).to be_falsey
+
+          request
+
+          expect(response).to have_gitlab_http_status(:found)
+          expect(group.reload.disable_personal_access_tokens?).to be_truthy
+        end
+      end
+    end
+
     context 'setting enable_auto_assign_gitlab_duo_pro_seats' do
       let(:params) { { group: { enable_auto_assign_gitlab_duo_pro_seats: true } } }
 

@@ -236,6 +236,7 @@ RSpec.describe PersonalAccessToken, feature_category: :system_access do
 
     context 'when disable_personal_access_tokens feature is available' do
       before do
+        stub_saas_features(disable_personal_access_tokens: true)
         stub_licensed_features(disable_personal_access_tokens: true)
       end
 

@@ -533,6 +533,36 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
       end
     end
 
+    context 'for disable personal access tokens setting' do
+      before do
+        stub_licensed_features(disable_personal_access_tokens: true)
+      end
+
+      it 'does not render disable personal access tokens setting' do
+        visit edit_group_path(group)
+        wait_for_all_requests
+
+        within(permissions_selector) do
+          expect(page).not_to have_content(s_('GroupSettings|Disable personal access tokens'))
+        end
+      end
+
+      context 'for SaaS', :saas do
+        before do
+          stub_saas_features(disable_personal_access_tokens: true)
+        end
+
+        it 'renders disable personal access tokens setting' do
+          visit edit_group_path(group)
+          wait_for_all_requests
+
+          within(permissions_selector) do
+            expect(page).to have_content(s_('GroupSettings|Disable personal access tokens'))
+          end
+        end
+      end
+    end
+
     def permissions_selector
       '[data-testid="permissions-settings"]'
     end

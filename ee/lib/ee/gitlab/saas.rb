@@ -31,6 +31,7 @@ module EE
           identity_verification
           gitlab_duo_saas_only
           pipl_compliance
+          disable_personal_access_tokens
           ci_runners_allowed_plans
           secret_detection_service
           ci_component_usages_in_projects
