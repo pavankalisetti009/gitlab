@@ -27,7 +27,8 @@ module Vulnerabilities
     mount_file_store_uploader AttachmentUploader
 
     enum format: {
-      csv: 0
+      csv: 0,
+      pdf: 1
     }
 
     validates :status, presence: true

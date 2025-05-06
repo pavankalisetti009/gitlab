@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Vulnerabilities::Export, feature_category: :vulnerability_management do
-  it { is_expected.to define_enum_for(:format) }
+  it { is_expected.to define_enum_for(:format).with_values(csv: 0, pdf: 1) }
 
   describe 'associations' do
     it { is_expected.to belong_to(:project) }
