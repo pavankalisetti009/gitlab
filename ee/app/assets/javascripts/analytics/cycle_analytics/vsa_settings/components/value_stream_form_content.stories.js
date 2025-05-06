@@ -20,6 +20,7 @@ const Template = (args, { argTypes }) => ({
     valueStream,
     stageEvents,
     defaultStages,
+    isEditing: args.isEditing || false,
   },
   props: Object.keys(argTypes),
   template: '<value-stream-form-content v-bind="$props" />',

@@ -9,9 +9,9 @@ describe('ValueStreamFormContentActions', () => {
   const findPrimaryBtn = () => wrapper.findByTestId('primary-button');
   const findCancelBtn = () => wrapper.findByTestId('cancel-button');
 
-  const createComponent = ({ props = {}, valueStreamId = -1 } = {}) => {
+  const createComponent = ({ props = {}, isEditing = false, valueStreamId = -1 } = {}) => {
     wrapper = shallowMountExtended(ValueStreamFormContentActions, {
-      provide: { vsaPath, valueStream: { id: valueStreamId } },
+      provide: { vsaPath, isEditing, valueStream: { id: valueStreamId } },
       propsData: {
         ...props,
       },
@@ -27,7 +27,7 @@ describe('ValueStreamFormContentActions', () => {
     'when `valueStreamId` is `$valueStreamId`',
     ({ isEditing, valueStreamId, text, cancelHref }) => {
       beforeEach(() => {
-        createComponent({ valueStreamId, props: { isEditing } });
+        createComponent({ valueStreamId, isEditing });
       });
 
       it('renders primary action correctly', () => {
@@ -52,7 +52,7 @@ describe('ValueStreamFormContentActions', () => {
 
       describe('isLoading=true', () => {
         beforeEach(() => {
-          createComponent({ valueStreamId, props: { isEditing, isLoading: true } });
+          createComponent({ valueStreamId, isEditing, props: { isLoading: true } });
         });
 
         it('sets primary action to a loading state', () => {
