@@ -15,12 +15,40 @@ RSpec.describe MergeRequests::ExternalStatusCheck, type: :model do
     it { is_expected.to validate_uniqueness_of(:name).scoped_to(:project_id) }
     it { is_expected.to validate_uniqueness_of(:external_url).scoped_to(:project_id) }
 
-    describe 'protected_branches_must_belong_to_project' do
-      let(:check) { build(:external_status_check, protected_branches: [create(:protected_branch)]) }
+    describe 'protected_branches_must_belong_to_project_or_group_hierarchy' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project, group: group) }
 
-      it 'is invalid' do
-        expect(check).to be_invalid
-        expect(check.errors.messages[:base]).to eq ['all protected branches must exist within the project']
+      let(:check) { build(:external_status_check, project: project, protected_branches: [protected_branch]) }
+
+      subject(:error_messages) { check.validate.then { check.errors.messages[:base] } }
+
+      context 'with project-level protected branch' do
+        context 'when branch belongs to same project' do
+          let(:protected_branch) { create(:protected_branch, project: project) }
+
+          it { is_expected.to be_empty }
+        end
+
+        context 'when branch belongs to other project' do
+          let(:protected_branch) { create(:protected_branch, project: build(:project)) }
+
+          it { is_expected.to contain_exactly('all protected branches must exist within the project') }
+        end
+      end
+
+      context 'with group-level protected branch' do
+        let(:protected_branch) { create(:protected_branch, project: nil, group: group) }
+
+        context 'when protected branch belongs to group hierarchy' do
+          it { is_expected.to be_empty }
+        end
+
+        context 'when protected branch does not belong to group hierarchy' do
+          let(:group) { build(:group) }
+
+          it { is_expected.to contain_exactly('all protected branches must exist within the project') }
+        end
       end
     end
   end
