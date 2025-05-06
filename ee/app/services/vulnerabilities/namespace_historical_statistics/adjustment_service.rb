@@ -50,7 +50,7 @@ module Vulnerabilities
       SQL
 
       STATS_SQL = <<~SQL
-        WITH project_to_namespace_traversal_ids (project_id, namespace_id, traversal_ids) AS (
+        WITH project_to_namespace_traversal_ids (project_id, namespace_id) AS (
             %{with_values}
         )
         SELECT
@@ -62,7 +62,7 @@ module Vulnerabilities
           SUM(high) AS high,
           SUM(critical) AS critical,
           MAX(letter_grade) AS letter_grade,
-          project_to_namespace_traversal_ids.traversal_ids as traversal_ids,
+          traversal_ids as traversal_ids,
           project_to_namespace_traversal_ids.namespace_id as namespace_id,
           vulnerability_statistics.updated_at::date AS date,
           now() AS created_at,
@@ -71,7 +71,7 @@ module Vulnerabilities
         LEFT JOIN project_to_namespace_traversal_ids ON
           project_to_namespace_traversal_ids.project_id = vulnerability_statistics.project_id
         WHERE vulnerability_statistics.project_id IN (%{project_ids})
-        GROUP BY project_to_namespace_traversal_ids.traversal_ids, namespace_id, date
+        GROUP BY traversal_ids, namespace_id, date
       SQL
 
       MAX_PROJECTS = 1_000
@@ -120,7 +120,7 @@ module Vulnerabilities
         project_info = ProjectSetting.for_projects(project_ids_batch).with_namespace
                                      .has_vulnerabilities.limit(project_ids_batch.length)
                                      # rubocop:disable CodeReuse/ActiveRecord -- Plucking these attributes in this order is very specific to this service.
-                                     .pluck(:project_id, :namespace_id, :traversal_ids)
+                                     .pluck(:project_id, :namespace_id)
         # rubocop:enable CodeReuse/ActiveRecord
 
         return if project_info.blank?
@@ -128,8 +128,7 @@ module Vulnerabilities
         values = project_info.map do |row|
           [
             row[0],
-            row[1],
-            Arel.sql("ARRAY#{row[2]}::bigint[]")
+            row[1]
           ]
         end
 
