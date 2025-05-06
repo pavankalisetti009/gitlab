@@ -125,6 +125,10 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
       expect(prompt[:system]).to eq(described_class::SYSTEM_MESSAGE[1])
     end
 
+    it 'specifies max_tokens' do
+      expect(prompt[:max_tokens]).to eq(described_class::OUTPUT_MAX_TOKENS)
+    end
+
     context 'with multiple files' do
       before do
         stub_feature_flags(duo_code_review_multi_file: true)

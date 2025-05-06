@@ -232,6 +232,9 @@ module EE
           has_vulnerabilities: 'true',
           vulnerabilities_export_endpoint:
             expose_path(api_v4_security_projects_vulnerability_exports_path(id: project.id)),
+          vulnerabilities_pdf_export_endpoint:
+          expose_path(api_v4_security_projects_vulnerability_exports_path(id: project.id,
+            params: { export_format: :pdf })),
           new_project_pipeline_path: new_project_pipeline_path(project),
           scanners: VulnerabilityScanners::ListService.new(project).execute.to_json,
           can_view_false_positive: can_view_false_positive?,

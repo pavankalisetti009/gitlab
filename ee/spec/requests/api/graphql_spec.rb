@@ -29,6 +29,7 @@ RSpec.describe 'GraphQL', feature_category: :api do
         let_it_be(:enterprise_user_of_another_group) { create(:enterprise_user) }
 
         before do
+          stub_saas_features(disable_personal_access_tokens: true)
           stub_licensed_features(disable_personal_access_tokens: true)
         end
 

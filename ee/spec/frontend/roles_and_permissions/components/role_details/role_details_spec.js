@@ -12,6 +12,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import memberRoleQuery from 'ee/roles_and_permissions/graphql/role_details/member_role.query.graphql';
 import adminRoleQuery from 'ee/roles_and_permissions/graphql/admin_role/role.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { mockMemberRole, getMemberRoleQueryResponse } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -43,8 +44,7 @@ describe('Role details', () => {
   };
 
   const findRoleDetails = () => wrapper.findByTestId('role-details');
-  const findRoleName = () => wrapper.find('h1');
-  const findHeaderDescription = () => wrapper.find('p');
+  const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findDetailsTab = () => wrapper.findComponent(GlTabs).findComponent(DetailsTab);
   const findEditButton = () => wrapper.findByTestId('edit-button');
   const findDeleteButtonWrapper = () => wrapper.findByTestId('delete-button');
@@ -84,7 +84,7 @@ describe('Role details', () => {
       });
 
       it('shows role name', () => {
-        expect(findRoleName().text()).toBe(role.text);
+        expect(findPageHeading().props('heading')).toBe(role.text);
       });
 
       it('does not show action buttons', () => {
@@ -93,7 +93,7 @@ describe('Role details', () => {
       });
 
       it('shows header description', () => {
-        expect(findHeaderDescription().text()).toBe(
+        expect(findPageHeading().text()).toBe(
           'This role is available by default and cannot be changed.',
         );
       });
@@ -118,7 +118,7 @@ describe('Role details', () => {
       beforeEach(waitForPromises);
 
       it('shows role name', () => {
-        expect(findRoleName().text()).toBe('Custom role');
+        expect(findPageHeading().props('heading')).toBe('Custom role');
       });
 
       it('shows action buttons', () => {
@@ -127,7 +127,7 @@ describe('Role details', () => {
       });
 
       it('shows header description', () => {
-        expect(findHeaderDescription().text()).toBe('Custom role created on Aug 4, 2024');
+        expect(findPageHeading().text()).toBe('Custom role created on Aug 4, 2024');
       });
     });
   });

@@ -4,6 +4,7 @@ import { __, s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
+import SettingsSection from '~/vue_shared/components/settings/settings_section.vue';
 import memberRolePermissionsQuery from '../../graphql/member_role_permissions.query.graphql';
 import adminRolePermissionsQuery from '../../graphql/admin_role/role_permissions.query.graphql';
 import { isCustomRole, isAdminRole, isPermissionPreselected } from '../../utils';
@@ -12,7 +13,7 @@ export default {
   i18n: {
     badgeText: s__('MemberRole|Added from %{role}'),
   },
-  components: { GlTab, GlButton, GlIcon, GlSprintf, GlSkeletonLoader, GlBadge },
+  components: { GlTab, GlButton, GlIcon, GlSprintf, GlSkeletonLoader, GlBadge, SettingsSection },
   props: {
     role: {
       type: Object,
@@ -94,76 +95,80 @@ export default {
 </script>
 <template>
   <gl-tab :title="__('Details')">
-    <h4 class="gl-mb-5">{{ __('General') }}</h4>
-    <dl class="gl-mb-8">
-      <dt data-testid="id-header">{{ idLabel }}</dt>
-      <dd class="gl-mb-6 gl-mt-3 gl-text-subtle" data-testid="id-value">{{ roleId }}</dd>
+    <settings-section :heading="__('General')">
+      <dl>
+        <dt data-testid="id-header">{{ idLabel }}</dt>
+        <dd class="gl-mb-6 gl-mt-3 gl-text-subtle" data-testid="id-value">{{ roleId }}</dd>
 
-      <dt data-testid="type-header">{{ s__('MemberRole|Role type') }}</dt>
-      <dd class="gl-mb-6 gl-mt-3 gl-text-subtle" data-testid="type-value">{{ roleType }}</dd>
+        <dt data-testid="type-header">{{ s__('MemberRole|Role type') }}</dt>
+        <dd class="gl-mb-6 gl-mt-3 gl-text-subtle" data-testid="type-value">{{ roleType }}</dd>
 
-      <dt data-testid="description-header">{{ __('Description') }}</dt>
-      <dd class="gl-mt-3 gl-leading-20 gl-text-subtle" data-testid="description-value">
-        {{ role.description }}
-      </dd>
-    </dl>
+        <dt data-testid="description-header">{{ __('Description') }}</dt>
+        <dd class="gl-mt-2 gl-leading-20 gl-text-subtle" data-testid="description-value">
+          {{ role.description }}
+        </dd>
+      </dl>
+    </settings-section>
 
-    <h4>{{ __('Permissions') }}</h4>
-    <dl>
-      <dt v-if="isCustomRole" data-testid="base-role-header">{{ s__('MemberRole|Base role') }}</dt>
-      <dd
-        v-if="isCustomRole || isDefaultRole"
-        class="gl-mb-6 gl-mt-3 gl-flex gl-gap-x-5 gl-text-subtle"
-      >
-        <span v-if="isCustomRole" data-testid="base-role-value">
-          {{ role.baseAccessLevel.humanAccess }}
-        </span>
-        <gl-button
-          :href="$options.userPermissionsDocsPath"
-          icon="external-link"
-          variant="link"
-          target="_blank"
-          data-testid="view-permissions-button"
-        >
-          {{ s__('MemberRole|View permissions') }}
-        </gl-button>
-      </dd>
-
-      <template v-if="isCustomRole || isAdminRole">
-        <dt data-testid="custom-permissions-header" class="gl-mt-5">
-          {{ s__('MemberRole|Custom permissions') }}
+    <settings-section :heading="__('Permissions')">
+      <dl>
+        <dt v-if="isCustomRole" data-testid="base-role-header">
+          {{ s__('MemberRole|Base role') }}
         </dt>
         <dd
-          v-if="allPermissions.length"
-          class="gl-mb-6 gl-mt-3 gl-text-subtle"
-          data-testid="custom-permissions-value"
+          v-if="isCustomRole || isDefaultRole"
+          class="gl-mb-6 gl-mt-3 gl-flex gl-gap-x-5 gl-text-subtle"
         >
-          <gl-sprintf :message="s__('MemberRole|%{count} of %{total} permissions added')">
-            <template #count>{{ checkedPermissionsCount }}</template>
-            <template #total>{{ allPermissions.length }}</template>
-          </gl-sprintf>
+          <span v-if="isCustomRole" data-testid="base-role-value">
+            {{ role.baseAccessLevel.humanAccess }}
+          </span>
+          <gl-button
+            :href="$options.userPermissionsDocsPath"
+            icon="external-link"
+            variant="link"
+            target="_blank"
+            data-testid="view-permissions-button"
+          >
+            {{ s__('MemberRole|View permissions') }}
+          </gl-button>
         </dd>
 
-        <div class="gl-flex gl-flex-col gl-gap-y-4" data-testid="custom-permissions-list">
-          <gl-skeleton-loader v-if="$apollo.queries.allPermissions.loading" />
-          <div
-            v-for="permission in allPermissions"
-            :key="permission.value"
-            :data-testid="`permission-${permission.value}`"
-            :class="{ 'gl-text-subtle': !permission.checked }"
+        <template v-if="isCustomRole || isAdminRole">
+          <dt data-testid="custom-permissions-header" class="gl-mt-5">
+            {{ s__('MemberRole|Custom permissions') }}
+          </dt>
+          <dd
+            v-if="allPermissions.length"
+            class="gl-mb-6 gl-mt-3 gl-text-subtle"
+            data-testid="custom-permissions-value"
           >
-            <gl-icon v-if="permission.checked" name="check-sm" variant="success" />
-            <gl-icon v-else name="merge-request-close-m" variant="disabled" />
+            <gl-sprintf :message="s__('MemberRole|%{count} of %{total} permissions added')">
+              <template #count>{{ checkedPermissionsCount }}</template>
+              <template #total>{{ allPermissions.length }}</template>
+            </gl-sprintf>
+          </dd>
 
-            <span class="gl-ml-2">{{ permission.name }}</span>
-            <gl-badge v-if="permission.isPreselected" variant="info" class="-gl-my-1 gl-ml-2">
-              <gl-sprintf :message="$options.i18n.badgeText">
-                <template #role>{{ role.baseAccessLevel.humanAccess }}</template>
-              </gl-sprintf>
-            </gl-badge>
+          <div class="gl-flex gl-flex-col gl-gap-y-4" data-testid="custom-permissions-list">
+            <gl-skeleton-loader v-if="$apollo.queries.allPermissions.loading" />
+            <div
+              v-for="permission in allPermissions"
+              :key="permission.value"
+              :data-testid="`permission-${permission.value}`"
+              :class="{ 'gl-text-subtle': !permission.checked }"
+            >
+              <gl-icon v-if="permission.checked" name="check-sm" variant="success" />
+              <gl-icon v-else name="merge-request-close-m" variant="disabled" />
+
+              <span class="gl-ml-2">{{ permission.name }}</span>
+              <gl-badge v-if="permission.isPreselected" variant="info" class="-gl-my-1 gl-ml-2">
+                <gl-sprintf :message="$options.i18n.badgeText">
+                  <template #role>{{ role.baseAccessLevel.humanAccess }}</template>
+                </gl-sprintf>
+              </gl-badge>
+            </div>
           </div>
-        </div>
-      </template>
-    </dl>
+        </template>
+      </dl>
+    </settings-section>
   </gl-tab>
 </template>

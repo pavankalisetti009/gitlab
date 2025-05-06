@@ -12520,8 +12520,10 @@ CREATE TABLE compliance_requirements_controls (
     encrypted_secret_token bytea,
     encrypted_secret_token_iv bytea,
     external_url text,
+    external_control_name text,
     CONSTRAINT check_110c87ed8d CHECK ((char_length(expression) <= 255)),
-    CONSTRAINT check_5020dd6745 CHECK ((char_length(external_url) <= 1024))
+    CONSTRAINT check_5020dd6745 CHECK ((char_length(external_url) <= 1024)),
+    CONSTRAINT check_e3c26a3c02 CHECK ((char_length(external_control_name) <= 255))
 );
 
 CREATE SEQUENCE compliance_requirements_controls_id_seq
@@ -16066,7 +16068,8 @@ CREATE TABLE issue_email_participants (
     updated_at timestamp with time zone NOT NULL,
     email text NOT NULL,
     namespace_id bigint,
-    CONSTRAINT check_2c321d408d CHECK ((char_length(email) <= 255))
+    CONSTRAINT check_2c321d408d CHECK ((char_length(email) <= 255)),
+    CONSTRAINT check_9d8a1ecc85 CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE issue_email_participants_id_seq
@@ -32939,6 +32942,8 @@ CREATE INDEX i_resource_iteration_events_on_triggered_by_id ON resource_iteratio
 CREATE UNIQUE INDEX i_sbom_occurrences_vulnerabilities_on_occ_id_and_vuln_id ON sbom_occurrences_vulnerabilities USING btree (sbom_occurrence_id, vulnerability_id);
 
 CREATE INDEX i_software_license_policies_on_custom_software_license_id ON software_license_policies USING btree (custom_software_license_id);
+
+CREATE UNIQUE INDEX i_unique_external_control_name_per_requirement ON compliance_requirements_controls USING btree (compliance_requirement_id, external_control_name) WHERE (external_control_name IS NOT NULL);
 
 CREATE INDEX i_vuln_occurrences_on_proj_report_loc_dep_pkg_ver_file_img ON vulnerability_occurrences USING btree (project_id, report_type, ((((location -> 'dependency'::text) -> 'package'::text) ->> 'name'::text)), (((location -> 'dependency'::text) ->> 'version'::text)), COALESCE((location ->> 'file'::text), (location ->> 'image'::text))) WHERE (report_type = ANY (ARRAY[2, 1]));
 

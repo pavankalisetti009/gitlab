@@ -271,6 +271,7 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
       let(:params) { valid_params }
 
       before do
+        stub_saas_features(disable_personal_access_tokens: true)
         stub_licensed_features(disable_personal_access_tokens: true)
       end
 

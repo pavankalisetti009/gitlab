@@ -399,12 +399,15 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       let(:scanner) { vulnerability.vulnerability_finding.scanner }
 
       let(:base_values) do
+        vulnerabilities_export = "/api/v4/security/projects/#{project.id}/vulnerability_exports"
+
         {
           has_vulnerabilities: 'true',
           has_jira_vulnerabilities_integration_enabled: 'true',
           project: { id: project.id, name: project.name },
           project_full_path: project.full_path,
-          vulnerabilities_export_endpoint: "/api/v4/security/projects/#{project.id}/vulnerability_exports",
+          vulnerabilities_export_endpoint: vulnerabilities_export,
+          vulnerabilities_pdf_export_endpoint: "#{vulnerabilities_export}?export_format=pdf",
           no_vulnerabilities_svg_path: start_with('/assets/illustrations/empty-state/empty-search-md-'),
           empty_state_svg_path: start_with('/assets/illustrations/empty-state/empty-secure-md'),
           operational_configuration_path: new_project_security_policy_path(project),
@@ -439,12 +442,18 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       context 'with related_url_root set' do
         let(:relative_url) { '/gitlab' }
         let(:expected_path) { "#{relative_url}/api/v4/security/projects/#{project.id}/vulnerability_exports" }
+        let(:expected_value) do
+          base_values.merge(
+            vulnerabilities_export_endpoint: expected_path,
+            vulnerabilities_pdf_export_endpoint: "#{expected_path}?export_format=pdf"
+          )
+        end
 
         before do
           stub_config_setting(relative_url_root: relative_url)
         end
 
-        it { is_expected.to match(base_values.merge(vulnerabilities_export_endpoint: expected_path)) }
+        it { is_expected.to match(expected_value) }
       end
 
       context 'without pipeline' do
