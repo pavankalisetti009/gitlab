@@ -13,7 +13,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
   let_it_be(:requirement3) { create(:compliance_requirement, name: 'Third Requirement', framework: framework) }
 
   let(:status1) do
-    create(:project_requirement_compliance_status,
+    create(:project_requirement_compliance_status, :with_control_status,
       pass_count: 2,
       fail_count: 0,
       pending_count: 1,
@@ -23,8 +23,10 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
     )
   end
 
+  let(:control_status1) { status1.control_statuses.last }
+
   let(:status2) do
-    create(:project_requirement_compliance_status,
+    create(:project_requirement_compliance_status, :with_control_status,
       pass_count: 0,
       fail_count: 3,
       pending_count: 0,
@@ -33,6 +35,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
       compliance_framework: framework
     )
   end
+
+  let(:control_status2) { status2.control_statuses.last }
 
   subject(:service) { described_class.new(user: user, group: group) }
 
@@ -91,8 +95,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
         header = csv[0]
 
         expected_header = [
-          "Passed", "Failed", "Pending", "Requirement",
-          "Framework", "Project ID", "Project name", "Date of last update"
+          "Passed", "Failed", "Pending", "Requirement", "Framework",
+          "Project ID", "Project name", "Date of last update", "Control Statuses"
         ]
 
         expect(header).to match_array(expected_header)
@@ -115,6 +119,9 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
         expect(rows[0]["Project ID"]).to eq(status1.project_id.to_s)
         expect(rows[1]["Project name"]).to eq(status1.project.name)
         expect(rows[0]["Date of last update"]).to eq(status1.updated_at.to_s)
+        expect(rows[0]["Control Statuses"]).to eq(
+          "#{control_status1.compliance_requirements_control.name}:#{control_status1.status} "
+        )
 
         expect(rows[1]["Passed"]).to eq(status2.pass_count.to_s)
         expect(rows[1]["Failed"]).to eq(status2.fail_count.to_s)
@@ -124,6 +131,9 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
         expect(rows[1]["Project ID"]).to eq(status2.project_id.to_s)
         expect(rows[1]["Project name"]).to eq(status2.project.name)
         expect(rows[1]["Date of last update"]).to eq(status2.updated_at.to_s)
+        expect(rows[1]["Control Statuses"]).to eq(
+          "#{control_status2.compliance_requirements_control.name}:#{control_status2.status} "
+        )
       end
 
       context 'with no status data' do
@@ -142,8 +152,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
 
           expect(csv.length).to eq(1)
           expect(csv[0]).to match_array([
-            "Passed", "Failed", "Pending", "Requirement",
-            "Framework", "Project ID", "Project name", "Date of last update"
+            "Passed", "Failed", "Pending", "Requirement", "Framework",
+            "Project ID", "Project name", "Date of last update", "Control Statuses"
           ])
         end
       end

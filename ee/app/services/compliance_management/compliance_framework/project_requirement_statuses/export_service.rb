@@ -5,7 +5,7 @@ module ComplianceManagement
     module ProjectRequirementStatuses
       class ExportService
         TARGET_FILESIZE = 15.megabytes
-        CSV_ASSOCIATIONS = [:compliance_framework, :compliance_requirement, :project].freeze
+        CSV_ASSOCIATIONS = [:compliance_framework, :compliance_requirement, :project, :control_statuses].freeze
 
         def initialize(user:, group:)
           @user = user
@@ -50,7 +50,12 @@ module ComplianceManagement
             "Framework" => ->(status) { status.compliance_framework.name },
             "Project ID" => 'project_id',
             "Project name" => ->(status) { status.project.name },
-            "Date of last update" => 'updated_at'
+            "Date of last update" => 'updated_at',
+            "Control Statuses" => ->(status) {
+              status.control_statuses.map do |control|
+                "#{control.compliance_requirements_control.name}:#{control.status} "
+              end.join(" ")
+            }
           }
         end
       end
