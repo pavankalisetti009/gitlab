@@ -11,11 +11,11 @@ module Security
         scan_result_policy: :approval_policy
       }.freeze
 
-      def initialize(policy_configuration:, policies:, policy_type:)
+      def initialize(policy_configuration:, policies:, policy_type:, force_resync: false)
         @policy_configuration = policy_configuration
         @policies = policies
         @policy_type = POLICY_TYPE_ALIAS[policy_type] || policy_type
-
+        @force_resync = force_resync
         raise ArgumentError, "unrecognized policy_type" unless Security::Policy.types.symbolize_keys.key?(@policy_type)
       end
 
@@ -52,18 +52,18 @@ module Security
           )
         )
 
-        return unless created_policies.any? || policies_changes.any? || deleted_policies.any?
-
         Security::SecurityOrchestrationPolicies::EventPublisher.new(
+          db_policies: db_policies.undeleted,
           created_policies: created_policies,
           policies_changes: policies_changes,
-          deleted_policies: deleted_policies
+          deleted_policies: deleted_policies,
+          force_resync: force_resync
         ).publish
       end
 
       private
 
-      attr_reader :policy_configuration, :policies, :policy_type
+      attr_reader :policy_configuration, :policies, :policy_type, :force_resync
 
       delegate :security_policies, to: :policy_configuration
 

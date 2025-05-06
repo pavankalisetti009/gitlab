@@ -7,19 +7,19 @@ module Security
 
     data_consistency :always
 
-    sidekiq_options retry: true
-
     deduplicate :until_executed, if_deduplicated: :reschedule_once
     idempotent!
 
     feature_category :security_policy_management
 
-    def perform(configuration_id, _params = {})
+    def perform(configuration_id, params = {})
       configuration = Security::OrchestrationPolicyConfiguration.find_by_id(configuration_id)
 
       return unless configuration
 
-      update_policy_configuration(configuration)
+      force_resync = params[:force_resync] || false
+
+      update_policy_configuration(configuration, force_resync)
     end
   end
 end

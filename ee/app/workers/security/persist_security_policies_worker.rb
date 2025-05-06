@@ -9,19 +9,23 @@ module Security
     deduplicate :until_executed, if_deduplicated: :reschedule_once
     feature_category :security_policy_management
 
-    def perform(configuration_id, _params = {})
+    def perform(configuration_id, params = {})
       configuration = Security::OrchestrationPolicyConfiguration.find_by_id(configuration_id) || return
 
       configuration.invalidate_policy_yaml_cache
 
-      persist_policy(configuration, configuration.scan_result_policies, :approval_policy)
-      persist_policy(configuration, configuration.scan_execution_policy, :scan_execution_policy)
-      persist_policy(configuration, configuration.pipeline_execution_policy, :pipeline_execution_policy)
-      persist_policy(configuration, configuration.vulnerability_management_policy, :vulnerability_management_policy)
+      force_resync = params[:force_resync] || false
+
+      persist_policy(configuration, configuration.scan_result_policies, :approval_policy, force_resync)
+      persist_policy(configuration, configuration.scan_execution_policy, :scan_execution_policy, force_resync)
+      persist_policy(configuration, configuration.pipeline_execution_policy, :pipeline_execution_policy, force_resync)
+      persist_policy(configuration, configuration.vulnerability_management_policy, :vulnerability_management_policy,
+        force_resync)
       persist_policy(
         configuration,
         configuration.pipeline_execution_schedule_policy,
-        :pipeline_execution_schedule_policy
+        :pipeline_execution_schedule_policy,
+        force_resync
       )
 
       Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesService.new(configuration).execute
@@ -29,10 +33,13 @@ module Security
 
     private
 
-    def persist_policy(configuration, policies, policy_type)
-      Security::SecurityOrchestrationPolicies::PersistPolicyService
-        .new(policy_configuration: configuration, policies: policies, policy_type: policy_type)
-        .execute
+    def persist_policy(configuration, policies, policy_type, force_resync = false)
+      Security::SecurityOrchestrationPolicies::PersistPolicyService.new(
+        policy_configuration: configuration,
+        policies: policies,
+        policy_type: policy_type,
+        force_resync: force_resync
+      ).execute
     end
   end
 end

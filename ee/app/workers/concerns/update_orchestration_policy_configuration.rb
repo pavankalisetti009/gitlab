@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module UpdateOrchestrationPolicyConfiguration
-  def update_policy_configuration(configuration)
+  def update_policy_configuration(configuration, force_resync = false)
     configuration.invalidate_policy_yaml_cache
 
     unless configuration.policy_configuration_valid?
@@ -14,12 +14,12 @@ module UpdateOrchestrationPolicyConfiguration
 
     update_experiments_configuration!(configuration)
 
-    unless configuration.policies_changed?
+    unless force_resync || configuration.policies_changed?
       update_configuration_timestamp!(configuration)
       return
     end
 
-    Security::PersistSecurityPoliciesWorker.perform_async(configuration.id)
+    Security::PersistSecurityPoliciesWorker.perform_async(configuration.id, { force_resync: force_resync })
 
     configuration.delete_all_schedules
     configuration.active_scan_execution_policies.each_with_index do |policy, policy_index|

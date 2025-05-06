@@ -35,7 +35,8 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
     end
 
     it_behaves_like 'an idempotent worker' do
-      subject(:perform) { perform_multiple(policy_configuration.id) }
+      let(:params) { {} }
+      subject(:perform) { perform_multiple([policy_configuration.id, params]) }
 
       context 'when policy is empty' do
         let(:approval_policies) { [] }
@@ -56,6 +57,31 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
           it 'deletes the policy' do
             expect { perform }.to change { Security::Policy.count }.from(1).to(0)
           end
+        end
+      end
+
+      context 'when force_resync is true' do
+        let(:params) { { force_resync: true } }
+
+        it 'calls PersistPolicyService for each policy type with expected arguments' do
+          [
+            [policy_configuration.scan_result_policies, :approval_policy],
+            [policy_configuration.scan_execution_policy, :scan_execution_policy],
+            [policy_configuration.pipeline_execution_policy, :pipeline_execution_policy],
+            [policy_configuration.vulnerability_management_policy, :vulnerability_management_policy],
+            [policy_configuration.pipeline_execution_schedule_policy, :pipeline_execution_schedule_policy]
+          ].each do |policies, policy_type|
+            expect(Security::SecurityOrchestrationPolicies::PersistPolicyService)
+              .to receive(:new)
+                .exactly(IdempotentWorkerHelper::WORKER_EXEC_TIMES).with(
+                  policy_configuration: policy_configuration,
+                  policies: policies,
+                  policy_type: policy_type,
+                  force_resync: true
+                ).and_call_original
+          end
+
+          perform
         end
       end
 
