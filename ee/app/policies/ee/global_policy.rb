@@ -78,9 +78,9 @@ module EE
 
       condition(:duo_chat_enabled_for_user) do
         if duo_chat_self_hosted?
-          self_hosted_models_available_for?(@user)
+          @user.allowed_to_use?(:duo_chat, service_name: :self_hosted_models)
         else
-          user.allowed_to_use?(:duo_chat)
+          @user.allowed_to_use?(:duo_chat)
         end
       end
 
@@ -249,10 +249,6 @@ module EE
     # Check whether a user is allowed to use Duo Chat powered by self-hosted models
     def duo_chat_self_hosted?
       ::Ai::FeatureSetting.find_by_feature(:duo_chat)&.self_hosted?
-    end
-
-    def self_hosted_models_available_for?(user)
-      CloudConnector::AvailableServices.find_by_name(:self_hosted_models).allowed_for?(user)
     end
 
     def custom_role_ability(user)

@@ -9,12 +9,6 @@ RSpec.describe CloudConnector::MissingServiceData, feature_category: :cloud_conn
     it { is_expected.to be false }
   end
 
-  describe '#allowed_for?' do
-    subject(:allowed_for?) { described_class.new.allowed_for?(nil) }
-
-    it { is_expected.to be false }
-  end
-
   describe '#purchased?' do
     subject(:purchased?) { described_class.new.purchased? }
 

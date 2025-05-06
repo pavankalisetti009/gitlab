@@ -15,14 +15,6 @@ module CloudConnector
       cut_off_date.nil? || cut_off_date&.future?
     end
 
-    # Returns true if service is allowed to be used.
-    # For provided user, it will check if user is assigned to a proper seat.
-    #
-    # user - User
-    def allowed_for?(user)
-      add_on_purchases_assigned_to(user).any?
-    end
-
     # Returns the active add-on purchases for the add-on names associated with this service
     #
     # namespace - Namespace
