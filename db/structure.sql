@@ -16156,7 +16156,8 @@ CREATE TABLE issue_email_participants (
     updated_at timestamp with time zone NOT NULL,
     email text NOT NULL,
     namespace_id bigint,
-    CONSTRAINT check_2c321d408d CHECK ((char_length(email) <= 255))
+    CONSTRAINT check_2c321d408d CHECK ((char_length(email) <= 255)),
+    CONSTRAINT check_9d8a1ecc85 CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE issue_email_participants_id_seq
