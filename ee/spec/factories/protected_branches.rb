@@ -60,6 +60,11 @@ FactoryBot.modify do
       end
     end
 
+    trait :group_level do
+      group { association(:group) }
+      project { nil }
+    end
+
     after(:build) do |protected_branch, evaluator|
       push_user = evaluator.authorize_user_to_push
       push_group = evaluator.authorize_group_to_push
