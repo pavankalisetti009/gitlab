@@ -72,6 +72,12 @@ module EE
           ::Gitlab::CurrentSettings.disable_overriding_approvers_per_merge_request
       end
 
+      with_scope :global
+      condition(:disable_invite_members) do
+        License.feature_available?(:disable_invite_members) &&
+          ::Gitlab::CurrentSettings.current_application_settings.disable_invite_members?
+      end
+
       condition(:group_merge_request_approval_settings_enabled) do
         @subject.feature_available?(:merge_request_approvers)
       end
@@ -399,6 +405,10 @@ module EE
         prevent(:read_project_merge_request_analytics)
         prevent(:read_code_review_analytics)
         prevent(:read_issue_analytics)
+      end
+
+      rule { ~admin & disable_invite_members }.policy do
+        prevent :invite_project_members
       end
 
       rule { feature_flags_related_issues_disabled | repository_disabled }.policy do

@@ -970,8 +970,17 @@ module EE
         @subject.licensed_feature_available?(:group_bulk_edit)
       end
 
+      condition(:disable_invite_members, scope: :global) do
+        ::License.feature_available?(:disable_invite_members) &&
+          ::Gitlab::CurrentSettings.current_application_settings.disable_invite_members?
+      end
+
       rule { can?(:admin_epic) & bulk_edit_feature_available }.policy do
         enable :bulk_admin_epic
+      end
+
+      rule { ~admin & disable_invite_members }.policy do
+        prevent :invite_group_members
       end
 
       rule { duo_workflow_token & ~duo_features_enabled }.prevent_all

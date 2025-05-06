@@ -239,6 +239,68 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     it { is_expected.not_to be_allowed(:read_cluster_environments) }
   end
 
+  describe 'invite_group_members policy' do
+    let(:app_setting) { :disable_invite_members }
+    let(:policy) { :invite_group_members }
+
+    context 'with disable_invite_members available in license' do
+      where(:role, :setting, :admin_mode, :allowed) do
+        :guest      | true  | nil    | false
+        :planner    | true  | nil    | false
+        :reporter   | true  | nil    | false
+        :developer  | true  | nil    | false
+        :maintainer | false | nil    | false
+        :maintainer | true  | nil    | false
+        :owner      | false | nil    | true
+        :owner      | true  | nil    | false
+        :admin      | false | false  | false
+        :admin      | false | true   | true
+        :admin      | true  | false  | false
+      end
+
+      with_them do
+        let(:current_user) { public_send(role) }
+
+        before do
+          stub_licensed_features(disable_invite_members: true)
+          stub_application_setting(app_setting => setting)
+          enable_admin_mode!(current_user) if admin_mode
+        end
+
+        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+      end
+    end
+
+    context 'with disable_invite_members not available in license' do
+      where(:role, :setting, :admin_mode, :allowed) do
+        :guest      | true  | nil    | false
+        :planner    | true  | nil    | false
+        :reporter   | true  | nil    | false
+        :developer  | true  | nil    | false
+        :maintainer | false | nil    | false
+        :maintainer | true  | nil    | false
+        :owner      | false | nil    | true
+        :owner      | true  | nil    | true
+        :admin      | false | false  | false
+        :admin      | false | true   | true
+        :admin      | true  | false  | false
+        :admin      | true  | true   | true
+      end
+
+      with_them do
+        let(:current_user) { public_send(role) }
+
+        before do
+          stub_licensed_features(disable_invite_members: false)
+          stub_application_setting(app_setting => setting)
+          enable_admin_mode!(current_user) if admin_mode
+        end
+
+        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+      end
+    end
+  end
+
   describe 'modify_value_stream_dashboard_settings policy' do
     context 'when analytics dashboard is available' do
       let(:current_user) { maintainer }

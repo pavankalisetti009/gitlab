@@ -22535,6 +22535,9 @@ msgstr ""
 msgid "Disable group runners"
 msgstr ""
 
+msgid "Disable inviting new members to group or project by group/project owners or project maintainers"
+msgstr ""
+
 msgid "Disable password authentication for users with an SSO identity"
 msgstr ""
 
@@ -46022,6 +46025,9 @@ msgid "Prevent auto-stopping"
 msgstr ""
 
 msgid "Prevent environment from auto-stopping"
+msgstr ""
+
+msgid "Prevent group/project member invitations"
 msgstr ""
 
 msgid "Prevent outdated deployment jobs"
