@@ -5,6 +5,7 @@ module API
     module Packages
       class Maven < ::API::Base
         include ::API::Concerns::DependencyProxy::PackagesHelpers
+
         helpers ::API::Helpers::Packages::Maven
         helpers ::API::Helpers::Packages::Maven::BasicAuthHelpers
 
