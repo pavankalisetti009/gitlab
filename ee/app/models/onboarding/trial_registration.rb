@@ -41,6 +41,10 @@ module Onboarding
       false
     end
 
+    def self.learn_gitlab_redesign?
+      true
+    end
+
     def self.redirect_to_company_form?
       true
     end

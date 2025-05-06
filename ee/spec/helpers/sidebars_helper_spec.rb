@@ -336,4 +336,51 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       end
     end
   end
+
+  describe '#project_sidebar_context_data' do
+    let(:project) { build(:project) }
+    let(:user) { build(:user) }
+
+    before do
+      allow(helper).to receive(:project_jira_issues_integration?).and_return(false)
+      allow(helper).to receive(:can_view_pipeline_editor?).with(project).and_return(true)
+      allow(helper).to receive(:show_gke_cluster_integration_callout?).with(project).and_return(false)
+    end
+
+    it 'returns the correct context data hash' do
+      current_ref = 'main'
+
+      expected_hash = {
+        current_user: user,
+        container: project,
+        current_ref: current_ref,
+        ref_type: nil,
+        jira_issues_integration: false,
+        can_view_pipeline_editor: true,
+        show_cluster_hint: false,
+        learn_gitlab_enabled: false,
+        show_get_started_menu: false,
+        show_discover_project_security: false,
+        show_promotions: false
+      }
+
+      expect(helper.project_sidebar_context_data(project, user, current_ref)).to eq(expected_hash)
+    end
+
+    context 'when learn_gitlab is available' do
+      it 'sets learn_gitlab_enabled to true' do
+        allow(::Onboarding::LearnGitlab).to receive(:available?).with(project.namespace, user).and_return(true)
+
+        expect(helper.project_sidebar_context_data(project, user, nil)[:learn_gitlab_enabled]).to be true
+      end
+    end
+
+    context 'when show_get_started_menu is available' do
+      it 'sets show_get_started_menu to true' do
+        allow(helper).to receive(:current_path?).with('projects/get_started#show').and_return(true)
+
+        expect(helper.project_sidebar_context_data(project, user, nil)[:show_get_started_menu]).to be true
+      end
+    end
+  end
 end

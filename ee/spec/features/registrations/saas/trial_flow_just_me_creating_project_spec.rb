@@ -30,6 +30,32 @@ RSpec.describe 'Trial flow for user picking just me and creating a project', :js
       fills_in_group_and_project_creation_form_with_trial
       click_on 'Create project'
 
+      expect_to_be_in_get_started
+    end
+  end
+
+  context 'when learn_gitlab_redesign feature flag is disabled' do
+    it 'lands in legacy learn gitlab page', :sidekiq_inline do
+      stub_feature_flags(learn_gitlab_redesign: false)
+
+      trial_registration_sign_up(glm_params)
+
+      expect_to_see_welcome_form
+      expect_not_to_send_iterable_request
+
+      fills_in_welcome_form
+      click_on 'Continue'
+
+      expect_to_see_company_form
+
+      fill_in_company_form
+      click_on 'Continue'
+
+      expect_to_see_group_and_project_creation_form
+
+      fills_in_group_and_project_creation_form_with_trial
+      click_on 'Create project'
+
       expect_to_be_in_learn_gitlab
     end
   end
