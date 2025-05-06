@@ -8,6 +8,16 @@ module Geo
       ::Project
     end
 
+    # @return [String] human-readable title.
+    def self.replicable_title
+      s_('Geo|Project Repository')
+    end
+
+    # @return [String] pluralized human-readable title.
+    def self.replicable_title_plural
+      s_('Geo|Project Repositories')
+    end
+
     def before_housekeeping
       return unless ::Gitlab::Geo.secondary?
 

@@ -8,6 +8,16 @@ module Geo
       model_record.file
     end
 
+    # @return [String] human-readable title.
+    def self.replicable_title
+      s_('Geo|Lfs Object')
+    end
+
+    # @return [String] pluralized human-readable title.
+    def self.replicable_title_plural
+      s_('Geo|Lfs Objects')
+    end
+
     def self.model
       ::LfsObject
     end
