@@ -197,6 +197,7 @@ module GitlabSubscriptions
       summarize_comments
       review_merge_request
       board_status_lists
+      disable_invite_members
     ].freeze
 
     ULTIMATE_FEATURES = %i[

@@ -88,6 +88,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     %i[
       secret_push_protection_available
       virtual_registries_endpoints_api_limit
+      disable_invite_members
     ].each do |setting|
       it "contains #{setting}" do
         expect(described_class.possible_licensed_attributes).to include(setting)

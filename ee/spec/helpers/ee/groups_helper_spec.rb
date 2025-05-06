@@ -605,6 +605,77 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
   end
 
+  describe '#can_invite_group_member?' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:group) { create(:group) }
+
+    before do
+      allow(helper).to receive(:current_user).and_return(user)
+    end
+
+    context 'when licensed feature is not available' do
+      before do
+        stub_licensed_features(disable_invite_members: false)
+      end
+
+      context  'when application setting to disable_invite_members is enabled' do
+        before do
+          stub_application_setting(disable_invite_members: true)
+        end
+
+        it 'returns true for the group owner' do
+          group.add_owner(user)
+
+          expect(helper.can_invite_group_member?(group)).to be(true)
+        end
+
+        it 'returns false for non group owner' do
+          group.add_developer(user)
+
+          expect(helper.can_invite_group_member?(group)).to be(false)
+        end
+
+        it 'returns true for admin user', :enable_admin_mode do
+          user.update_attribute(:admin, true)
+
+          expect(helper.can_invite_group_member?(group)).to be(true)
+        end
+      end
+    end
+
+    context 'when licensed feature is available' do
+      before do
+        stub_licensed_features(disable_invite_members: true)
+      end
+
+      context  'when application setting to disable_invite_members is enabled' do
+        before do
+          stub_application_setting(disable_invite_members: true)
+        end
+
+        it 'returns false for the group owner' do
+          group.add_owner(user)
+
+          expect(helper.can_invite_group_member?(group)).to be(false)
+        end
+
+        context 'when user is admin' do
+          before do
+            user.update_attribute(:admin, true)
+          end
+
+          it 'returns false for instance admin without admin mode' do
+            expect(helper.can_invite_group_member?(group)).to be(false)
+          end
+
+          it 'returns true for instance admin with admin mode', :enable_admin_mode do
+            expect(helper.can_invite_group_member?(group)).to be(true)
+          end
+        end
+      end
+    end
+  end
+
   describe '#saml_sso_settings_generate_helper_text' do
     let(:text) { 'some text' }
     let(:result) { "<span class=\"js-helper-text gl-clearfix\">#{text}</span>" }

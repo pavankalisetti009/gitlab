@@ -466,6 +466,92 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
       let(:failed_status_code) { :not_found }
     end
 
+    context 'when licensed feature for disable_invite_members is available' do
+      let(:email) { 'example1@example.com' }
+      let(:maintainer) { create(:user) }
+
+      before do
+        project.add_maintainer(maintainer)
+        stub_licensed_features(disable_invite_members: true)
+      end
+
+      context 'when setting to disable_group_invite_member is ON' do
+        before do
+          stub_application_setting(disable_invite_members: true)
+        end
+
+        context 'when user is maintainer/owner' do
+          it 'returns 403' do
+            post api(url, maintainer),
+              params: { email: email, access_level: Member::MAINTAINER }
+
+            expect(response).to have_gitlab_http_status(:forbidden)
+          end
+        end
+
+        context 'when user is admin' do
+          let(:admin_user) { create(:admin) }
+
+          it 'adds a new member by email when admin_mode is enabled', :enable_admin_mode do
+            expect do
+              post api(url, admin_user),
+                params: { email: email, access_level: Member::DEVELOPER }
+
+              expect(response).to have_gitlab_http_status(:created)
+            end.to change { project.members.invite.count }.by(1)
+          end
+
+          it 'returns 403 when admin_mode is not enabled' do
+            post api(url, admin_user),
+              params: { email: email, access_level: Member::MAINTAINER }
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+      end
+
+      context 'when setting to disable_group_invite_member is OFF' do
+        let_it_be(:owner) { create(:user) }
+
+        before do
+          project.add_owner(owner)
+          stub_application_setting(disable_invite_members: false)
+        end
+
+        it 'adds a new member by email for owner/maintainer role' do
+          expect do
+            post api(url, owner),
+              params: { email: email, access_level: Member::MAINTAINER }
+            expect(response).to have_gitlab_http_status(:created)
+          end.to change { project.members.invite.count }.by(1)
+        end
+      end
+    end
+
+    context 'when licensed feature disable_invite_members is not available' do
+      let(:email) { 'example1@example.com' }
+      let(:maintainer) { create(:user) }
+
+      before do
+        project.add_maintainer(maintainer)
+        stub_licensed_features(disable_invite_members: false)
+      end
+
+      context 'setting to disable_invite_members is ON' do
+        before do
+          stub_application_setting(disable_invite_members: true)
+        end
+
+        it "does not make any difference to invitation of new member" do
+          expect do
+            post api(url, maintainer),
+              params: { email: email, access_level: Member::MAINTAINER }
+            expect(response).to have_gitlab_http_status(:created)
+          end.to change { project.members.invite.count }.by(1)
+        end
+      end
+    end
+
     context 'with group membership locked' do
       before do
         group.update!(membership_lock: true)

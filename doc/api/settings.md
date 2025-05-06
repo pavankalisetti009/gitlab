@@ -166,7 +166,8 @@ Example response:
   "concurrent_bitbucket_import_jobs_limit": 100,
   "concurrent_bitbucket_server_import_jobs_limit": 100,
   "silent_admin_exports_enabled": false,
-  "top_level_group_creation_enabled": true
+  "top_level_group_creation_enabled": true,
+  "disable_invite_members": false
 }
 ```
 
@@ -625,7 +626,7 @@ to configure other related settings. These requirements are
 | `max_yaml_size_bytes`                    | integer          | no                                   | The maximum size in bytes of a single CI/CD configuration file. Default: `2097152`. |
 | `git_rate_limit_users_allowlist`         | array of strings  | no                                  | List of usernames excluded from Git anti-abuse rate limits. Default: `[]`, Maximum: 100 usernames. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/90815) in GitLab 15.2. GitLab Self-Managed, Ultimate only. |
 | `git_rate_limit_users_alertlist`         | array of integers | no                                  | List of user IDs that are emailed when the Git abuse rate limit is exceeded. Default: `[]`, Maximum: 100 user IDs. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/110201) in GitLab 15.9. GitLab Self-Managed, Ultimate only. |
-| `auto_ban_user_on_excessive_projects_download` | boolean    | no                                   | When enabled, users will get automatically banned from the application when they download more than the maximum number of unique projects in the time period specified by `max_number_of_repository_downloads` and `max_number_of_repository_downloads_within_time_period` respectively. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/94153) in GitLab 15.4. GitLab Self-Managed, Ultimate only. |
+| `auto_ban_user_on_excessive_projects_download` | boolean    | no                                   | When enabled, users will get automatically banned from the application when they download more than the maximum number of unique projects in the time period specified by `max_number_of_repository_downloads` and `max_number_of_repository_downloads_within_time_period`. [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/94153) in GitLab 15.4. GitLab Self-Managed, Ultimate only. |
 | `mirror_available`                       | boolean          | no                                   | Allow repository mirroring to configured by project Maintainers. If disabled, only Administrators can configure repository mirroring. |
 | `mirror_capacity_threshold`              | integer          | no                                   | Minimum capacity to be available before scheduling more mirrors preemptively. Premium and Ultimate only. |
 | `mirror_max_capacity`                    | integer          | no                                   | Maximum number of mirrors that can be synchronizing at the same time. Premium and Ultimate only. |
@@ -790,6 +791,7 @@ to configure other related settings. These requirements are
 | `helm_max_packages_count` | integer     | no                                   | Maximum number of Helm packages that can be listed per channel. Must be at least 1. Default is 1000. |
 | `require_admin_two_factor_authentication` | boolean         | no | Allow administrators to require 2FA for all administrators on the instance. |
 | `secret_push_protection_available` | boolean         | no | Allow projects to enable secret push protection. This does not enable secret push protection. Ultimate only. |
+| `disable_invite_members` | boolean         | no | Disable invite members functionality for group. |
 
 ### Inactive project settings
 

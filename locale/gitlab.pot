@@ -5792,6 +5792,9 @@ msgstr ""
 msgid "AiPowered|Expire conversation based on time conversation was last updated."
 msgstr ""
 
+msgid "AiPowered|Explore GitLab Duo Core"
+msgstr ""
+
 msgid "AiPowered|Features are available. However, any group, subgroup, or project can turn them off."
 msgstr ""
 
@@ -5799,6 +5802,9 @@ msgid "AiPowered|Features are not available and cannot be turned on for any grou
 msgstr ""
 
 msgid "AiPowered|Features are not available. However, any group, subgroup, or project can turn them on."
+msgstr ""
+
+msgid "AiPowered|Get started with GitLab Duo"
 msgstr ""
 
 msgid "AiPowered|Get started with GitLab Duo Core"
@@ -5919,6 +5925,9 @@ msgid "AiPowered|When you save, GitLab Duo will be turned for all groups, subgro
 msgstr ""
 
 msgid "AiPowered|When you save, GitLab Duo will be turned off for all groups, subgroups, and projects."
+msgstr ""
+
+msgid "AiPowered|You now have access to GitLab Duo Chat and Code Suggestions in supported IDEs. To start using these features, %{link1Start}install the GitLab extension in your IDE%{link1End}. If you already have this extension installed, %{link2Start}explore what you can do with GitLab Duo Core%{link2End}."
 msgstr ""
 
 msgid "Akismet"
@@ -6865,6 +6874,9 @@ msgid "An error occurred loading the tab counts."
 msgstr ""
 
 msgid "An error occurred previewing the blob"
+msgstr ""
+
+msgid "An error occurred restoring this group. Please refresh the page to try again."
 msgstr ""
 
 msgid "An error occurred when trying to display this GLQL view:"
@@ -22532,6 +22544,9 @@ msgstr ""
 msgid "Disable group runners"
 msgstr ""
 
+msgid "Disable inviting new members to group or project by group/project owners or project maintainers"
+msgstr ""
+
 msgid "Disable password authentication for users with an SSO identity"
 msgstr ""
 
@@ -24481,6 +24496,9 @@ msgid "Environment|Get started"
 msgstr ""
 
 msgid "Environment|Healthy"
+msgstr ""
+
+msgid "Environment|Needs attention"
 msgstr ""
 
 msgid "Environment|No Kubernetes clusters configured"
@@ -46016,6 +46034,9 @@ msgid "Prevent auto-stopping"
 msgstr ""
 
 msgid "Prevent environment from auto-stopping"
+msgstr ""
+
+msgid "Prevent group/project member invitations"
 msgstr ""
 
 msgid "Prevent outdated deployment jobs"

@@ -578,17 +578,14 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
     context 'with foreign keys mappings', :aggregate_failures do
       let(:ignore_columns) do
         {
-          id: [Project, Issue, MergeRequest, Commit, Epic, User, WorkItem],
-          project_id: :all,
-          root_namespace_id: :all,
-          target_project_id: :all,
-          source_project_id: :all,
-          author_id: :all,
-          namespace_id: :all,
-          assignee_id: :all,
+          id: [Issue, Commit, Epic, WorkItem],
+          project_id: [WorkItem, Issue],
+          root_namespace_id: [WorkItem],
+          author_id: [WorkItem, Issue, Epic],
+          namespace_id: [WorkItem],
+          assignee_id: [WorkItem, Issue],
           hashed_root_namespace_id: :all,
-          work_item_type_id: :all,
-          owner_id: :all,
+          work_item_type_id: [WorkItem, Issue],
           cluster_agent_id: [Vulnerability],
           scanner_external_id: [Vulnerability]
         }.with_indifferent_access

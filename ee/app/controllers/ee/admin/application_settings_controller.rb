@@ -165,7 +165,8 @@ module EE
           ],
           disable_personal_access_tokens: :disable_personal_access_tokens,
           integrations_allow_list: :allowed_integrations_raw,
-          packages_virtual_registry: :virtual_registries_endpoints_api_limit
+          packages_virtual_registry: :virtual_registries_endpoints_api_limit,
+          disable_invite_members: :disable_invite_members
         }.each do |license_feature, attribute_names|
           attrs += Array.wrap(attribute_names) if License.feature_available?(license_feature)
         end

@@ -256,7 +256,7 @@ variables:
   SECRET_DETECTION_RULESET_GIT_REFERENCE: "gitlab.com/example-group/remote-ruleset-project"
 ```
 
-Pipeline secret detection assumes the configuration is defined in `.gitlab/secret-detection-ruleset.toml` file in the repository referenced by the CI variable where the remote ruleset is stored. If that file doesn't exist, please make sure to [create one](#create-a-ruleset-configuration-file) and follow the steps to [override](#override-a-rule) or [disable](#disable-a-rule) a predefined rule as outlined above.
+Pipeline secret detection assumes the configuration is defined in `.gitlab/secret-detection-ruleset.toml` file in the repository referenced by the CI variable where the remote ruleset is stored. If that file doesn't exist, make sure to [create one](#create-a-ruleset-configuration-file) and follow the steps to [override](#override-a-rule) or [disable](#disable-a-rule) a predefined rule as outlined above.
 
 {{< alert type="note" >}}
 
@@ -340,7 +340,7 @@ For more information on the passthrough syntax to use, see [Schema](custom_rules
 
 #### With a remote ruleset
 
-You can replace the default ruleset with configuration defined in a remote Git repository or a file stored somewhere online using the `git` and `url` passthroughs, respectively.
+You can replace the default ruleset with configuration defined in a remote Git repository or a file stored somewhere online using the `git` and `url` passthroughs.
 
 A remote ruleset can be used across multiple projects. For example, you may want to apply the same
 ruleset to a number of projects in one of your namespaces, in such case, you may use either type of

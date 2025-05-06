@@ -65,6 +65,7 @@ RSpec.describe 'projects/project_members/index', :aggregate_failures, feature_ca
       let_it_be(:project) { create(:project, group: create(:group)) } # rubocop:todo RSpec/FactoryBot/AvoidCreate
 
       before do
+        allow(view).to receive(:can?).with(user, :invite_group_members, project.root_ancestor).and_return(true)
         allow(view).to receive(:can?).with(user, :admin_group_member, project.root_ancestor).and_return(true)
         allow_next_instance_of(::Namespaces::FreeUserCap::Enforcement, project.root_ancestor) do |instance|
           allow(instance).to receive(:enforce_cap?).and_return(true)
