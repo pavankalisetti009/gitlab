@@ -109,6 +109,14 @@ module EE
           model_class.constantize
         end
 
+        def self.replicable_title
+          s_('Geo|Dummy')
+        end
+
+        def self.replicable_title_plural
+          s_('Geo|Dummies')
+        end
+
         def geo_handle_after_checksum_succeeded
           true
         end
@@ -143,6 +151,14 @@ module EE
 
         def self.selective_sync_scope(node, **_params)
           all
+        end
+
+        def self.replicable_title
+          s_('Geo|Dummy')
+        end
+
+        def self.replicable_title_plural
+          s_('Geo|Dummies')
         end
       end
 
@@ -257,6 +273,14 @@ module EE
 
         def self.selective_sync_scope(node, **_params)
           all
+        end
+
+        def self.replicable_title
+          s_('Geo|Dummy')
+        end
+
+        def self.replicable_title_plural
+          s_('Geo|Dummies')
         end
 
         def self.replicables_for_current_secondary(primary_key_in)

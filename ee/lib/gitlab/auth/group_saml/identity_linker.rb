@@ -5,6 +5,7 @@ module Gitlab
     module GroupSaml
       class IdentityLinker < Gitlab::Auth::Saml::IdentityLinker
         include ::Gitlab::Utils::StrongMemoize
+
         attr_reader :saml_provider, :auth_hash
 
         def initialize(current_user, oauth, session, saml_provider)

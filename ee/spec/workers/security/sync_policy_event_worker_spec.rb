@@ -177,11 +177,12 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
 
     context 'when event is a default branch changed event' do
       let_it_be(:project) { create(:project) }
+      let(:project_id) { project.id }
       let_it_be(:security_policy) { create(:security_policy) }
 
       let(:event) do
         Repositories::DefaultBranchChangedEvent.new(data: {
-          container_id: project.id,
+          container_id: project_id,
           container_type: 'Project'
         })
       end
@@ -190,16 +191,26 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
         create(:security_policy_project_link, project: project, security_policy: security_policy)
       end
 
-      context 'when security_orchestration_policies is not licensed' do
-        before do
-          stub_licensed_features(security_orchestration_policies: false)
-        end
-
+      shared_examples_for 'does not sync rules' do
         it 'does not sync rules' do
           expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService).not_to receive(:new)
 
           handle_event
         end
+      end
+
+      context 'when project is not found' do
+        let(:project_id) { non_existing_record_id }
+
+        it_behaves_like 'does not sync rules'
+      end
+
+      context 'when security_orchestration_policies is not licensed' do
+        before do
+          stub_licensed_features(security_orchestration_policies: false)
+        end
+
+        it_behaves_like 'does not sync rules'
       end
 
       context 'when container type is not Project' do
@@ -210,11 +221,7 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
           })
         end
 
-        it 'does not sync rules' do
-          expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService).not_to receive(:new)
-
-          handle_event
-        end
+        it_behaves_like 'does not sync rules'
       end
 
       context 'when feature flag is disabled' do
@@ -222,11 +229,7 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
           stub_feature_flags(use_approval_policy_rules_for_approval_rules: false)
         end
 
-        it 'does not sync rules' do
-          expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService).not_to receive(:new)
-
-          handle_event
-        end
+        it_behaves_like 'does not sync rules'
       end
 
       context 'when all conditions are met' do

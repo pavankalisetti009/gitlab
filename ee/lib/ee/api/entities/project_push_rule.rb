@@ -5,6 +5,7 @@ module EE
     module Entities
       class ProjectPushRule < Grape::Entity
         extend ::API::Entities::EntityHelpers
+
         expose :id, documentation: { type: 'integer', example: 2 }
         expose :project_id, documentation: { type: 'integer', example: 3 }
         expose :created_at, documentation: { type: 'date-time', example: '2020-08-31T15:53:00.073Z' }

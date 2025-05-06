@@ -8,6 +8,16 @@ module Geo
       ::MergeRequestDiff
     end
 
+    # @return [String] human-readable title.
+    def self.replicable_title
+      s_('Geo|Merge Request Diff')
+    end
+
+    # @return [String] pluralized human-readable title.
+    def self.replicable_title_plural
+      s_('Geo|Merge Request Diffs')
+    end
+
     def carrierwave_uploader
       model_record.external_diff
     end

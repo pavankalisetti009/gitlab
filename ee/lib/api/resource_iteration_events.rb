@@ -3,6 +3,7 @@
 module API
   class ResourceIterationEvents < ::API::Base
     include PaginationParams
+
     helpers ::API::Helpers::NotesHelpers
 
     resource_iteration_events_tags = %w[resource_iteration_events]

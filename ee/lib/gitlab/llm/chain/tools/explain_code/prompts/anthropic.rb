@@ -8,6 +8,7 @@ module Gitlab
           module Prompts
             class Anthropic
               include Concerns::AnthropicPrompt
+
               def self.prompt(variables)
                 {
                   prompt: Utils::Prompt.role_conversation(

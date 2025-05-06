@@ -100,6 +100,18 @@ module Geo
       end
     end
 
+    # @return [String] human-readable title. E.g. "Package File"
+    # Override in each model that includes this concern
+    def self.replicable_title
+      raise NotImplementedError
+    end
+
+    # @return [String] pluralized human-readable title. E.g. "Package Files"
+    # Override in each model that includes this concern
+    def self.replicable_title_plural
+      raise NotImplementedError
+    end
+
     def in_replicables_for_current_secondary?
       self.class.replicables_for_current_secondary(self).exists?
     end
