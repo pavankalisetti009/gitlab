@@ -10,6 +10,9 @@ module SecurityHelper
       project_list_endpoint: security_projects_path,
       instance_dashboard_settings_path: settings_security_dashboard_path,
       vulnerabilities_export_endpoint: expose_path(api_v4_security_vulnerability_exports_path),
+      vulnerabilities_pdf_export_endpoint: expose_path(
+        api_v4_security_vulnerability_exports_path(params: { export_format: :pdf })
+      ),
       can_admin_vulnerability: can_admin_vulnerability?,
       false_positive_doc_url: help_page_path('user/application_security/vulnerabilities/_index.md'),
       can_view_false_positive: can_view_false_positive?,

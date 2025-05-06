@@ -91,6 +91,7 @@ RSpec.describe Groups::SecurityFeaturesHelper, feature_category: :user_managemen
         empty_state_svg_path: helper.image_path('illustrations/empty-state/empty-dashboard-md.svg'),
         security_dashboard_empty_svg_path: helper.image_path('illustrations/empty-state/empty-secure-md.svg'),
         vulnerabilities_export_endpoint: "/api/v4/security/groups/#{group.id}/vulnerability_exports",
+        vulnerabilities_pdf_export_endpoint: "/api/v4/security/groups/#{group.id}/vulnerability_exports?export_format=pdf",
         can_admin_vulnerability: 'true',
         can_view_false_positive: 'false',
         has_projects: has_projects,
