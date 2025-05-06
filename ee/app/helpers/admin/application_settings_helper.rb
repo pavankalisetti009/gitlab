@@ -93,19 +93,11 @@ module Admin
         duo_chat_expiration_column: current_application_settings.duo_chat_expiration_column,
         duo_chat_expiration_days: current_application_settings.duo_chat_expiration_days.to_s,
         duo_core_features_enabled: ::Ai::Setting.instance.duo_core_features_enabled?.to_s,
-        is_duo_base_access_allowed: Feature.enabled?(:allow_duo_base_access, :instance).to_s,
-        duo_pro_or_duo_enterprise_tier: active_self_managed_duo_pro_or_duo_enterprise_add_on
+        is_duo_base_access_allowed: Feature.enabled?(:allow_duo_base_access, :instance).to_s
       }
     end
 
     private
-
-    def active_self_managed_duo_pro_or_duo_enterprise_add_on
-      add_on_purchase = GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_pro_or_duo_enterprise.active.first
-      return unless add_on_purchase
-
-      add_on_purchase.add_on.name.upcase
-    end
 
     def can_manage_self_hosted_models?
       has_required_license = ::License.current&.ultimate? || ::License.current&.premium?

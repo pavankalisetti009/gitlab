@@ -60,8 +60,7 @@ module EE
           is_duo_base_access_allowed: ::Feature.enabled?(:allow_duo_base_access, @group).to_s,
           show_early_access_banner: show_early_access_program_banner?.to_s,
           early_access_path: group_early_access_opt_in_path(@group),
-          update_id: @group.id,
-          duo_pro_or_duo_enterprise_tier: active_namespace_duo_pro_or_duo_enterprise_add_on
+          update_id: @group.id
         }
       end
 
@@ -84,13 +83,6 @@ module EE
       end
 
       private
-
-      def active_namespace_duo_pro_or_duo_enterprise_add_on
-        add_on_purchase = GitlabSubscriptions::AddOnPurchase.by_namespace(@group).for_duo_pro_or_duo_enterprise.active.first
-        return unless add_on_purchase
-
-        add_on_purchase.add_on.name.upcase
-      end
 
       def saas_user_caps_i18n_string(group)
         if ::Feature.enabled?(:saas_user_caps_auto_approve_pending_users_on_cap_increase, group.root_ancestor)

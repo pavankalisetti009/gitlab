@@ -40,7 +40,6 @@ export const initAiSettings = (id, component) => {
     enabledExpandedLogging,
     duoChatExpirationDays,
     duoChatExpirationColumn,
-    duoProOrDuoEnterpriseTier,
   } = el.dataset;
 
   let cascadingSettingsDataParsed;
@@ -76,7 +75,6 @@ export const initAiSettings = (id, component) => {
       isDuoBaseAccessAllowed: parseBoolean(isDuoBaseAccessAllowed),
       duoChatExpirationDays: parseInt(duoChatExpirationDays, 10),
       duoChatExpirationColumn,
-      duoProOrDuoEnterpriseTier,
     },
     render: (createElement) =>
       createElement(component, {
