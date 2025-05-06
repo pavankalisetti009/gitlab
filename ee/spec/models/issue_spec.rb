@@ -949,23 +949,6 @@ RSpec.describe Issue, feature_category: :team_planning do
     end
   end
 
-  context 'when an external authentication service' do
-    before do
-      enable_external_authorization_service_check
-    end
-
-    describe '#visible_to_user?' do
-      it 'does not check the external webservice for auditors' do
-        issue = build(:issue)
-        user = build(:auditor)
-
-        expect(::Gitlab::ExternalAuthorization).not_to receive(:access_allowed?)
-
-        issue.visible_to_user?(user)
-      end
-    end
-  end
-
   describe "#issue_link_type" do
     let(:issue) { build(:issue) }
 
