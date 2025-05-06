@@ -8,6 +8,16 @@ module Geo
       ::Projects::WikiRepository
     end
 
+    # @return [String] human-readable title.
+    def self.replicable_title
+      s_('Geo|Project Wiki Repository')
+    end
+
+    # @return [String] pluralized human-readable title.
+    def self.replicable_title_plural
+      s_('Geo|Project Wiki Repositories')
+    end
+
     override :housekeeping_model_record
     def housekeeping_model_record
       # The ::Repositories::HousekeepingService and Wikis::GitGarbageCollectWorker

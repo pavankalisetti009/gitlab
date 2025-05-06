@@ -8,6 +8,16 @@ module Geo
       DesignManagement::Repository
     end
 
+    # @return [String] human-readable title.
+    def self.replicable_title
+      s_('Geo|Design Management Repository')
+    end
+
+    # @return [String] pluralized human-readable title.
+    def self.replicable_title_plural
+      s_('Geo|Design Management Repositories')
+    end
+
     override :housekeeping_enabled?
     def self.housekeeping_enabled?
       false

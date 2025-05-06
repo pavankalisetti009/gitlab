@@ -34,6 +34,18 @@ RSpec.describe Geo::ReplicableModel, feature_category: :geo_replication do
     let(:replicator_class) { Geo::DummyReplicator }
   end
 
+  describe '.replicable_title' do
+    it 'raises NotImplementedError by default' do
+      expect { described_class.replicable_title }.to raise_error(NotImplementedError)
+    end
+  end
+
+  describe '.replicable_title_plural' do
+    it 'raises NotImplementedError by default' do
+      expect { described_class.replicable_title_plural }.to raise_error(NotImplementedError)
+    end
+  end
+
   describe '#geo_create_event!' do
     context 'when the replicator raises an error' do
       let(:error) { StandardError.new("testing error") }

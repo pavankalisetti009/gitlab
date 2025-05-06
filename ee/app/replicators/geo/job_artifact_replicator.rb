@@ -8,6 +8,16 @@ module Geo
       ::Ci::JobArtifact
     end
 
+    # @return [String] human-readable title.
+    def self.replicable_title
+      s_('Geo|Job Artifact')
+    end
+
+    # @return [String] pluralized human-readable title.
+    def self.replicable_title_plural
+      s_('Geo|Job Artifacts')
+    end
+
     def carrierwave_uploader
       model_record.file
     end

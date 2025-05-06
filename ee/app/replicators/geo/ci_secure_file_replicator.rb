@@ -8,6 +8,16 @@ module Geo
       ::Ci::SecureFile
     end
 
+    # @return [String] human-readable title.
+    def self.replicable_title
+      s_('Geo|Ci Secure File')
+    end
+
+    # @return [String] pluralized human-readable title.
+    def self.replicable_title_plural
+      s_('Geo|Ci Secure Files')
+    end
+
     def carrierwave_uploader
       model_record.file
     end

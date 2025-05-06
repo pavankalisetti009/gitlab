@@ -17,6 +17,16 @@ module Geo
         ::ContainerRepository
       end
 
+      # @return [String] human-readable title.
+      def replicable_title
+        s_('Geo|Container Repository')
+      end
+
+      # @return [String] pluralized human-readable title.
+      def replicable_title_plural
+        s_('Geo|Container Repositories')
+      end
+
       # ContainerRepository replication is a bit different in a way that it's not enough
       # to check if the feature flag is enabled we also need to check if
       # it's enabled in the config file Gitlab.config.geo.registry_replication.enabled

@@ -23,6 +23,8 @@ module Gitlab
       delegate :model, to: :class
       delegate :replication_enabled_feature_key, to: :class
       delegate :in_replicables_for_current_secondary?, to: :model_record
+      delegate :replicable_title, to: :class
+      delegate :replicable_title_plural, to: :class
 
       class << self
         delegate :find_registries_never_attempted_sync,
@@ -78,16 +80,6 @@ module Gitlab
       # @return [String] slug that identifies this replicator, pluralized
       def self.replicable_name_plural
         self.replicable_name.pluralize
-      end
-
-      # @return [String] human-readable title of this replicator. E.g. "Package File"
-      def self.replicable_title
-        self.replicable_name.titleize
-      end
-
-      # @return [String] human-readable title of this replicator, pluralized. E.g. "Package Files"
-      def self.replicable_title_plural
-        self.replicable_name.pluralize.titleize
       end
 
       # @return [String] GraphQL registries field name. E.g. "packageFileRegistries"

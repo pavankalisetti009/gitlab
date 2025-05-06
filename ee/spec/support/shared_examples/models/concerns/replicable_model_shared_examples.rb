@@ -30,6 +30,20 @@ RSpec.shared_examples 'a replicable model' do
     model_record.save!
   end
 
+  describe '.replicable_title' do
+    it 'returns replicator title' do
+      expect(replicator_class.replicable_title).to be_a(String)
+      expect(replicator_class.replicable_title).not_to be_empty
+    end
+  end
+
+  describe '.replicable_title_plural' do
+    it 'returns replicator pluralized title' do
+      expect(replicator_class.replicable_title_plural).to be_a(String)
+      expect(replicator_class.replicable_title_plural).not_to be_empty
+    end
+  end
+
   describe '.replicables_for_current_secondary' do
     let_it_be(:secondary) { create(:geo_node) }
 
