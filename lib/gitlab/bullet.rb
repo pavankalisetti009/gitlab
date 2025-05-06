@@ -12,5 +12,15 @@ module Gitlab
     def configure_bullet?
       defined?(::Bullet) && (enabled? || Gitlab.config.bullet.enabled)
     end
+
+    def skip_bullet
+      return yield unless configure_bullet?
+
+      previous_value = enabled?
+      ::Bullet.enable = false
+      yield
+    ensure
+      ::Bullet.enable = previous_value
+    end
   end
 end
