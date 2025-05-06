@@ -15,7 +15,12 @@ RSpec.describe 'admin/users/_user_type.html.haml', feature_category: :user_manag
   end
 
   context 'when :admin_custom_roles feature flag is enabled' do
+    let(:user_member_role) { instance_double(Users::UserMemberRole) }
+
     before do
+      allow(user).to receive(:user_member_roles).and_return([user_member_role])
+      allow(user_member_role).to receive_messages(member_role_id: 12, ldap: true)
+
       render
     end
 
@@ -25,6 +30,8 @@ RSpec.describe 'admin/users/_user_type.html.haml', feature_category: :user_manag
       expect(rendered).to have_selector "#js-user-type[data-user-type='regular']"
       expect(rendered).to have_selector "#js-user-type[data-is-current-user='false']"
       expect(rendered).to have_selector "#js-user-type[data-license-allows-auditor-user='true']"
+      expect(rendered).to have_selector "#js-user-type[data-admin-role-id='12']"
+      expect(rendered).to have_selector "#js-user-type[data-admin-role-ldap='true']"
       expect(rendered).to have_selector "#js-user-type[data-manage-roles-path='#{manage_roles_path}']"
     end
 
