@@ -22595,6 +22595,9 @@ msgstr ""
 msgid "Discuss a specific suggestion or question."
 msgstr ""
 
+msgid "Discussion is %{lockedLinkStart}locked%{lockedLinkEnd}. Only members can comment."
+msgstr ""
+
 msgid "Discussion locked."
 msgstr ""
 
@@ -36591,6 +36594,12 @@ msgstr ""
 msgid "Marked For Deletion At - %{deletion_time}"
 msgstr ""
 
+msgid "Marked as %{confidentialLinkStart}confidential%{confidentialLinkEnd} and discussion is %{lockedLinkStart}locked%{lockedLinkEnd}. People without permission will never get a notification and won't be able to comment."
+msgstr ""
+
+msgid "Marked as %{confidentialLinkStart}confidential%{confidentialLinkEnd}. People without permission will never get a notification."
+msgstr ""
+
 msgid "Marked as draft. Can only be merged when marked as ready."
 msgstr ""
 
@@ -43867,12 +43876,6 @@ msgid "Pending sync…"
 msgstr ""
 
 msgid "PendingMembers|There are no pending members left to approve. High five!"
-msgstr ""
-
-msgid "People without permission will never get a notification and won't be able to comment."
-msgstr ""
-
-msgid "People without permission will never get a notification."
 msgstr ""
 
 msgid "Percent rollout must be an integer number between 0 and 100"
@@ -61559,9 +61562,6 @@ msgstr ""
 msgid "This %{issuable} would exceed the maximum number of linked %{issuables} (%{limit})."
 msgstr ""
 
-msgid "This %{noteableTypeText} is %{confidentialLinkStart}confidential%{confidentialLinkEnd} and its %{lockedLinkStart}discussion is locked%{lockedLinkEnd}."
-msgstr ""
-
 msgid "This Cron pattern is invalid"
 msgstr ""
 
@@ -61845,9 +61845,6 @@ msgid "This is a Jira user."
 msgstr ""
 
 msgid "This is a child pipeline within the parent pipeline"
-msgstr ""
-
-msgid "This is a confidential %{noteableTypeText}."
 msgstr ""
 
 msgid "This is a delayed job to run in %{remainingTime}"
