@@ -14,7 +14,8 @@ import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_i
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
-import { findStatusWidget } from '~/work_items/utils';
+import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
+import { findStatusWidget, newWorkItemId } from '~/work_items/utils';
 import WorkItemStatusBadge from './shared/work_item_status_badge.vue';
 
 export default {
@@ -88,6 +89,9 @@ export default {
     },
     localStatusId() {
       return this.localStatus?.id;
+    },
+    createFlow() {
+      return this.workItemId === newWorkItemId(this.workItemType);
     },
     filteredWidgetDefinitions() {
       return (
@@ -174,6 +178,27 @@ export default {
         }) ?? {};
 
       try {
+        if (this.createFlow) {
+          this.updateInProgress = true;
+          this.$apollo.mutate({
+            mutation: updateNewWorkItemMutation,
+            variables: {
+              input: {
+                workItemType: this.workItemType,
+                fullPath: this.fullPath,
+                status: this.localStatus
+                  ? {
+                      ...this.localStatus,
+                    }
+                  : null,
+              },
+            },
+          });
+
+          this.updateInProgress = false;
+          return;
+        }
+
         const {
           data: {
             workItemUpdate: { errors },

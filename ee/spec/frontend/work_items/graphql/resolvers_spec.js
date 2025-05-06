@@ -9,8 +9,13 @@ import {
   WIDGET_TYPE_ITERATION,
   WIDGET_TYPE_WEIGHT,
   WIDGET_TYPE_CUSTOM_FIELDS,
+  WIDGET_TYPE_STATUS,
 } from '~/work_items/constants';
-import { createWorkItemQueryResponse, customFieldsWidgetResponseFactory } from '../mock_data';
+import {
+  createWorkItemQueryResponse,
+  customFieldsWidgetResponseFactory,
+  mockWorkItemStatus,
+} from '../mock_data';
 
 describe('EE work items graphql resolvers', () => {
   describe('updateNewWorkItemCache', () => {
@@ -191,125 +196,140 @@ describe('EE work items graphql resolvers', () => {
       });
     });
 
-    it('updates number custom field properly', async () => {
-      const customFieldInput = {
-        id: '1-number',
-        value: 5,
-      };
+    describe('with custom field input', () => {
+      it('updates number custom field properly', async () => {
+        const customFieldInput = {
+          id: '1-number',
+          value: 5,
+        };
 
-      await mutate({ customField: customFieldInput });
+        await mutate({ customField: customFieldInput });
 
-      const queryResult = await query(WIDGET_TYPE_CUSTOM_FIELDS);
+        const queryResult = await query(WIDGET_TYPE_CUSTOM_FIELDS);
 
-      // Find the specific custom field in the customFieldValues array
-      const updatedField = queryResult.customFieldValues.find(
-        (field) => field.customField.id === '1-number',
-      );
+        // Find the specific custom field in the customFieldValues array
+        const updatedField = queryResult.customFieldValues.find(
+          (field) => field.customField.id === '1-number',
+        );
 
-      expect(updatedField.customField.fieldType).toBe('NUMBER');
-      expect(updatedField.value).toBe(5);
+        expect(updatedField.customField.fieldType).toBe('NUMBER');
+        expect(updatedField.value).toBe(5);
+      });
+
+      it('updates text custom field properly', async () => {
+        const customFieldInput = {
+          id: '1-text',
+          value: 'Sample text',
+        };
+
+        await mutate({ customField: customFieldInput });
+
+        const queryResult = await query(WIDGET_TYPE_CUSTOM_FIELDS);
+
+        // Find the specific custom field in the customFieldValues array
+        const updatedField = queryResult.customFieldValues.find(
+          (field) => field.customField.id === '1-text',
+        );
+
+        expect(updatedField.customField.fieldType).toBe('TEXT');
+        expect(updatedField.value).toBe('Sample text');
+      });
+
+      it('updates single select custom field properly', async () => {
+        const customFieldInput = {
+          id: '1-select',
+          selectedOptions: [
+            {
+              id: 'select-1',
+              value: 'Option 1',
+            },
+          ],
+        };
+
+        await mutate({ customField: customFieldInput });
+
+        const queryResult = await query(WIDGET_TYPE_CUSTOM_FIELDS);
+
+        // Find the specific custom field in the customFieldValues array
+        const updatedField = queryResult.customFieldValues.find(
+          (field) => field.customField.id === '1-select',
+        );
+
+        expect(updatedField.customField.fieldType).toBe('SINGLE_SELECT');
+        expect(updatedField.selectedOptions[0].id).toBe('select-1');
+        expect(updatedField.selectedOptions[0].value).toBe('Option 1');
+      });
+
+      it('updates multi select custom field properly', async () => {
+        const customFieldInput = {
+          id: '1-multi-select',
+          selectedOptions: [
+            {
+              id: 'select-1',
+              value: 'Option 1',
+            },
+            {
+              id: 'select-2',
+              value: 'Option 2',
+            },
+          ],
+        };
+
+        await mutate({ customField: customFieldInput });
+
+        const queryResult = await query(WIDGET_TYPE_CUSTOM_FIELDS);
+
+        // Find the specific custom field in the customFieldValues array
+        const updatedField = queryResult.customFieldValues.find(
+          (field) => field.customField.id === '1-multi-select',
+        );
+
+        expect(updatedField.customField.fieldType).toBe('MULTI_SELECT');
+        expect(updatedField.selectedOptions[0].id).toBe('select-1');
+        expect(updatedField.selectedOptions[0].value).toBe('Option 1');
+        expect(updatedField.selectedOptions[1].id).toBe('select-2');
+        expect(updatedField.selectedOptions[1].value).toBe('Option 2');
+      });
+
+      it('does not update custom field if id doesnt match', async () => {
+        const customFieldInput = {
+          id: '1-invalid',
+          selectedOptions: [
+            {
+              id: 'select-1',
+              value: 'Option 1',
+            },
+            {
+              id: 'select-2',
+              value: 'Option 2',
+            },
+          ],
+        };
+
+        await mutate({ customField: customFieldInput });
+
+        const queryResult = await query(WIDGET_TYPE_CUSTOM_FIELDS);
+
+        // Find the specific custom field in the customFieldValues array
+        const updatedField = queryResult.customFieldValues.find(
+          (field) => field.customField.id === '1-invalid',
+        );
+
+        expect(updatedField).toBe(undefined);
+      });
     });
 
-    it('updates text custom field properly', async () => {
-      const customFieldInput = {
-        id: '1-text',
-        value: 'Sample text',
-      };
+    describe('with custom status input', () => {
+      it('updates status', async () => {
+        await mutate({
+          status: mockWorkItemStatus,
+        });
 
-      await mutate({ customField: customFieldInput });
-
-      const queryResult = await query(WIDGET_TYPE_CUSTOM_FIELDS);
-
-      // Find the specific custom field in the customFieldValues array
-      const updatedField = queryResult.customFieldValues.find(
-        (field) => field.customField.id === '1-text',
-      );
-
-      expect(updatedField.customField.fieldType).toBe('TEXT');
-      expect(updatedField.value).toBe('Sample text');
-    });
-
-    it('updates single select custom field properly', async () => {
-      const customFieldInput = {
-        id: '1-select',
-        selectedOptions: [
-          {
-            id: 'select-1',
-            value: 'Option 1',
-          },
-        ],
-      };
-
-      await mutate({ customField: customFieldInput });
-
-      const queryResult = await query(WIDGET_TYPE_CUSTOM_FIELDS);
-
-      // Find the specific custom field in the customFieldValues array
-      const updatedField = queryResult.customFieldValues.find(
-        (field) => field.customField.id === '1-select',
-      );
-
-      expect(updatedField.customField.fieldType).toBe('SINGLE_SELECT');
-      expect(updatedField.selectedOptions[0].id).toBe('select-1');
-      expect(updatedField.selectedOptions[0].value).toBe('Option 1');
-    });
-
-    it('updates multi select custom field properly', async () => {
-      const customFieldInput = {
-        id: '1-multi-select',
-        selectedOptions: [
-          {
-            id: 'select-1',
-            value: 'Option 1',
-          },
-          {
-            id: 'select-2',
-            value: 'Option 2',
-          },
-        ],
-      };
-
-      await mutate({ customField: customFieldInput });
-
-      const queryResult = await query(WIDGET_TYPE_CUSTOM_FIELDS);
-
-      // Find the specific custom field in the customFieldValues array
-      const updatedField = queryResult.customFieldValues.find(
-        (field) => field.customField.id === '1-multi-select',
-      );
-
-      expect(updatedField.customField.fieldType).toBe('MULTI_SELECT');
-      expect(updatedField.selectedOptions[0].id).toBe('select-1');
-      expect(updatedField.selectedOptions[0].value).toBe('Option 1');
-      expect(updatedField.selectedOptions[1].id).toBe('select-2');
-      expect(updatedField.selectedOptions[1].value).toBe('Option 2');
-    });
-
-    it('does not update custom field if id doesnt match', async () => {
-      const customFieldInput = {
-        id: '1-invalid',
-        selectedOptions: [
-          {
-            id: 'select-1',
-            value: 'Option 1',
-          },
-          {
-            id: 'select-2',
-            value: 'Option 2',
-          },
-        ],
-      };
-
-      await mutate({ customField: customFieldInput });
-
-      const queryResult = await query(WIDGET_TYPE_CUSTOM_FIELDS);
-
-      // Find the specific custom field in the customFieldValues array
-      const updatedField = queryResult.customFieldValues.find(
-        (field) => field.customField.id === '1-invalid',
-      );
-
-      expect(updatedField).toBe(undefined);
+        const queryResult = await query(WIDGET_TYPE_STATUS);
+        expect(queryResult).toMatchObject({
+          status: mockWorkItemStatus,
+        });
+      });
     });
   });
 });
