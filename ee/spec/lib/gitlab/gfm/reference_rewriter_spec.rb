@@ -33,6 +33,10 @@ RSpec.describe Gitlab::Gfm::ReferenceRewriter, feature_category: :team_planning 
       parent_group2.add_reporter(user)
     end
 
+    before do
+      stub_licensed_features(epics: true)
+    end
+
     context 'with source as Project and target as Project within same parent group' do
       let_it_be(:source_parent) { source_project }  # 'parent-group-one/old-project'
       let_it_be(:target_parent) { target_project1 } # 'parent-group-one/new-project'
