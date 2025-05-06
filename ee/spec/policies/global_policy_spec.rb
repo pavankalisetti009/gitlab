@@ -902,4 +902,44 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       end
     end
   end
+
+  describe 'access_duo_core_features' do
+    let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }
+
+    context 'when Duo Core features are not available' do
+      before do
+        stub_licensed_features(code_suggestions: false, ai_chat: false)
+      end
+
+      it { is_expected.to be_disallowed(:access_duo_core_features) }
+    end
+
+    context 'when Duo Core features are available' do
+      context 'when Duo Core features are not enabled' do
+        before do
+          ::Ai::Setting.instance.update!(duo_core_features_enabled: false)
+        end
+
+        it { is_expected.to be_disallowed(:access_duo_core_features) }
+      end
+
+      context 'when Duo Core features are enabled' do
+        before do
+          ::Ai::Setting.instance.update!(duo_core_features_enabled: true)
+        end
+
+        context 'when allow_duo_base_access flag is off' do
+          before do
+            stub_feature_flags(allow_duo_base_access: false)
+          end
+
+          it { is_expected.to be_disallowed(:access_duo_core_features) }
+        end
+
+        context 'when allow_duo_base_access flag is on' do
+          it { is_expected.to be_allowed(:access_duo_core_features) }
+        end
+      end
+    end
+  end
 end

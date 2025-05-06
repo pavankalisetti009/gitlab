@@ -16,6 +16,7 @@ module EE
       JOINING_A_PROJECT_ALERT = 'joining_a_project_alert'
       PIPL_COMPLIANCE_ALERT = 'pipl_compliance_alert'
       DUO_CORE_RELEASE_DATE = Date.new(2025, 5, 15)
+      EXPLORE_DUO_CORE_BANNER = 'explore_duo_core_banner'
 
       override :render_dashboard_ultimate_trial
       def render_dashboard_ultimate_trial(user)
@@ -85,6 +86,12 @@ module EE
           !user_dismissed?(callouts_feature_name)
       end
 
+      def show_explore_duo_core_banner?(merge_request, namespace)
+        merge_request.assignees.include?(current_user) &&
+          duo_core_available?(namespace) &&
+          !user_dismissed?(EXPLORE_DUO_CORE_BANNER)
+      end
+
       private
 
       override :dismissed_callout?
@@ -108,6 +115,15 @@ module EE
 
       def show_ultimate_trial_suitable_env?
         ::Gitlab.com? && !::Gitlab::Database.read_only?
+      end
+
+      def duo_core_available?(namespace)
+        if ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
+          ::Feature.enabled?(:reveal_duo_core_feature, namespace) &&
+            current_user.can?(:access_duo_core_features, namespace)
+        else
+          current_user.can?(:access_duo_core_features)
+        end
       end
     end
   end
