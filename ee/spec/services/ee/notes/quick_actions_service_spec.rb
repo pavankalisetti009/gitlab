@@ -504,6 +504,61 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
     end
   end
 
+  describe '/request_review' do
+    context 'when requesting a review from Duo bot' do
+      let(:duo_bot) { ::Users::Internal.duo_code_review_bot }
+      let(:has_duo_access) { false }
+      let(:note) { create(:note_on_merge_request, note: note_text, noteable: merge_request, project: project) }
+
+      before do
+        allow(merge_request).to receive(:ai_review_merge_request_allowed?).and_return(has_duo_access)
+        merge_request.duo_code_review_attempted = nil
+
+        project.add_maintainer(reviewer)
+        project.add_maintainer(user)
+      end
+
+      context 'when user lacks Duo access' do
+        let(:has_duo_access) { false }
+        let(:note_text) { "/request_review @#{duo_bot.username}" }
+
+        it 'filters out Duo bot and shows access error message' do
+          _, update_params, message = service.execute(note)
+
+          expect(message).to include("Your account doesn't have GitLab Duo access")
+          expect(update_params[:reviewer_ids]).to be_nil
+          expect(merge_request.duo_code_review_attempted).to be true
+        end
+
+        context 'when also requesting a review from a regular user' do
+          let(:note_text) { "/request_review @#{duo_bot.username} @#{user.username}" }
+
+          it 'still requests a review from regular reviewers along with Duo error message' do
+            _, update_params, message = service.execute(note)
+
+            expect(message).to include("Your account doesn't have GitLab Duo access")
+            expect(message).to include("Requested a review from @#{user.username}")
+            expect(update_params[:reviewer_ids]).to contain_exactly(user.id)
+            expect(merge_request.duo_code_review_attempted).to be true
+          end
+        end
+      end
+
+      context 'when user has Duo access' do
+        let(:has_duo_access) { true }
+        let(:note_text) { "/request_review @#{duo_bot.username}" }
+
+        it 'request review from Duo bot' do
+          _, update_params, message = service.execute(note)
+
+          expect(message).to include("Requested a review from @#{duo_bot.username}")
+          expect(update_params[:reviewer_ids]).to contain_exactly(duo_bot.id)
+          expect(merge_request.duo_code_review_attempted).to be_nil
+        end
+      end
+    end
+  end
+
   describe '/assign' do
     let(:user) { create(:user) }
     let(:note_text) { %(/assign @#{user.username} @#{assignee.username}\n) }

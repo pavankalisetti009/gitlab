@@ -9,6 +9,7 @@ module EE
         prepended do
           before_action :disable_query_limiting, only: [:create]
           before_action :check_for_saml_authorization, only: [:new]
+          after_action :display_duo_seat_warning, only: [:create]
         end
 
         private
