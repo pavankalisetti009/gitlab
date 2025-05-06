@@ -7,7 +7,6 @@ module Gitlab
         module MergeRequestReader
           class Executor < Identifier
             include Concerns::ReaderTooling
-            prepend Concerns::UseAiGatewayAgentPrompt
 
             RESOURCE_NAME = 'merge request'
             NAME = "MergeRequestReader"
@@ -107,6 +106,14 @@ module Gitlab
             ].freeze
 
             private
+
+            def unit_primitive
+              'merge_request_reader'
+            end
+
+            def use_ai_gateway_agent_prompt?
+              true
+            end
 
             def reference_pattern_by_type
               PROJECT_REGEX
