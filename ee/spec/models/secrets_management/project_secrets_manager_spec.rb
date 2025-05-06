@@ -26,6 +26,206 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
     end
   end
 
+  describe '#ci_policies' do
+    let_it_be(:project) { create(:project) }
+    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
+
+    describe '#ci_policy_name_global' do
+      it 'returns the correct global policy name' do
+        expect(secrets_manager.ci_policy_name_global).to eq("project_#{project.id}/pipelines/global")
+      end
+    end
+
+    describe '#ci_policy_name_env' do
+      it 'returns the correct environment policy name with hex-encoded environment' do
+        environment = 'production'
+        hex_env = environment.unpack1('H*')
+
+        expect(secrets_manager.ci_policy_name_env(environment)).to eq("project_#{project.id}/pipelines/env/#{hex_env}")
+      end
+
+      it 'handles special characters in environment names' do
+        environment = 'staging/us-east-1'
+        hex_env = environment.unpack1('H*')
+
+        expect(secrets_manager.ci_policy_name_env(environment)).to eq("project_#{project.id}/pipelines/env/#{hex_env}")
+      end
+    end
+
+    describe '#ci_policy_name_branch' do
+      it 'returns the correct branch policy name with hex-encoded branch' do
+        branch = 'main'
+        hex_branch = branch.unpack1('H*')
+        policy_name = "project_#{project.id}/pipelines/branch/#{hex_branch}"
+
+        expect(secrets_manager.ci_policy_name_branch(branch)).to eq(policy_name)
+      end
+
+      it 'handles special characters in branch names' do
+        branch = 'feature/add-new-widget'
+        hex_branch = branch.unpack1('H*')
+        policy_name = "project_#{project.id}/pipelines/branch/#{hex_branch}"
+
+        expect(secrets_manager.ci_policy_name_branch(branch)).to eq(policy_name)
+      end
+    end
+
+    describe '#ci_policy_name_combined' do
+      it 'returns the correct combined policy name with hex-encoded environment and branch' do
+        environment = 'production'
+        branch = 'main'
+        hex_env = environment.unpack1('H*')
+        hex_branch = branch.unpack1('H*')
+
+        expected = "project_#{project.id}/pipelines/combined/env/#{hex_env}/branch/#{hex_branch}"
+        expect(secrets_manager.ci_policy_name_combined(environment, branch)).to eq(expected)
+      end
+
+      it 'handles special characters in environment and branch names' do
+        environment = 'staging/us-east-1'
+        branch = 'feature/add-new-widget'
+        hex_env = environment.unpack1('H*')
+        hex_branch = branch.unpack1('H*')
+
+        expected = "project_#{project.id}/pipelines/combined/env/#{hex_env}/branch/#{hex_branch}"
+        expect(secrets_manager.ci_policy_name_combined(environment, branch)).to eq(expected)
+      end
+    end
+
+    describe '#ci_auth_literal_policies' do
+      it 'returns an array with all policy types' do
+        policies = secrets_manager.ci_auth_literal_policies
+
+        expect(policies.size).to eq(4)
+        expect(policies[0]).to eq("project_#{project.id}/pipelines/global") # Global policy
+        expect(policies[1]).to eq(secrets_manager.ci_policy_template_literal_environment)
+        expect(policies[2]).to eq(secrets_manager.ci_policy_template_literal_branch)
+        expect(policies[3]).to eq(secrets_manager.ci_policy_template_literal_combined)
+      end
+    end
+
+    describe '#ci_auth_glob_policies' do
+      context 'with environment glob and literal branch' do
+        let(:environment) { 'prod-*' }
+        let(:branch) { 'main' }
+
+        it 'returns environment glob and combined environment glob with branch policies' do
+          policies = secrets_manager.ci_auth_glob_policies(environment, branch)
+
+          expect(policies.size).to eq(2)
+          expect(policies[0]).to eq(secrets_manager.ci_policy_template_glob_environment(environment))
+          expect(policies[1]).to eq(secrets_manager.ci_policy_template_combined_glob_environment_branch(environment,
+            branch))
+        end
+      end
+
+      context 'with literal environment and branch glob' do
+        let(:environment) { 'production' }
+        let(:branch) { 'feature-*' }
+
+        it 'returns branch glob and combined environment with branch glob policies' do
+          policies = secrets_manager.ci_auth_glob_policies(environment, branch)
+
+          expect(policies.size).to eq(2)
+          expect(policies[0]).to eq(secrets_manager.ci_policy_template_glob_branch(branch))
+          expect(policies[1]).to eq(secrets_manager.ci_policy_template_combined_environment_glob_branch(environment,
+            branch))
+        end
+      end
+
+      context 'with both environment and branch globs' do
+        let(:environment) { 'prod-*' }
+        let(:branch) { 'feature-*' }
+
+        it 'returns environment glob, branch glob, and combined glob policies' do
+          policies = secrets_manager.ci_auth_glob_policies(environment, branch)
+
+          expect(policies.size).to eq(3)
+          expect(policies[0]).to eq(secrets_manager.ci_policy_template_glob_environment(environment))
+          expect(policies[1]).to eq(secrets_manager.ci_policy_template_glob_branch(branch))
+          expect(policies[2]).to eq(secrets_manager.ci_policy_template_combined_glob_environment_glob_branch(
+            environment, branch))
+        end
+      end
+
+      context 'with no globs' do
+        let(:environment) { 'production' }
+        let(:branch) { 'main' }
+
+        it 'returns an empty array' do
+          policies = secrets_manager.ci_auth_glob_policies(environment, branch)
+
+          expect(policies).to be_empty
+        end
+      end
+    end
+
+    describe '#ci_policy_template_glob_environment' do
+      it 'returns a template that checks for matching environment with hex encoding' do
+        env_glob = 'prod-*'
+        env_glob_hex = env_glob.unpack1('H*')
+
+        template = secrets_manager.ci_policy_template_glob_environment(env_glob)
+
+        expect(template).to include("(eq \"#{env_glob_hex}\" (.environment | hex))")
+        expect(template).to include(secrets_manager.ci_policy_name_env(env_glob))
+      end
+    end
+
+    describe '#ci_policy_template_glob_branch' do
+      it 'returns a template that checks for matching branch with hex encoding' do
+        branch_glob = 'feature-*'
+        branch_glob_hex = branch_glob.unpack1('H*')
+
+        template = secrets_manager.ci_policy_template_glob_branch(branch_glob)
+
+        expect(template).to include("(eq \"#{branch_glob_hex}\" (.ref | hex))")
+        expect(template).to include(secrets_manager.ci_policy_name_branch(branch_glob))
+      end
+    end
+
+    describe '#ci_policy_template_combined_glob_environment_branch' do
+      it 'returns a template that checks for matching environment glob with literal branch' do
+        env_glob = 'prod-*'
+        branch_literal = 'main'
+        env_glob_hex = env_glob.unpack1('H*')
+
+        template = secrets_manager.ci_policy_template_combined_glob_environment_branch(env_glob, branch_literal)
+
+        expect(template).to include("(eq \"#{env_glob_hex}\" (.environment | hex))")
+        expect(template).to include(secrets_manager.ci_policy_name_combined(env_glob, branch_literal))
+      end
+    end
+
+    describe '#ci_policy_template_combined_environment_glob_branch' do
+      it 'returns a template that checks for matching branch glob with literal environment' do
+        env_literal = 'production'
+        branch_glob = 'feature-*'
+        branch_glob_hex = branch_glob.unpack1('H*')
+
+        template = secrets_manager.ci_policy_template_combined_environment_glob_branch(env_literal, branch_glob)
+
+        expect(template).to include("(eq \"#{branch_glob_hex}\" (.ref | hex))")
+        expect(template).to include(secrets_manager.ci_policy_name_combined(env_literal, branch_glob))
+      end
+    end
+
+    describe '#ci_policy_template_combined_glob_environment_glob_branch' do
+      it 'returns a template that checks for matching environment and branch globs' do
+        env_glob = 'prod-*'
+        branch_glob = 'feature-*'
+        env_glob_hex = env_glob.unpack1('H*')
+        branch_glob_hex = branch_glob.unpack1('H*')
+
+        template = secrets_manager.ci_policy_template_combined_glob_environment_glob_branch(env_glob, branch_glob)
+
+        expect(template).to include("(eq \"#{env_glob_hex}\" (.environment | hex))")
+        expect(template).to include("(eq \"#{branch_glob_hex}\" (.ref | hex))")
+        expect(template).to include(secrets_manager.ci_policy_name_combined(env_glob, branch_glob))
+      end
+    end
+  end
+
   describe '#ci_secrets_mount_path' do
     let(:secrets_manager) { build(:project_secrets_manager, project: project) }
 

@@ -64,7 +64,7 @@ module SecretsManagement
         token_policies_template_claims: true,
         token_policies: secrets_manager.ci_auth_literal_policies,
         bound_claims: {
-          project_id: secrets_manager.project.id
+          project_id: secrets_manager.project.id.to_s
         },
         bound_audiences: [ProjectSecretsManager.server_url],
         user_claim: "project_id",
