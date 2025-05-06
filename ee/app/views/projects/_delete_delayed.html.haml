@@ -9,4 +9,5 @@
     - linked_configurations.each do |configuration|
       %li
         = link_to(configuration.project&.name || configuration.namespace&.name, security_policies_path(configuration.project || configuration.namespace))
-  #js-project-delete-button{ data: project_delete_delayed_button_data(@project, is_security_policy_project: true) }
+  = render Pajamas::ButtonComponent.new(disabled: true) do
+    = _('Delete project')
