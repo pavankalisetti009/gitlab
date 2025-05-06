@@ -327,4 +327,14 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
 
     it { expect(response).to have_gitlab_http_status(:ok) }
   end
+
+  describe 'PUT #update' do
+    subject(:send_request) do
+      put project_merge_request_path(project, merge_request), params: {
+        merge_request: { description: description }
+      }
+    end
+
+    include_examples 'handle quickactions without Duo access'
+  end
 end

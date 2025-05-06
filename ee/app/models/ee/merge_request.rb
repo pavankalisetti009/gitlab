@@ -205,6 +205,9 @@ module EE
 
       # It allows us to finalize the approval rules of merged merge requests
       attr_accessor :finalizing_rules
+
+      # Used to show warning messages when Duo Code Review is attempted without a seat
+      attr_accessor :duo_code_review_attempted
     end
 
     class_methods do

@@ -11,10 +11,13 @@ module EE
 
       def assign_duo_as_reviewer(merge_request)
         return unless merge_request.project.auto_duo_code_review_enabled
-        return unless merge_request.ai_review_merge_request_allowed?(current_user)
 
-        duo_bot = ::Users::Internal.duo_code_review_bot
-        merge_request.reviewers << duo_bot unless merge_request.reviewer_ids.include?(duo_bot.id)
+        if merge_request.ai_review_merge_request_allowed?(current_user)
+          duo_bot = ::Users::Internal.duo_code_review_bot
+          merge_request.reviewers << duo_bot unless merge_request.reviewer_ids.include?(duo_bot.id)
+        else
+          merge_request.duo_code_review_attempted = true
+        end
       end
 
       override :handle_reviewers_change

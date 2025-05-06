@@ -34,6 +34,8 @@ module EE
           experiment(:root_cause_analysis_hotspot, actor: current_user, group: project.root_ancestor).publish
         end
 
+        after_action :display_duo_seat_warning, only: [:update]
+
         feature_category :vulnerability_management, [:container_scanning_reports, :dependency_scanning_reports,
           :sast_reports, :secret_detection_reports, :dast_reports,
           :coverage_fuzzing_reports, :api_fuzzing_reports,
