@@ -6462,6 +6462,9 @@ msgstr ""
 msgid "Allow top-level group owners to create Service accounts."
 msgstr ""
 
+msgid "Allow unauthenticated users to use search"
+msgstr ""
+
 msgid "Allow use of licensed EE features"
 msgstr ""
 
@@ -16686,13 +16689,13 @@ msgstr ""
 msgid "Configure runner version management and registration settings."
 msgstr ""
 
+msgid "Configure search access and visibility settings for search scopes."
+msgstr ""
+
 msgid "Configure settings for Advanced Search with Elasticsearch."
 msgstr ""
 
 msgid "Configure settings for exact code search."
-msgstr ""
-
-msgid "Configure settings for global search."
 msgstr ""
 
 msgid "Configure specific limits for Files API requests that supersede the general user and IP rate limits."
@@ -28293,9 +28296,6 @@ msgid "Given inputs not defined in the `spec` section of the included configurat
 msgstr ""
 
 msgid "Global SAML group membership lock"
-msgstr ""
-
-msgid "Global Search"
 msgstr ""
 
 msgid "Global Search is disabled for this scope"
@@ -51072,7 +51072,7 @@ msgstr ""
 msgid "Restrict access by IP address"
 msgstr ""
 
-msgid "Restrict global search to authenticated users"
+msgid "Restrict global search to authenticated users only"
 msgstr ""
 
 msgid "Restrict membership by email domain"
@@ -57282,7 +57282,7 @@ msgstr ""
 msgid "Show whitespace changes"
 msgstr ""
 
-msgid "Show wiki in global search results"
+msgid "Show wikis in global search results"
 msgstr ""
 
 msgid "Showing %d project."
