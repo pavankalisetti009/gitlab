@@ -19,7 +19,7 @@ export default {
       'An error occurred while retrieving your settings. Reload the page to try again.',
     ),
   },
-  inject: ['showEarlyAccessBanner'],
+  inject: ['showEarlyAccessBanner', 'onGeneralSettingsPage', 'isDuoBaseAccessAllowed'],
   provide: {
     isSaaS: true,
   },
@@ -40,11 +40,16 @@ export default {
       try {
         this.isLoading = true;
 
-        await updateGroupSettings(this.updateId, {
+        const input = {
           duo_availability: duoAvailability,
           experiment_features_enabled: experimentFeaturesEnabled,
-          duo_core_features_enabled: duoCoreFeaturesEnabled,
-        });
+        };
+
+        if (!this.onGeneralSettingsPage && this.isDuoBaseAccessAllowed) {
+          input.duo_core_features_enabled = duoCoreFeaturesEnabled;
+        }
+
+        await updateGroupSettings(this.updateId, input);
 
         visitUrlWithAlerts(this.redirectPath, [
           {
