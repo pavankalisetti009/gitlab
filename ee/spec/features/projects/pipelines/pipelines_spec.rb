@@ -75,8 +75,6 @@ RSpec.describe 'Pipelines', :js, feature_category: :continuous_integration do
 
         verify_phone_number
 
-        click_link 'Next'
-
         wait_for_requests
 
         run_pipeline
