@@ -16,7 +16,6 @@ module EE
       include ::WebHooks::HasWebHooks
       include CanMoveRepositoryStorage
       include ReactiveCaching
-      include IssueParent
       include ::WorkItems::Parent
       include Elastic::MaintainElasticsearchOnGroupUpdate
       include ProductAnalyticsHelpers
