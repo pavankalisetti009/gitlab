@@ -37,17 +37,14 @@ describe('your work groups resolver', () => {
     } = await makeQuery();
 
     expect(nodes[0]).toMatchObject({
-      markedForDeletionOn: null,
       isAdjournedDeletionEnabled: false,
       permanentDeletionDate: null,
       children: [
         {
-          markedForDeletionOn: null,
           isAdjournedDeletionEnabled: false,
           permanentDeletionDate: null,
           children: [
             {
-              markedForDeletionOn: null,
               isAdjournedDeletionEnabled: false,
               permanentDeletionDate: null,
             },
