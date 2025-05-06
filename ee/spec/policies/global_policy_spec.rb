@@ -610,7 +610,6 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
           allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:self_hosted_models)
                                                                             .and_return(self_hosted_service_data)
           allow(current_user).to receive(:allowed_to_use?).and_return(allowed_to_use)
-          allow(self_hosted_service_data).to receive(:allowed_for?).with(current_user).and_return(allowed_to_use)
           allow(self_hosted_service_data).to receive(:free_access?).and_return(free)
         end
 

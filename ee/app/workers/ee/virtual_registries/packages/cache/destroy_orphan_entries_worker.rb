@@ -48,7 +48,6 @@ module EE
           def log_metadata(cache_entry)
             log_extra_metadata_on_done(:cache_entry_id, cache_entry.id)
             log_extra_metadata_on_done(:group_id, cache_entry.group_id)
-            log_extra_metadata_on_done(:relative_path, cache_entry.relative_path)
           end
 
           def log_cleanup_item(cache_entry)

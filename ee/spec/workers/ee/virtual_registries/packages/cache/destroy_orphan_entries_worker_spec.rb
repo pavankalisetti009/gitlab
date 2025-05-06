@@ -30,9 +30,9 @@ RSpec.describe VirtualRegistries::Packages::Cache::DestroyOrphanEntriesWorker, t
       end
 
       it 'destroys orphan cache entries' do
-        expect(worker).to receive(:log_extra_metadata_on_done).with(:cache_entry_id, orphan_cache_entry.id)
+        expect(worker).to receive(:log_extra_metadata_on_done).with(:cache_entry_id,
+          [orphan_cache_entry.upstream_id, orphan_cache_entry.relative_path, 'processing'])
         expect(worker).to receive(:log_extra_metadata_on_done).with(:group_id, orphan_cache_entry.group_id)
-        expect(worker).to receive(:log_extra_metadata_on_done).with(:relative_path, orphan_cache_entry.relative_path)
         expect(model).to receive(:next_pending_destruction).and_call_original
         expect { perform_work }.to change { model.count }.by(-1)
         expect { orphan_cache_entry.reset }.to raise_error(ActiveRecord::RecordNotFound)

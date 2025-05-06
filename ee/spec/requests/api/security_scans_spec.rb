@@ -84,7 +84,7 @@ RSpec.describe API::SecurityScans, feature_category: :static_application_securit
     before do
       service = instance_double('::CloudConnector::SelfSigned::AvailableServiceData')
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
-      allow(service).to receive_messages({ free_access?: false, allowed_for?: true, access_token: jwt })
+      allow(service).to receive_messages({ free_access?: false, access_token: jwt })
     end
 
     context 'when user can access the security scan api for the project' do

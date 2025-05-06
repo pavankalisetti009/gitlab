@@ -436,4 +436,93 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
       end
     end
   end
+
+  describe '#modification_blocked_by_policy?' do
+    subject(:result) { protected_branch.modification_blocked_by_policy? }
+
+    before do
+      project.repository.add_branch(project.creator, branch_name, 'HEAD')
+    end
+
+    context 'with project-level protected branch' do
+      let(:project) { create(:project, :repository) }
+      let(:protected_branch) { create(:protected_branch, project: project) }
+      let(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
+
+      context 'without blocking scan result policy' do
+        let(:scan_result_policies) { [] }
+
+        it { is_expected.to be(false) }
+      end
+
+      include_context 'with scan result policy blocking protected branches' do
+        let(:branch_name) { protected_branch.name }
+
+        it { is_expected.to be(true) }
+
+        context 'without feature available' do
+          before do
+            stub_licensed_features(security_orchestration_policies: false)
+          end
+
+          it { is_expected.to be(false) }
+        end
+
+        context 'with mismatching name' do
+          let(:branch_name) { protected_branch.name.reverse }
+
+          it { is_expected.to be(false) }
+        end
+
+        context 'when protected branch is not backed by git ref' do
+          before do
+            project.repository.delete_branch(branch_name)
+          end
+
+          after do
+            project.repository.add_branch(project.creator, branch_name, 'HEAD')
+          end
+
+          it { is_expected.to be(true) }
+        end
+      end
+    end
+
+    context 'with group-level protected branch' do
+      let(:group) { create(:group) }
+      let(:project) { create(:project, :repository, group: group) }
+      let(:protected_branch) { create(:protected_branch, :group_level, group: group) }
+      let(:policy_configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: group) }
+
+      context 'without blocking scan result policy' do
+        let(:scan_result_policies) { [] }
+
+        it { is_expected.to be(false) }
+      end
+
+      include_context 'with scan result policy blocking group-level protected branches' do
+        let(:branch_name) { protected_branch.name }
+
+        it { is_expected.to be(true) }
+
+        context 'without feature available' do
+          before do
+            stub_licensed_features(security_orchestration_policies: false)
+          end
+
+          it { is_expected.to be(false) }
+        end
+      end
+
+      context 'when excepted' do
+        let(:scan_result_policy) do
+          build(:scan_result_policy,
+            branch_type: 'protected',
+            approval_settings: { block_group_branch_modification: { enabled: true, exceptions: [{ id: group.id }] } })
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
+  end
 end

@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe Security::AnalyzerNamespaceStatus, feature_category: :security_asset_inventories do
   describe 'associations' do
     it { is_expected.to belong_to(:namespace) }
+    it { is_expected.to belong_to(:group) }
   end
 
   describe 'validations' do

@@ -25,6 +25,17 @@ RSpec.describe Security::Orchestration::CreateBotService, feature_category: :sec
       expect { execute_service }.to raise_error(Gitlab::Access::AccessDeniedError)
     end
 
+    it 'logs the authorization failure' do
+      expect(Gitlab::AppJsonLogger).to receive(:info).with(
+        hash_including(
+          event: 'security_policy_bot_creation',
+          message: 'User not authorized to create security policy bot'
+        )
+      )
+
+      expect { execute_service }.to raise_error(Gitlab::Access::AccessDeniedError)
+    end
+
     context 'when skipping authorization' do
       let(:skip_authorization) { true }
 
@@ -54,6 +65,31 @@ RSpec.describe Security::Orchestration::CreateBotService, feature_category: :sec
           expect { execute_service }.to change { User.count }.by(1)
           expect(project.security_policy_bot).to be_present
         end
+
+        it 'logs the successful creation and addition' do
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(
+            hash_including(
+              event: 'security_policy_bot_creation',
+              message: 'Creating security policy bot user'
+            )
+          )
+
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(
+            hash_including(
+              event: 'security_policy_bot_creation',
+              message: 'Successfully created security policy bot user'
+            )
+          )
+
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(
+            hash_including(
+              event: 'security_policy_bot_creation',
+              message: 'Successfully added security policy bot as guest to project'
+            )
+          )
+
+          execute_service
+        end
       end
     end
   end
@@ -63,12 +99,105 @@ RSpec.describe Security::Orchestration::CreateBotService, feature_category: :sec
       expect { execute_service }.to raise_error(Gitlab::Access::AccessDeniedError)
     end
 
+    it 'logs the authorization failure' do
+      expect(Gitlab::AppJsonLogger).to receive(:info).with(
+        hash_including(
+          event: 'security_policy_bot_creation',
+          message: 'User not authorized to create security policy bot'
+        )
+      )
+
+      expect { execute_service }.to raise_error(Gitlab::Access::AccessDeniedError)
+    end
+
     context 'when skipping authorization' do
       let(:skip_authorization) { true }
 
       it 'creates and assigns a bot user', :aggregate_failures do
         expect { execute_service }.to change { User.count }.by(1)
         expect(project.reload.security_policy_bot).to be_present
+      end
+
+      it 'logs the successful creation and addition' do
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(
+          hash_including(
+            event: 'security_policy_bot_creation',
+            message: 'Creating security policy bot user'
+          )
+        )
+
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(
+          hash_including(
+            event: 'security_policy_bot_creation',
+            message: 'Successfully created security policy bot user'
+          )
+        )
+
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(
+          hash_including(
+            event: 'security_policy_bot_creation',
+            message: 'Successfully added security policy bot as guest to project'
+          )
+        )
+
+        execute_service
+      end
+
+      context 'when bot user is created but adding to project fails with errors' do
+        let(:project_member) do
+          instance_double(ProjectMember,
+            valid?: false,
+            errors: instance_double(ActiveModel::Errors, full_messages: ['Error message'])
+          )
+        end
+
+        before do
+          allow(project).to receive(:add_guest).and_return(project_member)
+        end
+
+        it 'logs the error and returns the project member' do
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(
+            hash_including(
+              event: 'security_policy_bot_creation',
+              message: 'Creating security policy bot user'
+            )
+          )
+
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(
+            hash_including(
+              event: 'security_policy_bot_creation',
+              message: 'Failed to add security policy bot as guest to project',
+              reason: 'add_guest did not complete successfully: Error message'
+            )
+          )
+
+          execute_service
+        end
+      end
+
+      context 'when bot user is created but adding to project returns false instead' do
+        before do
+          allow(project).to receive(:add_guest).and_return(false)
+        end
+
+        it 'logs the error and returns the project member' do
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(
+            hash_including(
+              event: 'security_policy_bot_creation',
+              message: 'Creating security policy bot user'
+            )
+          )
+
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(
+            hash_including(
+              event: 'security_policy_bot_creation',
+              message: 'Failed to add security policy bot as guest to project',
+              reason: 'unknown'
+            )
+          )
+
+          execute_service
+        end
       end
     end
   end
@@ -107,6 +236,31 @@ RSpec.describe Security::Orchestration::CreateBotService, feature_category: :sec
       expect(project.members.find_by(user: bot_user).access_level).to eq(Gitlab::Access::GUEST)
     end
 
+    it 'logs the successful creation and addition' do
+      expect(Gitlab::AppJsonLogger).to receive(:info).with(
+        hash_including(
+          event: 'security_policy_bot_creation',
+          message: 'Creating security policy bot user'
+        )
+      )
+
+      expect(Gitlab::AppJsonLogger).to receive(:info).with(
+        hash_including(
+          event: 'security_policy_bot_creation',
+          message: 'Successfully created security policy bot user'
+        )
+      )
+
+      expect(Gitlab::AppJsonLogger).to receive(:info).with(
+        hash_including(
+          event: 'security_policy_bot_creation',
+          message: 'Successfully added security policy bot as guest to project'
+        )
+      )
+
+      execute_service
+    end
+
     context 'when a bot user is already assigned' do
       let_it_be(:bot_user) { create(:user, :security_policy_bot) }
 
@@ -119,6 +273,12 @@ RSpec.describe Security::Orchestration::CreateBotService, feature_category: :sec
 
         expect(project.security_policy_bot.id).to equal(bot_user.id)
       end
+
+      it 'logs nothing' do
+        expect(Gitlab::AppJsonLogger).not_to receive(:info)
+
+        execute_service
+      end
     end
 
     context 'when a part of the creation fails' do
@@ -128,6 +288,44 @@ RSpec.describe Security::Orchestration::CreateBotService, feature_category: :sec
 
       it 'reverts the previous actions' do
         expect { execute_service }.to raise_error(StandardError).and(change { User.count }.by(0))
+      end
+
+      it 'logs process start and the failure' do
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(
+          hash_including(
+            event: 'security_policy_bot_creation',
+            message: 'Creating security policy bot user'
+          )
+        )
+
+        expect { execute_service }.to raise_error(StandardError)
+      end
+    end
+
+    context 'when creating the user fails' do
+      before do
+        allow_next_instance_of(::Users::CreateBotService) do |users_create_bot_service|
+          allow(users_create_bot_service).to receive(:execute).and_return(ServiceResponse.error(message: 'User error'))
+        end
+      end
+
+      it 'logs process start and the failure' do
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(
+          hash_including(
+            event: 'security_policy_bot_creation',
+            message: 'Creating security policy bot user'
+          )
+        )
+
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(
+          hash_including(
+            event: 'security_policy_bot_creation',
+            message: 'Failed to create security policy bot user',
+            reason: 'User error'
+          )
+        )
+
+        execute_service
       end
     end
   end

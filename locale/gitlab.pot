@@ -3690,6 +3690,9 @@ msgstr ""
 msgid "Add new webhook"
 msgstr ""
 
+msgid "Add optional summary content…"
+msgstr ""
+
 msgid "Add or remove a user."
 msgstr ""
 
@@ -17511,6 +17514,9 @@ msgstr ""
 msgid "Continue editing"
 msgstr ""
 
+msgid "Continue review"
+msgstr ""
+
 msgid "Continue to the next step"
 msgstr ""
 
@@ -17851,6 +17857,12 @@ msgid "Control whether to display customer experience improvement content and th
 msgstr ""
 
 msgid "Control which projects can use CI/CD job tokens to authenticate with this project."
+msgstr ""
+
+msgid "Convert Jenkins to GitLab CI/CD using Duo"
+msgstr ""
+
+msgid "Convert to GitLab CI/CD"
 msgstr ""
 
 msgid "Converts item to %{type}. Widgets not supported in new type are removed."
@@ -19156,6 +19168,9 @@ msgid "CycleAnalyticsStage|Total"
 msgstr ""
 
 msgid "CycleAnalyticsStage|is not available for the selected group"
+msgstr ""
+
+msgid "CycleAnalytics|%{issuableType} time in stage"
 msgstr ""
 
 msgid "CycleAnalytics|%{selectedLabelsCount} label selected (%{maxLabels} max)"
@@ -24712,6 +24727,9 @@ msgid "Error occurred when fetching sidebar data"
 msgstr ""
 
 msgid "Error occurred when saving reviewers"
+msgstr ""
+
+msgid "Error occurred when starting the workflow"
 msgstr ""
 
 msgid "Error occurred while updating the issue status"
@@ -49627,6 +49645,9 @@ msgstr ""
 msgid "RapidDiffs|Diff line number"
 msgstr ""
 
+msgid "RapidDiffs|Failed to expand lines, please try again."
+msgstr ""
+
 msgid "RapidDiffs|Original line"
 msgstr ""
 
@@ -51238,6 +51259,9 @@ msgid "Review App|View app"
 msgstr ""
 
 msgid "Review App|View latest app"
+msgstr ""
+
+msgid "Review approval"
 msgstr ""
 
 msgid "Review changes"
@@ -68318,6 +68342,9 @@ msgstr ""
 msgid "Work in progress limit: %{wipLimit} items"
 msgstr ""
 
+msgid "Work item"
+msgstr ""
+
 msgid "Work item not supported"
 msgstr ""
 
@@ -69307,6 +69334,9 @@ msgid "WorkItem|ticket"
 msgstr ""
 
 msgid "Workflow"
+msgstr ""
+
+msgid "Workflow started successfully, pipeline: %{pipelineHref}"
 msgstr ""
 
 msgid "Workspaces"
