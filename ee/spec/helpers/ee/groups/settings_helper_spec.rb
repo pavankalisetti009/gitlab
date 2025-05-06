@@ -43,6 +43,7 @@ RSpec.describe EE::Groups::SettingsHelper do
     it 'returns the expected data' do
       expect(group_ai_general_settings_helper_data).to include(
         on_general_settings_page: 'true',
+        redirect_path: edit_group_path(group),
         base_data: 'data'
       )
     end
