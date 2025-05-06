@@ -41,6 +41,7 @@ export default {
   data() {
     return {
       isDismissed: false,
+      isClosedByPrimaryModalBtn: false,
       showEnableDuoConfirmModal: false,
     };
   },
@@ -50,6 +51,8 @@ export default {
   methods: {
     handleEnableClick() {
       this.trackEvent('click_enable_button_enable_duo_banner_modal');
+
+      this.isClosedByPrimaryModalBtn = true;
 
       axios
         .put(this.enableButtonHref, {})
@@ -75,7 +78,11 @@ export default {
       visitUrl(this.$options.learnMoreHref, { external: true });
     },
     dismissModal() {
-      this.trackEvent('dismiss_enable_duo_banner_modal');
+      if (!this.isClosedByPrimaryModalBtn) {
+        this.trackEvent('dismiss_enable_duo_banner_modal');
+      }
+
+      this.isClosedByPrimaryModalBtn = false;
       this.showEnableDuoConfirmModal = false;
     },
     dismissBanner() {
