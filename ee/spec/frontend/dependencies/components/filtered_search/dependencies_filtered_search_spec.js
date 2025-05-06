@@ -18,7 +18,6 @@ describe('DependenciesFilteredSearch', () => {
 
   const defaultPropsData = {
     filteredSearchId: 'some-filtered-search-id',
-    viewOnly: false,
     tokens: [defaultToken],
   };
 
@@ -39,7 +38,6 @@ describe('DependenciesFilteredSearch', () => {
         ...props,
       },
       provide: {
-        belowGroupLimit: true,
         glFeatures,
       },
       scopedSlots: { default: slot },
@@ -54,9 +52,7 @@ describe('DependenciesFilteredSearch', () => {
     beforeEach(createComponent);
 
     it('sets the basic props correctly', () => {
-      const { viewOnly } = defaultPropsData;
       expect(findFilteredSearch().props()).toMatchObject({
-        viewOnly,
         termsAsTokens: true,
       });
     });
