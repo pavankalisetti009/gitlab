@@ -19,7 +19,7 @@ module DependenciesHelper
     })
   end
 
-  def group_dependencies_data(group, below_group_limit)
+  def group_dependencies_data(group)
     shared_dependencies_data.merge({
       has_dependencies: group.has_dependencies?.to_s,
       endpoint: group_dependencies_path(group, format: :json),
@@ -27,8 +27,7 @@ module DependenciesHelper
       locations_endpoint: locations_group_dependencies_path(group),
       export_endpoint: expose_path(api_v4_groups_dependency_list_exports_path(id: group.id)),
       vulnerabilities_endpoint: expose_path(api_v4_occurrences_vulnerabilities_path),
-      group_full_path: group.full_path,
-      below_group_limit: below_group_limit.to_s
+      group_full_path: group.full_path
     })
   end
 
@@ -40,8 +39,7 @@ module DependenciesHelper
       licenses_endpoint: nil,
       locations_endpoint: nil,
       export_endpoint: expose_path(api_v4_organizations_dependency_list_exports_path(id: organization.id)),
-      vulnerabilities_endpoint: nil,
-      below_group_limit: 'false'
+      vulnerabilities_endpoint: nil
     })
   end
 

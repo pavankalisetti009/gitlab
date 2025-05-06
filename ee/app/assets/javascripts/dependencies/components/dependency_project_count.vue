@@ -9,7 +9,6 @@ import { AVATAR_SHAPE_OPTION_RECT } from '~/vue_shared/constants';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { extractGroupNamespace } from 'ee/dependencies/store/utils';
 import getProjects from '../graphql/projects.query.graphql';
-import DependencyProjectCountPopover from './dependency_project_count_popover.vue';
 import { SEARCH_MIN_THRESHOLD } from './constants';
 
 const mapItemToListboxFormat = (item) => ({ ...item, value: item.id, text: item.name });
@@ -22,9 +21,8 @@ export default {
     GlTruncate,
     GlCollapsibleListbox,
     GlAvatar,
-    DependencyProjectCountPopover,
   },
-  inject: ['endpoint', 'belowGroupLimit'],
+  inject: ['endpoint'],
   props: {
     projectCount: {
       type: Number,
@@ -55,9 +53,6 @@ export default {
     },
     availableProjects() {
       return filterBySearchTerm(this.projects, this.searchTerm);
-    },
-    targetId() {
-      return `dependency-count-${this.componentId}`;
     },
     searchEnabled() {
       return this.loading || this.projectCount > SEARCH_MIN_THRESHOLD;
@@ -112,7 +107,6 @@ export default {
 
 <template>
   <gl-collapsible-listbox
-    v-if="belowGroupLimit"
     :header-text="headerText"
     :items="availableProjects"
     :searching="loading"
@@ -142,5 +136,4 @@ export default {
       </gl-link>
     </template>
   </gl-collapsible-listbox>
-  <dependency-project-count-popover v-else :target-id="targetId" :target-text="headerText" />
 </template>

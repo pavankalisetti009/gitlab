@@ -19,11 +19,6 @@ export default {
       type: Array,
       required: true,
     },
-    viewOnly: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   methods: {
     ...mapActions([
@@ -51,7 +46,6 @@ export default {
     :placeholder="$options.i18n.searchInputPlaceholder"
     :available-tokens="tokens"
     terms-as-tokens
-    :view-only="viewOnly"
     @input="setSearchFilterParameters"
     @submit="fetchDependenciesWithFeatureFlag"
   />

@@ -67,9 +67,8 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
 
   describe '#group_dependencies_data' do
     let_it_be(:group) { build_stubbed(:group, traversal_ids: [1]) }
-    let(:below_group_limit) { true }
 
-    subject { helper.group_dependencies_data(group, below_group_limit) }
+    subject { helper.group_dependencies_data(group) }
 
     it_behaves_like 'a helper method that returns shared dependencies data'
 
@@ -79,8 +78,7 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
         licenses_endpoint: "/groups/#{group.full_path}/-/dependencies/licenses",
         locations_endpoint: "/groups/#{group.full_path}/-/dependencies/locations",
         export_endpoint: "/api/v4/groups/#{group.id}/dependency_list_exports",
-        vulnerabilities_endpoint: "/api/v4/occurrences/vulnerabilities",
-        below_group_limit: "true"
+        vulnerabilities_endpoint: "/api/v4/occurrences/vulnerabilities"
       )
     end
   end
@@ -109,8 +107,7 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
         licenses_endpoint: nil,
         locations_endpoint: nil,
         export_endpoint: "/api/v4/organizations/#{organization.id}/dependency_list_exports",
-        vulnerabilities_endpoint: nil,
-        below_group_limit: "false"
+        vulnerabilities_endpoint: nil
       )
     end
   end

@@ -42,13 +42,13 @@ module SoftwareLicensePolicies
       software_license = find_software_license(params[:name])
       catalogue_license = find_software_license_in_catalogue(params[:name])
 
-      if software_license
-        create_software_license_policies_with_software_license(software_license, catalogue_license)
-      else
-        # also creates a software license to allow enabling and disabling the feature flag custom_software_license
-        # as needed.
-        new_software_license = SoftwareLicense.create!(name: params[:name])
+      # also creates a software license if needed to allow enabling and disabling the feature flags static_licenses
+      # and custom_software_license as needed.
+      new_software_license = software_license || SoftwareLicense.create!(name: params[:name])
 
+      if catalogue_license
+        create_software_license_policies_with_software_license(new_software_license, catalogue_license)
+      else
         create_software_license_policies_with_custom_software_license(find_or_create_custom_software_license,
           new_software_license)
       end

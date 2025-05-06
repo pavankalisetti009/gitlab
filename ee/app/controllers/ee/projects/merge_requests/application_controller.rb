@@ -74,6 +74,13 @@ module EE
 
           mr_params
         end
+
+        def display_duo_seat_warning
+          return unless merge_request.duo_code_review_attempted
+
+          flash[:alert] = s_("DuoCodeReview|Your account doesn't have GitLab Duo access. " \
+            "Please contact your system administrator for access.")
+        end
       end
     end
   end

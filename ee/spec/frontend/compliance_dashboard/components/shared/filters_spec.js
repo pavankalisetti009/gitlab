@@ -1,12 +1,20 @@
 import { mount } from '@vue/test-utils';
 import { GlPopover, GlFilteredSearch, GlButton } from '@gitlab/ui';
 import ComplianceFrameworksFilters from 'ee/compliance_dashboard/components/shared/filters.vue';
+import {
+  FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+  FRAMEWORKS_FILTER_TYPE_PROJECT,
+  FRAMEWORKS_FILTER_TYPE_GROUP,
+  FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS,
+} from 'ee/compliance_dashboard/constants';
 
 describe('ComplianceFrameworksFilters', () => {
   let wrapper;
 
   const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
   const findPopover = () => wrapper.findComponent(GlPopover);
+  const findAvailableTokens = () => findFilteredSearch().props('availableTokens');
+  const findTokenByType = (type) => findAvailableTokens().find((token) => token.type === type);
 
   const createComponent = (props) => {
     wrapper = mount(ComplianceFrameworksFilters, {
@@ -35,10 +43,38 @@ describe('ComplianceFrameworksFilters', () => {
       ).toBe('my-group-path');
     });
 
+    it('includes all expected token types in the available tokens', () => {
+      const availableTokens = findAvailableTokens();
+
+      expect(availableTokens.length).toBe(4);
+      expect(findTokenByType(FRAMEWORKS_FILTER_TYPE_FRAMEWORK)).toBeDefined();
+      expect(findTokenByType(FRAMEWORKS_FILTER_TYPE_PROJECT)).toBeDefined();
+      expect(findTokenByType(FRAMEWORKS_FILTER_TYPE_GROUP)).toBeDefined();
+      expect(findTokenByType(FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS)).toBeDefined();
+    });
+
+    it('configures the project status token correctly', () => {
+      const projectStatusToken = findTokenByType(FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS);
+
+      expect(projectStatusToken).toMatchObject({
+        unique: true,
+        icon: 'archive',
+        title: expect.any(String),
+        type: FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS,
+        entityType: 'project_status',
+      });
+    });
+
     it('emits a "submit" event with the filters when Filtered Search component is submitted', () => {
       findFilteredSearch().vm.$emit('submit', { framework: 'my-framework' });
 
       expect(wrapper.emitted('submit')).toEqual([[{ framework: 'my-framework' }]]);
+    });
+
+    it('emits a "submit" event with empty filters when Filtered Search is cleared', () => {
+      findFilteredSearch().vm.$emit('clear');
+
+      expect(wrapper.emitted('submit')).toEqual([[[]]]);
     });
 
     it('does not show update popover by default', () => {

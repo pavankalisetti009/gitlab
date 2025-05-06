@@ -13,7 +13,10 @@ import ComplianceFrameworksReport from 'ee/compliance_dashboard/components/proje
 import complianceFrameworksGroupProjects from 'ee/compliance_dashboard/graphql/compliance_frameworks_group_projects.query.graphql';
 import complianceFrameworksProjectFragment from 'ee/compliance_dashboard/graphql/compliance_frameworks_project.fragment.graphql';
 
-import { ROUTE_PROJECTS } from 'ee/compliance_dashboard/constants';
+import {
+  ROUTE_PROJECTS,
+  FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS,
+} from 'ee/compliance_dashboard/constants';
 import ProjectsTable from 'ee/compliance_dashboard/components/projects_report/projects_table.vue';
 import Pagination from 'ee/compliance_dashboard/components/shared/pagination.vue';
 import Filters from 'ee/compliance_dashboard/components/shared/filters.vue';
@@ -327,6 +330,50 @@ describe('ComplianceProjectsReport component', () => {
       });
     });
 
+    it('should update route query with project_status filter when set to archived', async () => {
+      findFilters().vm.$emit('submit', [
+        {
+          type: FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS,
+          value: {
+            data: 'archived',
+            operator: '=',
+          },
+        },
+      ]);
+      await waitForPromises();
+
+      expect($router.push).toHaveBeenCalledTimes(1);
+      expect($router.push).toHaveBeenCalledWith({
+        query: {
+          project_status: 'archived',
+          before: undefined,
+          after: undefined,
+        },
+      });
+    });
+
+    it('should update route query with project_status filter when set to non-archived', async () => {
+      findFilters().vm.$emit('submit', [
+        {
+          type: FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS,
+          value: {
+            data: 'non-archived',
+            operator: '=',
+          },
+        },
+      ]);
+      await waitForPromises();
+
+      expect($router.push).toHaveBeenCalledTimes(1);
+      expect($router.push).toHaveBeenCalledWith({
+        query: {
+          project_status: 'non-archived',
+          before: undefined,
+          after: undefined,
+        },
+      });
+    });
+
     it('should still reload list when updated to the same value', async () => {
       const FILTERS = [
         {
@@ -346,6 +393,34 @@ describe('ComplianceProjectsReport component', () => {
     });
   });
 
+  describe('filterParams computed property', () => {
+    it('should include archivedOnly when project_status is archived', async () => {
+      createComponent(mount, {}, mockGraphQlSuccess, {
+        project_status: 'archived',
+      });
+      await waitForPromises();
+
+      expect(mockGraphQlSuccess).toHaveBeenCalledWith(
+        expect.objectContaining({
+          archivedOnly: true,
+        }),
+      );
+    });
+
+    it('should set includeArchived to false when project_status is non-archived', async () => {
+      createComponent(mount, {}, mockGraphQlSuccess, {
+        project_status: 'non-archived',
+      });
+      await waitForPromises();
+
+      expect(mockGraphQlSuccess).toHaveBeenCalledWith(
+        expect.objectContaining({
+          includeArchived: false,
+        }),
+      );
+    });
+  });
+
   it('should not open update popover on filters on update from projects table when filters are not provided', async () => {
     createComponent(shallowMount, {}, mockGraphQlSuccess, {});
 
@@ -358,6 +433,15 @@ describe('ComplianceProjectsReport component', () => {
   it('should open update popover on filters on update from projects table when filters are provided', async () => {
     createComponent(shallowMount, {}, mockGraphQlSuccess, {
       'framework[]': ['some-framework'],
+    });
+    findProjectsTable().vm.$emit('updated');
+    await nextTick();
+    expect(findFilters().props('showUpdatePopover')).toBe(true);
+  });
+
+  it('should open update popover on filters when project_status filter is provided', async () => {
+    createComponent(shallowMount, {}, mockGraphQlSuccess, {
+      project_status: 'archived',
     });
     findProjectsTable().vm.$emit('updated');
     await nextTick();
