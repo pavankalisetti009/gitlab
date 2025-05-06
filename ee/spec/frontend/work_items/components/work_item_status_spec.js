@@ -1,8 +1,10 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import namespaceWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/group_namespace_work_item_types.query.graphql.json';
+import { newWorkItemId } from '~/work_items/utils';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import WorkItemStatus from 'ee/work_items/components/work_item_status.vue';
+import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
@@ -23,7 +25,6 @@ describe('WorkItemStatus component', () => {
 
   const workItemIid = '1';
   const workItemType = 'Task';
-  const workItemId = 'gid://gitlab/WorkItem/1';
   const allowedStatus = namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes
     .find((node) => node.name === workItemType)
     .widgetDefinitions?.find((item) => {
@@ -31,6 +32,7 @@ describe('WorkItemStatus component', () => {
     })?.allowedStatuses;
 
   const findSidebarDropdownWidget = () => wrapper.findComponent(WorkItemSidebarDropdownWidget);
+  const findWorkItemStatusBadge = () => wrapper.findComponent(WorkItemStatusBadge);
 
   const showDropdown = () => {
     findSidebarDropdownWidget().vm.$emit('dropdownShown');
@@ -47,12 +49,15 @@ describe('WorkItemStatus component', () => {
     }),
   );
 
+  const workItemUpdateErrorHandler = jest.fn().mockRejectedValue('Oops ! Problem');
+
   const createComponent = ({
     mountFn = shallowMountExtended,
     canUpdate = true,
     status = mockWorkItemStatus,
     workItemTypesHandler = jest.fn().mockResolvedValue(namespaceWorkItemTypesQueryResponse),
     mutationHandler = successUpdateWorkItemMutationHandler,
+    workItemId = 'gid://gitlab/WorkItem/1',
   } = {}) => {
     const workItemResponse = workItemByIidResponseFactory({
       statusWidgetPresent: true,
@@ -187,7 +192,7 @@ describe('WorkItemStatus component', () => {
 
       expect(successUpdateWorkItemMutationHandler).toHaveBeenCalledWith({
         input: {
-          id: workItemId,
+          id: 'gid://gitlab/WorkItem/1',
           statusWidget: {
             status: firstStatus.id,
           },
@@ -195,6 +200,49 @@ describe('WorkItemStatus component', () => {
       });
 
       expect(findSidebarDropdownWidget().props('itemValue')).toBe(firstStatus.id);
+    });
+
+    it('calls error handler when there is an error in updating', async () => {
+      createComponent({ mutationHandler: workItemUpdateErrorHandler });
+      await waitForPromises();
+
+      showDropdown();
+      await waitForPromises();
+
+      const firstStatus = allowedStatus[0];
+
+      findSidebarDropdownWidget().vm.$emit('updateValue', firstStatus.id);
+      await nextTick();
+      await waitForPromises();
+
+      expect(successUpdateWorkItemMutationHandler).not.toHaveBeenCalledWith();
+      expect(workItemUpdateErrorHandler).toHaveBeenCalled();
+    });
+
+    it('calls the update work item local mutation for new work items', async () => {
+      createComponent({ workItemId: newWorkItemId('task') });
+
+      await waitForPromises();
+
+      expect(findWorkItemStatusBadge().props()).toEqual({
+        name: mockWorkItemStatus.name,
+        iconName: mockWorkItemStatus.iconName,
+        color: mockWorkItemStatus.color,
+      });
+
+      showDropdown();
+      await waitForPromises();
+
+      const firstStatus = allowedStatus[0];
+
+      findSidebarDropdownWidget().vm.$emit('updateValue', firstStatus.id);
+      await waitForPromises();
+
+      expect(findWorkItemStatusBadge().props()).toEqual({
+        name: firstStatus.name,
+        iconName: firstStatus.iconName,
+        color: firstStatus.color,
+      });
     });
 
     describe('Tracking event', () => {

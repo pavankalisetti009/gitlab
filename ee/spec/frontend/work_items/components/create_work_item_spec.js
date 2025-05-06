@@ -11,9 +11,14 @@ import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
 import WorkItemIteration from 'ee/work_items/components/work_item_iteration.vue';
 import WorkItemWeight from 'ee/work_items/components/work_item_weight.vue';
 import WorkItemDates from 'ee/work_items/components/work_item_dates.vue';
+import WorkItemStatus from 'ee/work_items/components/work_item_status.vue';
 import WorkItemParent from '~/work_items/components/work_item_parent.vue';
 import WorkItemCustomFields from 'ee/work_items/components/work_item_custom_fields.vue';
-import { WORK_ITEM_TYPE_NAME_EPIC, WORK_ITEM_TYPE_NAME_ISSUE } from '~/work_items/constants';
+import {
+  WORK_ITEM_TYPE_NAME_EPIC,
+  WORK_ITEM_TYPE_NAME_ISSUE,
+  WORK_ITEM_TYPE_NAME_TASK,
+} from '~/work_items/constants';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import createWorkItemMutation from '~/work_items/graphql/create_work_item.mutation.graphql';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
@@ -60,6 +65,7 @@ describe('EE Create work item component', () => {
   const findDatesWidget = () => wrapper.findComponent(WorkItemDates);
   const findCustomFieldsWidget = () => wrapper.findComponent(WorkItemCustomFields);
   const findParentWidget = () => wrapper.findComponent(WorkItemParent);
+  const findStatusWidget = () => wrapper.findComponent(WorkItemStatus);
 
   const updateWorkItemTitle = async (title = 'Test title') => {
     findTitleInput().vm.$emit('updateDraft', title);
@@ -77,6 +83,7 @@ describe('EE Create work item component', () => {
     mutationHandler = createWorkItemSuccessHandler,
     namespaceHandler = namespaceWorkItemTypesHandler,
     preselectedWorkItemType = WORK_ITEM_TYPE_NAME_EPIC,
+    workItemStatusFeatureFlag = false,
   } = {}) => {
     mockApollo = createMockApollo(
       [
@@ -99,6 +106,9 @@ describe('EE Create work item component', () => {
         hasIssuableHealthStatusFeature: false,
         hasIterationsFeature: true,
         hasIssueWeightsFeature: true,
+        glFeatures: {
+          workItemStatusFeatureFlag,
+        },
       },
     });
   };
@@ -178,6 +188,42 @@ describe('EE Create work item component', () => {
       await waitForPromises();
 
       expect(findCustomFieldsWidget().exists()).toBe(true);
+    });
+  });
+
+  describe('Create work item widgets for Task work item type', () => {
+    beforeEach(async () => {
+      createComponent({ preselectedWorkItemType: WORK_ITEM_TYPE_NAME_TASK });
+      await waitForPromises();
+    });
+
+    it('renders the work item iteration widget', () => {
+      expect(findIterationWidget().exists()).toBe(true);
+    });
+
+    it('renders the work item weight widget', () => {
+      expect(findWeightWidget().exists()).toBe(true);
+    });
+
+    it('renders the work item parent widget', () => {
+      expect(findParentWidget().exists()).toBe(true);
+    });
+
+    it('does not render the work item status widget when flag is false', async () => {
+      createComponent({ preselectedWorkItemType: WORK_ITEM_TYPE_NAME_TASK });
+      await waitForPromises();
+
+      expect(findStatusWidget().exists()).toBe(false);
+    });
+
+    it('renders the work item status widget when flag is true', async () => {
+      createComponent({
+        preselectedWorkItemType: WORK_ITEM_TYPE_NAME_TASK,
+        workItemStatusFeatureFlag: true,
+      });
+      await waitForPromises();
+
+      expect(findStatusWidget().exists()).toBe(true);
     });
   });
 
