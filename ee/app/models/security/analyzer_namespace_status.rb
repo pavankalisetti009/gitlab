@@ -4,6 +4,7 @@ module Security
   class AnalyzerNamespaceStatus < ::SecApplicationRecord
     self.table_name = 'analyzer_namespace_statuses'
 
+    belongs_to :group, foreign_key: :namespace_id, inverse_of: :analyzer_group_statuses
     belongs_to :namespace
 
     enum analyzer_type: Enums::Security.analyzer_types

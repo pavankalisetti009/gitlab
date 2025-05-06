@@ -603,6 +603,11 @@ module EE
         field :target_branch_rules, ::Types::Projects::TargetBranchRuleType.connection_type,
           null: true,
           description: 'Target branch rules of the project.'
+
+        field :analyzer_statuses, [::Types::Security::AnalyzerProjectStatusType],
+          null: true,
+          description: 'Status for all analyzers in the project.',
+          experiment: { milestone: '18.0' }
       end
 
       def tracking_key
@@ -675,6 +680,23 @@ module EE
         return unless object.licensed_feature_available?(:security_inventory)
 
         object.vulnerability_statistic
+      end
+
+      def analyzer_statuses
+        BatchLoader::GraphQL.for(object).batch do |projects, loader|
+          namespaces = projects.map(&:project_namespace).uniq
+
+          ::Namespaces::Preloaders::NamespaceRootAncestorPreloader.new(namespaces).execute if namespaces.present?
+
+          projects.each do |project|
+            unless ::Feature.enabled?(:security_inventory_dashboard, project.root_ancestor) &&
+                project.licensed_feature_available?(:security_inventory)
+              next loader.call(project, nil)
+            end
+
+            loader.call(project, project.analyzer_statuses)
+          end
+        end
       end
     end
   end
