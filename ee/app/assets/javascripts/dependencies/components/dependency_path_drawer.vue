@@ -71,12 +71,14 @@ export default {
       const dependencyPathsLookup = {};
 
       this.locations.forEach((item) => {
-        projectDropdown.push({
-          value: item.value,
-          text: item.project.name,
-        });
+        if (item.location.dependency_paths?.length > 0) {
+          projectDropdown.push({
+            value: item.value,
+            text: item.project.name,
+          });
 
-        dependencyPathsLookup[item.value] = item.location.dependency_paths;
+          dependencyPathsLookup[item.value] = item.location.dependency_paths;
+        }
       });
 
       return { projectDropdown, dependencyPathsLookup };
