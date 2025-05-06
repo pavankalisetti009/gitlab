@@ -41,6 +41,10 @@ RSpec.describe Onboarding::TrialRegistration, type: :undefined, feature_category
     it { is_expected.to be_nil }
   end
 
+  describe '.learn_gitlab_redesign?' do
+    it { is_expected.to be_learn_gitlab_redesign }
+  end
+
   describe '.show_company_form_side_column?' do
     it { is_expected.not_to be_show_company_form_side_column }
   end

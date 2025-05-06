@@ -4,7 +4,7 @@ export default {
 };
 </script>
 <template>
-  <div class="row">
+  <div class="row" data-testid="get-started-page">
     <div class="col-sm-12 col-mb-9 col-lg-9">
       <h1 class="gl-text-size-h1">{{ s__('GetStarted|Quick start') }}</h1>
       <p class="gl-mb-0 gl-text-subtle">

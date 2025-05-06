@@ -58,6 +58,32 @@ RSpec.describe 'Project creation via Registrations::GroupsController',
 
       it_behaves_like 'user not in onboarding'
 
+      context 'with redirection on success' do
+        before do
+          allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(157)
+        end
+
+        context 'for trials' do
+          before do
+            user.update!(onboarding_status_registration_type: 'trial')
+          end
+
+          it { is_expected.to redirect_to(project_get_started_path(Project.last)) }
+
+          context 'when learn_gitlab_redesign feature flag is disabled' do
+            before do
+              stub_feature_flags(learn_gitlab_redesign: false)
+            end
+
+            it { is_expected.to redirect_to(project_learn_gitlab_path(Project.last)) }
+          end
+        end
+
+        context 'for free' do
+          it { is_expected.to redirect_to(project_learn_gitlab_path(Project.last)) }
+        end
+      end
+
       context 'when group and project can be created' do
         it 'creates a group' do
           # 204 before creating learn gitlab in worker

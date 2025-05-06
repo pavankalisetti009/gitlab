@@ -76,7 +76,16 @@ module Registrations
         # it later, see the above issue for context
         # cookies[:confetti_post_signup] = true
 
-        redirect_to project_learn_gitlab_path(payload[:project])
+        redirect_to learn_gitlab_path(payload[:project])
+      end
+    end
+
+    def learn_gitlab_path(project)
+      if ::Feature.enabled?(:learn_gitlab_redesign, project.namespace) &&
+          onboarding_status_presenter.learn_gitlab_redesign?
+        project_get_started_path(project)
+      else
+        project_learn_gitlab_path(project)
       end
     end
 

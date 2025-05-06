@@ -267,6 +267,20 @@ module SaasRegistrationHelpers
     # end
   end
 
+  def expect_to_be_in_get_started
+    within_testid('super-sidebar') do
+      expect(page).to have_link('Get started')
+    end
+
+    within_testid('top-bar') do
+      expect(page).to have_link('Get started')
+    end
+
+    within_testid('get-started-page') do
+      expect(page).to have_content('Quick start')
+    end
+  end
+
   def expect_to_see_group_and_project_creation_form
     expect(page).to have_content('Create or import your first project')
     expect(page).to have_content('Projects help you organize your work')

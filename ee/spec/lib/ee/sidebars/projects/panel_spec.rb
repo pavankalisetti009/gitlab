@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Sidebars::Projects::Panel, feature_category: :navigation do
   let_it_be(:project, reload: true) { create(:project) }
 
-  let(:context) { Sidebars::Projects::Context.new(current_user: nil, container: project) }
+  let(:context) { Sidebars::Projects::Context.new(current_user: nil, container: project, show_get_started_menu: false) }
 
   subject(:panel) { described_class.new(context) }
 
@@ -60,6 +60,26 @@ RSpec.describe Sidebars::Projects::Panel, feature_category: :navigation do
         end
 
         it 'contains the menu' do
+          expect(panel).to include_menu(Sidebars::Projects::Menus::LearnGitlabMenu)
+        end
+      end
+    end
+
+    context 'when show_get_started_menu is true' do
+      before do
+        allow(context).to receive(:show_get_started_menu).and_return(true)
+      end
+
+      it 'contains the getting started menu' do
+        expect(panel).to include_menu(Sidebars::Projects::Menus::GetStartedMenu)
+      end
+
+      context 'when learn_gitlab_redesign feature flag is disabled' do
+        before do
+          stub_feature_flags(learn_gitlab_redesign: false)
+        end
+
+        it 'contains the learn gitlab menu' do
           expect(panel).to include_menu(Sidebars::Projects::Menus::LearnGitlabMenu)
         end
       end

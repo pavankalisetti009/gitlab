@@ -33,6 +33,10 @@ module Onboarding
 
     # predicate methods
 
+    def self.learn_gitlab_redesign?
+      false
+    end
+
     def self.redirect_to_company_form?
       false
     end

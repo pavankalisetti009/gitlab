@@ -3,6 +3,7 @@
 exports[`GetStarted component rendering renders correctly 1`] = `
 <div
   class="row"
+  data-testid="get-started-page"
 >
   <div
     class="col-lg-9 col-mb-9 col-sm-12"

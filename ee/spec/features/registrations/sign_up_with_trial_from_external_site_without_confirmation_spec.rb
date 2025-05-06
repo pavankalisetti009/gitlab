@@ -51,6 +51,6 @@ RSpec.describe 'Sign up with trial from external site without confirmation', :sa
     fill_in 'blank_project_name', with: 'Project name'
     click_button 'Create project'
 
-    expect_to_be_in_learn_gitlab
+    expect_to_be_in_get_started
   end
 end

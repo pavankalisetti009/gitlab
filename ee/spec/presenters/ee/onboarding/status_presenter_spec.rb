@@ -18,6 +18,7 @@ RSpec.describe Onboarding::StatusPresenter, feature_category: :onboarding do
     it { is_expected.to delegate_method(:hide_setup_for_company_field?).to(:registration_type) }
     it { is_expected.to delegate_method(:read_from_stored_user_location?).to(:registration_type) }
     it { is_expected.to delegate_method(:preserve_stored_location?).to(:registration_type) }
+    it { is_expected.to delegate_method(:learn_gitlab_redesign?).to(:registration_type) }
   end
 
   describe '.glm_tracking_params' do
