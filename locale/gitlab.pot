@@ -24486,6 +24486,9 @@ msgstr ""
 msgid "Environment|Healthy"
 msgstr ""
 
+msgid "Environment|Needs attention"
+msgstr ""
+
 msgid "Environment|No Kubernetes clusters configured"
 msgstr ""
 
