@@ -32,9 +32,7 @@ module Security
 
       sync_pipeline_execution_policy_metadata(policy)
       sync_compliance_frameworks(policy)
-      all_project_ids(policy).each do |project_id|
-        ::Security::SyncProjectPolicyWorker.perform_async(project_id, policy.id, {})
-      end
+      sync_policy_for_projects(policy)
     end
 
     def handle_update_event(policy, event_data)
@@ -47,9 +45,26 @@ module Security
 
       return unless policy_diff.needs_refresh? || policy_diff.needs_rules_refresh?
 
-      all_project_ids(policy).each do |project_id|
-        ::Security::SyncProjectPolicyWorker.perform_async(project_id, policy.id, event_data)
-      end
+      sync_policy_for_projects(policy, event_data)
+    end
+
+    def sync_policy_for_projects(policy, event_data = {})
+      project_ids = all_project_ids(policy)
+      return if project_ids.empty?
+
+      config_context = if policy.security_orchestration_policy_configuration.namespace?
+                         { namespace: policy.security_orchestration_policy_configuration.namespace }
+                       else
+                         { project: policy.security_orchestration_policy_configuration.project }
+                       end
+
+      ::Security::SyncProjectPolicyWorker.bulk_perform_async_with_contexts(
+        project_ids,
+        arguments_proc: ->(project_id) do
+          [project_id, policy.id, event_data]
+        end,
+        context_proc: ->(_) { config_context }
+      )
     end
 
     def all_project_ids(policy)
