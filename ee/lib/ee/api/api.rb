@@ -6,8 +6,6 @@ module EE
       extend ActiveSupport::Concern
 
       prepended do
-        use ::Gitlab::Middleware::IpRestrictor
-
         mount ::EE::API::GroupBoards
 
         mount ::API::Admin::Search::Zoekt

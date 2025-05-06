@@ -7,8 +7,6 @@ module EE
 
     prepended do
       include ::Onboarding::Redirect
-
-      around_action :set_current_ip_address
     end
 
     def check_if_gl_com_or_dev
@@ -39,10 +37,6 @@ module EE
 
     def log_audit_event
       ::AuditEvents::UserImpersonationEventCreateWorker.perform_async(impersonator.id, current_user.id, request.remote_ip, 'stopped', DateTime.current)
-    end
-
-    def set_current_ip_address(&block)
-      ::Gitlab::IpAddressState.with(request.ip, &block) # rubocop: disable CodeReuse/ActiveRecord
     end
   end
 end

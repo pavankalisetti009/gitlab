@@ -1,8 +1,9 @@
 # frozen_string_literal: true
+
 require 'fast_spec_helper'
 
-RSpec.describe Gitlab::Middleware::IpRestrictor do
-  let(:app) { double(:app) }
+RSpec.describe Gitlab::Middleware::IpAddress, feature_category: :system_access do
+  let(:app) { double(:app) } # rubocop:disable RSpec/VerifiedDoubles -- stubbed app
   let(:middleware) { described_class.new(app) }
   let(:env) { {} }
 
