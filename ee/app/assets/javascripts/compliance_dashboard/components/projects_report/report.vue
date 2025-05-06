@@ -97,6 +97,7 @@ export default {
       },
       update(data) {
         const { nodes, pageInfo } = data?.group?.projects || {};
+
         return {
           list: mapProjects(nodes),
           pageInfo,
@@ -136,6 +137,7 @@ export default {
       const filters = { frameworks: [], frameworksNot: [] };
       const frameworks = queryParams['framework[]'];
       const notFrameworks = queryParams['not[framework][]'];
+      const projectStatus = queryParams.project_status;
 
       const getFrameworkParams = (params, presenceType) => {
         const frameworksArray = Array.isArray(params) ? params : [params];
@@ -163,6 +165,14 @@ export default {
 
       if (group) {
         filters.groupPath = group;
+      }
+
+      if (projectStatus === 'archived') {
+        filters.archivedOnly = true;
+      }
+
+      if (projectStatus === 'non-archived') {
+        filters.includeArchived = false;
       }
 
       return filters;

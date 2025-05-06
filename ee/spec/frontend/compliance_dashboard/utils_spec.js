@@ -5,6 +5,7 @@ import {
   FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
   FRAMEWORKS_FILTER_TYPE_PROJECT,
   FRAMEWORKS_FILTER_TYPE_GROUP,
+  FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS,
 } from 'ee/compliance_dashboard/constants';
 
 jest.mock('ee/audit_events/constants', () => ({
@@ -167,6 +168,15 @@ describe('compliance report utils', () => {
         },
       ]);
     });
+
+    it('maps project_status filter when present', () => {
+      const filters = [
+        { type: FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS, value: { data: 'archived', operator: '=' } },
+      ];
+      expect(utils.mapFiltersToUrlParams(filters)).toEqual({
+        project_status: 'archived',
+      });
+    });
   });
 
   describe('mapQueryToFilters', () => {
@@ -204,6 +214,16 @@ describe('compliance report utils', () => {
         },
       ]);
     });
+
+    it('maps project_status filter when query param is set', () => {
+      const queryParams = { project_status: 'archived' };
+      expect(utils.mapQueryToFilters(queryParams)).toEqual([
+        {
+          type: FRAMEWORKS_FILTER_TYPE_PROJECT_STATUS,
+          value: { data: 'archived', operator: '=' },
+        },
+      ]);
+    });
   });
 
   describe('checkFilterForChange', () => {
@@ -212,8 +232,12 @@ describe('compliance report utils', () => {
     });
 
     it('returns true when project filter has changed', () => {
-      const currentFilters = { project: 'framework 1', framework: '', frameworkExclude: false };
-      const newFilters = { project: 'framework 2', framework: '', frameworkExclude: false };
+      const currentFilters = {
+        project: 'framework 1',
+        framework: '',
+        project_status: 'non-archived',
+      };
+      const newFilters = { project: 'framework 2', framework: '', project_status: 'non-archived' };
       expect(utils.checkFilterForChange({ currentFilters, newFilters })).toBe(true);
     });
 
@@ -222,7 +246,7 @@ describe('compliance report utils', () => {
       const newFilters = {
         project: '',
         framework: ['old-framework', 'new-framework'],
-        frameworkExclude: false,
+        project_status: 'non-archived',
       };
       expect(utils.checkFilterForChange({ currentFilters, newFilters })).toBe(true);
     });
@@ -245,13 +269,26 @@ describe('compliance report utils', () => {
       expect(utils.checkFilterForChange({ currentFilters, newFilters })).toBe(true);
     });
 
+    it('returns true when project_status filter has changed', () => {
+      const currentFilters = {
+        project: '',
+        project_status: undefined,
+      };
+      const newFilters = { project: '', project_status: 'archived' };
+      expect(utils.checkFilterForChange({ currentFilters, newFilters })).toBe(true);
+    });
+
     it('returns false when filters have not changed', () => {
       const currentFilters = {
         project: '',
         framework: 'current-framework',
-        frameworkExclude: false,
+        project_status: 'non-archived',
       };
-      const newFilters = { project: '', framework: 'current-framework', frameworkExclude: false };
+      const newFilters = {
+        project: '',
+        framework: 'current-framework',
+        project_status: 'non-archived',
+      };
       expect(utils.checkFilterForChange({ currentFilters, newFilters })).toBe(false);
     });
   });

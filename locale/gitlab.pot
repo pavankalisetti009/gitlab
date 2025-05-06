@@ -40429,6 +40429,9 @@ msgstr ""
 msgid "Non-admin users are restricted to read-only access, in both GitLab UI and API."
 msgstr ""
 
+msgid "Non-archived"
+msgstr ""
+
 msgid "None"
 msgstr ""
 
@@ -46919,6 +46922,9 @@ msgid "Project Files"
 msgstr ""
 
 msgid "Project ID"
+msgstr ""
+
+msgid "Project Status"
 msgstr ""
 
 msgid "Project Templates"
