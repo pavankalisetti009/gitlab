@@ -286,7 +286,7 @@ module EE
         ),
         form.gitlab_ui_checkbox_component(
           :global_search_wiki_enabled,
-          _("Show wiki in global search results"),
+          _("Show wikis in global search results"),
           checkbox_options: { checked: @application_setting.global_search_wiki_enabled, multiple: false }
         )
       ]
