@@ -49636,6 +49636,9 @@ msgstr ""
 msgid "RapidDiffs|Diff line number"
 msgstr ""
 
+msgid "RapidDiffs|Failed to expand lines, please try again."
+msgstr ""
+
 msgid "RapidDiffs|Original line"
 msgstr ""
 
