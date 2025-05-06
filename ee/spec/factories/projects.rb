@@ -53,6 +53,13 @@ FactoryBot.modify do
       end
     end
 
+    trait :with_analyzer_statuses do
+      after(:create) do |project|
+        create(:analyzer_project_status, status: :success, analyzer_type: :sast, project: project)
+        create(:analyzer_project_status, status: :failed, analyzer_type: :dast, project: project)
+      end
+    end
+
     trait :with_cvs do
       after(:create) do |project|
         project.security_setting.update!(continuous_vulnerability_scans_enabled: true)

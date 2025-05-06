@@ -365,6 +365,11 @@ module EE
           authorize: :read_compliance_adherence_report,
           experiment: { milestone: '17.10' }
 
+        field :analyzer_statuses, [::Types::Security::AnalyzerGroupStatusType],
+          null: true,
+          description: 'Status for all analyzers in the group.',
+          experiment: { milestone: '18.0' }
+
         def epics_enabled
           object.licensed_feature_available?(:epics)
         end
@@ -386,6 +391,21 @@ module EE
           return unless object.licensed_feature_available?(:security_inventory)
 
           object.vulnerability_namespace_statistic
+        end
+
+        def analyzer_statuses
+          BatchLoader::GraphQL.for(object).batch do |groups, loader|
+            ::Namespaces::Preloaders::GroupRootAncestorPreloader.new(groups).execute if groups.present?
+
+            groups.each do |group|
+              unless ::Feature.enabled?(:security_inventory_dashboard, group.root_ancestor) &&
+                  group.licensed_feature_available?(:security_inventory)
+                next loader.call(group, nil)
+              end
+
+              loader.call(group, group.analyzer_group_statuses)
+            end
+          end
         end
       end
     end

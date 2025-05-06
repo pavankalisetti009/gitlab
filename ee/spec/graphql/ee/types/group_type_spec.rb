@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projects do
+  using RSpec::Parameterized::TableSyntax
+
   describe 'nested epic request' do
     it { expect(described_class).to have_graphql_field(:epicsEnabled) }
     it { expect(described_class).to have_graphql_field(:epic) }
@@ -19,6 +21,7 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:vulnerability_severities_count) }
   it { expect(described_class).to have_graphql_field(:vulnerabilities_count_by_day) }
   it { expect(described_class).to have_graphql_field(:vulnerability_grades) }
+  it { expect(described_class).to have_graphql_field(:analyzer_statuses) }
   it { expect(described_class).to have_graphql_field(:code_coverage_activities) }
   it { expect(described_class).to have_graphql_field(:stats) }
   it { expect(described_class).to have_graphql_field(:billable_members_count) }
@@ -318,6 +321,53 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
 
         results = search_results.dig('data', 'group', 'vulnerabilityNamespaceStatistic')
         expect(results).to be_nil
+      end
+    end
+  end
+
+  describe 'analyzer_statuses' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:group_analyzer_statuses) { create(:analyzer_namespace_status, namespace: group) }
+    let_it_be(:user) { create(:user) }
+
+    where(:user_role, :licensed_feature, :data_expected) do
+      :guest      | false | false
+      :guest      | true  | false
+      :developer  | false | false
+      :developer  | true  | false
+      :reporter   | false | false
+      :reporter   | true  | false
+      :maintainer | false | false
+      :maintainer | true  | true
+      :owner      | false | false
+      :owner      | true  | true
+    end
+
+    with_them do
+      let(:query) do
+        <<~GQL
+        query {
+          group(fullPath: "#{group.full_path}") {
+            analyzerStatuses {
+              analyzerType
+            }
+          }
+        }
+        GQL
+      end
+
+      before do
+        stub_licensed_features(security_inventory: licensed_feature)
+        group.add_member(user, user_role)
+      end
+
+      subject(:search_results) do
+        GitlabSchema.execute(query, context: { current_user: user }).as_json
+      end
+
+      it 'returns data only when expected' do
+        results = search_results.dig('data', 'group', 'analyzerStatuses')
+        expect(results.present?).to be(data_expected)
       end
     end
   end
