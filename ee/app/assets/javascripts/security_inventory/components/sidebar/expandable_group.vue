@@ -68,8 +68,8 @@ export default {
 <template>
   <div>
     <div
-      class="gl-flex gl-h-8 gl-cursor-pointer gl-items-center gl-gap-4 gl-rounded-base gl-px-3 hover:!gl-bg-gray-100"
-      :class="{ 'gl-bg-neutral-50': isActiveGroup }"
+      class="gl-flex gl-h-8 gl-cursor-pointer gl-items-center gl-gap-4 gl-rounded-base gl-px-3 hover:!gl-bg-status-neutral"
+      :class="{ 'gl-bg-strong': isActiveGroup }"
       data-testid="subgroup"
       :style="{ marginLeft: `${indentation}px` }"
       @click="selectSubgroup(group.fullPath)"

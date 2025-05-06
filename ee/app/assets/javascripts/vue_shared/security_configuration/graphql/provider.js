@@ -6,23 +6,6 @@ import typeDefs from './typedefs.graphql';
 
 Vue.use(VueApollo);
 
-const appendIncomingOntoExisting = (existing, incoming) => {
-  if (!incoming) return existing;
-  if (!existing) return incoming;
-
-  return {
-    ...incoming,
-    nodes: [
-      ...existing.nodes,
-      ...incoming.nodes.filter(
-        (incomingNode) =>
-          // eslint-disable-next-line no-underscore-dangle
-          !existing.nodes.find((existingNode) => existingNode.__ref === incomingNode.__ref),
-      ),
-    ],
-  };
-};
-
 export const typePolicies = {
   Query: {
     fields: {
@@ -46,22 +29,10 @@ export const typePolicies = {
       },
     },
   },
-  Group: {
-    fields: {
-      descendantGroups: {
-        read(cachedData) {
-          return cachedData;
-        },
-        merge: appendIncomingOntoExisting,
-      },
-    },
-  },
 };
 
 export const defaultClient = createDefaultClient(resolvers, {
-  cacheConfig: {
-    typePolicies,
-  },
+  cacheConfig: { typePolicies },
   typeDefs,
 });
 

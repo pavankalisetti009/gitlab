@@ -90,10 +90,10 @@ export default {
         @update:size="onSizeUpdate"
       />
 
-      <div class="gl-sticky gl-top-10 gl-h-screen gl-overflow-auto gl-pr-3">
+      <div class="gl-sticky gl-top-10 gl-h-screen gl-overflow-auto gl-pb-10 gl-pr-3">
         <div
-          class="gl-flex gl-h-8 gl-cursor-pointer gl-items-center gl-gap-4 gl-rounded-base gl-px-3 hover:!gl-bg-gray-100"
-          :class="{ 'gl-bg-neutral-50': isActiveGroup }"
+          class="gl-flex gl-h-8 gl-cursor-pointer gl-items-center gl-gap-4 gl-rounded-base gl-px-3 hover:!gl-bg-status-neutral"
+          :class="{ 'gl-bg-strong': isActiveGroup }"
           @click="selectSubgroup(group.fullPath)"
         >
           <project-avatar

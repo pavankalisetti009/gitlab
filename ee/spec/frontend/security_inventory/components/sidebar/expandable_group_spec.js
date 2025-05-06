@@ -15,7 +15,7 @@ describe('ExpandableGroup', () => {
   const findExpandButton = () => wrapper.findComponent(GlButton);
   const findExpandButtonIcon = () => wrapper.findComponent(GlButton).props('icon');
   const subgroupHasHighlightedClass = () =>
-    wrapper.findByTestId('subgroup').classes('gl-bg-neutral-50');
+    wrapper.findByTestId('subgroup').classes('gl-bg-strong');
   const findGroupList = () => wrapper.findComponent(GroupList);
 
   const subgroups = groupWithSubgroups.data.group.descendantGroups.nodes;
