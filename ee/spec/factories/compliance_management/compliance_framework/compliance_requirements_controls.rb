@@ -11,6 +11,17 @@ FactoryBot.define do
     name { 'scanner_sast_running' }
     expression { { operator: '=', field: 'scanner_sast_running', value: true }.to_json }
 
+    trait :minimum_approvals_required_1 do
+      name { 'minimum_approvals_required_1' }
+      expression do
+        {
+          operator: ">=",
+          field: "minimum_approvals_required",
+          value: 1
+        }.to_json
+      end
+    end
+
     trait :minimum_approvals_required_2 do
       name { 'minimum_approvals_required_2' }
       expression do

@@ -15975,6 +15975,9 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Configure your project to require all discussions be resolved before merging."
 msgstr ""
 
+msgid "ComplianceStandardsAdherence|Configure your project to require at least one approval on merge requests to improve code quality and security."
+msgstr ""
+
 msgid "ComplianceStandardsAdherence|Configure your project to require at least two approvals on merge requests to improve code quality and security."
 msgstr ""
 
@@ -16186,6 +16189,9 @@ msgid "ComplianceStandardsAdherence|Ensures status checks must pass before mergi
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Ensures strict permissions are set for repository access."
+msgstr ""
+
+msgid "ComplianceStandardsAdherence|Ensures that merge requests require at least one approval before merging."
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Ensures that merge requests require at least two approvals before merging."

@@ -587,6 +587,17 @@ export const mockGitLabStandardControls = [
     __typename: 'ControlExpression',
   },
   {
+    id: 'minimum_approvals_required_1',
+    name: 'At least one approval',
+    expression: {
+      field: 'minimum_approvals_required',
+      operator: '=',
+      value: 1,
+      __typename: 'IntegerExpression',
+    },
+    __typename: 'ControlExpression',
+  },
+  {
     id: 'minimum_approvals_required_2',
     name: 'At least two approvals',
     expression: {
