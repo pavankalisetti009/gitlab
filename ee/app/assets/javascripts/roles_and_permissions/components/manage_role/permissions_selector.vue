@@ -9,15 +9,16 @@ import {
   GlBadge,
 } from '@gitlab/ui';
 import { pull } from 'lodash';
-import { s__ } from '~/locale';
+import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { BASE_ROLES } from '~/access_level/constants';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { isPermissionPreselected } from '../../utils';
 import memberPermissionsQuery from '../../graphql/member_role_permissions.query.graphql';
 import adminPermissionsQuery from '../../graphql/admin_role/role_permissions.query.graphql';
 
 export const FIELDS = [
-  { key: 'checkbox', label: '' },
+  { key: 'checkbox', label: __('Select') },
   { key: 'name', label: s__('MemberRole|Permission') },
   { key: 'description', label: s__('MemberRole|Description') },
 ].map((field) => ({ ...field, class: '!gl-pt-6 !gl-pb-6' }));
@@ -41,6 +42,7 @@ export default {
     GlTable,
     GlAlert,
     GlBadge,
+    CrudComponent,
   },
   inject: ['isAdminRole'],
   model: {
@@ -202,37 +204,35 @@ export default {
 </script>
 
 <template>
-  <fieldset>
-    <legend class="gl-mb-1 gl-border-b-0 gl-text-base">
-      <span class="gl-font-bold">{{ $options.i18n.customPermissionsLabel }}</span>
-      <span
-        v-if="hasAvailablePermissions"
-        class="gl-ml-3 gl-text-subtle"
-        data-testid="permissions-selected-message"
-      >
+  <crud-component
+    :title="$options.i18n.customPermissionsLabel"
+    class="gl-mb-5"
+    title-class="gl-flex-wrap"
+  >
+    <template v-if="hasAvailablePermissions" #count>
+      <span data-testid="permissions-selected-message">
         <gl-sprintf :message="$options.i18n.permissionsSelected">
           <template #count>{{ checkedPermissionsCount }}</template>
           <template #total>{{ availablePermissions.length }}</template>
         </gl-sprintf>
       </span>
-    </legend>
+    </template>
 
-    <p v-if="!isAdminRole" class="gl-mb-4" data-testid="learn-more">
-      <gl-sprintf :message="$options.i18n.customPermissionsDescription">
-        <template #link="{ content }">
-          <gl-link :href="docsPath" target="_blank">{{ content }}</gl-link>
-        </template>
-      </gl-sprintf>
-    </p>
+    <template v-if="!isAdminRole || !isValid" #description>
+      <span v-if="!isAdminRole" data-testid="learn-more">
+        <gl-sprintf :message="$options.i18n.customPermissionsDescription">
+          <template #link="{ content }">
+            <gl-link :href="docsPath" target="_blank">{{ content }}</gl-link>
+          </template>
+        </gl-sprintf>
+      </span>
 
-    <p v-if="!isValid" class="gl-text-red-500">{{ $options.i18n.permissionsSelectionError }}</p>
+      <p v-if="!isValid" class="gl-mb-0 gl-mt-2 gl-text-base gl-text-danger">
+        {{ $options.i18n.permissionsSelectionError }}
+      </p>
+    </template>
 
-    <gl-alert
-      v-if="isErrorLoadingPermissions"
-      :dismissible="false"
-      variant="danger"
-      class="gl-mb-6 gl-inline-block"
-    >
+    <gl-alert v-if="isErrorLoadingPermissions" :dismissible="false" variant="danger">
       {{ $options.i18n.permissionsFetchError }}
     </gl-alert>
 
@@ -244,7 +244,7 @@ export default {
       hover
       selected-variant=""
       selectable
-      class="gl-my-8"
+      stacked="sm"
       @row-clicked="updatePermissions"
     >
       <template #table-busy>
@@ -273,7 +273,7 @@ export default {
       </template>
 
       <template #cell(name)="{ item }">
-        <span :class="{ 'gl-text-danger': !isValid }" class="gl-whitespace-nowrap">
+        <span :class="{ 'gl-text-danger': !isValid }" class="md:gl-whitespace-nowrap">
           {{ item.name }}
 
           <gl-badge v-if="item.disabled" variant="info" class="gl-ml-2">
@@ -284,5 +284,5 @@ export default {
         </span>
       </template>
     </gl-table>
-  </fieldset>
+  </crud-component>
 </template>
