@@ -23,8 +23,8 @@ Usage: rake "gitlab:secrets_management:openbao:clone[/installation/dir]")
 
         # As per https://gitlab.com/gitlab-org/govern/secrets-management/openbao-internal/-/packages/
         checksums_sha256 = {
-          'bao-darwin-arm64' => '59b8268bd0ad841c19954c5719ea32df490c45da518a20ebd97bfaeca4d64dac',
-          'bao-darwin-amd64' => 'b575cf2bf2d560572f0b100fa481355cbbaa0bb30077a6acf4648e0c27ee0e74',
+          'bao-darwin-arm64' => 'c6a50918e4ed9f264fda7fc22abffb9f8430a6c6f3f9c4714b5cf74a1ed64c21',
+          'bao-darwin-amd64' => 'b0a14071b5b399d02c32340a16d040b6c59f2005b6470a8a148c3b2da4f20eaa',
           'bao-linux-amd64' => '40b966fb3424f758895794ed30006ca188e55af973729699c17461bb51d09da8'
         }
 
