@@ -12,10 +12,6 @@ module CloudConnector
       false
     end
 
-    def allowed_for?(_user)
-      false
-    end
-
     def purchased?(_namespace = nil)
       false
     end

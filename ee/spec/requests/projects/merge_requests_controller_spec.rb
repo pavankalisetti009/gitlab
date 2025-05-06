@@ -60,7 +60,7 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
 
           service = instance_double(CloudConnector::BaseAvailableServiceData)
           allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
-          allow(service).to receive_messages({ free_access?: true, allowed_for?: true })
+          allow(service).to receive_messages({ free_access?: true })
           allow(::Gitlab::Saas).to receive(:feature_available?).and_return(true)
         end
 

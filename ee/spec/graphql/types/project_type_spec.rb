@@ -36,7 +36,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
       merge_trains pending_member_approvals observability_logs_links observability_metrics_links
       observability_traces_links dependencies security_exclusions security_exclusion
       compliance_standards_adherence target_branch_rules duo_workflow_status_check component_usages
-      vulnerability_archives component_versions vulnerability_statistic
+      vulnerability_archives component_versions vulnerability_statistic analyzer_statuses
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
@@ -452,6 +452,53 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
       it 'returns nil' do
         results = search_results.dig('data', 'project', 'vulnerabilityIdentifierSearch')
         expect(results).to be_nil
+      end
+    end
+  end
+
+  describe 'analyzer_statuses' do
+    let_it_be(:project) { create(:project, :with_analyzer_statuses) }
+    let_it_be(:user) { create(:user) }
+
+    where(:user_role, :licensed_feature, :data_expected) do
+      :guest      | false | false
+      :guest      | true  | false
+      :developer  | false | false
+      :developer  | true  | false
+      :reporter   | false | false
+      :reporter   | true  | false
+      :maintainer | false | false
+      :maintainer | true  | true
+      :owner      | false | false
+      :owner      | true  | true
+    end
+
+    with_them do
+      let(:query) do
+        <<~GQL
+          query {
+            project(fullPath: "#{project.full_path}") {
+              analyzerStatuses {
+                status
+                analyzerType
+              }
+            }
+          }
+        GQL
+      end
+
+      before do
+        stub_licensed_features(security_inventory: licensed_feature)
+        project.add_role(user, user_role)
+      end
+
+      subject(:search_results) do
+        GitlabSchema.execute(query, context: { current_user: user }).as_json
+      end
+
+      it 'returns data only when expected' do
+        results = search_results.dig('data', 'project', 'analyzerStatuses')
+        expect(results.present?).to be(data_expected)
       end
     end
   end

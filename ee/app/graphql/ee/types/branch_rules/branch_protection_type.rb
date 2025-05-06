@@ -16,6 +16,12 @@ module EE
             type: GraphQL::Types::Boolean,
             null: false,
             description: 'Enforce code owner approvals before allowing a merge.'
+
+          field :modification_blocked_by_policy,
+            type: GraphQL::Types::Boolean,
+            null: false,
+            description: 'Indicates if a security policy prevents modification.',
+            calls_gitaly: true
         end
       end
     end

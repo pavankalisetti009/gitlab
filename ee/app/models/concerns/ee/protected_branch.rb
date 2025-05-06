@@ -43,6 +43,23 @@ module EE
     end
     alias_method :code_owner_approval_required?, :code_owner_approval_required
 
+    def modification_blocked_by_policy?
+      return false unless entity.licensed_feature_available?(:security_orchestration_policies)
+
+      case entity
+      when Project
+        ::Security::SecurityOrchestrationPolicies::ProtectedBranchesDeletionCheckService
+          .new(project: entity)
+          .execute([self])
+          .any?
+      when Group
+        ::Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDeletionCheckService
+          .new(group: entity)
+          .execute
+      end
+    end
+    alias_method :modification_blocked_by_policy, :modification_blocked_by_policy?
+
     def allow_force_push
       return false if protected_from_push_by_security_policy?
 
