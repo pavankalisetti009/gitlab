@@ -345,7 +345,7 @@ li.note {
   width: 4px;
 
   &:hover {
-    background-color: $gray-50;
+    @apply gl-bg-strong;
   }
 
   &.is-dragging {

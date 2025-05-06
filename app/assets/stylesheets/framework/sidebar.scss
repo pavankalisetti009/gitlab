@@ -362,7 +362,7 @@
 
     &:hover {
       @apply gl-text-default;
-      background: $gray-50;
+      @apply gl-bg-strong;
     }
 
     &:hover,
