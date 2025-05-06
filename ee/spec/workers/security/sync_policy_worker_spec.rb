@@ -83,7 +83,13 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
     end
 
     it 'calls Security::SyncProjectPolicyWorker' do
-      expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).with(project.id, policy.id, {})
+      expect(::Security::SyncProjectPolicyWorker)
+        .to receive(:bulk_perform_async_with_contexts)
+        .with(
+          [project.id],
+          arguments_proc: kind_of(Proc),
+          context_proc: kind_of(Proc)
+        )
 
       handle_event
     end
@@ -104,7 +110,7 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       end
 
       it 'does not call Security::SyncProjectPolicyWorker' do
-        expect(::Security::SyncProjectPolicyWorker).not_to receive(:perform_async)
+        expect(::Security::SyncProjectPolicyWorker).not_to receive(:bulk_perform_async_with_contexts)
 
         handle_event
       end
@@ -121,8 +127,13 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       let_it_be(:policy) { create(:security_policy, security_orchestration_policy_configuration: policy_configuration) }
 
       it 'calls Security::SyncProjectPolicyWorker' do
-        expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).once.with(project1.id, policy.id, {})
-        expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).once.with(project2.id, policy.id, {})
+        expect(::Security::SyncProjectPolicyWorker)
+          .to receive(:bulk_perform_async_with_contexts)
+          .with(
+            [project1.id, project2.id],
+            arguments_proc: kind_of(Proc),
+            context_proc: kind_of(Proc)
+          )
 
         handle_event
       end
@@ -149,8 +160,13 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
     end
 
     it 'calls Security::SyncProjectPolicyWorker' do
-      expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).with(project.id, policy.id,
-        event_payload.deep_stringify_keys)
+      expect(::Security::SyncProjectPolicyWorker)
+        .to receive(:bulk_perform_async_with_contexts)
+        .with(
+          [project.id],
+          arguments_proc: kind_of(Proc),
+          context_proc: kind_of(Proc)
+        )
 
       handle_event
     end
@@ -166,10 +182,13 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       let_it_be(:policy) { create(:security_policy, security_orchestration_policy_configuration: policy_configuration) }
 
       it 'calls Security::SyncProjectPolicyWorker' do
-        expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).once.with(project1.id, policy.id,
-          event_payload.deep_stringify_keys)
-        expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).once.with(project2.id, policy.id,
-          event_payload.deep_stringify_keys)
+        expect(::Security::SyncProjectPolicyWorker)
+          .to receive(:bulk_perform_async_with_contexts)
+          .with(
+            [project1.id, project2.id],
+            arguments_proc: kind_of(Proc),
+            context_proc: kind_of(Proc)
+          )
 
         handle_event
       end
@@ -188,8 +207,13 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       end
 
       it 'calls Security::SyncProjectPolicyWorker' do
-        expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).with(project.id, policy.id,
-          event_payload.deep_stringify_keys)
+        expect(::Security::SyncProjectPolicyWorker)
+          .to receive(:bulk_perform_async_with_contexts)
+          .with(
+            [project.id],
+            arguments_proc: kind_of(Proc),
+            context_proc: kind_of(Proc)
+          )
 
         handle_event
       end
@@ -205,8 +229,13 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       end
 
       it 'calls Security::SyncProjectPolicyWorker' do
-        expect(::Security::SyncProjectPolicyWorker).to receive(:perform_async).with(project.id, policy.id,
-          event_payload.deep_stringify_keys)
+        expect(::Security::SyncProjectPolicyWorker)
+          .to receive(:bulk_perform_async_with_contexts)
+          .with(
+            [project.id],
+            arguments_proc: kind_of(Proc),
+            context_proc: kind_of(Proc)
+          )
 
         handle_event
       end
@@ -252,7 +281,7 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       end
 
       it 'does not call Security::SyncProjectPolicyWorker' do
-        expect(::Security::SyncProjectPolicyWorker).not_to receive(:perform_async)
+        expect(::Security::SyncProjectPolicyWorker).not_to receive(:bulk_perform_async_with_contexts)
 
         handle_event
       end
