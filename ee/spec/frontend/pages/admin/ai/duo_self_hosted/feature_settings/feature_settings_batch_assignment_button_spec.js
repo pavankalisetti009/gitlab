@@ -45,6 +45,8 @@ describe('FeatureSettingsBatchAssignmentButton', () => {
 
   const findBatchAssignmentButton = () => wrapper.findByTestId('model-batch-assignment-button');
   const findBatchAssignmentTooltip = () => wrapper.findByTestId('model-batch-assignment-tooltip');
+  const findUnassignedFeatureIcon = () => wrapper.findByTestId('warning-icon');
+  const findUnassignedFeatureTooltip = () => wrapper.findByTestId('unassigned-feature-tooltip');
 
   it('renders a button to batch assign an option for all sub-features', () => {
     createComponent();
@@ -56,7 +58,7 @@ describe('FeatureSettingsBatchAssignmentButton', () => {
   });
 
   describe('when the current feature setting has no option assigned', () => {
-    it('disables the batch update button', () => {
+    beforeEach(() => {
       const currentFeatureSetting = {
         feature: 'duo_chat',
         title: 'General Chat',
@@ -64,10 +66,36 @@ describe('FeatureSettingsBatchAssignmentButton', () => {
       };
 
       createComponent({ props: { currentFeatureSetting } });
+    });
+
+    it('disables the batch update button', () => {
+      expect(findBatchAssignmentButton().props('disabled')).toBe(true);
+      expect(findBatchAssignmentTooltip().attributes('title')).toBe(
+        'Assign a model to the General Chat sub-feature before applying to all',
+      );
+    });
+
+    it('renders a warning icon and tooltip', () => {
+      expect(findUnassignedFeatureIcon().exists()).toBe(true);
+      expect(findUnassignedFeatureTooltip().attributes('title')).toBe(
+        'Assign a model to enable this feature',
+      );
+    });
+  });
+
+  describe('when the current feature setting is disabled', () => {
+    it('disables the batch update button', () => {
+      const currentFeatureSetting = {
+        feature: 'duo_chat',
+        title: 'General Chat',
+        provider: 'disabled',
+      };
+
+      createComponent({ props: { currentFeatureSetting } });
 
       expect(findBatchAssignmentButton().props('disabled')).toBe(true);
       expect(findBatchAssignmentTooltip().attributes('title')).toBe(
-        'Assign a setting to the General Chat sub-feature before applying to all',
+        'Assign a model to the General Chat sub-feature before applying to all',
       );
     });
   });
@@ -95,55 +123,6 @@ describe('FeatureSettingsBatchAssignmentButton', () => {
         it('emits update event with updated feature settings', () => {
           expect(wrapper.emitted('update-feature-settings')[0][0]).toEqual(
             mockDuoChatFeatureSettings,
-          );
-        });
-
-        it('emits events to update loading state on parent', () => {
-          expect(wrapper.emitted('update-batch-saving-state')).toHaveLength(2);
-        });
-      });
-
-      describe('batch disabling feature settings', () => {
-        const mockDisabledDuoChatFeatureSettings = mockDuoChatFeatureSettings.map((setting) => ({
-          ...setting,
-          provider: 'disabled',
-        }));
-        const currentFeatureSetting = {
-          provider: 'disabled',
-          selfHostedModel: null,
-        };
-        const disableFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
-          data: {
-            aiFeatureSettingUpdate: {
-              aiFeatureSettings: mockDisabledDuoChatFeatureSettings,
-              errors: [],
-            },
-          },
-        });
-
-        beforeEach(async () => {
-          createComponent({
-            apolloHandlers: [[updateAiFeatureSettings, disableFeatureSettingsSuccessHandler]],
-            props: { currentFeatureSetting },
-          });
-
-          await findBatchAssignmentButton().trigger('click');
-          await waitForPromises();
-        });
-
-        it('invokes the update mutation with correct input', () => {
-          expect(disableFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
-            input: {
-              features: ['DUO_CHAT_TROUBLESHOOT_JOB', 'DUO_CHAT', 'DUO_CHAT_EXPLAIN_CODE'],
-              provider: 'DISABLED',
-              aiSelfHostedModelId: null,
-            },
-          });
-        });
-
-        it('emits an update-feature-settings event with the updated feature settings', () => {
-          expect(wrapper.emitted('update-feature-settings')[0][0]).toEqual(
-            mockDisabledDuoChatFeatureSettings,
           );
         });
 

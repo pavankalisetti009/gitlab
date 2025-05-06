@@ -4280,7 +4280,10 @@ msgstr ""
 msgid "AdminSelfHostedModels|Apply to all %{mainFeature} sub-features"
 msgstr ""
 
-msgid "AdminSelfHostedModels|Assign a setting to the %{subFeatureTitle} sub-feature before applying to all"
+msgid "AdminSelfHostedModels|Assign a model to enable this feature"
+msgstr ""
+
+msgid "AdminSelfHostedModels|Assign a model to the %{subFeatureTitle} sub-feature before applying to all"
 msgstr ""
 
 msgid "AdminSelfHostedModels|Create self-hosted model"

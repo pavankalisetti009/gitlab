@@ -1,5 +1,5 @@
 <script>
-import { GlButton, GlTooltip } from '@gitlab/ui';
+import { GlButton, GlIcon, GlTooltip } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import updateAiFeatureSettings from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
@@ -10,6 +10,7 @@ export default {
   name: 'FeatureSettingsBatchAssignmentButton',
   components: {
     GlButton,
+    GlIcon,
     GlTooltip,
   },
   props: {
@@ -23,10 +24,16 @@ export default {
     },
   },
   computed: {
-    currentFeatureSettingUnassigned() {
+    isCurrentFeatureSettingUnassigned() {
       const providers = [PROVIDERS.SELF_HOSTED, PROVIDERS.DISABLED];
 
       return !providers.includes(this.currentFeatureSetting.provider);
+    },
+    isCurrentFeatureSettingDisabledOrUnassigned() {
+      return (
+        this.isCurrentFeatureSettingUnassigned ||
+        this.currentFeatureSetting.provider === PROVIDERS.DISABLED
+      );
     },
     errorMessage() {
       return sprintf(
@@ -44,12 +51,15 @@ export default {
     disabledTooltipTitle() {
       return sprintf(
         s__(
-          'AdminSelfHostedModels|Assign a setting to the %{subFeatureTitle} sub-feature before applying to all',
+          'AdminSelfHostedModels|Assign a model to the %{subFeatureTitle} sub-feature before applying to all',
         ),
         {
           subFeatureTitle: this.currentFeatureSetting.title,
         },
       );
+    },
+    warningTooltipTitle() {
+      return s__('AdminSelfHostedModels|Assign a model to enable this feature');
     },
   },
   methods: {
@@ -121,19 +131,39 @@ export default {
 };
 </script>
 <template>
-  <div ref="batchUpdateButton">
-    <gl-button
-      data-testid="model-batch-assignment-button"
-      :aria-label="tooltipTitle"
-      category="primary"
-      icon="duplicate"
-      :disabled="currentFeatureSettingUnassigned"
-      @click="onClick"
-    />
-    <gl-tooltip
-      data-testid="model-batch-assignment-tooltip"
-      :target="() => $refs.batchUpdateButton"
-      :title="currentFeatureSettingUnassigned ? disabledTooltipTitle : tooltipTitle"
-    />
+  <div :class="{ 'gl-flex gl-w-full gl-justify-between': isCurrentFeatureSettingUnassigned }">
+    <div v-if="isCurrentFeatureSettingUnassigned" ref="unAssignedFeatureWarning">
+      <div
+        class="align-items-center gl-flex gl-h-7 gl-w-7 gl-justify-center gl-rounded-base gl-bg-orange-50"
+      >
+        <gl-icon
+          data-testid="warning-icon"
+          :aria-label="warningTooltipTitle"
+          name="warning"
+          variant="warning"
+          :size="16"
+        />
+      </div>
+      <gl-tooltip
+        data-testid="unassigned-feature-tooltip"
+        :target="() => $refs.unAssignedFeatureWarning"
+        :title="warningTooltipTitle"
+      />
+    </div>
+    <div ref="batchUpdateButton">
+      <gl-button
+        data-testid="model-batch-assignment-button"
+        :aria-label="tooltipTitle"
+        category="primary"
+        icon="duplicate"
+        :disabled="isCurrentFeatureSettingDisabledOrUnassigned"
+        @click="onClick"
+      />
+      <gl-tooltip
+        data-testid="model-batch-assignment-tooltip"
+        :target="() => $refs.batchUpdateButton"
+        :title="isCurrentFeatureSettingDisabledOrUnassigned ? disabledTooltipTitle : tooltipTitle"
+      />
+    </div>
   </div>
 </template>
