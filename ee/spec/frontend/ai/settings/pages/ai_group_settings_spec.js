@@ -28,6 +28,8 @@ const createComponent = (props = {}, provide = {}) => {
     },
     provide: {
       showEarlyAccessBanner: false,
+      onGeneralSettingsPage: false,
+      isDuoBaseAccessAllowed: true,
       ...provide,
     },
   });
@@ -110,6 +112,42 @@ describe('AiGroupSettings', () => {
           error,
         }),
       );
+    });
+
+    describe('when duo core access is not allowed', () => {
+      it('does not update duo core setting', async () => {
+        createComponent({}, { isDuoBaseAccessAllowed: false });
+
+        updateGroupSettings.mockResolvedValue({});
+        await findAiCommonSettings().vm.$emit('submit', {
+          duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+          experimentFeaturesEnabled: false,
+          duoCoreFeaturesEnabled: true,
+        });
+        expect(updateGroupSettings).toHaveBeenCalledTimes(1);
+        expect(updateGroupSettings).toHaveBeenCalledWith('100', {
+          duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+          experiment_features_enabled: false,
+        });
+      });
+    });
+
+    describe('when on general settings section', () => {
+      it('does not update duo core setting', async () => {
+        createComponent({}, { onGeneralSettingsPage: true });
+
+        updateGroupSettings.mockResolvedValue({});
+        await findAiCommonSettings().vm.$emit('submit', {
+          duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+          experimentFeaturesEnabled: false,
+          duoCoreFeaturesEnabled: true,
+        });
+        expect(updateGroupSettings).toHaveBeenCalledTimes(1);
+        expect(updateGroupSettings).toHaveBeenCalledWith('100', {
+          duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+          experiment_features_enabled: false,
+        });
+      });
     });
   });
 });
