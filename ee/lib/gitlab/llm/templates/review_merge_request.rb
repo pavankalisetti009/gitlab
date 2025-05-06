@@ -7,6 +7,8 @@ module Gitlab
         include Gitlab::Llm::Chain::Concerns::AnthropicPrompt
         include Gitlab::Utils::StrongMemoize
 
+        OUTPUT_MAX_TOKENS = 8192
+
         SYSTEM_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_system(
           <<~PROMPT.chomp
             You are an experienced software developer tasked with reviewing code changes made by your colleague in a GitLab merge request. Your goal is to review the changes thoroughly and offer constructive and yet concise feedback if required.
@@ -190,7 +192,8 @@ module Gitlab
               Gitlab::Llm::Chain::Utils::Prompt.format_conversation([user_message], variables)
             ),
             system: Gitlab::Llm::Chain::Utils::Prompt.no_role_text([SYSTEM_MESSAGE], {}),
-            model: model_version
+            model: model_version,
+            max_tokens: OUTPUT_MAX_TOKENS
           }
         end
 
