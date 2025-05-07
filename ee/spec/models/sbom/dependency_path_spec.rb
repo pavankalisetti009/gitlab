@@ -58,15 +58,16 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
           end
 
           it 'traverses until it finds no more ancestors, and skips children' do
-            is_expected.to eq([described_class.new(
-              id: occurrence_2.id,
-              project_id: project.id,
-              dependency_name: component_2.name,
-              full_path: [component_1.name, component_2.name],
-              version: [component_version_1.version, component_version_2.version],
-              is_cyclic: false,
-              max_depth_reached: false
-            )])
+            dependency_paths = find_dependencies
+
+            aggregate_failures do
+              expect(dependency_paths.length).to eq 1
+              expect(dependency_paths[0]['full_path']).to match_array([nil, component_1.name, component_2.name])
+              expect(dependency_paths[0]['version']).to match_array([nil, component_version_1.version,
+                component_version_2.version])
+              expect(dependency_paths[0]['is_cyclic']).to be_falsey
+              expect(dependency_paths[0]['max_depth_reached']).to be_falsey
+            end
           end
 
           it 'returns expected ancestors' do
@@ -83,15 +84,17 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
           end
 
           it 'traverses until it finds no more ancestors' do
-            is_expected.to eq([described_class.new(
-              id: occurrence_3.id,
-              project_id: project.id,
-              dependency_name: component_3.name,
-              full_path: [component_1.name, component_2.name, component_3.name],
-              version: [component_version_1.version, component_version_2.version, component_version_3.version],
-              is_cyclic: false,
-              max_depth_reached: false
-            )])
+            dependency_paths = find_dependencies
+
+            aggregate_failures do
+              expect(dependency_paths.length).to eq 1
+              expect(dependency_paths[0]['full_path']).to match_array([nil, component_1.name, component_2.name,
+                component_3.name])
+              expect(dependency_paths[0]['version']).to match_array([nil, component_version_1.version,
+                component_version_2.version, component_version_3.version])
+              expect(dependency_paths[0]['is_cyclic']).to be_falsey
+              expect(dependency_paths[0]['max_depth_reached']).to be_falsey
+            end
           end
 
           it 'returns expected ancestors' do
@@ -109,15 +112,85 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
           occurrence_1.id
         end
 
-        it 'returns an empty array' do
-          is_expected.to eq([])
+        it 'returns itself' do
+          dependency_paths = find_dependencies
+
+          aggregate_failures do
+            expect(dependency_paths.length).to eq 1
+            expect(dependency_paths[0]['full_path']).to match_array([nil, component_1.name])
+            expect(dependency_paths[0]['version']).to match_array([nil, component_version_1.version])
+            expect(dependency_paths[0]['is_cyclic']).to be_falsey
+            expect(dependency_paths[0]['max_depth_reached']).to be_falsey
+          end
+        end
+      end
+
+      context 'when the dependency is both direct and transitive' do
+        let_it_be(:component_4) { create(:sbom_component, name: "activerecord") }
+        let_it_be(:component_version_4) { create(:sbom_component_version, component: component_4, version: 'v3.4.5') }
+
+        let_it_be(:occurrence_4) do
+          create(:sbom_occurrence,
+            component: component_4,
+            project: project,
+            component_version: component_version_4,
+            # '{}' element will be present for direct dependencies
+            ancestors: [{ name: component_1.name, version: component_version_1.version }, {}]
+          )
+        end
+
+        let(:occurrence_id) { occurrence_4.id }
+
+        it 'returns both the direct path and the transitive path' do
+          paths = find_dependencies.map(&:path)
+
+          expect(paths).to match_array([
+            [
+              { name: component_1.name, version: component_version_1.version },
+              { name: component_4.name, version: component_version_4.version }
+            ],
+            [
+              { name: component_4.name, version: component_version_4.version }
+            ]
+          ])
+        end
+      end
+
+      context 'with occurrences which have same component id and component version id' do
+        # Occurrence which has same component id and component version id as occurrence_2
+        let_it_be(:occurrence_4) do
+          create(:sbom_occurrence,
+            component: component_2,
+            project: project,
+            component_version: component_version_2,
+            ancestors: [{ name: component_1.name, version: component_version_1.version }]
+          )
+        end
+
+        let(:occurrence_id) do
+          occurrence_3.id
+        end
+
+        it 'does not return duplicate paths' do
+          paths = find_dependencies.map(&:path)
+
+          expect(paths.size).to eq 1
+          expect(paths.first).to eq([
+            { name: component_1.name, version: component_version_1.version },
+            { name: component_2.name, version: component_version_2.version },
+            { name: component_3.name, version: component_version_3.version }
+          ])
         end
       end
     end
 
     context 'with overlapping paths' do
       let_it_be(:occurrence_1) do
-        create(:sbom_occurrence, component: component_1, project: project, component_version: component_version_1)
+        create(:sbom_occurrence,
+          component: component_1,
+          project: project,
+          component_version: component_version_1,
+          ancestors: [{}])
       end
 
       let_it_be(:occurrence_2) do
@@ -146,26 +219,24 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
       end
 
       it 'emits correct overlapping paths' do
-        is_expected.to eq([
-          described_class.new(
-            id: occurrence_3.id,
-            project_id: project.id,
-            dependency_name: component_3.name,
-            full_path: [component_1.name, component_3.name],
-            version: [component_version_1.version, component_version_3.version],
-            is_cyclic: false,
-            max_depth_reached: false
-          ),
-          described_class.new(
-            id: occurrence_3.id,
-            project_id: project.id,
-            dependency_name: component_3.name,
-            full_path: [component_1.name, component_2.name, component_3.name],
-            version: [component_version_1.version, component_version_2.version, component_version_3.version],
-            is_cyclic: false,
-            max_depth_reached: false
-          )
-        ])
+        dependency_paths = find_dependencies
+
+        aggregate_failures do
+          expect(dependency_paths.length).to eq 2
+
+          expect(dependency_paths[0]['full_path']).to match_array([nil, component_1.name, component_3.name])
+          expect(dependency_paths[0]['version']).to match_array([nil, component_version_1.version,
+            component_version_3.version])
+          expect(dependency_paths[0]['is_cyclic']).to be_falsey
+          expect(dependency_paths[0]['max_depth_reached']).to be_falsey
+
+          expect(dependency_paths[1]['full_path']).to match_array([nil, component_1.name, component_2.name,
+            component_3.name])
+          expect(dependency_paths[1]['version']).to match_array([nil, component_version_1.version,
+            component_version_2.version, component_version_3.version])
+          expect(dependency_paths[1]['is_cyclic']).to be_falsey
+          expect(dependency_paths[1]['max_depth_reached']).to be_falsey
+        end
       end
 
       it 'returns expected ancestors' do
@@ -214,16 +285,18 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
       end
 
       it 'traverses until it finds the cycle and stops' do
-        is_expected.to eq([described_class.new(
-          id: occurrence_3.id,
-          project_id: project.id,
-          dependency_name: component_3.name,
-          full_path: [component_3.name, component_1.name, component_2.name, component_3.name],
-          version: [component_version_3.version,
-            component_version_1.version, component_version_2.version, component_version_3.version],
-          is_cyclic: true,
-          max_depth_reached: false
-        )])
+        dependency_paths = find_dependencies
+
+        aggregate_failures do
+          expect(dependency_paths.length).to eq 1
+
+          expect(dependency_paths[0]['full_path']).to match_array([component_3.name, component_1.name, component_2.name,
+            component_3.name])
+          expect(dependency_paths[0]['version']).to match_array([component_version_3.version,
+            component_version_1.version, component_version_2.version, component_version_3.version])
+          expect(dependency_paths[0]['is_cyclic']).to be_truthy
+          expect(dependency_paths[0]['max_depth_reached']).to be_falsey
+        end
       end
 
       it 'returns expected ancestors' do
@@ -238,7 +311,7 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
 
     context 'if it exceeds the max depth' do
       before do
-        stub_const("#{described_class}::MAX_DEPTH", 1)
+        stub_const("#{described_class}::MAX_DEPTH", 2)
       end
 
       let_it_be(:occurrence_1) do
@@ -273,19 +346,22 @@ RSpec.describe Sbom::DependencyPath, feature_category: :vulnerability_management
       end
 
       it 'traverses until it reaches max depth and stops' do
-        is_expected.to eq([described_class.new(
-          id: occurrence_3.id,
-          project_id: project.id,
-          dependency_name: component_3.name,
-          full_path: [component_2.name, component_3.name],
-          version: [component_version_2.version, component_version_3.version],
-          is_cyclic: false,
-          max_depth_reached: true
-        )])
+        dependency_paths = find_dependencies
+        aggregate_failures do
+          expect(dependency_paths.length).to eq 1
+
+          expect(dependency_paths[0]['full_path']).to match_array([component_1.name, component_2.name,
+            component_3.name])
+          expect(dependency_paths[0]['version']).to match_array([component_version_1.version,
+            component_version_2.version, component_version_3.version])
+          expect(dependency_paths[0]['is_cyclic']).to be_falsey
+          expect(dependency_paths[0]['max_depth_reached']).to be_truthy
+        end
       end
 
       it 'returns expected ancestors' do
         expect(find_dependencies[0].path).to eq([
+          { name: component_1.name, version: component_version_1.version },
           { name: component_2.name, version: component_version_2.version },
           { name: component_3.name, version: component_version_3.version }
         ])

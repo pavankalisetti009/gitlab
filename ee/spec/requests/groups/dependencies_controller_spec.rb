@@ -692,7 +692,8 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
               source: source_bundler,
               component: component_ancestor,
               component_version: component_version_ancestor,
-              project: project
+              project: project,
+              ancestors: [{}]
             )
           end
 

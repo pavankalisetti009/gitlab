@@ -47,7 +47,21 @@ RSpec.describe DependencyEntity, feature_category: :dependency_management do
 
     context 'with an organization' do
       let_it_be(:project) { create(:project, organization: organization) }
-      let_it_be(:ancestor) { { 'name' => 'libc', 'version' => '1.2.3' } }
+      let_it_be(:parent_component) { create(:sbom_component, name: "libc") }
+      let_it_be(:parent_component_version_1) do
+        create(:sbom_component_version, component: parent_component, version: '1.2.3')
+      end
+
+      let_it_be(:parent_sbom) do
+        create(:sbom_occurrence,
+          component: parent_component,
+          project: project,
+          component_version: parent_component_version_1,
+          ancestors: [{}]
+        )
+      end
+
+      let_it_be(:ancestor) { { 'name' => parent_sbom.component_name, 'version' => parent_component_version_1.version } }
       let_it_be(:sbom_occurrence) { create(:sbom_occurrence, :mit, :bundler, project: project, ancestors: [ancestor]) }
       let_it_be(:dependency_paths) do
         [
@@ -56,8 +70,8 @@ RSpec.describe DependencyEntity, feature_category: :dependency_management do
             "max_depth_reached" => false,
             "path" => [
               {
-                "name" => "libc",
-                "version" => "1.2.3"
+                "name" => parent_sbom.component_name,
+                "version" => parent_component_version_1.version
               },
               {
                 "name" => sbom_occurrence.component_name,
