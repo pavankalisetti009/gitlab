@@ -44,11 +44,18 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
             status_widgets.each do |widget|
               if status_widget_supported?(work_item_type['name'])
                 allowed_statuses = widget['allowedStatuses']
+                status_names = allowed_statuses.pluck('name')
+                default_open_status_name = widget.dig('defaultOpenStatus', 'name')
+                default_closed_status_name = widget.dig('defaultClosedStatus', 'name')
 
                 expect(allowed_statuses).to all(include('id', 'name', 'iconName', 'color', 'position'))
-                expect(allowed_statuses.pluck('name')).to match_array(names_of_system_defined_statuses)
+                expect(status_names).to match_array(names_of_system_defined_statuses)
+                expect(default_open_status_name).to eq('To do')
+                expect(default_closed_status_name).to eq('Done')
               else
                 expect(widget['allowedStatuses']).to be_empty
+                expect(widget.dig('defaultOpenStatus', 'name')).to be_empty
+                expect(widget.dig('defaultClosedStatus', 'name')).to be_empty
               end
             end
           end
@@ -110,9 +117,13 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
 
             status_widgets.each do |widget|
               allowed_statuses = widget['allowedStatuses']
+              default_open_status_name = widget.dig('defaultOpenStatus', 'name')
+              default_closed_status_name = widget.dig('defaultClosedStatus', 'name')
 
               expect(allowed_statuses).to all(include('id', 'name', 'iconName', 'color', 'position'))
               expect(allowed_statuses.pluck('name')).to match_array(expected_names)
+              expect(default_open_status_name).to eq(open_status.name)
+              expect(default_closed_status_name).to eq(closed_status.name)
             end
           end
         end
