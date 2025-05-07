@@ -31,6 +31,15 @@ module RemoteDevelopment
           internal_variables = [
 
             #-------------------------------------------------------------------
+            # The directory to which logs related to the creation and management of the workspace are written.
+            # For example, logs from the poststart events.
+            {
+              key: "GL_WORKSPACE_LOGS_DIR",
+              value: WORKSPACE_LOGS_DIR,
+              variable_type: ENVIRONMENT_TYPE,
+              workspace_id: workspace_id
+            },
+            #-------------------------------------------------------------------
             # The user's workspace-specific personal access token which is injected into the workspace, and used for
             # authentication. For example, in the credential.helper script below.
             {
@@ -50,6 +59,7 @@ module RemoteDevelopment
             #-------------------------------------------------------------------
             # Standard git ENV vars which configure git on the workspace. See https://git-scm.com/docs/git-config
             {
+              # TODO: Move this entry to the scripts volume: https://gitlab.com/gitlab-org/gitlab/-/issues/539045
               # This script is set as the value of `credential.helper` below in `GIT_CONFIG_VALUE_0`
               key: GIT_CREDENTIAL_STORE_SCRIPT_FILE_NAME,
               value: GIT_CREDENTIAL_STORE_SCRIPT,

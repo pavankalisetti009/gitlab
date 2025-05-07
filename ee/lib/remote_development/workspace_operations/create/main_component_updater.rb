@@ -30,6 +30,14 @@ module RemoteDevelopment
 
           main_component_container = main_component.fetch(:container)
 
+          # TODO: When user-defined postStart commands are supported, add validation in previous devfile validation
+          #       steps of the ".../workspace_operations/create" ROP chain.
+          #       See: https://gitlab.com/gitlab-org/gitlab/-/issues/505988
+          add_poststart_commands(
+            processed_devfile: processed_devfile,
+            main_component: main_component
+          )
+
           update_env_vars(
             main_component_container: main_component_container,
             tools_dir: tools_dir,
@@ -110,6 +118,61 @@ module RemoteDevelopment
           nil
         end
 
+        # @param [Hash] processed_devfile
+        # @param [Hash] main_component
+        # @return [void]
+        def self.add_poststart_commands(processed_devfile:, main_component:)
+          processed_devfile => {
+            commands: Array => commands,
+            events: {
+              postStart: Array => poststart_events
+            }
+          }
+
+          main_component => { name: String => main_component_name }
+
+          # Add the start_sshd event
+          start_sshd_command_id = "gl-start-sshd-command"
+          commands << {
+            id: start_sshd_command_id,
+            exec: {
+              commandLine: MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT,
+              component: main_component_name
+            }
+          }
+          poststart_events << start_sshd_command_id
+
+          # Add the init_tools event
+          init_tools_command_id = "gl-init-tools-command"
+          commands << {
+            id: init_tools_command_id,
+            exec: {
+              commandLine: MAIN_COMPONENT_UPDATER_INIT_TOOLS_SCRIPT,
+              component: main_component_name
+            }
+          }
+          poststart_events << init_tools_command_id
+
+          # Add the sleep_until_container_is_running event
+          sleep_until_container_is_running_command_id = "gl-sleep-until-container-is-running-command"
+          sleep_until_container_is_running_script =
+            format(
+              MAIN_COMPONENT_UPDATER_SLEEP_UNTIL_CONTAINER_IS_RUNNING_SCRIPT,
+              workspace_reconciled_actual_state_file_path: WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH
+            )
+
+          commands << {
+            id: sleep_until_container_is_running_command_id,
+            exec: {
+              commandLine: sleep_until_container_is_running_script,
+              component: main_component_name
+            }
+          }
+          poststart_events << sleep_until_container_is_running_command_id
+
+          nil
+        end
+
         # @param [Hash] main_component_container
         # @return [void]
         def self.override_command_and_args(main_component_container:)
@@ -123,7 +186,7 @@ module RemoteDevelopment
           nil
         end
 
-        private_class_method :update_env_vars, :update_endpoints, :override_command_and_args
+        private_class_method :update_env_vars, :update_endpoints, :add_poststart_commands, :override_command_and_args
       end
     end
   end

@@ -330,7 +330,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     # rubocop:enable GitlabSecurity/PublicSend
   end
 
-  # rubocop:disable Metrics/ParameterLists, Metrics/AbcSize -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
+  # rubocop:disable Metrics/ParameterLists, Metrics/AbcSize, Metrics/PerceivedComplexity -- Cleanup as part of https://gitlab.com/gitlab-org/gitlab/-/issues/421687
 
   # @param [RemoteDevelopment::Workspace] workspace
   # @param [Boolean] started
@@ -353,6 +353,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [String] project_name
   # @param [String] namespace_path
   # @param [Array<Hash>] image_pull_secrets
+  # @param [Boolean] include_scripts_resources
+  # @param [Boolean] legacy_scripts_in_container_command
   # @param [Boolean] core_resources_only
   # @return [Array<Hash>]
   def create_config_to_apply_v3(
@@ -380,6 +382,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
     project_name: "test-project",
     namespace_path: "test-group",
     image_pull_secrets: [],
+    include_scripts_resources: true,
+    legacy_scripts_in_container_command: false,
     core_resources_only: false
   )
     spec_replicas = started ? 1 : 0
@@ -427,7 +431,9 @@ RSpec.shared_context 'with remote development shared fixtures' do
       default_resources_per_workspace_container: default_resources_per_workspace_container,
       allow_privilege_escalation: allow_privilege_escalation,
       use_kubernetes_user_namespaces: use_kubernetes_user_namespaces,
-      default_runtime_class: default_runtime_class
+      default_runtime_class: default_runtime_class,
+      include_scripts_resources: include_scripts_resources,
+      legacy_scripts_in_container_command: legacy_scripts_in_container_command
     )
 
     workspace_service = workspace_service(
@@ -460,6 +466,13 @@ RSpec.shared_context 'with remote development shared fixtures' do
       egress_ip_rules: egress_ip_rules
     )
 
+    scripts_configmap = scripts_configmap(
+      workspace_name: workspace.name,
+      workspace_namespace: workspace.namespace,
+      labels: labels,
+      annotations: workspace_inventory_annotations
+    )
+
     secrets_inventory_config_map = secrets_inventory_config_map(
       workspace_name: workspace.name,
       workspace_namespace: workspace.namespace,
@@ -485,7 +498,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
       workspace_variables_file: workspace_variables_file ||
         get_workspace_variables_file(workspace_variables: workspace.workspace_variables),
       additional_data: workspace_variables_additional_data ||
-        { "#{reconcile_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}": workspace.actual_state }
+        {
+          "#{workspace_operations_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}":
+            workspace.actual_state
+        }
     )
 
     if max_resources_per_workspace.present?
@@ -513,6 +529,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     unless core_resources_only
       resources << workspace_service_account
       resources << workspace_network_policy if include_network_policy
+      resources << scripts_configmap if include_scripts_resources
 
       if include_all_resources
         resources << secrets_inventory_config_map if include_inventory
@@ -525,7 +542,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     normalize_resources(namespace_path, project_name, resources)
   end
 
-  # rubocop:enable Metrics/ParameterLists, Metrics/CyclomaticComplexity, Metrics/AbcSize
+  # rubocop:enable Metrics/ParameterLists, Metrics/CyclomaticComplexity, Metrics/AbcSize, Metrics/PerceivedComplexity
 
   # @param [String] workspace_name
   # @param [String] workspace_namespace
@@ -555,24 +572,28 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
   # @param [String] workspace_name
   # @param [String] workspace_namespace
-  # @param [Hash] labels
-  # @param [Hash] annotations
-  # @param [Integer] spec_replicas
-  # @param [Hash] default_resources_per_workspace_container
   # @param [Boolean] allow_privilege_escalation
-  # @param [Boolean] use_kubernetes_user_namespaces
+  # @param [Hash] annotations
+  # @param [Hash] default_resources_per_workspace_container
   # @param [String] default_runtime_class
+  # @param [Boolean] include_scripts_resources
+  # @param [Boolean] legacy_scripts_in_container_command
+  # @param [Hash] labels
+  # @param [Integer] spec_replicas
+  # @param [Boolean] use_kubernetes_user_namespaces
   # @return [Hash]
   def workspace_deployment(
     workspace_name:,
     workspace_namespace:,
-    labels:,
-    annotations:,
-    spec_replicas:,
-    default_resources_per_workspace_container:,
-    allow_privilege_escalation:,
-    use_kubernetes_user_namespaces:,
-    default_runtime_class:
+    allow_privilege_escalation: false,
+    annotations: {},
+    default_resources_per_workspace_container: {},
+    default_runtime_class: "",
+    include_scripts_resources: true,
+    legacy_scripts_in_container_command: false,
+    labels: {},
+    spec_replicas: 1,
+    use_kubernetes_user_namespaces: false
   )
     container_security_context = {
       'allowPrivilegeEscalation' => allow_privilege_escalation,
@@ -672,6 +693,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
                   {
                     mountPath: workspace_operations_constants_module::VARIABLES_VOLUME_PATH,
                     name: workspace_operations_constants_module::VARIABLES_VOLUME_NAME
+                  },
+                  {
+                    mountPath: reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH,
+                    name: reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_NAME
                   }
                 ],
                 securityContext: container_security_context,
@@ -681,7 +706,23 @@ RSpec.shared_context 'with remote development shared fixtures' do
                       name: "#{workspace_name}-env-var"
                     }
                   }
-                ]
+                ],
+                lifecycle: {
+                  postStart: {
+                    exec: {
+                      command: [
+                        "/bin/sh",
+                        "-c",
+                        format(
+                          files_module::KUBERNETES_POSTSTART_HOOK_COMMAND,
+                          run_poststart_commands_script_file_path:
+                            "#{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/" \
+                              "#{reconcile_constants_module::RUN_POSTSTART_COMMANDS_SCRIPT_NAME}" # rubocop:disable Layout/LineEndStringConcatenationIndentation -- Match default RubyMien formatting
+                        )
+                      ]
+                    }
+                  }
+                }
               },
               {
                 env: [
@@ -710,6 +751,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
                   {
                     mountPath: workspace_operations_constants_module::VARIABLES_VOLUME_PATH,
                     name: workspace_operations_constants_module::VARIABLES_VOLUME_NAME
+                  },
+                  {
+                    mountPath: reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH,
+                    name: reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_NAME
                   }
                 ],
                 securityContext: container_security_context,
@@ -828,11 +873,24 @@ RSpec.shared_context 'with remote development shared fixtures' do
               {
                 name: workspace_operations_constants_module::VARIABLES_VOLUME_NAME,
                 projected: {
-                  defaultMode: 508,
+                  defaultMode: workspace_operations_constants_module::VARIABLES_VOLUME_DEFAULT_MODE,
                   sources: [
                     {
                       secret: {
                         name: "#{workspace_name}-file"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                name: reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_NAME,
+                projected: {
+                  defaultMode: reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_DEFAULT_MODE,
+                  sources: [
+                    {
+                      configMap: {
+                        name: "#{workspace_name}-scripts-configmap"
                       }
                     }
                   ]
@@ -850,6 +908,26 @@ RSpec.shared_context 'with remote development shared fixtures' do
       },
       status: {}
     }
+
+    unless include_scripts_resources
+      deployment[:spec][:template][:spec][:containers].each do |container|
+        container[:volumeMounts].delete_if do |volume_mount|
+          volume_mount[:name] == reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_NAME
+        end
+      end
+      deployment[:spec][:template][:spec][:volumes].delete_if do |volume|
+        volume[:name] == reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_NAME
+      end
+      deployment[:spec][:template][:spec][:containers][0].delete(:lifecycle)
+    end
+
+    if legacy_scripts_in_container_command
+      deployment[:spec][:template][:spec][:containers][0][:args][0] =
+        <<~YAML.chomp
+          #{files_module::MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT}
+          #{files_module::MAIN_COMPONENT_UPDATER_INIT_TOOLS_SCRIPT}
+        YAML
+    end
 
     deployment[:spec][:template][:spec].delete(:runtimeClassName) if default_runtime_class.empty?
     deployment[:spec][:template][:spec].delete(:hostUsers) unless use_kubernetes_user_namespaces
@@ -919,7 +997,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
         annotations: annotations,
         creationTimestamp: nil,
         labels: labels,
-        name: "#{workspace_name}-gl-workspace-data",
+        name: "#{workspace_name}-#{create_constants_module::WORKSPACE_DATA_VOLUME_NAME}",
         namespace: workspace_namespace
       },
       spec: {
@@ -1036,6 +1114,69 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [String] workspace_namespace
   # @param [Hash] labels
   # @param [Hash] annotations
+  # @return [Hash]
+  def scripts_configmap(workspace_name:, workspace_namespace:, labels:, annotations:)
+    postart_commands_script =
+      <<~SCRIPT
+        #!/bin/sh
+        echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command..."
+        #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command || true
+        echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command..."
+        #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command || true
+        echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command..."
+        #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command || true
+      SCRIPT
+
+    sleep_until_container_is_running_script =
+      format(
+        RemoteDevelopment::Files::MAIN_COMPONENT_UPDATER_SLEEP_UNTIL_CONTAINER_IS_RUNNING_SCRIPT,
+        workspace_reconciled_actual_state_file_path:
+          workspace_operations_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH
+      )
+
+    {
+      apiVersion: "v1",
+      kind: "ConfigMap",
+      metadata: {
+        annotations: annotations,
+        labels: labels,
+        name: "#{workspace_name}-scripts-configmap",
+        namespace: workspace_namespace
+      },
+      data: {
+        "gl-init-tools-command": files_module::MAIN_COMPONENT_UPDATER_INIT_TOOLS_SCRIPT,
+        reconcile_constants_module::RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym => postart_commands_script,
+        "gl-sleep-until-container-is-running-command": sleep_until_container_is_running_script,
+        "gl-start-sshd-command": files_module::MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT
+      }
+    }
+  end
+
+  # @param [String] workspace_name
+  # @param [String] workspace_namespace
+  # @param [Hash] labels
+  # @param [Hash] annotations
+  # @return [Hash]
+  def secrets_inventory_config_map(workspace_name:, workspace_namespace:, labels:, annotations:)
+    {
+      apiVersion: "v1",
+      kind: "ConfigMap",
+      metadata: {
+        annotations: annotations,
+        labels:
+          Gitlab::Utils.deep_sort_hashes(
+            labels.merge({ "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-secrets-inventory" })
+          ),
+        name: "#{workspace_name}-secrets-inventory",
+        namespace: workspace_namespace
+      }
+    }
+  end
+
+  # @param [String] workspace_name
+  # @param [String] workspace_namespace
+  # @param [Hash] labels
+  # @param [Hash] annotations
   # @param [Hash] max_resources_per_workspace
   # @return [Hash]
   def workspace_resource_quota(
@@ -1072,27 +1213,6 @@ RSpec.shared_context 'with remote development shared fixtures' do
           "requests.cpu": requests_cpu,
           "requests.memory": requests_memory
         }
-      }
-    }
-  end
-
-  # @param [String] workspace_name
-  # @param [String] workspace_namespace
-  # @param [Hash] labels
-  # @param [Hash] annotations
-  # @return [Hash]
-  def secrets_inventory_config_map(workspace_name:, workspace_namespace:, labels:, annotations:)
-    {
-      apiVersion: "v1",
-      kind: "ConfigMap",
-      metadata: {
-        annotations: annotations,
-        labels:
-          Gitlab::Utils.deep_sort_hashes(
-            labels.merge({ "cli-utils.sigs.k8s.io/inventory-id": "#{workspace_name}-secrets-inventory" })
-          ),
-        name: "#{workspace_name}-secrets-inventory",
-        namespace: workspace_namespace
       }
     }
   end

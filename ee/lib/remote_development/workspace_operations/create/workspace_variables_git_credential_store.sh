@@ -7,7 +7,7 @@ fi
 
 if [ -z "${GL_TOKEN_FILE_PATH}" ];
 then
-  echo "We could not find the GL_TOKEN_FILE_PATH variable"
+  echo "$(date -Iseconds): We could not find the GL_TOKEN_FILE_PATH variable" >&2
   exit 1
 fi
 password=$(cat "${GL_TOKEN_FILE_PATH}")

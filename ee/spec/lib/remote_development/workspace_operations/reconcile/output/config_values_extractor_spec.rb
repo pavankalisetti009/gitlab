@@ -114,6 +114,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
           network_policy_egress
           processed_devfile_yaml
           replicas
+          scripts_configmap_name
           secrets_inventory_annotations
           secrets_inventory_name
           use_kubernetes_user_namespaces
@@ -162,6 +163,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
     expect(extracted_values[:max_resources_per_workspace]).to eq(max_resources_per_workspace)
 
     expect(extracted_values[:processed_devfile_yaml]).to eq(workspace.processed_devfile)
+
+    expect(extracted_values[:scripts_configmap_name]).to eq("#{workspace.name}-scripts-configmap")
 
     expect(extracted_values[:secrets_inventory_annotations]).to eq(
       {
