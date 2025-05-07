@@ -191,8 +191,8 @@ describe('RunnerTagsDropdown', () => {
       await createComponentAndWaitForPromises({ value });
       await toggleDropdown();
 
-      expect(findDropdownItems().at(0).text()).toBe('macos');
-      expect(findDropdownItems().at(1).text()).toBe('linux');
+      expect(findDropdownItems().at(0).text()).toBe('linux');
+      expect(findDropdownItems().at(1).text()).toBe('macos');
       expect(findDropdownItems().at(0).props('isSelected')).toBe(true);
       expect(findDropdownItems().at(1).props('isSelected')).toBe(true);
     });
@@ -224,9 +224,8 @@ describe('RunnerTagsDropdown', () => {
       expect(wrapper.emitted('input')).toHaveLength(1);
     });
 
-    it('fetches more data with correct variables', async () => {
-      createComponent({ value: ['new-tag'] });
-      await waitForPromises();
+    it('fetches more data with selected tags', async () => {
+      await createComponentAndWaitForPromises({ value: ['new-tag'] });
 
       expect(handlers.projectRequestHandler).toHaveBeenCalledTimes(2);
       expect(handlers.projectRequestHandler).toHaveBeenNthCalledWith(1, {
@@ -237,20 +236,25 @@ describe('RunnerTagsDropdown', () => {
         fullPath: 'gitlab-org/testPath',
         tagList: ['new-tag'],
       });
+      expect(wrapper.emitted('error')).toHaveLength(1);
     });
 
-    it('merges previous and new results from tagList query', async () => {
-      createComponent(
+    it('merges previous and new results from tagList query and does not emit an error', async () => {
+      await createComponentAndWaitForPromises(
         { namespaceType: NAMESPACE_TYPES.PROJECT, value: ['xp'] },
         { handlers: { projectRequestHandler: multipleTagListRequests } },
       );
-
-      await waitForPromises();
       await toggleDropdown();
 
       expect(findDropdownItems()).toHaveLength(2);
       expect(findDropdownItems().at(0).text()).toEqual('xp');
       expect(findDropdownItems().at(1).text()).toEqual('lion');
+      expect(wrapper.emitted('error')).toBeUndefined();
+    });
+
+    it('does not fetch more data if the selected tag is retrieved in the first request', async () => {
+      await createComponentAndWaitForPromises({ value: ['macos'] });
+      expect(handlers.projectRequestHandler).toHaveBeenCalledTimes(1);
     });
   });
 
