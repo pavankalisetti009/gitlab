@@ -67,6 +67,7 @@ export const headerAppInjected = {
   ],
   isBinary: false,
   rootRef: 'main',
+  newWorkspacePath: '/workspaces/new',
 };
 
 export const userPermissionsMock = {
