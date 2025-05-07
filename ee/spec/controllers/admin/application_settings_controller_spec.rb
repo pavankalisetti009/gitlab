@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Admin::ApplicationSettingsController do
+RSpec.describe Admin::ApplicationSettingsController, feature_category: :shared do
   include StubENV
 
   let(:admin) { create(:admin) }
@@ -498,6 +498,7 @@ RSpec.describe Admin::ApplicationSettingsController do
       let_it_be(:helper) { ::Gitlab::Elastic::Helper.default }
 
       before do
+        allow(helper).to receive(:ping?).and_return(true)
         allow(::Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
       end
 
@@ -506,6 +507,13 @@ RSpec.describe Admin::ApplicationSettingsController do
 
         get :search
         expect(assigns[:search_error_if_version_incompatible]).to be_falsey
+      end
+
+      it 'does not set search_error_if_version_incompatible when ES is not reachable' do
+        allow(helper).to receive(:ping?).and_return(false)
+
+        get :search
+        expect(assigns[:search_error_if_version_incompatible]).to be_nil
       end
 
       it 'alerts when version is incompatible' do
@@ -521,7 +529,7 @@ RSpec.describe Admin::ApplicationSettingsController do
 
       before do
         allow(::Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
-        allow(helper).to receive(:index_exists?).and_return true
+        allow(helper).to receive_messages(index_exists?: true, ping?: true)
       end
 
       it 'warns when NOT using index aliases' do
@@ -534,6 +542,13 @@ RSpec.describe Admin::ApplicationSettingsController do
         allow(helper).to receive(:alias_missing?).and_return false
         get :search
         expect(assigns[:elasticsearch_warn_if_not_using_aliases]).to be_falsy
+      end
+
+      it 'does NOT blow up if ping? returns false' do
+        allow(helper).to receive(:ping?).and_return(false)
+        get :search
+        expect(assigns[:elasticsearch_warn_if_not_using_aliases]).to be_falsy
+        expect(response).to have_gitlab_http_status(:ok)
       end
 
       it 'does NOT blow up if elasticsearch is unreachable' do
@@ -554,6 +569,7 @@ RSpec.describe Admin::ApplicationSettingsController do
       let_it_be(:helper) { ::Gitlab::Elastic::Helper.default }
 
       before do
+        allow(helper).to receive(:ping?).and_return(true)
         allow(::Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
       end
 
