@@ -491,7 +491,7 @@ only. For example:
 {{< details >}}
 
 - Tier: Free, Premium, Ultimate
-- Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
+- Offering: GitLab Self-Managed, GitLab Dedicated
 
 {{< /details >}}
 
