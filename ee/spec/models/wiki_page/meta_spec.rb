@@ -22,4 +22,14 @@ RSpec.describe WikiPage::Meta, feature_category: :wiki do
       expect(meta.resource_parent).to eq(group)
     end
   end
+
+  describe '#gfm_reference' do
+    context 'with group container' do
+      it 'returns class name without reference' do
+        meta = create(:wiki_page_meta, canonical_slug: 'foo', container: group)
+
+        expect(meta.gfm_reference).to eq('group wiki page foo')
+      end
+    end
+  end
 end
