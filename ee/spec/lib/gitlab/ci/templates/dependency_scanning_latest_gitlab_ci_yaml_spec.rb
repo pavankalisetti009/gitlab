@@ -58,7 +58,7 @@ RSpec.describe 'Dependency-Scanning.latest.gitlab-ci.yml', feature_category: :so
               { 'DS_ENFORCE_NEW_ANALYZER' => 'true', 'DS_STATIC_REACHABILITY_ENABLED' => 'true' }
 
             where(:job, :image) do
-              'gitlab-static-reachability'            | 'registry.gitlab.com/security-products/gitlab-advanced-sast:1'
+              'gitlab-static-reachability'            | 'registry.gitlab.com/security-products/gitlab-advanced-sast:2'
               'dependency-scanning-with-reachability' | 'registry.gitlab.com/security-products/dependency-scanning:v0'
             end
 
