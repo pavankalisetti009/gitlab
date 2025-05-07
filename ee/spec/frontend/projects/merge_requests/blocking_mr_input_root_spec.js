@@ -152,7 +152,8 @@ describe('blocking mr input root', () => {
 
   describe('hidden inputs', () => {
     const createHiddenInputExpectation = (selector) => (bool) => {
-      expect(wrapper.find(selector).element.value).toBe(`${bool}`);
+      // eslint-disable-next-line no-underscore-dangle
+      expect(wrapper.find(selector).element._value).toBe(bool);
     };
 
     describe('update_blocking_merge_request_refs', () => {
