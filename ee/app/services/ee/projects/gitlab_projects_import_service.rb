@@ -37,7 +37,7 @@ module EE
       end
 
       def export_strategy(project)
-        Gitlab::ImportExport::AfterExportStrategies::CustomTemplateExportImportStrategy.new(export_into_project_id: project.id)
+        ::Import::AfterExportStrategies::CustomTemplateExportImportStrategy.new(export_into_project_id: project.id)
       end
     end
   end
