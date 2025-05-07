@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-require 'open3'
 
 RSpec.describe Gitlab::Backup::Cli::Services::GitalyBackup do
-  let(:context) { Gitlab::Backup::Cli::Context.build }
+  let(:context) { build_test_context }
   let(:gitaly_backup) { described_class.new(context) }
+
+  before do
+    Gitlab::Backup::Cli::Models::Base.initialize_connection!(context: context)
+  end
 
   describe '#start' do
     context 'when creating a backup' do
@@ -92,7 +95,7 @@ RSpec.describe Gitlab::Backup::Cli::Services::GitalyBackup do
     context 'when not started' do
       it 'raises an error' do
         expect do
-          gitaly_backup.enqueue(double, :project)
+          gitaly_backup.enqueue(double)
         end.to raise_error(Gitlab::Backup::Cli::Errors::GitalyBackupError, /not started/)
       end
     end
@@ -106,111 +109,95 @@ RSpec.describe Gitlab::Backup::Cli::Services::GitalyBackup do
       end
 
       context 'with a project repository' do
-        let(:container) do
-          instance_double('Models::ProjectWithRoutes', repository_storage: 'storage',
-            disk_path: 'disk/path', path_with_namespace: 'group/project')
-        end
+        let(:container) { build(:project) }
 
         it 'schedules a backup job with the correct parameters' do
           expected_json = {
             storage_name: 'storage',
-            relative_path: 'disk/path',
+            relative_path: container.disk_path,
             gl_project_path: 'group/project',
             always_create: true
           }.to_json
 
           expect(input_stream).to receive(:puts).with(expected_json)
 
-          gitaly_backup.enqueue(container, :project)
+          gitaly_backup.enqueue(container, always_create: true)
         end
       end
 
       context 'with a wiki repository' do
-        let(:container) do
-          instance_double('Models::ProjectWikiWithRoutes', repository_storage: 'wiki_storage',
-            disk_path: 'wiki/disk/path', path_with_namespace: 'group/project.wiki')
-        end
+        let(:container) { build(:project_wiki) }
 
         it 'schedules a backup job with the correct parameters' do
           expected_json = {
             storage_name: 'wiki_storage',
-            relative_path: 'wiki/disk/path',
+            relative_path: container.disk_path,
             gl_project_path: 'group/project.wiki',
             always_create: false
           }.to_json
 
           expect(input_stream).to receive(:puts).with(expected_json)
 
-          gitaly_backup.enqueue(container, :wiki)
+          gitaly_backup.enqueue(container)
         end
       end
 
       context 'with a personal snippet repository' do
-        let(:container) do
-          instance_double('Models::PersonalSnippet', repository_storage: 'storage',
-            disk_path: 'disk/path', path_with_namespace: 'snippets/1')
-        end
+        let(:container) { build(:personal_snippet, id: 1) }
 
         it 'schedules a backup job with the correct parameters' do
           expected_json = {
-            storage_name: 'storage',
-            relative_path: 'disk/path',
+            storage_name: 'snippets_storage',
+            relative_path: container.disk_path,
             gl_project_path: 'snippets/1',
             always_create: false
           }.to_json
 
           expect(input_stream).to receive(:puts).with(expected_json)
 
-          gitaly_backup.enqueue(container, :snippet)
+          gitaly_backup.enqueue(container)
         end
       end
 
       context 'with a project snippet repository' do
-        let(:container) do
-          instance_double('Models::ProjectSnippet', repository_storage: 'storage',
-            disk_path: 'disk/path', path_with_namespace: 'myproject/snippets/1')
-        end
+        let(:container) { build(:project_snippet, id: 1) }
 
         it 'schedules a backup job with the correct parameters' do
           expected_json = {
-            storage_name: 'storage',
-            relative_path: 'disk/path',
-            gl_project_path: 'myproject/snippets/1',
+            storage_name: 'snippets_storage',
+            relative_path: container.disk_path,
+            gl_project_path: 'group/myproject/snippets/1',
             always_create: false
           }.to_json
 
           expect(input_stream).to receive(:puts).with(expected_json)
 
-          gitaly_backup.enqueue(container, :snippet)
+          gitaly_backup.enqueue(container)
         end
       end
 
       context 'with a design repository' do
-        let(:container) do
-          instance_double('Models::DesignRepository', repository_storage: 'storage',
-            disk_path: 'disk/path', path_with_namespace: 'group/project')
-        end
+        let(:container) { build(:project_design_management) }
 
         it 'schedules a backup job with the correct parameters' do
           expected_json = {
-            storage_name: 'storage',
-            relative_path: 'disk/path',
-            gl_project_path: 'group/project',
+            storage_name: 'design_storage',
+            relative_path: container.disk_path,
+            gl_project_path: 'group/project.design',
             always_create: false
           }.to_json
 
           expect(input_stream).to receive(:puts).with(expected_json)
 
-          gitaly_backup.enqueue(container, :design)
+          gitaly_backup.enqueue(container)
         end
       end
 
-      context 'with an invalid repository type' do
+      context 'with an invalid container class' do
         it 'raises an error' do
           expect do
-            gitaly_backup.enqueue(nil,
-              :invalid)
-          end.to raise_error(Gitlab::Backup::Cli::Errors::GitalyBackupError, /no container for repo type/)
+            gitaly_backup.enqueue(nil)
+          end.to raise_error(Gitlab::Backup::Cli::Errors::GitalyBackupError, /not a valid container/)
         end
       end
     end
