@@ -419,13 +419,13 @@ export const statusesInfo = {
       },
     ],
   },
-  version_control_enabled: {
+  project_repo_exists: {
     description: s__(
-      'ComplianceStandardsAdherence|Ensures version control functionality is enabled for the project.',
+      'ComplianceStandardsAdherence|Ensures that a Git repository exists for the project.',
     ),
     fixes: [
       {
-        title: s__('ComplianceStandardsAdherence|Enable version control'),
+        title: s__('ComplianceStandardsAdherence|Project repository exists'),
         description: s__(
           'ComplianceStandardsAdherence|Ensure version control is properly configured for your project.',
         ),
@@ -513,9 +513,9 @@ export const statusesInfo = {
       },
     ],
   },
-  minimum_number_of_admins: {
+  more_members_than_admins: {
     description: s__(
-      'ComplianceStandardsAdherence|Ensures a minimum number of administrators are assigned to the project.',
+      'ComplianceStandardsAdherence|Ensures fewer administrators are assigned to the project than total members.',
     ),
     fixes: [
       {
@@ -922,6 +922,61 @@ export const statusesInfo = {
         linkTitle: __('CI/CD job token'),
         ultimate: true,
         link: helpPagePath('ci/jobs/ci_job_token.md'),
+      },
+    ],
+  },
+  protected_branches_set: {
+    description: s__(
+      'ComplianceStandardsAdherence|Ensures that project contains protected branches.',
+    ),
+    fixes: [
+      {
+        title: s__('ComplianceStandardsAdherence|Set up branch protection'),
+        description: s__(
+          'ComplianceStandardsAdherence|Set up branch protection rules for your default branch to enforce quality standards.',
+        ),
+        linkTitle: __('Protected branches'),
+        ultimate: false,
+      },
+    ],
+  },
+  code_owner_approval_required: {
+    description: s__('ComplianceStandardsAdherence|Ensures that code owners file is configured.'),
+    fixes: [
+      {
+        title: s__('ComplianceStandardsAdherence|Enforce code owner approval'),
+        description: s__(
+          'ComplianceStandardsAdherence|Configure code owners to require approval for code changes.',
+        ),
+        linkTitle: __('Code owners'),
+        ultimate: false,
+        link: helpPagePath('user/project/codeowners/_index.md'),
+      },
+    ],
+  },
+  require_signed_commits: {
+    description: s__('ComplianceStandardsAdherence|Ensures that signed commits are required'),
+    fixes: [
+      {
+        title: s__('ComplianceStandardsAdherence|Configure push rules to reject unsigned commits.'),
+        description: s__(
+          'ComplianceStandardsAdherence|Configure push rules to require that all commits are signed.',
+        ),
+        linkTitle: __('Code owners'),
+        ultimate: false,
+        link: helpPagePath('user/project/repository/signed_commits/_index.md'),
+      },
+    ],
+  },
+  has_forks: {
+    description: s__('ComplianceStandardsAdherence|Ensures that the project has been forked.'),
+    fixes: [
+      {
+        title: s__('ComplianceStandardsAdherence|Create a fork of the project.'),
+        description: s__('ComplianceStandardsAdherence|Create a fork of the project.'),
+        linkTitle: __('Code owners'),
+        ultimate: false,
+        link: helpPagePath('user/project/repository/forking_workflow.md'),
       },
     ],
   },

@@ -1,7 +1,7 @@
 [
   {
     "id": "scanner_sast_running",
-    "name": "SAST Running",
+    "name": "SAST running",
     "expression": {
       "field": "scanner_sast_running",
       "operator": "=",
@@ -64,7 +64,7 @@
   },
   {
     "id": "scanner_secret_detection_running",
-    "name": "Secret Detection Running",
+    "name": "Secret detection running",
     "expression": {
       "field": "scanner_secret_detection_running",
       "operator": "=",
@@ -91,7 +91,7 @@
   },
   {
     "id": "scanner_license_compliance_running",
-    "name": "License Compliance Running",
+    "name": "License compliance running",
     "expression": {
       "field": "scanner_license_compliance_running",
       "operator": "=",
@@ -154,7 +154,7 @@
   },
   {
     "id": "reset_approvals_on_push",
-    "name": "Reset Approvals on Push",
+    "name": "Reset approvals on push",
     "expression": {
       "field": "reset_approvals_on_push",
       "operator": "=",
@@ -163,7 +163,7 @@
   },
   {
     "id": "status_checks_required",
-    "name": "Status Checks Required",
+    "name": "Status checks required",
     "expression": {
       "field": "status_checks_required",
       "operator": "=",
@@ -172,7 +172,7 @@
   },
   {
     "id": "require_branch_up_to_date",
-    "name": "Require Branch Up to Date",
+    "name": "Require branch up to date",
     "expression": {
       "field": "require_branch_up_to_date",
       "operator": "=",
@@ -181,7 +181,7 @@
   },
   {
     "id": "resolve_discussions_required",
-    "name": "Resolve Discussions Required",
+    "name": "Resolve discussions required",
     "expression": {
       "field": "resolve_discussions_required",
       "operator": "=",
@@ -190,7 +190,7 @@
   },
   {
     "id": "require_linear_history",
-    "name": "Require Linear History",
+    "name": "Require linear history",
     "expression": {
       "field": "require_linear_history",
       "operator": "=",
@@ -199,7 +199,7 @@
   },
   {
     "id": "restrict_push_merge_access",
-    "name": "Restrict Push/Merge Access",
+    "name": "Restrict push and merge access",
     "expression": {
       "field": "restrict_push_merge_access",
       "operator": "=",
@@ -217,7 +217,7 @@
   },
   {
     "id": "terraform_enabled",
-    "name": "Terraform Enabled",
+    "name": "Terraform enabled",
     "expression": {
       "field": "terraform_enabled",
       "operator": "=",
@@ -225,17 +225,17 @@
     }
   },
   {
-    "id": "version_control_enabled",
-    "name": "Version Control Enabled",
+    "id": "project_repo_exists",
+    "name": "Project repo exists",
     "expression": {
-      "field": "version_control_enabled",
+      "field": "project_repo_exists",
       "operator": "=",
       "value": true
     }
   },
   {
     "id": "issue_tracking_enabled",
-    "name": "Issue Tracking Enabled",
+    "name": "Issue tracking enabled",
     "expression": {
       "field": "issue_tracking_enabled",
       "operator": "=",
@@ -244,7 +244,7 @@
   },
   {
     "id": "stale_branch_cleanup_enabled",
-    "name": "Stale Branch Cleanup Enabled",
+    "name": "Stale branch cleanup enabled",
     "expression": {
       "field": "stale_branch_cleanup_enabled",
       "operator": "=",
@@ -262,7 +262,7 @@
   },
   {
     "id": "review_and_archive_stale_repos",
-    "name": "Review and Archive Stale Repositories",
+    "name": "Review and archive stale repositories",
     "expression": {
       "field": "review_and_archive_stale_repos",
       "operator": "=",
@@ -271,7 +271,7 @@
   },
   {
     "id": "review_and_remove_inactive_users",
-    "name": "Review and Remove Inactive Users",
+    "name": "Review and remove inactive users",
     "expression": {
       "field": "review_and_remove_inactive_users",
       "operator": "=",
@@ -279,17 +279,17 @@
     }
   },
   {
-    "id": "minimum_number_of_admins",
-    "name": "Minimum Number of Admins",
+    "id": "more_members_than_admins",
+    "name": "More members than admins",
     "expression": {
-      "field": "minimum_number_of_admins",
+      "field": "more_members_than_admins",
       "operator": "=",
       "value": true
     }
   },
   {
     "id": "require_mfa_for_contributors",
-    "name": "Require MFA for Contributors",
+    "name": "Require MFA for contributors",
     "expression": {
       "field": "require_mfa_for_contributors",
       "operator": "=",
@@ -298,7 +298,7 @@
   },
   {
     "id": "require_mfa_at_org_level",
-    "name": "Require MFA at Org Level",
+    "name": "Require MFA at organization level",
     "expression": {
       "field": "require_mfa_at_org_level",
       "operator": "=",
@@ -325,7 +325,7 @@
   },
   {
     "id": "secure_webhooks",
-    "name": "Secure Webhooks",
+    "name": "Secure webhooks",
     "expression": {
       "field": "secure_webhooks",
       "operator": "=",
@@ -334,7 +334,7 @@
   },
   {
     "id": "restricted_build_access",
-    "name": "Restricted Build Access",
+    "name": "Restricted build access",
     "expression": {
       "field": "restricted_build_access",
       "operator": "=",
@@ -352,7 +352,7 @@
   },
   {
     "id": "status_page_configured",
-    "name": "Status Page Configured",
+    "name": "Status page configured",
     "expression": {
       "field": "status_page_configured",
       "operator": "=",
@@ -397,7 +397,7 @@
   },
   {
     "id": "push_protection_enabled",
-    "name": "Push Protection Enabled",
+    "name": "Push protection enabled",
     "expression": {
       "field": "push_protection_enabled",
       "operator": "=",
@@ -406,7 +406,7 @@
   },
   {
     "id": "project_marked_for_deletion",
-    "name": "Project Marked For Deletion",
+    "name": "Project marked for deletion",
     "expression": {
       "field": "project_marked_for_deletion",
       "operator": "=",
@@ -415,7 +415,7 @@
   },
   {
     "id": "project_archived",
-    "name": "Project Archived",
+    "name": "Project archived",
     "expression": {
       "field": "project_archived",
       "operator": "=",
@@ -433,7 +433,7 @@
   },
   {
     "id": "merge_request_commit_reset_approvals",
-    "name": "Merge Request Commit Reset Approvals",
+    "name": "Merge request commit reset approvals",
     "expression": {
       "field": "merge_request_commit_reset_approvals",
       "operator": "=",
@@ -442,7 +442,7 @@
   },
   {
     "id": "project_visibility_not_public",
-    "name": "Project Visibility Not Public",
+    "name": "Project visibility not public",
     "expression": {
       "field": "project_visibility_not_public",
       "operator": "=",
@@ -451,7 +451,7 @@
   },
   {
     "id": "package_hunter_no_findings_untriaged",
-    "name": "Package Hunter No Findings Untriaged",
+    "name": "Package Hunter no findings untriaged",
     "expression": {
       "field": "package_hunter_no_findings_untriaged",
       "operator": "=",
@@ -460,7 +460,7 @@
   },
   {
     "id": "project_pipelines_not_public",
-    "name": "Project Pipelines Not Public",
+    "name": "Project pipelines not public",
     "expression": {
       "field": "project_pipelines_not_public",
       "operator": "=",
@@ -469,7 +469,7 @@
   },
   {
     "id": "vulnerabilities_slo_days_over_threshold",
-    "name": "Vulnerabilities SLO Days Over Threshold",
+    "name": "Vulnerabilities SLO days over threshold",
     "expression": {
       "field": "vulnerabilities_slo_days_over_threshold",
       "operator": "=",
@@ -478,7 +478,7 @@
   },
   {
     "id": "merge_requests_approval_rules_prevent_editing",
-    "name": "Merge Requests Approval Rules Prevent Editing",
+    "name": "Merge requests approval rules prevent editing",
     "expression": {
       "field": "merge_requests_approval_rules_prevent_editing",
       "operator": "=",
@@ -487,7 +487,7 @@
   },
   {
     "id": "project_user_defined_variables_restricted_to_maintainers",
-    "name": "Project User Defined Variables Restricted To Maintainers",
+    "name": "Project user defined variables restricted to maintainers",
     "expression": {
       "field": "project_user_defined_variables_restricted_to_maintainers",
       "operator": "=",
@@ -496,7 +496,7 @@
   },
   {
     "id": "merge_requests_require_code_owner_approval",
-    "name": "Merge Requests Require Code Owner Approval",
+    "name": "Merge requests require code owner approval",
     "expression": {
       "field": "merge_requests_require_code_owner_approval",
       "operator": "=",
@@ -519,6 +519,42 @@
       "field": "minimum_approvals_required",
       "operator": ">=",
       "value": 1
+    }
+  },
+  {
+    "id": "protected_branches_set",
+    "name": "Protected branches exist",
+    "expression": {
+      "field": "protected_branches_set",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "code_owner_approval_required",
+    "name": "Code owner approval required",
+    "expression": {
+      "field": "code_owner_approval_required",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "require_signed_commits",
+    "name": "Requires signed commits",
+    "expression": {
+      "field": "require_signed_commits",
+      "operator": "=",
+      "value": true
+    }
+  },
+  {
+    "id": "has_forks",
+    "name": "Forks exist for the project",
+    "expression": {
+      "field": "has_forks",
+      "operator": "=",
+      "value": true
     }
   }
 ]

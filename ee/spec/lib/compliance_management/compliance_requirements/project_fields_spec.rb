@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feature_category: :compliance_management do
+  include ProjectForksHelper
+
   let_it_be(:namespace) { create(:group) }
   let_it_be(:project) { create(:project, namespace: namespace) }
   let_it_be(:group) { create(:group) }
@@ -58,22 +60,26 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         'scanner_fuzz_testing_running',
         'scanner_code_quality_running',
         'scanner_iac_running',
-        'version_control_enabled',
+        'project_repo_exists',
         'issue_tracking_enabled',
         'code_changes_requires_code_owners',
         'stale_branch_cleanup_enabled',
         'reset_approvals_on_push',
+        'protected_branches_set',
+        'code_owner_approval_required',
         'status_checks_required',
         'require_branch_up_to_date',
         'resolve_discussions_required',
+        'require_signed_commits',
         'require_linear_history',
         'restrict_push_merge_access',
         'force_push_disabled',
         'terraform_enabled',
         'branch_deletion_disabled',
+        'has_forks',
         'review_and_archive_stale_repos',
         'review_and_remove_inactive_users',
-        'minimum_number_of_admins',
+        'more_members_than_admins',
         'require_mfa_for_contributors',
         'require_mfa_at_org_level',
         'ensure_2_admins_per_repo',
@@ -502,11 +508,11 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       end
     end
 
-    describe '#version_control_enabled?' do
+    describe '#project_repo_exists?' do
       it 'delegates to project#repository_exists?' do
         expect(project.repository).to receive(:exists?)
 
-        described_class.map_field(project, 'version_control_enabled')
+        described_class.map_field(project, 'project_repo_exists')
       end
     end
 
@@ -560,6 +566,41 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       end
     end
 
+    describe '#protected_branches_set?' do
+      it 'returns true if there are any protected branches' do
+        create(:protected_branch, project: project)
+        expect(described_class.map_field(project, 'protected_branches_set')).to be true
+      end
+
+      it 'returns false if there are no protected branches' do
+        expect(described_class.map_field(project, 'protected_branches_set')).to be false
+      end
+    end
+
+    describe '#code_owner_approval_required?' do
+      let(:loader) { instance_double(Gitlab::CodeOwners::Loader) }
+
+      before do
+        allow(Gitlab::CodeOwners::Loader).to receive(:new)
+          .with(project, project.default_branch)
+          .and_return(loader)
+      end
+
+      it 'returns true if the default branch has a CODEOWNER file' do
+        expect(loader).to receive(:has_code_owners_file?)
+          .and_return(true)
+
+        expect(described_class.map_field(project, 'code_owner_approval_required')).to be true
+      end
+
+      it 'returns false if the default branch does not have a CODEOWNER file' do
+        expect(loader).to receive(:has_code_owners_file?)
+          .and_return(false)
+
+        expect(described_class.map_field(project, 'code_owner_approval_required')).to be false
+      end
+    end
+
     describe '#reset_approvals_on_push?' do
       it 'delegates to project#reset_approvals_on_push' do
         expect(project).to receive(:reset_approvals_on_push)
@@ -596,6 +637,22 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         expect(project).to receive(:only_allow_merge_if_all_discussions_are_resolved)
 
         described_class.map_field(project, 'resolve_discussions_required')
+      end
+    end
+
+    describe '#require_signed_commits?' do
+      it 'returns false if the project does not have push rules' do
+        expect(described_class.map_field(project, 'require_signed_commits')).to be false
+      end
+
+      it 'returns false if the project push rules do not require signed commits' do
+        create(:push_rule, project: project)
+        expect(described_class.map_field(project, 'require_signed_commits')).to be false
+      end
+
+      it 'returns true if the project push rules require signed commits' do
+        create(:push_rule, project: project, reject_unsigned_commits: true)
+        expect(described_class.map_field(project, 'require_signed_commits')).to be true
       end
     end
 
@@ -665,6 +722,18 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       end
     end
 
+    describe '#has_forks?' do
+      it 'returns true if the project has forks' do
+        fork_project(project)
+
+        expect(described_class.map_field(project, 'has_forks')).to be true
+      end
+
+      it 'returns false if the project has no forks' do
+        expect(described_class.map_field(project, 'has_forks')).to be false
+      end
+    end
+
     describe '#review_and_archive_stale_repos?' do
       it 'returns true if the project is archived' do
         project = build(:project, :archived)
@@ -708,12 +777,13 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
       end
     end
 
-    describe '#minimum_number_of_admins?' do
+    describe '#more_members_than_admins?' do
       let(:project1) { build(:project) }
 
       it 'returns true if the project has only one admin (owner/maintainer)' do
         project1.team.add_maintainer(create(:user))
-        expect(described_class.map_field(project1, 'minimum_number_of_admins')).to be true
+
+        expect(described_class.map_field(project1, 'more_members_than_admins')).to be true
       end
 
       it 'returns true if the project has more users of developers or below role than admins (owners/maintainers)' do
@@ -721,14 +791,14 @@ RSpec.describe ComplianceManagement::ComplianceRequirements::ProjectFields, feat
         project1.team.add_developer(create(:user))
         project1.team.add_reporter(create(:user))
 
-        expect(described_class.map_field(project1, 'minimum_number_of_admins')).to be true
+        expect(described_class.map_field(project1, 'more_members_than_admins')).to be true
       end
 
       it 'returns false if the project has only admins (owners/maintainers)' do
         project1.team.add_owner(create(:user))
         project1.team.add_maintainer(create(:user))
 
-        expect(described_class.map_field(project1, 'minimum_number_of_admins')).to be false
+        expect(described_class.map_field(project1, 'more_members_than_admins')).to be false
       end
     end
 

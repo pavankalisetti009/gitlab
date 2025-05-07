@@ -31,13 +31,13 @@
         "restrict_push_merge_access",
         "force_push_disabled",
         "terraform_enabled",
-        "version_control_enabled",
+        "project_repo_exists",
         "issue_tracking_enabled",
         "stale_branch_cleanup_enabled",
         "branch_deletion_disabled",
         "review_and_archive_stale_repos",
         "review_and_remove_inactive_users",
-        "minimum_number_of_admins",
+        "more_members_than_admins",
         "require_mfa_for_contributors",
         "require_mfa_at_org_level",
         "ensure_2_admins_per_repo",
@@ -62,7 +62,11 @@
         "merge_requests_approval_rules_prevent_editing",
         "project_user_defined_variables_restricted_to_maintainers",
         "merge_requests_require_code_owner_approval",
-        "cicd_job_token_scope_enabled"
+        "cicd_job_token_scope_enabled",
+        "protected_branches_set",
+        "code_owner_approval_required",
+        "require_signed_commits",
+        "has_forks"
       ]
     },
     "operator": {
@@ -120,13 +124,13 @@
               "restrict_push_merge_access",
               "force_push_disabled",
               "terraform_enabled",
-              "version_control_enabled",
+              "project_repo_exists",
               "issue_tracking_enabled",
               "stale_branch_cleanup_enabled",
               "branch_deletion_disabled",
               "review_and_archive_stale_repos",
               "review_and_remove_inactive_users",
-              "minimum_number_of_admins",
+              "more_members_than_admins",
               "require_mfa_for_contributors",
               "require_mfa_at_org_level",
               "ensure_2_admins_per_repo",
@@ -151,7 +155,11 @@
               "merge_requests_approval_rules_prevent_editing",
               "project_user_defined_variables_restricted_to_maintainers",
               "merge_requests_require_code_owner_approval",
-              "cicd_job_token_scope_enabled"
+              "cicd_job_token_scope_enabled",
+              "protected_branches_set",
+              "code_owner_approval_required",
+              "require_signed_commits",
+              "has_forks"
             ]
           }
         }
