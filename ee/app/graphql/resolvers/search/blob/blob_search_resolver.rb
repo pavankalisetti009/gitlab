@@ -122,6 +122,7 @@ module Resolvers
           )
 
           {
+            duration_s: global_search_duration_s,
             match_count: @search_results.blobs_count,
             file_count: @search_results.file_count,
             search_level: @search_service.level,

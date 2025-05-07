@@ -86,6 +86,7 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
     it 'returns the correct fields', :aggregate_failures do
       post_graphql(query, current_user: current_user)
 
+      expect(graphql_data_at(:blobSearch, :durationS)).to be_present
       expect(graphql_data_at(:blobSearch, :fileCount)).to eq(1)
       expect(graphql_data_at(:blobSearch, :matchCount)).to eq(1)
       expect(graphql_data_at(:blobSearch, :perPage)).to eq(20)
@@ -114,6 +115,46 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
       # rubocop:enable Layout/LineLength
 
       expect(graphql_data_at(:blobSearch, :files).first).to eq(expected_file)
+    end
+
+    context 'when zoekt_search_proxy is false' do
+      before do
+        stub_feature_flags(zoekt_search_proxy: false)
+      end
+
+      it 'returns the correct fields', :aggregate_failures do
+        post_graphql(query, current_user: current_user)
+
+        expect(graphql_data_at(:blobSearch, :durationS)).to be_present
+        expect(graphql_data_at(:blobSearch, :fileCount)).to eq(1)
+        expect(graphql_data_at(:blobSearch, :matchCount)).to eq(1)
+        expect(graphql_data_at(:blobSearch, :perPage)).to eq(20)
+        expect(graphql_data_at(:blobSearch, :searchType)).to eq('ZOEKT')
+        expect(graphql_data_at(:blobSearch, :searchLevel)).to eq('GROUP')
+
+        # rubocop:disable Layout/LineLength -- Keep it readable
+        expected_file = {
+          'path' => 'PROCESS.md',
+          'fileUrl' => "http://localhost/#{project.full_path}/-/blob/master/PROCESS.md",
+          'blameUrl' => "http://localhost/#{project.full_path}/-/blame/master/PROCESS.md",
+          'matchCountTotal' => 2,
+          'matchCount' => 2,
+          'projectPath' => project.full_path,
+          'language' => 'Markdown',
+          'chunks' => [{
+            'matchCountInChunk' => 2,
+            'lines' => [
+              { 'highlights' => nil, 'lineNumber' => 4, 'text' => '' },
+              { 'highlights' => [[116, 126], [188, 198]],
+                'lineNumber' => 5, 'text' => "Below we describe the contributing process to GitLab for two reasons. So that contributors know what to expect from maintainers (possible responses, friendly treatment, etc.). And so that maintainers know what to expect from contributors (use the latest version, ensure that the issue is addressed, friendly treatment, etc.).\n" },
+              { 'highlights' => nil, 'lineNumber' => 6, 'text' => '' }
+            ]
+          }]
+        }
+        # rubocop:enable Layout/LineLength
+
+        expect(graphql_data_at(:blobSearch, :files).first).to eq(expected_file)
+      end
     end
 
     it 'increments the custom search sli apdex' do
