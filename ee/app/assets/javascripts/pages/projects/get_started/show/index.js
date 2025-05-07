@@ -1,17 +1,6 @@
-import Vue from 'vue';
+import { initSimpleApp } from '~/helpers/init_simple_app_helper';
+import initInviteMembersModal from '~/invite_members/init_invite_members_modal';
 import GetStarted from '../components/get_started.vue';
 
-function initGetStarted() {
-  const el = document.getElementById('js-get-started-app');
-
-  if (!el) return null;
-
-  return new Vue({
-    el,
-    render(createElement) {
-      return createElement(GetStarted);
-    },
-  });
-}
-
-initGetStarted();
+initInviteMembersModal();
+initSimpleApp('#js-get-started-app', GetStarted);

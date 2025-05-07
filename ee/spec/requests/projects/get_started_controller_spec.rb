@@ -13,7 +13,7 @@ RSpec.describe Projects::GetStartedController, :saas, feature_category: :onboard
       stub_saas_features(onboarding: onboarding_enabled?)
     end
 
-    subject do
+    subject(:get_show) do
       get project_get_started_path(project), params: { project_id: project.to_param }
 
       response

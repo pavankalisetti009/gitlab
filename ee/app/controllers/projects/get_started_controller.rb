@@ -13,6 +13,10 @@ module Projects
     feature_category :onboarding
     urgency :low
 
+    def show
+      @get_started_presenter = ::Onboarding::GetStartedPresenter.new(current_user, project, onboarding_progress)
+    end
+
     private
 
     def onboarding_progress

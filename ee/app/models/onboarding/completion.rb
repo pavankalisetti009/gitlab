@@ -20,10 +20,11 @@ module Onboarding
       :secure_dast_run
     ].freeze
 
-    def initialize(project, current_user = nil)
+    def initialize(project, current_user = nil, onboarding_progress: nil)
       @project = project
       @namespace = project.namespace
       @current_user = current_user
+      @onboarding_progress = onboarding_progress
     end
 
     def percentage
@@ -47,9 +48,8 @@ module Onboarding
     strong_memoize_attr :attributes
 
     def onboarding_progress
-      ::Onboarding::Progress.find_by(namespace: namespace)
+      @onboarding_progress ||= ::Onboarding::Progress.find_by(namespace: namespace)
     end
-    strong_memoize_attr :onboarding_progress
 
     def action_columns
       ACTION_PATHS.map { |action_key| ::Onboarding::Progress.column_name(action_key) }
