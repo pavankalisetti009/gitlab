@@ -21225,6 +21225,7 @@ CREATE TABLE project_settings (
     protect_merge_request_pipelines boolean DEFAULT false NOT NULL,
     auto_duo_code_review_enabled boolean DEFAULT false NOT NULL,
     model_prompt_cache_enabled boolean,
+    web_based_commit_signing_enabled boolean DEFAULT false NOT NULL,
     CONSTRAINT check_1a30456322 CHECK ((char_length(pages_unique_domain) <= 63)),
     CONSTRAINT check_3a03e7557a CHECK ((char_length(previous_default_branch) <= 4096)),
     CONSTRAINT check_3ca5cbffe6 CHECK ((char_length(issue_branch_template) <= 255)),
