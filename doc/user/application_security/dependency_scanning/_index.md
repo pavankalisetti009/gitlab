@@ -369,8 +369,7 @@ The analyzers are published as Docker images, which Dependency Scanning uses to 
 containers for each analysis. You can also integrate a custom
 security scanner.
 
-Each analyzer is updated as new versions of Gemnasium are released. For more information, see the
-analyzer Release Process documentation.
+Each analyzer is updated as new versions of Gemnasium are released.
 
 ### How analyzers obtain dependency information
 
@@ -1048,10 +1047,8 @@ Dependency scanning outputs a report containing details of all vulnerabilities. 
 processed internally and the results are shown in the UI. The report is also output as an artifact
 of the dependency scanning job, named `gl-dependency-scanning-report.json`.
 
-For more details of the dependency scanning report, see:
-
-- Security scanner integration.
-- [Dependency scanning report schema](https://gitlab.com/gitlab-org/security-products/security-report-schemas/-/blob/master/dist/dependency-scanning-report-format.json).
+For more details of the dependency scanning report, see the
+[Dependency scanning report schema](https://gitlab.com/gitlab-org/security-products/security-report-schemas/-/blob/master/dist/dependency-scanning-report-format.json).
 
 ### CycloneDX Software Bill of Materials
 
