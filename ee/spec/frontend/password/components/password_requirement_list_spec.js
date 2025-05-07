@@ -82,7 +82,7 @@ describe('Password requirement list component', () => {
     });
 
     it('should show when password is empty', () => {
-      const passwordRules = wrapper.findAllByTestId('password-requirement-list');
+      const passwordRules = wrapper.findByTestId('password-requirement-list');
       expect(passwordRules.isVisible()).toBe(true);
     });
 
@@ -102,7 +102,7 @@ describe('Password requirement list component', () => {
       findPasswordInputElement().value = '';
     });
     it('should hide when password is empty', () => {
-      const passwordRules = wrapper.findAllByTestId('password-requirement-list');
+      const passwordRules = wrapper.findByTestId('password-requirement-list');
       expect(passwordRules.isVisible()).toBe(false);
     });
 
