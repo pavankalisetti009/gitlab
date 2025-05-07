@@ -20,6 +20,7 @@ describe('AiCommonSettingsForm', () => {
       },
       provide: {
         isDuoBaseAccessAllowed: false,
+        onGeneralSettingsPage: false,
         ...provide,
       },
     });
@@ -105,6 +106,13 @@ describe('AiCommonSettingsForm', () => {
       expect(findDuoSettingsWarningAlert().text()).toContain(
         'When you save, GitLab Duo will be turned for all groups, subgroups, and projects.',
       );
+    });
+
+    describe('with onGeneralSettingsPage true', () => {
+      it('does not render the Duo Core features form', () => {
+        createComponent({ provide: { onGeneralSettingsPage: true } });
+        expect(findDuoCoreFeaturesForm().exists()).toBe(false);
+      });
     });
   });
 });
