@@ -64,6 +64,10 @@ module EE
         end
       end
 
+      def status_lifecycle_for(namespace_id)
+        custom_lifecycle_for(namespace_id) || system_defined_lifecycle
+      end
+
       def custom_status_enabled_for?(namespace_id)
         return false unless namespace_id
 
@@ -89,6 +93,10 @@ module EE
       end
 
       private
+
+      def system_defined_lifecycle
+        ::WorkItems::Statuses::SystemDefined::Lifecycle.of_work_item_base_type(base_type.to_sym)
+      end
 
       def unlicensed_widget_classes(resource_parent)
         LICENSED_WIDGETS.flat_map do |licensed_feature, widget_class|

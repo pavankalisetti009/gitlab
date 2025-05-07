@@ -46,6 +46,7 @@ module WorkItems
         def statuses
           Status.where(id: status_ids)
         end
+        alias_method :ordered_statuses, :statuses
 
         def find_available_status_by_name(name)
           statuses.find { |status| status.matches_name?(name) }

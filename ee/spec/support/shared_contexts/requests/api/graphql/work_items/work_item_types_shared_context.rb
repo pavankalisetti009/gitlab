@@ -39,6 +39,14 @@ RSpec.shared_context 'with work item types request context EE' do
             color
             position
           }
+          defaultOpenStatus {
+            id
+            name
+          }
+          defaultClosedStatus {
+            id
+            name
+          }
         }
       }
       supportedConversionTypes {
