@@ -90,7 +90,7 @@
     display: block;
     align-self: stretch;
     min-height: 0;
-    background-color: $gray-50;
+    @apply gl-bg-strong;
     @apply gl-border-t;
 
     .table-action-buttons {

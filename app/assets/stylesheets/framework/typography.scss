@@ -657,7 +657,7 @@
   }
 
   .sidebarblock {
-    background: $gray-50;
+    @apply gl-bg-strong;
     padding: $gl-padding-12 $gl-padding-24;
     border-radius: $gl-border-radius-large;
 

@@ -64,11 +64,11 @@ $right-sidebar-policies-width: 350px;
 }
 
 .security-policies-drag-handle:hover {
-  background-color: var(--gray-50, #ececef);
+  @apply gl-bg-strong;
 }
 
 .security-policies-drag-handle.is-dragging {
-  background-color: var(--gray-50, #ececef);
+  @apply gl-bg-strong;
 }
 
 .security-policies-drag-thumbnail {
