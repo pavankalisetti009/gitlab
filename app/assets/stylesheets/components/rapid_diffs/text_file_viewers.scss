@@ -181,7 +181,8 @@
   background-color: var(--diff-deletion-color, var(--code-old-diff-background-color, $line-removed));
 
   &::before {
-    content: "-";
+    // / "" allows us to not announce this with screen readers
+    content: "−" / "";
     color: var(--code-old-diff-sign-color, scale-color($line-number-old, $red: -30%, $green: -30%, $blue: -30%));
   }
 }
@@ -190,7 +191,8 @@
   background-color: var(--diff-addition-color, var(--code-new-diff-background-color, $line-added));
 
   &::before {
-    content: "+";
+    // / "" allows us to not announce this with screen readers
+    content: "+" / "";
     color: var(--code-new-diff-sign-color, scale-color($line-number-new, $red: -30%, $green: -30%, $blue: -30%));
   }
 }
