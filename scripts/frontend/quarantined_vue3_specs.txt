@@ -119,7 +119,6 @@ spec/frontend/lib/utils/confirm_via_gl_modal/confirm_action_spec.js
 spec/frontend/members/components/app_spec.js
 spec/frontend/members/components/modals/leave_modal_spec.js
 spec/frontend/members/components/table/max_role_spec.js
-spec/frontend/members/components/table/members_pagination_spec.js
 spec/frontend/members/components/table/members_table_spec.js
 spec/frontend/ml/model_registry/apps/show_ml_model_spec.js
 spec/frontend/ml/model_registry/components/model_edit_spec.js
