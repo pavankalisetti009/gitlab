@@ -3,6 +3,7 @@ module EE
   module IpRestrictions
     class UpdateService
       include ::Gitlab::Utils::StrongMemoize
+
       # This class is responsible for updating the ip_restrictions of a specific group.
       # It takes in comma separated subnets as input, eg: '192.168.1.0/8,10.0.0.0/8'
 

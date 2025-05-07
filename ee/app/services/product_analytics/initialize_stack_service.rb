@@ -3,6 +3,7 @@
 module ProductAnalytics
   class InitializeStackService < BaseContainerService
     include Gitlab::Utils::StrongMemoize
+
     def execute
       return feature_availability_error if feature_availability_error.present?
 
