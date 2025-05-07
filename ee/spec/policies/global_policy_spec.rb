@@ -754,6 +754,16 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     end
 
     context 'when admin' do
+      context 'when on dedicated installation', :enable_admin_mode do
+        before do
+          allow(Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(true)
+        end
+
+        include_context 'with license setup', ultimate: true, premium: false
+        include_context 'with active add-on'
+        include_examples 'disallowed to manage self-hosted models'
+      end
+
       context 'Ultimate + Active Add-on', :enable_admin_mode do
         include_context 'with license setup', ultimate: true, premium: false
         include_context 'with active add-on'
