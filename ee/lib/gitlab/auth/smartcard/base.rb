@@ -24,8 +24,9 @@ module Gitlab
           @logger ||= ::Gitlab::AuthLogger.build
         end
 
-        def initialize(certificate)
+        def initialize(certificate, organization)
           @certificate = OpenSSL::X509::Certificate.new(certificate)
+          @organization = organization
         rescue OpenSSL::X509::CertificateError
           # no-op, certificate verification fails in this case in #valid?
         end
@@ -70,9 +71,7 @@ module Gitlab
           @password ||= ::User.random_password
         end
 
-        def organization
-          @organization ||= ::Organizations::Organization.default_organization
-        end
+        attr_reader :organization
       end
     end
   end

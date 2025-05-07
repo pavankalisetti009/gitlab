@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Auth::Smartcard::Certificate do
-  let_it_be(:organization) { create(:organization, :default) }
+RSpec.describe Gitlab::Auth::Smartcard::Certificate, :with_current_organization do
+  let_it_be(:organization) { create(:organization) }
   let(:subject_dn) { '/O=Random Corp Ltd/CN=gitlab-user/emailAddress=gitlab-user@random-corp.org' }
   let(:issuer_dn) { '/O=Random Corp Ltd/CN=Random Corp' }
   let(:certificate_header) { 'certificate' }
@@ -37,7 +37,7 @@ RSpec.describe Gitlab::Auth::Smartcard::Certificate do
   end
 
   describe '#find_or_create_user' do
-    subject { described_class.new(certificate_header).find_or_create_user }
+    subject { described_class.new(certificate_header, current_organization).find_or_create_user }
 
     context 'user and smartcard identity already exist' do
       let(:user) { create(:user) }
@@ -97,7 +97,7 @@ RSpec.describe Gitlab::Auth::Smartcard::Certificate do
           expect { subject }.to change { User.count }.from(0).to(1)
           expect(User.first.username).to eql('gitlab-user')
           expect(User.first.email).to eql('gitlab-user@random-corp.org')
-          expect(User.first.namespace.organization).to eq(organization)
+          expect(User.first.namespace.organization).to eq(current_organization)
         end
       end
 

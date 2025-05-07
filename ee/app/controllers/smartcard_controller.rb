@@ -52,9 +52,16 @@ class SmartcardController < ApplicationController
 
   def client_certificate
     if ldap_provider?
-      Gitlab::Auth::Smartcard::LdapCertificate.new(params[:provider], certificate_from_encrypted_param)
+      Gitlab::Auth::Smartcard::LdapCertificate.new(
+        params[:provider],
+        certificate_from_encrypted_param,
+        Current.organization
+      )
     else
-      Gitlab::Auth::Smartcard::Certificate.new(certificate_from_encrypted_param)
+      Gitlab::Auth::Smartcard::Certificate.new(
+        certificate_from_encrypted_param,
+        Current.organization
+      )
     end
   end
 
