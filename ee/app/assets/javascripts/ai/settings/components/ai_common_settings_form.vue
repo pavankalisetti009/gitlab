@@ -25,7 +25,10 @@ export default {
     ),
     confirmButtonText: __('Save changes'),
   },
-  inject: ['isDuoBaseAccessAllowed'],
+  inject: {
+    isDuoBaseAccessAllowed: { default: true },
+    onGeneralSettingsPage: { default: false },
+  },
   props: {
     duoAvailability: {
       type: String,
@@ -120,7 +123,7 @@ export default {
     <duo-availability :duo-availability="availability" @change="onRadioChanged" />
 
     <duo-core-features-form
-      v-if="isDuoBaseAccessAllowed"
+      v-if="isDuoBaseAccessAllowed && !onGeneralSettingsPage"
       :duo-core-features-enabled="duoCoreEnabled"
       @change="duoCoreCheckboxChanged"
     />
