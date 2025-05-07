@@ -16,7 +16,7 @@ module Analytics
 
       DUO_CHAT_INTERACTIONS_COUNT_QUERY = <<~SQL
         SELECT SUM(occurrences) as duo_chat_interactions_count, user_id
-        FROM duo_chat_daily_events
+        FROM duo_chat_events_daily
         WHERE user_id IN ({user_ids:Array(UInt64)})
         AND date >= {from:Date}
         AND date <= {to:Date}
