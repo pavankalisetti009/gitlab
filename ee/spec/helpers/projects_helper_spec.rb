@@ -938,35 +938,6 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
   end
 
-  describe '#home_panel_data_attributes' do
-    let_it_be(:user) { create(:user) }
-
-    before do
-      allow(helper).to receive_messages(current_user: user, groups_projects_more_actions_dropdown_data: nil,
-        fork_button_data_attributes: nil, notification_data_attributes: nil, star_count_data_attributes: {})
-    end
-
-    context "when project is not marked for deletion" do
-      before do
-        allow(project).to receive(:marked_for_deletion?).and_return(false)
-      end
-
-      subject { helper.home_panel_data_attributes }
-
-      it { is_expected.to include({ is_project_marked_for_deletion: "false" }) }
-    end
-
-    context "when project is marked for deletion" do
-      before do
-        allow(project).to receive(:marked_for_deletion?).and_return(true)
-      end
-
-      subject { helper.home_panel_data_attributes }
-
-      it { is_expected.to include({ is_project_marked_for_deletion: "true" }) }
-    end
-  end
-
   describe '#compliance_framework_data_attributes' do
     let_it_be(:user) { create(:user) }
 
