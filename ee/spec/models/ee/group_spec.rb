@@ -751,23 +751,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       is_expected.to include(group_vulnerability_scanner, subgroup_vulnerability_scanner, deleted_vulnerability_scanner)
       is_expected.not_to include(archived_vulnerability_scanner, unrelated_vulnerability_scanner)
     end
-
-    context 'when group_vulnerability_scanners_using_statistics is disabled' do
-      before do
-        # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
-        # that's what we're running in.
-        # It won't be turned off post decomposition, so this will be cleaned up with the FF.
-        # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
-        skip_if_multiple_databases_are_setup(:sec)
-
-        stub_feature_flags(group_vulnerability_scanners_using_statistics: false)
-      end
-
-      it 'returns vulnerability scanners for all non-archived, non-deleted projects in the group and its subgroups' do
-        is_expected.to include(group_vulnerability_scanner, subgroup_vulnerability_scanner)
-        is_expected.not_to include(archived_vulnerability_scanner, deleted_vulnerability_scanner, unrelated_vulnerability_scanner)
-      end
-    end
   end
 
   describe '#vulnerability_historical_statistics' do
