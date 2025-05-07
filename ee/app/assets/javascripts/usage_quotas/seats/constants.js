@@ -110,8 +110,8 @@ export const seatsInUseLink = helpPagePath('subscriptions/gitlab_com/_index', {
 export const seatsOwedLink = helpPagePath('subscriptions/gitlab_com/_index', {
   anchor: 'seats-owed',
 });
-export const seatsUsedLink = helpPagePath('subscriptions/gitlab_com/_index', {
-  anchor: 'view-gitlabcom-subscription',
+export const seatsUsedLink = helpPagePath('subscriptions/manage_subscription', {
+  anchor: 'view-subscription',
 });
 export const emailNotVisibleTooltipText = s__(
   'Billing|An email address is only visible for users with public emails.',
