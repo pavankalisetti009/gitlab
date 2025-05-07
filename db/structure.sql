@@ -20469,7 +20469,8 @@ CREATE VIEW postgres_sequences AS
     pg_attribute.attname AS col_name,
     pg_sequence.seqmax AS seq_max,
     pg_sequence.seqmin AS seq_min,
-    pg_sequence.seqstart AS seq_start
+    pg_sequence.seqstart AS seq_start,
+    pg_sequence_last_value((pg_sequence.seqrelid)::regclass) AS last_value
    FROM ((((pg_class seq_pg_class
      JOIN pg_sequence ON ((seq_pg_class.oid = pg_sequence.seqrelid)))
      LEFT JOIN pg_depend ON (((seq_pg_class.oid = pg_depend.objid) AND (pg_depend.classid = ('pg_class'::regclass)::oid) AND (pg_depend.refclassid = ('pg_class'::regclass)::oid))))
