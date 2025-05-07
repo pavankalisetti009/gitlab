@@ -102,6 +102,8 @@ module EE
         next false if ::Feature.disabled?(:allow_self_hosted_features_for_com) &&
           ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
+        next false if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
+
         (::License.current&.ultimate? || ::License.current&.premium?) &&
           ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.exists?
       end
