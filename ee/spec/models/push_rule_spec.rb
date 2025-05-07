@@ -15,27 +15,15 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
     let!(:model) { create(:push_rule_without_project, organization: parent) }
   end
 
+  it_behaves_like 'a push ruleable model'
+
   describe "Associations" do
     it { is_expected.to belong_to(:project).inverse_of(:push_rule) }
     it { is_expected.to belong_to(:organization) }
     it { is_expected.to have_one(:group).inverse_of(:push_rule).autosave(true) }
   end
 
-  describe "Validation" do
-    described_class::SHORT_REGEX_COLUMNS.each do |column|
-      context "#{column}: length validation" do
-        it { is_expected.to validate_length_of(column).is_at_most(511) }
-      end
-    end
-
-    described_class::LONG_REGEX_COLUMNS.each do |column|
-      context "#{column}: length validation" do
-        it { is_expected.to validate_length_of(column).is_at_most(2047) }
-      end
-    end
-
-    it { is_expected.to validate_numericality_of(:max_file_size).is_greater_than_or_equal_to(0).only_integer }
-
+  describe "Validations" do
     it 'validates RE2 regex syntax' do
       push_rule = build(:push_rule, branch_name_regex: '(ee|ce).*\1')
 
@@ -61,19 +49,10 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
   describe '#branch_name_allowed?' do
     subject(:push_rule) { create(:push_rule, branch_name_regex: '\d+\-.*') }
 
-    it 'checks branch against regex' do
-      expect(subject.branch_name_allowed?('123-feature')).to be true
-      expect(subject.branch_name_allowed?('feature-123')).to be false
-    end
-
     it 'uses RE2 regex engine' do
       expect_any_instance_of(Gitlab::UntrustedRegexp).to receive(:===)
 
       subject.branch_name_allowed?('123-feature')
-    end
-
-    it 'tolerates nil messages' do
-      expect(subject.branch_name_allowed?(nil)).to be false
     end
 
     context 'with legacy regex' do
@@ -107,52 +86,6 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
           expect { subject.branch_name_allowed?('ee-feature-ee') }
             .to raise_error(described_class::MatchError)
         end
-      end
-    end
-  end
-
-  describe '#commit_message_allowed?' do
-    subject(:push_rule) { create(:push_rule, commit_message_regex: '^Signed-off-by') }
-
-    it 'uses multiline regex' do
-      commit_message = "Some git commit feature\n\nSigned-off-by: Someone"
-
-      expect(subject.commit_message_allowed?(commit_message)).to be true
-    end
-
-    it 'tolerates nil messages' do
-      expect(subject.commit_message_allowed?(nil)).to be false
-    end
-  end
-
-  describe '#commit_message_blocked?' do
-    subject(:push_rule) { create(:push_rule, commit_message_negative_regex: 'commit') }
-
-    it 'uses multiline regex' do
-      commit_message = "Some git commit feature\n\nSigned-off-by: Someone"
-
-      expect(subject.commit_message_blocked?(commit_message)).to be true
-    end
-
-    it 'tolerates nil messages' do
-      expect(subject.commit_message_blocked?(nil)).to be false
-    end
-
-    context 'when commit message with break line in the last' do
-      subject(:push_rule) { create(:push_rule, commit_message_negative_regex: '^[0-9]*$') }
-
-      it 'uses multiline regex' do
-        commit_message = "Some git commit feature\n"
-        expect(subject.commit_message_blocked?(commit_message)).to be false
-      end
-    end
-
-    context 'when commit message without break line in the last' do
-      subject(:push_rule) { create(:push_rule, commit_message_negative_regex: '^[0-9]*$') }
-
-      it 'uses multiline regex' do
-        commit_message = "1234"
-        expect(subject.commit_message_blocked?(commit_message)).to be true
       end
     end
   end
@@ -193,29 +126,10 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
     end
   end
 
-  methods_and_regexes = {
-    commit_message_allowed?: :commit_message_regex,
-    commit_message_blocked?: :commit_message_negative_regex,
-    branch_name_allowed?: :branch_name_regex,
-    author_email_allowed?: :author_email_regex,
-    filename_denylisted?: :file_name_regex
-  }
-
-  methods_and_regexes.each do |method_name, regex_attr|
-    describe "##{method_name}" do
-      it 'raises a MatchError when the regex is invalid' do
-        push_rule[regex_attr] = '+'
-
-        expect { push_rule.public_send(method_name, 'foo') }
-          .to raise_error(PushRule::MatchError, /\ARegular expression '\+' is invalid/)
-      end
-    end
-  end
-
   describe '#commit_signature_allowed?' do
     let!(:premium_license) { create(:license, plan: License::PREMIUM_PLAN) }
-    let(:signed_commit) { double(has_signature?: true) }
-    let(:unsigned_commit) { double(has_signature?: false) }
+    let(:signed_commit) { instance_double(Commit, has_signature?: true) }
+    let(:unsigned_commit) { instance_double(Commit, has_signature?: false) }
 
     context 'when feature is not licensed and it is enabled' do
       before do

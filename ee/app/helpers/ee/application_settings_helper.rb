@@ -269,6 +269,8 @@ module EE
 
     override :global_search_settings_checkboxes
     def global_search_settings_checkboxes(form)
+      return super unless License.feature_available?(:elastic_search)
+
       super + [
         form.gitlab_ui_checkbox_component(
           :global_search_code_enabled,

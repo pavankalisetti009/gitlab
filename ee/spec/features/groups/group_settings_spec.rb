@@ -379,7 +379,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
             visit edit_group_path(group)
             wait_for_all_requests
 
-            expect(page).to have_content('Service account token expiration')
+            expect(page).to have_content(s_('AccessTokens|Require expiration dates for service accounts'))
 
             within(permissions_selector) do
               checkbox = find(service_access_token_expiration_enforced_selector)
