@@ -53,6 +53,18 @@ RSpec.describe Onboarding::Completion, feature_category: :onboarding do
       let(:code_added_at_timestamp) { Time.current }
 
       it { is_expected.to eq(true) }
+
+      context 'when onboarding_progress is provided to initializer' do
+        let(:column) { :code_added_at }
+        let(:completed_actions) { { code_added_at: Time.current } }
+        let(:onboarding_progress) { build(:onboarding_progress, **completed_actions) }
+
+        subject(:completed?) do
+          described_class.new(project, onboarding_progress: onboarding_progress).completed?(column)
+        end
+
+        it { is_expected.to eq(true) }
+      end
     end
 
     context 'when the action has not been completed' do

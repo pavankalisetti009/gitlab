@@ -2598,11 +2598,12 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
-    context 'importing members from another project' do
+    context 'for membership locking' do
       let(:current_user) { owner }
 
       context 'for a personal project' do
         it { is_expected.to be_allowed(:import_project_members_from_another_project) }
+        it { is_expected.to be_allowed(:invite_member) }
       end
 
       context 'for a project in a group' do
@@ -2615,6 +2616,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             end
 
             it { is_expected.to be_disallowed(:import_project_members_from_another_project) }
+            it { is_expected.to be_disallowed(:invite_member) }
           end
 
           context 'via LDAP' do
@@ -2623,6 +2625,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             end
 
             it { is_expected.to be_disallowed(:import_project_members_from_another_project) }
+            it { is_expected.to be_disallowed(:invite_member) }
           end
 
           context 'via SAML' do
@@ -2631,6 +2634,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             end
 
             it { is_expected.to be_disallowed(:import_project_members_from_another_project) }
+            it { is_expected.to be_disallowed(:invite_member) }
           end
         end
       end

@@ -245,6 +245,7 @@ module EE
 
       rule { membership_locked_via_parent_group }.policy do
         prevent :import_project_members_from_another_project
+        prevent :invite_member
       end
 
       condition(:custom_roles_allowed) do
