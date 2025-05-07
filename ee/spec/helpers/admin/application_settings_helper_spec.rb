@@ -283,6 +283,16 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       end
     end
 
+    context 'when the instance is Gitlab Dedicated' do
+      before do
+        allow(Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(true)
+      end
+
+      it 'sets can_manage_self_hosted_models to false' do
+        expect(helper.admin_duo_home_app_data[:can_manage_self_hosted_models]).to eq('false')
+      end
+    end
+
     context 'with feature flag allow_duo_base_access set to false' do
       before do
         stub_feature_flags(allow_duo_base_access: false)

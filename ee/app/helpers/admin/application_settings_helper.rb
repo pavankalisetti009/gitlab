@@ -100,6 +100,8 @@ module Admin
     private
 
     def can_manage_self_hosted_models?
+      return false if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
+
       has_required_license = ::License.current&.ultimate? || ::License.current&.premium?
       has_duo_enterprise = ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.exists?
 
