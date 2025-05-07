@@ -38,6 +38,7 @@ class Key < ApplicationRecord
 
   delegate :name, :email, to: :user, prefix: true
 
+  attribute :usage_type, :integer, limit: 2
   enum :usage_type, {
     auth_and_signing: 0,
     auth: 1,
