@@ -92,7 +92,7 @@ describe('BlockGroupBranchModification', () => {
     it('renders the default', () => {
       createComponent();
       expect(findLink().attributes('href')).toBe(
-        '/help/user/project/repository/branches/protected#for-all-projects-in-a-group',
+        '/help/user/project/repository/branches/protected#in-a-group',
       );
       expect(findHasExceptionsDropdown().exists()).toBe(true);
       expect(findHasExceptionsDropdown().props('selected')).toBe(WITHOUT_EXCEPTIONS);
@@ -102,7 +102,7 @@ describe('BlockGroupBranchModification', () => {
     it('renders when enabled', () => {
       createComponent({ propsData: { enabled: true } });
       expect(findLink().attributes('href')).toBe(
-        '/help/user/project/repository/branches/protected#for-all-projects-in-a-group',
+        '/help/user/project/repository/branches/protected#in-a-group',
       );
       expect(findHasExceptionsDropdown().exists()).toBe(true);
       expect(findHasExceptionsDropdown().props('selected')).toBe(WITHOUT_EXCEPTIONS);
