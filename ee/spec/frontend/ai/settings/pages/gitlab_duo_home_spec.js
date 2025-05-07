@@ -5,6 +5,7 @@ import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_
 import DuoSeatUtilizationInfoCard from 'ee/ai/settings/components/duo_seat_utilization_info_card.vue';
 import DuoSelfHostedInfoCard from 'ee/ai/settings/components/duo_self_hosted_info_card.vue';
 import DuoCoreUpgradeCard from 'ee/ai/settings/components/duo_core_upgrade_card.vue';
+import DuoWorkflowSettings from 'ee/ai/settings/components/duo_workflow_settings.vue';
 import GitlabDuoHome from 'ee/ai/settings/pages/gitlab_duo_home.vue';
 import { DUO_CORE, DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
 
@@ -21,12 +22,14 @@ describe('GitLab Duo Home', () => {
     isSaaS = true,
     canManageSelfHostedModels = false,
     customSlotProps = {},
+    showDuoWorkflowSettings = false,
   } = {}) => {
     wrapper = shallowMount(GitlabDuoHome, {
       propsData: {},
       provide: {
         isSaaS,
         canManageSelfHostedModels,
+        showDuoWorkflowSettings,
       },
       stubs: {
         CodeSuggestionsUsage: stubComponent(CodeSuggestionsUsage, {
@@ -50,6 +53,7 @@ describe('GitLab Duo Home', () => {
   const findDuoSeatUtilizationInfoCard = () => wrapper.findComponent(DuoSeatUtilizationInfoCard);
   const findDuoSelfHostedInfoCard = () => wrapper.findComponent(DuoSelfHostedInfoCard);
   const findDuoCoreUpgradeCard = () => wrapper.findComponent(DuoCoreUpgradeCard);
+  const findDuoWorkflowSettings = () => wrapper.findComponent(DuoWorkflowSettings);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -118,6 +122,26 @@ describe('GitLab Duo Home', () => {
         createComponent({ customSlotProps: { duoTier: DUO_CORE } });
         expect(findDuoCoreUpgradeCard().exists()).toBe(true);
         expect(findDuoSeatUtilizationInfoCard().exists()).toBe(false);
+      });
+    });
+
+    describe('when showDuoWorkflow is true', () => {
+      beforeEach(() => {
+        createComponent({ showDuoWorkflowSettings: true });
+      });
+
+      it('renders DuoWorkflowSettings but not CodeSuggestionsUsage', () => {
+        expect(findDuoWorkflowSettings().exists()).toBe(true);
+        expect(findCodeSuggestionsUsage().exists()).toBe(false);
+        expect(findDuoSeatUtilizationInfoCard().exists()).toBe(false);
+        expect(findHealthCheckList().exists()).toBe(false);
+      });
+
+      it('passes the correct props to DuoWorkflowSettings', () => {
+        expect(findDuoWorkflowSettings().props('title')).toBe('GitLab Duo');
+        expect(findDuoWorkflowSettings().props('subtitle')).toBe(
+          'Monitor, manage, and customize AI features to ensure efficient utilization and alignment.',
+        );
       });
     });
   });
