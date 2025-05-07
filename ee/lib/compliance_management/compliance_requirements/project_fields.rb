@@ -37,6 +37,23 @@ module ComplianceManagement
 
         private
 
+        ##
+        ## Helper Methods
+        ##
+
+        def security_scanner_running?(scanner, project, _context = {})
+          pipeline = project.latest_successful_pipeline_for_default_branch
+
+          return false if pipeline.nil?
+          return false unless SECURITY_SCANNERS.include?(scanner)
+
+          pipeline.job_artifacts.send(scanner).any? # rubocop: disable GitlabSecurity/PublicSend -- limited to supported scanners
+        end
+
+        ##
+        ## Control Methods
+        ##
+
         def default_branch_protected?(project, _context = {})
           return false unless project.default_branch
 
@@ -103,15 +120,6 @@ module ComplianceManagement
           security_scanner_running?(:iac, project, context)
         end
 
-        def security_scanner_running?(scanner, project, _context = {})
-          pipeline = project.latest_successful_pipeline_for_default_branch
-
-          return false if pipeline.nil?
-          return false unless SECURITY_SCANNERS.include?(scanner)
-
-          pipeline.job_artifacts.send(scanner).any? # rubocop: disable GitlabSecurity/PublicSend -- limited to supported scanners
-        end
-
         def code_changes_requires_code_owners?(project, _context = {})
           ProtectedBranch.branch_requires_code_owner_approval?(project, nil)
         end
@@ -121,7 +129,7 @@ module ComplianceManagement
             { per_page: 1, sort: 'updated_asc' }).execute(gitaly_pagination: true).any?(&:stale?)
         end
 
-        def version_control_enabled?(project, _context = {})
+        def project_repo_exists?(project, _context = {})
           project.repository.exists?
         end
 
@@ -138,6 +146,14 @@ module ComplianceManagement
           project.reset_approvals_on_push
         end
 
+        def protected_branches_set?(project, _context = {})
+          project.all_protected_branches.any?
+        end
+
+        def code_owner_approval_required?(project, _context = {})
+          Gitlab::CodeOwners::Loader.new(project, project.default_branch).has_code_owners_file?
+        end
+
         def status_checks_required?(project, _context = {})
           project.only_allow_merge_if_all_status_checks_passed
         end
@@ -148,6 +164,10 @@ module ComplianceManagement
 
         def resolve_discussions_required?(project, _context = {})
           project.only_allow_merge_if_all_discussions_are_resolved
+        end
+
+        def require_signed_commits?(project, _context = {})
+          !!(project.push_rule && project.push_rule.reject_unsigned_commits)
         end
 
         def require_linear_history?(project, _context = {})
@@ -181,6 +201,10 @@ module ComplianceManagement
           ProtectedBranch.protected_refs(project).any?
         end
 
+        def has_forks?(project, _context = {})
+          project.forks.any?
+        end
+
         def review_and_archive_stale_repos?(project, _context = {})
           stale_threshold = 6.months.ago
 
@@ -195,7 +219,7 @@ module ComplianceManagement
           project.team.users.none? { |user| user.last_activity_on.nil? || user.last_activity_on < stale_threshold }
         end
 
-        def minimum_number_of_admins?(project, _context = {})
+        def more_members_than_admins?(project, _context = {})
           team = project.team
 
           return true if team.members.count == 1

@@ -13,7 +13,7 @@ special_controls:
   external_control: 10000
 controls:
   scanner_sast_running:
-    name: SAST Running
+    name: SAST running
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -63,7 +63,7 @@ controls:
     field_method: auth_sso_enabled?
     enum_value: 6
   scanner_secret_detection_running:
-    name: Secret Detection Running
+    name: Secret detection running
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -84,7 +84,7 @@ controls:
     field_method: scanner_container_scanning_running?
     enum_value: 9
   scanner_license_compliance_running:
-    name: License Compliance Running
+    name: License compliance running
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -133,42 +133,42 @@ controls:
     field_method: code_changes_requires_code_owners?
     enum_value: 16
   reset_approvals_on_push:
-    name: Reset Approvals on Push
+    name: Reset approvals on push
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: reset_approvals_on_push?
     enum_value: 17
   status_checks_required:
-    name: Status Checks Required
+    name: Status checks required
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: status_checks_required?
     enum_value: 18
   require_branch_up_to_date:
-    name: Require Branch Up to Date
+    name: Require branch up to date
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: require_branch_up_to_date?
     enum_value: 19
   resolve_discussions_required:
-    name: Resolve Discussions Required
+    name: Resolve discussions required
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: resolve_discussions_required?
     enum_value: 20
   require_linear_history:
-    name: Require Linear History
+    name: Require linear history
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: require_linear_history?
     enum_value: 21
   restrict_push_merge_access:
-    name: Restrict Push/Merge Access
+    name: Restrict push and merge access
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -182,23 +182,23 @@ controls:
     field_method: force_push_disabled?
     enum_value: 23
   terraform_enabled:
-    name: Terraform Enabled
+    name: Terraform enabled
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: terraform_enabled?
     enum_value: 24
 
-  version_control_enabled:
-    name: 'Version Control Enabled'
+  project_repo_exists:
+    name: Project repository exists
     type: boolean
     compliant_value: true
     compliant_operator: '='
-    field_method: version_control_enabled?
+    field_method: project_repo_exists?
     enum_value: 25
 
   issue_tracking_enabled:
-    name: 'Issue Tracking Enabled'
+    name: Issue tracking enabled
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -206,7 +206,7 @@ controls:
     enum_value: 26
 
   stale_branch_cleanup_enabled:
-    name: 'Stale Branch Cleanup Enabled'
+    name: Stale branch cleanup enabled
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -214,7 +214,7 @@ controls:
     enum_value: 27
 
   branch_deletion_disabled:
-    name: 'Branch deletion disabled'
+    name: Branch deletion disabled
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -222,7 +222,7 @@ controls:
     enum_value: 28
 
   review_and_archive_stale_repos:
-    name: 'Review and Archive Stale Repositories'
+    name: Review and archive stale repositories
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -230,23 +230,23 @@ controls:
     enum_value: 29
 
   review_and_remove_inactive_users:
-    name: 'Review and Remove Inactive Users'
+    name: Review and remove inactive users
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: review_and_remove_inactive_users?
     enum_value: 30
 
-  minimum_number_of_admins:
-    name: 'Minimum Number of Admins'
+  more_members_than_admins:
+    name: More members than administrators
     type: boolean
     compliant_value: true
     compliant_operator: '='
-    field_method: minimum_number_of_admins?
+    field_method: more_members_than_admins?
     enum_value: 31
 
   require_mfa_for_contributors:
-    name: 'Require MFA for Contributors'
+    name: Require MFA for contributors
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -254,7 +254,7 @@ controls:
     enum_value: 32
 
   require_mfa_at_org_level:
-    name: 'Require MFA at Org Level'
+    name: Require MFA at organization level
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -262,7 +262,7 @@ controls:
     enum_value: 33
 
   ensure_2_admins_per_repo:
-    name: 'Ensure two administrators per repository'
+    name: Ensure two administrators per repository
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -278,7 +278,7 @@ controls:
     enum_value: 35
 
   secure_webhooks:
-    name: 'Secure Webhooks'
+    name: Secure webhooks
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -286,7 +286,7 @@ controls:
     enum_value: 36
 
   restricted_build_access:
-    name: 'Restricted Build Access'
+    name: Restricted build access
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -302,7 +302,7 @@ controls:
     enum_value: 38
 
   status_page_configured:
-    name: Status Page Configured
+    name: Status page configured
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -341,21 +341,21 @@ controls:
     field_method: default_branch_protected_from_direct_push?
     enum_value: 43
   push_protection_enabled:
-    name: Push Protection Enabled
+    name: Push protection enabled
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: push_protection_enabled?
     enum_value: 44
   project_marked_for_deletion:
-    name: Project Marked For Deletion
+    name: Project marked for deletion
     type: boolean
     compliant_value: false
     compliant_operator: '='
     field_method: project_marked_for_deletion?
     enum_value: 45
   project_archived:
-    name: Project Archived
+    name: Project archived
     type: boolean
     compliant_value: false
     compliant_operator: '='
@@ -369,56 +369,56 @@ controls:
     field_method: default_branch_users_can_merge?
     enum_value: 47
   merge_request_commit_reset_approvals:
-    name: Merge Request Commit Reset Approvals
+    name: Merge request commit reset approvals
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: merge_request_commit_reset_approvals?
     enum_value: 48
   project_visibility_not_public:
-    name: Project Visibility Not Public
+    name: Project visibility not public
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: project_visibility_not_public?
     enum_value: 49
   package_hunter_no_findings_untriaged:
-    name: Package Hunter No Findings Untriaged
+    name: Package Hunter no findings untriaged
     type: boolean
     compliant_value: false
     compliant_operator: '='
     field_method: package_hunter_no_findings_untriaged?
     enum_value: 50
   project_pipelines_not_public:
-    name: Project Pipelines Not Public
+    name: Project pipelines not public
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: project_pipelines_not_public?
     enum_value: 51
   vulnerabilities_slo_days_over_threshold:
-    name: Vulnerabilities SLO Days Over Threshold
+    name: Vulnerabilities SLO days over threshold
     type: boolean
     compliant_value: false
     compliant_operator: '='
     field_method: vulnerabilities_slo_days_over_threshold?
     enum_value: 52
   merge_requests_approval_rules_prevent_editing:
-    name: Merge Requests Approval Rules Prevent Editing
+    name: Merge requests approval rules prevent editing
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: merge_requests_approval_rules_prevent_editing?
     enum_value: 53
   project_user_defined_variables_restricted_to_maintainers:
-    name: Project User Defined Variables Restricted To Maintainers
+    name: Project user defined variables restricted to maintainers
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: project_user_defined_variables_restricted_to_maintainers?
     enum_value: 54
   merge_requests_require_code_owner_approval:
-    name: Merge Requests Require Code Owner Approval
+    name: Merge requests require code owner approval
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -439,3 +439,31 @@ controls:
     compliant_operator: '>='
     field_method: minimum_approvals_required
     enum_value: 57
+  protected_branches_set:
+    name: Protected branches exist
+    type: boolean
+    compliant_value: true
+    compliant_operator: '='
+    field_method: protected_branches_set?
+    enum_value: 58
+  code_owner_approval_required:
+    name: Code owner approval required
+    type: boolean
+    compliant_value: true
+    compliant_operator: '='
+    field_method: code_owner_approval_required?
+    enum_value: 59
+  require_signed_commits:
+    name: Requires signed commits
+    type: boolean
+    compliant_value: true
+    compliant_operator: '='
+    field_method: require_signed_commits?
+    enum_value: 60
+  has_forks:
+    name: Forks exist for the project
+    type: boolean
+    compliant_value: true
+    compliant_operator: '='
+    field_method: has_forks?
+    enum_value: 63
