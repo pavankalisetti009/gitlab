@@ -309,6 +309,31 @@ describe('ScheduleForm', () => {
           [expect.objectContaining({ days: ['Monday', 'Wednesday'] })],
         ]);
       });
+
+      it('emits changed event when days are reset', async () => {
+        createComponent({ schedule: { type: 'weekly', days: ['Monday'] } });
+        const weekdayDropdown = findWeekdayDropdown();
+        await weekdayDropdown.vm.$emit('reset');
+        expect(wrapper.emitted('changed')).toEqual([[expect.objectContaining({ days: [] })]]);
+      });
+    });
+
+    describe('monthly dropdown', () => {
+      it('emits changed event when days are selected', async () => {
+        createComponent({ schedule: { type: 'monthly', days_of_month: [1] } });
+        await findMonthlyDaysDropdown().vm.$emit('select', [1, 15, 2]);
+        expect(wrapper.emitted('changed')).toEqual([
+          [expect.objectContaining({ days_of_month: [1, 2, 15] })],
+        ]);
+      });
+
+      it('emits changed event when days are reset', async () => {
+        createComponent({ schedule: { type: 'monthly', days_of_month: [1] } });
+        await findMonthlyDaysDropdown().vm.$emit('reset');
+        expect(wrapper.emitted('changed')).toEqual([
+          [expect.objectContaining({ days_of_month: [] })],
+        ]);
+      });
     });
 
     describe('duration controls', () => {
