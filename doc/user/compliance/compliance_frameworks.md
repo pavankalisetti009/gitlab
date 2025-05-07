@@ -153,7 +153,7 @@ The JSON file is downloaded to your local system.
 
 ### Import a compliance framework from a JSON file
 
-With this feature, you can use shared or backed up compliance frameworks.
+With this feature, you can use shared or backed up compliance frameworks. The JSON file must not have the same name as an existing compliance framework.
 
 To import a compliance framework by using a JSON template:
 
@@ -340,3 +340,12 @@ To edit a requirement when creating or editing a framework:
 1. In the control dropdown list search and select a control.
 1. Select {{< icon name="remove" >}} to remove a control.
 1. Select **Save changes to the framework** to save the requirement.
+
+## Troubleshooting
+
+When working with compliance frameworks, you might encounter the following issues.
+
+### Error: `Unable to determine the correct upload URL`
+
+You will encounter this error during a [compliance framework import](#import-a-compliance-framework-from-a-json-file) if a compliance framework already exists with the same name as
+the JSON template.
