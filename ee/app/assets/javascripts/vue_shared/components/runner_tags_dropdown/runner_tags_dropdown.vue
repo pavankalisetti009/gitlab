@@ -33,14 +33,14 @@ export default {
           tagList: this.search,
         };
       },
-      update(data) {
+      async update(data) {
         const {
           [this.namespaceType]: {
             runners: { nodes = [] },
           },
         } = data;
         this.tags = uniq([...this.tags, ...getUniqueTagListFromEdges(nodes)]);
-        this.selectExistingTags();
+        await this.selectExistingTags();
         this.sortTags();
 
         this.$emit('tags-loaded', this.tags);
@@ -94,9 +94,10 @@ export default {
   },
   data() {
     return {
+      hasRequestedExistingTags: false,
       search: '',
-      tags: [],
       selected: [],
+      tags: [],
     };
   },
   computed: {
@@ -134,12 +135,8 @@ export default {
       return this.isProject ? projectRunnerTags : groupRunnerTags;
     },
   },
-  async created() {
+  created() {
     this.debouncedSearchKeyUpdate = debounce(this.setSearchKey, DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
-
-    if (this.value.length) {
-      await this.getExistingTags(this.value);
-    }
   },
   methods: {
     doesTagExist(tag) {
@@ -148,18 +145,31 @@ export default {
     isTagSelected(tag) {
       return this.selected?.includes(tag);
     },
-    async getExistingTags(tags) {
-      this.$apollo.queries.tagList.fetchMore({
-        variables: { fullPath: this.namespacePath, tagList: tags },
-        updateQuery: (previousResult, { fetchMoreResult }) => {
-          return produce(fetchMoreResult, (draftData) => {
-            draftData[this.namespaceType].runners.nodes = [
-              ...((previousResult[this.namespaceType] || {}).runners?.nodes || []),
-              ...((draftData[this.namespaceType] || {}).runners?.nodes || []),
-            ];
-          });
-        },
-      });
+    async getExistingTags(tagList) {
+      this.hasRequestedExistingTags = true;
+
+      try {
+        await this.$apollo.queries.tagList.fetchMore({
+          variables: { fullPath: this.namespacePath, tagList },
+          updateQuery: (previousResult, { fetchMoreResult }) => {
+            return produce(fetchMoreResult, (draftData) => {
+              draftData[this.namespaceType].runners.nodes = [
+                ...((previousResult[this.namespaceType] || {}).runners?.nodes || []),
+                ...((draftData[this.namespaceType] || {}).runners?.nodes || []),
+              ];
+            });
+          },
+        });
+      } catch {
+        this.$emit('error');
+        return;
+      }
+
+      // Check if any tags still don't exist after fetching
+      const nonExistingTags = this.value.filter((tag) => !this.doesTagExist(tag));
+      if (nonExistingTags.length > 0) {
+        this.$emit('error');
+      }
     },
     sortTags() {
       this.tags.sort((a) => (this.isTagSelected(a) ? -1 : 1));
@@ -171,17 +181,22 @@ export default {
       this.selected = tags;
       this.$emit('input', this.selected);
     },
-    selectExistingTags() {
-      if (this.value.length > 0) {
-        const nonExistingTags = this.value.filter((tag) => !this.doesTagExist(tag));
+    async selectExistingTags() {
+      if (this.value.length === 0) return;
 
-        if (nonExistingTags.length > 0) {
+      const nonExistingTags = this.value.filter((tag) => !this.doesTagExist(tag));
+
+      if (nonExistingTags.length > 0) {
+        if (this.hasRequestedExistingTags) {
           this.$emit('error');
-          return;
+        } else {
+          // Try to specifically retrieve tags that weren't available
+          await this.getExistingTags(nonExistingTags);
         }
-
-        this.selected = this.value;
       }
+
+      this.selected = this.value;
+      this.hasRequestedExistingTags = false;
     },
   },
 };
