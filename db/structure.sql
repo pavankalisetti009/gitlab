@@ -16476,6 +16476,12 @@ CREATE TABLE ldap_admin_role_links (
     provider text NOT NULL,
     cn text,
     filter text,
+    sync_status smallint DEFAULT 0 NOT NULL,
+    sync_started_at timestamp with time zone,
+    sync_ended_at timestamp with time zone,
+    last_successful_sync_at timestamp with time zone,
+    sync_error text,
+    CONSTRAINT check_044d783383 CHECK ((char_length(sync_error) <= 255)),
     CONSTRAINT check_7f4c5b8292 CHECK ((char_length(filter) <= 255)),
     CONSTRAINT check_db3fe65cb5 CHECK ((char_length(cn) <= 255)),
     CONSTRAINT check_f2efc15b43 CHECK ((char_length(provider) <= 255))
