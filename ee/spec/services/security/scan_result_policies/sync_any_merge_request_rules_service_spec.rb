@@ -124,8 +124,8 @@ RSpec.describe Security::ScanResultPolicies::SyncAnyMergeRequestRulesService, fe
             create(:security_orchestration_policy_configuration, project: project)
           end
 
-          let(:scan_result_policy) do
-            build(:scan_result_policy,
+          let(:approval_policy) do
+            build(:approval_policy,
               rules: [{
                 type: Security::ScanResultPolicy::ANY_MERGE_REQUEST,
                 branches: ['protected'],
@@ -135,7 +135,7 @@ RSpec.describe Security::ScanResultPolicies::SyncAnyMergeRequestRulesService, fe
           end
 
           let(:policy_yaml) do
-            build(:orchestration_policy_yaml, scan_result_policy: [scan_result_policy])
+            build(:orchestration_policy_yaml, approval_policy: [approval_policy])
           end
 
           subject(:violation_exists?) do
@@ -274,9 +274,9 @@ RSpec.describe Security::ScanResultPolicies::SyncAnyMergeRequestRulesService, fe
                 security_policy_management_project: policy_project)
             end
 
-            let(:scan_result_policy) { build(:scan_result_policy, :any_merge_request, branches: ['protected']) }
+            let(:approval_policy) { build(:approval_policy, :any_merge_request, branches: ['protected']) }
             let(:policy_yaml) do
-              build(:orchestration_policy_yaml, scan_result_policy: [scan_result_policy])
+              build(:orchestration_policy_yaml, approval_policy: [approval_policy])
             end
 
             before do

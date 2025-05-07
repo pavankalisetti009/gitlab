@@ -501,13 +501,12 @@ FactoryBot.define do
   end
 
   factory :orchestration_policy_yaml,
-    class: Struct.new(:scan_execution_policy, :scan_result_policy, :approval_policy, :pipeline_execution_policy,
+    class: Struct.new(:scan_execution_policy, :approval_policy, :pipeline_execution_policy,
       :ci_component_publishing_policy, :vulnerability_management_policy, :pipeline_execution_schedule_policy) do
     skip_create
 
     initialize_with do
       scan_execution_policy = attributes[:scan_execution_policy]
-      scan_result_policy = attributes[:scan_result_policy]
       approval_policy = attributes[:approval_policy]
       pipeline_execution_policy = attributes[:pipeline_execution_policy]
       ci_component_publishing_policy = attributes[:ci_component_publishing_policy]
@@ -517,7 +516,6 @@ FactoryBot.define do
       YAML.dump(
         new(
           scan_execution_policy,
-          scan_result_policy,
           approval_policy,
           pipeline_execution_policy,
           ci_component_publishing_policy,

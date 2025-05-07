@@ -31,7 +31,7 @@ module QA
       end
 
       let(:scan_result_policy_name) { 'greyhound' }
-      let(:policy_yaml_path) { "qa/ee/fixtures/scan_result_policy_yaml/scan_result_policy.yml" }
+      let(:policy_yaml_path) { "qa/ee/fixtures/approval_policy_yaml/approval_policy.yml" }
       let(:premade_report_name) { "gl-container-scanning-report.json" }
       let(:premade_report_path) { "qa/ee/fixtures/secure_premade_reports/gl-container-scanning-report.json" }
       let(:commit_branch) { "new_branch_#{SecureRandom.hex(8)}" }

@@ -118,8 +118,8 @@ RSpec.shared_context 'with project level approval policies' do
 
   let(:policy_type) { 'merge_request_approval_policy' }
 
-  let_it_be(:policy) { build(:scan_result_policy, actions: [action]) }
-  let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, scan_result_policy: [policy]) }
+  let_it_be(:policy) { build(:approval_policy, actions: [action]) }
+  let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, approval_policy: [policy]) }
 
   let_it_be(:query) do
     <<~QUERY
@@ -199,8 +199,8 @@ end
 RSpec.shared_context 'with group level approval policies' do
   include_context 'with base security policies graphql context'
 
-  let_it_be(:policy) { build(:scan_result_policy, actions: [action]) }
-  let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, scan_result_policy: [policy]) }
+  let_it_be(:policy) { build(:approval_policy, actions: [action]) }
+  let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, approval_policy: [policy]) }
 
   let_it_be(:group_variables) do
     {
@@ -542,7 +542,7 @@ RSpec.shared_context 'with approval policy and policy_scope' do
   include_context 'with policy_scope'
 
   let_it_be(:policy) do
-    build(:scan_result_policy, actions: [action], policy_scope: {
+    build(:approval_policy, actions: [action], policy_scope: {
       compliance_frameworks: [{ id: framework.id }],
       projects: {
         including: [{ id: including_project.id }],
@@ -552,7 +552,7 @@ RSpec.shared_context 'with approval policy and policy_scope' do
   end
 
   let_it_be(:policy_yaml) do
-    build(:orchestration_policy_yaml, scan_result_policy: [policy])
+    build(:orchestration_policy_yaml, approval_policy: [policy])
   end
 end
 

@@ -8,7 +8,7 @@ RSpec.describe Security::ProcessScanResultPolicyWorker, feature_category: :secur
   let(:policies) do
     {
       scan_execution_policy: [],
-      scan_result_policy:
+      approval_policy:
       [
         {
           name: 'CS critical policy',
@@ -41,8 +41,8 @@ RSpec.describe Security::ProcessScanResultPolicyWorker, feature_category: :secur
   end
 
   let(:active_scan_result_policies) do
-    policies[:scan_result_policy].select { |policy| policy[:enabled] }
-                                 .map { |policy| policy.merge({ type: 'scan_result_policy' }) }
+    policies[:approval_policy].select { |policy| policy[:enabled] }
+                                 .map { |policy| policy.merge({ type: 'approval_policy' }) }
   end
 
   it_behaves_like 'an idempotent worker' do
@@ -130,7 +130,7 @@ RSpec.describe Security::ProcessScanResultPolicyWorker, feature_category: :secur
       let(:policies) do
         {
           scan_execution_policy: [],
-          scan_result_policy:
+          approval_policy:
           [
             {
               name: 'CS critical policy',

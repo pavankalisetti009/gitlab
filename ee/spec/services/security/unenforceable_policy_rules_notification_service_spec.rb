@@ -230,9 +230,9 @@ RSpec.describe Security::UnenforceablePolicyRulesNotificationService, '#execute'
             security_policy_management_project: policy_project)
         end
 
-        let(:scan_result_policy) { build(:scan_result_policy, :any_merge_request, branches: ['protected']) }
+        let(:approval_policy) { build(:approval_policy, :any_merge_request, branches: ['protected']) }
         let(:policy_yaml) do
-          build(:orchestration_policy_yaml, scan_result_policy: [scan_result_policy])
+          build(:orchestration_policy_yaml, approval_policy: [approval_policy])
         end
 
         before do

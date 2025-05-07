@@ -16,7 +16,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDe
       namespace: group)
   end
 
-  let(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [], scan_result_policy: policies) }
+  let(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [], approval_policy: policies) }
   let(:policies) { [policy] }
   let(:policy) { build(:scan_result_policy, approval_settings: approval_settings) }
   let(:approval_settings) do
