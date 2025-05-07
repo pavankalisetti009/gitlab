@@ -6,6 +6,7 @@ RSpec.describe Types::Search::Blob::BlobSearchType, feature_category: :global_se
   it { expect(described_class.graphql_name).to eq('BlobSearch') }
 
   it 'has all the fields' do
-    expect(described_class).to have_graphql_fields(:fileCount, :files, :matchCount, :perPage, :searchLevel, :searchType)
+    expected_fields = %i[durationS fileCount files matchCount perPage searchLevel searchType]
+    expect(described_class).to have_graphql_fields(*expected_fields)
   end
 end

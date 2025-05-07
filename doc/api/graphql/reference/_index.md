@@ -22049,6 +22049,7 @@ Full JSON structure of multi-match results in a single file.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="blobsearchdurations"></a>`durationS` {{< icon name="warning-solid" >}} | [`Float`](#float) | **Introduced** in GitLab 18.0. **Status**: Experiment. Duration of the request in seconds. |
 | <a id="blobsearchfilecount"></a>`fileCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 17.2. **Status**: Experiment. Total number of files with matches. |
 | <a id="blobsearchfiles"></a>`files` {{< icon name="warning-solid" >}} | [`[SearchBlobFileType!]`](#searchblobfiletype) | **Introduced** in GitLab 17.2. **Status**: Experiment. List of files with matches. |
 | <a id="blobsearchmatchcount"></a>`matchCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 17.2. **Status**: Experiment. Total number of matches. |
