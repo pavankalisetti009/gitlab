@@ -56,8 +56,8 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
       build(:scan_execution_policy, name: 'SEP 1', policy_scope: policy_scope)
     end
 
-    let(:scan_result_policy) do
-      build(:scan_result_policy, name: 'SRP 1', policy_scope: policy_scope)
+    let(:approval_policy) do
+      build(:approval_policy, name: 'SRP 1', policy_scope: policy_scope)
     end
 
     let(:pipeline_execution_policy) do
@@ -73,7 +73,7 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
     let(:policy_yaml) do
       build(:orchestration_policy_yaml,
         scan_execution_policy: [scan_execution_policy],
-        scan_result_policy: [scan_result_policy],
+        approval_policy: [approval_policy],
         pipeline_execution_policy: [pipeline_execution_policy],
         vulnerability_management_policy: [vulnerability_management_policy]
       )
@@ -95,7 +95,7 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
           pending_frameworks: [],
           loaded_objects: {
             framework.id => {
-              scan_result_policies: [],
+              approval_policies: [],
               scan_execution_policies: [],
               pipeline_execution_policy: [],
               vulnerability_management_policy: []
@@ -120,7 +120,7 @@ RSpec.describe Gitlab::Graphql::Aggregations::SecurityOrchestrationPolicies::Laz
         policies = lazy_aggregate.execute
 
         expect(policies.count).to eq(1)
-        expect(policies[0][:name]).to eq(scan_result_policy[:name])
+        expect(policies[0][:name]).to eq(approval_policy[:name])
       end
 
       it 'clears the pending frameworks' do

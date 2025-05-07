@@ -17,8 +17,6 @@ module Security
     LICENSE_SCANNING = 'license_scanning'
     LICENSE_FINDING = 'license_finding'
     ANY_MERGE_REQUEST = 'any_merge_request'
-    SCAN_RESULT_POLICY_TYPES = %i[scan_result_policy approval_policy].freeze
-
     REQUIRE_APPROVAL = 'require_approval'
     SEND_BOT_MESSAGE = 'send_bot_message'
 
@@ -121,10 +119,8 @@ module Security
       end
 
       def scan_result_policies
-        SCAN_RESULT_POLICY_TYPES.flat_map do |type|
-          policy_by_type(type).map do |policy|
-            policy.tap { |p| p[:type] = type.to_s }
-          end
+        policy_by_type(:approval_policy).map do |policy|
+          policy.tap { |p| p[:type] = 'approval_policy' }
         end
       end
 

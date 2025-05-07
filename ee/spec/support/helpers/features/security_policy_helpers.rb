@@ -37,11 +37,11 @@ module Features
     end
 
     def policy_yaml
-      policy_hash.merge(type: 'scan_result_policy').to_yaml
+      policy_hash.merge(type: 'approval_policy').to_yaml
     end
 
     def policy_hash
-      build(:scan_result_policy, name: policy_name,
+      build(:approval_policy, name: policy_name,
         actions: [{ type: 'require_approval', approvals_required: 1,
                     role_approvers: approver_roles }], rules: [policy_rule])
     end

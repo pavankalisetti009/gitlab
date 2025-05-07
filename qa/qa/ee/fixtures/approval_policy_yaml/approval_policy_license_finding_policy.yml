@@ -1,4 +1,4 @@
-type: scan_result_policy
+type: approval_policy
 name: greyhound
 description: license finding
 enabled: true

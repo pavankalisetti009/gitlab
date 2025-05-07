@@ -3,15 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe Security::ScanResultPoliciesFinder, feature_category: :security_policy_management do
-  let!(:scan_result_policy) do
-    build(:scan_result_policy, name: 'Contains security critical', policy_scope: policy_scope)
+  let!(:approval_policy) do
+    build(:approval_policy, name: 'Contains security critical', policy_scope: policy_scope)
   end
 
   let!(:policy_yaml) do
-    build(:orchestration_policy_yaml, scan_result_policy: [scan_result_policy])
+    build(:orchestration_policy_yaml, approval_policy: [approval_policy])
   end
 
-  let(:policy) { scan_result_policy.merge({ type: 'scan_result_policy' }) }
+  let(:policy) { approval_policy.merge({ type: 'approval_policy' }) }
 
   include_context 'with security policies information'
 

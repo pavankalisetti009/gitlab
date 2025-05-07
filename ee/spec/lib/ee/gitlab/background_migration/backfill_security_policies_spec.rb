@@ -46,7 +46,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
   # We use the current schema in the background migration because we are not
   # introducing breaking changes outside of major milestones.
   let(:scan_execution_policy) { build(:scan_execution_policy, name: 'Run scans in every pipeline') }
-  let(:scan_result_policy) { build(:scan_result_policy, name: 'Require approvals', policy_scope: policy_scope) }
+  let(:approval_policy) { build(:approval_policy, name: 'Require approvals', policy_scope: policy_scope) }
   let(:vulnerability_management_policy) { build(:vulnerability_management_policy, name: 'Manage vulnerabilities') }
 
   let(:pipeline_execution_policy) do
@@ -125,13 +125,13 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
   end
 
   context 'with approval policies' do
-    let(:policies) { { scan_result_policy: [scan_result_policy] } }
+    let(:policies) { { approval_policy: [approval_policy] } }
 
     context 'with multiple rules' do
       # rubocop:disable RSpec/FactoriesInMigrationSpecs -- This uses a factory to build a security policy yaml.
       let(:policies) do
         {
-          scan_result_policy: [build(:scan_result_policy,
+          approval_policy: [build(:approval_policy,
             name: 'Require approvals',
             policy_scope: policy_scope,
             rules: [
@@ -370,7 +370,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
       {
         vulnerability_management_policy: [vulnerability_management_policy],
         pipeline_execution_policy: [pipeline_execution_policy],
-        scan_result_policy: [scan_result_policy],
+        approval_policy: [approval_policy],
         scan_execution_policy: [scan_execution_policy]
       }
     end
@@ -395,7 +395,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
         }
       end
 
-      let(:policies) { { scan_result_policy: [scan_result_policy] } }
+      let(:policies) { { approval_policy: [approval_policy] } }
 
       it 'creates links only for the project in scope', :aggregate_failures do
         expect { perform_migration }.to change { security_policies.count }.by(1) # 1 per policy
@@ -431,7 +431,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
         }
       end
 
-      let(:policies) { { scan_result_policy: [scan_result_policy] } }
+      let(:policies) { { approval_policy: [approval_policy] } }
 
       it 'creates links only for the project in group scope', :aggregate_failures do
         expect { perform_migration }.to change { security_policies.count }.by(1) # 1 per policy
@@ -467,7 +467,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
         }
       end
 
-      let(:policies) { { scan_result_policy: [scan_result_policy] } }
+      let(:policies) { { approval_policy: [approval_policy] } }
 
       it 'creates links only for the project with excluding group scope', :aggregate_failures do
         expect { perform_migration }.to change { security_policies.count }.by(1) # 1 per policy
@@ -518,7 +518,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
         }
       end
 
-      let(:policies) { { scan_result_policy: [scan_result_policy] } }
+      let(:policies) { { approval_policy: [approval_policy] } }
 
       it 'creates links only for the project in scope', :aggregate_failures do
         expect { perform_migration }.to change { security_policies.count }.by(1) # 1 per policy
@@ -551,7 +551,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
       {
         vulnerability_management_policy: [vulnerability_management_policy],
         pipeline_execution_policy: [pipeline_execution_policy],
-        scan_result_policy: [scan_result_policy, invalid_policy],
+        approval_policy: [approval_policy, invalid_policy],
         scan_execution_policy: [scan_execution_policy]
       }
     end
@@ -569,13 +569,13 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillSecurityPolicies, feature_ca
       {
         vulnerability_management_policy: [vulnerability_management_policy],
         pipeline_execution_policy: [pipeline_execution_policy],
-        scan_result_policy: [scan_result_policy],
+        approval_policy: [approval_policy],
         scan_execution_policy: [scan_execution_policy]
       }
     end
 
     before do
-      create_policy(:approval_policy, scan_result_policy, 0)
+      create_policy(:approval_policy, approval_policy, 0)
       create_policy(:scan_execution_policy, scan_execution_policy, 0)
       create_policy(:pipeline_execution_policy, pipeline_execution_policy, 0)
     end

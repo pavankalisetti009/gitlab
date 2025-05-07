@@ -70,7 +70,7 @@ module Security
 
       def default_branch_unprotected?
         return false unless project_container?
-        return false unless policy_type.in?(Security::ScanResultPolicy::SCAN_RESULT_POLICY_TYPES)
+        return false unless approval_policy?
         return false unless policy[:rules]&.any? { |rule| rule[:branch_type] == "default" }
 
         !ProtectedBranch.protected?(project, project.default_branch)
@@ -83,7 +83,7 @@ module Security
       end
 
       def exceeds_approver_action_limit?
-        return false unless scan_result_policy?
+        return false unless approval_policy?
 
         approver_actions_count = policy[:actions]&.count do |action|
           action[:type] == Security::ScanResultPolicy::REQUIRE_APPROVAL
@@ -152,7 +152,7 @@ module Security
 
       def multiple_approvals_failed_action_indices
         return [] if removing_policy?
-        return [] unless scan_result_policy?
+        return [] unless approval_policy?
         return [] if approval_requiring_actions.blank?
 
         result = ::Security::SecurityOrchestrationPolicies::FetchPolicyApproversService.new(
@@ -234,7 +234,7 @@ module Security
 
         policy[:rules].select { |rule| rule[:branch_type].present? }
                       .any? do |rule|
-          if scan_result_policy?
+          if approval_policy?
             service.scan_result_branches([rule]).empty?
           elsif scan_execution_policy? && !service.skip_validation?(rule)
             service.scan_execution_branches([rule]).empty?
@@ -255,7 +255,7 @@ module Security
       end
 
       def invalid_vulnerability_age?
-        return false unless scan_result_policy?
+        return false unless approval_policy?
 
         policy[:rules].select { |rule| rule[:vulnerability_age].present? }
                       .any? do |rule|
@@ -267,8 +267,8 @@ module Security
         policy[:type].to_sym
       end
 
-      def scan_result_policy?
-        Security::ScanResultPolicy::SCAN_RESULT_POLICY_TYPES.include?(policy_type)
+      def approval_policy?
+        policy_type == :approval_policy
       end
 
       def scan_execution_policy?

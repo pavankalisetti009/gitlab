@@ -582,7 +582,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
   describe '#max_active_scan_result_policies_reached?' do
     let_it_be(:policy_management_project) { create(:project, :repository) }
 
-    let(:policy_yaml) { build(:orchestration_policy_yaml, scan_result_policy: [build(:scan_result_policy)]) }
+    let(:policy_yaml) { build(:orchestration_policy_yaml, approval_policy: [build(:approval_policy)]) }
 
     context 'for project' do
       let_it_be(:security_orchestration_policy_configuration) do
