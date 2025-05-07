@@ -17,7 +17,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterprise::LeadFormWithErrorsCom
           last_name: 'bar',
           email_domain: 'baz',
           company_name: 'qux',
-          company_size: 'quux',
           phone_number: 'quuz',
           country: 'corge',
           state: 'grault'
@@ -30,7 +29,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterprise::LeadFormWithErrorsCom
           last_name: form_params[:last_name],
           email_domain: user.email_domain,
           company_name: form_params[:company_name],
-          company_size: form_params[:company_size],
           phone_number: form_params[:phone_number],
           country: form_params[:country],
           state: form_params[:state],

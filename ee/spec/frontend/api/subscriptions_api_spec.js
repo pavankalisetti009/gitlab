@@ -20,7 +20,6 @@ describe('SubscriptionsApi', () => {
       const params = {
         namespaceId: 1000,
         companyName: 'ACME',
-        companySize: '1-99',
         firstName: 'Joe',
         lastName: 'Doe',
         phoneNumber: '1-234567890',
@@ -33,7 +32,6 @@ describe('SubscriptionsApi', () => {
       const formParams = {
         namespace_id: 1000,
         company_name: 'ACME',
-        company_size: '1-99',
         first_name: 'Joe',
         last_name: 'Doe',
         phone_number: '1-234567890',

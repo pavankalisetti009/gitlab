@@ -129,6 +129,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   def expected_internal_variables(random_string:)
     # rubocop:disable Layout/LineLength -- keep them on one line for easier readability and editability
     [
+      { key: "GL_WORKSPACE_LOGS_DIR", type: :environment, value: workspace_operations_constants_module::WORKSPACE_LOGS_DIR },
       { key: create_constants_module::TOKEN_FILE_NAME, type: :file, value: /glpat-.+/ },
       { key: "GL_TOKEN_FILE_PATH", type: :environment, value: token_file_path },
       { key: git_credential_store_script_file_name, type: :file, value: git_credential_store_script },
@@ -237,6 +238,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
         organization_id: common_organization.to_global_id.to_s,
         cluster_agent_id: agent.to_global_id.to_s
       }
+    # noinspection RubyMismatchedArgumentType -- RubyMine is not detecting that FactoryBot returns a User type
     do_graphql_mutation_post(
       name: :organization_create_cluster_agent_mapping,
       input: organization_create_cluster_agent_mapping_create_mutation_args,

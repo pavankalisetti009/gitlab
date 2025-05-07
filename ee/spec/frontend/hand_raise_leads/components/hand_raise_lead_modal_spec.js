@@ -59,13 +59,7 @@ describe('HandRaiseLeadModal', () => {
 
   const fillForm = ({ stateRequired = false, comment = '' } = {}) => {
     const { country, state } = FORM_DATA;
-    const inputForms = pick(FORM_DATA, [
-      'firstName',
-      'lastName',
-      'companyName',
-      'companySize',
-      'phoneNumber',
-    ]);
+    const inputForms = pick(FORM_DATA, ['firstName', 'lastName', 'companyName', 'phoneNumber']);
 
     Object.entries(inputForms).forEach(([key, value]) => {
       wrapper.findByTestId(kebabCase(key)).vm.$emit('input', value);
@@ -97,7 +91,6 @@ describe('HandRaiseLeadModal', () => {
         { id: 'last-name', value: 'Doe' },
         { id: 'company-name', value: 'ACME' },
         { id: 'phone-number', value: '' },
-        { id: 'company-size', value: undefined },
       ];
 
       formInputValues.forEach(({ id, value }) => {
@@ -108,13 +101,7 @@ describe('HandRaiseLeadModal', () => {
     });
 
     it('has the correct form input in the form content', () => {
-      const visibleFields = [
-        'first-name',
-        'last-name',
-        'company-name',
-        'company-size',
-        'phone-number',
-      ];
+      const visibleFields = ['first-name', 'last-name', 'company-name', 'phone-number'];
 
       visibleFields.forEach((f) => expect(wrapper.findByTestId(f).exists()).toBe(true));
 
@@ -199,7 +186,6 @@ describe('HandRaiseLeadModal', () => {
           expect(wrapper.findByTestId(f).attributes('value')).toBe(''),
         );
 
-        expect(wrapper.findByTestId('company-size').attributes('value')).toBe(undefined);
         expect(findCountryOrRegionSelector().props()).toMatchObject({
           country: '',
           state: '',

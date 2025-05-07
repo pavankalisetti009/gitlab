@@ -9,7 +9,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::MainComponentUpda
     read_devfile("example.tools-injector-inserted-devfile.yaml.erb")
   end
 
-  let(:expected_processed_devfile_name) { 'example.main-container-updated-devfile.yaml.erb' }
+  let(:expected_processed_devfile_name) { "example.main-container-updated-devfile.yaml.erb" }
   let(:expected_processed_devfile) { read_devfile(expected_processed_devfile_name) }
 
   let(:vscode_extension_marketplace_metadata_enabled) { false }

@@ -9,7 +9,8 @@ components:
       image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
       args:
         - |
-          <%= indent_yaml_literal(MAIN_COMPONENT_UPDATER_CONTAINER_ARGS, 10) %>
+          <%= indent_yaml_literal(MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT, 10) %>
+          <%= indent_yaml_literal(MAIN_COMPONENT_UPDATER_INIT_TOOLS_SCRIPT, 10) %>
       command:
         - "/bin/sh"
         - "-c"
@@ -75,8 +76,8 @@ components:
       command:
         - "/bin/sh"
         - "-c"
-      memoryLimit: 512Mi
-      memoryRequest: 256Mi
+      memoryLimit: 1000Mi
+      memoryRequest: 500Mi
       cpuLimit: 500m
       cpuRequest: 100m
   - name: gl-workspace-data

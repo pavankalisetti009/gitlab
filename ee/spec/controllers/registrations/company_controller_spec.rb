@@ -93,7 +93,6 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
     let(:params) do
       {
         company_name: 'GitLab',
-        company_size: '1-99',
         phone_number: '+1 23 456-78-90',
         country: 'US',
         state: 'CA',

@@ -9,7 +9,6 @@ RSpec.describe 'Trial lead form submission and validation', :with_current_organi
     let(:form_data) do
       {
         phone_number: '+1 23 456-78-90',
-        company_size: '1 - 99',
         company_name: 'GitLab',
         country: { id: 'AF', name: 'Afghanistan' }
       }
@@ -18,7 +17,6 @@ RSpec.describe 'Trial lead form submission and validation', :with_current_organi
     let(:lead_params) do
       trial_user_params = {
         "company_name" => form_data[:company_name],
-        "company_size" => form_data[:company_size].delete(' '),
         "first_name" => user.first_name,
         "last_name" => user.last_name,
         "phone_number" => form_data[:phone_number],
@@ -55,7 +53,6 @@ RSpec.describe 'Trial lead form submission and validation', :with_current_organi
 
     def fill_in_company_information
       fill_in 'company_name', with: form_data[:company_name]
-      select form_data[:company_size], from: 'company_size'
       select form_data.dig(:country, :name), from: 'country'
       expect_phone_number_validation
       fill_in 'phone_number', with: form_data[:phone_number]

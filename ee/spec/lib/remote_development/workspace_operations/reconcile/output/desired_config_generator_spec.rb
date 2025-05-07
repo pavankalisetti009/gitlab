@@ -15,12 +15,15 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     let(:started) { true }
     let(:desired_state_is_terminated) { false }
     let(:include_all_resources) { false }
+    let(:include_scripts_resources) { true }
+    let(:legacy_scripts_in_container_command) { false }
     let(:deployment_resource_version_from_agent) { workspace.deployment_resource_version }
     let(:network_policy_enabled) { true }
     let(:gitlab_workspaces_proxy_namespace) { 'gitlab-workspaces' }
     let(:max_resources_per_workspace) { {} }
     let(:default_resources_per_workspace_container) { {} }
     let(:image_pull_secrets) { [] }
+    let(:processed_devfile_yaml) { example_processed_devfile_yaml }
     let(:workspaces_agent_config) do
       config = create(
         :workspaces_agent_config,
@@ -41,7 +44,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         agent: agent,
         user: user,
         desired_state: desired_state,
-        actual_state: actual_state
+        actual_state: actual_state,
+        processed_devfile: processed_devfile_yaml
       )
     end
 
@@ -52,6 +56,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         desired_state_is_terminated: desired_state_is_terminated,
         include_network_policy: workspace.workspaces_agent_config.network_policy_enabled,
         include_all_resources: include_all_resources,
+        include_scripts_resources: include_scripts_resources,
+        legacy_scripts_in_container_command: legacy_scripts_in_container_command,
         egress_ip_rules: workspace.workspaces_agent_config.network_policy_egress.map(&:deep_symbolize_keys),
         max_resources_per_workspace: max_resources_per_workspace,
         default_resources_per_workspace_container: default_resources_per_workspace_container,
@@ -75,6 +81,14 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
 
     it "generates the expected config", :unlimited_max_formatted_output_length do
       expect(workspace_resources).to eq(expected_config)
+    end
+
+    it "includes the workspace name in all resource names" do
+      resources_without_workspace_name_in_name = workspace_resources.reject do |resource|
+        resource[:metadata][:name].include?(workspace.name)
+      end
+
+      expect(resources_without_workspace_name_in_name).to be_empty
     end
 
     context 'when desired_state terminated' do
@@ -199,6 +213,18 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
           expect(workspace_resources).to eq(expected_config)
           resource_quota = workspace_resources.find { |resource| resource.fetch(:kind) == 'ResourceQuota' }
           expect(resource_quota).not_to be_nil
+        end
+      end
+
+      context "when postStart events are not present in devfile" do
+        let(:include_scripts_resources) { false }
+        let(:legacy_scripts_in_container_command) { true }
+        let(:processed_devfile_yaml) do
+          read_devfile_yaml("example.legacy-scripts-in-container-command-processed-devfile.yaml.erb")
+        end
+
+        it 'returns expected config without script resources' do
+          expect(workspace_resources).to eq(expected_config)
         end
       end
     end

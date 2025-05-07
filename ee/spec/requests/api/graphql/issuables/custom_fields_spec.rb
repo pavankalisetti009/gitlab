@@ -225,23 +225,6 @@ RSpec.describe 'Listing custom fields', feature_category: :team_planning do
         custom_field_attributes(select_field)
       ])
     end
-
-    context 'when an old global ID is used as a filter' do
-      it 'returns matching fields' do
-        expect(task_type.old_id).not_to eq(task_type.id)
-
-        post_graphql(
-          query,
-          current_user: guest,
-          variables: { work_item_type_id: ::Gitlab::GlobalId.build(task_type, id: task_type.old_id) }
-        )
-
-        expect(response).to have_gitlab_http_status(:ok)
-        expect(graphql_data_at(:namespace, :customFields, :nodes)).to match([
-          custom_field_attributes(select_field)
-        ])
-      end
-    end
   end
 
   context 'when querying associated select options and work item types' do

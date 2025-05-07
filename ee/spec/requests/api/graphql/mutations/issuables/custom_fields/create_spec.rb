@@ -98,29 +98,6 @@ RSpec.describe 'Creating a custom field', feature_category: :team_planning do
         )
       )
     end
-
-    context 'when an old ID is used' do
-      let(:issue_type_gid) { ::Gitlab::GlobalId.build(issue_type, id: issue_type.old_id).to_s }
-      let(:task_type_gid) { ::Gitlab::GlobalId.build(task_type, id: task_type.old_id).to_s }
-
-      it 'creates a custom field associated to the work item types' do
-        post_graphql_mutation(mutation, current_user: maintainer)
-
-        expect(response).to have_gitlab_http_status(:success)
-        expect_graphql_errors_to_be_empty
-
-        expect(mutation_response['customField']).to match(
-          a_hash_including(
-            'name' => 'Text Field',
-            'fieldType' => 'TEXT',
-            'workItemTypes' => [
-              a_hash_including('id' => issue_type.to_global_id.to_s),
-              a_hash_including('id' => task_type.to_global_id.to_s)
-            ]
-          )
-        )
-      end
-    end
   end
 
   context 'when user does not have access' do

@@ -1,20 +1,17 @@
 <script>
-import { GlFormGroup, GlFormInput, GlFormSelect, GlFormTextarea, GlModal } from '@gitlab/ui';
+import { GlFormGroup, GlFormInput, GlFormTextarea, GlModal } from '@gitlab/ui';
 import * as SubscriptionsApi from 'ee/api/subscriptions_api';
 import { createAlert, VARIANT_SUCCESS } from '~/alert';
 import { sprintf } from '~/locale';
 import Tracking from '~/tracking';
 import CountryOrRegionSelector from 'ee/trials/components/country_or_region_selector.vue';
 import {
-  companySizes,
   LEADS_COMPANY_NAME_LABEL,
-  LEADS_COMPANY_SIZE_LABEL,
   LEADS_FIRST_NAME_LABEL,
   LEADS_LAST_NAME_LABEL,
   LEADS_PHONE_NUMBER_LABEL,
 } from 'ee/vue_shared/leads/constants';
 import { BV_SHOW_MODAL } from '~/lib/utils/constants';
-import { TRIAL_COMPANY_SIZE_PROMPT } from 'ee/trials/constants';
 import {
   PQL_COMMENT_LABEL,
   PQL_HAND_RAISE_ACTION_ERROR,
@@ -35,7 +32,6 @@ export default {
   components: {
     GlFormGroup,
     GlFormInput,
-    GlFormSelect,
     GlFormTextarea,
     GlModal,
     CountryOrRegionSelector,
@@ -56,7 +52,6 @@ export default {
       firstName: this.user.firstName,
       lastName: this.user.lastName,
       companyName: this.user.companyName,
-      companySize: null,
       phoneNumber: '',
       country: '',
       state: '',
@@ -78,7 +73,6 @@ export default {
         this.firstName &&
         this.lastName &&
         this.companyName &&
-        this.companySize &&
         this.phoneNumber &&
         this.country &&
         (this.stateRequired ? this.state : true)
@@ -108,22 +102,12 @@ export default {
         experiment: this.ctaTracking.experiment,
       };
     },
-    companySizeOptionsWithDefault() {
-      return [
-        {
-          name: this.$options.i18n.companySizeSelectPrompt,
-          id: null,
-        },
-        ...companySizes,
-      ];
-    },
     formParams() {
       return {
         namespaceId: Number(this.user.namespaceId),
         firstName: this.firstName,
         lastName: this.lastName,
         companyName: this.companyName,
-        companySize: this.companySize,
         phoneNumber: this.phoneNumber,
         country: this.country,
         state: this.stateRequired ? this.state : null,
@@ -153,7 +137,6 @@ export default {
       this.firstName = '';
       this.lastName = '';
       this.companyName = '';
-      this.companySize = null;
       this.phoneNumber = '';
       this.country = '';
       this.state = '';
@@ -189,9 +172,7 @@ export default {
     firstNameLabel: LEADS_FIRST_NAME_LABEL,
     lastNameLabel: LEADS_LAST_NAME_LABEL,
     companyNameLabel: LEADS_COMPANY_NAME_LABEL,
-    companySizeLabel: LEADS_COMPANY_SIZE_LABEL,
     phoneNumberLabel: LEADS_PHONE_NUMBER_LABEL,
-    companySizeSelectPrompt: TRIAL_COMPANY_SIZE_PROMPT,
     phoneNumberDescription: PQL_PHONE_DESCRIPTION,
     commentLabel: PQL_COMMENT_LABEL,
     modalTitle: PQL_MODAL_TITLE,
@@ -262,21 +243,6 @@ export default {
           type="text"
           class="form-control"
           data-testid="company-name"
-        />
-      </gl-form-group>
-      <gl-form-group
-        :label="$options.i18n.companySizeLabel"
-        label-size="sm"
-        label-for="company-size"
-        class="w-50"
-      >
-        <gl-form-select
-          v-model="companySize"
-          name="company-size"
-          :options="companySizeOptionsWithDefault"
-          value-field="id"
-          text-field="name"
-          data-testid="company-size"
         />
       </gl-form-group>
     </div>

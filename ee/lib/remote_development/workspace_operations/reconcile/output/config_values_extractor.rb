@@ -44,6 +44,7 @@ module RemoteDevelopment
 
             workspace_inventory_name = "#{workspace_name}-workspace-inventory"
             secrets_inventory_name = "#{workspace_name}-secrets-inventory"
+            scripts_configmap_name = "#{workspace_name}-scripts-configmap"
 
             {
               # Please keep alphabetized
@@ -69,6 +70,7 @@ module RemoteDevelopment
               network_policy_egress: deep_sort_and_symbolize_hashes(workspaces_agent_config.network_policy_egress),
               processed_devfile_yaml: workspace.processed_devfile,
               replicas: workspace.desired_state_running? ? 1 : 0,
+              scripts_configmap_name: scripts_configmap_name,
               secrets_inventory_annotations:
                 deep_sort_and_symbolize_hashes(
                   common_annotations.merge("config.k8s.io/owning-inventory": secrets_inventory_name)

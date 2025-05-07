@@ -48,7 +48,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
   context "when workspace variables create is successful" do
     let(:valid_variable_type) { RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE }
     let(:variable_type) { valid_variable_type }
-    let(:expected_number_of_records_saved) { 18 }
+    let(:expected_number_of_records_saved) { 19 }
 
     it "creates the workspace variable records and returns ok result containing original context" do
       expect { result }.to change { workspace.workspace_variables.count }.by(expected_number_of_records_saved)
@@ -63,10 +63,10 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
   context "when workspace create fails" do
     let(:invalid_variable_type) { 9999999 }
     let(:variable_type) { invalid_variable_type }
-    let(:expected_number_of_records_saved) { 16 }
+    let(:expected_number_of_records_saved) { 17 }
 
     it "does not create the invalid workspace variable records and returns an error result with model errors" do
-      # NOTE: Any valid records will be saved if they are first in the array before the invalid record, but that"s OK,
+      # NOTE: Any valid records will be saved if they are first in the array before the invalid record, but that's OK,
       #       because if we return an err_result, the entire transaction will be rolled back at a higher level.
       expect { result }.to change { workspace.workspace_variables.count }.by(expected_number_of_records_saved)
 

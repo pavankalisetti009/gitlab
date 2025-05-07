@@ -82,16 +82,40 @@ components:
   - name: gl-workspace-data
     volume:
       size: 50Gi
-events:
-  preStart:
-    - gl-tools-injector-command
-    - gl-project-cloner-command
-  postStart: []
 commands:
   - id: gl-tools-injector-command
     apply:
       component: gl-tools-injector
+  - id: gl-start-sshd-command
+    exec:
+      commandLine: |
+        <%= indent_yaml_literal(MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT, 8) %>
+      component: tooling-container
+  - id: gl-init-tools-command
+    exec:
+      commandLine: |
+        <%= indent_yaml_literal(MAIN_COMPONENT_UPDATER_INIT_TOOLS_SCRIPT, 8) %>
+      component: tooling-container
+  - id: gl-sleep-until-container-is-running-command
+    exec:
+      commandLine: |
+        <%=
+          script = format(
+            MAIN_COMPONENT_UPDATER_SLEEP_UNTIL_CONTAINER_IS_RUNNING_SCRIPT,
+            workspace_reconciled_actual_state_file_path: WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH
+          )
+          indent_yaml_literal(script, 8)
+        %>
+      component: tooling-container
   - id: gl-project-cloner-command
     apply:
       component: gl-project-cloner
+events:
+  preStart:
+    - gl-tools-injector-command
+    - gl-project-cloner-command
+  postStart:
+    - gl-start-sshd-command
+    - gl-init-tools-command
+    - gl-sleep-until-container-is-running-command
 variables: {}

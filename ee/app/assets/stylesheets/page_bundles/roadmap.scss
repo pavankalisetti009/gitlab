@@ -198,7 +198,7 @@ html.group-epics-roadmap-html {
   &:hover {
     .epic-details-cell,
     .epic-timeline-cell {
-      background-color: var(--gray-50, $gray-50);
+      @apply gl-bg-strong;
     }
   }
 

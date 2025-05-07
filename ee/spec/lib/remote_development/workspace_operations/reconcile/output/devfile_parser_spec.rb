@@ -113,6 +113,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Devfil
       agent_labels: agent_labels,
       agent_annotations: agent_annotations,
       image_pull_secrets: image_pull_secrets,
+      include_scripts_resources: false,
       core_resources_only: true
     )
   end
