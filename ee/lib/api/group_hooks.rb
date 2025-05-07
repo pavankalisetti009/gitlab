@@ -42,6 +42,7 @@ module API
         optional :emoji_events, type: Boolean, desc: "Trigger hook on emoji events"
         optional :resource_access_token_events, type: Boolean, desc: "Trigger hook on group access token expiry events"
         optional :member_events, type: Boolean, desc: "Trigger hook on member events"
+        optional :vulnerability_events, type: Boolean, desc: "Trigger hook on vulnerability events"
         optional :enable_ssl_verification, type: Boolean, desc: "Do SSL verification when triggering the hook"
         optional :token, type: String, desc: "Secret token to validate received payloads; this will not be returned in the response"
         optional :custom_webhook_template, type: String, desc: "Custom template for the request payload"

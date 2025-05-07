@@ -19,6 +19,7 @@ module EE
         expose :emoji_events, documentation: { type: 'boolean' }
         expose :resource_access_token_events, documentation: { type: 'boolean' }
         expose :member_events, documentation: { type: 'boolean' }
+        expose :vulnerability_events, documentation: { type: 'boolean' }
       end
     end
   end
