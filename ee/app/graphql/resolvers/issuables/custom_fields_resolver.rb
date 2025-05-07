@@ -27,9 +27,7 @@ module Resolvers
         prepare: ->(work_item_typ_id, _ctx) { work_item_typ_id&.model_id }
 
       def resolve_with_lookahead(active: nil, field_type: nil, search: nil, work_item_type_id: nil)
-        unless work_item_type_id.nil?
-          work_item_type_ids = [::WorkItems::Type.find_by_id_with_fallback(work_item_type_id)&.id]
-        end
+        work_item_type_ids = [work_item_type_id] unless work_item_type_id.nil?
 
         custom_fields = ::Issuables::CustomFieldsFinder.new(
           current_user,
