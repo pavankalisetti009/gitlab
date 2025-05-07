@@ -221,14 +221,20 @@ module Gitlab
           def log_llm_response_metrics(response)
             return unless Feature.enabled?(:duo_code_review_response_logging, user)
 
+            input_tokens = response&.dig("usage", "input_tokens")
+            output_tokens = response&.dig("usage", "output_tokens")
+            total_tokens = input_tokens.to_i + output_tokens.to_i
+
             Gitlab::AppLogger.info(
               message: "LLM response metrics",
               event: "review_merge_request_llm_response_received",
               merge_request_id: merge_request&.id,
               response_id: response&.[]("id"),
               stop_reason: response&.[]("stop_reason"),
-              input_tokens: response&.dig("usage", "input_tokens"),
-              output_tokens: response&.dig("usage", "output_tokens")
+              input_tokens: input_tokens,
+              output_tokens: output_tokens,
+              total_tokens: total_tokens,
+              error_message: response&.dig("error", "message")
             )
           end
 
