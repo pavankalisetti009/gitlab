@@ -29109,7 +29109,7 @@ ALTER TABLE ONLY ci_instance_variables
     ADD CONSTRAINT ci_instance_variables_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ci_job_artifact_states
-    ADD CONSTRAINT ci_job_artifact_states_pkey PRIMARY KEY (job_artifact_id);
+    ADD CONSTRAINT ci_job_artifact_states_pkey PRIMARY KEY (job_artifact_id, partition_id);
 
 ALTER TABLE ONLY p_ci_job_artifacts
     ADD CONSTRAINT p_ci_job_artifacts_pkey PRIMARY KEY (id, partition_id);
@@ -34186,8 +34186,6 @@ CREATE INDEX index_ci_instance_runner_monthly_usages_on_namespace_and_month ON c
 CREATE INDEX index_ci_instance_runner_monthly_usages_on_project_and_month ON ci_instance_runner_monthly_usages USING btree (project_id, billing_month);
 
 CREATE UNIQUE INDEX index_ci_instance_variables_on_key ON ci_instance_variables USING btree (key);
-
-CREATE INDEX index_ci_job_artifact_states_on_job_artifact_id_partition_id ON ci_job_artifact_states USING btree (job_artifact_id, partition_id);
 
 CREATE INDEX p_ci_job_artifacts_expire_at_idx ON ONLY p_ci_job_artifacts USING btree (expire_at) WHERE ((locked = 0) AND (file_type <> 3) AND (expire_at IS NOT NULL));
 
