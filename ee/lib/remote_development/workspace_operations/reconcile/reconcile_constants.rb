@@ -15,7 +15,7 @@ module RemoteDevelopment
         # Please keep alphabetized
         RUN_AS_USER = 5001
         RUN_POSTSTART_COMMANDS_SCRIPT_NAME = "gl-run-poststart-commands.sh"
-        WORKSPACE_SCRIPTS_VOLUME_DEFAULT_MODE = 0o774
+        WORKSPACE_SCRIPTS_VOLUME_DEFAULT_MODE = 0o555
         WORKSPACE_SCRIPTS_VOLUME_NAME = "gl-workspace-scripts"
         WORKSPACE_SCRIPTS_VOLUME_PATH = "/workspace-scripts"
       end

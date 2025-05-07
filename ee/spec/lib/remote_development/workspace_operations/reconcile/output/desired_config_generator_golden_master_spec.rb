@@ -596,7 +596,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                   {
                     name: "gl-workspace-scripts",
                     projected: {
-                      defaultMode: 0o774,
+                      defaultMode: 0o555,
                       sources: [
                         {
                           configMap: {
@@ -1170,7 +1170,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                   {
                     name: "gl-workspace-scripts",
                     projected: {
-                      defaultMode: 0o774,
+                      defaultMode: 0o555,
                       sources: [
                         {
                           configMap: {
