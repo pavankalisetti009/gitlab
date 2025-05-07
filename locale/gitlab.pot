@@ -5930,6 +5930,12 @@ msgstr ""
 msgid "AiPowered|Turn on experiment and beta GitLab Duo features"
 msgstr ""
 
+msgid "AiPowered|Turn on prompt caching"
+msgstr ""
+
+msgid "AiPowered|Turn on prompt caching to improve Duo performance. %{linkStart}Learn more%{linkEnd}."
+msgstr ""
+
 msgid "AiPowered|Unlock advanced AI-powered capabilities with the Premium or Ultimate tier designed for your development needs."
 msgstr ""
 
@@ -5949,6 +5955,9 @@ msgid "AiPowered|What is this service account?"
 msgstr ""
 
 msgid "AiPowered|When GitLab Duo is not available, experiment and beta features cannot be turned on."
+msgstr ""
+
+msgid "AiPowered|When GitLab Duo is not available, prompt caching cannot be turned on."
 msgstr ""
 
 msgid "AiPowered|When turned on, all billable users can access GitLab Duo Chat and Code Suggestions in supported IDEs."
@@ -49006,6 +49015,9 @@ msgid "Promotions|When you have a lot of issues, it can be hard to get an overvi
 msgstr ""
 
 msgid "Promotions|You can restrict access to protected branches by choosing a role (Maintainers, Developers) as well as certain users."
+msgstr ""
+
+msgid "Prompt Cache"
 msgstr ""
 
 msgid "Prompt users to upload SSH keys"

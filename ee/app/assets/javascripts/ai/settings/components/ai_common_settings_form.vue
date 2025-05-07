@@ -5,6 +5,7 @@ import { AVAILABILITY_OPTIONS } from '../constants';
 import DuoAvailability from './duo_availability_form.vue';
 import DuoExperimentBetaFeatures from './duo_experiment_beta_features_form.vue';
 import DuoCoreFeaturesForm from './duo_core_features_form.vue';
+import DuoPromptCache from './duo_prompt_cache_form.vue';
 
 export default {
   name: 'AiCommonSettingsForm',
@@ -15,6 +16,7 @@ export default {
     DuoAvailability,
     DuoExperimentBetaFeatures,
     DuoCoreFeaturesForm,
+    DuoPromptCache,
   },
   i18n: {
     defaultOffWarning: s__(
@@ -43,6 +45,10 @@ export default {
       required: true,
       default: true,
     },
+    promptCacheEnabled: {
+      type: Boolean,
+      required: true,
+    },
     hasParentFormChanged: {
       type: Boolean,
       required: false,
@@ -54,6 +60,7 @@ export default {
       availability: this.duoAvailability,
       experimentsEnabled: this.experimentFeaturesEnabled,
       duoCoreEnabled: this.duoCoreFeaturesEnabled,
+      cacheEnabled: this.promptCacheEnabled,
     };
   },
   computed: {
@@ -66,11 +73,15 @@ export default {
     hasDuoCoreCheckboxChanged() {
       return this.duoCoreEnabled !== this.duoCoreFeaturesEnabled;
     },
+    hasCacheCheckboxChanged() {
+      return this.cacheEnabled !== this.promptCacheEnabled;
+    },
     hasFormChanged() {
       return (
         this.hasAvailabilityChanged ||
         this.hasExperimentCheckboxChanged ||
         this.hasDuoCoreCheckboxChanged ||
+        this.hasCacheCheckboxChanged ||
         this.hasParentFormChanged
       );
     },
@@ -93,7 +104,7 @@ export default {
           return '';
       }
     },
-    disableExperimentCheckbox() {
+    disableConfigCheckboxes() {
       return this.availability === AVAILABILITY_OPTIONS.NEVER_ON;
     },
   },
@@ -113,6 +124,10 @@ export default {
       this.duoCoreEnabled = value;
       this.$emit('duo-core-checkbox-changed', value);
     },
+    onCacheCheckboxChanged(value) {
+      this.cacheEnabled = value;
+      this.$emit('cache-checkbox-changed', value);
+    },
   },
 };
 </script>
@@ -130,9 +145,16 @@ export default {
 
     <duo-experiment-beta-features
       :experiment-features-enabled="experimentsEnabled"
-      :disabled-checkbox="disableExperimentCheckbox"
+      :disabled-checkbox="disableConfigCheckboxes"
       @change="experimentCheckboxChanged"
     />
+
+    <duo-prompt-cache
+      :prompt-cache-enabled="cacheEnabled"
+      :disabled-checkbox="disableConfigCheckboxes"
+      @change="onCacheCheckboxChanged"
+    />
+
     <slot name="ai-common-settings-bottom"></slot>
     <gl-alert
       v-if="showWarning"

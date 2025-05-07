@@ -129,6 +129,10 @@ module EE
         namespace.root?
       end
 
+      def prompt_cache_settings_allowed?
+        namespace.root?
+      end
+
       def user_cap_enabled?
         seat_control_user_cap? && namespace.root?
       end

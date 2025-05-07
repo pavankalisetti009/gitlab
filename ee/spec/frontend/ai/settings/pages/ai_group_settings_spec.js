@@ -69,12 +69,14 @@ describe('AiGroupSettings', () => {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experimentFeaturesEnabled: true,
         duoCoreFeaturesEnabled: true,
+        promptCacheEnabled: true,
       });
       expect(updateGroupSettings).toHaveBeenCalledTimes(1);
       expect(updateGroupSettings).toHaveBeenCalledWith('100', {
         duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experiment_features_enabled: true,
         duo_core_features_enabled: true,
+        model_prompt_cache_enabled: true,
       });
     });
 
@@ -84,6 +86,7 @@ describe('AiGroupSettings', () => {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experimentFeaturesEnabled: false,
         duoCoreFeaturesEnabled: false,
+        promptCacheEnabled: false,
       });
       await waitForPromises();
       expect(visitUrlWithAlerts).toHaveBeenCalledWith(
@@ -103,6 +106,7 @@ describe('AiGroupSettings', () => {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experimentFeaturesEnabled: false,
         duoCoreFeaturesEnabled: false,
+        promptCacheEnabled: true,
       });
       await waitForPromises();
       expect(createAlert).toHaveBeenCalledWith(

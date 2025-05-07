@@ -4,6 +4,7 @@ import AiCommonSettingsForm from 'ee/ai/settings/components/ai_common_settings_f
 import DuoAvailabilityForm from 'ee/ai/settings/components/duo_availability_form.vue';
 import DuoExperimentBetaFeaturesForm from 'ee/ai/settings/components/duo_experiment_beta_features_form.vue';
 import DuoCoreFeaturesForm from 'ee/ai/settings/components/duo_core_features_form.vue';
+import DuoPromptCacheForm from 'ee/ai/settings/components/duo_prompt_cache_form.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 
 describe('AiCommonSettingsForm', () => {
@@ -15,6 +16,7 @@ describe('AiCommonSettingsForm', () => {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
         duoCoreFeaturesEnabled: true,
         experimentFeaturesEnabled: true,
+        promptCacheEnabled: false,
         hasParentFormChanged: false,
         ...props,
       },
@@ -30,6 +32,7 @@ describe('AiCommonSettingsForm', () => {
   const findDuoAvailability = () => wrapper.findComponent(DuoAvailabilityForm);
   const findDuoExperimentBetaFeatures = () => wrapper.findComponent(DuoExperimentBetaFeaturesForm);
   const findDuoCoreFeaturesForm = () => wrapper.findComponent(DuoCoreFeaturesForm);
+  const findDuoPromptCache = () => wrapper.findComponent(DuoPromptCacheForm);
   const findDuoSettingsWarningAlert = () => wrapper.findByTestId('duo-settings-show-warning-alert');
   const findSaveButton = () => wrapper.findComponent(GlButton);
 
@@ -64,6 +67,10 @@ describe('AiCommonSettingsForm', () => {
       expect(findDuoExperimentBetaFeatures().exists()).toBe(true);
     });
 
+    it('renders DuoPromptCache component', () => {
+      expect(findDuoPromptCache().exists()).toBe(true);
+    });
+
     it('disables save button when no changes are made', () => {
       expect(findSaveButton().props('disabled')).toBe(true);
     });
@@ -72,6 +79,11 @@ describe('AiCommonSettingsForm', () => {
       await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.DEFAULT_OFF);
       await findDuoExperimentBetaFeatures().vm.$emit('change', true);
       await findDuoCoreFeaturesForm().vm.$emit('change', true);
+      expect(findSaveButton().props('disabled')).toBe(false);
+    });
+
+    it('enables save button when prompt cache changes are made', async () => {
+      await findDuoPromptCache().vm.$emit('change', true);
       expect(findSaveButton().props('disabled')).toBe(false);
     });
 
@@ -106,6 +118,32 @@ describe('AiCommonSettingsForm', () => {
       expect(findDuoSettingsWarningAlert().text()).toContain(
         'When you save, GitLab Duo will be turned for all groups, subgroups, and projects.',
       );
+    });
+
+    it('disables the prompt cache checkbox when duo availability is set to never_on', async () => {
+      await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.NEVER_ON);
+      expect(findDuoPromptCache().props('disabledCheckbox')).toBe(true);
+    });
+  });
+
+  describe('prompt cache integration', () => {
+    it('emits cache-checkbox-changed event when DuoPromptCache emits change', async () => {
+      await findDuoPromptCache().vm.$emit('change', true);
+
+      expect(wrapper.emitted('cache-checkbox-changed')[0]).toEqual([true]);
+    });
+
+    it('updates internal cacheEnabled data when change event is received', async () => {
+      await findDuoPromptCache().vm.$emit('change', true);
+
+      // Verify the form is changed (cacheEnabled is now different from initial prop)
+      expect(findSaveButton().props('disabled')).toBe(false);
+
+      // Change it back to initial value
+      await findDuoPromptCache().vm.$emit('change', false);
+
+      // Verify the form is unchanged
+      expect(findSaveButton().props('disabled')).toBe(true);
     });
 
     describe('with onGeneralSettingsPage true', () => {

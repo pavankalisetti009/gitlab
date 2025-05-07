@@ -7,6 +7,7 @@ module Admin
     delegate :duo_availability,
       :instance_level_ai_beta_features_enabled,
       :enabled_expanded_logging,
+      :model_prompt_cache_enabled,
       to: :current_application_settings
 
     def admin_display_duo_addon_settings?
@@ -29,8 +30,10 @@ module Admin
         duo_availability: duo_availability,
         direct_code_suggestions_enabled: direct_code_suggestions_enabled?.to_s,
         experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
+        prompt_cache_enabled: model_prompt_cache_enabled.to_s,
         beta_self_hosted_models_enabled: ::Ai::TestingTermsAcceptance.has_accepted?.to_s,
         are_experiment_settings_allowed: experiments_settings_allowed?.to_s,
+        are_prompt_cache_settings_allowed: 'true',
         duo_workflow_enabled: ::Ai::DuoWorkflow.available?.to_s,
         duo_workflow_service_account: duo_workflow_service_account,
         is_saas: ::Gitlab.com?.to_s, # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Will be addressed later when a feature is available
@@ -82,8 +85,10 @@ module Admin
       {
         duo_availability: duo_availability.to_s,
         experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
+        prompt_cache_enabled: model_prompt_cache_enabled.to_s,
         enabled_expanded_logging: enabled_expanded_logging.to_s,
         are_experiment_settings_allowed: experiments_settings_allowed?.to_s,
+        are_prompt_cache_settings_allowed: 'true',
         duo_pro_visible: code_suggestions_purchased.to_s,
         disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
         beta_self_hosted_models_enabled: beta_self_hosted_models_enabled.to_s,

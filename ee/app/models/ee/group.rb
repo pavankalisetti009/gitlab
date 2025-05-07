@@ -109,7 +109,7 @@ module EE
         to: :namespace_settings, allow_nil: true
 
       delegate :duo_availability, :duo_availability=, to: :namespace_settings
-      delegate :experiment_settings_allowed?, to: :namespace_settings
+      delegate :experiment_settings_allowed?, :prompt_cache_settings_allowed?, to: :namespace_settings
       delegate :user_cap_enabled?, to: :namespace_settings
 
       delegate :disable_personal_access_tokens=, to: :namespace_settings

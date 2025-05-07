@@ -363,9 +363,11 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         duo_seat_utilization_path: '/groups/my-group/-/settings/gitlab_duo/seat_utilization',
         duo_availability: 'default_on',
         experiment_features_enabled: 'true',
+        prompt_cache_enabled: 'true',
         duo_configuration_path: '/groups/my-group/-/settings/gitlab_duo/configuration',
         code_suggestions: 'data',
         are_experiment_settings_allowed: 'true',
+        are_prompt_cache_settings_allowed: 'true',
         is_duo_base_access_allowed: 'true',
         are_duo_core_features_enabled: 'true'
       })

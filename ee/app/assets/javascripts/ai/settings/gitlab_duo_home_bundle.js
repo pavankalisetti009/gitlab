@@ -22,7 +22,9 @@ export function initGitLabDuoHome() {
         duoConfigurationPath: data.duoConfigurationPath,
         duoAvailability: data.duoAvailability,
         experimentFeaturesEnabled: parseBoolean(data.experimentFeaturesEnabled),
+        promptCacheEnabled: parseBoolean(data.promptCacheEnabled),
         areExperimentSettingsAllowed: parseBoolean(data.areExperimentSettingsAllowed),
+        arePromptCacheSettingsAllowed: parseBoolean(data.arePromptCacheSettingsAllowed),
         areDuoCoreFeaturesEnabled: parseBoolean(data.areDuoCoreFeaturesEnabled),
       };
     },

@@ -22,7 +22,8 @@ RSpec.shared_context 'with experiment features disabled for group' do
   before do
     allow(Gitlab).to receive(:org_or_com?).and_return(true)
     stub_ee_application_setting(should_check_namespace_plan: true)
-    allow(group.namespace_settings).to receive(:experiment_settings_allowed?).and_return(true)
+    allow(group.namespace_settings)
+      .to receive_messages(experiment_settings_allowed?: true, prompt_cache_settings_allowed?: true)
     stub_licensed_features(
       glab_ask_git_command: true,
       ai_features: true,

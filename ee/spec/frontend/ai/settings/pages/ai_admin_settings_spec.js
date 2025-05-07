@@ -102,11 +102,13 @@ describe('AiAdminSettings', () => {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experimentFeaturesEnabled: false,
         duoCoreFeaturesEnabled: false,
+        promptCacheEnabled: true,
       });
       expect(updateApplicationSettings).toHaveBeenCalledTimes(1);
       expect(updateApplicationSettings).toHaveBeenCalledWith({
         duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         instance_level_ai_beta_features_enabled: false,
+        model_prompt_cache_enabled: true,
         disabled_direct_code_suggestions: false,
         enabled_expanded_logging: false,
         duo_chat_expiration_days: 30,
