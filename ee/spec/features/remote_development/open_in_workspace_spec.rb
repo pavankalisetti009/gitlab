@@ -18,6 +18,7 @@ RSpec.describe 'Open in Workspace button', :js, feature_category: :workspaces do
     end
 
     it 'they should be able to click on Open in Workspace' do
+      # noinspection RubyArgCount -- Rubymine is incorrectly thinking this is an invalid block argument
       within '.merge-request' do
         click_button 'Code'
       end

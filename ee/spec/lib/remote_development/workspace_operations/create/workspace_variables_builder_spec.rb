@@ -18,6 +18,12 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
   let(:expected_variables) do
     [
       {
+        key: "GL_WORKSPACE_LOGS_DIR",
+        value: RemoteDevelopment::WorkspaceOperations::WorkspaceOperationsConstants::WORKSPACE_LOGS_DIR,
+        variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
+        workspace_id: workspace_id
+      },
+      {
         key: create_constants_module::TOKEN_FILE_NAME,
         value: "example-pat-value",
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::FILE_TYPE,

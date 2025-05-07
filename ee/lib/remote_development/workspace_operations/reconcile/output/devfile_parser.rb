@@ -216,7 +216,7 @@ module RemoteDevelopment
               volume = {
                 name: VARIABLES_VOLUME_NAME,
                 projected: {
-                  defaultMode: 0o774,
+                  defaultMode: VARIABLES_VOLUME_DEFAULT_MODE,
                   sources: file_secret_names.map { |name| { secret: { name: name } } }
                 }
               }

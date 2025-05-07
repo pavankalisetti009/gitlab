@@ -279,8 +279,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             command:
               - "/bin/sh"
               - "-c"
-            memoryLimit: 512Mi
-            memoryRequest: 256Mi
+            memoryLimit: 1000Mi
+            memoryRequest: 500Mi
             cpuLimit: 500m
             cpuRequest: 100m
         - name: gl-workspace-data
@@ -489,8 +489,23 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                       {
                         mountPath: "/.workspace-data/variables/file",
                         name: "gl-workspace-variables"
+                      },
+                      {
+                        name: "gl-workspace-scripts",
+                        mountPath: "/workspace-scripts"
                       }
-                    ]
+                    ],
+                    lifecycle: {
+                      postStart: {
+                        exec: {
+                          command: [
+                            "/bin/sh",
+                            "-c",
+                            "mkdir -p \"${GL_WORKSPACE_LOGS_DIR}\"\nln -sf \"${GL_WORKSPACE_LOGS_DIR}\" /tmp\n\"/workspace-scripts/gl-run-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\" &\n"
+                          ]
+                        }
+                      }
+                    }
                   }
                 ],
                 initContainers: [
@@ -568,11 +583,24 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                   {
                     name: "gl-workspace-variables",
                     projected: {
-                      defaultMode: 508,
+                      defaultMode: 0o774,
                       sources: [
                         {
                           secret: {
                             name: "workspace-991-990-fedcba-file"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    name: "gl-workspace-scripts",
+                    projected: {
+                      defaultMode: 0o774,
+                      sources: [
+                        {
+                          configMap: {
+                            name: "workspace-991-990-fedcba-scripts-configmap"
                           }
                         }
                       ]
@@ -764,6 +792,31 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "Ingress",
             "Egress"
           ]
+        }
+      },
+      {
+        apiVersion: "v1",
+        kind: "ConfigMap",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+          },
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba-scripts-configmap",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        },
+        data: {
+          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-example-tooling-container-internal-command...\"\n/workspace-scripts/gl-example-tooling-container-internal-command || true\n",
+          "gl-example-tooling-container-internal-command": "echo 'example tooling container internal command'"
         }
       },
       {
@@ -1010,8 +1063,23 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                       {
                         mountPath: "/.workspace-data/variables/file",
                         name: "gl-workspace-variables"
+                      },
+                      {
+                        name: "gl-workspace-scripts",
+                        mountPath: "/workspace-scripts"
                       }
-                    ]
+                    ],
+                    lifecycle: {
+                      postStart: {
+                        exec: {
+                          command: [
+                            "/bin/sh",
+                            "-c",
+                            "mkdir -p \"${GL_WORKSPACE_LOGS_DIR}\"\nln -sf \"${GL_WORKSPACE_LOGS_DIR}\" /tmp\n\"/workspace-scripts/gl-run-poststart-commands.sh\" 1>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stdout.log\" 2>>\"${GL_WORKSPACE_LOGS_DIR}/poststart-stderr.log\" &\n"
+                          ]
+                        }
+                      }
+                    }
                   }
                 ],
                 initContainers: [
@@ -1089,11 +1157,24 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                   {
                     name: "gl-workspace-variables",
                     projected: {
-                      defaultMode: 508,
+                      defaultMode: 0o774,
                       sources: [
                         {
                           secret: {
                             name: "workspace-991-990-fedcba-file"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    name: "gl-workspace-scripts",
+                    projected: {
+                      defaultMode: 0o774,
+                      sources: [
+                        {
+                          configMap: {
+                            name: "workspace-991-990-fedcba-scripts-configmap"
                           }
                         }
                       ]
@@ -1286,6 +1367,31 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
             "Egress"
           ]
         }
+      },
+      {
+        apiVersion: "v1",
+        kind: "ConfigMap",
+        metadata: {
+          annotations: {
+            environment: "production",
+            team: "engineering",
+            "config.k8s.io/owning-inventory": "workspace-991-990-fedcba-workspace-inventory",
+            "workspaces.gitlab.com/host-template": "{{.port}}-workspace-991-990-fedcba.workspaces.localdev.me",
+            "workspaces.gitlab.com/id": "993",
+            "workspaces.gitlab.com/max-resources-per-workspace-sha256": "24aefc317e11db538ede450d1773e273966b9801b988d49e1219f2a9bf8e7f66"
+          },
+          labels: {
+            app: "workspace",
+            tier: "development",
+            "agent.gitlab.com/id": "991"
+          },
+          name: "workspace-991-990-fedcba-scripts-configmap",
+          namespace: "gl-rd-ns-991-990-fedcba"
+        },
+        data: {
+          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-example-tooling-container-internal-command...\"\n/workspace-scripts/gl-example-tooling-container-internal-command || true\n",
+          "gl-example-tooling-container-internal-command": "echo 'example tooling container internal command'"
+        }
       }
     ]
   end
@@ -1468,11 +1574,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                     resources: {
                       limits: {
                         cpu: "500m",
-                        memory: "512Mi"
+                        memory: "1000Mi"
                       },
                       requests: {
                         cpu: "100m",
-                        memory: "256Mi"
+                        memory: "500Mi"
                       }
                     },
                     securityContext: {
@@ -1511,7 +1617,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                   {
                     name: "gl-workspace-variables",
                     projected: {
-                      defaultMode: 508,
+                      defaultMode: 0o774,
                       sources: [
                         {
                           secret: {

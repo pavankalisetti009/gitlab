@@ -30,10 +30,18 @@ module RemoteDevelopment
     DEFAULT_DEVFILE_YAML = read_file("settings/default_devfile.yaml")
     GIT_CREDENTIAL_STORE_SCRIPT =
       read_file("workspace_operations/create/workspace_variables_git_credential_store.sh")
-    PROJECTS_CLONER_COMPONENT_INSERTER_CONTAINER_ARGS =
-      read_file("workspace_operations/create/project_cloner_component_inserter_container_args.sh")
+    KUBERNETES_POSTSTART_HOOK_COMMAND =
+      read_file("workspace_operations/reconcile/output/kubernetes_poststart_hook_command.sh")
     MAIN_COMPONENT_UPDATER_CONTAINER_ARGS =
       read_file("workspace_operations/create/main_component_updater_container_args.sh")
+    MAIN_COMPONENT_UPDATER_INIT_TOOLS_SCRIPT =
+      read_file("workspace_operations/create/main_component_updater_init_tools.sh")
+    MAIN_COMPONENT_UPDATER_SLEEP_UNTIL_CONTAINER_IS_RUNNING_SCRIPT =
+      read_file("workspace_operations/create/main_component_updater_sleep_until_workspace_is_running.sh")
+    MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT =
+      read_file("workspace_operations/create/main_component_updater_start_sshd.sh")
+    PROJECTS_CLONER_COMPONENT_INSERTER_CONTAINER_ARGS =
+      read_file("workspace_operations/create/project_cloner_component_inserter_container_args.sh")
 
     private_class_method :read_file
   end

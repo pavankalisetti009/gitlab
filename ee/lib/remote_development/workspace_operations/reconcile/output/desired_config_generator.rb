@@ -29,6 +29,7 @@ module RemoteDevelopment
               network_policy_egress: Array => network_policy_egress,
               processed_devfile_yaml: String => processed_devfile_yaml,
               replicas: Integer => replicas,
+              scripts_configmap_name: scripts_configmap_name,
               secrets_inventory_annotations: Hash => secrets_inventory_annotations,
               secrets_inventory_name: String => secrets_inventory_name,
               use_kubernetes_user_namespaces: TrueClass | FalseClass => use_kubernetes_user_namespaces,
@@ -104,6 +105,15 @@ module RemoteDevelopment
               gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
               network_policy_enabled: network_policy_enabled,
               network_policy_egress: network_policy_egress,
+              labels: labels,
+              annotations: workspace_inventory_annotations
+            )
+
+            append_scripts_resources(
+              desired_config: desired_config,
+              processed_devfile_yaml: processed_devfile_yaml,
+              name: scripts_configmap_name,
+              namespace: workspace.namespace,
               labels: labels,
               annotations: workspace_inventory_annotations
             )
@@ -333,6 +343,73 @@ module RemoteDevelopment
             }
 
             desired_config.append(network_policy)
+
+            nil
+          end
+
+          # @param [Array] desired_config
+          # @param [String] processed_devfile_yaml
+          # @param [String] name
+          # @param [String] namespace
+          # @param [Hash] labels
+          # @param [Hash] annotations
+          # @return [void]
+          def self.append_scripts_resources(
+            desired_config:,
+            processed_devfile_yaml:,
+            name:,
+            namespace:,
+            labels:,
+            annotations:
+          )
+            desired_config => [
+              *_,
+              {
+                kind: "Deployment",
+                spec: {
+                  template: {
+                    spec: {
+                      containers: Array => containers,
+                      volumes: Array => volumes
+                    }
+                  }
+                }
+              },
+              *_
+            ]
+
+            processed_devfile = YAML.safe_load(processed_devfile_yaml).deep_symbolize_keys.to_h
+
+            devfile_commands = processed_devfile.fetch(:commands)
+            devfile_events = processed_devfile.fetch(:events)
+
+            # NOTE: This guard clause ensures we still support older running workspaces which were started before we
+            #       added support for devfile postStart events. In that case, we don't want to add any resources
+            #       related to the postStart script handling, because that would cause those existing workspaces
+            #       to restart because the deployment would be updated.
+            return unless devfile_events[:postStart].present?
+
+            ScriptsConfigmapAppender.append(
+              desired_config: desired_config,
+              name: name,
+              namespace: namespace,
+              labels: labels,
+              annotations: annotations,
+              devfile_commands: devfile_commands,
+              devfile_events: devfile_events
+            )
+
+            ScriptsVolumeInserter.insert(
+              configmap_name: name,
+              containers: containers,
+              volumes: volumes
+            )
+
+            KubernetesPoststartHookInserter.insert(
+              containers: containers,
+              devfile_commands: devfile_commands,
+              devfile_events: devfile_events
+            )
 
             nil
           end
