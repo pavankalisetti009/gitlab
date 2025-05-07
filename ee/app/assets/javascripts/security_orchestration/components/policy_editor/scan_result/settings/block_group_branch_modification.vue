@@ -218,7 +218,7 @@ export default {
   },
 
   GROUP_PROTECTED_BRANCHES_DOCS: helpPagePath('user/project/repository/branches/protected', {
-    anchor: 'for-all-projects-in-a-group',
+    anchor: 'in-a-group',
   }),
   EXCEPTION_GROUPS_TEXTS,
   EXCEPTION_GROUPS_LISTBOX_ITEMS,
