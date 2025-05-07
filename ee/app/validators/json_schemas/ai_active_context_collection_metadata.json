@@ -4,6 +4,11 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "include_ref_fields": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether or not to use ref_id and ref_version fields"
+    },
     "search_embedding_version": {
       "type": [
         "integer",

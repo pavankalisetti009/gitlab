@@ -6,6 +6,7 @@ module Ai
       self.table_name = :ai_active_context_collections
 
       jsonb_accessor :metadata,
+        include_ref_fields: :boolean,
         indexing_embedding_versions: [:integer, { array: true }],
         search_embedding_version: :integer,
         collection_class: :string
