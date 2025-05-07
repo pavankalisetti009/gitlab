@@ -52,7 +52,7 @@ export default {
       return this.parsedYaml?.variables_override;
     },
     hasSchedules() {
-      return this.parsedYaml.schedules?.length > 0;
+      return this.schedules.length > 0;
     },
     humanizedActions() {
       return humanizeActions([this.parsedYaml]);
@@ -71,6 +71,9 @@ export default {
     },
     policyType() {
       return this.policy?.policyType || '';
+    },
+    schedules() {
+      return this.parsedYaml?.schedules || [];
     },
   },
   methods: {
@@ -110,7 +113,7 @@ export default {
         <template v-if="!humanizedActions.length">{{ $options.i18n.noActionMessage }}</template>
         <div v-else>
           <div v-if="hasSchedules" data-testid="schedule-summary">
-            <div v-for="(schedule, index) in parsedYaml.schedules" :key="index">
+            <div v-for="(schedule, index) in schedules" :key="index">
               <p>{{ generateScheduleSummary(schedule) }}</p>
               <p v-if="schedule.snooze" data-testid="snooze-summary">
                 {{ getSnoozeInfo(schedule) }}
