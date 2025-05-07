@@ -474,8 +474,18 @@ export const updateWorkItemMutationResponse = applyEEWorkItemPermissions(
 
 export const mockBlockedByLinkedItem = applyEEWorkItemPermissions(CE.mockBlockedByLinkedItem, true);
 
+export const mockBlockedByOpenAndClosedLinkedItems = applyEEWorkItemPermissions(
+  CE.mockBlockedByOpenAndClosedLinkedItems,
+  true,
+);
+
 export const workItemBlockedByLinkedItemsResponse = applyEEWorkItemPermissions(
   CE.workItemBlockedByLinkedItemsResponse,
+  true,
+);
+
+export const workItemsClosedAndOpenLinkedItemsResponse = applyEEWorkItemPermissions(
+  CE.workItemsClosedAndOpenLinkedItemsResponse,
   true,
 );
 
