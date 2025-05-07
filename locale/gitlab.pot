@@ -31636,6 +31636,9 @@ msgstr ""
 msgid "ImportButtons|Connect repositories from"
 msgstr ""
 
+msgid "ImportHistory|%{groupName} import history"
+msgstr ""
+
 msgid "ImportProjects|%{provider} rate limit exceeded. Try again later"
 msgstr ""
 
