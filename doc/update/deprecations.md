@@ -1273,6 +1273,9 @@ The behavior of "Upcoming" and "Started" special filters is planned to change in
 The new behavior of both the filters is outlined in
 [issue 429728](https://gitlab.com/gitlab-org/gitlab/-/issues/429728#proposed-issue-filter-logic-for-upcoming-and-started-milestones).
 
+This change does not impact the GitLab REST API, which will continue to use the existing milestone filtering logic.
+The GitLab GraphQL API will be updated to adhere to the new filtering logic.
+
 </div>
 
 <div class="deprecation breaking-change" data-milestone="18.0">
