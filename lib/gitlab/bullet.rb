@@ -16,11 +16,10 @@ module Gitlab
     def skip_bullet
       return yield unless configure_bullet?
 
-      previous_value = enabled?
       ::Bullet.enable = false
       yield
     ensure
-      ::Bullet.enable = previous_value
+      ::Bullet.enable = true if configure_bullet?
     end
   end
 end
