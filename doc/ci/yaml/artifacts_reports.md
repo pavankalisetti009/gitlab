@@ -341,7 +341,7 @@ rspec:
 
 GitLab can display the results of one or more reports in:
 
-- The merge request [code quality widget](../testing/unit_test_reports.md#how-it-works).
+- The merge request [code quality widget](../testing/unit_test_reports.md#unit-test-reporting-workflow).
 - The [full report](../testing/unit_test_reports.md#view-unit-test-reports-on-gitlab).
 
 Some JUnit tools export to multiple XML files. You can specify multiple test report paths in a single job to
