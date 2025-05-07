@@ -7,6 +7,7 @@ import DuoCoreUpgradeCard from 'ee/ai/settings/components/duo_core_upgrade_card.
 import DuoSeatUtilizationInfoCard from '../components/duo_seat_utilization_info_card.vue';
 import DuoConfigurationSettingsInfoCard from '../components/duo_configuration_settings_info_card.vue';
 import DuoSelfHostedInfoCard from '../components/duo_self_hosted_info_card.vue';
+import DuoWorkflowSettings from '../components/duo_workflow_settings.vue';
 
 export default {
   name: 'GitlabDuoHome',
@@ -17,10 +18,12 @@ export default {
     DuoCoreUpgradeCard,
     DuoSeatUtilizationInfoCard,
     DuoSelfHostedInfoCard,
+    DuoWorkflowSettings,
   },
   inject: {
     canManageSelfHostedModels: { default: false },
     isSaaS: {},
+    showDuoWorkflowSettings: { default: false },
   },
   i18n: {
     gitlabDuoHomeTitle: __('GitLab Duo'),
@@ -40,27 +43,35 @@ export default {
 </script>
 
 <template>
-  <code-suggestions-usage
-    :title="$options.i18n.gitlabDuoHomeTitle"
-    :subtitle="$options.i18n.gitlabDuoHomeSubtitle"
-    :force-hide-title="false"
-    v-bind="$attrs"
-  >
-    <template #health-check>
-      <health-check-list v-if="!isSaaS" />
-    </template>
-    <template #duo-card="{ totalValue, usageValue, duoTier }">
-      <section class="gl-grid gl-gap-5 gl-pb-5 md:gl-grid-cols-2">
-        <duo-core-upgrade-card v-if="shouldShowDuoCoreUpgradeCard(duoTier)" />
-        <duo-seat-utilization-info-card
-          v-if="shouldShowSeatUtilizationInfoCard(duoTier)"
-          :total-value="totalValue"
-          :usage-value="usageValue"
-          :duo-tier="duoTier"
-        />
-        <duo-configuration-settings-info-card :duo-tier="duoTier" />
-      </section>
-      <duo-self-hosted-info-card v-if="!isSaaS && canManageSelfHostedModels" />
-    </template>
-  </code-suggestions-usage>
+  <div>
+    <duo-workflow-settings
+      v-if="showDuoWorkflowSettings"
+      :title="$options.i18n.gitlabDuoHomeTitle"
+      :subtitle="$options.i18n.gitlabDuoHomeSubtitle"
+    />
+    <code-suggestions-usage
+      v-else
+      :title="$options.i18n.gitlabDuoHomeTitle"
+      :subtitle="$options.i18n.gitlabDuoHomeSubtitle"
+      :force-hide-title="false"
+      v-bind="$attrs"
+    >
+      <template #health-check>
+        <health-check-list v-if="!isSaaS" />
+      </template>
+      <template #duo-card="{ totalValue, usageValue, duoTier }">
+        <section class="gl-grid gl-gap-5 gl-pb-5 md:gl-grid-cols-2">
+          <duo-core-upgrade-card v-if="shouldShowDuoCoreUpgradeCard(duoTier)" />
+          <duo-seat-utilization-info-card
+            v-if="shouldShowSeatUtilizationInfoCard(duoTier)"
+            :total-value="totalValue"
+            :usage-value="usageValue"
+            :duo-tier="duoTier"
+          />
+          <duo-configuration-settings-info-card :duo-tier="duoTier" />
+        </section>
+        <duo-self-hosted-info-card v-if="!isSaaS && canManageSelfHostedModels" />
+      </template>
+    </code-suggestions-usage>
+  </div>
 </template>
