@@ -116,7 +116,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
     let(:lead_params) do
       {
         company_name: '_company_name_',
-        company_size: '1-99',
         first_name: '_first_name_',
         last_name: '_last_name_',
         phone_number: '123',

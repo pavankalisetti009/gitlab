@@ -16,7 +16,6 @@ export const NO_USER_LAST_NAME_FORM_DATA = {
   lastName: 'Doe',
   showNameFields: false,
   companyName: 'ACME',
-  companySize: '1-99',
   phoneNumber: '192919',
   country: 'US',
   state: 'CA',

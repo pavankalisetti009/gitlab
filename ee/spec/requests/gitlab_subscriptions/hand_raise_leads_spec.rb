@@ -15,7 +15,6 @@ RSpec.describe 'Hand Raise Leads', :saas, feature_category: :subscription_manage
         first_name: 'James',
         last_name: 'Bond',
         company_name: 'ACME',
-        company_size: '1-99',
         phone_number: '+1-192-10-10',
         country: 'US',
         state: 'CA',

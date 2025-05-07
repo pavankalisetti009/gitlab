@@ -96,7 +96,7 @@ module GitlabSubscriptions
 
     def lead_form_params
       params.permit(
-        :first_name, :last_name, :company_name, :company_size, :phone_number, :country, :state
+        :first_name, :last_name, :company_name, :phone_number, :country, :state
       ).to_h.symbolize_keys
     end
 

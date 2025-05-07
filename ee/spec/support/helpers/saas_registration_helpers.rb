@@ -430,7 +430,6 @@ module SaasRegistrationHelpers
 
   def fill_company_form_fields
     fill_in 'company_name', with: 'Test Company'
-    select '1 - 99', from: 'company_size'
     select 'United States of America', from: 'country'
     select 'Florida', from: 'state'
     fill_in 'phone_number', with: '+1234567890'
@@ -439,7 +438,6 @@ module SaasRegistrationHelpers
   def company_params(user)
     ActionController::Parameters.new(
       company_name: 'Test Company',
-      company_size: '1-99',
       first_name: user.first_name,
       last_name: 'User',
       phone_number: '+1234567890',

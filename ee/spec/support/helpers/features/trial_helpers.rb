@@ -60,7 +60,6 @@ module Features
     def expect_to_be_on_lead_form_with_errors
       expect(page).to have_content('could not be created because our system did not respond successfully')
       expect(page).to have_content('_lead_fail_')
-      expect(page).to have_content('Number of employees')
 
       # This is needed to ensure the countries and regions selector has time to populate
       # This only happens on the duo trial and not the regular trial. Probably due to the added time for full page
@@ -97,7 +96,6 @@ module Features
     def form_data
       {
         phone_number: '+1 23 456-78-90',
-        company_size: '1 - 99',
         company_name: 'GitLab',
         country: { id: 'US', name: 'United States of America' },
         state: { id: 'CA', name: 'California' }
@@ -106,7 +104,6 @@ module Features
 
     def fill_in_company_information
       fill_in 'company_name', with: form_data[:company_name]
-      select form_data[:company_size], from: 'company_size'
       fill_in 'phone_number', with: form_data[:phone_number]
       select form_data.dig(:country, :name), from: 'country'
       select form_data.dig(:state, :name), from: 'state'
@@ -128,7 +125,6 @@ module Features
       # lead
       trial_user_params = {
         company_name: form_data[:company_name],
-        company_size: form_data[:company_size].delete(' '),
         first_name: user.first_name,
         last_name: last_name,
         phone_number: form_data[:phone_number],
@@ -245,7 +241,6 @@ module Features
       # lead
       trial_user_params = {
         company_name: form_data[:company_name],
-        company_size: form_data[:company_size].delete(' '),
         first_name: user.first_name,
         last_name: last_name,
         phone_number: form_data[:phone_number],
@@ -367,7 +362,6 @@ module Features
       # lead
       trial_user_params = {
         company_name: form_data[:company_name],
-        company_size: form_data[:company_size].delete(' '),
         first_name: user.first_name,
         last_name: last_name,
         phone_number: form_data[:phone_number],

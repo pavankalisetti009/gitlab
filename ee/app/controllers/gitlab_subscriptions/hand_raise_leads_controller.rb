@@ -42,7 +42,7 @@ module GitlabSubscriptions
 
     def base_params
       params.permit(
-        :first_name, :last_name, :company_name, :company_size, :phone_number, :country,
+        :first_name, :last_name, :company_name, :phone_number, :country,
         :state, :namespace_id, :comment, :glm_content, :product_interaction
       )
     end
