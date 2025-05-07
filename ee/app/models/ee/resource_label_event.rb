@@ -19,14 +19,5 @@ module EE
     def issuable
       epic || super
     end
-
-    private
-
-    override :label_url_method
-    def label_url_method
-      return :group_epics_url if issuable.is_a?(Epic)
-
-      super
-    end
   end
 end

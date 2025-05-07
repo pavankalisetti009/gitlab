@@ -24,18 +24,6 @@ RSpec.describe LabelNote do
     it 'includes a link to the list of epics filtered by the label' do
       expect(subject.note_html).to include(group_epics_path(group, label_name: label.title))
     end
-
-    context 'when render_label_notes_lazily is disabled' do
-      before do
-        stub_feature_flags(render_label_notes_lazily: false)
-      end
-
-      it_behaves_like 'label note created from events'
-
-      it 'includes a link to the list of epics filtered by the label' do
-        expect(subject.note_html).to include(group_epics_path(group, label_name: label.title))
-      end
-    end
   end
 
   context 'when a label is removed' do
