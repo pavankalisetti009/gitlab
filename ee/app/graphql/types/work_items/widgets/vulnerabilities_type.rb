@@ -10,7 +10,7 @@ module Types
 
         implements ::Types::WorkItems::WidgetInterface
 
-        field :related_vulnerabilities, ::Types::VulnerabilityType.connection_type,
+        field :related_vulnerabilities, ::Types::Vulnerabilities::CountableVulnerabilityType.connection_type,
           null: true,
           description: 'Related vulnerabilities of the work item.',
           experiment: { milestone: '17.10' }
