@@ -64,7 +64,8 @@ export default {
     :directory-download-links="directoryDownloadLinks"
     :project-path="projectPath"
     :show-web-ide-button="showWebIdeButton"
-    :show-gitpod-button="showGitpodButton"
+    :is-gitpod-enabled-for-user="isGitpodEnabledForUser"
+    :is-gitpod-enabled-for-instance="isGitpodEnabledForInstance"
   >
     <template #gl-ee-compact-code-dropdown>
       <div v-if="isWorkspacesDropdownGroupAvailable" class="gl-w-full">
