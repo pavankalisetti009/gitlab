@@ -25,7 +25,7 @@ module RemoteDevelopment
       WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME = "gl_workspace_reconciled_actual_state.txt"
       WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH =
         "#{VARIABLES_VOLUME_PATH}/#{WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_NAME}".freeze
-      WORKSPACE_TOOLS_IMAGE = "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:12.0.0"
+      WORKSPACE_TOOLS_IMAGE = "registry.gitlab.com/gitlab-org/workspaces/gitlab-workspaces-tools:13.0.0"
     end
   end
 end
