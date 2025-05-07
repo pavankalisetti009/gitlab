@@ -46,6 +46,7 @@ describe('EditorLayout component', () => {
         ...propsData,
       },
       provide: {
+        assignedPolicyProject: { id: '1' },
         policiesPath,
         namespaceType,
         maxActiveScanExecutionPoliciesReached: false,
@@ -76,6 +77,7 @@ describe('EditorLayout component', () => {
   const findSavePolicyButton = () => wrapper.findByTestId('save-policy');
   const findScanResultPolicyRunTimeInfo = () =>
     wrapper.findByTestId('scan-result-policy-run-time-info');
+  const findNoSPPInfoText = () => wrapper.findByTestId('no-spp-info');
   const findScanResultPolicyRunTimeTooltip = () =>
     findScanResultPolicyRunTimeInfo().findComponent(GlIcon);
   const findScopeSection = () => wrapper.findComponent(ScopeSection);
@@ -124,6 +126,13 @@ describe('EditorLayout component', () => {
       expect(findRuleModeSection().exists()).toBe(false);
       expect(findYamlModeSection().exists()).toBe(true);
       expect(wrapper.emitted('update-editor-mode')).toStrictEqual([[EDITOR_MODE_YAML]]);
+    });
+  });
+
+  describe('without an SPP', () => {
+    it('renders the correct save button text when creating a new policy without an SPP', () => {
+      factory({ provide: { assignedPolicyProject: {} } });
+      expect(findSavePolicyButton().text()).toBe('Create new project with the new policy');
     });
   });
 
@@ -221,16 +230,6 @@ describe('EditorLayout component', () => {
     });
   });
 
-  describe('custom behavior', () => {
-    it('enables the save button tooltip when "disableTooltip" is false', async () => {
-      const customSaveTooltipText = 'Custom Test';
-      factory({ propsData: { customSaveTooltipText, disableTooltip: false } });
-      await nextTick();
-
-      expect(findSavePolicyButton().attributes('title')).toBe(customSaveTooltipText);
-    });
-  });
-
   describe('policy runtime info', () => {
     it.each`
       title                                                           | currentNamespaceType       | propsData
@@ -256,6 +255,18 @@ describe('EditorLayout component', () => {
       const policyRunTimeTooltip = findScanResultPolicyRunTimeTooltip();
       expect(policyRunTimeTooltip.exists()).toBe(true);
       expect(glTooltipDirectiveMock.mock.calls[1][1].value).toBe(POLICY_RUN_TIME_TOOLTIP);
+    });
+  });
+
+  describe('no SPP info message', () => {
+    it('displays the info when creating a new policy without an SPP', () => {
+      factory({ provide: { assignedPolicyProject: {} } });
+      expect(findNoSPPInfoText().exists()).toBe(true);
+    });
+
+    it('does not display the info message when creating a new policy with an SPP', () => {
+      factory();
+      expect(findNoSPPInfoText().exists()).toBe(false);
     });
   });
 
