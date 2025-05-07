@@ -25220,6 +25220,9 @@ msgstr ""
 msgid "Everything you need to create a GitLab Pages site using Astro"
 msgstr ""
 
+msgid "Everything you need to create a GitLab Pages site using Docusaurus"
+msgstr ""
+
 msgid "Everything you need to create a GitLab Pages site using Hugo"
 msgstr ""
 
@@ -48266,6 +48269,9 @@ msgid "ProjectTemplates|NodeJS Express"
 msgstr ""
 
 msgid "ProjectTemplates|Pages/Astro"
+msgstr ""
+
+msgid "ProjectTemplates|Pages/Docusaurus"
 msgstr ""
 
 msgid "ProjectTemplates|Pages/Hugo"
