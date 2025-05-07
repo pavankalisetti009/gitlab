@@ -2,8 +2,6 @@
 
 # Shared examples for models that include the PushRuleable concern.
 RSpec.shared_examples 'a push ruleable model' do
-  using RSpec::Parameterized::TableSyntax
-
   # NOTE: We use push_rule prefix for convenience to refer to any push ruleable class.
   # Do not confuse it with the `PushRule` model, which is associated with a project only.
   let(:push_rule_name) { described_class.name.underscore.to_sym }
