@@ -455,7 +455,6 @@ module EE
       end
 
       delegate :requirements_access_level, to: :project_feature, allow_nil: true
-      alias_attribute :compliance_pipeline_configuration_full_path, :pipeline_configuration_full_path
 
       delegate :prevent_merge_without_jira_issue,
         :prevent_merge_without_jira_issue=,
@@ -515,6 +514,7 @@ module EE
           .order('project_compliance_framework_settings.created_at' => :asc)
           .pick(:pipeline_configuration_full_path)
       end
+      alias_method :compliance_pipeline_configuration_full_path, :pipeline_configuration_full_path
 
       def verification_state_object
         project_state

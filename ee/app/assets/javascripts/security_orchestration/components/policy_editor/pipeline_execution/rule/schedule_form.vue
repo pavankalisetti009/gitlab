@@ -1,6 +1,6 @@
 <script>
 import { GlCollapsibleListbox, GlSprintf, GlFormInput } from '@gitlab/ui';
-import { debounce } from 'lodash';
+import { debounce, sortBy } from 'lodash';
 import { n__, s__, __, sprintf } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
@@ -44,10 +44,12 @@ export default {
     ),
     duration: __('Duration'),
     durationPlaceholder: __('Enter duration'),
+    headerText: s__('SecurityOrchestration|Select days'),
     message: s__('SecurityOrchestration|Schedule to run for %{branchSelector}'),
     monthly: __('Monthly'),
     monthlyDaysLabel: s__('SecurityOrchestration|Days of month'),
     monthlyDaysPlaceholder: s__('SecurityOrchestration|Select days'),
+    resetLabel: __('Clear all'),
     time: __('Time'),
     timezoneLabel: s__('ScanExecutionPolicy|on %{hostname}'),
     timezonePlaceholder: s__('ScanExecutionPolicy|Select timezone'),
@@ -149,7 +151,10 @@ export default {
   },
   methods: {
     handleMonthlyDaysInput(selectedDays) {
-      this.updatePolicy('days_of_month', selectedDays);
+      this.updatePolicy('days_of_month', sortBy(selectedDays));
+    },
+    handleWeeklyDaysInput(selectedDays) {
+      this.updatePolicy('days', selectedDays);
     },
     updateBranchConfig({ branch_type, branches }) {
       const {
@@ -221,10 +226,13 @@ export default {
               multiple
               data-testid="weekday-dropdown"
               :aria-label="$options.i18n.weekly"
+              :header-text="$options.i18n.headerText"
               :items="$options.WEEKDAY_OPTIONS"
+              :reset-button-label="$options.i18n.resetLabel"
               :selected="schedule.days"
               :toggle-text="weekdayToggleText"
-              @select="updatePolicy('days', $event)"
+              @reset="handleWeeklyDaysInput([])"
+              @select="handleWeeklyDaysInput"
             />
           </template>
 
@@ -236,9 +244,12 @@ export default {
                 multiple
                 data-testid="monthly-days-dropdown"
                 :aria-label="$options.i18n.monthlyDaysLabel"
+                :header-text="$options.i18n.headerText"
                 :items="monthlyDayOptions"
+                :reset-button-label="$options.i18n.resetLabel"
                 :selected="selectedMonthlyDays"
                 :toggle-text="monthlyDaysToggleText"
+                @reset="handleMonthlyDaysInput([])"
                 @select="handleMonthlyDaysInput"
               />
               {{ monthlyDaysMessage }}
