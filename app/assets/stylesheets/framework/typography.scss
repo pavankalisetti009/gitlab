@@ -379,7 +379,7 @@
     &.stripes-odd tr:nth-of-type(odd),
     &.stripes-even tr:nth-of-type(even),
     &.stripes-hover tr:hover {
-      background: $gray-10;
+      @apply gl-bg-subtle;
     }
   }
 

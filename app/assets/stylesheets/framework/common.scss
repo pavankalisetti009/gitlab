@@ -286,7 +286,7 @@ li.note {
     clip: auto;
     text-decoration: none;
     @apply gl-text-default;
-    background: $gray-10;
+    @apply gl-bg-subtle;
     z-index: 1;
   }
 }

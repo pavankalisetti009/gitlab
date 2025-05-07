@@ -1,6 +1,6 @@
 .compliance-report-table {
   .view-details {
-    background-color: $gray-10;
+    @apply gl-bg-subtle;
 
     div {
       width: 100% !important;
