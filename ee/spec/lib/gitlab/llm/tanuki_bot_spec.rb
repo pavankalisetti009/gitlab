@@ -49,6 +49,16 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
       end
     end
 
+    context 'when user is authorized by duo core' do
+      before do
+        allow(described_class).to receive(:authorized_by_duo_core?).with(user).and_return(true)
+      end
+
+      it 'returns false' do
+        expect(described_class.enabled_for?(user: user)).to be(false)
+      end
+    end
+
     context 'when user is not present' do
       it 'returns false' do
         expect(described_class.enabled_for?(user: nil)).to be(false)
@@ -59,18 +69,13 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
   describe '.show_breadcrumbs_entry_point' do
     let(:authorizer_response) { instance_double(Gitlab::Llm::Utils::Authorizer::Response, allowed?: allowed) }
     let(:allowed) { true }
-    let(:user_authorization_response) do
-      instance_double(Ai::UserAuthorizable::Response, allowed?: true, authorized_by_duo_core: authorized_by_duo_core)
-    end
-
-    let(:authorized_by_duo_core) { false }
 
     before do
       allow(described_class).to receive(:chat_enabled?).with(user)
                                                        .and_return(ai_features_enabled_for_user)
+      allow(described_class).to receive(:authorized_by_duo_core?).with(user).and_return(authorized_by_duo_core)
       allow(Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive(:user).with(user: user)
                                                                         .and_return(authorizer_response)
-      allow(user).to receive(:allowed_to_use).with(:duo_chat).and_return(user_authorization_response)
     end
 
     where(:container, :ai_features_enabled_for_user, :allowed, :authorized_by_duo_core, :duo_chat_access) do
@@ -96,6 +101,44 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
     with_them do
       it 'shows button in correct cases' do
         expect(described_class.show_breadcrumbs_entry_point?(user: user, container: container)).to be(duo_chat_access)
+      end
+    end
+  end
+
+  describe '.authorized_by_duo_core?' do
+    let(:user_authorization_response) do
+      instance_double(Ai::UserAuthorizable::Response, allowed?: allowed, authorized_by_duo_core: authorized_by_duo_core)
+    end
+
+    let(:authorized_by_duo_core) { false }
+    let(:allowed) { true }
+
+    before do
+      allow(user).to receive(:allowed_to_use).with(:duo_chat).and_return(user_authorization_response)
+    end
+
+    context 'when user is authorized by duo core' do
+      let(:authorized_by_duo_core) { true }
+
+      it 'returns true' do
+        expect(described_class.authorized_by_duo_core?(user)).to be(true)
+      end
+    end
+
+    context 'when user is not authorized by duo core' do
+      let(:authorized_by_duo_core) { false }
+
+      it 'returns false' do
+        expect(described_class.authorized_by_duo_core?(user)).to be(false)
+      end
+    end
+
+    context 'when allowed? is false' do
+      let(:allowed) { false }
+      let(:authorized_by_duo_core) { false }
+
+      it 'returns false' do
+        expect(described_class.authorized_by_duo_core?(user)).to be(false)
       end
     end
   end
