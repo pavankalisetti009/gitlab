@@ -65844,10 +65844,16 @@ msgstr ""
 msgid "UserMapping|User ID"
 msgstr ""
 
-msgid "UserMapping|You can assign only active users with regular or auditor access. To assign users with administrator access, ask your GitLab administrator to enable the \"Allow contribution mapping to administrators\" setting."
+msgid "UserMapping|You can assign active users with regular or auditor access only."
+msgstr ""
+
+msgid "UserMapping|You can assign active users with regular, auditor, or administrator access only."
 msgstr ""
 
 msgid "UserMapping|You can assign only users with linked SAML and SCIM identities. Ensure the user has signed into GitLab through your SAML SSO provider and has an active SCIM identity for this group."
+msgstr ""
+
+msgid "UserMapping|You can assign users with regular or auditor access only."
 msgstr ""
 
 msgid "UserMapping|You can assign users with regular, auditor, or administrator access only."
