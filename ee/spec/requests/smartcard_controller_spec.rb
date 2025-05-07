@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe SmartcardController, type: :request, feature_category: :system_access do
+RSpec.describe SmartcardController, :with_current_organization, type: :request, feature_category: :system_access do
   include LdapHelpers
 
   let_it_be(:organization) { create(:organization, :default) }
@@ -319,7 +319,7 @@ RSpec.describe SmartcardController, type: :request, feature_category: :system_ac
       context 'certificate header formats from NGINX' do
         shared_examples 'valid certificate header' do
           it 'authenticates user' do
-            expect(Gitlab::Auth::Smartcard::Certificate).to receive(:new).with(expected_certificate).and_call_original
+            expect(Gitlab::Auth::Smartcard::Certificate).to receive(:new).with(expected_certificate, current_organization).and_call_original
 
             subject
 

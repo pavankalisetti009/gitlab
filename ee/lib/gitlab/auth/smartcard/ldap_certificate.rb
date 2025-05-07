@@ -6,8 +6,8 @@ module Gitlab
       class LdapCertificate < Gitlab::Auth::Smartcard::Base
         include Gitlab::Utils::StrongMemoize
 
-        def initialize(provider, certificate)
-          super(certificate)
+        def initialize(provider, certificate, organization = nil)
+          super(certificate, organization)
 
           @provider = provider
         end
