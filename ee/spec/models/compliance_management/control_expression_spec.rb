@@ -35,7 +35,7 @@ RSpec.describe ComplianceManagement::ControlExpression, feature_category: :compl
 
       expect(result).to be_a(described_class)
       expect(result.id).to eq('scanner_sast_running')
-      expect(result.name).to eq('SAST Running')
+      expect(result.name).to eq('SAST running')
       expect(result.expression).to eq({ field: 'scanner_sast_running', operator: '=', value: true })
     end
 
