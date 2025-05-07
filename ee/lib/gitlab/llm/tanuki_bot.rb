@@ -5,6 +5,7 @@ module Gitlab
     class TanukiBot
       def self.enabled_for?(user:, container: nil)
         return false unless chat_enabled?(user)
+        return false if authorized_by_duo_core?(user)
 
         authorizer_response = if container
                                 Gitlab::Llm::Chain::Utils::ChatAuthorizer.container(container: container, user: user)
@@ -17,13 +18,14 @@ module Gitlab
 
       def self.show_breadcrumbs_entry_point?(user:, container: nil)
         return false unless chat_enabled?(user) && container
-
-        authorization_response = user.allowed_to_use(:duo_chat)
-        access_from_duo_core = authorization_response.authorized_by_duo_core
-
-        return false if access_from_duo_core
+        return false if authorized_by_duo_core?(user)
 
         Gitlab::Llm::Chain::Utils::ChatAuthorizer.user(user: user).allowed?
+      end
+
+      def self.authorized_by_duo_core?(user)
+        authorization_response = user.allowed_to_use(:duo_chat)
+        authorization_response.authorized_by_duo_core
       end
 
       def self.chat_disabled_reason(user:, container: nil)
