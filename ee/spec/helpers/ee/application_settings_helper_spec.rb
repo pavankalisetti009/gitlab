@@ -245,32 +245,59 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
   describe '#global_search_settings_checkboxes', feature_category: :global_search do
     let_it_be(:application_setting) { build(:application_setting) }
 
-    before do
-      application_setting.global_search_issues_enabled = true
-      application_setting.global_search_merge_requests_enabled = false
-      application_setting.global_search_snippet_titles_enabled = true
-      application_setting.global_search_users_enabled = false
-      application_setting.global_search_code_enabled = true
-      application_setting.global_search_commits_enabled = false
-      application_setting.global_search_epics_enabled = true
-      application_setting.global_search_wiki_enabled = true
-      application_setting.global_search_block_anonymous_searches_enabled = false
-      helper.instance_variable_set(:@application_setting, application_setting)
+    context 'when license is enabled' do
+      before do
+        stub_licensed_features(elastic_search: true)
+        application_setting.global_search_issues_enabled = true
+        application_setting.global_search_merge_requests_enabled = false
+        application_setting.global_search_snippet_titles_enabled = true
+        application_setting.global_search_users_enabled = false
+        application_setting.global_search_code_enabled = true
+        application_setting.global_search_commits_enabled = false
+        application_setting.global_search_epics_enabled = true
+        application_setting.global_search_wiki_enabled = true
+        application_setting.global_search_block_anonymous_searches_enabled = false
+        helper.instance_variable_set(:@application_setting, application_setting)
+      end
+
+      it 'returns correctly checked checkboxes' do
+        helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
+          result = helper.global_search_settings_checkboxes(form)
+          expect(result[0]).to have_checked_field('Allow unauthenticated users to use search', with: 1)
+          expect(result[1]).not_to have_checked_field('Restrict global search to authenticated users only', with: 1)
+          expect(result[2]).to have_checked_field('Show issues in global search results', with: 1)
+          expect(result[3]).not_to have_checked_field('Show merge requests in global search results', with: 1)
+          expect(result[4]).to have_checked_field('Show snippets in global search results', with: 1)
+          expect(result[5]).not_to have_checked_field('Show users in global search results', with: 1)
+          expect(result[6]).to have_checked_field('Show code in global search results', with: 1)
+          expect(result[7]).not_to have_checked_field('Show commits in global search results', with: 1)
+          expect(result[8]).to have_checked_field('Show epics in global search results', with: 1)
+          expect(result[9]).to have_checked_field('Show wikis in global search results', with: 1)
+        end
+      end
     end
 
-    it 'returns correctly checked checkboxes' do
-      helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
-        result = helper.global_search_settings_checkboxes(form)
-        expect(result[0]).to have_checked_field('Allow unauthenticated users to use search', with: 1)
-        expect(result[1]).not_to have_checked_field('Restrict global search to authenticated users only', with: 1)
-        expect(result[2]).to have_checked_field('Show issues in global search results', with: 1)
-        expect(result[3]).not_to have_checked_field('Show merge requests in global search results', with: 1)
-        expect(result[4]).to have_checked_field('Show snippets in global search results', with: 1)
-        expect(result[5]).not_to have_checked_field('Show users in global search results', with: 1)
-        expect(result[6]).to have_checked_field('Show code in global search results', with: 1)
-        expect(result[7]).not_to have_checked_field('Show commits in global search results', with: 1)
-        expect(result[8]).to have_checked_field('Show epics in global search results', with: 1)
-        expect(result[9]).to have_checked_field('Show wikis in global search results', with: 1)
+    context 'when license is disabled' do
+      before do
+        stub_licensed_features(elastic_search: false)
+        application_setting.global_search_issues_enabled = true
+        application_setting.global_search_merge_requests_enabled = false
+        application_setting.global_search_users_enabled = false
+        application_setting.global_search_snippet_titles_enabled = true
+        application_setting.global_search_block_anonymous_searches_enabled = true
+        helper.instance_variable_set(:@application_setting, application_setting)
+      end
+
+      it 'returns correctly checked checkboxes' do
+        helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
+          result = helper.global_search_settings_checkboxes(form)
+          expect(result[0]).to have_checked_field('Allow unauthenticated users to use search', with: 1)
+          expect(result[1]).to have_checked_field('Restrict global search to authenticated users only', with: 1)
+          expect(result[2]).to have_checked_field('Show issues in global search results', with: 1)
+          expect(result[3]).not_to have_checked_field('Show merge requests in global search results', with: 1)
+          expect(result[4]).to have_checked_field('Show snippets in global search results', with: 1)
+          expect(result[5]).not_to have_checked_field('Show users in global search results', with: 1)
+        end
       end
     end
   end
