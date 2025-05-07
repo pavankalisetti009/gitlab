@@ -22,19 +22,19 @@ components:
         - name: GL_EDITOR_LOG_LEVEL
           value: "info"
         - name: GL_EDITOR_PORT
-          value: "60001"
+          value: "<%= WORKSPACE_EDITOR_PORT %>"
         - name: GL_SSH_PORT
-          value: "60022"
+          value: "<%= WORKSPACE_SSH_PORT %>"
         - name: GL_EDITOR_ENABLE_MARKETPLACE
           value: "false"
       endpoints:
         - name: editor-server
-          targetPort: 60001
+          targetPort: <%= WORKSPACE_EDITOR_PORT %>
           exposure: public
           secure: true
           protocol: https
         - name: ssh-server
-          targetPort: 60022
+          targetPort: <%= WORKSPACE_SSH_PORT %>
           exposure: internal
           secure: true
       dedicatedPod: false
