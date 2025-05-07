@@ -19,6 +19,7 @@ describe('AiCommonSettings', () => {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
         experimentFeaturesEnabled: false,
         duoCoreFeaturesEnabled: false,
+        promptCacheEnabled: true,
         onGeneralSettingsPage: false,
         ...provide,
       },
@@ -68,6 +69,7 @@ describe('AiCommonSettings', () => {
       duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
       experimentFeaturesEnabled: true,
       duoCoreFeaturesEnabled: true,
+      promptCacheEnabled: true,
     });
   });
 

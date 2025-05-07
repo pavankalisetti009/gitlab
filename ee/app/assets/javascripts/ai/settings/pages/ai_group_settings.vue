@@ -36,13 +36,19 @@ export default {
   },
   data: () => ({ isLoading: false }),
   methods: {
-    async updateSettings({ duoAvailability, experimentFeaturesEnabled, duoCoreFeaturesEnabled }) {
+    async updateSettings({
+      duoAvailability,
+      experimentFeaturesEnabled,
+      duoCoreFeaturesEnabled,
+      promptCacheEnabled,
+    }) {
       try {
         this.isLoading = true;
 
         const input = {
           duo_availability: duoAvailability,
           experiment_features_enabled: experimentFeaturesEnabled,
+          model_prompt_cache_enabled: promptCacheEnabled,
         };
 
         if (!this.onGeneralSettingsPage && this.isDuoBaseAccessAllowed) {

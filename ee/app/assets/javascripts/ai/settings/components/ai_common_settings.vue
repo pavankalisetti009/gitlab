@@ -28,6 +28,7 @@ export default {
     'experimentFeaturesEnabled',
     'duoCoreFeaturesEnabled',
     'onGeneralSettingsPage',
+    'promptCacheEnabled',
   ],
   props: {
     hasParentFormChanged: {
@@ -41,6 +42,7 @@ export default {
       availability: this.duoAvailability,
       experimentsEnabled: this.experimentFeaturesEnabled,
       duoCoreEnabled: this.duoCoreFeaturesEnabled,
+      cacheEnabled: this.promptCacheEnabled,
     };
   },
   methods: {
@@ -49,6 +51,7 @@ export default {
         duoAvailability: this.availability,
         experimentFeaturesEnabled: this.experimentsEnabled,
         duoCoreFeaturesEnabled: this.duoCoreEnabled,
+        promptCacheEnabled: this.cacheEnabled,
       });
     },
     onRadioChanged(value) {
@@ -59,6 +62,9 @@ export default {
     },
     duoCoreCheckboxChanged(value) {
       this.duoCoreEnabled = value;
+    },
+    onCacheCheckboxChanged(value) {
+      this.cacheEnabled = value;
     },
   },
   aiFeaturesHelpPath: helpPagePath('user/ai_features'),
@@ -92,6 +98,7 @@ export default {
             @radio-changed="onRadioChanged"
             @experiment-checkbox-changed="experimentCheckboxChanged"
             @duo-core-checkbox-changed="duoCoreCheckboxChanged"
+            @cache-checkbox-changed="onCacheCheckboxChanged"
           >
             <template #ai-common-settings-top>
               <slot name="ai-common-settings-top"></slot>
@@ -116,11 +123,13 @@ export default {
         :duo-availability="duoAvailability"
         :experiment-features-enabled="experimentFeaturesEnabled"
         :duo-core-features-enabled="duoCoreFeaturesEnabled"
+        :prompt-cache-enabled="promptCacheEnabled"
         :has-parent-form-changed="hasParentFormChanged"
         @submit="submitForm"
         @radio-changed="onRadioChanged"
         @experiment-checkbox-changed="experimentCheckboxChanged"
         @duo-core-checkbox-changed="duoCoreCheckboxChanged"
+        @cache-checkbox-changed="onCacheCheckboxChanged"
       >
         <template #ai-common-settings-top>
           <slot name="ai-common-settings-top"></slot>

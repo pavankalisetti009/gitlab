@@ -17,6 +17,7 @@ module EE
             optional :duo_availability, type: String, values: %w[default_on default_off never_on], desc: 'Duo availability. One of `default_on`, `default_off` or `never_on`'
             optional :amazon_q_auto_review_enabled, type: ::Grape::API::Boolean, desc: 'Enable Amazon Q auto review for merge request'
             optional :experiment_features_enabled, type: ::Grape::API::Boolean, desc: 'Enable experiment features for this group'
+            optional :model_prompt_cache_enabled, type: ::Grape::API::Boolean, desc: 'Enable model prompt cache for this group'
             all_or_none_of :ldap_cn, :ldap_access
           end
 

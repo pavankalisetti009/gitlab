@@ -52,6 +52,7 @@ module EE
         :geo_node_allowed_ips,
         :geo_status_timeout,
         :instance_level_ai_beta_features_enabled,
+        :model_prompt_cache_enabled,
         :lock_memberships_to_ldap,
         :lock_memberships_to_saml,
         :max_personal_access_token_lifetime,

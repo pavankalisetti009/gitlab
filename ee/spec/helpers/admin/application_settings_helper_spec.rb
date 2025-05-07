@@ -7,6 +7,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
   let(:duo_availability) { :default_off }
   let(:instance_level_ai_beta_features_enabled) { false }
+  let(:model_prompt_cache_enabled) { true }
   let(:disabled_direct_code_suggestions) { false }
   let(:enabled_expanded_logging) { true }
   let(:duo_chat_expiration_column) { 'created_at' }
@@ -16,6 +17,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
   before do
     stub_ee_application_setting(duo_availability: duo_availability)
     stub_ee_application_setting(instance_level_ai_beta_features_enabled: instance_level_ai_beta_features_enabled)
+    stub_ee_application_setting(model_prompt_cache_enabled: model_prompt_cache_enabled)
     stub_ee_application_setting(enabled_expanded_logging: enabled_expanded_logging)
     stub_ee_application_setting(disabled_direct_code_suggestions: disabled_direct_code_suggestions)
     stub_ee_application_setting(duo_chat_expiration_column: duo_chat_expiration_column)
@@ -52,6 +54,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       let(:ai_gateway_url) { "http://0.0.0.0:5052" }
       let(:duo_availability) { 'default_on' }
       let(:instance_level_ai_beta_features_enabled) { false }
+      let(:model_prompt_cache_enabled) { 'true' }
       let(:enabled_expanded_logging) { false }
       let(:disabled_direct_code_suggestions) { false }
       let(:duo_chat_expiration_column) { 'created_at' }
@@ -83,7 +86,9 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
           {
             duo_availability: duo_availability.to_s,
             experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
+            prompt_cache_enabled: model_prompt_cache_enabled,
             are_experiment_settings_allowed: expected_experiments_visible_value.to_s,
+            are_prompt_cache_settings_allowed: 'true',
             enabled_expanded_logging: enabled_expanded_logging.to_s,
             disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
             beta_self_hosted_models_enabled: terms_accepted.to_s,
@@ -105,12 +110,14 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
           allow(helper).to receive_messages(
             experiments_settings_allowed?: expected_experiments_visible_value == 'true',
+            prompt_cache_settings_allowed?: true,
             duo_availability: duo_availability,
             instance_level_ai_beta_features_enabled: instance_level_ai_beta_features_enabled,
             enabled_expanded_logging: enabled_expanded_logging,
             current_application_settings: double( # rubocop:disable RSpec/VerifiedDoubles -- Stubbed to test expiration call
               duo_chat_expiration_column: duo_chat_expiration_column,
-              duo_chat_expiration_days: duo_chat_expiration_days
+              duo_chat_expiration_days: duo_chat_expiration_days,
+              model_prompt_cache_enabled: model_prompt_cache_enabled
             )
           )
 
@@ -251,8 +258,10 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         duo_availability: 'default_off',
         direct_code_suggestions_enabled: 'true',
         experiment_features_enabled: 'true',
+        prompt_cache_enabled: 'true',
         beta_self_hosted_models_enabled: 'true',
         are_experiment_settings_allowed: 'true',
+        are_prompt_cache_settings_allowed: 'true',
         duo_workflow_enabled: 'false',
         duo_workflow_service_account: nil,
         is_saas: 'false',

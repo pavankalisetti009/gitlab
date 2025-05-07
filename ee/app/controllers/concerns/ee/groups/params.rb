@@ -70,7 +70,7 @@ module EE
 
           if licensed_ai_features_available?
             params_ee.push(%i[duo_features_enabled duo_core_features_enabled lock_duo_features_enabled
-              duo_availability])
+              duo_availability prompt_cache_enabled])
           end
 
           params_ee << :disable_personal_access_tokens if current_group&.disable_personal_access_tokens_available?
@@ -106,6 +106,10 @@ module EE
 
       def experiment_settings_allowed?
         current_group&.experiment_settings_allowed?
+      end
+
+      def prompt_cache_settings_allowed?
+        current_group&.prompt_cache_settings_allowed?
       end
 
       def licensed_ai_features_available?
