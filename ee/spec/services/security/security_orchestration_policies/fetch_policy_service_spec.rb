@@ -35,48 +35,5 @@ RSpec.describe Security::SecurityOrchestrationPolicies::FetchPolicyService, feat
         expect(response[:policy]).to eq(nil)
       end
     end
-
-    describe 'multiple scan result policy types' do
-      let(:scan_result_policy) { build(:scan_result_policy) }
-      let(:approval_policy) { build(:approval_policy) }
-      let(:policy_blob) do
-        build(:orchestration_policy_yaml,
-          scan_execution_policy: [build(:scan_execution_policy)],
-          scan_result_policy: [scan_result_policy],
-          approval_policy: [approval_policy])
-      end
-
-      shared_examples 'returns policy matching the name regardless of type' do
-        context 'when name matches scan_result_policy' do
-          let(:name) { scan_result_policy[:name] }
-
-          it 'returns scan_result_policy matching the name' do
-            expect(response[:status]).to eq(:success)
-            expect(response[:policy]).to eq(scan_result_policy)
-          end
-        end
-
-        context 'when name matches approval_policy' do
-          let(:name) { approval_policy[:name] }
-
-          it 'returns approval_policy matching the name' do
-            expect(response[:status]).to eq(:success)
-            expect(response[:policy]).to eq(approval_policy)
-          end
-        end
-      end
-
-      context 'when type is approval_policy' do
-        let(:type) { :approval_policy }
-
-        it_behaves_like 'returns policy matching the name regardless of type'
-      end
-
-      context 'when type is scan_result_policy' do
-        let(:type) { :scan_result_policy }
-
-        it_behaves_like 'returns policy matching the name regardless of type'
-      end
-    end
   end
 end

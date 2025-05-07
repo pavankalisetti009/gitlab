@@ -10,9 +10,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::OperationalVulnerabiliti
   let(:relationship) { nil }
   let(:action_scan_types) { nil }
   let(:policy) { build(:scan_execution_policy) }
-  let(:result_policy) { build(:scan_result_policy) }
+  let(:approval_policy) { build(:approval_policy) }
   let(:policy_yaml) do
-    build(:orchestration_policy_yaml, scan_execution_policy: [policy], scan_result_policy: [result_policy])
+    build(:orchestration_policy_yaml, scan_execution_policy: [policy], approval_policy: [approval_policy])
   end
 
   let!(:policy_management_project) do

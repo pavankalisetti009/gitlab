@@ -16,8 +16,8 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::ScanResultPoli
   end
 
   let(:policy_scope) { { compliance_frameworks: [{ id: framework.id }] } }
-  let(:policy) { build(:scan_result_policy, name: 'Enforce approvals', policy_scope: policy_scope) }
-  let(:policy_content) { { scan_result_policy: [policy] } }
+  let(:policy) { build(:approval_policy, name: 'Enforce approvals', policy_scope: policy_scope) }
+  let(:policy_content) { { approval_policy: [policy] } }
 
   describe '#resolve' do
     subject(:resolve_policies) do
@@ -61,7 +61,7 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::ScanResultPoli
             action_approvers: [{ all_groups: [], groups: [], roles: [], users: [], custom_roles: [] }],
             user_approvers: [],
             all_group_approvers: [],
-            deprecated_properties: deprecated_properties,
+            deprecated_properties: [],
             role_approvers: [],
             custom_roles: [],
             source: {
@@ -85,22 +85,8 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::ScanResultPoli
         end
       end
 
-      context 'when the policy type is scan_result_policy' do
-        let(:deprecated_properties) { ['scan_result_policy'] }
-
-        it 'returns the policy' do
-          expect(resolve_policies).to match_array(expected_response)
-        end
-      end
-
-      context 'when the policy type is approval_policy' do
-        let(:policy) { build(:approval_policy, name: 'Enforce approvals', policy_scope: policy_scope) }
-        let(:policy_content) { { approval_policy: [policy] } }
-        let(:deprecated_properties) { [] }
-
-        it 'returns the policy' do
-          expect(resolve_policies).to match_array(expected_response)
-        end
+      it 'returns the policy' do
+        expect(resolve_policies).to match_array(expected_response)
       end
     end
   end

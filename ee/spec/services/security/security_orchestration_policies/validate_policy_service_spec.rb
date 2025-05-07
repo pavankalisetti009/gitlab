@@ -129,7 +129,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
           using RSpec::Parameterized::TableSyntax
 
           where(:policy_type, :branches, :branch_type, :status, :details, :field) do
-            'scan_result_policy'                 | nil | nil | :success | nil                                                     | nil
             'approval_policy'                    | nil | nil | :success | nil                                                     | nil
             'pipeline_execution_policy'          | nil | nil | :success | nil                                                     | nil
             'pipeline_execution_schedule_policy' | nil | nil | :success | nil                                                     | nil
@@ -244,219 +243,217 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
     end
 
     shared_examples 'checks if required approvals exceed eligible approvers' do
-      Security::ScanResultPolicy::SCAN_RESULT_POLICY_TYPES.each do |type|
-        context "when policy_type is #{type}" do
-          let(:policy_type) { type }
-          let(:user) { create(:user) }
+      context "when policy_type is approval_policy" do
+        let(:policy_type) { 'approval_policy' }
+        let(:user) { create(:user) }
+
+        before do
+          ::Gitlab::Database.allow_cross_joins_across_databases(url:
+            "https://gitlab.com/gitlab-org/gitlab/-/issues/422405") do
+            container.users.delete_all
+          end
+
+          container.add_developer(user)
+
+          policy[:actions] = [action]
+        end
+
+        shared_examples 'fails validation' do
+          specify do
+            expect(result).to include(status: :error,
+              message: 'Invalid policy',
+              details: ['Required approvals exceed eligible approvers.'])
+          end
+
+          it_behaves_like 'sets validation errors',
+            field: :actions,
+            message: 'Required approvals exceed eligible approvers.',
+            title: 'Logic error',
+            index: 0
+        end
+
+        shared_examples 'passes validation' do
+          specify do
+            expect(result).to eq(status: :success)
+          end
+        end
+
+        context 'when removing policy' do
+          let(:operation) { :remove }
+
+          let(:action) do
+            {
+              type: 'require_approval',
+              user_approvers: [user.username],
+              approvals_required: 42
+            }
+          end
+
+          it_behaves_like 'passes validation'
+        end
+
+        context 'with multiple actions' do
+          subject(:errors) { result[:validation_errors] }
+
+          let(:action) do
+            {
+              type: 'require_approval',
+              user_approvers: [user.username]
+            }
+          end
 
           before do
-            ::Gitlab::Database.allow_cross_joins_across_databases(url:
-              "https://gitlab.com/gitlab-org/gitlab/-/issues/422405") do
-              container.users.delete_all
-            end
-
-            container.add_developer(user)
-
-            policy[:actions] = [action]
+            policy[:actions] = [action, action]
           end
 
-          shared_examples 'fails validation' do
-            specify do
-              expect(result).to include(status: :error,
-                message: 'Invalid policy',
-                details: ['Required approvals exceed eligible approvers.'])
+          context 'with user_approvers with exceeding approvals_required' do
+            before do
+              action[:approvals_required] = 2
             end
 
-            it_behaves_like 'sets validation errors',
-              field: :actions,
-              message: 'Required approvals exceed eligible approvers.',
-              title: 'Logic error',
-              index: 0
-          end
-
-          shared_examples 'passes validation' do
-            specify do
-              expect(result).to eq(status: :success)
+            it 'fails validation for multiple errors' do
+              expect(errors.length).to eq(2)
+              expect(errors[0]).to include(field: :actions, level: :error, message: 'Required approvals exceed eligible approvers.', title: 'Logic error', index: 0)
+              expect(errors[1]).to include(field: :actions, level: :error, message: 'Required approvals exceed eligible approvers.', title: 'Logic error', index: 1)
             end
           end
 
-          context 'when removing policy' do
-            let(:operation) { :remove }
+          context 'with sufficient approvals_required' do
+            before do
+              action[:approvals_required] = 1
+            end
 
-            let(:action) do
-              {
-                type: 'require_approval',
-                user_approvers: [user.username],
-                approvals_required: 42
-              }
+            it_behaves_like 'passes validation'
+          end
+        end
+
+        context 'with user_approvers' do
+          let(:action) do
+            {
+              type: 'require_approval',
+              user_approvers: [user.username]
+            }
+          end
+
+          context 'with exceeding approvals_required' do
+            before do
+              action[:approvals_required] = 2
+            end
+
+            it_behaves_like 'fails validation'
+          end
+
+          context 'with sufficient approvals_required' do
+            before do
+              action[:approvals_required] = 1
+            end
+
+            it_behaves_like 'passes validation'
+          end
+        end
+
+        context 'with group_approvers' do
+          let_it_be(:other_user) { create(:user) }
+          let(:group) { create(:group) }
+          let(:action) do
+            {
+              type: 'require_approval',
+              group_approvers: [group.name]
+            }
+          end
+
+          before do
+            group.add_developer(other_user)
+          end
+
+          context 'with exceeding approvals_required' do
+            before do
+              action[:approvals_required] = 2
+            end
+
+            it_behaves_like 'fails validation'
+          end
+
+          context 'with sufficient approvals_required' do
+            before do
+              action[:approvals_required] = 1
             end
 
             it_behaves_like 'passes validation'
           end
 
-          context 'with multiple actions' do
-            subject(:errors) { result[:validation_errors] }
+          context 'with sufficient approvals_required through membership inheritance' do
+            let(:subgroup) { create(:group, parent: group) }
 
             let(:action) do
               {
                 type: 'require_approval',
-                user_approvers: [user.username]
+                group_approvers: [subgroup.name],
+                approvals_required: 1
               }
             end
 
+            it_behaves_like 'passes validation'
+          end
+        end
+
+        context 'with role_approvers' do
+          let(:action) do
+            {
+              type: 'require_approval',
+              role_approvers: %w[developer]
+            }
+          end
+
+          context 'with exceeding approvals_required' do
             before do
-              policy[:actions] = [action, action]
+              skip if container.is_a?(Group)
+
+              action[:approvals_required] = 2
             end
 
-            context 'with user_approvers with exceeding approvals_required' do
-              before do
-                action[:approvals_required] = 2
-              end
-
-              it 'fails validation for multiple errors' do
-                expect(errors.length).to eq(2)
-                expect(errors[0]).to include(field: :actions, level: :error, message: 'Required approvals exceed eligible approvers.', title: 'Logic error', index: 0)
-                expect(errors[1]).to include(field: :actions, level: :error, message: 'Required approvals exceed eligible approvers.', title: 'Logic error', index: 1)
-              end
-            end
-
-            context 'with sufficient approvals_required' do
-              before do
-                action[:approvals_required] = 1
-              end
-
-              it_behaves_like 'passes validation'
-            end
+            it_behaves_like 'fails validation'
           end
 
-          context 'with user_approvers' do
-            let(:action) do
-              {
-                type: 'require_approval',
-                user_approvers: [user.username]
-              }
-            end
-
-            context 'with exceeding approvals_required' do
-              before do
-                action[:approvals_required] = 2
-              end
-
-              it_behaves_like 'fails validation'
-            end
-
-            context 'with sufficient approvals_required' do
-              before do
-                action[:approvals_required] = 1
-              end
-
-              it_behaves_like 'passes validation'
-            end
-          end
-
-          context 'with group_approvers' do
-            let_it_be(:other_user) { create(:user) }
-            let(:group) { create(:group) }
-            let(:action) do
-              {
-                type: 'require_approval',
-                group_approvers: [group.name]
-              }
-            end
-
+          context 'with sufficient approvals_required' do
             before do
-              group.add_developer(other_user)
+              action[:approvals_required] = 1
             end
 
-            context 'with exceeding approvals_required' do
-              before do
-                action[:approvals_required] = 2
-              end
+            it_behaves_like 'passes validation'
+          end
+        end
 
-              it_behaves_like 'fails validation'
-            end
-
-            context 'with sufficient approvals_required' do
-              before do
-                action[:approvals_required] = 1
-              end
-
-              it_behaves_like 'passes validation'
-            end
-
-            context 'with sufficient approvals_required through membership inheritance' do
-              let(:subgroup) { create(:group, parent: group) }
-
-              let(:action) do
-                {
-                  type: 'require_approval',
-                  group_approvers: [subgroup.name],
-                  approvals_required: 1
-                }
-              end
-
-              it_behaves_like 'passes validation'
-            end
+        context 'with compound approvals' do
+          let(:group) { create(:group) }
+          let(:other_user) { create(:user) }
+          let(:action) do
+            {
+              type: 'require_approval',
+              group_approvers: [group.name],
+              user_approvers: [other_user.username]
+            }
           end
 
-          context 'with role_approvers' do
-            let(:action) do
-              {
-                type: 'require_approval',
-                role_approvers: %w[developer]
-              }
-            end
-
-            context 'with exceeding approvals_required' do
-              before do
-                skip if container.is_a?(Group)
-
-                action[:approvals_required] = 2
-              end
-
-              it_behaves_like 'fails validation'
-            end
-
-            context 'with sufficient approvals_required' do
-              before do
-                action[:approvals_required] = 1
-              end
-
-              it_behaves_like 'passes validation'
-            end
+          before do
+            group.add_developer(user)
+            container.add_developer(other_user)
           end
 
-          context 'with compound approvals' do
-            let(:group) { create(:group) }
-            let(:other_user) { create(:user) }
-            let(:action) do
-              {
-                type: 'require_approval',
-                group_approvers: [group.name],
-                user_approvers: [other_user.username]
-              }
-            end
-
+          context 'with exceeding approvals_required' do
             before do
-              group.add_developer(user)
-              container.add_developer(other_user)
+              action[:approvals_required] = 3
             end
 
-            context 'with exceeding approvals_required' do
-              before do
-                action[:approvals_required] = 3
-              end
+            it_behaves_like 'fails validation'
+          end
 
-              it_behaves_like 'fails validation'
+          context 'with sufficient approvals_required' do
+            before do
+              action[:approvals_required] = 2
             end
 
-            context 'with sufficient approvals_required' do
-              before do
-                action[:approvals_required] = 2
-              end
-
-              it_behaves_like 'passes validation'
-            end
+            it_behaves_like 'passes validation'
           end
         end
       end
@@ -575,50 +572,48 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       let(:new_and_previously_existing_states) { %w[detected new_needs_triage] }
       let(:previously_existing_states) { %w[detected confirmed resolved dismissed] }
 
-      Security::ScanResultPolicy::SCAN_RESULT_POLICY_TYPES.each do |type|
-        context "when policy_type is #{type}" do
-          let(:policy_type) { type }
+      context "when policy_type is approval_policy" do
+        let(:policy_type) { 'approval_policy' }
 
-          context 'when vulnerability_age is not provided' do
-            it { expect(result[:status]).to eq(:success) }
+        context 'when vulnerability_age is not provided' do
+          it { expect(result[:status]).to eq(:success) }
+        end
+
+        context 'when vulnerability_age is provided' do
+          let(:rule) do
+            {
+              branches: ['master'],
+              vulnerability_states: vulnerability_states,
+              vulnerability_age: {
+                value: 1,
+                interval: 'day',
+                operator: 'less_than'
+              }
+            }
           end
 
-          context 'when vulnerability_age is provided' do
-            let(:rule) do
-              {
-                branches: ['master'],
-                vulnerability_states: vulnerability_states,
-                vulnerability_age: {
-                  value: 1,
-                  interval: 'day',
-                  operator: 'less_than'
-                }
-              }
-            end
+          where(:vulnerability_states, :status) do
+            nil                                       | :error
+            []                                        | :error
+            ref(:new_states)                          | :error
+            ref(:new_and_previously_existing_states)  | :success
+            ref(:previously_existing_states)          | :success
+          end
 
-            where(:vulnerability_states, :status) do
-              nil                                       | :error
-              []                                        | :error
-              ref(:new_states)                          | :error
-              ref(:new_and_previously_existing_states)  | :success
-              ref(:previously_existing_states)          | :success
-            end
+          with_them do
+            it { expect(result[:status]).to eq(status) }
 
-            with_them do
-              it { expect(result[:status]).to eq(status) }
-
-              it 'returns a corresponding error message for error case' do
-                if status == :error
-                  expect(result[:details]).to contain_exactly(/Vulnerability age requires previously existing/)
-                else
-                  expect(result[:details]).to be_nil
-                end
+            it 'returns a corresponding error message for error case' do
+              if status == :error
+                expect(result[:details]).to contain_exactly(/Vulnerability age requires previously existing/)
+              else
+                expect(result[:details]).to be_nil
               end
+            end
 
-              it_behaves_like 'sets validation errors', field: :vulnerability_age, message: /Vulnerability age requires previously existing/ do
-                before do
-                  skip if status != :error
-                end
+            it_behaves_like 'sets validation errors', field: :vulnerability_age, message: /Vulnerability age requires previously existing/ do
+              before do
+                skip if status != :error
               end
             end
           end
@@ -833,8 +828,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             :scan_execution_policy | 'default' | :error | ref(:error_message_non_existing)
             :scan_execution_policy | 'target_protected' | :success | nil
             :scan_execution_policy | 'target_default' | :success | nil
-            :scan_result_policy | 'protected' | :error | ref(:error_message_non_existing)
-            :scan_result_policy | 'default' | :error | ref(:error_message_non_existing)
             :approval_policy | 'protected' | :error | ref(:error_message_non_existing)
             :approval_policy | 'default' | :error | ref(:error_message_non_existing)
           end
@@ -868,8 +861,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             :scan_execution_policy | 'default' | :success
             :scan_execution_policy | 'target_protected' | :success
             :scan_execution_policy | 'target_default' | :success
-            :scan_result_policy | 'protected' | :success
-            :scan_result_policy | 'default' | :success
             :approval_policy | 'protected' | :success
             :approval_policy | 'default' | :success
           end
@@ -901,8 +892,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             :scan_execution_policy | 'default' | :success | nil
             :scan_execution_policy | 'target_protected' | :success | nil
             :scan_execution_policy | 'target_default' | :success | nil
-            :scan_result_policy | 'protected' | :success | nil
-            :scan_result_policy | 'default' | :error | ref(:error_message_default_unprotected)
             :approval_policy | 'protected' | :success | nil
             :approval_policy | 'default' | :error | ref(:error_message_default_unprotected)
           end
@@ -927,8 +916,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             :scan_execution_policy | 'default' | :success | nil
             :scan_execution_policy | 'target_protected' | :success | nil
             :scan_execution_policy | 'target_default' | :success | nil
-            :scan_result_policy | 'protected' | :error | ref(:error_message_non_existing)
-            :scan_result_policy | 'default' | :error | ref(:error_message_default_unprotected)
             :approval_policy | 'protected' | :error | ref(:error_message_non_existing)
             :approval_policy | 'default' | :error | ref(:error_message_default_unprotected)
           end

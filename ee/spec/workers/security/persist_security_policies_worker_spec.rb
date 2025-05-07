@@ -10,14 +10,14 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
       build(
         :orchestration_policy_yaml,
         scan_execution_policy: scan_execution_policies,
-        scan_result_policy: scan_result_policies,
+        approval_policy: approval_policies,
         pipeline_execution_policy: pipeline_execution_policies,
         vulnerability_management_policy: vulnerability_management_policies,
         pipeline_execution_schedule_policy: pipeline_execution_schedule_policies
       )
     end
 
-    let(:scan_result_policies) { build_list(:scan_result_policy, 2) + [build(:scan_result_policy, active: false)] }
+    let(:approval_policies) { build_list(:approval_policy, 2) + [build(:approval_policy, active: false)] }
     let(:scan_execution_policies) do
       build_list(:scan_execution_policy, 2) + [build(:scan_execution_policy, active: false)]
     end
@@ -38,7 +38,7 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
       subject(:perform) { perform_multiple(policy_configuration.id) }
 
       context 'when policy is empty' do
-        let(:scan_result_policies) { [] }
+        let(:approval_policies) { [] }
         let(:scan_execution_policies) { [] }
         let(:pipeline_execution_policies) { [] }
         let(:vulnerability_management_policies) { [] }

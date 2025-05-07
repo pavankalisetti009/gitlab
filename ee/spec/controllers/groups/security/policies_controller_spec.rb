@@ -121,13 +121,13 @@ RSpec.describe Groups::Security::PoliciesController, type: :request, feature_cat
           expect(app.attributes['data-namespace-id'].value).to eq(group.id.to_s)
         end
 
-        shared_examples 'scan result policy like type' do |type|
-          let(:policy) { build(:scan_result_policy) }
-          let(:policy_type) { type }
+        context 'when approval policy type' do
+          let(:policy) { build(:approval_policy) }
+          let(:policy_type) { 'approval_policy' }
 
           before do
             allow_next_instance_of(Repository) do |repository|
-              allow(repository).to receive(:blob_data_at).and_return({ scan_result_policy: [policy] }.to_yaml)
+              allow(repository).to receive(:blob_data_at).and_return({ approval_policy: [policy] }.to_yaml)
             end
           end
 
@@ -138,9 +138,6 @@ RSpec.describe Groups::Security::PoliciesController, type: :request, feature_cat
             expect(response).to render_template(:edit)
           end
         end
-
-        it_behaves_like 'scan result policy like type', 'scan_result_policy'
-        it_behaves_like 'scan result policy like type', 'approval_policy'
 
         context 'when type is missing' do
           let(:policy_type) { nil }

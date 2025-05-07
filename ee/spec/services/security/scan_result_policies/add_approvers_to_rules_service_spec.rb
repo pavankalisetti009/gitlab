@@ -18,32 +18,32 @@ RSpec.describe Security::ScanResultPolicies::AddApproversToRulesService, feature
   let(:user_ids) { [user1.id, user2.id, user_not_referenced_in_policy.id] }
   let(:configuration) { namespace.security_orchestration_policy_configuration }
   let(:policies_yaml) do
-    build(:orchestration_policy_yaml, scan_result_policy: [
-      build(:scan_result_policy, name: 'Active policy', actions: [
+    build(:orchestration_policy_yaml, approval_policy: [
+      build(:approval_policy, name: 'Active policy', actions: [
         { type: 'require_approval', approvals_required: 1,
           user_approvers_ids: [user1.id], user_approvers: [user2.username] }
       ]),
-      build(:scan_result_policy, name: 'Disabled policy', enabled: false, actions: [
+      build(:approval_policy, name: 'Disabled policy', enabled: false, actions: [
         { type: 'require_approval', approvals_required: 1, user_approvers_ids: [user1.id] }
       ])
     ])
   end
 
   let(:policies_applicable_yaml) do
-    build(:orchestration_policy_yaml, scan_result_policy: [
-      build(:scan_result_policy, name: 'Active policy', actions: [
+    build(:orchestration_policy_yaml, approval_policy: [
+      build(:approval_policy, name: 'Active policy', actions: [
         { type: 'require_approval', approvals_required: 1,
           user_approvers_ids: [user1.id], user_approvers: [user2.username] }
       ]),
-      build(:scan_result_policy, name: 'Active policy 2', enabled: true, actions: [
+      build(:approval_policy, name: 'Active policy 2', enabled: true, actions: [
         { type: 'require_approval', approvals_required: 1, user_approvers_ids: [user1.id] }
       ])
     ])
   end
 
   let(:policies_not_applicable_yaml) do
-    build(:orchestration_policy_yaml, scan_result_policy: [
-      build(:scan_result_policy, name: 'Active policy',
+    build(:orchestration_policy_yaml, approval_policy: [
+      build(:approval_policy, name: 'Active policy',
         actions: [
           { type: 'require_approval', approvals_required: 1,
             user_approvers_ids: [user1.id], user_approvers: [user2.username] }

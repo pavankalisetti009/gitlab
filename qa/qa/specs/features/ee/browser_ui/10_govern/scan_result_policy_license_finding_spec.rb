@@ -26,7 +26,7 @@ module QA
       end
 
       let(:scan_result_policy_name) { 'greyhound' }
-      let(:policy_yaml_path) { "qa/ee/fixtures/scan_result_policy_yaml/scan_result_license_finding_policy.yml" }
+      let(:policy_yaml_path) { "qa/ee/fixtures/approval_policy_yaml/approval_policy_license_finding_policy.yml" }
       let(:dependency_scan_fixtures) { Pathname.new(EE::Runtime::Path.fixture('dependency_scanning_fixtures')) }
 
       let(:commit_branch) { "new_branch_#{SecureRandom.hex(8)}" }

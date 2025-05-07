@@ -102,14 +102,14 @@ RSpec.describe Projects::Security::PoliciesController, type: :request, feature_c
           expect(app.attributes['data-policy-type'].value).to eq(type)
         end
 
-        shared_examples 'scan result policy like type' do |type|
-          let_it_be(:type) { type }
-          let_it_be(:policy) { build(:scan_result_policy) }
+        context 'when approval policy type' do
+          let_it_be(:type) { 'approval_policy' }
+          let_it_be(:policy) { build(:approval_policy) }
           let_it_be(:group) { create(:group) }
 
           before do
             allow_next_instance_of(Repository) do |repository|
-              allow(repository).to receive(:blob_data_at).and_return({ scan_result_policy: [policy] }.to_yaml)
+              allow(repository).to receive(:blob_data_at).and_return({ approval_policy: [policy] }.to_yaml)
             end
           end
 
@@ -125,9 +125,6 @@ RSpec.describe Projects::Security::PoliciesController, type: :request, feature_c
             expect(app['data-policy-type']).to eq(type)
           end
         end
-
-        it_behaves_like 'scan result policy like type', 'scan_result_policy'
-        it_behaves_like 'scan result policy like type', 'approval_policy'
 
         context 'when type is missing' do
           let_it_be(:edit) { edit_project_security_policy_url(project, id: policy[:name]) }

@@ -7,10 +7,10 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
 
   include_context 'orchestration policy context'
 
-  let(:policy) { build(:scan_result_policy, name: 'Require security approvals') }
-  let(:policy_yaml) { build(:orchestration_policy_yaml, scan_result_policy: [policy]) }
+  let(:policy) { build(:approval_policy, name: 'Require security approvals') }
+  let(:policy_yaml) { build(:orchestration_policy_yaml, approval_policy: [policy]) }
 
-  let(:deprecated_properties) { ['scan_result_policy'] }
+  let(:deprecated_properties) { [] }
   let(:all_group_approvers) { [] }
   let(:role_approvers) { [] }
   let(:user_approvers) { [] }
@@ -54,7 +54,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
   it_behaves_like 'as an orchestration policy'
 
   context 'when the policy contains deprecated properties' do
-    let(:policy) { build(:scan_result_policy, name: 'Require security approvals', rules: [rule]) }
+    let(:policy) { build(:approval_policy, name: 'Require security approvals', rules: [rule]) }
 
     let(:rule) do
       {
@@ -67,7 +67,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
       }
     end
 
-    let(:deprecated_properties) { %w[newly_detected scan_result_policy] }
+    let(:deprecated_properties) { %w[newly_detected] }
 
     it_behaves_like 'as an orchestration policy'
   end
@@ -111,7 +111,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
       }
     end
 
-    let(:policy) { build(:scan_result_policy, name: 'Require security approvals', actions: [action_1, action_2]) }
+    let(:policy) { build(:approval_policy, name: 'Require security approvals', actions: [action_1, action_2]) }
 
     it_behaves_like 'as an orchestration policy'
   end

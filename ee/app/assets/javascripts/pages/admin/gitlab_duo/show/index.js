@@ -11,6 +11,8 @@ export function mountGitlabDuoHomeApp() {
     return null;
   }
 
+  const isAdminSettings = true;
+
   const {
     addDuoProSeatsUrl,
     aiGatewayUrl,
@@ -35,6 +37,12 @@ export function mountGitlabDuoHomeApp() {
     amazonQConfigurationPath,
     canManageSelfHostedModels,
     areDuoCoreFeaturesEnabled,
+    duoWorkflowEnabled,
+    duoWorkflowServiceAccount,
+    isSaas,
+    duoWorkflowSettingsPath,
+    redirectPath,
+    duoWorkflowDisablePath,
   } = el.dataset;
 
   return new Vue({
@@ -43,7 +51,7 @@ export function mountGitlabDuoHomeApp() {
     apolloProvider,
     provide: {
       aiGatewayUrl,
-      isSaaS: false,
+      isSaaS: parseBoolean(isSaas),
       addDuoProHref: addDuoProSeatsUrl,
       duoSeatUtilizationPath,
       isBulkAddOnAssignmentEnabled: parseBoolean(isBulkAddOnAssignmentEnabled),
@@ -66,6 +74,14 @@ export function mountGitlabDuoHomeApp() {
       amazonQConfigurationPath,
       canManageSelfHostedModels: parseBoolean(canManageSelfHostedModels),
       areDuoCoreFeaturesEnabled: parseBoolean(areDuoCoreFeaturesEnabled),
+      duoWorkflowEnabled: parseBoolean(duoWorkflowEnabled),
+      duoWorkflowServiceAccount: duoWorkflowServiceAccount
+        ? JSON.parse(duoWorkflowServiceAccount)
+        : undefined,
+      duoWorkflowSettingsPath,
+      redirectPath,
+      duoWorkflowDisablePath,
+      showDuoWorkflowSettings: isAdminSettings && parseBoolean(isSaas),
     },
     render: (h) => h(GitlabDuoHome),
   });
