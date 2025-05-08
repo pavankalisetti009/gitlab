@@ -5,11 +5,11 @@ module Vulnerabilities
     self.table_name = 'secret_detection_token_statuses'
     self.primary_key = 'vulnerability_occurrence_id'
 
-    enum status: {
+    enum :status, {
       unknown: 0,
       active: 1,
       inactive: 2
-    }, _prefix: true
+    }, prefix: true
 
     belongs_to :finding,
       class_name: 'Vulnerabilities::Finding',

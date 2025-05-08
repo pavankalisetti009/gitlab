@@ -20,7 +20,7 @@ module Observability
     # canonical list is available here:
     # https://github.com/open-telemetry/opentelemetry-proto/blob/main/opentelemetry/proto/metrics/v1/metrics.proto#L201
     # Each is suffixed with _type to avoid conflicts with Rails class methods.
-    enum metric_type: {
+    enum :metric_type, {
       gauge_type: 0,
       sum_type: 1,
       histogram_type: 2,

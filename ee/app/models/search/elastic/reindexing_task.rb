@@ -34,7 +34,7 @@ module Search
       has_many :subtasks, class_name: 'Search::Elastic::ReindexingSubtask',
         foreign_key: :elastic_reindexing_task_id, inverse_of: :elastic_reindexing_task
 
-      enum state: {
+      enum :state, {
         initial: 0,
         indexing_paused: 1,
         reindexing: 2,

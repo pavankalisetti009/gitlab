@@ -56,7 +56,7 @@ module Security
       primary_key: 'uuid',
       foreign_key: 'finding_uuid'
 
-    enum severity: ::Enums::Vulnerability.severity_levels, _prefix: :severity
+    enum :severity, ::Enums::Vulnerability.severity_levels, prefix: :severity
 
     validates :uuid, presence: true
     validates :finding_data, json_schema: { filename: "security_finding_data" }

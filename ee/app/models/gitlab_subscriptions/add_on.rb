@@ -11,7 +11,7 @@ module GitlabSubscriptions
       presence: true,
       length: { maximum: 512 }
 
-    enum name: {
+    enum :name, {
       code_suggestions: 1,
       product_analytics: 2,
       duo_enterprise: 3,

@@ -23,7 +23,7 @@ class DastSiteValidation < ::SecApplicationRecord
 
   before_create :set_normalized_url_base
 
-  enum validation_strategy: { text_file: 0, header: 1, meta_tag: 2 }
+  enum :validation_strategy, { text_file: 0, header: 1, meta_tag: 2 }
 
   delegate :project, :dast_site, to: :dast_site_token, allow_nil: true
 

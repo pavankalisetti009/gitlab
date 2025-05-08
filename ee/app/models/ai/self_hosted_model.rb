@@ -37,7 +37,7 @@ module Ai
       algorithm: 'aes-256-gcm',
       encode: true
 
-    enum model: {
+    enum :model, {
       mistral: 0,
       llama3: 1,
       codegemma: 2,

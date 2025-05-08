@@ -8,8 +8,8 @@ module MergeRequests
 
     self.table_name = 'merge_requests_compliance_violations'
 
-    enum reason: ::Enums::MergeRequests::ComplianceViolation.reasons
-    enum severity_level: ::Enums::MergeRequests::ComplianceViolation.severity_levels
+    enum :reason, ::Enums::MergeRequests::ComplianceViolation.reasons
+    enum :severity_level, ::Enums::MergeRequests::ComplianceViolation.severity_levels
 
     scope :with_violating_user, -> { preload(:violating_user) }
     scope :with_merge_requests, -> { preload(merge_request: [{ target_project: :namespace }, { metrics: :merged_by }]) }

@@ -12,7 +12,7 @@ class DastScannerProfile < ::SecApplicationRecord
   scope :with_name, ->(name) { where(name: name) }
   scope :with_project, -> { includes(:project) }
 
-  enum scan_type: {
+  enum :scan_type, {
     passive: 1,
     active: 2
   }

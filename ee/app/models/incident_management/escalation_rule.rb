@@ -9,7 +9,7 @@ module IncidentManagement
     belongs_to :user, optional: true
     has_one :project, through: :policy, source: :project
 
-    enum status: ::IncidentManagement::Escalatable::STATUSES.slice(:acknowledged, :resolved)
+    enum :status, ::IncidentManagement::Escalatable::STATUSES.slice(:acknowledged, :resolved)
 
     validates :status, presence: true
     validates :elapsed_time_seconds,

@@ -10,7 +10,7 @@ module Vulnerabilities
 
     belongs_to :pipeline, class_name: 'Ci::Pipeline', foreign_key: :latest_pipeline_id
 
-    enum letter_grade: { a: 0, b: 1, c: 2, d: 3, f: 4 }
+    enum :letter_grade, { a: 0, b: 1, c: 2, d: 3, f: 4 }
 
     validates :total, numericality: { greater_than_or_equal_to: 0 }
     validates :critical, numericality: { greater_than_or_equal_to: 0 }

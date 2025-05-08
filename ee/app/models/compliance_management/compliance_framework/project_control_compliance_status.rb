@@ -12,7 +12,7 @@ module ComplianceManagement
       belongs_to :requirement_status,
         class_name: '::ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus', optional: true
 
-      enum status: ::Enums::ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus.status
+      enum :status, ::Enums::ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus.status
 
       validates :project_id, uniqueness: { scope: :compliance_requirements_control_id }
       validates_presence_of :status, :project, :namespace, :compliance_requirement,

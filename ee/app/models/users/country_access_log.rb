@@ -4,7 +4,7 @@ module Users
   class CountryAccessLog < ::ApplicationRecord
     COUNTRY_CODES = { CN: 0, HK: 1, MO: 2 }.stringify_keys
 
-    enum country_code: COUNTRY_CODES
+    enum :country_code, COUNTRY_CODES
 
     belongs_to :user
 

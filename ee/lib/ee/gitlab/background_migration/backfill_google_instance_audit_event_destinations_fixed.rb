@@ -21,7 +21,7 @@ module EE
 
         class ExternalStreamingDestination < ::ApplicationRecord
           self.table_name = 'audit_events_instance_external_streaming_destinations'
-          enum category: { http: 0, gcp: 1, aws: 2 }
+          enum :category, { http: 0, gcp: 1, aws: 2 }
         end
 
         override :perform

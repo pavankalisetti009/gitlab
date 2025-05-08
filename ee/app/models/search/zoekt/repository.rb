@@ -29,7 +29,7 @@ module Search
         scope: :zoekt_index_id, message: 'violates unique constraint between [:zoekt_index_id, :project_identifier]'
       }
 
-      enum state: {
+      enum :state, {
         pending: 0,
         initializing: 1,
         ready: 10,

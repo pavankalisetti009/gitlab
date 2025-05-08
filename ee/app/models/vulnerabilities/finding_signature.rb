@@ -8,7 +8,7 @@ module Vulnerabilities
     self.table_name = 'vulnerability_finding_signatures'
 
     belongs_to :finding, foreign_key: 'finding_id', inverse_of: :signatures, class_name: 'Vulnerabilities::Finding'
-    enum algorithm_type: VulnerabilityFindingSignatureHelpers::ALGORITHM_TYPES, _prefix: :algorithm
+    enum :algorithm_type, VulnerabilityFindingSignatureHelpers::ALGORITHM_TYPES, prefix: :algorithm
     validates :finding, presence: true
 
     scope :by_project, ->(project) { joins(:finding).where(vulnerability_occurrences: { project_id: project.id }) }

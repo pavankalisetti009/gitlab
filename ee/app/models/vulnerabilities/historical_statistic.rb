@@ -18,7 +18,7 @@ module Vulnerabilities
     validates :unknown, numericality: { greater_than_or_equal_to: 0 }
     validates :info, numericality: { greater_than_or_equal_to: 0 }
 
-    enum letter_grade: Vulnerabilities::Statistic.letter_grades
+    enum :letter_grade, Vulnerabilities::Statistic.letter_grades
 
     scope :older_than, ->(days:) { where('"vulnerability_historical_statistics"."date" < now() - interval ?', "#{days} days") }
     scope :between_dates, ->(start_date, end_date) { where(arel_table[:date].between(start_date..end_date)) }

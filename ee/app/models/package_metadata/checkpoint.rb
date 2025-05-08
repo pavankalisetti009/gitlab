@@ -2,9 +2,9 @@
 
 module PackageMetadata
   class Checkpoint < ApplicationRecord
-    enum purl_type: ::Enums::Sbom.purl_types
-    enum data_type: ::Enums::PackageMetadata.data_types
-    enum version_format: ::Enums::PackageMetadata.version_formats
+    enum :purl_type, ::Enums::Sbom.purl_types
+    enum :data_type, ::Enums::PackageMetadata.data_types
+    enum :version_format, ::Enums::PackageMetadata.version_formats
 
     validates :data_type, presence: true
     validates :version_format, presence: true

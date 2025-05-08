@@ -36,7 +36,7 @@ module Security
       )
     end
 
-    enum policy_type: {
+    enum :policy_type, {
       scan_execution_policy: 0,
       pipeline_execution_policy: 1
     }

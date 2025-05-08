@@ -22,7 +22,7 @@ module Vulnerabilities
     belongs_to :project, optional: false
     belongs_to :author, class_name: 'User', optional: false
 
-    enum format: { csv: 0 }
+    enum :format, { csv: 0 }
 
     validates :date_range, presence: true
     validates :status, presence: true

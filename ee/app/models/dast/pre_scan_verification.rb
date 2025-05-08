@@ -12,7 +12,7 @@ module Dast
 
     delegate :project, :dast_site_profile, to: :dast_profile, allow_nil: true
 
-    enum status: { running: 0, complete: 1, complete_with_errors: 2, failed: 3 }
+    enum :status, { running: 0, complete: 1, complete_with_errors: 2, failed: 3 }
 
     validates :dast_profile_id, :status, presence: true
 

@@ -14,7 +14,7 @@ module Ai
 
     attribute :timestamp, :datetime, default: -> { DateTime.current }
 
-    enum event: { request_duo_chat_response: 1 }
+    enum :event, { request_duo_chat_response: 1 }
 
     belongs_to :user
 

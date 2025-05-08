@@ -120,9 +120,9 @@ module Vulnerabilities
     attr_writer :sha
     attr_accessor :scan, :found_by_pipeline
 
-    enum report_type: ::Enums::Vulnerability.report_types
-    enum severity: ::Enums::Vulnerability.severity_levels, _prefix: :severity
-    enum detection_method: ::Enums::Vulnerability.detection_methods
+    enum :report_type, ::Enums::Vulnerability.report_types
+    enum :severity, ::Enums::Vulnerability.severity_levels, prefix: :severity
+    enum :detection_method, ::Enums::Vulnerability.detection_methods
 
     validates :scanner, presence: true
     validates :project, presence: true

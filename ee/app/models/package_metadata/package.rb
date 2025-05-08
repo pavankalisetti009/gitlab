@@ -20,7 +20,7 @@ module PackageMetadata
 
     include BulkInsertSafe
 
-    enum purl_type: ::Enums::Sbom.purl_types
+    enum :purl_type, ::Enums::Sbom.purl_types
 
     validates :purl_type, presence: true
     validates :name, presence: true, length: { maximum: 255 }

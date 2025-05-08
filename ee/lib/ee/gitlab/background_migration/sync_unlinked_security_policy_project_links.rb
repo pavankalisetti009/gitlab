@@ -102,12 +102,12 @@ module EE
           self.table_name = 'security_policies'
           self.inheritance_column = :_type_disabled
 
-          enum type: {
+          enum :type, {
             approval_policy: 0,
             scan_execution_policy: 1,
             pipeline_execution_policy: 2,
             vulnerability_management_policy: 3
-          }, _prefix: true
+          }, prefix: true
 
           # rubocop:disable Layout/LineLength -- the name is long
           belongs_to :security_orchestration_policy_configuration, class_name:
@@ -125,7 +125,7 @@ module EE
           self.table_name = 'approval_policy_rules'
           self.inheritance_column = :_type_disabled
 
-          enum type: { scan_finding: 0, license_finding: 1, any_merge_request: 2 }, _prefix: true
+          enum :type, { scan_finding: 0, license_finding: 1, any_merge_request: 2 }, prefix: true
         end
 
         class ApprovalPolicyRuleProjectLink < ::ApplicationRecord

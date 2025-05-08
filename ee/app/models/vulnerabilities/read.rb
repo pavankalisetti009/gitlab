@@ -48,10 +48,10 @@ module Vulnerabilities
     validates :resolved_on_default_branch, inclusion: { in: [true, false], message: N_('must be a boolean value') }
     validates :has_remediations, inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
-    enum state: ::Enums::Vulnerability.vulnerability_states
-    enum report_type: ::Enums::Vulnerability.report_types
-    enum severity: ::Enums::Vulnerability.severity_levels, _prefix: :severity
-    enum owasp_top_10: ::Enums::Vulnerability.owasp_top_10.merge('undefined' => OWASP_TOP_10_DEFAULT)
+    enum :state, ::Enums::Vulnerability.vulnerability_states
+    enum :report_type, ::Enums::Vulnerability.report_types
+    enum :severity, ::Enums::Vulnerability.severity_levels, prefix: :severity
+    enum :owasp_top_10, ::Enums::Vulnerability.owasp_top_10.merge('undefined' => OWASP_TOP_10_DEFAULT)
 
     after_initialize :set_default_values, if: :new_record?
 

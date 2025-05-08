@@ -56,7 +56,7 @@ class ApprovalMergeRequestRule < ApplicationRecord
   validate :validate_approval_project_rule
   validate :merge_request_not_merged, unless: proc { merge_request.blank? || merge_request.finalizing_rules.present? }
 
-  enum rule_type: {
+  enum :rule_type, {
     regular: 1,
     code_owner: 2,
     report_approver: 3,

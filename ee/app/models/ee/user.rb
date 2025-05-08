@@ -213,11 +213,11 @@ module EE
       accepts_nested_attributes_for :namespace
       accepts_nested_attributes_for :custom_attributes
 
-      enum roadmap_layout: { weeks: 1, months: 4, quarters: 12 }
+      enum :roadmap_layout, { weeks: 1, months: 4, quarters: 12 }
 
       # User's Group preference
       # Note: When adding an option, it's value MUST equal to the last value + 1.
-      enum group_view: { details: 1, security_dashboard: 2 }, _prefix: true
+      enum :group_view, { details: 1, security_dashboard: 2 }, prefix: true
       scope :group_view_details, -> { where('group_view = ? OR group_view IS NULL', group_view[:details]) }
       scope :unconfirmed_and_created_before, ->(created_cut_off) { human.with_state(:active).where(confirmed_at: nil).where('created_at < ?', created_cut_off).where(sign_in_count: 0) }
 

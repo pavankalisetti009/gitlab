@@ -14,7 +14,7 @@ module Analytics
 
       validates :namespace_id, :count, :metric, :recorded_at, presence: true
 
-      enum metric: { projects: 1, issues: 2, groups: 3, merge_requests: 4, pipelines: 5, direct_members: 6 }
+      enum :metric, { projects: 1, issues: 2, groups: 3, merge_requests: 4, pipelines: 5, direct_members: 6 }
 
       scope :latest_first_order, -> { order(recorded_at: :desc, id: :desc) }
       scope :for_period, ->(metric, from, to) {

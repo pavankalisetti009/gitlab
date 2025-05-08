@@ -18,7 +18,7 @@ module Vulnerabilities
     validates :traversal_ids, presence: true
     validates :letter_grade, presence: true
 
-    enum letter_grade: Vulnerabilities::Statistic.letter_grades
+    enum :letter_grade, Vulnerabilities::Statistic.letter_grades
 
     scope :by_direct_group, ->(group) { where(namespace: group) }
     scope :older_than, ->(days:) {

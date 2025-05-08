@@ -25,7 +25,7 @@ module Dora
     end
 
     DailyMetrics::AVAILABLE_METRICS.each do |metric|
-      enum metric.to_sym => SCORES, :_suffix => true
+      enum metric.to_sym, SCORES, suffix: true
     end
 
     def self.refresh!(project, date)

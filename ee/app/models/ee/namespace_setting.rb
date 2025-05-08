@@ -57,8 +57,8 @@ module EE
       validates :remove_dormant_members_period,
         numericality: { only_integer: true, greater_than_or_equal_to: 90, less_than_or_equal_to: 1827 } # 90d - ~5 years
 
-      enum enterprise_users_extensions_marketplace_opt_in_status:
-        ::Enums::WebIde::ExtensionsMarketplaceOptInStatus.statuses, _prefix: :enterprise_users_extensions_marketplace
+      enum :enterprise_users_extensions_marketplace_opt_in_status,
+        ::Enums::WebIde::ExtensionsMarketplaceOptInStatus.statuses, prefix: :enterprise_users_extensions_marketplace
 
       attribute :security_policies, default: -> { {} }
       validates :security_policies, json_schema: { filename: "application_setting_security_policies" }

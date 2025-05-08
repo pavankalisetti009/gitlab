@@ -31,7 +31,7 @@ class ApprovalProjectRule < ApplicationRecord
   after_initialize :set_scanners_default_value
   after_create_commit :audit_creation, :track_creation_event
 
-  enum rule_type: {
+  enum :rule_type, {
     regular: 0,
     code_owner: 1, # currently unused
     report_approver: 2,

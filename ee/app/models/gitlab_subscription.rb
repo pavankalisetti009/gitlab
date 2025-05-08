@@ -5,7 +5,7 @@ class GitlabSubscription < ApplicationRecord
   include Gitlab::Utils::StrongMemoize
   include AfterCommitQueue
 
-  enum trial_extension_type: { extended: 1, reactivated: 2 }
+  enum :trial_extension_type, { extended: 1, reactivated: 2 }
 
   attribute :start_date, default: -> { Date.today }
 

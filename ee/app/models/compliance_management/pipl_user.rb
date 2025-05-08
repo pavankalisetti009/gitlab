@@ -48,7 +48,7 @@ module ComplianceManagement
 
     validates :last_access_from_pipl_country_at, presence: true
 
-    enum state: {
+    enum :state, {
       default: 0,
       deletion_needs_to_be_reviewed: 1
     }

@@ -12,7 +12,7 @@ module Sbom
       container_scanning: 1
     }.freeze
 
-    enum source_type: {
+    enum :source_type, {
       container_scanning_for_registry: 2
     }.merge(DEFAULT_SOURCES)
 
