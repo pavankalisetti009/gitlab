@@ -20,6 +20,10 @@ module Types
         null: false,
         description: 'Description of the compliance framework.'
 
+      field :updated_at, Types::TimeType,
+        null: true,
+        description: 'Timestamp of when the compliance framework was last updated.'
+
       field :color, GraphQL::Types::String,
         null: false,
         description: 'Hexadecimal representation of compliance framework\'s label color.'

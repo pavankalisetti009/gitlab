@@ -9,6 +9,7 @@ RSpec.describe GitlabSchema.types['ComplianceFramework'] do
     id
     name
     description
+    updated_at
     color
     default
     pipeline_configuration_full_path
