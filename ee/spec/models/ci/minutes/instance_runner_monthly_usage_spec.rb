@@ -67,4 +67,39 @@ RSpec.describe Ci::Minutes::InstanceRunnerMonthlyUsage, feature_category: :hoste
       end
     end
   end
+
+  describe 'loose foreign keys' do
+    context 'with loose foreign key on namespaces.id' do
+      it_behaves_like 'cleanup by a loose foreign key' do
+        before do
+          project.project_namespace.destroy! # Needed so that root_namespace can be deleted
+        end
+
+        let_it_be(:model) do
+          create(
+            :ci_instance_runner_monthly_usage,
+            runner_id: runner.id,
+            root_namespace_id: root_namespace.id,
+            project_id: project.id
+          )
+        end
+
+        let_it_be(:parent) { model.root_namespace }
+      end
+    end
+
+    context 'with loose foreign key on projects.id' do
+      it_behaves_like 'cleanup by a loose foreign key' do
+        let!(:model) { usage.tap(&:save!) }
+        let!(:parent) { model.project }
+      end
+    end
+
+    context 'with loose foreign key on ci_runners.id' do
+      it_behaves_like 'cleanup by a loose foreign key' do
+        let!(:model) { usage.tap(&:save!) }
+        let!(:parent) { model.runner }
+      end
+    end
+  end
 end
