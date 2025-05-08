@@ -16,6 +16,7 @@ import rails from '@gitlab/svgs/dist/illustrations/logos/rails.svg';
 import hugo from '@gitlab/svgs/dist/illustrations/logos/hugo.svg';
 import astro from '@gitlab/svgs/dist/illustrations/third-party-logos/astro.svg';
 import gomicro from '@gitlab/svgs/dist/illustrations/logos/gomicro.svg';
+import gitlab from '@gitlab/svgs/dist/illustrations/gitlab_logo.svg';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
 import TEMPLATE_DESC from 'ee/projects/default_project_templates';
 import { s__ } from '~/locale';
@@ -33,7 +34,17 @@ const NAMES = [
   'astro',
   'gomicro',
 ];
-const LOGOS = { express, android, spring, dotnetcore, rails, hugo, astro, gomicro };
+const LOGOS = {
+  express,
+  android,
+  spring,
+  dotnetcore,
+  rails,
+  hugo,
+  astro,
+  gomicro,
+  plainhtml: gitlab,
+};
 const TEMPLATES = NAMES.map((name) => ({
   value: name,
   text: TEMPLATE_DESC[name].text,
