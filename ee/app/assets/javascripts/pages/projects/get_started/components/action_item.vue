@@ -65,20 +65,20 @@ export default {
       class="gl-display-inline-block gl-text-subtle"
       aria-disabled="true"
       :aria-label="
-        s__('GetStarted|You don\'t have sufficient access to perform this action: ') + action.title
+        s__('LearnGitLab|You don\'t have sufficient access to perform this action: ') + action.title
       "
       data-testid="action-disabled"
     >
       {{ action.title }}
       <gl-icon
-        v-gl-tooltip="s__('GetStarted|You don\'t have sufficient access to perform this action')"
+        v-gl-tooltip="s__('LearnGitLab|You don\'t have sufficient access to perform this action')"
         name="lock"
         class="gl-ml-2"
         aria-hidden="true"
         data-testid="disabled-icon"
       />
       <span class="gl-sr-only">
-        {{ s__("GetStarted|You don't have sufficient access to perform this action") }}
+        {{ s__("LearnGitLab|You don't have sufficient access to perform this action") }}
       </span>
     </span>
   </li>

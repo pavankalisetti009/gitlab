@@ -57,7 +57,7 @@ export default {
         <div class="gl-flex gl-items-center gl-gap-3">
           <gl-icon variant="default" name="license" data-testid="trial-icon" />
           <span class="gl-text-subtle" data-testid="trial-description-text">{{
-            s__('GetStarted|Included in trial')
+            s__('LearnGitLab|Included in trial')
           }}</span>
         </div>
       </li>

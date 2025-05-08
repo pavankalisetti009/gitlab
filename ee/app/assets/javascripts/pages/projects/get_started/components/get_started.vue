@@ -68,9 +68,9 @@ export default {
       data-testid="get-started-sections"
     >
       <header>
-        <h2 class="gl-text-size-h2">{{ s__('GetStarted|Quick start') }}</h2>
+        <h2 class="gl-text-size-h2">{{ s__('LearnGitLab|Quick start') }}</h2>
         <p class="gl-mb-0 gl-text-subtle">
-          {{ s__('GetStarted|Follow these steps to get familiar with the GitLab workflow.') }}
+          {{ s__('LearnGitLab|Follow these steps to get familiar with the GitLab workflow.') }}
         </p>
       </header>
 
@@ -95,7 +95,7 @@ export default {
     </div>
 
     <div class="col-md-3 md:gl-pl-6">
-      <h2 class="gl-text-size-h2">{{ s__('GetStarted|GitLab University') }}</h2>
+      <h2 class="gl-text-size-h2">{{ s__('LearnGitLab|GitLab University') }}</h2>
     </div>
   </div>
 </template>
