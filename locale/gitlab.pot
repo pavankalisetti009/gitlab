@@ -23673,6 +23673,9 @@ msgstr ""
 msgid "Editing"
 msgstr ""
 
+msgid "Editing this file is not supported"
+msgstr ""
+
 msgid "Editor toolbar"
 msgstr ""
 
