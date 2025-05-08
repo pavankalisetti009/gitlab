@@ -127,7 +127,8 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
         label: "IssueReader",
         action: 'process_gitlab_duo_question',
         property: 'uuid',
-        namespace: container,
+        namespace: container&.namespace,
+        project: container,
         user: user,
         value: 1
       )
@@ -199,7 +200,8 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
           label: "IssueReader",
           action: 'process_gitlab_duo_question',
           property: 'uuid',
-          namespace: container,
+          namespace: container&.namespace,
+          project: container,
           user: user,
           value: 0
         )
@@ -292,7 +294,8 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
             action: 'process_gitlab_duo_slash_command',
             label: command,
             property: 'uuid',
-            namespace: container,
+            namespace: container&.namespace,
+            project: container,
             user: user,
             value: 1
           )

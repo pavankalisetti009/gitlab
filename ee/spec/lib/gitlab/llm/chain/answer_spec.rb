@@ -198,7 +198,8 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
         property: 'uuid',
         label: 'gitlab_duo_chat_answer',
         user: user,
-        namespace: project
+        project: project,
+        namespace: project.namespace
       )
     end
   end
@@ -226,7 +227,8 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
         property: 'uuid',
         label: 'gitlab_duo_chat_answer',
         user: user,
-        namespace: project
+        project: project,
+        namespace: project.namespace
       )
     end
   end
