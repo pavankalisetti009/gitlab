@@ -1004,6 +1004,26 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     end
   end
 
+  describe '#normalized_add_on_name' do
+    context 'when add_on_name is code_suggestions' do
+      it 'returns duo_pro' do
+        add_on = create(:gitlab_subscription_add_on, name: 'code_suggestions')
+        add_on_purchase = create(:gitlab_subscription_add_on_purchase, add_on: add_on)
+
+        expect(add_on_purchase.normalized_add_on_name).to eq('duo_pro')
+      end
+    end
+
+    context 'when add_on_name is not mapped' do
+      it 'returns the original add_on_name' do
+        add_on = create(:gitlab_subscription_add_on, name: 'product_analytics')
+        add_on_purchase = create(:gitlab_subscription_add_on_purchase, add_on: add_on)
+
+        expect(add_on_purchase.normalized_add_on_name).to eq('product_analytics')
+      end
+    end
+  end
+
   describe '#destroy' do
     it_behaves_like 'create audits for user add-on assignments' do
       let(:entity) { add_on_purchase }

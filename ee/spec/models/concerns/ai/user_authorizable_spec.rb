@@ -63,7 +63,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       context 'when the user has an active assigned seat' do
         let(:expected_allowed) { true }
         let(:expected_namespace_ids) { allowed_by_namespace_ids }
-        let(:expected_enablement_type) { 'add_on' }
+        let(:expected_enablement_type) { 'duo_pro' }
 
         before do
           create(
@@ -76,13 +76,43 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         it { is_expected.to eq expected_response }
       end
 
+      context 'when the user has an active assigned duo enterprise seat' do
+        let_it_be_with_reload(:enterprise_gitlab_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+        let_it_be_with_reload(:enterprise_gitlab_purchase) do
+          create(:gitlab_subscription_add_on_purchase, add_on: enterprise_gitlab_add_on)
+        end
+
+        let(:expected_allowed) { true }
+        let(:expected_namespace_ids) { [enterprise_gitlab_purchase.namespace_id] }
+        let(:expected_enablement_type) { 'duo_enterprise' }
+
+        let(:service) { CloudConnector::BaseAvailableServiceData.new(service_name, nil, %w[duo_enterprise]) }
+
+        before do
+          allow(service).to receive_messages(
+            free_access?: free_access,
+            add_on_purchases: GitlabSubscriptions::AddOnPurchase
+          )
+
+          enterprise_gitlab_purchase.namespace.add_owner(user)
+
+          create(
+            :gitlab_subscription_user_add_on_assignment,
+            user: user,
+            add_on_purchase: enterprise_gitlab_purchase
+          )
+        end
+
+        it { is_expected.to eq expected_response }
+      end
+
       context 'when the user has a Duo Core subscription' do
         let_it_be_with_reload(:active_gitlab_purchase) do
           create(:gitlab_subscription_add_on_purchase, :duo_core)
         end
 
         let(:expected_allowed) { true }
-        let(:expected_enablement_type) { 'add_on' }
+        let(:expected_enablement_type) { 'duo_core' }
         let(:expected_namespace_ids) { allowed_by_namespace_ids }
         let(:expected_authorized_by_duo_core) { true }
         let(:free_access) { false }
@@ -93,7 +123,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         context 'when duo_core_saas feature flag is disabled' do
           let(:allowed_by_namespace_ids) { [] }
           let(:expected_allowed) { !feature_flag_blocks_access }
-          let(:expected_enablement_type) { 'add_on' unless feature_flag_blocks_access }
+          let(:expected_enablement_type) { 'duo_core' unless feature_flag_blocks_access }
           let(:expected_authorized_by_duo_core) { !feature_flag_blocks_access }
 
           before do

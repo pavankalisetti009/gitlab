@@ -183,7 +183,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
     context 'when on Gitlab.com instance', :saas do
       let(:gitlab_realm) { "saas" }
       let(:enabled_by_namespace_ids) { [namespace.id] }
-      let(:enablement_type) { 'add_on' }
+      let(:enablement_type) { 'duo_pro' }
       let(:namespace_workhorse_headers) do
         {
           "X-Gitlab-Saas-Namespace-Ids" => [namespace.id.to_s]

@@ -8,6 +8,7 @@ module GitlabSubscriptions
     columns_changing_default :organization_id
 
     CLEANUP_DELAY_PERIOD = 14.days
+    NORMALIZED_ADD_ON_NAME = { 'code_suggestions' => 'duo_pro' }.freeze
 
     belongs_to :add_on, foreign_key: :subscription_add_on_id, inverse_of: :add_on_purchases
     belongs_to :namespace, optional: true
@@ -135,6 +136,10 @@ module GitlabSubscriptions
 
     def lock_key_for_refreshing_user_assignments
       "#{self.class.name.underscore}:user_refresh:#{id}"
+    end
+
+    def normalized_add_on_name
+      NORMALIZED_ADD_ON_NAME[add_on_name] || add_on_name
     end
 
     private

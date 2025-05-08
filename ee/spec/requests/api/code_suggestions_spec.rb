@@ -50,6 +50,11 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user, :uniq_namespace_ids)
       .and_return(enabled_by_namespace_ids)
 
+    purchases = class_double(GitlabSubscriptions::AddOnPurchase)
+    mock_purchase = instance_double(GitlabSubscriptions::AddOnPurchase, normalized_add_on_name: 'duo_pro')
+    allow(service).to receive_message_chain(:add_on_purchases, :assigned_to_user).and_return(purchases)
+    allow(purchases).to receive_messages(any?: true, uniq_namespace_ids: enabled_by_namespace_ids, last: mock_purchase)
+
     stub_feature_flags(incident_fail_over_completion_provider: false)
     stub_feature_flags(use_claude_code_completion: false)
     stub_feature_flags(use_fireworks_codestral_code_completion: false)
@@ -1026,7 +1031,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       let(:current_user) { authorized_user }
       let(:expected_expiration) { Time.now.to_i + 3600 }
       let(:duo_seat_count) { '0' }
-      let(:enablement_type) { 'add_on' }
+      let(:enablement_type) { 'duo_pro' }
 
       let(:base_headers) do
         {
