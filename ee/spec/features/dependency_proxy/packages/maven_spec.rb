@@ -148,7 +148,7 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
         end
       end
 
-      it_behaves_like 'returning bad gateway error when local requests are not allowed', :maven
+      it_behaves_like 'returning forbidden error when local requests are not allowed', :maven
 
       context 'when local requests are allowed in settings' do
         before do
@@ -180,7 +180,7 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
 
       context 'with a wrong etag returned' do
         include_context 'with a wrong etag returned' do
-          it_behaves_like 'returning bad gateway error when local requests are not allowed', :maven
+          it_behaves_like 'returning forbidden error when local requests are not allowed', :maven
         end
 
         context 'when local requests are allowed in settings' do

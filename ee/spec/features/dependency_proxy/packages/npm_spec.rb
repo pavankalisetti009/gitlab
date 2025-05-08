@@ -143,7 +143,7 @@ RSpec.describe 'Dependency Proxy for npm packages', :js, :aggregate_failures, fe
         end
       end
 
-      it_behaves_like 'returning bad gateway error when local requests are not allowed', :npm
+      it_behaves_like 'returning forbidden error when local requests are not allowed', :npm
 
       context 'when local requests are allowed in settings' do
         before do
@@ -175,7 +175,7 @@ RSpec.describe 'Dependency Proxy for npm packages', :js, :aggregate_failures, fe
 
       context 'with a wrong etag returned' do
         include_context 'with a wrong etag returned' do
-          it_behaves_like 'returning bad gateway error when local requests are not allowed', :npm
+          it_behaves_like 'returning forbidden error when local requests are not allowed', :npm
         end
 
         context 'when local requests are allowed in settings' do
