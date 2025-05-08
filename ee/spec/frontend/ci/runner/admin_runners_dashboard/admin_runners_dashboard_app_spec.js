@@ -42,15 +42,15 @@ describe('AdminRunnersDashboardApp', () => {
     expect(listBtn.text()).toBe('View runners list');
     expect(listBtn.attributes('href')).toBe(mockAdminRunnersPath);
 
-    expect(newBtn.text()).toBe('New instance runner');
+    expect(newBtn.text()).toBe('Create instance runner');
     expect(newBtn.attributes('href')).toBe(mockNewRunnerPath);
   });
 
   describe('when canAdminRunners is false', () => {
-    it('does not show new instance runner button', () => {
+    it('does not show create instance runner button', () => {
       createComponent({ props: { canAdminRunners: false } });
 
-      expect(wrapper.findByText('New instance runner').exists()).toBe(false);
+      expect(wrapper.findByText('Create instance runner').exists()).toBe(false);
     });
   });
 

@@ -43,7 +43,7 @@ describe('GroupRunnersDashboardApp', () => {
     expect(listBtn.text()).toBe('View runners list');
     expect(listBtn.attributes('href')).toBe(mockGroupRunnersPath);
 
-    expect(newBtn.text()).toBe('New group runner');
+    expect(newBtn.text()).toBe('Create group runner');
     expect(newBtn.attributes('href')).toBe(mockNewRunnerPath);
   });
 
