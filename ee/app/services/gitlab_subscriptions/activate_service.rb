@@ -21,15 +21,13 @@ module GitlabSubscriptions
       license.last_synced_at = Time.current
 
       if license.save
-        save_future_subscriptions(response[:future_subscriptions])
-        update_add_on_purchases
-        auto_enable_duo_core_features(response[:new_subscription])
+        payload = update_license_dependencies(response, license)
         sync_service_token
 
         {
           success: true,
           license: license,
-          future_subscriptions: application_settings.future_subscriptions
+          future_subscriptions: payload[:future_subscriptions]
         }
       else
         error(license.errors.full_messages)
@@ -58,32 +56,12 @@ module GitlabSubscriptions
       License.new(data: license_key, cloud: true)
     end
 
-    def save_future_subscriptions(future_subscriptions)
-      future_subscriptions = future_subscriptions.presence || []
-
-      application_settings.update!(future_subscriptions: future_subscriptions)
-    rescue ActiveRecord::ActiveRecordError => err
-      Gitlab::ErrorTracking.track_and_raise_for_dev_exception(err)
-    end
-
-    def application_settings
-      strong_memoize(:application_settings) do
-        Gitlab::CurrentSettings.current_application_settings
-      end
-    end
-
-    def update_add_on_purchases
-      ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoExclusive.new.execute
-      ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoCore.new.execute
-    end
-
-    def auto_enable_duo_core_features(new_subscription)
-      return unless new_subscription
-      return unless GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_core.active.exists?
-
-      Ai::Setting.instance.update!(duo_nano_features_enabled: true)
-    rescue ActiveRecord::ActiveRecordError => err
-      Gitlab::ErrorTracking.track_and_raise_for_dev_exception(err)
+    def update_license_dependencies(response, license)
+      ::GitlabSubscriptions::UpdateLicenseDependenciesService.new(
+        future_subscriptions: response[:future_subscriptions],
+        license: license,
+        new_subscription: response[:new_subscription]
+      ).execute
     end
   end
 end
