@@ -12,7 +12,7 @@ module Gitlab
 
           class << self
             def review_queued_msg
-              s_("DuoCodeReview|I've received your Duo Code Review request, and will review your code shortly.")
+              s_("DuoCodeReview|is reviewing your merge request and will let you know when it's finished")
             end
 
             def resource_not_found_msg
@@ -66,7 +66,7 @@ module Gitlab
           ensure
             update_review_state('reviewed') if merge_request.present?
 
-            @progress_note&.destroy if duo_code_review_system_note_enabled?
+            @progress_note&.destroy
           end
 
           private
@@ -277,38 +277,24 @@ module Gitlab
           def create_progress_note
             return unless merge_request.present?
 
-            note = if duo_code_review_system_note_enabled?
-                     s_("DuoCodeReview|is reviewing your merge request and will let you know when it's finished")
-                   else
-                     self.class.review_queued_msg
-                   end
-
             ::Notes::CreateService.new(
               merge_request.project,
               review_bot,
               noteable: merge_request,
-              note: note,
-              system: duo_code_review_system_note_enabled?
+              note: self.class.review_queued_msg,
+              system: true
             ).execute
           end
 
           def update_progress_note(note, with_todo: false)
             todo_service.new_review(merge_request, review_bot) if with_todo
 
-            if duo_code_review_system_note_enabled?
-              ::Notes::CreateService.new(
-                merge_request.project,
-                review_bot,
-                noteable: merge_request,
-                note: note
-              ).execute
-            else
-              Notes::UpdateService.new(
-                progress_note.project,
-                review_bot,
-                note: note
-              ).execute(progress_note)
-            end
+            ::Notes::CreateService.new(
+              merge_request.project,
+              review_bot,
+              noteable: merge_request,
+              note: note
+            ).execute
           end
 
           def find_progress_note
@@ -371,10 +357,6 @@ module Gitlab
 
           def update_review_state(state)
             update_review_state_service.execute(merge_request, state)
-          end
-
-          def duo_code_review_system_note_enabled?
-            ::Feature.enabled?(:duo_code_review_system_note, merge_request&.project)
           end
 
           def todo_service
