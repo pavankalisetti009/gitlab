@@ -118,7 +118,7 @@ module Registrations
         :path,
         :visibility_level,
         :organization_id
-      ).with_defaults(organization_id: Current.organization&.id)
+      ).with_defaults(organization_id: Current.organization.id)
     end
 
     def project_params
