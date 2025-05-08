@@ -74,10 +74,7 @@ module EE
             pipeline.run_after_commit do
               if pipeline.can_store_security_reports?
                 ::Security::StoreScansWorker.perform_async(pipeline.id)
-
-                if ::Feature.enabled?(:process_scan_events, pipeline.project)
-                  ::Security::ProcessScanEventsWorker.perform_async(pipeline.id)
-                end
+                ::Security::ProcessScanEventsWorker.perform_async(pipeline.id)
               else
                 ::Sbom::ScheduleIngestReportsService.new(pipeline).execute
                 ::Ci::CompareSecurityReportsService.set_security_mr_widget_to_ready(pipeline_id: pipeline.id)
