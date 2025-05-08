@@ -62,6 +62,12 @@ export default {
       });
     },
     reviewersForApprovalRule(rule) {
+      if (rule.type.toLowerCase() === RULE_TYPE_ANY_APPROVER) {
+        return this.reviewers.filter(
+          (r) => !r.mergeRequestInteraction.applicableApprovalRules.length,
+        );
+      }
+
       return this.reviewers.filter((r) =>
         r.mergeRequestInteraction.applicableApprovalRules.find((a) => a.id === rule.id),
       );
@@ -175,6 +181,7 @@ export default {
                   :root-path="relativeUrlRoot"
                   :is-editable="userPermissions.adminMergeRequest"
                   :can-rerequest="userPermissions.adminMergeRequest"
+                  data-testid="approval-rule-reviewers"
                   @request-review="(data) => $emit('request-review', data)"
                   @remove-reviewer="(data) => $emit('remove-reviewer', data)"
                 />

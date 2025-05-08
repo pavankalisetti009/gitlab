@@ -13,7 +13,12 @@ describe('Reviewer drawer approval rules component', () => {
   const findOptionalToggle = () => wrapper.findByTestId('optional-rules-toggle');
   const findRuleRows = () => wrapper.findAll('tbody tr');
 
-  function createComponent({ rule = null, approvalsRequired = 1, key = 'required' } = {}) {
+  function createComponent({
+    rule = null,
+    approvalsRequired = 1,
+    key = 'required',
+    reviewers = [],
+  } = {}) {
     const apolloProvider = createMockApollo([
       [userPermissionsQuery, jest.fn().mockResolvedValue({ data: { project: null } })],
     ]);
@@ -27,7 +32,7 @@ describe('Reviewer drawer approval rules component', () => {
         directlyInviteMembers: false,
       },
       propsData: {
-        reviewers: [],
+        reviewers,
         group: {
           label: 'Rule',
           key,
@@ -135,6 +140,43 @@ describe('Reviewer drawer approval rules component', () => {
       });
 
       expect(wrapper.findByTestId('section-name').exists()).toBe(false);
+    });
+  });
+
+  describe('when rule is any approver', () => {
+    it('shows reviewers who are not attached to a approval rule', () => {
+      createComponent({
+        rule: {
+          id: '1',
+          approvalsRequired: 1,
+          name: 'Any approval rule',
+          section: 'optional',
+          type: 'any_approver',
+          approvedBy: { nodes: [] },
+        },
+        reviewers: [
+          {
+            id: 1,
+            username: 'root',
+            mergeRequestInteraction: { applicableApprovalRules: [] },
+          },
+          {
+            id: 2,
+            username: 'user',
+            mergeRequestInteraction: { applicableApprovalRules: [{ id: 10 }] },
+          },
+        ],
+      });
+
+      const reviewers = wrapper.findByTestId('approval-rule-reviewers');
+
+      expect(reviewers.exists()).toBe(true);
+      expect(reviewers.props('users')).toContainEqual(
+        expect.objectContaining({
+          id: 1,
+          username: 'root',
+        }),
+      );
     });
   });
 });
