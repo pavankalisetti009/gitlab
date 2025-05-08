@@ -22,6 +22,7 @@ import {
   shallowMountExtended,
   extendedWrapper,
 } from 'helpers/vue_test_utils_helper';
+import { ROUTE_FRAMEWORKS } from 'ee/compliance_dashboard/constants';
 import { requirementEvents } from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { stubComponent } from 'helpers/stub_component';
@@ -95,6 +96,7 @@ describe('Edit Framework Form', () => {
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findError = () => wrapper.findComponent(GlAlert);
+  const findCancelButton = () => wrapper.findByTestId('cancel-btn');
   const findDeleteButton = () => wrapper.findByTestId('delete-btn');
   const findDeleteModal = () => wrapper.findComponent(DeleteModal);
   const findDeleteButtonTooltip = () => wrapper.findComponent(GlTooltip);
@@ -229,7 +231,25 @@ describe('Edit Framework Form', () => {
 
       expect(wrapper.find('input[name="default"]').attributes('value')).toBe('true');
     });
+
+    it('navigates to compliance center if cancel button is clicked', async () => {
+      wrapper = createComponent(mountExtended, {
+        requestHandlers: [
+          [
+            getComplianceFrameworkQuery,
+            () => ({ ...createComplianceFrameworksReportResponse(), default: true }),
+          ],
+        ],
+      });
+
+      await waitForPromises();
+
+      findCancelButton().vm.$emit('click');
+
+      expect(routerPush).toHaveBeenCalledWith({ name: ROUTE_FRAMEWORKS, query: { id: 1 } });
+    });
   });
+
   describe('Security policies migration', () => {
     describe('popup when saving framework', () => {
       beforeEach(() => {

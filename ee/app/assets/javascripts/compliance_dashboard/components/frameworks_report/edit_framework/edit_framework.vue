@@ -21,7 +21,7 @@ import {
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
-import { ROUTE_NEW_FRAMEWORK_SUCCESS } from '../../../constants';
+import { ROUTE_NEW_FRAMEWORK_SUCCESS, ROUTE_FRAMEWORKS } from '../../../constants';
 import { convertFrameworkIdToGraphQl } from '../../../utils';
 import createComplianceFrameworkMutation from '../../../graphql/mutations/create_compliance_framework.mutation.graphql';
 import updateComplianceFrameworkMutation from '../../../graphql/mutations/update_compliance_framework.mutation.graphql';
@@ -220,8 +220,15 @@ export default {
       this.errorMessage = userFriendlyText;
       Sentry.captureException(error);
     },
-    navigateBack() {
-      this.$router.back();
+    navigateOutEditView() {
+      if (this.isNewFramework) {
+        this.$router.back();
+      }
+
+      this.$router.push({
+        name: ROUTE_FRAMEWORKS,
+        query: { id: getIdFromGraphQLId(this.formData.id) },
+      });
     },
     async createFramework(params) {
       const { data } = await this.$apollo.mutate({
@@ -282,7 +289,7 @@ export default {
           if (this.adherenceV2Enabled) {
             await this.createRequirements(frameworkId);
           }
-          this.handleMutationSuccess();
+          this.handleMutationSuccess(frameworkId);
         } else {
           await this.updateFramework(params);
           this.interjectModal();
@@ -293,21 +300,22 @@ export default {
         this.isSaving = false;
       }
     },
-    navigateNewFramework() {
+    navigateNewFramework(frameworkId) {
       this.$router.push({
         name: ROUTE_NEW_FRAMEWORK_SUCCESS,
+        query: { id: getIdFromGraphQLId(frameworkId) },
       });
     },
     interjectModal() {
       if (!this.hasPipeline) {
-        this.handleMutationSuccess();
+        this.handleMutationSuccess(this.formData.id);
       }
 
       this.showMigrationPopup = true;
     },
-    handleMutationSuccess() {
+    handleMutationSuccess(frameworkId) {
       if (this.isNewFramework) {
-        this.navigateNewFramework();
+        this.navigateNewFramework(frameworkId);
       }
       this.showMigrationPopup = false;
     },
@@ -695,7 +703,9 @@ export default {
           >
             {{ saveButtonText }}
           </gl-button>
-          <gl-button data-testid="cancel-btn" @click="navigateBack">{{ __('Cancel') }}</gl-button>
+          <gl-button data-testid="cancel-btn" @click="navigateOutEditView">
+            {{ __('Cancel') }}
+          </gl-button>
           <template v-if="graphqlId">
             <gl-tooltip
               v-if="deleteBtnDisabled"
