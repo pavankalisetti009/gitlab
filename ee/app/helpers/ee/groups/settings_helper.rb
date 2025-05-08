@@ -22,8 +22,9 @@ module EE
       end
 
       def show_group_ai_settings_general?
-        GitlabSubscriptions::Trials::DuoAddOn.any_add_on_purchased_or_trial?(@group.root_ancestor)
+        GitlabSubscriptions::Trials::DuoProOrDuoEnterprise.any_add_on_purchased_or_trial?(@group.root_ancestor)
       end
+      alias_method :should_show_duo_availability_general_settings?, :show_group_ai_settings_general?
 
       def show_group_ai_settings_page?
         @group.licensed_ai_features_available? && show_gitlab_duo_settings_app?(@group)
@@ -63,7 +64,9 @@ module EE
           is_duo_base_access_allowed: ::Feature.enabled?(:allow_duo_base_access, @group).to_s,
           show_early_access_banner: show_early_access_program_banner?.to_s,
           early_access_path: group_early_access_opt_in_path(@group),
-          update_id: @group.id
+          update_id: @group.id,
+          duo_pro_or_duo_enterprise_tier: active_group_duo_pro_or_duo_enterprise_tier,
+          should_show_duo_availability: should_show_duo_availability_general_settings?.to_s
         }
       end
 
@@ -86,6 +89,13 @@ module EE
       end
 
       private
+
+      def active_group_duo_pro_or_duo_enterprise_tier
+        add_on_purchase = GitlabSubscriptions::Trials::DuoProOrDuoEnterprise.any_add_on_purchase(@group.root_ancestor)
+        return unless add_on_purchase
+
+        add_on_purchase.add_on.name.upcase
+      end
 
       def saas_user_caps_i18n_string(group)
         if ::Feature.enabled?(:saas_user_caps_auto_approve_pending_users_on_cap_increase, group.root_ancestor)

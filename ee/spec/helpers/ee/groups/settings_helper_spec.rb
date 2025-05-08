@@ -18,6 +18,8 @@ RSpec.describe EE::Groups::SettingsHelper do
     helper.instance_variable_set(:@group, group)
     allow(helper).to receive(:current_user).and_return(current_user)
     allow(helper).to receive(:instance_variable_get).with(:@current_user).and_return(current_user)
+    allow(::GitlabSubscriptions::AddOnPurchase)
+      .to receive_message_chain(:for_self_managed, :for_duo_pro_or_duo_enterprise, :active, :first)
   end
 
   describe '.unique_project_download_limit_settings_data', feature_category: :insider_threat do
@@ -68,8 +70,16 @@ RSpec.describe EE::Groups::SettingsHelper do
   describe 'group_ai_settings_helper_data' do
     subject { helper.group_ai_settings_helper_data }
 
+    let(:add_on_purchase) { nil }
+    let(:root_ancestor) { group }
+
     before do
       allow(helper).to receive(:show_early_access_program_banner?).and_return(true)
+
+      allow(GitlabSubscriptions::Trials::DuoProOrDuoEnterprise)
+        .to receive(:any_add_on_purchase)
+        .with(root_ancestor)
+        .and_return(add_on_purchase)
     end
 
     it 'returns the expected data' do
@@ -86,9 +96,43 @@ RSpec.describe EE::Groups::SettingsHelper do
           are_prompt_cache_settings_allowed: (group.prompt_cache_settings_allowed? && gitlab_com_subscription?).to_s,
           show_early_access_banner: "true",
           early_access_path: group_early_access_opt_in_path(group),
-          update_id: group.id
+          update_id: group.id,
+          duo_pro_or_duo_enterprise_tier: nil,
+          should_show_duo_availability: "false"
         }
       )
+    end
+
+    context 'with Duo Pro' do
+      let(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase, :duo_pro, :active) }
+
+      it 'returns Duo Pro' do
+        is_expected.to include(duo_pro_or_duo_enterprise_tier: 'CODE_SUGGESTIONS', should_show_duo_availability: 'true')
+      end
+    end
+
+    context 'with Duo Enterprise' do
+      let(:add_on_purchase) { build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active) }
+
+      it 'returns Duo Enterprise' do
+        is_expected.to include(duo_pro_or_duo_enterprise_tier: 'DUO_ENTERPRISE', should_show_duo_availability: 'true')
+      end
+    end
+
+    context 'with sub-group' do
+      # rubocop:disable RSpec/FactoryBot/AvoidCreate -- Need persisted objects
+      let(:root_ancestor) { create(:group) }
+      let(:sub_group) { create(:group, parent: root_ancestor) }
+      # rubocop:enable RSpec/FactoryBot/AvoidCreate
+      let(:group) { build(:group, parent: sub_group, namespace_settings: namespace_settings) }
+
+      let(:add_on_purchase) do
+        build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, namespace: root_ancestor)
+      end
+
+      it 'returns add-on purchase from root ancestor' do
+        is_expected.to include(duo_pro_or_duo_enterprise_tier: 'DUO_ENTERPRISE', should_show_duo_availability: 'true')
+      end
     end
   end
 
@@ -131,8 +175,8 @@ RSpec.describe EE::Groups::SettingsHelper do
   describe 'show_group_ai_settings_general?' do
     context 'when group has trial or add on' do
       before do
-        allow(GitlabSubscriptions::Trials::DuoAddOn).to receive(:any_add_on_purchased_or_trial?)
-        allow(GitlabSubscriptions::Trials::DuoAddOn).to receive(:any_add_on_purchased_or_trial?)
+        allow(GitlabSubscriptions::Trials::DuoProOrDuoEnterprise).to receive(:any_add_on_purchased_or_trial?)
+        allow(GitlabSubscriptions::Trials::DuoProOrDuoEnterprise).to receive(:any_add_on_purchased_or_trial?)
           .with(group).and_return(true)
       end
 
@@ -143,7 +187,7 @@ RSpec.describe EE::Groups::SettingsHelper do
 
     context 'when group has no trial or add on' do
       before do
-        allow(GitlabSubscriptions::Trials::DuoAddOn).to receive(:any_add_on_purchased_or_trial?)
+        allow(GitlabSubscriptions::Trials::DuoProOrDuoEnterprise).to receive(:any_add_on_purchased_or_trial?)
           .with(group).and_return(false)
       end
 

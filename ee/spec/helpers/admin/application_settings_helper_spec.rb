@@ -99,7 +99,9 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             duo_chat_expiration_column: duo_chat_expiration_column,
             duo_chat_expiration_days: duo_chat_expiration_days.to_s,
             duo_core_features_enabled: expected_duo_core_features_enabled.to_s,
-            is_duo_base_access_allowed: 'true'
+            is_duo_base_access_allowed: 'true',
+            duo_pro_or_duo_enterprise_tier: nil,
+            should_show_duo_availability: 'false'
           }
         end
 
@@ -130,6 +132,9 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?)
             .and_return(duo_ent_purchased)
 
+          allow(::GitlabSubscriptions::AddOnPurchase)
+            .to receive_message_chain(:for_self_managed, :for_duo_pro_or_duo_enterprise, :active, :first)
+
           allow(::Ai::Setting).to receive_message_chain(:instance, :ai_gateway_url).and_return(ai_gateway_url)
           allow(::Ai::Setting).to receive_message_chain(:instance, :enabled_instance_verbose_ai_logs)
             .and_return(enabled_expanded_logging)
@@ -140,7 +145,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             .and_return expected_duo_core_features_enabled
         end
 
-        it "returns the expected data" do
+        it 'returns the expected data' do
           is_expected.to eq(expected_settings_helper_data)
         end
 
@@ -169,6 +174,66 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
           .to receive(:find_by_name).with(:anthropic_proxy).and_return(enterprise_service)
         allow(enterprise_service).to receive(:purchased?).and_return(true)
       end
+    end
+  end
+
+  describe '#ai_settings_helper_data[:duo_pro_or_duo_enterprise_tier]' do
+    subject { helper.ai_settings_helper_data[:duo_pro_or_duo_enterprise_tier] }
+
+    before do
+      allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:code_suggestions)
+      allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:anthropic_proxy)
+
+      allow(GitlabSubscriptions::Trials::DuoProOrDuoEnterprise)
+        .to receive(:any_add_on_purchase)
+        .with(nil)
+        .and_return(duo_pro_or_duo_enterprise_add_on_purchase)
+    end
+
+    context 'with Duo Pro' do
+      let(:duo_pro_or_duo_enterprise_add_on_purchase) do
+        build(:gitlab_subscription_add_on_purchase, :duo_pro, :self_managed, :active)
+      end
+
+      it { is_expected.to eq 'CODE_SUGGESTIONS' }
+    end
+
+    context 'with Duo Enterprise' do
+      let(:duo_pro_or_duo_enterprise_add_on_purchase) do
+        build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed, :active)
+      end
+
+      it { is_expected.to eq 'DUO_ENTERPRISE' }
+    end
+  end
+
+  describe '#ai_settings_helper_data[:should_show_duo_availability]' do
+    subject { helper.ai_settings_helper_data[:should_show_duo_availability] }
+
+    before do
+      allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:code_suggestions)
+      allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(:anthropic_proxy)
+
+      allow(GitlabSubscriptions::Trials::DuoProOrDuoEnterprise)
+        .to receive(:any_add_on_purchased_or_trial?)
+        .with(nil)
+        .and_return(duo_pro_or_duo_enterprise_add_on_purchase.active?)
+    end
+
+    context 'with active Duo add-on' do
+      let(:duo_pro_or_duo_enterprise_add_on_purchase) do
+        build(:gitlab_subscription_add_on_purchase, :duo_pro, :active)
+      end
+
+      it { is_expected.to eq 'true' }
+    end
+
+    context 'with expired Duo add-on' do
+      let(:duo_pro_or_duo_enterprise_add_on_purchase) do
+        build(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired)
+      end
+
+      it { is_expected.to eq 'false' }
     end
   end
 
@@ -324,13 +389,13 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       end
 
       before do
-        allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
-          :for_self_managed, :for_duo_pro_or_duo_enterprise, :last
-        ).and_return(duo_purchase)
+        allow(GitlabSubscriptions::AddOnPurchase)
+          .to receive_message_chain(:for_self_managed, :for_duo_pro_or_duo_enterprise, :last)
+          .and_return(duo_purchase)
 
-        allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
-          :for_self_managed, :for_duo_enterprise, :active, :exists?
-        ).and_return(true)
+        allow(::GitlabSubscriptions::AddOnPurchase)
+          .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?)
+          .and_return(true)
       end
 
       it 'includes the correct values' do

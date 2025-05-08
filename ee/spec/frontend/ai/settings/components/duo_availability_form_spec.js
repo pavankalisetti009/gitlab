@@ -3,11 +3,12 @@ import { GlFormRadio } from '@gitlab/ui';
 import DuoAvailabilityForm from 'ee/ai/settings/components/duo_availability_form.vue';
 import CascadingLockIcon from '~/namespaces/cascading_settings/components/cascading_lock_icon.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
+import { DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
 
 describe('DuoAvailabilityForm', () => {
   let wrapper;
 
-  const createComponent = (props = {}, provide = {}) => {
+  const createComponent = ({ props = {}, provide = {} } = {}) => {
     return shallowMount(DuoAvailabilityForm, {
       propsData: {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
@@ -20,6 +21,7 @@ describe('DuoAvailabilityForm', () => {
           lockedByApplicationSetting: false,
           ancestorNamespace: null,
         },
+        duoProOrDuoEnterpriseTier: DUO_ENTERPRISE,
         ...provide,
       },
     });
@@ -27,6 +29,7 @@ describe('DuoAvailabilityForm', () => {
 
   const findFormRadioButtons = () => wrapper.findAllComponents(GlFormRadio);
   const findCascadingLockIcon = () => wrapper.findComponent(CascadingLockIcon);
+  const findTitleText = () => wrapper.find('h5').text();
 
   it('renders radio buttons with correct labels', () => {
     wrapper = createComponent();
@@ -44,12 +47,11 @@ describe('DuoAvailabilityForm', () => {
 
   describe('when areDuoSettingsLocked is true', () => {
     beforeEach(() => {
-      wrapper = createComponent(
-        {},
-        {
+      wrapper = createComponent({
+        provide: {
           areDuoSettingsLocked: true,
         },
-      );
+      });
     });
 
     it('disables radio buttons', () => {
@@ -72,22 +74,20 @@ describe('DuoAvailabilityForm', () => {
     });
 
     it('does not show CascadingLockIcon when cascadingSettingsData is empty', () => {
-      wrapper = createComponent(
-        {},
-        {
+      wrapper = createComponent({
+        provide: {
           cascadingSettingsData: {},
         },
-      );
+      });
       expect(findCascadingLockIcon().exists()).toBe(false);
     });
 
     it('does not show CascadingLockIcon when cascadingSettingsData is null', () => {
-      wrapper = createComponent(
-        {},
-        {
+      wrapper = createComponent({
+        provide: {
           cascadingSettingsData: null,
         },
-      );
+      });
       expect(findCascadingLockIcon().exists()).toBe(false);
     });
   });
@@ -96,6 +96,30 @@ describe('DuoAvailabilityForm', () => {
     it('does not show CascadingLockIcon', () => {
       wrapper = createComponent();
       expect(findCascadingLockIcon().exists()).toBe(false);
+    });
+  });
+
+  describe('without Duo Pro or Duo Enterprise', () => {
+    it('displays generic title', () => {
+      wrapper = createComponent({ provide: { duoProOrDuoEnterpriseTier: null } });
+
+      expect(findTitleText()).toBe('Availability');
+    });
+  });
+
+  describe('with Duo Pro', () => {
+    it('displays Duo Pro title', () => {
+      wrapper = createComponent({ provide: { duoProOrDuoEnterpriseTier: DUO_PRO } });
+
+      expect(findTitleText()).toBe('GitLab Duo Pro availability');
+    });
+  });
+
+  describe('with Duo Enterprise', () => {
+    it('displays Duo Enterprise title', () => {
+      wrapper = createComponent({ provide: { duoProOrDuoEnterpriseTier: DUO_ENTERPRISE } });
+
+      expect(findTitleText()).toBe('GitLab Duo Enterprise availability');
     });
   });
 });
