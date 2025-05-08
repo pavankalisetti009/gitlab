@@ -23502,6 +23502,9 @@ msgstr ""
 msgid "Each project can also have an issue tracker and a wiki."
 msgstr ""
 
+msgid "Eclipse"
+msgstr ""
+
 msgid "Edit"
 msgstr ""
 
@@ -27866,6 +27869,12 @@ msgstr ""
 msgid "Get started!"
 msgstr ""
 
+msgid "GetStarted|Download the extension to access GitLab features and GitLab Duo AI capabilities to handle everyday tasks."
+msgstr ""
+
+msgid "GetStarted|Use GitLab Duo locally"
+msgstr ""
+
 msgid "GiB"
 msgstr ""
 
@@ -27996,6 +28005,9 @@ msgid "GitLab Advanced SAST"
 msgstr ""
 
 msgid "GitLab Billing Team."
+msgstr ""
+
+msgid "GitLab CLI"
 msgstr ""
 
 msgid "GitLab Community Edition"
@@ -33967,6 +33979,9 @@ msgid "January"
 msgstr ""
 
 msgid "Japanese language support using"
+msgstr ""
+
+msgid "Jetbrains"
 msgstr ""
 
 msgid "Jira display name"
@@ -39994,6 +40009,9 @@ msgid "Needs attention"
 msgstr ""
 
 msgid "Neither gitlab_instance_uid or sub found on Cloud Connector token"
+msgstr ""
+
+msgid "Neovim"
 msgstr ""
 
 msgid "Network"
@@ -66339,6 +66357,9 @@ msgstr ""
 msgid "Using required encryption strategy when encrypted field is missing!"
 msgstr ""
 
+msgid "VS Code"
+msgstr ""
+
 msgid "VS Code Extension Marketplace"
 msgstr ""
 
@@ -67044,6 +67065,9 @@ msgid "VisibilityLevel|Unknown"
 msgstr ""
 
 msgid "Visit new homepage"
+msgstr ""
+
+msgid "Visual Studio"
 msgstr ""
 
 msgid "Visual Studio Code"
