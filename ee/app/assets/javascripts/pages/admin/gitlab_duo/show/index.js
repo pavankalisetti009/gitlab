@@ -11,8 +11,6 @@ export function mountGitlabDuoHomeApp() {
     return null;
   }
 
-  const isAdminSettings = true;
-
   const {
     addDuoProSeatsUrl,
     aiGatewayUrl,
@@ -85,7 +83,7 @@ export function mountGitlabDuoHomeApp() {
       duoWorkflowSettingsPath,
       redirectPath,
       duoWorkflowDisablePath,
-      showDuoWorkflowSettings: isAdminSettings && parseBoolean(isSaas),
+      showDuoWorkflowSettings: parseBoolean(isSaas),
     },
     render: (h) => h(GitlabDuoHome),
   });

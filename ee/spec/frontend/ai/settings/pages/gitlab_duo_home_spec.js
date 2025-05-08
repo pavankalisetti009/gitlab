@@ -125,7 +125,7 @@ describe('GitLab Duo Home', () => {
       });
     });
 
-    describe('when showDuoWorkflow is true', () => {
+    describe('when showDuoWorkflowSettings is true', () => {
       beforeEach(() => {
         createComponent({ showDuoWorkflowSettings: true });
       });

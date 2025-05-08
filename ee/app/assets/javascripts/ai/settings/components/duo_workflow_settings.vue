@@ -8,7 +8,7 @@ import {
   GlLoadingIcon,
   GlCard,
 } from '@gitlab/ui';
-import { __, s__, sprintf } from '~/locale';
+import { s__, sprintf } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
@@ -36,8 +36,7 @@ export default {
   props: {
     title: {
       type: String,
-      required: false,
-      default: __('GitLab Duo'),
+      required: true,
     },
     subtitle: {
       type: String,
@@ -63,16 +62,27 @@ export default {
           visitUrlWithAlerts(this.redirectPath, [
             {
               id: 'duo-workflow-successfully-enabled',
-              message: sprintf(this.$options.i18n.enabledSuccessMessage, {
-                accountId: username ? `@${username}` : '',
-              }),
+              message: username
+                ? sprintf(
+                    s__(
+                      'AiPowered|GitLab Duo Workflow is now on for the instance and the service account (%{accountId}) was created. To use Workflow in your groups, you must turn on AI features for specific groups.',
+                    ),
+                    {
+                      accountId: `@${username}`,
+                    },
+                  )
+                : s__(
+                    'AiPowered|GitLab Duo Workflow is now on for the instance. To use Workflow in your groups, you must turn on AI features for specific groups.',
+                  ),
               variant: 'success',
             },
           ]);
         })
         .catch((error) => {
           createAlert({
-            message: error.response?.data?.message || this.$options.i18n.enableErrorMessage,
+            message:
+              error.response?.data?.message ||
+              s__('AiPowered|Failed to enable GitLab Duo Workflow.'),
             captureError: true,
             error,
           });
@@ -91,7 +101,7 @@ export default {
             visitUrlWithAlerts(this.redirectPath, [
               {
                 id: 'duo-workflow-successfully-disabled',
-                message: this.$options.i18n.disabledSuccessMessage,
+                message: s__('AiPowered|GitLab Duo Workflow has successfully been turned off.'),
                 variant: 'success',
               },
             ]);
@@ -99,7 +109,9 @@ export default {
         })
         .catch((error) => {
           createAlert({
-            message: error.response?.data?.message || this.$options.i18n.disableErrorMessage,
+            message:
+              error.response?.data?.message ||
+              s__('AiPowered|Failed to disable GitLab Duo Workflow.'),
             captureError: true,
             error,
           });
@@ -113,33 +125,6 @@ export default {
     hideDisableConfirmation() {
       this.showConfirmModal = false;
     },
-  },
-  i18n: {
-    workflowTitle: s__('AiPowered|GitLab Duo Workflow'),
-    workflowStatusOn: __('On'),
-    workflowStatusOff: __('Off'),
-    workflowDescription: s__(
-      'AiPowered|Workflow is an AI-powered coding agent in the Visual Studio Code (VS Code) IDE.',
-    ),
-    turnOnButton: s__('AiPowered|Turn on GitLab Duo Workflow'),
-    turnOffButton: s__('AiPowered|Turn off GitLab Duo Workflow'),
-    serviceAccountText: s__(
-      'AiPowered|When you turn on GitLab Duo Workflow, a service account is created.',
-    ),
-    serviceAccountLink: s__('AiPowered|What is this service account?'),
-    accountLabel: __('Account:'),
-    enabledSuccessMessage: s__(
-      'AiPowered|GitLab Duo Workflow is now on for the instance and the service account (%{accountId}) was created. To use Workflow in your groups, you must turn on AI features for specific groups.',
-    ),
-    disabledSuccessMessage: s__('AiPowered|GitLab Duo Workflow has successfully been turned off.'),
-    confirmModalTitle: s__('AiPowered|Are you sure you want to turn off GitLab Duo Workflow?'),
-    confirmModalMessage: s__(
-      'AiPowered|When you turn off Workflow, users can no longer use it to solve coding tasks. Are you sure?',
-    ),
-    cancelButton: __('Cancel'),
-    confirmDisableButton: s__('AiPowered|Turn off Workflow'),
-    disableErrorMessage: s__('AiPowered|Failed to disable GitLab Duo Workflow.'),
-    enableErrorMessage: s__('AiPowered|Failed to enable GitLab Duo Workflow.'),
   },
 };
 </script>
@@ -166,18 +151,18 @@ export default {
       class="gl-mt-5 gl-justify-between"
     >
       <template #default>
-        <h2 class="gl-heading-3 gl-mb-3 gl-font-bold">{{ $options.i18n.workflowTitle }}</h2>
+        <h2 class="gl-heading-3 gl-mb-3 gl-font-bold">
+          {{ s__('AiPowered|GitLab Duo Workflow') }}
+        </h2>
 
         <h3 class="gl-font-lg gl-mb-3">
-          {{
-            duoWorkflowEnabled ? $options.i18n.workflowStatusOn : $options.i18n.workflowStatusOff
-          }}
+          {{ duoWorkflowEnabled ? __('On') : __('Off') }}
         </h3>
 
         <template v-if="duoWorkflowEnabled">
           <div class="gl-border-t gl-py-3">
             <div class="gl-flex gl-items-center gl-gap-2" data-testid="service-account">
-              <span>{{ $options.i18n.accountLabel }}</span>
+              <span>{{ __('Account:') }}</span>
               <gl-avatar-link
                 :href="duoWorkflowServiceAccount.webUrl"
                 :title="duoWorkflowServiceAccount.name"
@@ -199,7 +184,13 @@ export default {
 
         <template v-else>
           <div class="gl-border-b gl-py-3">
-            <p class="gl-mb-0">{{ $options.i18n.workflowDescription }}</p>
+            <p class="gl-mb-0">
+              {{
+                s__(
+                  'AiPowered|Workflow is an AI-powered coding agent in the Visual Studio Code (VS Code) IDE.',
+                )
+              }}
+            </p>
           </div>
         </template>
       </template>
@@ -213,7 +204,7 @@ export default {
             @click="showDisableConfirmation"
           >
             <gl-loading-icon v-if="isLoading" inline size="sm" class="gl-mr-2" />
-            {{ $options.i18n.turnOffButton }}
+            {{ s__('AiPowered|Turn off GitLab Duo Workflow') }}
           </gl-button>
         </div>
 
@@ -226,13 +217,15 @@ export default {
             @click="enableWorkflow"
           >
             <gl-loading-icon v-if="isLoading" inline size="sm" class="gl-mr-2" />
-            {{ $options.i18n.turnOnButton }}
+            {{ s__('AiPowered|Turn on GitLab Duo Workflow') }}
           </gl-button>
 
           <p class="gl-mb-0 gl-mt-5">
-            {{ $options.i18n.serviceAccountText }}
+            {{
+              s__('AiPowered|When you turn on GitLab Duo Workflow, a service account is created.')
+            }}
             <gl-link href="#" class="gl-ml-1" data-testid="service-account-link">
-              {{ $options.i18n.serviceAccountLink }}
+              {{ s__('AiPowered|What is this service account?') }}
             </gl-link>
           </p>
         </div>
@@ -241,17 +234,23 @@ export default {
 
     <gl-modal
       :visible="showConfirmModal"
-      :title="$options.i18n.confirmModalTitle"
+      :title="s__('AiPowered|Are you sure you want to turn off GitLab Duo Workflow?')"
       modal-id="disable-workflow-modal"
       size="sm"
       @primary="disableWorkflow"
       @cancel="hideDisableConfirmation"
       @close="hideDisableConfirmation"
     >
-      <p>{{ $options.i18n.confirmModalMessage }}</p>
+      <p>
+        {{
+          s__(
+            'AiPowered|When you turn off Workflow, users can no longer use it to solve coding tasks. Are you sure?',
+          )
+        }}
+      </p>
       <template #modal-footer>
         <gl-button class="js-cancel" data-testid="cancel-button" @click="hideDisableConfirmation">
-          {{ $options.i18n.cancelButton }}
+          {{ __('Cancel') }}
         </gl-button>
         <gl-button
           variant="danger"
@@ -259,7 +258,7 @@ export default {
           data-testid="confirm-disable-button"
           @click="disableWorkflow"
         >
-          {{ $options.i18n.confirmDisableButton }}
+          {{ s__('AiPowered|Turn off Workflow') }}
         </gl-button>
       </template>
     </gl-modal>

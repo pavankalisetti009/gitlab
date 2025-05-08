@@ -90,32 +90,59 @@ describe('DuoWorkflowSettings', () => {
   });
 
   describe('workflow operations', () => {
-    it('calls the enable workflow API and redirects with success alert', async () => {
-      createWrapper();
+    describe('enabling GitLab Duo Workflow', () => {
+      it('shows success message with new service account when created', async () => {
+        createWrapper();
 
-      axios.post.mockResolvedValueOnce({
-        status: 200,
-        data: {
-          service_account: SERVICE_ACCOUNT,
-        },
+        axios.post.mockResolvedValueOnce({
+          status: 200,
+          data: {
+            service_account: SERVICE_ACCOUNT,
+          },
+        });
+
+        findEnableButton().vm.$emit('click');
+
+        expect(axios.post).toHaveBeenCalledWith(WORKFLOW_SETTINGS_PATH);
+
+        await waitForPromises();
+
+        expect(visitUrlWithAlerts).toHaveBeenCalledWith(
+          REDIRECT_PATH,
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: 'duo-workflow-successfully-enabled',
+              message: `GitLab Duo Workflow is now on for the instance and the service account (@${SERVICE_ACCOUNT.username}) was created. To use Workflow in your groups, you must turn on AI features for specific groups.`,
+              variant: 'success',
+            }),
+          ]),
+        );
       });
 
-      findEnableButton().vm.$emit('click');
+      it('shows generic success message when no service account info is available', async () => {
+        createWrapper();
 
-      expect(axios.post).toHaveBeenCalledWith(WORKFLOW_SETTINGS_PATH);
+        axios.post.mockResolvedValueOnce({
+          status: 200,
+          data: {},
+        });
 
-      await waitForPromises();
+        findEnableButton().vm.$emit('click');
 
-      expect(visitUrlWithAlerts).toHaveBeenCalledWith(
-        REDIRECT_PATH,
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: 'duo-workflow-successfully-enabled',
-            message: `GitLab Duo Workflow is now on for the instance and the service account (@${SERVICE_ACCOUNT.username}) was created. To use Workflow in your groups, you must turn on AI features for specific groups.`,
-            variant: 'success',
-          }),
-        ]),
-      );
+        await waitForPromises();
+
+        expect(visitUrlWithAlerts).toHaveBeenCalledWith(
+          REDIRECT_PATH,
+          expect.arrayContaining([
+            expect.objectContaining({
+              id: 'duo-workflow-successfully-enabled',
+              message:
+                'GitLab Duo Workflow is now on for the instance. To use Workflow in your groups, you must turn on AI features for specific groups.',
+              variant: 'success',
+            }),
+          ]),
+        );
+      });
     });
 
     it('calls the disable workflow API and redirects with success alert', async () => {
