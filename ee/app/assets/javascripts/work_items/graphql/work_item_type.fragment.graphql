@@ -62,6 +62,9 @@ fragment WorkItemTypeFragment on WorkItemType {
       allowedStatuses {
         ...WorkItemStatusFragment
       }
+      defaultOpenStatus {
+        ...WorkItemStatusFragment
+      }
     }
   }
 }
