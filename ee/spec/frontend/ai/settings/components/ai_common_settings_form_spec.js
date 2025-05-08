@@ -23,6 +23,7 @@ describe('AiCommonSettingsForm', () => {
       provide: {
         isDuoBaseAccessAllowed: false,
         onGeneralSettingsPage: false,
+        shouldShowDuoAvailability: true,
         ...provide,
       },
     });
@@ -43,10 +44,6 @@ describe('AiCommonSettingsForm', () => {
   describe('component rendering', () => {
     it('renders GlForm component', () => {
       expect(findForm().exists()).toBe(true);
-    });
-
-    it('renders DuoAvailability component', () => {
-      expect(findDuoAvailability().exists()).toBe(true);
     });
 
     describe('when isDuoBaseAccessAllowed is false', () => {
@@ -88,10 +85,7 @@ describe('AiCommonSettingsForm', () => {
     });
 
     it('enables save button when parent form changes are made', () => {
-      createComponent({
-        props: { hasParentFormChanged: true },
-        provide: { onGeneralSettingsPage: false },
-      });
+      createComponent({ props: { hasParentFormChanged: true } });
       expect(findSaveButton().props('disabled')).toBe(false);
     });
 
@@ -151,6 +145,22 @@ describe('AiCommonSettingsForm', () => {
         createComponent({ provide: { onGeneralSettingsPage: true } });
         expect(findDuoCoreFeaturesForm().exists()).toBe(false);
       });
+    });
+  });
+
+  describe('with shouldShowDuoAvailability false', () => {
+    it('hides the Duo availability form', () => {
+      createComponent({ provide: { shouldShowDuoAvailability: false } });
+
+      expect(findDuoAvailability().exists()).toBe(false);
+    });
+  });
+
+  describe('with shouldShowDuoAvailability true', () => {
+    it('hides the Duo availability form', () => {
+      createComponent({ provide: { shouldShowDuoAvailability: true } });
+
+      expect(findDuoAvailability().exists()).toBe(true);
     });
   });
 });

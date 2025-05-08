@@ -2,7 +2,61 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::DuoAddOn, feature_category: :subscription_management do
+RSpec.describe GitlabSubscriptions::Trials::DuoProOrDuoEnterprise, feature_category: :subscription_management do
+  describe '.any_add_on_purchase' do
+    subject { described_class.any_add_on_purchase(namespace) }
+
+    let_it_be(:namespace) { create(:group) }
+
+    context 'when namespace add-on exists' do
+      before do
+        allow(described_class).to receive(:gitlab_com_subscription?).and_return(true)
+      end
+
+      context 'when active' do
+        let_it_be(:add_on_purchase) do
+          create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace)
+        end
+
+        it { is_expected.to eq add_on_purchase }
+      end
+
+      context 'when expired' do
+        let_it_be(:add_on_purchase) do
+          create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired, namespace: namespace)
+        end
+
+        it { is_expected.to eq add_on_purchase }
+      end
+    end
+
+    context 'when instance add-on exists' do
+      before do
+        allow(described_class).to receive(:gitlab_com_subscription?).and_return(false)
+      end
+
+      context 'when active' do
+        let_it_be(:add_on_purchase) do
+          create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed)
+        end
+
+        it { is_expected.to eq add_on_purchase }
+      end
+
+      context 'when expired' do
+        let_it_be(:add_on_purchase) do
+          create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed, :expired)
+        end
+
+        it { is_expected.to eq add_on_purchase }
+      end
+    end
+
+    context 'when namespace does not have an add-on' do
+      it { is_expected.to be_nil }
+    end
+  end
+
   describe '.any_add_on_purchased_or_trial?' do
     subject { described_class.any_add_on_purchased_or_trial?(namespace) }
 
