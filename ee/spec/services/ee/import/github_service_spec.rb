@@ -31,6 +31,7 @@ RSpec.describe Import::GithubService, feature_category: :importers do
   before do
     allow(client).to receive_message_chain(:octokit, :rate_limit, :limit)
     allow(client).to receive_message_chain(:octokit, :rate_limit, :remaining).and_return(100)
+    allow(::Gitlab::ApplicationRateLimiter).to receive(:throttled?).and_return(false)
     allow(Gitlab::GithubImport::Settings).to receive(:new).with(project_double).and_return(settings)
     allow(settings)
       .to receive(:write)
