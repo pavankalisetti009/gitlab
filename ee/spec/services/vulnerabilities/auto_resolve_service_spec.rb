@@ -42,6 +42,12 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
   end
 
   describe '#execute' do
+    it_behaves_like 'sync vulnerabilities changes to ES' do
+      let(:expected_vulnerabilities) { vulnerability }
+
+      subject { service.execute }
+    end
+
     it 'resolves vulnerabilities that are not resolved or dismissed', :freeze_time do
       service.execute
 

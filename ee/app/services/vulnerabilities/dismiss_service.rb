@@ -28,7 +28,7 @@ module Vulnerabilities
             author: @user
           )
 
-          Vulnerabilities::Read.by_vulnerabilities(@vulnerability).update_all(dismissal_reason: @dismissal_reason)
+          Vulnerabilities::Read.by_vulnerabilities(@vulnerability).update(dismissal_reason: @dismissal_reason)
         rescue ActiveRecord::RecordInvalid => invalid
           errors = invalid.record.errors
           messages = errors.full_messages.join

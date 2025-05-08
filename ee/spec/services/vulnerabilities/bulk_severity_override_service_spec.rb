@@ -44,6 +44,12 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
     end
 
     context 'when the user is authorized' do
+      it_behaves_like 'sync vulnerabilities changes to ES' do
+        let(:expected_vulnerabilities) { vulnerability }
+
+        subject { service.execute }
+      end
+
       it 'updates the severity for each vulnerability', :freeze_time do
         service.execute
 

@@ -10,15 +10,17 @@ module Vulnerabilities
     private
 
     def update(vulnerabilities_ids)
-      vulnerabilities = vulnerabilities_to_update(vulnerabilities_ids)
-      vulnerability_attrs = vulnerabilities_attributes(vulnerabilities)
+      selected_vulnerabilities = vulnerabilities_to_update(vulnerabilities_ids)
+      vulnerability_attrs = vulnerabilities_attributes(selected_vulnerabilities)
       return if vulnerability_attrs.empty?
 
       db_attributes = db_attributes_for(vulnerability_attrs)
 
       SecApplicationRecord.transaction do
-        update_support_tables(vulnerabilities, db_attributes)
-        vulnerabilities.update_all(db_attributes[:vulnerabilities])
+        update_support_tables(selected_vulnerabilities, db_attributes)
+        Vulnerabilities::BulkEsOperationService.new(selected_vulnerabilities).execute do |vulnerabilities|
+          vulnerabilities.update_all(db_attributes[:vulnerabilities])
+        end
       end
 
       Note.transaction do
