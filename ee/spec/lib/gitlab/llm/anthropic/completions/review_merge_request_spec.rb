@@ -655,7 +655,9 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
                 response_id: "msg_01NnknffDsPVts8FAQ6tyh47",
                 stop_reason: "end_turn",
                 input_tokens: 4087,
-                output_tokens: 420
+                output_tokens: 420,
+                total_tokens: 4507,
+                error_message: nil
               )
             )
 
@@ -671,7 +673,11 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
               hash_including(
                 message: "LLM response metrics",
                 event: "review_merge_request_llm_response_received",
-                merge_request_id: merge_request.id
+                merge_request_id: merge_request.id,
+                input_tokens: nil,
+                output_tokens: nil,
+                total_tokens: 0,
+                error_message: nil
               )
             )
 
@@ -693,7 +699,11 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
                 message: "LLM response metrics",
                 event: "review_merge_request_llm_response_received",
                 merge_request_id: merge_request.id,
-                response_id: "err_01NnknffDsPVts8FAQ6tyh48"
+                response_id: "err_01NnknffDsPVts8FAQ6tyh48",
+                input_tokens: nil,
+                output_tokens: nil,
+                total_tokens: 0,
+                error_message: combined_review_response["error"]["message"]
               )
             )
 
