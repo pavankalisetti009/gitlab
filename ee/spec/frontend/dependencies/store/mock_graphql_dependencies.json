@@ -1,6 +1,6 @@
 {
   "data": {
-    "project": {
+    "namespace": {
       "dependencies": {
         "nodes": [
           {

@@ -8,6 +8,7 @@ module Groups
     before_action only: :index do
       push_frontend_feature_flag(:version_filtering_on_group_level_dependency_list, group)
       push_frontend_feature_flag(:dependency_paths, group)
+      push_frontend_feature_flag(:group_dependencies_graphql, group)
     end
 
     before_action :authorize_read_dependency_list!

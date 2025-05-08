@@ -52,7 +52,11 @@ export default {
     ...mapGetters(['totals']),
     ...mapState(['pageInfo', 'initialized']),
     shouldFetchDependenciesViaGraphQL() {
-      return this.namespaceType === NAMESPACE_PROJECT && this.glFeatures.projectDependenciesGraphql;
+      if (this.isOrganizationNamespace) {
+        return false;
+      }
+
+      return this.glFeatures.projectDependenciesGraphql || this.glFeatures.groupDependenciesGraphql;
     },
     showSbomReportsErrors() {
       return this.sbomReportsErrors.length > 0;
