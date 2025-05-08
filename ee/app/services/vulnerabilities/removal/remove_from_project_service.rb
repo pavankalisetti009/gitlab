@@ -37,14 +37,18 @@ module Vulnerabilities
         def execute
           return false if batch_size == 0
 
-          Vulnerability.transaction do
+          transaction_status = Vulnerability.transaction do
             delete_resources_by_findings
             delete_resources_by_vulnerabilities
             delete_vulnerabilities
             delete_findings
 
             update_project_vulnerabilities_count if update_counts
+
+            true
           end
+
+          sync_elasticsearch if transaction_status
 
           true
         end
@@ -87,6 +91,12 @@ module Vulnerabilities
 
         def batch_attributes
           @batch_attributes ||= batch.pluck(:id, :finding_id) # rubocop:disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- This is a very specific usage
+        end
+
+        def sync_elasticsearch
+          vulnerabilities_to_delete = Vulnerability.id_in(vulnerability_ids)
+
+          Vulnerabilities::BulkEsOperationService.new(vulnerabilities_to_delete).execute(&:itself)
         end
       end
 

@@ -35,7 +35,7 @@ module Vulnerabilities
       # redundant safety check
       return if to_state == :dismissed
 
-      Vulnerabilities::Read.by_vulnerabilities(@vulnerability).update_all(dismissal_reason: nil)
+      Vulnerabilities::Read.by_vulnerabilities(@vulnerability).update(dismissal_reason: nil)
     end
   end
 end

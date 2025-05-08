@@ -83,13 +83,16 @@ module Vulnerabilities
         # Theoretically we could sort them according to severity but this will also not work if you have a policy
         # that auto-resolves Critical and Low SAST vulnerabilities. First 100 will most certainly contain the Critical
         # ones but the Low ones are going to be at the end of the collection
-        Vulnerability.id_in(vulnerabilities_to_resolve.map(&:vulnerability_id)).update_all(
-          state: :resolved,
-          auto_resolved: true,
-          resolved_by_id: user.id,
-          resolved_at: now,
-          updated_at: now
-        )
+        vulnerabilities_to_update = Vulnerability.id_in(vulnerabilities_to_resolve.map(&:vulnerability_id))
+
+        Vulnerabilities::BulkEsOperationService.new(vulnerabilities_to_update).execute do |vulnerabilities|
+          vulnerabilities.update_all(
+            state: :resolved,
+            auto_resolved: true,
+            resolved_by_id: user.id,
+            resolved_at: now,
+            updated_at: now)
+        end
       end
 
       Note.transaction do
