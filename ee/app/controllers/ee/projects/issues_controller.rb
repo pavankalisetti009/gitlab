@@ -17,7 +17,7 @@ module EE
         before_action :disable_query_limiting_ee, only: [:update, :bulk_update]
 
         before_action do
-          push_frontend_feature_flag(:work_item_related_vulnerabilities, project, type: :wip)
+          push_frontend_feature_flag(:work_item_related_vulnerabilities, project, type: :beta)
         end
 
         before_action only: [:new, :create] do
