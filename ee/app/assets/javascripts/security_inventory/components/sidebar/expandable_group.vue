@@ -68,10 +68,10 @@ export default {
 <template>
   <div>
     <div
-      class="gl-flex gl-h-8 gl-cursor-pointer gl-items-center gl-gap-4 gl-rounded-base gl-px-3 hover:!gl-bg-status-neutral"
+      class="gl-relative gl-flex gl-h-8 gl-cursor-pointer gl-items-center gl-gap-4 gl-rounded-base gl-px-3 hover:!gl-bg-status-neutral"
       :class="{ 'gl-bg-strong': isActiveGroup }"
       data-testid="subgroup"
-      :style="{ marginLeft: `${indentation}px` }"
+      :style="{ left: `${indentation}px` }"
       @click="selectSubgroup(group.fullPath)"
     >
       <gl-icon name="subgroup" variant="subtle" class="gl-mx-2 gl-shrink-0" />
@@ -83,18 +83,20 @@ export default {
         {{ group.name }}
       </div>
 
-      <gl-badge v-if="group.projectsCount" icon="project">
-        {{ group.projectsCount }}
-      </gl-badge>
+      <div class="gl-sticky gl-right-0 gl-float-right gl-flex gl-gap-4">
+        <gl-badge v-if="group.projectsCount" icon="project">
+          {{ group.projectsCount }}
+        </gl-badge>
 
-      <gl-button
-        v-if="group.descendantGroupsCount"
-        :icon="expanded ? 'chevron-down' : 'chevron-right'"
-        category="tertiary"
-        size="small"
-        icon-only
-        @click="toggleExpanded"
-      />
+        <gl-button
+          v-if="group.descendantGroupsCount"
+          :icon="expanded ? 'chevron-down' : 'chevron-right'"
+          category="tertiary"
+          size="small"
+          icon-only
+          @click="toggleExpanded"
+        />
+      </div>
     </div>
     <group-list
       v-if="expanded"
