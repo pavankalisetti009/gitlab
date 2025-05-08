@@ -1,7 +1,9 @@
 mutation updateDuoSettings($input: DuoSettingsUpdateInput!) {
   duoSettingsUpdate(input: $input) {
-    aiGatewayUrl
-    duoCoreFeaturesEnabled
+    duoSettings {
+      aiGatewayUrl
+      duoCoreFeaturesEnabled
+    }
     errors
   }
 }

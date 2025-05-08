@@ -16,14 +16,9 @@ module Mutations
           validates: { allow_null: false },
           description: 'Indicates whether GitLab Duo Core features are enabled.'
 
-        field :ai_gateway_url, String,
-          null: true,
-          description: 'URL for local AI gateway server.'
-
-        field :duo_core_features_enabled, Boolean,
-          null: true,
-          description: 'Indicates whether GitLab Duo Core features are enabled.',
-          experiment: { milestone: '18.0' }
+        field :duo_settings, Types::Ai::DuoSettings::DuoSettingsType,
+          null: false,
+          description: 'GitLab Duo settings after mutation.'
 
         def resolve(**args)
           check_feature_available!(args)
@@ -31,20 +26,15 @@ module Mutations
           result = ::Ai::DuoSettings::UpdateService.new(permitted_params(args)).execute
 
           if result.error?
-            setting = ::Ai::Setting.instance # return existing setting
+            duo_setting = ::Ai::Setting.instance # return existing setting
             errors = Array(result.errors)
           else
-            setting = result.payload
+            duo_setting = result.payload
             errors = []
           end
 
           {
-            ai_gateway_url: authorized_read(:read_self_hosted_models_settings, setting, setting.ai_gateway_url),
-            duo_core_features_enabled: authorized_read(
-              :read_duo_core_settings,
-              setting,
-              setting.duo_nano_features_enabled?
-            ),
+            duo_settings: duo_setting,
             errors: errors
           }
         end
@@ -80,10 +70,6 @@ module Mutations
           end
 
           params
-        end
-
-        def authorized_read(permission, setting, attribute)
-          Ability.allowed?(current_user, permission, setting) ? attribute : nil
         end
       end
     end

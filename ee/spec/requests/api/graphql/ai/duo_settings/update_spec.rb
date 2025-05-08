@@ -92,7 +92,10 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
             result = json_response['data']['duoSettingsUpdate']
 
-            expect(result).to include('aiGatewayUrl' => 'http://0.0.0.0:5052', 'duoCoreFeaturesEnabled' => false)
+            expect(result['duoSettings']).to include(
+              'aiGatewayUrl' => 'http://0.0.0.0:5052',
+              'duoCoreFeaturesEnabled' => false
+            )
           end
         end
 
@@ -119,7 +122,10 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
           result = json_response['data']['duoSettingsUpdate']
 
-          expect(result).to include("aiGatewayUrl" => "http://new-ai-gateway-url", "duoCoreFeaturesEnabled" => true)
+          expect(result['duoSettings']).to include(
+            "aiGatewayUrl" => "http://new-ai-gateway-url",
+            "duoCoreFeaturesEnabled" => true
+          )
           expect(result['errors']).to eq([])
 
           expect { duo_settings.reload }.to change { duo_settings.ai_gateway_url }.to("http://new-ai-gateway-url")
@@ -134,7 +140,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
             result = json_response['data']['duoSettingsUpdate']
 
-            expect(result).to include("aiGatewayUrl" => nil)
+            expect(result['duoSettings']).to include("aiGatewayUrl" => nil)
             expect(result['errors']).to eq([])
 
             expect { duo_settings.reload }.to change { duo_settings.ai_gateway_url }.to(nil)
@@ -149,7 +155,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
             result = json_response['data']['duoSettingsUpdate']
 
-            expect(result).to include("aiGatewayUrl" => "http://new-ai-gateway-url")
+            expect(result['duoSettings']).to include("aiGatewayUrl" => "http://new-ai-gateway-url")
             expect(result['errors']).to eq([])
 
             expect { duo_settings.reload }.to change { duo_settings.ai_gateway_url }.to("http://new-ai-gateway-url")
@@ -168,7 +174,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
             result = json_response['data']['duoSettingsUpdate']
 
-            expect(result).to include(
+            expect(result['duoSettings']).to include(
               'aiGatewayUrl' => nil,
               'duoCoreFeaturesEnabled' => true
             )
@@ -191,7 +197,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
 
             result = json_response['data']['duoSettingsUpdate']
 
-            expect(result).to include(
+            expect(result['duoSettings']).to include(
               'aiGatewayUrl' => 'http://new-ai-gateway-url',
               'duoCoreFeaturesEnabled' => nil
             )
