@@ -53,6 +53,28 @@ describe('ProjectTemplateSelector', () => {
       expect(findGlCollapsibleListbox().props('selected')).toBe(templateName);
       expect(findGlFormInput().attributes('value')).toBe(templateName);
     });
+
+    it('renders icons', () => {
+      createComponent({ selectedTemplateName: templateName });
+
+      const dropdown = findGlCollapsibleListbox();
+      expect(
+        dropdown
+          .props('items')
+          .filter((item) => item.logoSrc)
+          .map((item) => item.value),
+      ).toEqual([
+        'express',
+        'android',
+        'spring',
+        'dotnetcore',
+        'rails',
+        'hugo',
+        'plainhtml',
+        'astro',
+        'gomicro',
+      ]);
+    });
   });
 
   describe('select', () => {
