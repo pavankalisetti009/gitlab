@@ -35,7 +35,7 @@ GitLab Duo Core is included automatically if you have:
 - GitLab 18.0 or later.
 - A Premium or Ultimate subscription.
 
-You only need to [turn on IDE features](../user/gitlab_duo/turn_on_off.md)
+You only need to [turn on IDE features](../user/gitlab_duo/turn_on_off.md#change-gitlab-duo-core-availability)
 to start using GitLab Duo in your IDEs. No further action is needed.
 
 Users assigned the [Guest role](../administration/guest_users.md) do not have
