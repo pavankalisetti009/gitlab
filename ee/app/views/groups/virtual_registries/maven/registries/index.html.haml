@@ -1,6 +1,12 @@
-- add_to_breadcrumbs s_('VirtualRegistry|Virtual registries'), group_virtual_registries_path(@group)
-- title = s_('VirtualRegistry|Maven virtual registries')
+- add_to_breadcrumbs s_('VirtualRegistry|Virtual registry'), group_virtual_registries_path(@group)
+- title = s_('VirtualRegistry|Maven virtual registry')
 - breadcrumb_title s_('VirtualRegistry|Maven')
 - page_title title
 
-= render ::Layouts::PageHeadingComponent.new(title)
+= render ::Layouts::PageHeadingComponent.new(title) do |c|
+  - if can_create_virtual_registry?(@group)
+    - c.with_actions do
+      = render Pajamas::ButtonComponent.new(variant: :confirm, href: new_group_virtual_registries_maven_registry_path(@group)) do
+        = s_('VirtualRegistry|Create registry')
+
+#js-vue-maven-virtual-registries-list{ "data-provide": maven_registries_data(@group) }

@@ -51,4 +51,16 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
       it { is_expected.to eq(result) }
     end
   end
+
+  describe '#maven_registries_data' do
+    let(:group) { build_stubbed(:group) }
+
+    it 'returns maven registries JSON data' do
+      json_data = ::Gitlab::Json.parse(helper.maven_registries_data(group))
+      expect(json_data).to include(
+        'fullPath' => group.full_path,
+        'basePath' => group_virtual_registries_maven_registries_path(group)
+      )
+    end
+  end
 end
