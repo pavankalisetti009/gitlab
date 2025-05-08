@@ -4841,7 +4841,7 @@ msgstr ""
 msgid "AdminSettings|Size and domain settings for Pages static sites."
 msgstr ""
 
-msgid "AdminSettings|Skip confirmation when reassigning placeholder users %{link_start}%{icon}%{link_end}"
+msgid "AdminSettings|Skip confirmation when reassigning placeholder users"
 msgstr ""
 
 msgid "AdminSettings|The URL of your Cube instance."
