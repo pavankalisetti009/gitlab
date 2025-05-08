@@ -647,7 +647,11 @@ module EE
       end
 
       rule { issues_disabled & merge_requests_disabled }.policy do
-        prevent(*create_read_update_admin_destroy(:iteration))
+        prevent :read_iteration
+        prevent :create_iteration
+        prevent :update_iteration
+        prevent :admin_iteration
+        prevent :destroy_iteration
       end
 
       rule { repository_disabled }.policy do
