@@ -6,11 +6,12 @@ module EE
       extend ActiveSupport::Concern
       extend ::Gitlab::Utils::Override
 
-      include OneTrustCSP
-      include GoogleAnalyticsCSP
       include GitlabSubscriptions::SeatCountAlert
 
       prepended do
+        include OneTrustCSP
+        include GoogleAnalyticsCSP
+
         before_action only: [:root] do
           push_frontend_feature_flag(:data_transfer_monitoring, group)
           push_frontend_feature_flag(:limited_access_modal)
