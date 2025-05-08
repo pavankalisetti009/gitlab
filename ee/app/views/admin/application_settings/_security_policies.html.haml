@@ -3,6 +3,9 @@
 
   %fieldset
     .form-group.gl-mb-0
+      = f.label :scan_execution_policies_schedule_limit, _('Maximum number of schedule rules per scan execution policy'), class: 'label-bold'
+      = f.number_field :scan_execution_policies_schedule_limit, class: 'form-control gl-form-input', min: 0, max: 20
+    .form-group.gl-mb-0
       = f.label :scan_execution_policies_action_limit, _('Maximum number of actions per scan execution policy'), class: 'label-bold'
       = f.number_field :scan_execution_policies_action_limit, class: 'form-control gl-form-input', min: 0, max: 20
     .form-group.gl-mb-0
