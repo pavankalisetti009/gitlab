@@ -1,0 +1,10 @@
+---
+name: duo_workflow_chat_mutation_tools
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/duo-workflow/duo-workflow-service/-/issues/374
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/189671
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/538224
+milestone: '18.0'
+group: group::duo workflow
+type: beta
+default_enabled: false
