@@ -30,9 +30,7 @@ module Security
 
           next unless security_policy.type_pipeline_execution_schedule_policy?
 
-          Security::SecurityOrchestrationPolicies::PipelineExecutionPolicies::CreateProjectSchedulesService
-            .new(project: project, policy: security_policy)
-            .execute
+          recreate_pipeline_execution_schedule_project_schedules(project, security_policy)
         end
 
         return unless security_policy.type_approval_policy?
@@ -51,6 +49,12 @@ module Security
           .security_pipeline_execution_project_schedules
           .for_project(project)
           .delete_all
+      end
+
+      def recreate_pipeline_execution_schedule_project_schedules(project, security_policy)
+        Security::SecurityOrchestrationPolicies::PipelineExecutionPolicies::CreateProjectSchedulesService
+          .new(project: project, policy: security_policy)
+          .execute
       end
     end
   end

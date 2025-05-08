@@ -32,9 +32,12 @@ module Security
       def sync_policy_changes
         return unlink_policy if should_unlink_policy?
         return link_policy if should_link_policy?
-        return unless security_policy.type_approval_policy?
 
-        sync_project_approval_policy_rules_service.sync_policy_diff(policy_diff)
+        if security_policy.type_approval_policy?
+          sync_project_approval_policy_rules_service.sync_policy_diff(policy_diff)
+        elsif security_policy.type_pipeline_execution_schedule_policy?
+          recreate_pipeline_execution_schedule_project_schedules(project, security_policy)
+        end
       end
 
       def should_unlink_policy?

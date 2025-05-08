@@ -29,6 +29,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyDiff::Diff, featur
       expect(diff.needs_refresh?).to be true
     end
 
+    it 'returns true when schedules is changed' do
+      diff.add_policy_field(:schedules, nil, true)
+
+      expect(diff.needs_refresh?).to be true
+    end
+
     it 'returns true when rules are created' do
       diff.add_created_rule({})
 
