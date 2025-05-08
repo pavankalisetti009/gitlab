@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Gitlab::ImportExport::Project::TreeSaver, feature_category: :importers do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
-  let_it_be(:project) { create(:project, group: group) }
+  let_it_be_with_reload(:project) { create(:project, group: group) }
   let_it_be(:issue) { create(:issue, project: project) }
 
   let_it_be(:epic) { create(:epic, group: group) }
