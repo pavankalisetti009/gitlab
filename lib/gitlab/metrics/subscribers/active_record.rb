@@ -103,7 +103,7 @@ module Gitlab
         private
 
         def wal_command?(payload)
-          payload[:sql].match(SQL_WAL_LOCATION_REGEX)
+          payload[:sql].match?(SQL_WAL_LOCATION_REGEX)
         end
 
         def increment_db_role_counters(db_role, payload, cached_query:, select_sql_command:)
@@ -143,7 +143,7 @@ module Gitlab
         end
 
         def select_sql_command?(payload)
-          payload[:sql].match(SQL_COMMANDS_WITH_COMMENTS_REGEX)
+          payload[:sql].match?(SQL_COMMANDS_WITH_COMMENTS_REGEX)
         end
 
         def increment(counter, db_config_name:, db_role: nil)
