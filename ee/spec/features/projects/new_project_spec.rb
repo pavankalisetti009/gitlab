@@ -178,7 +178,7 @@ RSpec.describe 'New project', :js, feature_category: :importers do
       end
 
       it '"Import project" tab creates projects with features enabled' do
-        stub_request(:get, "http://foo.git/info/refs?service=git-upload-pack").to_return(status: 200, body: "001e# service=git-upload-pack", headers: { 'Content-Type': 'application/x-git-upload-pack-advertisement' })
+        allow(Gitlab::GitalyClient::RemoteService).to receive(:exists?).with('http://foo.git').and_return(true)
 
         visit new_project_path
         click_link 'Import project'
@@ -211,8 +211,8 @@ RSpec.describe 'New project', :js, feature_category: :importers do
         click_link 'Run CI/CD for external repository'
 
         page.within '#ci-cd-project-pane' do
-          stub_request(:get, "http://foo.git/info/refs?service=git-upload-pack")
-            .to_return(status: 200, body: "001e# service=git-upload-pack", headers: { 'Content-Type': 'application/x-git-upload-pack-advertisement' })
+          allow(Gitlab::GitalyClient::RemoteService).to receive(:exists?).with('http://foo.git').and_return(true)
+
           find('.js-import-git-toggle-button').click
 
           fill_in 'project_import_url', with: 'http://foo.git'
