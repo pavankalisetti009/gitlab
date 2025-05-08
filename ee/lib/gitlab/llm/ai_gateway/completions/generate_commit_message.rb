@@ -16,11 +16,7 @@ module Gitlab
 
           override :prompt_version
           def prompt_version
-            if Feature.enabled?(:generate_commit_message_claude_3_7, user)
-              '1.1.0'
-            else
-              '1.0.0'
-            end
+            '1.1.0'
           end
         end
       end

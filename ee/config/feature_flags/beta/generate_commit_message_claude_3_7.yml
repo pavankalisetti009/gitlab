@@ -1,9 +1,0 @@
----
-name: generate_commit_message_claude_3_7
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/521392
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/183311
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/522917
-milestone: '17.10'
-group: group::code review
-type: beta
-default_enabled: true

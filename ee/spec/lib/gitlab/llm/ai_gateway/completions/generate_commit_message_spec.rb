@@ -98,15 +98,5 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::GenerateCommitMessage, featu
 
       it_behaves_like 'successful completion request'
     end
-
-    context 'when generate_commit_message_claude_3_7 FF is disabled' do
-      before do
-        stub_feature_flags(generate_commit_message_claude_3_7: false)
-      end
-
-      let(:expected_prompt_version) { "1.0.0" }
-
-      it_behaves_like 'successful completion request'
-    end
   end
 end
