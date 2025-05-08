@@ -252,24 +252,6 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
         results = search_results.dig('data', 'group', 'vulnerabilityIdentifierSearch')
         expect(results).to contain_exactly(identifier.name)
       end
-
-      context 'when flags that solve cross-joins are disabled' do
-        before do
-          # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
-          # that's what we're running in.
-          # It won't be turned off post decomposition, so this will be cleaned up with the FFs.
-          # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
-          skip_if_multiple_databases_are_setup(:sec)
-
-          stub_feature_flags(sum_vulnerability_count_for_group_using_vulnerability_statistics: false)
-          stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
-        end
-
-        it 'returns the matching search result' do
-          results = search_results.dig('data', 'group', 'vulnerabilityIdentifierSearch')
-          expect(results).to contain_exactly(identifier.name)
-        end
-      end
     end
 
     context 'when user do not have access' do

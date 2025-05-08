@@ -17,19 +17,8 @@ module Security
       end
 
       def sum_vulnerability_count_for_group(group)
-        # Disabling this feature flag would break GitLab.com post Secure Decomposition, so we are ensuring it's
-        # always active for GitLab.com. See https://gitlab.com/gitlab-org/gitlab/-/issues/523212 for more info.
-        # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Intentional Platform disable
-        if ::Feature.enabled?(:sum_vulnerability_count_for_group_using_vulnerability_statistics, group) || ::Gitlab.com?
-          project_ids = ::Vulnerabilities::Statistic.by_group(group).unarchived.select(:project_id)
-          return Security::ProjectStatistics.where(project_id: project_ids).sum(:vulnerability_count)
-        end
-        # rubocop:enable Gitlab/AvoidGitlabInstanceChecks
-
-        Security::ProjectStatistics
-          .where(project_id: group.all_project_ids)
-          .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/515040')
-          .sum(:vulnerability_count)
+        project_ids = ::Vulnerabilities::Statistic.by_group(group).unarchived.select(:project_id)
+        Security::ProjectStatistics.where(project_id: project_ids).sum(:vulnerability_count)
       end
     end
 
