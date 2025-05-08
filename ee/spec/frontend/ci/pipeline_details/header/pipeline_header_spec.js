@@ -5,6 +5,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import PipelineHeader from '~/ci/pipeline_details/header/pipeline_header.vue';
 import getPipelineDetailsQuery from '~/ci/pipeline_details/header/graphql/queries/get_pipeline_header_data.query.graphql';
+import pipelineCiStatusUpdatedSubscription from '~/graphql_shared/subscriptions/pipeline_ci_status_updated.subscription.graphql';
 import PipelineAccountVerificationAlert from 'ee/vue_shared/components/pipeline_account_verification_alert.vue';
 import HeaderMergeTrainsLink from 'ee/ci/pipeline_details/header/components/header_merge_trains_link.vue';
 import {
@@ -12,6 +13,7 @@ import {
   pipelineHeaderRunning,
   pipelineHeaderSuccess,
   pipelineHeaderMergeTrain,
+  mockPipelineStatusResponse,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -23,11 +25,15 @@ describe('Pipeline header', () => {
   const successHandler = jest.fn().mockResolvedValue(pipelineHeaderSuccess);
   const runningHandler = jest.fn().mockResolvedValue(pipelineHeaderRunning);
   const mergeTrainHandler = jest.fn().mockResolvedValue(pipelineHeaderMergeTrain);
+  const subscriptionHandler = jest.fn().mockResolvedValue(mockPipelineStatusResponse);
 
   const findComputeMinutes = () => wrapper.findByTestId('compute-minutes');
   const findMergeTrainsLink = () => wrapper.findComponent(HeaderMergeTrainsLink);
 
-  const defaultHandlers = [[getPipelineDetailsQuery, minutesHandler]];
+  const defaultHandlers = [
+    [getPipelineDetailsQuery, minutesHandler],
+    [pipelineCiStatusUpdatedSubscription, subscriptionHandler],
+  ];
 
   const defaultProvideOptions = {
     pipelineIid: 1,
@@ -83,7 +89,12 @@ describe('Pipeline header', () => {
     });
 
     it('does not display compute minutes when zero', async () => {
-      await createComponent({ handlers: [[getPipelineDetailsQuery, successHandler]] });
+      await createComponent({
+        handlers: [
+          [getPipelineDetailsQuery, successHandler],
+          [pipelineCiStatusUpdatedSubscription, subscriptionHandler],
+        ],
+      });
 
       expect(findComputeMinutes().exists()).toBe(false);
     });
@@ -91,7 +102,12 @@ describe('Pipeline header', () => {
 
   describe('running pipeline', () => {
     beforeEach(() => {
-      return createComponent({ handlers: [[getPipelineDetailsQuery, runningHandler]] });
+      return createComponent({
+        handlers: [
+          [getPipelineDetailsQuery, runningHandler],
+          [pipelineCiStatusUpdatedSubscription, subscriptionHandler],
+        ],
+      });
     });
 
     it('does not display compute minutes', () => {
@@ -101,7 +117,12 @@ describe('Pipeline header', () => {
 
   describe('merge trains link', () => {
     it('should display the link', async () => {
-      await createComponent({ handlers: [[getPipelineDetailsQuery, mergeTrainHandler]] });
+      await createComponent({
+        handlers: [
+          [getPipelineDetailsQuery, mergeTrainHandler],
+          [pipelineCiStatusUpdatedSubscription, subscriptionHandler],
+        ],
+      });
 
       expect(findMergeTrainsLink().attributes('href')).toBe(defaultProvideOptions.mergeTrainsPath);
     });

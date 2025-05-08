@@ -15,4 +15,10 @@ export const pipelineHeaderMergeTrain = {
   },
 };
 
+export const mockPipelineStatusResponse = {
+  data: {
+    ciPipelineStatusUpdated: null,
+  },
+};
+
 export { pipelineHeaderFinishedComputeMinutes, pipelineHeaderRunning, pipelineHeaderSuccess };
