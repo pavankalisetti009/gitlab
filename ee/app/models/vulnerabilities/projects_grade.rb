@@ -27,10 +27,7 @@ module Vulnerabilities
     def self.grades_for(vulnerables, filter: nil, include_subgroups: false)
       # collect vulnerability statistics as relations
       relations = vulnerables.map do |vulnerable|
-        # Disabling this feature flag would break GitLab.com post Secure Decomposition, so we are ensuring it's
-        # always active for GitLab.com. See https://gitlab.com/gitlab-org/gitlab/-/issues/523212 for more info.
-        # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Intentional Platform disable
-        if vulnerable.is_a?(Group) && (::Feature.enabled?(:remove_cross_join_from_vulnerabilities_projects_grade, vulnerable) || ::Gitlab.com?)
+        if vulnerable.is_a?(Group)
           if include_subgroups
             ::Vulnerabilities::Statistic.by_group(vulnerable).unarchived
           else
@@ -44,7 +41,6 @@ module Vulnerabilities
           ::Vulnerabilities::Statistic.for_project([collection].reduce(&:or))
             .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/503387')
         end
-        # rubocop:enable Gitlab/AvoidGitlabInstanceChecks
       end
 
       # collect hashes that map letter grades to project IDs
