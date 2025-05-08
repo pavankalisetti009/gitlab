@@ -288,6 +288,43 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         expect(group.parent).to eq(new_group)
       end
     end
+
+    describe 'vulnerability indexing', :aggregate_failures do
+      before do
+        allow(transfer_service).to receive(:delete_vulnerabilities_with_old_routing).and_call_original
+        allow_next_instance_of(::Search::Elastic::VulnerabilityManagementHelper) do |helper|
+          allow(helper).to receive(:delete_vulnerabilities_with_old_routing)
+        end
+      end
+
+      it 'includes the helper module' do
+        expect(described_class.included_modules).to include(::Search::Elastic::VulnerabilityManagementHelper)
+      end
+
+      it 'calls delete_vulnerabilities_with_old_routing for each project' do
+        project1 = create(:project, :repository, namespace: group)
+        project2 = create(:project, :repository, namespace: group)
+
+        expect(transfer_service).to receive(:delete_vulnerabilities_with_old_routing).with(project1)
+        expect(transfer_service).to receive(:delete_vulnerabilities_with_old_routing).with(project2)
+
+        transfer_service.execute(new_group)
+
+        expect(group.parent).to eq(new_group)
+      end
+
+      context 'when a group has subgroups with projects' do
+        let!(:subgroup) { create(:group, parent: group) }
+        let!(:subgroup_project) { create(:project, namespace: subgroup) }
+
+        it 'calls delete_vulnerabilities_with_old_routing for projects in subgroups' do
+          expect(transfer_service).to receive(:delete_vulnerabilities_with_old_routing).with(project)
+          expect(transfer_service).to receive(:delete_vulnerabilities_with_old_routing).with(subgroup_project)
+
+          transfer_service.execute(new_group)
+        end
+      end
+    end
   end
 
   context 'with epics' do

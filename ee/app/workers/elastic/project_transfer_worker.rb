@@ -4,6 +4,7 @@ module Elastic
   class ProjectTransferWorker
     include ApplicationWorker
     include Search::Worker
+    include ::Search::Elastic::VulnerabilityManagementHelper
     prepend ::Geo::SkipSecondary
 
     data_consistency :delayed
@@ -35,6 +36,10 @@ module Elastic
 
         delete_old_project(project, old_namespace_id)
       end
+
+      # Vulnerability honours only ::Gitlab::CurrentSettings.elasticsearch_indexing?.
+      # Should always run on project/group transfer so keeping it outside the if, elsif.
+      delete_vulnerabilities_with_old_routing(project)
     end
 
     private

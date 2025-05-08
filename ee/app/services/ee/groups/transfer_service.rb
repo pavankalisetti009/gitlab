@@ -3,6 +3,7 @@
 module EE
   module Groups
     module TransferService
+      include ::Search::Elastic::VulnerabilityManagementHelper
       extend ::Gitlab::Utils::Override
 
       PROJECT_QUERY_BATCH_SIZE = 1000
@@ -54,6 +55,7 @@ module EE
             end
 
             process_elasticsearch_project(project, elasticsearch_limit_indexing_enabled)
+            delete_vulnerabilities_with_old_routing(project)
           end
         end
 
