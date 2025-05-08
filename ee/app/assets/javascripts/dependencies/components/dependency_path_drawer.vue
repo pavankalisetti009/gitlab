@@ -85,7 +85,7 @@ export default {
     },
   },
   created() {
-    this.selectedProject = this.locations?.[0]?.value ?? null;
+    this.selectedProject = this.dropdownData.projectDropdown[0]?.value ?? null;
   },
   beforeDestroy() {
     if (this.loadingTimeout) {

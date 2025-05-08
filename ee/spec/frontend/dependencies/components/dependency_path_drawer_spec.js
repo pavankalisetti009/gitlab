@@ -90,7 +90,7 @@ describe('DependencyPathDrawer component', () => {
       {
         name: 'Project 1',
         value: 100,
-        dependencyPaths: [{ name: 'one', version: 'v1' }],
+        dependencyPaths: [],
       },
       {
         name: 'Project 2',
@@ -100,7 +100,7 @@ describe('DependencyPathDrawer component', () => {
       {
         name: 'Project 3',
         value: 300,
-        dependencyPaths: [],
+        dependencyPaths: [{ name: 'three', version: 'v3' }],
       },
     ];
 
@@ -123,8 +123,11 @@ describe('DependencyPathDrawer component', () => {
       });
     });
 
-    it('renders the first selected project and its path', () => {
-      const { value, dependencyPaths } = locations[0];
+    it('renders the first project with dependency paths and its path', () => {
+      const firstLocationWithDependencyPaths = locations.find(
+        (location) => location.dependencyPaths.length > 0,
+      );
+      const { value, dependencyPaths } = firstLocationWithDependencyPaths;
       const { name, version } = dependencyPaths[0];
 
       expect(findProjectList().props('selected')).toBe(value);
@@ -150,19 +153,20 @@ describe('DependencyPathDrawer component', () => {
     });
 
     it('updates the dependency path list', async () => {
-      const locationOne = locations[0];
-      const {
-        value,
-        dependencyPaths: [{ name, version }],
-      } = locations[1];
+      const locationsWithPaths = locations.filter(
+        (location) => location.dependencyPaths.length > 0,
+      );
 
-      expect(findProjectList().props('selected')).toBe(locationOne.value);
+      const [initialLocation, targetLocation] = locationsWithPaths;
+      const { name, version } = targetLocation.dependencyPaths[0];
 
-      findProjectList().vm.$emit('select', value);
+      expect(findProjectList().props('selected')).toBe(initialLocation.value);
+
+      findProjectList().vm.$emit('select', targetLocation.value);
       jest.advanceTimersByTime(300);
       await nextTick();
 
-      expect(findProjectList().props('selected')).toBe(value);
+      expect(findProjectList().props('selected')).toBe(targetLocation.value);
       expect(wrapper.text()).toContain(`${name} @${version}`);
     });
   });
