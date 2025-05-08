@@ -11,7 +11,7 @@ module EE
         before_action :authorize_read_work_item!, only: [:description_diff, :delete_description_version]
 
         before_action do
-          push_frontend_feature_flag(:work_item_related_vulnerabilities, group, type: :wip)
+          push_frontend_feature_flag(:work_item_related_vulnerabilities, group, type: :beta)
         end
 
         include DescriptionDiffActions
