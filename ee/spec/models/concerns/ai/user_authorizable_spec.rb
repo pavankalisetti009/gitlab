@@ -648,6 +648,18 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
         stub_saas_features(gitlab_com_subscriptions: true)
       end
 
+      shared_examples 'excludes root_group_ids for banned user' do
+        context 'when the user is banned' do
+          let(:result) { [] }
+
+          before do
+            create(:namespace_ban, namespace: root_group, user: user)
+          end
+
+          it { is_expected.to eq(result) }
+        end
+      end
+
       where(:access_level, :include_group) do
         :guest      | false
         :reporter   | true
@@ -681,6 +693,8 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           end
 
           it { is_expected.to eq(result) }
+
+          it_behaves_like 'excludes root_group_ids for banned user'
         end
 
         context 'when the user is a member of a project within the top level group' do
@@ -689,6 +703,8 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           end
 
           it { is_expected.to eq(result) }
+
+          it_behaves_like 'excludes root_group_ids for banned user'
         end
 
         context 'when the user is a member of a project within a sub group of the top level group' do
@@ -697,6 +713,8 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           end
 
           it { is_expected.to eq(result) }
+
+          it_behaves_like 'excludes root_group_ids for banned user'
         end
 
         context 'when the user is a member of an invited group' do
