@@ -127,8 +127,12 @@ module Ai
         purchases = service.add_on_purchases.assigned_to_user(self)
         return unless purchases.any?
 
-        Response.new(allowed?: true, namespace_ids: purchases.uniq_namespace_ids, enablement_type: 'add_on',
-          authorized_by_duo_core: false)
+        Response.new(
+          allowed?: true,
+          namespace_ids: purchases.uniq_namespace_ids,
+          enablement_type: purchases.last.normalized_add_on_name,
+          authorized_by_duo_core: false
+        )
       end
 
       def check_duo_core_features(service)
@@ -138,10 +142,19 @@ module Ai
           groups = groups_with_duo_core_enabled
           return unless groups.any?
 
-          Response.new(allowed?: true, namespace_ids: groups.ids, enablement_type: 'add_on',
-            authorized_by_duo_core: true)
+          Response.new(
+            allowed?: true,
+            namespace_ids: groups.ids,
+            enablement_type: duo_core_add_on_purchase.normalized_add_on_name,
+            authorized_by_duo_core: true
+          )
         elsif !saas? && ::Ai::Setting.instance.duo_nano_features_enabled?
-          Response.new(allowed?: true, namespace_ids: [], enablement_type: 'add_on', authorized_by_duo_core: true)
+          Response.new(
+            allowed?: true,
+            namespace_ids: [],
+            enablement_type: duo_core_add_on_purchase.normalized_add_on_name,
+            authorized_by_duo_core: true
+          )
         end
       end
 
@@ -178,9 +191,11 @@ module Ai
       end
 
       def duo_core_add_on?
-        # Duo Core doesn't use seats, so this checks if the user has access to the add-on through the instance
-        # or a root group membership
-        GitlabSubscriptions::AddOnPurchase.for_duo_core.for_user(self).active.any?
+        duo_core_add_on_purchase.present?
+      end
+
+      def duo_core_add_on_purchase
+        @duo_core_add_on_purchase ||= GitlabSubscriptions::AddOnPurchase.for_duo_core.for_user(self).active.first
       end
 
       def amazon_q_connected?(ai_feature)
