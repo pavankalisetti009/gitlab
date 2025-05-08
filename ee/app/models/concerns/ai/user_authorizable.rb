@@ -132,6 +132,7 @@ module Ai
       end
 
       def check_duo_core_features(service)
+        return unless active? && !bot?
         return unless service.add_on_names.include?("duo_core") && duo_core_add_on?
 
         if saas? && Feature.enabled?(:duo_core_saas, self)

@@ -109,6 +109,18 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           let(:expected_enablement_type) { nil }
           let(:expected_authorized_by_duo_core) { false }
 
+          context 'when user is not active' do
+            let(:user) { create(:user, :blocked) }
+
+            it { is_expected.to eq expected_response }
+          end
+
+          context 'when user is is a bot' do
+            let(:user) { create(:user, :bot) }
+
+            it { is_expected.to eq expected_response }
+          end
+
           context 'when duo_nano_features_enabled is false' do
             let(:duo_nano_features_enabled) { false }
 
