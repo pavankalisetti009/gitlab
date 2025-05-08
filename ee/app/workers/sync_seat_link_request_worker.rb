@@ -24,16 +24,17 @@ class SyncSeatLinkRequestWorker
       key: license_key,
       max_users: max_historical_user_count,
       billable_users_count: billable_users_count,
-      refresh_token: refresh_token)
+      refresh_token: refresh_token
+    )
+
     response = Gitlab::SubscriptionPortal::Client.create_seat_link(seat_link_data)
 
     raise RequestError, response['data']['errors'] unless response['success']
 
     response_data = response['data']
-    reset_license!(response_data['license']) if response_data['license']
+    license = find_or_create_cloud_license!(response_data['license']) if response_data['license']
 
-    save_future_subscriptions(response_data)
-    update_add_on_purchases
+    update_license_dependencies(response_data, license)
     update_reconciliation!(response_data)
 
     perform_cloud_connector_sync if refresh_token
@@ -48,21 +49,19 @@ class SyncSeatLinkRequestWorker
     )
   end
 
-  def reset_license!(license_key)
+  def find_or_create_cloud_license!(license_key)
     License.reset_current
 
     if License.current_cloud_license?(license_key)
-      License.current.reset.touch(:last_synced_at)
+      license = License.current.reset
+      license.touch(:last_synced_at)
+
+      license
     else
       License.create!(data: license_key, cloud: true, last_synced_at: Time.current)
     end
   rescue StandardError => e
     Gitlab::ErrorTracking.track_and_raise_for_dev_exception(e)
-  end
-
-  def update_add_on_purchases
-    ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoExclusive.new.execute
-    ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::DuoCore.new.execute
   end
 
   def update_reconciliation!(response)
@@ -86,11 +85,11 @@ class SyncSeatLinkRequestWorker
     end
   end
 
-  def save_future_subscriptions(response)
-    future_subscriptions = response['future_subscriptions'].presence || []
-
-    Gitlab::CurrentSettings.current_application_settings.update!(future_subscriptions: future_subscriptions)
-  rescue StandardError => err
-    Gitlab::ErrorTracking.track_and_raise_for_dev_exception(err)
+  def update_license_dependencies(response, license)
+    ::GitlabSubscriptions::UpdateLicenseDependenciesService.new(
+      future_subscriptions: response['future_subscriptions'],
+      license: license,
+      new_subscription: response['new_subscription']
+    ).execute
   end
 end

@@ -12,6 +12,9 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
     let(:seat_link_url) { [subscription_portal_url, '/api/v1/seat_links'].join }
     let(:body) { { success: true } }
 
+    let(:future_subscriptions) { nil }
+    let(:new_subscription) { nil }
+
     let_it_be(:organization) { create(:organization) }
 
     before do
@@ -20,6 +23,23 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
         body: body.to_json
       )
     end
+
+    shared_examples 'call service to update license dependencies' do
+      it 'calls the service to update license dependencies with the correct params' do
+        expect_next_instance_of(
+          GitlabSubscriptions::UpdateLicenseDependenciesService,
+          future_subscriptions: future_subscriptions,
+          license: body.has_key?(:license) ? an_instance_of(License) : nil,
+          new_subscription: new_subscription
+        ) do |service|
+          expect(service).to receive(:execute).and_call_original
+        end
+
+        sync_seat_link
+      end
+    end
+
+    it_behaves_like 'call service to update license dependencies'
 
     it 'makes an HTTP POST request with passed params' do
       allow(Gitlab::CurrentSettings).to receive(:uuid).and_return('one-two-three')
@@ -74,6 +94,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
 
         it_behaves_like 'clearing license cache'
         it_behaves_like 'successful license creation'
+        it_behaves_like 'call service to update license dependencies'
       end
 
       context 'when there is a previous license' do
@@ -86,6 +107,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
             let!(:current_license) { create(:license, cloud: true, last_synced_at: 1.day.ago) }
 
             it_behaves_like 'clearing license cache'
+            it_behaves_like 'call service to update license dependencies'
 
             it 'creates a new license', :freeze_time do
               expect { sync_seat_link }.to change(License.cloud, :count).by(1)
@@ -104,6 +126,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
             let!(:current_license) { create(:license, cloud: true, data: license_key, last_synced_at: 1.day.ago) }
 
             it_behaves_like 'clearing license cache'
+            it_behaves_like 'call service to update license dependencies'
 
             it 'reuses the current license and updates the last_synced_at', :request_store, :freeze_time do
               expect { sync_seat_link }.not_to change(License.cloud, :count)
@@ -137,6 +160,12 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
 
               expect(License).to exist(current_license.id)
             end
+
+            it 'does not call the service to update license dependencies' do
+              expect(GitlabSubscriptions::UpdateLicenseDependenciesService).not_to receive(:new)
+
+              expect { sync_seat_link }.to raise_error ActiveRecord::RecordInvalid
+            end
           end
         end
 
@@ -145,6 +174,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
 
           it_behaves_like 'clearing license cache'
           it_behaves_like 'successful license creation'
+          it_behaves_like 'call service to update license dependencies'
         end
       end
     end
@@ -177,74 +207,36 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
     end
 
     context 'when response contains future subscription information' do
-      let(:future_subscriptions) { [{ 'foo' => 'bar' }] }
       let(:body) { { success: true, future_subscriptions: future_subscriptions } }
       let(:today) { Date.current }
 
       context 'when future subscription information is present in the response' do
-        context 'and no future subscriptions are saved in the current settings' do
-          it 'persists future subscription information' do
-            expect { sync_seat_link }.to change { Gitlab::CurrentSettings.current_application_settings.future_subscriptions }.from([]).to(future_subscriptions)
-          end
-        end
+        let(:future_subscriptions) { [{ 'foo' => 'bar' }] }
 
-        context 'and future subscriptions are saved in the current settings' do
-          before do
-            Gitlab::CurrentSettings.current_application_settings.update!(future_subscriptions: [{}])
-          end
-
-          it 'replaces future subscription information' do
-            expect { sync_seat_link }.to change { Gitlab::CurrentSettings.current_application_settings.future_subscriptions }.from([{}]).to(future_subscriptions)
-          end
-        end
+        it_behaves_like 'call service to update license dependencies'
       end
 
       context 'when future subscription information is not present in the response' do
         let(:future_subscriptions) { [] }
 
-        context 'and no future subscriptions are saved in the current settings' do
-          it 'does not change the settings' do
-            expect { sync_seat_link }.not_to change { Gitlab::CurrentSettings.current_application_settings.future_subscriptions }.from(future_subscriptions)
-          end
-        end
-
-        context 'and future subscription are saved in the current settings' do
-          before do
-            Gitlab::CurrentSettings.current_application_settings.update!(future_subscriptions: [{}])
-          end
-
-          it 'clears future subscription information' do
-            expect { sync_seat_link }.to change { Gitlab::CurrentSettings.current_application_settings.future_subscriptions }.from([{}]).to(future_subscriptions)
-          end
-        end
-      end
-
-      context 'when saving fails' do
-        it 'logs error' do
-          allow(Gitlab::CurrentSettings.current_application_settings).to receive(:save!).and_raise('saving fails')
-
-          expect(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception)
-          expect { sync_seat_link }.not_to raise_error
-        end
+        it_behaves_like 'call service to update license dependencies'
       end
     end
 
-    context 'when new license does not contain a code suggestions add-on purchase' do
-      it_behaves_like 'call runner to handle the provision of add-ons'
-    end
+    context 'when response contains new subscription information' do
+      let(:body) { { success: true, new_subscription: new_subscription } }
 
-    context 'when new license contains a code suggestions add-on purchase' do
-      let(:license_key) do
-        build(
-          :gitlab_license,
-          :cloud,
-          restrictions: { code_suggestions_seat_count: 1, subscription_name: 'A-S00000001' }
-        ).export
+      context 'when new subscription is true' do
+        let(:new_subscription) { true }
+
+        it_behaves_like 'call service to update license dependencies'
       end
 
-      let(:body) { { success: true, license: license_key } }
+      context 'when new subscription is false' do
+        let(:new_subscription) { false }
 
-      it_behaves_like 'call runner to handle the provision of add-ons'
+        it_behaves_like 'call service to update license dependencies'
+      end
     end
 
     context 'when the response does not contain reconciliation dates' do

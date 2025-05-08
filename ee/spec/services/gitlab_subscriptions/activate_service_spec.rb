@@ -26,33 +26,49 @@ RSpec.describe GitlabSubscriptions::ActivateService, feature_category: :plan_pro
     allow(Gitlab::CurrentSettings).to receive(:current_application_settings).and_return(application_settings)
   end
 
+  shared_examples 'call service to update license dependencies' do
+    it 'calls the service to update license dependencies with the correct params' do
+      expect_next_instance_of(
+        GitlabSubscriptions::UpdateLicenseDependenciesService,
+        future_subscriptions: future_subscriptions,
+        license: an_instance_of(License),
+        new_subscription: new_subscription
+      ) do |service|
+        expect(service).to receive(:execute).and_call_original
+      end
+
+      execute_service
+    end
+  end
+
   context 'when CustomerDot returns success' do
     let(:future_subscriptions) { [] }
+    let(:new_subscription) { false }
     let(:customer_dot_response) do
-      { success: true, license_key: license_key, future_subscriptions: future_subscriptions, new_subscription: false }
+      {
+        success: true,
+        license_key: license_key,
+        future_subscriptions: future_subscriptions,
+        new_subscription: new_subscription
+      }
     end
 
     before do
       stub_client_activate
     end
 
-    context 'when there are no future subscriptions' do
-      it 'persists license and clears the future subscriptions' do
-        freeze_time do
-          result = execute_service
-          created_license = License.current
+    it_behaves_like 'call service to update license dependencies'
 
-          expect(result).to eq({ success: true, license: created_license, future_subscriptions: future_subscriptions })
-
-          expect(created_license).to have_attributes(
-            data: license_key,
-            cloud: true,
-            last_synced_at: Time.current
-          )
-
-          expect(application_settings.reload.future_subscriptions).to eq(future_subscriptions)
-        end
+    it 'triggers SeatLinkData sync' do
+      expect_next_instance_of(::Gitlab::SeatLinkData, refresh_token: true) do |sync_link_data|
+        expect(sync_link_data).to receive(:sync)
       end
+
+      execute_service
+    end
+
+    context 'when there are no future subscriptions' do
+      it_behaves_like 'call service to update license dependencies'
     end
 
     context 'when there are future subscriptions' do
@@ -74,129 +90,13 @@ RSpec.describe GitlabSubscriptions::ActivateService, feature_category: :plan_pro
         ]
       end
 
-      it 'persists license and stores the future subscriptions' do
-        freeze_time do
-          expect(application_settings.future_subscriptions).to eq([])
-
-          result = execute_service
-          created_license = License.current
-
-          expect(result).to eq({ success: true, license: created_license, future_subscriptions: future_subscriptions })
-
-          expect(created_license).to have_attributes(
-            data: license_key,
-            cloud: true,
-            last_synced_at: Time.current
-          )
-
-          expect(application_settings.reload.future_subscriptions).to eq(future_subscriptions)
-        end
-      end
-
-      context 'when saving the future subscriptions fails' do
-        it 'logs error and returns an empty future_subscriptions array' do
-          result = nil
-
-          allow(Gitlab::CurrentSettings.current_application_settings).to receive(:update!)
-            .and_raise(ActiveRecord::ActiveRecordError)
-
-          expect(application_settings.future_subscriptions).to eq([])
-          expect(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception)
-
-          expect { result = execute_service }.not_to raise_error
-
-          created_license = License.current
-
-          expect(result).to eq({ success: true, license: created_license, future_subscriptions: [] })
-          expect(application_settings.future_subscriptions).to eq([])
-        end
-      end
-    end
-
-    context 'when new license does not contain a code suggestions add-on purchase' do
-      it_behaves_like 'call runner to handle the provision of add-ons'
-    end
-
-    context 'when new license contains a code suggestions add-on purchase' do
-      let(:license_key) do
-        build(
-          :gitlab_license,
-          :cloud,
-          restrictions: { code_suggestions_seat_count: 1, subscription_name: 'A-S00000001' }
-        ).export
-      end
-
-      it_behaves_like 'call runner to handle the provision of add-ons'
-
-      it 'triggers SeatLinkData sync' do
-        expect_next_instance_of(::Gitlab::SeatLinkData, refresh_token: true) do |sync_link_data|
-          expect(sync_link_data).to receive(:sync)
-        end
-
-        execute_service
-      end
+      it_behaves_like 'call service to update license dependencies'
     end
 
     context 'when the activated subscription is a new subscription' do
-      let(:customer_dot_response) do
-        super().merge(new_subscription: true)
-      end
+      let(:new_subscription) { true }
 
-      context 'when the subscription does not contain Duo Core' do
-        let(:license_key) { build(:gitlab_license, :cloud).export }
-
-        it 'does not auto enable the Duo Core features setting' do
-          expect { execute_service }.to not_change(Ai::Setting.instance, :duo_nano_features_enabled)
-        end
-      end
-
-      context 'when the subscription contains Duo Core' do
-        let(:license_key) do
-          build(
-            :gitlab_license,
-            :cloud,
-            restrictions: {
-              add_on_products: {
-                'duo_core' => [
-                  {
-                    'quantity' => 10,
-                    'started_on' => Date.current.to_s,
-                    'expires_on' => (Date.current + 11.months).to_s,
-                    'purchase_xid' => 'A-S00000001',
-                    'trial' => false
-                  }
-                ]
-              }
-            }
-          ).export
-        end
-
-        context 'when auto enabling the Duo Core features setting fails' do
-          before do
-            allow_next_instance_of(Ai::Setting) do |ai_setting|
-              allow(ai_setting).to receive(:update!).and_raise(ActiveRecord::ActiveRecordError)
-            end
-          end
-
-          it 'logs an error about it' do
-            result = nil
-
-            expect(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception)
-
-            expect { result = execute_service }.not_to raise_error
-
-            created_license = License.current
-
-            expect(result).to eq({ success: true, license: created_license, future_subscriptions: [] })
-          end
-        end
-
-        it 'auto enables the Duo Core features setting' do
-          ai_setting = Ai::Setting.instance
-
-          expect { execute_service }.to change { ai_setting.reload.duo_nano_features_enabled }.from(nil).to(true)
-        end
-      end
+      it_behaves_like 'call service to update license dependencies'
     end
 
     context 'when the current license key does not match the one returned from activation' do
