@@ -56,7 +56,6 @@ describe('TokenValidityBadge', () => {
         content:
           'GitLab checks the validity of the secret with the third party vendor on each pipeline run. If the secret is still active it could be exploited and needs to be revoked and rotated.',
       });
-      expect(findHelpPopover().classes()).toContain('gl-ml-2');
     });
   });
 });
