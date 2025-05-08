@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
   let(:user) { create(:user) }
   let(:another_user) { create(:user) }
+  let(:workflow) { create(:duo_workflows_workflow) }
   let(:owned_workflow) { create(:duo_workflows_workflow, user: user) }
   let(:not_owned_workflow) { create(:duo_workflows_workflow, user: another_user) }
 
@@ -197,5 +198,14 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
         expect(owned_workflow.can_require_tool_call_approval?).to eq(can_require_tool_call_approval)
       end
     end
+  end
+
+  it 'has_many workloads' do
+    workload1 = create(:ci_workload)
+    workload2 = create(:ci_workload)
+    create(:duo_workflows_workload, workflow: workflow, workload: workload1)
+    create(:duo_workflows_workload, workflow: workflow, workload: workload2)
+
+    expect(workflow.reload.workloads).to contain_exactly(workload1, workload2)
   end
 end

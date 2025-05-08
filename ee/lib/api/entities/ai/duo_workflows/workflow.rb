@@ -27,8 +27,8 @@ module API
             end
           end
 
-          expose :pipeline do |_, opts|
-            opts[:pipeline]
+          expose :workload do |_, opts|
+            opts[:workload]
           end
         end
       end

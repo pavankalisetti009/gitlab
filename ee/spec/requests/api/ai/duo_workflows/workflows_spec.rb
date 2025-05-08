@@ -216,10 +216,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
         post api(path, user), params: params
         expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
-        pipeline_id = json_response.dig('pipeline', 'id')
-
-        expect(pipeline_id).not_to be_nil
-        expect(json_response.dig('pipeline', 'path')).to eq("/#{project.full_path}/-/pipelines/#{pipeline_id}")
+        expect(json_response['workload']['id']).to eq(Ci::Workloads::Workload.last.id)
+        expect(::Ci::Pipeline.last.project_id).to eq(project.id)
       end
 
       context 'when Feature flag is disabled' do
@@ -230,9 +228,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         it 'does not start a pipeline' do
           post api(path, user), params: params
 
-          expect(json_response.dig('pipeline', 'id')).to eq(nil)
-          expect(json_response.dig('pipeline', 'path')).to eq(nil)
-          expect(json_response.dig('pipeline', 'message')).to eq('Can not execute workflow in CI')
+          expect(json_response.dig('workload', 'id')).to eq(nil)
+          expect(json_response.dig('workload', 'message')).to eq('Can not execute workflow in CI')
         end
       end
 
@@ -252,9 +249,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         it 'does not start a pipeline to execute workflow' do
           post api(path, user), params: params
           expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
-          expect(json_response.dig('pipeline', 'id')).to eq(nil)
-          expect(json_response.dig('pipeline', 'path')).to eq(nil)
-          expect(json_response.dig('pipeline', 'message')).to eq('Error in creating pipeline')
+          expect(json_response.dig('workload', 'id')).to eq(nil)
+          expect(json_response.dig('workload', 'message')).to eq('Error in creating workload: full error messages')
         end
       end
     end

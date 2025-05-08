@@ -18,25 +18,19 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
   end
 
   shared_examples "success" do
-    it 'starts a pipeline to execute workflow' do
-      aggregate_failures do
-        expect(execute).to be_success
+    it 'creates a workload to execute workflow' do
+      expect(execute).to be_success
 
-        pipeline_id = execute.payload[:pipeline_id]
+      workload_id = execute.payload[:workload_id]
+      expect(workload_id).not_to be_nil
 
-        expect(execute.payload).to eq(
-          pipeline_id: pipeline_id,
-          pipeline_path: Gitlab::Application.routes.url_helpers.project_pipeline_path(project, pipeline_id)
-        )
-
-        ci_pipeline = Ci::Pipeline.find_by_id([pipeline_id])
-        expect(ci_pipeline.ref).to start_with('workloads/')
-      end
+      workload = Ci::Workloads::Workload.find_by_id([workload_id])
+      expect(workload.branch_name).to start_with('workloads/')
     end
   end
 
   shared_examples 'failure' do
-    it 'does not start a pipeline to execute workflow' do
+    it 'does not create a workload to execute workflow' do
       expect(execute).to be_error
       expect(execute.reason).to eq(:feature_unavailable)
       expect(execute.message).to eq('Can not execute workflow in CI')
@@ -86,7 +80,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
     it 'does not start a pipeline to execute workflow' do
       expect(execute).to be_error
       expect(execute.reason).to eq(:workload_failure)
-      expect(execute.message).to eq('Error in creating pipeline')
+      expect(execute.message).to eq('Error in creating workload: full error messages')
     end
   end
 end
