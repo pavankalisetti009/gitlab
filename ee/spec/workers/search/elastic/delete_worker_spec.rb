@@ -35,9 +35,26 @@ RSpec.describe Search::Elastic::DeleteWorker, :elastic_helpers, feature_category
       end
 
       context 'when we pass valid task' do
-        it 'call the corresponding service' do
-          expect(::Search::Elastic::Delete::ProjectAssociationsService).to receive(:execute)
-          perform
+        context 'with delete_project_associations task' do
+          subject(:perform) do
+            described_class.new.perform({ task: :delete_project_associations })
+          end
+
+          it 'calls the corresponding service' do
+            expect(::Search::Elastic::Delete::ProjectAssociationsService).to receive(:execute)
+            perform
+          end
+        end
+
+        context 'with delete_project_vulnerabilities task' do
+          subject(:perform) do
+            described_class.new.perform({ task: :delete_project_vulnerabilities })
+          end
+
+          it 'calls the corresponding service' do
+            expect(::Search::Elastic::Delete::VulnerabilityService).to receive(:execute)
+            perform
+          end
         end
       end
 

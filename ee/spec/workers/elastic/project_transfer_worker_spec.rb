@@ -39,6 +39,7 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
             expect(::Gitlab::CurrentSettings)
               .to receive(:invalidate_elasticsearch_indexes_cache_for_project!)
               .with(project.id).and_call_original
+            expect(worker).to receive(:delete_vulnerabilities_with_old_routing).with(project)
 
             worker.perform(project.id, non_existing_record_id, indexed_namespace.id)
           end
@@ -59,6 +60,7 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
             expect(::Gitlab::CurrentSettings)
               .to receive(:invalidate_elasticsearch_indexes_cache_for_project!)
               .with(project.id).and_call_original
+            expect(worker).to receive(:delete_vulnerabilities_with_old_routing).with(project)
 
             worker.perform(project.id, non_indexed_namespace.id, indexed_namespace.id)
           end
@@ -81,6 +83,7 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
             expect(::Gitlab::CurrentSettings)
               .to receive(:invalidate_elasticsearch_indexes_cache_for_project!)
                 .with(project.id).and_call_original
+            expect(worker).to receive(:delete_vulnerabilities_with_old_routing).with(project)
 
             worker.perform(project.id, non_indexed_namespace.id, indexed_namespace.id)
           end
@@ -104,6 +107,7 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
             expect(ElasticDeleteProjectWorker).to receive(:perform_async)
               .with(project.id, "project_#{project.id}",
                 { project_only: true, namespace_routing_id: another_indexed_namespace.id })
+            expect(worker).to receive(:delete_vulnerabilities_with_old_routing).with(project)
 
             worker.perform(project.id, another_indexed_namespace.id, indexed_namespace.id)
           end
@@ -124,8 +128,29 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
           expect(ElasticDeleteProjectWorker).to receive(:perform_async)
             .with(project.id, "project_#{project.id}",
               { project_only: true, namespace_routing_id: non_indexed_namespace.id })
+          expect(worker).to receive(:delete_vulnerabilities_with_old_routing).with(project)
 
           worker.perform(project.id, non_indexed_namespace.id, indexed_namespace.id)
+        end
+      end
+
+      describe '#delete_old_project' do
+        it 'calls ElasticDeleteProjectWorker with correct parameters' do
+          options = { namespace_routing_id: non_indexed_namespace.id }
+
+          expect(ElasticDeleteProjectWorker).to receive(:perform_async)
+            .with(project.id, project.es_id, options)
+
+          worker.send(:delete_old_project, project, non_indexed_namespace.id)
+        end
+
+        it 'calls ElasticDeleteProjectWorker with project_only option when specified' do
+          options = { project_only: true, namespace_routing_id: non_indexed_namespace.id }
+
+          expect(ElasticDeleteProjectWorker).to receive(:perform_async)
+            .with(project.id, project.es_id, options)
+
+          worker.send(:delete_old_project, project, non_indexed_namespace.id, project_only: true)
         end
       end
     end

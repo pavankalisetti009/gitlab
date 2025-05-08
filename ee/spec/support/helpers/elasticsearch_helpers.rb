@@ -115,7 +115,7 @@ module ElasticsearchHelpers
     a_value_between(0, Search::ElasticGroupAssociationDeletionWorker::MAX_JOBS_PER_HOUR.pred)
   end
 
-  def items_in_index(index_name)
-    es_helper.client.search(index: index_name).dig('hits', 'hits').map { |hit| hit['_source']['id'] }
+  def items_in_index(index_name, id = 'id')
+    es_helper.client.search(index: index_name).dig('hits', 'hits').map { |hit| hit['_source'][id] }
   end
 end
