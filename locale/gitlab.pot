@@ -66883,6 +66883,9 @@ msgstr ""
 msgid "VirtualRegistry|Create registry"
 msgstr ""
 
+msgid "VirtualRegistry|Failed to fetch list of maven virtual registries."
+msgstr ""
+
 msgid "VirtualRegistry|Get started with virtual registries"
 msgstr ""
 
@@ -66892,7 +66895,7 @@ msgstr ""
 msgid "VirtualRegistry|Maven"
 msgstr ""
 
-msgid "VirtualRegistry|Maven virtual registries"
+msgid "VirtualRegistry|Maven virtual registry"
 msgstr ""
 
 msgid "VirtualRegistry|New maven virtual registry"
@@ -66902,6 +66905,12 @@ msgid "VirtualRegistry|No upstreams yet"
 msgstr ""
 
 msgid "VirtualRegistry|Registry types"
+msgstr ""
+
+msgid "VirtualRegistry|There are no maven virtual registries yet"
+msgstr ""
+
+msgid "VirtualRegistry|Updated %{date}"
 msgstr ""
 
 msgid "VirtualRegistry|Upstreams"

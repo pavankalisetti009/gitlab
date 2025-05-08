@@ -12,7 +12,7 @@ RSpec.describe Groups::VirtualRegistries::Maven::RegistriesController, feature_c
   end
 
   describe 'GET #index' do
-    subject { get group_virtual_registries_maven_registries_path(group) }
+    subject(:get_index) { get group_virtual_registries_maven_registries_path(group) }
 
     it { is_expected.to have_request_urgency(:low) }
 
@@ -37,6 +37,24 @@ RSpec.describe Groups::VirtualRegistries::Maven::RegistriesController, feature_c
         it_behaves_like 'returning response status', :ok
 
         it_behaves_like 'disallowed access to virtual registry'
+
+        it 'pushes updateVirtualRegistry: false ability to frontend' do
+          get_index
+
+          expect(response.body).to have_pushed_frontend_ability(updateVirtualRegistry: false)
+        end
+      end
+
+      context 'when user is group admin' do
+        before_all do
+          group.add_maintainer(user)
+        end
+
+        it 'pushes updateVirtualRegistry: true ability to frontend' do
+          get_index
+
+          expect(response.body).to have_pushed_frontend_ability(updateVirtualRegistry: true)
+        end
       end
     end
   end

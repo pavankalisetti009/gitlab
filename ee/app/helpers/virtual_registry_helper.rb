@@ -16,4 +16,11 @@ module VirtualRegistryHelper
   def can_create_virtual_registry?(group)
     can?(current_user, :create_virtual_registry, group.virtual_registry_policy_subject)
   end
+
+  def maven_registries_data(group)
+    {
+      fullPath: group.full_path,
+      basePath: group_virtual_registries_maven_registries_path(group)
+    }.to_json
+  end
 end
