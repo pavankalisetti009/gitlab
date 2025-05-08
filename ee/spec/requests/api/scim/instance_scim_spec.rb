@@ -888,15 +888,27 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
       it_behaves_like 'SAML SSO must be enabled'
       it_behaves_like 'sets current organization'
 
-      context 'with valid parameters' do
-        it 'responds with 204 No Content' do
-          expect { api_request }.to change { saml_group_link.group.users.count }.by(1)
+      context 'with add operation' do
+        it 'responds with 204 No Content and schedules the worker' do
+          expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+            .with(scim_group_uid, [identity.user_id], 'add')
+
+          api_request
 
           expect(response).to have_gitlab_http_status(:no_content)
         end
 
-        it 'adds the user to the group' do
-          expect { api_request }.to change { saml_group_link.group.users.include?(identity.user) }.from(false).to(true)
+        context 'with end-to-end behavior' do
+          before do
+            allow(Authn::SyncScimGroupMembersWorker).to receive(:perform_async) do |scim_group_uid, user_ids, operation|
+              Authn::SyncScimGroupMembersWorker.new.perform(scim_group_uid, user_ids, operation)
+            end
+          end
+
+          it 'adds the user to the group' do
+            expect { api_request }.to change { saml_group_link.group.users.include?(identity.user) }
+              .from(false).to(true)
+          end
         end
 
         context 'with case-insensitive operation matching' do
@@ -915,10 +927,144 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
             }
           end
 
-          it 'matches operations case-insensitively' do
-            expect { api_request }.to change {
-              saml_group_link.group.users.include?(identity.user)
-            }.from(false).to(true)
+          it 'schedules the worker with correct parameters' do
+            expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+              .with(scim_group_uid, [identity.user_id], 'add')
+
+            api_request
+
+            expect(response).to have_gitlab_http_status(:no_content)
+          end
+        end
+      end
+
+      context 'with remove operation' do
+        before do
+          saml_group_link.group.add_member(identity.user, Gitlab::Access::DEVELOPER)
+        end
+
+        let(:patch_params) do
+          {
+            schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+            Operations: [
+              {
+                op: 'Remove',
+                path: 'members',
+                value: [
+                  { value: identity.extern_uid }
+                ]
+              }
+            ]
+          }
+        end
+
+        it 'responds with 204 No Content and schedules the worker' do
+          expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+            .with(scim_group_uid, [identity.user_id], 'remove')
+
+          api_request
+
+          expect(response).to have_gitlab_http_status(:no_content)
+        end
+
+        context 'with end-to-end behavior' do
+          before do
+            allow(Authn::SyncScimGroupMembersWorker).to receive(:perform_async) do |scim_group_uid, user_ids, operation|
+              Authn::SyncScimGroupMembersWorker.new.perform(scim_group_uid, user_ids, operation)
+            end
+          end
+
+          it 'removes the user from the group' do
+            user = identity.user
+            group = saml_group_link.group
+
+            expect(group.member?(user)).to be_truthy
+
+            api_request
+
+            expect(group.member?(user)).to be_falsey
+          end
+        end
+
+        context 'with case-insensitive operation matching' do
+          let(:patch_params) do
+            {
+              schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+              Operations: [
+                {
+                  op: 'REMOVE',
+                  path: 'MEMBERS',
+                  value: [
+                    { value: identity.extern_uid }
+                  ]
+                }
+              ]
+            }
+          end
+
+          it 'schedules the worker with correct parameters' do
+            expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+              .with(scim_group_uid, [identity.user_id], 'remove')
+
+            api_request
+
+            expect(response).to have_gitlab_http_status(:no_content)
+          end
+        end
+
+        context 'with multiple group links sharing the same SCIM ID' do
+          let!(:another_group) { create(:group) }
+          let!(:another_group_link) do
+            create(:saml_group_link,
+              group: another_group,
+              saml_group_name: 'engineering',
+              scim_group_uid: scim_group_uid)
+          end
+
+          before do
+            another_group.add_member(identity.user, Gitlab::Access::DEVELOPER)
+
+            allow(Authn::SyncScimGroupMembersWorker).to receive(:perform_async) do |scim_group_uid, user_ids, operation|
+              Authn::SyncScimGroupMembersWorker.new.perform(scim_group_uid, user_ids, operation)
+            end
+          end
+
+          it 'removes the user from all the linked groups' do
+            user = identity.user
+            group = saml_group_link.group
+            another_group = another_group_link.group
+
+            expect(group.member?(user)).to be_truthy
+            expect(another_group.member?(user)).to be_truthy
+
+            api_request
+
+            expect(group.member?(user)).to be_falsey
+            expect(another_group.member?(user)).to be_falsey
+          end
+        end
+
+        context 'with non-existent user identity' do
+          let(:patch_params) do
+            {
+              schemas: ['urn:ietf:params:scim:api:messages:2.0:PatchOp'],
+              Operations: [
+                {
+                  op: 'Remove',
+                  path: 'members',
+                  value: [
+                    { value: 'non-existent-identity' }
+                  ]
+                }
+              ]
+            }
+          end
+
+          it 'responds with 204 No Content but does not schedule the worker with user IDs' do
+            expect(Authn::SyncScimGroupMembersWorker).not_to receive(:perform_async)
+
+            api_request
+
             expect(response).to have_gitlab_http_status(:no_content)
           end
         end
@@ -1011,6 +1157,12 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
             scim_group_uid: scim_group_uid)
         end
 
+        before do
+          allow(Authn::SyncScimGroupMembersWorker).to receive(:perform_async) do |scim_group_uid, user_ids, operation|
+            Authn::SyncScimGroupMembersWorker.new.perform(scim_group_uid, user_ids, operation)
+          end
+        end
+
         it 'adds the user to all linked groups' do
           expect { api_request }.to change {
             saml_group_link.group.users.include?(identity.user) &&
@@ -1033,8 +1185,10 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
           }
         end
 
-        it 'responds with 204 No Content' do
-          expect { api_request }.not_to change { saml_group_link.group.users.count }
+        it 'responds with 204 No Content without scheduling a worker' do
+          expect(Authn::SyncScimGroupMembersWorker).not_to receive(:perform_async)
+
+          api_request
 
           expect(response).to have_gitlab_http_status(:no_content)
         end
@@ -1070,8 +1224,10 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
           }
         end
 
-        it 'responds with 204 No Content but does not add any users' do
-          expect { api_request }.not_to change { saml_group_link.group.users.count }
+        it 'responds with 204 No Content without scheduling a worker' do
+          expect(Authn::SyncScimGroupMembersWorker).not_to receive(:perform_async)
+
+          api_request
 
           expect(response).to have_gitlab_http_status(:no_content)
         end

@@ -14,15 +14,16 @@ RSpec.describe EE::Gitlab::Scim::GroupSyncPatchService, feature_category: :syste
     create(:saml_group_link, group: another_group, saml_group_name: 'engineering', scim_group_uid: scim_group_uid)
   end
 
-  let_it_be(:user) { create(:user) }
-  let_it_be(:identity) { create(:scim_identity, user: user, extern_uid: 'test-extern-uid', group: nil) }
+  let_it_be(:user1) { create(:user) }
+  let_it_be(:user2) { create(:user) }
+  let_it_be(:identity1) { create(:scim_identity, user: user1, extern_uid: 'scim-user1', group: nil) }
+  let_it_be(:identity2) { create(:scim_identity, user: user2, extern_uid: 'scim-user2', group: nil) }
 
-  let(:group_links) { SamlGroupLink.by_scim_group_uid(scim_group_uid) }
   let(:operations) { [] }
 
   subject(:service) do
     described_class.new(
-      group_links: group_links,
+      scim_group_uid: scim_group_uid,
       operations: operations
     )
   end
@@ -35,31 +36,45 @@ RSpec.describe EE::Gitlab::Scim::GroupSyncPatchService, feature_category: :syste
             op: 'Add',
             path: 'members',
             value: [
-              { value: identity.extern_uid }
+              { value: identity1.extern_uid },
+              { value: identity2.extern_uid }
             ]
           }
         ]
       end
 
-      it 'adds the user to all group links' do
-        expect { service.execute }.to change {
-          group.users.include?(user) && another_group.users.include?(user)
-        }.from(false).to(true)
+      it 'schedules the worker to add members' do
+        expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+          .with(scim_group_uid, [user1.id, user2.id], 'add')
+
+        service.execute
       end
 
       it 'returns a success response' do
+        allow(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+
         result = service.execute
 
         expect(result).to be_success
       end
 
-      context 'when user is already a member of the group' do
-        before do
-          group.add_member(user, saml_group_link.access_level)
+      context 'with a mix of valid and non-existent user identities' do
+        let(:operations) do
+          [
+            {
+              op: 'Add',
+              path: 'members',
+              value: [
+                { value: identity1.extern_uid },
+                { value: 'non-existent-identity' }
+              ]
+            }
+          ]
         end
 
-        it 'does not attempt to add the user again' do
-          expect(group).not_to receive(:add_member)
+        it 'only includes valid user IDs in the worker call' do
+          expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+            .with(scim_group_uid, [user1.id], 'add')
 
           service.execute
         end
@@ -72,41 +87,115 @@ RSpec.describe EE::Gitlab::Scim::GroupSyncPatchService, feature_category: :syste
               op: 'ADD',
               path: 'MEMBERS',
               value: [
-                { value: identity.extern_uid }
+                { value: identity1.extern_uid }
               ]
             }
           ]
         end
 
-        it 'matches operations case-insensitively' do
-          expect { service.execute }.to change {
-            group.users.include?(user) && another_group.users.include?(user)
-          }.from(false).to(true)
+        it 'still schedules the worker correctly' do
+          expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+            .with(scim_group_uid, [user1.id], 'add')
+
+          service.execute
         end
       end
+    end
 
-      context 'with non-existent user identity' do
+    context 'with remove members operation' do
+      let(:operations) do
+        [
+          {
+            op: 'Remove',
+            path: 'members',
+            value: [
+              { value: identity1.extern_uid },
+              { value: identity2.extern_uid }
+            ]
+          }
+        ]
+      end
+
+      it 'schedules the worker to remove members' do
+        expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+          .with(scim_group_uid, [user1.id, user2.id], 'remove')
+
+        service.execute
+      end
+
+      context 'with a mix of valid and non-existent user identities' do
         let(:operations) do
           [
             {
-              op: 'Add',
+              op: 'Remove',
               path: 'members',
               value: [
+                { value: identity1.extern_uid },
                 { value: 'non-existent-identity' }
               ]
             }
           ]
         end
 
-        it 'does not add any users' do
-          expect { service.execute }.not_to change { group.users.count }
+        it 'only includes valid user IDs in the worker call' do
+          expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+            .with(scim_group_uid, [user1.id], 'remove')
+
+          service.execute
+        end
+      end
+
+      context 'with case-insensitive operation matching' do
+        let(:operations) do
+          [
+            {
+              op: 'REMOVE',
+              path: 'MEMBERS',
+              value: [
+                { value: identity1.extern_uid },
+                { value: identity2.extern_uid }
+              ]
+            }
+          ]
         end
 
-        it 'returns a success response' do
-          result = service.execute
+        it 'still schedules the worker correctly' do
+          expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+            .with(scim_group_uid, [user1.id, user2.id], 'remove')
 
-          expect(result).to be_success
+          service.execute
         end
+      end
+    end
+
+    context 'with mixed add and remove operations' do
+      let(:operations) do
+        [
+          {
+            op: 'Remove',
+            path: 'members',
+            value: [
+              { value: identity1.extern_uid }
+            ]
+          },
+          {
+            op: 'Add',
+            path: 'members',
+            value: [
+              { value: identity2.extern_uid }
+            ]
+          }
+        ]
+      end
+
+      it 'schedules both operations with the worker' do
+        expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+          .with(scim_group_uid, [user1.id], 'remove')
+
+        expect(Authn::SyncScimGroupMembersWorker).to receive(:perform_async)
+          .with(scim_group_uid, [user2.id], 'add')
+
+        service.execute
       end
     end
 
@@ -121,30 +210,10 @@ RSpec.describe EE::Gitlab::Scim::GroupSyncPatchService, feature_category: :syste
         ]
       end
 
-      it 'accepts the operation but does not update anything' do
-        expect { service.execute }.not_to change { saml_group_link.reload.attributes }
-      end
+      it 'does not schedule any worker' do
+        expect(Authn::SyncScimGroupMembersWorker).not_to receive(:perform_async)
 
-      it 'returns a success response' do
-        result = service.execute
-
-        expect(result).to be_success
-      end
-    end
-
-    context 'with unsupported operation type' do
-      let(:operations) do
-        [
-          {
-            op: 'Replace',
-            path: 'members',
-            value: []
-          }
-        ]
-      end
-
-      it 'does not process the operation' do
-        expect { service.execute }.not_to change { group.users.count }
+        service.execute
       end
 
       it 'returns a success response' do
