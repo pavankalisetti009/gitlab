@@ -62,7 +62,7 @@ export default {
           s__('Runners|View runners list')
         }}</gl-button>
         <gl-button variant="confirm" :href="newRunnerPath">
-          {{ s__('Runners|New group runner') }}
+          {{ s__('Runners|Create group runner') }}
         </gl-button>
       </template>
     </runner-list-header>

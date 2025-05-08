@@ -65,7 +65,7 @@ export default {
           s__('Runners|View runners list')
         }}</gl-button>
         <gl-button v-if="canAdminRunners" variant="confirm" :href="newRunnerPath">
-          {{ s__('Runners|New instance runner') }}
+          {{ s__('Runners|Create instance runner') }}
         </gl-button>
       </template>
     </runner-list-header>
