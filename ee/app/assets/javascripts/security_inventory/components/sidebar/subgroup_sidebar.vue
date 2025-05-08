@@ -1,5 +1,8 @@
 <script>
 import { setLocationHash } from '~/lib/utils/url_utility';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { s__ } from '~/locale';
+import { createAlert } from '~/alert';
 import TooltipOnTruncate from '~/vue_shared/directives/tooltip_on_truncate';
 import PanelResizer from '~/vue_shared/components/panel_resizer.vue';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
@@ -40,11 +43,20 @@ export default {
   apollo: {
     group: {
       query: SubgroupsQuery,
-      client: 'appendGroupsClient',
       variables() {
         return {
           fullPath: this.groupFullPath,
         };
+      },
+      error(error) {
+        createAlert({
+          message: s__(
+            'SecurityInventory|An error occurred while fetching subgroups. Please try again.',
+          ),
+          error,
+          captureError: true,
+        });
+        Sentry.captureException(error);
       },
     },
   },

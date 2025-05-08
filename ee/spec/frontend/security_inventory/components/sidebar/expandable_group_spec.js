@@ -2,6 +2,7 @@ import { GlBadge, GlButton, GlIcon } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { stubComponent } from 'helpers/stub_component';
 import ExpandableGroup from 'ee/security_inventory/components/sidebar/expandable_group.vue';
 import GroupList from 'ee/security_inventory/components/sidebar/group_list.vue';
 import { groupWithSubgroups } from '../../mock_data';
@@ -18,10 +19,10 @@ describe('ExpandableGroup', () => {
     wrapper.findByTestId('subgroup').classes('gl-bg-strong');
   const findGroupList = () => wrapper.findComponent(GroupList);
 
-  const subgroups = groupWithSubgroups.data.group.descendantGroups.nodes;
+  const subgroups = groupWithSubgroups.data.group.descendantGroups.edges;
 
   const createComponent = ({
-    group = { ...subgroups[0] },
+    group = { ...subgroups[0].node },
     activeFullPath = 'a-group',
     indentation = 0,
     mountFn = shallowMountExtended,
@@ -32,6 +33,7 @@ describe('ExpandableGroup', () => {
         activeFullPath,
         indentation,
       },
+      stubs: { GroupList: stubComponent(GroupList) },
     });
   };
 

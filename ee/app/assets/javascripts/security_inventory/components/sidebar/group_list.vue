@@ -32,20 +32,14 @@ export default {
     return {
       group: {
         descendantGroups: {
-          nodes: [],
-          pageInfo: {
-            hasNextPage: true,
-          },
+          edges: [],
         },
       },
-      loading: false,
-      scrolledToEndWithNextPage: false,
     };
   },
   apollo: {
     group: {
       query: SubgroupsQuery,
-      client: 'appendGroupsClient',
       variables() {
         return {
           fullPath: this.groupFullPath,
@@ -63,31 +57,14 @@ export default {
       },
     },
   },
-  computed: {
-    hasNextPage() {
-      return this.group.descendantGroups.pageInfo?.hasNextPage;
-    },
-  },
   methods: {
     selectSubgroup(subgroupFullPath) {
       this.$emit('selectSubgroup', subgroupFullPath);
     },
-    async fetchMoreSubgroups() {
-      if (!this.hasNextPage) return;
-      this.loading = true;
-      await this.$apollo.queries.group.fetchMore({
-        variables: {
-          after: this.group.descendantGroups.pageInfo?.endCursor,
-        },
-      });
-      this.loading = false;
-
-      if (this.scrolledToEndWithNextPage) {
-        this.fetchMoreSubgroups();
-      }
-    },
-    checkScrolledToEnd(observer) {
-      this.scrolledToEndWithNextPage = this.hasNextPage && observer.isIntersecting;
+    fetchMoreSubgroups() {
+      const { hasNextPage, endCursor } = this.group.descendantGroups.pageInfo || {};
+      if (!hasNextPage) return;
+      this.$apollo.queries.group.fetchMore({ variables: { after: endCursor } });
     },
   },
 };
@@ -95,14 +72,14 @@ export default {
 <template>
   <div>
     <expandable-group
-      v-for="subgroup in group.descendantGroups.nodes"
+      v-for="subgroup in group.descendantGroups.edges.map((edge) => edge.node)"
       :key="subgroup.id"
       :group="subgroup"
       :active-full-path="activeFullPath"
       :indentation="indentation"
       @selectSubgroup="selectSubgroup"
     />
-    <gl-intersection-observer @appear="fetchMoreSubgroups" @update="checkScrolledToEnd" />
-    <gl-loading-icon v-if="loading" />
+    <gl-loading-icon v-if="$apollo.queries.group.loading" class="gl-pt-3" />
+    <gl-intersection-observer v-else @appear="fetchMoreSubgroups" />
   </div>
 </template>

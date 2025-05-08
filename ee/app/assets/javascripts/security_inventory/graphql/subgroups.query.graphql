@@ -5,13 +5,14 @@ query Subgroups($fullPath: ID!, $after: String) {
     fullPath
     avatarUrl
     descendantGroups(includeParentDescendants: false, first: 10, after: $after) {
-      nodes {
-        __typename
-        id
-        name
-        projectsCount
-        descendantGroupsCount
-        fullPath
+      edges {
+        node {
+          id
+          name
+          projectsCount
+          descendantGroupsCount
+          fullPath
+        }
       }
       pageInfo {
         hasNextPage

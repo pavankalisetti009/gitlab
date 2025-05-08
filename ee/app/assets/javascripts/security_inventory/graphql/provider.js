@@ -1,41 +1,18 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import { relayStylePagination } from '@apollo/client/utilities';
 import createDefaultClient from '~/lib/graphql';
 
 Vue.use(VueApollo);
 
-const appendIncomingOntoExisting = (existing, incoming) => {
-  if (!incoming) return existing;
-  if (!existing) return incoming;
-
-  return {
-    ...incoming,
-    nodes: [
-      ...existing.nodes,
-      ...incoming.nodes.filter(
-        (incomingNode) =>
-          // eslint-disable-next-line no-underscore-dangle
-          !existing.nodes.find((existingNode) => existingNode.__ref === incomingNode.__ref),
-      ),
-    ],
-  };
-};
-
-const defaultClient = createDefaultClient();
-
-const appendGroupsClient = createDefaultClient(
+const defaultClient = createDefaultClient(
   {},
   {
     cacheConfig: {
       typePolicies: {
         Group: {
           fields: {
-            descendantGroups: {
-              read(cachedData) {
-                return cachedData;
-              },
-              merge: appendIncomingOntoExisting,
-            },
+            descendantGroups: relayStylePagination(),
           },
         },
       },
@@ -43,10 +20,4 @@ const appendGroupsClient = createDefaultClient(
   },
 );
 
-export default new VueApollo({
-  clients: {
-    defaultClient,
-    appendGroupsClient,
-  },
-  defaultClient,
-});
+export default new VueApollo({ defaultClient });

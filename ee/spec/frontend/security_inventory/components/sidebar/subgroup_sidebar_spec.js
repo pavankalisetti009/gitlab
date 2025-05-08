@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { createMockClient } from 'helpers/mock_apollo_helper';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import PanelResizer from '~/vue_shared/components/panel_resizer.vue';
 import SubgroupsQuery from 'ee/security_inventory/graphql/subgroups.query.graphql';
@@ -22,24 +22,13 @@ describe('SubgroupSidebar', () => {
   const resizePanel = (size) => wrapper.findComponent(PanelResizer).vm.$emit('update:size', size);
 
   const createComponent = async ({
-    resolvedValue = groupWithSubgroups,
     groupFullPath = 'a-group',
     activeFullPath = 'a-group',
     mountFn = shallowMountExtended,
+    queryHandler = jest.fn().mockResolvedValue(groupWithSubgroups),
   } = {}) => {
-    const mockDefaultClient = createMockClient();
-    const mockAppendGroupsClient = createMockClient([
-      [SubgroupsQuery, jest.fn().mockResolvedValue(resolvedValue)],
-    ]);
-
     wrapper = mountFn(SubgroupSidebar, {
-      apolloProvider: new VueApollo({
-        clients: {
-          defaultClient: mockDefaultClient,
-          appendGroupsClient: mockAppendGroupsClient,
-        },
-        defaultClient: mockDefaultClient,
-      }),
+      apolloProvider: createMockApollo([[SubgroupsQuery, queryHandler]]),
       provide: {
         groupFullPath,
       },
