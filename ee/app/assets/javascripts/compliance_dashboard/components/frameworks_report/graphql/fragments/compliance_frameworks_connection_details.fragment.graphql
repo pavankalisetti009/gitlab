@@ -7,6 +7,7 @@ fragment ComplianceFrameworkConnectionDetails on ComplianceFrameworkConnection {
     default
     description
     color
+    updatedAt
     pipelineConfigurationFullPath
     scanExecutionPolicies(first: 100) {
       nodes {

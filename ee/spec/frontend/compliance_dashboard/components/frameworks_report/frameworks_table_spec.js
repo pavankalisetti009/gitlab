@@ -14,6 +14,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
+import { useFakeDate } from 'helpers/fake_date';
 import {
   createComplianceFrameworksReportResponse,
   createFramework,
@@ -30,6 +31,9 @@ import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_
 import updateComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/update_compliance_framework.mutation.graphql';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+
+// 2025-05-03T00:00:00.000Z
+useFakeDate(2025, 4, 3);
 
 Vue.use(VueApollo);
 
@@ -164,6 +168,7 @@ describe('FrameworksTable component', () => {
         'Requirements',
         'Associated projects',
         'Policies',
+        'Last updated',
         'Action',
       ]);
     });
@@ -188,7 +193,13 @@ describe('FrameworksTable component', () => {
       wrapper = createComponent({ isLoading: false, groupPath: null, projectPath: 'foo/bar' });
 
       const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
-      expect(headerTexts).toStrictEqual(['Frameworks', 'Requirements', 'Policies', 'Action']);
+      expect(headerTexts).toStrictEqual([
+        'Frameworks',
+        'Requirements',
+        'Policies',
+        'Last updated',
+        'Action',
+      ]);
     });
 
     it('does not render search bar', () => {
@@ -299,6 +310,68 @@ describe('FrameworksTable component', () => {
 
       const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
       expect(headerTexts).not.toContain('Requirements');
+    });
+  });
+
+  describe('Last updated column', () => {
+    describe('when relative time is set to true', () => {
+      it('displays last updated relative time for groups', () => {
+        wrapper = createComponent({
+          frameworks,
+          isLoading: false,
+        });
+
+        frameworks.forEach((framework, idx) => {
+          const date = findTableRowData(idx).at(4);
+          expect(date.text()).toBe('4 weeks ago');
+        });
+      });
+
+      it('displays last updated for relative time projects', () => {
+        wrapper = createComponent({
+          frameworks,
+          isLoading: false,
+          groupPath: null,
+          projectPath: 'my-group/my-project',
+        });
+
+        frameworks.forEach((framework, idx) => {
+          const date = findTableRowData(idx).at(3);
+          expect(date.text()).toBe('4 weeks ago');
+        });
+      });
+    });
+
+    describe('when relative time is set to false', () => {
+      beforeEach(() => {
+        window.gon = { time_display_relative: false };
+      });
+
+      it('displays last updated absolute time for groups', () => {
+        wrapper = createComponent({
+          frameworks,
+          isLoading: false,
+        });
+
+        frameworks.forEach((framework, idx) => {
+          const date = findTableRowData(idx).at(4);
+          expect(date.text()).toBe('Apr 3, 2025, 2:01 AM');
+        });
+      });
+
+      it('displays last updated absolute time for projects', () => {
+        wrapper = createComponent({
+          frameworks,
+          isLoading: false,
+          groupPath: null,
+          projectPath: 'my-group/my-project',
+        });
+
+        frameworks.forEach((framework, idx) => {
+          const date = findTableRowData(idx).at(3);
+          expect(date.text()).toBe('Apr 3, 2025, 2:01 AM');
+        });
+      });
     });
   });
 
