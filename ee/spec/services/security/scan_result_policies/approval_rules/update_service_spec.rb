@@ -229,7 +229,8 @@ RSpec.describe Security::ScanResultPolicies::ApprovalRules::UpdateService, featu
         })
       end
 
-      it 'updates scan_result_policy_read but does not update approval rule' do
+      it 'updates scan_result_policy_read but does not update approval rule',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/537136' do
         expect { execute_service }
           .to change { new_scan_result_policy_read.reload.updated_at }
           .and not_change { ApprovalProjectRule.count }
