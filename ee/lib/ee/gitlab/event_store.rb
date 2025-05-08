@@ -126,6 +126,9 @@ module EE
             to: ::Projects::ProjectTransferedEvent
           store.subscribe ::Vulnerabilities::NamespaceStatistics::ProcessGroupTransferEventsWorker,
             to: ::Groups::GroupTransferedEvent
+
+          store.subscribe ::Vulnerabilities::NamespaceStatistics::ProcessProjectDeleteEventsWorker,
+            to: ::Projects::ProjectDeletedEvent
         end
 
         def subscribe_to_epic_events(store)

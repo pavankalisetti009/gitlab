@@ -21,8 +21,21 @@ module Vulnerabilities
 
       return unless project_setting
 
-      Vulnerabilities::UpdateArchivedOfVulnerabilityReadsService.execute(project_setting.project_id)
-      Vulnerabilities::UpdateArchivedOfVulnerabilityStatisticsService.execute(project_setting.project_id)
+      handle_project_records(project_setting.project_id)
+      # Handle namespace-level records after project records to ensure calculations use updated data.
+      handle_namespace_records(project_setting.project_id, event.data[:namespace_id])
+    end
+
+    def handle_project_records(project_id)
+      Vulnerabilities::UpdateArchivedOfVulnerabilityReadsService.execute(project_id)
+      Vulnerabilities::UpdateArchivedOfVulnerabilityStatisticsService.execute(project_id)
+    end
+
+    def handle_namespace_records(project_id, namespace_id)
+      group = Group.by_id(namespace_id).first
+      return unless group
+
+      NamespaceStatistics::RecalculateService.execute(project_id, group)
     end
   end
 end

@@ -8,7 +8,7 @@ module Vulnerabilities
       UPSERT_SQL = <<~SQL
         INSERT INTO vulnerability_namespace_statistics
           (total, info, unknown, low, medium, high, critical, traversal_ids, namespace_id, created_at, updated_at)
-          (%{stats_sql})
+          (%{new_values})
         ON CONFLICT (namespace_id)
         DO UPDATE SET
           total = EXCLUDED.total,
@@ -20,6 +20,7 @@ module Vulnerabilities
           critical = EXCLUDED.critical,
           updated_at = EXCLUDED.updated_at,
           traversal_ids = EXCLUDED.traversal_ids
+        RETURNING namespace_id
       SQL
 
       STATS_SQL = <<~SQL
@@ -27,22 +28,86 @@ module Vulnerabilities
             %{with_values}
         )
         SELECT
-          SUM(total) AS total,
-          SUM(info) AS info,
-          SUM(unknown) AS unknown,
-          SUM(low) AS low,
-          SUM(medium) AS medium,
-          SUM(high) AS high,
-          SUM(critical) AS critical,
+          COALESCE(SUM(vulnerability_statistics.total), 0) AS total,
+          COALESCE(SUM(vulnerability_statistics.info), 0) AS info,
+          COALESCE(SUM(vulnerability_statistics.unknown), 0) AS unknown,
+          COALESCE(SUM(vulnerability_statistics.low), 0) AS low,
+          COALESCE(SUM(vulnerability_statistics.medium), 0) AS medium,
+          COALESCE(SUM(vulnerability_statistics.high), 0) AS high,
+          COALESCE(SUM(vulnerability_statistics.critical), 0) AS critical,
           namespace_data.traversal_ids as traversal_ids,
           namespace_data.namespace_id as namespace_id,
           now() AS created_at,
           now() AS updated_at
-        FROM vulnerability_statistics, namespace_data
-        WHERE vulnerability_statistics.archived = FALSE
+        FROM namespace_data
+        LEFT JOIN vulnerability_statistics
+          ON vulnerability_statistics.archived = FALSE
           AND vulnerability_statistics.traversal_ids >= namespace_data.traversal_ids
           AND vulnerability_statistics.traversal_ids < namespace_data.next_traversal_id
         GROUP BY namespace_data.traversal_ids, namespace_id
+      SQL
+
+      SELECT_NEW_VALUES_SQL = <<~SQL
+        SELECT total, info, unknown, low, medium, high, critical, traversal_ids, namespace_id, created_at, updated_at
+        FROM new_values
+      SQL
+
+      OLD_VALUES_SQL = <<~SQL
+        SELECT
+          namespace_id,
+          traversal_ids,
+          total,
+          critical,
+          high,
+          medium,
+          low,
+          unknown,
+          info
+        FROM vulnerability_namespace_statistics
+        WHERE namespace_id IN (SELECT namespace_id FROM new_values)
+      SQL
+
+      NAMESPACE_DIFF_SQL = <<~SQL
+        SELECT
+          new_values.namespace_id AS namespace_id,
+          new_values.traversal_ids,
+          new_values.total - COALESCE(old_values.total, 0) AS total,
+          new_values.info - COALESCE(old_values.info, 0) AS info,
+          new_values.unknown - COALESCE(old_values.unknown, 0) AS unknown,
+          new_values.low - COALESCE(old_values.low, 0) AS low,
+          new_values.medium - COALESCE(old_values.medium, 0) AS medium,
+          new_values.high - COALESCE(old_values.high, 0) AS high,
+          new_values.critical - COALESCE(old_values.critical, 0) AS critical
+        FROM new_values
+        LEFT JOIN old_values
+          ON new_values.namespace_id = old_values.namespace_id
+        WHERE EXISTS (
+          SELECT 1
+          FROM upserted
+          WHERE upserted.namespace_id = new_values.namespace_id
+        )
+      SQL
+
+      UPSERT_WITH_DIFF_SQL = <<~SQL
+        WITH new_values AS (
+          %{stats_sql}
+        ), old_values AS (
+          %{old_values_sql}
+        ), upserted AS (
+          %{upsert_sql}
+        ), diff_values AS (
+          %{diff_sql}
+        )
+        SELECT *
+        FROM diff_values
+        WHERE
+          total != 0 OR
+          info != 0 OR
+          unknown != 0 OR
+          low != 0 OR
+          medium != 0 OR
+          high != 0 OR
+          critical != 0
       SQL
 
       MAX_NAMESPACES = 1_000
@@ -60,20 +125,48 @@ module Vulnerabilities
       end
 
       def execute
-        return if @namespace_ids.empty?
+        all_diffs = []
+        return all_diffs if @namespace_ids.empty?
 
         @namespace_ids.each_slice(100) do |namespace_ids_batch|
           namespace_data = with_namespace_data(namespace_ids_batch)
           next if namespace_data.blank?
 
-          SecApplicationRecord.connection.execute(upsert_sql(namespace_data))
+          diffs = connection.execute(upsert_with_diffs_sql(namespace_data))
+          all_diffs.concat(non_zero_diffs(diffs.to_a))
         end
+
+        all_diffs
       end
 
       private
 
-      def upsert_sql(namespace_data)
-        format(UPSERT_SQL, stats_sql: stats_sql(namespace_data))
+      def connection
+        SecApplicationRecord.connection
+      end
+
+      def upsert_with_diffs_sql(namespace_data)
+        format(UPSERT_WITH_DIFF_SQL,
+          stats_sql: stats_sql(namespace_data),
+          old_values_sql: old_values_sql,
+          upsert_sql: upsert_sql,
+          diff_sql: diff_sql)
+      end
+
+      def upsert_sql
+        format(UPSERT_SQL, new_values: select_new_values_sql)
+      end
+
+      def select_new_values_sql
+        SELECT_NEW_VALUES_SQL
+      end
+
+      def old_values_sql
+        OLD_VALUES_SQL
+      end
+
+      def diff_sql
+        NAMESPACE_DIFF_SQL
       end
 
       def stats_sql(namespace_data)
@@ -105,6 +198,12 @@ module Vulnerabilities
         end
 
         Arel::Nodes::ValuesList.new(values).to_sql
+      end
+
+      def non_zero_diffs(diffs)
+        diffs.select do |diff|
+          ::Enums::Vulnerability.severity_levels.keys.any? { |level| diff[level] != 0 }
+        end
       end
     end
   end
