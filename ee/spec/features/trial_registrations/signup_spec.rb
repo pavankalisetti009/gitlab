@@ -29,6 +29,14 @@ RSpec.describe 'Trial Sign Up', :with_current_organization, :saas, feature_categ
       end
     end
 
+    context 'when email is passed in the path', :js do
+      it 'prefills the email form field' do
+        visit new_trial_registration_path(email: 'foobar@email.com')
+
+        expect(page).to have_field('Email', with: 'foobar@email.com')
+      end
+    end
+
     it_behaves_like 'creates a user with ArkoseLabs risk band' do
       let(:signup_path) { new_trial_registration_path }
       let(:user_email) { new_user.email }
