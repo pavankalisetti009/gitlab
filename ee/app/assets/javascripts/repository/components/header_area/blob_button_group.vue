@@ -22,7 +22,11 @@ export default {
       type: String,
       required: true,
     },
-    canLock: {
+    canCreateLock: {
+      type: Boolean,
+      required: true,
+    },
+    canDestroyLock: {
       type: Boolean,
       required: true,
     },
@@ -53,7 +57,8 @@ export default {
         :project-path="projectPath"
         :user-permissions="userPermissions"
         :is-loading="isLoading"
-        :can-lock="canLock"
+        :can-create-lock="canCreateLock"
+        :can-destroy-lock="canDestroyLock"
         :is-locked="isLocked"
       />
     </template>

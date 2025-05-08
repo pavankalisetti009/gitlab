@@ -435,7 +435,8 @@ describe('Blob controls component', () => {
           overrideCopy: true,
           isEmptyRepository: false,
           isUsingLfs: false,
-          eeCanLock: undefined,
+          eeCanCreateLock: undefined,
+          eeCanDestroyLock: undefined,
           eeCanModifyFile: undefined,
           eeIsLocked: undefined,
         });
