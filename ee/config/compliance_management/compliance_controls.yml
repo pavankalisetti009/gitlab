@@ -28,14 +28,14 @@ controls:
     field_method: minimum_approvals_required
     enum_value: 1
   merge_request_prevent_author_approval:
-    name: Author approved merge request
+    name: Author approved merge request is forbidden
     type: boolean
     compliant_value: true
     compliant_operator: '='
     field_method: merge_request_prevent_author_approval?
     enum_value: 2
   merge_request_prevent_committers_approval:
-    name: Committers approved merge request
+    name: Committers approved merge request is forbidden
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -348,14 +348,14 @@ controls:
     field_method: push_protection_enabled?
     enum_value: 44
   project_marked_for_deletion:
-    name: Project marked for deletion
+    name: Project not marked for deletion
     type: boolean
     compliant_value: false
     compliant_operator: '='
     field_method: project_marked_for_deletion?
     enum_value: 45
   project_archived:
-    name: Project archived
+    name: Project not archived
     type: boolean
     compliant_value: false
     compliant_operator: '='
