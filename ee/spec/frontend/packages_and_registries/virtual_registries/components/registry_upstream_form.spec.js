@@ -1,0 +1,119 @@
+import { GlForm } from '@gitlab/ui';
+import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_form.vue';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+
+describe('RegistryUpstreamForm', () => {
+  let wrapper;
+
+  const createComponent = (props = {}) => {
+    wrapper = shallowMountExtended(RegistryUpstreamForm, {
+      propsData: props,
+    });
+  };
+
+  const findForm = () => wrapper.findComponent(GlForm);
+  const findNameInput = () => wrapper.findByTestId('name-input');
+  const findUpstreamUrlInput = () => wrapper.findByTestId('upstream-url-input');
+  const findDescriptionInput = () => wrapper.findByTestId('description-input');
+  const findUsernameInput = () => wrapper.findByTestId('username-input');
+  const findPasswordInput = () => wrapper.findByTestId('password-input');
+  const findCacheValidityHoursInput = () => wrapper.findByTestId('cache-validity-hours-input');
+  const findCreateUpstreamButton = () => wrapper.findByTestId('create-upstream-button');
+  const findCancelButton = () => wrapper.findByTestId('cancel-button');
+  const findTestUpstreamButton = () => wrapper.findByTestId('test-upstream-button');
+
+  beforeEach(() => {
+    createComponent();
+  });
+
+  describe('renders', () => {
+    it('renders Form', () => {
+      expect(findForm().exists()).toBe(true);
+    });
+
+    describe('inputs', () => {
+      it('renders Name input', () => {
+        expect(findNameInput().exists()).toBe(true);
+      });
+
+      it('renders Upstream URL input', () => {
+        expect(findUpstreamUrlInput().exists()).toBe(true);
+      });
+
+      it('renders Description input', () => {
+        expect(findDescriptionInput().exists()).toBe(true);
+      });
+
+      it('renders Username input', () => {
+        expect(findUsernameInput().exists()).toBe(true);
+      });
+
+      it('renders Password input', () => {
+        expect(findPasswordInput().exists()).toBe(true);
+      });
+
+      it('renders Cache validity hours input', () => {
+        expect(findCacheValidityHoursInput().exists()).toBe(true);
+      });
+    });
+
+    describe('buttons', () => {
+      it('renders Create upstream button', () => {
+        expect(findCreateUpstreamButton().exists()).toBe(true);
+      });
+
+      it('renders Cancel button', () => {
+        expect(findCancelButton().exists()).toBe(true);
+      });
+
+      it('renders Test upstream button if canTestUpstream is true', () => {
+        createComponent({ canTestUpstream: true });
+        expect(findTestUpstreamButton().exists()).toBe(true);
+      });
+
+      it('does not render Test upstream button if canTestUpstream is false', () => {
+        createComponent({ canTestUpstream: false });
+        expect(findTestUpstreamButton().exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('emits events', () => {
+    it('emits createUpstream event when form is submitted', () => {
+      findForm().vm.$emit('submit', { preventDefault: () => {} });
+      expect(Boolean(wrapper.emitted('createUpstream'))).toBe(true);
+      expect(wrapper.emitted('createUpstream')[0]).toEqual([
+        {
+          name: '',
+          upstreamUrl: '',
+          description: '',
+          username: '',
+          password: '',
+          cacheValidityHours: 24,
+        },
+      ]);
+    });
+
+    it('emits cancel event when Cancel button is clicked', () => {
+      findCancelButton().vm.$emit('click');
+      expect(Boolean(wrapper.emitted('cancel'))).toBe(true);
+      expect(wrapper.emitted('cancel')[0]).toEqual([]);
+    });
+
+    it('emits testUpstream event when Test upstream button is clicked', () => {
+      createComponent({ canTestUpstream: true });
+      findTestUpstreamButton().vm.$emit('click');
+      expect(Boolean(wrapper.emitted('testUpstream'))).toBe(true);
+      expect(wrapper.emitted('testUpstream')[0]).toEqual([
+        {
+          name: '',
+          upstreamUrl: '',
+          description: '',
+          username: '',
+          password: '',
+          cacheValidityHours: 24,
+        },
+      ]);
+    });
+  });
+});
