@@ -40,7 +40,7 @@ module Security
         end
 
         def needs_refresh?
-          status_changed? || scope_changed? || rules_diff.any_changes?
+          status_changed? || scope_changed? || schedules_changed? || rules_diff.any_changes?
         end
 
         def needs_rules_refresh?
@@ -74,6 +74,10 @@ module Security
 
         def content_changed?
           diff.key?(:content)
+        end
+
+        def schedules_changed?
+          diff.key?(:schedules)
         end
 
         def content_project_changed?

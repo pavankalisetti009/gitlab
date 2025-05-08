@@ -306,6 +306,74 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
           end
         end
       end
+
+      context 'with scheduled pipeline execution policy' do
+        let_it_be(:snoozed_until) { Time.zone.parse("2025-12-24") }
+        let_it_be(:snooze) { { until: snoozed_until.iso8601 } }
+
+        let_it_be(:schedule_to) do
+          { type: "daily", start_time: "10:00", time_window: { value: 600, distribution: "random" }, snooze: snooze }
+        end
+
+        let_it_be(:schedule_from) { schedule_to.except(:snooze) }
+
+        let_it_be(:diff) { { schedules: { from: [schedule_from], to: [schedule_to] } } }
+        let_it_be(:policy_changes) do
+          {
+            diff: diff,
+            rules_diff: {
+              created: [],
+              updated: [],
+              deleted: []
+            }
+          }
+        end
+
+        let_it_be(:security_policy) do
+          create(
+            :security_policy,
+            :pipeline_execution_schedule_policy,
+            content: {
+              content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
+              schedules: [schedule_to]
+            })
+        end
+
+        let_it_be_with_refind(:project_schedule) do
+          create(:security_pipeline_execution_project_schedule, project: project, security_policy: security_policy)
+        end
+
+        def persisted_schedule
+          Security::PipelineExecutionProjectSchedule.for_project(project).for_policy(security_policy).first!
+        end
+
+        context 'with experiment enabled' do
+          before do
+            allow(security_policy.security_orchestration_policy_configuration)
+              .to receive(:experiment_enabled?).and_return(true)
+          end
+
+          specify do
+            expect { service.execute }.to change { persisted_schedule.snoozed_until }.from(nil).to(snoozed_until)
+          end
+
+          context 'with feature disabled' do
+            before do
+              stub_feature_flags(scheduled_pipeline_execution_policies: false)
+            end
+
+            specify do
+              expect { service.execute }.to change { Security::PipelineExecutionProjectSchedule.count }.from(1).to(0)
+            end
+          end
+        end
+
+        context 'with experiment disabled' do
+          specify do
+            expect { service.execute }.to change { Security::PipelineExecutionProjectSchedule.count }.from(1).to(0)
+          end
+        end
+      end
     end
   end
 end
