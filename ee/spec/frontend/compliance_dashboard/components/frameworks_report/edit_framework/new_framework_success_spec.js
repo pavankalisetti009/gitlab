@@ -1,6 +1,7 @@
 import { GlPopover, GlButton, GlCard, GlSprintf, GlLink, GlBadge } from '@gitlab/ui';
 import NewFrameworkSuccess from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/new_framework_success.vue';
 import {
+  ROUTE_EDIT_FRAMEWORK,
   ROUTE_FRAMEWORKS,
   ROUTE_PROJECTS,
   FEEDBACK_ISSUE_URL,
@@ -17,7 +18,7 @@ describe('NewFrameworkSuccess', () => {
 
   const findTitle = () => wrapper.find('h1');
   const findIllustration = () => wrapper.find('img');
-  const findCta = () => wrapper.findComponent(GlButton);
+  const findCtas = () => wrapper.findAllComponents(GlButton);
   const findPoliciesCard = () => wrapper.findByTestId('policies-card');
   const findProjectsCard = () => wrapper.findByTestId('projects-card');
   const findFeedbackBadge = () => wrapper.findComponent(GlBadge);
@@ -31,6 +32,9 @@ describe('NewFrameworkSuccess', () => {
         ...provideData,
       },
       mocks: {
+        $route: {
+          query: { id: '123' },
+        },
         $router,
       },
       stubs: {
@@ -51,14 +55,26 @@ describe('NewFrameworkSuccess', () => {
     expect(findTitle().text()).toBe('Compliance framework created!');
   });
 
-  describe('CTA', () => {
-    it('renders the CTA button', () => {
-      expect(findCta().text()).toBe('Back to compliance center');
+  describe('CTAs', () => {
+    it('renders Back to compliance center first', () => {
+      expect(findCtas().at(0).text()).toBe('Back to compliance center');
     });
 
-    it('navigates to compliance center when CTA is clicked', () => {
-      findCta().vm.$emit('click');
-      expect($router.push).toHaveBeenCalledWith({ name: ROUTE_FRAMEWORKS });
+    it('navigates to compliance center when first CTA is clicked', () => {
+      findCtas().at(0).vm.$emit('click');
+      expect($router.push).toHaveBeenCalledWith({ name: ROUTE_FRAMEWORKS, query: { id: '123' } });
+    });
+
+    it('renders Edit framework second', () => {
+      expect(findCtas().at(1).text()).toBe('Edit framework');
+    });
+
+    it('navigates to Edit form when second CTA is clicked', () => {
+      findCtas().at(1).vm.$emit('click');
+      expect($router.push).toHaveBeenCalledWith({
+        name: ROUTE_EDIT_FRAMEWORK,
+        params: { id: '123' },
+      });
     });
   });
 

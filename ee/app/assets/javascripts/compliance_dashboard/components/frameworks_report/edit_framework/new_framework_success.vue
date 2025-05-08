@@ -2,6 +2,7 @@
 import { GlButton, GlBadge, GlPopover, GlCard, GlSprintf, GlLink } from '@gitlab/ui';
 import EmptyTodosAllDoneSvg from '@gitlab/svgs/dist/illustrations/empty-todos-all-done-md.svg';
 import {
+  ROUTE_EDIT_FRAMEWORK,
   ROUTE_FRAMEWORKS,
   ROUTE_PROJECTS,
   FEEDBACK_ISSUE_URL,
@@ -20,8 +21,17 @@ export default {
   },
   inject: ['groupSecurityPoliciesPath', 'adherenceV2Enabled'],
   methods: {
+    navigateToEditFramework() {
+      this.$router.push({
+        name: ROUTE_EDIT_FRAMEWORK,
+        params: { id: this.$route.query.id },
+      });
+    },
     navigateToComplianceCenter() {
-      this.$router.push({ name: ROUTE_FRAMEWORKS });
+      this.$router.push({
+        name: ROUTE_FRAMEWORKS,
+        query: { id: this.$route.query.id },
+      });
     },
     navigateToProjectsReport() {
       this.$router.push({ name: ROUTE_PROJECTS });
@@ -34,7 +44,8 @@ export default {
     text: s__(
       'NewFramework|Use the compliance framework to scope policies and include projects to make sure they are compliant.',
     ),
-    ctaText: s__('NewFramework|Back to compliance center'),
+    editFramework: s__('ComplianceFrameworksReport|Edit framework'),
+    backtoComplianceCenter: s__('NewFramework|Back to compliance center'),
     feedback: s__('NewFramework|Feedback?'),
     feedbackTitle: s__('NewFramework|New improvements to creating compliance framework.'),
     feedbackText: s__(
@@ -74,10 +85,14 @@ export default {
     />
     <h1 class="gl-heading-1 gl-mt-6">{{ $options.i18n.title }}</h1>
     <p class="gl-text-lg">{{ $options.i18n.text }}</p>
-    <gl-button class="gl-mb-5 gl-block" variant="confirm" @click="navigateToComplianceCenter">{{
-      $options.i18n.ctaText
-    }}</gl-button>
-
+    <section class="gl-mb-5">
+      <gl-button variant="confirm" category="primary" @click="navigateToComplianceCenter">
+        {{ $options.i18n.backtoComplianceCenter }}
+      </gl-button>
+      <gl-button variant="confirm" category="secondary" @click="navigateToEditFramework">
+        {{ $options.i18n.editFramework }}
+      </gl-button>
+    </section>
     <gl-badge v-if="adherenceV2Enabled" id="feedback" variant="info" icon="comment-lines">
       {{ $options.i18n.feedback }}
     </gl-badge>
