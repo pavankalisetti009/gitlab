@@ -7,6 +7,7 @@ module AuditEvents
       include ExternallyCommonDestinationable
       include GcpExternallyDestinationable
       include InstanceStreamDestinationMappable
+      include Activatable
 
       self.limit_name = 'google_cloud_logging_configurations'
       self.limit_scope = Limitable::GLOBAL_SCOPE

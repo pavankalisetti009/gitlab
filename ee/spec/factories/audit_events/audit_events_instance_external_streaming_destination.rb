@@ -7,7 +7,11 @@ FactoryBot.define do
     config { { url: FFaker::Internet.uri('https') } }
     secret_token { 'a' * 20 }
     legacy_destination_ref { nil }
+    active { true }
 
+    trait :inactive do
+      active { false }
+    end
     trait :aws do
       category { 'aws' }
       config do

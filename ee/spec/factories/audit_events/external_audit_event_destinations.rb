@@ -5,5 +5,10 @@ FactoryBot.define do
     group
     sequence(:destination_url) { |n| "http://example.com/#{n}" }
     stream_destination_id { nil }
+    active { true }
+
+    trait :inactive do
+      active { false }
+    end
   end
 end
