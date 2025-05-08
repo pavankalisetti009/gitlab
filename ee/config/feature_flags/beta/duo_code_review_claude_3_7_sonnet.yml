@@ -1,9 +1,0 @@
----
-name: duo_code_review_claude_3_7_sonnet
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/521359
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/182986
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/521539
-milestone: '17.10'
-group: group::code review
-type: beta
-default_enabled: true

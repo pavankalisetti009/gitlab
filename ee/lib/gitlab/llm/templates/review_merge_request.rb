@@ -195,11 +195,7 @@ module Gitlab
         end
 
         def model_version
-          if Feature.enabled?(:duo_code_review_claude_3_7_sonnet, user)
-            ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_7_SONNET
-          else
-            ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET
-          end
+          ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_7_SONNET
         end
 
         private
