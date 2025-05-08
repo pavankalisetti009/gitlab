@@ -3,7 +3,7 @@ import { GlIcon, GlLink, GlTooltipDirective } from '@gitlab/ui';
 import eventHub from '~/invite_members/event_hub';
 import { LEARN_GITLAB } from 'ee/invite_members/constants';
 import Tracking from '~/tracking';
-import { ICON_TYPE_EMPTY, ICON_TYPE_PARTIAL, ICON_TYPE_COMPLETED } from '../constants';
+import { ICON_TYPE_EMPTY, ICON_TYPE_COMPLETED } from '../constants';
 
 export default {
   name: 'ActionItem',
@@ -14,9 +14,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  emptyIcon: ICON_TYPE_EMPTY,
-  partialIcon: ICON_TYPE_PARTIAL,
-  completedIcon: ICON_TYPE_COMPLETED,
   urlType: 'invite',
   mixins: [Tracking.mixin({ category: 'projects:learn_gitlab:show' })],
   props: {
@@ -27,7 +24,7 @@ export default {
   },
   computed: {
     iconName() {
-      return this.action.completed ? this.$options.completedIcon : this.$options.emptyIcon;
+      return this.action.completed ? ICON_TYPE_COMPLETED : ICON_TYPE_EMPTY;
     },
 
     isDisabled() {
