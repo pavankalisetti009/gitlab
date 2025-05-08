@@ -161,12 +161,26 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
         expect { post_create }.to change { Group.count }.by(1).and change { Project.count }.by(1)
       end
 
-      it 'sets the cookie for confetti for learn gitlab' do
-        post_create
+      context 'with the cookie for confetti for learn gitlab' do
+        context 'when feature `streamlined_first_product_experience` is enabled' do
+          it 'does not set the cookie' do
+            post_create
 
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/537444 - Cookie is disabled for now, it may be re-enabled later
-        # See the linked issue for details
-        expect(cookies[:confetti_post_signup]).to be_nil
+            expect(cookies[:confetti_post_signup]).to be_nil
+          end
+        end
+
+        context 'when feature `streamlined_first_product_experience` is disabled' do
+          before do
+            stub_feature_flags(streamlined_first_product_experience: false)
+          end
+
+          it 'sets the cookie' do
+            post_create
+
+            expect(cookies[:confetti_post_signup]).to be true
+          end
+        end
       end
 
       context 'when form is successfully submitted' do

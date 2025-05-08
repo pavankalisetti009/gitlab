@@ -36,7 +36,7 @@ RSpec.describe 'Trial flow for user picking just me and creating a project', :js
 
   context 'when learn_gitlab_redesign feature flag is disabled' do
     it 'lands in legacy learn gitlab page', :sidekiq_inline do
-      stub_feature_flags(learn_gitlab_redesign: false)
+      stub_feature_flags(learn_gitlab_redesign: false, streamlined_first_product_experience: false)
 
       trial_registration_sign_up(glm_params)
 
