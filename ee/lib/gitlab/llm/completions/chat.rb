@@ -72,7 +72,8 @@ module Gitlab
               'process_gitlab_duo_question',
               label: tool::NAME,
               property: prompt_message.request_id,
-              namespace: context.container,
+              project: project_from_context(context),
+              namespace: project_from_context(context)&.namespace,
               user: user,
               value: response.status == :ok ? 1 : 0
             )
@@ -135,7 +136,8 @@ module Gitlab
             'process_gitlab_duo_slash_command',
             label: slash_command.name,
             property: prompt_message.request_id,
-            namespace: context.container,
+            project: project_from_context(context),
+            namespace: project_from_context(context)&.namespace,
             user: user,
             value: slash_command.user_input.present? ? 1 : 0
           )
@@ -146,6 +148,10 @@ module Gitlab
             stream_response_handler: stream_response_handler,
             command: slash_command
           ).execute
+        end
+
+        def project_from_context(context)
+          context.container.is_a?(Project) ? context.container : nil
         end
 
         def slash_command

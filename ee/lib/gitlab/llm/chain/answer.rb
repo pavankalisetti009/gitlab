@@ -104,6 +104,10 @@ module Gitlab
           s_("AI|I'm sorry, I can't generate a response. Please try again.")
         end
 
+        def self.project_from_context(context)
+          context.container.is_a?(Project) ? context.container : nil
+        end
+
         def initialize(
           status:, context:, content:, tool:, suggestions: nil, is_final: false, extras: nil,
           error_code: nil)
@@ -123,7 +127,8 @@ module Gitlab
             action,
             label: 'gitlab_duo_chat_answer',
             property: context.request_id,
-            namespace: context.container,
+            project: project_from_context(context),
+            namespace: project_from_context(context)&.namespace,
             user: context.current_user
           )
         end
