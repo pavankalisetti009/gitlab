@@ -22,15 +22,13 @@ describe('SubgroupSidebar', () => {
   const resizePanel = (size) => wrapper.findComponent(PanelResizer).vm.$emit('update:size', size);
 
   const createComponent = async ({
-    resolvedValue = groupWithSubgroups,
     groupFullPath = 'a-group',
     activeFullPath = 'a-group',
     mountFn = shallowMountExtended,
+    queryHandler = jest.fn().mockResolvedValue(groupWithSubgroups),
   } = {}) => {
     wrapper = mountFn(SubgroupSidebar, {
-      apolloProvider: createMockApollo([
-        [SubgroupsQuery, jest.fn().mockResolvedValue(resolvedValue)],
-      ]),
+      apolloProvider: createMockApollo([[SubgroupsQuery, queryHandler]]),
       provide: {
         groupFullPath,
       },

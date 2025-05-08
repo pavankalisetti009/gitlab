@@ -1,10 +1,15 @@
 import { GlBadge, GlButton, GlIcon } from '@gitlab/ui';
 import { nextTick } from 'vue';
-import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
 import ExpandableGroup from 'ee/security_inventory/components/sidebar/expandable_group.vue';
 import GroupList from 'ee/security_inventory/components/sidebar/group_list.vue';
 import { groupWithSubgroups } from '../../mock_data';
+
+jest.mock('ee/security_inventory/components/sidebar/group_list.vue', () => ({
+  name: 'GroupList',
+}));
 
 describe('ExpandableGroup', () => {
   let wrapper;
@@ -15,22 +20,26 @@ describe('ExpandableGroup', () => {
   const findExpandButton = () => wrapper.findComponent(GlButton);
   const findExpandButtonIcon = () => wrapper.findComponent(GlButton).props('icon');
   const subgroupHasHighlightedClass = () =>
-    wrapper.findByTestId('subgroup').classes('gl-bg-neutral-50');
+    wrapper.findByTestId('subgroup').classes('gl-bg-strong');
   const findGroupList = () => wrapper.findComponent(GroupList);
 
-  const subgroups = groupWithSubgroups.data.group.descendantGroups.nodes;
+  const subgroups = groupWithSubgroups.data.group.descendantGroups.edges;
 
   const createComponent = ({
-    group = { ...subgroups[0] },
+    group = { ...subgroups[0].node },
     activeFullPath = 'a-group',
     indentation = 0,
-    mountFn = shallowMountExtended,
   } = {}) => {
-    wrapper = mountFn(ExpandableGroup, {
+    wrapper = shallowMountExtended(ExpandableGroup, {
       propsData: {
         group,
         activeFullPath,
         indentation,
+      },
+      stubs: {
+        GroupList: stubComponent(GroupList, {
+          props: ['activeFullPath', 'groupFullPath', 'indentation'],
+        }),
       },
     });
   };
@@ -76,7 +85,7 @@ describe('ExpandableGroup', () => {
 
   describe('events', () => {
     beforeEach(() => {
-      createComponent({ mountFn: mountExtended });
+      createComponent();
     });
 
     it('on group click, emits selectSubgroup event', () => {
