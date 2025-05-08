@@ -19,7 +19,7 @@
   },
   {
     "id": "merge_request_prevent_author_approval",
-    "name": "Author approved merge request",
+    "name": "Author approved merge request is forbidden",
     "expression": {
       "field": "merge_request_prevent_author_approval",
       "operator": "=",
@@ -28,7 +28,7 @@
   },
   {
     "id": "merge_request_prevent_committers_approval",
-    "name": "Committers approved merge request",
+    "name": "Committers approved merge request is forbidden",
     "expression": {
       "field": "merge_request_prevent_committers_approval",
       "operator": "=",
@@ -406,7 +406,7 @@
   },
   {
     "id": "project_marked_for_deletion",
-    "name": "Project marked for deletion",
+    "name": "Project not marked for deletion",
     "expression": {
       "field": "project_marked_for_deletion",
       "operator": "=",
@@ -415,7 +415,7 @@
   },
   {
     "id": "project_archived",
-    "name": "Project archived",
+    "name": "Project not archived",
     "expression": {
       "field": "project_archived",
       "operator": "=",

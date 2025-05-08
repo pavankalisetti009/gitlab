@@ -735,7 +735,7 @@ export const statusesInfo = {
   },
   project_marked_for_deletion: {
     description: s__(
-      'ComplianceStandardsAdherence|Checks if project is marked for deletion (false is compliant).',
+      'ComplianceStandardsAdherence|Ensures that project is not marked for deletion.',
     ),
     fixes: [
       {
@@ -750,9 +750,7 @@ export const statusesInfo = {
     ],
   },
   project_archived: {
-    description: s__(
-      'ComplianceStandardsAdherence|Checks if project is archived (typically false is compliant).',
-    ),
+    description: s__('ComplianceStandardsAdherence|Ensures that project is not archived.'),
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Review archive status'),

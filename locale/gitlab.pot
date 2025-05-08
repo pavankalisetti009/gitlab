@@ -15870,12 +15870,6 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Checks"
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Checks if project is archived (typically false is compliant)."
-msgstr ""
-
-msgid "ComplianceStandardsAdherence|Checks if project is marked for deletion (false is compliant)."
-msgstr ""
-
 msgid "ComplianceStandardsAdherence|Configure DAST in your CI/CD pipeline to automatically test your application for security issues."
 msgstr ""
 
@@ -16207,6 +16201,12 @@ msgid "ComplianceStandardsAdherence|Ensures that merge requests require at least
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Ensures that project contains protected branches."
+msgstr ""
+
+msgid "ComplianceStandardsAdherence|Ensures that project is not archived."
+msgstr ""
+
+msgid "ComplianceStandardsAdherence|Ensures that project is not marked for deletion."
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Ensures that signed commits are required"
