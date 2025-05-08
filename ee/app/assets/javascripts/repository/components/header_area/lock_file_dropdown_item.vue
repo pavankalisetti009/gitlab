@@ -29,7 +29,11 @@ export default {
       type: String,
       required: true,
     },
-    canLock: {
+    canCreateLock: {
+      type: Boolean,
+      required: true,
+    },
+    canDestroyLock: {
       type: Boolean,
       required: true,
     },
@@ -65,7 +69,11 @@ export default {
         text: this.lockButtonTitle,
         extraAttrs: {
           'data-testid': 'lock-file-dropdown-item',
-          disabled: !this.canLock || this.isLoading || this.isUpdating,
+          disabled:
+            !this.canCreateLock ||
+            (this.isLocked && !this.canDestroyLock) ||
+            this.isLoading ||
+            this.isUpdating,
         },
       };
     },
@@ -94,7 +102,7 @@ export default {
       this.isModalVisible = false;
     },
     showModal() {
-      if (this.canLock) {
+      if (this.canCreateLock) {
         this.isModalVisible = true;
       }
     },

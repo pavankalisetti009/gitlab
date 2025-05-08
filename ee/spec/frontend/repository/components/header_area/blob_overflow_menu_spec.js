@@ -73,32 +73,38 @@ describe('EE Blob Overflow Menu', () => {
 
     describe('when on default branch', () => {
       it.each`
-        scenario                                            | username   | pushCode | pathLockNodes | expectedDisabled | expectedCanLock | expectedIsReplaceDisabled | expectedIsLocked
-        ${'user cannot push code'}                          | ${'root'}  | ${false} | ${null}       | ${true}          | ${false}        | ${true}                   | ${true}
-        ${'user can push code and no lock'}                 | ${'root'}  | ${true}  | ${[]}         | ${false}         | ${true}         | ${false}                  | ${false}
-        ${'user can push code with own lock'}               | ${'root'}  | ${true}  | ${null}       | ${false}         | ${true}         | ${false}                  | ${true}
-        ${'user can push code with lock from another user'} | ${'homer'} | ${true}  | ${null}       | ${true}          | ${false}        | ${true}                   | ${true}
+        scenario                                      | canDestroyPathLock | pathLockNodes | expectedDisabled | expectedIsReplaceDisabled | expectedIsLocked
+        ${'user cannot destroy path lock, with lock'} | ${false}           | ${null}       | ${true}          | ${true}                   | ${true}
+        ${'user can destroy path lock, with lock'}    | ${true}            | ${null}       | ${false}         | ${false}                  | ${true}
+        ${'no lock exists'}                           | ${false}           | ${[]}         | ${false}         | ${false}                  | ${false}
       `(
         'returns correct values when $scenario',
         async ({
-          username,
-          pushCode,
+          canDestroyPathLock,
           pathLockNodes,
           expectedDisabled,
-          expectedCanLock,
           expectedIsReplaceDisabled,
           expectedIsLocked,
         }) => {
-          window.gon.current_username = username;
-
           const projectInfoResolver = jest.fn().mockResolvedValue({
             data: {
               project: getProjectMockWithOverrides({
-                accessLevel: pushCode ? 40 : 10,
-                userPermissionsOverride: {
-                  pushCode,
-                },
-                pathLockNodesOverride: pathLockNodes,
+                pathLockNodesOverride: pathLockNodes || [
+                  {
+                    __typename: 'PathLock',
+                    id: 'gid://gitlab/PathLock/2',
+                    path: 'some/file.js',
+                    user: {
+                      id: 'gid://gitlab/User/1',
+                      username: 'root',
+                      name: 'Administrator',
+                      __typename: 'UserCore',
+                    },
+                    userPermissions: {
+                      destroyPathLock: canDestroyPathLock,
+                    },
+                  },
+                ],
               }),
             },
           });
@@ -111,7 +117,7 @@ describe('EE Blob Overflow Menu', () => {
 
           expect(findBlobDeleteFileGroup().props('disabled')).toBe(expectedDisabled);
           expect(findBlobButtonGroup().props()).toMatchObject({
-            canLock: expectedCanLock,
+            canDestroyLock: canDestroyPathLock,
             isReplaceDisabled: expectedIsReplaceDisabled,
             isLocked: expectedIsLocked,
           });
@@ -121,32 +127,38 @@ describe('EE Blob Overflow Menu', () => {
 
     describe('when not on default branch', () => {
       it.each`
-        scenario                                            | username   | pushCode | pathLockNodes | expectedDisabled | expectedCanLock | expectedIsReplaceDisabled | expectedIsLocked
-        ${'user cannot push code'}                          | ${'root'}  | ${false} | ${null}       | ${false}         | ${false}        | ${false}                  | ${true}
-        ${'user can push code and no lock'}                 | ${'root'}  | ${true}  | ${[]}         | ${false}         | ${true}         | ${false}                  | ${false}
-        ${'user can push code with own lock'}               | ${'root'}  | ${true}  | ${null}       | ${false}         | ${true}         | ${false}                  | ${true}
-        ${'user can push code with lock from another user'} | ${'homer'} | ${true}  | ${null}       | ${false}         | ${false}        | ${false}                  | ${true}
+        scenario                                      | canDestroyPathLock | pathLockNodes | expectedDisabled | expectedIsReplaceDisabled | expectedIsLocked
+        ${'user cannot destroy path lock, with lock'} | ${false}           | ${null}       | ${false}         | ${false}                  | ${true}
+        ${'user can destroy path lock, with lock'}    | ${true}            | ${null}       | ${false}         | ${false}                  | ${true}
+        ${'no lock exists'}                           | ${false}           | ${[]}         | ${false}         | ${false}                  | ${false}
       `(
         'returns correct values when $scenario',
         async ({
-          username,
-          pushCode,
+          canDestroyPathLock,
           pathLockNodes,
           expectedDisabled,
-          expectedCanLock,
           expectedIsReplaceDisabled,
           expectedIsLocked,
         }) => {
-          window.gon.current_username = username;
-
           const projectInfoResolver = jest.fn().mockResolvedValue({
             data: {
               project: getProjectMockWithOverrides({
-                accessLevel: pushCode ? 40 : 10,
-                userPermissionsOverride: {
-                  pushCode,
-                },
-                pathLockNodesOverride: pathLockNodes,
+                pathLockNodesOverride: pathLockNodes || [
+                  {
+                    __typename: 'PathLock',
+                    id: 'gid://gitlab/PathLock/2',
+                    path: 'some/file.js',
+                    user: {
+                      id: 'gid://gitlab/User/1',
+                      username: 'root',
+                      name: 'Administrator',
+                      __typename: 'UserCore',
+                    },
+                    userPermissions: {
+                      destroyPathLock: canDestroyPathLock,
+                    },
+                  },
+                ],
               }),
             },
           });
@@ -159,7 +171,7 @@ describe('EE Blob Overflow Menu', () => {
 
           expect(findBlobDeleteFileGroup().props('disabled')).toBe(expectedDisabled);
           expect(findBlobButtonGroup().props()).toMatchObject({
-            canLock: expectedCanLock,
+            canDestroyLock: canDestroyPathLock,
             isReplaceDisabled: expectedIsReplaceDisabled,
             isLocked: expectedIsLocked,
           });

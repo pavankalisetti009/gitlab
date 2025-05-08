@@ -68,28 +68,22 @@ export default {
     isOnDefaultBranch() {
       return this.currentRef === this.rootRef;
     },
-    pathLockedByUser() {
-      const pathLock = this.pathLocks?.nodes.find((node) => {
+    pathLock() {
+      return this.pathLocks?.nodes.find((node) => {
         return node.path === this.blobInfo.path;
       });
-
-      return pathLock ? pathLock.user : null;
-    },
-    canLock() {
-      const { pushCode, downloadCode } = this.userPermissions;
-      const currentUsername = window.gon?.current_username;
-
-      if (this.pathLockedByUser && this.pathLockedByUser.username !== currentUsername) {
-        return false;
-      }
-
-      return pushCode && downloadCode;
-    },
-    canModifyFile() {
-      return !this.isOnDefaultBranch || this.canLock;
     },
     isLocked() {
-      return Boolean(this.pathLockedByUser);
+      return Boolean(this.pathLock);
+    },
+    canCreatePathLock() {
+      return this.userPermissions.createPathLock;
+    },
+    canDestroyPathLock() {
+      return Boolean(this.pathLock?.userPermissions.destroyPathLock);
+    },
+    canModifyFile() {
+      return !this.isOnDefaultBranch || this.canDestroyPathLock;
     },
   },
   methods: {
@@ -114,7 +108,8 @@ export default {
     :is-using-lfs="isUsingLfs"
     :ee-can-modify-file="canModifyFile"
     :ee-is-locked="isLocked"
-    :ee-can-lock="canLock"
+    :ee-can-create-lock="canCreatePathLock"
+    :ee-can-destroy-lock="canDestroyPathLock"
     @copy="onCopy"
     @showForkSuggestion="onShowForkSuggestion"
     @lockedFile="onLockedFile"

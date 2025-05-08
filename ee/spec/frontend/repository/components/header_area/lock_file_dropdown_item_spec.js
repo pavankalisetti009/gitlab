@@ -29,7 +29,8 @@ describe('LockFileDropdownItem component', () => {
         path: 'some/path/locked_file.js',
         projectPath: 'some/project/path',
         isLoading: false,
-        canLock: true,
+        canCreateLock: true,
+        canDestroyLock: true,
         isLocked: true,
         ...props,
       },
@@ -51,10 +52,10 @@ describe('LockFileDropdownItem component', () => {
     fakeApollo = null;
   });
 
-  it('renders disabled the lock dropdown item if user can not lock a file', async () => {
+  it('renders disabled the lock dropdown item if user can not create lock', async () => {
     createComponent({
       props: {
-        canLock: false,
+        canCreateLock: false,
       },
     });
     await waitForPromises();
@@ -67,6 +68,19 @@ describe('LockFileDropdownItem component', () => {
   it('renders disabled until query fetches projects info', async () => {
     createComponent({
       props: { isLoading: true },
+    });
+    await waitForPromises();
+
+    expect(findLockFileDropdownItem().props('item')).toMatchObject({
+      extraAttrs: { disabled: true },
+    });
+  });
+
+  it('renders disabled the lock dropdown item if user can not destroy lock', async () => {
+    createComponent({
+      props: {
+        canDestroyLock: false,
+      },
     });
     await waitForPromises();
 

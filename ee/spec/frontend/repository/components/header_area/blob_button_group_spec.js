@@ -15,7 +15,8 @@ describe('EE blob button group', () => {
     isReplaceDisabled: false,
     projectPath: 'some/project/path',
     isLocked: false,
-    canLock: true,
+    canCreateLock: true,
+    canDestroyLock: true,
     isLoading: false,
   };
 
@@ -63,7 +64,8 @@ describe('EE blob button group', () => {
       name: 'file.js',
       path: 'some/file.js',
       projectPath: 'some/project/path',
-      canLock: true,
+      canCreateLock: true,
+      canDestroyLock: true,
       isLocked: false,
       isLoading: false,
     });
