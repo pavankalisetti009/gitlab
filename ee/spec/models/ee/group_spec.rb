@@ -4343,14 +4343,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
       it { is_expected.to be(false) }
     end
-
-    context 'when ai_review_merge_request feature flag is disabled' do
-      before do
-        stub_feature_flags(ai_review_merge_request: false)
-      end
-
-      it { is_expected.to be(false) }
-    end
   end
 
   describe '#project_epics_enabled?' do

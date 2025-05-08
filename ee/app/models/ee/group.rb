@@ -311,8 +311,7 @@ module EE
     end
 
     def ai_review_merge_request_allowed?(user)
-      ::Feature.enabled?(:ai_review_merge_request, user) &&
-        Ability.allowed?(user, :access_ai_review_mr, self) &&
+      Ability.allowed?(user, :access_ai_review_mr, self) &&
         ::Gitlab::Llm::FeatureAuthorizer.new(
           container: self,
           feature_name: :review_merge_request,

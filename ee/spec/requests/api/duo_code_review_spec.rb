@@ -18,7 +18,6 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
     let(:dev_or_test_env?) { true }
     let(:license_feature_available) { true }
     let(:global_feature_flag_enabled) { true }
-    let(:feature_flag_enabled) { true }
     let(:current_user) { authorized_user }
     let(:raw_diffs) do
       <<~DIFFS
@@ -67,7 +66,6 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
     before do
       stub_licensed_features(review_merge_request: license_feature_available)
       stub_feature_flags(ai_global_switch: global_feature_flag_enabled)
-      stub_feature_flags(ai_review_merge_request: feature_flag_enabled)
 
       allow(Gitlab).to receive(:dev_or_test_env?).and_return(dev_or_test_env?)
 
@@ -129,12 +127,6 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
 
     context 'when feature is not available in license' do
       let(:license_feature_available) { false }
-
-      it { expect(response).to have_gitlab_http_status(:not_found) }
-    end
-
-    context 'when ai_review_merge_request is disabled' do
-      let(:feature_flag_enabled) { false }
 
       it { expect(response).to have_gitlab_http_status(:not_found) }
     end

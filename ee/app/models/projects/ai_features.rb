@@ -9,8 +9,7 @@ module Projects
     end
 
     def review_merge_request_allowed?(user)
-      ::Feature.enabled?(:ai_review_merge_request, user) &&
-        Ability.allowed?(user, :access_ai_review_mr, project) &&
+      Ability.allowed?(user, :access_ai_review_mr, project) &&
         ::Gitlab::Llm::FeatureAuthorizer.new(
           container: project,
           feature_name: :review_merge_request,
