@@ -7,7 +7,6 @@ module EE
 
     prepended do
       include ::Gitlab::Utils::StrongMemoize
-      include CrudPolicyHelpers
       include RemoteDevelopment::GroupPolicy
       include Vulnerabilities::AdvancedVulnerabilityManagementPolicy
 
@@ -847,8 +846,12 @@ module EE
       end
 
       rule { wiki_disabled }.policy do
-        prevent(*create_read_update_admin_destroy(:wiki))
-        prevent(:download_wiki_code)
+        prevent :read_wiki
+        prevent :create_wiki
+        prevent :update_wiki
+        prevent :admin_wiki
+        prevent :destroy_wiki
+        prevent :download_wiki_code
       end
 
       rule { can?(:admin_push_rules) }.policy do

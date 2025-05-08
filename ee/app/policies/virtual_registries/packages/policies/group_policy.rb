@@ -4,8 +4,6 @@ module VirtualRegistries
   module Packages
     module Policies
       class GroupPolicy < ::BasePolicy
-        include CrudPolicyHelpers
-
         delegate(:group) { @subject.group }
 
         condition(:deploy_token_user, scope: :user, score: 0) { @user.is_a?(DeployToken) }
@@ -15,7 +13,11 @@ module VirtualRegistries
         end
 
         rule { anonymous }.policy do
-          prevent(*create_read_update_admin_destroy(:virtual_registry))
+          prevent :read_virtual_registry
+          prevent :create_virtual_registry
+          prevent :update_virtual_registry
+          prevent :admin_virtual_registry
+          prevent :destroy_virtual_registry
         end
 
         rule { group.guest | admin | group.has_projects }.policy do
