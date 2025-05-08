@@ -34,11 +34,24 @@ RSpec.describe AuditEvents::Streaming::Destinations::AmazonS3StreamDestination, 
 
     context 'when an error occurs' do
       before do
-        allow(aws_s3_client).to receive(:upload_object).and_raise(StandardError.new('S3 error'))
+        allow(aws_s3_client).to receive(:upload_object).and_raise(StandardError.new('Unexpected error'))
+      end
+
+      it 'tracks the exception' do
+        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(kind_of(StandardError))
+
+        s3_destination.stream
+      end
+    end
+
+    context 'when S3 specific error occurs' do
+      before do
+        allow(aws_s3_client).to receive(:upload_object).and_raise(Aws::S3::Errors::ServiceError.new(nil,
+          "S3 Service Error"))
       end
 
       it 'logs the exception' do
-        expect(Gitlab::ErrorTracking).to receive(:log_exception).with(kind_of(StandardError))
+        expect(Gitlab::ErrorTracking).to receive(:log_exception).with(kind_of(Aws::S3::Errors::ServiceError))
 
         s3_destination.stream
       end

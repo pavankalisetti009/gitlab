@@ -107,5 +107,29 @@ RSpec.shared_examples 'validate Amazon S3 destination strategy' do
         track_and_stream
       end
     end
+
+    context 'when an error occurs' do
+      it 'tracks the exception' do
+        expect(Gitlab::ErrorTracking).to receive(:track_exception).with(kind_of(StandardError))
+
+        allow_next_instance_of(Aws::S3::Client) do |s3_client|
+          expect(s3_client).to receive(:put_object).and_raise(StandardError.new('Unexpected error'))
+        end
+
+        track_and_stream
+      end
+    end
+
+    context 'when S3 specific error occurs' do
+      it 'logs the exception' do
+        expect(Gitlab::ErrorTracking).to receive(:log_exception).with(kind_of(Aws::S3::Errors::ServiceError))
+
+        allow_next_instance_of(Aws::S3::Client) do |s3_client|
+          expect(s3_client).to receive(:put_object).and_raise(Aws::S3::Errors::ServiceError.new(nil, "S3 Error"))
+        end
+
+        track_and_stream
+      end
+    end
   end
 end

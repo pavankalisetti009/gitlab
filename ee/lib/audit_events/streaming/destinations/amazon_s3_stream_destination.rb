@@ -7,8 +7,10 @@ module AuditEvents
         def stream
           payload = request_body
           aws_s3_client.upload_object(filename(payload), bucket_name, payload, 'application/json')
-        rescue StandardError => e
+        rescue Aws::S3::Errors::ServiceError => e
           Gitlab::ErrorTracking.log_exception(e)
+        rescue StandardError => e
+          Gitlab::ErrorTracking.track_exception(e)
         end
 
         private

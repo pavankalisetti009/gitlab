@@ -11,6 +11,8 @@ module AuditEvents
         payload = request_body
         Aws::S3Client.new(destination.access_key_xid, destination.secret_access_key, destination.aws_region)
                      .upload_object(filename(payload), destination.bucket_name, payload, 'application/json')
+      rescue Aws::S3::Errors::ServiceError => e
+        Gitlab::ErrorTracking.log_exception(e)
       rescue StandardError => e
         Gitlab::ErrorTracking.track_exception(e)
       end
