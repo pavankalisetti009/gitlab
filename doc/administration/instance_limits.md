@@ -525,17 +525,21 @@ Set the limit to `0` to disable it.
 
 ### Limit pipeline hierarchy size
 
-A [pipeline hierarchy](../ci/pipelines/downstream_pipelines.md) can
-contain up to 1000 downstream pipelines by default. This limit is checked when creating new
-downstream pipelines. If a new downstream pipeline would cause the hierarchy to exceed this
-limit, the pipeline creation fails.
+By default, a [pipeline hierarchy](../ci/pipelines/downstream_pipelines.md) can contain up to 1000 downstream pipelines.
+When this limit is exceeded, pipeline creation fails with the error `downstream pipeline tree is too large`.
 
-Set the limit to `0` to disable it. Defaults to `1000` on GitLab Self-Managed.
+{{< alert type="warning" >}}
 
-To set this limit to `2000` on your instance, run the following command in the GitLab Rails console:
+Increasing this limit is not recommended. The default limit protects your GitLab instance from excessive resource consumption, potential pipeline recursion, and database overload.
+
+Instead of increasing the limit, restructure your CI/CD configuration by splitting large pipeline hierarchies into smaller pipelines or using parallel jobs.
+
+{{< /alert >}}
+
+To modify this limit on your instance, run the following command in the GitLab Rails console:
 
 ```ruby
-Plan.default.actual_limits.update!(pipeline_hierarchy_size: 2000)
+Plan.default.actual_limits.update!(pipeline_hierarchy_size: 500)
 ```
 
 You can also set this limit by using the GitLab UI in the [Admin area](settings/continuous_integration.md#set-cicd-limits).
