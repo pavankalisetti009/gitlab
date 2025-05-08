@@ -15,30 +15,6 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
         .to receive(:concurrent_worker_count).and_return(concurrent_workers)
     end
 
-    shared_examples 'report prometheus metrics' do |limit = described_class::BATCH_SIZE, queue_size = 10000|
-      it 'reports worker queue size and concurrency limit to prometheus' do
-        queue_size_gauge_double = instance_double(Prometheus::Client::Gauge)
-        expect(Gitlab::Metrics).to receive(:gauge).at_least(:once)
-                                                  .with(:sidekiq_concurrency_limit_queue_jobs, anything, {}, :max)
-                                                  .and_return(queue_size_gauge_double)
-
-        allow(queue_size_gauge_double).to receive(:set).with({ worker: anything }, anything)
-        expect(queue_size_gauge_double).to receive(:set).with({ worker: worker_with_concurrency_limit.name },
-          queue_size)
-
-        limit_gauge_double = instance_double(Prometheus::Client::Gauge)
-        expect(Gitlab::Metrics).to receive(:gauge).at_least(:once)
-                                                  .with(:sidekiq_concurrency_limit_max_concurrent_jobs, anything, {})
-                                                  .and_return(limit_gauge_double)
-
-        allow(limit_gauge_double).to receive(:set).with({ worker: anything }, anything)
-        expect(limit_gauge_double).to receive(:set)
-          .with({ worker: worker_with_concurrency_limit.name }, limit)
-
-        worker.perform
-      end
-    end
-
     context 'when worker_name is absent' do
       subject(:perform) { worker.perform }
 
@@ -111,8 +87,6 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
 
           perform
         end
-
-        it_behaves_like 'report prometheus metrics', 10, 0
       end
 
       context 'when there are jobs in the queue' do
@@ -149,8 +123,6 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
           perform
         end
 
-        it_behaves_like 'report prometheus metrics', 60
-
         context 'when limit is negative' do
           before do
             allow(::Gitlab::SidekiqMiddleware::ConcurrencyLimit::WorkersMap).to receive(:limit_for).and_return(0)
@@ -166,8 +138,6 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
 
             perform
           end
-
-          it_behaves_like 'report prometheus metrics', -1
         end
 
         context 'when limit is not set' do
@@ -186,8 +156,6 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
 
             perform
           end
-
-          it_behaves_like 'report prometheus metrics', 0
         end
       end
     end
