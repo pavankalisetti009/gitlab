@@ -11,6 +11,7 @@ import * as types from './mutation_types';
 
 const fetchUsersForRuleForProject = (
   entityId,
+  entityType,
   {
     user_id: userId,
     group_id: groupId,
@@ -27,7 +28,13 @@ const fetchUsersForRuleForProject = (
     );
   }
 
-  return getProjectMembers(entityId, groupInheritanceType === INHERITED_GROUPS).then(({ data }) =>
+  const isInherited = groupInheritanceType === INHERITED_GROUPS;
+  const fetchMembers =
+    entityType === 'projects'
+      ? getProjectMembers(entityId, isInherited)
+      : getGroupMembers(entityId, isInherited);
+
+  return fetchMembers.then(({ data }) =>
     data.filter(({ access_level: memberAccessLevel }) => memberAccessLevel >= accessLevel),
   );
 };
@@ -78,7 +85,7 @@ export const fetchAllMembersForEnvironment = ({ dispatch }, environment) => {
 };
 
 export const fetchMembers = ({ state, commit }, { type, rule }) => {
-  return fetchUsersForRuleForProject(state.entityId, rule)
+  return fetchUsersForRuleForProject(state.entityId, state.entityType, rule)
     .then((users) => {
       commit(types.RECEIVE_MEMBER_SUCCESS, { type, rule, users });
     })

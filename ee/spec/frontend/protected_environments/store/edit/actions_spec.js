@@ -151,20 +151,23 @@ describe('ee/protected_environments/store/edit/actions', () => {
 
   describe('fetchMembers', () => {
     it.each`
-      type                                | rule                                                                                                     | url                               | response
-      ${'group with integer inheritance'} | ${{ group_id: 1, user_id: null, access_level: null, group_inheritance_type: 1 }}                         | ${'/api/v4/groups/1/members/all'} | ${[{ name: 'root' }]}
-      ${'group without inheritance'}      | ${{ group_id: 1, user_id: null, access_level: null, group_inheritance_type: 0 }}                         | ${'/api/v4/groups/1/members'}     | ${[{ name: 'root' }]}
-      ${'user'}                           | ${{ group_id: null, user_id: 1, access_level: null, group_inheritance_type: null }}                      | ${'/api/v4/users/1'}              | ${{ name: 'root' }}
-      ${'access level'}                   | ${{ group_id: null, user_id: null, access_level: MAINTAINER_ACCESS_LEVEL, group_inheritance_type: '0' }} | ${'/api/v4/projects/8/members'}   | ${[{ name: 'root', access_level: MAINTAINER_ACCESS_LEVEL.toString() }]}
+      type                                | rule                                                                                                     | url                               | response                                                                | entityType
+      ${'group with integer inheritance'} | ${{ group_id: 1, user_id: null, access_level: null, group_inheritance_type: 1 }}                         | ${'/api/v4/groups/1/members/all'} | ${[{ name: 'root' }]}                                                   | ${'groups'}
+      ${'group without inheritance'}      | ${{ group_id: 1, user_id: null, access_level: null, group_inheritance_type: 0 }}                         | ${'/api/v4/groups/1/members'}     | ${[{ name: 'root' }]}                                                   | ${'groups'}
+      ${'user'}                           | ${{ group_id: null, user_id: 1, access_level: null, group_inheritance_type: null }}                      | ${'/api/v4/users/1'}              | ${{ name: 'root' }}                                                     | ${'groups'}
+      ${'access level'}                   | ${{ group_id: null, user_id: null, access_level: MAINTAINER_ACCESS_LEVEL, group_inheritance_type: '0' }} | ${'/api/v4/projects/8/members'}   | ${[{ name: 'root', access_level: MAINTAINER_ACCESS_LEVEL.toString() }]} | ${'projects'}
+      ${'all project members'}            | ${{ group_id: null, user_id: null, access_level: MAINTAINER_ACCESS_LEVEL, group_inheritance_type: '0' }} | ${'/api/v4/projects/8/members'}   | ${[{ name: 'root', access_level: MAINTAINER_ACCESS_LEVEL.toString() }]} | ${'projects'}
+      ${'all group members'}              | ${{ group_id: null, user_id: null, access_level: MAINTAINER_ACCESS_LEVEL, group_inheritance_type: '0' }} | ${'/api/v4/groups/8/members'}     | ${[{ name: 'root', access_level: MAINTAINER_ACCESS_LEVEL.toString() }]} | ${'groups'}
     `(
       'successfully fetches members for a given deploy access rule of type $type',
-      ({ rule, url, response }) => {
+      ({ rule, url, response, entityType }) => {
         mock.onGet(url).replyOnce(HTTP_STATUS_OK, response);
+        const currentState = { ...mockedState, entityType };
 
         return testAction(
           fetchMembers,
           { type: DEPLOYER_RULE_KEY, rule },
-          mockedState,
+          currentState,
           [
             {
               type: types.RECEIVE_MEMBER_SUCCESS,
