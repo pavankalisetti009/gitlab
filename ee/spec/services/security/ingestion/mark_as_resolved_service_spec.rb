@@ -5,6 +5,28 @@ require 'spec_helper'
 RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vulnerability_management do
   let_it_be(:project) { create(:project) }
 
+  before do
+    allow(Vulnerabilities::AutoResolveService).to receive(:new).and_call_original
+  end
+
+  def expect_vulnerability_to_be_resolved(vulnerability)
+    expect(Vulnerabilities::AutoResolveService).to have_received(:new).with(
+      project,
+      array_including(vulnerability.id),
+      anything
+    )
+    expect(vulnerability).to be_resolved_on_default_branch
+  end
+
+  def expect_vulnerability_not_to_be_resolved(vulnerability)
+    expect(Vulnerabilities::AutoResolveService).not_to have_received(:new).with(
+      project,
+      array_including(vulnerability.id),
+      anything
+    )
+    expect(vulnerability).not_to be_resolved_on_default_branch
+  end
+
   describe '#execute' do
     context 'when using a vulnerability scanner' do
       let(:command) { described_class.new(pipeline, scanner, ingested_ids) }
@@ -28,15 +50,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
         it 'resolves non-generic vulnerabilities detected by the scanner' do
           command.execute
 
-          expect(vulnerability.reload).to be_resolved_on_default_branch
-        end
-
-        it 'calls AutoResolveService on missing_ids' do
-          expect_next_instance_of(Vulnerabilities::AutoResolveService, project, [vulnerability.id], 1000) do |service|
-            expect(service).to receive(:execute).and_return(ServiceResponse.success(payload: { count: 1 }))
-          end
-
-          command.execute
+          expect_vulnerability_to_be_resolved(vulnerability.reload)
         end
 
         it 'does not call AutoResolveService when count of resolved vulnerabilities is over limit' do
@@ -181,7 +195,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
 
         command.execute
 
-        expect(vulnerability.reload).not_to be_resolved_on_default_branch
+        expect_vulnerability_not_to_be_resolved(vulnerability.reload)
       end
 
       context 'when a vulnerability requires manual resolution' do
@@ -190,7 +204,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
 
           command.execute
 
-          expect(vulnerability.reload).not_to be_resolved_on_default_branch
+          expect_vulnerability_not_to_be_resolved(vulnerability.reload)
         end
 
         it 'does not resolve secret_detection vulnerabilities' do
@@ -198,7 +212,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
 
           command.execute
 
-          expect(vulnerability.reload).not_to be_resolved_on_default_branch
+          expect_vulnerability_not_to_be_resolved(vulnerability.reload)
         end
       end
 
@@ -212,7 +226,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
         it 'does not resolve ingested vulnerabilities' do
           command.execute
 
-          expect(ingested_vulnerability.reload).not_to be_resolved_on_default_branch
+          expect_vulnerability_not_to_be_resolved(ingested_vulnerability.reload)
         end
       end
 
@@ -258,8 +272,8 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
             it 'resolves CVS vulnerabilities of the Dependency Scanning report type' do
               command.execute
 
-              expect(cvs_ds_vulnerability.reload).to be_resolved_on_default_branch
-              expect(cvs_cs_vulnerability.reload).not_to be_resolved_on_default_branch
+              expect_vulnerability_to_be_resolved(cvs_ds_vulnerability.reload)
+              expect_vulnerability_not_to_be_resolved(cvs_cs_vulnerability.reload)
             end
           end
         end
@@ -275,8 +289,8 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           it 'resolves CVS vulnerabilities of the Container Scanning report type' do
             command.execute
 
-            expect(cvs_cs_vulnerability.reload).to be_resolved_on_default_branch
-            expect(cvs_ds_vulnerability.reload).not_to be_resolved_on_default_branch
+            expect_vulnerability_to_be_resolved(cvs_cs_vulnerability.reload)
+            expect_vulnerability_not_to_be_resolved(cvs_ds_vulnerability.reload)
           end
         end
 
@@ -286,8 +300,8 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           it 'does not resolve CVS vulnerabilities' do
             command.execute
 
-            expect(cvs_cs_vulnerability.reload).not_to be_resolved_on_default_branch
-            expect(cvs_ds_vulnerability.reload).not_to be_resolved_on_default_branch
+            expect_vulnerability_not_to_be_resolved(cvs_cs_vulnerability.reload)
+            expect_vulnerability_not_to_be_resolved(cvs_ds_vulnerability.reload)
           end
         end
 
@@ -306,8 +320,8 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           it 'does not resolve CVS vulnerabilities' do
             command.execute
 
-            expect(cvs_cs_vulnerability.reload).not_to be_resolved_on_default_branch
-            expect(cvs_ds_vulnerability.reload).not_to be_resolved_on_default_branch
+            expect_vulnerability_not_to_be_resolved(cvs_cs_vulnerability.reload)
+            expect_vulnerability_not_to_be_resolved(cvs_ds_vulnerability.reload)
           end
         end
       end
@@ -358,7 +372,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
 
         command.execute
 
-        expect(vulnerability.reload).not_to be_resolved_on_default_branch
+        expect_vulnerability_not_to_be_resolved(vulnerability.reload)
       end
     end
   end
