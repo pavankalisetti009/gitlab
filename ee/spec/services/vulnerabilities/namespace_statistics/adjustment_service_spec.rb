@@ -63,14 +63,22 @@ RSpec.describe Vulnerabilities::NamespaceStatistics::AdjustmentService, feature_
       let(:empty_group) { create(:group) }
       let(:namespace_ids) { [empty_group.id] }
 
-      it 'does not create new namespace_statistics records' do
-        expect { adjust_statistics }.not_to change { Vulnerabilities::NamespaceStatistic.count }
+      it 'creates new empty namespace_statistics records' do
+        expect { adjust_statistics }.to change { Vulnerabilities::NamespaceStatistic.count }.by(1)
+      end
+
+      it 'returns empty diff' do
+        expect(adjust_statistics).to eq([])
       end
     end
 
     context 'when there are no vulnerability_statistic record for the groups projects' do
-      it 'does not create a new record in database' do
-        expect { adjust_statistics }.not_to change { Vulnerabilities::NamespaceStatistic.count }
+      it 'creates new empty namespace_statistics records' do
+        expect { adjust_statistics }.to change { Vulnerabilities::NamespaceStatistic.count }.by(3)
+      end
+
+      it 'returns empty diff' do
+        expect(adjust_statistics).to eq([])
       end
     end
 
@@ -134,6 +142,27 @@ RSpec.describe Vulnerabilities::NamespaceStatistics::AdjustmentService, feature_
             'traversal_ids' => root_group.traversal_ids
           }))
         end
+
+        it 'returns the correct diffs' do
+          diffs = adjust_statistics
+          expect(diffs.size).to eq(3)
+
+          sub_group_diff = diffs.find { |d| d['namespace_id'] == sub_group.id }
+          group_diff = diffs.find { |d| d['namespace_id'] == group.id }
+          root_group_diff = diffs.find { |d| d['namespace_id'] == root_group.id }
+
+          expect(sub_group_diff).to include(
+            expected_single_project_statistics.merge({ 'namespace_id' => sub_group.id })
+          )
+
+          expect(group_diff).to include(
+            expected_ancestor_statistics.merge({ 'namespace_id' => group.id })
+          )
+
+          expect(root_group_diff).to include(
+            expected_ancestor_statistics.merge({ 'namespace_id' => root_group.id })
+          )
+        end
       end
 
       context 'when there is already a vulnerability_namespace_statistic record for a group' do
@@ -148,6 +177,31 @@ RSpec.describe Vulnerabilities::NamespaceStatistics::AdjustmentService, feature_
             'namespace_id' => root_group.id,
             'traversal_ids' => root_group.traversal_ids
           }))
+        end
+
+        it 'returns the correct diffs' do
+          diffs = adjust_statistics
+          expect(diffs.size).to eq(3)
+
+          sub_group_diff = diffs.find { |d| d['namespace_id'] == sub_group.id }
+          group_diff = diffs.find { |d| d['namespace_id'] == group.id }
+          root_group_diff = diffs.find { |d| d['namespace_id'] == root_group.id }
+
+          expect(group_diff).to include(expected_ancestor_statistics.merge({ 'namespace_id' => group.id }))
+          expect(sub_group_diff).to include(
+            expected_single_project_statistics.merge({ 'namespace_id' => sub_group.id })
+          )
+
+          expect(root_group_diff).to include(
+            'namespace_id' => root_group.id,
+            'total' => 0,            # 4 (new) - 4 (old) = 0
+            'critical' => 2,         # 2 (new) - 0 (old) = 2
+            'high' => 2,             # 2 (new) - 0 (old) = 2
+            'medium' => 0,
+            'low' => 0,
+            'info' => -3,            # 0 (new) - 3 (old) = -3
+            'unknown' => -1          # 0 (new) - 1 (old) = -1
+          )
         end
 
         context 'when a group traversal_ids is outdated' do
@@ -175,7 +229,17 @@ RSpec.describe Vulnerabilities::NamespaceStatistics::AdjustmentService, feature_
         it 'excludes the statistics from archived projects' do
           adjust_statistics
 
-          expect(group_statistics(sub_group)).to be_nil
+          expect(group_statistics(sub_group)).to eq({
+            'namespace_id' => sub_group.id,
+            'traversal_ids' => sub_group.traversal_ids,
+            'total' => 0,
+            'critical' => 0,
+            'high' => 0,
+            'medium' => 0,
+            'low' => 0,
+            'info' => 0,
+            'unknown' => 0
+          })
 
           expect(group_statistics(group)).to eq(expected_single_project_statistics.merge({
             'namespace_id' => group.id,

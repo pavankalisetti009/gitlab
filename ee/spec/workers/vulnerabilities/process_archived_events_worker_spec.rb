@@ -43,14 +43,41 @@ RSpec.describe Vulnerabilities::ProcessArchivedEventsWorker, feature_category: :
 
       use_event
     end
+
+    it 'calls the namespace statistics remove project update service' do
+      expect(Group).to receive(:by_id).with(group.id).and_return(Group.where(id: group.id))
+      expect(Vulnerabilities::NamespaceStatistics::RecalculateService)
+        .to receive(:execute).with(project.id, group)
+
+      use_event
+    end
+
+    context 'when the group does not exist' do
+      it 'does not call the namespace statistics remove project update service when no group is found' do
+        expect(Group).to receive(:by_id).with(group.id).and_return(Group.none)
+        expect(Vulnerabilities::NamespaceStatistics::RecalculateService).not_to receive(:execute)
+
+        use_event
+      end
+
+      it 'still calls the vulnerability update services when no group is found' do
+        expect(Group).to receive(:by_id).with(group.id).and_return(Group.none)
+        expect(Vulnerabilities::UpdateArchivedOfVulnerabilityReadsService).to receive(:execute).with(project.id)
+        expect(Vulnerabilities::UpdateArchivedOfVulnerabilityStatisticsService).to receive(:execute).with(project.id)
+
+        use_event
+      end
+    end
   end
 
   context 'when the associated project does not have vulnerabilities' do
     let(:project) { project_without_vulnerabilities }
 
     context 'when a project transfered event is published', :sidekiq_inline do
-      it 'does not enqueue a vulnerability reads archived update job' do
+      it 'does not enqueue any update jobs' do
         expect(Vulnerabilities::UpdateArchivedOfVulnerabilityReadsService).not_to receive(:execute)
+        expect(Vulnerabilities::UpdateArchivedOfVulnerabilityStatisticsService).not_to receive(:execute)
+        expect(Vulnerabilities::NamespaceStatistics::RecalculateService).not_to receive(:execute)
 
         use_event
       end
