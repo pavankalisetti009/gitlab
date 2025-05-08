@@ -22,7 +22,8 @@ class TrialRegistrationsController < RegistrationsController
 
   override :new
   def new
-    @resource = Users::AuthorizedBuildService.new(nil, {}).execute
+    @resource =
+      Users::AuthorizedBuildService.new(nil, { email: email_param }).execute
 
     ::Gitlab::Tracking.event(
       self.class.name,
@@ -32,6 +33,10 @@ class TrialRegistrationsController < RegistrationsController
   end
 
   private
+
+  def email_param
+    ActionController::Base.helpers.sanitize(params.permit(:email)[:email])
+  end
 
   def redirect_to_trial
     redirect_to new_trial_path(request.query_parameters)
