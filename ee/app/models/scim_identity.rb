@@ -15,6 +15,7 @@ class ScimIdentity < ApplicationRecord
   scope :for_instance, -> { where(group: nil) }
   scope :for_user, ->(user) { where(user: user) }
   scope :with_extern_uid, ->(extern_uid) { iwhere(extern_uid: extern_uid) }
+  scope :with_user_ids, ->(user_ids) { where(user_id: user_ids) }
 
   after_commit :sync_records, on: %i[create update]
 
