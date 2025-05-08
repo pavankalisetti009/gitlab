@@ -712,12 +712,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
 
       before do
-        git_response = {
-          status: 200,
-          body: '001e# service=git-upload-pack',
-          headers: { 'Content-Type': 'application/x-git-upload-pack-advertisement' }
-        }
-        stub_full_request("#{import_url}/info/refs?service=git-upload-pack", method: :get).to_return(git_response)
+        allow(Gitlab::GitalyClient::RemoteService).to receive(:exists?).with(import_url).and_return(true)
         stub_application_setting(import_sources: ['git'])
       end
 
@@ -1587,17 +1582,8 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         }
       end
 
-      let(:git_response) do
-        {
-          status: 200,
-          body: '001e# service=git-upload-pack',
-          headers: { 'Content-Type': 'application/x-git-upload-pack-advertisement' }
-        }
-      end
-
       before do
-        endpoint_url = "#{import_url}/info/refs?service=git-upload-pack"
-        stub_full_request(endpoint_url, method: :get).to_return(git_response)
+        allow(Gitlab::GitalyClient::RemoteService).to receive(:exists?).with(import_url).and_return(true)
       end
 
       context 'when pull mirroring is not available' do
@@ -1636,19 +1622,13 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       end
 
       context 'when import_url is not a valid git endpoint' do
-        let(:git_response) do
-          {
-            status: 301,
-            body: '',
-            headers: nil
-          }
-        end
-
         it 'disallows creating a project with an import_url that is not reachable' do
+          allow(Gitlab::GitalyClient::RemoteService).to receive(:exists?).with(import_url).and_return(false)
+
           subject
 
           expect(response).to have_gitlab_http_status(:unprocessable_entity)
-          expect(json_response['message']).to eq("#{import_url} endpoint error: 301")
+          expect(json_response['message']).to eq('Unable to access repository with the URL and credentials provided')
         end
       end
 
