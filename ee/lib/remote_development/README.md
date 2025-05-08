@@ -656,7 +656,17 @@ The only difference between `Result#and_then` and `Result#map` is that reference
 
 All of the above is explained in much more detail in the [ROP presentation/video](https://fsharpforfunandprofit.com/rop/), as well as the Rust `Result` [documentation](https://doc.rust-lang.org/std/result/index.html) and [API](https://doc.rust-lang.org/std/result/enum.Result.html).
 
-Note that we do not support procs to be used with result, only lambdas and class/singleton methods, for the reasons described above in the [Higher order functions](#higher-order-functions) section.
+As our usage of this pattern has evolved, we have added additional Rust-inspired methods to the result class, including `Result#map_err`,
+`Result#inspect_ok`, and `Result#inspect_err`.  See the corresponding documentation of these methods in the
+[`Result` class source code](https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/fp/result.rb) for more details.
+
+Note that we do not support procs to be used with result, only lambdas and class/singleton methods, for the reasons described above in the [Higher order functions](#higher-order-functions) section. However, the type signature for these
+parameters is still `[Proc, Method]`, because the class of a lambda is `Proc`. For example: 
+
+```
+irb(main):001> (->(a) { a }).inspect
+=> "#<Proc:0x000000011cd86ae0 (irb):1 (lambda)>"
+```
 
 ### Message class and Messages module
 
