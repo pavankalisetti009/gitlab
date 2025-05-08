@@ -290,8 +290,6 @@ The default value is `4` for GitLab Self-Managed and GitLab.com.
 
 To change this limit on your GitLab Self-Managed instance, use the [Admin Area](settings/continuous_integration.md#pipeline-limit-per-git-push).
 
-Changing the limit is currently behind the [`git_push_create_all_pipelines` feature flag](feature_flags.md), without this feature flag turned on the amount of pipelines that can be triggered is limited to 4.
-
 {{< alert type="warning" >}}
 
 Increasing this limit is not recommended. It can cause excessive load on your GitLab instance if many changes are pushed simultaneously, potentially creating a flood of pipelines.
