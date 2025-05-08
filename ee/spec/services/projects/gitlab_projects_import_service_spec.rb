@@ -2,26 +2,28 @@
 
 require 'spec_helper'
 
-RSpec.describe Projects::GitlabProjectsImportService do
+RSpec.describe Projects::GitlabProjectsImportService, feature_category: :importers do
   let_it_be(:namespace) { create(:namespace) }
 
   let(:path) { 'test-path' }
   let(:custom_template) { create(:project) }
   let(:overwrite) { false }
-  let(:import_params) { { namespace_id: namespace.id, path: path, custom_template: custom_template, overwrite: overwrite } }
+  let(:import_params) do
+    { namespace_id: namespace.id, path: path, custom_template: custom_template, overwrite: overwrite }
+  end
 
-  subject { described_class.new(namespace.owner, import_params) }
+  subject(:service) { described_class.new(namespace.owner, import_params) }
 
   after do
     TestEnv.clean_test_path
   end
 
   describe '#execute' do
-    context 'creates template export job' do
+    context 'when template export job is created' do
       it 'if project saved and custom template exists' do
         expect(custom_template).to receive(:add_template_export_job)
 
-        project = subject.execute
+        project = service.execute
 
         expect(project.saved?).to be true
       end
@@ -30,14 +32,14 @@ RSpec.describe Projects::GitlabProjectsImportService do
         expect(custom_template)
           .to receive(:add_template_export_job).with(
             current_user: namespace.owner,
-            after_export_strategy: instance_of(EE::Gitlab::ImportExport::AfterExportStrategies::CustomTemplateExportImportStrategy)
+            after_export_strategy: instance_of(Import::AfterExportStrategies::CustomTemplateExportImportStrategy)
           )
 
-        subject.execute
+        service.execute
       end
     end
 
-    context 'does not create export job' do
+    context 'when template export job is not created' do
       it 'if project not saved' do
         allow_next_instance_of(Project) do |instance|
           allow(instance).to receive(:saved?).and_return(false)
@@ -45,7 +47,7 @@ RSpec.describe Projects::GitlabProjectsImportService do
 
         expect(custom_template).not_to receive(:add_template_export_job)
 
-        project = subject.execute
+        project = service.execute
 
         expect(project.saved?).to be false
       end
