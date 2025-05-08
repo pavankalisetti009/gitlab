@@ -13,6 +13,8 @@ module Ai
       has_many :checkpoints, class_name: 'Ai::DuoWorkflows::Checkpoint'
       has_many :checkpoint_writes, class_name: 'Ai::DuoWorkflows::CheckpointWrite'
       has_many :events, class_name: 'Ai::DuoWorkflows::Event'
+      has_many :workflows_workloads, class_name: 'Ai::DuoWorkflows::WorkflowsWorkload'
+      has_many :workloads, through: :workflows_workloads, disable_joins: true
 
       validates :status, presence: true
       validates :goal, length: { maximum: 4096 }
