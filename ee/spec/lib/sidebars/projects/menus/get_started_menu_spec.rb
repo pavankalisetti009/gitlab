@@ -64,6 +64,7 @@ RSpec.describe Sidebars::Projects::Menus::GetStartedMenu, feature_category: :onb
         active_routes: { controller: :get_started },
         sprite_icon: 'bulb',
         pill_count: menu.pill_count,
+        pill_count_dynamic: true,
         has_pill: true,
         super_sidebar_parent: ::Sidebars::StaticMenu
       }

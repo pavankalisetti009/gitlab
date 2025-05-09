@@ -181,7 +181,7 @@ export default {
 };
 </script>
 <template>
-  <div>
+  <div data-testid="learn-gitlab-page">
     <gl-alert
       v-if="showSuccessfulInvitationsAlert"
       variant="success"

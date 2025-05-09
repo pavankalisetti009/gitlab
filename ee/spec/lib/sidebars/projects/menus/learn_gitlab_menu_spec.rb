@@ -13,16 +13,16 @@ RSpec.describe Sidebars::Projects::Menus::LearnGitlabMenu, feature_category: :on
     )
   end
 
-  subject { described_class.new(context) }
+  subject(:menu) { described_class.new(context) }
 
   it 'does not contain any sub menu' do
-    expect(subject.has_items?).to be false
+    expect(menu.has_items?).to be false
   end
 
   describe '#render?' do
     context 'when learn gitlab is enabled' do
       it 'returns true' do
-        expect(subject.render?).to eq true
+        expect(menu.render?).to be true
       end
     end
 
@@ -30,7 +30,7 @@ RSpec.describe Sidebars::Projects::Menus::LearnGitlabMenu, feature_category: :on
       let(:learn_gitlab_enabled) { false }
 
       it 'returns false' do
-        expect(subject.render?).to eq false
+        expect(menu.render?).to be false
       end
     end
   end
@@ -38,7 +38,7 @@ RSpec.describe Sidebars::Projects::Menus::LearnGitlabMenu, feature_category: :on
   describe '#has_pill?' do
     context 'when learn gitlab is enabled' do
       it 'returns true' do
-        expect(subject.has_pill?).to eq true
+        expect(menu.has_pill?).to be true
       end
     end
 
@@ -46,7 +46,7 @@ RSpec.describe Sidebars::Projects::Menus::LearnGitlabMenu, feature_category: :on
       let(:learn_gitlab_enabled) { false }
 
       it 'returns false' do
-        expect(subject.has_pill?).to eq false
+        expect(menu.has_pill?).to be false
       end
     end
   end
@@ -57,17 +57,17 @@ RSpec.describe Sidebars::Projects::Menus::LearnGitlabMenu, feature_category: :on
         expect(onboarding).to receive(:percentage).and_return(20)
       end
 
-      expect(subject.pill_count).to eq '20%'
+      expect(menu.pill_count).to eq '20%'
     end
   end
 
   it_behaves_like 'serializable as super_sidebar_menu_args' do
-    let(:menu) { subject }
     let(:extra_attrs) do
       {
         item_id: :learn_gitlab,
         sprite_icon: 'bulb',
         pill_count: menu.pill_count,
+        pill_count_dynamic: true,
         has_pill: menu.has_pill?,
         super_sidebar_parent: ::Sidebars::StaticMenu
       }

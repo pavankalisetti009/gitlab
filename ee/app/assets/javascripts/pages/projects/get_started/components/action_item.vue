@@ -3,7 +3,7 @@ import { GlIcon, GlLink, GlTooltipDirective } from '@gitlab/ui';
 import eventHub from '~/invite_members/event_hub';
 import { LEARN_GITLAB } from 'ee/invite_members/constants';
 import Tracking from '~/tracking';
-import { ICON_TYPE_EMPTY, ICON_TYPE_COMPLETED } from '../constants';
+import { ICON_TYPE_EMPTY, ICON_TYPE_COMPLETED, INVITE_URL_TYPE } from '../constants';
 
 export default {
   name: 'ActionItem',
@@ -14,7 +14,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  urlType: 'invite',
   mixins: [Tracking.mixin({ category: 'projects:learn_gitlab:show' })],
   props: {
     action: {
@@ -33,7 +32,7 @@ export default {
   },
   methods: {
     handleActionClick() {
-      if (this.action.urlType === this.$options.urlType) {
+      if (this.action.urlType === INVITE_URL_TYPE) {
         eventHub.$emit('openModal', { source: LEARN_GITLAB });
       }
 

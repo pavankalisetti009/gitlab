@@ -1,8 +1,11 @@
-import { GlProgressBar, GlCard } from '@gitlab/ui';
+import { GlProgressBar, GlCard, GlAlert } from '@gitlab/ui';
+import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GetStarted from 'ee/pages/projects/get_started/components/get_started.vue';
 import SectionHeader from 'ee/pages/projects/get_started/components/section_header.vue';
 import SectionBody from 'ee/pages/projects/get_started/components/section_body.vue';
+import eventHub from '~/invite_members/event_hub';
+import eventHubNav from '~/super_sidebar/event_hub';
 
 describe('GetStarted', () => {
   let wrapper;
@@ -43,6 +46,7 @@ describe('GetStarted', () => {
   const findSectionHeaders = () => wrapper.findAllComponents(SectionHeader);
   const findSectionBodies = () => wrapper.findAllComponents(SectionBody);
   const findTitle = () => wrapper.find('h2');
+  const findSuccessfulInvitationsAlert = () => wrapper.findComponent(GlAlert);
 
   describe('rendering', () => {
     beforeEach(() => {
@@ -126,6 +130,84 @@ describe('GetStarted', () => {
       await wrapper.vm.toggleExpand(1);
       expect(wrapper.vm.expandedIndex).toBe(null);
       expect(wrapper.vm.isExpanded(1)).toBe(false);
+    });
+  });
+
+  describe('event handling and action completion', () => {
+    let sections;
+
+    beforeEach(() => {
+      jest.spyOn(eventHub, '$on');
+      jest.spyOn(eventHub, '$off');
+      jest.spyOn(eventHubNav, '$emit');
+      sections = createSections();
+      sections[0].actions[1].urlType = 'invite';
+      createComponent({ sections });
+    });
+
+    it('registers event listeners on mount', () => {
+      expect(eventHub.$on).toHaveBeenCalledWith(
+        'showSuccessfulInvitationsAlert',
+        wrapper.vm.handleShowSuccessfulInvitationsAlert,
+      );
+    });
+
+    it('removes event listeners before destroy', () => {
+      wrapper.destroy();
+
+      expect(eventHub.$off).toHaveBeenCalledWith(
+        'showSuccessfulInvitationsAlert',
+        wrapper.vm.handleShowSuccessfulInvitationsAlert,
+      );
+    });
+
+    it('marks an action as completed by ID', async () => {
+      expect(findProgressBar().props('value')).toBe(50);
+
+      // Mark action with ID 2 as completed
+      eventHub.$emit('showSuccessfulInvitationsAlert');
+      await nextTick();
+
+      expect(findProgressBar().props('value')).toBe(75);
+
+      // Assert that the sidebar percentage was updated
+      expect(eventHubNav.$emit).toHaveBeenCalledWith('updatePillValue', {
+        value: '75%',
+        itemId: 'get_started',
+      });
+    });
+  });
+
+  describe('invitation alerts', () => {
+    let sections;
+
+    beforeEach(() => {
+      sections = createSections();
+      sections[0].actions[0].urlType = 'invite';
+      createComponent({ sections });
+    });
+
+    it('does not show alert by default', () => {
+      expect(findSuccessfulInvitationsAlert().exists()).toBe(false);
+    });
+
+    it('shows alert when invitation is successful', async () => {
+      eventHub.$emit('showSuccessfulInvitationsAlert');
+      await nextTick();
+
+      expect(findSuccessfulInvitationsAlert().exists()).toBe(true);
+      expect(findSuccessfulInvitationsAlert().props('variant')).toBe('success');
+      expect(findSuccessfulInvitationsAlert().props('dismissible')).toBe(true);
+    });
+
+    it('dismisses the alert when dismissed', async () => {
+      eventHub.$emit('showSuccessfulInvitationsAlert');
+      await nextTick();
+
+      findSuccessfulInvitationsAlert().vm.$emit('dismiss');
+      await nextTick();
+
+      expect(findSuccessfulInvitationsAlert().exists()).toBe(false);
     });
   });
 });

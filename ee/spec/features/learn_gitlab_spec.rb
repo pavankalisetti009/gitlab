@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: :onboarding do
   include Features::InviteMembersModalHelpers
+  include SubscriptionPortalHelpers
 
   context 'with learn gitlab links' do
     let_it_be(:user) { create(:user) }
@@ -92,11 +93,28 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
           visit namespace_project_learn_gitlab_path(namespace, project)
         end
 
-        it 'launches invite modal when invite is clicked' do
-          click_link('Invite your colleagues')
+        it 'invites a user and completes the invite action and updates the completion status' do
+          within_testid('static-items-section') do
+            expect(page).to have_link('Learn GitLab 8%')
+          end
 
-          page.within invite_modal_selector do
-            expect(page).to have_content("You're inviting members to the #{project.name} project")
+          user_name_to_invite = create(:user).name
+
+          within_testid('learn-gitlab-page') do
+            find_link('Invite your colleagues').click
+          end
+
+          stub_signing_key
+          stub_reconciliation_request(true)
+
+          invite_with_opened_modal(user_name_to_invite)
+
+          within_testid('learn-gitlab-page') do
+            expect(page).not_to have_link('Invite your colleagues')
+          end
+
+          within_testid('static-items-section') do
+            expect(page).to have_link('Learn GitLab 17%')
           end
         end
       end
