@@ -935,7 +935,9 @@ module EE
         prevent(*readonly_abilities)
 
         readonly_features.each do |feature|
-          prevent(*create_update_admin(feature))
+          prevent :"create_#{feature}"
+          prevent :"update_#{feature}"
+          prevent :"admin_#{feature}"
         end
       end
 

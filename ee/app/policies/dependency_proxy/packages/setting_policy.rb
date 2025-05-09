@@ -3,8 +3,6 @@
 module DependencyProxy
   module Packages
     class SettingPolicy < BasePolicy
-      include CrudPolicyHelpers
-
       delegate(:project) { @subject.project }
 
       overrides(:read_package)

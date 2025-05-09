@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class EpicPolicy < BasePolicy
-  include CrudPolicyHelpers
-
   delegate { @subject.group }
 
   condition(:is_group_member) { @subject.group.member?(@user) }
