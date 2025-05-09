@@ -14,9 +14,9 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
   describe '#attributes' do
     subject(:attributes) { presenter.attributes }
 
-    it 'returns a JSON string with sections' do
+    it 'returns a JSON string with all attributes' do
       expect(attributes).to be_a(String)
-      expect(parsed_attributes).to include('sections')
+      expect(parsed_attributes).to include('projectName', 'sections')
     end
 
     it 'includes all required sections' do
@@ -50,6 +50,12 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
       expect(sections.flat_map { |section| section['actions'] }).to all(satisfy(&actions_structure))
       expect(sections.find { |section| section['trialActions'] }&.fetch('trialActions'))
         .to all(satisfy(&actions_structure))
+    end
+
+    context 'for projectName' do
+      it 'includes project name' do
+        expect(parsed_attributes['projectName']).to eq(project.name)
+      end
     end
 
     context 'for code section' do

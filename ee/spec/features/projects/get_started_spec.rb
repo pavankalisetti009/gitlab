@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Get started concerns', :js, :saas, :aggregate_failures, feature_category: :onboarding do
   include Features::InviteMembersModalHelpers
+  include SubscriptionPortalHelpers
 
   context 'for Getting started page' do
     let_it_be(:user) { create(:user) }
@@ -30,16 +31,43 @@ RSpec.describe 'Get started concerns', :js, :saas, :aggregate_failures, feature_
         end
       end
 
-      it 'renders modal link and opens modal correctly' do
+      it 'invites a user and completes the invite action and updates the completion status' do
         sign_in(user)
 
         visit namespace_project_get_started_path(namespace, project)
 
-        find_by_testid('section-header-1').click
-        find_link('Invite your colleagues').click
+        within_testid('static-items-section') do
+          expect(page).to have_link('Get started 8%')
+        end
 
-        page.within invite_modal_selector do
-          expect(page).to have_content("You're inviting members to the #{project.name} project")
+        within_testid('get-started-sections') do
+          expect(find_by_testid('progress-bar')).to have_selector('[aria-valuenow="8"]')
+        end
+
+        find_by_testid('section-header-1').click
+
+        user_name_to_invite = create(:user).name
+
+        within_testid('get-started-sections') do
+          find_link('Invite your colleagues').click
+        end
+
+        stub_signing_key
+        stub_reconciliation_request(true)
+
+        invite_with_opened_modal(user_name_to_invite)
+
+        within_testid('get-started-page') do
+          expect(page).to have_content('Your team is growing')
+        end
+
+        within_testid('get-started-sections') do
+          expect(find_by_testid('progress-bar')).to have_selector('[aria-valuenow="15"]')
+          expect(page).not_to have_link('Invite your colleagues')
+        end
+
+        within_testid('static-items-section') do
+          expect(page).to have_link('Get started 15%')
         end
       end
     end

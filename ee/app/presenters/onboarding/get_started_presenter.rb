@@ -9,7 +9,7 @@ module Onboarding
     end
 
     def attributes
-      ::Gitlab::Json.generate({ sections: sections })
+      ::Gitlab::Json.generate({ projectName: project.name, sections: sections })
     end
 
     private

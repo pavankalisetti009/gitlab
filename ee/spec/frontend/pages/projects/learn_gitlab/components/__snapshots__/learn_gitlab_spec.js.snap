@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
-<div>
+<div
+  data-testid="learn-gitlab-page"
+>
   <div
     class="row"
   >
