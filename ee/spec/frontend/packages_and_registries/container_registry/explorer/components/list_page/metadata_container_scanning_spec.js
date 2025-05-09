@@ -79,7 +79,7 @@ describe('Metadata Container Scanning', () => {
 
     await waitForApolloRequestRender();
 
-    expect(wrapper.text()).toContain('Container Scanning for Registry: On');
+    expect(wrapper.text()).toContain('Container scanning for registry: On');
   });
 
   it('renders the off status', async () => {
@@ -97,7 +97,7 @@ describe('Metadata Container Scanning', () => {
 
     await waitForApolloRequestRender();
 
-    expect(wrapper.text()).toContain('Container Scanning for Registry: Off');
+    expect(wrapper.text()).toContain('Container scanning for registry: Off');
   });
 
   it('does not render when disabled', async () => {

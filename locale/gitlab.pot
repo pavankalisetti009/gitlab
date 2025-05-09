@@ -17068,7 +17068,7 @@ msgstr ""
 msgid "ContainerRegistry|Build an image"
 msgstr ""
 
-msgid "ContainerRegistry|CLI Commands"
+msgid "ContainerRegistry|CLI commands"
 msgstr ""
 
 msgid "ContainerRegistry|Cleanup disabled"
@@ -17119,12 +17119,6 @@ msgstr ""
 msgid "ContainerRegistry|Configure in settings"
 msgstr ""
 
-msgid "ContainerRegistry|Container Scanning for Registry: Off"
-msgstr ""
-
-msgid "ContainerRegistry|Container Scanning for Registry: On"
-msgstr ""
-
 msgid "ContainerRegistry|Container image tags can be created, overwritten, or deleted by specific user roles."
 msgstr ""
 
@@ -17144,6 +17138,12 @@ msgid "ContainerRegistry|Container registry"
 msgstr ""
 
 msgid "ContainerRegistry|Container registry cleanup policies"
+msgstr ""
+
+msgid "ContainerRegistry|Container scanning for registry: Off"
+msgstr ""
+
+msgid "ContainerRegistry|Container scanning for registry: On"
 msgstr ""
 
 msgid "ContainerRegistry|Continuous container scanning runs in the registry when any image or database is updated."
