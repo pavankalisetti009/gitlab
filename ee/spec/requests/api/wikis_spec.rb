@@ -21,8 +21,8 @@ RSpec.describe API::Wikis, feature_category: :wiki do
   let(:group) { create(:group, :internal, :wiki_repo) }
   let(:wiki) { create(:group_wiki, container: group, user: user) }
   let(:payload) { { content: 'content', format: 'rdoc', title: 'title' } }
-  let(:expected_keys_with_content) { %w[content format slug title encoding front_matter] }
-  let(:expected_keys_without_content) { %w[format slug title] }
+  let(:expected_keys_with_content) { %w[content format slug title encoding front_matter wiki_page_meta_id] }
+  let(:expected_keys_without_content) { %w[format slug title wiki_page_meta_id] }
 
   before do
     stub_group_wikis(true)

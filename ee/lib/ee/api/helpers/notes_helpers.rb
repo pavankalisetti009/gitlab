@@ -5,21 +5,26 @@ module EE
     module Helpers
       module NotesHelpers
         extend ActiveSupport::Concern
+        extend ::Gitlab::Utils::Override
 
         class_methods do
           extend ::Gitlab::Utils::Override
 
-          override :feature_category_per_noteable_type
-          def feature_category_per_noteable_type
-            super.merge!(
-              ::Epic => :portfolio_management,
-              ::Vulnerability => :vulnerability_management
+          override :noteable_types
+          def noteable_types
+            super.append(
+              ::API::Helpers::NotesHelpers::NoteableType.new(::Epic, :portfolio_management),
+              ::API::Helpers::NotesHelpers::NoteableType.new(::Vulnerability, :vulnerability_management),
+              ::API::Helpers::NotesHelpers::NoteableType.new(::WikiPage::Meta, :wiki, 'wiki_pages', 'group')
             )
           end
         end
 
-        def add_parent_to_finder_params(finder_params, noteable_type)
-          if noteable_type.name.underscore == 'epic'
+        override :add_parent_to_finder_params
+        def add_parent_to_finder_params(finder_params, noteable_type, parent_type)
+          noteable_name = noteable_type.name.underscore
+
+          if noteable_name == 'epic' || (noteable_name == 'wiki_page/meta' && parent_type == 'group')
             finder_params[:group_id] = user_group.id
           else
             super

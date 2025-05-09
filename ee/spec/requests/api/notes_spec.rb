@@ -81,4 +81,21 @@ RSpec.describe API::Notes, :aggregate_failures, feature_category: :portfolio_man
       end
     end
   end
+
+  context "when noteable is a WikiPage::Meta for a group wiki" do
+    let(:group) { create(:group, :public) }
+    let!(:wiki_page_meta) { create(:wiki_page_meta, :for_wiki_page, container: group) }
+    let!(:wiki_page_meta_note) { create(:note, noteable: wiki_page_meta, namespace: group, project: nil, author: user) }
+
+    before do
+      group.add_owner(user)
+      stub_licensed_features(group_wikis: true)
+    end
+
+    it_behaves_like "noteable API", 'groups', 'wiki_pages', 'id' do
+      let(:parent) { group }
+      let(:noteable) { wiki_page_meta }
+      let(:note) { wiki_page_meta_note }
+    end
+  end
 end
