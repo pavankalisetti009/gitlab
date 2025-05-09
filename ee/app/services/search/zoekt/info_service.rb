@@ -10,21 +10,25 @@ module Search
         new(...).execute
       end
 
-      def initialize(logger:)
+      def initialize(logger:, options: {})
         @logger = logger
         @entries = []
+        @options = options
       end
 
       def execute
         display_settings_section
         display_indexing_status_section
         display_feature_flags_sections
+
+        return unless options[:extended_mode]
+
         display_nodes_section
       end
 
       private
 
-      attr_reader :logger, :entries
+      attr_reader :logger, :entries, :options
 
       def display_feature_flags_sections
         log_header("Feature Flags (Non-Default Values)")

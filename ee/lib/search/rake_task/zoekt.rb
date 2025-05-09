@@ -4,16 +4,24 @@ module Search
   module RakeTask
     module Zoekt
       class << self
-        def info(name:, watch_interval: nil)
+        def info(name:, extended: nil, watch_interval: nil)
+          extended_mode = if extended.present?
+                            Gitlab::Utils.to_boolean(extended)
+                          else
+                            !watch_interval
+                          end
+
+          options = { extended_mode: extended_mode }
+
           run_with_interval(name:, watch_interval:) do
-            task_executor_service.execute(:info)
+            task_executor_service(options: options).execute(:info)
           end
         end
 
         private
 
-        def task_executor_service
-          Search::Zoekt::RakeTaskExecutorService.new(logger: stdout_logger)
+        def task_executor_service(options: {})
+          Search::Zoekt::RakeTaskExecutorService.new(logger: stdout_logger, options: options)
         end
 
         def run_with_interval(name:, watch_interval:)

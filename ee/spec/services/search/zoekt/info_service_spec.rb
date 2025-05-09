@@ -4,11 +4,12 @@ require 'spec_helper'
 
 RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: :global_search do
   let(:logger) { instance_double(Logger) }
-  let(:service) { described_class.new(logger: logger) }
+  let(:service) { described_class.new(logger: logger, options: options) }
   let(:settings) { instance_double(ApplicationSetting) }
   let(:current_time) { Time.current.change(usec: 0) }
   let(:version_info) { Gitlab::VersionInfo.new(15, 0, 0) }
   let(:online_relation) { instance_double(ActiveRecord::Relation, count: 0, to_a: []) }
+  let(:options) { {} }
 
   before do
     allow(logger).to receive(:info)
@@ -40,6 +41,28 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
   end
 
   describe '#execute' do
+    context 'when extended_mode is false' do
+      let(:options) { { extended_mode: false } }
+
+      it 'does not display nodes section' do
+        service.execute
+
+        expect(logger).to have_received(:info).with(/GitLab version/)
+        expect(logger).not_to have_received(:info).with("\n#{Rainbow('Nodes').bright.yellow.underline}")
+      end
+    end
+
+    context 'when extended_mode is true' do
+      let(:options) { { extended_mode: true } }
+
+      it 'displays nodes section' do
+        service.execute
+
+        expect(logger).to have_received(:info).with(/GitLab version/)
+        expect(logger).to have_received(:info).with("\n#{Rainbow('Nodes').bright.yellow.underline}")
+      end
+    end
+
     context 'when displaying settings section' do
       it 'displays settings information' do
         service.execute
@@ -58,6 +81,8 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
     end
 
     context 'when displaying nodes section with no nodes' do
+      let(:options) { { extended_mode: true } }
+
       before do
         empty_online_relation = instance_double(ActiveRecord::Relation, count: 0, to_a: [])
         allow(Search::Zoekt::Node).to receive_messages(
@@ -79,6 +104,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
     end
 
     context 'when displaying nodes section with online nodes' do
+      let(:options) { { extended_mode: true } }
       let(:node1) do
         instance_double(Search::Zoekt::Node, watermark_exceeded_critical?: true, watermark_exceeded_high?: true,
           watermark_exceeded_low?: true)
@@ -151,6 +177,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
     end
 
     context 'when displaying node details' do
+      let(:options) { { extended_mode: true } }
       let(:node1) do
         instance_double(Search::Zoekt::Node,
           id: 1,
