@@ -48,7 +48,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
         service.execute
 
         expect(logger).to have_received(:info).with(/GitLab version/)
-        expect(logger).not_to have_received(:info).with("\n#{Rainbow('Nodes').bright.yellow.underline}")
+        expect(logger).not_to have_received(:info).with("\n#{Rainbow('Node Details').bright.yellow.underline}")
       end
     end
 
