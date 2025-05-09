@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'OAuth tokens', feature_category: :system_access do
-  let_it_be(:organization) { create(:organization, :default) }
+  let_it_be(:organization) { create(:organization) }
 
   context 'for Resource Owner Password Credentials' do
     subject(:request_oauth_token) do
@@ -12,7 +12,7 @@ RSpec.describe 'OAuth tokens', feature_category: :system_access do
 
     context 'for enterprise user' do
       let_it_be(:enterprise_group) { create(:group) }
-      let_it_be(:user) { create(:enterprise_user, enterprise_group: enterprise_group) }
+      let_it_be(:user) { create(:enterprise_user, enterprise_group: enterprise_group, organizations: [organization]) }
 
       it 'creates an access token' do
         request_oauth_token
