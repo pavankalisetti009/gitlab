@@ -30,18 +30,6 @@ RSpec.describe Resolvers::Vulnerabilities::ScannersResolver, feature_category: :
       let(:vulnerable) { group }
 
       it { is_expected.to contain_exactly(Representation::VulnerabilityScannerEntry.new(vulnerability_scanner_1, finding_1.report_type)) }
-
-      context 'when group_vulnerability_scanners_using_statistics is disabled' do
-        before do
-          # This test won't work in a decomposed GitLab, so we skip it.
-          # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
-          skip_if_multiple_databases_are_setup(:sec)
-
-          stub_feature_flags(group_vulnerability_scanners_using_statistics: false)
-        end
-
-        it { is_expected.to contain_exactly(Representation::VulnerabilityScannerEntry.new(vulnerability_scanner_1, finding_1.report_type)) }
-      end
     end
 
     context 'when listing scanners for project' do
