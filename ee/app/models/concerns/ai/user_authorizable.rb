@@ -67,9 +67,13 @@ module Ai
           .where(shared_with_group_id: group_ids_from_memberships)
             .pluck(:shared_group_id)
 
-          Group.where(
+          root_group_ids = Group.where(
             id: group_ids_from_project_authorizaton | group_ids_from_memberships | group_ids_from_linked_groups
           ).pluck(Arel.sql('traversal_ids[1]')).uniq
+
+          banned_root_group_ids = ::Namespaces::NamespaceBan.where(user_id: id).pluck(:namespace_id)
+
+          root_group_ids - banned_root_group_ids
         end
       end
       # rubocop: enable Database/AvoidUsingPluckWithoutLimit -- limited to a single user's groups
