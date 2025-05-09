@@ -224,6 +224,21 @@ describe('ee/protected_environments/store/edit/actions', () => {
         [],
       );
     });
+
+    it('throws an error for an unknown entityType', () => {
+      const rule = {
+        group_id: null,
+        user_id: null,
+        access_level: MAINTAINER_ACCESS_LEVEL,
+        group_inheritance_type: '0',
+      };
+
+      const stateWithUnknownEntityType = { ...mockedState, entityType: 'unknown' };
+
+      expect(() => {
+        fetchMembers({ state: stateWithUnknownEntityType }, { type: DEPLOYER_RULE_KEY, rule });
+      }).toThrow('Unexpected entityType: unknown');
+    });
   });
 
   describe('deleteRule', () => {
