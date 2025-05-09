@@ -1,12 +1,5 @@
 <script>
-import {
-  GlSprintf,
-  GlTabs,
-  GlAlert,
-  GlButton,
-  GlTooltipDirective,
-  GlLoadingIcon,
-} from '@gitlab/ui';
+import { GlSprintf, GlAlert, GlButton, GlTooltipDirective, GlLoadingIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
 import { BASE_ROLES_WITHOUT_MINIMAL_ACCESS } from '~/access_level/constants';
@@ -17,15 +10,14 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import DeleteRoleModal from '../delete_role_modal.vue';
 import memberRoleQuery from '../../graphql/role_details/member_role.query.graphql';
 import adminRoleQuery from '../../graphql/admin_role/role.query.graphql';
-import DetailsTab from './details_tab.vue';
+import RoleDetailsContent from './role_details_content.vue';
 
 export const DETAILS_QUERYSTRING = 'from_details';
 
 export default {
   components: {
     GlSprintf,
-    GlTabs,
-    DetailsTab,
+    RoleDetailsContent,
     GlAlert,
     GlButton,
     GlLoadingIcon,
@@ -151,8 +143,6 @@ export default {
       </template>
     </page-heading>
 
-    <gl-tabs>
-      <details-tab :role="role" />
-    </gl-tabs>
+    <role-details-content :role="role" />
   </div>
 </template>

@@ -1,9 +1,9 @@
-import { GlAlert, GlSprintf, GlTabs, GlButton, GlLoadingIcon } from '@gitlab/ui';
+import { GlAlert, GlSprintf, GlButton, GlLoadingIcon } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RoleDetails from 'ee/roles_and_permissions/components/role_details/role_details.vue';
-import DetailsTab from 'ee/roles_and_permissions/components/role_details/details_tab.vue';
+import RoleDetailsContent from 'ee/roles_and_permissions/components/role_details/role_details_content.vue';
 import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
 import { BASE_ROLES_WITHOUT_MINIMAL_ACCESS } from '~/access_level/constants';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
@@ -45,7 +45,7 @@ describe('Role details', () => {
 
   const findRoleDetails = () => wrapper.findByTestId('role-details');
   const findPageHeading = () => wrapper.findComponent(PageHeading);
-  const findDetailsTab = () => wrapper.findComponent(GlTabs).findComponent(DetailsTab);
+  const findDetailsContent = () => wrapper.findComponent(RoleDetailsContent);
   const findEditButton = () => wrapper.findByTestId('edit-button');
   const findDeleteButtonWrapper = () => wrapper.findByTestId('delete-button');
   const findDeleteButton = () => findDeleteButtonWrapper().findComponent(GlButton);
@@ -70,8 +70,8 @@ describe('Role details', () => {
   describe('for all roles', () => {
     beforeEach(() => createWrapper());
 
-    it('shows role details tab', () => {
-      expect(findDetailsTab().props('role')).toEqual(mockMemberRole);
+    it('shows role details content', () => {
+      expect(findDetailsContent().props('role')).toEqual(mockMemberRole);
     });
   });
 
