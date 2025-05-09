@@ -9,9 +9,6 @@ export default {
     GlIcon,
     GlButton,
   },
-  emptyIcon: ICON_TYPE_EMPTY,
-  partialIcon: ICON_TYPE_PARTIAL,
-  completedIcon: ICON_TYPE_COMPLETED,
   props: {
     section: {
       required: true,
@@ -54,13 +51,13 @@ export default {
     },
 
     completionIcon() {
-      if (this.allActions.length === 0) return this.$options.emptyIcon;
+      if (this.allActions.length === 0) return ICON_TYPE_EMPTY;
 
       const { completed, total } = this.actionCounts;
 
-      if (completed === 0) return this.$options.emptyIcon;
-      if (completed < total) return this.$options.partialIcon;
-      return this.$options.completedIcon;
+      if (completed === 0) return ICON_TYPE_EMPTY;
+      if (completed < total) return ICON_TYPE_PARTIAL;
+      return ICON_TYPE_COMPLETED;
     },
 
     isAllCompleted() {
