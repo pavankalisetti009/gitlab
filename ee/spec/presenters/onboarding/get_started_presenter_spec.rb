@@ -23,10 +23,10 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
       expect(sections.size).to eq(4)
 
       titles = [
-        s_('GetStarted|Set up your code'),
-        s_('GetStarted|Configure a project'),
-        s_('GetStarted|Plan and execute work together'),
-        s_('GetStarted|Secure your deployment')
+        s_('LearnGitLab|Set up your code'),
+        s_('LearnGitLab|Configure a project'),
+        s_('LearnGitLab|Plan and execute work together'),
+        s_('LearnGitLab|Secure your deployment')
       ]
       expect(sections.pluck('title')).to eq(titles)
     end
