@@ -705,6 +705,15 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
                 total_tokens: 0,
                 error_message: combined_review_response["error"]["message"]
               )
+            ).twice
+
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              hash_including(
+                message: "Review request failed with files content, retrying without file content",
+                event: "review_merge_request_retry_without_content",
+                merge_request_id: merge_request.id,
+                error: ["Some error occurred"]
+              )
             )
 
             completion.execute
@@ -782,6 +791,51 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
 
             completion.execute
           end
+        end
+      end
+
+      context 'when there is an error due of large prompt' do
+        let(:summary_response) { nil }
+        let(:error_response) { { "error" => { "message" => "Some error occurred" } } }
+        let(:retry_response) { { "content" => [{ "text" => "<review></review>" }] } }
+
+        before do
+          allow(Gitlab::AppLogger).to receive(:info)
+        end
+
+        it 'regenerates the prompt without file content' do
+          # We expect that a new prompt is generated with `files_content` as empty hash when we retry.
+          expect_next_instance_of(
+            review_prompt_class,
+            hash_including(
+              files_content: {}
+            )
+          ) do |template|
+            expect(template).to receive(:to_prompt).and_return(combined_review_prompt)
+          end
+
+          allow_next_instance_of(
+            Gitlab::Llm::Anthropic::Client,
+            user,
+            unit_primitive: 'review_merge_request',
+            tracking_context: tracking_context
+          ) do |client|
+            expect(client)
+              .to receive(:messages_complete)
+              .with(combined_review_prompt)
+              .and_return(error_response, retry_response)
+          end
+
+          expect(Gitlab::AppLogger).to receive(:info).with(
+            hash_including(
+              message: "Review request failed with files content, retrying without file content",
+              event: "review_merge_request_retry_without_content",
+              merge_request_id: merge_request&.id,
+              error: ["Some error occurred"]
+            )
+          )
+
+          completion.execute
         end
       end
     end
