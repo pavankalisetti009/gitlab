@@ -124,7 +124,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         expect(workspace.actual_state).to eq(states_module::CREATION_REQUESTED)
         expect(workspace.actual_state_updated_at).to eq(Time.current)
         expect(workspace.name).to eq("workspace-#{agent.id}-#{user.id}-#{random_string}")
-        expect(workspace.namespace).to eq("default")
+        expect(workspace.namespace)
+          .to eq("#{create_constants_module::NAMESPACE_PREFIX}-#{agent.id}-#{user.id}-#{random_string}")
         expect(workspace.workspaces_agent_config_version).to eq(expected_workspaces_agent_config_version)
         expect(workspace.url).to eq(URI::HTTPS.build({
           host: "#{create_constants_module::WORKSPACE_EDITOR_PORT}-#{workspace.name}." \
@@ -165,15 +166,18 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         end
       end
 
-      context "without shared namespace" do
+      context "with shared namespace" do
         before do
-          agent.unversioned_latest_workspaces_agent_config.update!(shared_namespace: "")
+          # max_resources_per_workspace must be an empty hash if shared_namespace is specified
+          agent.unversioned_latest_workspaces_agent_config.update!(
+            shared_namespace: "default",
+            max_resources_per_workspace: {}
+          )
         end
 
         it 'uses a unique namespace', :aggregate_failures do
           workspace = response.fetch(:payload).fetch(:workspace)
-          expect(workspace.namespace)
-            .to eq("#{create_constants_module::NAMESPACE_PREFIX}-#{agent.id}-#{user.id}-#{random_string}")
+          expect(workspace.namespace).to eq("default")
         end
       end
     end

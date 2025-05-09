@@ -72454,6 +72454,9 @@ msgstr ""
 msgid "math|Too many expansions. Consider using multiple math blocks."
 msgstr ""
 
+msgid "max_resources_per_workspace must be an empty hash if shared_namespace is specified"
+msgstr ""
+
 msgid "member"
 msgid_plural "members"
 msgstr[0] ""
