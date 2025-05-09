@@ -39,33 +39,11 @@ module Search
             next
           end
 
-          if index_circuit_breaker_enabled? && index_circuit_broken?(idx)
-            IndexingTaskWorker.perform_in(WATERMARK_RESCHEDULE_INTERVAL, project_id, task_type, { index_id: idx.id })
-            logger.info(
-              build_structured_payload(
-                indexing_task_type: task_type,
-                message: 'Indexing rescheduled due to storage watermark',
-                index_id: idx.id,
-                index_state: idx.state
-              )
-            )
-            next
-          end
-
           perform_at = Time.current
           perform_at += delay if delay
           zoekt_repo = idx.find_or_create_repository_by_project!(project_id, project)
           Repository.id_in(zoekt_repo).create_bulk_tasks(task_type: current_task_type, perform_at: perform_at)
         end
-      end
-
-      def initial_indexing?
-        repo = Repository.find_by_project_identifier(project_id)
-
-        return true if repo.nil?
-        return true if repo.ready? && random_force_reindexing?
-
-        repo.pending? || repo.initializing? || repo.failed?
       end
 
       private
@@ -90,20 +68,6 @@ module Search
         task_type == :index_repo && (rand * 100 <= REINDEXING_CHANCE_PERCENTAGE)
       end
       strong_memoize_attr :random_force_reindexing?
-
-      def index_circuit_broken?(idx)
-        # Note: we skip indexing tasks depending on storage watermark levels.
-        #
-        # If the low watermark is exceeded, we don't allow any new initial indexing tasks through,
-        # but we permit incremental indexing or force reindexing for existing repos.
-        #
-        # If the high watermark is exceeded, we don't allow any indexing tasks at all anymore.
-        idx.high_watermark_exceeded? || (idx.low_watermark_exceeded? && initial_indexing?)
-      end
-
-      def index_circuit_breaker_enabled?
-        Feature.enabled?(:zoekt_index_circuit_breaker, ::Project.actor_from_id(project_id), type: :ops)
-      end
     end
   end
 end

@@ -7,7 +7,9 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
   let_it_be(:project) { create(:project, :repository, namespace: ns) }
   let_it_be(:node) { create(:zoekt_node, :enough_free_space) }
   let_it_be(:zoekt_enabled_namespace) { create(:zoekt_enabled_namespace, namespace: ns) }
-  let_it_be(:zoekt_index) { create(:zoekt_index, zoekt_enabled_namespace: zoekt_enabled_namespace, node: node) }
+  let_it_be_with_reload(:zoekt_index) do
+    create(:zoekt_index, zoekt_enabled_namespace: zoekt_enabled_namespace, node: node)
+  end
 
   describe '.execute' do
     let(:service) { described_class.new(project.id, :index_repo) }
@@ -20,18 +22,6 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
   end
 
   describe '#execute' do
-    RSpec.shared_examples 'creates a task when circuit breaker is disabled' do
-      context 'with index circuit breaker feature flag disabled' do
-        before do
-          stub_feature_flags(zoekt_index_circuit_breaker: false)
-        end
-
-        it 'creates Search::Zoekt::Task record' do
-          expect { service.execute }.to change { Search::Zoekt::Task.count }.by(1)
-        end
-      end
-    end
-
     context 'when a watermark is exceeded' do
       let(:service) { described_class.new(project.id, task_type) }
       let(:task_type) { :index_repo }
@@ -50,39 +40,18 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
         end
 
         context 'with initial indexing' do
-          it 'does not create Search::Zoekt::Task record for initial indexing' do
-            expect { service.execute }.not_to change { Search::Zoekt::Task.count }
+          it 'creates Search::Zoekt::Task record for initial indexing' do
+            expect { service.execute }.to change { Search::Zoekt::Task.count }.by(1)
           end
-
-          it 'reschedules the indexing task worker' do
-            expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_in).with(
-              30.minutes, project.id, task_type, { index_id: zoekt_index.id }
-            )
-
-            service.execute
-          end
-
-          it_behaves_like 'creates a task when circuit breaker is disabled'
         end
 
         context 'with force reindexing' do
           let(:task_type) { :force_index_repo }
 
           context 'when a repo does not exist' do
-            it 'does not create Search::Zoekt::Task record for initial indexing' do
-              expect(service.initial_indexing?).to eq(true)
-              expect { service.execute }.not_to change { Search::Zoekt::Task.count }
+            it 'creates Search::Zoekt::Task record for initial indexing' do
+              expect { service.execute }.to change { Search::Zoekt::Task.count }.by(1)
             end
-
-            it 'reschedules the indexing task worker' do
-              expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_in).with(
-                30.minutes, project.id, task_type, { index_id: zoekt_index.id }
-              )
-
-              service.execute
-            end
-
-            it_behaves_like 'creates a task when circuit breaker is disabled'
           end
 
           context 'when a repo already exists' do
@@ -91,44 +60,20 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
               create(:zoekt_repository, project: project, zoekt_index: zoekt_index, state: repo_state)
             end
 
-            it_behaves_like 'creates a task when circuit breaker is disabled'
-
             context 'and is ready' do
               let_it_be(:repo_state) { ::Search::Zoekt::Repository.states.fetch(:ready) }
 
-              it 'does not create Search::Zoekt::Task record for initial indexing' do
-                expect(service.initial_indexing?).to eq(true)
-                expect { service.execute }.not_to change { Search::Zoekt::Task.count }
+              it 'creates Search::Zoekt::Task record for initial indexing' do
+                expect { service.execute }.to change { Search::Zoekt::Task.count }.by(1)
               end
-
-              it 'reschedules the indexing task worker' do
-                expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_in).with(
-                  30.minutes, project.id, task_type, { index_id: zoekt_index.id }
-                )
-
-                service.execute
-              end
-
-              it_behaves_like 'creates a task when circuit breaker is disabled'
             end
 
             context 'and is not ready' do
               let_it_be(:repo_state) { ::Search::Zoekt::Repository.states.fetch(:orphaned) }
 
-              it 'does not create Search::Zoekt::Task record for initial indexing' do
-                expect(service.initial_indexing?).to eq(true)
-                expect { service.execute }.not_to change { Search::Zoekt::Task.count }
+              it 'creates Search::Zoekt::Task record for initial indexing' do
+                expect { service.execute }.to change { Search::Zoekt::Task.count }.by(1)
               end
-
-              it 'reschedules the indexing task worker' do
-                expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_in).with(
-                  30.minutes, project.id, task_type, { index_id: zoekt_index.id }
-                )
-
-                service.execute
-              end
-
-              it_behaves_like 'creates a task when circuit breaker is disabled'
             end
           end
         end
@@ -139,7 +84,6 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
           end
 
           it 'allows incremental indexing' do
-            expect(service.initial_indexing?).to eq(false)
             expect { service.execute }.to change { Search::Zoekt::Task.count }.by(1)
           end
         end
@@ -150,11 +94,9 @@ RSpec.describe Search::Zoekt::IndexingTaskService, feature_category: :global_sea
           allow(zoekt_index).to receive(:high_watermark_exceeded?).and_return(true)
         end
 
-        it 'does not create Search::Zoekt::Task record' do
-          expect { service.execute }.not_to change { Search::Zoekt::Task.count }
+        it 'creates Search::Zoekt::Task record' do
+          expect { service.execute }.to change { Search::Zoekt::Task.count }.by(1)
         end
-
-        it_behaves_like 'creates a task when circuit breaker is disabled'
       end
     end
 
