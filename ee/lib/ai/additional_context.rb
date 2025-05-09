@@ -27,7 +27,8 @@ module Ai
       issue: 'issue',
       dependency: 'dependency',
       local_git: 'local_git',
-      terminal: 'terminal'
+      terminal: 'terminal',
+      repository: 'repository'
     }.freeze
 
     MAX_BODY_SIZE = ::API::CodeSuggestions::MAX_BODY_SIZE
