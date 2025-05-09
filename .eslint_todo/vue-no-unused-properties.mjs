@@ -231,8 +231,6 @@ export default {
     'app/assets/javascripts/token_access/components/token_permissions.vue',
     'app/assets/javascripts/usage_quotas/components/search_and_sort_bar/search_and_sort_bar.vue',
     'app/assets/javascripts/user_lists/components/user_lists.vue',
-    'app/assets/javascripts/vue_merge_request_widget/components/checks/message.vue',
-    'app/assets/javascripts/vue_merge_request_widget/components/deployment/deployment_actions.vue',
     'app/assets/javascripts/vue_merge_request_widget/components/widget/action_buttons.vue',
     'app/assets/javascripts/vue_merge_request_widget/mr_widget_options.vue',
     'app/assets/javascripts/vue_merge_request_widget/widgets/accessibility/index.vue',
