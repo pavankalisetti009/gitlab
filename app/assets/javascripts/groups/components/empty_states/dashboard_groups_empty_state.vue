@@ -17,7 +17,12 @@ export default {
 
 <template>
   <resource-lists-empty-state
-    :title="s__('GroupsEmptyState|No public or internal groups')"
+    :title="s__('GroupsEmptyState|A group is a collection of several projects')"
+    :description="
+      s__(
+        'GroupsEmptyState|If you organize your projects under a group, it works like a folder. You can manage your group member\'s permissions and access to each project in the group.',
+      )
+    "
     :svg-path="$options.groupsEmptyStateIllustration"
     :search="search"
   />
