@@ -1,4 +1,4 @@
-import fetch from 'ee/analytics/analytics_dashboards/data_sources/merge_request_counts';
+import fetch from 'ee/analytics/analytics_dashboards/data_sources/mean_time_to_merge';
 import * as api from 'ee/analytics/merge_request_analytics/api';
 import * as utils from 'ee/analytics/analytics_dashboards/components/filters/utils';
 import {
@@ -7,24 +7,13 @@ import {
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { mockQueryThroughputDataResponse } from '../../mock_data';
 
-const mockMRCountsResponse = [
-  {
-    data: [
-      ['Jul 2020', 8],
-      ['Jun 2020', 0],
-      ['May 2020', 0],
-    ],
-    name: 'Merge Requests merged',
-  },
-];
-
-const mockResolvedQuery = (resp = mockQueryThroughputDataResponse) =>
+const mockResolvedQuery = (resp = {}) =>
   jest.spyOn(api, 'queryThroughputData').mockResolvedValue(resp);
 
 const expectQueryWithVariables = (variables) =>
   expect(api.queryThroughputData).toHaveBeenCalledWith(expect.objectContaining(variables));
 
-describe('Merge request counts data source', () => {
+describe('Mean time to merge data source', () => {
   let mockSetVisualizationOverrides;
   let res;
 
@@ -69,9 +58,26 @@ describe('Merge request counts data source', () => {
     });
   });
 
+  it('will call setVisualizationOverrides to set the title and icon', async () => {
+    mockResolvedQuery();
+
+    res = await fetch({
+      setVisualizationOverrides: mockSetVisualizationOverrides,
+      namespace,
+      query: defaultQueryParams,
+    });
+
+    expect(mockSetVisualizationOverrides).toHaveBeenCalledWith({
+      visualizationOptionOverrides: {
+        title: 'Last 60 days',
+        titleIcon: 'clock',
+      },
+    });
+  });
+
   describe('with data available', () => {
     beforeEach(async () => {
-      mockResolvedQuery();
+      mockResolvedQuery(mockQueryThroughputDataResponse);
 
       res = await fetch({
         setVisualizationOverrides: mockSetVisualizationOverrides,
@@ -80,36 +86,23 @@ describe('Merge request counts data source', () => {
       });
     });
 
-    it('returns each interval in the result', () => {
-      const intervalNames = res[0].data.map(([name]) => name);
-      expect(intervalNames).toEqual(['Jul 2020', 'Jun 2020', 'May 2020']);
-    });
-
-    it('returns a data series for MR counts', async () => {
-      mockResolvedQuery();
-
-      res = await fetch({
-        namespace,
-        query: defaultQueryParams,
-      });
-
-      expect(res).toMatchObject(mockMRCountsResponse);
+    it('returns a single value representing the mean time to merge', () => {
+      expect(res).toEqual(2);
     });
   });
 
   describe('no data available', () => {
     beforeEach(async () => {
-      mockResolvedQuery({});
+      mockResolvedQuery();
 
       res = await fetch({
         setVisualizationOverrides: mockSetVisualizationOverrides,
         namespace,
-        query: defaultQueryParams,
       });
     });
 
-    it('returns an empty object', () => {
-      expect(res).toEqual({});
+    it('returns a "-"', () => {
+      expect(res).toEqual('-');
     });
   });
 });
