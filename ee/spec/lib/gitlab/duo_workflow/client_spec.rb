@@ -4,15 +4,42 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
   let(:user) { create(:user) }
-  let(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
-
-  before do
-    allow(Gitlab.config.duo_workflow).to receive(:service_url).and_return duo_workflow_service_url
-  end
 
   describe '.url' do
-    it 'returns configured url' do
-      expect(described_class.url).to eq("duo-workflow-service.example.com:50052")
+    it 'returns url to Duo Workflow Service fleet' do
+      expect(described_class.url).to eq('duo-workflow-svc.runway.gitlab.net:443')
+    end
+
+    context 'when new_duo_workflow_service feature flag is disabled' do
+      before do
+        stub_feature_flags(new_duo_workflow_service: false)
+      end
+
+      it 'returns url to legacy Duo Workflow Service fleet' do
+        expect(described_class.url).to eq('duo-workflow.runway.gitlab.net:443')
+      end
+    end
+
+    context 'when cloud connector url is staging' do
+      before do
+        allow(::CloudConnector::Config).to receive(:host).and_return('cloud.staging.gitlab.com')
+      end
+
+      it 'returns url to staging Duo Workflow Service fleet' do
+        expect(described_class.url).to eq('duo-workflow-svc.staging.runway.gitlab.net:443')
+      end
+    end
+
+    context 'when url is set in config' do
+      let(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
+
+      before do
+        allow(Gitlab.config.duo_workflow).to receive(:service_url).and_return duo_workflow_service_url
+      end
+
+      it 'returns configured url' do
+        expect(described_class.url).to eq(duo_workflow_service_url)
+      end
     end
   end
 
