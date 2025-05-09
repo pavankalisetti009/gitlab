@@ -15118,9 +15118,6 @@ msgstr ""
 msgid "Commit|containing commit"
 msgstr ""
 
-msgid "Community forum"
-msgstr ""
-
 msgid "Company"
 msgstr ""
 
@@ -28059,6 +28056,9 @@ msgid "GitLab account request rejected"
 msgstr ""
 
 msgid "GitLab commit"
+msgstr ""
+
+msgid "GitLab community forum"
 msgstr ""
 
 msgid "GitLab container registry API not supported"
