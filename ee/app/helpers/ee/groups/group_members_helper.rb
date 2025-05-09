@@ -32,7 +32,8 @@ module EE::Groups::GroupMembersHelper
       manage_member_roles_path: manage_member_roles_path(group),
       promotion_request: { enabled: member_promotion_management_enabled?, total_items: pending_members_count },
       can_approve_access_requests: !::Namespaces::FreeUserCap::Enforcement.new(group.root_ancestor).reached_limit?,
-      namespace_user_limit: ::Namespaces::FreeUserCap.dashboard_limit
+      namespace_user_limit: ::Namespaces::FreeUserCap.dashboard_limit,
+      restrict_reassignment_to_enterprise: group.any_enterprise_users?
     })
   end
   # rubocop:enable Metrics/ParameterLists

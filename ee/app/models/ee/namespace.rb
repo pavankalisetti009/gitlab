@@ -611,6 +611,10 @@ module EE
       ::Gitlab.com? && root? && licensed_feature_available?(:domain_verification)
     end
 
+    def any_enterprise_users?
+      domain_verification_available? && enterprise_users.any?
+    end
+
     def enforce_ssh_certificates?
       root? && namespace_settings&.enforce_ssh_certificates?
     end
