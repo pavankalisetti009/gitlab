@@ -334,6 +334,16 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
           send_request(params: payload)
 
           expect(response).to have_gitlab_http_status(:bad_request)
+          expect(response.body).to eq(
+            '{"error":"vulnerability is invalid, vulnerability[name] is missing, vulnerability[name] is invalid, vulnerability[severity] is missing, ' \
+              'vulnerability[severity] is invalid, vulnerability[location] is missing, vulnerability[location] is invalid, vulnerability[location][image] is missing, ' \
+              'vulnerability[location][dependency] is missing, vulnerability[location][dependency][package] is missing, ' \
+              'vulnerability[location][dependency][package][name] is missing, vulnerability[location][kubernetes_resource] is missing, ' \
+              'vulnerability[location][kubernetes_resource][namespace] is missing, vulnerability[location][kubernetes_resource][name] is missing, ' \
+              'vulnerability[location][kubernetes_resource][kind] is missing, vulnerability[location][kubernetes_resource][container_name] is missing, ' \
+              'vulnerability[location][kubernetes_resource][agent_id] is missing, vulnerability[identifiers] is missing, vulnerability[identifiers] is invalid, ' \
+              'scanner is missing, scanner[id] is missing, scanner[name] is missing, scanner[vendor] is missing, scanner[vendor][name] is missing"}'),
+            "got: #{response.body}"
         end
       end
 
@@ -345,6 +355,16 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
             send_request(params: payload.delete(missing_param))
 
             expect(response).to have_gitlab_http_status(:bad_request)
+            expect(response.body).to eq(
+              '{"error":"vulnerability is missing, vulnerability[name] is missing, vulnerability[severity] is missing, vulnerability[severity] is invalid, ' \
+                'vulnerability[location] is missing, vulnerability[location][image] is missing, vulnerability[location][dependency] is missing, ' \
+                'vulnerability[location][dependency][package] is missing, vulnerability[location][dependency][package][name] is missing, ' \
+                'vulnerability[location][kubernetes_resource] is missing, vulnerability[location][kubernetes_resource][namespace] is missing, ' \
+                'vulnerability[location][kubernetes_resource][name] is missing, vulnerability[location][kubernetes_resource][kind] is missing, ' \
+                'vulnerability[location][kubernetes_resource][container_name] is missing, vulnerability[location][kubernetes_resource][agent_id] is missing, ' \
+                'vulnerability[identifiers] is missing, scanner is missing, scanner[id] is missing, scanner[name] is missing, scanner[vendor] is missing, ' \
+                'scanner[vendor][name] is missing"}'),
+              "got: #{response.body}"
           end
         end
       end
