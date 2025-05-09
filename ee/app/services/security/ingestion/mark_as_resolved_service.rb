@@ -60,31 +60,34 @@ module Security
 
       def process_batch(batch)
         (batch.pluck_primary_key - ingested_ids).then do |missing_ids|
-          mark_as_no_longer_detected(missing_ids)
-          auto_resolve(missing_ids)
+          next if missing_ids.blank?
+
+          no_longer_detected_vulnerability_ids = Vulnerability
+            .id_in(missing_ids)
+            .with_resolution(false)
+            .not_requiring_manual_resolution
+            .pluck_primary_key
+
+          next if no_longer_detected_vulnerability_ids.blank?
+
+          mark_as_no_longer_detected(no_longer_detected_vulnerability_ids)
+          auto_resolve(no_longer_detected_vulnerability_ids)
         end
       end
 
-      def mark_as_no_longer_detected(missing_ids)
-        return if missing_ids.blank?
-
-        no_longer_detected_vulnerability_ids = Vulnerability
-                  .id_in(missing_ids)
-                  .with_resolution(false)
-                  .not_requiring_manual_resolution
-                  .pluck_primary_key
-
+      def mark_as_no_longer_detected(no_longer_detected_vulnerability_ids)
         Vulnerability.id_in(no_longer_detected_vulnerability_ids).update_all(resolved_on_default_branch: true)
 
         CreateVulnerabilityRepresentationInformation.execute(pipeline, no_longer_detected_vulnerability_ids)
+
         track_no_longer_detected_vulnerabilities(no_longer_detected_vulnerability_ids.count)
       end
 
-      def auto_resolve(missing_ids)
+      def auto_resolve(no_longer_detected_vulnerability_ids)
         budget = AUTO_RESOLVE_LIMIT - auto_resolved_count
         return unless budget > 0
 
-        result = Vulnerabilities::AutoResolveService.new(project, missing_ids, budget).execute
+        result = Vulnerabilities::AutoResolveService.new(project, no_longer_detected_vulnerability_ids, budget).execute
 
         if result.success?
           @auto_resolved_count += result.payload[:count]
