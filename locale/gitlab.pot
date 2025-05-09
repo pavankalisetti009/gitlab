@@ -66039,6 +66039,9 @@ msgstr ""
 msgid "UserMapping|You can assign active users with regular, auditor, or administrator access only."
 msgstr ""
 
+msgid "UserMapping|You can assign only enterprise users in the top-level group you're importing to."
+msgstr ""
+
 msgid "UserMapping|You can assign only users with linked SAML and SCIM identities. Ensure the user has signed into GitLab through your SAML SSO provider and has an active SCIM identity for this group."
 msgstr ""
 

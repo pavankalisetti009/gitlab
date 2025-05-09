@@ -2303,6 +2303,42 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#any_enterprise_users?' do
+    let_it_be(:group) { create(:group) }
+
+    subject { group.any_enterprise_users? }
+
+    before do
+      stub_licensed_features(domain_verification: true)
+      allow(::Gitlab).to receive(:com?).and_return(true)
+    end
+
+    context 'when there are enterprise users for the group' do
+      let_it_be(:enterprise_user) { create(:user, enterprise_group: group) }
+
+      it { is_expected.to be(true) }
+
+      context 'when domain_verification_available? is false' do
+        before do
+          stub_licensed_features(domain_verification: false)
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context 'when there are enterprise users for another group' do
+      let_it_be(:other_group) { create(:group) }
+      let_it_be(:enterprise_user) { create(:user, enterprise_group: other_group) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when there are no enterprise users' do
+      it { is_expected.to be(false) }
+    end
+  end
+
   describe '#enforce_ssh_certificates?' do
     let(:namespace) { create(:group) }
 

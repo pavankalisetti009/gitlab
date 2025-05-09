@@ -88,5 +88,34 @@ RSpec.describe Import::SourceUsers::ReassignService, feature_category: :importer
         end
       end
     end
+
+    context 'for enterprise users check' do
+      before do
+        # Needed for managed_by_group?
+        stub_licensed_features(domain_verification: true)
+        allow(::Gitlab).to receive(:com?).and_return(true)
+      end
+
+      context 'when there are enterprise users' do
+        let_it_be(:enterprise_user) { create(:user, enterprise_group: group) }
+
+        context 'when the user is part of the enterprise group' do
+          let_it_be(:assignee_user) { create(:user, enterprise_group: group) }
+
+          it_behaves_like 'success response'
+        end
+
+        context 'when the user is not part of the enterprise group' do
+          let_it_be(:assignee_user) { create(:user, enterprise_group: nil) }
+
+          it_behaves_like 'an error response',
+            error: "You can assign only enterprise users in the top-level group you're importing to."
+        end
+      end
+
+      context 'when there are no enterprise users' do
+        it_behaves_like 'success response'
+      end
+    end
   end
 end
