@@ -340,7 +340,7 @@ The default prefix is `glpat-` but administrators can change it.
 
 By default, [secret push protection](../../user/application_security/secret_detection/secret_push_protection/_index.md) and
 [pipeline secret detection](../../user/application_security/secret_detection/pipeline/_index.md#detected-secrets) do not detect custom prefixes.
-Custom prefixes might cause an increase in false negatives.
+Custom prefixes might cause an increase in false negatives. To use custom instance prefixes with your pipeline secret detection ruleset, consider [extending the pipeline configuration](../../user/application_security/secret_detection/pipeline/configure.md#ignore-patterns-and-paths).
 
 ### Set a prefix
 
@@ -395,7 +395,7 @@ To set a custom token prefix:
 {{< alert type="note" >}}
 
 By default, [secret push protection](../../user/application_security/secret_detection/secret_push_protection/_index.md), [client-side secret detection](../../user/application_security/secret_detection/client/_index.md) and
-[pipeline secret detection](../../user/application_security/secret_detection/pipeline/_index.md#detected-secrets) do not detect custom instance token prefixes. This may result in an increase in false negatives.
+[pipeline secret detection](../../user/application_security/secret_detection/pipeline/_index.md#detected-secrets) do not detect custom instance token prefixes. This may result in an increase in false negatives. To use custom instance prefixes with your pipeline secret detection ruleset, consider [extending the pipeline configuration](../../user/application_security/secret_detection/pipeline/configure.md#ignore-patterns-and-paths).
 
 {{< /alert >}}
 
