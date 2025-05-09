@@ -111,16 +111,6 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
       expect(prompt[:model]).to eq(::Gitlab::Llm::Anthropic::Client::CLAUDE_3_7_SONNET)
     end
 
-    context 'when duo_code_review_claude_3_7_sonnet FF is disabled' do
-      before do
-        stub_feature_flags(duo_code_review_claude_3_7_sonnet: false)
-      end
-
-      it 'uses Claude 3.5 Sonnet' do
-        expect(prompt[:model]).to eq(::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET)
-      end
-    end
-
     it 'specifies the system prompt' do
       expect(prompt[:system]).to eq(described_class::SYSTEM_MESSAGE[1])
     end
