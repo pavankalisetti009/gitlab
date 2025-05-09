@@ -293,8 +293,8 @@ RSpec.describe 'Admin updates EE-only settings', feature_category: :shared do
 
       visit general_admin_application_settings_path
 
-      within_testid('admin-visibility-access-settings') do
-        uncheck _('Disable personal access tokens')
+      within_testid('account-and-limit-settings-content') do
+        uncheck s_('AccessTokens|Disable access tokens')
         click_button _('Save changes')
       end
 
