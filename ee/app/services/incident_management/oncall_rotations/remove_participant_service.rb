@@ -4,6 +4,7 @@ module IncidentManagement
   module OncallRotations
     class RemoveParticipantService < OncallRotations::BaseService
       include IncidentManagement::OncallRotations::SharedRotationLogic
+
       # @param oncall_rotations [IncidentManagement::OncallRotation]
       # @param user_to_remove [User]
       # @param async_email [Boolean]

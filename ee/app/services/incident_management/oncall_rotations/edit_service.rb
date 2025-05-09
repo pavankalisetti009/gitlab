@@ -4,6 +4,7 @@ module IncidentManagement
   module OncallRotations
     class EditService < OncallRotations::BaseService
       include IncidentManagement::OncallRotations::SharedRotationLogic
+
       # @param rotation [IncidentManagement::OncallRotation]
       # @param user [User]
       # @param edit_params [Hash<Symbol,Any>]

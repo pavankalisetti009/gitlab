@@ -3,6 +3,7 @@
 module Llm
   class GenerateDescriptionService < BaseService
     extend ::Gitlab::Utils::Override
+
     SUPPORTED_ISSUABLE_TYPES = %w[issue work_item].freeze
 
     override :valid
