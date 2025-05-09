@@ -3,14 +3,21 @@
 module Ai
   module Conversation
     class Message < ApplicationRecord
+      include Gitlab::Utils::StrongMemoize
+
       self.table_name = :ai_conversation_messages
 
       belongs_to :organization, class_name: 'Organizations::Organization'
       belongs_to :thread, class_name: 'Ai::Conversation::Thread', inverse_of: :messages
 
+      delegate :user, to: :thread, allow_nil: true
+
       validates :content, :role, :thread_id, presence: true
       validates :extras, json_schema: { filename: "ai_conversation_message_extras", parse_json: true },
-        if: -> { new_record? || extras_changed? }
+        if: -> { new_record? || extras_changed? }, unless: :duo_chat_read_directly_from_db_enabled?
+      # for the feature flag transition period where extras outputs from String to Hash
+      validates :extras, json_schema: { filename: "ai_conversation_message_extras" },
+        if: -> { (new_record? || extras_changed?) && duo_chat_read_directly_from_db_enabled? }
 
       scope :for_thread, ->(thread) { where(thread: thread) }
       scope :for_user, ->(user) { joins(:thread).where(ai_conversation_threads: { user_id: user.id }) }
@@ -29,6 +36,9 @@ module Ai
 
       before_create :populate_organization
 
+      alias_attribute :request_id, :request_xid
+      alias_attribute :timestamp, :created_at
+
       def self.find_for_user!(xid, user)
         for_id(xid).for_user(user).first!
       end
@@ -37,11 +47,66 @@ module Ai
         order(id: :desc).limit(limit).reverse
       end
 
+      def ai_action
+        'chat'
+      end
+
+      def conversation_reset?
+        content == Gitlab::Llm::ChatMessage::RESET_MESSAGE
+      end
+
+      def clear_history?
+        content == Gitlab::Llm::ChatMessage::CLEAR_HISTORY_MESSAGE ||
+          content == Gitlab::Llm::ChatMessage::NEW_MESSAGE
+      end
+
+      def question?
+        user? && !conversation_reset? && !clear_history?
+      end
+
+      def extras
+        extras_hash = self[:extras]
+
+        return extras_hash unless duo_chat_read_directly_from_db_enabled?
+
+        extras_hash ||= {}
+
+        begin
+          extras_hash = ::Gitlab::Json.parse(extras_hash) if extras_hash.is_a?(String)
+        rescue JSON::ParserError
+          extras_hash = {}
+        end
+
+        extras_hash['has_feedback'] = has_feedback?
+        extras_hash
+      end
+
+      def error_details
+        errors_array = self[:error_details]
+
+        return errors_array unless duo_chat_read_directly_from_db_enabled?
+
+        errors_array ||= []
+
+        begin
+          errors_array = ::Gitlab::Json.parse(errors_array) if errors_array.is_a?(String)
+        rescue JSON::ParserError
+          errors_array = []
+        end
+
+        errors_array
+      end
+
       private
 
       def populate_organization
         self.organization ||= thread.organization
       end
+
+      def duo_chat_read_directly_from_db_enabled?
+        Feature.enabled?(:duo_chat_read_directly_from_db, user)
+      end
+      strong_memoize_attr :duo_chat_read_directly_from_db_enabled?
     end
   end
 end

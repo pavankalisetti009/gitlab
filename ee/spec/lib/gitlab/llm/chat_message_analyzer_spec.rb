@@ -3,7 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::ChatMessageAnalyzer, feature_category: :duo_chat do
-  let(:messages) { [build(:ai_chat_message, content: 'What is the pipeline?')] }
+  let_it_be(:organization) { create(:organization) }
+
+  let(:messages) { [create(:ai_conversation_message, content: 'What is the pipeline?')] }
 
   subject(:result) { described_class.new(messages).execute }
 
@@ -22,10 +24,10 @@ RSpec.describe Gitlab::Llm::ChatMessageAnalyzer, feature_category: :duo_chat do
     context 'with reset' do
       let(:messages) do
         [
-          build(:ai_chat_message, content: 'what?', timestamp: 1.second.ago),
-          build(:ai_chat_message, :assistant, content: 'abc'),
-          build(:ai_chat_message, content: '/reset'),
-          build(:ai_chat_message, content: 'why?')
+          create(:ai_conversation_message, content: 'what?', timestamp: 1.second.ago),
+          create(:ai_conversation_message, :assistant, content: 'abc'),
+          create(:ai_conversation_message, content: '/reset'),
+          create(:ai_conversation_message, content: 'why?')
         ]
       end
 
@@ -45,9 +47,9 @@ RSpec.describe Gitlab::Llm::ChatMessageAnalyzer, feature_category: :duo_chat do
     context 'with previous question' do
       let(:messages) do
         [
-          build(:ai_chat_message, content: 'what?', timestamp: 1.second.ago),
-          build(:ai_chat_message, :assistant, content: 'abc'),
-          build(:ai_chat_message, content: 'why?')
+          create(:ai_conversation_message, content: 'what?', timestamp: 1.second.ago),
+          create(:ai_conversation_message, :assistant, content: 'abc'),
+          create(:ai_conversation_message, content: 'why?')
         ]
       end
 
@@ -65,8 +67,8 @@ RSpec.describe Gitlab::Llm::ChatMessageAnalyzer, feature_category: :duo_chat do
 
       context 'when current question does not have a referer URL' do
         before do
-          messages << build(:ai_chat_message, referer_url: 'http://127.0.0.1:3000')
-          messages << build(:ai_chat_message)
+          messages << create(:ai_conversation_message, referer_url: 'http://127.0.0.1:3000')
+          messages << create(:ai_conversation_message)
         end
 
         it 'does not include asked_on_the_same_page attribute' do
@@ -76,8 +78,8 @@ RSpec.describe Gitlab::Llm::ChatMessageAnalyzer, feature_category: :duo_chat do
 
       context 'when previous question does not have a referer URL' do
         before do
-          messages << build(:ai_chat_message)
-          messages << build(:ai_chat_message, referer_url: 'http://127.0.0.1:3000')
+          messages << create(:ai_conversation_message)
+          messages << create(:ai_conversation_message, referer_url: 'http://127.0.0.1:3000')
         end
 
         it 'does not include asked_on_the_same_page attribute' do
@@ -87,8 +89,8 @@ RSpec.describe Gitlab::Llm::ChatMessageAnalyzer, feature_category: :duo_chat do
 
       context 'when previous question has a different referer URL' do
         before do
-          messages << build(:ai_chat_message, referer_url: 'http://127.0.0.1:3000')
-          messages << build(:ai_chat_message, referer_url: 'http://127.0.0.1:3000/dashboard/')
+          messages << create(:ai_conversation_message, referer_url: 'http://127.0.0.1:3000')
+          messages << create(:ai_conversation_message, referer_url: 'http://127.0.0.1:3000/dashboard/')
         end
 
         it 'returns false for the asked_on_the_same_page attribute' do
@@ -98,8 +100,8 @@ RSpec.describe Gitlab::Llm::ChatMessageAnalyzer, feature_category: :duo_chat do
 
       context 'when previous question has the same referer URL' do
         before do
-          messages << build(:ai_chat_message, referer_url: 'http://127.0.0.1:3000')
-          messages << build(:ai_chat_message, referer_url: 'http://127.0.0.1:3000')
+          messages << create(:ai_conversation_message, referer_url: 'http://127.0.0.1:3000')
+          messages << create(:ai_conversation_message, referer_url: 'http://127.0.0.1:3000')
         end
 
         it 'returns true for the asked_on_the_same_page attribute' do
@@ -115,7 +117,7 @@ RSpec.describe Gitlab::Llm::ChatMessageAnalyzer, feature_category: :duo_chat do
     end
 
     context 'when current message contains url' do
-      let(:messages) { [build(:ai_chat_message, content: content)] }
+      let(:messages) { [create(:ai_conversation_message, content: content)] }
       let(:content) do
         project = create(:project)
         issue = create(:issue, project: project)

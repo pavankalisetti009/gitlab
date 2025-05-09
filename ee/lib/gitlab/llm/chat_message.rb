@@ -9,6 +9,8 @@ module Gitlab
 
       attr_writer :active_record
 
+      alias_method :message_xid, :id
+
       def save!
         storage = ChatStorage.new(user, agent_version_id, thread)
 

@@ -36,7 +36,7 @@ module Gitlab
 
       def messages_up_to(message_id)
         all = messages
-        idx = all.rindex { |m| m.id == message_id }
+        idx = all.rindex { |m| m.message_xid == message_id }
         idx ? all.first(idx + 1) : []
       end
 

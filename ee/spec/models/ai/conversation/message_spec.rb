@@ -3,6 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
+  using RSpec::Parameterized::TableSyntax
+
+  subject(:message) { create(:ai_conversation_message) }
+
   describe 'associations' do
     it { is_expected.to belong_to(:organization).class_name('Organizations::Organization') }
     it { is_expected.to belong_to(:thread).class_name('Ai::Conversation::Thread') }
@@ -214,6 +218,107 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:ai_conversation_thread) }
       let_it_be(:model) { create(:ai_conversation_message, thread: parent) }
+    end
+  end
+
+  describe '#conversation_reset?' do
+    it 'returns true for reset message' do
+      expect(build(:ai_conversation_message, content: '/reset')).to be_conversation_reset
+    end
+
+    it 'returns false for regular message' do
+      expect(message).not_to be_conversation_reset
+    end
+  end
+
+  describe '#clear_history?' do
+    it "returns true for clear message" do
+      expect(build(:ai_conversation_message, content: '/clear')).to be_clear_history
+    end
+
+    it 'returns false for regular message' do
+      expect(message).not_to be_clear_history
+    end
+  end
+
+  describe '#question?' do
+    where(:role, :content, :expectation) do
+      [
+        ['user', 'foo?', true],
+        ['user', '/reset', false],
+        ['user', '/clear', false],
+        ['user', '/new', false],
+        ['assistant', 'foo?', false]
+      ]
+    end
+
+    with_them do
+      it "returns expectation" do
+        message.assign_attributes(role: role, content: content)
+
+        expect(message.question?).to eq(expectation)
+      end
+    end
+  end
+
+  describe '#extras' do
+    let_it_be_with_refind(:message) { create(:ai_conversation_message) }
+
+    where(:input, :has_feedback, :expected_output) do
+      nil            | true  | { 'has_feedback' => true }
+      { 'k' => 'v' } | true  | { 'k' => 'v', 'has_feedback' => true }
+      '{"k":"v"}'    | false | { 'k' => 'v', 'has_feedback' => false }
+      '{invalid}'    | true  | { 'has_feedback' => true }
+    end
+
+    with_them do
+      it 'returns hash' do
+        message.extras = input
+        allow(message).to receive(:has_feedback?).and_return(has_feedback)
+
+        expect(message.extras).to eq(expected_output)
+      end
+    end
+
+    context 'when duo_chat_read_directly_from_db feature flag is disabled' do
+      it 'returns raw value' do
+        stub_feature_flags(duo_chat_read_directly_from_db: false)
+
+        raw_extras = '{}'
+        message.extras = raw_extras
+
+        expect(message.extras).to eq(raw_extras)
+      end
+    end
+  end
+
+  describe '#error_details' do
+    let_it_be_with_refind(:message) { create(:ai_conversation_message) }
+
+    where(:input, :expected_output) do
+      nil                   | []
+      %w[error1 error2]     | %w[error1 error2]
+      '["error1","error2"]' | %w[error1 error2]
+      '[invalid:json]'      | []
+    end
+
+    with_them do
+      it 'returns array' do
+        message.error_details = input
+
+        expect(message.error_details).to eq(expected_output)
+      end
+    end
+
+    context 'when duo_chat_read_directly_from_db feature flag is disabled' do
+      it 'returns raw value' do
+        stub_feature_flags(duo_chat_read_directly_from_db: false)
+
+        raw_error_details = '[]'
+        message.error_details = raw_error_details
+
+        expect(message.error_details).to eq(raw_error_details)
+      end
     end
   end
 end

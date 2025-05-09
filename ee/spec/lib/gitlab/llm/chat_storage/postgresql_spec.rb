@@ -22,6 +22,23 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
     }
   end
 
+  let(:payload_active_record) do
+    {
+      request_id: request_id,
+      error_details: ['some error1', 'another error'].to_json,
+      role: 'user',
+      content: 'response',
+      thread: thread,
+      referer_url: 'http://127.0.0.1:3000',
+      extras: {
+        additional_context:
+          [
+            { category: 'file', id: 'file.rb', content: 'puts "code"' }
+          ]
+      }.to_json
+    }
+  end
+
   let_it_be(:agent_version_id) { 1 }
   let(:thread) { nil }
 
@@ -39,11 +56,10 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
       result = storage.add(message)
 
       last = storage.messages.last
-      expect(last.id).to eq(uuid)
+      expect(last.message_xid).to eq(uuid)
       expect(last.user).to eq(user)
-      expect(last.agent_version_id).to eq(agent_version_id)
       expect(last.request_id).to eq(request_id)
-      expect(last.errors).to match_array(['some error1', 'another error'])
+      expect(last.error_details).to match_array(['some error1', 'another error'])
       expect(last.content).to eq('response')
       expect(last.role).to eq('user')
       expect(last.ai_action).to eq('chat')
@@ -52,7 +68,7 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
       expect(last.extras['additional_context']).to eq(payload[:additional_context].to_a)
 
       expect(result).to be_a(Ai::Conversation::Message)
-      expect(result.message_xid).to eq(last.id)
+      expect(result).to eq(last)
     end
 
     context 'when the content exceeds the text limit' do
@@ -83,13 +99,18 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
   end
 
   describe '#messages' do
+    let_it_be(:thread) { create(:ai_conversation_thread, user: user, organization: organization) }
+
     before do
-      storage.add(build(:ai_chat_message, payload.merge(content: 'msg1')))
-      storage.add(build(:ai_chat_message, payload.merge(content: 'msg2')))
+      create(:ai_conversation_message, payload_active_record.merge(content: 'msg1'))
+      create(:ai_conversation_message, payload_active_record.merge(content: 'msg2'))
     end
 
     it 'retrieves all stored messages' do
-      expect(storage.messages.map(&:content)).to eq(%w[msg1 msg2])
+      results = storage.messages
+
+      expect(results).to all(be_an(Ai::Conversation::Message))
+      expect(results.map(&:content)).to eq(%w[msg1 msg2])
     end
 
     context 'when the count of messages exceed the limit' do
@@ -100,6 +121,15 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
       it 'retrieves messages within the max limit' do
         expect(storage.messages.map(&:content)).to eq(%w[msg2])
       end
+    end
+
+    it 'returns ChatMessage if feature flag is disabled' do
+      stub_feature_flags(duo_chat_read_directly_from_db: false)
+
+      results = storage.messages
+
+      expect(results).to all(be_an(Gitlab::Llm::ChatMessage))
+      expect(results.map(&:content)).to eq(%w[msg1 msg2])
     end
   end
 

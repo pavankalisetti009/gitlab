@@ -11,12 +11,10 @@ module Types
         [:api, :read_api, :ai_features]
       end
 
-      # rubocop:disable GraphQL/FieldHashKey
       field :id,
         GraphQL::Types::ID,
         scopes: [:api, :read_api, :ai_features],
         description: 'UUID of the message.'
-      # rubocop:enable GraphQL/FieldHashKey
 
       field :request_id, GraphQL::Types::String,
         null: true,
@@ -79,12 +77,32 @@ module Types
         scopes: [:api, :read_api, :ai_features],
         description: 'Global ID of the existing thread for the Chat conversation.'
 
+      # TODO: phase out xid in favor of actual ActiveRecord id
       def id
-        object['id']
+        case object
+        when ::Ai::Conversation::Message
+          object.message_xid
+        else # Hash-like
+          object['id']
+        end
       end
 
       def thread_id
-        object['thread']&.id
+        case object
+        when ::Ai::Conversation::Message
+          object.thread&.id
+        else # Hash-like
+          object['thread']&.id
+        end
+      end
+
+      def errors
+        case object
+        when ::Ai::Conversation::Message
+          object.error_details
+        else # Hash-like
+          object['errors']
+        end
       end
 
       def content_html

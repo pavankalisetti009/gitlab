@@ -6,5 +6,11 @@ FactoryBot.define do
     role { :user }
     content { 'Message content' }
     message_xid { SecureRandom.uuid }
+    extras { {}.to_json }
+    error_details { [].to_json }
+
+    trait :assistant do
+      role { 'assistant' }
+    end
   end
 end

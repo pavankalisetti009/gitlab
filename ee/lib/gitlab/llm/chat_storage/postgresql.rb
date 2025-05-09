@@ -40,7 +40,10 @@ module Gitlab
         def messages
           return [] unless current_thread
 
-          current_thread.messages.recent(MAX_MESSAGES).map do |message|
+          messages = current_thread.messages.recent(MAX_MESSAGES)
+          return messages if Feature.enabled?(:duo_chat_read_directly_from_db, user)
+
+          messages.map do |message|
             data = message.as_json
 
             data['id'] = data.delete('message_xid') if data['message_xid']
