@@ -24,7 +24,7 @@ module Gitlab
             }.freeze
 
             WEB_COPY = <<~COPY.freeze
-GitLab Duo Chat is your personal AI-powered assistant for boosting productivity. GitLab Duo Chat can help with:
+GitLab Duo Chat is your personal AI-native assistant for boosting productivity. GitLab Duo Chat can help with:
 
 * Questions about an issue or an epic, for example:
   * `Summarize this issue in 5 bullet points.`
@@ -54,7 +54,7 @@ Learn more about GitLab Duo Chat in the [documentation](#{::Gitlab::Routing.url_
             COPY
 
             IDE_COPY = <<~COPY.freeze
-GitLab Duo Chat is your personal AI-powered assistant for boosting productivity. You can ask GitLab Duo Chat questions about code by selecting the code and asking a question. GitLab Duo Chat can help with:
+GitLab Duo Chat is your personal AI-native assistant for boosting productivity. You can ask GitLab Duo Chat questions about code by selecting the code and asking a question. GitLab Duo Chat can help with:
 
 * Generating or change code, for example:
   * Select the code that you have a question about and ask your question.

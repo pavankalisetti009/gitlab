@@ -25,7 +25,7 @@ module GitlabSubscriptions
         {
           header: s_('DuoEnterpriseDiscover|Boost productivity with smart code assistance'),
           body: s_(
-            "DuoEnterpriseDiscover|Write secure code faster with AI-powered suggestions in more than 20 languages, " \
+            "DuoEnterpriseDiscover|Write secure code faster with AI-native suggestions in more than 20 languages, " \
               "and chat with your AI companion throughout development."
           ),
           footer: render_footer_link(
@@ -38,7 +38,7 @@ module GitlabSubscriptions
         {
           header: s_('DuoEnterpriseDiscover|Fortify your code'),
           body: s_(
-            "DuoEnterpriseDiscover|AI-powered vulnerability explanation and resolution features to remediate " \
+            "DuoEnterpriseDiscover|AI-native vulnerability explanation and resolution features to remediate " \
               "vulnerabilities and uplevel skills."
           ),
           footer: render_footer_link(

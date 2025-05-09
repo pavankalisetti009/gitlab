@@ -19,7 +19,7 @@ export default {
     confirmButtonText: __('Save changes'),
     settingsBlockTitle: __('GitLab Duo features'),
     settingsBlockDescription: s__(
-      'AiPowered|Configure AI-powered GitLab Duo features. %{linkStart}Which features?%{linkEnd}',
+      'AiPowered|Configure AI-native GitLab Duo features. %{linkStart}Which features?%{linkEnd}',
     ),
     configurationPageTitle: s__('AiPowered|Configuration'),
   },
@@ -79,7 +79,7 @@ export default {
             data-testid="general-settings-subtitle"
             :message="
               s__(
-                'AiPowered|Configure AI-powered GitLab Duo features. %{linkStart}Which features?%{linkEnd}',
+                'AiPowered|Configure AI-native GitLab Duo features. %{linkStart}Which features?%{linkEnd}',
               )
             "
           >

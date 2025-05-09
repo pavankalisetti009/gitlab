@@ -187,7 +187,7 @@ export default {
             <p class="gl-mb-0">
               {{
                 s__(
-                  'AiPowered|Workflow is an AI-powered coding agent in the Visual Studio Code (VS Code) IDE.',
+                  'AiPowered|Workflow is an AI-native coding agent in the Visual Studio Code (VS Code) IDE.',
                 )
               }}
             </p>

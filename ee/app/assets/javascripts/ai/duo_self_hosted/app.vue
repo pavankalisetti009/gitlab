@@ -21,7 +21,7 @@ export default {
   i18n: {
     title: s__('AdminSelfHostedModels|GitLab Duo Self-Hosted'),
     description: s__(
-      'AdminSelfHostedModels|Manage GitLab Duo by configuring and assigning self-hosted models to AI-powered features.',
+      'AdminSelfHostedModels|Manage GitLab Duo by configuring and assigning self-hosted models to AI-native features.',
     ),
   },
   inject: ['duoChatSubFeaturesEnabled'],
@@ -35,7 +35,7 @@ export default {
   tabs: [
     {
       id: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS,
-      title: s__('AdminAIPoweredFeatures|AI-powered features'),
+      title: s__('AdminAIPoweredFeatures|AI-native features'),
     },
     {
       id: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS,

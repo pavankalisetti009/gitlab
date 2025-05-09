@@ -23,7 +23,7 @@ module GitlabSubscriptions
           s_('BillingPlans|Start an Ultimate trial with GitLab Duo Enterprise to ' \
             'try the complete set of features from GitLab. GitLab Duo Enterprise ' \
             'gives you access to the full product offering from GitLab, ' \
-            'including AI-powered features.')
+            'including AI-native features.')
         ]
 
         return sentences if duo_pro_add_on_purchase?

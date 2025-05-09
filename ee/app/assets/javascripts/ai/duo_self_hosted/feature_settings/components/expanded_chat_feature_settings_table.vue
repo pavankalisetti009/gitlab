@@ -124,7 +124,7 @@ export default {
         <gl-sprintf
           :message="
             s__(
-              'AdminSelfHostedModels|More features are available in beta. You can %{linkStart}turn on AI-powered beta features%{linkEnd}.',
+              'AdminSelfHostedModels|More features are available in beta. You can %{linkStart}turn on AI-native beta features%{linkEnd}.',
             )
           "
         >
@@ -167,7 +167,7 @@ export default {
           <gl-sprintf
             :message="
               s__(
-                'AdminSelfHostedModels|More features are available in beta. You can %{linkStart}turn on AI-powered beta features%{linkEnd}.',
+                'AdminSelfHostedModels|More features are available in beta. You can %{linkStart}turn on AI-native beta features%{linkEnd}.',
               )
             "
           >

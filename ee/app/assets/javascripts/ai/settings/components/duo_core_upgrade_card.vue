@@ -38,7 +38,7 @@ export default {
       <p class="gl-mb-0 gl-mt-3">
         {{
           s__(
-            'AiPowered|Unlock advanced AI-powered capabilities with the Premium or Ultimate tier designed for your development needs.',
+            'AiPowered|Unlock advanced AI-native capabilities with the Premium or Ultimate tier designed for your development needs.',
           )
         }}
       </p>

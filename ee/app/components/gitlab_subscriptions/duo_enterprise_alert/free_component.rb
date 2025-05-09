@@ -14,7 +14,7 @@ module GitlabSubscriptions
           s_('BillingPlans|Start an Ultimate trial with GitLab Duo Enterprise to ' \
             'try the complete set of features from GitLab. GitLab Duo Enterprise ' \
             'gives you access to the full product offering from GitLab, including ' \
-            'AI-powered features. You can try it for free, no credit card required.')
+            'AI-native features. You can try it for free, no credit card required.')
         ]
       end
     end

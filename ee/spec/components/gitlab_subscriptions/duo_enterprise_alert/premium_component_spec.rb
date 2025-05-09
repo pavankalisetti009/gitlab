@@ -31,7 +31,7 @@ RSpec.describe GitlabSubscriptions::DuoEnterpriseAlert::PremiumComponent, :saas,
         'Start an Ultimate trial with GitLab Duo Enterprise to try the ' \
           'complete set of features from GitLab. GitLab Duo Enterprise gives ' \
           'you access to the full product offering from GitLab, including ' \
-          'AI-powered features.'
+          'AI-native features.'
       )
     end
   end
