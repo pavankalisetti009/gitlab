@@ -10,6 +10,7 @@ module EE
 
       setup_indexer
       setup_openbao
+      setup_zoekt
     end
 
     override :post_init
@@ -17,6 +18,7 @@ module EE
       super
 
       Settings.elasticsearch['indexer_path'] = indexer_bin_path
+      Settings.zoekt['bin_path'] = zoekt_bin_path
     end
 
     def setup_indexer
@@ -26,6 +28,16 @@ module EE
         version: indexer_version,
         task: "gitlab:indexer:install",
         task_args: [indexer_path, indexer_url].compact
+      )
+    end
+
+    def setup_zoekt
+      component_timed_setup(
+        'GitLab Zoekt',
+        install_dir: zoekt_path,
+        version: zoekt_version,
+        task: "gitlab:zoekt:install",
+        task_args: [zoekt_path, zoekt_url].compact
       )
     end
 
@@ -57,11 +69,28 @@ module EE
       ENV.fetch('GITLAB_ELASTICSEARCH_INDEXER_URL', nil)
     end
 
+    def zoekt_path
+      @zoekt_path ||= File.join('tmp', 'tests', 'gitlab-zoekt')
+    end
+
+    def zoekt_bin_path
+      @zoekt_bin_path ||= File.join(zoekt_path, 'bin', 'gitlab-zoekt')
+    end
+
+    def zoekt_url
+      ENV.fetch('GITLAB_ZOEKT_URL', nil)
+    end
+
+    def zoekt_version
+      @zoekt_version ||= Rails.root.join('GITLAB_ZOEKT_VERSION').read.chomp
+    end
+
     private
 
     def test_dirs
       @ee_test_dirs ||= super + %w[
         gitlab-elasticsearch-indexer
+        gitlab-zoekt
         openbao
       ]
     end

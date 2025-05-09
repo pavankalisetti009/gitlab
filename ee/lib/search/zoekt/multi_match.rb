@@ -122,8 +122,7 @@ module Search
 
       def generate_decoded_context_array(match, context)
         context_encoded_string = context == :before ? match[:Before] : match[:After]
-
-        return [''] if context_encoded_string.empty?
+        return [''] if context_encoded_string.nil? || context_encoded_string.empty?
 
         decoded_string = encode_utf8(Base64.decode64(context_encoded_string))
         return [''] if decoded_string == "\n"
