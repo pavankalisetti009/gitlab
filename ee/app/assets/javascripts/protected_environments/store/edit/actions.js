@@ -29,10 +29,16 @@ const fetchUsersForRuleForProject = (
   }
 
   const isInherited = groupInheritanceType === INHERITED_GROUPS;
-  const fetchMembers =
-    entityType === 'projects'
-      ? getProjectMembers(entityId, isInherited)
-      : getGroupMembers(entityId, isInherited);
+  // Currently only 'projects' and 'groups' entity types exist
+  let fetchMembers;
+
+  if (entityType === 'projects') {
+    fetchMembers = getProjectMembers(entityId, isInherited);
+  } else if (entityType === 'groups') {
+    fetchMembers = getGroupMembers(entityId, isInherited);
+  } else {
+    throw new Error(`Unexpected entityType: ${entityType}`);
+  }
 
   return fetchMembers.then(({ data }) =>
     data.filter(({ access_level: memberAccessLevel }) => memberAccessLevel >= accessLevel),
