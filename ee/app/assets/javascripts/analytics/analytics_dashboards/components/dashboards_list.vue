@@ -139,9 +139,6 @@ export default {
     featureRequiresOnboarding([feature]) {
       return this.requiresOnboarding.includes(feature);
     },
-    routeToDashboard(dashboardId) {
-      return this.$router.push(dashboardId);
-    },
     onboardingComplete(feature) {
       this.requiresOnboarding = this.requiresOnboarding.filter((f) => f !== feature);
 

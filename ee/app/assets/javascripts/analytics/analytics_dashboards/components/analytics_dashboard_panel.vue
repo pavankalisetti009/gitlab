@@ -46,7 +46,6 @@ export default {
       import(
         'ee/analytics/analytics_dashboards/components/visualizations/contributions/contributions_pushes_chart.vue'
       ),
-
     ContributionsMergeRequestsChart: () =>
       import(
         'ee/analytics/analytics_dashboards/components/visualizations/contributions/contributions_merge_requests_chart.vue'
@@ -141,9 +140,6 @@ export default {
     },
     isErrorAlert() {
       return this.alertVariant === VARIANT_DANGER;
-    },
-    showAlertPopover() {
-      return this.showAlertState && !this.dropdownOpen;
     },
     showAlertState() {
       return Boolean(this.alertMessages.length > 0 || this.alertDescription.length);
