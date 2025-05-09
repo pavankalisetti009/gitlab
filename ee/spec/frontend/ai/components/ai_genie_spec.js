@@ -39,11 +39,7 @@ describe('AiGenie', () => {
   const resourceId = 'gid://gitlab/Project/1';
 
   const getContainer = () => document.querySelector(containerSelector);
-  const createComponent = ({
-    propsData = { containerSelector, filePath },
-    data = {},
-    glFeatures = {},
-  } = {}) => {
+  const createComponent = ({ propsData = { containerSelector, filePath }, data = {} } = {}) => {
     wrapper = shallowMountExtended(AiGenie, {
       propsData,
       data() {
@@ -51,7 +47,6 @@ describe('AiGenie', () => {
       },
       provide: {
         resourceId,
-        glFeatures,
       },
     });
   };

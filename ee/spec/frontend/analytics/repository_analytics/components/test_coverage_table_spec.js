@@ -42,7 +42,7 @@ describe('Test coverage table component', () => {
     await waitForPromises();
   };
 
-  const createComponent = ({ glFeatures = {}, mockData = {}, mountFn = shallowMount } = {}) => {
+  const createComponent = ({ mockData = {}, mountFn = shallowMount } = {}) => {
     const mockApollo = createMockApollo([
       [getGroupProjects, jest.fn().mockResolvedValue()],
       [getProjectsTestCoverage, getProjectsTestCoverageSpy],
@@ -58,7 +58,6 @@ describe('Test coverage table component', () => {
           };
         },
         provide: {
-          glFeatures,
           groupFullPath: 'gitlab-org',
         },
       }),
