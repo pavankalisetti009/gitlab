@@ -9,6 +9,9 @@ module Sbom
       component_id uuid package_manager component_name input_file_path licenses highest_severity vulnerability_count
       source_package_id archived traversal_ids ancestors reachability], remove_never: true
 
+    # We set the timout to be half the default to prevent overloading the database
+    # when we need to fetch too large a graph.
+    FAST_TIMEOUT_MS = 7500
     MAX_DEPTH = 8
 
     attribute :id, :integer
@@ -83,7 +86,11 @@ module Sbom
 
       sql = sanitize_sql_array([query, query_params])
 
-      DependencyPath.find_by_sql(sql)
+      # rubocop:disable Performance/ActiveRecordSubtransactionMethods -- Read-only query should not be invoked as subtransaction
+      SecApplicationRecord.with_fast_read_statement_timeout(FAST_TIMEOUT_MS) do
+        DependencyPath.find_by_sql(sql)
+      end
+      # rubocop:enable Performance/ActiveRecordSubtransactionMethods
     end
 
     def path

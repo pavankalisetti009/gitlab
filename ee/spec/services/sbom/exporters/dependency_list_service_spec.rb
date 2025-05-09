@@ -69,7 +69,8 @@ RSpec.describe Sbom::Exporters::DependencyListService, feature_category: :depend
 
         create(:sbom_occurrence, :with_vulnerabilities, :mit, project: project)
 
-        expect { render }.not_to exceed_query_limit(control)
+        # Control order plus 3 as we wrap query in fast timeout
+        expect { render }.not_to exceed_query_limit(control).with_threshold(3)
       end
     end
   end
