@@ -41850,13 +41850,30 @@ Represents a hierarchy widget.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="workitemwidgethierarchyancestors"></a>`ancestors` | [`WorkItemConnection`](#workitemconnection) | Ancestors (parents) of the work item. (see [Connections](#connections)) |
-| <a id="workitemwidgethierarchychildren"></a>`children` | [`WorkItemConnection`](#workitemconnection) | Child work items. (see [Connections](#connections)) |
 | <a id="workitemwidgethierarchydepthlimitreachedbytype"></a>`depthLimitReachedByType` {{< icon name="warning-solid" >}} | [`[WorkItemTypeDepthLimitReachedByType!]!`](#workitemtypedepthlimitreachedbytype) | **Introduced** in GitLab 17.4. **Status**: Experiment. Depth limit reached by allowed work item type. |
 | <a id="workitemwidgethierarchyhaschildren"></a>`hasChildren` | [`Boolean!`](#boolean) | Indicates if the work item has children. |
 | <a id="workitemwidgethierarchyhasparent"></a>`hasParent` | [`Boolean!`](#boolean) | Indicates if the work item has a parent. |
 | <a id="workitemwidgethierarchyparent"></a>`parent` | [`WorkItem`](#workitem) | Parent work item. |
 | <a id="workitemwidgethierarchyrolledupcountsbytype"></a>`rolledUpCountsByType` {{< icon name="warning-solid" >}} | [`[WorkItemTypeCountsByState!]!`](#workitemtypecountsbystate) | **Introduced** in GitLab 17.3. **Status**: Experiment. Counts of descendant work items by work item type and state. |
 | <a id="workitemwidgethierarchytype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
+
+#### Fields with arguments
+
+##### `WorkItemWidgetHierarchy.children`
+
+Child work items.
+
+Returns [`WorkItemConnection`](#workitemconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemwidgethierarchychildrenstate"></a>`state` | [`WorkItemState`](#workitemstate) | Current state of the child work items. Returns all states when omitted. |
 
 ### `WorkItemWidgetIteration`
 
