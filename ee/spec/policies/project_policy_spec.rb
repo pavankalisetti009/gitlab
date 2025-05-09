@@ -2167,8 +2167,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       let(:project) { public_project_in_group }
       let(:current_user) { maintainer }
       let(:abilities) do
-        described_class.readonly_features.flat_map { |feature| described_class.create_update_admin(feature) } +
-          described_class.readonly_abilities
+        described_class.readonly_features.flat_map do |feature|
+          [
+            :"create_#{feature}",
+            :"update_#{feature}",
+            :"admin_#{feature}"
+          ]
+        end + described_class.readonly_abilities
       end
 
       before do
@@ -2187,7 +2192,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let(:read_only) { false }
 
         # These are abilities that are not explicitly allowed by policies because most of them are not
-        # real abilities.  They are prevented due to the use of create_update_admin helper method.
+        # real abilities.
         let(:abilities_not_currently_enabled) do
           %i[create_merge_request create_issue_board_list create_issue_board update_issue_board
              update_issue_board_list create_label update_label create_milestone
