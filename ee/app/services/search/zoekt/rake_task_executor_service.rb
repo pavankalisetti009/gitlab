@@ -7,8 +7,9 @@ module Search
         info
       ].freeze
 
-      def initialize(logger:)
+      def initialize(logger:, options:)
         @logger = logger
+        @options = options.with_indifferent_access
       end
 
       def execute(task)
@@ -20,10 +21,10 @@ module Search
 
       private
 
-      attr_reader :logger
+      attr_reader :logger, :options
 
       def info
-        InfoService.execute(logger: logger)
+        InfoService.execute(logger: logger, options: options)
       end
     end
   end
