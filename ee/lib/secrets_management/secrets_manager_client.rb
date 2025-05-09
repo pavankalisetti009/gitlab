@@ -98,28 +98,25 @@ module SecretsManagement
       result["data"]
     end
 
-    def update_kv_secret(mount_path, secret_path, value, custom_metadata = {})
-      result = make_request(
-        :post,
-        "#{mount_path}/data/#{secret_path}",
-        {
-          data: { KV_VALUE_FIELD => value },
-          options: {
-            cas: 0
-          }
-        }
-      )
-
-      return result unless custom_metadata&.any?
-
-      # NOTE: This is only temporary. Once OpenBao has the endpoint for
-      # creating a secret and its metadata in one transaction, we will
-      # use that instead.
+    def update_kv_secret_metadata(mount_path, secret_path, custom_metadata)
       make_request(
         :post,
         "#{mount_path}/metadata/#{secret_path}",
         {
           custom_metadata: custom_metadata
+        }
+      )
+    end
+
+    def update_kv_secret(mount_path, secret_path, value, version: nil)
+      options = { cas: version } if version
+
+      make_request(
+        :post,
+        "#{mount_path}/data/#{secret_path}",
+        {
+          data: { KV_VALUE_FIELD => value },
+          options: options
         }
       )
     end

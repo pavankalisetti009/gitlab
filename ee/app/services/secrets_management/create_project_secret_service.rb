@@ -4,6 +4,7 @@ module SecretsManagement
   class CreateProjectSecretService < BaseService
     include Gitlab::Utils::StrongMemoize
     include SecretsManagerClientHelpers
+    include SecretCiPoliciesRefresherHelper
 
     # MAX_SECRET_SIZE sets the maximum size of a secret value; see note
     # below before removing.
@@ -43,8 +44,8 @@ module SecretsManagement
       # branch and environments will then allow pipelines to access the secret.
 
       create_secret(project_secret, value)
-      add_policy(project_secret)
-      add_wildcard_role(project_secret) if has_glob_patterns?(project_secret)
+
+      refresh_secret_ci_policies(project_secret)
 
       ServiceResponse.success(payload: { project_secret: project_secret })
     rescue SecretsManagerClient::ApiError => e
@@ -54,66 +55,29 @@ module SecretsManagement
       error_response(project_secret)
     end
 
+    # NOTE: The current implementation makes two separate API calls (one for the value, one for metadata).
+    # In the future, the secret value creation will be handled directly in the frontend for better security,
+    # before calling this service. However, the metadata update and policy management will still be handled
+    # in this Rails backend service, as they contain essential information for access control.
     def create_secret(project_secret, value)
-      # Create the secret itself.
+      secrets_manager_client.update_kv_secret(
+        secrets_manager.ci_secrets_mount_path,
+        secrets_manager.ci_data_path(project_secret.name),
+        value,
+        version: 0
+      )
+
       custom_metadata = {
         environment: project_secret.environment,
         branch: project_secret.branch,
         description: project_secret.description
       }.compact
 
-      secrets_manager_client.update_kv_secret(
+      secrets_manager_client.update_kv_secret_metadata(
         secrets_manager.ci_secrets_mount_path,
         secrets_manager.ci_data_path(project_secret.name),
-        value,
         custom_metadata
       )
-    end
-
-    def add_policy(project_secret)
-      # Add it to the CI policy for the specified environment and branch.
-      policy_name = secrets_manager.ci_policy_name(
-        project_secret.environment,
-        project_secret.branch
-      )
-
-      policy = secrets_manager_client.get_policy(policy_name)
-      policy.add_capability(
-        secrets_manager.ci_full_path(project_secret.name),
-        "read"
-      )
-      policy.add_capability(
-        secrets_manager.ci_metadata_full_path(project_secret.name),
-        "read"
-      )
-      secrets_manager_client.set_policy(policy)
-    end
-
-    def add_wildcard_role(project_secret)
-      # Lastly, update the JWT role. If we have a glob, we need to know
-      # the possible values for that glob so that we can.
-      role = secrets_manager_client.read_jwt_role(
-        secrets_manager.ci_auth_mount,
-        secrets_manager.ci_auth_role
-      )
-
-      token_policies = Set.new(role["token_policies"])
-      new_policies = secrets_manager.ci_auth_glob_policies(
-        project_secret.environment,
-        project_secret.branch
-      )
-      token_policies.merge(new_policies)
-
-      role["token_policies"] = token_policies.to_a
-      secrets_manager_client.update_jwt_role(
-        secrets_manager.ci_auth_mount,
-        secrets_manager.ci_auth_role,
-        **role
-      )
-    end
-
-    def has_glob_patterns?(project_secret)
-      project_secret.environment.include?("*") || project_secret.branch.include?("*")
     end
 
     def error_response(project_secret)

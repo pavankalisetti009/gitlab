@@ -55,5 +55,9 @@ module SecretsManagement
     def configuration
       SecretsManagerClient.configuration
     end
+
+    def get_raw_policy(name)
+      read_raw_policy(name)
+    end
   end
 end

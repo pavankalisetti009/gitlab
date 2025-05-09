@@ -74,6 +74,10 @@ module SecretsManagement
         .to raise_error(SecretsManagement::SecretsManagerClient::ApiError)
     end
 
+    def expect_policy_not_to_exist(path)
+      expect(secrets_manager_client.get_raw_policy(path)).to be_nil
+    end
+
     def secrets_manager_client
       jwt = TestJwt.new.encoded
 
