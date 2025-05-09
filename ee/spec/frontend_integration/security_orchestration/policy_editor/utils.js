@@ -17,16 +17,21 @@ export const switchRuleMode = async (wrapper, mode, awaitPromise = true) => {
 export const findYamlPreview = (wrapper) => wrapper.findByTestId('rule-editor-preview-content');
 const findYamlEditor = (wrapper) => wrapper.findComponent(YamlEditor);
 
+const verifyNoDisabledSectionsExist = (wrapper) =>
+  expect(wrapper.findByTestId('disabled-section-overlay').exists()).toBe(false);
+
 export const getYamlPreviewText = (wrapper) => findYamlPreview(wrapper).text();
 export const normaliseYaml = (yaml) => yaml.replaceAll('\n', '');
 export const verify = async ({ manifest, verifyRuleMode, wrapper }) => {
   verifyRuleMode();
+  verifyNoDisabledSectionsExist(wrapper);
   expect(normaliseYaml(getYamlPreviewText(wrapper))).toBe(normaliseYaml(manifest));
   await switchRuleMode(wrapper, EDITOR_MODE_YAML);
   expect(findYamlEditor(wrapper).props('value')).toBe(manifest);
   await switchRuleMode(wrapper, EDITOR_MODE_RULE, false);
 
   expect(normaliseYaml(getYamlPreviewText(wrapper))).toBe(normaliseYaml(manifest));
+  verifyNoDisabledSectionsExist(wrapper);
   verifyRuleMode();
 };
 

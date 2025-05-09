@@ -18,7 +18,7 @@ describe('DisabledSection', () => {
     });
   };
 
-  const findOverlay = () => wrapper.findByTestId('overlay');
+  const findOverlay = () => wrapper.findByTestId('disabled-section-overlay');
   const findAlert = () => wrapper.findComponent(GlAlert);
 
   it('renders the title slot', () => {
