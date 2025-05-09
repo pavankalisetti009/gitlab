@@ -43135,9 +43135,6 @@ msgstr ""
 msgid "PackageRegistry|Add rule"
 msgstr ""
 
-msgid "PackageRegistry|Additional metadata"
-msgstr ""
-
 msgid "PackageRegistry|Allow duplicates"
 msgstr ""
 
@@ -43672,6 +43669,9 @@ msgid "PackageRegistry|Users with at least the Developer role for this project w
 msgstr ""
 
 msgid "PackageRegistry|Validate these URLs manually to ensure malicious packages are not uploaded to the NuGet package registry. Selecting and clearing the checkbox might lead to invalid records in the package registry that you cannot update."
+msgstr ""
+
+msgid "PackageRegistry|Version %{version} was first created %{datetime}"
 msgstr ""
 
 msgid "PackageRegistry|When a package is protected, only certain user roles can push, update, and delete the protected package, which helps to avoid tampering with the package."

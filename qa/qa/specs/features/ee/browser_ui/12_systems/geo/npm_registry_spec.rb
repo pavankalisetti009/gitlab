@@ -77,7 +77,7 @@ module QA
           end
 
           Page::Project::Packages::Show.perform do |show|
-            expect(show).to have_package_info(package_name, version)
+            expect(show).to have_package_info(name: package_name, version: version)
           end
         end
       end
