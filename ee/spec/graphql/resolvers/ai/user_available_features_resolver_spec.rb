@@ -65,7 +65,8 @@ RSpec.describe Resolvers::Ai::UserAvailableFeaturesResolver, feature_category: :
                 duo_include_context_issue: 'include_issue_context',
                 duo_include_context_dependency: 'include_dependency_context',
                 duo_include_context_local_git: 'include_local_git_context',
-                duo_include_context_terminal: 'include_terminal_context'
+                duo_include_context_terminal: 'include_terminal_context',
+                duo_include_context_repository: 'include_repository_context'
               }
 
             already_enabled_context = %w[include_file_context].freeze
