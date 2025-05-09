@@ -60,6 +60,8 @@ module Security
 
       def process_batch(batch)
         (batch.pluck_primary_key - ingested_ids).then do |missing_ids|
+          next if missing_ids.blank?
+
           no_longer_detected_vulnerability_ids = Vulnerability
             .id_in(missing_ids)
             .with_resolution(false)
