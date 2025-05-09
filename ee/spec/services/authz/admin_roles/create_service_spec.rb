@@ -31,11 +31,24 @@ RSpec.describe Authz::AdminRoles::CreateService, feature_category: :permissions 
 
     context 'when admin_mode is enabled', :enable_admin_mode do
       context 'when creating an admin custom role' do
-        let(:fail_condition!) do
-          allow(Ability).to receive(:allowed?).and_return(false)
+        it_behaves_like 'custom role creation' do
+          let(:fail_condition!) do
+            allow(Ability).to receive(:allowed?).and_return(false)
+          end
+
+          let(:audit_event_message) { 'Admin role was created' }
+          let(:audit_event_type) { 'admin_role_created' }
         end
 
-        it_behaves_like 'custom role creation', 'admin_role_created', 'Admin role was created'
+        context 'with a missing param' do
+          let(:error_message) { "Name can't be blank" }
+
+          before do
+            params.delete(:name)
+          end
+
+          it_behaves_like 'custom role create service returns error'
+        end
       end
     end
   end

@@ -57,9 +57,11 @@ RSpec.shared_examples 'custom role create service returns error' do
   end
 end
 
-RSpec.shared_examples 'custom role creation' do |audit_event_type, audit_event_message|
+RSpec.shared_examples 'custom role creation' do
   let(:audit_entity_id) { Gitlab::Audit::InstanceScope.new.id }
   let(:audit_entity_type) { 'Gitlab::Audit::InstanceScope' }
+  let(:audit_event_message) { 'Member role was created' }
+  let(:audit_event_type) { 'member_role_created' }
 
   context 'with valid params' do
     it 'is successful' do
@@ -67,7 +69,7 @@ RSpec.shared_examples 'custom role creation' do |audit_event_type, audit_event_m
     end
 
     it 'returns the object with assigned attributes' do
-      expect(create_role.payload[:member_role].name).to eq(role_name)
+      expect(create_role.payload.name).to eq(role_name)
     end
 
     it 'creates the role correctly' do
@@ -80,7 +82,7 @@ RSpec.shared_examples 'custom role creation' do |audit_event_type, audit_event_m
 
     include_examples 'audit event logging' do
       let(:licensed_features_to_stub) { { custom_roles: true } }
-      let(:operation) { create_role.payload[:member_role] }
+      let(:operation) { create_role.payload }
 
       let(:attributes) do
         {
@@ -172,11 +174,73 @@ RSpec.shared_examples 'custom role update' do
     end
 
     it 'includes the object errors' do
-      expect(result.message).to eq(['this is wrong'])
+      expect(result.message).to eq('this is wrong')
     end
 
     it 'does not log an audit event' do
       expect { result }.not_to change { AuditEvent.count }
+    end
+  end
+end
+
+RSpec.shared_examples 'deleting a role' do
+  let(:audit_event_message) { 'Member role was deleted' }
+  let(:audit_event_type) { 'member_role_deleted' }
+  let(:audit_event_abilities) { 'read_code' }
+  let(:audit_entity_id) { Gitlab::Audit::InstanceScope.new.id }
+  let(:audit_entity_type) { 'Gitlab::Audit::InstanceScope' }
+
+  it 'is successful' do
+    expect(result).to be_success
+  end
+
+  it 'deletes the role' do
+    result
+
+    expect(role).to be_destroyed
+  end
+
+  context 'when failing to delete the role' do
+    before do
+      errors = ActiveModel::Errors.new(role).tap { |e| e.add(:base, 'error message') }
+      allow(role).to receive_messages(destroy: false, errors: errors)
+    end
+
+    it 'returns an error message' do
+      expect(result).to be_error
+      expect(result.message).to eq('error message')
+    end
+
+    it 'does not log an audit event' do
+      expect { result }.not_to change { AuditEvent.count }
+    end
+  end
+
+  include_examples 'audit event logging' do
+    let(:licensed_features_to_stub) { { custom_roles: true } }
+    let(:event_type) { audit_event_type }
+    let(:operation) { result }
+    let(:fail_condition!) { allow(role).to receive(:destroy).and_return(false) }
+
+    let(:attributes) do
+      {
+        author_id: user.id,
+        entity_id: audit_entity_id,
+        entity_type: audit_entity_type,
+        details: {
+          author_name: user.name,
+          target_id: role.id,
+          target_type: role.class.name,
+          event_name: audit_event_type,
+          target_details: {
+            name: role.name,
+            description: role.description,
+            abilities: audit_event_abilities
+          }.to_s,
+          custom_message: audit_event_message,
+          author_class: user.class.name
+        }
+      }
     end
   end
 end

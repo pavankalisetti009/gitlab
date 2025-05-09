@@ -67,7 +67,7 @@ module API
         response = service.execute
 
         if response.success?
-          present response.payload[:member_role], with: EE::API::Entities::MemberRole
+          present response.payload, with: EE::API::Entities::MemberRole
         else
           render_api_error!(response.message, 400)
         end

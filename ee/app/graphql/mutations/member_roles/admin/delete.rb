@@ -29,7 +29,7 @@ module Mutations
           response = ::MemberRoles::DeleteService.new(current_user).execute(member_role)
 
           {
-            member_role: response.payload[:member_role],
+            member_role: response.payload,
             errors: response.errors
           }
         end
