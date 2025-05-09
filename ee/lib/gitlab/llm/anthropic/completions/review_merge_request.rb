@@ -158,7 +158,10 @@ module Gitlab
               return unless prompt.present?
 
               response = review_response_for(prompt)
-              return response unless response.errors.any?
+              unless response.errors.any?
+                log_llm_response_metrics(response.ai_response)
+                return response
+              end
 
               if duo_code_review_logging_enabled?
                 Gitlab::AppLogger.info(
@@ -172,7 +175,10 @@ module Gitlab
 
             # Retry without file content on failure or if no file content was provided
             prompt = generate_review_prompt(diffs_and_paths, {})
-            review_response_for(prompt)
+
+            response = review_response_for(prompt)
+            log_llm_response_metrics(response.ai_response)
+            response
           end
 
           def include_file_content?
@@ -230,8 +236,6 @@ module Gitlab
 
           def review_response_for(prompt)
             response = ai_client.messages_complete(**prompt)
-
-            log_llm_response_metrics(response)
 
             ::Gitlab::Llm::Anthropic::ResponseModifiers::ReviewMergeRequest.new(response)
           end
