@@ -33,23 +33,13 @@ export default {
     return {
       relatedVulnerabilities: [],
       pageInfo: {},
+      relatedVulnerabilitiesCount: 0,
       fetchNextPageInProgress: false,
     };
   },
   computed: {
-    relatedVulnerabilitiesCount() {
-      return this.relatedVulnerabilities.length;
-    },
     hasRelatedVulnerabilities() {
       return this.relatedVulnerabilitiesCount > 0;
-    },
-    badgeCount() {
-      if (this.hasNextPage) {
-        return sprintf(s__('WorkItem|%{count}+'), {
-          count: this.relatedVulnerabilitiesCount,
-        });
-      }
-      return this.relatedVulnerabilitiesCount;
     },
     countBadgeAriaLabel() {
       return sprintf(
@@ -58,7 +48,7 @@ export default {
           'WorkItem|Issue has %{itemCount} related vulnerabilities',
           this.relatedVulnerabilitiesCount,
         ),
-        { itemCount: this.badgeCount },
+        { itemCount: this.relatedVulnerabilitiesCount },
       );
     },
     hasNextPage() {
@@ -77,6 +67,7 @@ export default {
       update(data) {
         const relatedVulnerabilities = this.getRelatedVulnerabilities(data);
         this.pageInfo = relatedVulnerabilities?.pageInfo || {};
+        this.relatedVulnerabilitiesCount = relatedVulnerabilities?.count || 0;
 
         return relatedVulnerabilities?.nodes || [];
       },
@@ -138,7 +129,7 @@ export default {
   >
     <template #count>
       <gl-badge :aria-label="countBadgeAriaLabel" variant="muted">
-        {{ badgeCount }}
+        {{ relatedVulnerabilitiesCount }}
       </gl-badge>
     </template>
 
