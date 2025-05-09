@@ -2,7 +2,7 @@
 
 module Import
   module AfterExportStrategies
-    class CustomTemplateExportImportStrategy < ::Gitlab::ImportExport::AfterExportStrategies::BaseAfterExportStrategy
+    class CustomTemplateExportImportStrategy < BaseAfterExportStrategy
       include ::Gitlab::Utils::StrongMemoize
       include ::Gitlab::TemplateHelper
 
