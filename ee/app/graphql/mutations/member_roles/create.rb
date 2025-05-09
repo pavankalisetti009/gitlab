@@ -37,7 +37,7 @@ module Mutations
         raise_resource_not_available_error! if response.error? && response.reason == :unauthorized
 
         {
-          member_role: response.payload[:member_role],
+          member_role: response.payload,
           errors: response.errors
         }
       end

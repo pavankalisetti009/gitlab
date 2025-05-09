@@ -18,7 +18,7 @@ module Authz
         ::ServiceResponse.error(message: _('Operation not allowed'), reason: :unauthorized)
       end
 
-      def log_audit_event(role, action:)
+      def log_audit_event(action:)
         audit_context = {
           author: current_user,
           target: role,
@@ -27,13 +27,13 @@ module Authz
             description: role.description,
             abilities: role.enabled_permissions(current_user).keys.sort.join(', ')
           },
-          **audit_event_attributes(role, action)
+          **audit_event_attributes(action)
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
       end
 
-      def audit_event_attributes(role, action)
+      def audit_event_attributes(action)
         if role.admin_related_role?
           {
             name: "admin_role_#{action}",
@@ -43,10 +43,29 @@ module Authz
         else
           {
             name: "member_role_#{action}",
-            scope: group || Gitlab::Audit::InstanceScope.new,
+            scope: namespace || Gitlab::Audit::InstanceScope.new,
             message: "Member role was #{action}"
           }
         end
+      end
+
+      def namespace
+        params[:namespace] || role.try(:namespace)
+      end
+
+      def success
+        ::ServiceResponse.success(payload: role)
+      end
+
+      def error(message: role.errors.full_messages.join(', '))
+        ::ServiceResponse.error(message: message,
+          payload: safe_reset(role))
+      end
+
+      def safe_reset(model)
+        model.reset
+      rescue ActiveRecord::RecordNotFound
+        nil
       end
     end
   end

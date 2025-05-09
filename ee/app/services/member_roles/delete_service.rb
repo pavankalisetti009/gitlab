@@ -1,31 +1,25 @@
 # frozen_string_literal: true
 
 module MemberRoles
-  class DeleteService < BaseService
-    def execute(member_role)
-      @role = member_role
+  class DeleteService < ::Authz::CustomRoles::BaseService
+    def execute(role)
+      @role = role
 
       return authorized_error unless allowed?
 
-      if role.dependent_security_policies.exists?
-        return ::ServiceResponse.error(
-          message: 'Custom role linked with a security policy.',
-          payload: { member_role: role }
-        )
-      end
+      return error(message: 'Custom role linked with a security policy.') if role.dependent_security_policies.exists?
 
       if role.destroy
-        log_audit_event(role, action: :deleted)
+        log_audit_event(action: :deleted)
 
-        ::ServiceResponse.success(payload: {
-          member_role: role
-        })
+        success
       else
-        ::ServiceResponse.error(
-          message: role.errors.full_messages,
-          payload: { member_role: role }
-        )
+        error
       end
+    end
+
+    def allowed?
+      can?(current_user, :admin_member_role, role)
     end
   end
 end

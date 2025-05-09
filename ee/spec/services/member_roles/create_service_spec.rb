@@ -140,13 +140,16 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
         end
 
         context 'when creating an admin custom role' do
-          let(:fail_condition!) do
-            allow(Ability).to receive(:allowed?).and_return(false)
-          end
-
           let(:abilities) { { read_admin_dashboard: true } }
 
-          it_behaves_like 'custom role creation', 'admin_role_created', 'Admin role was created'
+          it_behaves_like 'custom role creation' do
+            let(:fail_condition!) do
+              allow(Ability).to receive(:allowed?).and_return(false)
+            end
+
+            let(:audit_event_message) { 'Admin role was created' }
+            let(:audit_event_type) { 'admin_role_created' }
+          end
         end
       end
     end

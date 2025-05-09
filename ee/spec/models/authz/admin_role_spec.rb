@@ -87,4 +87,10 @@ RSpec.describe Authz::AdminRole, feature_category: :permissions do
       it { is_expected.to match_array(permissions) }
     end
   end
+
+  describe 'admin_related_role?' do
+    subject(:admin_related_role) { admin_role.admin_related_role? }
+
+    it { is_expected.to be true }
+  end
 end
