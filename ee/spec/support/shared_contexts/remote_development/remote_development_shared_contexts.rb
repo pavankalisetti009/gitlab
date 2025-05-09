@@ -355,6 +355,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Array<Hash>] image_pull_secrets
   # @param [Boolean] include_scripts_resources
   # @param [Boolean] legacy_scripts_in_container_command
+  # @param [String] shared_namespace
   # @param [Boolean] core_resources_only
   # @return [Array<Hash>]
   def create_config_to_apply_v3(
@@ -384,6 +385,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     image_pull_secrets: [],
     include_scripts_resources: true,
     legacy_scripts_in_container_command: false,
+    shared_namespace: "",
     core_resources_only: false
   )
     spec_replicas = started ? 1 : 0
@@ -406,10 +408,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
       Gitlab::Utils.deep_sort_hashes(
         common_annotations.merge({ "config.k8s.io/owning-inventory": "#{workspace.name}-workspace-inventory" })
       ).to_h
-    labels =
-      Gitlab::Utils.deep_sort_hashes(
-        agent_labels.merge({ "agent.gitlab.com/id": workspace.agent.id.to_s })
-      ).to_h
+
+    labels = agent_labels.merge({ "agent.gitlab.com/id": workspace.agent.id.to_s })
+    labels["workspaces.gitlab.com/id"] = workspace.id.to_s if shared_namespace.present?
+    labels = Gitlab::Utils.deep_sort_hashes(labels).to_h
+
     secrets_inventory_annotations =
       Gitlab::Utils.deep_sort_hashes(
         common_annotations.merge({ "config.k8s.io/owning-inventory": "#{workspace.name}-secrets-inventory" })
@@ -504,7 +507,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
         }
     )
 
-    if max_resources_per_workspace.present?
+    if max_resources_per_workspace.present? && shared_namespace.empty?
       workspace_resource_quota = workspace_resource_quota(
         workspace_name: workspace.name,
         workspace_namespace: workspace.namespace,
@@ -533,7 +536,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
 
       if include_all_resources
         resources << secrets_inventory_config_map if include_inventory
-        resources << workspace_resource_quota unless max_resources_per_workspace.blank?
+        resources << workspace_resource_quota unless max_resources_per_workspace.blank? && shared_namespace.empty?
         resources << secret_environment
         resources << secret_file
       end
@@ -1075,6 +1078,16 @@ RSpec.shared_context 'with remote development shared fixtures' do
         { to: [{ ipBlock: { cidr: symbolized_egress_rule[:allow], except: symbolized_egress_rule[:except] } }] }
       )
     end
+
+    # Use the workspace_id as a pod selector if it is present
+    workspace_id = labels.fetch("workspaces.gitlab.com/id", nil)
+    pod_selector = {}
+    if workspace_id.present?
+      pod_selector[:matchLabels] = {
+        "workspaces.gitlab.com/id": workspace_id
+      }
+    end
+
     {
       apiVersion: "networking.k8s.io/v1",
       kind: "NetworkPolicy",
@@ -1104,7 +1117,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
             ]
           }
         ],
-        podSelector: {},
+        podSelector: pod_selector,
         policyTypes: %w[Ingress Egress]
       }
     }

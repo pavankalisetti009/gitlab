@@ -24,6 +24,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     let(:default_resources_per_workspace_container) { {} }
     let(:image_pull_secrets) { [] }
     let(:processed_devfile_yaml) { example_processed_devfile_yaml }
+    let(:shared_namespace) { "" }
     let(:workspaces_agent_config) do
       config = create(
         :workspaces_agent_config,
@@ -31,7 +32,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         image_pull_secrets: image_pull_secrets,
         default_resources_per_workspace_container: default_resources_per_workspace_container,
         max_resources_per_workspace: max_resources_per_workspace,
-        network_policy_enabled: network_policy_enabled
+        network_policy_enabled: network_policy_enabled,
+        shared_namespace: shared_namespace
       )
       agent.reload
       config
@@ -66,7 +68,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         default_runtime_class: workspace.workspaces_agent_config.default_runtime_class,
         agent_labels: workspace.workspaces_agent_config.labels.deep_symbolize_keys,
         agent_annotations: workspace.workspaces_agent_config.annotations.deep_symbolize_keys,
-        image_pull_secrets: image_pull_secrets.map(&:deep_symbolize_keys)
+        image_pull_secrets: image_pull_secrets.map(&:deep_symbolize_keys),
+        shared_namespace: shared_namespace
       )
     end
 
@@ -198,6 +201,32 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
         expect(workspace_resources).to eq(expected_config)
         service_account_resource = workspace_resources.find { |resource| resource.fetch(:kind) == 'ServiceAccount' }
         expect(service_account_resource.to_h.fetch(:imagePullSecrets)).to eq(expected_image_pull_secrets_names)
+      end
+    end
+
+    context 'when shared_namespace is not empty' do
+      let(:shared_namespace) { "secret-namespace" }
+      let(:expected_pod_selector_labels) do
+        { "workspaces.gitlab.com/id": workspace.id.to_s }
+      end
+
+      it 'returns expected config with no resource quota and explicit pod selector in network policy' do
+        expect(workspace_resources).to eq(expected_config)
+        resource_quota = workspace_resources.find { |resource| resource.fetch(:kind) == "ResourceQuota" }
+        expect(resource_quota).to be_nil
+        workspace_resources => [
+          *_,
+          {
+            kind: "NetworkPolicy",
+            spec: {
+              podSelector: {
+                matchLabels: pod_selector_labels,
+              }
+            }
+          },
+          *_
+        ]
+        expect(pod_selector_labels).to eq(expected_pod_selector_labels)
       end
     end
 

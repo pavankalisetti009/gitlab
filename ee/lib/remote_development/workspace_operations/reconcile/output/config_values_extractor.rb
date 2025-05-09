@@ -32,6 +32,8 @@ module RemoteDevelopment
             default_resources_per_workspace_container =
               deep_sort_and_symbolize_hashes(workspaces_agent_config.default_resources_per_workspace_container)
 
+            shared_namespace = workspaces_agent_config.shared_namespace
+
             extra_annotations = {
               "workspaces.gitlab.com/host-template": domain_template.to_s,
               "workspaces.gitlab.com/id": workspace.id.to_s,
@@ -41,6 +43,11 @@ module RemoteDevelopment
             }
             agent_annotations = workspaces_agent_config.annotations
             common_annotations = agent_annotations.merge(extra_annotations)
+
+            agent_labels = workspaces_agent_config.labels
+            labels = agent_labels.merge({ "agent.gitlab.com/id": workspace.agent.id.to_s })
+            # TODO: Unconditionally add this label in https://gitlab.com/gitlab-org/gitlab/-/issues/535197
+            labels["workspaces.gitlab.com/id"] = workspace.id.to_s if shared_namespace.present?
 
             workspace_inventory_name = "#{workspace_name}-workspace-inventory"
             secrets_inventory_name = "#{workspace_name}-secrets-inventory"
@@ -59,12 +66,9 @@ module RemoteDevelopment
               # Update this when a new desired config generator is created for some other reason.
               env_secret_name: "#{workspace_name}-env-var",
               file_secret_name: "#{workspace_name}-file",
-              image_pull_secrets: deep_sort_and_symbolize_hashes(workspaces_agent_config.image_pull_secrets),
               gitlab_workspaces_proxy_namespace: workspaces_agent_config.gitlab_workspaces_proxy_namespace,
-              labels:
-                deep_sort_and_symbolize_hashes(
-                  workspaces_agent_config.labels.merge({ "agent.gitlab.com/id": workspace.agent.id.to_s })
-                ),
+              image_pull_secrets: deep_sort_and_symbolize_hashes(workspaces_agent_config.image_pull_secrets),
+              labels: deep_sort_and_symbolize_hashes(labels),
               max_resources_per_workspace: max_resources_per_workspace,
               network_policy_enabled: workspaces_agent_config.network_policy_enabled,
               network_policy_egress: deep_sort_and_symbolize_hashes(workspaces_agent_config.network_policy_egress),
@@ -76,6 +80,7 @@ module RemoteDevelopment
                   common_annotations.merge("config.k8s.io/owning-inventory": secrets_inventory_name)
                 ),
               secrets_inventory_name: secrets_inventory_name,
+              shared_namespace: shared_namespace,
               use_kubernetes_user_namespaces: workspaces_agent_config.use_kubernetes_user_namespaces,
               workspace_inventory_annotations:
                 deep_sort_and_symbolize_hashes(
