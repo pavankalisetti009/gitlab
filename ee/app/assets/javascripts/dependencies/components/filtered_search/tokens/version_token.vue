@@ -118,6 +118,15 @@ export default {
       return this.pageInfo.hasNextPage;
     },
   },
+  watch: {
+    componentNames(newVal, oldVal) {
+      // If the component token is opened after applying a version, the version token
+      // must be destroyed because it depends on which component is selected.
+      if (newVal.length !== oldVal.length) {
+        this.$emit('destroy');
+      }
+    },
+  },
   methods: {
     isVersionSelected(version) {
       return this.selectedVersions.includes(version);
