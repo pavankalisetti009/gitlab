@@ -9,6 +9,7 @@ module Gitlab
         INDEXING_TIMEOUT_S = 30.minutes.to_i
         MAXIMUM_THREADS = 16
         CONTEXT_LINES_COUNT = 1
+        PROXY_SEARCH_PATH = '/webserver/api/v2/search'
 
         TooManyRequestsError = Class.new(StandardError)
 
@@ -52,12 +53,9 @@ module Gitlab
             raise ArgumentError, "Too many targets #{targets.size}, maximum allowed #{MAXIMUM_THREADS}"
           end
 
-          threads = []
-
-          targets.each do |node_id, project_ids|
-            threads << Thread.new do
+          threads = targets.map do |node_id, project_ids|
+            Thread.new do
               response = search(query, num: num, project_ids: project_ids, node_id: node_id, search_mode: search_mode)
-
               [node_id, response]
             end
           end
@@ -67,39 +65,23 @@ module Gitlab
 
         def search_zoekt_proxy(query, num:, targets:, search_mode:)
           start = Time.current
-          path = '/indexer/proxy_search'
-
           payload = build_search_payload(query, num: num, search_mode: search_mode)
           payload[:ForwardTo] = targets.map do |node_id, project_ids|
             target_node = node(node_id)
-            { Endpoint: "#{target_node.search_base_url}/api/search", RepoIds: project_ids }
+            { Endpoint: "#{target_node.search_base_url}#{PROXY_SEARCH_PATH}", RepoIds: project_ids }
           end
 
           # Unless a node is specified, prefer the node with the most projects
           node_id ||= targets.max_by { |_zkt_node_id, project_ids| project_ids.length }.first
+          proxy_node = node(node_id)
+          raise 'Node can not be found' unless proxy_node
 
-          response = zoekt_indexer_post(path, payload, node_id)
+          search_url = join_url(proxy_node.search_base_url, PROXY_SEARCH_PATH)
+          response = post_request(search_url, payload, timeout: INDEXING_TIMEOUT_S)
           log_error('Zoekt search failed', status: response.code, response: response.body) unless response.success?
           Gitlab::Search::Zoekt::Response.new parse_response(response)
         ensure
-          add_request_details(start_time: start, path: path, body: payload)
-        end
-
-        def index(project, node_id, force: false, callback_payload: {})
-          raise 'Node can not be found' unless node(node_id)
-
-          callback_payload[:project_id] = project.id
-          payload = indexing_payload(project, force: force, callback_payload: callback_payload)
-
-          response = zoekt_indexer_post('/indexer/index', payload, node_id)
-
-          raise TooManyRequestsError if response.code == 429
-          raise "Request failed with: #{response.inspect}" unless response.success?
-
-          parsed_response = parse_response(response)
-          raise parsed_response['Error'] if parsed_response['Error']
-
-          response
+          add_request_details(start_time: start, path: PROXY_SEARCH_PATH, body: payload)
         end
 
         def delete(node_id:, project_id:)
@@ -154,17 +136,6 @@ module Gitlab
           raise ::Search::Zoekt::Errors::ClientConnectionError, e.message
         end
 
-        def zoekt_indexer_post(path, payload, node_id)
-          target_node = node(node_id)
-          raise 'Node can not be found' unless target_node
-
-          post_request(
-            join_url(target_node.index_base_url, path),
-            payload,
-            timeout: INDEXING_TIMEOUT_S
-          )
-        end
-
         def basic_auth_params
           @basic_auth_params ||= {
             username: username,
@@ -184,42 +155,12 @@ module Gitlab
           end
         end
 
-        def indexing_payload(project, force:, callback_payload:)
-          repository_storage = project.repository_storage
-          connection_info = Gitlab::GitalyClient.connection_data(repository_storage)
-          repository_path = "#{project.repository.disk_path}.git"
-          address = connection_info['address']
-
-          # This code is needed to support relative unix: connection strings. For example, specs
-          if address.match?(%r{\Aunix:[^/.]})
-            path = address.split('unix:').last
-            address = "unix:#{Rails.root.join(path)}"
-          end
-
-          payload = {
-            GitalyConnectionInfo: {
-              Address: address,
-              Token: connection_info['token'],
-              Storage: repository_storage,
-              Path: repository_path
-            },
-            Callback: { name: 'index', payload: callback_payload },
-            RepoId: project.id,
-            FileSizeLimit: Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes,
-            Timeout: "#{INDEXING_TIMEOUT_S}s"
-          }
-
-          payload[:Force] = force if force
-
-          payload
-        end
-
         def node(node_id)
           ::Search::Zoekt::Node.find_by_id(node_id)
         end
 
         def with_node_exception_handling(zoekt_node)
-          return yield if Feature.disabled?(:zoekt_node_backoffs, type: :ops)
+          return yield if Feature.disabled?(:zoekt_node_backoffs, Feature.current_request)
 
           backoff = zoekt_node.backoff
 

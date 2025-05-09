@@ -364,4 +364,10 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
       end
     end
   end
+
+  describe '.bin_path' do
+    subject { described_class.bin_path }
+
+    it { is_expected.to eq('tmp/tests/gitlab-zoekt/bin/gitlab-zoekt') }
+  end
 end

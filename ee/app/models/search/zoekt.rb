@@ -81,6 +81,10 @@ module Search
         end
       end
 
+      def bin_path
+        Gitlab.config.zoekt.bin_path
+      end
+
       private
 
       def fetch_root_namespace_id(container)

@@ -1,14 +1,19 @@
 # frozen_string_literal: true
 
+require_relative 'zoekt_process_manager'
+
 module Search
   module Zoekt
     module TestHelpers
       def ensure_zoekt_node!
-        index_base_url = ENV.fetch('ZOEKT_INDEX_BASE_URL', 'http://127.0.0.1:6060')
-        search_base_url = ENV.fetch('ZOEKT_SEARCH_BASE_URL', 'http://127.0.0.1:6070')
+        # Start zoekt processes if they're not already running
+        process_manager = ::Search::Zoekt::ZoektProcessManager.instance
+        process_manager.start
+
+        # Create or find node using the URLs from process manager
         ::Search::Zoekt::Node.find_or_create_by!(
-          index_base_url: index_base_url,
-          search_base_url: search_base_url
+          index_base_url: process_manager.index_base_url,
+          search_base_url: process_manager.search_base_url
         ) do |node|
           node.uuid = SecureRandom.uuid
           node.last_seen_at = Time.zone.now
@@ -117,6 +122,14 @@ module Search
 
     config.before(:each, :zoekt_settings_enabled) do
       stub_ee_application_setting(zoekt_indexing_enabled: true, zoekt_search_enabled: true)
+    end
+
+    # Make sure we clean up Zoekt processes after all tests are done
+    config.after(:suite) do
+      if defined?(Search::Zoekt::ZoektProcessManager)
+        zoekt_manager = Search::Zoekt::ZoektProcessManager.instance
+        zoekt_manager.stop if zoekt_manager
+      end
     end
 
     config.include Search::Zoekt::TestHelpers
