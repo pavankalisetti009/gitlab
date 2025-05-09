@@ -125,6 +125,7 @@ describe('visualization utils', () => {
   describe('humanizeDisplayUnit', () => {
     it.each`
       unit            | data   | result
+      ${'days'}       | ${'-'} | ${'days'}
       ${'days'}       | ${0.8} | ${'days'}
       ${'days'}       | ${1}   | ${'day'}
       ${'per_day'}    | ${1}   | ${'/day'}

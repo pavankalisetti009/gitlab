@@ -45,4 +45,5 @@ export default {
   namespace_metadata: () => import('./namespace_metadata'),
   merge_requests: () => import('./merge_requests'),
   merge_request_counts: () => import('./merge_request_counts'),
+  mean_time_to_merge: () => import('./mean_time_to_merge'),
 };

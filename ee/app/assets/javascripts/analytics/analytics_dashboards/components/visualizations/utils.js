@@ -46,7 +46,7 @@ export function customFormatVisualizationTooltipTitle(params, formatter) {
 export const humanizeDisplayUnit = ({ unit, data = 0 }) => {
   switch (unit) {
     case 'days':
-      return n__('day', 'days', data);
+      return n__('day', 'days', data === '-' ? 0 : data);
     case 'per_day':
       return __('/day');
     case 'percent':

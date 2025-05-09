@@ -1353,3 +1353,9 @@ export const nullSeries = {
   showSymbol: false,
   id: NULL_SERIES_ID,
 };
+
+export const mockQueryThroughputDataResponse = {
+  Jul_2020: { count: 8, totalTimeToMerge: 1337000 },
+  Jun_2020: { count: 0, totalTimeToMerge: null },
+  May_2020: { count: 0, totalTimeToMerge: null },
+};
