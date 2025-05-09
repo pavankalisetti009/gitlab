@@ -303,4 +303,24 @@ describe('ee/dependencies/components/filtered_search/tokens/version_token.vue', 
       });
     });
   });
+
+  describe('when `componentNames` changes', () => {
+    beforeEach(async () => {
+      createVuexStore();
+      // Setting component names before creating the component to simulate store state
+      // already being set before token is created
+      setComponentNames(['git']);
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('emits "destroy" event', async () => {
+      expect(wrapper.emitted('destroy')).toBeUndefined();
+
+      setComponentNames([]);
+      await waitForPromises();
+
+      expect(wrapper.emitted('destroy')).toHaveLength(1);
+    });
+  });
 });
