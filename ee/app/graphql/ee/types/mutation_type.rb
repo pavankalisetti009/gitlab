@@ -67,6 +67,7 @@ module EE
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretsManagerInitialize
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretCreate
         mount_mutation ::Mutations::SecretsManagement::ProjectSecretDelete
+        mount_mutation ::Mutations::SecretsManagement::ProjectSecretUpdate
         mount_mutation ::Mutations::SecretsManagement::Permissions::Update
         mount_mutation ::Mutations::SecretsManagement::Permissions::Delete
         mount_mutation ::Mutations::Security::Finding::CreateIssue

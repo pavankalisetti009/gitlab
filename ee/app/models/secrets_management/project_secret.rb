@@ -5,6 +5,7 @@ module SecretsManagement
     include ActiveModel::Model
     include ActiveModel::Attributes
     include ActiveModel::Validations
+    include ActiveModel::Dirty
 
     attribute :project
 
@@ -12,6 +13,9 @@ module SecretsManagement
     attribute :description, :string
     attribute :branch, :string
     attribute :environment, :string
+
+    # We only track changes for environment and branch for policy updates
+    define_attribute_methods :branch, :environment
 
     validates :project, presence: true
     validates :name,
@@ -26,8 +30,26 @@ module SecretsManagement
 
     delegate :secrets_manager, to: :project
 
+    def initialize(attributes = {})
+      super
+
+      # Mark current state as the baseline for dirty tracking
+      changes_applied
+    end
+
     def ==(other)
       other.is_a?(self.class) && attributes == other.attributes
+    end
+
+    # Add methods to track attribute changes
+    def branch=(val)
+      branch_will_change! unless val == branch
+      super
+    end
+
+    def environment=(val)
+      environment_will_change! unless val == environment
+      super
     end
 
     private

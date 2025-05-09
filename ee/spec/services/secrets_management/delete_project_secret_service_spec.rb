@@ -49,11 +49,9 @@ RSpec.describe SecretsManagement::DeleteProjectSecretService, :gitlab_secrets_ma
             secrets_manager.ci_data_path(name)
           )
 
-          policy_name = project.secrets_manager.ci_policy_name(environment, branch)
-          updated_policy = secrets_manager_client.get_policy(policy_name)
-
           # Since this was the only secret, the policy should be completely deleted
-          expect(updated_policy.paths).to be_empty
+          policy_name = project.secrets_manager.ci_policy_name(environment, branch)
+          expect_policy_not_to_exist(policy_name)
 
           expect_project_secret_not_to_exist(project, name, user)
         end
@@ -148,8 +146,7 @@ RSpec.describe SecretsManagement::DeleteProjectSecretService, :gitlab_secrets_ma
 
               # Verify policy is also deleted
               policy_name = project.secrets_manager.ci_policy_name(wildcard_environment, wildcard_branch)
-              updated_policy = secrets_manager_client.get_policy(policy_name)
-              expect(updated_policy.paths).to be_empty
+              expect_policy_not_to_exist(policy_name)
             end
           end
 

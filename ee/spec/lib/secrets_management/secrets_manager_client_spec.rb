@@ -280,31 +280,25 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       client.enable_secrets_engine(mount_path, 'kv-v2')
       client.enable_secrets_engine(other_mount_path, 'kv-v2')
 
-      client.update_kv_secret(
+      update_kv_secret_with_metadata(
         mount_path,
         "#{secrets_path}/DBPASS",
         'somevalue',
-        {
-          environment: 'staging'
-        }
+        environment: 'staging'
       )
 
-      client.update_kv_secret(
+      update_kv_secret_with_metadata(
         mount_path,
         "other_secrets/APIKEY",
         'somevalue',
-        {
-          environment: 'staging'
-        }
+        environment: 'staging'
       )
 
-      client.update_kv_secret(
+      update_kv_secret_with_metadata(
         other_mount_path,
         "#{secrets_path}/DEPLOYKEY",
         'somevalue',
-        {
-          environment: 'staging'
-        }
+        environment: 'staging'
       )
     end
 
@@ -315,6 +309,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
         a_hash_including(
           "key" => "DBPASS",
           "metadata" => a_hash_including(
+            "current_version" => 1,
             "custom_metadata" => a_hash_including(
               "environment" => "staging"
             )
@@ -355,13 +350,11 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     before do
       client.enable_secrets_engine(existing_mount_path, 'kv-v2')
 
-      client.update_kv_secret(
+      update_kv_secret_with_metadata(
         existing_mount_path,
         existing_secret_path,
         'somevalue',
-        {
-          environment: 'staging'
-        }
+        environment: 'staging'
       )
     end
 
@@ -397,6 +390,75 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     let(:mount_path) { existing_mount_path }
     let(:secret_path) { 'DBPASS' }
     let(:value) { 'somevalue' }
+    let(:version) { 0 }
+
+    before do
+      client.enable_secrets_engine(existing_mount_path, 'kv-v2')
+    end
+
+    subject(:call_api) { client.update_kv_secret(mount_path, secret_path, value, version: version) }
+
+    context 'when the mount path exists' do
+      context 'when the given secret path does not exist' do
+        it 'creates the secret and the custom metadata' do
+          call_api
+
+          expect_kv_secret_to_have_value(mount_path, secret_path, value)
+        end
+
+        it 'returns the response of the API call' do
+          expect(call_api["data"]).to match(a_hash_including("version" => 1))
+        end
+      end
+
+      context 'when the given secret path exists' do
+        before do
+          client.update_kv_secret(mount_path, secret_path, 'someexistingvalue')
+        end
+
+        context 'and given version is 0' do
+          it_behaves_like 'making an invalid API request'
+        end
+
+        context 'and given version is not equal to the current version of the secret' do
+          let(:version) { 3 }
+
+          it_behaves_like 'making an invalid API request'
+        end
+
+        shared_examples_for 'successful update' do
+          it 'updates the secret value' do
+            call_api
+
+            expect_kv_secret_to_have_value(mount_path, secret_path, value)
+          end
+        end
+
+        context 'and given version is equal to the current version of the secret' do
+          let(:version) { 1 }
+
+          it_behaves_like 'successful update'
+        end
+
+        context 'and version is not given' do
+          let(:version) { nil }
+
+          it_behaves_like 'successful update'
+        end
+      end
+    end
+
+    context 'when the mount path does not exist' do
+      let(:mount_path) { 'something/else' }
+
+      it_behaves_like 'making an invalid API request'
+    end
+  end
+
+  describe '#update_kv_secret_metadata' do
+    let(:existing_mount_path) { 'some/test/path' }
+    let(:mount_path) { existing_mount_path }
+    let(:secret_path) { 'DBPASS' }
 
     let(:custom_metadata) do
       {
@@ -408,33 +470,26 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       client.enable_secrets_engine(existing_mount_path, 'kv-v2')
     end
 
-    subject(:call_api) { client.update_kv_secret(mount_path, secret_path, value, custom_metadata) }
+    subject(:call_api) { client.update_kv_secret_metadata(mount_path, secret_path, custom_metadata) }
 
     context 'when the mount path exists' do
       context 'when the given secret path does not exist' do
         it 'creates the secret and the custom metadata' do
           call_api
 
-          expect_kv_secret_to_have_value(mount_path, secret_path, value)
           expect_kv_secret_to_have_custom_metadata(mount_path, secret_path, custom_metadata.stringify_keys)
         end
       end
 
       context 'when the given secret path exists' do
         before do
-          client.update_kv_secret(mount_path, secret_path, 'someexistingvalue')
+          client.update_kv_secret_metadata(mount_path, secret_path, { environment: 'prod' })
         end
 
-        it_behaves_like 'making an invalid API request'
-      end
-
-      context 'without custom metadata' do
-        subject(:call_api) { client.update_kv_secret(mount_path, secret_path, value) }
-
-        it 'creates the secret without custom metadata' do
+        it 'updates the secret and the custom metadata' do
           call_api
 
-          expect_kv_secret_to_have_value(mount_path, secret_path, value)
+          expect_kv_secret_to_have_custom_metadata(mount_path, secret_path, custom_metadata.stringify_keys)
         end
       end
     end
@@ -573,13 +628,11 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     before do
       client.enable_secrets_engine(existing_mount_path, 'kv-v2')
 
-      client.update_kv_secret(
+      update_kv_secret_with_metadata(
         existing_mount_path,
         existing_secret_path,
         'somevalue',
-        {
-          environment: 'staging'
-        }
+        environment: 'staging'
       )
     end
 
@@ -606,5 +659,19 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
 
       it_behaves_like 'making an invalid API request'
     end
+  end
+
+  def update_kv_secret_with_metadata(mount_path, secret_path, value, custom_metadata)
+    client.update_kv_secret(
+      mount_path,
+      secret_path,
+      value
+    )
+
+    client.update_kv_secret_metadata(
+      mount_path,
+      secret_path,
+      custom_metadata
+    )
   end
 end
