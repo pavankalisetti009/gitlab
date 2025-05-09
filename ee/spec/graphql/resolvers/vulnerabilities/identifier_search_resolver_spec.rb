@@ -75,21 +75,6 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
           expect(search_results).to contain_exactly('CWE-23', 'CWE-24', 'CWE-25')
         end
 
-        context 'when flags that solve cross-joins are disabled' do
-          before do
-            # This test won't work in a decomposed GitLab, so we skip it.
-            # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
-            skip_if_multiple_databases_are_setup(:sec)
-
-            stub_feature_flags(sum_vulnerability_count_for_group_using_vulnerability_statistics: false)
-            stub_feature_flags(search_identifier_name_in_group_using_vulnerability_statistics: false)
-          end
-
-          it 'fetches matching identifier names' do
-            expect(search_results).to contain_exactly('CWE-23', 'CWE-24', 'CWE-25')
-          end
-        end
-
         it_behaves_like 'handles invalid search input'
       end
 
