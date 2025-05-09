@@ -28,6 +28,7 @@ query workItemVulnerabilities(
             pageInfo {
               ...PageInfo
             }
+            count
           }
         }
       }

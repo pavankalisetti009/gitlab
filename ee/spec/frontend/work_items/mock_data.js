@@ -612,6 +612,7 @@ export const getVulnerabilitiesWidgetResponse = (
                   startCursor: null,
                   __typename: 'PageInfo',
                 },
+                count: nodes.length,
                 __typename: 'VulnerabilityConnection',
               },
               __typename: 'WorkItemWidgetVulnerabilities',
