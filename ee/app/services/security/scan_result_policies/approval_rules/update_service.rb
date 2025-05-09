@@ -34,16 +34,6 @@ module Security
           ).execute
         end
 
-        def project_approval_rules_map
-          project
-            .approval_rules
-            .for_approval_policy_rules(approval_policy_rules)
-            .each_with_object({}) do |item, result|
-              result[item.approval_policy_rule_id] ||= {}
-              result[item.approval_policy_rule_id][item.approval_policy_action_idx] = item
-            end
-        end
-
         def scan_result_policy_reads_map
           project
             .scan_result_policy_reads
