@@ -48,6 +48,7 @@ module Ai
       def variables
         {
           DUO_WORKFLOW_BASE_PATH: './',
+          DUO_WORKFLOW_DEFINITION: @params[:workflow_definition],
           DUO_WORKFLOW_GOAL: @params[:goal],
           DUO_WORKFLOW_WORKFLOW_ID: String(@params[:workflow_id]),
           GITLAB_OAUTH_TOKEN: @params[:workflow_oauth_token],
@@ -61,7 +62,8 @@ module Ai
           DUO_WORKFLOW_GIT_HTTP_BASE_URL: Gitlab.config.gitlab.url,
           DUO_WORKFLOW_GIT_HTTP_PASSWORD: @params[:workflow_oauth_token],
           DUO_WORKFLOW_GIT_HTTP_USER: "oauth",
-          GITLAB_BASE_URL: Gitlab.config.gitlab.url
+          GITLAB_BASE_URL: Gitlab.config.gitlab.url,
+          GITLAB_CI: true
         }
       end
 
