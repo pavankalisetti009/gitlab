@@ -3585,6 +3585,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let_it_be(:other_private_project) { create(:project, :private) }
 
         before do
+          allow(::Gitlab::CurrentSettings).to receive(:enforce_ci_inbound_job_token_scope_enabled?).and_return(instance_level_token_scope_enabled)
           project.add_guest(security_policy_bot)
           current_user.set_ci_job_token_scope!(job)
           project.update!(
@@ -3597,39 +3598,65 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           )
         end
 
-        context 'when token scope is disabled' do
-          let(:token_scope_enabled) { false }
+        context 'when instance_level_token_scope_enabled is false' do
+          let(:instance_level_token_scope_enabled) { false }
 
-          context 'when pipeline is executed in project where bot is invited' do
-            it { is_expected.to be_allowed(:create_pipeline) }
-            it { is_expected.to be_allowed(:create_bot_pipeline) }
-            it { is_expected.to be_allowed(:build_download_code) }
+          context 'when token scope is disabled' do
+            let(:token_scope_enabled) { false }
+
+            context 'when pipeline is executed in project where bot is invited' do
+              it { is_expected.to be_allowed(:create_pipeline) }
+              it { is_expected.to be_allowed(:create_bot_pipeline) }
+              it { is_expected.to be_allowed(:build_download_code) }
+            end
+
+            context 'when pipeline is executed in project where bot is not invited' do
+              let(:scope_project) { other_private_project }
+
+              it { is_expected.to be_allowed(:create_pipeline) }
+              it { is_expected.to be_allowed(:create_bot_pipeline) }
+              it { is_expected.to be_allowed(:build_download_code) }
+            end
           end
 
-          context 'when pipeline is executed in project where bot is not invited' do
-            let(:scope_project) { other_private_project }
+          context 'when token scope is enabled' do
+            let(:token_scope_enabled) { true }
 
-            it { is_expected.to be_allowed(:create_pipeline) }
-            it { is_expected.to be_allowed(:create_bot_pipeline) }
-            it { is_expected.to be_allowed(:build_download_code) }
+            context 'when pipeline is executed in project where bot is invited' do
+              it { is_expected.to be_allowed(:create_pipeline) }
+              it { is_expected.to be_allowed(:create_bot_pipeline) }
+              it { is_expected.to be_allowed(:build_download_code) }
+            end
+
+            context 'when pipeline is executed in project where bot is not invited' do
+              let(:scope_project) { other_private_project }
+
+              it { is_expected.to be_disallowed(:create_pipeline) }
+              it { is_expected.to be_disallowed(:create_bot_pipeline) }
+              it { is_expected.to be_disallowed(:build_download_code) }
+            end
           end
         end
 
-        context 'when token scope is enabled' do
-          let(:token_scope_enabled) { true }
+        context 'when instance_level_token_scope_enabled is true' do
+          let(:instance_level_token_scope_enabled) { true }
 
-          context 'when pipeline is executed in project where bot is invited' do
-            it { is_expected.to be_allowed(:create_pipeline) }
-            it { is_expected.to be_allowed(:create_bot_pipeline) }
-            it { is_expected.to be_allowed(:build_download_code) }
-          end
+          context 'when token scope is disabled' do
+            let(:token_scope_enabled) { false }
 
-          context 'when pipeline is executed in project where bot is not invited' do
-            let(:scope_project) { other_private_project }
+            context 'when pipeline is executed in project where bot is invited' do
+              it { is_expected.to be_allowed(:create_pipeline) }
+              it { is_expected.to be_allowed(:create_bot_pipeline) }
+              it { is_expected.to be_allowed(:build_download_code) }
+            end
 
-            it { is_expected.to be_disallowed(:create_pipeline) }
-            it { is_expected.to be_disallowed(:create_bot_pipeline) }
-            it { is_expected.to be_disallowed(:build_download_code) }
+            context 'when pipeline is executed in project where bot is not invited' do
+              let(:scope_project) { other_private_project }
+
+              it { is_expected.to be_disallowed(:create_pipeline) }
+              it { is_expected.to be_disallowed(:create_bot_pipeline) }
+              it { is_expected.to be_disallowed(:build_download_code) }
+            end
           end
         end
       end
@@ -3758,6 +3785,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let_it_be(:other_private_project) { create(:project, :private) }
 
         before do
+          allow(::Gitlab::CurrentSettings).to receive(:enforce_ci_inbound_job_token_scope_enabled?).and_return(instance_level_token_scope_enabled)
           current_user.set_ci_job_token_scope!(job)
           create(:security_orchestration_policy_configuration, security_policy_management_project: project)
           project.project_setting.update!(spp_repository_pipeline_access: true)
@@ -3771,31 +3799,53 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           )
         end
 
-        context 'when token scope is disabled' do
-          let(:token_scope_enabled) { false }
+        context 'when instance_level_token_scope_enabled is false' do
+          let(:instance_level_token_scope_enabled) { false }
 
-          context 'when accessing from the same project' do
-            it { is_expected.to be_allowed(:download_code_spp_repository) }
+          context 'when token scope is disabled' do
+            let(:token_scope_enabled) { false }
+
+            context 'when accessing from the same project' do
+              it { is_expected.to be_allowed(:download_code_spp_repository) }
+            end
+
+            context 'when accessing from other project' do
+              let(:scope_project) { other_private_project }
+
+              it { is_expected.to be_allowed(:download_code_spp_repository) }
+            end
           end
 
-          context 'when accessing from other project' do
-            let(:scope_project) { other_private_project }
+          context 'when token scope is enabled' do
+            let(:token_scope_enabled) { true }
 
-            it { is_expected.to be_allowed(:download_code_spp_repository) }
+            context 'when accessing from the same project' do
+              it { is_expected.to be_allowed(:download_code_spp_repository) }
+            end
+
+            context 'when accessing from other project' do
+              let(:scope_project) { other_private_project }
+
+              it { is_expected.to be_disallowed(:download_code_spp_repository) }
+            end
           end
         end
 
-        context 'when token scope is enabled' do
-          let(:token_scope_enabled) { true }
+        context 'when instance_level_token_scope_enabled is true' do
+          let(:instance_level_token_scope_enabled) { true }
 
-          context 'when accessing from the same project' do
-            it { is_expected.to be_allowed(:download_code_spp_repository) }
-          end
+          context 'when token scope is enabled' do
+            let(:token_scope_enabled) { false }
 
-          context 'when accessing from other project' do
-            let(:scope_project) { other_private_project }
+            context 'when accessing from the same project' do
+              it { is_expected.to be_allowed(:download_code_spp_repository) }
+            end
 
-            it { is_expected.to be_disallowed(:download_code_spp_repository) }
+            context 'when accessing from other project' do
+              let(:scope_project) { other_private_project }
+
+              it { is_expected.to be_disallowed(:download_code_spp_repository) }
+            end
           end
         end
       end

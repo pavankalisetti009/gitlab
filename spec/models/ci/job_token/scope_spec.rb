@@ -214,10 +214,11 @@ RSpec.describe Ci::JobToken::Scope, feature_category: :continuous_integration, f
       end
     end
 
-    context 'with inbound scope disabled and outbound scope enabled' do
+    context 'with inbound scope disabled and outbound scope enabled and instance-level scope is false' do
       before do
         accessed_project.update!(ci_inbound_job_token_scope_enabled: false)
         current_project.update!(ci_outbound_job_token_scope_enabled: true)
+        allow(::Gitlab::CurrentSettings).to receive(:enforce_ci_inbound_job_token_scope_enabled?).and_return(false)
       end
 
       include_context 'with accessible and inaccessible projects'
@@ -288,9 +289,10 @@ RSpec.describe Ci::JobToken::Scope, feature_category: :continuous_integration, f
         end
       end
 
-      context 'when the accessed project has ci_inbound_job_token_scope_enabled false' do
+      context 'when accessed project has ci_inbound_job_token_scope_enabled and instance-level scope set to false' do
         before do
           fully_accessible_project.update!(ci_inbound_job_token_scope_enabled: false)
+          allow(::Gitlab::CurrentSettings).to receive(:enforce_ci_inbound_job_token_scope_enabled?).and_return(false)
         end
 
         it 'increments the counter metric with legacy: false' do
@@ -394,9 +396,10 @@ RSpec.describe Ci::JobToken::Scope, feature_category: :continuous_integration, f
         it_behaves_like 'not capturing job token policies'
       end
 
-      context 'when the accessed project does not have ci_inbound_job_token_scope_enabled set to true' do
+      context 'when accessed project has ci_inbound_job_token_scope_enabled and instance-level scope set to false' do
         before do
           accessed_project.ci_inbound_job_token_scope_enabled = false
+          allow(::Gitlab::CurrentSettings).to receive(:enforce_ci_inbound_job_token_scope_enabled?).and_return(false)
         end
 
         it { is_expected.to be(true) }
