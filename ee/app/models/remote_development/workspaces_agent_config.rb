@@ -65,6 +65,8 @@ module RemoteDevelopment
 
     validate :validate_image_pull_secrets_namespace
 
+    validate :validate_max_resources_per_workspace
+
     scope :by_cluster_agent_ids, ->(ids) { where(cluster_agent_id: ids) }
 
     private
@@ -114,6 +116,21 @@ module RemoteDevelopment
         :image_pull_secrets,
         format(
           _("image_pull_secrets.namespace and shared_namespace must match if shared_namespace is specified")
+        )
+      )
+      nil
+    end
+
+    # max_resources_per_workspace must be an empty hash if shared_namespace is specified
+    # @return [void]
+    def validate_max_resources_per_workspace
+      return if shared_namespace.blank?
+      return if max_resources_per_workspace.nil? || max_resources_per_workspace.empty?
+
+      errors.add(
+        :max_resources_per_workspace,
+        format(
+          _("max_resources_per_workspace must be an empty hash if shared_namespace is specified")
         )
       )
       nil

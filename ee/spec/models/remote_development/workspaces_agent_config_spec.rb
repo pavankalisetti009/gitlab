@@ -205,6 +205,32 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
       end
     end
 
+    context 'when max_resources_per_workspace and shared_namespace are specified' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:shared_namespace, :max_resources_per_workspace, :validity, :error_field, :errors) do
+        # rubocop:disable Layout/LineLength -- The RSpec table syntax often requires long lines for errors
+        ''               | {}                                                                              | true  | :max_resources_per_workspace | []
+        ''               | { requests: { cpu: "1", memory: "1Gi" }, limits: { cpu: "2", memory: "2Gi" } }  | true  | :max_resources_per_workspace | []
+        ''               | nil                                                                             | false | :max_resources_per_workspace | ["must be a valid json schema", "must be a hash"]
+        'my-namespace'   | {}                                                                              | true  | :max_resources_per_workspace | []
+        'my-namespace'   | nil                                                                             | false | :max_resources_per_workspace | ["must be a valid json schema", "must be a hash"]
+        'my-namespace'   | { requests: { cpu: "1", memory: "1Gi" }, limits: { cpu: "2", memory: "2Gi" } }  | false | :max_resources_per_workspace | ["max_resources_per_workspace must be an empty hash if shared_namespace is specified"]
+        # rubocop:enable Layout/LineLength
+      end
+
+      with_them do
+        before do
+          config.shared_namespace = shared_namespace
+          config.max_resources_per_workspace = max_resources_per_workspace
+          config.validate
+        end
+
+        it { expect(config.valid?).to eq(validity) }
+        it { expect(config.errors[error_field]).to eq(errors) }
+      end
+    end
+
     it 'when network_policy_egress is not specified explicitly' do
       expect(config).to be_valid
       expect(config.network_policy_egress).to eq(default_network_policy_egress)
