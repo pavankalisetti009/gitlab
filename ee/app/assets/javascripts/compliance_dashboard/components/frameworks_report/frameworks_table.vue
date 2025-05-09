@@ -15,6 +15,7 @@ import {
 import { __, s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import FrameworkBadge from '../shared/framework_badge.vue';
 import {
   ROUTE_EDIT_FRAMEWORK,
@@ -42,6 +43,7 @@ export default {
     GlDisclosureDropdown,
     GlButton,
     GlSprintf,
+    TimeAgo,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -277,6 +279,13 @@ export default {
       sortable: false,
     },
     {
+      key: 'updatedAt',
+      label: __('Last updated'),
+      thClass: 'md:gl-max-w-26 gl-whitespace-nowrap !gl-align-middle',
+      tdClass: 'md:gl-max-w-26 !gl-align-middle gl-cursor-pointer',
+      sortable: true,
+    },
+    {
       key: 'action',
       label: __('Action'),
       thAlignRight: true,
@@ -397,6 +406,9 @@ export default {
       </template>
       <template #cell(policies)="{ item }">
         {{ getPoliciesList(item) }}
+      </template>
+      <template #cell(updatedAt)="{ item }">
+        <time-ago :time="item.updatedAt" />
       </template>
       <template #table-busy>
         <gl-loading-icon size="lg" color="dark" class="gl-my-5" />
