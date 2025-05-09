@@ -53,8 +53,9 @@ export default {
         v-if="showWeight"
         anchor-id="issuable-weight-content"
         data-testid="weight-attribute"
+        wrapper-component-class="issuable-weight"
         :title="`${weight}`"
-        title-component-class="issuable-weight gl-mr-3"
+        title-component-class="gl-mr-3"
         :tooltip-text="__('Weight')"
         tooltip-placement="top"
       >
