@@ -21,7 +21,7 @@ RSpec.describe Mutations::Ai::DuoUserFeedback, :clean_gitlab_redis_chat, feature
     it 'marks the message as having feedback' do
       resolve
 
-      expect(chat_storage.messages.find { |m| m.id == ai_message_id }.extras['has_feedback']).to be(true)
+      expect(chat_storage.messages.find { |m| m.message_xid == ai_message_id }.extras['has_feedback']).to be(true)
     end
 
     context 'without a user' do

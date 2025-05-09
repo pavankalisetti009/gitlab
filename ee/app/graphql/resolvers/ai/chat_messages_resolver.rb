@@ -34,12 +34,16 @@ module Resolvers
         agent_version_id = args[:agent_version_id]&.model_id
         thread = find_thread(args)
 
-        ::Gitlab::Llm::ChatStorage.new(
+        messages = ::Gitlab::Llm::ChatStorage.new(
           current_user,
           agent_version_id,
           thread,
           thread_fallback: view_legacy_messages?(args[:conversation_type])
-        ).messages_by(args).map(&:to_h)
+        ).messages_by(args)
+
+        return messages if Feature.enabled?(:duo_chat_read_directly_from_db, current_user)
+
+        messages.map(&:to_h)
       end
 
       private

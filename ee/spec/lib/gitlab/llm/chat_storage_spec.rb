@@ -35,7 +35,7 @@ RSpec.describe Gitlab::Llm::ChatStorage, feature_category: :duo_chat do
     it 'stores the message in PostgreSQL' do
       subject.add(message)
 
-      expect(postgres_storage.messages).to include(message)
+      expect(postgres_storage.messages).to include(message.active_record)
     end
   end
 
@@ -44,7 +44,7 @@ RSpec.describe Gitlab::Llm::ChatStorage, feature_category: :duo_chat do
       subject.add(message)
       subject.set_has_feedback(message)
 
-      expect(subject.messages.find { |m| m.id == message.id }.extras['has_feedback']).to be(true)
+      expect(subject.messages.find { |m| m.message_xid == message.id }.extras['has_feedback']).to be(true)
       expect(postgres_storage.messages.first.extras['has_feedback']).to be true
     end
   end
@@ -202,7 +202,8 @@ RSpec.describe Gitlab::Llm::ChatStorage, feature_category: :duo_chat do
     end
 
     it 'returns first n messages up to one with matching message id' do
-      expect(subject.messages_up_to(messages[1].id)).to eq(messages.first(2))
+      result = subject.messages_up_to(messages[1].id)
+      expect(result.map(&:message_xid)).to eq(messages.first(2).map(&:id))
     end
 
     it 'returns [] if message id is not found' do
