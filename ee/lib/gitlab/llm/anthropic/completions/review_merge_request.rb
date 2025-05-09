@@ -114,10 +114,7 @@ module Gitlab
               files_content[diff_file.new_path] = content if content.present?
             end
 
-            review_prompt = generate_review_prompt(diffs_and_paths, files_content)
-            return unless review_prompt.present?
-
-            response = review_response_for(review_prompt)
+            response = process_review_with_retry(diffs_and_paths, files_content)
             return if note_not_required?(response)
 
             parsed_body = ResponseBodyParser.new(response.response_body)
@@ -154,10 +151,39 @@ module Gitlab
             end
           end
 
+          def process_review_with_retry(diffs_and_paths, files_content)
+            # First try with file content (if any)
+            if files_content.present?
+              prompt = generate_review_prompt(diffs_and_paths, files_content)
+              return unless prompt.present?
+
+              response = review_response_for(prompt)
+              return response unless response.errors.any?
+
+              if duo_code_review_logging_enabled?
+                Gitlab::AppLogger.info(
+                  message: "Review request failed with files content, retrying without file content",
+                  event: "review_merge_request_retry_without_content",
+                  merge_request_id: merge_request&.id,
+                  error: response.errors
+                )
+              end
+            end
+
+            # Retry without file content on failure or if no file content was provided
+            prompt = generate_review_prompt(diffs_and_paths, {})
+            review_response_for(prompt)
+          end
+
           def include_file_content?
             Feature.enabled?(:duo_code_review_full_file, user)
           end
           strong_memoize_attr :include_file_content?
+
+          def duo_code_review_logging_enabled?
+            Feature.enabled?(:duo_code_review_response_logging, user)
+          end
+          strong_memoize_attr :duo_code_review_logging_enabled?
 
           def process_comments(comments, diff_file, diff_refs)
             comments.each do |comment|
@@ -219,7 +245,7 @@ module Gitlab
           end
 
           def log_llm_response_metrics(response)
-            return unless Feature.enabled?(:duo_code_review_response_logging, user)
+            return unless duo_code_review_logging_enabled?
 
             input_tokens = response&.dig("usage", "input_tokens")
             output_tokens = response&.dig("usage", "output_tokens")
