@@ -17,8 +17,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
   let_it_be(:include_all_resources) { false }
   let_it_be(:network_policy_enabled) { true }
   let_it_be(:gitlab_workspaces_proxy_namespace) { "gitlab-workspaces" }
-  let_it_be(:image_pull_secrets) { [{ namespace: "secret-namespace", name: "secret-name" }] }
+  let_it_be(:image_pull_secrets) { [{ namespace: "default", name: "secret-name" }] }
   let_it_be(:agent_annotations) { { "some/annotation": "value" } }
+  let_it_be(:shared_namespace) { "" }
   let_it_be(:network_policy_egress) do
     [
       {
@@ -37,7 +38,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
       limits: {
         memory: "786Mi",
         cpu: "1.5"
-
       }
     }
   end
@@ -51,7 +51,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
       limits: {
         memory: "700Mi",
         cpu: "1.0"
-
       }
     }
   end
@@ -68,7 +67,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
       max_resources_per_workspace: max_resources_per_workspace.deep_stringify_keys,
       labels: labels.deep_stringify_keys,
       annotations: agent_annotations.deep_stringify_keys,
-      network_policy_egress: network_policy_egress.map(&:deep_stringify_keys)
+      network_policy_egress: network_policy_egress.map(&:deep_stringify_keys),
+      shared_namespace: shared_namespace
     )
     agent.reload
     config
@@ -106,8 +106,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
           domain_template
           env_secret_name
           file_secret_name
-          image_pull_secrets
           gitlab_workspaces_proxy_namespace
+          image_pull_secrets
           labels
           max_resources_per_workspace
           network_policy_enabled
@@ -117,6 +117,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
           scripts_configmap_name
           secrets_inventory_annotations
           secrets_inventory_name
+          shared_namespace
           use_kubernetes_user_namespaces
           workspace_inventory_annotations
           workspace_inventory_name
@@ -143,7 +144,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
 
     expect(extracted_values[:file_secret_name]).to eq("#{workspace.name}-file")
 
-    expect(extracted_values[:image_pull_secrets]).to eq([{ name: "secret-name", namespace: "secret-namespace" }])
+    expect(extracted_values[:image_pull_secrets]).to eq([{ name: "secret-name", namespace: "default" }])
 
     expect(extracted_values[:gitlab_workspaces_proxy_namespace]).to eq("gitlab-workspaces")
 
@@ -208,6 +209,61 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Config
       let(:expected_replicas) { 0 }
 
       it { is_expected.to eq(expected_replicas) }
+    end
+  end
+
+  describe "devfile_parser_params[:labels]" do
+    subject(:actual_labels) { extractor.extract(workspace: workspace).fetch(:labels) }
+
+    context "when shared_namespace is not set" do
+      let(:expected_labels) do
+        {
+          "agent.gitlab.com/id": agent.id.to_s,
+          "other-label": "other-value",
+          "some-label": "value"
+        }
+      end
+
+      it { is_expected.to eq(expected_labels) }
+    end
+
+    context "when shared_namespace is set" do
+      let_it_be(:shared_namespace) { "default" }
+      let_it_be(:workspace_name) { "workspace-name-shared-namespace" }
+      let_it_be(:agent, reload: true) { create(:ee_cluster_agent) }
+      let_it_be(:workspaces_agent_config) do
+        config = create(
+          :workspaces_agent_config,
+          agent: agent,
+          dns_zone: dns_zone,
+          labels: labels.deep_stringify_keys,
+          shared_namespace: shared_namespace
+        )
+        agent.reload
+        config
+      end
+
+      let_it_be(:workspace) do
+        workspaces_agent_config
+        create(
+          :workspace,
+          name: workspace_name,
+          agent: agent,
+          user: user,
+          actual_state: actual_state
+        )
+      end
+
+      let(:expected_labels) do
+        {
+          "agent.gitlab.com/id": agent.id.to_s,
+          "other-label": "other-value",
+          "some-label": "value",
+          "workspaces.gitlab.com/id": workspace.id.to_s
+        }
+      end
+
+      it { is_expected.to eq(expected_labels) }
     end
   end
 end

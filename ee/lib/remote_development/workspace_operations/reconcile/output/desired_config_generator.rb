@@ -32,6 +32,7 @@ module RemoteDevelopment
               scripts_configmap_name: scripts_configmap_name,
               secrets_inventory_annotations: Hash => secrets_inventory_annotations,
               secrets_inventory_name: String => secrets_inventory_name,
+              shared_namespace: String => shared_namespace,
               use_kubernetes_user_namespaces: TrueClass | FalseClass => use_kubernetes_user_namespaces,
               workspace_inventory_annotations: Hash => workspace_inventory_annotations,
               workspace_inventory_name: String => workspace_inventory_name,
@@ -134,7 +135,8 @@ module RemoteDevelopment
               namespace: workspace.namespace,
               labels: labels,
               annotations: workspace_inventory_annotations,
-              max_resources_per_workspace: max_resources_per_workspace
+              max_resources_per_workspace: max_resources_per_workspace,
+              shared_namespace: shared_namespace
             )
 
             append_secret(
@@ -325,6 +327,16 @@ module RemoteDevelopment
               )
             end
 
+            # Use the workspace_id as a pod selector if it is present
+            workspace_id = labels.fetch(:"workspaces.gitlab.com/id", nil)
+            pod_selector = {}
+            # TODO: Unconditionally add this pod selector in https://gitlab.com/gitlab-org/gitlab/-/issues/535197
+            if workspace_id.present?
+              pod_selector[:matchLabels] = {
+                "workspaces.gitlab.com/id": workspace_id
+              }
+            end
+
             network_policy = {
               apiVersion: "networking.k8s.io/v1",
               kind: "NetworkPolicy",
@@ -337,7 +349,7 @@ module RemoteDevelopment
               spec: {
                 egress: egress,
                 ingress: ingress,
-                podSelector: {},
+                podSelector: pod_selector,
                 policyTypes: policy_types
               }
             }
@@ -427,9 +439,11 @@ module RemoteDevelopment
             namespace:,
             labels:,
             annotations:,
-            max_resources_per_workspace:
+            max_resources_per_workspace:,
+            shared_namespace:
           )
             return unless max_resources_per_workspace.present?
+            return if shared_namespace.present?
 
             max_resources_per_workspace => {
               limits: {
