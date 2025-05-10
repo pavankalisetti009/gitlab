@@ -9,6 +9,7 @@ import SectionHeader from './section_header.vue';
 import SectionBody from './section_body.vue';
 import DuoExtensions from './duo_extensions.vue';
 import RightSidebar from './right_sidebar.vue';
+import GetFamiliar from './get_familiar.vue';
 
 const trackingMixin = InternalEvents.mixin();
 export default {
@@ -23,6 +24,7 @@ export default {
     SectionHeader,
     DuoExtensions,
     RightSidebar,
+    GetFamiliar,
   },
   mixins: [trackingMixin],
   props: {
@@ -192,6 +194,7 @@ export default {
         <section-body :section="section" :is-expanded="isExpanded(index)" />
       </gl-card>
       <duo-extensions />
+      <get-familiar />
     </div>
 
     <div class="col-md-3 gl-w-full md:gl-pl-0">
