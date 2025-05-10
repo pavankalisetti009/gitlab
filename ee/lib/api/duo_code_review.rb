@@ -15,9 +15,8 @@ module API
 
       license_feature_available = ::License.feature_available?(:review_merge_request)
       global_feature_flag_enabled = Gitlab::Llm::Utils::FlagChecker.flag_enabled_for_feature?(:review_merge_request)
-      feature_flag_enabled = ::Feature.enabled?(:ai_review_merge_request, current_user)
 
-      not_found! unless license_feature_available && global_feature_flag_enabled && feature_flag_enabled
+      not_found! unless license_feature_available && global_feature_flag_enabled
     end
 
     helpers do

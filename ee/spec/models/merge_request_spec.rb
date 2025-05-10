@@ -3214,14 +3214,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
       it { is_expected.to eq(true) }
 
-      context 'when ai_review_merge_request feature flag is disabled' do
-        before do
-          stub_feature_flags(ai_review_merge_request: false)
-        end
-
-        it { is_expected.to eq(false) }
-      end
-
       context 'when license is not set' do
         before do
           stub_licensed_features(review_merge_request: false)
