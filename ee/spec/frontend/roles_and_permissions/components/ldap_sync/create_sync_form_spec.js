@@ -3,6 +3,7 @@ import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import CreateSyncForm from 'ee/roles_and_permissions/components/ldap_sync/create_sync_form.vue';
 import ServerFormGroup from 'ee/roles_and_permissions/components/ldap_sync/server_form_group.vue';
+import SyncMethodFormGroup from 'ee/roles_and_permissions/components/ldap_sync/sync_method_form_group.vue';
 
 describe('CreateSyncForm component', () => {
   let wrapper;
@@ -13,6 +14,7 @@ describe('CreateSyncForm component', () => {
 
   const findForm = () => wrapper.findComponent(GlForm);
   const findServerFormGroup = () => wrapper.findComponent(ServerFormGroup);
+  const findSyncMethodFormGroup = () => wrapper.findComponent(SyncMethodFormGroup);
 
   const findFormButtons = () => wrapper.findAllComponents(GlButton);
   const findCancelButton = () => findFormButtons().at(0);
@@ -27,6 +29,10 @@ describe('CreateSyncForm component', () => {
     findServerFormGroup().vm.$emit('input', 'ldapmain');
   };
 
+  const selectSyncMethod = (value = 'group_cn') => {
+    findSyncMethodFormGroup().vm.$emit('input', value);
+  };
+
   beforeEach(() => createWrapper());
 
   describe('form', () => {
@@ -35,8 +41,9 @@ describe('CreateSyncForm component', () => {
     });
 
     it.each`
-      name        | findFormGroup
-      ${'server'} | ${findServerFormGroup}
+      name             | findFormGroup
+      ${'server'}      | ${findServerFormGroup}
+      ${'sync method'} | ${findSyncMethodFormGroup}
     `('shows $name form group', ({ findFormGroup }) => {
       expect(findFormGroup().props()).toMatchObject({ value: null, state: true });
     });
@@ -67,6 +74,7 @@ describe('CreateSyncForm component', () => {
 
       it('emits submit event when all fields are filled', () => {
         selectServer();
+        selectSyncMethod();
         submitForm();
 
         expect(wrapper.emitted('submit')).toHaveLength(1);
@@ -76,8 +84,9 @@ describe('CreateSyncForm component', () => {
 
     describe('form validation', () => {
       describe.each`
-        name        | findFormGroup          | fillField       | expectedValue
-        ${'server'} | ${findServerFormGroup} | ${selectServer} | ${'ldapmain'}
+        name             | findFormGroup              | fillField           | expectedValue
+        ${'server'}      | ${findServerFormGroup}     | ${selectServer}     | ${'ldapmain'}
+        ${'sync method'} | ${findSyncMethodFormGroup} | ${selectSyncMethod} | ${'group_cn'}
       `('$name form group', ({ findFormGroup, fillField, expectedValue }) => {
         beforeEach(() => {
           createWrapper();

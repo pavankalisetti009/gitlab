@@ -35519,6 +35519,9 @@ msgstr ""
 msgid "LDAP|Default, minimum permission level for LDAP group members of %{group_name}."
 msgstr ""
 
+msgid "LDAP|Group cn"
+msgstr ""
+
 msgid "LDAP|If you do not belong to this LDAP user filter you will lose ownership of %{group_name}."
 msgstr ""
 
@@ -35553,6 +35556,9 @@ msgid "LDAP|Synchronize %{group_name}'s members with this LDAP group."
 msgstr ""
 
 msgid "LDAP|This query must use valid %{ldap_link_start}LDAP Search Filter Syntax%{ldap_link_end}. Synchronize %{group_name}'s members with this LDAP user filter."
+msgstr ""
+
+msgid "LDAP|User filter"
 msgstr ""
 
 msgid "LDAP|You can manage permission levels for individual group members in the Members tab."
