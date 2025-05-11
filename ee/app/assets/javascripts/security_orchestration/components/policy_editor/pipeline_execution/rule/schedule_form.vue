@@ -9,15 +9,17 @@ import BranchSelection from 'ee/security_orchestration/components/policy_editor/
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
 import { getHostname } from '../../utils';
 import { PROJECT_DEFAULT_BRANCH } from '../../constants';
-import { DEFAULT_TIMEZONE } from './constants';
 import {
   CADENCE_OPTIONS,
   DEFAULT_TIME_PER_UNIT,
+  DEFAULT_TIMEZONE,
   HOUR_MINUTE_LIST,
   MINIMUM_SECONDS_IN_MINUTES,
-  WEEKDAY_OPTIONS,
   TIME_UNIT_OPTIONS,
   TIME_UNITS,
+  WEEKDAY_OPTIONS,
+} from './constants';
+import {
   isCadenceWeekly,
   isCadenceMonthly,
   isValidCadence,
