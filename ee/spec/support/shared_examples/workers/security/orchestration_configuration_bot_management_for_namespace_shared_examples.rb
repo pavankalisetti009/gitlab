@@ -4,6 +4,7 @@ RSpec.shared_examples 'bot management worker examples' do
   describe '#perform' do
     let_it_be(:namespace, reload: true) { create(:group, :with_security_orchestration_policy_configuration) }
     let_it_be(:namespace_projects) { create_list(:project, 2, group: namespace) }
+    let_it_be(:namespace_without_linked_policies) { create(:group) }
     let_it_be(:user) { create(:user) }
     let(:current_user_id) { nil }
     let(:namespace_project_ids) { namespace_projects.map(&:id) }
@@ -34,7 +35,7 @@ RSpec.shared_examples 'bot management worker examples' do
       it_behaves_like 'worker exits without error'
     end
 
-    context 'with valid project_id' do
+    context 'with valid namespace_id' do
       let(:namespace_id) { namespace.id }
 
       context 'when user with given current_user_id does not exist' do
@@ -45,6 +46,12 @@ RSpec.shared_examples 'bot management worker examples' do
 
       context 'when current user is provided' do
         let(:current_user_id) { user.id }
+
+        context 'when namespace does not have security orchestration configuration linked' do
+          let(:namespace_id) { namespace_without_linked_policies.id }
+
+          it_behaves_like 'worker exits without error'
+        end
 
         it 'enqueues a worker for each projects', :aggregate_failures do
           expect(management_worker)
