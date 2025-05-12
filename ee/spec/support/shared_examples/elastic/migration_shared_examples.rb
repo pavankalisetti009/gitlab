@@ -511,17 +511,28 @@ RSpec.shared_examples 'migration reindexes all data' do
   end
 
   describe 'QueryRecorder to check N+1' do
-    it 'avoids N+1 queries' do
-      allow(migration).to receive(:limit_per_iteration).and_return(1)
+    let(:factory_name) do
+      if defined?(factory_to_create_objects)
+        factory_to_create_objects
+      else
+        klass.name.downcase.to_sym
+      end
+    end
+
+    before do
+      klass.delete_all
+    end
+
+    it 'avoids N+1 queries', :use_sql_query_cache do
+      create_list(factory_name, 1)
+      ensure_elasticsearch_index!
 
       control = ActiveRecord::QueryRecorder.new(skip_cached: false) { migration.migrate }
 
-      if defined?(factory_to_create_objects)
-        create_list(factory_to_create_objects, objects.size)
-      else
-        create_list(klass.name.downcase.to_sym, objects.size)
-      end
+      klass.delete_all
+      migration.set_migration_state(migration.migration_state.keys.index_with { nil })
 
+      create_list(factory_name, 3)
       ensure_elasticsearch_index!
 
       expect { migration.migrate }.to issue_same_number_of_queries_as(control)
