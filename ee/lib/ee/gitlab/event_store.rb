@@ -129,6 +129,8 @@ module EE
 
           store.subscribe ::Vulnerabilities::NamespaceStatistics::ProcessProjectDeleteEventsWorker,
             to: ::Projects::ProjectDeletedEvent
+
+          store.subscribe ::Security::AnalyzersStatus::ProcessArchivedEventsWorker, to: ::Projects::ProjectArchivedEvent
         end
 
         def subscribe_to_epic_events(store)

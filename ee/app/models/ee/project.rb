@@ -116,6 +116,8 @@ module EE
       has_many :vulnerability_remediations, class_name: 'Vulnerabilities::Remediation', inverse_of: :project
       has_many :vulnerability_archives, class_name: 'Vulnerabilities::Archive'
 
+      has_many :analyzer_statuses, class_name: 'Security::AnalyzerProjectStatus', inverse_of: :project
+
       has_many :workspaces, class_name: 'RemoteDevelopment::Workspace', inverse_of: :project
 
       has_many :dast_site_profiles

@@ -120,6 +120,13 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
             expect { execute }.to change { existing_dast_status.reload.status }.from('success').to('not_configured')
           end
 
+          it 'updates the archive column' do
+            archived_status = create(:analyzer_project_status, project: project, analyzer_type: :sast,
+              status: :success, archived: true)
+
+            expect { execute }.to change { archived_status.reload.archived }.from(true).to(false)
+          end
+
           include_examples 'calls namespace related services'
         end
 

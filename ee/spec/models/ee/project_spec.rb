@@ -103,6 +103,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:approval_policies).through(:security_policy_project_links).source(:security_policy) }
 
     it { is_expected.to have_many(:security_exclusions).class_name('Security::ProjectSecurityExclusion') }
+    it { is_expected.to have_many(:analyzer_statuses).class_name('Security::AnalyzerProjectStatus') }
 
     it { is_expected.to have_many(:project_control_compliance_statuses) }
     it { is_expected.to have_many(:project_requirement_compliance_statuses) }
