@@ -35,13 +35,11 @@ module Gitlab
           target_node = node(node_id)
           raise 'Node can not be found' unless target_node
 
-          with_node_exception_handling(target_node) do
-            response = post_request(join_url(target_node.search_base_url, path), payload)
+          response = post_request(join_url(target_node.search_base_url, path), payload)
 
-            log_error('Zoekt search failed', status: response.code, response: response.body) unless response.success?
+          log_error('Zoekt search failed', status: response.code, response: response.body) unless response.success?
 
-            Gitlab::Search::Zoekt::Response.new parse_response(response)
-          end
+          Gitlab::Search::Zoekt::Response.new parse_response(response)
         ensure
           add_request_details(start_time: start, path: path, body: payload)
         end
@@ -157,25 +155,6 @@ module Gitlab
 
         def node(node_id)
           ::Search::Zoekt::Node.find_by_id(node_id)
-        end
-
-        def with_node_exception_handling(zoekt_node)
-          return yield if Feature.disabled?(:zoekt_node_backoffs, Feature.current_request)
-
-          backoff = zoekt_node.backoff
-
-          if backoff.enabled?
-            log_error('Zoekt node in backoff', node_id: zoekt_node.id, expire_at: backoff.expires_at)
-            raise ::Search::Zoekt::Errors::BackoffError,
-              'Zoekt node cannot be used yet because it is in back off period'
-          end
-
-          begin
-            yield
-          rescue StandardError => err
-            backoff.backoff!
-            raise(err)
-          end
         end
 
         def join_url(base_url, path)

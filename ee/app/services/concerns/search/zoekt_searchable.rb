@@ -49,7 +49,7 @@ module Search
     end
 
     def zoekt_node_available_for_search?
-      ::Search::Zoekt::CircuitBreaker.new(*zoekt_nodes).operational?
+      zoekt_nodes.exists?
     end
 
     def skip_api?

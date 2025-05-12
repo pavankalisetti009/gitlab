@@ -178,17 +178,14 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     let(:use_zoekt) { true }
     let(:scope) { 'blobs' }
     let(:page) { nil }
-    let_it_be(:zoekt_nodes) { create_list(:zoekt_node, 2) }
-    let(:circuit_breaker) { instance_double(::Search::Zoekt::CircuitBreaker) }
-    let(:circuit_breaker_operational) { true }
+    let_it_be(:zoekt_nodes_list) { create_list(:zoekt_node, 2) }
+    let(:zoekt_nodes) { Search::Zoekt::Node.id_in(zoekt_nodes_list) }
 
     before do
       allow(group).to receive_messages(use_zoekt?: use_zoekt, search_code_with_zoekt?: use_zoekt)
       zoekt_ensure_namespace_indexed!(group)
 
       allow(service).to receive(:zoekt_nodes).and_return zoekt_nodes
-      allow(::Search::Zoekt::CircuitBreaker).to receive(:new).with(*zoekt_nodes).and_return(circuit_breaker)
-      allow(circuit_breaker).to receive(:operational?).and_return(circuit_breaker_operational)
     end
 
     it 'returns a Search::Zoekt::SearchResults' do
@@ -281,15 +278,6 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
       it 'does not search with Zoekt' do
         expect(service.use_zoekt?).to be(false)
-        expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
-      end
-    end
-
-    context 'when circuit breaker is tripped' do
-      let(:circuit_breaker_operational) { false }
-
-      it 'does not search with Zoekt' do
-        expect(service).not_to be_use_zoekt
         expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end
@@ -741,7 +729,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
           it { is_expected.not_to include('blobs') }
         end
 
-        context 'and the group does is not enabled for zoekt' do
+        context 'and the group is not enabled for zoekt' do
           before do
             allow(::Search::Zoekt).to receive(:search?).with(group).and_return(false)
           end

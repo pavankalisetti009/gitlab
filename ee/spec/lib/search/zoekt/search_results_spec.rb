@@ -533,16 +533,6 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
         end
       end
 
-      context 'when node backoff occurs' do
-        it 'returns zero when a node backoff occurs' do
-          client_error = ::Search::Zoekt::Errors::BackoffError.new('test')
-          allow(::Gitlab::Search::Zoekt::Client).to receive(:search).and_raise(client_error)
-
-          expect(blobs_count).to eq 0
-          expect(results.error).to eq(client_error.message)
-        end
-      end
-
       it 'limits to the zoekt count limit' do
         stub_const("#{described_class}::ZOEKT_COUNT_LIMIT", 2)
 

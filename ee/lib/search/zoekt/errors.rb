@@ -4,7 +4,6 @@ module Search
   module Zoekt
     module Errors
       BaseError = Class.new(StandardError)
-      BackoffError = Class.new(BaseError)
       ClientConnectionError = Class.new(BaseError)
     end
   end

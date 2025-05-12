@@ -273,7 +273,6 @@ RSpec/BeEq:
     - 'ee/spec/models/scim_identity_spec.rb'
     - 'ee/spec/models/scim_oauth_access_token_spec.rb'
     - 'ee/spec/models/scoped_label_set_spec.rb'
-    - 'ee/spec/models/search/zoekt/node_spec.rb'
     - 'ee/spec/models/search/zoekt/task_spec.rb'
     - 'ee/spec/models/security/orchestration_policy_configuration_spec.rb'
     - 'ee/spec/models/security/orchestration_policy_rule_schedule_spec.rb'

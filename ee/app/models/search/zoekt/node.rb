@@ -106,10 +106,6 @@ module Search
         [calculated_limit, MAX_CONCURRENCY_LIMIT].min
       end
 
-      def backoff
-        @backoff ||= ::Search::Zoekt::NodeBackoff.new(self)
-      end
-
       def metadata_json
         {
           'zoekt.node_name' => metadata['name'],
