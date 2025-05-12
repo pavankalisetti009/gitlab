@@ -76,4 +76,36 @@ RSpec.describe SystemNotes::MergeRequestsService, feature_category: :code_review
       end
     end
   end
+
+  describe '#duo_code_review_started' do
+    subject(:duo_code_review_started) do
+      described_class
+        .new(noteable: noteable, container: project, author: author)
+        .duo_code_review_started
+    end
+
+    it 'sets the note text' do
+      expect(duo_code_review_started.note)
+        .to eq("is reviewing your merge request and will let you know when it's finished")
+    end
+  end
+
+  describe '#duo_code_review_chat_started' do
+    let(:note) { create(:note, noteable: noteable, project: noteable.project) }
+
+    subject(:duo_code_review_chat_started) do
+      described_class
+        .new(noteable: noteable, container: project, author: author)
+        .duo_code_review_chat_started(note.discussion)
+    end
+
+    it 'sets the note text' do
+      expect(duo_code_review_chat_started.note)
+        .to eq("is working on a reply")
+    end
+
+    it 'converts discussion from IndividualNoteDiscussion to Discussion' do
+      expect(duo_code_review_chat_started.discussion_class(noteable)).to eq(Discussion)
+    end
+  end
 end

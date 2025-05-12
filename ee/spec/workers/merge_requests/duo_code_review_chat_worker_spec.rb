@@ -107,26 +107,20 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
           )
           .and_call_original
 
-        progress_note_service = instance_double(Notes::CreateService)
+        progress_note_service = instance_double(::SystemNotes::MergeRequestsService)
         progress_note = instance_double(Note, destroy: true)
 
-        expect(Notes::CreateService)
+        expect(::SystemNotes::MergeRequestsService)
           .to receive(:new)
           .with(
-            project,
-            ::Users::Internal.duo_code_review_bot,
-            hash_including(
-              noteable: merge_request,
-              note: s_("DuoCodeReview|is working on a reply"),
-              in_reply_to_discussion_id: note.discussion_id,
-              type: note.type,
-              system: true
-            )
+            noteable: merge_request,
+            container: merge_request.project,
+            author: Users::Internal.duo_code_review_bot
           )
           .and_return(progress_note_service)
           .ordered
 
-        expect(progress_note_service).to receive(:execute).and_return(progress_note)
+        expect(progress_note_service).to receive(:duo_code_review_chat_started).and_return(progress_note)
 
         expect(Notes::CreateService)
           .to receive(:new)
@@ -137,8 +131,7 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
               noteable: merge_request,
               note: response_modifier.response_body,
               in_reply_to_discussion_id: note.discussion_id,
-              type: note.type,
-              system: false
+              type: note.type
             )
           )
           .and_call_original
@@ -157,26 +150,20 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
         end
 
         it 'creates progress note and error note' do
-          progress_note_service = instance_double(Notes::CreateService)
+          progress_note_service = instance_double(::SystemNotes::MergeRequestsService)
           progress_note = instance_double(Note, destroy: true)
 
-          expect(Notes::CreateService)
+          expect(::SystemNotes::MergeRequestsService)
             .to receive(:new)
             .with(
-              project,
-              ::Users::Internal.duo_code_review_bot,
-              hash_including(
-                noteable: merge_request,
-                note: s_("DuoCodeReview|is working on a reply"),
-                in_reply_to_discussion_id: note.discussion_id,
-                type: note.type,
-                system: true
-              )
+              noteable: merge_request,
+              container: merge_request.project,
+              author: Users::Internal.duo_code_review_bot
             )
             .and_return(progress_note_service)
             .ordered
 
-          expect(progress_note_service).to receive(:execute).and_return(progress_note)
+          expect(progress_note_service).to receive(:duo_code_review_chat_started).and_return(progress_note)
 
           expect(Notes::CreateService)
             .to receive(:new)
@@ -187,8 +174,7 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
                 noteable: merge_request,
                 note: error_note,
                 in_reply_to_discussion_id: note.discussion_id,
-                type: note.type,
-                system: false
+                type: note.type
               )
             )
             .and_call_original
@@ -225,25 +211,20 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
         end
 
         it 'creates progress note but no response note' do
-          progress_note_service = instance_double(Notes::CreateService)
+          progress_note_service = instance_double(::SystemNotes::MergeRequestsService)
           progress_note = instance_double(Note, destroy: true)
 
-          expect(Notes::CreateService)
+          expect(::SystemNotes::MergeRequestsService)
             .to receive(:new)
             .with(
-              project,
-              ::Users::Internal.duo_code_review_bot,
-              hash_including(
-                noteable: merge_request,
-                note: s_("DuoCodeReview|is working on a reply"),
-                in_reply_to_discussion_id: note.discussion_id,
-                type: note.type,
-                system: true
-              )
+              noteable: merge_request,
+              container: merge_request.project,
+              author: Users::Internal.duo_code_review_bot
             )
             .and_return(progress_note_service)
+            .ordered
 
-          expect(progress_note_service).to receive(:execute).and_return(progress_note)
+          expect(progress_note_service).to receive(:duo_code_review_chat_started).and_return(progress_note)
 
           worker.perform(note.id)
         end
@@ -276,26 +257,20 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
       end
 
       it 'creates progress note and then parses code suggestions' do
-        progress_note_service = instance_double(Notes::CreateService)
+        progress_note_service = instance_double(::SystemNotes::MergeRequestsService)
         progress_note = instance_double(Note, destroy: true)
 
-        expect(Notes::CreateService)
+        expect(::SystemNotes::MergeRequestsService)
           .to receive(:new)
           .with(
-            project,
-            ::Users::Internal.duo_code_review_bot,
-            hash_including(
-              noteable: merge_request,
-              note: s_("DuoCodeReview|is working on a reply"),
-              in_reply_to_discussion_id: note.discussion_id,
-              type: note.type,
-              system: true
-            )
+            noteable: merge_request,
+            container: merge_request.project,
+            author: Users::Internal.duo_code_review_bot
           )
           .and_return(progress_note_service)
           .ordered
 
-        expect(progress_note_service).to receive(:execute).and_return(progress_note)
+        expect(progress_note_service).to receive(:duo_code_review_chat_started).and_return(progress_note)
 
         expect(Notes::CreateService)
           .to receive(:new)
@@ -305,8 +280,7 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
             hash_including(
               noteable: merge_request,
               in_reply_to_discussion_id: note.discussion_id,
-              type: note.type,
-              system: false
+              type: note.type
             )
           )
           .and_call_original
