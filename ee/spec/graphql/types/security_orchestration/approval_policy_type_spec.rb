@@ -4,9 +4,10 @@ require 'spec_helper'
 
 RSpec.describe GitlabSchema.types['ApprovalPolicy'], feature_category: :security_policy_management do
   let(:fields) do
-    %i[name description edit_path enabled policy_scope updated_at yaml source
-      action_approvers user_approvers all_group_approvers role_approvers custom_roles deprecatedProperties]
+    %i[name description edit_path enabled policy_scope updated_at yaml]
   end
 
-  it { expect(described_class).to have_graphql_fields(fields) }
+  include_context 'with approval policy specific fields'
+
+  it { expect(described_class).to have_graphql_fields(fields + type_specific_fields) }
 end
