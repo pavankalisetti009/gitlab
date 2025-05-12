@@ -31,6 +31,7 @@ import {
   DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import EditorComponent from 'ee/security_orchestration/components/policy_editor/scan_result/editor_component.vue';
+import PolicyExceptions from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/policy_exceptions.vue';
 import {
   DEFAULT_ASSIGNED_POLICY_PROJECT,
   NAMESPACE_TYPES,
@@ -172,6 +173,7 @@ describe('EditorComponent', () => {
   const findWarnAction = () => wrapper.findByTestId('warn-action');
   const findAdvancedSectionButton = () => wrapper.findByTestId('collapse-button');
   const findCollapseSection = () => wrapper.findComponent(GlCollapse);
+  const findPolicyExceptions = () => wrapper.findComponent(PolicyExceptions);
 
   beforeEach(() => {
     getInvalidBranches.mockClear();
@@ -194,6 +196,7 @@ describe('EditorComponent', () => {
       factory({ provide: { namespaceType } });
       expect(findPolicyEditorLayout().props('policy')).toStrictEqual(policy);
       expect(findPolicyEditorLayout().props('hasParsingError')).toBe(false);
+      expect(findPolicyExceptions().exists()).toBe(false);
     });
 
     it.each`
@@ -939,6 +942,14 @@ describe('EditorComponent', () => {
         fail: OPEN,
       });
       expect(findFallbackAndEdgeCasesSection().props('hasError')).toBe(false);
+    });
+  });
+
+  describe('bypass options', () => {
+    it('renders bypass policy exceptions when ff is true', () => {
+      factory({ provide: { glFeatures: { securityPoliciesBypassOptions: true } } });
+
+      expect(findPolicyExceptions().exists()).toBe(true);
     });
   });
 

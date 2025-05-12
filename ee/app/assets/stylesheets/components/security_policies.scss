@@ -25,6 +25,11 @@ $right-sidebar-policies-width: 350px;
   max-width: 330px;
 }
 
+.security-policies-exceptions-modal-height {
+  min-height: 380px;
+}
+
+
 .security-policies-bg-subtle {
   @apply gl-bg-subtle;
 }
