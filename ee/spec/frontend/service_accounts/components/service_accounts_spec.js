@@ -26,7 +26,7 @@ const findDeleteModal = () => wrapper.findComponent(DeleteServiceAccountModal);
 const findCreateEditServiceAccountModal = () =>
   wrapper.findComponent(CreateEditServiceAccountModal);
 
-describe('Service Accounts', () => {
+describe('Service accounts', () => {
   const serviceAccountsPath = `${TEST_HOST}/service_accounts`;
   const serviceAccountsEditPath = `${TEST_HOST}/service_accounts`;
   const serviceAccountsDeletePath = '/api/v4/users';
@@ -133,17 +133,17 @@ describe('Service Accounts', () => {
           const options = wrapper.findByTestId('cell-options').findComponent(GlDisclosureDropdown);
           expect(options.props('items')).toMatchObject([
             {
-              text: 'Manage Access Tokens',
+              text: 'Manage access tokens',
             },
             {
               text: 'Edit',
             },
             {
-              text: 'Delete Account',
+              text: 'Delete account',
               variant: 'danger',
             },
             {
-              text: 'Delete Account and Contributions',
+              text: 'Delete account and contributions',
               variant: 'danger',
             },
           ]);

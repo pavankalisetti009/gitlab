@@ -55,7 +55,7 @@ module EE
             return ::Sidebars::NilMenuItem.new(item_id: :service_accounts) unless service_accounts_available?
 
             ::Sidebars::MenuItem.new(
-              title: _('Service Accounts'),
+              title: _('Service accounts'),
               link: group_settings_service_accounts_path(context.group),
               active_routes: { controller: :service_accounts },
               item_id: :service_accounts

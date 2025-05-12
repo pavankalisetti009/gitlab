@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Service Accounts', feature_category: :user_management do
+RSpec.describe 'Service accounts', feature_category: :user_management do
   let(:admin) { create(:admin) }
 
   before do

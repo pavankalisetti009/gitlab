@@ -56706,9 +56706,6 @@ msgstr ""
 msgid "Service Account Key"
 msgstr ""
 
-msgid "Service Accounts"
-msgstr ""
-
 msgid "Service Accounts keys authorize GitLab to deploy your Google Cloud project"
 msgstr ""
 
@@ -56736,10 +56733,7 @@ msgstr ""
 msgid "Service accounts"
 msgstr ""
 
-msgid "ServiceAccounts|Access Tokens"
-msgstr ""
-
-msgid "ServiceAccounts|Add Service Account"
+msgid "ServiceAccounts|Add service account"
 msgstr ""
 
 msgid "ServiceAccounts|An error occurred creating the service account."
@@ -56754,16 +56748,16 @@ msgstr ""
 msgid "ServiceAccounts|An error occurred while fetching the service accounts."
 msgstr ""
 
-msgid "ServiceAccounts|Delete Account"
+msgid "ServiceAccounts|Delete account"
 msgstr ""
 
-msgid "ServiceAccounts|Delete Account and Contributions"
+msgid "ServiceAccounts|Delete account and contributions"
 msgstr ""
 
 msgid "ServiceAccounts|Edit"
 msgstr ""
 
-msgid "ServiceAccounts|Manage Access Tokens"
+msgid "ServiceAccounts|Manage access tokens"
 msgstr ""
 
 msgid "ServiceAccounts|Name"
@@ -56772,7 +56766,10 @@ msgstr ""
 msgid "ServiceAccounts|No service accounts"
 msgstr ""
 
-msgid "ServiceAccounts|Service Accounts"
+msgid "ServiceAccounts|Personal access tokens"
+msgstr ""
+
+msgid "ServiceAccounts|Service accounts"
 msgstr ""
 
 msgid "ServiceAccounts|Service accounts are non-human accounts that allow interactions between software applications, systems, or services. %{learnMore}"

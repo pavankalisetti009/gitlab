@@ -18,15 +18,15 @@ describe('ServiceAccountsBreadcrumb', () => {
   it('renders the root `Service Accounts` breadcrumb on Service Accounts page', () => {
     createComponent();
 
-    expect(findBreadcrumb().props('items')).toEqual([{ text: 'Service Accounts', to: '/' }]);
+    expect(findBreadcrumb().props('items')).toEqual([{ text: 'Service accounts', to: '/' }]);
   });
 
-  it('renders the `Access Tokens` breadcrumb on Access Tokens page', () => {
+  it('renders the `Personal access tokens` breadcrumb on access token page', () => {
     createComponent({ $route: { name: 'access_tokens', path: '/72/access_tokens' } });
 
     expect(findBreadcrumb().props('items')).toEqual([
-      { text: 'Service Accounts', to: '/' },
-      { text: 'Access Tokens', to: '/72/access_tokens' },
+      { text: 'Service accounts', to: '/' },
+      { text: 'Personal access tokens', to: '/72/access_tokens' },
     ]);
   });
 });
