@@ -148,7 +148,6 @@ spec/frontend/set_status_modal/user_profile_set_status_wrapper_spec.js
 spec/frontend/sidebar/components/assignees/sidebar_assignees_widget_spec.js
 spec/frontend/sidebar/components/confidential/confidentiality_dropdown_spec.js
 spec/frontend/sidebar/components/confidential/sidebar_confidentiality_widget_spec.js
-spec/frontend/sidebar/components/incidents/escalation_status_spec.js
 spec/frontend/sidebar/components/labels/labels_select_vue/dropdown_contents_labels_view_spec.js
 spec/frontend/sidebar/components/milestone/milestone_dropdown_spec.js
 spec/frontend/sidebar/components/subscriptions/subscriptions_dropdown_spec.js
