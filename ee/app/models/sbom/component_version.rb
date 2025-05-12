@@ -76,7 +76,6 @@ module Sbom
                     component_versions.component_name,
                     component_versions.component_version_id)
                 AND component_name = :component_name COLLATE "C"
-                AND sbom_occurrences.component_version_id > component_versions.component_version_id
               ORDER BY
                 sbom_occurrences.traversal_ids ASC,
                 sbom_occurrences.component_name COLLATE "C" ASC,
