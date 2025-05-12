@@ -7,6 +7,7 @@ import SectionBody from 'ee/pages/projects/get_started/components/section_body.v
 import eventHub from '~/invite_members/event_hub';
 import eventHubNav from '~/super_sidebar/event_hub';
 import DuoExtensions from 'ee/pages/projects/get_started/components/duo_extensions.vue';
+import RightSidebar from 'ee/pages/projects/get_started/components/right_sidebar.vue';
 
 describe('GetStarted', () => {
   let wrapper;
@@ -48,6 +49,7 @@ describe('GetStarted', () => {
   const findSectionBodies = () => wrapper.findAllComponents(SectionBody);
   const findTitle = () => wrapper.find('h2');
   const findSuccessfulInvitationsAlert = () => wrapper.findComponent(GlAlert);
+  const findRightSidebar = () => wrapper.findComponent(RightSidebar);
 
   describe('rendering', () => {
     beforeEach(() => {
@@ -76,6 +78,10 @@ describe('GetStarted', () => {
 
     it('renders section bodies', () => {
       expect(findSectionBodies()).toHaveLength(2);
+    });
+
+    it('renders the right sidebar', () => {
+      expect(findRightSidebar().exists()).toBe(true);
     });
   });
 
