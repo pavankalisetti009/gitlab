@@ -2,6 +2,7 @@
 import { GlForm, GlButton, GlFormGroup, GlFormInput, GlSprintf, GlLink } from '@gitlab/ui';
 import CountryOrRegionSelector from 'jh_else_ee/trials/components/country_or_region_selector.vue';
 import csrf from '~/lib/utils/csrf';
+import GlFieldErrors from '~/gl_field_errors';
 import autofocusonshow from '~/vue_shared/directives/autofocusonshow';
 import { trackSaasTrialLeadSubmit } from 'ee/google_tag_manager';
 import {
@@ -36,6 +37,10 @@ export default {
   inject: ['user', 'submitPath', 'gtmSubmitEventLabel', 'submitButtonText'],
   data() {
     return this.user;
+  },
+  mounted() {
+    // eslint-disable-next-line no-new
+    new GlFieldErrors(this.$el);
   },
   methods: {
     onSubmit() {
@@ -102,8 +107,9 @@ export default {
     <gl-form-group
       :label="$options.i18n.phoneNumberLabel"
       label-size="sm"
-      :description="$options.i18n.phoneNumberDescription"
+      :optional-text="__('(optional)')"
       label-for="phone_number"
+      optional
     >
       <gl-form-input
         id="phone_number"
@@ -112,7 +118,7 @@ export default {
         type="tel"
         data-testid="phone-number-field"
         pattern="^(\+)*[0-9\-\s]+$"
-        required
+        :title="$options.i18n.phoneNumberDescription"
       />
     </gl-form-group>
     <gl-button

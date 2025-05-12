@@ -7,6 +7,7 @@ import TrialCreateLeadForm from 'ee/trials/components/trial_create_lead_form.vue
 import CountryOrRegionSelector from 'jh_else_ee/trials/components/country_or_region_selector.vue';
 import { TRIAL_TERMS_TEXT } from 'ee/trials/constants';
 import { trackSaasTrialLeadSubmit } from 'ee/google_tag_manager';
+import GlFieldErrors from '~/gl_field_errors';
 import {
   FORM_DATA,
   NO_USER_LAST_NAME_FORM_DATA,
@@ -14,6 +15,7 @@ import {
   GTM_SUBMIT_EVENT_LABEL,
 } from './mock_data';
 
+jest.mock('~/gl_field_errors');
 jest.mock('ee/google_tag_manager', () => ({
   trackSaasTrialLeadSubmit: jest.fn(),
 }));
@@ -106,6 +108,18 @@ describe('TrialCreateLeadForm', () => {
     });
   });
 
+  describe('field errors initialization', () => {
+    beforeEach(() => {
+      GlFieldErrors.mockClear();
+
+      wrapper = createComponent();
+    });
+
+    it('initializes GlFieldErrors on mount', () => {
+      expect(GlFieldErrors).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it('has the submit button text on the submit button', () => {
     wrapper = createComponent();
 
@@ -128,7 +142,6 @@ describe('TrialCreateLeadForm', () => {
 
     it.each`
       value                    | result
-      ${null}                  | ${false}
       ${'+1 (121) 22-12-23'}   | ${false}
       ${'+12190AX '}           | ${false}
       ${'Tel:129120'}          | ${false}
