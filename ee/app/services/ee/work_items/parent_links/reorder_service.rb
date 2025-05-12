@@ -116,7 +116,7 @@ module EE
         end
 
         override :can_add_to_parent?
-        def can_add_to_parent?(parent_work_item)
+        def can_add_to_parent?(parent_work_item, _child_work_item = nil)
           return true if synced_work_item
 
           super

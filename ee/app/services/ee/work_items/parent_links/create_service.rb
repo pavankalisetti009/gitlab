@@ -50,6 +50,7 @@ module EE
         override :create_notes_and_resource_event
         def create_notes_and_resource_event(work_item, _link)
           return if synced_work_item
+          return if work_item.importing?
 
           super
         end
@@ -57,12 +58,14 @@ module EE
         override :can_admin_link?
         def can_admin_link?(work_item)
           return true if synced_work_item
+          return true if work_item.importing?
 
           super
         end
 
         override :can_add_to_parent?
-        def can_add_to_parent?(parent_work_item)
+        def can_add_to_parent?(parent_work_item, child_work_item = nil)
+          return true if child_work_item&.importing?
           return true if synced_work_item
 
           # For legacy epics, we allow to add child items to the epic, when the user only has read access to the group.
