@@ -5885,6 +5885,9 @@ msgstr ""
 msgid "AiPowered|GitLab Duo Workflow is now on for the instance and the service account (%{accountId}) was created. To use Workflow in your groups, you must turn on AI features for specific groups."
 msgstr ""
 
+msgid "AiPowered|GitLab Duo Workflow is now on for the instance. To use Workflow in your groups, you must turn on AI features for specific groups."
+msgstr ""
+
 msgid "AiPowered|GitLab Duo seat assignment is now located in GitLab Duo settings."
 msgstr ""
 
