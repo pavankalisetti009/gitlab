@@ -13,6 +13,8 @@ module Gitlab
       #
       # In self-managed, it could have appeared beginning in the 17.7 release on 2024-12-19.
       FIRST_APPEARANCE_DATE = Date.new(2024, 12, 5)
+      COMMENT = "Status changed to dismissed. Reverts a bug that incorrectly set this vulnerability to resolved." \
+        "For details, see [issue 523433](https://gitlab.com/gitlab-org/gitlab/-/issues/523433)"
 
       job_arguments :namespace_id, :instance
       operation_name :fix_vulnerabilities_transitioned_from_dismissed_to_resolved
@@ -31,6 +33,7 @@ module Gitlab
         self.table_name = 'vulnerabilities'
 
         has_many :state_transitions, -> { order(id: :desc) }, class_name: 'StateTransition'
+        belongs_to :project, class_name: 'Project'
 
         enum :state, {
           detected: 1,
@@ -39,7 +42,7 @@ module Gitlab
           dismissed: 2
         }
 
-        scope :with_state_transitions_and_author, -> { preload(state_transitions: :author) }
+        scope :with_state_transitions_author_and_project, -> { preload([{ state_transitions: :author }, :project]) }
         scope :transitioned_at_least_once, -> {
           where('EXISTS (SELECT 1 FROM vulnerability_state_transitions WHERE vulnerability_id = vulnerabilities.id)')
         }
@@ -59,6 +62,10 @@ module Gitlab
         end
       end
 
+      class Project < ApplicationRecord
+        self.table_name = 'projects'
+      end
+
       class User < ApplicationRecord
         self.table_name = 'users'
 
@@ -67,38 +74,104 @@ module Gitlab
         end
       end
 
+      class Note < ApplicationRecord
+        self.table_name = 'notes'
+      end
+
       def perform
         each_sub_batch do |vulnerability_reads|
-          ids = affected_vulnerability_ids(vulnerability_reads)
+          data = affected_vulnerability_data(vulnerability_reads)
 
-          next if ids.blank?
+          next if data.blank?
 
-          Vulnerability.id_in(ids).update_all(state: :dismissed)
+          batch_timestamp = Time.current
+
+          transition_states(data, batch_timestamp)
+          insert_notes(data, batch_timestamp)
         end
       end
 
-      def affected_vulnerability_ids(vulnerability_reads)
+      def affected_vulnerability_data(vulnerability_reads)
+        batch_timestamp = Time.current
+
         Vulnerability
           .id_in(vulnerability_reads.pluck(:vulnerability_id))
           .transitioned_at_least_once
-          .with_state_transitions_and_author
+          .with_state_transitions_author_and_project
           .filter_map do |vulnerability|
-            next unless affected?(vulnerability)
+            bug_transition = affected_transition(vulnerability)
 
-            vulnerability.id
+            next if bug_transition.blank?
+
+            {
+              vulnerability: vulnerability,
+              bug_transition: bug_transition,
+              original_dismissal_transition: original_dismissal(vulnerability, bug_transition),
+              timestamp: batch_timestamp
+            }
           end
       end
 
-      def affected?(vulnerability)
-        vulnerability.state_transitions.each do |state_transition|
-          return false if state_transition.created_before_issue_first_appeared?
+      def affected_transition(vulnerability)
+        vulnerability.state_transitions.find do |state_transition|
+          break if state_transition.created_before_issue_first_appeared?
           # If the state has been transitioned by someone besides the security policy bot then we should
           # respect their decision. When a vulnerability is redetected by a scanner, the transition has no author.
-          return false if state_transition.author.present? && !state_transition.author.security_policy_bot?
-          return true if state_transition.transitioned_from_dismissed_to_resolved?
-        end
+          break if state_transition.author.present? && !state_transition.author.security_policy_bot?
 
-        false
+          state_transition.transitioned_from_dismissed_to_resolved?
+        end
+      end
+
+      def original_dismissal(vulnerability, bug_transition)
+        bug_transition_index = vulnerability.state_transitions.index(bug_transition)
+        prior_transitions = vulnerability.state_transitions[(bug_transition_index + 1)..]
+        prior_transitions.find { |transition| transition.to_state == Vulnerability.states[:dismissed] }
+      end
+
+      def transition_states(data, timestamp)
+        vulnerability_ids = data.map { |record| record[:vulnerability].id }
+
+        Vulnerability.transaction do
+          Vulnerability.id_in(vulnerability_ids).update_all(state: :dismissed, updated_at: timestamp)
+          StateTransition.insert_all(state_transition_attributes(data, timestamp))
+        end
+      end
+
+      def state_transition_attributes(data, timestamp)
+        data.map do |record|
+          {
+            author_id: record[:bug_transition].author_id,
+            from_state: Vulnerability.states[record[:vulnerability].state],
+            to_state: Vulnerability.states[:dismissed],
+            dismissal_reason: record[:original_dismissal_transition]&.dismissal_reason || 0,
+            vulnerability_id: record[:vulnerability].id,
+            comment: COMMENT,
+            created_at: timestamp,
+            updated_at: timestamp
+          }
+        end
+      end
+
+      def insert_notes(data, timestamp)
+        Note.insert_all(note_attributes(data, timestamp))
+      end
+
+      def note_attributes(data, timestamp)
+        data.map do |record|
+          vulnerability = record[:vulnerability]
+          {
+            noteable_type: "Vulnerability",
+            noteable_id: vulnerability.id,
+            project_id: vulnerability.project.id,
+            namespace_id: vulnerability.project.project_namespace_id,
+            system: true,
+            note: COMMENT,
+            author_id: record[:bug_transition].author_id,
+            created_at: timestamp,
+            updated_at: timestamp
+          }
+        end
       end
     end
   end

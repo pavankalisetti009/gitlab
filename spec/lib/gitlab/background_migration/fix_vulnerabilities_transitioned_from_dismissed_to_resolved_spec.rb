@@ -111,7 +111,7 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
   end
 
   let!(:affected_vulnerability_before_date_of_bug) do
-    vulnerability = create_vulnerability(project, **vulnerability_attributes)
+    vulnerability = create_vulnerability(project)
 
     create_state_transitions(vulnerability,
       [
@@ -189,6 +189,37 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
             .and(not_change { confirmed_vulnerability.reload.state })
         )
       end
+
+      it 'inserts state transitions for migrated vulnerabilities', :aggregate_failures do
+        perform_migration
+
+        expect(latest_transition(affected_vulnerability_inside_group)).to have_attributes(
+          comment: described_class::COMMENT,
+          from_state: states[:resolved],
+          to_state: states[:dismissed],
+          dismissal_reason: 1,
+          author_id: security_policy_bot.id,
+          vulnerability_id: affected_vulnerability_inside_group.id
+        )
+
+        expect(latest_transition(affected_vulnerability_outside_group)).to have_attributes(
+          comment: described_class::COMMENT,
+          from_state: states[:resolved],
+          to_state: states[:dismissed],
+          dismissal_reason: 1,
+          author_id: security_policy_bot.id,
+          vulnerability_id: affected_vulnerability_outside_group.id
+        )
+
+        expect(latest_transition(affected_vulnerability_flapping)).to have_attributes(
+          comment: described_class::COMMENT,
+          from_state: states[:detected],
+          to_state: states[:dismissed],
+          dismissal_reason: 1,
+          author_id: security_policy_bot.id,
+          vulnerability_id: affected_vulnerability_flapping.id
+        )
+      end
     end
 
     context 'when migrating a namespace' do
@@ -211,6 +242,10 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
     # rubocop:enable RSpec/MultipleMemoizedHelpers
   end
 
+  def latest_transition(vulnerability)
+    state_transitions.where(vulnerability_id: vulnerability.id).order(:id).last
+  end
+
   def create_affected_vulnerability(project, **vulnerability_attributes)
     vulnerability = create_vulnerability(project, **vulnerability_attributes)
 
@@ -220,6 +255,7 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
           author_id: user.id,
           from_state: states[:detected],
           to_state: states[:dismissed],
+          dismissal_reason: 1,
           comment: 'Not affected'
         },
         {
