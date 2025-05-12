@@ -66,7 +66,7 @@ module Gitlab
           payload = build_search_payload(query, num: num, search_mode: search_mode)
           payload[:ForwardTo] = targets.map do |node_id, project_ids|
             target_node = node(node_id)
-            { Endpoint: "#{target_node.search_base_url}#{PROXY_SEARCH_PATH}", RepoIds: project_ids }
+            { Endpoint: target_node.search_base_url, RepoIds: project_ids }
           end
 
           # Unless a node is specified, prefer the node with the most projects
