@@ -488,7 +488,7 @@ export default {
         </p>
 
         <div
-          class="gl-mt-5 gl-flex gl-grow gl-flex-wrap gl-gap-3"
+          class="gl-mt-5 gl-flex gl-w-full gl-grow gl-flex-wrap gl-gap-3"
           :class="{ '!gl-mt-3': shouldShowRuntimeMessage }"
         >
           <gl-button
@@ -503,18 +503,19 @@ export default {
           <gl-button category="secondary" :href="policiesPath">
             {{ __('Cancel') }}
           </gl-button>
+
+          <gl-button
+            v-if="isEditing"
+            v-gl-modal="'delete-modal'"
+            class="gl-self-end md:gl-ml-auto"
+            category="secondary"
+            variant="danger"
+            data-testid="delete-policy"
+            :loading="isRemovingPolicy"
+          >
+            {{ s__('SecurityOrchestration|Delete policy') }}
+          </gl-button>
         </div>
-        <gl-button
-          v-if="isEditing"
-          v-gl-modal="'delete-modal'"
-          class="gl-self-end"
-          category="secondary"
-          variant="danger"
-          data-testid="delete-policy"
-          :loading="isRemovingPolicy"
-        >
-          {{ s__('SecurityOrchestration|Delete policy') }}
-        </gl-button>
       </div>
     </div>
 
