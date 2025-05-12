@@ -1419,8 +1419,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           [:failed, [:cyclonedx, :container_scanning], :parsed],
           [:failed, [], :error],
           [:running, [:container_scanning], :error],
-          [:running, [:cyclonedx], :parsed],
-          [:running, [:cyclonedx, :container_scanning], :parsed],
+          [:running, [:cyclonedx], :error],
+          [:running, [:cyclonedx, :container_scanning], :error],
           [:running, [], :error],
           [:success, [:container_scanning], :error],
           [:success, [:cyclonedx], :parsed],
@@ -2548,6 +2548,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       context 'when there are merge base pipelines' do
         let_it_be(:old_merge_base_pipeline) do
           create(:ci_pipeline,
+            :success,
             project: project,
             ref: merge_request.target_branch,
             sha: merge_request.target_branch_sha
@@ -2556,6 +2557,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
         let_it_be(:most_recent_merge_base_pipeline) do
           create(:ci_pipeline,
+            :success,
             project: project,
             ref: merge_request.target_branch,
             sha: merge_request.target_branch_sha
@@ -2602,6 +2604,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       context 'when there is no merge base pipeline' do
         let_it_be(:old_base_pipeline) do
           create(:ci_pipeline,
+            :success,
             project: project,
             ref: merge_request.target_branch,
             sha: merge_request.diff_base_sha
@@ -2610,6 +2613,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
         let_it_be(:most_recent_base_pipeline) do
           create(:ci_pipeline,
+            :success,
             project: project,
             ref: merge_request.target_branch,
             sha: merge_request.diff_base_sha
@@ -2928,18 +2932,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           end
 
           context 'when comparison prior to pipeline completion is disabled' do
-            before do
-              stub_feature_flags(mr_show_reports_immediately: false)
-            end
-
             it 'returns nil' do
               expect(pipeline).to be_nil
-            end
-          end
-
-          context 'when comparison prior to pipeline completion is enabled' do
-            it 'returns the most recent base pipeline' do
-              expect(pipeline).to eq(old_base_pipeline)
             end
           end
         end

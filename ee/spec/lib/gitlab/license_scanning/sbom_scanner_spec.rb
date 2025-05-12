@@ -238,25 +238,13 @@ RSpec.describe ::Gitlab::LicenseScanning::SbomScanner, feature_category: :softwa
       context "and the pipeline has an sbom report" do
         let_it_be(:pipeline) { create(:ee_ci_pipeline, :with_cyclonedx_report, project: project) }
 
-        it { is_expected.to be_truthy }
-
         context "and the pipeline is running" do
           let_it_be(:pipeline) { create(:ee_ci_pipeline, :running, project: project) }
           let_it_be(:build) do
             create(:ci_build, job_artifacts: [create(:ee_ci_job_artifact, :cyclonedx)], pipeline: pipeline)
           end
 
-          context "and the mr_show_reports_immediately feature flag is false" do
-            before do
-              stub_feature_flags(mr_show_reports_immediately: false)
-            end
-
-            it { is_expected.to be_falsy }
-          end
-
-          context "and the mr_show_reports_immediately feature flag is true" do
-            it { is_expected.to be_truthy }
-          end
+          it { is_expected.to be_falsy }
         end
 
         context "and the pipeline is blocked by manual jobs" do
