@@ -21,7 +21,7 @@ module Search
         completed = documents_after_current_id.empty?
 
         unless completed
-          maximum_id = documents_after_current_id.maximum(:id).to_i
+          maximum_id = documents_after_current_id.maximum(document_primary_key).to_i
           documents_remaining_approximate = maximum_id - current_id
 
           set_migration_state(maximum_id: maximum_id, documents_remaining_approximate: documents_remaining_approximate)
@@ -60,7 +60,11 @@ module Search
       end
 
       def documents_after_current_id
-        document_type.where("id > ?", current_id).order(:id) # rubocop:disable CodeReuse/ActiveRecord -- we need to select only unprocessed ids
+        document_type.where("#{document_primary_key} > ?", current_id).order(document_primary_key) # rubocop:disable CodeReuse/ActiveRecord -- we need to select only unprocessed ids
+      end
+
+      def document_primary_key
+        document_type.primary_key.to_sym
       end
 
       def backfill_documents
@@ -68,14 +72,12 @@ module Search
           number_of_iterations_per_run.times do
             documents = documents_after_current_id.limit(limit_per_iteration)
 
-            if limit_indexing?
-              documents = documents.preload(item_to_preload) # rubocop: disable CodeReuse/ActiveRecord -- Avoid N+1
-            end
+            documents = documents.preload(item_to_preload) # rubocop: disable CodeReuse/ActiveRecord -- Avoid N+1
 
             documents = documents.to_a
             break if documents.blank?
 
-            max_id = documents.maximum(:id).to_i
+            max_id = documents.maximum(document_primary_key).to_i
 
             documents.select!(&:maintaining_elasticsearch?) if limit_indexing?
 
