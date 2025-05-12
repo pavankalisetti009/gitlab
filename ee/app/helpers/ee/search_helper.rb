@@ -116,7 +116,6 @@ module EE
 
     override :should_show_zoekt_results?
     def should_show_zoekt_results?(scope, search_type)
-      return false if ::Feature.disabled?(:zoekt_multimatch_frontend, current_user)
       return false if scope != 'blobs' || search_type != 'zoekt'
 
       if ::Feature.enabled?(:zoekt_cross_namespace_search, current_user)
