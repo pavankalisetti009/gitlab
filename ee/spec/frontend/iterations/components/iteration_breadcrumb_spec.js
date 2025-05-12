@@ -63,7 +63,7 @@ describe('Iteration Breadcrumb', () => {
     router = createRouter({ base, permissions });
   };
 
-  const mountComponent = ({ requestHandlers = [], readCadenceSpy } = {}) => {
+  const mountComponent = ({ requestHandlers = [], readCadenceSpy, props = {} } = {}) => {
     mockApollo = createMockApollo([[readCadenceQuery, readCadenceSpy], ...requestHandlers]);
 
     wrapper = extendedWrapper(
@@ -71,7 +71,7 @@ describe('Iteration Breadcrumb', () => {
         router,
         provide: { groupPath: '' },
         apolloProvider: mockApollo,
-        propsData: {},
+        propsData: props,
       }),
     );
   };
@@ -115,6 +115,32 @@ describe('Iteration Breadcrumb', () => {
       await waitForApollo();
 
       expect(findBreadcrumb().props('items')).toEqual([
+        { path: '', text: 'Iteration cadences', to: '/' },
+        { path: '1234', text: 'cadenceTitle', to: '/1234' },
+        { path: 'iterations', text: 'Iterations', to: `/${cadenceId}/iterations` },
+        {
+          path: `${iterationId}`,
+          text: `${iterationId}`,
+          to: `/${cadenceId}/iterations/${iterationId}`,
+        },
+        { path: 'edit', text: 'Edit', to: `/${cadenceId}/iterations/${iterationId}/edit` },
+      ]);
+    });
+
+    it('passes the static breadcrumbs to GlBreadcrumb if provided', async () => {
+      await router.push({ name: 'editIteration', params: { cadenceId, iterationId } });
+      mountComponent({
+        readCadenceSpy: jest.fn().mockResolvedValue(cadenceResponse),
+        props: {
+          staticBreadcrumbs: {
+            items: [{ text: 'Static breadcrumb', href: '/static' }],
+          },
+        },
+      });
+      await waitForApollo();
+
+      expect(findBreadcrumb().props('items')).toEqual([
+        { text: 'Static breadcrumb', href: '/static' },
         { path: '', text: 'Iteration cadences', to: '/' },
         { path: '1234', text: 'cadenceTitle', to: '/1234' },
         { path: 'iterations', text: 'Iterations', to: `/${cadenceId}/iterations` },

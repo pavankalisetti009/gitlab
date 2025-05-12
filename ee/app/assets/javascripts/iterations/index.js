@@ -51,7 +51,16 @@ export function initCadenceApp({ namespaceType }) {
     },
   });
 
-  injectVueAppBreadcrumbs(router, IterationBreadcrumb, apolloProvider);
+  injectVueAppBreadcrumbs(
+    router,
+    IterationBreadcrumb,
+    apolloProvider,
+    {},
+    {
+      // Cf. https://gitlab.com/gitlab-org/gitlab/-/merge_requests/186906
+      singleNavOptIn: true,
+    },
+  );
 
   return new Vue({
     el,
