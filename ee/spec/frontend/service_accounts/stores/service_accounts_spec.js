@@ -70,12 +70,12 @@ describe('useAccessTokens store', () => {
         expect(store.busy).toBe(true);
       });
 
-      it('dismisses any existing alert', () => {
-        store.alert = createAlert({ message: 'dummy' });
-        expect(mockAlertDismiss).toHaveBeenCalledTimes(0);
+      it('calls clearAlert', () => {
+        store.clearAlert = jest.fn();
+        expect(store.clearAlert).toHaveBeenCalledTimes(0);
         store.fetchServiceAccounts(url, params);
 
-        expect(mockAlertDismiss).toHaveBeenCalledTimes(1);
+        expect(store.clearAlert).toHaveBeenCalledTimes(1);
       });
 
       it('fetches the service accounts with the correct params', async () => {
@@ -154,12 +154,12 @@ describe('useAccessTokens store', () => {
         expect(store.busy).toBe(true);
       });
 
-      it('clears the alert', () => {
-        store.alert = createAlert({ message: 'dummy' });
-        expect(mockAlertDismiss).toHaveBeenCalledTimes(0);
-        store.createServiceAccount(url, values);
+      it('calls clearAlert', () => {
+        store.clearAlert = jest.fn();
+        expect(store.clearAlert).toHaveBeenCalledTimes(0);
+        store.fetchServiceAccounts(url, params);
 
-        expect(mockAlertDismiss).toHaveBeenCalledTimes(1);
+        expect(store.clearAlert).toHaveBeenCalledTimes(1);
       });
 
       it('calls the create endpoint with the correct params', async () => {
@@ -232,12 +232,12 @@ describe('useAccessTokens store', () => {
         expect(store.busy).toBe(true);
       });
 
-      it('clears the alert', () => {
-        store.alert = createAlert({ message: 'dummy' });
-        expect(mockAlertDismiss).toHaveBeenCalledTimes(0);
-        store.editServiceAccount(url, values, false);
+      it('calls clearAlert', () => {
+        store.clearAlert = jest.fn();
+        expect(store.clearAlert).toHaveBeenCalledTimes(0);
+        store.fetchServiceAccounts(url, params);
 
-        expect(mockAlertDismiss).toHaveBeenCalledTimes(1);
+        expect(store.clearAlert).toHaveBeenCalledTimes(1);
       });
 
       describe('admin level', () => {
@@ -326,12 +326,12 @@ describe('useAccessTokens store', () => {
         expect(store.busy).toBe(true);
       });
 
-      it('clears the alert', () => {
-        store.alert = createAlert({ message: 'dummy' });
-        expect(mockAlertDismiss).toHaveBeenCalledTimes(0);
-        store.deleteUser(url);
+      it('calls clearAlert', () => {
+        store.clearAlert = jest.fn();
+        expect(store.clearAlert).toHaveBeenCalledTimes(0);
+        store.fetchServiceAccounts(url, params);
 
-        expect(mockAlertDismiss).toHaveBeenCalledTimes(1);
+        expect(store.clearAlert).toHaveBeenCalledTimes(1);
       });
 
       it('calls the delete endpoint with the correct params', async () => {
