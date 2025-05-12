@@ -149,36 +149,83 @@ describe('Service Accounts', () => {
           ]);
         });
 
-        it('routes to the token management when click on manage access token button', () => {
-          findDisclosureButton(0).trigger('click');
+        describe('when click on the manage access token button', () => {
+          it('routes to the token management', () => {
+            findDisclosureButton(0).trigger('click');
 
-          expect($router.push).toHaveBeenCalledWith({
-            name: 'access_tokens',
-            params: { id: 1 },
-            replace: true,
+            expect($router.push).toHaveBeenCalledWith({
+              name: 'access_tokens',
+              params: { id: 1 },
+              replace: true,
+            });
+          });
+
+          it('clears alerts', () => {
+            expect(store.clearAlert).toHaveBeenCalledTimes(0);
+            findDisclosureButton(0).trigger('click');
+
+            expect(store.clearAlert).toHaveBeenCalledTimes(1);
           });
         });
 
-        it('set the account and delete type when click on the delete account button', () => {
-          findDisclosureButton(2).trigger('click');
+        describe('when click on the edit button', () => {
+          it('set the account and delete type when click on the delete account button', () => {
+            findDisclosureButton(1).trigger('click');
 
-          expect(store.setServiceAccount).toHaveBeenCalledWith({
-            id: 1,
-            name: 'Service Account 1',
-            username: 'test_user',
+            expect(store.setServiceAccount).toHaveBeenCalledWith({
+              id: 1,
+              name: 'Service Account 1',
+              username: 'test_user',
+            });
+            expect(store.setCreateEditType).toHaveBeenCalledWith('edit');
           });
-          expect(store.setDeleteType).toHaveBeenCalledWith('soft');
+
+          it('clears alerts', () => {
+            expect(store.clearAlert).toHaveBeenCalledTimes(0);
+            findDisclosureButton(1).trigger('click');
+
+            expect(store.clearAlert).toHaveBeenCalledTimes(1);
+          });
         });
 
-        it('set the account and delete type when click on the delete account and contribution button', () => {
-          findDisclosureButton(3).trigger('click');
+        describe('when click on the delete account button', () => {
+          it('set the account and delete type when click on the delete account button', () => {
+            findDisclosureButton(2).trigger('click');
 
-          expect(store.setServiceAccount).toHaveBeenCalledWith({
-            id: 1,
-            name: 'Service Account 1',
-            username: 'test_user',
+            expect(store.setServiceAccount).toHaveBeenCalledWith({
+              id: 1,
+              name: 'Service Account 1',
+              username: 'test_user',
+            });
+            expect(store.setDeleteType).toHaveBeenCalledWith('soft');
           });
-          expect(store.setDeleteType).toHaveBeenCalledWith('hard');
+
+          it('clears alerts', () => {
+            expect(store.clearAlert).toHaveBeenCalledTimes(0);
+            findDisclosureButton(2).trigger('click');
+
+            expect(store.clearAlert).toHaveBeenCalledTimes(1);
+          });
+        });
+
+        describe('when click on the delete account and contribution button', () => {
+          it('sets the account and delete type', () => {
+            findDisclosureButton(3).trigger('click');
+
+            expect(store.setServiceAccount).toHaveBeenCalledWith({
+              id: 1,
+              name: 'Service Account 1',
+              username: 'test_user',
+            });
+            expect(store.setDeleteType).toHaveBeenCalledWith('hard');
+          });
+
+          it('clears alerts', () => {
+            expect(store.clearAlert).toHaveBeenCalledTimes(0);
+            findDisclosureButton(3).trigger('click');
+
+            expect(store.clearAlert).toHaveBeenCalledTimes(1);
+          });
         });
       });
     });
@@ -208,6 +255,7 @@ describe('Service Accounts', () => {
       addServiceAccountButton.vm.$emit('click');
 
       expect(addServiceAccountButton.emitted()).toHaveProperty('click');
+      expect(store.clearAlert).toHaveBeenCalled();
       expect(store.setCreateEditType).toHaveBeenCalledWith('create');
       expect(store.setServiceAccount).toHaveBeenCalledWith(null);
     });
