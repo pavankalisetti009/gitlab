@@ -233,27 +233,13 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
   end
 
   describe "#name" do
-    context 'when the feature flag custom_software_license is disabled' do
-      before do
-        stub_feature_flags(custom_software_license: false)
-      end
+    context 'when associated with a custom_software_license' do
+      subject(:software_license_policy) { build(:software_license_policy, project: project, software_license: nil, custom_software_license: custom_software_license) }
 
-      specify { expect(subject.name).to eql(subject.software_license.name) }
-    end
+      let_it_be(:project) { create(:project) }
+      let_it_be(:custom_software_license) { create(:custom_software_license) }
 
-    context 'when the feature flag custom_software_license is enabled' do
-      before do
-        stub_feature_flags(custom_software_license: true)
-      end
-
-      context 'when associated with a custom_software_license' do
-        subject(:software_license_policy) { build(:software_license_policy, project: project, software_license: nil, custom_software_license: custom_software_license) }
-
-        let_it_be(:project) { create(:project) }
-        let_it_be(:custom_software_license) { create(:custom_software_license) }
-
-        specify { expect(software_license_policy.name).to eql(software_license_policy.custom_software_license.name) }
-      end
+      specify { expect(software_license_policy.name).to eql(software_license_policy.custom_software_license.name) }
     end
   end
 

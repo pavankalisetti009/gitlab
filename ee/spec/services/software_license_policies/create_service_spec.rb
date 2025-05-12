@@ -57,159 +57,78 @@ RSpec.describe SoftwareLicensePolicies::CreateService, feature_category: :securi
     end
 
     context 'when valid parameters are specified' do
-      context 'when custom_software_license feature flag is disabled' do
-        let(:license_name) { 'MIT License' }
-        let(:license_spdx_identifier) { 'MIT' }
-        let(:params) { { name: license_name, approval_status: 'allowed' } }
-        let(:result) { subject.execute }
+      let(:license_name) { nil }
 
-        before do
-          stub_feature_flags(custom_software_license: false)
+      let(:params) { { name: license_name, approval_status: 'allowed' } }
+
+      subject(:result) { described_class.new(project, user, params).execute }
+
+      shared_examples_for 'finds or create a new software license' do
+        context 'when a software license with the given name exists' do
+          before do
+            create(:software_license, name: license_name)
+          end
+
+          it 'does not create a new SoftwareLicense' do
+            expect { result }.not_to change { SoftwareLicense.count }
+          end
         end
 
-        it 'creates one software license policy correctly' do
-          result
+        context 'when a software license with the given name does not exists' do
+          it 'creates a new SoftwareLicense' do
+            expect { result }.to change { SoftwareLicense.count }.by(1)
+            expect(SoftwareLicense.last).to have_attributes(name: license_name)
+          end
+        end
+      end
 
+      context 'when the software license is not part of the SPDX catalog' do
+        let(:license_name) { 'License Saved in Database' }
+
+        it 'creates one software license policy with software_license and custom_software_license' do
+          result
           expect(project.software_license_policies.count).to be(1)
           expect(result[:status]).to be(:success)
           expect(result[:software_license_policy]).to be_present
           expect(result[:software_license_policy]).to be_persisted
           expect(result[:software_license_policy].name).to eq(params[:name])
           expect(result[:software_license_policy].classification).to eq(params[:approval_status])
-          expect(result[:software_license_policy].spdx_identifier).to eq(license_spdx_identifier)
+          expect(result[:software_license_policy].software_license_spdx_identifier).to be_nil
+          expect(result[:software_license_policy].software_license.name).to eq(license_name)
+          expect(result[:software_license_policy].custom_software_license.name).to eq(license_name)
         end
 
-        context 'when name contains whitespaces' do
-          let(:params) { { name: '  MIT   ', approval_status: 'allowed' } }
-
-          it 'creates one software license policy with stripped name' do
-            result
-
-            expect(project.software_license_policies.count).to be(1)
-            expect(result[:status]).to be(:success)
-            expect(result[:software_license_policy]).to be_persisted
-            expect(result[:software_license_policy].name).to eq('MIT')
-          end
-        end
-
-        context 'when a software license with the given name exists' do
-          before do
-            create(:software_license, name: license_name, spdx_identifier: spdx_identifier)
-          end
-
-          context 'when the license is part of spdx latest catalog' do
-            let(:license_name) { 'MIT License' }
-            let(:spdx_identifier) { 'MIT' }
-
-            it 'does not call CustomSoftwareLicense::FindOrCreateService' do
-              expect(Security::CustomSoftwareLicenses::FindOrCreateService).not_to receive(:new)
-
-              result
-            end
-
-            it 'sets the expected attributes' do
-              result
-
-              expect(result[:software_license_policy].software_license.name).to eq(license_name)
-              expect(result[:software_license_policy].spdx_identifier).to eq(spdx_identifier)
-              expect(result[:software_license_policy].custom_software_license).to be_nil
-            end
-          end
-
-          context 'when the license is not part of spdx latest catalog' do
-            let(:license_name) { 'License outside spdx catalogue' }
-            let(:spdx_identifier) { 'License' }
-
-            it_behaves_like 'find or creates a custom software license'
-          end
-        end
-
-        context 'when the software license does not exists' do
-          let(:license_name) { 'Custom License' }
-
-          it_behaves_like 'find or creates a custom software license'
-          it_behaves_like 'when an error occurs during the software license creation'
-        end
+        it_behaves_like 'find or creates a custom software license'
+        it_behaves_like 'finds or create a new software license'
       end
 
-      context 'when custom_software_license feature flag is enabled' do
-        before do
-          stub_feature_flags(custom_software_license: true)
+      context 'when the software license is part of the SPDX catalog' do
+        let(:license_name) { 'MIT License' }
+        let(:license_spdx_identifier) { 'MIT' }
+
+        it 'creates one software license policy with a software_license_spdx_identifier and software_license' do
+          result
+          expect(project.software_license_policies.count).to be(1)
+          expect(result[:status]).to be(:success)
+          expect(result[:software_license_policy]).to be_present
+          expect(result[:software_license_policy]).to be_persisted
+          expect(result[:software_license_policy].name).to eq(params[:name])
+          expect(result[:software_license_policy].classification).to eq(params[:approval_status])
+          expect(result[:software_license_policy].software_license_spdx_identifier).to eq(license_spdx_identifier)
+          expect(result[:software_license_policy].software_license.name).to eq(license_name)
+          expect(result[:software_license_policy].custom_software_license).to be_nil
         end
 
-        let(:license_name) { nil }
+        it 'does not call CustomSoftwareLicense::FindOrCreateService' do
+          expect(Security::CustomSoftwareLicenses::FindOrCreateService).not_to receive(:new)
 
-        let(:params) { { name: license_name, approval_status: 'allowed' } }
-
-        subject(:result) { described_class.new(project, user, params).execute }
-
-        shared_examples_for 'finds or create a new software license' do
-          context 'when a software license with the given name exists' do
-            before do
-              create(:software_license, name: license_name)
-            end
-
-            it 'does not create a new SoftwareLicense' do
-              expect { result }.not_to change { SoftwareLicense.count }
-            end
-          end
-
-          context 'when a software license with the given name does not exists' do
-            it 'creates a new SoftwareLicense' do
-              expect { result }.to change { SoftwareLicense.count }.by(1)
-              expect(SoftwareLicense.last).to have_attributes(name: license_name)
-            end
-          end
+          result
         end
 
-        context 'when the software license is not part of the SPDX catalog' do
-          let(:license_name) { 'License Saved in Database' }
-
-          it 'creates one software license policy with software_license and custom_software_license' do
-            result
-            expect(project.software_license_policies.count).to be(1)
-            expect(result[:status]).to be(:success)
-            expect(result[:software_license_policy]).to be_present
-            expect(result[:software_license_policy]).to be_persisted
-            expect(result[:software_license_policy].name).to eq(params[:name])
-            expect(result[:software_license_policy].classification).to eq(params[:approval_status])
-            expect(result[:software_license_policy].software_license_spdx_identifier).to be_nil
-            expect(result[:software_license_policy].software_license.name).to eq(license_name)
-            expect(result[:software_license_policy].custom_software_license.name).to eq(license_name)
-          end
-
-          it_behaves_like 'find or creates a custom software license'
-          it_behaves_like 'finds or create a new software license'
-        end
-
-        context 'when the software license is part of the SPDX catalog' do
-          let(:license_name) { 'MIT License' }
-          let(:license_spdx_identifier) { 'MIT' }
-
-          it 'creates one software license policy with a software_license_spdx_identifier and software_license' do
-            result
-            expect(project.software_license_policies.count).to be(1)
-            expect(result[:status]).to be(:success)
-            expect(result[:software_license_policy]).to be_present
-            expect(result[:software_license_policy]).to be_persisted
-            expect(result[:software_license_policy].name).to eq(params[:name])
-            expect(result[:software_license_policy].classification).to eq(params[:approval_status])
-            expect(result[:software_license_policy].software_license_spdx_identifier).to eq(license_spdx_identifier)
-            expect(result[:software_license_policy].software_license.name).to eq(license_name)
-            expect(result[:software_license_policy].custom_software_license).to be_nil
-          end
-
-          it 'does not call CustomSoftwareLicense::FindOrCreateService' do
-            expect(Security::CustomSoftwareLicenses::FindOrCreateService).not_to receive(:new)
-
-            result
-          end
-
-          it_behaves_like 'finds or create a new software license'
-        end
-
-        it_behaves_like 'when an error occurs during the software license creation'
+        it_behaves_like 'finds or create a new software license'
       end
+
+      it_behaves_like 'when an error occurs during the software license creation'
     end
 
     context 'when an argument error is raised' do
