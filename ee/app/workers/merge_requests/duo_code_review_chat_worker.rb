@@ -143,8 +143,6 @@ module MergeRequests
     end
 
     def create_progress_note(note)
-      return unless ::Feature.enabled?(:duo_code_review_system_note, note.project)
-
       create_note_on(note, s_("DuoCodeReview|is working on a reply"), system_note: true)
     end
   end
