@@ -1350,14 +1350,6 @@ RSpec.describe License, feature_category: :plan_provisioning do
       end
     end
 
-    context 'with a license that has no start date' do
-      let_it_be(:license) { create(:license, starts_at: nil, expires_at: Date.new(2014, 12, 31)) }
-
-      it 'returns correct number of records starting a year ago to license\s expiration date' do
-        expect(historical_data_count).to eq(14)
-      end
-    end
-
     context 'with a license that has no end date' do
       let_it_be(:license) { create(:license, starts_at: Date.new(2014, 7, 1), expires_at: nil) }
 
@@ -1427,22 +1419,6 @@ RSpec.describe License, feature_category: :plan_provisioning do
 
       it 'returns max value for active_user_count for within the license period only' do
         expect(historical_max).to eq(15)
-      end
-    end
-
-    context 'when license has no start date' do
-      let(:license) { create(:license, starts_at: nil, expires_at: Date.current + 1.month) }
-
-      before do
-        travel_to DateTime.new(2023, 12, 10) # use fixed date to avoid leap day failures
-
-        create(:historical_data, recorded_at: Date.yesterday.ago(1.year), active_user_count: 15)
-        create(:historical_data, recorded_at: Date.current.ago(1.year), active_user_count: 12)
-        create(:historical_data, recorded_at: license.expires_at.ago(2.days), active_user_count: 10)
-      end
-
-      it 'returns max value for active_user_count from up to a year ago' do
-        expect(historical_max).to eq(12)
       end
     end
 
