@@ -305,6 +305,25 @@ RSpec.describe 'getting the project compliance requirement statuses for a group'
           end
         end
       end
+
+      context 'with all filters' do
+        it 'returns filtered statuses' do
+          post_graphql(
+            query(
+              {
+                filters: {
+                  projectId: root_group_project.to_global_id.to_s,
+                  requirementId: requirement1.to_global_id.to_s,
+                  frameworkId: framework1.to_global_id.to_s
+                }
+              }
+            ),
+            current_user: current_user
+          )
+
+          expect(requirement_statuses).to match_array([requirement_status1_output])
+        end
+      end
     end
 
     context 'with ordering' do

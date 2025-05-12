@@ -3,6 +3,8 @@
 module ComplianceManagement
   module ComplianceFramework
     class ProjectRequirementStatusFinder
+      include ::Gitlab::Utils::StrongMemoize
+
       LIMIT = 100
 
       def initialize(group, current_user, params = {})
@@ -14,12 +16,13 @@ module ComplianceManagement
       def execute
         return model.none unless allowed?
 
-        Gitlab::Pagination::Keyset::InOperatorOptimization::QueryBuilder.new(
-          scope: in_operator_scope,
-          array_scope: group.self_and_descendant_ids,
-          array_mapping_scope: model.method(:in_optimization_array_mapping_scope),
-          finder_query: model.method(:in_optimization_finder_query)
-        ).execute.limit(LIMIT)
+        # If records need to be filtered by project then we don't need inoperator optimization as we are already
+        # dealing with just a single project.
+        if project.present?
+          in_operator_scope
+        else
+          records_for_group
+        end
       end
 
       private
@@ -32,6 +35,15 @@ module ComplianceManagement
 
       def model
         ::ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus
+      end
+
+      def records_for_group
+        Gitlab::Pagination::Keyset::InOperatorOptimization::QueryBuilder.new(
+          scope: in_operator_scope,
+          array_scope: group.self_and_descendant_ids,
+          array_mapping_scope: model.method(:in_optimization_array_mapping_scope),
+          finder_query: model.method(:in_optimization_finder_query)
+        ).execute.limit(LIMIT)
       end
 
       def in_operator_scope
@@ -73,6 +85,11 @@ module ComplianceManagement
 
         status_records
       end
+
+      def project
+        Project.find_by_id(params[:project_id])
+      end
+      strong_memoize_attr :project
     end
   end
 end
