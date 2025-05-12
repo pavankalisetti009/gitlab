@@ -1,7 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlFormCheckbox, GlPopover, GlFormGroup, GlSprintf } from '@gitlab/ui';
+import { GlFormCheckbox, GlPopover, GlFormGroup, GlSprintf, GlLink } from '@gitlab/ui';
 import DuoPromptCacheForm from 'ee/ai/settings/components/duo_prompt_cache_form.vue';
-import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 
 const MOCK_DATA = {
   promptCacheHelpPath: '/help/user/project/repository/code_suggestions/_index.md#prompt-caching',
@@ -25,7 +24,7 @@ describe('DuoPromptCacheForm', () => {
         GlFormCheckbox,
         GlPopover,
         GlSprintf,
-        PromoPageLink,
+        GlLink,
       },
     });
   };
@@ -76,9 +75,9 @@ describe('DuoPromptCacheForm', () => {
     });
 
     it('renders correct links', () => {
-      const helpLink = wrapper.findComponent(PromoPageLink);
+      const helpLink = wrapper.findComponent(GlLink);
       expect(helpLink.exists()).toBe(true);
-      expect(helpLink.props('path')).toBe(MOCK_DATA.promptCacheHelpPath);
+      expect(helpLink.props('href')).toBe(MOCK_DATA.promptCacheHelpPath);
     });
 
     describe('when disabledCheckbox is true', () => {
