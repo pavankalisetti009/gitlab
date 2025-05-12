@@ -6,6 +6,7 @@ import SectionHeader from 'ee/pages/projects/get_started/components/section_head
 import SectionBody from 'ee/pages/projects/get_started/components/section_body.vue';
 import eventHub from '~/invite_members/event_hub';
 import eventHubNav from '~/super_sidebar/event_hub';
+import DuoExtensions from 'ee/pages/projects/get_started/components/duo_extensions.vue';
 
 describe('GetStarted', () => {
   let wrapper;
@@ -130,6 +131,10 @@ describe('GetStarted', () => {
       await wrapper.vm.toggleExpand(1);
       expect(wrapper.vm.expandedIndex).toBe(null);
       expect(wrapper.vm.isExpanded(1)).toBe(false);
+    });
+
+    it('renders the duo extension section', () => {
+      expect(wrapper.findComponent(DuoExtensions).exists()).toBe(true);
     });
   });
 

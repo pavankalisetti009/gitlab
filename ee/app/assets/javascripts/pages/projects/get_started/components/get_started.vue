@@ -5,6 +5,7 @@ import eventHubNav from '~/super_sidebar/event_hub';
 import { INVITE_URL_TYPE } from 'ee/pages/projects/get_started/constants';
 import SectionHeader from './section_header.vue';
 import SectionBody from './section_body.vue';
+import DuoExtensions from './duo_extensions.vue';
 
 export default {
   name: 'GetStarted',
@@ -15,6 +16,7 @@ export default {
     GlAlert,
     SectionBody,
     SectionHeader,
+    DuoExtensions,
   },
   props: {
     sections: {
@@ -156,6 +158,7 @@ export default {
         </template>
         <section-body :section="section" :is-expanded="isExpanded(index)" />
       </gl-card>
+      <duo-extensions />
     </div>
 
     <div class="col-md-3 md:gl-pl-6">

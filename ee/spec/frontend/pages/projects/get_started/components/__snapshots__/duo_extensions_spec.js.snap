@@ -1,0 +1,88 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DuoExtensions component renders correctly 1`] = `
+<div>
+  <header>
+    <h2
+      class="gl-text-size-h2"
+    >
+      Use GitLab Duo locally
+    </h2>
+    <p
+      class="gl-mb-0 gl-text-subtle"
+    >
+      Download the extension to access GitLab features and GitLab Duo AI capabilities to handle everyday tasks.
+    </p>
+  </header>
+  <div
+    class="gl-mt-3"
+  >
+    <gl-button-stub
+      buttontextclasses=""
+      category="secondary"
+      class="gl-mr-3"
+      href="/help/editor_extensions/visual_studio_code/_index.md"
+      icon=""
+      size="medium"
+      variant="default"
+    >
+      VS Code
+    </gl-button-stub>
+    <gl-button-stub
+      buttontextclasses=""
+      category="secondary"
+      class="gl-mr-3"
+      href="/help/editor_extensions/jetbrains_ide/_index.md"
+      icon=""
+      size="medium"
+      variant="default"
+    >
+      Jetbrains
+    </gl-button-stub>
+    <gl-button-stub
+      buttontextclasses=""
+      category="secondary"
+      class="gl-mr-3"
+      href="/help/editor_extensions/visual_studio/_index.md"
+      icon=""
+      size="medium"
+      variant="default"
+    >
+      Visual Studio
+    </gl-button-stub>
+    <gl-button-stub
+      buttontextclasses=""
+      category="secondary"
+      class="gl-mr-3"
+      href="/help/editor_extensions/eclipse/_index.md"
+      icon=""
+      size="medium"
+      variant="default"
+    >
+      Eclipse
+    </gl-button-stub>
+    <gl-button-stub
+      buttontextclasses=""
+      category="secondary"
+      class="gl-mr-3"
+      href="/help/editor_extensions/neovim/_index.md"
+      icon=""
+      size="medium"
+      variant="default"
+    >
+      Neovim
+    </gl-button-stub>
+    <gl-button-stub
+      buttontextclasses=""
+      category="secondary"
+      class="gl-mr-3"
+      href="/help/editor_extensions/gitlab_cli/_index.md"
+      icon=""
+      size="medium"
+      variant="default"
+    >
+      GitLab CLI
+    </gl-button-stub>
+  </div>
+</div>
+`;
