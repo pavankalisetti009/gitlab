@@ -35,8 +35,8 @@ module API
               goal: params[:goal],
               workflow_definition: params[:workflow_definition],
               workflow_id: workflow_id,
-              workflow_oauth_token: gitlab_oauth_token,
-              workflow_service_token: duo_workflow_token
+              workflow_oauth_token: gitlab_oauth_token.plaintext_token,
+              workflow_service_token: duo_workflow_token[:token]
             }
           end
 
@@ -50,7 +50,7 @@ module API
               render_api_error!(gitlab_oauth_token_result[:message], gitlab_oauth_token_result[:http_status])
             end
 
-            gitlab_oauth_token_result[:oauth_access_token].plaintext_token
+            gitlab_oauth_token_result[:oauth_access_token]
           end
 
           def duo_workflow_token
@@ -61,7 +61,7 @@ module API
             ).generate_token
             bad_request!(duo_workflow_token_result[:message]) if duo_workflow_token_result[:status] == :error
 
-            duo_workflow_token_result[:token]
+            duo_workflow_token_result
           end
 
           def create_workflow_params
@@ -112,14 +112,19 @@ module API
                   render_api_error!(_('This endpoint has been requested too many times. Try again later.'), 429)
                 end
 
+                oauth_token = gitlab_oauth_token
+                workflow_token = duo_workflow_token
+
                 access = {
                   gitlab_rails: {
                     base_url: Gitlab.config.gitlab.url,
-                    token: gitlab_oauth_token
+                    token: oauth_token.plaintext_token,
+                    token_expires_at: oauth_token.expires_at
                   },
                   duo_workflow_service: {
                     base_url: Gitlab::DuoWorkflow::Client.url,
-                    token: duo_workflow_token,
+                    token: workflow_token[:token],
+                    token_expires_at: workflow_token[:expires_at],
                     headers: Gitlab::DuoWorkflow::Client.headers(user: current_user),
                     secure: Gitlab::DuoWorkflow::Client.secure?
                   },

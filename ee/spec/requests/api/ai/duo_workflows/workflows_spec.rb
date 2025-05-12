@@ -322,14 +322,19 @@ message: "could not generate token" })
     end
 
     context 'when success' do
+      let(:gitlab_rails_token_expires_at) { 2.hours.from_now.to_i }
+      let(:duo_workflow_service_token_expires_at) { 1.hour.from_now.to_i }
+
       before do
         allow(::CloudConnector).to receive(:ai_headers).with(user).and_return({ header_key: 'header_value' })
         allow_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
           allow(service).to receive(:execute).and_return({ status: :success,
-oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token') })
+oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token',
+  expires_at: gitlab_rails_token_expires_at) })
         end
         allow_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
-          allow(client).to receive(:generate_token).and_return({ status: :success, token: 'duo_workflow_token' })
+          allow(client).to receive(:generate_token).and_return({ status: :success, token: 'duo_workflow_token',
+expires_at: duo_workflow_service_token_expires_at })
         end
       end
 
@@ -339,10 +344,12 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['gitlab_rails']['base_url']).to eq(Gitlab.config.gitlab.url)
         expect(json_response['gitlab_rails']['token']).to eq('oauth_token')
+        expect(json_response['gitlab_rails']['token_expires_at']).to eq(gitlab_rails_token_expires_at)
         expect(json_response['duo_workflow_service']['base_url']).to eq("duo-workflow-service.example.com:50052")
         expect(json_response['duo_workflow_service']['token']).to eq('duo_workflow_token')
         expect(json_response['duo_workflow_service']['headers']['header_key']).to eq("header_value")
         expect(json_response['duo_workflow_service']['secure']).to eq(Gitlab::DuoWorkflow::Client.secure?)
+        expect(json_response['duo_workflow_service']['token_expires_at']).to eq(duo_workflow_service_token_expires_at)
         expect(json_response['duo_workflow_executor']['executor_binary_url']).to eq('https://example.com/executor')
         expect(json_response['duo_workflow_executor']['version']).to eq('v1.2.3')
         expect(json_response['workflow_metadata']['extended_logging']).to eq(true)
