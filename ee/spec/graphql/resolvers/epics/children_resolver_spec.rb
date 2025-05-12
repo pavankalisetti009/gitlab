@@ -12,6 +12,7 @@ RSpec.describe 'Resolvers::Epics::ChildrenResolver' do
   let_it_be_with_reload(:confidential_base_epic) { create(:epic, :confidential, group: group) }
   let_it_be(:child1) { create(:epic, group: group, parent: base_epic) }
   let_it_be(:child2) { create(:epic, group: other_group, parent: base_epic) }
+  let_it_be(:closed_child) { create(:epic, :closed, group: group, parent: base_epic) }
   let_it_be(:confidential_child1) { create(:epic, :confidential, group: group, parent: confidential_base_epic) }
   let_it_be(:confidential_child2) { create(:epic, :confidential, group: other_group, parent: confidential_base_epic) }
 
@@ -36,7 +37,7 @@ RSpec.describe 'Resolvers::Epics::ChildrenResolver' do
       end
 
       it 'returns only accessible children' do
-        expect(resolve_children(base_epic)).to contain_exactly(child1)
+        expect(resolve_children(base_epic)).to contain_exactly(child1, closed_child)
       end
 
       it 'returns only accessible confidential children' do
@@ -55,13 +56,23 @@ RSpec.describe 'Resolvers::Epics::ChildrenResolver' do
         end
       end
 
+      it 'returns only open children when state is open' do
+        expect(resolve_children(base_epic, { state: 'opened' })).to contain_exactly(child1)
+        expect(resolve_children(base_epic, { state: 'opened' })).not_to include(closed_child)
+      end
+
+      it 'returns only closed children when state is closed' do
+        expect(resolve_children(base_epic, { state: 'closed' })).to contain_exactly(closed_child)
+        expect(resolve_children(base_epic, { state: 'closed' })).not_to include(child1)
+      end
+
       context 'when user has access to all child epics groups' do
         before do
           other_group.add_reporter(current_user)
         end
 
         it 'returns all children' do
-          expect(resolve_children(base_epic)).to contain_exactly(child1, child2)
+          expect(resolve_children(base_epic)).to contain_exactly(child1, child2, closed_child)
         end
 
         it 'returns confidential children' do
@@ -78,7 +89,7 @@ RSpec.describe 'Resolvers::Epics::ChildrenResolver' do
           end
 
           it 'returns all children' do
-            expect(resolve_children(base_epic)).to match_array([child3, child2, child1])
+            expect(resolve_children(base_epic)).to match_array([child3, child2, child1, closed_child])
           end
         end
       end
@@ -90,7 +101,7 @@ RSpec.describe 'Resolvers::Epics::ChildrenResolver' do
       end
 
       it 'returns accessible non confidential children' do
-        expect(resolve_children(base_epic)).to contain_exactly(child1)
+        expect(resolve_children(base_epic)).to contain_exactly(child1, closed_child)
       end
 
       it 'does not return confidential children' do
