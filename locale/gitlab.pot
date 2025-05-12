@@ -40089,9 +40089,6 @@ msgstr ""
 msgid "New Security findings"
 msgstr ""
 
-msgid "New User"
-msgstr ""
-
 msgid "New branch"
 msgstr ""
 
