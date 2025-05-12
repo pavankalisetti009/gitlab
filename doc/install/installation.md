@@ -86,6 +86,8 @@ of GitLab and `config.yml` of GitLab Shell.
 
 It is not necessary to create these directories manually now, and doing so can cause errors later in the installation.
 
+## Installation workflow
+
 The GitLab installation consists of setting up the following components:
 
 1. [Packages and dependencies](#1-packages-and-dependencies).
@@ -98,8 +100,6 @@ The GitLab installation consists of setting up the following components:
 1. [Redis](#8-redis).
 1. [GitLab](#9-gitlab).
 1. [NGINX](#10-nginx).
-
-For a more in-depth overview, see the GitLab architecture in the development documentation.
 
 ## 1. Packages and dependencies
 
