@@ -184,17 +184,6 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
           expect(controller).not_to receive(:haml_search_results)
           get :show, params: { scope: 'blobs', search: 'test', group_id: group.id }
         end
-
-        context 'when the feature flag is disabled' do
-          before do
-            stub_feature_flags(zoekt_multimatch_frontend: false)
-          end
-
-          it 'calls haml_search_results' do
-            expect(controller).to receive(:haml_search_results)
-            get :show, params: { scope: 'blobs', search: 'test', group_id: group.id }
-          end
-        end
       end
     end
 
@@ -462,34 +451,15 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
       allow(controller_instance).to receive(:current_user).and_return(current_user)
     end
 
-    context 'when the feature flag is enabled, scope is "blobs", and search_type is "zoekt"' do
-      before do
-        allow(Feature).to receive(:enabled?).with(:zoekt_multimatch_frontend, current_user).and_return(true)
-      end
-
+    context 'when scope is "blobs", and search_type is "zoekt"' do
       it 'returns true' do
         result = controller_instance.send(:multi_match?, search_type: search_type, scope: scope)
         expect(result).to be(true)
       end
     end
 
-    context 'when the feature flag is disabled' do
-      before do
-        allow(Feature).to receive(:enabled?).with(:zoekt_multimatch_frontend, current_user).and_return(false)
-      end
-
-      it 'returns false' do
-        result = controller_instance.send(:multi_match?, search_type: search_type, scope: scope)
-        expect(result).to be(false)
-      end
-    end
-
     context 'when scope is not "blobs"' do
       let(:scope) { 'other_scope' }
-
-      before do
-        allow(Feature).to receive(:enabled?).with(:zoekt_multimatch_frontend, current_user).and_return(true)
-      end
 
       it 'returns false' do
         result = controller_instance.send(:multi_match?, search_type: search_type, scope: scope)
@@ -499,10 +469,6 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
 
     context 'when search_type is not "zoekt"' do
       let(:search_type) { 'other_search' }
-
-      before do
-        allow(Feature).to receive(:enabled?).with(:zoekt_multimatch_frontend, current_user).and_return(true)
-      end
 
       it 'returns false' do
         result = controller_instance.send(:multi_match?, search_type: search_type, scope: scope)

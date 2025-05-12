@@ -53,7 +53,6 @@ module EE
       before_action :check_search_rate_limit!, only: search_rate_limited_endpoints
 
       before_action only: :show do
-        push_frontend_feature_flag(:zoekt_multimatch_frontend, current_user)
         push_frontend_feature_flag(:zoekt_cross_namespace_search, current_user)
       end
 
@@ -80,7 +79,7 @@ module EE
 
     override :multi_match?
     def multi_match?(search_type:, scope:)
-      scope == 'blobs' && search_type == 'zoekt' && ::Feature.enabled?(:zoekt_multimatch_frontend, current_user)
+      scope == 'blobs' && search_type == 'zoekt'
     end
 
     override :default_sort

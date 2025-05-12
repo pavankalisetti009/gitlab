@@ -164,9 +164,6 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
 
     before do
       sign_in(user)
-      # this tests tests only non-multimatch search
-      # multimatch search is tested in jest
-      stub_feature_flags(zoekt_multimatch_frontend: false)
 
       allow_next_instance_of(SearchService) do |service|
         allow(service).to receive_messages(search_service: search_service, show_epics?: false, search_results: results)

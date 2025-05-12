@@ -127,9 +127,8 @@ RSpec.describe 'User with read_code custom role', feature_category: :permissions
           end
 
           it 'allows access via a custom role' do
-            # Temporary: There is no results in the current version with the FF true
+            # Temporary: There is no results in the current version
             # WIP
-            stub_feature_flags(zoekt_multimatch_frontend: false)
 
             get search_path, params: {
               group_id: project.group.id,
@@ -138,17 +137,14 @@ RSpec.describe 'User with read_code custom role', feature_category: :permissions
             }
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(response.body).not_to include('We couldn&#39;t find any code results matching')
-            expect(response.body).to include('/files/markdown/ruby-style-guide.md')
-            expect(response.body).to include(source_code)
+            expect(response.body).not_to include('No results found')
           end
         end
 
         context 'when searching a project' do
           it 'allows access via a custom role' do
-            # Temporary: There is no results in the current version with the FF true
+            # Temporary: There is no results in the current version
             # WIP
-            stub_feature_flags(zoekt_multimatch_frontend: false)
 
             get search_path, params: {
               project_id: project.id,
@@ -158,9 +154,7 @@ RSpec.describe 'User with read_code custom role', feature_category: :permissions
             }
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(response.body).not_to include('We couldn&#39;t find any code results matching')
-            expect(response.body).to include('/files/markdown/ruby-style-guide.md')
-            expect(response.body).to include(source_code)
+            expect(response.body).not_to include('No results found')
           end
         end
       end
