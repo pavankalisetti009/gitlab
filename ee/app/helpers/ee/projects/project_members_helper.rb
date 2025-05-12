@@ -25,6 +25,17 @@ module EE
       end
 
       def project_member_header_subtext(project)
+        unless can?(current_user, :invite_project_members, project)
+          if ::Gitlab::Saas.feature_available?(:group_disable_invite_members)
+            return "You cannot invite a new member to #{project.name}. " \
+              "User invitations are disabled by the group owner."
+          end
+
+          return "You cannot invite a new member to #{project.name}. " \
+            "User invitations are disabled by the instance administrator."
+
+        end
+
         if project.group &&
             ::Namespaces::FreeUserCap::Enforcement.new(project.root_ancestor).enforce_cap? &&
             can?(current_user, :admin_group_member, project.root_ancestor)

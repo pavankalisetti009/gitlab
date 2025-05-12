@@ -469,17 +469,15 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
     context 'when licensed feature for disable_invite_members is available' do
       let(:email) { 'example1@example.com' }
       let(:maintainer) { create(:user) }
+      let(:owner) { create(:user) }
 
       before do
         project.add_maintainer(maintainer)
+        project.add_maintainer(owner)
         stub_licensed_features(disable_invite_members: true)
       end
 
-      context 'when setting to disable_group_invite_member is ON' do
-        before do
-          stub_application_setting(disable_invite_members: true)
-        end
-
+      shared_examples "user is not allowed to invite members" do
         context 'when user is maintainer/owner' do
           it 'returns 403' do
             post api(url, maintainer),
@@ -510,20 +508,83 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
         end
       end
 
-      context 'when setting to disable_group_invite_member is OFF' do
-        let_it_be(:owner) { create(:user) }
-
-        before do
-          project.add_owner(owner)
-          stub_application_setting(disable_invite_members: false)
-        end
-
-        it 'adds a new member by email for owner/maintainer role' do
+      shared_examples "user is allowed to invite members" do
+        it 'adds a new member by email for owner role' do
           expect do
             post api(url, owner),
               params: { email: email, access_level: Member::MAINTAINER }
             expect(response).to have_gitlab_http_status(:created)
           end.to change { project.members.invite.count }.by(1)
+        end
+
+        it 'adds a new member by email for maintainer role' do
+          expect do
+            post api(url, maintainer),
+              params: { email: email, access_level: Member::MAINTAINER }
+            expect(response).to have_gitlab_http_status(:created)
+          end.to change { project.members.invite.count }.by(1)
+        end
+      end
+
+      context 'when .com', :saas do
+        let_it_be(:group, refind: true) { create(:group_with_plan, plan: :premium_plan) }
+        let_it_be(:project, refind: true) { create(:project, namespace: group) }
+
+        context 'when saas feature is available' do
+          before do
+            stub_saas_features(group_disable_invite_members: true)
+          end
+
+          context 'when setting to disable_invite_member is ON' do
+            before do
+              group.update!(disable_invite_members: true)
+            end
+
+            it_behaves_like "user is not allowed to invite members"
+
+            context 'when disable_invite_members application setting is OFF' do
+              before do
+                stub_application_setting(disable_invite_members: false)
+              end
+
+              it_behaves_like "user is not allowed to invite members"
+            end
+          end
+
+          context 'when setting to disable_invite_member is OFF' do
+            before do
+              group.update!(disable_invite_members: false)
+            end
+
+            it_behaves_like "user is allowed to invite members"
+          end
+        end
+
+        context 'when saas feature is not available' do
+          before do
+            stub_saas_features(group_disable_invite_members: false)
+            group.update!(disable_invite_members: true)
+          end
+
+          it_behaves_like "user is allowed to invite members"
+        end
+      end
+
+      context 'when self-managed' do
+        context 'when setting to disable_invite_member is ON' do
+          before do
+            stub_application_setting(disable_invite_members: true)
+          end
+
+          it_behaves_like "user is not allowed to invite members"
+        end
+
+        context 'when setting to disable_invite_member is OFF' do
+          before do
+            stub_application_setting(disable_invite_members: false)
+          end
+
+          it_behaves_like "user is allowed to invite members"
         end
       end
     end
@@ -537,17 +598,36 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
         stub_licensed_features(disable_invite_members: false)
       end
 
-      context 'setting to disable_invite_members is ON' do
-        before do
-          stub_application_setting(disable_invite_members: true)
-        end
+      context 'when .com', :saas do
+        context 'setting to disable_invite_members is ON' do
+          before do
+            stub_saas_features(group_disable_invite_members: true)
+            project.group.update!(disable_invite_members: true)
+          end
 
-        it "does not make any difference to invitation of new member" do
-          expect do
-            post api(url, maintainer),
-              params: { email: email, access_level: Member::MAINTAINER }
-            expect(response).to have_gitlab_http_status(:created)
-          end.to change { project.members.invite.count }.by(1)
+          it "does not make any difference to invitation of new member" do
+            expect do
+              post api(url, maintainer),
+                params: { email: email, access_level: Member::MAINTAINER }
+              expect(response).to have_gitlab_http_status(:created)
+            end.to change { project.members.invite.count }.by(1)
+          end
+        end
+      end
+
+      context 'when self-managed' do
+        context 'setting to disable_invite_members is ON' do
+          before do
+            stub_application_setting(disable_invite_members: true)
+          end
+
+          it "does not make any difference to invitation of new member" do
+            expect do
+              post api(url, maintainer),
+                params: { email: email, access_level: Member::MAINTAINER }
+              expect(response).to have_gitlab_http_status(:created)
+            end.to change { project.members.invite.count }.by(1)
+          end
         end
       end
     end

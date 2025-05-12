@@ -40,6 +40,7 @@ module EE
           instance_push_limit
           hide_project_instance_tab
           cloud_connector_self_signed_tokens
+          group_disable_invite_members
         ].freeze
 
       CONFIG_FILE_ROOT = 'ee/config/saas_features'
