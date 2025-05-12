@@ -35,19 +35,17 @@ These environments have physical barriers or security policies (for example, fir
 or limit internet access. These instructions are designed for physically disconnected networks, but
 can also be followed in these other use cases.
 
+GitLab scanners usually connect to the internet to download the
+latest sets of signatures, rules, and patches. A few extra steps are necessary
+to configure the tools to function properly by using resources available on your local network.
+
 ## Defining offline environments
 
 In an offline environment, the GitLab instance can be one or more servers and services that can
 communicate on a local network, but with no or very restricted access to the internet. Assume
-anything within the GitLab instance and supporting infrastructure (for example, a private Maven
+anything in the GitLab instance and supporting infrastructure (for example, a private Maven
 repository) can be accessed through a local network connection. Assume any files from the internet
 must come in through physical media (USB drive, hard drive, writeable DVD, etc.).
-
-## Overview
-
-GitLab scanners usually connect to the internet to download the
-latest sets of signatures, rules, and patches. A few extra steps are necessary
-to configure the tools to function properly by using resources available on your local network.
 
 ### Container registries and package repositories
 
