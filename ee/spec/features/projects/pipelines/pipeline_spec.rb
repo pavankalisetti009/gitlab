@@ -343,7 +343,7 @@ RSpec.describe 'Pipeline', :js, feature_category: :continuous_integration do
       it 'shows code quality tab pane as active, quality issue with link to file, and events for data tracking' do
         expect(page).to have_content('Code Quality')
 
-        expect(page).to have_content('Method `new_array` has 12 arguments (exceeds 4 allowed). Consider refactoring.')
+        expect(page).to have_content('Method new_array has 12 arguments (exceeds 4 allowed). Consider refactoring.')
         expect(find_link('foo.rb:10')[:href]).to end_with(project_blob_path(project, File.join(pipeline.commit.id, 'foo.rb')) + '#L10')
 
         expect(page).to have_selector('[data-track-action="click_button"]')
