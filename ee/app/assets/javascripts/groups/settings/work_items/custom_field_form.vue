@@ -49,8 +49,11 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['fullPath'],
   props: {
+    fullPath: {
+      type: String,
+      required: true,
+    },
     customFieldId: {
       type: String,
       required: false,

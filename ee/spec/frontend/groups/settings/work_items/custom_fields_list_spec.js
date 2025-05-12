@@ -102,7 +102,7 @@ describe('CustomFieldsTable', () => {
       [customFieldArchiveMutation, archiveMutationResponse],
     ]);
     wrapper = mount(CustomFieldsTable, {
-      provide: {
+      propsData: {
         fullPath: 'group/path',
       },
       apolloProvider,

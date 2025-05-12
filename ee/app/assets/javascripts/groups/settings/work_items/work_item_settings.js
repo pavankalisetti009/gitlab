@@ -2,7 +2,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import Translate from '~/vue_shared/translate';
-import CustomFieldsList from './custom_fields_list.vue';
+import WorkItemSettings from './work_item_settings.vue';
 
 Vue.use(VueApollo);
 Vue.use(Translate);
@@ -21,11 +21,12 @@ export function initWorkItemSettingsApp() {
   new Vue({
     el,
     apolloProvider,
-    provide: {
-      fullPath,
-    },
     render(createElement) {
-      return createElement(CustomFieldsList);
+      return createElement(WorkItemSettings, {
+        props: {
+          fullPath,
+        },
+      });
     },
   });
 }

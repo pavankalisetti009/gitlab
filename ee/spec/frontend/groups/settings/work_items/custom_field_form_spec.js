@@ -103,10 +103,8 @@ describe('CustomFieldForm', () => {
   } = {}) => {
     wrapper = shallowMountExtended(CustomFieldForm, {
       propsData: {
-        ...props,
-      },
-      provide: {
         fullPath,
+        ...props,
       },
       apolloProvider: createMockApollo([
         [createCustomFieldMutation, createFieldHandler],
