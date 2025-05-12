@@ -24,10 +24,13 @@ describe('AnalyticsDashboardsBreadcrumbs', () => {
 
   const findBreadcrumbs = () => wrapper.findComponent(GlBreadcrumb);
 
-  const createWrapper = () => {
+  const createWrapper = (props = {}) => {
     router = createRouter(base, breadcrumbState);
 
-    wrapper = shallowMount(AnalyticsDashboardsBreadcrumbs, { router });
+    wrapper = shallowMount(AnalyticsDashboardsBreadcrumbs, {
+      router,
+      propsData: props,
+    });
   };
 
   describe('when mounted', () => {
@@ -97,6 +100,25 @@ describe('AnalyticsDashboardsBreadcrumbs', () => {
 
     it('should disable auto-resize behavior', () => {
       expect(findBreadcrumbs().props('autoResize')).toEqual(false);
+    });
+  });
+
+  describe('when static breadcrumbs are provided', () => {
+    it('should render the static breadcrumbs', async () => {
+      const staticBreadcrumb = { text: 'Static breadcrumb', href: '/static' };
+      createWrapper({
+        staticBreadcrumbs: { items: [staticBreadcrumb] },
+      });
+      await router.push('/data-explorer');
+
+      expect(findBreadcrumbs().props('items')).toStrictEqual([
+        staticBreadcrumb,
+        rootBreadcrumb,
+        {
+          text: 'Data explorer',
+          to: undefined,
+        },
+      ]);
     });
   });
 });

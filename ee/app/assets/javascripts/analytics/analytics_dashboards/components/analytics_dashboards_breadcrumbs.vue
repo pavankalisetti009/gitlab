@@ -5,6 +5,13 @@ export default {
   components: {
     GlBreadcrumb,
   },
+  props: {
+    staticBreadcrumbs: {
+      type: Object,
+      default: () => ({ items: [] }),
+      required: false,
+    },
+  },
   computed: {
     rootRoute() {
       return this.$router.options.routes.find((r) => r.meta.root);
@@ -38,7 +45,8 @@ export default {
         });
       }
 
-      return crumbs;
+      const staticCrumbs = this.staticBreadcrumbs.items;
+      return [...staticCrumbs, ...crumbs];
     },
   },
 };

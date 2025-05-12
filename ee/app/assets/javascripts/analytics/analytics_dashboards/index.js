@@ -101,7 +101,16 @@ export default () => {
     canCreateNewDashboard,
   });
 
-  injectVueAppBreadcrumbs(router, AnalyticsDashboardsBreadcrumbs);
+  injectVueAppBreadcrumbs(
+    router,
+    AnalyticsDashboardsBreadcrumbs,
+    null,
+    {},
+    {
+      // Cf. https://gitlab.com/gitlab-org/gitlab/-/merge_requests/186906
+      singleNavOptIn: true,
+    },
+  );
 
   return new Vue({
     el,
