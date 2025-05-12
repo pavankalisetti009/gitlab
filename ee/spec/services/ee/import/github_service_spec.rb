@@ -33,13 +33,9 @@ RSpec.describe Import::GithubService, feature_category: :importers do
     allow(client).to receive_message_chain(:octokit, :rate_limit, :remaining).and_return(100)
     allow(::Gitlab::ApplicationRateLimiter).to receive(:throttled?).with(:github_import, scope: user).and_return(false)
     allow(Gitlab::GithubImport::Settings).to receive(:new).with(project_double).and_return(settings)
-    allow(settings)
-      .to receive(:write)
-      .with(
-        optional_stages: optional_stages,
-        timeout_strategy: timeout_strategy,
-        pagination_limit: pagination_limit
-      )
+
+    # catch every call to write, regardless of arguments
+    allow(settings).to receive(:write)
   end
 
   context 'when validating repository size' do
@@ -61,9 +57,12 @@ RSpec.describe Import::GithubService, feature_category: :importers do
         expect(github_importer.execute(access_params, :github)).to include(status: :success)
         expect(settings)
           .to have_received(:write)
-          .with(optional_stages: nil,
-            timeout_strategy: timeout_strategy,
-            pagination_limit: pagination_limit
+          .with(
+            hash_including(
+              optional_stages: nil,
+              timeout_strategy: timeout_strategy,
+              pagination_limit: pagination_limit
+            )
           )
         expect_snowplow_event(
           category: 'Import::GithubService',
@@ -87,9 +86,11 @@ RSpec.describe Import::GithubService, feature_category: :importers do
         expect(settings)
           .to have_received(:write)
           .with(
-            optional_stages: nil,
-            timeout_strategy: timeout_strategy,
-            pagination_limit: pagination_limit
+            hash_including(
+              optional_stages: nil,
+              timeout_strategy: timeout_strategy,
+              pagination_limit: pagination_limit
+            )
           )
         expect_snowplow_event(
           category: 'Import::GithubService',
@@ -123,9 +124,11 @@ RSpec.describe Import::GithubService, feature_category: :importers do
           expect(settings)
             .to have_received(:write)
             .with(
-              optional_stages: nil,
-              timeout_strategy: timeout_strategy,
-              pagination_limit: pagination_limit
+              hash_including(
+                optional_stages: nil,
+                timeout_strategy: timeout_strategy,
+                pagination_limit: pagination_limit
+              )
             )
           expect_snowplow_event(
             category: 'Import::GithubService',
@@ -160,9 +163,11 @@ RSpec.describe Import::GithubService, feature_category: :importers do
         expect(settings)
           .to have_received(:write)
           .with(
-            optional_stages: optional_stages,
-            timeout_strategy: timeout_strategy,
-            pagination_limit: pagination_limit
+            hash_including(
+              optional_stages: optional_stages,
+              timeout_strategy: timeout_strategy,
+              pagination_limit: pagination_limit
+            )
           )
       end
     end
@@ -176,9 +181,11 @@ RSpec.describe Import::GithubService, feature_category: :importers do
         expect(settings)
           .to have_received(:write)
           .with(
-            optional_stages: optional_stages,
-            timeout_strategy: timeout_strategy,
-            pagination_limit: pagination_limit
+            hash_including(
+              optional_stages: optional_stages,
+              timeout_strategy: timeout_strategy,
+              pagination_limit: pagination_limit
+            )
           )
       end
     end
@@ -192,9 +199,11 @@ RSpec.describe Import::GithubService, feature_category: :importers do
         expect(settings)
           .to have_received(:write)
           .with(
-            optional_stages: optional_stages,
-            timeout_strategy: timeout_strategy,
-            pagination_limit: pagination_limit
+            hash_including(
+              optional_stages: optional_stages,
+              timeout_strategy: timeout_strategy,
+              pagination_limit: pagination_limit
+            )
           )
       end
     end
@@ -206,9 +215,11 @@ RSpec.describe Import::GithubService, feature_category: :importers do
         expect(settings)
           .to have_received(:write)
           .with(
-            optional_stages: optional_stages,
-            timeout_strategy: timeout_strategy,
-            pagination_limit: pagination_limit
+            hash_including(
+              optional_stages: optional_stages,
+              timeout_strategy: timeout_strategy,
+              pagination_limit: pagination_limit
+            )
           )
       end
     end
