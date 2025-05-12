@@ -20,7 +20,6 @@ module API
 
                 def abort_indexing?(node)
                   return true if ::Gitlab::CurrentSettings.zoekt_indexing_paused?
-                  return false if Feature.disabled?(:zoekt_critical_watermark_stop_indexing, Feature.current_request)
 
                   node.watermark_exceeded_critical?
                 end
@@ -45,9 +44,7 @@ module API
                     { id: node.id, truncate: new_node }.tap do |resp|
                       resp[:tasks] = ::Search::Zoekt::TaskPresenterService.execute(node)
                       resp[:pull_frequency] = node.task_pull_frequency
-                      if Feature.enabled?(:zoekt_critical_watermark_stop_indexing, Feature.current_request)
-                        resp[:stop_indexing] = node.watermark_exceeded_critical?
-                      end
+                      resp[:stop_indexing] = node.watermark_exceeded_critical?
                     end
                   else
                     unprocessable_entity!
