@@ -27082,6 +27082,9 @@ msgstr ""
 msgid "GPG key mismatch"
 msgstr ""
 
+msgid "GPG key was added to your account"
+msgstr ""
+
 msgid "GPG keys"
 msgstr ""
 
@@ -52901,6 +52904,9 @@ msgid "SSH key"
 msgstr ""
 
 msgid "SSH key fingerprint:"
+msgstr ""
+
+msgid "SSH key was added to your account"
 msgstr ""
 
 msgid "SSH keys"
