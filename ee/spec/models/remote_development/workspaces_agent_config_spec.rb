@@ -74,14 +74,23 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
   end
 
   describe 'validations' do
-    context 'when config has an invalid dns_zone' do
-      subject(:config) { build(:workspaces_agent_config, dns_zone: "invalid dns zone") }
+    context 'for dns_zone' do
+      using RSpec::Parameterized::TableSyntax
 
-      it 'prevents config from being created' do
-        expect { config.save! }.to raise_error(
-          ActiveRecord::RecordInvalid,
-          "Validation failed: Dns zone contains invalid characters (valid characters: [a-z0-9\\-])"
-        )
+      where(:dns_zone, :validity, :errors) do
+        "1.domain.com"          | be_valid   | []
+        "example.1.domain.com"  | be_valid   | []
+        # noinspection RubyResolve -- RubyMine cannot find matchers that works general predicate matcher system
+        "invalid dns"           | be_invalid | ["contains invalid characters (valid characters: [a-z0-9\\-])"]
+      end
+
+      with_them do
+        subject(:config) { build(:workspaces_agent_config, dns_zone: dns_zone) }
+
+        it 'validates' do
+          expect(config).to validity
+          expect(config.errors[:dns_zone]).to eq(errors)
+        end
       end
     end
 
