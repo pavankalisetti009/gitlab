@@ -1,8 +1,9 @@
 # frozen_string_literal: true
+
 require 'erb'
 
 module QA
-  RSpec.describe 'Configure',
+  RSpec.describe 'Deploy',
     only: { pipeline: %i[staging staging-canary canary production] }, product_group: :environments do
     include Service::Shellout
 
