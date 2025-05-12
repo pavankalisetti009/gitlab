@@ -91,6 +91,14 @@ module EE
           authorize: :read_compliance_adherence_report,
           experiment: { milestone: '17.11' }
 
+        field :compliance_requirement_statuses,
+          ::Types::ComplianceManagement::ComplianceFramework::ProjectRequirementStatusType.connection_type,
+          null: true,
+          description: 'Compliance requirement statuses for a project.',
+          resolver: ::Resolvers::ComplianceManagement::ComplianceFramework::ProjectRequirementStatusResolver,
+          authorize: :read_compliance_adherence_report,
+          experiment: { milestone: '18.0' }
+
         field :security_dashboard_path, GraphQL::Types::String,
           description: "Path to project's security dashboard.",
           null: true

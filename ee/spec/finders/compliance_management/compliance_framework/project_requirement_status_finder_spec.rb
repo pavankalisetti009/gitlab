@@ -118,7 +118,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
           end
         end
 
-        context 'for project_ids filter' do
+        context 'for project_id filter' do
           let(:params) { { project_id: project1.id } }
 
           it 'returns requirement statuses for the specified project' do
@@ -126,7 +126,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
           end
         end
 
-        context 'for requirement_ids filter' do
+        context 'for requirement_id filter' do
           let(:params) { { requirement_id: requirement1.id } }
 
           it 'returns requirement statuses for the specified requirement' do
@@ -134,7 +134,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementStat
           end
         end
 
-        context 'for framework ids filter' do
+        context 'for framework id filter' do
           let(:params) { { framework_id: framework1.id } }
 
           it 'returns requirement statuses for the specified requirement' do
