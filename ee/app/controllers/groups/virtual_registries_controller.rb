@@ -9,7 +9,7 @@ module Groups
 
     def index
       @registry_types_with_counts = ::VirtualRegistries::PACKAGE_TYPES.index_with do |registry_type|
-        ::EE::VirtualRegistries.registries_count_for(@group, registry_type:)
+        ::VirtualRegistries.registries_count_for(@group, registry_type:)
       end
     end
   end
