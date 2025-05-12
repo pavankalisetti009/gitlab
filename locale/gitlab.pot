@@ -73592,6 +73592,15 @@ msgstr ""
 msgid "tag name"
 msgstr ""
 
+msgid "target all default branches"
+msgstr ""
+
+msgid "target all protected branches"
+msgstr ""
+
+msgid "target default branch"
+msgstr ""
+
 msgid "targeting "
 msgstr ""
 
