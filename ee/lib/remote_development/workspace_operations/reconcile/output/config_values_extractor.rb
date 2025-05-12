@@ -33,6 +33,8 @@ module RemoteDevelopment
               deep_sort_and_symbolize_hashes(workspaces_agent_config.default_resources_per_workspace_container)
 
             shared_namespace = workspaces_agent_config.shared_namespace
+            # TODO: Fix this as part of https://gitlab.com/gitlab-org/gitlab/-/issues/541902
+            shared_namespace = "" if shared_namespace.nil?
 
             extra_annotations = {
               "workspaces.gitlab.com/host-template": domain_template.to_s,
