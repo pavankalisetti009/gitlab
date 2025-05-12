@@ -251,10 +251,20 @@ RSpec.describe Vulnerabilities::Export, feature_category: :vulnerability_managem
   end
 
   describe '#export_service' do
-    let(:export) { build(:vulnerability_export) }
+    context 'for csv exports' do
+      let(:export) { build(:vulnerability_export, :csv) }
 
-    it 'instantiates an export service for the instance' do
-      expect(export.export_service).to be_an_instance_of(::VulnerabilityExports::ExportService)
+      it 'instantiates an export service for the instance' do
+        expect(export.export_service).to be_an_instance_of(::VulnerabilityExports::ExportService)
+      end
+    end
+
+    context 'for pdf exports' do
+      let(:export) { build(:vulnerability_export, :pdf) }
+
+      it 'instantiates an export service for the instance' do
+        expect(export.export_service).to be_an_instance_of(::VulnerabilityExports::PdfExportService)
+      end
     end
   end
 

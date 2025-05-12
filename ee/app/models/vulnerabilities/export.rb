@@ -9,7 +9,10 @@ module Vulnerabilities
 
     columns_changing_default :organization_id
 
-    EXPORTER_CLASS = VulnerabilityExports::ExportService
+    EXPORTER_CLASS = {
+      csv: VulnerabilityExports::ExportService,
+      pdf: VulnerabilityExports::PdfExportService
+    }.freeze
     MAX_EXPORT_DURATION = 24.hours
     EXPIRES_AFTER = 7.days
     RECENT_WINDOW = 1.hour
@@ -101,7 +104,7 @@ module Vulnerabilities
     end
 
     def export_service
-      EXPORTER_CLASS.new(self)
+      EXPORTER_CLASS[self.format.to_sym].new(self)
     end
 
     def schedule_export_deletion
