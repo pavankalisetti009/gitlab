@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Subscriptions # rubocop:disable Gitlab/BoundedContexts -- Subscriptions is a concept of GraphQL
+module Subscriptions
   module Security
     class PolicyProjectCreated < ::Subscriptions::BaseSubscription
       include Gitlab::Graphql::Laziness
