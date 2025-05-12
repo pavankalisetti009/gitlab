@@ -48,6 +48,10 @@ export default {
     },
     username: {
       label: __('Username'),
+      groupAttrs: {
+        optional: true,
+        'optional-text': __('(optional)'),
+      },
     },
   },
   i18n: {
