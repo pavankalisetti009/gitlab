@@ -295,7 +295,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         it 'allows creation of another node with the same URL' do
           node.update!(index_base_url: params['node.url'], search_base_url: params['node.url'])
 
-          expect(tasked_node.save).to eq(true)
+          expect(tasked_node.save).to be(true)
         end
       end
     end
@@ -319,7 +319,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
 
   describe '.marking_lost_enabled?', :zoekt_settings_enabled do
     it 'returns true' do
-      expect(described_class.marking_lost_enabled?).to eq true
+      expect(described_class.marking_lost_enabled?).to be true
     end
 
     context 'when application setting zoekt_indexing_paused? is enabled' do
@@ -328,7 +328,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       end
 
       it 'returns false' do
-        expect(described_class.marking_lost_enabled?).to eq false
+        expect(described_class.marking_lost_enabled?).to be false
       end
     end
 
@@ -338,7 +338,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       end
 
       it 'returns false' do
-        expect(described_class.marking_lost_enabled?).to eq false
+        expect(described_class.marking_lost_enabled?).to be false
       end
     end
 
@@ -348,15 +348,8 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       end
 
       it 'returns false' do
-        expect(described_class.marking_lost_enabled?).to eq false
+        expect(described_class.marking_lost_enabled?).to be false
       end
-    end
-  end
-
-  describe '#backoff' do
-    it 'returns a NodeBackoff' do
-      expect(::Search::Zoekt::NodeBackoff).to receive(:new).with(node).and_return(:backoff)
-      expect(node.backoff).to eq(:backoff)
     end
   end
 

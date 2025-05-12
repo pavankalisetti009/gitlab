@@ -106,9 +106,7 @@ module Search
     end
 
     config.around(:each, :zoekt) do |example|
-      node = Search::Zoekt::TestHelpers.ensure_zoekt_node!
-      node.backoff.remove_backoff!
-
+      zoekt_node
       Search::Zoekt::TestHelpers.zoekt_truncate_index!
 
       example.run

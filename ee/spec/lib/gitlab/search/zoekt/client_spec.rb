@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt, :clean_gitlab_redis_cache, feature_category: :global_search do
+RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt, feature_category: :global_search do
   let_it_be(:project_1) { create(:project, :public, :repository) }
   let_it_be(:project_2) { create(:project, :public, :repository) }
   let_it_be(:project_3) { create(:project, :public, :repository) }
@@ -53,57 +53,6 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt, :clean_gitlab_redis_cach
       requested_url = custom_node.index_base_url + expected_path
       expect(Gitlab::HTTP).to receive(method).with(requested_url, anything).and_return(success)
       make_request
-    end
-  end
-
-  shared_examples 'without node backoffs' do |method|
-    context 'and an exception occurs' do
-      it 'does not backoff current node and exception is still raised' do
-        expect(::Search::Zoekt::NodeBackoff).not_to receive(:new)
-        expect(::Gitlab::HTTP).to receive(method).and_raise 'boom'
-        expect { make_request }.to raise_error 'boom'
-      end
-    end
-
-    context 'when a backoff is active for zoekt node' do
-      it 'does not raise an exception' do
-        node.backoff.backoff!
-
-        expect { make_request }.not_to raise_error
-      end
-    end
-  end
-
-  shared_examples 'with node backoffs' do |method|
-    before do
-      node.backoff.remove_backoff!
-    end
-
-    context 'when an exception occurs' do
-      it 'backs off current node and re-raises the exception' do
-        expect_next_instance_of(::Search::Zoekt::NodeBackoff) do |backoff|
-          expect(backoff).to receive(:backoff!)
-        end
-        expect(::Gitlab::HTTP).to receive(method).and_raise 'boom'
-        expect { make_request }.to raise_error 'boom'
-      end
-    end
-
-    context 'when a backoff is active for zoekt node' do
-      it 'raises an exception' do
-        node.backoff.backoff!
-        expect { make_request }.to raise_error(
-          ::Search::Zoekt::Errors::BackoffError, /Zoekt node cannot be used yet because it is in back off period/
-        )
-      end
-    end
-
-    context 'when feature flag zoekt_node_backoffs is disabled' do
-      before do
-        stub_feature_flags(zoekt_node_backoffs: false)
-      end
-
-      it_behaves_like 'without node backoffs', method
     end
   end
 
@@ -224,10 +173,6 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt, :clean_gitlab_redis_cach
     it_behaves_like 'with relative base_url', :post do
       let(:make_request) { search }
       let(:expected_path) { '/api/search' }
-    end
-
-    it_behaves_like 'with node backoffs', :post do
-      let(:make_request) { search }
     end
 
     it_behaves_like 'with connection errors', :post

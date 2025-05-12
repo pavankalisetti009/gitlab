@@ -177,7 +177,7 @@ module Search
 
         results = zoekt_extract_result_pages(response, per_page: per_page, page_limit: page_limit)
         [results, total_count, response.file_count]
-      rescue ::Search::Zoekt::Errors::ClientConnectionError, ::Search::Zoekt::Errors::BackoffError => e
+      rescue ::Search::Zoekt::Errors::ClientConnectionError => e
         @blobs_count = 0
         @error_message = e.message
         [{}, @blobs_count, 0]
