@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Service Accounts', feature_category: :user_management do
+RSpec.describe 'Service accounts', feature_category: :user_management do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let_it_be(:group_owner) { create(:user, owner_of: [group]) }

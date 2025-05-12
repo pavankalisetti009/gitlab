@@ -98,7 +98,7 @@ export default {
     optionsItems(serviceAccount) {
       return [
         {
-          text: s__('ServiceAccounts|Manage Access Tokens'),
+          text: s__('ServiceAccounts|Manage access tokens'),
           action: () => {
             this.clearAlert();
             this.routeToAccessTokensManagement(serviceAccount.id);
@@ -113,7 +113,7 @@ export default {
           },
         },
         {
-          text: s__('ServiceAccounts|Delete Account'),
+          text: s__('ServiceAccounts|Delete account'),
           action: () => {
             this.clearAlert();
             this.setServiceAccount(serviceAccount);
@@ -122,7 +122,7 @@ export default {
           variant: 'danger',
         },
         {
-          text: s__('ServiceAccounts|Delete Account and Contributions'),
+          text: s__('ServiceAccounts|Delete account and contributions'),
           action: () => {
             this.clearAlert();
             this.setServiceAccount(serviceAccount);
@@ -149,7 +149,7 @@ export default {
     },
   ],
   i18n: {
-    title: s__('ServiceAccounts|Service Accounts'),
+    title: s__('ServiceAccounts|Service accounts'),
   },
 };
 </script>
@@ -173,7 +173,7 @@ export default {
 
       <template #actions>
         <gl-button variant="confirm" @click="addServiceAccount">
-          {{ s__('ServiceAccounts|Add Service Account') }}
+          {{ s__('ServiceAccounts|Add service account') }}
         </gl-button>
       </template>
     </page-heading>

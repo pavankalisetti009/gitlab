@@ -11,14 +11,14 @@ export default {
     breadcrumbs() {
       const breadcrumbs = [
         {
-          text: s__('ServiceAccounts|Service Accounts'),
+          text: s__('ServiceAccounts|Service accounts'),
           to: '/',
         },
       ];
 
       if (this.$route.name === ROUTES.accessTokens) {
         breadcrumbs.push({
-          text: s__('ServiceAccounts|Access Tokens'),
+          text: s__('ServiceAccounts|Personal access tokens'),
           to: this.$route.path,
         });
       }
