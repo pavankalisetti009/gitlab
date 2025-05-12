@@ -6,6 +6,7 @@ import { INVITE_URL_TYPE } from 'ee/pages/projects/get_started/constants';
 import SectionHeader from './section_header.vue';
 import SectionBody from './section_body.vue';
 import DuoExtensions from './duo_extensions.vue';
+import RightSidebar from './right_sidebar.vue';
 
 export default {
   name: 'GetStarted',
@@ -17,6 +18,7 @@ export default {
     SectionBody,
     SectionHeader,
     DuoExtensions,
+    RightSidebar,
   },
   props: {
     sections: {
@@ -111,7 +113,7 @@ export default {
 <template>
   <div class="row" data-testid="get-started-page">
     <div
-      class="col-md-9 gl-flex gl-flex-col gl-gap-4 md:gl-pr-6"
+      class="col-md-9 gl-flex gl-flex-col gl-gap-4 md:gl-pr-9"
       data-testid="get-started-sections"
     >
       <gl-alert
@@ -161,8 +163,8 @@ export default {
       <duo-extensions />
     </div>
 
-    <div class="col-md-3 md:gl-pl-6">
-      <h2 class="gl-text-size-h2">{{ s__('LearnGitLab|GitLab University') }}</h2>
+    <div class="col-md-3 gl-w-full md:gl-pl-0">
+      <right-sidebar />
     </div>
   </div>
 </template>
