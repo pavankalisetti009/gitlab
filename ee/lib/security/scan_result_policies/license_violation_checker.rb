@@ -55,33 +55,20 @@ module Security
       attr_reader :project, :report, :target_branch_report
 
       def software_license_policies(scan_result_policy_read)
-        if Feature.enabled?(:custom_software_license, project)
-          project
-            .software_license_policies
-            .including_license
-            .including_custom_license
-            .for_scan_result_policy_read(scan_result_policy_read.id)
-        else
-          project
-            .software_license_policies
-            .including_license
-            .for_scan_result_policy_read(scan_result_policy_read.id)
-        end
+        project
+          .software_license_policies
+          .including_license
+          .including_custom_license
+          .for_scan_result_policy_read(scan_result_policy_read.id)
       end
 
       def violates_db_licenses?(software_license_policies, ids, names)
-        if Feature.enabled?(:custom_software_license, project)
-          policies_with_matching_license_name = software_license_policies
-                                                  .denied
-                                                  .with_license_or_custom_license_by_name(names, project)
-          policies_with_matching_spdx_id = software_license_policies.denied.by_spdx(ids, project)
+        policies_with_matching_license_name = software_license_policies
+                                                .denied
+                                                .with_license_or_custom_license_by_name(names, project)
+        policies_with_matching_spdx_id = software_license_policies.denied.by_spdx(ids, project)
 
-          policies_with_matching_spdx_id.present? || policies_with_matching_license_name.present?
-        else
-          policies_with_matching_license_name = software_license_policies.denied.with_license_by_name(names, project)
-          policies_with_matching_spdx_id = software_license_policies.denied.by_spdx(ids, project)
-          policies_with_matching_spdx_id.or(policies_with_matching_license_name).exists?
-        end
+        policies_with_matching_spdx_id.present? || policies_with_matching_license_name.present?
       end
 
       def licenses_to_check(scan_result_policy_read)

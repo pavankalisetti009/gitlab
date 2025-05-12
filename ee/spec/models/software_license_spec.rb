@@ -12,25 +12,6 @@ RSpec.describe SoftwareLicense, feature_category: :security_policy_management do
     it { is_expected.to validate_uniqueness_of(:name) }
   end
 
-  describe '.unsafe_create_policy_for!' do
-    subject { described_class.unsafe_create_policy_for!(project: project, name: mit_license.name, classification: :allowed) }
-
-    let_it_be(:project) { create(:project) }
-    let_it_be(:mit_license) { create(:software_license, :mit) }
-
-    it 'calls find_or_create_by!' do
-      expect(described_class).to receive(:find_or_create_by!).with(name: mit_license.name).and_call_original
-
-      subject
-    end
-
-    it 'sets the software_license_spdx_identifier' do
-      subject
-
-      expect(project.software_license_policies.last.spdx_identifier).to eq('MIT')
-    end
-  end
-
   describe 'scopes' do
     subject { described_class }
 

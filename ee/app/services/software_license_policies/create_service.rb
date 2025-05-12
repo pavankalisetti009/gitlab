@@ -19,23 +19,7 @@ module SoftwareLicensePolicies
     private
 
     def create_for_scan_result_policy
-      if Feature.enabled?(:custom_software_license, project)
-        insert_software_license_policy
-      else
-        # also creates a custom license if the license is not found in the catalogue
-        catalogue_license = find_software_license_in_catalogue(params[:name])
-        custom_software_license = catalogue_license ? nil : find_or_create_custom_software_license
-
-        SoftwareLicense.unsafe_create_policy_for!(
-          project: project,
-          name: params[:name].strip,
-          classification: params[:approval_status],
-          scan_result_policy_read: params[:scan_result_policy_read],
-          approval_policy_rule_id: params[:approval_policy_rule_id],
-          custom_software_license: custom_software_license,
-          catalogue_license: catalogue_license
-        )
-      end
+      insert_software_license_policy
     end
 
     def insert_software_license_policy
