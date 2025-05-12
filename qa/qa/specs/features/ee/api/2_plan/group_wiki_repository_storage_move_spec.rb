@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create', product_group: :editor do
+  RSpec.describe 'Plan', product_group: :knowledge do
     describe 'Group Wiki repository storage', :requires_admin, :orchestrated, :repository_storage do
       let(:source_storage) { { type: :gitaly, name: 'default' } }
       let(:destination_storage) { { type: :gitaly, name: QA::Runtime::Env.additional_repository_storage } }
@@ -28,11 +28,14 @@ module QA
         praefect_manager.gitlab = 'gitlab'
       end
 
-      it 'moves group Wiki repository from one Gitaly storage to another', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347644' do
+      it 'moves group Wiki repository from one Gitaly storage to another',
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347644' do
         expect(wiki).to have_page_content(original_page_title, original_page_content)
 
         expect { group.change_repository_storage(destination_storage[:name]) }.not_to raise_error
-        expect { praefect_manager.verify_storage_move(source_storage, destination_storage, repo_type: :group_wiki) }.not_to raise_error
+        expect do
+          praefect_manager.verify_storage_move(source_storage, destination_storage, repo_type: :group_wiki)
+        end.not_to raise_error
 
         # verifies you can push commits to the moved Wiki
         Resource::Repository::WikiPush.fabricate! do |push|
