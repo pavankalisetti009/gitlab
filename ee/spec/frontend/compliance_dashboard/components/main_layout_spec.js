@@ -1,6 +1,5 @@
-import { mount } from '@vue/test-utils';
-import { GlTabs, GlPopover, GlLink } from '@gitlab/ui';
-import { extendedWrapper, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { GlTabs, GlPopover } from '@gitlab/ui';
+import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 
 import MainLayout from 'ee/compliance_dashboard/components/main_layout.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -62,40 +61,38 @@ describe('ComplianceReportsApp component', () => {
     props = {},
     // eslint-disable-next-line max-params
   ) => {
-    return extendedWrapper(
-      mountFn(MainLayout, {
-        mocks: {
-          $router,
-          $route: {
-            name: ROUTE_VIOLATIONS,
-          },
-          ...mocks,
+    return mountFn(MainLayout, {
+      mocks: {
+        $router,
+        $route: {
+          name: ROUTE_VIOLATIONS,
         },
-        propsData: {
-          availableTabs: [
-            ROUTE_STANDARDS_ADHERENCE,
-            ROUTE_VIOLATIONS,
-            ROUTE_PROJECTS,
-            ROUTE_FRAMEWORKS,
-          ],
-          groupPath,
-          rootAncestor,
-          ...props,
-        },
-        stubs: {
-          'router-view': stubComponent({}),
-        },
-        provide: {
-          ...defaultInjects,
-          ...provide,
-        },
-      }),
-    );
+        ...mocks,
+      },
+      propsData: {
+        availableTabs: [
+          ROUTE_STANDARDS_ADHERENCE,
+          ROUTE_VIOLATIONS,
+          ROUTE_PROJECTS,
+          ROUTE_FRAMEWORKS,
+        ],
+        groupPath,
+        rootAncestor,
+        ...props,
+      },
+      stubs: {
+        'router-view': stubComponent({}),
+      },
+      provide: {
+        ...defaultInjects,
+        ...provide,
+      },
+    });
   };
 
   describe('adherence standards report', () => {
     beforeEach(() => {
-      wrapper = createComponent(mount);
+      wrapper = createComponent(mountExtended);
     });
 
     it('renders the standards adherence report tab', () => {
@@ -107,14 +104,14 @@ describe('ComplianceReportsApp component', () => {
     });
 
     it('does not render the adherences export button when there is no CSV path', () => {
-      wrapper = createComponent(mount, {}, { adherencesCsvExportPath: null });
+      wrapper = createComponent(mountExtended, {}, { adherencesCsvExportPath: null });
       expect(findAdherencesExportButton().exists()).toBe(false);
     });
   });
 
   describe('New framework button', () => {
     it('navigates to add framework page when in top level group', () => {
-      wrapper = createComponent(mount);
+      wrapper = createComponent(mountExtended);
 
       findNewFrameworkButton().trigger('click');
       expect($router.push).toHaveBeenCalledWith({ name: ROUTE_NEW_FRAMEWORK });
@@ -122,7 +119,7 @@ describe('ComplianceReportsApp component', () => {
 
     describe('when in a subgroup', () => {
       it('is disabled and shows info popover', () => {
-        wrapper = createComponent(mount, {}, {}, { groupPath: 'sub-group-path' });
+        wrapper = createComponent(mountExtended, {}, {}, { groupPath: 'sub-group-path' });
 
         expect(findNewFrameworkButton().attributes('disabled')).toBeDefined();
         expect(findNewFrameworkPopover().text()).toMatchInterpolatedText(
@@ -132,7 +129,7 @@ describe('ComplianceReportsApp component', () => {
 
       it('shows additional info when user does not have access to top-level group', () => {
         wrapper = createComponent(
-          mount,
+          mountExtended,
           {},
           { canAccessRootAncestorComplianceCenter: false },
           { groupPath: 'sub-group-path' },
@@ -147,7 +144,7 @@ describe('ComplianceReportsApp component', () => {
     describe('when ability `adminComplianceFramework` is false', () => {
       it('does not render the button', () => {
         wrapper = createComponent(
-          mount,
+          mountExtended,
           {},
           { glAbilities: { adminComplianceFramework: false } },
           {},
@@ -160,7 +157,7 @@ describe('ComplianceReportsApp component', () => {
 
   describe('violations report', () => {
     beforeEach(() => {
-      wrapper = createComponent(mount);
+      wrapper = createComponent(mountExtended);
     });
 
     it('renders the violations report tab', () => {
@@ -172,7 +169,7 @@ describe('ComplianceReportsApp component', () => {
       expect(findHeader().text()).toContain(
         'Report and manage compliance status, violations, and compliance frameworks for the group. Learn more.',
       );
-      expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
+      expect(wrapper.findByTestId('subheading-docs-link').attributes('href')).toBe(
         helpPagePath('user/compliance/compliance_center/_index.md'),
       );
     });
@@ -182,14 +179,14 @@ describe('ComplianceReportsApp component', () => {
     });
 
     it('does not render the merge commit export button when there is no CSV path', () => {
-      wrapper = createComponent(mount, {}, { mergeCommitsCsvExportPath: null });
+      wrapper = createComponent(mountExtended, {}, { mergeCommitsCsvExportPath: null });
       findTabs().vm.$emit('input', 0);
 
       expect(findMergeCommitsExportButton().exists()).toBe(false);
     });
 
     it('does not render the violations export button when there is no CSV path', () => {
-      wrapper = createComponent(mount, {}, { violationsCsvExportPath: null });
+      wrapper = createComponent(mountExtended, {}, { violationsCsvExportPath: null });
       findTabs().vm.$emit('input', 0);
 
       expect(findViolationsExportButton().exists()).toBe(false);
@@ -198,7 +195,7 @@ describe('ComplianceReportsApp component', () => {
 
   describe('projects report', () => {
     beforeEach(() => {
-      wrapper = createComponent(mount, {
+      wrapper = createComponent(mountExtended, {
         $route: {
           name: ROUTE_PROJECTS,
         },
@@ -214,7 +211,7 @@ describe('ComplianceReportsApp component', () => {
       expect(findHeader().text()).toContain(
         'Report and manage compliance status, violations, and compliance frameworks for the group. Learn more.',
       );
-      expect(wrapper.findComponent(GlLink).attributes('href')).toBe(
+      expect(wrapper.findByTestId('subheading-docs-link').attributes('href')).toBe(
         helpPagePath('user/compliance/compliance_center/_index.md'),
       );
     });
@@ -225,7 +222,7 @@ describe('ComplianceReportsApp component', () => {
 
     it('does not render the projects export button when there is no CSV path', () => {
       wrapper = createComponent(
-        mount,
+        mountExtended,
         {
           $route: {
             name: ROUTE_FRAMEWORKS,
@@ -240,7 +237,7 @@ describe('ComplianceReportsApp component', () => {
 
   describe('frameworks report', () => {
     beforeEach(() => {
-      wrapper = createComponent(mount, {
+      wrapper = createComponent(mountExtended, {
         $route: {
           name: ROUTE_PROJECTS,
         },
@@ -260,14 +257,14 @@ describe('ComplianceReportsApp component', () => {
     });
 
     it('does not render the adherences export button when there is no CSV path', () => {
-      wrapper = createComponent(mount, {}, { frameworksCsvExportPath: null });
+      wrapper = createComponent(mountExtended, {}, { frameworksCsvExportPath: null });
       expect(findFrameworksExportButton().exists()).toBe(false);
     });
   });
 
   it('does not render export button if no report is available', () => {
     wrapper = createComponent(
-      mount,
+      mountExtended,
       {},
       {
         projectFrameworksCsvExportPath: null,
@@ -292,7 +289,7 @@ describe('ComplianceReportsApp component', () => {
     const allTabs = [ROUTE_STANDARDS_ADHERENCE, ROUTE_VIOLATIONS, ROUTE_PROJECTS, ROUTE_FRAMEWORKS];
     it('does not render the tab when relevant tab is not passed', () => {
       wrapper = createComponent(
-        mount,
+        mountExtended,
         {},
         {},
         {
@@ -305,7 +302,7 @@ describe('ComplianceReportsApp component', () => {
 
     it('render the tab when relevant tab is passed', () => {
       wrapper = createComponent(
-        mount,
+        mountExtended,
         {},
         {},
         {
@@ -319,7 +316,7 @@ describe('ComplianceReportsApp component', () => {
 
   describe('tracking', () => {
     beforeEach(() => {
-      wrapper = createComponent(mount, {
+      wrapper = createComponent(mountExtended, {
         $route: {
           name: ROUTE_VIOLATIONS,
         },
@@ -353,7 +350,7 @@ describe('ComplianceReportsApp component', () => {
     });
     it('tracks clicks on violations tab', () => {
       // Can't navigate to a page we are already on so use a different tab to start with
-      wrapper = createComponent(mount, {
+      wrapper = createComponent(mountExtended, {
         $route: {
           name: ROUTE_FRAMEWORKS,
         },

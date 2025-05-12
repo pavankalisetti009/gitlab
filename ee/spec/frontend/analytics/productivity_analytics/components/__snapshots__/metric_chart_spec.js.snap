@@ -4,6 +4,7 @@ exports[`MetricChart component template when isLoading is false and chart data i
 <div>
   <gl-alert-stub
     dismisslabel="Dismiss"
+    politeness="polite"
     primarybuttonlink=""
     primarybuttontext=""
     secondarybuttonlink=""

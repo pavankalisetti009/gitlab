@@ -3,6 +3,7 @@
 exports[`ProfileConflictAlert renders properly 1`] = `
 <gl-alert-stub
   dismisslabel="Dismiss"
+  politeness="polite"
   primarybuttonlink=""
   primarybuttontext=""
   secondarybuttonlink=""
