@@ -18,12 +18,13 @@ module Search
 
       def execute
         display_settings_section
+        display_nodes_section
         display_indexing_status_section
         display_feature_flags_sections
 
         return unless options[:extended_mode]
 
-        display_nodes_section
+        log_node_details
       end
 
       private
@@ -124,7 +125,6 @@ module Search
         log_indexed_data
         log_node_watermark_levels
         display_entries
-        log_node_details
       end
 
       def display_indexing_status_section
