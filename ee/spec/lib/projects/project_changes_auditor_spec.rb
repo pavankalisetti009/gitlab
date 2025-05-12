@@ -166,7 +166,7 @@ RSpec.describe Projects::ProjectChangesAuditor, feature_category: :groups_and_pr
 
           expect { auditor_instance.execute }.to change(AuditEvent, :count).by(2)
           expect(AuditEvent.last(2).map { |e| e.details[:change] })
-          .to eq %w[packages_enabled package_registry_access_level]
+          .to eq ['packages_enabled', 'package registry']
         end
       end
 
