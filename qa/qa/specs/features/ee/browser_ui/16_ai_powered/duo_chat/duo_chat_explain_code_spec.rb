@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create' do
-    describe 'Duo Chat', :external_ai_provider, product_group: :source_code,
+  RSpec.describe 'Ai-powered' do
+    describe 'Duo Chat', :external_ai_provider, product_group: :duo_chat,
       only: { pipeline: %w[staging-canary staging canary production] } do
       let(:project) { create(:project, :with_readme, name: 'duo-chat-explain-code') }
 
