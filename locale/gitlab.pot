@@ -30078,6 +30078,9 @@ msgstr ""
 msgid "GroupSettings|Disable personal access tokens for enterprise users"
 msgstr ""
 
+msgid "GroupSettings|Disable user invitations to groups and projects within %{group}"
+msgstr ""
+
 msgid "GroupSettings|Emails are not encrypted. Concerned administrators may want to disable diff previews."
 msgstr ""
 
@@ -30145,6 +30148,9 @@ msgid "GroupSettings|If enabled, group access tokens expiry webhooks execute 60,
 msgstr ""
 
 msgid "GroupSettings|If enabled, individual user accounts will be able to use only issued SSH certificates for Git access. It doesn't apply to service accounts, deploy keys, and other types of internal accounts."
+msgstr ""
+
+msgid "GroupSettings|If enabled, users can no longer invite members to groups or projects in the top-level group. %{learn_more_link}."
 msgstr ""
 
 msgid "GroupSettings|If not specified at the group or instance level, the default is %{default_initial_branch_name}. Does not affect existing repositories."
@@ -65605,6 +65611,9 @@ msgid_plural "Users in subscription"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "User invitation restrictions"
+msgstr ""
+
 msgid "User is blocked"
 msgstr ""
 
@@ -70285,6 +70294,9 @@ msgid "You cannot impersonate a user with an expired password"
 msgstr ""
 
 msgid "You cannot impersonate an internal user"
+msgstr ""
+
+msgid "You cannot invite a new member to %{strong_start}%{group_name}%{strong_end} since its disabled by %{actor}."
 msgstr ""
 
 msgid "You cannot play this scheduled pipeline at the moment. Please wait a minute."

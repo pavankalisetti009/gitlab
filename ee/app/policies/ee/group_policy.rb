@@ -973,6 +973,12 @@ module EE
         @subject.licensed_feature_available?(:group_bulk_edit)
       end
 
+      condition(:disable_invite_members_for_group, scope: :subject) do
+        ::Gitlab::Saas.feature_available?(:group_disable_invite_members) &&
+          @subject.licensed_feature_available?(:disable_invite_members) &&
+          @subject.root_ancestor.disable_invite_members?
+      end
+
       condition(:disable_invite_members, scope: :global) do
         ::License.feature_available?(:disable_invite_members) &&
           ::Gitlab::CurrentSettings.current_application_settings.disable_invite_members?
@@ -982,7 +988,7 @@ module EE
         enable :bulk_admin_epic
       end
 
-      rule { ~admin & disable_invite_members }.policy do
+      rule { ~admin & ((~is_gitlab_com & disable_invite_members) | disable_invite_members_for_group) }.policy do
         prevent :invite_group_members
       end
 

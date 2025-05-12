@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Groups::GroupMembersHelper do
+RSpec.describe Groups::GroupMembersHelper, feature_category: :groups_and_projects do
   include MembersPresentation
   using RSpec::Parameterized::TableSyntax
 
@@ -206,18 +206,39 @@ RSpec.describe Groups::GroupMembersHelper do
 
   describe '#group_member_header_subtext' do
     let(:base_subtext) { "You're viewing members of <strong>#{group.name}</strong>." }
+    let(:cannot_invite_subtext_for_com) { "You cannot invite a new member to <strong>#{group.name}</strong> since its disabled by group owner." }
+    let(:cannot_invite_subtext_for_self_managed) { "You cannot invite a new member to <strong>#{group.name}</strong> since its disabled by administrator." }
+
     let(:standard_subtext) { "^#{base_subtext}$" }
     let(:enforcement_subtext) { "^#{base_subtext}<br />To manage seats for all members" }
 
-    where(:can_admin_member, :enforce_free_user_cap, :subtext) do
-      true  | true  | ref(:enforcement_subtext)
-      true  | false | ref(:standard_subtext)
-      false | true  | ref(:standard_subtext)
-      false | false | ref(:standard_subtext)
+    where(:com, :can_invite_member, :can_admin_member, :enforce_free_user_cap, :subtext) do
+      true | true | true | true | ref(:enforcement_subtext)
+      true | false | true | true | ref(:cannot_invite_subtext_for_com)
+      false | false | true | true | ref(:cannot_invite_subtext_for_self_managed)
+
+      true | true | true | false | ref(:standard_subtext)
+      true | false | true  | false | ref(:cannot_invite_subtext_for_com)
+      false | false | true | false | ref(:cannot_invite_subtext_for_self_managed)
+
+      true | true | false | true | ref(:standard_subtext)
+      true | false | false | true  | ref(:cannot_invite_subtext_for_com)
+      false | false | false | true | ref(:cannot_invite_subtext_for_self_managed)
+
+      true | true | false | false | ref(:standard_subtext)
+      true | false | false | false | ref(:cannot_invite_subtext_for_com)
+      false | false | false | false | ref(:cannot_invite_subtext_for_self_managed)
     end
 
     before do
-      allow(helper).to receive(:can?).with(current_user, :admin_group_member, group).and_return(can_admin_member)
+      allow(helper).to receive(:can?).with(current_user, :invite_group_members, group)
+                                    .and_return(can_invite_member)
+      allow(Gitlab::Saas).to receive(:feature_available?).with(:group_disable_invite_members).and_return(com)
+
+      if can_invite_member
+        allow(helper).to receive(:can?).with(current_user, :admin_group_member, group).and_return(can_admin_member)
+      end
+
       allow_next_instance_of(::Namespaces::FreeUserCap::Enforcement, group) do |instance|
         allow(instance).to receive(:enforce_cap?).and_return(enforce_free_user_cap)
       end

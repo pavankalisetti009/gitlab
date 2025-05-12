@@ -240,63 +240,140 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
   end
 
   describe 'invite_group_members policy' do
-    let(:app_setting) { :disable_invite_members }
-    let(:policy) { :invite_group_members }
+    context 'when on saas', :saas do
+      let(:policy) { :invite_group_members }
+      let(:app_setting) { :disable_invite_members }
 
-    context 'with disable_invite_members available in license' do
-      where(:role, :setting, :admin_mode, :allowed) do
-        :guest      | true  | nil    | false
-        :planner    | true  | nil    | false
-        :reporter   | true  | nil    | false
-        :developer  | true  | nil    | false
-        :maintainer | false | nil    | false
-        :maintainer | true  | nil    | false
-        :owner      | false | nil    | true
-        :owner      | true  | nil    | false
-        :admin      | false | false  | false
-        :admin      | false | true   | true
-        :admin      | true  | false  | false
+      before do
+        stub_saas_features(group_disable_invite_members: true)
       end
 
-      with_them do
-        let(:current_user) { public_send(role) }
-
-        before do
-          stub_licensed_features(disable_invite_members: true)
-          stub_application_setting(app_setting => setting)
-          enable_admin_mode!(current_user) if admin_mode
+      context 'with disable_invite_members is available in license' do
+        where(:role, :group_setting, :application_setting, :allowed) do
+          :guest      | true | true | false
+          :planner    | true | true | false
+          :reporter   | true | true | false
+          :developer  | true | true | false
+          :maintainer | false | true | false
+          :maintainer | true | true | false
+          :owner      | false | true | true
+          :owner      | false | false | true
+          :owner      | true  | true | false
+          :owner      | true  | false | false
+          :admin      | false | true |  true
+          :admin      | false | false | true
+          :admin      | false | true | true
+          :admin      | false | false | true
         end
 
-        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+        with_them do
+          let(:current_user) { public_send(role) }
+
+          before do
+            stub_licensed_features(disable_invite_members: true)
+            stub_application_setting(app_setting => application_setting)
+            allow(group).to receive(:disable_invite_members?).and_return(group_setting)
+            enable_admin_mode!(current_user) if role == :admin
+          end
+
+          it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+        end
+      end
+
+      context 'with disable_invite_members not available in license' do
+        where(:role, :group_setting, :application_setting, :allowed) do
+          :guest      | true | true | false
+          :planner    | true | true | false
+          :reporter   | true | true | false
+          :developer  | true | true | false
+          :maintainer | false | true |  false
+          :maintainer | true | true   | false
+          :owner      | false  | true | true
+          :owner      | false  | false | true
+          :owner      | true   | false | true
+          :owner      | true   | true | true
+          :admin      | false  | true | true
+          :admin      | true | false | true
+        end
+
+        with_them do
+          let(:current_user) { public_send(role) }
+
+          before do
+            stub_licensed_features(disable_invite_members: false)
+            stub_application_setting(app_setting => application_setting)
+            allow(group).to receive(:disable_invite_members?).and_return(group_setting)
+            enable_admin_mode!(current_user) if role == :admin
+          end
+
+          it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+        end
       end
     end
 
-    context 'with disable_invite_members not available in license' do
-      where(:role, :setting, :admin_mode, :allowed) do
-        :guest      | true  | nil    | false
-        :planner    | true  | nil    | false
-        :reporter   | true  | nil    | false
-        :developer  | true  | nil    | false
-        :maintainer | false | nil    | false
-        :maintainer | true  | nil    | false
-        :owner      | false | nil    | true
-        :owner      | true  | nil    | true
-        :admin      | false | false  | false
-        :admin      | false | true   | true
-        :admin      | true  | false  | false
-        :admin      | true  | true   | true
+    context 'when self-managed' do
+      before do
+        allow(Gitlab).to receive(:com?).and_return(false)
       end
 
-      with_them do
-        let(:current_user) { public_send(role) }
+      let(:app_setting) { :disable_invite_members }
+      let(:policy) { :invite_group_members }
 
-        before do
-          stub_licensed_features(disable_invite_members: false)
-          stub_application_setting(app_setting => setting)
-          enable_admin_mode!(current_user) if admin_mode
+      context 'with disable_invite_members available in license' do
+        where(:role, :setting, :admin_mode, :allowed) do
+          :guest      | true  | nil    | false
+          :planner    | true  | nil    | false
+          :reporter   | true  | nil    | false
+          :developer  | true  | nil    | false
+          :maintainer | false | nil    | false
+          :maintainer | true  | nil    | false
+          :owner      | false | nil    | true
+          :owner      | true  | nil    | false
+          :admin      | false | false  | false
+          :admin      | false | true   | true
+          :admin      | true  | false  | false
         end
 
-        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+        with_them do
+          let(:current_user) { public_send(role) }
+
+          before do
+            stub_licensed_features(disable_invite_members: true)
+            stub_application_setting(app_setting => setting)
+            enable_admin_mode!(current_user) if admin_mode
+          end
+
+          it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+        end
+      end
+
+      context 'with disable_invite_members not available in license' do
+        where(:role, :setting, :admin_mode, :allowed) do
+          :guest      | true  | nil    | false
+          :planner    | true  | nil    | false
+          :reporter   | true  | nil    | false
+          :developer  | true  | nil    | false
+          :maintainer | false | nil    | false
+          :maintainer | true  | nil    | false
+          :owner      | false | nil    | true
+          :owner      | true  | nil    | true
+          :admin      | false | false  | false
+          :admin      | false | true   | true
+          :admin      | true  | false  | false
+          :admin      | true  | true   | true
+        end
+
+        with_them do
+          let(:current_user) { public_send(role) }
+
+          before do
+            stub_licensed_features(disable_invite_members: false)
+            stub_application_setting(app_setting => setting)
+            enable_admin_mode!(current_user) if admin_mode
+          end
+
+          it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+        end
       end
     end
   end

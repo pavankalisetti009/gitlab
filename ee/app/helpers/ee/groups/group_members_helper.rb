@@ -39,6 +39,15 @@ module EE::Groups::GroupMembersHelper
   # rubocop:enable Metrics/ParameterLists
 
   def group_member_header_subtext(group)
+    unless current_user && can?(current_user, :invite_group_members, group)
+      if Gitlab::Saas.feature_available?(:group_disable_invite_members)
+        return cannot_invite_member_subtext(group.name, "group owner")
+      end
+
+      return cannot_invite_member_subtext(group.name, "administrator")
+
+    end
+
     if ::Namespaces::FreeUserCap::Enforcement.new(group.root_ancestor).enforce_cap? &&
         can?(current_user, :admin_group_member, group.root_ancestor)
       super + member_header_manage_namespace_members_text(group.root_ancestor)
@@ -55,5 +64,13 @@ module EE::Groups::GroupMembersHelper
     end
 
     super + custom_role_options
+  end
+
+  private
+
+  def cannot_invite_member_subtext(group_name, actor)
+    safe_format(
+      _("You cannot invite a new member to %{strong_start}%{group_name}%{strong_end} since its disabled by %{actor}."),
+      tag_pair(tag.strong, :strong_start, :strong_end), group_name: group_name, actor: actor)
   end
 end

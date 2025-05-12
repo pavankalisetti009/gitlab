@@ -165,26 +165,51 @@ RSpec.describe Projects::ProjectMembersHelper do
     end
   end
 
-  describe '#project_member_header_subtext' do
+  describe '#project_member_header_subtext', feature_category: :groups_and_projects do
     let(:base_subtext) { "You can invite a new member to <strong>#{current_project.name}</strong> or invite another group." }
+    let(:cannot_invite_subtext_for_com) { "You cannot invite a new member to #{current_project.name}. User invitations are disabled by the group owner." }
+    let(:cannot_invite_subtext_for_self_managed) { "You cannot invite a new member to #{current_project.name}. User invitations are disabled by the instance administrator." }
     let(:standard_subtext) { "^#{base_subtext}$" }
     let(:enforcement_subtext) { "^#{base_subtext}<br />To manage seats for all members" }
 
     let_it_be(:project_with_group) { create(:project, group: create(:group)) }
 
-    where(:can_admin_member, :enforce_free_user_cap, :subtext, :current_project) do
-      true  | true  | ref(:standard_subtext) | ref(:project)
-      true  | true  | ref(:enforcement_subtext) | ref(:project_with_group)
-      true  | false | ref(:standard_subtext) | ref(:project_with_group)
-      false | true  | ref(:standard_subtext) | ref(:project_with_group)
-      false | false | ref(:standard_subtext) | ref(:project_with_group)
+    where(:com, :can_invite_member, :can_admin_member, :enforce_free_user_cap, :subtext, :current_project) do
+      true | true | true | true | ref(:standard_subtext) | ref(:project)
+      false | false | true | true | ref(:cannot_invite_subtext_for_self_managed) | ref(:project)
+      true | false | true | true | ref(:cannot_invite_subtext_for_com) | ref(:project)
+
+      true | true | true | true | ref(:enforcement_subtext) | ref(:project_with_group)
+      false | false | true | true | ref(:cannot_invite_subtext_for_self_managed) | ref(:project_with_group)
+      true | false | true | true | ref(:cannot_invite_subtext_for_com) | ref(:project_with_group)
+
+      true | true | true | false | ref(:standard_subtext) | ref(:project_with_group)
+      false | false | true | false | ref(:cannot_invite_subtext_for_self_managed) | ref(:project_with_group)
+      true | false | true | false | ref(:cannot_invite_subtext_for_com) | ref(:project_with_group)
+
+      true | true | false | true | ref(:standard_subtext) | ref(:project_with_group)
+      false | false | false | true | ref(:cannot_invite_subtext_for_self_managed) | ref(:project_with_group)
+      true | false | false | true  | ref(:cannot_invite_subtext_for_com) | ref(:project_with_group)
+
+      true | true |  false | false | ref(:standard_subtext) | ref(:project_with_group)
+      false | false | false | false | ref(:cannot_invite_subtext_for_self_managed) | ref(:project_with_group)
+      true | false |  false | false | ref(:cannot_invite_subtext_for_com) | ref(:project_with_group)
     end
 
     before do
       assign(:project, current_project)
-      allow(helper).to receive(:can?).with(current_user, :admin_project_member, current_project).and_return(true)
-      allow(helper).to receive(:can?).with(current_user, :admin_group_member, current_project.root_ancestor)
-                                     .and_return(can_admin_member)
+
+      allow(helper).to receive(:can?).with(current_user, :invite_project_members, current_project)
+                                     .and_return(can_invite_member)
+      allow(::Gitlab::Saas).to receive(:feature_available?).with(:group_disable_invite_members).and_return(com)
+
+      if can_invite_member
+        allow(helper).to receive(:can?).with(current_user, :admin_group_member, current_project.root_ancestor)
+                                       .and_return(can_admin_member)
+        allow(helper).to receive(:can?).with(current_user, :admin_project_member, current_project)
+                                       .and_return(can_invite_member)
+      end
+
       allow_next_instance_of(::Namespaces::FreeUserCap::Enforcement, current_project.root_ancestor) do |instance|
         allow(instance).to receive(:enforce_cap?).and_return(enforce_free_user_cap)
       end

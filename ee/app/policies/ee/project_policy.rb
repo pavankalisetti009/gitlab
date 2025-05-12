@@ -72,6 +72,14 @@ module EE
           ::Gitlab::CurrentSettings.disable_overriding_approvers_per_merge_request
       end
 
+      with_scope :subject
+      condition(:disable_invite_members_for_group) do
+        ::Gitlab::Saas.feature_available?(:group_disable_invite_members) &&
+          @subject.group &&
+          @subject.group.root_ancestor.licensed_feature_available?(:disable_invite_members) &&
+          @subject.group.root_ancestor.disable_invite_members?
+      end
+
       with_scope :global
       condition(:disable_invite_members) do
         License.feature_available?(:disable_invite_members) &&
@@ -408,7 +416,7 @@ module EE
         prevent(:read_issue_analytics)
       end
 
-      rule { ~admin & disable_invite_members }.policy do
+      rule { ~admin & ((~is_gitlab_com & disable_invite_members) | disable_invite_members_for_group) }.policy do
         prevent :invite_project_members
       end
 
