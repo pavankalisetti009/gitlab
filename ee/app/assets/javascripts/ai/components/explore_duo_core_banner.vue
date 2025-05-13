@@ -37,7 +37,7 @@ export default {
         <gl-banner
           v-if="shouldShowCallout"
           :title="s__('AiPowered|Get started with GitLab Duo')"
-          class="explore-duo-core-banner gl-mb-5 gl-mt-5"
+          class="explore-duo-core-banner gl-mb-5 gl-mt-5 gl-bg-white"
           :button-text="s__('AiPowered|Explore GitLab Duo Core')"
           :button-link="$options.ctaLink"
           @primary="dismiss"

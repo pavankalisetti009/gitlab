@@ -123,7 +123,7 @@ export default {
       v-if="!isDismissed"
       :title="bannerTitle"
       :button-text="$options.i18n.enableCodeSuggestionsAndChatText"
-      class="custom-banner gl-mt-5"
+      class="custom-banner gl-mt-5 gl-bg-white"
       data-testid="enable-duo-banner"
       @primary="primaryClicked()"
       @close="dismissBanner()"
