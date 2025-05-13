@@ -63,15 +63,6 @@ module EE
       end
     end
 
-    override :remove_project_message
-    def remove_project_message(project)
-      return super unless project.adjourned_deletion?
-
-      date = permanent_deletion_date_formatted(Date.current)
-      format(_("Deleting a project places it into a read-only state until %{date}, " \
-        "at which point the project will be permanently deleted. Are you ABSOLUTELY sure?"), date: date)
-    end
-
     def approvals_app_data(project = @project)
       {
         project_id: project.id,
