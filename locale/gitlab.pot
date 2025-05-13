@@ -66917,6 +66917,9 @@ msgstr ""
 msgid "VirtualRegistry|Maven"
 msgstr ""
 
+msgid "VirtualRegistry|Maven upstream"
+msgstr ""
+
 msgid "VirtualRegistry|Maven virtual registry"
 msgstr ""
 
