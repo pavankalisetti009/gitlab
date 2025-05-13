@@ -17,6 +17,13 @@ export default {
   components: {
     GlBreadcrumb,
   },
+  props: {
+    staticBreadcrumbs: {
+      type: Object,
+      default: () => ({ items: [] }),
+      required: false,
+    },
+  },
   computed: {
     rootRoute() {
       return {
@@ -77,7 +84,7 @@ export default {
       }
     },
     breadcrumbs() {
-      const breadCrumbs = [this.rootRoute];
+      const breadCrumbs = [...this.staticBreadcrumbs.items, this.rootRoute];
 
       if (this.activeTabRoute) breadCrumbs.push(this.activeTabRoute);
       if (this.actionRoute) breadCrumbs.push(this.actionRoute);
