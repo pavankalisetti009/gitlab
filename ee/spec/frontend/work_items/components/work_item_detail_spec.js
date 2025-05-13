@@ -36,11 +36,7 @@ describe('EE WorkItemDetail component', () => {
     .mockResolvedValue(mockProjectPermissionsQueryResponse());
   const allowedChildrenTypesHandler = jest.fn().mockResolvedValue(allowedChildrenTypesResponse);
 
-  const createComponent = ({
-    workItemIid = '1',
-    handler = successHandler,
-    relatedVulnerabilitiesEnabled = true,
-  } = {}) => {
+  const createComponent = ({ workItemIid = '1', handler = successHandler } = {}) => {
     wrapper = shallowMountExtended(WorkItemDetail, {
       apolloProvider: createMockApollo([
         [workItemByIidQuery, handler],
@@ -55,7 +51,6 @@ describe('EE WorkItemDetail component', () => {
       provide: {
         glFeatures: {
           workItemsAlpha: true,
-          workItemRelatedVulnerabilities: relatedVulnerabilitiesEnabled,
         },
         hasSubepicsFeature: true,
         hasLinkedItemsEpicsFeature: true,
@@ -87,14 +82,6 @@ describe('EE WorkItemDetail component', () => {
 
     it('shows vulnerabilities widget', () => {
       expect(findVulnerabilitiesWidget().exists()).toBe(true);
-    });
-
-    it('does not show vulnerabilities widget if feature flag is disabled', async () => {
-      createComponent({
-        relatedVulnerabilitiesEnabled: false,
-      });
-      await waitForPromises();
-      expect(findVulnerabilitiesWidget().exists()).toBe(false);
     });
   });
 });
