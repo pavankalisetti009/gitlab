@@ -70350,7 +70350,10 @@ msgstr ""
 msgid "You cannot impersonate an internal user"
 msgstr ""
 
-msgid "You cannot invite a new member to %{strong_start}%{group_name}%{strong_end} since its disabled by %{actor}."
+msgid "You cannot invite a new member to %{strong_start}%{group_name}%{strong_end}. User invitations are disabled by the %{actor}."
+msgstr ""
+
+msgid "You cannot invite a new member to %{strong_start}%{project_name}%{strong_end}. User invitations are disabled by the %{actor}."
 msgstr ""
 
 msgid "You cannot play this scheduled pipeline at the moment. Please wait a minute."

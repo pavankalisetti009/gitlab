@@ -27,12 +27,10 @@ module EE
       def project_member_header_subtext(project)
         unless can?(current_user, :invite_project_members, project)
           if ::Gitlab::Saas.feature_available?(:group_disable_invite_members)
-            return "You cannot invite a new member to #{project.name}. " \
-              "User invitations are disabled by the group owner."
+            return cannot_invite_member_subtext(project.name, "group owner")
           end
 
-          return "You cannot invite a new member to #{project.name}. " \
-            "User invitations are disabled by the instance administrator."
+          return  cannot_invite_member_subtext(project.name, "instance administrator")
 
         end
 
@@ -53,6 +51,15 @@ module EE
         end
 
         super + custom_role_options
+      end
+
+      private
+
+      def cannot_invite_member_subtext(project_name, actor)
+        safe_format(
+          _("You cannot invite a new member to %{strong_start}%{project_name}%{strong_end}. " \
+            "User invitations are disabled by the %{actor}."),
+          tag_pair(tag.strong, :strong_start, :strong_end), project_name: project_name, actor: actor)
       end
     end
   end

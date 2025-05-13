@@ -416,7 +416,11 @@ module EE
         prevent(:read_issue_analytics)
       end
 
-      rule { ~admin & ((~is_gitlab_com & disable_invite_members) | disable_invite_members_for_group) }.policy do
+      rule { ~admin & (~is_gitlab_com & disable_invite_members) }.policy do
+        prevent :invite_project_members
+      end
+
+      rule { ~admin & disable_invite_members_for_group }.policy do
         prevent :invite_project_members
       end
 
