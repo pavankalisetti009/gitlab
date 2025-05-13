@@ -156,6 +156,21 @@ export const ALL_PROTECTED_BRANCHES = {
   value: 'protected',
 };
 
+export const TARGET_PROTECTED_BRANCHES = {
+  text: __('target all protected branches'),
+  value: 'target_protected',
+};
+
+export const PROJECT_TARGET_DEFAULT_BRANCH = {
+  text: __('target default branch'),
+  value: 'target_default',
+};
+
+export const GROUP_TARGET_DEFAULT_BRANCHES = {
+  text: __('target all default branches'),
+  value: 'target_default',
+};
+
 export const ANY_COMMIT = 'any';
 export const ANY_UNSIGNED_COMMIT = 'unsigned';
 
@@ -182,17 +197,40 @@ export const SCAN_RESULT_BRANCH_TYPE_OPTIONS = (nameSpaceType = NAMESPACE_TYPES.
   SPECIFIC_BRANCHES,
 ];
 
-export const SCAN_EXECUTION_BRANCH_TYPE_OPTIONS = (nameSpaceType = NAMESPACE_TYPES.GROUP) => [
-  ALL_BRANCHES,
-  isGroup(nameSpaceType) ? GROUP_DEFAULT_BRANCHES : PROJECT_DEFAULT_BRANCH,
-  ALL_PROTECTED_BRANCHES,
-  SPECIFIC_BRANCHES,
-];
+export const SCAN_EXECUTION_BRANCH_TYPE_OPTIONS = (
+  namespaceType = NAMESPACE_TYPES.GROUP,
+  featureFlags = {},
+) => {
+  const isGroupNamespace = isGroup(namespaceType);
+
+  // Base options always included
+  const baseOptions = [
+    ALL_BRANCHES,
+    isGroupNamespace ? GROUP_DEFAULT_BRANCHES : PROJECT_DEFAULT_BRANCH,
+    ALL_PROTECTED_BRANCHES,
+    SPECIFIC_BRANCHES,
+  ];
+
+  // Feature flag dependent options
+  if (featureFlags.flexibleScanExecutionPolicy) {
+    // Additional options when feature flag is enabled
+    const additionalOptions = [
+      TARGET_PROTECTED_BRANCHES,
+      isGroupNamespace ? GROUP_TARGET_DEFAULT_BRANCHES : PROJECT_TARGET_DEFAULT_BRANCH,
+    ];
+
+    return [...baseOptions, ...additionalOptions];
+  }
+
+  return baseOptions;
+};
+
 export const VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS = [
   ALL_BRANCHES.value,
   ALL_PROTECTED_BRANCHES.value,
   GROUP_DEFAULT_BRANCHES.value,
 ];
+
 export const VALID_SCAN_RESULT_BRANCH_TYPE_OPTIONS = [
   ALL_PROTECTED_BRANCHES.value,
   GROUP_DEFAULT_BRANCHES.value,

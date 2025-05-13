@@ -1,6 +1,7 @@
 <script>
 import { GlCollapsibleListbox, GlFormInput } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   SCAN_EXECUTION_BRANCH_TYPE_OPTIONS,
   SPECIFIC_BRANCHES,
@@ -16,6 +17,7 @@ export default {
     GlCollapsibleListbox,
     GlFormInput,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: ['namespaceType'],
   props: {
     branchesToAdd: {
@@ -38,7 +40,7 @@ export default {
     defaultBranchTypeItems() {
       return this.branchTypes.length > 0
         ? this.branchTypes
-        : SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(this.namespaceType);
+        : SCAN_EXECUTION_BRANCH_TYPE_OPTIONS(this.namespaceType, this.glFeatures);
     },
     isBranchScope() {
       return this.selectedBranchType === SPECIFIC_BRANCHES.value;

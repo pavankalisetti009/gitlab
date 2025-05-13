@@ -17,6 +17,7 @@ module Groups
         push_frontend_feature_flag(:security_policies_split_view, group)
         push_frontend_feature_flag(:security_policy_approval_warn_mode, group)
         push_frontend_feature_flag(:scheduled_pipeline_execution_policies, group)
+        push_frontend_feature_flag(:flexible_scan_execution_policy, group)
       end
 
       feature_category :security_policy_management
