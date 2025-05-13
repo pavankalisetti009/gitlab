@@ -26438,6 +26438,9 @@ msgstr ""
 msgid "File added."
 msgstr ""
 
+msgid "File browser"
+msgstr ""
+
 msgid "File changed and moved."
 msgstr ""
 
@@ -26493,6 +26496,9 @@ msgid "File suppressed by a .gitattributes entry or the file's encoding is unsup
 msgstr ""
 
 msgid "File too large. Secure files must be less than %{limit} MB."
+msgstr ""
+
+msgid "File tree"
 msgstr ""
 
 msgid "File upload error."

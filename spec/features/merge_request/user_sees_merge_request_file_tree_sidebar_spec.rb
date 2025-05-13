@@ -19,13 +19,13 @@ RSpec.describe 'Merge request > User sees merge request file tree sidebar', :js,
   end
 
   it 'sees file tree sidebar' do
-    expect(page).to have_selector('.file-row[role=button]')
+    expect(page).to have_selector('[data-testid="file-tree-container"]')
   end
 
   shared_examples 'last entry clickable' do
     specify do
       sidebar_scroller.execute_script('this.scrollBy(0,99999)')
-      button = find_all('.file-row[role=button]').last
+      button = find_all('[data-testid="file-tree-container"] nav button').last
       title = button.find('[data-testid=file-row-name-container]')[:title]
       expect(button.obscured?).to be_falsy
       button.click
