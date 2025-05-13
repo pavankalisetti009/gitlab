@@ -119,6 +119,7 @@ module EE
       has_many :analyzer_statuses, class_name: 'Security::AnalyzerProjectStatus', inverse_of: :project
 
       has_many :workspaces, class_name: 'RemoteDevelopment::Workspace', inverse_of: :project
+      has_many :workspace_agentk_states, class_name: 'RemoteDevelopment::WorkspaceAgentkState', inverse_of: :project
 
       has_many :dast_site_profiles
       has_many :dast_site_tokens

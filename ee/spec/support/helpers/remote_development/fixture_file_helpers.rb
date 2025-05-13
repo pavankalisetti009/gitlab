@@ -14,7 +14,7 @@ module RemoteDevelopment
     # @param [String] namespace_path
     # @return [String]
     def read_devfile_yaml(filename, project_name: "test-project", namespace_path: "test-group")
-      erb_devfile_contents = read_fixture_file_yaml(filename)
+      erb_devfile_contents = read_fixture_file(filename)
       fixture_file_binding = FixtureFileErbBinding.new.get_fixture_file_binding
       devfile_contents = ERB.new(erb_devfile_contents).result(fixture_file_binding)
       devfile_contents.gsub!('http://localhost/', root_url)
@@ -28,7 +28,7 @@ module RemoteDevelopment
 
     # @param [String] filename
     # @return [String]
-    def read_fixture_file_yaml(filename)
+    def read_fixture_file(filename)
       File.read(Rails.root.join('ee/spec/fixtures/remote_development', filename).to_s)
     end
 

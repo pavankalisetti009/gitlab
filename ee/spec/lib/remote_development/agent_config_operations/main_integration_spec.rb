@@ -10,7 +10,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
   let(:dns_zone) { 'my-awesome-domain.me' }
 
   let(:config) do
-    yaml = read_fixture_file_yaml("example.agent_config.yaml")
+    yaml = read_fixture_file("example.agent_config.yaml")
     yaml.gsub!("dns_zone: workspaces.dev.test", "dns_zone: #{dns_zone}")
     # NOTE: YAML.safe_load will ensure that all keys are strings, not symbols.
     YAML.safe_load(yaml)

@@ -53,6 +53,10 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       it { is_expected.to have_many(:workspace_variables) }
     end
 
+    context "for has_one" do
+      it { is_expected.to have_one(:agentk_state) }
+    end
+
     context "for belongs_to" do
       it { is_expected.to belong_to(:user) }
       it { is_expected.to belong_to(:personal_access_token) }
