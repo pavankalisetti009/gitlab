@@ -1029,12 +1029,40 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       let(:merge_request) { create(:ee_merge_request, :with_metrics_reports, source_project: project) }
 
       it { is_expected.to be_truthy }
+
+      context 'when the head pipeline is still in progress' do
+        it 'does not return any metrics reports' do
+          merge_request.head_pipeline.update!(status: 'running')
+
+          expect(subject).to be_falsey
+        end
+      end
     end
 
-    context 'when head pipeline does not have license scanning reports' do
-      let(:merge_request) { create(:ee_merge_request, source_project: project) }
+    context 'when head pipeline does not have metrics reports' do
+      let(:merge_request) { create(:ee_merge_request, :with_head_pipeline, source_project: project) }
+
+      before do
+        merge_request.head_pipeline.update!(status: 'success')
+      end
 
       it { is_expected.to be_falsey }
+
+      context 'when child pipeline has metrics reports' do
+        it 'returns child report' do
+          create(:ee_ci_pipeline, :success, :with_metrics_report, child_of: merge_request.head_pipeline)
+
+          expect(subject).to be_truthy
+        end
+
+        context 'when ff show_child_reports_in_mr_page is disabled' do
+          before do
+            stub_feature_flags(show_child_reports_in_mr_page: false)
+          end
+
+          it { is_expected.to be_falsey }
+        end
+      end
     end
   end
 

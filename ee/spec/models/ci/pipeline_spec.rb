@@ -437,6 +437,44 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
         expect(subject.metrics).to be_empty
       end
     end
+
+    context 'when a child pipeline has metrics reports' do
+      let_it_be(:child_pipeline) { create(:ee_ci_pipeline, :with_metrics_report, child_of: pipeline) }
+
+      it 'returns the metrics report of the child pipeline' do
+        expect(subject.metrics.count).to eq(2)
+      end
+
+      context 'when the parent pipeline has metrics reports' do
+        before do
+          create(:ee_ci_build, :success, :metrics_alternate, pipeline: pipeline, project: project)
+        end
+
+        it 'returns the combined metrics report of both pipelines' do
+          expect(subject.metrics.count).to eq(3)
+        end
+      end
+
+      context 'when the child pipeline is a nested pipeline' do
+        let_it_be(:nested_child_pipeline) do
+          create(:ee_ci_pipeline, :with_metrics_alternate_report, child_of: child_pipeline)
+        end
+
+        it 'returns the combined metrics of all child pipelines' do
+          expect(subject.metrics.count).to eq(3)
+        end
+      end
+
+      context 'when ff show_child_reports_in_mr_page is disabled' do
+        before do
+          stub_feature_flags(show_child_reports_in_mr_page: false)
+        end
+
+        it 'does not return the metrics report of the child pipeline' do
+          expect(subject.metrics).to be_empty
+        end
+      end
+    end
   end
 
   describe '#sbom_reports' do
