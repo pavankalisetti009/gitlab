@@ -1,4 +1,5 @@
 - return unless @project.project_setting.duo_features_enabled?
+- return unless @project.namespace.has_active_add_on_purchase?(:duo_enterprise)
 
 = render ::Layouts::SettingsSectionComponent.new(s_('DuoCodeReview|GitLab Duo Code Review'),
   id: 'merge-request-duo-code-review-settings',

@@ -232,6 +232,17 @@ module EE
       end
     end
 
+    def has_active_add_on_purchase?(add_on)
+      ::GitlabSubscriptions::AddOnPurchase
+        .joins(:add_on)
+        .where(
+          namespace_id: self_and_ancestor_ids,
+          subscription_add_ons: { name: GitlabSubscriptions::AddOn.names[add_on] }
+        )
+        .active
+        .any?
+    end
+
     def namespace_limit
       limit = has_parent? ? root_ancestor.namespace_limit : super
 
