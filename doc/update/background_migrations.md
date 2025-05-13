@@ -180,7 +180,7 @@ Use the following database queries to see the state of the current batched backg
    If no new row has been added, the migration has been paused.
 
 1. After confirming the migration has paused, restart the migration (using the `enable`
-   command above) to proceed with the batch when ready. On larger instances,
+   command mentioned previously) to proceed with the batch when ready. On larger instances,
    background migrations can take as long as 48 hours to complete each batch.
 
 ##### Automatic batch size optimization
