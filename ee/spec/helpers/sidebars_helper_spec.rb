@@ -3,7 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe ::SidebarsHelper, feature_category: :navigation do
-  using RSpec::Parameterized::TableSyntax
   include Devise::Test::ControllerHelpers
 
   describe '#super_sidebar_context' do
@@ -274,18 +273,13 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
   end
 
   describe '#context_switcher_links' do
-    let_it_be(:user) { build_stubbed(:user) }
+    let_it_be(:user) { create(:user) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- Persisted user needed for admin_member_role
     let_it_be(:panel) { {} }
     let_it_be(:panel_type) { 'default' }
     let_it_be(:current_user_mode) { Gitlab::Auth::CurrentUserMode.new(user) }
 
-    let_it_be(:public_links_for_user) do
-      [
-        { title: s_('Navigation|Your work'), link: '/', icon: 'work' },
-        { title: s_('Navigation|Explore'), link: '/explore', icon: 'compass' },
-        { title: s_('Navigation|Profile'), link: '/-/user_settings/profile', icon: 'profile' },
-        { title: s_('Navigation|Preferences'), link: '/-/profile/preferences', icon: 'preferences' }
-      ]
+    let_it_be(:admin_area_link) do
+      { title: s_('Navigation|Admin area'), link: '/admin', icon: 'admin' }
     end
 
     subject(:sidebar_context) do
@@ -299,37 +293,42 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       allow(helper).to receive(:current_user_mode).and_return(current_user_mode)
     end
 
-    context 'when user is not an admin' do
-      it 'returns only the public links for a user' do
-        expect(sidebar_context[:context_switcher_links]).to eq(public_links_for_user)
+    context 'when user is assigned a custom admin role' do
+      before do
+        stub_licensed_features(custom_roles: true)
       end
 
-      context 'when user is allowed to access_admin_area' do
-        where(:admin_ability, :link) do
-          nil                      | nil
-          :admin_unknown           | '/admin'
-          :read_admin_cicd         | '/admin/runners'
-          :read_admin_dashboard    | '/admin'
-          :read_admin_subscription | '/admin/subscription'
-          :read_admin_users        | ref(:admin_users_path)
-        end
-
-        with_them do
+      MemberRole.all_customizable_admin_permission_keys.each do |ability|
+        context "with #{ability} ability" do
           before do
-            allow_next_instance_of(::Authz::Admin) do |instance|
-              allow(instance).to receive(:permitted).and_return([admin_ability]) if admin_ability
-            end
-
-            allow(user).to receive(:can?).and_call_original
-            allow(user).to receive(:can?).with(admin_ability).and_return(true) if admin_ability
-            allow(user).to receive(:can_admin_all_resources?).and_return(false)
+            create(:admin_member_role, ability, user: user) # rubocop:disable RSpec/FactoryBot/AvoidCreate -- Persisted records needed
           end
 
-          it 'returns the correct links' do
-            if link
-              expect(sidebar_context[:context_switcher_links]).to include(hash_including(link: link))
-            else
-              expect(sidebar_context[:context_switcher_links]).not_to include(hash_including(link: '/admin'))
+          context 'when application setting :admin_mode is enabled' do
+            before do
+              stub_application_setting(admin_mode: true)
+            end
+
+            context 'when admin mode is on', :enable_admin_mode do
+              it 'returns admin area link' do
+                expect(sidebar_context[:context_switcher_links]).to include(admin_area_link)
+              end
+            end
+
+            context 'when admin mode is off' do
+              it 'does not return admin area link' do
+                expect(sidebar_context[:context_switcher_links]).not_to include(admin_area_link)
+              end
+            end
+          end
+
+          context 'when application setting :admin_mode is disabled' do
+            before do
+              stub_application_setting(admin_mode: false)
+            end
+
+            it 'returns admin area link' do
+              expect(sidebar_context[:context_switcher_links]).to include(admin_area_link)
             end
           end
         end

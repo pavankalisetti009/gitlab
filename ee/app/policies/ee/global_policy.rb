@@ -226,14 +226,19 @@ module EE
 
       rule { custom_role_enables_read_admin_dashboard }.policy do
         enable :access_admin_area
+        enable :read_application_statistics
         enable :read_admin_dashboard
       end
 
       rule { custom_role_enables_read_admin_cicd }.policy do
+        enable :access_admin_area
+        enable :read_application_statistics
         enable :read_admin_cicd
       end
 
       rule { custom_role_enables_read_admin_monitoring }.policy do
+        enable :access_admin_area
+        enable :read_application_statistics
         enable :read_admin_audit_log
         enable :read_admin_background_migrations
         enable :read_admin_gitaly_servers
@@ -242,12 +247,18 @@ module EE
       end
 
       rule { custom_role_enables_read_admin_subscription }.policy do
+        enable :access_admin_area
+        enable :read_application_statistics
         enable :read_admin_subscription
         enable :read_billable_member
         enable :read_licenses
       end
 
-      rule { custom_role_enables_read_admin_users }.enable :read_admin_users
+      rule { custom_role_enables_read_admin_users }.policy do
+        enable :access_admin_area
+        enable :read_application_statistics
+        enable :read_admin_users
+      end
 
       rule { admin & duo_core_features_available }.policy do
         enable :manage_duo_core_settings

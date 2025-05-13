@@ -206,9 +206,9 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
     end
   end
 
-  context 'with user having read_admin_dashboard custom permission' do
+  context 'when user is assigned a custom admin role' do
     let_it_be(:user) { create(:user) }
-    let_it_be(:role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
+    let_it_be(:role) { create(:admin_member_role, :read_admin_users, user: user) }
 
     before do
       assign(:license, create(:license))

@@ -30,7 +30,6 @@ RSpec.describe Admin::DashboardController, feature_category: :shared do
 
     context 'when using custom permissions' do
       let_it_be(:user) { create(:user) }
-      let_it_be(:role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
 
       before do
         sign_in(user)
@@ -43,10 +42,18 @@ RSpec.describe Admin::DashboardController, feature_category: :shared do
           stub_licensed_features(custom_roles: true)
         end
 
-        it 'responds with success' do
-          admin_dashboard
+        MemberRole.all_customizable_admin_permission_keys.each do |ability|
+          context "with #{ability} ability" do
+            before do
+              create(:admin_member_role, ability, user: user)
+            end
 
-          expect(response).to have_gitlab_http_status(:ok)
+            it 'responds with success' do
+              admin_dashboard
+
+              expect(response).to have_gitlab_http_status(:ok)
+            end
+          end
         end
       end
 

@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Admin mode', :js, feature_category: :permissions do
   let_it_be(:user) { create(:user) }
-  let_it_be(:role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
+  let_it_be(:role) { create(:admin_member_role, :read_admin_users, user: user) }
 
   context 'when using custom permissions' do
     context 'when custom_roles feature is available' do

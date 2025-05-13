@@ -78,38 +78,6 @@ module EE
 
     private
 
-    def custom_role_grants_admin_access?
-      return false unless current_user
-
-      ::Authz::Admin.new(current_user).permitted.any?
-    end
-    strong_memoize_attr :custom_role_grants_admin_access?
-
-    override :display_admin_area_link?
-    def display_admin_area_link?
-      return true if super
-
-      custom_role_grants_admin_access?
-    end
-
-    override :admin_area_link
-    def admin_area_link
-      return super unless custom_role_grants_admin_access?
-      return super if current_user.can?(:read_admin_dashboard)
-
-      # If user does not have access to /admin (dashboard) but has access to other admin resources
-      # then link them to the first one they have access to
-      if current_user.can?(:read_admin_cicd)
-        admin_runners_path
-      elsif current_user.can?(:read_admin_subscription)
-        admin_subscription_path
-      elsif current_user.can?(:read_admin_users)
-        admin_users_path
-      else
-        super
-      end
-    end
-
     def super_sidebar_default_pins(panel_type)
       case panel_type
       when 'group'
