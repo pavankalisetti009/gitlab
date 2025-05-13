@@ -127,3 +127,49 @@ RSpec.shared_examples 'when dependencies graphql query filtered by source type' 
     expect(result).not_to be_empty
   end
 end
+
+RSpec.shared_examples 'when dependencies graphql query filtered by component versions' do
+  let_it_be(:matching_component_version) { '1.2.3' }
+  let_it_be(:other_component_version) { '4.5.6' }
+  let_it_be(:matching_occurrence) do
+    create(:sbom_occurrence, project: project,
+      component_version: create(:sbom_component_version, version: matching_component_version))
+  end
+
+  let_it_be(:other_occurrence) do
+    create(:sbom_occurrence, project: project,
+      component_version: create(:sbom_component_version, version: other_component_version))
+  end
+
+  let(:queried_component_version) { [matching_component_version] }
+  let(:component_version_query_payload) { { component_versions: queried_component_version } }
+  let(:dependencies_query) { pagination_query(component_version_query_payload) }
+
+  context 'when the version filtering feature flag is enabled for the project' do
+    it 'returns only records matching the specified component version(s)' do
+      post_graphql(dependencies_query, current_user: current_user)
+
+      result_nodes = graphql_data_at(*nodes_path)
+      versions_in_result = result_nodes.pluck('version')
+
+      expect(versions_in_result).to contain_exactly(matching_component_version)
+      expect(result_nodes.size).to eq(1)
+    end
+  end
+
+  context 'when the component version filtering feature flag is disabled for the project' do
+    before do
+      stub_feature_flags(version_filtering_on_project_level_dependency_list: false)
+    end
+
+    it 'ignores the component filter and returns all relevant records' do
+      post_graphql(dependencies_query, current_user: current_user)
+
+      result_nodes = graphql_data_at(*nodes_path)
+      component_versions_in_result = result_nodes.pluck('version')
+
+      expect(component_versions_in_result).to include(matching_component_version, other_component_version)
+      expect(result_nodes.size).to eq(project.sbom_occurrences.count)
+    end
+  end
+end
