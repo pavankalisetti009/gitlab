@@ -24,6 +24,10 @@ module Groups
       def verify_create_virtual_registry!
         access_denied! unless can_create_virtual_registry?(@group)
       end
+
+      def verify_update_virtual_registry!
+        access_denied! unless can?(current_user, :update_virtual_registry, @group.virtual_registry_policy_subject)
+      end
     end
   end
 end
