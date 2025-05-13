@@ -4026,6 +4026,9 @@ export const mockWorkItemNotesResponse = {
             nodes: [
               {
                 id: 'gid://gitlab/Discussion/8bbc4890b6ff0f2cde93a5a0947cd2b8a13d3b6e',
+                resolved: false,
+                resolvable: false,
+                resolvedBy: null,
                 notes: {
                   nodes: [
                     {
@@ -4044,13 +4047,6 @@ export const mockWorkItemNotesResponse = {
                       maxAccessLevelOfAuthor: 'Owner',
                       authorIsContributor: false,
                       externalAuthor: null,
-                      discussion: {
-                        id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723561234',
-                        resolved: false,
-                        resolvable: false,
-                        resolvedBy: null,
-                        __typename: 'Discussion',
-                      },
                       userPermissions: {
                         adminNote: false,
                         awardEmoji: true,
@@ -4081,6 +4077,9 @@ export const mockWorkItemNotesResponse = {
               },
               {
                 id: 'gid://gitlab/Discussion/7b08b89a728a5ceb7de8334246837ba1d07270dc',
+                resolved: false,
+                resolvable: false,
+                resolvedBy: null,
                 notes: {
                   nodes: [
                     {
@@ -4099,9 +4098,6 @@ export const mockWorkItemNotesResponse = {
                       maxAccessLevelOfAuthor: 'Owner',
                       authorIsContributor: false,
                       externalAuthor: null,
-                      discussion: {
-                        id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723565678',
-                      },
                       userPermissions: {
                         adminNote: false,
                         awardEmoji: true,
@@ -4132,6 +4128,9 @@ export const mockWorkItemNotesResponse = {
               },
               {
                 id: 'gid://gitlab/Discussion/0f2f195ec0d1ef95ee9d5b10446b8e96a7d83864',
+                resolved: false,
+                resolvable: false,
+                resolvedBy: null,
                 notes: {
                   nodes: [
                     {
@@ -4149,13 +4148,6 @@ export const mockWorkItemNotesResponse = {
                       maxAccessLevelOfAuthor: 'Owner',
                       authorIsContributor: false,
                       externalAuthor: null,
-                      discussion: {
-                        id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723560987',
-                        resolved: false,
-                        resolvable: false,
-                        resolvedBy: null,
-                        __typename: 'Discussion',
-                      },
                       userPermissions: {
                         adminNote: false,
                         awardEmoji: true,
@@ -4224,6 +4216,9 @@ export const mockWorkItemNotesByIidResponse = {
               nodes: [
                 {
                   id: 'gid://gitlab/Discussion/8bbc4890b6ff0f2cde93a5a0947cd2b8a13d3b6e',
+                  resolved: false,
+                  resolvable: false,
+                  resolvedBy: null,
                   notes: {
                     nodes: [
                       {
@@ -4242,13 +4237,6 @@ export const mockWorkItemNotesByIidResponse = {
                         maxAccessLevelOfAuthor: null,
                         authorIsContributor: false,
                         externalAuthor: null,
-                        discussion: {
-                          id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723561234',
-                          resolved: false,
-                          resolvable: false,
-                          resolvedBy: null,
-                          __typename: 'Discussion',
-                        },
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
@@ -4282,6 +4270,9 @@ export const mockWorkItemNotesByIidResponse = {
                 },
                 {
                   id: 'gid://gitlab/Discussion/7b08b89a728a5ceb7de8334246837ba1d07270dc',
+                  resolved: false,
+                  resolvable: false,
+                  resolvedBy: null,
                   notes: {
                     nodes: [
                       {
@@ -4300,13 +4291,6 @@ export const mockWorkItemNotesByIidResponse = {
                         maxAccessLevelOfAuthor: null,
                         authorIsContributor: false,
                         externalAuthor: null,
-                        discussion: {
-                          id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723568765',
-                          resolved: false,
-                          resolvable: false,
-                          resolvedBy: null,
-                          __typename: 'Discussion',
-                        },
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
@@ -4340,6 +4324,9 @@ export const mockWorkItemNotesByIidResponse = {
                 },
                 {
                   id: 'gid://gitlab/Discussion/addbc177f7664699a135130ab05ffb78c57e4db3',
+                  resolved: false,
+                  resolvable: false,
+                  resolvedBy: null,
                   notes: {
                     nodes: [
                       {
@@ -4358,13 +4345,6 @@ export const mockWorkItemNotesByIidResponse = {
                         maxAccessLevelOfAuthor: null,
                         authorIsContributor: false,
                         externalAuthor: null,
-                        discussion: {
-                          id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723569876',
-                          resolved: false,
-                          resolvable: false,
-                          resolvedBy: null,
-                          __typename: 'Discussion',
-                        },
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
@@ -4435,6 +4415,9 @@ export const mockMoreWorkItemNotesResponse = {
               nodes: [
                 {
                   id: 'gid://gitlab/Discussion/8bbc4890b6ff0f2cde93a5a0947cd2b8a13d3b6e',
+                  resolved: false,
+                  resolvable: false,
+                  resolvedBy: null,
                   notes: {
                     nodes: [
                       {
@@ -4453,13 +4436,6 @@ export const mockMoreWorkItemNotesResponse = {
                         maxAccessLevelOfAuthor: 'Owner',
                         authorIsContributor: false,
                         externalAuthor: null,
-                        discussion: {
-                          id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da1112356a59e',
-                          resolved: false,
-                          resolvable: false,
-                          resolvedBy: null,
-                          __typename: 'Discussion',
-                        },
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
@@ -4493,6 +4469,9 @@ export const mockMoreWorkItemNotesResponse = {
                 },
                 {
                   id: 'gid://gitlab/Discussion/7b08b89a728a5ceb7de8334246837ba1d07270dc',
+                  resolved: false,
+                  resolvable: false,
+                  resolvedBy: null,
                   notes: {
                     nodes: [
                       {
@@ -4511,13 +4490,6 @@ export const mockMoreWorkItemNotesResponse = {
                         maxAccessLevelOfAuthor: 'Owner',
                         authorIsContributor: false,
                         externalAuthor: null,
-                        discussion: {
-                          id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da1272356a59e',
-                          resolved: false,
-                          resolvable: false,
-                          resolvedBy: null,
-                          __typename: 'Discussion',
-                        },
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
@@ -4551,6 +4523,9 @@ export const mockMoreWorkItemNotesResponse = {
                 },
                 {
                   id: 'gid://gitlab/Discussion/0f2f195ec0d1ef95ee9d5b10446b8e96a7d83864',
+                  resolved: false,
+                  resolvable: false,
+                  resolvedBy: null,
                   notes: {
                     nodes: [
                       {
@@ -4568,13 +4543,6 @@ export const mockMoreWorkItemNotesResponse = {
                         maxAccessLevelOfAuthor: 'Owner',
                         authorIsContributor: false,
                         externalAuthor: null,
-                        discussion: {
-                          id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723569876',
-                          resolved: false,
-                          resolvable: false,
-                          resolvedBy: null,
-                          __typename: 'Discussion',
-                        },
                         userPermissions: {
                           adminNote: false,
                           awardEmoji: true,
@@ -4630,6 +4598,9 @@ export const createWorkItemNoteResponse = ({
         id: 'gid://gitlab/Note/569',
         discussion: {
           id: 'gid://gitlab/Discussion/c872ba2d7d3eb780d2255138d67ca8b04f65b122',
+          resolved: false,
+          resolvable: true,
+          resolvedBy: null,
           notes: {
             nodes: [
               {
@@ -4647,13 +4618,6 @@ export const createWorkItemNoteResponse = ({
                 maxAccessLevelOfAuthor: 'Owner',
                 authorIsContributor: false,
                 externalAuthor: null,
-                discussion: {
-                  id: 'gid://gitlab/Discussion/c872ba2d7d3eb780d2255138d67ca8b04f65b122',
-                  resolved: false,
-                  resolvable: true,
-                  resolvedBy: null,
-                  __typename: 'Discussion',
-                },
                 author: {
                   id: 'gid://gitlab/User/1',
                   avatarUrl:
@@ -4710,13 +4674,6 @@ export const mockWorkItemCommentNote = {
   maxAccessLevelOfAuthor: 'Owner',
   authorIsContributor: false,
   externalAuthor: null,
-  discussion: {
-    id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723569876',
-    resolved: false,
-    resolvable: true,
-    resolvedBy: null,
-    __typename: 'Discussion',
-  },
   userPermissions: {
     adminNote: false,
     awardEmoji: true,
@@ -4749,6 +4706,16 @@ export const mockWorkItemCommentByMaintainer = {
   maxAccessLevelOfAuthor: 'Maintainer',
 };
 
+export const mockWorkItemDiscussion = {
+  id: 'gid://gitlab/Discussion/c872ba2d7d3eb780d2255138d67ca8b04f65b122',
+  resolved: false,
+  resolvable: true,
+  resolvedBy: null,
+  notes: {
+    nodes: [mockWorkItemCommentNote],
+  },
+};
+
 export const mockWorkItemNotesResponseWithComments = (resolved = false) => {
   return {
     data: {
@@ -4776,6 +4743,9 @@ export const mockWorkItemNotesResponseWithComments = (resolved = false) => {
                 nodes: [
                   {
                     id: 'gid://gitlab/Discussion/8bbc4890b6ff0f2cde93a5a0947cd2b8a13d3b6e',
+                    resolved,
+                    resolvable: true,
+                    resolvedBy: null,
                     notes: {
                       nodes: [
                         {
@@ -4793,13 +4763,6 @@ export const mockWorkItemNotesResponseWithComments = (resolved = false) => {
                           maxAccessLevelOfAuthor: 'Owner',
                           authorIsContributor: false,
                           externalAuthor: null,
-                          discussion: {
-                            id: 'gid://gitlab/Discussion/2bb1162fd0d39297d1a68fdd7d4083d3780af0f3',
-                            resolved,
-                            resolvable: true,
-                            resolvedBy: null,
-                            __typename: 'Discussion',
-                          },
                           author: {
                             id: 'gid://gitlab/User/1',
                             avatarUrl:
@@ -4838,13 +4801,6 @@ export const mockWorkItemNotesResponseWithComments = (resolved = false) => {
                           maxAccessLevelOfAuthor: 'Owner',
                           authorIsContributor: false,
                           externalAuthor: null,
-                          discussion: {
-                            id: 'gid://gitlab/Discussion/2bb1162fd0d39297d1a68fdd7d4083d3780af0f3',
-                            resolved,
-                            resolvable: true,
-                            resolvedBy: null,
-                            __typename: 'Discussion',
-                          },
                           author: {
                             id: 'gid://gitlab/User/1',
                             avatarUrl:
@@ -4875,6 +4831,9 @@ export const mockWorkItemNotesResponseWithComments = (resolved = false) => {
                   },
                   {
                     id: 'gid://gitlab/Discussion/0f2f195ec0d1ef95ee9d5b10446b8e96a7d83864',
+                    resolved,
+                    resolvable: true,
+                    resolvedBy: null,
                     notes: {
                       nodes: [
                         {
@@ -4892,13 +4851,6 @@ export const mockWorkItemNotesResponseWithComments = (resolved = false) => {
                           maxAccessLevelOfAuthor: 'Owner',
                           authorIsContributor: false,
                           externalAuthor: null,
-                          discussion: {
-                            id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723560987',
-                            resolved,
-                            resolvable: true,
-                            resolvedBy: null,
-                            __typename: 'Discussion',
-                          },
                           userPermissions: {
                             adminNote: false,
                             awardEmoji: true,
@@ -4956,6 +4908,9 @@ export const workItemNotesCreateSubscriptionResponse = {
       imported: false,
       discussion: {
         id: 'gid://gitlab/Discussion/8bbc4890b6ff0f2cde93a5a0947cd2b8a13d3b6e',
+        resolved: false,
+        resolvable: false,
+        resolvedBy: null,
         notes: {
           nodes: [
             {
@@ -4973,13 +4928,6 @@ export const workItemNotesCreateSubscriptionResponse = {
               maxAccessLevelOfAuthor: 'Owner',
               authorIsContributor: false,
               externalAuthor: null,
-              discussion: {
-                id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723560987',
-                resolved: false,
-                resolvable: false,
-                resolvedBy: null,
-                __typename: 'Discussion',
-              },
               userPermissions: {
                 adminNote: false,
                 awardEmoji: true,
@@ -5055,13 +5003,6 @@ export const workItemNotesUpdateSubscriptionResponse = {
       maxAccessLevelOfAuthor: 'Owner',
       authorIsContributor: false,
       externalAuthor: null,
-      discussion: {
-        id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723560987',
-        resolved: false,
-        resolvable: false,
-        resolvedBy: null,
-        __typename: 'Discussion',
-      },
       userPermissions: {
         adminNote: false,
         awardEmoji: true,
@@ -5116,13 +5057,6 @@ export const workItemSystemNoteWithMetadata = {
   maxAccessLevelOfAuthor: 'Owner',
   authorIsContributor: false,
   externalAuthor: null,
-  discussion: {
-    id: 'gid://gitlab/Discussion/7d4a46ea0525e2eeed451f7b718b0ebe73205374',
-    resolved: false,
-    resolvable: false,
-    resolvedBy: null,
-    __typename: 'Discussion',
-  },
   author: {
     id: 'gid://gitlab/User/1',
     avatarUrl:
@@ -5184,6 +5118,9 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
               nodes: [
                 {
                   id: 'gid://gitlab/Discussion/aa72f4c2f3eef66afa6d79a805178801ce4bd89f',
+                  resolved: false,
+                  resolvable: false,
+                  resolvedBy: null,
                   notes: {
                     nodes: [
                       {
@@ -5202,13 +5139,6 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                         maxAccessLevelOfAuthor: 'Owner',
                         authorIsContributor: false,
                         externalAuthor: null,
-                        discussion: {
-                          id: 'gid://gitlab/Discussion/aa72f4c2f3eef66afa6d79a805178801ce4bd89f',
-                          resolved: false,
-                          resolvable: false,
-                          resolvedBy: null,
-                          __typename: 'Discussion',
-                        },
                         author: {
                           id: 'gid://gitlab/User/1',
                           avatarUrl:
@@ -5252,6 +5182,9 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                 },
                 {
                   id: 'gid://gitlab/Discussion/a7d3cf7bd72f7a98f802845f538af65cb11a02cc',
+                  resolved: false,
+                  resolvable: false,
+                  resolvedBy: null,
                   notes: {
                     nodes: [
                       {
@@ -5270,13 +5203,6 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                         maxAccessLevelOfAuthor: 'Owner',
                         authorIsContributor: false,
                         externalAuthor: null,
-                        discussion: {
-                          id: 'gid://gitlab/Discussion/a7d3cf7bd72f7a98f802845f538af65cb11a02cc',
-                          resolved: false,
-                          resolvable: false,
-                          resolvedBy: null,
-                          __typename: 'Discussion',
-                        },
                         author: {
                           id: 'gid://gitlab/User/1',
                           avatarUrl:
@@ -5320,6 +5246,9 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                 },
                 {
                   id: 'gid://gitlab/Discussion/391eed1ee0a258cc966a51dde900424f3b51b95d',
+                  resolved: false,
+                  resolvable: false,
+                  resolvedBy: null,
                   notes: {
                     nodes: [
                       {
@@ -5338,13 +5267,6 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                         maxAccessLevelOfAuthor: 'Owner',
                         authorIsContributor: false,
                         externalAuthor: null,
-                        discussion: {
-                          id: 'gid://gitlab/Discussion/391eed1ee0a258cc966a51dde900424f3b51b95d',
-                          resolved: false,
-                          resolvable: false,
-                          resolvedBy: null,
-                          __typename: 'Discussion',
-                        },
                         author: {
                           id: 'gid://gitlab/User/1',
                           avatarUrl:
@@ -6121,6 +6043,13 @@ export const mockToggleResolveDiscussionResponse = {
     discussionToggleResolve: {
       discussion: {
         id: 'gid://gitlab/Discussion/c4be5bec43a737e0966dbc4c040b1517e7febfa9',
+        resolved: true,
+        resolvable: true,
+        resolvedBy: {
+          id: 'gid://gitlab/User/1',
+          name: 'Administrator',
+          __typename: 'UserCore',
+        },
         notes: {
           nodes: [
             {
@@ -6137,17 +6066,6 @@ export const mockToggleResolveDiscussionResponse = {
               maxAccessLevelOfAuthor: 'Owner',
               lastEditedBy: null,
               externalAuthor: null,
-              discussion: {
-                id: 'gid://gitlab/Discussion/c4be5bec43a737e0966dbc4c040b1517e7febfa9',
-                resolved: true,
-                resolvable: true,
-                resolvedBy: {
-                  id: 'gid://gitlab/User/1',
-                  name: 'Administrator',
-                  __typename: 'UserCore',
-                },
-                __typename: 'Discussion',
-              },
               author: {
                 id: 'gid://gitlab/User/1',
                 avatarUrl:
@@ -6186,17 +6104,6 @@ export const mockToggleResolveDiscussionResponse = {
               maxAccessLevelOfAuthor: 'Owner',
               lastEditedBy: null,
               externalAuthor: null,
-              discussion: {
-                id: 'gid://gitlab/Discussion/c4be5bec43a737e0966dbc4c040b1517e7febfa9',
-                resolved: true,
-                resolvable: true,
-                resolvedBy: {
-                  id: 'gid://gitlab/User/1',
-                  name: 'Administrator',
-                  __typename: 'UserCore',
-                },
-                __typename: 'Discussion',
-              },
               author: {
                 id: 'gid://gitlab/User/1',
                 avatarUrl:
