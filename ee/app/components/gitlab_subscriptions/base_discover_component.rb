@@ -44,7 +44,15 @@ module GitlabSubscriptions
       raise NoMethodError, 'This method must be implemented in a subclass'
     end
 
+    def hero_tagline_text
+      nil
+    end
+
     def buy_now_link
+      raise NoMethodError, 'This method must be implemented in a subclass'
+    end
+
+    def cta_button_text
       raise NoMethodError, 'This method must be implemented in a subclass'
     end
 

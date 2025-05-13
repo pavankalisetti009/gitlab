@@ -148,6 +148,11 @@ module GitlabSubscriptions
       ::Gitlab::Routing.url_helpers.subscription_portal_add_saas_duo_pro_seats_url(namespace.id)
     end
 
+    override :cta_button_text
+    def cta_button_text
+      _('Buy now')
+    end
+
     override :hero_video
     def hero_video
       'https://player.vimeo.com/video/855805049?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479'
