@@ -6,6 +6,10 @@ query requestedChanges($projectPath: ID!, $iid: String!) {
       changeRequesters {
         nodes {
           id
+          avatarUrl
+          name
+          username
+          webPath
         }
       }
       userPermissions {

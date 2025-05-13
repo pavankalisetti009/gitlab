@@ -43,6 +43,10 @@ function factory(mountFn, { canMerge = true, mergeabilityChecks = [] } = {}) {
                 nodes: [
                   {
                     id: 'gid://gitlab/User/1',
+                    avatarUrl: '/',
+                    name: 'Admin',
+                    username: 'root',
+                    webPath: '/',
                   },
                 ],
               },

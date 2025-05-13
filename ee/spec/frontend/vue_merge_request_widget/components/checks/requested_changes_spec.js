@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlModal } from '@gitlab/ui';
+import { GlModal, GlAvatarLink } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -56,6 +56,10 @@ describe('Requested changes merge checks component', () => {
                   nodes: [
                     {
                       id: 'gid://gitlab/User/1',
+                      avatarUrl: '/',
+                      name: 'Admin',
+                      username: 'root',
+                      webPath: '/',
                     },
                   ],
                 },
@@ -161,6 +165,10 @@ describe('Requested changes merge checks component', () => {
         overrideRequestedChanges: true,
         projectPath: 'gitlab-org/gitlab',
       });
+    });
+
+    it('renders list of change requesters', () => {
+      expect(wrapper.findAllComponents(GlAvatarLink)).toHaveLength(1);
     });
   });
 

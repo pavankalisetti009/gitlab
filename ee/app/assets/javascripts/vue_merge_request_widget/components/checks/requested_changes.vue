@@ -1,8 +1,8 @@
 <script>
-import { GlIcon, GlPopover, GlButton, GlModal } from '@gitlab/ui';
+import { GlIcon, GlPopover, GlButton, GlModal, GlAvatarLink, GlAvatar } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { TYPENAME_USER } from '~/graphql_shared/constants';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import mergeRequestQueryVariablesMixin from '~/vue_merge_request_widget/mixins/merge_request_query_variables';
 import ActionButtons from '~/vue_merge_request_widget/components/action_buttons.vue';
 import MergeChecksMessage from '~/vue_merge_request_widget/components/checks/message.vue';
@@ -17,6 +17,8 @@ export default {
     GlPopover,
     GlButton,
     GlModal,
+    GlAvatarLink,
+    GlAvatar,
     MergeChecksMessage,
     ActionButtons,
   },
@@ -139,6 +141,9 @@ export default {
 
       this.removingChangeRequest = false;
     },
+    userId(user) {
+      return getIdFromGraphQLId(user.id);
+    },
   },
   modalPrimaryActionBypass: {
     text: s__('mrWidget|Bypass'),
@@ -177,10 +182,32 @@ export default {
     <template #warning>
       <action-buttons :tertiary-buttons="warningTertiaryActionsButtons" />
     </template>
+    <template #reason-footer>
+      <div v-if="state.changeRequesters && check.status === 'FAILED'">
+        <gl-avatar-link
+          v-for="user in state.changeRequesters.nodes"
+          :key="user.id"
+          :href="user.webPath"
+          :data-user-id="userId(user)"
+          :data-username="user.username"
+          :title="user.name"
+          class="js-user-link gl-mr-3 gl-inline-block"
+        >
+          <gl-avatar
+            :src="user.avatarUrl"
+            :entity-name="user.username"
+            :alt="user.name"
+            :size="16"
+          />
+        </gl-avatar-link>
+      </div>
+    </template>
     <template v-if="check.status === 'WARNING' || check.status === 'FAILED'">
-      <gl-button variant="link" class="gl-mr-3" :aria-label="__('Learn more')">
-        <gl-icon id="changes-requested-help" name="information-o" />
-      </gl-button>
+      <div>
+        <gl-button variant="link" class="gl-mr-3" :aria-label="__('Learn more')">
+          <gl-icon id="changes-requested-help" name="information-o" />
+        </gl-button>
+      </div>
       <gl-popover target="changes-requested-help" placement="top">
         <template #title>{{ __('Bypass requested changes') }}</template>
         <p class="gl-mb-0">
