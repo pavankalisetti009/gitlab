@@ -10054,6 +10054,30 @@ Input type: `RestorePagesDeploymentInput`
 | <a id="mutationrestorepagesdeploymenterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationrestorepagesdeploymentpagesdeployment"></a>`pagesDeployment` | [`PagesDeployment!`](#pagesdeployment) | Restored Pages Deployment. |
 
+### `Mutation.runnerAssignToProject`
+
+{{< details >}}
+**Introduced** in GitLab 18.1.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `RunnerAssignToProjectInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationrunnerassigntoprojectclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationrunnerassigntoprojectprojectpath"></a>`projectPath` | [`ID!`](#id) | Full path of the project to which the runner will be assigned. |
+| <a id="mutationrunnerassigntoprojectrunnerid"></a>`runnerId` | [`CiRunnerID!`](#cirunnerid) | ID of the runner to assign to the project . |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationrunnerassigntoprojectclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationrunnerassigntoprojecterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+
 ### `Mutation.runnerBulkPause`
 
 {{< details >}}
@@ -10151,6 +10175,30 @@ Input type: `RunnerDeleteInput`
 | ---- | ---- | ----------- |
 | <a id="mutationrunnerdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationrunnerdeleteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+
+### `Mutation.runnerUnassignFromProject`
+
+{{< details >}}
+**Introduced** in GitLab 18.1.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `RunnerUnassignFromProjectInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationrunnerunassignfromprojectclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationrunnerunassignfromprojectprojectpath"></a>`projectPath` | [`ID!`](#id) | Full path of the project from which the runner will be unassigned. |
+| <a id="mutationrunnerunassignfromprojectrunnerid"></a>`runnerId` | [`CiRunnerID!`](#cirunnerid) | ID of the runner to unassign from the project. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationrunnerunassignfromprojectclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationrunnerunassignfromprojecterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 
 ### `Mutation.runnerUpdate`
 
