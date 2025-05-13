@@ -72,18 +72,6 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response).to include('stop_indexing' => true)
           end
-
-          context 'when zoekt_critical_watermark_stop_indexing is disabled' do
-            before do
-              stub_feature_flags(zoekt_critical_watermark_stop_indexing: false)
-            end
-
-            it 'does not add stop_indexing in the response' do
-              get api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
-              expect(response).to have_gitlab_http_status(:ok)
-              expect(json_response).not_to have_key('stop_indexing')
-            end
-          end
         end
       end
 
@@ -278,18 +266,6 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
             post api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response).to include('stop_indexing' => true)
-          end
-
-          context 'when zoekt_critical_watermark_stop_indexing is disabled' do
-            before do
-              stub_feature_flags(zoekt_critical_watermark_stop_indexing: false)
-            end
-
-            it 'sets stop_indexing attribute in response to false' do
-              post api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
-              expect(response).to have_gitlab_http_status(:ok)
-              expect(json_response).to include('stop_indexing' => false)
-            end
           end
         end
 
