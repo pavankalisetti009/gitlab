@@ -19,8 +19,10 @@ module EE
         has_scoped_labels_feature: resource_parent.licensed_feature_available?(:scoped_labels).to_s,
         has_quality_management_feature: resource_parent.licensed_feature_available?(:quality_management).to_s,
         can_bulk_edit_epics: can?(current_user, :bulk_admin_epic, resource_parent).to_s,
-        new_comment_template_paths: new_comment_template_paths(group,
-          resource_parent.is_a?(Group) ? nil : resource_parent).to_json,
+        new_comment_template_paths: new_comment_template_paths(
+          group,
+          resource_parent.is_a?(Group) ? nil : resource_parent
+        ).to_json,
         group_issues_path: issues_group_path(resource_parent),
         labels_fetch_path: group_labels_path(
           resource_parent, format: :json, only_group_labels: true, include_ancestor_groups: true),
