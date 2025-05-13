@@ -44,7 +44,7 @@ RSpec.describe 'Admin interacts with merge requests approvals settings', :js, fe
 
   context 'when project has security policies' do
     let_it_be(:policy_management_project) { create(:project, :repository, namespace: project.namespace) }
-    let_it_be(:policy) { create(:scan_result_policy) }
+    let_it_be(:policy) { create(:approval_policy) }
     let_it_be(:policy_name) { 'Deny MIT licenses' }
     let_it_be(:approver) { create(:user) }
     let_it_be(:approver_roles) { ['maintainer'] }

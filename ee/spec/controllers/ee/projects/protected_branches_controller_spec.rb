@@ -152,7 +152,7 @@ RSpec.describe Projects::ProtectedBranchesController, feature_category: :source_
       end
 
       describe 'block_branch_modification' do
-        include_context 'with scan result policy blocking protected branches'
+        include_context 'with approval policy blocking protected branches'
 
         before do
           create(:scan_result_policy_read, :blocking_protected_branches, project: project,
@@ -171,7 +171,7 @@ RSpec.describe Projects::ProtectedBranchesController, feature_category: :source_
       end
 
       describe 'prevent_pushing_and_force_pushing' do
-        include_context 'with scan result policy preventing force pushing'
+        include_context 'with approval policy preventing force pushing'
 
         before do
           create(:scan_result_policy_read, :prevent_pushing_and_force_pushing, project: project,

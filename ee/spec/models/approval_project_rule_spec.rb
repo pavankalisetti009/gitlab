@@ -356,48 +356,48 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
   end
 
   describe '#vulnerability_attribute_false_positive' do
-    let(:rule) { build(:approval_project_rule, scan_result_policy_read: scan_result_policy) }
+    let(:rule) { build(:approval_project_rule, scan_result_policy_read: approval_policy) }
 
     subject { rule.vulnerability_attribute_false_positive }
 
     context 'when false_positive is true' do
-      let(:scan_result_policy) { create(:scan_result_policy_read, vulnerability_attributes: { false_positive: true }) }
+      let(:approval_policy) { create(:scan_result_policy_read, vulnerability_attributes: { false_positive: true }) }
 
       it { is_expected.to eq(true) }
     end
 
     context 'when false_positive is false' do
-      let(:scan_result_policy) { create(:scan_result_policy_read, vulnerability_attributes: { false_positive: false }) }
+      let(:approval_policy) { create(:scan_result_policy_read, vulnerability_attributes: { false_positive: false }) }
 
       it { is_expected.to eq(false) }
     end
 
     context 'when vulnerability_attributes is empty' do
-      let(:scan_result_policy) { create(:scan_result_policy_read) }
+      let(:approval_policy) { create(:scan_result_policy_read) }
 
       it { is_expected.to be_nil }
     end
   end
 
   describe '#vulnerability_attribute_fix_available' do
-    let(:rule) { build(:approval_project_rule, scan_result_policy_read: scan_result_policy) }
+    let(:rule) { build(:approval_project_rule, scan_result_policy_read: approval_policy) }
 
     subject { rule.vulnerability_attribute_fix_available }
 
     context 'when fix_available is true' do
-      let(:scan_result_policy) { create(:scan_result_policy_read, vulnerability_attributes: { fix_available: true }) }
+      let(:approval_policy) { create(:scan_result_policy_read, vulnerability_attributes: { fix_available: true }) }
 
       it { is_expected.to eq(true) }
     end
 
     context 'when fix_available is false' do
-      let(:scan_result_policy) { create(:scan_result_policy_read, vulnerability_attributes: { fix_available: false }) }
+      let(:approval_policy) { create(:scan_result_policy_read, vulnerability_attributes: { fix_available: false }) }
 
       it { is_expected.to eq(false) }
     end
 
     context 'when vulnerability_attributes is empty' do
-      let(:scan_result_policy) { create(:scan_result_policy_read) }
+      let(:approval_policy) { create(:scan_result_policy_read) }
 
       it { is_expected.to be_nil }
     end

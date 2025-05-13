@@ -45,16 +45,16 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
     end
   end
 
-  shared_examples_for 'deletes scan result policy violations' do
-    it 'deletes scan result policy violations' do
+  shared_examples_for 'deletes approval policy violations' do
+    it 'deletes approval policy violations' do
       expect { perform }.to change { Security::ScanResultPolicyViolation.count }.from(2).to(1)
 
       expect(merge_request.scan_result_policy_violations).to be_empty
     end
   end
 
-  shared_examples_for 'does not delete scan result policy violations' do
-    it 'does not delete scan result policy violations' do
+  shared_examples_for 'does not delete approval policy violations' do
+    it 'does not delete approval policy violations' do
       expect { perform }.not_to change { Security::ScanResultPolicyViolation.count }
     end
   end
@@ -64,7 +64,7 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
       let(:event) { merge_request_merged_event }
 
       it_behaves_like 'an idempotent worker'
-      it_behaves_like 'deletes scan result policy violations'
+      it_behaves_like 'deletes approval policy violations'
 
       it 'logs running violations' do
         expect(Gitlab::AppJsonLogger).to receive(:info).with(a_hash_including(
@@ -94,7 +94,7 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
       let(:event) { merge_request_closed_event }
 
       it_behaves_like 'an idempotent worker'
-      it_behaves_like 'deletes scan result policy violations'
+      it_behaves_like 'deletes approval policy violations'
 
       it 'does not log running violations' do
         expect(Gitlab::AppJsonLogger).not_to receive(:info)
@@ -106,13 +106,13 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
     context 'when feature is not licensed' do
       let(:feature_licensed) { false }
 
-      it_behaves_like 'does not delete scan result policy violations'
+      it_behaves_like 'does not delete approval policy violations'
     end
   end
 
   context 'with non-existing merge request' do
     let(:merge_request_id) { non_existing_record_id }
 
-    it_behaves_like 'does not delete scan result policy violations'
+    it_behaves_like 'does not delete approval policy violations'
   end
 end

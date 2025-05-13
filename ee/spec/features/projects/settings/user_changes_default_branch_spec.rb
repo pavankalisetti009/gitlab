@@ -29,7 +29,7 @@ RSpec.describe 'Projects > Settings > User changes default branch', feature_cate
   end
 
   context 'with branch protected by security policy' do
-    include_context 'with scan result policy blocking protected branches' do
+    include_context 'with approval policy blocking protected branches' do
       let(:branch_name) { project.default_branch }
       let(:policy_configuration) do
         create(:security_orchestration_policy_configuration, project: project)

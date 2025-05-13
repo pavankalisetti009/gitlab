@@ -16,7 +16,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProtectedBranchesUnprote
   subject(:result) { described_class.new(project: project).execute }
 
   context 'with blocking scan result policy' do
-    include_context 'with scan result policy preventing force pushing'
+    include_context 'with approval policy preventing force pushing'
 
     context 'when protected branch is not backed by git ref' do
       it "includes the protected branch" do

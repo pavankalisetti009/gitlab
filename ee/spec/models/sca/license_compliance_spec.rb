@@ -37,32 +37,32 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
 
       let(:license_check_and_scan_result_policies) do
         [
-          { id: 'MIT', name: 'MIT', classification: 'allowed', scan_result_policy: false },
-          { id: 'AML', name: 'Apple MIT License', classification: 'denied', scan_result_policy: false },
-          { id: 'MS-PL', name: 'Microsoft Public License', classification: 'denied', scan_result_policy: true },
-          { id: 'Apache-2.0', name: 'Apache-2.0 License', classification: 'allowed', scan_result_policy: true }
+          { id: 'MIT', name: 'MIT', classification: 'allowed', approval_policy: false },
+          { id: 'AML', name: 'Apple MIT License', classification: 'denied', approval_policy: false },
+          { id: 'MS-PL', name: 'Microsoft Public License', classification: 'denied', approval_policy: true },
+          { id: 'Apache-2.0', name: 'Apache-2.0 License', classification: 'allowed', approval_policy: true }
         ]
       end
 
       let(:denied_scan_result_policies) do
         [
-          { id: 'MIT', name: 'MIT', classification: 'allowed', scan_result_policy: false },
-          { id: 'AML', name: 'Apple MIT License', classification: 'denied', scan_result_policy: false },
-          { id: 'MS-PL', name: 'Microsoft Public License', classification: 'denied', scan_result_policy: true }
+          { id: 'MIT', name: 'MIT', classification: 'allowed', approval_policy: false },
+          { id: 'AML', name: 'Apple MIT License', classification: 'denied', approval_policy: false },
+          { id: 'MS-PL', name: 'Microsoft Public License', classification: 'denied', approval_policy: true }
         ]
       end
 
       let(:only_license_check_policies) do
         [
-          { id: 'MIT', name: 'MIT', classification: 'allowed', scan_result_policy: false },
-          { id: 'AML', name: 'Apple MIT License', classification: 'denied', scan_result_policy: false }
+          { id: 'MIT', name: 'MIT', classification: 'allowed', approval_policy: false },
+          { id: 'AML', name: 'Apple MIT License', classification: 'denied', approval_policy: false }
         ]
       end
 
       let(:only_scan_result_policies) do
         [
-          { id: 'Apache-2.0', name: 'Apache-2.0 License', classification: 'allowed', scan_result_policy: true },
-          { id: 'MS-PL', name: 'Microsoft Public License', classification: 'denied', scan_result_policy: true }
+          { id: 'Apache-2.0', name: 'Apache-2.0 License', classification: 'allowed', approval_policy: true },
+          { id: 'MS-PL', name: 'Microsoft Public License', classification: 'denied', approval_policy: true }
         ]
       end
 
@@ -105,7 +105,7 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
             stub_feature_flags(static_licenses: false)
 
             input.each do |policy|
-              scan_result_policy_read = policy[:scan_result_policy] ? create(:scan_result_policy_read, match_on_inclusion_license: policy[:classification] == 'denied') : nil
+              scan_result_policy_read = policy[:approval_policy] ? create(:scan_result_policy_read, match_on_inclusion_license: policy[:classification] == 'denied') : nil
               create(:software_license_policy, policy[:classification],
                 project: project,
                 software_license: license_map[policy[:id]],
@@ -122,7 +122,7 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
         context "when the feature flag static_licenses is enabled" do
           before do
             input.each do |policy|
-              scan_result_policy_read = policy[:scan_result_policy] ? create(:scan_result_policy_read, match_on_inclusion_license: policy[:classification] == 'denied') : nil
+              scan_result_policy_read = policy[:approval_policy] ? create(:scan_result_policy_read, match_on_inclusion_license: policy[:classification] == 'denied') : nil
               create(:software_license_policy, policy[:classification],
                 project: project,
                 software_license_spdx_identifier: policy[:id],

@@ -13,7 +13,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::FetchPolicyApproversServ
     let_it_be(:user) { create(:user) }
 
     let(:container) { project }
-    let(:policy) { build(:scan_result_policy, actions: [action]) }
+    let(:policy) { build(:approval_policy, actions: [action]) }
 
     subject(:service) do
       described_class.new(policy: policy, current_user: user, container: container)
@@ -24,7 +24,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::FetchPolicyApproversServ
     end
 
     context 'with multiple actions' do
-      let(:policy) { build(:scan_result_policy, actions: [action1, action2]) }
+      let(:policy) { build(:approval_policy, actions: [action1, action2]) }
       let(:action1) { { type: "require_approval", approvals_required: 1, group_approvers_ids: [group.id] } }
       let(:action2) { { type: "require_approval", approvals_required: 1, user_approvers_ids: [user.id] } }
 

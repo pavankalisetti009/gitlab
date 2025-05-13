@@ -717,7 +717,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
 
   describe '#policy_configuration_validation_errors' do
     let(:scan_execution_policy) { nil }
-    let(:scan_result_policy) { nil }
+    let(:approval_policy) { nil }
     let(:pipeline_execution_policy) { nil }
     let(:pipeline_execution_schedule_policy) { nil }
     let(:experiments) { {} }
@@ -725,7 +725,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     let(:policy_yaml) do
       {
         scan_execution_policy: [scan_execution_policy].compact,
-        approval_policy: [scan_result_policy].compact,
+        approval_policy: [approval_policy].compact,
         pipeline_execution_policy: [pipeline_execution_policy].compact,
         pipeline_execution_schedule_policy: [pipeline_execution_schedule_policy].compact,
         experiments: experiments

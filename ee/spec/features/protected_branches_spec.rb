@@ -58,7 +58,7 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
       end
     end
 
-    include_context 'with scan result policy preventing force pushing'
+    include_context 'with approval policy preventing force pushing'
 
     before do
       # Maximize window to accommodate dropdown

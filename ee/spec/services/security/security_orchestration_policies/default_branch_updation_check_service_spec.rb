@@ -24,7 +24,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::DefaultBranchUpdationChe
   end
 
   context 'with blocking scan result policy' do
-    include_context 'with scan result policy blocking protected branches' do
+    include_context 'with approval policy blocking protected branches' do
       let(:branch_name) { default_branch }
 
       it_behaves_like 'when policy is applicable based on the policy scope configuration' do
@@ -37,10 +37,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::DefaultBranchUpdationChe
     end
 
     context 'with mismatching branch specification' do
-      include_context 'with scan result policy blocking protected branches' do
+      include_context 'with approval policy blocking protected branches' do
         let(:branch_name) { default_branch }
-        let(:scan_result_policy) do
-          build(:scan_result_policy, branches: [default_branch.reverse],
+        let(:approval_policy) do
+          build(:approval_policy, branches: [default_branch.reverse],
             approval_settings: { block_branch_modification: true })
         end
 

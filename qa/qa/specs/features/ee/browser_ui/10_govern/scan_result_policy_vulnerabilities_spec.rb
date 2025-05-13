@@ -2,12 +2,12 @@
 
 module QA
   RSpec.describe 'Govern', product_group: :security_policies do
-    describe 'Scan result policy' do
+    describe 'Approval policy' do
       let!(:project) do
         create(:project,
           :with_readme,
           name: 'project-with-scan-result-policy',
-          description: 'Project to test scan result policy with secure')
+          description: 'Project to test approval policy with secure')
       end
 
       let(:tag_name) { "secure_report_#{project.name}" }
@@ -57,8 +57,8 @@ module QA
           project.find_member(approver.username)
         end
 
-        QA::Support::Retrier.retry_on_exception(sleep_interval: 2, message: "Retrying Scan result policy commit") do
-          scan_result_policy_commit # fabricate scan result policy commit
+        QA::Support::Retrier.retry_on_exception(sleep_interval: 2, message: "Retrying approval policy commit") do
+          scan_result_policy_commit # fabricate approval policy commit
         end
 
         Flow::Login.sign_in
@@ -69,9 +69,9 @@ module QA
         runner.remove_via_api!
       end
 
-      it 'requires approval when a pipeline report has findings matching the scan result policy',
+      it 'requires approval when a pipeline report has findings matching the approval policy',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/365005' do
-        # Make sure Scan result policy commit was successful before running examples
+        # Make sure approval policy commit was successful before running examples
         expect(scan_result_policy_commit.api_response).to have_key(:branch)
         expect(scan_result_policy_commit.api_response[:branch]).not_to be_nil
 
@@ -90,9 +90,9 @@ module QA
         end
       end
 
-      it 'does not block merge when scan result policy does not apply for pipeline security findings',
+      it 'does not block merge when approval policy does not apply for pipeline security findings',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/423412' do
-        # Make sure Scan result policy commit was successful before running examples
+        # Make sure approval policy commit was successful before running examples
         expect(scan_result_policy_commit.api_response).to have_key(:branch)
         expect(scan_result_policy_commit.api_response[:branch]).not_to be_nil
 

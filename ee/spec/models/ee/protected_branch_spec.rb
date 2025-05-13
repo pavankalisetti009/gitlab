@@ -449,13 +449,13 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
       let(:protected_branch) { create(:protected_branch, project: project) }
       let(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
 
-      context 'without blocking scan result policy' do
-        let(:scan_result_policies) { [] }
+      context 'without blocking approval policy' do
+        let(:approval_policies) { [] }
 
         it { is_expected.to be(false) }
       end
 
-      include_context 'with scan result policy blocking protected branches' do
+      include_context 'with approval policy blocking protected branches' do
         let(:branch_name) { protected_branch.name }
 
         it { is_expected.to be(true) }
@@ -494,13 +494,13 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
       let(:protected_branch) { create(:protected_branch, :group_level, group: group) }
       let(:policy_configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: group) }
 
-      context 'without blocking scan result policy' do
-        let(:scan_result_policies) { [] }
+      context 'without blocking approval policy' do
+        let(:approval_policies) { [] }
 
         it { is_expected.to be(false) }
       end
 
-      include_context 'with scan result policy blocking group-level protected branches' do
+      include_context 'with approval policy blocking group-level protected branches' do
         let(:branch_name) { protected_branch.name }
 
         it { is_expected.to be(true) }
@@ -515,8 +515,8 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
       end
 
       context 'when excepted' do
-        let(:scan_result_policy) do
-          build(:scan_result_policy,
+        let(:approval_policy) do
+          build(:approval_policy,
             branch_type: 'protected',
             approval_settings: { block_group_branch_modification: { enabled: true, exceptions: [{ id: group.id }] } })
         end

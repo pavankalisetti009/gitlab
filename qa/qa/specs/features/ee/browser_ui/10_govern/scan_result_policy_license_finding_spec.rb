@@ -3,7 +3,7 @@
 module QA
   RSpec.describe 'Govern', only: { pipeline: %i[staging staging-canary] },
     product_group: :security_policies do
-    describe 'Scan result policy' do
+    describe 'approval policy' do
       let!(:project) do
         create(:project, :with_readme,
           name: 'project-with-fake-dependency-scan', description: 'Project to test license finding')
@@ -76,7 +76,7 @@ module QA
 
       before do
         project.add_member(approver)
-        scan_result_policy_commit # fabricate scan result policy commit
+        scan_result_policy_commit # fabricate approval policy commit
 
         Flow::Login.sign_in
         project.visit!
@@ -87,13 +87,13 @@ module QA
         project.remove_via_api!
       end
 
-      it 'requires approval when license findings violate scan result policy',
+      it 'requires approval when license findings violate approval policy',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/426073' do
         expect(scan_result_policy_commit.api_response).to have_key(:branch)
         expect(scan_result_policy_commit.api_response[:branch]).not_to be_nil
 
         create_scan_result_policy
-        # Create MR after creating the scan result policy
+        # Create MR after creating the approval policy
         merge_request = create_test_mr
 
         Flow::Pipeline.wait_for_latest_pipeline(status: 'passed', wait: 90)

@@ -309,7 +309,7 @@ RSpec.describe Security::ProcessScanResultPolicyWorker, feature_category: :secur
       let(:policies) do
         {
           scan_execution_policy: [],
-          scan_result_policy:
+          approval_policy:
           [
             {
               name: 'CS critical policy',

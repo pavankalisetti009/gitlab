@@ -8,7 +8,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     let_it_be_with_refind(:project) { create(:project, :empty_repo, namespace: group) }
 
     let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
-    let_it_be(:policy) { build(:scan_result_policy, name: 'Test Policy') }
+    let_it_be(:policy) { build(:approval_policy, name: 'Test Policy') }
     let_it_be(:policy_yaml) { Gitlab::Config::Loader::Yaml.new(policy.to_yaml).load! }
     let_it_be(:approver) { create(:user) }
 
@@ -67,7 +67,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
         approval_policy_rule.destroy!
       end
 
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: [{ type: 'another_one' }]) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', actions: [{ type: 'another_one' }]) }
 
       it 'creates scan_result_policy_read without approval_policy_rule_id' do
         expect { subject }.to change { Security::ScanResultPolicyRead.count }.by(1)
@@ -77,7 +77,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     end
 
     context 'when actions are not provided' do
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: nil) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', actions: nil) }
 
       it 'creates approval rules' do
         expect { subject }.to change { project.approval_rules.count }.by(1)
@@ -91,7 +91,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     end
 
     context 'without any require_approval action' do
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: [{ type: 'another_one' }]) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', actions: [{ type: 'another_one' }]) }
 
       it 'creates approval rules' do
         expect { subject }.to change { project.approval_rules.count }.by(1)
@@ -107,7 +107,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     context 'with multiple require_approval actions' do
       let_it_be(:developer) { create(:user) }
       let(:policy) do
-        build(:scan_result_policy, name: 'Test Policy',
+        build(:approval_policy, name: 'Test Policy',
           actions: [
             { type: 'require_approval', approvals_required: 1, user_approvers_ids: [approver.id] },
             { type: 'require_approval', approvals_required: 1, role_approvers: ['developer'] }
@@ -143,7 +143,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     end
 
     context 'without any rule of the scan_finding type' do
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', rules: [{ type: 'another_one' }]) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', rules: [{ type: 'another_one' }]) }
 
       it 'does not create approval project rules' do
         expect { subject }.not_to change { project.approval_rules.count }
@@ -158,13 +158,13 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     end
 
     context 'with only user id' do
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, user_approvers_ids: [approver.id] }]) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, user_approvers_ids: [approver.id] }]) }
 
       it_behaves_like 'create approval rule with specific approver'
     end
 
     context 'with only username' do
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, user_approvers: [approver.username] }]) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, user_approvers: [approver.username] }]) }
 
       it_behaves_like 'create approval rule with specific approver'
     end
@@ -173,7 +173,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
       let_it_be(:custom_role) { create(:member_role, namespace: project.group) }
 
       let(:policy) do
-        build(:scan_result_policy,
+        build(:approval_policy,
           name: 'Test Policy',
           actions: [{
             type: 'require_approval',
@@ -206,13 +206,13 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     end
 
     context 'with only group id' do
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, group_approvers_ids: [group.id] }]) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, group_approvers_ids: [group.id] }]) }
 
       it_behaves_like 'create approval rule with specific approver'
 
       context 'with public group outside of the scope' do
         let(:another_group) { create(:group, :public) }
-        let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, group_approvers_ids: [another_group.id] }]) }
+        let(:policy) { build(:approval_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, group_approvers_ids: [another_group.id] }]) }
 
         it 'does not include any approvers' do
           subject
@@ -223,7 +223,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
 
       context 'with private group outside of the scope' do
         let(:another_group) { create(:group, :private) }
-        let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, group_approvers_ids: [another_group.id] }]) }
+        let(:policy) { build(:approval_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, group_approvers_ids: [another_group.id] }]) }
 
         it 'does not include any approvers' do
           subject
@@ -235,7 +235,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
       context 'with an invited group' do
         let(:group_user) { create(:user) }
         let(:another_group) { create(:group, :public) }
-        let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, group_approvers_ids: [another_group.id] }]) }
+        let(:policy) { build(:approval_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, group_approvers_ids: [another_group.id] }]) }
 
         before do
           another_group.add_maintainer(group_user)
@@ -251,7 +251,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     end
 
     context 'with only group path' do
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, group_approvers: [group.path] }]) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, group_approvers: [group.path] }]) }
 
       it_behaves_like 'create approval rule with specific approver'
 
@@ -259,7 +259,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
         let(:other_container) { create(:group) }
         let(:other_group) { create(:group, name: group.name, parent: other_container) }
         let(:other_user) { create(:user) }
-        let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, group_approvers: [group.name] }]) }
+        let(:policy) { build(:approval_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, group_approvers: [group.name] }]) }
 
         before do
           other_group.add_developer(other_user)
@@ -292,7 +292,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     end
 
     context 'when rules are not provided' do
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: [{ type: 'require_approval' }], rules: nil) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', actions: [{ type: 'require_approval' }], rules: nil) }
 
       it 'does not create approval project rules' do
         expect { subject }.not_to change { project.approval_rules.count }
@@ -311,7 +311,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
         }
       end
 
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', rules: [rule]) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', rules: [rule]) }
 
       context 'with valid vulnerability_states' do
         states_list = [
@@ -357,7 +357,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
 
     context 'with vulnerability_attributes' do
       let(:vulnerability_attributes) { { false_positive: true, fix_available: false } }
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', vulnerability_attributes: vulnerability_attributes) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', vulnerability_attributes: vulnerability_attributes) }
 
       it 'creates approval rules' do
         expect { subject }.to change { project.approval_rules.count }.by(1)
@@ -388,7 +388,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
 
       let(:rules) { [rule] * rules_count }
 
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', rules: rules) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', rules: rules) }
 
       where(:rules_count, :expected_rules_count) do
         [
@@ -408,7 +408,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     end
 
     context 'when user does not have edit_approval_rule permission' do
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, user_approvers_ids: [approver.id] }]) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', actions: [{ type: 'require_approval', approvals_required: 1, user_approvers_ids: [approver.id] }]) }
 
       before do
         allow(Ability).to receive(:allowed?).and_call_original
@@ -431,7 +431,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
       end
 
       let(:rules) { [rule] }
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', rules: rules) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', rules: rules) }
 
       before do
         create(:protected_branch, project: project)
@@ -457,7 +457,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
         }]
       end
 
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', rules: rules) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', rules: rules) }
 
       context 'when protected' do
         let(:branch_type) { 'protected' }
@@ -510,7 +510,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
       end
 
       let(:rules) { [rule] }
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', rules: rules) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', rules: rules) }
 
       it 'creates new approval rules' do
         expect { subject }.to change { project.approval_rules.count }.by(1)
@@ -539,7 +539,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
       end
 
       let(:policy) do
-        build(:scan_result_policy, :with_approval_settings, name: 'Test Policy', rules: [rule])
+        build(:approval_policy, :with_approval_settings, name: 'Test Policy', rules: [rule])
       end
 
       it 'creates new approval rules' do
@@ -569,7 +569,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
       end
 
       let(:policy) do
-        build(:scan_result_policy, :with_disabled_bot_message, name: 'Test Policy', rules: [rule])
+        build(:approval_policy, :with_disabled_bot_message, name: 'Test Policy', rules: [rule])
       end
 
       it 'creates scan_result_policy_read with send_bot_message data' do
@@ -581,7 +581,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
 
       context 'when action includes additional properties' do
         let(:policy) do
-          build(:scan_result_policy, name: 'Test Policy', rules: [rule],
+          build(:approval_policy, name: 'Test Policy', rules: [rule],
             actions: [{ type: 'send_bot_message', enabled: true, additional: 'unsupported' }])
         end
 
@@ -607,7 +607,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
         }
       end
 
-      let(:policy) { build(:scan_result_policy, name: 'Test Policy', rules: [rule]) }
+      let(:policy) { build(:approval_policy, name: 'Test Policy', rules: [rule]) }
       let(:scan_finding_rule) { project.approval_rules.first }
 
       let!(:project_protected_branch) do
@@ -639,7 +639,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     end
 
     context 'with license_finding rule_type' do
-      let(:policy) { build(:scan_result_policy, :license_finding) }
+      let(:policy) { build(:approval_policy, :license_finding) }
 
       shared_examples 'license_finding_rule_type' do
         it "triggers an internal event" do
@@ -705,7 +705,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
       end
 
       context 'when using licenses with package exclusions' do
-        let(:policy) { build(:scan_result_policy, :license_finding_with_allowed_licenses) }
+        let(:policy) { build(:approval_policy, :license_finding_with_allowed_licenses) }
 
         it 'persists the licenses on scan_result_policy_read' do
           subject
@@ -724,7 +724,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     end
 
     context 'with any_merge_request rule_type' do
-      let(:policy) { build(:scan_result_policy, :any_merge_request, commits: 'unsigned') }
+      let(:policy) { build(:approval_policy, :any_merge_request, commits: 'unsigned') }
 
       it "triggers an internal event" do
         expect { subject }.to trigger_internal_events('create_approval_rule_from_merge_request_approval_policy').with(
@@ -752,7 +752,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
       end
 
       context 'when rule has no actions' do
-        let(:policy) { build(:scan_result_policy, :any_merge_request, commits: 'unsigned', actions: []) }
+        let(:policy) { build(:approval_policy, :any_merge_request, commits: 'unsigned', actions: []) }
 
         it 'does not create approval rule' do
           expect { subject }.not_to change { project.approval_rules.count }
@@ -761,7 +761,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
 
       context 'when rule has only send_bot_message action' do
         let(:policy) do
-          build(:scan_result_policy, :any_merge_request, commits: 'unsigned',
+          build(:approval_policy, :any_merge_request, commits: 'unsigned',
             actions: [{ type: 'send_bot_message', enabled: false }])
         end
 
@@ -792,7 +792,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     end
 
     context 'with fallback_behavior' do
-      let(:policy) { build(:scan_result_policy, :fail_open) }
+      let(:policy) { build(:approval_policy, :fail_open) }
 
       it 'sets fallback_behavior' do
         subject
@@ -804,7 +804,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessScanResultPolicyS
     end
 
     context 'with policy_tuning' do
-      let(:policy) { build(:scan_result_policy, policy_tuning: { unblock_rules_using_execution_policies: true }) }
+      let(:policy) { build(:approval_policy, policy_tuning: { unblock_rules_using_execution_policies: true }) }
 
       it 'persists it on scan_result_policy_read' do
         subject

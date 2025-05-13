@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Security::SecurityPoliciesFinder, feature_category: :security_policy_management do
-  let_it_be(:scan_result_policy) { build(:scan_result_policy, name: 'SRP 1') }
+  let_it_be(:approval_policy) { build(:approval_policy, name: 'SRP 1') }
   let_it_be(:scan_execution_policy) { build(:scan_execution_policy, name: 'SEP 1') }
   let_it_be(:pipeline_execution_policy) { build(:pipeline_execution_policy, name: 'PEP 1') }
   let_it_be(:vulnerability_management_policy) { build(:vulnerability_management_policy, name: 'VMP 1') }
@@ -40,7 +40,7 @@ RSpec.describe Security::SecurityPoliciesFinder, feature_category: :security_pol
       before do
         stub_licensed_features(security_orchestration_policies: true)
 
-        allow(policy_configuration).to receive(:scan_result_policies).and_return([scan_result_policy])
+        allow(policy_configuration).to receive(:scan_result_policies).and_return([approval_policy])
         allow(policy_configuration).to receive(:scan_execution_policy).and_return([])
         allow(policy_configuration).to receive(:pipeline_execution_policy).and_return([])
         allow(policy_configuration).to receive(:vulnerability_management_policy)
@@ -53,7 +53,7 @@ RSpec.describe Security::SecurityPoliciesFinder, feature_category: :security_pol
 
       context 'when configuration is associated to project' do
         it 'returns policies with project' do
-          is_expected.to eq({ scan_result_policies: [scan_result_policy.merge({
+          is_expected.to eq({ scan_result_policies: [approval_policy.merge({
             config: policy_configuration,
             project: project,
             namespace: nil,
