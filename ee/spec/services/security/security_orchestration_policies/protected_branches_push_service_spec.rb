@@ -23,7 +23,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProtectedBranchesPushSer
   end
 
   context 'with blocking scan result policy' do
-    include_context 'with scan result policy preventing force pushing'
+    include_context 'with approval policy preventing force pushing'
 
     it 'includes the protected branch' do
       expect(result).to include(branch_name)

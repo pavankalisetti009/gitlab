@@ -38,7 +38,7 @@ RSpec.describe Gitlab::Checks::Security::PolicyCheck, '#validate!', feature_cate
   end
 
   context 'when affected by active scan result policy' do
-    include_context 'with scan result policy preventing force pushing'
+    include_context 'with approval policy preventing force pushing'
 
     it 'raises' do
       expect do

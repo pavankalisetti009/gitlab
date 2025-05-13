@@ -65,7 +65,7 @@ module QA
           retry
         end
 
-        # GraphQl endpoint to create a Scan result policy commit
+        # GraphQl endpoint to create a approval policy commit
         alias_method :api_post_path, :api_get_path
       end
     end

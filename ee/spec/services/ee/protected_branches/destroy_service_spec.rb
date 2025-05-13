@@ -50,7 +50,7 @@ RSpec.describe ProtectedBranches::DestroyService, feature_category: :compliance_
         let_it_be(:project) { create(:project, :repository) }
         let(:protected_branch) { create(:protected_branch, project: project, name: 'master') }
 
-        include_context 'with scan result policy blocking protected branches' do
+        include_context 'with approval policy blocking protected branches' do
           let(:branch_name) { protected_branch.name }
           let(:policy_configuration) { security_orchestration_policy_configuration }
 
@@ -66,7 +66,7 @@ RSpec.describe ProtectedBranches::DestroyService, feature_category: :compliance_
 
         subject(:service) { described_class.new(group, user) }
 
-        include_context 'with scan result policy' do
+        include_context 'with approval policy' do
           let(:security_orchestration_policy_configuration) do
             create(
               :security_orchestration_policy_configuration,
@@ -78,8 +78,8 @@ RSpec.describe ProtectedBranches::DestroyService, feature_category: :compliance_
           let(:policy_configuration) { security_orchestration_policy_configuration }
           let(:user) { create(:user) }
           let(:branch_name) { protected_branch.name }
-          let(:scan_result_policies) do
-            [build(:scan_result_policy, approval_settings: { block_group_branch_modification: true })]
+          let(:approval_policies) do
+            [build(:approval_policy, approval_settings: { block_group_branch_modification: true })]
           end
 
           before do

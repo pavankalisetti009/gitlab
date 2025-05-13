@@ -34,8 +34,8 @@ RSpec.describe Branches::DeleteService, feature_category: :source_code_managemen
 
     it_behaves_like 'a deleted branch'
 
-    context 'with scan result policy blocking protected branches' do
-      include_context 'with scan result policy blocking protected branches'
+    context 'with approval policy blocking protected branches' do
+      include_context 'with approval policy blocking protected branches'
 
       let(:branch_name) { protected_branch_name }
 
@@ -56,7 +56,7 @@ RSpec.describe Branches::DeleteService, feature_category: :source_code_managemen
       end
 
       context 'when branch is not included in security policy' do
-        include_context 'with scan result policy blocking protected branches' do
+        include_context 'with approval policy blocking protected branches' do
           let(:branch_name) { 'some other branch' }
         end
 
@@ -64,7 +64,7 @@ RSpec.describe Branches::DeleteService, feature_category: :source_code_managemen
       end
 
       context 'with branch exceptions' do
-        include_context 'with scan result policy blocking protected branches' do
+        include_context 'with approval policy blocking protected branches' do
           let(:rules) do
             [
               {
@@ -80,8 +80,8 @@ RSpec.describe Branches::DeleteService, feature_category: :source_code_managemen
             ]
           end
 
-          let(:scan_result_policy) do
-            build(:scan_result_policy, rules: rules, approval_settings: { block_branch_modification: true })
+          let(:approval_policy) do
+            build(:approval_policy, rules: rules, approval_settings: { block_branch_modification: true })
           end
         end
 

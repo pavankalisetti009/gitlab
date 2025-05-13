@@ -174,12 +174,12 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
     end
 
     describe '.for_policy_index' do
-      let_it_be(:scan_result_policy) do
+      let_it_be(:approval_policy) do
         create(:scan_result_policy_read, orchestration_policy_idx: 1)
       end
 
       it 'returns policies with matching orchestration policy index' do
-        expect(described_class.for_policy_index(1)).to contain_exactly(scan_result_policy)
+        expect(described_class.for_policy_index(1)).to contain_exactly(approval_policy)
       end
 
       it 'returns empty when no matching policy index exists' do
@@ -188,12 +188,12 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
     end
 
     describe '.for_rule_index' do
-      let_it_be(:scan_result_policy) do
+      let_it_be(:approval_policy) do
         create(:scan_result_policy_read, rule_idx: 1)
       end
 
       it 'returns policies with matching rule index' do
-        expect(described_class.for_rule_index(1)).to contain_exactly(scan_result_policy)
+        expect(described_class.for_rule_index(1)).to contain_exactly(approval_policy)
       end
 
       it 'returns empty when no matching rule index exists' do
@@ -275,27 +275,27 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
   end
 
   describe '#approval_policy_rule' do
-    let(:scan_result_policy) { create(:scan_result_policy_read) }
-    let(:policy_configuration) { scan_result_policy.security_orchestration_policy_configuration }
+    let(:approval_policy) { create(:scan_result_policy_read) }
+    let(:policy_configuration) { approval_policy.security_orchestration_policy_configuration }
 
     context 'when approval_policy_rule_id is present' do
       let_it_be(:approval_policy_rule) { create(:approval_policy_rule) }
-      let_it_be(:scan_result_policy) do
+      let_it_be(:approval_policy) do
         create(:scan_result_policy_read, approval_policy_rule: approval_policy_rule)
       end
 
       it 'returns the associated approval_policy_rule' do
-        expect(scan_result_policy.approval_policy_rule).to eq(approval_policy_rule)
+        expect(approval_policy.approval_policy_rule).to eq(approval_policy_rule)
       end
     end
 
     context 'when real_policy_index is negative' do
       before do
-        allow(scan_result_policy).to receive(:real_policy_index).and_return(-1)
+        allow(approval_policy).to receive(:real_policy_index).and_return(-1)
       end
 
       it 'returns nil' do
-        expect(scan_result_policy.approval_policy_rule).to be_nil
+        expect(approval_policy.approval_policy_rule).to be_nil
       end
     end
 
@@ -305,8 +305,8 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
       let(:approval_policy_rule) { instance_double(Security::ApprovalPolicyRule) }
 
       before do
-        allow(scan_result_policy).to receive(:real_policy_index).and_return(real_policy_index)
-        allow(scan_result_policy).to receive(:rule_idx).and_return(rule_idx)
+        allow(approval_policy).to receive(:real_policy_index).and_return(real_policy_index)
+        allow(approval_policy).to receive(:rule_idx).and_return(rule_idx)
         allow(Security::ApprovalPolicyRule).to receive(:by_policy_rule_index).and_return(approval_policy_rule)
       end
 
@@ -314,11 +314,11 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
         expect(Security::ApprovalPolicyRule).to receive(:by_policy_rule_index)
           .with(policy_configuration, policy_index: real_policy_index, rule_index: rule_idx)
 
-        scan_result_policy.approval_policy_rule
+        approval_policy.approval_policy_rule
       end
 
       it 'returns the result from Security::ApprovalPolicyRule.by_policy_rule_index' do
-        expect(scan_result_policy.approval_policy_rule).to eq(approval_policy_rule)
+        expect(approval_policy.approval_policy_rule).to eq(approval_policy_rule)
       end
     end
   end

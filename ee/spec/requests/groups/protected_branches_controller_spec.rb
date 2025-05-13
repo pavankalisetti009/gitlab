@@ -155,11 +155,11 @@ RSpec.describe Groups::ProtectedBranchesController, feature_category: :source_co
         end
       end
 
-      include_context 'with scan result policy blocking protected branches' do
+      include_context 'with approval policy blocking protected branches' do
         include_examples 'prevents update of protected branch'
       end
 
-      include_context 'with scan result policy blocking group-level protected branches' do
+      include_context 'with approval policy blocking group-level protected branches' do
         include_examples 'prevents update of protected branch'
       end
     end

@@ -35,15 +35,15 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
     let(:policy_type) { :approval_policy }
 
     let(:scan_finding_policy) do
-      build(:scan_result_policy, :with_approval_settings, :with_policy_scope)
+      build(:approval_policy, :with_approval_settings, :with_policy_scope)
     end
 
     let(:license_finding_policy) do
-      build(:scan_result_policy, :license_finding, :with_approval_settings)
+      build(:approval_policy, :license_finding, :with_approval_settings)
     end
 
     let(:any_merge_request_policy) do
-      build(:scan_result_policy, :any_merge_request, :with_policy_scope)
+      build(:approval_policy, :any_merge_request, :with_policy_scope)
     end
 
     let(:policies) do
@@ -317,8 +317,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
       end
 
       context 'with updated policy name' do
-        let(:policy_before) { build(:scan_result_policy) }
-        let(:policy_after) { build(:scan_result_policy, name: "#{policy_before[:name]} updated") }
+        let(:policy_before) { build(:approval_policy) }
+        let(:policy_after) { build(:approval_policy, name: "#{policy_before[:name]} updated") }
 
         let(:pre_existing_policies) { [policy_before] }
         let(:policies) { [policy_after] }
@@ -367,8 +367,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
         let(:default_rule) { { type: 'any_merge_request', branch_type: 'default', commits: 'any' } }
         let(:protected_rule) { { type: 'any_merge_request', branch_type: 'protected', commits: 'any' } }
 
-        let(:policy_before) { build(:scan_result_policy, rules: [default_rule, protected_rule]) }
-        let(:policy_after) { build(:scan_result_policy, name: policy_before[:name], rules: [protected_rule]) }
+        let(:policy_before) { build(:approval_policy, rules: [default_rule, protected_rule]) }
+        let(:policy_after) { build(:approval_policy, name: policy_before[:name], rules: [protected_rule]) }
 
         let(:pre_existing_policies) { [policy_before] }
         let(:policies) { [policy_after] }
@@ -671,7 +671,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
   end
 
   describe "successive calls with differing policy types" do
-    let(:approval_policy) { build(:scan_result_policy) }
+    let(:approval_policy) { build(:approval_policy) }
     let(:scan_execution_policy) { build(:scan_execution_policy) }
 
     subject(:execute) do

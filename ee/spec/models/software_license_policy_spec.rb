@@ -46,7 +46,7 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
           create(:software_license_policy, project: project, software_license: nil, custom_software_license: custom_software_license)
         end
 
-        context 'with same custom_license, project, and scan_result_policy' do
+        context 'with same custom_license, project, and approval_policy' do
           let(:message) { 'Custom software license has already been taken' }
 
           it 'disallows on create' do

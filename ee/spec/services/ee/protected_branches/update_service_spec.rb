@@ -47,7 +47,7 @@ RSpec.describe ProtectedBranches::UpdateService, feature_category: :compliance_m
         create(:security_orchestration_policy_configuration, project: project)
       end
 
-      include_context 'with scan result policy blocking protected branches'
+      include_context 'with approval policy blocking protected branches'
 
       before do
         create(:scan_result_policy_read, :blocking_protected_branches, project: project,
@@ -81,11 +81,11 @@ RSpec.describe ProtectedBranches::UpdateService, feature_category: :compliance_m
           end
         end
 
-        include_context 'with scan result policy blocking protected branches' do
+        include_context 'with approval policy blocking protected branches' do
           include_examples 'prevents update of protected branch'
         end
 
-        include_context 'with scan result policy blocking group-level protected branches' do
+        include_context 'with approval policy blocking group-level protected branches' do
           include_examples 'prevents update of protected branch'
         end
       end

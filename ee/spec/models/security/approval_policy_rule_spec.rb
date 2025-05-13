@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_management do
   it_behaves_like 'policy rule' do
-    let(:rule_hash) { build(:scan_result_policy)[:rules].first }
+    let(:rule_hash) { build(:approval_policy)[:rules].first }
     let(:policy_type) { :approval_policy }
   end
 

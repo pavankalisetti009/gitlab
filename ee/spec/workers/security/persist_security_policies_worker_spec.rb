@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_category: :security_policy_management do
-  include_context 'with scan result policy' do
+  include_context 'with approval policy' do
     let(:policy_configuration) { create(:security_orchestration_policy_configuration) }
 
     let(:policy_yaml) do

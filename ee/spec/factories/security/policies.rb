@@ -356,10 +356,9 @@ FactoryBot.define do
     end
   end
 
-  factory :scan_result_policy,
+  factory :approval_policy,
     class: Struct.new(:name, :description, :enabled, :actions, :rules, :approval_settings, :policy_scope,
-      :fallback_behavior, :metadata, :policy_tuning),
-    aliases: %i[approval_policy] do
+      :fallback_behavior, :metadata, :policy_tuning) do
     skip_create
 
     initialize_with do

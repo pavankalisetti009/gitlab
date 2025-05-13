@@ -19,7 +19,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProtectedBranchesDeletio
   end
 
   context "with blocking scan result policy" do
-    include_context 'with scan result policy blocking protected branches' do
+    include_context 'with approval policy blocking protected branches' do
       let(:branch_name) { protected_branch.name }
 
       it_behaves_like 'when policy is applicable based on the policy scope configuration' do
@@ -52,7 +52,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProtectedBranchesDeletio
     context 'when policy branch specification has wildcard' do
       let_it_be(:protected_branch) { create(:protected_branch, project: project, name: "rc-1") }
 
-      include_context 'with scan result policy blocking protected branches' do
+      include_context 'with approval policy blocking protected branches' do
         let(:branch_name) { "rc-*" }
 
         it "includes the protected branch" do
@@ -62,10 +62,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProtectedBranchesDeletio
     end
 
     context "with mismatching branch specification" do
-      include_context 'with scan result policy blocking protected branches' do
+      include_context 'with approval policy blocking protected branches' do
         let(:branch_name) { protected_branch.name }
-        let(:scan_result_policy) do
-          build(:scan_result_policy, branches: [branch_name.reverse],
+        let(:approval_policy) do
+          build(:approval_policy, branches: [branch_name.reverse],
             approval_settings: { block_branch_modification: true })
         end
 

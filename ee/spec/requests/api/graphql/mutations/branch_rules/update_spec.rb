@@ -67,7 +67,7 @@ RSpec.describe 'BranchRuleUpdate', feature_category: :source_code_management do
       create(:security_orchestration_policy_configuration, project: project)
     end
 
-    include_context 'with scan result policy blocking protected branches'
+    include_context 'with approval policy blocking protected branches'
 
     before do
       create(:scan_result_policy_read, :blocking_protected_branches, project: project,

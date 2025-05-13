@@ -18,7 +18,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDe
 
   let(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [], approval_policy: policies) }
   let(:policies) { [policy] }
-  let(:policy) { build(:scan_result_policy, approval_settings: approval_settings) }
+  let(:policy) { build(:approval_policy, approval_settings: approval_settings) }
   let(:approval_settings) do
     { block_branch_modification: block_branch_modification,
       block_group_branch_modification: block_group_branch_modification }.compact
@@ -71,8 +71,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDe
 
   context 'with conflicting settings' do
     let(:policies) do
-      [build(:scan_result_policy, approval_settings: { block_group_branch_modification: true }),
-        build(:scan_result_policy, approval_settings: { block_group_branch_modification: false })]
+      [build(:approval_policy, approval_settings: { block_group_branch_modification: true }),
+        build(:approval_policy, approval_settings: { block_group_branch_modification: false })]
     end
 
     it { is_expected.to be(true) }

@@ -41,7 +41,7 @@ RSpec.describe 'Merge request > User sees security policy rules license complian
       end
     end
 
-    shared_examples 'with scan result policy' do
+    shared_examples 'with approval policy' do
       let!(:existing_license) { create(:pm_license, spdx_identifier: 'MIT') }
       let!(:package) do
         create(:pm_package, name: "activesupport", purl_type: "gem",
@@ -161,7 +161,7 @@ RSpec.describe 'Merge request > User sees security policy rules license complian
       end
 
       it_behaves_like 'a merge request without violations'
-      it_behaves_like 'with scan result policy'
+      it_behaves_like 'with approval policy'
     end
   end
 end
