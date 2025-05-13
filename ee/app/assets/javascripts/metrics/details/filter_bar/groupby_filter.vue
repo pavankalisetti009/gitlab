@@ -77,9 +77,19 @@ export default {
     },
   },
   methods: {
-    onSelect() {
+    selectFunction(value) {
+      this.groupByFunction = value;
+
       this.$emit('groupBy', {
         attributes: this.groupByAttributes,
+        func: value,
+      });
+    },
+    selectAttributes(value) {
+      this.groupByAttributes = value;
+
+      this.$emit('groupBy', {
+        attributes: value,
         func: this.groupByFunction,
       });
     },
@@ -90,20 +100,20 @@ export default {
 <template>
   <div class="gl-flex gl-flex-row gl-items-center gl-gap-3">
     <gl-collapsible-listbox
-      v-model="groupByFunction"
       data-testid="group-by-function-dropdown"
+      :selected="groupByFunction"
       :items="availableGroupByFunctions"
       :toggle-text="groupByFunctionToggleText"
-      @select="onSelect"
+      @select="selectFunction"
     />
     <span>{{ __('by') }}</span>
     <gl-collapsible-listbox
-      v-model="groupByAttributes"
       data-testid="group-by-attributes-dropdown"
+      :selected="groupByAttributes"
       :toggle-text="groupByAttributesToggleText"
       multiple
       :items="attributesItems"
-      @select="onSelect"
+      @select="selectAttributes"
     />
   </div>
 </template>
