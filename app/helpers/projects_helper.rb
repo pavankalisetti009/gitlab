@@ -773,9 +773,9 @@ module ProjectsHelper
 
   def delete_immediately_message(project)
     return delete_permanently_message unless project.adjourned_deletion?
-    return delete_delayed_message(project) unless project.marked_for_deletion_on
+    return delete_delayed_message(project) unless project.self_deletion_scheduled?
 
-    date = permanent_deletion_date_formatted(project.marked_for_deletion_on)
+    date = permanent_deletion_date_formatted(project)
 
     message = _('This project is scheduled for deletion on %{date}. ' \
       'This action will permanently delete this project, ' \

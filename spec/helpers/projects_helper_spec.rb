@@ -2154,7 +2154,7 @@ RSpec.describe ProjectsHelper, feature_category: :source_code_management do
       let(:marked_for_deletion) { Date.parse('2024-01-01') }
 
       it 'returns the delete permanently override message' do
-        deletion_date = helper.permanent_deletion_date_formatted(project.marked_for_deletion_on)
+        deletion_date = helper.permanent_deletion_date_formatted(project)
 
         expect(message).to eq "This project is scheduled for deletion on <strong>#{deletion_date}</strong>. " \
           "This action will permanently delete this project, including all its resources, " \
