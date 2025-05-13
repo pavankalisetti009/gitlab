@@ -13,6 +13,7 @@ import {
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   HTTP_STATUS_OK,
 } from '~/lib/utils/http_status';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
 
 const EVENT_TYPE_LABEL = 'label';
 
@@ -528,3 +529,21 @@ export const generateFilterTextDescription = ({
     groupName,
   });
 };
+
+/**
+ * Generates value stream's GraphQL ID
+ *
+ * @param id - Value stream's ID
+ * @returns {String} - Value stream's GraphQL ID
+ */
+export const getValueStreamGraphQLId = (id) =>
+  convertToGraphQLId('Analytics::CycleAnalytics::ValueStream', id);
+
+/**
+ * Generates value stream stage's GraphQL ID
+ *
+ * @param id - Value stream stage's ID
+ * @returns {String} - Value stream stage's GraphQL ID
+ */
+export const getValueStreamStageGraphQLId = (id) =>
+  convertToGraphQLId('Analytics::CycleAnalytics::Stage', id);

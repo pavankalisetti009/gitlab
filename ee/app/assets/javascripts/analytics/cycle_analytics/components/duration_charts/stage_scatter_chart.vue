@@ -12,7 +12,11 @@ import {
   TYPENAME_WORK_ITEM,
 } from '~/graphql_shared/constants';
 import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
-import { millisecondsToSeconds, newDate } from '~/lib/utils/datetime/date_calculation_utility';
+import {
+  getDatesInRange,
+  millisecondsToSeconds,
+  newDate,
+} from '~/lib/utils/datetime/date_calculation_utility';
 import { humanizeTimeInterval } from '~/lib/utils/datetime/date_format_utility';
 import NoDataAvailableState from '../no_data_available_state.vue';
 
@@ -56,6 +60,14 @@ export default {
       required: false,
       default: '',
     },
+    startDate: {
+      type: Date,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+      required: true,
+    },
   },
   data() {
     return {
@@ -71,7 +83,7 @@ export default {
   },
   computed: {
     hasPlottableData() {
-      return !this.isLoading && this.plottableData.some(([, value]) => !isNil(value));
+      return this.plottableData.some(([, value]) => !isNil(value));
     },
     chartTitle() {
       return sprintf(DURATION_STAGE_TIME_LABEL, {
@@ -94,7 +106,7 @@ export default {
         {
           type: 'scatter',
           name: this.timeInStageSeriesName,
-          data: this.plottableData,
+          data: this.plottableData.map(([date, value]) => [formatDate(date), value]),
         },
       ];
     },
@@ -108,16 +120,31 @@ export default {
 
       return series.map(({ type, name, lineStyle: { color } }) => ({ type, name, color }));
     },
+    chartOptions() {
+      return {
+        yAxis: {
+          type: 'value',
+          axisLabel: {
+            formatter: (value) => formatChartValue(value),
+          },
+        },
+        xAxis: {
+          type: 'category',
+          data: getDatesInRange(this.startDate, this.endDate, formatDate),
+        },
+      };
+    },
   },
   methods: {
     onChartCreated(chart) {
       this.chart = chart;
+      this.chart.setOption({ lazyUpdate: true });
     },
     formatTooltipText({ data }) {
       const [date, value] = data;
 
       this.tooltip = {
-        title: formatDate(date),
+        title: date,
         content: {
           label: this.$options.i18n.yAxisTitle,
           value: formatChartValue(value),
@@ -129,25 +156,11 @@ export default {
     yAxisTitle: __('Duration'),
     xAxisTitle: __('Date'),
   },
-  chartOptions: {
-    yAxis: {
-      type: 'value',
-      axisLabel: {
-        formatter: (value) => formatChartValue(value),
-      },
-    },
-    xAxis: {
-      type: 'time',
-      axisLabel: {
-        formatter: (date) => formatDate(date),
-      },
-    },
-  },
 };
 </script>
 
 <template>
-  <chart-skeleton-loader v-if="isLoading" />
+  <chart-skeleton-loader v-if="isLoading && !hasPlottableData" />
   <div v-else data-testid="vsa-duration-chart">
     <h2 class="gl-heading-3">{{ chartTitle }}</h2>
     <gl-alert v-if="errorMessage" variant="danger" :dismissible="false">{{
@@ -158,7 +171,7 @@ export default {
         :data="chartData"
         :x-axis-title="$options.i18n.xAxisTitle"
         :y-axis-title="$options.i18n.yAxisTitle"
-        :option="$options.chartOptions"
+        :option="chartOptions"
         :format-tooltip-text="formatTooltipText"
         @created="onChartCreated"
       >

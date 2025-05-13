@@ -7,6 +7,12 @@ module EE
       extend ActiveSupport::Concern
       extend ::Gitlab::Utils::Override
 
+      prepended do
+        before_action do
+          push_frontend_feature_flag(:vsa_stage_time_scatter_chart, project.group)
+        end
+      end
+
       override :value_stream
       def value_stream
         return super unless params[:value_stream_id]

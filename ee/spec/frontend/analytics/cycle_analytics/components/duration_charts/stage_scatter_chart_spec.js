@@ -16,9 +16,13 @@ describe('StageScatterChart', () => {
 
   const chartTitle = `Stage time: ${stageTitle}`;
 
+  const startDate = new Date('2025-05-19');
+  const endDate = new Date('2025-05-21');
+
   const plottableData = [
-    ['19 May', 6.95],
-    ['20 May', 7.58],
+    ['May 19, 2025', 6.95],
+    ['May 20, 2025', 7.58],
+    ['May 21, 2025', 8.58],
   ];
 
   const timeInStageSeries = {
@@ -47,12 +51,14 @@ describe('StageScatterChart', () => {
           series: mockChartOptionSeries,
         };
       },
+      setOption: jest.fn(),
     };
 
     wrapper = shallowMountExtended(StageScatterChart, {
       propsData: {
         stageTitle,
-        plottableData,
+        startDate,
+        endDate,
         ...props,
       },
       stubs: {
@@ -133,9 +139,9 @@ describe('StageScatterChart', () => {
     });
   });
 
-  describe('when there is plottable data', () => {
+  describe.each([true, false])('when there is plottable data and isLoading=%s', (isLoading) => {
     beforeEach(() => {
-      createWrapper();
+      createWrapper({ props: { plottableData, isLoading } });
     });
 
     it('renders the stage title', () => {
@@ -150,7 +156,7 @@ describe('StageScatterChart', () => {
     `(
       `sets the chart's data correctly when issuableType=$issuableType`,
       ({ issuableType, expectedSeriesName }) => {
-        createWrapper({ props: { issuableType } });
+        createWrapper({ props: { plottableData, issuableType } });
 
         expect(findScatterChart().props('data')).toEqual([
           { ...timeInStageSeries, name: expectedSeriesName },
@@ -174,10 +180,8 @@ describe('StageScatterChart', () => {
           },
         },
         xAxis: {
-          type: 'time',
-          axisLabel: {
-            formatter: expect.any(Function),
-          },
+          type: 'category',
+          data: ['May 19, 2025', 'May 20, 2025', 'May 21, 2025'],
         },
       };
 
