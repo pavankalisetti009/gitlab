@@ -3,10 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Analytics::DuoChatEventsBackfillWorker, feature_category: :value_stream_management do
-  let_it_be(:organization) { create(:organization, :default) }
-
   it_behaves_like 'common ai usage backfill worker', Ai::DuoChatEvent do
-    let(:user) { create(:user, :with_namespace) }
+    let(:user) { create(:user, :with_organization, :with_namespace) }
 
     let!(:pg_events) do
       [
