@@ -10901,25 +10901,6 @@ CREATE SEQUENCE ci_builds_metadata_id_seq
 
 ALTER SEQUENCE ci_builds_metadata_id_seq OWNED BY p_ci_builds_metadata.id;
 
-CREATE TABLE ci_builds_metadata (
-    project_id bigint NOT NULL,
-    timeout integer,
-    timeout_source integer DEFAULT 1 NOT NULL,
-    interruptible boolean,
-    config_options jsonb,
-    config_variables jsonb,
-    has_exposed_artifacts boolean,
-    environment_auto_stop_in character varying(255),
-    expanded_environment_name character varying(255),
-    secrets jsonb DEFAULT '{}'::jsonb NOT NULL,
-    build_id bigint NOT NULL,
-    id bigint DEFAULT nextval('ci_builds_metadata_id_seq'::regclass) NOT NULL,
-    id_tokens jsonb DEFAULT '{}'::jsonb NOT NULL,
-    partition_id bigint NOT NULL,
-    debug_trace_enabled boolean DEFAULT false NOT NULL,
-    exit_code smallint
-);
-
 CREATE TABLE ci_builds_runner_session (
     id bigint NOT NULL,
     url character varying NOT NULL,
@@ -26582,8 +26563,6 @@ ALTER TABLE ONLY uploads_9ba88c4165 ATTACH PARTITION bulk_import_export_upload_u
 
 ALTER TABLE ONLY p_ci_builds ATTACH PARTITION ci_builds FOR VALUES IN ('100');
 
-ALTER TABLE ONLY p_ci_builds_metadata ATTACH PARTITION ci_builds_metadata FOR VALUES IN ('100');
-
 ALTER TABLE ONLY p_ci_job_artifacts ATTACH PARTITION ci_job_artifacts FOR VALUES IN ('100', '101');
 
 ALTER TABLE ONLY p_ci_pipelines ATTACH PARTITION ci_pipelines FOR VALUES IN ('100', '101', '102');
@@ -29095,12 +29074,6 @@ ALTER TABLE ONLY ci_build_report_results
 ALTER TABLE ONLY ci_build_trace_chunks
     ADD CONSTRAINT ci_build_trace_chunks_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY p_ci_builds_metadata
-    ADD CONSTRAINT p_ci_builds_metadata_pkey PRIMARY KEY (id, partition_id);
-
-ALTER TABLE ONLY ci_builds_metadata
-    ADD CONSTRAINT ci_builds_metadata_pkey PRIMARY KEY (id, partition_id);
-
 ALTER TABLE ONLY p_ci_builds
     ADD CONSTRAINT p_ci_builds_pkey PRIMARY KEY (id, partition_id);
 
@@ -30258,6 +30231,9 @@ ALTER TABLE ONLY p_ci_build_trace_metadata
 
 ALTER TABLE ONLY p_ci_builds_execution_configs
     ADD CONSTRAINT p_ci_builds_execution_configs_pkey PRIMARY KEY (id, partition_id);
+
+ALTER TABLE ONLY p_ci_builds_metadata
+    ADD CONSTRAINT p_ci_builds_metadata_pkey PRIMARY KEY (id, partition_id);
 
 ALTER TABLE ONLY p_ci_finished_build_ch_sync_events
     ADD CONSTRAINT p_ci_finished_build_ch_sync_events_pkey PRIMARY KEY (build_id, partition);
@@ -34100,22 +34076,6 @@ CREATE UNIQUE INDEX index_ci_build_trace_chunks_on_build_id_and_chunk_index ON c
 CREATE INDEX index_ci_build_trace_chunks_on_partition_id_build_id ON ci_build_trace_chunks USING btree (partition_id, build_id);
 
 CREATE INDEX index_ci_build_trace_chunks_on_project_id ON ci_build_trace_chunks USING btree (project_id);
-
-CREATE INDEX p_ci_builds_metadata_build_id_idx ON ONLY p_ci_builds_metadata USING btree (build_id) WHERE (has_exposed_artifacts IS TRUE);
-
-CREATE INDEX index_ci_builds_metadata_on_build_id_and_has_exposed_artifacts ON ci_builds_metadata USING btree (build_id) WHERE (has_exposed_artifacts IS TRUE);
-
-CREATE INDEX p_ci_builds_metadata_build_id_id_idx ON ONLY p_ci_builds_metadata USING btree (build_id) INCLUDE (id) WHERE (interruptible = true);
-
-CREATE INDEX index_ci_builds_metadata_on_build_id_and_id_and_interruptible ON ci_builds_metadata USING btree (build_id) INCLUDE (id) WHERE (interruptible = true);
-
-CREATE UNIQUE INDEX p_ci_builds_metadata_build_id_partition_id_idx ON ONLY p_ci_builds_metadata USING btree (build_id, partition_id);
-
-CREATE UNIQUE INDEX index_ci_builds_metadata_on_build_id_partition_id_unique ON ci_builds_metadata USING btree (build_id, partition_id);
-
-CREATE INDEX p_ci_builds_metadata_project_id_idx ON ONLY p_ci_builds_metadata USING btree (project_id);
-
-CREATE INDEX index_ci_builds_metadata_on_project_id ON ci_builds_metadata USING btree (project_id);
 
 CREATE INDEX p_ci_builds_auto_canceled_by_id_idx ON ONLY p_ci_builds USING btree (auto_canceled_by_id) WHERE (auto_canceled_by_id IS NOT NULL);
 
@@ -38275,6 +38235,14 @@ CREATE INDEX organization_detail_uploads_uploaded_by_user_id_idx ON organization
 
 CREATE INDEX organization_detail_uploads_uploader_path_idx ON organization_detail_uploads USING btree (uploader, path);
 
+CREATE INDEX p_ci_builds_metadata_build_id_id_idx ON ONLY p_ci_builds_metadata USING btree (build_id) INCLUDE (id) WHERE (interruptible = true);
+
+CREATE INDEX p_ci_builds_metadata_build_id_idx ON ONLY p_ci_builds_metadata USING btree (build_id) WHERE (has_exposed_artifacts IS TRUE);
+
+CREATE UNIQUE INDEX p_ci_builds_metadata_build_id_partition_id_idx ON ONLY p_ci_builds_metadata USING btree (build_id, partition_id);
+
+CREATE INDEX p_ci_builds_metadata_project_id_idx ON ONLY p_ci_builds_metadata USING btree (project_id);
+
 CREATE INDEX p_ci_builds_scheduled_at_idx ON ONLY p_ci_builds USING btree (scheduled_at) WHERE ((scheduled_at IS NOT NULL) AND ((type)::text = 'Ci::Build'::text) AND ((status)::text = 'scheduled'::text));
 
 CREATE UNIQUE INDEX p_ci_builds_token_encrypted_partition_id_idx ON ONLY p_ci_builds USING btree (token_encrypted, partition_id) WHERE (token_encrypted IS NOT NULL);
@@ -40475,8 +40443,6 @@ ALTER INDEX index_uploads_9ba88c4165_on_uploader_and_path ATTACH PARTITION bulk_
 
 ALTER INDEX p_ci_builds_status_created_at_project_id_idx ATTACH PARTITION ci_builds_gitlab_monitor_metrics;
 
-ALTER INDEX p_ci_builds_metadata_pkey ATTACH PARTITION ci_builds_metadata_pkey;
-
 ALTER INDEX p_ci_builds_pkey ATTACH PARTITION ci_builds_pkey;
 
 ALTER INDEX p_ci_job_artifacts_pkey ATTACH PARTITION ci_job_artifacts_pkey;
@@ -40642,14 +40608,6 @@ ALTER INDEX index_p_ci_builds_on_execution_config_id ATTACH PARTITION index_0928
 ALTER INDEX tmp_p_ci_builds_trigger_request_id_idx ATTACH PARTITION index_437b1804fb;
 
 ALTER INDEX index_ci_runner_machines_on_executor_type ATTACH PARTITION index_aa3b4fe8c6;
-
-ALTER INDEX p_ci_builds_metadata_build_id_idx ATTACH PARTITION index_ci_builds_metadata_on_build_id_and_has_exposed_artifacts;
-
-ALTER INDEX p_ci_builds_metadata_build_id_id_idx ATTACH PARTITION index_ci_builds_metadata_on_build_id_and_id_and_interruptible;
-
-ALTER INDEX p_ci_builds_metadata_build_id_partition_id_idx ATTACH PARTITION index_ci_builds_metadata_on_build_id_partition_id_unique;
-
-ALTER INDEX p_ci_builds_metadata_project_id_idx ATTACH PARTITION index_ci_builds_metadata_on_project_id;
 
 ALTER INDEX p_ci_builds_auto_canceled_by_id_idx ATTACH PARTITION index_ci_builds_on_auto_canceled_by_id;
 
