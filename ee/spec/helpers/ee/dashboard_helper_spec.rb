@@ -30,17 +30,18 @@ RSpec.describe DashboardHelper, type: :helper, feature_category: :shared do
   end
 
   describe '#feature_entry' do
-    context 'with user having read_admin_dashboard custom permission' do
+    context 'when user is assigned a custom admin role' do
       let_it_be(:user) { create(:user) }
-      let_it_be(:role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
+      let_it_be(:role) { create(:admin_member_role, :read_admin_users, user: user) }
 
       subject(:feature_entry) { helper.feature_entry('Demo', href: 'demo.link') }
 
       before do
+        stub_licensed_features(custom_roles: true)
         allow(helper).to receive(:current_user).and_return(user)
       end
 
-      it 'does not have configuration lin' do
+      it 'does not have configuration link' do
         is_expected.not_to have_link('Configure')
       end
     end

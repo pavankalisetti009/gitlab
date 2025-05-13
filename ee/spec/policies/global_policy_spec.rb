@@ -848,22 +848,25 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
 
   context 'custom permissions', :enable_admin_mode do
     where(:custom_ability, :enabled_permissions) do
-      :read_admin_cicd         | %i[read_admin_cicd]
-      :read_admin_dashboard    | %i[read_admin_dashboard access_admin_area]
+      :read_admin_cicd         | %i[access_admin_area read_admin_cicd]
+      :read_admin_dashboard    | %i[access_admin_area read_admin_dashboard]
       :read_admin_monitoring   | %i[
+        access_admin_area
         read_admin_audit_log
         read_admin_background_migrations
         read_admin_gitaly_servers
         read_admin_health_check
         read_admin_system_information
       ]
-      :read_admin_subscription | %i[read_admin_subscription read_billable_member read_licenses]
-      :read_admin_users        | %i[read_admin_users]
+      :read_admin_subscription | %i[access_admin_area read_admin_subscription read_billable_member read_licenses]
+      :read_admin_users        | %i[access_admin_area read_admin_users]
     end
 
     with_them do
       context 'when a user is assigned an admin custom role' do
-        let!(:role) { create(:admin_member_role, custom_ability, user: current_user) }
+        before do
+          create(:admin_member_role, custom_ability, user: current_user)
+        end
 
         context 'when custom_roles feature is enabled' do
           before do
