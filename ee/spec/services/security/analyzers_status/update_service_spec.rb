@@ -89,18 +89,23 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
           it 'creates new records for analyzers in the pipeline' do
             expect { execute }.to change { Security::AnalyzerProjectStatus.count }.from(0).to(6)
 
-            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast).status)
-              .to eq('success')
-            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :container_scanning).status)
-              .to eq('failed')
-            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection).status)
-              .to eq('success')
-            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast_iac).status)
-              .to eq('success')
-            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast_advanced).status)
-              .to eq('success')
-            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :dependency_scanning)
-              .status).to eq('failed')
+            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast))
+              .to have_attributes(status: 'success', build_id: sast_build.id)
+
+            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :container_scanning))
+              .to have_attributes(status: 'failed', build_id: container_scanning_build.id)
+
+            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection))
+              .to have_attributes(status: 'success', build_id: secret_detection_build.id)
+
+            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast_iac))
+              .to have_attributes(status: 'success', build_id: kics_build.id)
+
+            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast_advanced))
+              .to have_attributes(status: 'success', build_id: advanced_sast_build.id)
+
+            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :dependency_scanning))
+              .to have_attributes(status: 'failed', build_id: dependency_scanning_build.id)
           end
 
           it 'updates existing records for analyzers in the pipeline' do
