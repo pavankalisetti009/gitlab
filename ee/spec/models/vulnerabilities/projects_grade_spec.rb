@@ -51,22 +51,6 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
           it 'returns the letter grades for given vulnerable' do
             expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
           end
-
-          context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
-            before do
-              # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
-              # that's what we're running in.
-              # It won't be turned off post decomposition, so this will be cleaned up with the FF.
-              # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
-              skip_if_multiple_databases_are_setup(:sec)
-
-              stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
-            end
-
-            it 'returns the letter grades for given vulnerable' do
-              expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
-            end
-          end
         end
 
         context 'when the filter is given' do
@@ -81,22 +65,6 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
 
           it 'returns the filtered letter grade for given vulnerable' do
             expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
-          end
-
-          context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
-            before do
-              # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
-              # that's what we're running in.
-              # It won't be turned off post decomposition, so this will be cleaned up with the FF.
-              # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
-              skip_if_multiple_databases_are_setup(:sec)
-
-              stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
-            end
-
-            it 'returns the filtered letter grade for given vulnerable' do
-              expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
-            end
           end
         end
       end
@@ -120,22 +88,6 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
           it 'returns the letter grades for given vulnerable' do
             expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
           end
-
-          context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
-            before do
-              # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
-              # that's what we're running in.
-              # It won't be turned off post decomposition, so this will be cleaned up with the FF.
-              # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
-              skip_if_multiple_databases_are_setup(:sec)
-
-              stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
-            end
-
-            it 'returns the letter grades for given vulnerable' do
-              expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
-            end
-          end
         end
 
         context 'when the filter is given' do
@@ -150,22 +102,6 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
 
           it 'returns the filtered letter grade for given vulnerable' do
             expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
-          end
-
-          context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled' do
-            before do
-              # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
-              # that's what we're running in.
-              # It won't be turned off post decomposition, so this will be cleaned up with the FF.
-              # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
-              skip_if_multiple_databases_are_setup(:sec)
-
-              stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
-            end
-
-            it 'returns the filtered letter grade for given vulnerable' do
-              expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades[vulnerable].map(&compare_key))
-            end
           end
         end
       end
@@ -188,32 +124,6 @@ RSpec.describe Vulnerabilities::ProjectsGrade, feature_category: :vulnerability_
           ]
 
           expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades.map(&compare_key))
-        end
-      end
-
-      context 'when remove_cross_join_from_vulnerabilities_projects_grade is disabled in one of the groups' do
-        before do
-          # This test cannot pass in a post Sec Decomposition Gitlab instance, so we skip it if
-          # that's what we're running in.
-          # It won't be turned off post decomposition, so this will be cleaned up with the FF.
-          # Consult https://gitlab.com/gitlab-org/gitlab/-/merge_requests/180764 for more info.
-          skip_if_multiple_databases_are_setup(:sec)
-
-          stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: false)
-          stub_feature_flags(remove_cross_join_from_vulnerabilities_projects_grade: group)
-        end
-
-        it 'returns all letter grades for each vulnerable' do
-          vulnerables.each do |vulnerable|
-            expected_projects_grades = [
-              described_class.new(vulnerable, 'a', [project_1.id, project_7.id]),
-              described_class.new(vulnerable, 'b', [project_2.id, project_3.id]),
-              described_class.new(vulnerable, 'c', [project_4.id]),
-              described_class.new(vulnerable, 'f', [project_5.id])
-            ]
-
-            expect(projects_grades[vulnerable].map(&compare_key)).to match_array(expected_projects_grades.map(&compare_key))
-          end
         end
       end
     end
