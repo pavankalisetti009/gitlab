@@ -401,7 +401,7 @@ end
 
 There may be cases where you want to force background migrations to run in the foreground during a maintenance window.
 
-Note that this script may timeout/exit before all migrations are completed. You can run it again until all migrations are complete.
+This script may timeout/exit before all migrations are completed. You can run it again until all migrations are complete.
 
 ```ruby
 # Start the rails console

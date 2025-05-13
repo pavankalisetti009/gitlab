@@ -288,7 +288,7 @@ On the EC2 dashboard, look for **Load Balancers** in the left navigation bar:
       1. **Policy name:** Pick a predefined security policy from the dropdown list. You can see a breakdown of [Predefined SSL Security Policies for Network Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/network/create-tls-listener.html#describe-ssl-policies) in the AWS documentation. Check the GitLab codebase for a list of [supported SSL ciphers and protocols](https://gitlab.com/gitlab-org/gitlab/-/blob/9ee7ad433269b37251e0dd5b5e00a0f00d8126b4/lib/support/nginx/gitlab-ssl#L97-99).
       1. **Default SSL/TLS server certificate:** Select an SSL/TLS certificate from ACM or upload a certificate to IAM.
 
-1. For each listener we created, we need to create a target group and assign them based on the table earlier. Note that we haven't created any EC2 instances yet so you don't need to register targets. The EC2 instances are created and assigned as part of the [auto scaling group setup](#create-an-auto-scaling-group) later on.
+1. For each listener we created, we need to create a target group and assign them based on the table earlier. We haven't created any EC2 instances yet so you don't need to register targets. The EC2 instances are created and assigned as part of the [auto scaling group setup](#create-an-auto-scaling-group) later on.
    1. Select `Create target group`.on. Select **Instances** as the target type.
    1. Select an appropriate `Target group name` for each listener:
       - `gitlab-loadbalancer-http-target` - TCP Protocol for port 80
