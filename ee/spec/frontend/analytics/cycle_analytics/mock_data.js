@@ -390,3 +390,180 @@ export const durationOverviewLegendSeriesInfo = durationOverviewDataSeries.map(
     ...lineStyle,
   }),
 );
+
+const defaultPageInfo = {
+  __typename: 'PageInfo',
+  hasNextPage: false,
+  hasPreviousPage: false,
+  startCursor: null,
+  endCursor: null,
+};
+
+const valueStreamStageMetricsPaginatedData = {
+  id: 'fake-path',
+  valueStreams: {
+    nodes: [
+      {
+        stages: [
+          {
+            id: 'gid://gitlab/Analytics::CycleAnalytics::Stage/104',
+            name: 'Cool stage',
+            metrics: {
+              items: {
+                edges: [
+                  {
+                    node: {
+                      duration: '8 days',
+                      durationInMilliseconds: '719706000',
+                      endEventTimestamp: '2025-04-13T04:33:20Z',
+                      record: {
+                        __typename: 'Issue',
+                      },
+                      __typename: 'ValueStreamStageItems',
+                    },
+                    __typename: 'ValueStreamStageItemsEdge',
+                  },
+                  {
+                    node: {
+                      duration: '11 days',
+                      durationInMilliseconds: '1019305000',
+                      endEventTimestamp: '2025-04-16T16:28:27Z',
+                      record: {
+                        __typename: 'Issue',
+                      },
+                      __typename: 'ValueStreamStageItems',
+                    },
+                    __typename: 'ValueStreamStageItemsEdge',
+                  },
+                ],
+                pageInfo: {
+                  ...defaultPageInfo,
+                  hasNextPage: true,
+                  endCursor: 'GL',
+                },
+                __typename: 'ValueStreamStageItemsConnection',
+              },
+              __typename: 'ValueStreamStageMetrics',
+            },
+            __typename: 'ValueStreamStage',
+          },
+        ],
+        __typename: 'ValueStream',
+      },
+    ],
+    __typename: 'ValueStreamConnection',
+  },
+};
+
+export const mockGroupValueStreamStageMetricsPaginatedResponse = {
+  data: {
+    group: valueStreamStageMetricsPaginatedData,
+  },
+};
+
+export const mockProjectValueStreamStageMetricsPaginatedResponse = {
+  data: {
+    project: valueStreamStageMetricsPaginatedData,
+  },
+};
+
+export const valueStreamStageMetricsData = {
+  id: 'fake-path',
+  valueStreams: {
+    nodes: [
+      {
+        stages: [
+          {
+            id: 'gid://gitlab/Analytics::CycleAnalytics::Stage/104',
+            name: 'Cool stage',
+            metrics: {
+              items: {
+                edges: [
+                  {
+                    node: {
+                      duration: '16 hours',
+                      durationInMilliseconds: '58606000',
+                      endEventTimestamp: '2025-04-29T04:47:24Z',
+                      record: {
+                        __typename: 'Issue',
+                      },
+                      __typename: 'ValueStreamStageItems',
+                    },
+                    __typename: 'ValueStreamStageItemsEdge',
+                  },
+                  {
+                    node: {
+                      duration: '7 days',
+                      durationInMilliseconds: '668182000',
+                      endEventTimestamp: '2025-04-29T05:09:00Z',
+                      record: {
+                        __typename: 'Issue',
+                      },
+                      __typename: 'ValueStreamStageItems',
+                    },
+                    __typename: 'ValueStreamStageItemsEdge',
+                  },
+                ],
+                pageInfo: {
+                  ...defaultPageInfo,
+                  hasNextPage: false,
+                  endCursor: 'GL',
+                },
+                __typename: 'ValueStreamStageItemsConnection',
+              },
+              __typename: 'ValueStreamStageMetrics',
+            },
+            __typename: 'ValueStreamStage',
+          },
+        ],
+        __typename: 'ValueStream',
+      },
+    ],
+    __typename: 'ValueStreamConnection',
+  },
+};
+
+export const mockGroupValueStreamStageMetricsResponse = {
+  data: {
+    group: valueStreamStageMetricsData,
+  },
+};
+
+export const mockProjectValueStreamStageMetricsResponse = {
+  data: {
+    project: valueStreamStageMetricsData,
+  },
+};
+
+export const valueStreamStageMetricsNoData = {
+  id: 'fake-path',
+  valueStreams: {
+    nodes: [
+      {
+        stages: [
+          {
+            id: 'gid://gitlab/Analytics::CycleAnalytics::Stage/104',
+            name: 'Cool stage',
+            metrics: {
+              items: {
+                edges: [],
+                pageInfo: defaultPageInfo,
+                __typename: 'ValueStreamStageItemsConnection',
+              },
+              __typename: 'ValueStreamStageMetrics',
+            },
+            __typename: 'ValueStreamStage',
+          },
+        ],
+        __typename: 'ValueStream',
+      },
+    ],
+    __typename: 'ValueStreamConnection',
+  },
+};
+
+export const mockValueStreamStageMetricsNoDataResponse = {
+  data: {
+    group: valueStreamStageMetricsNoData,
+  },
+};

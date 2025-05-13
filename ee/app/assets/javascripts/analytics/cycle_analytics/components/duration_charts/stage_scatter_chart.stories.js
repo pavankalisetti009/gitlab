@@ -8,6 +8,8 @@ export default {
 };
 
 const stageTitle = 'VSA stage';
+const startDate = new Date('2023-09-06');
+const endDate = new Date('2023-10-05');
 
 const Template = (args, { argTypes }) => ({
   components: { StageScatterChart },
@@ -20,12 +22,16 @@ Default.args = {
   stageTitle,
   issuableType: TYPENAME_ISSUE,
   plottableData: stageScatterChartData,
+  startDate,
+  endDate,
 };
 
 export const Loading = Template.bind({});
 Loading.args = {
   stageTitle,
   isLoading: true,
+  startDate,
+  endDate,
 };
 
 export const NoData = Template.bind({});

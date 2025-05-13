@@ -18,6 +18,8 @@ import {
   generateFilterTextDescription,
   groupDurationsByDay,
   formatDurationOverviewChartData,
+  getValueStreamGraphQLId,
+  getValueStreamStageGraphQLId,
 } from 'ee/analytics/cycle_analytics/utils';
 import {
   TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
@@ -499,5 +501,21 @@ describe('Value Stream Analytics utils', () => {
         expect(str).toBe(text);
       },
     );
+  });
+
+  describe('getValueStreamGraphQLId', () => {
+    it(`returns the value stream's GraphQL ID as expected`, () => {
+      expect(getValueStreamGraphQLId(100)).toBe(
+        'gid://gitlab/Analytics::CycleAnalytics::ValueStream/100',
+      );
+    });
+  });
+
+  describe('getValueStreamStageGraphQLId', () => {
+    it(`returns the value stream stage's GraphQL ID as expected`, () => {
+      expect(getValueStreamStageGraphQLId(120)).toBe(
+        'gid://gitlab/Analytics::CycleAnalytics::Stage/120',
+      );
+    });
   });
 });

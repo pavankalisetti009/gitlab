@@ -1,0 +1,26 @@
+#import "~/graphql_shared/fragments/page_info.fragment.graphql"
+
+fragment ValueStreamStageMetrics on ValueStreamConnection {
+  nodes {
+    stages(id: $stageId) {
+      id
+      name
+      metrics(timeframe: { start: $startDate, end: $endDate }) {
+        items(sort: END_EVENT_ASC, first: 100, after: $endCursor) {
+          edges {
+            node {
+              durationInMilliseconds
+              endEventTimestamp
+              record {
+                __typename
+              }
+            }
+          }
+          pageInfo {
+            ...PageInfo
+          }
+        }
+      }
+    }
+  }
+}
