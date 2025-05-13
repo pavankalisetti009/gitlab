@@ -78,6 +78,7 @@ FactoryBot.define do
       end
     end
 
+    # has two metrics, one duplicated with :metrics above
     trait :metrics_alternate do
       after(:build) do |build|
         build.job_artifacts << build(:ee_ci_job_artifact, :metrics_alternate, job: build)
