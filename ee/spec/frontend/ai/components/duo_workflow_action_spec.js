@@ -72,8 +72,6 @@ describe('DuoWorkflowAction component', () => {
       agent_privileges: defaultProps.agentPrivileges,
     };
 
-    const pipelineHref = `<a href="${pipelinePath}">${pipelineId}</a>`;
-
     beforeEach(() => {
       createComponent();
     });
@@ -101,7 +99,7 @@ describe('DuoWorkflowAction component', () => {
             variant: 'success',
             data: mockPipelineData,
             renderMessageHTML: true,
-            message: expect.stringContaining(pipelineHref),
+            message: 'Workflow started successfully',
           }),
         );
       });

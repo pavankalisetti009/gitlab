@@ -69682,7 +69682,7 @@ msgstr ""
 msgid "Workflow"
 msgstr ""
 
-msgid "Workflow started successfully, pipeline: %{pipelineHref}"
+msgid "Workflow started successfully"
 msgstr ""
 
 msgid "Workspaces"
