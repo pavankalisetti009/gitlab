@@ -157,18 +157,20 @@ export default {
       </gl-alert>
 
       <header>
-        <h2 class="gl-text-size-h2">{{ s__('LearnGitLab|Quick start') }}</h2>
+        <div class="gl-flex gl-items-baseline gl-justify-between">
+          <h2 class="gl-text-size-h2">{{ s__('LearnGitLab|Quick start') }}</h2>
+          <gl-button
+            :disabled="disableEndTutorialButton"
+            category="tertiary"
+            data-testid="end-tutorial-button"
+            @click="handleEndTutorialClick"
+          >
+            {{ s__('LearnGitLab|End tutorial') }}
+          </gl-button>
+        </div>
         <p class="gl-mb-0 gl-text-subtle">
           {{ s__('LearnGitLab|Follow these steps to get familiar with the GitLab workflow.') }}
         </p>
-        <gl-button
-          :disabled="disableEndTutorialButton"
-          category="tertiary"
-          data-testid="end-tutorial-button"
-          @click="handleEndTutorialClick"
-        >
-          {{ s__('LearnGitLab|End tutorial') }}
-        </gl-button>
       </header>
 
       <gl-progress-bar :value="completionPercentage" data-testid="progress-bar" />
