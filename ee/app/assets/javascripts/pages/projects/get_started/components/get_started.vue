@@ -1,16 +1,20 @@
 <script>
-import { GlProgressBar, GlCard, GlSprintf, GlAlert } from '@gitlab/ui';
+import { GlButton, GlCard, GlProgressBar, GlSprintf, GlAlert } from '@gitlab/ui';
 import eventHub from '~/invite_members/event_hub';
 import eventHubNav from '~/super_sidebar/event_hub';
 import { INVITE_URL_TYPE } from 'ee/pages/projects/get_started/constants';
+import { InternalEvents } from '~/tracking';
+import { visitUrl } from '~/lib/utils/url_utility';
 import SectionHeader from './section_header.vue';
 import SectionBody from './section_body.vue';
 import DuoExtensions from './duo_extensions.vue';
 import RightSidebar from './right_sidebar.vue';
 
+const trackingMixin = InternalEvents.mixin();
 export default {
   name: 'GetStarted',
   components: {
+    GlButton,
     GlProgressBar,
     GlCard,
     GlSprintf,
@@ -20,6 +24,7 @@ export default {
     DuoExtensions,
     RightSidebar,
   },
+  mixins: [trackingMixin],
   props: {
     sections: {
       type: Array,
@@ -29,6 +34,10 @@ export default {
       type: String,
       required: true,
     },
+    tutorialEndPath: {
+      required: true,
+      type: String,
+    },
   },
   data() {
     return {
@@ -37,6 +46,7 @@ export default {
       expandedIndex: 0,
       totalActions: 0,
       completedActions: 0,
+      disableEndTutorialButton: false,
     };
   },
   computed: {
@@ -87,6 +97,17 @@ export default {
     },
     toggleExpand(index) {
       this.expandedIndex = this.expandedIndex === index ? null : index;
+    },
+    handleEndTutorialClick() {
+      this.disableEndTutorialButton = true;
+
+      this.trackEvent('click_end_tutorial_button', {
+        label: 'get_started',
+        property: 'progress_percentage_on_end',
+        value: this.completionPercentage,
+      });
+
+      visitUrl(this.tutorialEndPath);
     },
     calculateActionCounts() {
       this.totalActions = 0;
@@ -140,6 +161,14 @@ export default {
         <p class="gl-mb-0 gl-text-subtle">
           {{ s__('LearnGitLab|Follow these steps to get familiar with the GitLab workflow.') }}
         </p>
+        <gl-button
+          :disabled="disableEndTutorialButton"
+          category="tertiary"
+          data-testid="end-tutorial-button"
+          @click="handleEndTutorialClick"
+        >
+          {{ s__('LearnGitLab|End tutorial') }}
+        </gl-button>
       </header>
 
       <gl-progress-bar :value="completionPercentage" data-testid="progress-bar" />

@@ -9,7 +9,11 @@ module Onboarding
     end
 
     def attributes
-      ::Gitlab::Json.generate({ projectName: project.name, sections: sections })
+      ::Gitlab::Json.generate({
+        sections: sections,
+        tutorialEndPath: url_helpers.end_tutorial_project_get_started_path(project),
+        projectName: project.name
+      })
     end
 
     private

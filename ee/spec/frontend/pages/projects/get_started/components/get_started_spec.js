@@ -8,6 +8,13 @@ import eventHub from '~/invite_members/event_hub';
 import eventHubNav from '~/super_sidebar/event_hub';
 import DuoExtensions from 'ee/pages/projects/get_started/components/duo_extensions.vue';
 import RightSidebar from 'ee/pages/projects/get_started/components/right_sidebar.vue';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { visitUrl } from '~/lib/utils/url_utility';
+
+jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
+  visitUrl: jest.fn().mockName('visitUrlMock'),
+}));
 
 describe('GetStarted', () => {
   let wrapper;
@@ -35,6 +42,7 @@ describe('GetStarted', () => {
     wrapper = shallowMountExtended(GetStarted, {
       propsData: {
         sections: createSections(),
+        tutorialEndPath: '/group/project/-/get-started/end',
         ...props,
       },
       stubs: {
@@ -50,6 +58,7 @@ describe('GetStarted', () => {
   const findTitle = () => wrapper.find('h2');
   const findSuccessfulInvitationsAlert = () => wrapper.findComponent(GlAlert);
   const findRightSidebar = () => wrapper.findComponent(RightSidebar);
+  const findEndTutorialButton = () => wrapper.findByTestId('end-tutorial-button');
 
   describe('rendering', () => {
     beforeEach(() => {
@@ -141,6 +150,43 @@ describe('GetStarted', () => {
 
     it('renders the duo extension section', () => {
       expect(wrapper.findComponent(DuoExtensions).exists()).toBe(true);
+    });
+  });
+
+  describe('End tutorial button', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('should disable the button when clicked', async () => {
+      findEndTutorialButton().vm.$emit('click');
+
+      await nextTick();
+
+      expect(findEndTutorialButton().attributes('disabled')).toBeDefined();
+    });
+
+    it('should call visitUrl with the correct link when clicked', () => {
+      findEndTutorialButton().vm.$emit('click');
+
+      expect(visitUrl).toHaveBeenCalledWith('/group/project/-/get-started/end');
+    });
+
+    const { bindInternalEventDocument } = useMockInternalEventsTracking();
+    it('should call trackEvent when clicked', () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      findEndTutorialButton().vm.$emit('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_end_tutorial_button',
+        {
+          label: 'get_started',
+          property: 'progress_percentage_on_end',
+          value: 50,
+        },
+        undefined,
+      );
     });
   });
 
