@@ -44,6 +44,10 @@ module Resolvers
         default_value: ::Sbom::Source::DEFAULT_SOURCES.keys.map(&:to_s) + ['nil_source'],
         description: 'Filter dependencies by source type.'
 
+      argument :component_versions, [GraphQL::Types::String],
+        required: false,
+        description: 'Filter dependencies by component versions.'
+
       validates mutually_exclusive: [:component_names, :component_ids]
 
       alias_method :project_or_namespace, :object
