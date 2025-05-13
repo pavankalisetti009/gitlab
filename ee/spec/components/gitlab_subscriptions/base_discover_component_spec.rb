@@ -18,6 +18,7 @@ RSpec.describe GitlabSubscriptions::BaseDiscoverComponent, :aggregate_failures, 
         define_method(:hero_logo) { 'logo' } unless method_name == :hero_logo
         define_method(:hero_header_text) { 'hero_text' } unless method_name == :hero_header_text
         define_method(:buy_now_link) { 'some/link' } unless method_name == :buy_now_link
+        define_method(:cta_button_text) { 'Buy now' } unless method_name == :cta_button_text
         define_method(:hero_video) { 'some/video' } unless method_name == :hero_video
         define_method(:why_section_header_text) { 'header_text' } unless method_name == :why_section_header_text
 
@@ -49,6 +50,7 @@ RSpec.describe GitlabSubscriptions::BaseDiscoverComponent, :aggregate_failures, 
           :hero_logo,
           :hero_header_text,
           :buy_now_link,
+          :cta_button_text,
           :hero_video,
           :why_section_header_text,
           :core_feature_one_header_text,
@@ -63,6 +65,25 @@ RSpec.describe GitlabSubscriptions::BaseDiscoverComponent, :aggregate_failures, 
         it 'raises an error for the unimplemented method' do
           expect { component }.to raise_error(NoMethodError, 'This method must be implemented in a subclass')
         end
+      end
+    end
+
+    context 'with hero_tagline_text' do
+      let(:no_method_name) { nil }
+
+      it 'does not render hero tagline section by default' do
+        expect(component).not_to have_css('[data-testid="hero-tagline-text"]')
+      end
+
+      it 'renders hero tagline text when implementation returns a value' do
+        allow_next_instance_of(test_discover_class) do |instance|
+          allow(instance).to receive(:hero_tagline_text).and_return(
+            'New customers can get access to GitLab Premium with Duo'
+          )
+        end
+
+        expect(component).to have_css('[data-testid="hero-tagline-text"]',
+          text: 'New customers can get access to GitLab Premium with Duo')
       end
     end
 

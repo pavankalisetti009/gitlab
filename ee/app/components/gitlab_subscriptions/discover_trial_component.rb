@@ -201,7 +201,7 @@ module GitlabSubscriptions
       'md:gl-grid-cols-4'
     end
 
-    override :core_feature_one_header_text
+    override :core_feature_two_header_text
     def core_feature_two_header_text
       s_('TrialDiscover|Duo Enterprise')
     end

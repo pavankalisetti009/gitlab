@@ -9,7 +9,11 @@ module Groups
     urgency :low
 
     def show
-      render GitlabSubscriptions::DiscoverTrialComponent.new(namespace: @group)
+      if Feature.enabled?(:reveal_duo_core_feature, @group)
+        render GitlabSubscriptions::DiscoverDuoCoreTrialComponent.new(namespace: @group)
+      else
+        render GitlabSubscriptions::DiscoverTrialComponent.new(namespace: @group)
+      end
     end
 
     private

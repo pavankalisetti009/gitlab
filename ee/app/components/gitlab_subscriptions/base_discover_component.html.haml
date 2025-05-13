@@ -5,12 +5,15 @@
     = image_tag(hero_logo, class: "gl-w-full")
     %h2.gl-text-size-h1.gl-mb-5
       = hero_header_text
+    - if hero_tagline_text.present?
+      %p.gl-mb-2{ data: { testid: 'hero-tagline-text' } }
+        = hero_tagline_text
     .gl-flex.gl-gap-3.gl-flex-wrap.gl-flex-col.sm:gl-flex-row{ data: { testid: 'discover-header-actions' } }
       - if buy_now_link.present?
         = render Pajamas::ButtonComponent.new(href: buy_now_link,
           category: :primary, variant: :confirm,
           button_options: { data: { testid: 'buy-now-top', track_action: 'click_buy_now', track_label: trial_status_cta_label } }) do
-          = _('Buy now')
+          = cta_button_text
       .js-hand-raise-lead-trigger{ data: hand_raise_lead_data }
   = link_to hero_video, target: '_blank' do
     = image_tag(hero_thumbnail, class: 'gl-w-full gl-rounded-lg')
@@ -49,5 +52,5 @@
       category: :primary, variant: :confirm,
       button_options: { class: 'gl-w-full gl-mb-3 sm:gl-w-auto sm:gl-mr-3 sm:gl-mb-0',
       data: { testid: 'buy-now-bottom', track_action: 'click_buy_now', track_label: trial_status_cta_label } }) do
-      = _('Buy now')
+      = cta_button_text
   .js-hand-raise-lead-trigger{ data: hand_raise_lead_data }
