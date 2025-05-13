@@ -19670,7 +19670,8 @@ CREATE TABLE pages_domain_acme_orders (
     challenge_file_content text NOT NULL,
     encrypted_private_key text NOT NULL,
     encrypted_private_key_iv text NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_07cb634b65 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE pages_domain_acme_orders_id_seq
