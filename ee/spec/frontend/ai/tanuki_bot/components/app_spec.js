@@ -235,14 +235,9 @@ describeSkipVue3(skipReason, () => {
 
         expect(duoChat.props('slashCommands')).toEqual([
           {
-            description: 'Reset conversation and ignore previous messages.',
-            name: '/reset',
-            shouldSubmit: true,
-          },
-          {
-            description: 'Delete all messages in the current conversation.',
-            name: '/clear',
-            shouldSubmit: true,
+            description: 'New chat conversation.',
+            name: '/new',
+            shouldSubmit: false,
           },
           {
             description: 'Learn what Duo Chat can do.',
@@ -332,8 +327,8 @@ describeSkipVue3(skipReason, () => {
         question: '/troubleshoot',
         resourceId: 'command::1',
         projectId: null,
-        conversationType: null,
-        threadId: null,
+        conversationType: 'DUO_CHAT',
+        threadId: undefined,
       });
     });
   });
@@ -362,11 +357,9 @@ describeSkipVue3(skipReason, () => {
       });
 
       it.each([GENIE_CHAT_NEW_MESSAGE, GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
-        'resets chat state when "%s" command is sent and multi-thread is enabled',
+        'resets chat state when "%s" command is sent',
         async (command) => {
-          createComponent({
-            glFeatures: { duoChatMultiThread: true },
-          });
+          createComponent();
           findDuoChat().vm.$emit('send-chat-prompt', command);
           await nextTick();
 
@@ -380,7 +373,7 @@ describeSkipVue3(skipReason, () => {
         },
       );
 
-      it('does set loading to `true` for a message other than the reset or clear messages', () => {
+      it('does set loading to `true` unless a new chat is requested', () => {
         findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         expect(actionSpies.setLoading).toHaveBeenCalled();
       });
@@ -404,8 +397,8 @@ describeSkipVue3(skipReason, () => {
           question: MOCK_USER_MESSAGE.content,
           resourceId: MOCK_USER_ID,
           projectId: 'project-123',
-          conversationType: null,
-          threadId: null,
+          conversationType: 'DUO_CHAT',
+          threadId: undefined,
         });
       });
 
@@ -423,8 +416,8 @@ describeSkipVue3(skipReason, () => {
           question: MOCK_USER_MESSAGE.content,
           resourceId: MOCK_RESOURCE_ID,
           projectId: null,
-          conversationType: null,
-          threadId: null,
+          conversationType: 'DUO_CHAT',
+          threadId: undefined,
         });
       });
 
@@ -452,16 +445,6 @@ describeSkipVue3(skipReason, () => {
         );
       });
 
-      it.each([GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
-        'does not set loading to `true` for "%s" message in single-thread mode',
-        async (msg) => {
-          actionSpies.setLoading.mockReset();
-          findDuoChat().vm.$emit('send-chat-prompt', msg);
-          await nextTick();
-          expect(actionSpies.setLoading).not.toHaveBeenCalled();
-        },
-      );
-
       describe.each`
         resourceId          | expectedResourceId
         ${MOCK_RESOURCE_ID} | ${MOCK_RESOURCE_ID}
@@ -480,30 +463,11 @@ describeSkipVue3(skipReason, () => {
             question: MOCK_USER_MESSAGE.content,
             clientSubscriptionId: '123',
             projectId: null,
-            conversationType: null,
-            threadId: null,
+            conversationType: 'DUO_CHAT',
+            threadId: undefined,
           });
         });
       });
-
-      it.each([GENIE_CHAT_CLEAR_MESSAGE])(
-        'refetches the `aiMessages` if the prompt is "%s" and does not call addDuoChatMessage',
-        async (prompt) => {
-          createComponent();
-
-          await waitForPromises();
-
-          queryHandlerMock.mockClear();
-          actionSpies.addDuoChatMessage.mockClear();
-
-          findDuoChat().vm.$emit('send-chat-prompt', prompt);
-
-          await waitForPromises();
-
-          expect(queryHandlerMock).toHaveBeenCalled();
-          expect(actionSpies.addDuoChatMessage).not.toHaveBeenCalled();
-        },
-      );
 
       describe('tracking on mutation', () => {
         const expectedCategory = undefined;
@@ -858,29 +822,10 @@ describeSkipVue3(skipReason, () => {
     });
   });
 
-  describe('with duoChatMultiThread disabled', () => {
-    beforeEach(() => {
-      duoChatGlobalState.isShown = true;
-      createComponent({
-        glFeatures: { duoChatMultiThread: false },
-      });
-    });
-
-    it('includes all slash commands', async () => {
-      await waitForPromises();
-      const allCommands = findDuoChat().props().slashCommands;
-      expect(allCommands.some((cmd) => cmd.name === '/reset')).toBe(true);
-      expect(allCommands.some((cmd) => cmd.name === '/clear')).toBe(true);
-      expect(allCommands.some((cmd) => cmd.name === '/help')).toBe(true);
-    });
-  });
-
-  describe('with duoChatMultiThread enabled', () => {
+  describe('multi-threaded chat functionality', () => {
     beforeEach(async () => {
       duoChatGlobalState.isShown = true;
-      createComponent({
-        glFeatures: { duoChatMultiThread: true },
-      });
+      createComponent();
       await waitForPromises();
     });
 
@@ -910,9 +855,7 @@ describeSkipVue3(skipReason, () => {
 
       it('uses correct conversation type DUO_CHAT when sending a message and active thread exists', async () => {
         threadQueryHandlerMock.mockResolvedValue(mockMessagesData);
-        createComponent({
-          glFeatures: { duoChatMultiThread: true },
-        });
+        createComponent();
 
         findDuoChat().vm.$emit('thread-selected', { id: mockThreadId });
         await waitForPromises();
@@ -1008,9 +951,7 @@ describeSkipVue3(skipReason, () => {
         it('returns to thread list view', async () => {
           conversationThreadsQueryHandlerMock.mockResolvedValue(MOCK_THREADS_RESPONSE);
 
-          createComponent({
-            glFeatures: { duoChatMultiThread: true },
-          });
+          createComponent();
           const duoChat = findDuoChat();
           await waitForPromises();
 
@@ -1066,9 +1007,7 @@ describeSkipVue3(skipReason, () => {
               },
             },
           });
-          createComponent({
-            glFeatures: { duoChatMultiThread: true },
-          });
+          createComponent();
         });
 
         it('does not auto-select thread when in list view', async () => {
@@ -1092,9 +1031,7 @@ describeSkipVue3(skipReason, () => {
             },
           });
 
-          createComponent({
-            glFeatures: { duoChatMultiThread: true },
-          });
+          createComponent();
 
           const duoChat = findDuoChat();
 
@@ -1109,9 +1046,7 @@ describeSkipVue3(skipReason, () => {
 
           duoChatGlobalState.commands = [{ question: 'Button command' }];
 
-          createComponent({
-            glFeatures: { duoChatMultiThread: true },
-          });
+          createComponent();
 
           await waitForPromises();
 
@@ -1123,16 +1058,12 @@ describeSkipVue3(skipReason, () => {
 
   describe('aiConversationThreads query', () => {
     it.each`
-      isShown  | hasMultiThread | shouldSkip | description
-      ${false} | ${false}       | ${true}    | ${'when chat is hidden and multi-thread is disabled'}
-      ${false} | ${true}        | ${true}    | ${'when chat is hidden and multi-thread is enabled'}
-      ${true}  | ${false}       | ${true}    | ${'when chat is shown and multi-thread is disabled'}
-      ${true}  | ${true}        | ${false}   | ${'when chat is shown and multi-thread is enabled'}
-    `('skips query=$shouldSkip $description', async ({ isShown, hasMultiThread, shouldSkip }) => {
+      isShown  | shouldSkip | description
+      ${false} | ${true}    | ${'when chat is hidden'}
+      ${true}  | ${false}   | ${'when chat is shown'}
+    `('skips query=$shouldSkip $description', async ({ isShown, shouldSkip }) => {
       duoChatGlobalState.isShown = isShown;
-      createComponent({
-        glFeatures: { duoChatMultiThread: hasMultiThread },
-      });
+      createComponent();
       await waitForPromises();
 
       expect(conversationThreadsQueryHandlerMock).toHaveBeenCalledTimes(shouldSkip ? 0 : 1);
@@ -1141,14 +1072,11 @@ describeSkipVue3(skipReason, () => {
 
   describe('aiMessages query', () => {
     it.each`
-      hasMultiThread | expectedType  | description
-      ${false}       | ${null}       | ${'uses null conversation type when multi-thread is disabled'}
-      ${true}        | ${'DUO_CHAT'} | ${'uses DUO_CHAT conversation type when multi-thread is enabled'}
-    `('$description', async ({ hasMultiThread, expectedType }) => {
+      expectedType  | description
+      ${'DUO_CHAT'} | ${'uses DUO_CHAT conversation type'}
+    `('$description', async ({ expectedType }) => {
       duoChatGlobalState.isShown = true;
-      createComponent({
-        glFeatures: { duoChatMultiThread: hasMultiThread },
-      });
+      createComponent();
       await waitForPromises();
 
       expect(queryHandlerMock).toHaveBeenCalledWith(
@@ -1196,9 +1124,7 @@ describeSkipVue3(skipReason, () => {
     describe('duoChatGlobalState.isShown', () => {
       it('creates a new chat when Duo Chat is closed', async () => {
         duoChatGlobalState.isShown = true;
-        createComponent({
-          glFeatures: { duoChatMultiThread: true },
-        });
+        createComponent();
 
         const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
 
@@ -1211,9 +1137,7 @@ describeSkipVue3(skipReason, () => {
 
       it('does not create a new chat when Duo Chat is opened', async () => {
         duoChatGlobalState.isShown = false;
-        createComponent({
-          glFeatures: { duoChatMultiThread: true },
-        });
+        createComponent();
 
         const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
 
@@ -1227,9 +1151,7 @@ describeSkipVue3(skipReason, () => {
         duoChatGlobalState.isShown = false;
         duoChatGlobalState.commands = [{ question: 'Button command' }];
 
-        createComponent({
-          glFeatures: { duoChatMultiThread: true },
-        });
+        createComponent();
 
         const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
 
@@ -1245,9 +1167,7 @@ describeSkipVue3(skipReason, () => {
     describe('duoChatGlobalState.commands', () => {
       beforeEach(() => {
         duoChatGlobalState.isShown = true;
-        createComponent({
-          glFeatures: { duoChatMultiThread: true },
-        });
+        createComponent();
       });
 
       afterEach(() => {

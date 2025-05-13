@@ -32,13 +32,7 @@ export default {
         return false;
       }
 
-      // In single-threaded mode, we ignore threadId checks since the API still includes threadIds
-      // and they can change (e.g., on /clear). Only check threadId matching in multi-threaded mode.
-      if (!this.glFeatures?.duoChatMultiThread) {
-        return true;
-      }
-
-      // if we're running multi-threaded, check if the threadId is the same as the active thread
+      // check if the threadId is the same as the active thread
       return !threadId || threadId === this.activeThreadId;
     },
   },

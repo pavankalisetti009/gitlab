@@ -87,7 +87,7 @@ export default {
       query: getAiMessages,
       variables() {
         return {
-          conversationType: this.glFeatures.duoChatMultiThread ? 'DUO_CHAT' : null,
+          conversationType: 'DUO_CHAT',
         };
       },
       skip() {
@@ -106,7 +106,7 @@ export default {
     aiConversationThreads: {
       query: getAiConversationThreads,
       skip() {
-        return !this.duoChatGlobalState.isShown || !this.glFeatures.duoChatMultiThread;
+        return !this.duoChatGlobalState.isShown;
       },
       update(data) {
         return data?.aiConversationThreads?.nodes || [];
@@ -264,8 +264,10 @@ export default {
     onWindowResize() {
       this.updateDimensions();
     },
-    isClearOrResetMessage(question) {
-      return [GENIE_CHAT_CLEAR_MESSAGE, GENIE_CHAT_RESET_MESSAGE].includes(question);
+    shouldStartNewChat(question) {
+      return [GENIE_CHAT_NEW_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE, GENIE_CHAT_RESET_MESSAGE].includes(
+        question,
+      );
     },
     findPredefinedPrompt(question) {
       return this.formattedContextPresets.find(({ text }) => text === question);
@@ -332,25 +334,16 @@ export default {
       this.isResponseTracked = true;
     },
     onSendChatPrompt(question, variables = {}, resourceId = this.computedResourceId) {
-      const CHAT_RESET_COMMANDS = [
-        GENIE_CHAT_NEW_MESSAGE,
-        GENIE_CHAT_RESET_MESSAGE,
-        GENIE_CHAT_CLEAR_MESSAGE,
-      ];
-
-      // Create a new thread if chat is reset
-      if (this.glFeatures.duoChatMultiThread && CHAT_RESET_COMMANDS.includes(question)) {
+      if (this.shouldStartNewChat(question)) {
         this.onNewChat();
-
-        if (CHAT_RESET_COMMANDS.includes(question)) {
-          return;
-        }
+        return;
       }
+
       performance.mark('prompt-sent');
       this.completedRequestId = null;
       this.isResponseTracked = false;
 
-      if (!this.loading && !this.isClearOrResetMessage(question)) {
+      if (!this.loading) {
         this.setLoading(true);
       }
 
@@ -359,10 +352,8 @@ export default {
         resourceId,
         clientSubscriptionId: this.clientSubscriptionId,
         projectId: this.projectId,
-        threadId: this.glFeatures.duoChatMultiThread ? this.activeThread : null,
-        conversationType: this.glFeatures.duoChatMultiThread
-          ? MULTI_THREADED_CONVERSATION_TYPE
-          : null,
+        threadId: this.activeThread,
+        conversationType: MULTI_THREADED_CONVERSATION_TYPE,
         ...variables,
       };
 
@@ -378,27 +369,21 @@ export default {
           },
         })
         .then(({ data: { aiAction = {} } = {} }) => {
-          if (!this.isClearOrResetMessage(question)) {
-            const trackingOptions = {
-              property: aiAction.requestId,
-              label: this.findPredefinedPrompt(question)?.eventLabel,
-            };
+          const trackingOptions = {
+            property: aiAction.requestId,
+            label: this.findPredefinedPrompt(question)?.eventLabel,
+          };
 
-            this.trackEvent('submit_gitlab_duo_question', trackingOptions);
-          }
+          this.trackEvent('submit_gitlab_duo_question', trackingOptions);
 
           if (aiAction.threadId && !this.activeThread) {
             this.activeThread = aiAction.threadId;
           }
 
-          if ([GENIE_CHAT_CLEAR_MESSAGE].includes(question)) {
-            this.$apollo.queries.aiMessages.refetch();
-          } else {
-            this.addDuoChatMessage({
-              ...aiAction,
-              content: question,
-            });
-          }
+          this.addDuoChatMessage({
+            ...aiAction,
+            content: question,
+          });
         })
         .catch((err) => {
           this.addDuoChatMessage({
@@ -498,7 +483,7 @@ export default {
         :thread-list="aiConversationThreads"
         :multi-threaded-view="multithreadedView"
         :active-thread-id="activeThread"
-        :is-multithreaded="glFeatures.duoChatMultiThread"
+        :is-multithreaded="true"
         :slash-commands="aiSlashCommands"
         :title="chatTitle"
         :dimensions="dimensions"

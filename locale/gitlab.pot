@@ -20872,9 +20872,6 @@ msgstr ""
 msgid "Delete account"
 msgstr ""
 
-msgid "Delete all messages in the current conversation."
-msgstr ""
-
 msgid "Delete asset"
 msgstr ""
 
@@ -51340,9 +51337,6 @@ msgid "Reset"
 msgstr ""
 
 msgid "Reset approvals on push"
-msgstr ""
-
-msgid "Reset conversation and ignore previous messages."
 msgstr ""
 
 msgid "Reset error tracking access token"
