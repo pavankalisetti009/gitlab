@@ -53,16 +53,6 @@ RSpec.describe "Creating Issue", feature_category: :vulnerability_management do
         stub_licensed_features(security_dashboard: true)
       end
 
-      context 'when new_issue_attachment_from_vulnerability_bulk_action feature flag is disabled' do
-        before do
-          stub_feature_flags(new_issue_attachment_from_vulnerability_bulk_action: false)
-        end
-
-        it_behaves_like 'a mutation that returns top-level errors',
-          errors: ['The resource that you are attempting to access does not ' \
-            'exist or you don\'t have permission to perform this action']
-      end
-
       it "creates an issue" do
         expect do
           post_graphql_mutation(mutation, current_user: current_user)
