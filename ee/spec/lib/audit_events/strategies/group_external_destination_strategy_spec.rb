@@ -103,7 +103,8 @@ RSpec.describe AuditEvents::Strategies::GroupExternalDestinationStrategy, featur
             }
 
             expect(Gitlab::HTTP).to receive(:post).with(
-              an_instance_of(String), a_hash_including(headers: a_hash_including(expected_hash))
+              an_instance_of(String), a_hash_including(headers: a_hash_including(expected_hash),
+**::AuditEvents::HttpTimeoutConfig::DEFAULT)
             ).once
 
             subject
