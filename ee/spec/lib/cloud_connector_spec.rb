@@ -51,7 +51,6 @@ RSpec.describe ::CloudConnector, feature_category: :cloud_connector do
   describe '.ai_headers' do
     let(:expected_headers) do
       super().merge(
-        'X-Gitlab-Duo-Seat-Count' => '0',
         'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => namespace_ids.join(',')
       )
     end
@@ -61,18 +60,6 @@ RSpec.describe ::CloudConnector, feature_category: :cloud_connector do
     it_behaves_like 'building HTTP headers'
 
     subject(:headers) { described_class.ai_headers(user, namespace_ids: namespace_ids) }
-
-    context 'when Duo seats have been purchased' do
-      let(:user) { nil }
-
-      it 'sets the seat count header to the correct number of seats' do
-        expect(GitlabSubscriptions::AddOnPurchase).to(
-          receive(:maximum_duo_seat_count).with(namespace_ids: namespace_ids).and_return(5)
-        )
-
-        expect(headers).to include('X-Gitlab-Duo-Seat-Count' => '5')
-      end
-    end
   end
 
   describe '.self_managed_cloud_connected?' do
