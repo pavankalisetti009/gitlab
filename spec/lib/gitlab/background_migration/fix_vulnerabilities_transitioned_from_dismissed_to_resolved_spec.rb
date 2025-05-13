@@ -37,11 +37,12 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
   end
 
   let(:scanner) do
-    table(:vulnerability_scanners).create!(project_id: project.id, external_id: 'semgrep', name: 'Semgrep')
+    table(:vulnerability_scanners, database: :sec).create!(project_id: project.id, external_id: 'semgrep',
+      name: 'Semgrep')
   end
 
   let(:primary_identifier) do
-    table(:vulnerability_identifiers).create!(
+    table(:vulnerability_identifiers, database: :sec).create!(
       project_id: project.id,
       external_id: "CVE-2018-1234",
       external_type: "CVE",
@@ -50,10 +51,10 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
     )
   end
 
-  let(:vulnerability_findings) { table(:vulnerability_occurrences) }
-  let(:vulnerabilities) { table(:vulnerabilities) }
-  let(:vulnerability_reads) { table(:vulnerability_reads) }
-  let(:state_transitions) { table(:vulnerability_state_transitions) }
+  let(:vulnerability_findings) { table(:vulnerability_occurrences, database: :sec) }
+  let(:vulnerabilities) { table(:vulnerabilities, database: :sec) }
+  let(:vulnerability_reads) { table(:vulnerability_reads, database: :sec) }
+  let(:state_transitions) { table(:vulnerability_state_transitions, database: :sec) }
 
   let!(:affected_vulnerability_inside_group) { create_affected_vulnerability(project) }
   let!(:affected_vulnerability_outside_group) { create_affected_vulnerability(outside_project) }
