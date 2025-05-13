@@ -212,6 +212,7 @@ export const namespaceWorkItemsWithoutEpicSupport = {
   data: {
     workspace: {
       id: 'gid://gitlab/Group/14',
+      webUrl: 'http://127.0.0.1:3000/groups/flightjs',
       workItemTypes: {
         nodes: [
           {
