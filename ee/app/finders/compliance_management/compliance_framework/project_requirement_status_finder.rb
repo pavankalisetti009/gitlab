@@ -19,7 +19,7 @@ module ComplianceManagement
         # If records need to be filtered by project then we don't need inoperator optimization as we are already
         # dealing with just a single project.
         if project.present?
-          in_operator_scope
+          base_scope
         else
           records_for_group
         end
@@ -39,14 +39,14 @@ module ComplianceManagement
 
       def records_for_group
         Gitlab::Pagination::Keyset::InOperatorOptimization::QueryBuilder.new(
-          scope: in_operator_scope,
+          scope: base_scope,
           array_scope: group.self_and_descendant_ids,
           array_mapping_scope: model.method(:in_optimization_array_mapping_scope),
           finder_query: model.method(:in_optimization_finder_query)
         ).execute.limit(LIMIT)
       end
 
-      def in_operator_scope
+      def base_scope
         base_scope = model
         base_scope = filter_by_project(base_scope)
         base_scope = filter_by_requirement(base_scope)
