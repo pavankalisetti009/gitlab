@@ -38,6 +38,13 @@ export default {
       },
     },
   },
+  props: {
+    staticBreadcrumbs: {
+      type: Object,
+      default: () => ({ items: [] }),
+      required: false,
+    },
+  },
   data() {
     return {
       cadenceTitle: '',
@@ -69,7 +76,9 @@ export default {
         }
       });
 
-      return breadcrumbs;
+      const staticBreadcrumbs = this.staticBreadcrumbs.items;
+
+      return [...staticBreadcrumbs, ...breadcrumbs];
     },
   },
   methods: {
