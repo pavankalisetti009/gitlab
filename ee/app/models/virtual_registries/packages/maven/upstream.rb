@@ -36,9 +36,6 @@ module VirtualRegistries
         before_validation :set_cache_validity_hours_for_maven_central, if: :url?, on: :create
         after_validation :reset_credentials, if: -> { persisted? && url_changed? }
 
-        ignore_columns %i[encrypted_username encrypted_username_iv encrypted_password encrypted_password_iv],
-          remove_with: '18.1', remove_after: '2025-05-20'
-
         prevent_from_serialization(:username, :password) if respond_to?(:prevent_from_serialization)
 
         scope :eager_load_registry_upstream, ->(registry:) {
