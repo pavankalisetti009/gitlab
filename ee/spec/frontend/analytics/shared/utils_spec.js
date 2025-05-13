@@ -5,6 +5,7 @@ import {
   buildNullSeries,
   pairDataAndLabels,
   linearRegression,
+  transformFilters,
 } from 'ee/analytics/shared/utils';
 
 const rawValueStream = `{
@@ -476,6 +477,64 @@ describe('linearRegression', () => {
 
     lrResult.forEach(({ value }) => {
       expect(value).toBe(0);
+    });
+  });
+
+  describe('transformFilters', () => {
+    const rawFilters = {
+      author_username: 'root',
+      assignee_username: ['bob', 'smith'],
+      label_name: ['Brest', 'DLT'],
+      milestone_title: '16.4',
+    };
+
+    const transformedFilters = {
+      authorUsername: 'root',
+      assigneeUsernames: ['bob', 'smith'],
+      labelName: ['Brest', 'DLT'],
+      milestoneTitle: '16.4',
+    };
+
+    it('transforms the object keys as expected', () => {
+      expect(transformFilters({ filters: rawFilters })).toEqual(transformedFilters);
+    });
+
+    it('groups negated filters into a single `not` object', () => {
+      const originalNegatedFilters = {
+        'not[author_username]': 'john_smith',
+        'not[label_name]': ['Phant'],
+        'not[epic_id]': '4',
+      };
+
+      const negatedFilters = {
+        not: {
+          authorUsername: 'john_smith',
+          labelName: ['Phant'],
+          epicId: '4',
+        },
+      };
+
+      expect(
+        transformFilters({
+          filters: { ...rawFilters, ...originalNegatedFilters },
+        }),
+      ).toEqual({ ...transformedFilters, ...negatedFilters });
+    });
+
+    it('renames keys when new key names are provided', () => {
+      const renamedKeys = { labelName: 'labelNames', assigneeUsername: 'assigneeUsernames' };
+      const filters = { label_name: [], assignee_username: [], author_username: 'bob' };
+      const expectedFilters = { labelNames: [], assigneeUsernames: [], authorUsername: 'bob' };
+
+      expect(transformFilters({ filters, renamedKeys })).toEqual(expectedFilters);
+    });
+
+    it('drops keys as expected', () => {
+      const filters = { author_username: 'bob', project_ids: ['123', '345'] };
+      const expectedFilters = { authorUsername: 'bob' };
+      const dropKeys = ['project_ids'];
+
+      expect(transformFilters({ filters, dropKeys })).toEqual(expectedFilters);
     });
   });
 });

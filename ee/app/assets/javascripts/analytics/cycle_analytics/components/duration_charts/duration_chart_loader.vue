@@ -5,6 +5,8 @@ import { __, s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { getDurationChart } from 'ee/api/analytics_api';
 import { createAlert } from '~/alert';
+import { transformFilters } from 'ee/analytics/shared/utils';
+import { DEFAULT_RENAMED_FILTER_KEYS } from 'ee/analytics/shared/constants';
 import {
   getDurationOverviewChartData,
   getDurationChartData,
@@ -134,6 +136,16 @@ export default {
     async fetchScatterChartData(endCursor) {
       this.isLoadingScatterChart = true;
 
+      const filters = transformFilters({
+        filters: this.cycleAnalyticsRequestParams,
+        renamedKeys: {
+          labelName: 'labelNames',
+          'not[labelName]': 'not[labelNames]',
+          ...DEFAULT_RENAMED_FILTER_KEYS,
+        },
+        dropKeys: ['created_after', 'created_before', 'project_ids'],
+      });
+
       try {
         const { data } = await this.$apollo.query({
           query: getValueStreamStageMetricsQuery,
@@ -145,6 +157,7 @@ export default {
             startDate: this.createdAfter,
             endDate: this.createdBefore,
             endCursor,
+            ...filters,
           },
         });
 

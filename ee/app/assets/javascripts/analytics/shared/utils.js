@@ -1,4 +1,4 @@
-import { merge, cloneDeep, zip } from 'lodash';
+import { merge, cloneDeep, zip, isEmpty, mapKeys } from 'lodash';
 import { dateFormats } from '~/analytics/shared/constants';
 import { extractVSAFeaturesFromGON } from '~/analytics/shared/utils';
 import dateFormat from '~/lib/dateformat';
@@ -8,7 +8,11 @@ import {
   roundOffFloat,
 } from '~/lib/utils/common_utils';
 import { getDateInFuture, newDate } from '~/lib/utils/datetime/date_calculation_utility';
-import { DEFAULT_NULL_SERIES_OPTIONS, DEFAULT_SERIES_DATA_OPTIONS } from './constants';
+import {
+  DEFAULT_NULL_SERIES_OPTIONS,
+  DEFAULT_SERIES_DATA_OPTIONS,
+  DEFAULT_RENAMED_FILTER_KEYS,
+} from './constants';
 
 export const formattedDate = (d) => dateFormat(d, dateFormats.defaultDate);
 
@@ -355,4 +359,60 @@ export const linearRegression = (timeSeriesData, forecastAmount = 30, rounding =
       rounding,
     }),
   }));
+};
+
+/**
+ * Returns an object with renamed filter keys.
+ *
+ * @param {Object} filters - Filters with keys to be renamed
+ * @param {Object} newKeys - Map of old keys to new keys
+ *
+ * @returns {Object}
+ */
+const renameFilterKeys = (filters, newKeys) =>
+  mapKeys(filters, (value, key) => newKeys[key] ?? key);
+
+/**
+ * This util method takes the global page filters and transforms parameters which
+ * are not standardized between the REST API and the GraphQL API.
+ *
+ * @param {Object} filters - the global filters used to fetch data
+ * @param {Object} renamedKeys - map of keys to be renamed
+ * @param {Array} dropKeys - array of keys to be deleted
+ *
+ * @returns {Object} - the transformed filters for the GraphQL API
+ */
+export const transformFilters = ({
+  filters = {},
+  renamedKeys = DEFAULT_RENAMED_FILTER_KEYS,
+  dropKeys = [],
+} = {}) => {
+  let formattedFilters = convertObjectPropsToCamelCase(filters, {
+    deep: true,
+    dropKeys,
+  });
+
+  if (!isEmpty(renamedKeys)) {
+    formattedFilters = renameFilterKeys(formattedFilters, renamedKeys);
+  }
+
+  const newFilters = {};
+
+  Object.entries(formattedFilters).forEach(([key, val]) => {
+    const negatedFilterMatch = key.match(/^not\[(.+)\]/);
+
+    if (negatedFilterMatch) {
+      const negatedFilterKey = negatedFilterMatch[1];
+
+      if (!newFilters.not) {
+        newFilters.not = {};
+      }
+
+      Object.assign(newFilters.not, { [negatedFilterKey]: val });
+    } else {
+      newFilters[key] = val;
+    }
+  });
+
+  return newFilters;
 };
