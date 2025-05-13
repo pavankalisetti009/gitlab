@@ -7,130 +7,176 @@ module ConstructSecurityPolicies
   POLICY_YAML_ATTRIBUTES = %i[name description enabled actions rules approval_settings policy_scope
     fallback_behavior metadata policy_tuning].freeze
 
-  def construct_vulnerability_management_policies(policies)
+  def construct_scan_result_policies(policies)
     policies.map do |policy|
-      {
-        name: policy[:name],
-        description: policy[:description],
-        edit_path: edit_path(policy, :vulnerability_management_policy),
-        enabled: policy[:enabled],
-        policy_scope: policy_scope(policy[:policy_scope]),
-        yaml: YAML.dump(
-          policy.slice(:name, :description, :enabled, :rules, :actions, :policy_scope).deep_stringify_keys
-        ),
-        updated_at: policy[:config].policy_last_updated_at,
-        source: {
-          project: policy[:project],
-          namespace: policy[:namespace],
-          inherited: policy[:inherited]
-        }
-      }
-    end
-  end
-
-  def construct_pipeline_execution_policies(policies)
-    policies.map do |policy|
-      warnings = []
-      {
-        name: policy[:name],
-        description: policy[:description],
-        edit_path: edit_path(policy, :pipeline_execution_policy),
-        policy_blob_file_path: policy_blob_file_path(policy, warnings),
-        enabled: policy[:enabled],
-        policy_scope: policy_scope(policy[:policy_scope]),
-        yaml: YAML.dump(
-          policy.slice(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope, :metadata,
-            :suffix, :skip_ci).deep_stringify_keys
-        ),
-        updated_at: policy[:config].policy_last_updated_at,
-        source: {
-          project: policy[:project],
-          namespace: policy[:namespace],
-          inherited: policy[:inherited]
-        },
-        warnings: warnings
-      }
-    end
-  end
-
-  def construct_pipeline_execution_schedule_policies(policies)
-    policies.map do |policy|
-      warnings = []
-      {
-        name: policy[:name],
-        description: policy[:description],
-        edit_path: edit_path(policy, :pipeline_execution_schedule_policy),
-        policy_blob_file_path: policy_blob_file_path(policy, warnings),
-        enabled: policy[:enabled],
-        policy_scope: policy_scope(policy[:policy_scope]),
-        yaml: YAML.dump(
-          policy.slice(
-            :name,
-            :description,
-            :enabled,
-            :content,
-            :schedules,
-            :policy_scope,
-            :metadata
-          ).deep_stringify_keys
-        ),
-        updated_at: policy[:config].policy_last_updated_at,
-        source: {
-          project: policy[:project],
-          namespace: policy[:namespace],
-          inherited: policy[:inherited]
-        },
-        warnings: warnings
-      }
+      construct_scan_result_policy(policy)
     end
   end
 
   def construct_scan_execution_policies(policies)
     policies.map do |policy|
-      {
-        name: policy[:name],
-        description: policy[:description],
-        edit_path: edit_path(policy, :scan_execution_policy),
-        enabled: policy[:enabled],
-        policy_scope: policy_scope(policy[:policy_scope]),
-        yaml: YAML.dump(policy.slice(*POLICY_YAML_ATTRIBUTES, :skip_ci).deep_stringify_keys),
-        updated_at: policy[:config].policy_last_updated_at,
-        deprecated_properties: deprecated_properties(policy),
-        source: {
-          project: policy[:project],
-          namespace: policy[:namespace],
-          inherited: policy[:inherited]
-        }
-      }
+      construct_scan_execution_policy(policy)
     end
   end
 
-  def construct_scan_result_policies(policies)
+  def construct_pipeline_execution_policies(policies)
     policies.map do |policy|
-      approvers = approvers(policy)
-      scan_result_policy = {
-        name: policy[:name],
-        description: policy[:description],
-        edit_path: edit_path(policy, :approval_policy),
-        enabled: policy[:enabled],
-        policy_scope: policy_scope(policy[:policy_scope]),
-        yaml: YAML.dump(policy.slice(*POLICY_YAML_ATTRIBUTES).deep_stringify_keys),
-        updated_at: policy[:config].policy_last_updated_at,
-        user_approvers: approvers[:users],
-        action_approvers: approvers[:approvers],
-        all_group_approvers: approvers[:all_groups],
-        role_approvers: approvers[:roles],
-        custom_roles: approvers[:custom_roles],
-        deprecated_properties: deprecated_properties(policy),
-        source: {
-          project: policy[:project],
-          namespace: policy[:namespace],
-          inherited: policy[:inherited]
-        }
-      }
-
-      scan_result_policy
+      construct_pipeline_execution_policy(policy)
     end
+  end
+
+  def construct_pipeline_execution_schedule_policies(policies)
+    policies.map do |policy|
+      construct_pipeline_execution_schedule_policy(policy)
+    end
+  end
+
+  def construct_vulnerability_management_policies(policies)
+    policies.map do |policy|
+      construct_vulnerability_management_policy(policy)
+    end
+  end
+
+  def construct_scan_result_policy(policy, with_policy_attributes = false)
+    approvers = approvers(policy)
+
+    policy_attributes = {
+      action_approvers: approvers[:approvers],
+      all_group_approvers: approvers[:all_groups],
+      custom_roles: approvers[:custom_roles],
+      deprecated_properties: deprecated_properties(policy),
+      role_approvers: approvers[:roles],
+      source: {
+        project: policy[:project],
+        namespace: policy[:namespace],
+        inherited: policy[:inherited]
+      },
+      user_approvers: approvers[:users]
+    }
+
+    policy_hash = {
+      name: policy[:name],
+      description: policy[:description],
+      edit_path: edit_path(policy, :approval_policy),
+      enabled: policy[:enabled],
+      policy_scope: policy_scope(policy[:policy_scope]),
+      yaml: YAML.dump(policy.slice(*POLICY_YAML_ATTRIBUTES).deep_stringify_keys),
+      updated_at: policy[:config].policy_last_updated_at
+    }
+
+    policy_hash.merge(policy_specific_attributes(policy[:type], policy_attributes, with_policy_attributes))
+  end
+
+  def construct_scan_execution_policy(policy, with_policy_attributes = false)
+    policy_attributes = {
+      deprecated_properties: deprecated_properties(policy),
+      source: {
+        project: policy[:project],
+        namespace: policy[:namespace],
+        inherited: policy[:inherited]
+      }
+    }
+
+    policy_hash = {
+      name: policy[:name],
+      description: policy[:description],
+      edit_path: edit_path(policy, :scan_execution_policy),
+      enabled: policy[:enabled],
+      policy_scope: policy_scope(policy[:policy_scope]),
+      yaml: YAML.dump(policy.slice(*POLICY_YAML_ATTRIBUTES, :skip_ci).deep_stringify_keys),
+      updated_at: policy[:config].policy_last_updated_at
+    }
+
+    policy_hash.merge(policy_specific_attributes(policy[:type], policy_attributes, with_policy_attributes))
+  end
+
+  def construct_pipeline_execution_schedule_policy(policy, with_policy_attributes = false)
+    warnings = []
+
+    policy_attributes = {
+      source: {
+        project: policy[:project],
+        namespace: policy[:namespace],
+        inherited: policy[:inherited]
+      },
+      policy_blob_file_path: policy_blob_file_path(policy, warnings),
+      warnings: warnings
+    }
+
+    policy_hash = {
+      name: policy[:name],
+      description: policy[:description],
+      edit_path: edit_path(policy, :pipeline_execution_schedule_policy),
+      enabled: policy[:enabled],
+      policy_scope: policy_scope(policy[:policy_scope]),
+      yaml: YAML.dump(
+        policy.slice(
+          :name,
+          :description,
+          :enabled,
+          :content,
+          :schedules,
+          :policy_scope,
+          :metadata
+        ).deep_stringify_keys
+      ),
+      updated_at: policy[:config].policy_last_updated_at
+    }
+
+    policy_hash.merge(policy_specific_attributes(policy[:type], policy_attributes, with_policy_attributes))
+  end
+
+  def construct_pipeline_execution_policy(policy, with_policy_attributes = false)
+    warnings = []
+
+    policy_attributes = {
+      source: {
+        project: policy[:project],
+        namespace: policy[:namespace],
+        inherited: policy[:inherited]
+      },
+      policy_blob_file_path: policy_blob_file_path(policy, warnings),
+      warnings: warnings
+    }
+
+    policy_hash = {
+      name: policy[:name],
+      description: policy[:description],
+      edit_path: edit_path(policy, :pipeline_execution_policy),
+      enabled: policy[:enabled],
+      policy_scope: policy_scope(policy[:policy_scope]),
+      yaml: YAML.dump(
+        policy.slice(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope, :metadata,
+          :suffix, :skip_ci).deep_stringify_keys
+      ),
+      updated_at: policy[:config].policy_last_updated_at
+    }
+
+    policy_hash.merge(policy_specific_attributes(policy[:type], policy_attributes, with_policy_attributes))
+  end
+
+  def construct_vulnerability_management_policy(policy, with_policy_attributes = false)
+    policy_attributes = {
+      source: {
+        project: policy[:project],
+        namespace: policy[:namespace],
+        inherited: policy[:inherited]
+      }
+    }
+
+    policy_hash = {
+      name: policy[:name],
+      description: policy[:description],
+      edit_path: edit_path(policy, :vulnerability_management_policy),
+      enabled: policy[:enabled],
+      policy_scope: policy_scope(policy[:policy_scope]),
+      yaml: YAML.dump(
+        policy.slice(:name, :description, :enabled, :rules, :actions, :policy_scope).deep_stringify_keys
+      ),
+      updated_at: policy[:config].policy_last_updated_at
+    }
+
+    policy_hash.merge(policy_specific_attributes(policy[:type], policy_attributes, with_policy_attributes))
   end
 
   def approvers(policy)
@@ -180,5 +226,13 @@ module ConstructSecurityPolicies
     return unless content_include && content_include[:project]
 
     Project.find_by_full_path(content_include[:project])
+  end
+
+  def policy_specific_attributes(type, policy_attributes, with_policy_attributes)
+    if with_policy_attributes # for when querying generic policies
+      { type: type, policy_attributes: policy_attributes.merge(type: type) }
+    else # for when querying a specific policy type
+      policy_attributes
+    end
   end
 end
