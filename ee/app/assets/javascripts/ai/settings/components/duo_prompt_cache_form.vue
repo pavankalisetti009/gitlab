@@ -1,8 +1,7 @@
 <script>
-import { GlSprintf, GlFormCheckbox, GlPopover } from '@gitlab/ui';
+import { GlSprintf, GlFormCheckbox, GlPopover, GlLink } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { s__, __ } from '~/locale';
-import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 
 export default {
   name: 'DuoPromptCacheForm',
@@ -21,7 +20,7 @@ export default {
     GlSprintf,
     GlFormCheckbox,
     GlPopover,
-    PromoPageLink,
+    GlLink,
   },
   inject: ['arePromptCacheSettingsAllowed'],
   props: {
@@ -62,9 +61,9 @@ export default {
       <template #help>
         <gl-sprintf :message="$options.i18n.checkboxHelpText">
           <template #link="{ content }">
-            <promo-page-link :path="$options.promptCacheHelpPath" target="_blank">
+            <gl-link :href="$options.promptCacheHelpPath" target="_blank">
               {{ content }}
-            </promo-page-link>
+            </gl-link>
           </template>
         </gl-sprintf>
       </template>
