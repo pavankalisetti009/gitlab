@@ -73184,6 +73184,9 @@ msgstr ""
 msgid "must contain only a mastodon handle."
 msgstr ""
 
+msgid "must contain only a orcid ID."
+msgstr ""
+
 msgid "must have a repository"
 msgstr ""
 
