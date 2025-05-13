@@ -29,10 +29,6 @@ module Mutations
       def resolve(vulnerability_ids:, project:)
         project = authorized_find!(id: project)
 
-        unless Feature.enabled?(:new_issue_attachment_from_vulnerability_bulk_action, project)
-          raise_resource_not_available_error!
-        end
-
         issue_result = create_issue(project)
 
         return { errors: [issue_result[:message]] } if issue_result.error?
