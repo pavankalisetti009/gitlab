@@ -6,10 +6,17 @@ module Search
       include Search::Elastic::DocumentType
 
       DEFAULT_LIMIT_PER_ITERATION = 1_000
+      QUEUE_THRESHOLD = 50_000
 
       def migrate
         if completed?
           log 'Migration is completed'
+
+          return
+        end
+
+        if queue_full?
+          log 'Migration is throttled due to full queue'
 
           return
         end
@@ -41,7 +48,15 @@ module Search
         raise NotImplementedError
       end
 
+      def bookkeeping_service
+        ::Elastic::ProcessInitialBookkeepingService
+      end
+
       private
+
+      def queue_full?
+        bookkeeping_service.queue_size > QUEUE_THRESHOLD
+      end
 
       def limit_indexing?
         respect_limited_indexing? && ::Gitlab::CurrentSettings.elasticsearch_limit_indexing?
@@ -81,7 +96,7 @@ module Search
 
             documents.select!(&:maintaining_elasticsearch?) if limit_indexing?
 
-            ::Elastic::ProcessInitialBookkeepingService.track!(*documents)
+            bookkeeping_service.track!(*documents)
             set_migration_state(current_id: max_id)
           end
         end

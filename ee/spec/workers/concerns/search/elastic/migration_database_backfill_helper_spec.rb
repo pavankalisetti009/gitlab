@@ -77,6 +77,34 @@ RSpec.describe Search::Elastic::MigrationDatabaseBackfillHelper, :elastic, featu
 
         expect(migration.completed?).to be_truthy
       end
+
+      context 'when queue is full' do
+        before do
+          allow(migration.bookkeeping_service).to receive(:queue_size).and_return(described_class::QUEUE_THRESHOLD + 1)
+        end
+
+        it 'does not process documents' do
+          expect(::Elastic::ProcessInitialBookkeepingService).not_to receive(:track!)
+
+          migration.migrate
+
+          expect(migration.completed?).to be_falsey
+        end
+      end
+    end
+  end
+
+  describe '#bookkeeping_service' do
+    let(:migration_class) do
+      Class.new do
+        include ::Search::Elastic::MigrationDatabaseBackfillHelper
+      end
+    end
+
+    subject(:migration) { migration_class.new }
+
+    it 'returns the ProcessInitialBookkeepingService by default' do
+      expect(migration.bookkeeping_service).to eq(::Elastic::ProcessInitialBookkeepingService)
     end
   end
 end
