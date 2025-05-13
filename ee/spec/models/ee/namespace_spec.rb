@@ -1167,6 +1167,59 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#has_active_add_on_purchase?' do
+    let!(:duo_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+
+    context 'when current namespace has duo enterprise add_on' do
+      let_it_be(:namespace) { create(:namespace) }
+      let!(:purchase) do
+        create(:gitlab_subscription_add_on_purchase,
+          namespace: namespace,
+          add_on: duo_add_on)
+      end
+
+      it 'has active duo enterprise add_on' do
+        expect(namespace.has_active_add_on_purchase?(:duo_enterprise)).to be_truthy
+      end
+    end
+
+    context 'when current namespace has no duo enterprise add_on' do
+      let_it_be(:namespace) { create(:namespace) }
+
+      it 'has no active duo enterprise add_on' do
+        expect(namespace.has_active_add_on_purchase?(:duo_enterprise)).to be_falsey
+      end
+    end
+
+    context 'when current namespace has expired duo enterprise add_on' do
+      let_it_be(:namespace) { create(:namespace) }
+      let!(:purchase) do
+        create(:gitlab_subscription_add_on_purchase,
+          expires_on: 1.day.ago,
+          namespace: namespace,
+          add_on: duo_add_on)
+      end
+
+      it 'has no active duo enterprise add_on' do
+        expect(namespace.has_active_add_on_purchase?(:duo_enterprise)).to be_falsey
+      end
+    end
+
+    context 'when parent namespace has active duo enterprise add_on' do
+      let_it_be(:parent) { create(:group) }
+      let_it_be(:namespace) { create(:group, parent: parent) }
+      let!(:purchase) do
+        create(:gitlab_subscription_add_on_purchase,
+          namespace: parent,
+          add_on: duo_add_on)
+      end
+
+      it 'has active duo enterprise add_on' do
+        expect(namespace.has_active_add_on_purchase?(:duo_enterprise)).to be_truthy
+      end
+    end
+  end
+
   describe '#billable_members_count' do
     let(:user) { create(:user) }
 

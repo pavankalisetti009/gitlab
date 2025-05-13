@@ -15,6 +15,7 @@ RSpec.describe 'projects/settings/merge_requests/show', feature_category: :code_
   describe 'Duo Code Review' do
     before do
       allow(project.project_setting).to receive(:duo_features_enabled?).and_return(duo_enabled)
+      allow(project.namespace).to receive(:has_active_add_on_purchase?).and_return(true)
     end
 
     context 'when Duo Code Review is enabled' do
