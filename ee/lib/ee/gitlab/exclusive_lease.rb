@@ -16,15 +16,6 @@ module EE
         end
       end
       # rubocop: enable Gitlab/ModuleWithInstanceVariables
-
-      # Returns true if the UUID for the key hasn't changed.
-      # rubocop: disable Gitlab/ModuleWithInstanceVariables
-      def same_uuid?
-        ::Gitlab::Redis::SharedState.with do |redis|
-          redis.get(@redis_shared_state_key) == @uuid
-        end
-      end
-      # rubocop: enable Gitlab/ModuleWithInstanceVariables
     end
   end
 end
