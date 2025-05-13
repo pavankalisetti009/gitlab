@@ -5,14 +5,9 @@ export const MOCK_SLASH_COMMANDS = {
   data: {
     aiSlashCommands: [
       {
-        description: 'Reset conversation and ignore previous messages.',
-        name: '/reset',
-        shouldSubmit: true,
-      },
-      {
-        description: 'Delete all messages in the current conversation.',
-        name: '/clear',
-        shouldSubmit: true,
+        description: 'New chat conversation.',
+        name: '/new',
+        shouldSubmit: false,
       },
       {
         description: 'Learn what Duo Chat can do.',

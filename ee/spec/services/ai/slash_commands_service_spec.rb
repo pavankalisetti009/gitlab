@@ -168,16 +168,5 @@ RSpec.describe Ai::SlashCommandsService, feature_category: :duo_chat do
 
       it_behaves_like 'returns only base commands'
     end
-
-    context 'when duo_chat_multi_thread is disabled' do
-      let(:url) { nil }
-
-      it 'returns deprecated commands' do
-        stub_feature_flags(duo_chat_multi_thread: false)
-
-        expect(available_commands.pluck(:name)).to include('/reset', '/clear')
-        expect(available_commands.pluck(:name)).not_to include('/new')
-      end
-    end
   end
 end

@@ -49,7 +49,6 @@ describe('Ai Response Subscriptions', () => {
       },
       provide: {
         glFeatures: {
-          duoChatMultiThread: false,
           ...provide.glFeatures,
         },
       },
@@ -84,15 +83,12 @@ describe('Ai Response Subscriptions', () => {
     eventName,
     isStream = false,
     threadId = 'thread-1',
-    multiThread = false,
     shouldEmit = true,
   }) => {
     const requestId = '123';
     const response = createResponseData(requestId, threadId, isStream);
 
-    createComponent({
-      provide: { glFeatures: { duoChatMultiThread: multiThread } },
-    });
+    createComponent();
     await waitForPromises();
 
     const subscription = isStream ? mockSubscriptionStream : mockSubscriptionComplete;
@@ -149,21 +145,12 @@ describe('Ai Response Subscriptions', () => {
         expect(emittedEvents[0]).toEqual([requestId]);
       });
 
-      it('does not emit message-stream event when in multi-threaded mode and threadId does not match', () => {
+      it('does not emit message-stream event when threadId does not match', () => {
         return testMessageEmission({
           eventName: 'message-stream',
           isStream: true,
           threadId: 'thread-2',
-          multiThread: true,
           shouldEmit: false,
-        });
-      });
-
-      it('does emit message-stream event when in single-threaded mode and threadId does not match', () => {
-        return testMessageEmission({
-          eventName: 'message-stream',
-          isStream: true,
-          threadId: 'thread-2',
         });
       });
     });
@@ -173,19 +160,11 @@ describe('Ai Response Subscriptions', () => {
         return testMessageEmission({ eventName: 'message' });
       });
 
-      it('does not emit message event when in multi-threaded mode and threadId does not match', () => {
+      it('does not emit message event when threadId does not match', () => {
         return testMessageEmission({
           eventName: 'message',
           threadId: 'thread-2',
-          multiThread: true,
           shouldEmit: false,
-        });
-      });
-
-      it('does emit message event when in single-threaded mode and threadId does not match', () => {
-        return testMessageEmission({
-          eventName: 'message',
-          threadId: 'thread-2',
         });
       });
     });

@@ -12,17 +12,7 @@ module Ai
         relation = current_user.ai_conversation_threads
         relation = by_id(relation)
         relation = by_conversation_type(relation)
-        relation = relation.ordered
-
-        # When requesting duo_chat threads but none exist,
-        # attempt to copy latest duo_chat_legacy type thread as a duo_chat thread.
-        if copy_legacy_thread?(relation)
-          legacy_thread = current_user.ai_conversation_threads.duo_chat_legacy.last
-          legacy_thread.dup_as_duo_chat_thread! if legacy_thread
-          ::Ai::Conversation::LegacyDuoChatCopiedUser.add(current_user.id)
-        end
-
-        relation
+        relation.ordered
       end
 
       private
@@ -39,13 +29,6 @@ module Ai
         return relation unless params[:conversation_type]
 
         relation.for_conversation_type(params[:conversation_type])
-      end
-
-      def copy_legacy_thread?(relation)
-        params[:conversation_type] == 'duo_chat' &&
-          params[:id].nil? &&
-          relation.empty? &&
-          !::Ai::Conversation::LegacyDuoChatCopiedUser.include?(current_user.id) # rubocop:disable Rails/NegateInclude -- no exclude method
       end
     end
   end

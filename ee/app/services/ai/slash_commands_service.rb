@@ -46,18 +46,9 @@ module Ai
     private
 
     def new_thread_commands
-      if Feature.enabled?(:duo_chat_multi_thread, @user)
-        [
-          { name: '/new', description: _('New chat conversation.'), should_submit: false }
-        ]
-      else
-        [
-          { name: '/reset', description: _('Reset conversation and ignore previous messages.'),
-            should_submit: true },
-          { name: '/clear', description: _('Delete all messages in the current conversation.'),
-            should_submit: true }
-        ]
-      end
+      [
+        { name: '/new', description: _('New chat conversation.'), should_submit: false }
+      ]
     end
 
     def context_commands
