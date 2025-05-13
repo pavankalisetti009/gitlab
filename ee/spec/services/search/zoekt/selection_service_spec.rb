@@ -103,12 +103,13 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
 
     context 'with available nodes selection' do
       let_it_be(:eligible_node) { create(:zoekt_node, :enough_free_space) }
+      let_it_be(:eligible_node2) { create(:zoekt_node, :not_enough_free_space) }
       let_it_be(:offline_node) { create(:zoekt_node, :offline, :enough_free_space) }
       # Node with no unclaimed storage.
       let_it_be(:no_storage_node) { create(:zoekt_node, total_bytes: 100.gigabytes, used_bytes: 100.gigabytes) }
 
-      it 'returns only online nodes with positive unclaimed storage bytes' do
-        expect(resource_pool.nodes).to include(eligible_node)
+      it 'returns only online nodes with positive unclaimed storage bytes in ordered by unclaimed_storage_bytes' do
+        expect(resource_pool.nodes.to_a).to eq([eligible_node2, eligible_node])
         expect(resource_pool.nodes).not_to include(no_storage_node, offline_node)
       end
     end

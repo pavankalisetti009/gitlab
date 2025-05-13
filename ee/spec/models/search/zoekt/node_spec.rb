@@ -228,6 +228,15 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         end
       end
     end
+
+    describe '.order_by_unclaimed_space' do
+      let_it_be(:node2) { create(:zoekt_node, :enough_free_space) }
+      let_it_be(:node3) { create(:zoekt_node, :not_enough_free_space) }
+
+      it 'returns nodes with positive unclaimed storage_bytes in ascending order' do
+        expect(described_class.order_by_unclaimed_space.to_a).to eq([node3, node2])
+      end
+    end
   end
 
   describe '.find_or_initialize_by_task_request', :freeze_time do

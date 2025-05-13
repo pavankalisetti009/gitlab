@@ -2,12 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe Search::Zoekt::PlanningService, feature_category: :global_search do
+RSpec.describe Search::Zoekt::PlanningService, :freeze_time, feature_category: :global_search do
   let_it_be(:group1) { create(:group) }
   let_it_be(:enabled_namespace1) { create(:zoekt_enabled_namespace, namespace: group1) }
   let_it_be(:group2) { create(:group) }
   let_it_be(:enabled_namespace2) { create(:zoekt_enabled_namespace, namespace: group2) }
-  let_it_be_with_reload(:nodes) { create_list(:zoekt_node, 5, total_bytes: 100.gigabytes, used_bytes: 90.gigabytes) }
+  let_it_be(:_) { create_list(:zoekt_node, 5, total_bytes: 100.gigabytes, used_bytes: 90.gigabytes) }
+  let_it_be(:nodes) { Search::Zoekt::Node.order_by_unclaimed_space.online }
   let_it_be(:projects_namespace1) do
     [
       create(:project, namespace: group1, statistics: create(:project_statistics, repository_size: 1.gigabyte)),
@@ -89,7 +90,7 @@ RSpec.describe Search::Zoekt::PlanningService, feature_category: :global_search 
       let(:num_replicas) { 1 }
 
       before do
-        nodes.map { |node| node.update!(total_bytes: 10.gigabytes, used_bytes: 3.gigabytes) }
+        create(:project, namespace: group1, statistics: create(:project_statistics, repository_size: 2.gigabytes))
       end
 
       it 'creates multiple indices for a namespace' do
@@ -100,7 +101,7 @@ RSpec.describe Search::Zoekt::PlanningService, feature_category: :global_search 
         expect(indices_plan.pluck(:node_id).uniq.size).to eq(2)
         projects = indices_plan.first[:projects]
         p_ns = ::Namespace.by_root_id(group1.id).project_namespaces.order(:id)
-        expect(projects).to eq({ project_namespace_id_from: nil, project_namespace_id_to: p_ns[0].id })
+        expect(projects).to eq({ project_namespace_id_from: nil, project_namespace_id_to: p_ns[1].id })
         first_index_project_namespace_id_to = projects[:project_namespace_id_to]
         projects = indices_plan.last[:projects]
         expect(projects).to eq(

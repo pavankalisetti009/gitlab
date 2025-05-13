@@ -32,11 +32,11 @@ module Search
       private
 
       def format_nodes(zoekt_nodes)
-        Array(zoekt_nodes).map do |node|
+        zoekt_nodes.to_a.map do |node|
           {
-            id: node.id,
-            unclaimed_storage_bytes: node.unclaimed_storage_bytes,
-            unclaimed_storage_bytes_before: node.unclaimed_storage_bytes,
+            id: node[:id],
+            unclaimed_storage_bytes: node[:unclaimed_storage_bytes],
+            unclaimed_storage_bytes_before: node[:unclaimed_storage_bytes],
             indices: [],
             namespace_ids: [],
             node: node
@@ -149,10 +149,7 @@ module Search
         end
 
         def find_best_node(stats)
-          nodes
-            .reject { |node| @used_node_ids.include?(node[:id]) }
-            .select { |node| node[:unclaimed_storage_bytes] && node[:unclaimed_storage_bytes] >= scaled_size(stats) }
-            .max_by { |node| node[:unclaimed_storage_bytes] }
+          nodes.reject { |n| @used_node_ids.member?(n[:id]) || (n[:unclaimed_storage_bytes] < scaled_size(stats)) }.last
         end
 
         def assign_project_to_index(node, stats, replica_indices)
@@ -160,6 +157,8 @@ module Search
           last_index = replica_indices.last
           if last_index && (last_index[:required_storage_bytes] + project_size) <= last_index[:max_storage_bytes]
             index = last_index
+            assigned_node_id = last_index[:node_id]
+            assigned_node = nodes.find { |n| n[:id] == assigned_node_id }
           end
 
           unless index
@@ -169,10 +168,11 @@ module Search
             node[:indices] << index
             node[:namespace_ids] << namespace.id unless node[:namespace_ids].include?(namespace.id)
             @used_node_ids.add(node[:id])
+            assigned_node = node
           end
 
           add_project_to_index(index, stats, last_index: last_index)
-          node[:unclaimed_storage_bytes] -= project_size
+          assigned_node[:unclaimed_storage_bytes] -= project_size
         end
 
         def simulate_index(node)
