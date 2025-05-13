@@ -102,7 +102,7 @@ export default {
           v-if="shouldShowCallout && !isDismissed"
           :title="bannerTitle"
           :button-text="$options.i18n.enableCodeSuggestionsAndChatText"
-          class="custom-banner gl-mb-5 gl-mt-5"
+          class="custom-banner gl-mb-5 gl-mt-5 gl-bg-white"
           data-testid="enable-duo-banner-sm"
           @primary="primaryClicked"
           @close="dismiss"
