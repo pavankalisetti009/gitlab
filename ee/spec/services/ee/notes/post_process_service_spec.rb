@@ -86,14 +86,6 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
         execute
       end
 
-      context 'when duo_code_review_chat is disabled' do
-        before do
-          stub_feature_flags(duo_code_review_chat: false)
-        end
-
-        it_behaves_like 'not enqueueing MergeRequests::DuoCodeReviewChatWorker'
-      end
-
       context 'when note is authored by GitLab Duo' do
         before do
           allow(note).to receive(:authored_by_duo_bot?).and_return(true)

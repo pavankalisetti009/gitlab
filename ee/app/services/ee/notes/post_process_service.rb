@@ -38,7 +38,6 @@ module EE
 
       def process_duo_code_review_chat
         author = note.author
-        return unless ::Feature.enabled?(:duo_code_review_chat, author)
 
         # Duo Code Review should respond to any MR note when mentioned
         return unless note.for_merge_request?
