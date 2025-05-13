@@ -21,12 +21,12 @@ describe('workspaces/user/components/workspaces_breadcrumbs', () => {
 
   const findBreadcrumbs = () => wrapper.findComponent(GlBreadcrumb);
 
-  const createWrapper = () => {
+  const createWrapper = (props = {}) => {
     // noinspection JSCheckFunctionSignatures - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
     router = createRouter(base);
 
     // noinspection JSValidateTypes - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
-    wrapper = shallowMount(WorkspacesBreadcrumbs, { router });
+    wrapper = shallowMount(WorkspacesBreadcrumbs, { router, propsData: props });
   };
 
   describe('when mounted', () => {
@@ -78,6 +78,15 @@ describe('workspaces/user/components/workspaces_breadcrumbs', () => {
 
     it('should disable auto-resize behavior', () => {
       expect(findBreadcrumbs().props('autoResize')).toEqual(false);
+    });
+
+    it('should render static breadcrumbs', () => {
+      const staticBreadcrumb = { text: 'Static', href: '/static' };
+
+      createWrapper({
+        staticBreadcrumbs: { items: [staticBreadcrumb] },
+      });
+      expect(findBreadcrumbs().props('items')).toStrictEqual([staticBreadcrumb, rootBreadcrumb]);
     });
   });
 });
