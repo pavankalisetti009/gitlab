@@ -13,8 +13,6 @@ RSpec.describe 'Merge request > Batch comments', :js, :sidekiq_inline, feature_c
   end
 
   before do
-    stub_feature_flags(improved_review_experience: false)
-
     create(:draft_note, merge_request: merge_request, author: current_user)
 
     sign_in(current_user)
@@ -26,7 +24,11 @@ RSpec.describe 'Merge request > Batch comments', :js, :sidekiq_inline, feature_c
 
   context 'when submitting a review with a comment' do
     it 'publishes the review' do
-      click_button 'Finish review'
+      page.within '.merge-request-tabs-holder' do
+        click_button 'Your review'
+      end
+
+      find_by_testid('placeholder-input-field').click
 
       find('textarea[data-testid="comment-textarea"]').set('overview comment')
 
@@ -42,7 +44,9 @@ RSpec.describe 'Merge request > Batch comments', :js, :sidekiq_inline, feature_c
       let(:current_user) { create(:user) }
 
       it 'does not allow user to approve' do
-        click_button 'Finish review'
+        page.within '.merge-request-tabs-holder' do
+          click_button 'Your review'
+        end
 
         expect(page).to have_selector('[data-testid="reviewer_states"] .custom-control-input[disabled]')
       end
@@ -50,9 +54,12 @@ RSpec.describe 'Merge request > Batch comments', :js, :sidekiq_inline, feature_c
 
     context 'when user has permission to approve' do
       it 'allows user to approve' do
-        click_button 'Finish review'
+        page.within '.merge-request-tabs-holder' do
+          click_button 'Your review'
+        end
 
         all('[data-testid="reviewer_states"] .custom-control-label')[1].click
+
         click_button 'Submit review'
 
         wait_for_requests
@@ -68,7 +75,9 @@ RSpec.describe 'Merge request > Batch comments', :js, :sidekiq_inline, feature_c
         end
 
         it 'does not allow user to approve without password' do
-          click_button 'Finish review'
+          page.within '.merge-request-tabs-holder' do
+            click_button 'Your review'
+          end
 
           all('[data-testid="reviewer_states"] .custom-control-label')[1].click
           click_button 'Submit review'
@@ -79,7 +88,9 @@ RSpec.describe 'Merge request > Batch comments', :js, :sidekiq_inline, feature_c
         end
 
         it 'allows user to approve' do
-          click_button 'Finish review'
+          page.within '.merge-request-tabs-holder' do
+            click_button 'Your review'
+          end
 
           all('[data-testid="reviewer_states"] .custom-control-label')[1].click
           fill_in(type: 'password', with: current_user.password)
