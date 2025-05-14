@@ -11929,21 +11929,6 @@ CREATE SEQUENCE ci_sources_projects_id_seq
 
 ALTER SEQUENCE ci_sources_projects_id_seq OWNED BY ci_sources_projects.id;
 
-CREATE TABLE ci_stages (
-    project_id bigint,
-    created_at timestamp without time zone,
-    updated_at timestamp without time zone,
-    name character varying,
-    status integer,
-    lock_version integer DEFAULT 0,
-    "position" integer,
-    id bigint NOT NULL,
-    partition_id bigint NOT NULL,
-    pipeline_id bigint,
-    CONSTRAINT check_74835fc631 CHECK ((project_id IS NOT NULL)),
-    CONSTRAINT check_81b431e49b CHECK ((lock_version IS NOT NULL))
-);
-
 CREATE SEQUENCE ci_stages_id_seq
     START WITH 1
     INCREMENT BY 1
@@ -26594,8 +26579,6 @@ ALTER TABLE ONLY ci_runner_taggings ATTACH PARTITION ci_runner_taggings_instance
 
 ALTER TABLE ONLY ci_runner_taggings ATTACH PARTITION ci_runner_taggings_project_type FOR VALUES IN ('3');
 
-ALTER TABLE ONLY p_ci_stages ATTACH PARTITION ci_stages FOR VALUES IN ('100', '101');
-
 ALTER TABLE ONLY uploads_9ba88c4165 ATTACH PARTITION dependency_list_export_part_uploads FOR VALUES IN ('Dependencies::DependencyListExport::Part');
 
 ALTER TABLE ONLY uploads_9ba88c4165 ATTACH PARTITION dependency_list_export_uploads FOR VALUES IN ('Dependencies::DependencyListExport');
@@ -29257,12 +29240,6 @@ ALTER TABLE ONLY ci_sources_pipelines
 ALTER TABLE ONLY ci_sources_projects
     ADD CONSTRAINT ci_sources_projects_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY p_ci_stages
-    ADD CONSTRAINT p_ci_stages_pkey PRIMARY KEY (id, partition_id);
-
-ALTER TABLE ONLY ci_stages
-    ADD CONSTRAINT ci_stages_pkey PRIMARY KEY (id, partition_id);
-
 ALTER TABLE ONLY ci_subscriptions_projects
     ADD CONSTRAINT ci_subscriptions_projects_pkey PRIMARY KEY (id);
 
@@ -30279,6 +30256,9 @@ ALTER TABLE ONLY p_ci_pipelines_config
 
 ALTER TABLE ONLY p_ci_runner_machine_builds
     ADD CONSTRAINT p_ci_runner_machine_builds_pkey PRIMARY KEY (build_id, partition_id);
+
+ALTER TABLE ONLY p_ci_stages
+    ADD CONSTRAINT p_ci_stages_pkey PRIMARY KEY (id, partition_id);
 
 ALTER TABLE ONLY p_ci_workloads
     ADD CONSTRAINT p_ci_workloads_pkey PRIMARY KEY (id, partition_id);
@@ -34493,22 +34473,6 @@ CREATE INDEX index_ci_sources_projects_on_pipeline_id ON ci_sources_projects USI
 
 CREATE UNIQUE INDEX index_ci_sources_projects_on_source_project_id_and_pipeline_id ON ci_sources_projects USING btree (source_project_id, pipeline_id);
 
-CREATE INDEX p_ci_stages_pipeline_id_id_idx ON ONLY p_ci_stages USING btree (pipeline_id, id) WHERE (status = ANY (ARRAY[0, 1, 2, 8, 9, 10]));
-
-CREATE INDEX index_ci_stages_on_pipeline_id_and_id ON ci_stages USING btree (pipeline_id, id) WHERE (status = ANY (ARRAY[0, 1, 2, 8, 9, 10]));
-
-CREATE INDEX p_ci_stages_pipeline_id_position_idx ON ONLY p_ci_stages USING btree (pipeline_id, "position");
-
-CREATE INDEX index_ci_stages_on_pipeline_id_and_position ON ci_stages USING btree (pipeline_id, "position");
-
-CREATE UNIQUE INDEX p_ci_stages_pipeline_id_name_partition_id_idx ON ONLY p_ci_stages USING btree (pipeline_id, name, partition_id);
-
-CREATE UNIQUE INDEX index_ci_stages_on_pipeline_id_name_partition_id_unique ON ci_stages USING btree (pipeline_id, name, partition_id);
-
-CREATE INDEX p_ci_stages_project_id_idx ON ONLY p_ci_stages USING btree (project_id);
-
-CREATE INDEX index_ci_stages_on_project_id ON ci_stages USING btree (project_id);
-
 CREATE INDEX index_ci_subscriptions_projects_author_id ON ci_subscriptions_projects USING btree (author_id);
 
 CREATE INDEX index_ci_subscriptions_projects_on_upstream_project_id ON ci_subscriptions_projects USING btree (upstream_project_id);
@@ -38283,6 +38247,14 @@ CREATE INDEX p_ci_job_artifacts_expire_at_job_id_idx1 ON ONLY p_ci_job_artifacts
 
 CREATE UNIQUE INDEX p_ci_pipeline_variables_pipeline_id_key_partition_id_idx ON ONLY p_ci_pipeline_variables USING btree (pipeline_id, key, partition_id);
 
+CREATE INDEX p_ci_stages_pipeline_id_id_idx ON ONLY p_ci_stages USING btree (pipeline_id, id) WHERE (status = ANY (ARRAY[0, 1, 2, 8, 9, 10]));
+
+CREATE UNIQUE INDEX p_ci_stages_pipeline_id_name_partition_id_idx ON ONLY p_ci_stages USING btree (pipeline_id, name, partition_id);
+
+CREATE INDEX p_ci_stages_pipeline_id_position_idx ON ONLY p_ci_stages USING btree (pipeline_id, "position");
+
+CREATE INDEX p_ci_stages_project_id_idx ON ONLY p_ci_stages USING btree (project_id);
+
 CREATE UNIQUE INDEX p_ci_workloads_pipeline_id_idx ON ONLY p_ci_workloads USING btree (pipeline_id, partition_id);
 
 CREATE INDEX package_name_index ON packages_packages USING btree (name);
@@ -40507,8 +40479,6 @@ ALTER INDEX index_ci_runner_taggings_on_runner_id_and_runner_type ATTACH PARTITI
 
 ALTER INDEX index_ci_runner_taggings_on_sharding_key_id ATTACH PARTITION ci_runner_taggings_project_type_sharding_key_id_idx;
 
-ALTER INDEX p_ci_stages_pkey ATTACH PARTITION ci_stages_pkey;
-
 ALTER INDEX index_uploads_9ba88c4165_on_model_uploader_created_at ATTACH PARTITION dependency_list_export_part_u_model_id_model_type_uploader__idx;
 
 ALTER INDEX index_uploads_9ba88c4165_on_checksum ATTACH PARTITION dependency_list_export_part_uploads_checksum_idx;
@@ -40748,14 +40718,6 @@ ALTER INDEX p_ci_pipelines_user_id_created_at_source_idx ATTACH PARTITION index_
 ALTER INDEX p_ci_pipelines_user_id_id_idx ATTACH PARTITION index_ci_pipelines_on_user_id_and_id_and_cancelable_status;
 
 ALTER INDEX p_ci_pipelines_user_id_id_idx1 ATTACH PARTITION index_ci_pipelines_on_user_id_and_id_desc_and_user_not_verified;
-
-ALTER INDEX p_ci_stages_pipeline_id_id_idx ATTACH PARTITION index_ci_stages_on_pipeline_id_and_id;
-
-ALTER INDEX p_ci_stages_pipeline_id_position_idx ATTACH PARTITION index_ci_stages_on_pipeline_id_and_position;
-
-ALTER INDEX p_ci_stages_pipeline_id_name_partition_id_idx ATTACH PARTITION index_ci_stages_on_pipeline_id_name_partition_id_unique;
-
-ALTER INDEX p_ci_stages_project_id_idx ATTACH PARTITION index_ci_stages_on_project_id;
 
 ALTER INDEX index_ci_runner_machines_on_executor_type ATTACH PARTITION index_d58435d85e;
 
