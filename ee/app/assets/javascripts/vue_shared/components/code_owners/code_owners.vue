@@ -189,33 +189,38 @@ export default {
       </template>
     </div>
 
-    <help-icon
-      v-if="hasCodeOwners"
-      :id="$options.helpPopoverId"
-      :aria-label="$options.i18n.helpText"
-      class="gl-my-3 gl-ml-auto gl-mr-3 gl-shrink-0"
-      data-testid="help-popover-trigger"
-    />
-    <gl-popover
-      v-if="hasCodeOwners"
-      :target="$options.helpPopoverId"
-      placement="top"
-      triggers="hover focus"
+    <div
+      v-if="canViewBranchRules || hasCodeOwners"
+      data-testid="code-owners-actions"
+      class="gl-flex gl-shrink-0 gl-items-baseline gl-gap-3"
     >
-      {{ $options.i18n.helpText }}
-      <gl-link :href="$options.codeOwnersHelpPath">
-        {{ $options.i18n.learnMore }}
-      </gl-link>
-    </gl-popover>
+      <help-icon
+        v-if="hasCodeOwners"
+        :id="$options.helpPopoverId"
+        :aria-label="$options.i18n.helpText"
+        class="gl-self-center"
+        data-testid="help-popover-trigger"
+      />
+      <gl-popover
+        v-if="hasCodeOwners"
+        :target="$options.helpPopoverId"
+        placement="top"
+        triggers="hover focus"
+      >
+        {{ $options.i18n.helpText }}
+        <gl-link :href="$options.codeOwnersHelpPath">
+          {{ $options.i18n.learnMore }}
+        </gl-link>
+      </gl-popover>
 
-    <gl-button
-      v-if="canViewBranchRules"
-      size="small"
-      :href="branchRulesPath"
-      class="gl-ml-2"
-      data-testid="branch-rules-link"
-    >
-      {{ $options.i18n.manageBranchRules }}
-    </gl-button>
+      <gl-button
+        v-if="canViewBranchRules"
+        size="small"
+        :href="branchRulesPath"
+        data-testid="branch-rules-link"
+      >
+        {{ $options.i18n.manageBranchRules }}
+      </gl-button>
+    </div>
   </div>
 </template>

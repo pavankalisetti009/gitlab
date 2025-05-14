@@ -61,7 +61,7 @@ describe('Code owners component', () => {
   const findHelpPopoverTrigger = () => wrapper.findByTestId('help-popover-trigger');
   const findHelpPopover = () => wrapper.findComponent(GlPopover);
   const findHelpPopoverLink = () => findHelpPopover().findComponent(GlLink);
-
+  const findCodeOwnersActions = () => wrapper.findByTestId('code-owners-actions');
   beforeEach(() => createComponent());
 
   describe('Default state', () => {
@@ -104,6 +104,25 @@ describe('Code owners component', () => {
       });
       expect(findHelpPopoverLink().exists()).toBe(true);
       expect(findHelpPopover().text()).toContain(i18n.helpText);
+    });
+  });
+
+  describe('codeowner actions renders when there are codeowners or the user has access to branch rules', () => {
+    it('when there are codeowners but the user does not have access to branch rules the codeowner actions section is rendered', async () => {
+      await createComponent({
+        props: { canViewBranchRules: false },
+      });
+      expect(findCodeOwnersActions().exists()).toBe(true);
+    });
+
+    it('when there are no codeowners but the user has access to branch rules the codeowner actions section is rendered', async () => {
+      await createComponent({ codeOwnersDataMock: [], props: { canViewBranchRules: true } });
+      expect(findCodeOwnersActions().exists()).toBe(true);
+    });
+
+    it('when the user does not have access to branch rules and there are no codeowners the codeowner actions section is not rendered', async () => {
+      await createComponent({ codeOwnersDataMock: [], props: { canViewBranchRules: false } });
+      expect(findCodeOwnersActions().exists()).toBe(false);
     });
   });
 
