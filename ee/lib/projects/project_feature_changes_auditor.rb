@@ -48,8 +48,8 @@ module Projects
       return base_data unless COLUMNS_EVENT_TYPE_HASH.key?(column)
 
       {
-        from: ::Gitlab::VisibilityLevel.level_name(model.previous_changes[column].first),
-        to: ::Gitlab::VisibilityLevel.level_name(model.previous_changes[column].last)
+        from: ProjectFeature.str_from_access_level(model.previous_changes[column].first),
+        to: ProjectFeature.str_from_access_level(model.previous_changes[column].last)
       }.merge(base_data)
     end
   end
