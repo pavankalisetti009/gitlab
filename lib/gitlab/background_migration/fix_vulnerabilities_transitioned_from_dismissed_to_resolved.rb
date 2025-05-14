@@ -16,13 +16,13 @@ module Gitlab
       COMMENT = "Status changed to dismissed. Reverts a bug that incorrectly set this vulnerability to resolved." \
         "For details, see [issue 523433](https://gitlab.com/gitlab-org/gitlab/-/issues/523433)"
 
-      job_arguments :namespace_id, :instance
+      job_arguments :namespace_id
       operation_name :fix_vulnerabilities_transitioned_from_dismissed_to_resolved
       feature_category :vulnerability_management
       scope_to ->(vulnerability_reads) {
         relation = vulnerability_reads.where(state: [Vulnerability.states[:detected], Vulnerability.states[:resolved]])
 
-        return relation if instance
+        return relation if namespace_id == 'instance'
 
         relation
           .where(vulnerability_reads.arel_table[:traversal_ids].gteq([namespace_id]))
