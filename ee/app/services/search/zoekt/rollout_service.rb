@@ -7,7 +7,7 @@ module Search
 
       DEFAULT_OPTIONS = {
         num_replicas: 1,
-        max_indices_per_replica: 5,
+        max_indices_per_replica: MAX_INDICES_PER_REPLICA,
         dry_run: true,
         batch_size: 128
       }.freeze

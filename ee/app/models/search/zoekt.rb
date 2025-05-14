@@ -3,6 +3,7 @@
 module Search
   module Zoekt
     EXPIRED_SUBSCRIPTION_GRACE_PERIOD = 30.days
+    MAX_INDICES_PER_REPLICA = 10
 
     class << self
       include Gitlab::Utils::StrongMemoize

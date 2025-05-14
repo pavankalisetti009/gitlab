@@ -14,7 +14,7 @@ RSpec.describe ::Search::Zoekt::RolloutService, feature_category: :global_search
   let(:default_options) do
     {
       num_replicas: 1,
-      max_indices_per_replica: 5,
+      max_indices_per_replica: Search::Zoekt::MAX_INDICES_PER_REPLICA,
       dry_run: true,
       batch_size: 128,
       logger: logger

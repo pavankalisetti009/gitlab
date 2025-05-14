@@ -66,7 +66,7 @@ module Search
 
         def initialize(
           enabled_namespace:, num_replicas:, nodes:,
-          buffer_factor: 3, max_indices_per_replica: 5)
+          buffer_factor: 3, max_indices_per_replica: MAX_INDICES_PER_REPLICA)
           @enabled_namespace = enabled_namespace
           @namespace = enabled_namespace.namespace
           @num_replicas = num_replicas
