@@ -4,10 +4,11 @@ module Search
   module Zoekt
     class TaskSerializerService
       INDEXING_TIMEOUT_S = 1.5.hours.to_i
-      # Single thread to minimize CPU load.
-      # Concurrency will be controlled by node's metadata.concurrency
-      PARALLELISM_FACTOR = 1
       attr_reader :task
+
+      def self.execute(...)
+        new(...).execute
+      end
 
       def initialize(task)
         @task = task
@@ -33,10 +34,6 @@ module Search
         else
           raise ArgumentError, "Unknown task_type: #{task.task_type.inspect}"
         end
-      end
-
-      def self.execute(...)
-        new(...).execute
       end
 
       private
@@ -66,11 +63,7 @@ module Search
           FileSizeLimit: Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes,
           Timeout: "#{INDEXING_TIMEOUT_S}s"
         }
-
-        if Feature.enabled?(:zoekt_reduce_parallelism, Feature.current_request)
-          payload[:Parallelism] = PARALLELISM_FACTOR
-        end
-
+        payload[:Parallelism] = ::Gitlab::CurrentSettings.zoekt_indexing_parallelism
         payload
       end
 

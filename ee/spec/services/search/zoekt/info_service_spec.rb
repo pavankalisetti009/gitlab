@@ -22,6 +22,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
       zoekt_cache_response: true,
       zoekt_auto_index_root_namespace: true,
       zoekt_cpu_to_tasks_ratio: 1.5,
+      zoekt_indexing_parallelism: 1,
       zoekt_rollout_batch_size: 32,
       zoekt_rollout_retry_interval: '1d'
     )

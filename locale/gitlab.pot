@@ -41730,6 +41730,9 @@ msgstr ""
 msgid "Number of namespaces per indexing rollout"
 msgstr ""
 
+msgid "Number of parallel processes per indexing task"
+msgstr ""
+
 msgid "Number of references exceeds the limit. Please provide no more than %{refs_limit} references at the same time."
 msgstr ""
 
