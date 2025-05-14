@@ -8,6 +8,17 @@ module Authz
 
     belongs_to :member_role
 
+    enum :sync_status, {
+      never_synced: 0,
+      queued: 1,
+      running: 2,
+      failed: 3,
+      successful: 4
+    }, default: :never_synced
+
+    validates :sync_status, presence: true
+    validates :sync_error, length: { maximum: 255 }
+
     validates :member_role, :provider, presence: true
     validates :provider, :cn, :filter, length: { maximum: 255 }
 
