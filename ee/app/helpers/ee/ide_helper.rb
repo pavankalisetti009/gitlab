@@ -6,8 +6,8 @@ module EE
 
     private
 
-    override :new_ide_code_suggestions_data
-    def new_ide_code_suggestions_data
+    override :ide_code_suggestions_data
+    def ide_code_suggestions_data
       super.merge({
         'code-suggestions-enabled' => show_code_suggestions? ? 'true' : ''
       })
