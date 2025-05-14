@@ -18,7 +18,6 @@ RSpec.describe Projects::ProjectFeatureChangesAuditor, feature_category: :groups
 
     it 'creates an event when any project feature level changes', :aggregate_failures do
       columns = project.project_feature.attributes.keys.select { |attr| attr.end_with?('level') }
-
       columns.each do |column|
         event_name = "project_feature_#{column}_updated"
         previous_value = features.method(column).call
@@ -36,10 +35,48 @@ RSpec.describe Projects::ProjectFeatureChangesAuditor, feature_category: :groups
         expect { project_feature_changes_auditor.execute }.to change(AuditEvent, :count).by(1)
 
         event = AuditEvent.last
-        expect(event.details[:from]).to eq ::Gitlab::VisibilityLevel.level_name(previous_value)
-        expect(event.details[:to]).to eq ::Gitlab::VisibilityLevel.level_name(new_value)
+        expect(event.details[:from]).to eq ProjectFeature.str_from_access_level(previous_value)
+        expect(event.details[:to]).to eq ProjectFeature.str_from_access_level(new_value)
         expect(event.details[:change]).to eq column
       end
+    end
+
+    it 'audits ProjectFeature::PUBLIC levels' do
+      column = 'pages_access_level'
+      event_name = "project_feature_#{column}_updated"
+      previous_value = features.method(column).call
+      new_value = ProjectFeature::PUBLIC
+
+      features.update_attribute(column, new_value)
+
+      expect(AuditEvents::AuditEventStreamingWorker).to receive(:perform_async)
+        .with(event_name, anything, anything)
+
+      expect { project_feature_changes_auditor.execute }.to change(AuditEvent, :count).by(1)
+
+      event = AuditEvent.last
+      expect(event.details[:from]).to eq ProjectFeature.str_from_access_level(previous_value)
+      expect(event.details[:to]).to eq 'public'
+      expect(event.details[:change]).to eq column
+    end
+
+    it 'audits ProjectFeature::PRIVATE levels' do
+      column = 'merge_requests_access_level'
+      event_name = "project_feature_#{column}_updated"
+      previous_value = features.method(column).call
+      new_value = ProjectFeature::PRIVATE
+
+      features.update_attribute(column, new_value)
+
+      expect(AuditEvents::AuditEventStreamingWorker).to receive(:perform_async)
+        .with(event_name, anything, anything)
+
+      expect { project_feature_changes_auditor.execute }.to change(AuditEvent, :count).by(1)
+
+      event = AuditEvent.last
+      expect(event.details[:from]).to eq ProjectFeature.str_from_access_level(previous_value)
+      expect(event.details[:to]).to eq 'private'
+      expect(event.details[:change]).to eq column
     end
   end
 end
