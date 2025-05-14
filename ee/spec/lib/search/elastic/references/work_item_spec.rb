@@ -117,54 +117,18 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
 
     describe 'project namespace work item' do
       let(:object) { project_work_item }
-      let_it_be(:note1) { create(:note_on_issue, noteable: project_work_item, project: project, note: 'Some pig') }
-      let_it_be(:note2) { create(:note_on_issue, noteable: project_work_item, project: project, note: 'Terrific') }
-      let_it_be(:note3) { create(:note, :internal, noteable: project_work_item, project: project, note: "Radiant") }
       let(:expected_hash) do
         base_work_item_hash.merge(
           root_namespace_id: project_work_item.namespace.root_ancestor.id,
           traversal_ids: project_work_item.namespace.elastic_namespace_ancestry,
           archived: project.archived?,
           project_visibility_level: project.visibility_level,
-          issues_access_level: project.issues_access_level,
-          notes: "Terrific\nSome pig",
-          notes_internal: "Radiant"
+          issues_access_level: project.issues_access_level
         )
       end
 
       it 'serializes work_item as a hash' do
         expect(indexed_json).to match(expected_hash)
-      end
-
-      it 'truncates notes fields' do
-        create(:note, :internal, noteable: project_work_item, project: project, note: 'Newest')
-
-        stub_const("#{described_class}::NOTES_MAXIMUM_BYTES", 10)
-
-        expect(indexed_json[:notes_internal]).not_to include('Radiant')
-        expect(indexed_json[:notes_internal]).to eq("Newest\n…")
-      end
-
-      it 'does not include system notes' do
-        create(:note, :system, noteable: project_work_item, project: project, note: "Enchanting!")
-
-        expect(indexed_json[:notes]).not_to include('Enchanting!')
-      end
-
-      it 'includes notes or notes_internal', :aggregate_failures do
-        expect(indexed_json).to include(:notes_internal)
-        expect(indexed_json).to include(:notes)
-      end
-
-      context 'when feature flag search_work_items_index_notes is false' do
-        before do
-          stub_feature_flags(search_work_items_index_notes: false)
-        end
-
-        it 'does not include notes or notes_internal', :aggregate_failures do
-          expect(indexed_json).not_to include(:notes_internal)
-          expect(indexed_json).not_to include(:notes)
-        end
       end
     end
   end

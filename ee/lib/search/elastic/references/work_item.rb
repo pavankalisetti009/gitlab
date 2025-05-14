@@ -81,18 +81,6 @@ module Search
 
         private
 
-        def populate_notes(target, data)
-          notes_internal, notes = target.lazy_user_notes.partition(&:internal)
-
-          notes_internal = notes_internal.sort_by(&:created_at).reverse.map(&:note).join("\n").presence
-          notes = notes.sort_by(&:created_at).reverse.map(&:note).join("\n").presence
-
-          data['notes_internal'] = notes_internal.truncate_bytes(NOTES_MAXIMUM_BYTES) if notes_internal
-          data['notes'] = notes.truncate_bytes(NOTES_MAXIMUM_BYTES) if notes
-
-          data
-        end
-
         def build_indexed_json(target)
           data = {}
 
@@ -104,10 +92,6 @@ module Search
           data.merge!(build_namespace_data(target))
           data.merge!(build_project_data(target))
           data.merge!(build_milestone_data(target))
-
-          if ::Feature.enabled?(:search_work_items_index_notes, ::Feature.current_request)
-            data = populate_notes(target, data)
-          end
 
           data.stringify_keys
         end
