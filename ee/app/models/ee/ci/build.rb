@@ -294,11 +294,11 @@ module EE
       end
 
       def variables_encompassing_secrets_configs
-        # We DO NOT need to pass all the build.variables to the Secrets Integration because scoped_variables and job_variables
-        # are the ONLY two subsets of variables that may potentially include information for integration with secrets providers.
+        # We DO NOT need to pass all the build.variables to the Secrets Integration because scoped_variables and
+        # job_variables (included in scoped_variables) are the ONLY two subsets of variables that may potentially
+        # include information for integration with secrets providers.
         ::Gitlab::Ci::Variables::Collection.new
           .concat(scoped_variables)
-          .concat(job_variables)
       end
 
       def pages_config
