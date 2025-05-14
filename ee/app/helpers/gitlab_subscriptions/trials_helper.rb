@@ -5,7 +5,7 @@ module GitlabSubscriptions
     def duo_trial_namespace_selector_data(namespaces, namespace_create_errors)
       namespace_selector_data(namespace_create_errors).merge(
         any_trial_eligible_namespaces: namespaces.any?.to_s,
-        items: current_namespaces_for_selector(namespaces).to_json
+        items: GitlabSubscriptions::Trials::TrialFormDisplayUtilities.format_namespaces_for_selector(namespaces).to_json
       )
     end
 
@@ -51,10 +51,6 @@ module GitlabSubscriptions
       else
         s_('Trial|Continue')
       end
-    end
-
-    def current_namespaces_for_selector(namespaces)
-      namespaces.map { |n| { text: n.name, value: n.id.to_s } }
     end
 
     def namespace_selector_data(namespace_create_errors)
