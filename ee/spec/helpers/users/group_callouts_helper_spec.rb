@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Users::GroupCalloutsHelper, :saas, feature_category: :groups_and_projects do
-  let_it_be(:group) { build_stubbed(:group, :private, name: 'private namespace') }
+  let_it_be(:group) { build(:group, :private, name: 'private namespace') }
   let_it_be(:user) { build(:user) }
 
   before do
@@ -49,6 +49,7 @@ RSpec.describe Users::GroupCalloutsHelper, :saas, feature_category: :groups_and_
       allow(group).to receive_message_chain(:namespace_settings, :duo_core_features_enabled).and_return(nil)
       allow(helper).to receive(:user_dismissed_for_group).with('enable_duo_banner', group).and_return(false)
       allow(group).to receive(:paid?).and_return(true)
+      allow(GitlabSubscriptions::DuoCore).to receive(:any_add_on_purchase_for_namespace?).with(group).and_return(true)
     end
 
     context 'when all conditions are met' do
@@ -100,6 +101,19 @@ RSpec.describe Users::GroupCalloutsHelper, :saas, feature_category: :groups_and_
     context 'when alert is dismissed' do
       before do
         allow(helper).to receive(:user_dismissed_for_group).with('enable_duo_banner', group).and_return(true)
+      end
+
+      it 'returns false' do
+        expect(show_enable_duo_banner?).to be false
+      end
+    end
+
+    context 'when no duo core add on exists for the group' do
+      before do
+        allow(GitlabSubscriptions::DuoCore)
+          .to receive(:any_add_on_purchase_for_namespace?)
+          .with(group)
+          .and_return(false)
       end
 
       it 'returns false' do

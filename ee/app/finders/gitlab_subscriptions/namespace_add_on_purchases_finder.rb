@@ -29,6 +29,8 @@ module GitlabSubscriptions
         items.for_gitlab_duo_pro
       when :duo_enterprise
         items.for_duo_enterprise
+      when :duo_core
+        items.for_duo_core
       else
         raise ArgumentError, "Unknown add_on: #{add_on}"
       end

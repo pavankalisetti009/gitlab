@@ -66,6 +66,16 @@ RSpec.describe GitlabSubscriptions::NamespaceAddOnPurchasesFinder, feature_categ
           end
         end
 
+        context 'with duo_core add_on' do
+          let_it_be(:add_on_purchase) do
+            create(:gitlab_subscription_add_on_purchase, :active, :duo_core, namespace: namespace)
+          end
+
+          subject(:execute) { described_class.new(namespace, add_on: :duo_core).execute }
+
+          it { is_expected.to match_array([add_on_purchase]) }
+        end
+
         context 'with duo_enterprise add_on' do
           let_it_be(:add_on_purchase) do
             create(:gitlab_subscription_add_on_purchase, :active, :duo_enterprise, namespace: namespace)

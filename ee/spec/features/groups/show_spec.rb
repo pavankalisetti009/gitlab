@@ -27,6 +27,7 @@ RSpec.describe 'Group show page', :js, :saas, feature_category: :groups_and_proj
 
   context 'with enable duo banner' do
     let_it_be(:gitlab_subscription) { create(:gitlab_subscription, end_date: 1.month.from_now, namespace: group) }
+    let_it_be(:duo_core) { create(:gitlab_subscription_add_on_purchase, :duo_core, namespace: group) }
 
     before do
       stub_licensed_features(ai_features: true)
