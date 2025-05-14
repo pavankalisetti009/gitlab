@@ -281,7 +281,14 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
             it_behaves_like 'pulling non existing files', can_write_package_files: false
 
             context 'when doing a request to an external registry' do
-              let(:allowed_uris) { ObjectStoreSettings.enabled_endpoint_uris }
+              let(:enabled_endpoint_uris) { [URI('192.168.1.1')] }
+              let(:outbound_local_requests_allowlist) { ['127.0.0.1'] }
+              let(:allowed_endpoints) { enabled_endpoint_uris + outbound_local_requests_allowlist }
+
+              before do
+                allow(ObjectStoreSettings).to receive(:enabled_endpoint_uris).and_return(enabled_endpoint_uris)
+                stub_application_setting(outbound_local_requests_whitelist: outbound_local_requests_allowlist)
+              end
 
               it 'uses SSRF filter' do
                 allow(Gitlab::Workhorse).to receive(:send_url)
@@ -290,7 +297,7 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
 
                 expect(Gitlab::Workhorse).to have_received(:send_url).with(
                   an_instance_of(String),
-                  a_hash_including(allow_localhost: true, ssrf_filter: true, allowed_uris: allowed_uris)
+                  a_hash_including(allow_localhost: true, ssrf_filter: true, allowed_endpoints: allowed_endpoints)
                 )
               end
             end
@@ -554,7 +561,14 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
       end
 
       context 'when doing a request to an external registry' do
-        let(:allowed_uris) { ObjectStoreSettings.enabled_endpoint_uris }
+        let(:enabled_endpoint_uris) { [URI('192.168.1.1')] }
+        let(:outbound_local_requests_allowlist) { ['127.0.0.1'] }
+        let(:allowed_endpoints) { enabled_endpoint_uris + outbound_local_requests_allowlist }
+
+        before do
+          allow(ObjectStoreSettings).to receive(:enabled_endpoint_uris).and_return(enabled_endpoint_uris)
+          stub_application_setting(outbound_local_requests_whitelist: outbound_local_requests_allowlist)
+        end
 
         it 'uses SSRF filter' do
           allow(Gitlab::Workhorse).to receive(:send_dependency)
@@ -564,7 +578,7 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
           expect(Gitlab::Workhorse).to have_received(:send_dependency).with(
             an_instance_of(Hash),
             an_instance_of(String),
-            a_hash_including(allow_localhost: true, ssrf_filter: true, allowed_uris: allowed_uris)
+            a_hash_including(allow_localhost: true, ssrf_filter: true, allowed_endpoints: allowed_endpoints)
           )
         end
       end
