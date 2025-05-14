@@ -3,7 +3,7 @@
 RSpec.shared_examples 'migration backfills fields' do
   let(:migration) { described_class.new(version) }
   let(:klass) { objects.first.class }
-  let(:index_name) { klass.__elasticsearch__.index_name }
+  let(:index_name) { migration.index_name }
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)

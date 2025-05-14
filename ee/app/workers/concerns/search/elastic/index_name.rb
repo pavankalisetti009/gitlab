@@ -3,8 +3,6 @@
 module Search
   module Elastic
     module IndexName
-      private
-
       def index_name
         if self.class.const_defined?(:DOCUMENT_TYPE)
           document_type = self.class::DOCUMENT_TYPE
