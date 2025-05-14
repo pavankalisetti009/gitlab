@@ -108,6 +108,7 @@ except those captured by `runit`.
 | [LogRotate logs](#logrotate-logs)               | {{< icon name="dotted-circle" >}} No  | {{< icon name="check-circle" >}} Yes  |
 | [Mailroom](#mail_room_jsonlog-default)          | {{< icon name="check-circle" >}} Yes  | {{< icon name="check-circle" >}} Yes  |
 | [NGINX](#nginx-logs)                            | {{< icon name="check-circle" >}} Yes  | {{< icon name="check-circle" >}} Yes  |
+| [Patroni logs](#patroni-logs)                   | {{< icon name="dotted-circle" >}} No  | {{< icon name="check-circle" >}} Yes  |
 | [PgBouncer logs](#pgbouncer-logs)               | {{< icon name="dotted-circle" >}} No  | {{< icon name="check-circle" >}} Yes  |
 | [PostgreSQL logs](#postgresql-logs)             | {{< icon name="dotted-circle" >}} No  | {{< icon name="check-circle" >}} Yes  |
 | [Praefect logs](#praefect-logs)                 | {{< icon name="dotted-circle" >}} Yes | {{< icon name="check-circle" >}} Yes  |
@@ -1284,6 +1285,10 @@ For Linux package installations, Mattermost logs are in these locations:
 
 For Linux package installations, Workhorse logs are in `/var/log/gitlab/gitlab-workhorse/current`.
 
+## Patroni logs
+
+For Linux package installations, Patroni logs are in `/var/log/gitlab/patroni/current`.
+
 ## PgBouncer logs
 
 For Linux package installations, PgBouncer logs are in `/var/log/gitlab/pgbouncer/current`.
@@ -1291,6 +1296,8 @@ For Linux package installations, PgBouncer logs are in `/var/log/gitlab/pgbounce
 ## PostgreSQL logs
 
 For Linux package installations, PostgreSQL logs are in `/var/log/gitlab/postgresql/current`.
+
+If Patroni is being used, the PostgreSQL logs are stored in the [Patroni logs](#patroni-logs) instead.
 
 ## Prometheus logs
 
