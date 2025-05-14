@@ -48,7 +48,7 @@ export default {
   computed: {
     shouldShowSeverityOverrides() {
       return (
-        this.glFeatures.vulnerabilitySeverityOverride &&
+        !this.glFeatures.hideVulnerabilitySeverityOverride &&
         this.showSeverityOverrides &&
         !isEmpty(this.severityOverride)
       );

@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe Security::Findings::SeverityOverrideService, feature_category: :vulnerability_management do
   before do
     stub_licensed_features(security_dashboard: true)
+    stub_feature_flags(hide_vulnerability_severity_override: false)
   end
 
   def override_severity(severity: new_severity)
@@ -212,7 +213,7 @@ RSpec.describe Security::Findings::SeverityOverrideService, feature_category: :v
       context 'when vulnerability_severity_override feature flag is disabled' do
         before do
           security_finding.project.add_maintainer(current_user)
-          stub_feature_flags(vulnerability_severity_override: false)
+          stub_feature_flags(hide_vulnerability_severity_override: true)
         end
 
         it 'raises an "access denied" error' do

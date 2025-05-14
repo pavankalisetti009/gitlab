@@ -45,6 +45,7 @@ RSpec.describe Mutations::Security::Finding::SeverityOverride, feature_category:
     context 'when the user has permission to override severity' do
       before do
         stub_licensed_features(security_dashboard: true)
+        stub_feature_flags(hide_vulnerability_severity_override: false)
       end
 
       context 'when no uuid is provided' do
@@ -132,7 +133,7 @@ RSpec.describe Mutations::Security::Finding::SeverityOverride, feature_category:
         context 'when vulnerability_severity_override feature flag is disabled' do
           before do
             security_finding.project.add_maintainer(current_user)
-            stub_feature_flags(vulnerability_severity_override: false)
+            stub_feature_flags(hide_vulnerability_severity_override: true)
           end
 
           it 'raises an error' do

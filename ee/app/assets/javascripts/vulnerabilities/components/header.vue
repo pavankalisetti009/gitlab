@@ -110,7 +110,7 @@ export default {
       );
     },
     showSeverityModal() {
-      return this.glFeatures.vulnerabilitySeverityOverride;
+      return !this.glFeatures.hideVulnerabilitySeverityOverride;
     },
     canExplainWithAi() {
       return (

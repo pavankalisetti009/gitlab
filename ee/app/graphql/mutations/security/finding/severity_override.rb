@@ -24,7 +24,7 @@ module Mutations
 
         def resolve(uuid:, severity:)
           security_finding = authorized_find!(uuid: uuid)
-          unless Feature.enabled?(:vulnerability_severity_override, security_finding.project&.root_ancestor)
+          unless Feature.disabled?(:hide_vulnerability_severity_override, security_finding.project&.root_ancestor)
             raise Gitlab::Access::AccessDeniedError
           end
 

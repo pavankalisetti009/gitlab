@@ -32,7 +32,7 @@ module Vulnerabilities
     end
 
     def authorized_for_project(project)
-      super && Feature.enabled?(:vulnerability_severity_override, project.root_ancestor)
+      super && Feature.disabled?(:hide_vulnerability_severity_override, project.root_ancestor)
     end
 
     def severity_overrides_attributes_for(vulnerability_attrs)

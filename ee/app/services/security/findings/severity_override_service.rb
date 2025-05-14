@@ -44,7 +44,7 @@ module Security
 
       def authorized?
         can?(@current_user, :admin_vulnerability, @project) &&
-          Feature.enabled?(:vulnerability_severity_override, @project&.root_ancestor)
+          Feature.disabled?(:hide_vulnerability_severity_override, @project&.root_ancestor)
       end
 
       def update_severity(vulnerability)

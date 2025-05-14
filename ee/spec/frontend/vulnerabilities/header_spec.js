@@ -147,7 +147,7 @@ describe('Vulnerability Header', () => {
     vulnerability = {},
     apolloProvider,
     glAbilities,
-    vulnerabilitySeverityOverride = true,
+    hideVulnerabilitySeverityOverride = false,
   }) => {
     wrapper = shallowMount(Header, {
       apolloProvider,
@@ -169,7 +169,7 @@ describe('Vulnerability Header', () => {
           ...glAbilities,
         },
         glFeatures: {
-          vulnerabilitySeverityOverride,
+          hideVulnerabilitySeverityOverride,
         },
       },
       stubs: {
@@ -311,7 +311,7 @@ describe('Vulnerability Header', () => {
 
     describe('severity change', () => {
       const featureFlags = {
-        vulnerabilitySeverityOverride: true,
+        hideVulnerabilitySeverityOverride: false,
       };
 
       describe('when API call is successful', () => {
@@ -400,7 +400,7 @@ describe('Vulnerability Header', () => {
     // "Change status" button when ff `vulnerability_severity_override` is disabled
     describe('change status button', () => {
       const featureFlags = {
-        vulnerabilitySeverityOverride: false,
+        hideVulnerabilitySeverityOverride: true,
       };
 
       beforeEach(() => {
@@ -458,7 +458,7 @@ describe('Vulnerability Header', () => {
       'when vulnerability_severity_override is $vulnerabilitySeverityOverride',
       ({ vulnerabilitySeverityOverride, findLoadingElement }) => {
         const featureFlags = {
-          vulnerabilitySeverityOverride,
+          hideVulnerabilitySeverityOverride: !vulnerabilitySeverityOverride,
         };
 
         describe.each`
