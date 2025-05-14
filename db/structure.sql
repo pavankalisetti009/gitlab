@@ -7835,6 +7835,27 @@ CREATE SEQUENCE ai_feature_settings_id_seq
 
 ALTER SEQUENCE ai_feature_settings_id_seq OWNED BY ai_feature_settings.id;
 
+CREATE TABLE ai_namespace_feature_settings (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    namespace_id bigint NOT NULL,
+    feature smallint NOT NULL,
+    offered_model_ref text,
+    offered_model_name text,
+    CONSTRAINT check_14e81e87bc CHECK ((char_length(offered_model_ref) <= 255)),
+    CONSTRAINT check_c850e74656 CHECK ((char_length(offered_model_name) <= 255))
+);
+
+CREATE SEQUENCE ai_namespace_feature_settings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE ai_namespace_feature_settings_id_seq OWNED BY ai_namespace_feature_settings.id;
+
 CREATE TABLE ai_self_hosted_models (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -26683,6 +26704,8 @@ ALTER TABLE ONLY ai_duo_chat_events ALTER COLUMN id SET DEFAULT nextval('ai_duo_
 
 ALTER TABLE ONLY ai_feature_settings ALTER COLUMN id SET DEFAULT nextval('ai_feature_settings_id_seq'::regclass);
 
+ALTER TABLE ONLY ai_namespace_feature_settings ALTER COLUMN id SET DEFAULT nextval('ai_namespace_feature_settings_id_seq'::regclass);
+
 ALTER TABLE ONLY ai_self_hosted_models ALTER COLUMN id SET DEFAULT nextval('ai_self_hosted_models_id_seq'::regclass);
 
 ALTER TABLE ONLY ai_settings ALTER COLUMN id SET DEFAULT nextval('ai_settings_id_seq'::regclass);
@@ -28699,6 +28722,9 @@ ALTER TABLE ONLY ai_duo_chat_events
 
 ALTER TABLE ONLY ai_feature_settings
     ADD CONSTRAINT ai_feature_settings_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY ai_namespace_feature_settings
+    ADD CONSTRAINT ai_namespace_feature_settings_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ai_self_hosted_models
     ADD CONSTRAINT ai_self_hosted_models_pkey PRIMARY KEY (id);
@@ -33186,6 +33212,8 @@ CREATE UNIQUE INDEX idx_metrics_users_starred_dashboard_on_user_project_dashboar
 CREATE INDEX idx_mr_cc_diff_files_on_mr_cc_id_and_sha ON merge_request_context_commit_diff_files USING btree (merge_request_context_commit_id, sha);
 
 CREATE INDEX idx_mrs_on_target_id_and_created_at_and_state_id ON merge_requests USING btree (target_project_id, state_id, created_at, id);
+
+CREATE UNIQUE INDEX idx_namespace_feature_settings_on_namespace_id_and_feature ON ai_namespace_feature_settings USING btree (namespace_id, feature);
 
 CREATE INDEX idx_namespace_hostname_import_type_id_source_name_and_username ON import_source_users USING btree (namespace_id, source_hostname, import_type, id) WHERE ((source_name IS NULL) OR (source_username IS NULL));
 
@@ -44317,6 +44345,9 @@ ALTER TABLE ONLY issue_user_mentions
 
 ALTER TABLE ONLY namespace_settings
     ADD CONSTRAINT fk_rails_3896d4fae5 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ai_namespace_feature_settings
+    ADD CONSTRAINT fk_rails_3910c64ae1 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY packages_cleanup_policies
     ADD CONSTRAINT fk_rails_393ba98591 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
