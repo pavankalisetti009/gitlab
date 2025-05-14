@@ -3023,16 +3023,6 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
-- :name: search_zoekt_index_watermark_changed_event
-  :worker_name: Search::Zoekt::IndexWatermarkChangedEventWorker
-  :feature_category: :global_search
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-  :queue_namespace:
 - :name: search_zoekt_indexing_task
   :worker_name: Search::Zoekt::IndexingTaskWorker
   :feature_category: :global_search
