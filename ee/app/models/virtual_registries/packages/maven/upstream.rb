@@ -36,7 +36,7 @@ module VirtualRegistries
         before_validation :set_cache_validity_hours_for_maven_central, if: :url?, on: :create
         after_validation :reset_credentials, if: -> { persisted? && url_changed? }
 
-        prevent_from_serialization(:username, :password) if respond_to?(:prevent_from_serialization)
+        prevent_from_serialization(:password) if respond_to?(:prevent_from_serialization)
 
         scope :eager_load_registry_upstream, ->(registry:) {
           eager_load(:registry_upstream)
