@@ -47,25 +47,7 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
       end
     end
 
-    shared_examples 'handles a disabled feature flag' do
-      context 'when the feature flag is disabled' do
-        let(:error_msg) { /Feature flag `#{feature_flag}` is disabled for the #{obj.class.name}./i }
-
-        before do
-          stub_feature_flags(feature_flag => false)
-        end
-
-        it 'raises an error for the disabled feature flag' do
-          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError, error_msg) do
-            search_results
-          end
-        end
-      end
-    end
-
-    let!(:args) { { name: 'cwe' } }
-
-    context 'when the current user has access' do
+    shared_examples 'when the current user has access' do
       let(:current_user) { user }
 
       context 'with a group' do
@@ -89,7 +71,7 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
       end
     end
 
-    context 'when the current user does not have access' do
+    shared_examples 'when the current user does not have access' do
       let(:current_user) { other_user }
 
       context 'with a group' do
@@ -101,6 +83,48 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
           end
         end
       end
+    end
+
+    context 'when filtering records from postgres' do
+      let!(:args) { { name: 'cwe' } }
+
+      it_behaves_like 'when the current user has access'
+      it_behaves_like 'when the current user does not have access'
+    end
+
+    context 'when filtering records from Elasticsearch', :elastic_clean do
+      let_it_be(:vulnerability_read_1) do
+        create(:vulnerability_read, identifier_names: ['CWE-23'], project: project)
+      end
+
+      let_it_be(:vulnerability_read_2) do
+        create(:vulnerability_read, identifier_names: ['CWE-25'], project: project)
+      end
+
+      let_it_be(:vulnerability_read_3) do
+        create(:vulnerability_read, identifier_names: %w[CWE-24 test], project: project_2)
+      end
+
+      let_it_be(:vulnerability_read_4) do
+        create(:vulnerability_read, identifier_names: ['CWE-26'], project: other_project)
+      end
+
+      let!(:args) { { name: 'cwe' } }
+
+      before do
+        stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+        Elastic::ProcessBookkeepingService.track!(
+          vulnerability_read_1, vulnerability_read_2, vulnerability_read_3, vulnerability_read_4
+        )
+        ensure_elasticsearch_index!
+
+        allow(::Search::Elastic::VulnerabilityIndexingHelper)
+          .to receive(:vulnerability_indexing_allowed?).and_return(true)
+      end
+
+      it_behaves_like 'when the current user has access'
+      it_behaves_like 'when the current user does not have access'
     end
   end
 end

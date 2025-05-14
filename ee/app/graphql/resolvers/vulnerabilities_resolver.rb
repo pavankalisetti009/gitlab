@@ -99,7 +99,7 @@ module Resolvers
       args[:scanner_id] = resolve_gids(args[:scanner_id], ::Vulnerabilities::Scanner) if args[:scanner_id]
 
       disabled_filters = context.response_extensions["disabled_filters"] ||= []
-      disabled_filters << :identifier_name unless search_by_identifier_allowed?(vulnerable: vulnerable)
+      disabled_filters << :identifier_name unless search_by_identifier_allowed_on_db?(vulnerable: vulnerable)
 
       vulnerabilities(args)
         .with_findings_scanner_and_identifiers
