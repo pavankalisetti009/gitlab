@@ -7,7 +7,7 @@ module EE
 
       class_methods do
         def epic
-          @epic ||= /(?<epic>\d+)(?<format>\+s{,1})?/
+          @epic ||= /(?<epic>\d{1,20})(?<format>\+s{,1})?/
         end
       end
     end
