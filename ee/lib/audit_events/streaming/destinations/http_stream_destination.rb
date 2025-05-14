@@ -10,8 +10,7 @@ module AuditEvents
           Gitlab::HTTP.post(
             destination.config["url"],
             body: request_body,
-            headers: build_headers,
-            **::AuditEvents::HttpTimeoutConfig::DEFAULT
+            headers: build_headers
           )
         rescue URI::InvalidURIError, *Gitlab::HTTP::HTTP_ERRORS => e
           Gitlab::ErrorTracking.log_exception(e)
