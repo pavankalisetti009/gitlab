@@ -71,9 +71,11 @@ RSpec.describe 'Groups > Usage Quotas', :saas, feature_category: :consumables_co
     context 'with OneTrust disabled' do
       let(:onetrust_enabled) { false }
 
-      it 'has the Google Tag Manager and no OneTrust scripts', :aggregate_failures do
+      it 'has the Google Tag Manager and no OneTrust scripts and CSP records', :aggregate_failures do
         expect(page.html).to include(gtm_script_url)
+        expect(csp_header).to include(gtm_csp_url)
         expect(page.html).not_to include(onetrust_script_url)
+        expect(csp_header).not_to include(onetrust_csp_url)
       end
     end
 
@@ -81,9 +83,11 @@ RSpec.describe 'Groups > Usage Quotas', :saas, feature_category: :consumables_co
       let(:gtm_enabled) { false }
       let(:onetrust_enabled) { false }
 
-      it "doesn't include the related scripts", :aggregate_failures do
+      it "doesn't include the related scripts and CSP", :aggregate_failures do
         expect(page.html).not_to include(gtm_script_url)
+        expect(csp_header).not_to include(gtm_csp_url)
         expect(page.html).not_to include(onetrust_script_url)
+        expect(csp_header).not_to include(onetrust_csp_url)
       end
     end
   end

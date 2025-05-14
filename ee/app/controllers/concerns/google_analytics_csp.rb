@@ -5,7 +5,8 @@ module GoogleAnalyticsCSP
 
   included do
     content_security_policy do |policy|
-      next unless helpers.google_tag_manager_enabled? || policy.directives.present?
+      next unless helpers.google_tag_manager_enabled?
+      next unless policy.directives.present?
 
       # Tag Manager with a Content Security Policy for Google Analytics 4
       # https://developers.google.com/tag-platform/security/guides/csp#google_analytics_4_google_analytics
