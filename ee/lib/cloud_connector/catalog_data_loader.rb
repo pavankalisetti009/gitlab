@@ -5,7 +5,7 @@ module CloudConnector
     def initialize(model_class)
       super
 
-      @loader = DataLoaderFactory.create_loader(model_class)
+      @loader = ::CloudConnector::DataLoaderFactory.create_loader(model_class)
     end
 
     def load!
