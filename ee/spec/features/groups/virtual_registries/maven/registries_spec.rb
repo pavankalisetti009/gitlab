@@ -121,10 +121,33 @@ RSpec.describe 'Maven virtual registries', feature_category: :virtual_registry d
 
       it_behaves_like 'virtual registry is unavailable'
 
-      it 'renders new maven virtual registry page' do
+      it 'allows creation of new maven virtual registry', :aggregate_failures do
         visit url
 
         expect(page).to have_selector('h1', text: 'New maven virtual registry')
+        fill_in 'Name', with: 'test maven registry'
+        fill_in 'Description (optional)', with: 'This is a test maven registry'
+        click_button 'Create registry'
+
+        expect(page).to have_title('test maven registry')
+        expect(page).to have_content('Maven virtual registry was created')
+      end
+
+      it 'shows error when virtual registry name is too long', :aggregate_failures do
+        visit url
+
+        expect(page).to have_selector('h1', text: 'New maven virtual registry')
+        fill_in 'Name', with: 'test maven registry' * 20
+        click_button 'Create registry'
+        expect(page).to have_content('Name is too long (maximum is 255 characters)')
+      end
+
+      it 'passes accessibility tests', :js do
+        visit url
+
+        wait_for_requests
+
+        expect(page).to be_axe_clean
       end
     end
   end

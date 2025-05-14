@@ -67105,6 +67105,9 @@ msgstr ""
 msgid "VirtualRegistry|Maven virtual registry"
 msgstr ""
 
+msgid "VirtualRegistry|Maven virtual registry was created"
+msgstr ""
+
 msgid "VirtualRegistry|Move upstream down"
 msgstr ""
 
@@ -67151,9 +67154,6 @@ msgid "VirtualRegistry|Use the arrow buttons to reorder upstreams. Artifacts are
 msgstr ""
 
 msgid "VirtualRegistry|Username (optional)"
-msgstr ""
-
-msgid "VirtualRegistry|Virtual registries"
 msgstr ""
 
 msgid "VirtualRegistry|Virtual registry"
