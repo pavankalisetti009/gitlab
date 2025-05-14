@@ -7,14 +7,18 @@ import {
   ACTION_RESTORE,
 } from '~/vue_shared/components/list_actions/constants';
 
-export const availableGraphQLGroupActions = ({ userPermissions, markedForDeletionOn }) => {
+export const availableGraphQLGroupActions = ({
+  userPermissions,
+  markedForDeletionOn,
+  isSelfDeletionInProgress,
+}) => {
   const baseActions = [];
 
   if (userPermissions.viewEditPage) {
     baseActions.push(ACTION_EDIT);
   }
 
-  if (userPermissions.removeGroup && markedForDeletionOn) {
+  if (userPermissions.removeGroup && markedForDeletionOn && !isSelfDeletionInProgress) {
     baseActions.push(ACTION_RESTORE);
   }
 
@@ -22,7 +26,7 @@ export const availableGraphQLGroupActions = ({ userPermissions, markedForDeletio
     baseActions.push(ACTION_LEAVE);
   }
 
-  if (userPermissions.removeGroup) {
+  if (userPermissions.removeGroup && !isSelfDeletionInProgress) {
     baseActions.push(ACTION_DELETE);
   }
 
