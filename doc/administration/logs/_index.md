@@ -115,6 +115,7 @@ except those captured by `runit`.
 | [Puma](#puma-logs)                              | {{< icon name="check-circle" >}} Yes  | {{< icon name="check-circle" >}} Yes  |
 | [Redis logs](#redis-logs)                       | {{< icon name="dotted-circle" >}} No  | {{< icon name="check-circle" >}} Yes  |
 | [Registry logs](#registry-logs)                 | {{< icon name="dotted-circle" >}} No  | {{< icon name="check-circle" >}} Yes  |
+| [Sentinel logs](#sentinel-logs)                 | {{< icon name="dotted-circle" >}} No  | {{< icon name="check-circle" >}} Yes  |
 | [Workhorse logs](#workhorse-logs)               | {{< icon name="check-circle" >}} Yes  | {{< icon name="check-circle" >}} Yes  |
 
 ## `production_json.log`
@@ -1299,6 +1300,10 @@ For Linux package installations, Prometheus logs are in `/var/log/gitlab/prometh
 ## Redis logs
 
 For Linux package installations, Redis logs are in `/var/log/gitlab/redis/current`.
+
+## Sentinel logs
+
+For Linux package installations, Sentinel logs are in `/var/log/gitlab/sentinel/current`.
 
 ## Alertmanager logs
 
