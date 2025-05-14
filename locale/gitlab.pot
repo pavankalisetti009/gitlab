@@ -40209,6 +40209,9 @@ msgstr ""
 msgid "New Security findings"
 msgstr ""
 
+msgid "New application"
+msgstr ""
+
 msgid "New branch"
 msgstr ""
 
