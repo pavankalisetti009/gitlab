@@ -15,6 +15,7 @@ RSpec.describe 'Groups > Discovers > Hand Raise Lead', :js, :saas, feature_categ
 
   before do
     stub_saas_features(subscriptions_trials: true)
+    stub_feature_flags(reveal_duo_core_feature: true)
 
     sign_in(user)
 
@@ -25,13 +26,15 @@ RSpec.describe 'Groups > Discovers > Hand Raise Lead', :js, :saas, feature_categ
     it 'renders and submits the top of the page instance' do
       all_by_testid('trial-discover-hand-raise-lead-button').first.click
 
-      fill_in_and_submit_hand_raise_lead(user, group, glm_content: 'trial_discover_page')
+      fill_in_and_submit_hand_raise_lead(user, group, glm_content: 'trial_discover_page',
+        product_interaction: 'SMB Promo')
     end
 
     it 'renders and submits the bottom of the page instance' do
       all_by_testid('trial-discover-hand-raise-lead-button').last.click
 
-      fill_in_and_submit_hand_raise_lead(user, group, glm_content: 'trial_discover_page')
+      fill_in_and_submit_hand_raise_lead(user, group, glm_content: 'trial_discover_page',
+        product_interaction: 'SMB Promo')
     end
   end
 end
