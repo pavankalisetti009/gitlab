@@ -17,8 +17,14 @@ module Security
         schedule = Security::PipelineExecutionProjectSchedule.find_by_id(schedule_id) || return
 
         return if Feature.disabled?(:scheduled_pipeline_execution_policies, schedule.project)
+
         return unless experiment_enabled?(schedule)
-        return if schedule.snoozed?
+
+        if schedule.snoozed?
+          ::Gitlab::InternalEvents.track_event('scheduled_pipeline_execution_policy_snoozed', project: schedule.project)
+
+          return
+        end
 
         result = execute(schedule)
 
@@ -30,11 +36,21 @@ module Security
       def execute(schedule)
         ci_content = schedule.ci_content.deep_stringify_keys.to_yaml
 
-        Ci::CreatePipelineService.new(
+        result = Ci::CreatePipelineService.new(
           schedule.project,
           schedule.project.security_policy_bot,
           ref: schedule.project.default_branch_or_main
         ).execute(PIPELINE_SOURCE, content: ci_content, ignore_skip_ci: true)
+
+        ::Gitlab::InternalEvents.track_event(
+          'execute_job_scheduled_pipeline_execution_policy',
+          project: schedule.project,
+          additional_properties: {
+            label: result.status.to_s
+          }
+        )
+
+        result
       end
 
       def log_pipeline_creation_failure(result, schedule)

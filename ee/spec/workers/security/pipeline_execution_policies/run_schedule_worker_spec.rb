@@ -110,6 +110,26 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, '#perform
         expect { perform }.to change { project.all_pipelines.count }.from(0).to(1)
       end
 
+      it 'tracks the execution event with successful status', :clean_gitlab_redis_shared_state do
+        allow_next_instance_of(Ci::CreatePipelineService) do |create_pipeline_service|
+          allow(create_pipeline_service).to receive(:execute).and_return(
+            ServiceResponse.success
+          )
+        end
+
+        expect { perform }
+          .to trigger_internal_events('execute_job_scheduled_pipeline_execution_policy')
+          .with(
+            project: schedule.project,
+            additional_properties: { label: 'success' },
+            category: 'InternalEventTracking'
+          ).and increment_usage_metrics(
+            # rubocop:disable Layout/LineLength -- Long metric names
+            'redis_hll_counters.count_distinct_namespace_id_from_execute_job_scheduled_pipeline_execution_policy_monthly'
+            # rubocop:enable Layout/LineLength
+          )
+      end
+
       describe 'resulting pipeline' do
         subject(:pipeline) { perform.then { project.all_pipelines.last! } }
 
@@ -166,6 +186,18 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, '#perform
 
             perform
           end
+
+          it 'tracks the execution event with error status', :clean_gitlab_redis_shared_state do
+            expect { perform }
+              .to trigger_internal_events('execute_job_scheduled_pipeline_execution_policy')
+              .with(
+                project: schedule.project,
+                additional_properties: { label: 'error' },
+                category: 'InternalEventTracking'
+              ).and increment_usage_metrics(
+                'counts.count_total_errors_in_pipelines_created_from_scheduled_pipeline_execution_policy'
+              )
+          end
         end
 
         context 'with SPP access setting disabled' do
@@ -180,15 +212,31 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, '#perform
           it_behaves_like 'logs the error'
         end
       end
-    end
 
-    context 'when schedule is snoozed' do
-      let_it_be(:schedule) do
-        create(:security_pipeline_execution_project_schedule, project: project, snoozed_until: Time.zone.now + 1.day)
-      end
+      context 'when schedule is snoozed' do
+        let_it_be(:schedule) do
+          create(
+            :security_pipeline_execution_project_schedule,
+            project: project,
+            security_policy: security_policy,
+            snoozed_until: Time.zone.now + 1.day
+          )
+        end
 
-      it 'does not create a pipeline' do
-        expect { perform }.not_to change { project.all_pipelines.count }.from(0)
+        it 'does not create a pipeline' do
+          expect { perform }.not_to change { project.all_pipelines.count }.from(0)
+        end
+
+        it 'tracks the snoozed event', :clean_gitlab_redis_shared_state do
+          expect { perform }
+            .to trigger_internal_events('scheduled_pipeline_execution_policy_snoozed')
+            .with(project: schedule.project, category: 'InternalEventTracking')
+            .and increment_usage_metrics(
+              # rubocop:disable Layout/LineLength -- Long metric names
+              'redis_hll_counters.count_distinct_namespace_id_from_execute_job_scheduled_pipeline_execution_policy_snoozed_monthly'
+              # rubocop:enable Layout/LineLength
+            )
+        end
       end
     end
   end

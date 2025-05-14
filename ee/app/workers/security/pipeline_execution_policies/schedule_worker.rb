@@ -51,7 +51,11 @@ module Security
       delegate :measure, to: ::Security::SecurityOrchestrationPolicies::ObserveHistogramsService
 
       def enqueue_within_time_window(schedule)
-        return if schedule.snoozed?
+        if schedule.snoozed?
+          ::Gitlab::InternalEvents.track_event('scheduled_pipeline_execution_policy_snoozed', project: schedule.project)
+
+          return
+        end
 
         time_window = [schedule.time_window_seconds, schedule.next_run_in].min
 
