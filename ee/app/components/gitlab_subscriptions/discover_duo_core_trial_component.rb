@@ -120,16 +120,18 @@ module GitlabSubscriptions
     override :hero_tagline_text
     def hero_tagline_text
       safe_join([
-        s_('DuoCoreTrialDiscover|New customers can get access to GitLab Premium with Duo '),
+        s_(
+          'DuoCoreTrialDiscover|New customers can now get access to GitLab Premium with Duo at a discount. ' \
+            'Contact Sales to get started.'
+        ),
         content_tag(:div, class: 'gl-display-inline-flex gl-items-center gl-gap-2 gl-mb-2') do
           safe_join([
             content_tag(:span, '$29', class: 'gl-text-lg gl-line-through gl-mr-2'),
             content_tag(:span, '$19',
               class: 'gl-text-size-h2-xl gl-font-bold gl-decoration-2 gl-mr-2'),
-            content_tag(:span, s_('per user/month.'))
+            content_tag(:span, s_('per user/month'))
           ])
-        end,
-        s_('Contact Sales to get started.')
+        end
       ])
     end
 

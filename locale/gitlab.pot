@@ -16995,9 +16995,6 @@ msgstr ""
 msgid "Consistency guarantee method"
 msgstr ""
 
-msgid "Contact Sales to get started."
-msgstr ""
-
 msgid "Contact sales"
 msgstr ""
 
@@ -23224,7 +23221,7 @@ msgstr ""
 msgid "DuoCoreTrialDiscover|Native AI Benefits in Premium"
 msgstr ""
 
-msgid "DuoCoreTrialDiscover|New customers can get access to GitLab Premium with Duo "
+msgid "DuoCoreTrialDiscover|New customers can now get access to GitLab Premium with Duo at a discount. Contact Sales to get started."
 msgstr ""
 
 msgid "DuoCoreTrialDiscover|Prevent pipeline conflicts with merge trains and push rules, store build outputs with Artifact Registry, and reuse working templates across teams."
@@ -73363,7 +73360,7 @@ msgstr ""
 msgid "pending comment"
 msgstr ""
 
-msgid "per user/month."
+msgid "per user/month"
 msgstr ""
 
 msgid "personal access token"
