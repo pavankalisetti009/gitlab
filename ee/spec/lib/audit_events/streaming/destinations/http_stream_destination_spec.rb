@@ -23,10 +23,7 @@ RSpec.describe AuditEvents::Streaming::Destinations::HttpStreamDestination, feat
         expect(Gitlab::HTTP).to receive(:post).with(
           destination.config["url"],
           body: request_body,
-          headers: request_headers,
-          open_timeout: 8.seconds,
-          read_timeout: 8.seconds,
-          write_timeout: 8.seconds
+          headers: request_headers
         )
         stream
       end
