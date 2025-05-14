@@ -10,9 +10,52 @@ module Namespaces
           container_or_date
         end
 
-      return unless date
+      return unless date.is_a?(Date) || date.is_a?(Time)
 
       ::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(date).strftime(format)
+    end
+
+    def deletion_in_progress_or_scheduled_in_hierarchy_chain?(namespace)
+      return false unless namespace.respond_to?(:deletion_in_progress_or_scheduled_in_hierarchy_chain?)
+
+      namespace.deletion_in_progress_or_scheduled_in_hierarchy_chain?
+    end
+
+    def self_or_ancestors_deletion_in_progress_or_scheduled_message(namespace)
+      _self_deletion_in_progress_message(namespace) || _deletion_scheduled_in_hierarchy_chain_message(namespace)
+    end
+
+    def _self_deletion_in_progress_message(namespace)
+      return unless namespace.self_deletion_in_progress?
+
+      _message_for_namespace(namespace, _self_deletion_in_progress_messages)
+    end
+
+    def _deletion_scheduled_in_hierarchy_chain_message(namespace)
+      if namespace.self_deletion_scheduled?
+        _self_deletion_scheduled_message(namespace)
+      else
+        _parent_deletion_scheduled_message(namespace)
+      end
+    end
+
+    def _self_deletion_scheduled_message(namespace)
+      date = permanent_deletion_date_formatted(namespace)
+
+      safe_format(
+        _message_for_namespace(namespace, _self_deletion_scheduled_messages),
+        date: tag.strong(date)
+      )
+    end
+
+    def _parent_deletion_scheduled_message(namespace)
+      namespace_pending_deletion = namespace.first_scheduled_for_deletion_in_hierarchy_chain
+      date = permanent_deletion_date_formatted(namespace_pending_deletion)
+
+      safe_format(
+        _message_for_namespace(namespace, _parent_deletion_scheduled_messages),
+        date: tag.strong(date)
+      )
     end
 
     def delete_delayed_namespace_message(namespace)
@@ -84,7 +127,7 @@ module Namespaces
 
     def restore_namespace_scheduled_for_deletion_message(namespace)
       safe_format(
-        _message_for_namespace(namespace, _restore_namespace_scheduled_for_deletion_message),
+        _message_for_namespace(namespace, _restore_namespace_scheduled_for_deletion_messages),
         date: tag.strong(permanent_deletion_date_formatted(namespace))
       )
     end
@@ -99,6 +142,30 @@ module Namespaces
       else
         raise "Unsupported namespace type: #{namespace.class.name}"
       end
+    end
+
+    def _self_deletion_in_progress_messages
+      {
+        group: _('This group and its subgroups are being deleted.'),
+        project: _('This project is being deleted. Repository and other project resources are read-only.')
+      }
+    end
+
+    def _self_deletion_scheduled_messages
+      {
+        group: _('This group and its subgroups and projects are pending deletion, and will be deleted on %{date}.'),
+        project: _('This project is pending deletion, and will be deleted on %{date}. Repository and other project ' \
+          'resources are read-only.')
+      }
+    end
+
+    def _parent_deletion_scheduled_messages
+      {
+        group: _('This group will be deleted on %{date} because its parent group is ' \
+          'scheduled for deletion.'),
+        project: _('This project will be deleted on %{date} because its parent group is ' \
+          'scheduled for deletion.')
+      }
     end
 
     def _delete_delayed_namespace_messages
@@ -139,7 +206,7 @@ module Namespaces
       }
     end
 
-    def _restore_namespace_scheduled_for_deletion_message
+    def _restore_namespace_scheduled_for_deletion_messages
       {
         group: _("This group has been scheduled for deletion on %{date}. " \
           "To cancel the scheduled deletion, you can restore this group, including all its resources."),
