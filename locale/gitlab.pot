@@ -72564,6 +72564,9 @@ msgstr ""
 msgid "has already been published"
 msgstr ""
 
+msgid "has already been recorded as a violation for this compliance control"
+msgstr ""
+
 msgid "has already been taken"
 msgstr ""
 
@@ -73312,6 +73315,9 @@ msgstr ""
 msgid "must be associated with a Group or a Project"
 msgstr ""
 
+msgid "must be associated with either a Project or Group entity type"
+msgstr ""
+
 msgid "must be at least 1 day"
 msgstr ""
 
@@ -73387,6 +73393,12 @@ msgstr ""
 msgid "must belong to the same namespace."
 msgstr ""
 
+msgid "must belong to the specified namespace"
+msgstr ""
+
+msgid "must belong to the specified project"
+msgstr ""
+
 msgid "must contain only a discord user ID."
 msgstr ""
 
@@ -73439,6 +73451,12 @@ msgid "must only be set for bot user types"
 msgstr ""
 
 msgid "must only contain letters, digits, forward-slash, underscore, hyphen or period"
+msgstr ""
+
+msgid "must reference the specified namespace as its entity"
+msgstr ""
+
+msgid "must reference the specified project as its entity"
 msgstr ""
 
 msgid "my-awesome-group"
