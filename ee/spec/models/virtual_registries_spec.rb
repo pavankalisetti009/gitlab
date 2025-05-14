@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::VirtualRegistries, feature_category: :virtual_registry do
+RSpec.describe VirtualRegistries, feature_category: :virtual_registry do
   describe '.registries_count_for' do
     let_it_be(:group) { create(:group) }
 

@@ -6,8 +6,9 @@ module EE
       module Request
         extend ::Gitlab::Utils::Override
 
+        VIRTUAL_REGISTRIES_API_PACKAGE_TYPES = ::VirtualRegistries::PACKAGE_TYPES.map(&:to_s).join('|')
         VIRTUAL_REGISTRIES_API_PACKAGES_ENDPOINTS_REGEX =
-          %r{^/api/v\d+/virtual_registries/packages/(?:#{VirtualRegistries::PACKAGE_TYPES.map(&:to_s).join('|')})/\d+/}
+          %r{^/api/v\d+/virtual_registries/packages/(?:#{VIRTUAL_REGISTRIES_API_PACKAGE_TYPES})/\d+/}
 
         override :should_be_skipped?
         def should_be_skipped?
