@@ -49,6 +49,13 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:subscription_seat_assignments).class_name('GitlabSubscriptions::SeatAssignment') }
 
     it do
+      is_expected.to have_many(:ai_feature_settings)
+         .class_name('Ai::ModelSelection::NamespaceFeatureSetting')
+         .with_foreign_key(:namespace_id)
+         .inverse_of(:namespace)
+    end
+
+    it do
       is_expected.to have_many(:enterprise_user_details)
           .class_name('UserDetail')
           .with_foreign_key(:enterprise_group_id)

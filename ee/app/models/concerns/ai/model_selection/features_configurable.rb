@@ -1,0 +1,130 @@
+# frozen_string_literal: true
+
+module Ai
+  module ModelSelection
+    module FeaturesConfigurable
+      extend ActiveSupport::Concern
+
+      MODEL_PROVIDER = "gitlab"
+
+      FEATURES = {
+        code_generations: 0,
+        code_completions: 1,
+        duo_chat: 2,
+        duo_chat_explain_code: 3,
+        duo_chat_write_tests: 4,
+        duo_chat_refactor_code: 5,
+        duo_chat_fix_code: 6,
+        duo_chat_troubleshoot_job: 7,
+        generate_commit_message: 8,
+        summarize_new_merge_request: 9,
+        duo_chat_explain_vulnerability: 10,
+        resolve_vulnerability: 11,
+        summarize_review: 12,
+        duo_chat_summarize_comments: 14
+      }.freeze
+      # Duo CLI should be number 13
+      # But it has been disabled here because its context not namespaced
+      # See full feature list at ee/app/models/ai/feature_setting.rb
+      # For more context see https://gitlab.com/groups/gitlab-org/-/epics/17570#note_2487671188
+
+      included do
+        enum :feature, FEATURES, validate: true
+
+        validates :feature, presence: true
+        validate :validate_model_selection_enabled
+        validate :validate_model_ref_with_definition
+
+        delegate :title, :main_feature, to: :metadata, allow_nil: true
+
+        attribute :model_definitions, default: {}
+
+        after_validation :set_model_name, if: -> { offered_model_ref_changed? }
+
+        def self.find_or_initialize_by_feature
+          raise NotImplementedError,
+            '.find_or_initialize_by_feature method must be implemented for Model Selection logic'
+        end
+
+        def model_selection_scope
+          raise NotImplementedError, '#model_selection_scope method must be implemented for Model Selection logic'
+        end
+
+        def metadata
+          feature_metadata = Ai::FeatureSetting::FEATURE_METADATA[feature.to_s] || {}
+
+          Ai::FeatureSetting::FeatureMetadata.new(feature_metadata)
+        end
+
+        def provider
+          MODEL_PROVIDER
+        end
+
+        private
+
+        def validate_model_selection_enabled
+          return if model_selection_enabled?
+
+          errors.add(:base,
+            "Model selection is not enabled.")
+        end
+
+        def validate_model_ref_with_definition
+          return if offered_model_ref.blank?
+
+          return unless model_definition_present?
+
+          feature_data = model_definitions['unit_primitives']&.find { |unit| unit['feature_setting'] == feature.to_s }
+
+          unless feature_data.present?
+            errors.add(:offered_model_ref, 'Feature not found in model definitions')
+            return
+          end
+
+          add_model_not_compatible_error if feature_data['selectable_models'].exclude?(offered_model_ref)
+        end
+
+        def model_selection_enabled?
+          ::Feature.enabled?(:ai_model_switching, model_selection_scope)
+        end
+
+        def set_model_name
+          if offered_model_ref.blank?
+            self.offered_model_name = offered_model_ref
+            return
+          end
+
+          return unless model_definition_present?
+
+          model_data = model_definitions['models']&.find { |model| model['identifier'] == offered_model_ref }
+
+          if model_data.nil?
+            errors.add(:offered_model_ref, 'Model reference not found in definitions')
+            return
+          end
+
+          model_name_candidate = model_data['name']
+
+          if model_name_candidate.blank?
+            errors.add(:offered_model_ref, 'No model name found in model data')
+            return
+          end
+
+          self.offered_model_name = model_name_candidate
+        end
+
+        def model_definition_present?
+          return true if model_definitions.present?
+
+          errors.add(:feature, "No model definition given for validation")
+          false
+        end
+
+        def add_model_not_compatible_error
+          errors.add(:offered_model_ref,
+            "Selected model '#{offered_model_ref}' is not compatible with the feature '#{feature}'")
+        end
+      end
+    end
+  end
+end
