@@ -135,7 +135,7 @@ export default {
     runHealthCheck: s__('CodeSuggestions|Run health check'),
     showResults: __('Show results'),
     hideResults: __('Hide results'),
-    updating: s__('CodeSuggestions|Updating...'),
+    updating: s__('CodeSuggestions|Updating…'),
     noHealthProblems: s__('CodeSuggestions|No health problems detected'),
     problemsWithSetup: s__('CodeSuggestions|Problems detected with setup'),
     downloadReport: s__('CodeSuggestions|Download Report'),

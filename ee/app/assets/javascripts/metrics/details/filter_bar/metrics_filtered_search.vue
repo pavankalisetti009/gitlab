@@ -35,7 +35,7 @@ export default {
     GlLoadingIcon,
   },
   i18n: {
-    searchInputPlaceholder: s__('ObservabilityMetrics|Filter dimensions...'),
+    searchInputPlaceholder: s__('ObservabilityMetrics|Filter dimensions…'),
     search: s__('ObservabilityMetrics|Search'),
     cancel: s__('ObservabilityMetrics|Cancel'),
   },

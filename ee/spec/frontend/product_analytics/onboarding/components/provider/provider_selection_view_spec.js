@@ -193,7 +193,7 @@ describe('ProviderSelectionView', () => {
 
         it('should show instance loading state', () => {
           expect(findGlEmptyState().props()).toMatchObject({
-            title: 'Creating your product analytics instance...',
+            title: 'Creating your product analytics instance…',
             svgPath: loadingStateSvgPath,
           });
           expect(findInstanceLoadingState().exists()).toBe(true);

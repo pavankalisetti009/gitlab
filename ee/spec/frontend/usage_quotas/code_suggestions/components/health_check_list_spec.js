@@ -115,8 +115,8 @@ describe('HealthCheckList', () => {
         expect(findHealthCheckIcon().props('name')).toBe('status-health');
       });
 
-      it('renders health check title as Updating...', () => {
-        expect(findHealthCheckTitle().text()).toBe('Updating...');
+      it('renders health check title as Updating…', () => {
+        expect(findHealthCheckTitle().text()).toBe('Updating…');
       });
 
       it('disables run health check button', () => {
@@ -186,8 +186,8 @@ describe('HealthCheckList', () => {
         expect(findHealthCheckIcon().props('name')).toBe('status-health');
       });
 
-      it('renders health check title as Updating...', () => {
-        expect(findHealthCheckTitle().text()).toBe('Updating...');
+      it('renders health check title as Updating…', () => {
+        expect(findHealthCheckTitle().text()).toBe('Updating…');
       });
 
       it('disables run health check button', () => {
@@ -338,7 +338,7 @@ describe('HealthCheckList', () => {
       findRunHealthCheckButton().vm.$emit('click');
       await nextTick();
 
-      expect(findHealthCheckTitle().text()).toBe('Updating...');
+      expect(findHealthCheckTitle().text()).toBe('Updating…');
       expect(healthStatusReq).toHaveBeenCalledTimes(1);
     });
   });

@@ -147,7 +147,7 @@ RSpec.shared_examples 'product analytics dashboards' do
               it 'renders the creating instance loading screen and then the instrumentation setup page' do
                 click_button s_('ProductAnalytics|Connect your own provider')
 
-                expect(page).to have_content(s_('ProductAnalytics|Creating your product analytics instance...'))
+                expect(page).to have_content(s_('ProductAnalytics|Creating your product analytics instance…'))
 
                 wait_for_requests
 
@@ -177,7 +177,7 @@ RSpec.shared_examples 'product analytics dashboards' do
             end
 
             it 'renders the loading view' do
-              expect(page).to have_content(s_('ProductAnalytics|Creating your product analytics instance...'))
+              expect(page).to have_content(s_('ProductAnalytics|Creating your product analytics instance…'))
             end
           end
 

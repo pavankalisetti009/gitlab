@@ -85,7 +85,7 @@ export default {
       block
       positioning-strategy="fixed"
       :loading="isLoadingAdminRoles"
-      :toggle-text="isLoadingAdminRoles ? __('Loading...') : ''"
+      :toggle-text="isLoadingAdminRoles ? __('Loading…') : ''"
       :items="dropdownItems"
       :header-text="s__('AdminUsers|Change access')"
       :reset-button-label="s__('MemberRole|Manage roles')"

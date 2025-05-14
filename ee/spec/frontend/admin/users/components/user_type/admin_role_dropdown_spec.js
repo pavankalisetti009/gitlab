@@ -54,7 +54,7 @@ describe('AdminRoleDropdown component', () => {
     });
 
     it('shows loading message in dropdown button', () => {
-      expect(findDropdown().props('toggleText')).toBe('Loading...');
+      expect(findDropdown().props('toggleText')).toBe('Loading…');
     });
 
     it('runs admin roles query', () => {

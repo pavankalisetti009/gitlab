@@ -51,7 +51,7 @@ export default {
     },
   },
   i18n: {
-    searchInputPlaceholder: s__('ObservabilityLogs|Search logs...'),
+    searchInputPlaceholder: s__('ObservabilityLogs|Search logs…'),
   },
   data() {
     return {
