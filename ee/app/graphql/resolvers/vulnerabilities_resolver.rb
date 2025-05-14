@@ -27,8 +27,21 @@ module Resolvers
     argument :owasp_top_ten, [Types::VulnerabilityOwaspTop10Enum],
       required: false,
       as: :owasp_top_10,
-      description: 'Filter vulnerabilities by OWASP Top 10 category. Wildcard value "NONE" also supported ' \
-                   'and it cannot be combined with other OWASP top 10 values.'
+      description: 'Filter vulnerabilities by OWASP Top 10 category. Wildcard value `NONE` is also supported ' \
+                   'but it cannot be combined with other OWASP top 10 values. ' \
+                   'Experimental support for OWASP 2021 values is deprecated ' \
+                   'and the removal is tracked in <https://gitlab.com/gitlab-org/gitlab/-/issues/539250> ' \
+                   'Instead, use the `owasp_top_ten_2021` argument to continue filtering by OWASP 2021 values.'
+
+    argument :owasp_top_ten_2021, [::Types::Vulnerabilities::Owasp2021Top10Enum],
+      required: false,
+      as: :owasp_top_10_2021,
+      experiment: { milestone: '18.1' },
+      description: 'Filter vulnerabilities by OWASP Top 10 2021 category. Wildcard value `NONE` is also supported ' \
+                   'but it cannot be combined with other OWASP top 10 2021 values. ' \
+                   'To use this argument, you must have Elasticsearch configured and the ' \
+                   '`advanced_vulnerability_management` feature flag enabled. ' \
+                   'Not supported on Instance Security Dashboard queries.'
 
     argument :identifier_name, GraphQL::Types::String,
       required: false,
@@ -101,6 +114,8 @@ module Resolvers
       disabled_filters = context.response_extensions["disabled_filters"] ||= []
       disabled_filters << :identifier_name unless search_by_identifier_allowed_on_db?(vulnerable: vulnerable)
 
+      return vulnerabilities_from_es(args) if use_elasticsearch?(args)
+
       vulnerabilities(args)
         .with_findings_scanner_and_identifiers
     end
@@ -172,6 +187,10 @@ module Resolvers
           label: 'graphql'
         }
       )
+    end
+
+    def vulnerabilities_from_es(filters)
+      ::Security::VulnerabilityReadsElasticFinder.new(vulnerable, filters).execute
     end
   end
 end

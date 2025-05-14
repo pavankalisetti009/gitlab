@@ -6,7 +6,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
   include GraphqlHelpers
 
   describe '#resolve' do
-    subject { resolve(described_class, obj: vulnerable, args: params, ctx: { current_user: current_user, **extra_context }) }
+    subject(:resolved) { resolve(described_class, obj: vulnerable, args: params, ctx: { current_user: current_user, **extra_context }) }
 
     let_it_be(:group) { create(:group) }
     let_it_be_with_reload(:project) { create(:project, namespace: group) }
@@ -250,6 +250,17 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
           is_expected.to be_empty
         end
       end
+
+      context 'when filtering vulnerabilities with owasp_top_10_2021', :elastic_clean do
+        let(:params) { { owasp_top_ten_2021: ['A1:2021-Broken Access Control'] } }
+        let(:error_msg) { "Feature is not supported for InstanceSecurityDashboard" }
+
+        it 'raises an error' do
+          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError, s_(error_msg)) do
+            resolved
+          end
+        end
+      end
     end
 
     context 'when image is given' do
@@ -347,6 +358,70 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       end
     end
 
+    context 'when filtering vulnerabilities with owasp_top_10_2021', :elastic_clean do
+      let(:params) do
+        { owasp_top_ten_2021: ['A1:2021-Broken Access Control'] }
+      end
+
+      let_it_be(:vuln_read_with_owasp_top_10_first) do
+        create(:vulnerability_read, :with_owasp_top_10, severity: :high, project: project,
+          identifier_names: ['A1:2021-Broken Access Control'])
+      end
+
+      let_it_be(:vuln_read_with_owasp_top_10_second) do
+        create(:vulnerability_read, :with_owasp_top_10,
+          owasp_top_10: 'A1:2021-Broken Access Control', severity: :low, project: project,
+          identifier_names: ['A1:2021-Broken Access Control'])
+      end
+
+      let_it_be(:vuln_read) { create(:vulnerability_read, severity: :medium) }
+
+      context 'without elasticsearch' do
+        before do
+          allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(false)
+        end
+
+        it_behaves_like 'raises ES errors'
+      end
+
+      context 'with advanced_vulnerability_management FF disabled' do
+        before do
+          allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(true)
+          stub_feature_flags(advanced_vulnerability_management: false)
+        end
+
+        it_behaves_like 'raises ES errors'
+      end
+
+      context 'with elastic search' do
+        before do
+          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+          Elastic::ProcessBookkeepingService.track!(
+            low_vulnerability.vulnerability_read,
+            critical_vulnerability.vulnerability_read,
+            high_vulnerability.vulnerability_read,
+            vuln_read_with_owasp_top_10_first,
+            vuln_read_with_owasp_top_10_second
+          )
+          ensure_elasticsearch_index!
+
+          allow(current_user).to receive(:can?).with(:access_advanced_vulnerability_management, vulnerable).and_return(true)
+        end
+
+        it 'only returns vulnerabilities with matching owasp_top_10_2021 values in identifier_names' do
+          expect(Gitlab::Search::Client).to receive(:execute_search).and_call_original
+
+          results = resolved.to_a
+
+          expect(results).to match_array([
+            vuln_read_with_owasp_top_10_first,
+            vuln_read_with_owasp_top_10_second
+          ].map(&:vulnerability))
+        end
+      end
+    end
+
     context 'when identifer_name is given' do
       let_it_be(:identifier_name) { 'CVE-2024-1234' }
 
@@ -362,8 +437,32 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
       let(:params) { { identifier_name: identifier_name } }
 
-      it 'only returns vulnerabilities with matching identifier_name alone' do
-        is_expected.to contain_exactly(vuln_read_with_identifier_name_first.vulnerability)
+      shared_examples_for 'when elasticsearch is available', :elastic_clean do
+        before do
+          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+          Elastic::ProcessBookkeepingService.track!(
+            vuln_read_with_identifier_name_first, vuln_read_with_identifier_name_second
+          )
+          ensure_elasticsearch_index!
+
+          allow(current_user).to receive(:can?).with(:access_advanced_vulnerability_management, vulnerable).and_return(true)
+        end
+
+        it 'retuns vulnerabilities from elasticsearch' do
+          expect(Gitlab::Search::Client).to receive(:execute_search).and_call_original
+          results = resolved.to_a
+
+          expect(results).to match_array([vuln_read_with_identifier_name_first].map(&:vulnerability))
+        end
+      end
+
+      context 'when vulnerable is a project' do
+        it 'only returns vulnerabilities with matching identifier_name alone' do
+          is_expected.to contain_exactly(vuln_read_with_identifier_name_first.vulnerability)
+        end
+
+        it_behaves_like 'when elasticsearch is available'
       end
 
       context 'when vulnerable is a group' do
@@ -389,6 +488,8 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
             end
             expect(::Security::ProjectStatistics).to have_received(:sum_vulnerability_count_for_group).once
           end
+
+          it_behaves_like 'when elasticsearch is available'
         end
 
         context 'when the group has fewer vulnerabilities than the max' do
