@@ -38,16 +38,14 @@ export default {
         }}
       </p>
     </header>
-    <div class="gl-mt-3">
-      <gl-button
-        v-for="ext in extensions"
-        :key="ext.name"
-        category="secondary"
-        :href="ext.path"
-        class="gl-mr-3"
-      >
-        {{ ext.name }}
-      </gl-button>
-    </div>
+    <gl-button
+      v-for="ext in extensions"
+      :key="ext.name"
+      category="secondary"
+      :href="ext.path"
+      class="gl-mr-3 gl-mt-3"
+    >
+      {{ ext.name }}
+    </gl-button>
   </div>
 </template>
