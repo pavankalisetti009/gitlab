@@ -3,6 +3,7 @@
 module Resolvers
   module Vulnerabilities
     class IdentifierSearchResolver < BaseResolver
+      include VulnerabilityFilterable
       include Gitlab::Graphql::Authorize::AuthorizeResource
       include ::Security::GroupIdentifierSearch
 
@@ -22,7 +23,9 @@ module Resolvers
 
         validate_args(args)
 
-        search_by_identifier_allowed!(vulnerable: object)
+        return search_from_es(args) if advanced_filtering_available?
+
+        search_by_identifier_allowed_on_db!(vulnerable: object)
 
         if object.is_a?(::Project)
           ::Vulnerabilities::Identifier.search_identifier_name(
@@ -45,6 +48,10 @@ module Resolvers
       def authorize!
         Ability.allowed?(context[:current_user], :read_security_resource, object) ||
           raise_resource_not_available_error!
+      end
+
+      def search_from_es(args)
+        ::Security::VulnerabilityReadsElasticFinder.new(object).search_identifier_name(args[:name])
       end
     end
   end
