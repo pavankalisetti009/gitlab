@@ -60,6 +60,7 @@ RSpec.describe Mutations::Security::Finding::SeverityOverride, feature_category:
     context 'when the user has access to vulnerability management' do
       before do
         stub_licensed_features(security_dashboard: true)
+        stub_feature_flags(hide_vulnerability_severity_override: false)
       end
 
       context 'when user does not have access to the project' do
@@ -167,7 +168,7 @@ RSpec.describe Mutations::Security::Finding::SeverityOverride, feature_category:
       context 'when the feature flag is disabled' do
         before do
           security_finding.project.add_maintainer(current_user)
-          stub_feature_flags(vulnerability_severity_override: false)
+          stub_feature_flags(hide_vulnerability_severity_override: true)
         end
 
         it 'returns ResourceNotAvailable error' do

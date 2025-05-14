@@ -29,7 +29,7 @@ describe('Severity Badge', () => {
       },
       provide: {
         glFeatures: {
-          vulnerabilitySeverityOverride: true,
+          hideVulnerabilitySeverityOverride: false,
         },
       },
       stubs: {
