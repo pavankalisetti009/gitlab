@@ -103,11 +103,12 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     end
 
     context 'for issues scope' do
-      let(:term) { 'Goodbye' }
-      let(:search_group) { group }
-      let_it_be(:project) { create(:project, :public, group: group) }
-      let_it_be(:issue) { create(:issue, project: project, title: 'Hello world, here I am!') }
+      let_it_be(:project3) { create(:project, :public, :in_group) }
+      let_it_be(:issue) { create(:issue, project: project3, title: 'Hello world, here I am!') }
       let_it_be(:note) { create(:note_on_issue, note: 'Goodbye moon', noteable: issue, project: issue.project) }
+
+      let(:term) { 'Goodbye' }
+      let(:search_group) { project3.group }
 
       before do
         # this flag is default off and all related code will be removed and replaced by search_work_item_queries_notes
