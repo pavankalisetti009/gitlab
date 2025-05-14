@@ -23,17 +23,13 @@ module CloudConnector
 
       private
 
-      # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- we don't have dedicated SM/.com Cloud Connector features
-      # or other checks that would allow us to identify where the code is running. We rely on instance checks for now.
-      # Will be addressed in https://gitlab.com/gitlab-org/gitlab/-/issues/437725
       def use_self_signed_token?(service_name)
-        return true if Gitlab.org_or_com?
+        return true if ::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
         return true if service_name == :self_hosted_models
 
         # All remaining code paths require requesting self-signed tokens.
         Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
       end
-      # rubocop:enable Gitlab/AvoidGitlabInstanceChecks
     end
   end
 end
