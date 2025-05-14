@@ -19,7 +19,7 @@ export const GROUPS = [
     ],
   },
   {
-    text: s__('SecurityReports|Dismissed as...'),
+    text: s__('SecurityReports|Dismissed as…'),
     options: [
       { value: dismissed.searchParamValue, text: s__('SecurityReports|All dismissal reasons') },
       ...Object.entries(DISMISSAL_REASONS).map(([value, text]) => ({

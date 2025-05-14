@@ -14736,7 +14736,7 @@ msgstr ""
 msgid "CodeSuggestions|Trial"
 msgstr ""
 
-msgid "CodeSuggestions|Updating..."
+msgid "CodeSuggestions|Updating…"
 msgstr ""
 
 msgid "CodeSuggestions|Welcome to GitLab Duo Pro!"
@@ -23158,7 +23158,7 @@ msgstr ""
 msgid "DuoChat|No results found"
 msgstr ""
 
-msgid "DuoChat|Search %{categoryLabel}..."
+msgid "DuoChat|Search %{categoryLabel}…"
 msgstr ""
 
 msgid "DuoChat|The issue, epic, merge request, or code you're viewing"
@@ -27187,7 +27187,7 @@ msgstr ""
 msgid "GPG keys allow you to verify signed commits."
 msgstr ""
 
-msgid "GPG signature (loading...)"
+msgid "GPG signature (loading…)"
 msgstr ""
 
 msgid "GcpDestinationValidator validates only gcp external audit event destinations."
@@ -28406,7 +28406,7 @@ msgstr ""
 msgid "GitLabPages|Unverified"
 msgstr ""
 
-msgid "GitLabPages|Updating your Pages configuration..."
+msgid "GitLabPages|Updating your Pages configuration…"
 msgstr ""
 
 msgid "GitLabPages|Use unique domain"
@@ -28415,7 +28415,7 @@ msgstr ""
 msgid "GitLabPages|Verified"
 msgstr ""
 
-msgid "GitLabPages|Waiting for the Pages Pipeline to complete..."
+msgid "GitLabPages|Waiting for the Pages Pipeline to complete…"
 msgstr ""
 
 msgid "GitLabPages|When enabled, a unique domain is generated to access pages."
@@ -28436,7 +28436,7 @@ msgstr ""
 msgid "GitLabPages|Your Pages site is not configured yet. See the %{docs_link_start}GitLab Pages documentation%{link_end} to learn how to upload your static site and have GitLab serve it. You can also take some inspiration from the %{samples_link_start}sample Pages projects%{link_end}."
 msgstr ""
 
-msgid "GitLabPages|Your project is configured for GitLab Pages and the pipeline is running..."
+msgid "GitLabPages|Your project is configured for GitLab Pages and the pipeline is running…"
 msgstr ""
 
 msgid "GitPod"
@@ -28916,19 +28916,19 @@ msgstr ""
 msgid "GlobalSearch|Search %{kbdStart}↵%{kbdEnd}"
 msgstr ""
 
-msgid "GlobalSearch|Search for `%{searchTerm}` files in..."
+msgid "GlobalSearch|Search for `%{searchTerm}` files in…"
 msgstr ""
 
-msgid "GlobalSearch|Search for `%{searchTerm}` in..."
+msgid "GlobalSearch|Search for `%{searchTerm}` in…"
 msgstr ""
 
-msgid "GlobalSearch|Search for `%{searchTerm}` pages in..."
+msgid "GlobalSearch|Search for `%{searchTerm}` pages in…"
 msgstr ""
 
-msgid "GlobalSearch|Search for `%{searchTerm}` projects in..."
+msgid "GlobalSearch|Search for `%{searchTerm}` projects in…"
 msgstr ""
 
-msgid "GlobalSearch|Search for `%{searchTerm}` users in..."
+msgid "GlobalSearch|Search for `%{searchTerm}` users in…"
 msgstr ""
 
 msgid "GlobalSearch|Search for projects, issues, etc."
@@ -29008,7 +29008,7 @@ msgstr ""
 msgid "GlobalSearch|Type to filter labels."
 msgstr ""
 
-msgid "GlobalSearch|Type to search..."
+msgid "GlobalSearch|Type to search…"
 msgstr ""
 
 msgid "GlobalSearch|Users"
@@ -31971,7 +31971,7 @@ msgstr[1] ""
 msgid "Importing GitLab projects? Migrating GitLab projects when migrating groups by direct transfer is in Beta. %{link_start}Learn more.%{link_end}"
 msgstr ""
 
-msgid "Importing..."
+msgid "Importing…"
 msgstr ""
 
 msgid "Import|An error occurred while fetching import details."
@@ -33464,7 +33464,7 @@ msgstr ""
 msgid "InviteReminderEmail|Hey there!"
 msgstr ""
 
-msgid "InviteReminderEmail|In case you missed it..."
+msgid "InviteReminderEmail|In case you missed it…"
 msgstr ""
 
 msgid "InviteReminderEmail|Invitation pending"
@@ -36501,7 +36501,7 @@ msgstr ""
 msgid "Loading files, directories, and submodules in the path %{path} for commit reference %{ref}"
 msgstr ""
 
-msgid "Loading full blame..."
+msgid "Loading full blame…"
 msgstr ""
 
 msgid "Loading more"
@@ -36514,9 +36514,6 @@ msgid "Loading snippet"
 msgstr ""
 
 msgid "Loading the Web IDE"
-msgstr ""
-
-msgid "Loading..."
 msgstr ""
 
 msgid "Loading…"
@@ -36792,7 +36789,7 @@ msgstr ""
 msgid "Manage security policy settings in your GitLab instance"
 msgstr ""
 
-msgid "Manage templates..."
+msgid "Manage templates…"
 msgstr ""
 
 msgid "Manage two-factor authentication"
@@ -41811,7 +41808,7 @@ msgstr ""
 msgid "ObservabilityLogs|Resource attributes"
 msgstr ""
 
-msgid "ObservabilityLogs|Search logs..."
+msgid "ObservabilityLogs|Search logs…"
 msgstr ""
 
 msgid "ObservabilityLogs|Service"
@@ -41871,7 +41868,7 @@ msgstr ""
 msgid "ObservabilityMetrics|Failed to load metrics."
 msgstr ""
 
-msgid "ObservabilityMetrics|Filter dimensions..."
+msgid "ObservabilityMetrics|Filter dimensions…"
 msgstr ""
 
 msgid "ObservabilityMetrics|Last ingested"
@@ -41907,7 +41904,7 @@ msgstr ""
 msgid "ObservabilityMetrics|Search"
 msgstr ""
 
-msgid "ObservabilityMetrics|Search metrics..."
+msgid "ObservabilityMetrics|Search metrics…"
 msgstr ""
 
 msgid "ObservabilityMetrics|Select dimensions"
@@ -45938,7 +45935,7 @@ msgstr ""
 msgid "Please select what should be included in each exported requirement."
 msgstr ""
 
-msgid "Please select..."
+msgid "Please select…"
 msgstr ""
 
 msgid "Please set the admin account password."
@@ -46546,7 +46543,7 @@ msgstr ""
 msgid "ProductAnalytics|Continue set up"
 msgstr ""
 
-msgid "ProductAnalytics|Creating your product analytics instance..."
+msgid "ProductAnalytics|Creating your product analytics instance…"
 msgstr ""
 
 msgid "ProductAnalytics|Cube API URL"
@@ -56170,7 +56167,7 @@ msgstr ""
 msgid "SecurityReports|Dismissed (all reasons)"
 msgstr ""
 
-msgid "SecurityReports|Dismissed as..."
+msgid "SecurityReports|Dismissed as…"
 msgstr ""
 
 msgid "SecurityReports|Does not have a solution"
@@ -59352,7 +59349,7 @@ msgstr ""
 msgid "Step-up auth not successful"
 msgstr ""
 
-msgid "Still loading..."
+msgid "Still loading…"
 msgstr ""
 
 msgid "Stop impersonating"
@@ -65136,10 +65133,10 @@ msgstr ""
 msgid "Uploaded date"
 msgstr ""
 
-msgid "Uploading..."
+msgid "Uploading: %{progress}"
 msgstr ""
 
-msgid "Uploading: %{progress}"
+msgid "Uploading…"
 msgstr ""
 
 msgid "Upon successful validation, you're granted access to slash commands."

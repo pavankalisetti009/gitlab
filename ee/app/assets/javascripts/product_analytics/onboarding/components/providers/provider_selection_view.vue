@@ -120,7 +120,7 @@ export default {
   <section>
     <gl-empty-state
       v-if="isInitializingInstance"
-      :title="s__('ProductAnalytics|Creating your product analytics instance...')"
+      :title="s__('ProductAnalytics|Creating your product analytics instance…')"
       :svg-path="instanceInitializingSvgPath"
       :svg-height="null"
       data-testid="provider-selection-instance-loading"

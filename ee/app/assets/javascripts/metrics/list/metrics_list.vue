@@ -48,7 +48,7 @@ export default {
   },
   mixins: [InternalEvents.mixin()],
   i18n: {
-    searchInputPlaceholder: s__('ObservabilityMetrics|Search metrics...'),
+    searchInputPlaceholder: s__('ObservabilityMetrics|Search metrics…'),
     pageTitle: s__(`ObservabilityMetrics|Metrics`),
     description: s__(
       `ObservabilityMetrics|Track health data from your systems. Send metric data to this project using OpenTelemetry. %{docsLink}`,
