@@ -64,23 +64,31 @@ describe('DuoCoreFeaturesForm', () => {
     expect(wrapper.findComponent(GlLink).props('href')).toBe(requirementsPath);
   });
 
-  it('renders the description', () => {
-    expect(wrapper.text()).toMatch('Subgroup and project access controls are coming soon.');
-  });
-
   describe('on SaaS', () => {
-    it('renders the namespace description', () => {
+    beforeEach(() => {
       wrapper = createComponent({ provide: { isSaaS: true } });
+    });
 
-      expect(wrapper.text()).toMatch('This settings applies to the whole top-level group.');
+    it('renders the namespace description', () => {
+      expect(wrapper.text()).toMatch('This setting applies to the whole top-level group.');
+    });
+
+    it('renders the description', () => {
+      expect(wrapper.text()).toMatch('Subgroup and project access controls are coming soon.');
     });
   });
 
   describe('on Self-Managed', () => {
-    it('renders the instance description', () => {
+    beforeEach(() => {
       wrapper = createComponent({ provide: { isSaaS: false } });
+    });
 
-      expect(wrapper.text()).toMatch('This settings applies to the whole instance.');
+    it('renders the instance description', () => {
+      expect(wrapper.text()).toMatch('This setting applies to the whole instance.');
+    });
+
+    it('renders the description', () => {
+      expect(wrapper.text()).toMatch('Group and project access controls are coming soon.');
     });
   });
 });
