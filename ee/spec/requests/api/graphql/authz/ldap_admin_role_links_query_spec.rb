@@ -26,6 +26,11 @@ RSpec.describe 'Query LDAP admin links', feature_category: :permissions do
         adminMemberRole {
           name
         }
+        syncStatus
+        syncStartedAt
+        syncEndedAt
+        lastSuccessfulSyncAt
+        syncError
       }
     GRAPHQL
   end
@@ -57,7 +62,12 @@ RSpec.describe 'Query LDAP admin links', feature_category: :permissions do
         'provider' => { 'id' => ldap_server_config.provider_name, 'label' => ldap_server_config.label },
         'filter' => nil,
         'cn' => 'group1',
-        'adminMemberRole' => { 'name' => 'Admin role' }
+        'adminMemberRole' => { 'name' => 'Admin role' },
+        'syncStatus' => 'NEVER_SYNCED',
+        'syncStartedAt' => nil,
+        'syncEndedAt' => nil,
+        'lastSuccessfulSyncAt' => nil,
+        'syncError' => nil
       }])
     end
   end

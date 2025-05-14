@@ -19,6 +19,17 @@ RSpec.describe Authz::LdapAdminRoleLink, feature_category: :system_access do
     it { is_expected.to nullify_if_blank(:cn) }
     it { is_expected.to nullify_if_blank(:filter) }
 
+    it { is_expected.to validate_presence_of(:sync_status) }
+    it { is_expected.to validate_length_of(:sync_error).is_at_most(255) }
+
+    describe 'enums' do
+      let(:sync_statuses) do
+        { never_synced: 0, queued: 1, running: 2, failed: 3, successful: 4 }
+      end
+
+      it { is_expected.to define_enum_for(:sync_status).with_values(sync_statuses) }
+    end
+
     describe 'cn' do
       context 'when cn is duplicated for the same provider' do
         before do

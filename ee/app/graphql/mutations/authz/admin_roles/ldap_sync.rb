@@ -10,7 +10,7 @@ module Mutations
         field :success, GraphQL::Types::Boolean, description: 'Whether the sync was successfully enqueued.'
 
         def ready?(**args)
-          raise_resource_not_available_error! unless current_user.can?(:admin_member_role)
+          raise_resource_not_available_error! unless current_user.can?(:manage_ldap_admin_links)
 
           super
         end

@@ -21,6 +21,24 @@ module Types
 
       field :filter, GraphQL::Types::String,
         null: true, description: 'Search filter for the LDAP group.'
+
+      # rubocop:disable GraphQL/ExtractType -- sync columns might get removed from this type in future
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/534311#note_2491416269
+      field :sync_status, Types::Authz::LdapAdminRoleSyncStatusEnum,
+        null: true, description: 'Status of the last sync.'
+
+      field :sync_started_at, Types::TimeType,
+        null: true, description: 'Timestamp of when the last sync started.'
+
+      field :sync_ended_at, Types::TimeType,
+        null: true, description: 'Timestamp of when the last sync ended.'
+
+      field :last_successful_sync_at, Types::TimeType,
+        null: true, description: 'Timestamp of the last successful sync.'
+
+      field :sync_error, GraphQL::Types::String,
+        null: true, description: 'Error message if the sync has failed.'
+      # rubocop:enable GraphQL/ExtractType
     end
     # rubocop: enable Graphql/AuthorizeTypes
   end
