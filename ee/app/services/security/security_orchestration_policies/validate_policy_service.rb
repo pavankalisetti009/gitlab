@@ -20,7 +20,8 @@ module Security
 
         return error_with_title(s_('SecurityOrchestration|Invalid policy type')) if invalid_policy_type?
         return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} actions'), limit: scan_execution_policies_action_limit)) if exceeds_action_limit?
-        return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} rule schedules'), limit: scan_execution_policies_schedule_limit)) if exceeds_schedule_limit?
+        return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} rule schedules'), limit: scan_execution_policies_schedule_limit)) if exceeds_scan_execution_policy_schedule_limit?
+        return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} pipeline execution schedules'), limit: pipeline_execution_schedule_policies_schedule_limit)) if exceeds_pipeline_execution_schedule_policy_schedule_limit?
         return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} approver actions'), limit: approval_action_limit)) if exceeds_approver_action_limit?
 
         return error_with_title(s_('SecurityOrchestration|Policy cannot be enabled without branch information'), field: :branches) if blank_branch_for_rule?
@@ -99,15 +100,19 @@ module Security
         (policy[:actions]&.count || 0) > scan_execution_policies_action_limit
       end
 
-      def exceeds_schedule_limit?
+      def exceeds_scan_execution_policy_schedule_limit?
         return false if removing_policy?
         return false if !scan_execution_policy? || scan_execution_policies_schedule_limit == 0
+
+        schedule_rules = policy[:rules]&.select { |rule| rule[:type] == ::Security::ScanExecutionPolicy::RULE_TYPES[:schedule] }
 
         (schedule_rules&.size || 0) > scan_execution_policies_schedule_limit
       end
 
-      def schedule_rules
-        policy[:rules]&.select { |rule| rule[:type] == ::Security::ScanExecutionPolicy::RULE_TYPES[:schedule] }
+      def exceeds_pipeline_execution_schedule_policy_schedule_limit?
+        return false if removing_policy? || !pipeline_execution_schedule_policy?
+
+        (policy[:schedules]&.size || 0) > pipeline_execution_schedule_policies_schedule_limit
       end
 
       def blank_name?
@@ -279,6 +284,10 @@ module Security
         policy_type == :pipeline_execution_policy
       end
 
+      def pipeline_execution_schedule_policy?
+        policy_type == :pipeline_execution_schedule_policy
+      end
+
       def compliance_framework_ids
         policy.dig(:policy_scope, :compliance_frameworks)&.pluck(:id)&.uniq
       end
@@ -303,6 +312,11 @@ module Security
         Gitlab::CurrentSettings.scan_execution_policies_schedule_limit
       end
       strong_memoize_attr :scan_execution_policies_schedule_limit
+
+      def pipeline_execution_schedule_policies_schedule_limit
+        Security::PipelineExecutionSchedulePolicy::POLICY_LIMIT
+      end
+      strong_memoize_attr :pipeline_execution_schedule_policies_schedule_limit
 
       def approval_action_limit
         Security::ScanResultPolicy::APPROVERS_ACTIONS_LIMIT
