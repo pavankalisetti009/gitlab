@@ -41,7 +41,7 @@ module Mutations
       field :errors, [GraphQL::Types::String],
         null: false,
         scopes: [:api, :ai_features],
-        description: 'Errors encountered during execution of the mutation.'
+        description: 'Errors encountered during the mutation.'
 
       field :request_id, GraphQL::Types::String,
         scopes: [:api, :ai_features],
