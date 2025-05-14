@@ -91,7 +91,7 @@ module Gitlab
 
           def merge_on_demand_scan_template(merged_config, defined_stages)
             on_demand_scan_template = prepare_on_demand_scans_template
-            on_demand_scan_job_names = on_demand_scan_template.keys
+            on_demand_scan_job_names = job_names(on_demand_scan_template.keys)
 
             if on_demand_scan_template.present?
               insert_stage_before_or_append(defined_stages, DEFAULT_ON_DEMAND_STAGE, ['.post'])
@@ -102,7 +102,7 @@ module Gitlab
 
           def merge_pipeline_scan_template(merged_config, defined_stages)
             pipeline_scan_template = prepare_pipeline_scans_template
-            pipeline_scan_job_names = prepare_pipeline_scans_template.keys
+            pipeline_scan_job_names = job_names(prepare_pipeline_scans_template.keys)
 
             if pipeline_scan_template.present?
               unless defined_stages.include?(DEFAULT_SECURITY_JOB_STAGE)
@@ -116,6 +116,10 @@ module Gitlab
 
               scan_execution_policy_context.collect_injected_job_names(pipeline_scan_job_names)
             end
+          end
+
+          def job_names(keys)
+            keys - %i[variables]
           end
 
           def insert_stage_after_or_prepend(stages, insert_stage_name, after_stages)

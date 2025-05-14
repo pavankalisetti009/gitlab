@@ -116,6 +116,32 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
             expect(config.to_hash).to eq(
               stages: [".pre", "build", "test", "deploy", "dast", ".post"],
               sample_job: { script: ["echo 'test'"] },
+              variables: Security::SecurityOrchestrationPolicies::ScanPipelineService::TOP_LEVEL_VARIABLES,
+              'dast-on-demand-0': { allow_failure: true, script: 'echo "Error during On-Demand Scan execution: Dast site profile was not provided" && false' }
+            )
+          end
+        end
+
+        context 'when project CI configuration contains top-level variables' do
+          let_it_be(:ci_yml) do
+            <<-EOS
+            variables:
+              FOO: 'bar'
+
+            sample_job:
+              script:
+              - echo 'test'
+            EOS
+          end
+
+          let_it_be(:top_level_variables) { Security::SecurityOrchestrationPolicies::ScanPipelineService::TOP_LEVEL_VARIABLES }
+          let_it_be(:expected_variables) { top_level_variables.merge(FOO: 'bar') }
+
+          it 'retains top-level variables' do
+            expect(config.to_hash).to eq(
+              stages: [".pre", "build", "test", "deploy", "dast", ".post"],
+              sample_job: { script: ["echo 'test'"] },
+              variables: expected_variables,
               'dast-on-demand-0': { allow_failure: true, script: 'echo "Error during On-Demand Scan execution: Dast site profile was not provided" && false' }
             )
           end

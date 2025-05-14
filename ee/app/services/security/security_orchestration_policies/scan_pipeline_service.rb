@@ -7,6 +7,7 @@ module Security
 
       EMPTY_RESULT = { pipeline_scan: {}, on_demand: {}, variables: {} }.freeze
       HISTOGRAM = :gitlab_security_policies_scan_execution_configuration_rendering_seconds
+      TOP_LEVEL_VARIABLES = { GITLAB_SCAN_EXECUTION_POLICY_PIPELINE: 'true' }.freeze
 
       SCAN_VARIABLES_WITH_RESTRICTED_VARIABLES = {
         secret_detection: {
@@ -59,13 +60,21 @@ module Security
           on_demand_variables = collect_config_variables(on_demand_scan_actions, on_demand_configs)
           variables = pipeline_variables.merge(on_demand_variables)
 
-          { pipeline_scan: pipeline_scan_configs.reduce({}, :merge),
-            on_demand: on_demand_configs.reduce({}, :merge),
+          { pipeline_scan: scan_config(pipeline_scan_configs),
+            on_demand: scan_config(on_demand_configs),
             variables: variables }
         end
       end
 
       private
+
+      def scan_config(configs)
+        return {} if configs.empty?
+
+        configs
+          .reduce({}, :merge)
+          .merge(variables: TOP_LEVEL_VARIABLES)
+      end
 
       def collect_config_variables(actions, configs)
         actions.zip(configs).each_with_object({}) do |(action, config), hash|
