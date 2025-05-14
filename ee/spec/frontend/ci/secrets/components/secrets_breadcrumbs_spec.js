@@ -28,10 +28,13 @@ describe('SecretsBreadcrumbs', () => {
 
   const findBreadcrumbs = () => wrapper.findComponent(GlBreadcrumb);
 
-  const createWrapper = () => {
+  const createWrapper = (props = {}) => {
     router = createRouter('/-/secrets', defaultProps);
 
-    wrapper = shallowMount(SecretsBreadcrumbs, { router });
+    wrapper = shallowMount(SecretsBreadcrumbs, {
+      router,
+      propsData: props,
+    });
   };
 
   beforeEach(() => {
@@ -81,5 +84,21 @@ describe('SecretsBreadcrumbs', () => {
 
   it('should disable auto-resize behavior', () => {
     expect(findBreadcrumbs().props('autoResize')).toEqual(false);
+  });
+
+  it('should include static breadcrumbs before dynamic breadcrumbs', () => {
+    const staticBreadcrumbs = {
+      items: [
+        { text: 'Static 1', href: '/static1' },
+        { text: 'Static 2', href: '/static2' },
+      ],
+    };
+
+    createWrapper({ staticBreadcrumbs });
+
+    expect(findBreadcrumbs().props('items')).toStrictEqual([
+      ...staticBreadcrumbs.items,
+      rootBreadcrumb,
+    ]);
   });
 });

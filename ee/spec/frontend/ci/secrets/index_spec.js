@@ -35,7 +35,15 @@ describe('initProjectSecretsApp', () => {
     });
 
     it('injects breadcrumbs', () => {
-      expect(injectVueAppBreadcrumbs).toHaveBeenCalledWith(expect.any(Object), SecretsBreadcrumbs);
+      expect(injectVueAppBreadcrumbs).toHaveBeenCalledWith(
+        expect.any(Object),
+        SecretsBreadcrumbs,
+        null,
+        {},
+        {
+          singleNavOptIn: true,
+        },
+      );
     });
   });
 });
