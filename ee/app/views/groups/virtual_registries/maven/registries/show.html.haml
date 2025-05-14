@@ -1,8 +1,7 @@
-- title = s_('VirtualRegistry|New maven virtual registry')
+- title = @maven_registry.name
 - add_to_breadcrumbs s_('VirtualRegistry|Virtual registry'), group_virtual_registries_path(@group)
 - add_to_breadcrumbs s_('VirtualRegistry|Maven'), group_virtual_registries_maven_registries_path(@group)
-- breadcrumb_title _('New')
+- breadcrumb_title @maven_registry.id.to_s
 - page_title title
 
 = render ::Layouts::PageHeadingComponent.new(title)
-= render 'form', url: group_virtual_registries_maven_registries_path(@group), cancel_path: group_virtual_registries_maven_registries_path(@group)
