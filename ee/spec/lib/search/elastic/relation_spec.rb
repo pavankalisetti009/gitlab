@@ -149,4 +149,10 @@ RSpec.describe ::Search::Elastic::Relation, :elastic_helpers, :sidekiq_inline, :
       expect(cursor).to match([an_instance_of(Integer), record.id])
     end
   end
+
+  describe "#to_a" do
+    it "returns all the records without sorting" do
+      expect(relation.to_a).to eq(all_vulnerabilities)
+    end
+  end
 end

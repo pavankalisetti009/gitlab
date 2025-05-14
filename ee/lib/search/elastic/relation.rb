@@ -46,6 +46,10 @@ module Search
         self
       end
 
+      def to_a
+        records
+      end
+
       private
 
       attr_reader :klass, :query, :options, :preload_values
