@@ -100,14 +100,20 @@ RSpec.describe Import::SourceUsers::ReassignService, feature_category: :importer
         let_it_be(:enterprise_user) { create(:user, enterprise_group: group) }
 
         context 'when the user is part of the enterprise group' do
-          let_it_be(:assignee_user) { create(:user, enterprise_group: group) }
+          let_it_be(:assignee_user) { enterprise_user }
 
           it_behaves_like 'success response'
         end
 
-        context 'when the user is not part of the enterprise group' do
-          let_it_be(:assignee_user) { create(:user, enterprise_group: nil) }
+        context 'when the user is an enterprise users for another group' do
+          let_it_be(:other_group) { create(:group) }
+          let_it_be(:assignee_user) { create(:user, enterprise_group: other_group) }
 
+          it_behaves_like 'an error response',
+            error: "You can assign only enterprise users in the top-level group you're importing to."
+        end
+
+        context 'when the user is not part of an enterprise group' do
           it_behaves_like 'an error response',
             error: "You can assign only enterprise users in the top-level group you're importing to."
         end

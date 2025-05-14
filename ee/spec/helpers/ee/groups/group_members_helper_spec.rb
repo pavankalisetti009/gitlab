@@ -55,22 +55,24 @@ RSpec.describe Groups::GroupMembersHelper do
       expect(subject[:manage_member_roles_path]).to eq(admin_application_settings_roles_and_permissions_path)
     end
 
-    context 'when enterprise users exist for the group' do
-      let_it_be(:enterprise_user) { create(:user, enterprise_group: group) }
-
+    context 'when domain verification is available' do
       before do
         stub_licensed_features(domain_verification: true)
         allow(::Gitlab).to receive(:com?).and_return(true)
       end
 
-      it 'sets the restrict_reassignment_to_enterprise flag to true' do
-        expect(subject[:restrict_reassignment_to_enterprise]).to be(true)
-      end
-    end
+      context 'when enterprise users exist for the group' do
+        let_it_be(:enterprise_user) { create(:user, enterprise_group: group) }
 
-    context 'when enterprise users do not exist for the group' do
-      it 'sets the restrict_reassignment_to_enterprise flag to true' do
-        expect(subject[:restrict_reassignment_to_enterprise]).to be(false)
+        it 'sets the restrict_reassignment_to_enterprise flag to true' do
+          expect(subject[:restrict_reassignment_to_enterprise]).to be(true)
+        end
+      end
+
+      context 'when enterprise users do not exist for the group' do
+        it 'sets the restrict_reassignment_to_enterprise flag to false' do
+          expect(subject[:restrict_reassignment_to_enterprise]).to be(false)
+        end
       end
     end
 
