@@ -76,15 +76,22 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
 
         non_obsolete_migrations = described_class.migrations.filter_map { |m| m.send(:migration) unless m.obsolete? }
 
+        docs_directory_path = File.join('ee', 'elastic', 'docs')
+
         filtered_migrations = non_obsolete_migrations.filter do |m|
           klass = m.class
           klass.include?(::Search::Elastic::MigrationUpdateMappingsHelper) ||
             klass.include?(::Search::Elastic::MigrationBackfillHelper)
         end
 
-        migrations_grouped_by_index = filtered_migrations.group_by { |m| m.send(:index_name) }
+        migrations_grouped_by_index_and_milestone = filtered_migrations.group_by do |m|
+          docs_file_path = "#{m.version}_#{m.class.name.underscore}.yml"
+          docs_yaml = YAML.load_file(Rails.root.join(File.join(docs_directory_path, docs_file_path)))
 
-        migrations_grouped_by_index.each_key do |index_name|
+          [m.send(:index_name), docs_yaml['milestone']]
+        end
+
+        migrations_grouped_by_index_and_milestone.each_key do |index_name|
           backfill_versions = non_obsolete_migrations.filter do |m|
             m.class.include?(::Search::Elastic::MigrationBackfillHelper) && m.send(:index_name) == index_name
           end.map(&:version)
