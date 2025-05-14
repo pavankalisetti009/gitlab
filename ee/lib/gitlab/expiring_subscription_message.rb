@@ -201,7 +201,7 @@ module Gitlab
     def expired_subscribable_within_notification_window?
       return true unless subscribable.expired?
 
-      (subscribable.expires_at + GRACE_PERIOD_EXTENSION_DAYS) > Date.today
+      (subscribable.expires_at + GRACE_PERIOD_EXTENSION_DAYS) > Date.current
     end
 
     def plan_name
@@ -247,11 +247,7 @@ module Gitlab
 
     def remaining_days
       strong_memoize(:remaining_days) do
-        days = if subscribable.expired?
-                 (subscribable.block_changes_at - Date.today).to_i
-               else
-                 (subscribable.expires_at - Date.today).to_i
-               end
+        days = (subscribable.block_changes_at - Date.current).to_i
 
         days < 0 ? 0 : days
       end
