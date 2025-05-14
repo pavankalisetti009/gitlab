@@ -22,7 +22,7 @@ module RemoteDevelopment
     has_many :workspaces, through: :agent, source: :workspaces
 
     validates :agent, presence: true
-    validates :dns_zone, hostname: true
+    validates :dns_zone, hostname: { allow_numeric_hostname: true }
     validates :enabled, inclusion: { in: [true, false] }
 
     validates :network_policy_egress,
