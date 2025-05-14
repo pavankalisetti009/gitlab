@@ -182,9 +182,12 @@ export default {
     </template>
     <template #list-item="{ item }">
       <div class="js-comment-template-content gl-flex">
-        <div class="gl-text-sm">
-          <strong>{{ item.title }}</strong>
-          <br /><span>{{ item.description }}</span>
+        <gl-icon v-if="item.icon" :name="item.icon" class="gl-mr-3" />
+        <div :class="{ 'gl-text-sm': !item.icon }">
+          <component :is="item.icon ? 'span' : 'strong'">{{ item.title }}</component>
+          <template v-if="item.description"
+            ><br /><span>{{ item.description }}</span></template
+          >
         </div>
       </div>
     </template>

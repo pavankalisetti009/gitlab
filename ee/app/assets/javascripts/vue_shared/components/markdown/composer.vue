@@ -1,16 +1,14 @@
 <script>
 import { v4 as uuidv4 } from 'uuid';
-import { GlDisclosureDropdown, GlButton, GlFormInput, GlFormGroup, GlIcon } from '@gitlab/ui';
+import { GlButton, GlFormInput, GlFormGroup, GlSkeletonLoader } from '@gitlab/ui';
 import { InternalEvents } from '~/tracking';
-import { __ } from '~/locale';
 import aiActionMutation from 'ee/graphql_shared/mutations/ai_action.mutation.graphql';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_USER, TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { updateText } from '~/lib/utils/text_markdown';
-import { CONTENT_EDITOR_PASTE } from '~/vue_shared/constants';
-import markdownEditorEventHub from '~/vue_shared/components/markdown/eventhub';
+import eventHub from '~/vue_shared/components/markdown/eventhub';
 
 export default {
   name: 'MarkdownComposer',
@@ -37,38 +35,10 @@ export default {
           this.aiContentPreviewLoading = false;
         },
       },
-      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
-      summarizeChanges: {
-        query: aiResponseSubscription,
-        variables() {
-          return {
-            resourceId: this.resourceId,
-            userId: this.userId,
-            htmlResponse: true,
-            clientSubscriptionId: this.summarizeSubscriptionID,
-          };
-        },
-        result({ data: { aiCompletionResponse } }) {
-          if (aiCompletionResponse) {
-            const { content } = aiCompletionResponse;
-
-            if (this.textarea) {
-              updateText({
-                textArea: this.textarea,
-                tag: content,
-                cursorOffset: 0,
-                wrap: false,
-              });
-            } else {
-              markdownEditorEventHub.$emit(CONTENT_EDITOR_PASTE, content);
-            }
-          }
-        },
-      },
     },
   },
   directives: { SafeHtml },
-  components: { GlDisclosureDropdown, GlButton, GlFormInput, GlFormGroup, GlIcon },
+  components: { GlButton, GlFormInput, GlFormGroup, GlSkeletonLoader },
   mixins: [InternalEvents.mixin()],
   inject: ['projectId', 'sourceBranch', 'targetBranch'],
   props: {
@@ -79,8 +49,8 @@ export default {
   },
   data() {
     return {
-      showComposerPrompt: false,
       userPrompt: '',
+      showComposer: false,
       aiContentPreviewLoading: false,
       aiContentPreview: null,
       aiContentPreviewHTML: null,
@@ -95,37 +65,6 @@ export default {
     userId() {
       return convertToGraphQLId(TYPENAME_USER, gon.current_user_id);
     },
-    dropdownItems() {
-      return [
-        {
-          text: __('Insert code change summary'),
-          action: () => {
-            this.trackEvent('click_summarize_code_changes');
-
-            this.$apollo.mutate({
-              mutation: aiActionMutation,
-              variables: {
-                input: {
-                  summarizeNewMergeRequest: {
-                    resourceId: this.resourceId,
-                    sourceProjectId: this.projectId,
-                    sourceBranch: this.sourceBranch,
-                    targetBranch: this.targetBranch,
-                  },
-                  clientSubscriptionId: this.summarizeSubscriptionID,
-                },
-              },
-            });
-          },
-        },
-        {
-          text: __('Write with GitLab Duo'),
-          action: () => {
-            this.showComposerPrompt = true;
-          },
-        },
-      ];
-    },
     cursorText() {
       return this.markdown.substring(0, this.cursorLocation);
     },
@@ -135,11 +74,13 @@ export default {
     composerSubscriptionID() {
       return `composer-${uuidv4()}`;
     },
-    summarizeSubscriptionID() {
-      return uuidv4();
-    },
   },
   mounted() {
+    document.addEventListener('keyup', this.onDocumentKeyUp);
+
+    eventHub.$on('SHOW_COMPOSER', this.showComposerPopover);
+    eventHub.$on('CLOSE_COMPOSER', this.closeComposerPopover);
+
     this.textarea = this.$el.querySelector('textarea');
 
     if (this.textarea) {
@@ -149,6 +90,11 @@ export default {
     }
   },
   beforeDestroy() {
+    document.removeEventListener('keyup', this.onDocumentKeyUp);
+
+    eventHub.$off('SHOW_COMPOSER', this.showComposerPopover);
+    eventHub.$off('CLOSE_COMPOSER', this.closeComposerPopover);
+
     if (this.textarea) {
       this.textarea.removeEventListener('mouseup', this.onKeyUp);
       this.textarea.removeEventListener('keyup', this.onKeyUp);
@@ -156,15 +102,33 @@ export default {
     }
   },
   methods: {
+    showComposerPopover() {
+      this.showComposer = true;
+    },
+    closeComposerPopover() {
+      this.showComposer = false;
+      this.discardAIContent();
+    },
+    onDocumentKeyUp(e) {
+      if (this.showComposer && e.key === 'Escape') {
+        this.closeComposerPopover();
+      }
+    },
     onKeyUp() {
-      this.cursorLocation = this.textarea.selectionStart;
-      this.$nextTick(() => {
-        this.top = this.$refs.text.offsetTop - 1;
-        this.onScroll();
-      });
+      this.cursorLocation = this.textarea.selectionEnd;
+      this.calculateTop();
     },
     onScroll() {
       this.$refs.textContainer.scrollTo(0, this.textarea.scrollTop);
+      this.calculateTop();
+    },
+    calculateTop() {
+      this.$nextTick(() => {
+        const top =
+          this.$refs.text.offsetTop + this.$refs.text.offsetHeight - this.textarea.scrollTop;
+
+        this.top = Math.min(this.textarea.offsetHeight, Math.max(0, top)) + 8;
+      });
     },
     submitComposer() {
       let description = this.markdown || '';
@@ -204,11 +168,12 @@ export default {
         wrap: false,
         replaceText: true,
       });
+
+      this.closeComposerPopover();
     },
-    onDropdownHidden() {
+    discardAIContent() {
       this.aiContentPreview = null;
       this.aiContentPreviewHTML = null;
-      this.showComposerPrompt = false;
       this.userPrompt = '';
     },
   },
@@ -216,83 +181,80 @@ export default {
 </script>
 
 <template>
-  <div class="gl-relative gl-overflow-x-hidden">
+  <div class="gl-relative">
     <slot></slot>
     <div
-      ref="textContainer"
-      class="gl-absolute gl-bottom-0 gl-left-0 gl-right-[-50px] gl-top-[-2px] gl-overflow-auto gl-border-2 gl-border-solid gl-border-transparent gl-py-[10px] gl-pl-7 gl-pr-[66px]"
+      class="gl-absolute gl-bottom-0 gl-left-0 gl-right-0 gl-top-[-2px] gl-overflow-auto gl-overflow-x-hidden gl-border-2 gl-border-solid gl-border-transparent gl-px-[14px] gl-py-[12px]"
     >
-      <!-- prettier-ignore -->
-      <div 
-          class="gfm-input-text markdown-area gl-invisible !gl-font-monospace gl-whitespace-pre-wrap gl-border-0 gl-p-0 !gl-max-h-fit"
-          style="word-wrap: break-word">{{ cursorText }}<span ref="text">|</span>{{ cursorAfterText }}</div>
-      <gl-disclosure-dropdown
-        v-show="top !== 0"
-        class="gl-absolute gl-left-2 gl-top-0 gl-z-4"
-        :class="{ 'composer-prompt-visible': showComposerPrompt }"
-        icon="tanuki-ai"
-        no-caret
-        size="small"
-        category="tertiary"
-        placement="right-start"
-        :style="{ top: `${top}px` }"
-        :items="dropdownItems"
-        :auto-close="false"
-        positioning-strategy="fixed"
-        fluid-width
-        @hidden="onDropdownHidden"
+      <div ref="textContainer">
+        <!-- prettier-ignore -->
+        <div 
+            class="gfm-input-text markdown-area gl-invisible !gl-font-monospace gl-whitespace-pre-wrap gl-border-0 gl-p-0 !gl-max-h-fit"
+            style="word-wrap: break-word">{{ cursorText }}<span ref="text">|</span>{{ cursorAfterText }}</div>
+      </div>
+    </div>
+    <div
+      v-if="showComposer"
+      class="gl-absolute gl-left-5 gl-right-5 gl-top-0 gl-z-4 gl-overflow-hidden gl-rounded-lg gl-border-1 gl-border-solid gl-border-dropdown gl-bg-dropdown gl-shadow-md"
+      :class="{ 'gl-pt-0': aiContentPreview }"
+      :style="`top: ${top}px`"
+    >
+      <div
+        v-if="aiContentPreviewLoading || aiContentPreview"
+        class="gl-border-b-1 gl-border-dropdown gl-bg-gray-50 gl-p-4 gl-border-b-solid"
       >
-        <template v-if="showComposerPrompt">
-          <div
-            class="gl-flex gl-min-h-5 gl-items-center gl-border-b-1 gl-border-b-dropdown-divider gl-px-4 gl-py-3 gl-border-b-solid"
+        <gl-skeleton-loader v-if="aiContentPreviewLoading" :lines="3" />
+        <div
+          v-else-if="aiContentPreview"
+          v-safe-html="aiContentPreview"
+          class="md gl-max-h-[200px] gl-overflow-y-auto gl-whitespace-pre-wrap gl-font-monospace"
+        ></div>
+      </div>
+      <div class="gl-p-4">
+        <gl-form-group
+          :label="__('Describe what you want to write')"
+          label-for="composer-user-prompt"
+        >
+          <gl-form-input
+            id="composer-user-prompt"
+            v-model="userPrompt"
+            :placeholder="
+              __('Ask GitLab Duo to help you write descriptions, rewrite existing text and more...')
+            "
+            autocomplete="off"
+            autofocus
+            data-testid="composer-user-prompt"
+            :disabled="aiContentPreviewLoading"
+            @keydown.enter.prevent.stop="submitComposer"
+          />
+        </gl-form-group>
+        <div class="gl-flex gl-justify-end gl-gap-3">
+          <gl-button
+            v-if="aiContentPreview"
+            variant="danger"
+            category="tertiary"
+            data-testid="composer-discard"
+            @click="discardAIContent"
+            >{{ s__('AI|Discard suggestion') }}</gl-button
           >
-            <div class="gl-grow gl-pr-2 gl-text-sm gl-font-bold gl-text-strong">
-              <gl-icon name="tanuki-ai" />
-              {{ __('Write with GitLab Duo') }}
-            </div>
-          </div>
-          <div
-            class="gl-w-[450px] gl-max-w-[80vw] gl-p-3"
-            :class="{ 'gl-pt-0': aiContentPreviewHTML }"
+          <gl-button
+            :variant="aiContentPreview ? 'default' : 'confirm'"
+            :loading="aiContentPreviewLoading"
+            data-testid="composer-submit"
+            @click="submitComposer"
           >
-            <div
-              v-if="aiContentPreviewHTML"
-              v-safe-html="aiContentPreviewHTML"
-              class="md gl-mb-4 gl-max-h-[200px] gl-overflow-y-auto gl-border-gray-100 gl-px-4 gl-pb-4 gl-pt-4 gl-border-b-solid"
-            ></div>
-            <div>
-              <gl-form-group label="Prompt" label-for="composer-user-prompt">
-                <gl-form-input
-                  id="composer-user-prompt"
-                  v-model="userPrompt"
-                  :placeholder="__('Enter a prompt')"
-                  autocomplete="off"
-                  autofocus
-                  data-testid="composer-user-prompt"
-                  @keydown.enter.prevent.stop="submitComposer"
-                />
-              </gl-form-group>
-              <div class="gl-flex gl-justify-end gl-gap-3">
-                <gl-button
-                  v-if="aiContentPreview"
-                  data-testid="composer-insert"
-                  @click="insertAiContent"
-                  >{{ __('Insert') }}</gl-button
-                >
-                <gl-button
-                  variant="confirm"
-                  :loading="aiContentPreviewLoading"
-                  data-testid="composer-submit"
-                  @click="submitComposer"
-                >
-                  <template v-if="aiContentPreview">{{ __('Regenerate') }}</template>
-                  <template v-else>{{ __('Generate') }}</template>
-                </gl-button>
-              </div>
-            </div>
-          </div>
-        </template>
-      </gl-disclosure-dropdown>
+            <template v-if="aiContentPreview">{{ s__('AI|Regenerate') }}</template>
+            <template v-else>{{ s__('AI|Generate') }}</template>
+          </gl-button>
+          <gl-button
+            v-if="aiContentPreview"
+            variant="confirm"
+            data-testid="composer-insert"
+            @click="insertAiContent"
+            >{{ s__('AI|Accept & Insert') }}</gl-button
+          >
+        </div>
+      </div>
     </div>
   </div>
 </template>
