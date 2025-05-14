@@ -216,24 +216,6 @@ RSpec.describe MergeRequests::ApprovalService, feature_category: :code_review_wo
 
             expect { service_with_params.execute(merge_request) }.to change { merge_request.approvals.size }
           end
-
-          context 'when allow_ldap_users_to_authenticate_with_gitlab_username FF is disabled' do
-            before do
-              stub_feature_flags(allow_ldap_users_to_authenticate_with_gitlab_username: false)
-            end
-
-            it 'approves the merge request', :aggregate_failures do
-              expect(adapter).to receive(:bind_as).with(
-                filter: Net::LDAP::Filter.equals(Gitlab::Auth::Ldap::Config.new(provider).uid, gitlab_username),
-                size: 1,
-                password: password
-              ).and_return(ldap_user_entry(gitlab_username))
-
-              service_with_params = described_class.new(project: project, current_user: user, params: params)
-
-              expect { service_with_params.execute(merge_request) }.to change { merge_request.approvals.size }
-            end
-          end
         end
 
         context 'when LDAP UID does not match GitLab username' do
@@ -251,24 +233,6 @@ RSpec.describe MergeRequests::ApprovalService, feature_category: :code_review_wo
             service_with_params = described_class.new(project: project, current_user: user, params: params)
 
             expect { service_with_params.execute(merge_request) }.to change { merge_request.approvals.size }
-          end
-
-          context 'when allow_ldap_users_to_authenticate_with_gitlab_username FF is disabled' do
-            before do
-              stub_feature_flags(allow_ldap_users_to_authenticate_with_gitlab_username: false)
-            end
-
-            it 'does not update the approvals' do
-              expect(adapter).to receive(:bind_as).with(
-                filter: Net::LDAP::Filter.equals(Gitlab::Auth::Ldap::Config.new(provider).uid, gitlab_username),
-                size: 1,
-                password: password
-              )
-
-              service_with_params = described_class.new(project: project, current_user: user, params: params)
-
-              expect { service_with_params.execute(merge_request) }.not_to change { merge_request.approvals.size }
-            end
           end
         end
       end
