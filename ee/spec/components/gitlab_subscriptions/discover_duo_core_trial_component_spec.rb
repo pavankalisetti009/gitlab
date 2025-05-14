@@ -74,6 +74,7 @@ RSpec.describe GitlabSubscriptions::DiscoverDuoCoreTrialComponent, :aggregate_fa
     let(:trial_active?) { true }
     let(:expected_data_attributes) do
       {
+        product_interaction: 'SMB Promo',
         glm_content: 'trial_discover_page',
         cta_tracking: {
           action: 'click_contact_sales',

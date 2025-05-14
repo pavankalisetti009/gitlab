@@ -85,6 +85,25 @@ module GitlabSubscriptions
       ]
     end
 
+    override :hand_raise_lead_data
+    def hand_raise_lead_data
+      {
+        namespace_id: namespace.id,
+        product_interaction: 'SMB Promo',
+        glm_content: glm_content,
+        cta_tracking: {
+          action: 'click_contact_sales',
+          label: trial_status_cta_label
+        }.to_json,
+        button_attributes: {
+          category: buy_now_link ? 'secondary' : 'primary',
+          variant: 'confirm',
+          class: 'gl-w-full sm:gl-w-auto',
+          'data-testid': 'trial-discover-hand-raise-lead-button'
+        }.to_json
+      }
+    end
+
     override :glm_content
     def glm_content
       'trial_discover_page'
