@@ -10,7 +10,7 @@ export default {
     GlIcon,
   },
   inject: ['testRunsEmptyStateImagePath'],
-  testRunsHelpPath: helpPagePath('ci/testing/test_coverage_visualization/_index'),
+  testRunsHelpPath: helpPagePath('ci/testing/code_coverage/_index.md'),
   i18n,
 };
 </script>
