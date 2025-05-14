@@ -23,7 +23,7 @@ module Security
 
       def link_policy
         return unless security_policy.enabled
-        return unless security_policy.scope_applicable?(project)
+        return unless scope_applicable?
 
         security_policy.transaction do
           security_policy.link_project!(project)
@@ -49,6 +49,10 @@ module Security
           .security_pipeline_execution_project_schedules
           .for_project(project)
           .delete_all
+      end
+
+      def scope_applicable?
+        security_policy.scope_applicable?(project)
       end
 
       def recreate_pipeline_execution_schedule_project_schedules(project, security_policy)

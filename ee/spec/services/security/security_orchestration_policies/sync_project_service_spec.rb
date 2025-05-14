@@ -123,6 +123,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
               expect { service.execute }
                 .to change { Security::ApprovalPolicyRuleProjectLink.count }.from(1).to(2)
             end
+
+            context 'when policy_scope is not applicable' do
+              before do
+                allow(service).to receive(:scope_applicable?).and_return(false)
+              end
+
+              it 'does not link the policy and rules' do
+                expect { service.execute }.to not_change { Security::PolicyProjectLink.count }
+                  .and not_change { Security::ApprovalPolicyRuleProjectLink.count }
+              end
+            end
           end
 
           context 'with updated policy rules' do
@@ -355,6 +366,16 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncProjectService, feat
 
           specify do
             expect { service.execute }.to change { persisted_schedule.snoozed_until }.from(nil).to(snoozed_until)
+          end
+
+          context 'when policy_scope is not applicable' do
+            before do
+              allow(service).to receive(:scope_applicable?).and_return(false)
+            end
+
+            specify do
+              expect { service.execute }.not_to change { persisted_schedule.snoozed_until }
+            end
           end
 
           context 'with feature disabled' do
