@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerability_management do
   describe '#execute' do
-    let_it_be_with_refind(:artifact) { create(:ee_ci_job_artifact, :dast_observability) }
+    let_it_be_with_refind(:artifact) { create(:ee_ci_job_artifact, :test_observability) }
 
     let(:pipeline) { artifact.job.pipeline }
 
@@ -97,13 +97,13 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
     end
 
     context 'with invalid security report JSON' do
-      let(:artifact_invalid_json) { create(:ee_ci_job_artifact, :dast_observability) }
+      let(:artifact_invalid_json) { create(:ee_ci_job_artifact, :test_observability) }
       let(:service_object) { described_class.new(artifact_invalid_json.job.pipeline) }
 
       before do
         # rubocop:disable AnyInstanceOf -- Each call to ProcessScanEventsService::report_artifacts results in different object instances being returned
         allow_any_instance_of(::Ci::JobArtifact).to receive(:each_blob)
-          .and_yield("[][]{{(*$)@&%(*@&%^@$!_@)iowuejrfiqwoiqwfqwdfoij")
+                                                      .and_yield("[][]{{(*$)@&%(*@&%^@$!_@)iowuejrfiqwoiqwfqwdfoij")
         # rubocop:enable AnyInstanceOf -- AST: Dynamic Analysis
       end
 
@@ -148,6 +148,63 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
             file_count: 1000
           }
         )
+      end
+    end
+
+    context 'with DAST scan events' do
+      using RSpec::Parameterized::TableSyntax
+
+      let(:dast_artifact) { create(:ee_ci_job_artifact, :dast_observability) }
+      let(:dast_pipeline) { dast_artifact.job.pipeline }
+      let(:dast_service_object) { described_class.new(dast_pipeline) }
+
+      before do
+        dast_artifact.job.update!(status: :success)
+      end
+
+      where(:event_name, :expected_properties) do
+        'collect_dast_scan_page_metrics_from_pipeline' | {
+          property: '294f623d-b2ce-4568-8008-6fd4a5fb3330',
+          label: '560',
+          value: 1904,
+          check_items_count: 320
+        }
+        'collect_dast_scan_form_metrics_from_pipeline' | {
+          property: '294f623d-b2ce-4568-8008-6fd4a5fb3330',
+          label: '68',
+          value: 60,
+          form_fields_found: 127,
+          form_submission_attempts: 43,
+          successful_submissions: 31,
+          failed_submissions: 12,
+          forms_per_minute: 0.88,
+          successful_navigation_from_forms: 31,
+          failed_navigation_from_forms: 18
+        }
+        'collect_dast_scan_crawl_metrics_from_pipeline' | {
+          property: '294f623d-b2ce-4568-8008-6fd4a5fb3330',
+          label: '124',
+          value: 2004,
+          max_crawl_depth: 5
+        }
+        'collect_dast_scan_ff_form_hashing_metrics_from_pipeline' | {
+          property: '294f623d-b2ce-4568-8008-6fd4a5fb3330',
+          label: '1904',
+          value: 60,
+          forms_per_minute: 0.88,
+          max_crawl_depth: 5,
+          average_form_depth: 4.7,
+          crawl_surface_area: 2004
+        }
+      end
+
+      with_them do
+        it "triggers event data from '#{params[:event_name]}'" do
+          expect { dast_service_object.execute }.to trigger_internal_events(event_name).with(
+            project: dast_pipeline.project,
+            additional_properties: expected_properties
+          )
+        end
       end
     end
   end

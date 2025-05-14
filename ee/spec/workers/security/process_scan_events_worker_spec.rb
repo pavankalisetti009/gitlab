@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Security::ProcessScanEventsWorker, feature_category: :vulnerability_management do
-  let_it_be_with_refind(:artifact) { create(:ee_ci_job_artifact, :dast_observability) }
+  let_it_be_with_refind(:artifact) { create(:ee_ci_job_artifact, :test_observability) }
   let_it_be(:pipeline) { artifact.job.pipeline }
 
   describe '#perform' do

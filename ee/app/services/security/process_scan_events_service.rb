@@ -6,7 +6,13 @@ module Security
 
     ScanEventNotInAllowListError = Class.new(StandardError)
 
-    EVENT_NAME_ALLOW_LIST = %w[collect_sast_scan_metrics_from_pipeline].freeze
+    EVENT_NAME_ALLOW_LIST = %w[
+      collect_sast_scan_metrics_from_pipeline
+      collect_dast_scan_crawl_metrics_from_pipeline
+      collect_dast_scan_ff_form_hashing_metrics_from_pipeline
+      collect_dast_scan_form_metrics_from_pipeline
+      collect_dast_scan_page_metrics_from_pipeline
+    ].freeze
 
     def self.execute(pipeline)
       new(pipeline).execute

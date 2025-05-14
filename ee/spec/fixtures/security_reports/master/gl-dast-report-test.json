@@ -14,41 +14,17 @@
     "observability": {
       "events": [
         {
-          "event": "collect_dast_scan_page_metrics_from_pipeline",
+          "event": "dummy_event_for_testing_abcdefg",
           "property": "294f623d-b2ce-4568-8008-6fd4a5fb3330",
-          "label": "560",
-          "value": 1904,
-          "check_items_count": 320
-        },
-        {
-          "event": "collect_dast_scan_form_metrics_from_pipeline",
-          "property": "294f623d-b2ce-4568-8008-6fd4a5fb3330",
-          "label": "68",
+          "label": "openapi",
           "value": 60,
-          "form_fields_found": 127,
-          "form_submission_attempts": 43,
-          "successful_submissions": 31,
-          "failed_submissions": 12,
-          "forms_per_minute": 0.88,
-          "successful_navigation_from_forms": 31,
-          "failed_navigation_from_forms": 18
-        },
-        {
-          "event": "collect_dast_scan_crawl_metrics_from_pipeline",
-          "property": "294f623d-b2ce-4568-8008-6fd4a5fb3330",
-          "label":  "124",
-          "value": 2004,
-          "max_crawl_depth": 5
-        },
-        {
-          "event": "collect_dast_scan_ff_form_hashing_metrics_from_pipeline",
-          "property": "294f623d-b2ce-4568-8008-6fd4a5fb3330",
-          "label": "1904",
-          "value": 60,
-          "forms_per_minute": 0.88,
-          "max_crawl_depth": 5,
-          "average_form_depth": 4.7,
-          "crawl_surface_area": 2004
+          "version": "5.5.5",
+          "version_major": 5,
+          "operations": 10,
+          "per_request_script": 1,
+          "overrides_command": 1,
+          "status": "completed",
+          "content_type": "json"
         }
       ]
     },
