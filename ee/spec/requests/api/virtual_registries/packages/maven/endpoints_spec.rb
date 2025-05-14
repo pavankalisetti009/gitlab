@@ -35,6 +35,15 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
     end
 
     shared_examples 'returning the workhorse send_dependency response' do
+      let(:enabled_endpoint_uris) { [URI('192.168.1.1')] }
+      let(:outbound_local_requests_allowlist) { ['127.0.0.1'] }
+      let(:allowed_endpoints) { enabled_endpoint_uris + outbound_local_requests_allowlist }
+
+      before do
+        allow(ObjectStoreSettings).to receive(:enabled_endpoint_uris).and_return(enabled_endpoint_uris)
+        stub_application_setting(outbound_local_requests_whitelist: outbound_local_requests_allowlist)
+      end
+
       it 'returns a workhorse send_url response' do
         expect(::VirtualRegistries::Cache::EntryUploader).to receive(:workhorse_authorize).with(
           a_hash_including(
@@ -49,7 +58,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
           a_hash_including(
             allow_localhost: true,
             ssrf_filter: true,
-            allowed_uris: ObjectStoreSettings.enabled_endpoint_uris
+            allowed_endpoints: allowed_endpoints
           )
         ).and_call_original
 

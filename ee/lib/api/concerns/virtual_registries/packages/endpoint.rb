@@ -71,14 +71,17 @@ module API
               def workhorse_upload_url(url:, upstream:)
                 allow_localhost = Gitlab.dev_or_test_env? ||
                   Gitlab::CurrentSettings.allow_local_requests_from_web_hooks_and_services?
-                allowed_uris = ObjectStoreSettings.enabled_endpoint_uris
+                # rubocop:disable Naming/InclusiveLanguage -- existing setting
+                allowed_endpoints = ObjectStoreSettings.enabled_endpoint_uris +
+                  Gitlab::CurrentSettings.outbound_local_requests_whitelist
+                # rubocop:enable Naming/InclusiveLanguage
                 send_workhorse_headers(
                   Gitlab::Workhorse.send_dependency(
                     upstream.headers,
                     url,
                     response_headers: EXTRA_RESPONSE_HEADERS,
                     allow_localhost: allow_localhost,
-                    allowed_uris: allowed_uris,
+                    allowed_endpoints: allowed_endpoints,
                     ssrf_filter: true,
                     upload_config: {
                       headers: { UPSTREAM_GID_HEADER => upstream.to_global_id.to_s },

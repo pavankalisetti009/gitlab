@@ -95,7 +95,7 @@ module API
                   timeouts: TIMEOUTS,
                   response_statuses: RESPONSE_STATUSES,
                   ssrf_filter: true,
-                  allowed_uris: allowed_uris,
+                  allowed_endpoints: allowed_endpoints,
                   restrict_forwarded_response_headers: {
                     enabled: true,
                     allow_list: ALLOWED_HEADERS
@@ -134,7 +134,7 @@ module API
                   upload_config: upload_config,
                   response_headers: EXTRA_RESPONSE_HEADERS,
                   ssrf_filter: true,
-                  allowed_uris: allowed_uris,
+                  allowed_endpoints: allowed_endpoints,
                   restrict_forwarded_response_headers: {
                     enabled: true,
                     allow_list: ALLOWED_HEADERS
@@ -212,8 +212,10 @@ module API
               Gitlab.dev_or_test_env? || Gitlab::CurrentSettings.allow_local_requests_from_web_hooks_and_services?
             end
 
-            def allowed_uris
-              ObjectStoreSettings.enabled_endpoint_uris
+            def allowed_endpoints
+              # rubocop:disable Naming/InclusiveLanguage -- existing setting
+              ObjectStoreSettings.enabled_endpoint_uris + Gitlab::CurrentSettings.outbound_local_requests_whitelist
+              # rubocop:enable Naming/InclusiveLanguage
             end
           end
 
