@@ -66858,7 +66858,7 @@ msgstr ""
 msgid "View all"
 msgstr ""
 
-msgid "View all (one more item)"
+msgid "View all (%d more item)"
 msgid_plural "View all (%d more items)"
 msgstr[0] ""
 msgstr[1] ""
