@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::ImportExport::Project::TreeSaver, feature_category: :importers do
+  include TmpdirHelper
+
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let_it_be_with_reload(:project) { create(:project, group: group) }
@@ -11,7 +13,7 @@ RSpec.describe Gitlab::ImportExport::Project::TreeSaver, feature_category: :impo
   let_it_be(:epic) { create(:epic, group: group) }
   let_it_be(:epic_issue) { create(:epic_issue, issue: issue, epic: epic) }
 
-  let_it_be(:export_path) { "#{Dir.tmpdir}/project_tree_saver_spec_ee" }
+  let(:export_path) { mktmpdir }
 
   let_it_be(:push_rule) { create(:push_rule, project: project, max_file_size: 10) }
   let_it_be(:approval_rule) { create :approval_project_rule, project: project, approvals_required: 1 }
@@ -53,11 +55,8 @@ RSpec.describe Gitlab::ImportExport::Project::TreeSaver, feature_category: :impo
       stub_all_feature_flags
       stub_licensed_features(epics: epics_available)
       project.add_maintainer(user)
-    end
 
-    after do
-      FileUtils.rm_rf(export_path)
-      FileUtils.rm_rf(full_path)
+      allow(shared).to receive(:export_path).and_return(export_path)
     end
 
     context 'epics relation' do
@@ -93,8 +92,7 @@ RSpec.describe Gitlab::ImportExport::Project::TreeSaver, feature_category: :impo
           expect(issue_json['epic_issue']['id']).to eql(epic_issue.id)
           expect(issue_json['notes']).not_to be_empty
           expect(issue_json['notes'].count).to eq(2)
-          expect(issue_json['notes'].first['note']).to eq(notes[0].note)
-          expect(issue_json['notes'].last['note']).to eq(notes[2].note)
+          expect(issue_json['notes'].pluck('note')).to contain_exactly(notes[0].note, notes[2].note)
         end
       end
     end
@@ -164,20 +162,25 @@ RSpec.describe Gitlab::ImportExport::Project::TreeSaver, feature_category: :impo
       let(:finding) { create(:vulnerabilities_finding, :with_pipeline) }
       let!(:vulnerability) { create(:vulnerability, :detected, project: project, findings: [finding]) }
 
-      let(:vulnerability_json) { get_json(full_path, exportable_path, :vulnerabilities).first }
+      let(:vulnerabilities) { get_json(full_path, exportable_path, :vulnerabilities) || [] }
 
       it 'exports and imports vulnerabilities' do
         project.project_setting.update!(has_vulnerabilities: true)
+
         expect(project_tree_saver.save).to be true
-        expect(vulnerability_json['title']).to eq(vulnerability.title)
-        expect(vulnerability_json['severity']).to eq(vulnerability.severity)
-        expect(vulnerability_json['report_type']).to eq(vulnerability.report_type)
-        expect(vulnerability_json['description']).to eq(vulnerability.description)
-        expect(vulnerability_json['author_id']).to eq(vulnerability.author_id)
-        expect(get_json(full_path, exportable_path, :vulnerabilities).count).to eq(project.vulnerabilities.count)
+
+        expect(vulnerabilities).not_to be_empty
+        json = vulnerabilities.detect { |v| v['title'] == vulnerability.title }
+        expect(json).to include(
+          'severity' => vulnerability.severity,
+          'report_type' => vulnerability.report_type,
+          'description' => vulnerability.description,
+          'author_id' => vulnerability.author_id
+        )
+        expect(vulnerabilities.size).to eq(project.vulnerabilities.count)
       end
     end
   end
 
-  it_behaves_like "EE saves project tree successfully"
+  it_behaves_like 'EE saves project tree successfully'
 end
