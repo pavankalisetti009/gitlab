@@ -32,6 +32,10 @@
       "type": "number",
       "description": "The ratio between number of concurrent tasks and number of CPUs"
     },
+    "zoekt_indexing_parallelism": {
+      "type": "number",
+      "description": "Number of parallel processes per indexing task"
+    },
     "zoekt_rollout_batch_size": {
       "type": "number",
       "description": "Number of namespaces per indexing rollout"

@@ -362,13 +362,16 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         expect(result[0]).to have_selector('label', text: 'Indexing CPU to tasks multiplier')
         expect(result[1])
           .to have_selector('input[type="number"][name="application_setting[zoekt_cpu_to_tasks_ratio]"][value="1.5"]')
-        expect(result[2]).to have_selector('label', text: _('Number of namespaces per indexing rollout'))
+        expect(result[2]).to have_selector('label', text: _('Number of parallel processes per indexing task'))
         expect(result[3])
+          .to have_selector('input[type="number"][name="application_setting[zoekt_indexing_parallelism]"][value="1"]')
+        expect(result[4]).to have_selector('label', text: _('Number of namespaces per indexing rollout'))
+        expect(result[5])
           .to have_selector('input[type="number"][name="application_setting[zoekt_rollout_batch_size]"][value="100"]')
-        expect(result[4]).to have_selector('label', text: _('Retry interval for failed namespaces'))
+        expect(result[6]).to have_selector('label', text: _('Retry interval for failed namespaces'))
         selector = 'input[type="text"][name="application_setting[zoekt_rollout_retry_interval]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL}\"]"
-        expect(result[5]).to have_selector(selector)
+        expect(result[7]).to have_selector(selector)
       end
     end
 

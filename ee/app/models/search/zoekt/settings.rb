@@ -62,6 +62,12 @@ module Search
           input_type: :number_field,
           input_options: { step: 0.1 }
         },
+        zoekt_indexing_parallelism: {
+          type: :integer,
+          default: 1,
+          label: -> { _('Number of parallel processes per indexing task') },
+          input_type: :number_field
+        },
         zoekt_rollout_batch_size: {
           type: :integer,
           default: 32,
