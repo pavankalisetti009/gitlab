@@ -52,6 +52,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarPanel, feature_category: :navigat
     allow(::ServiceDesk).to receive(:supported?).and_return(true)
     project.update!(service_desk_enabled: true)
     allow(project).to receive(:product_analytics_enabled?).and_return(true)
+    stub_feature_flags(hide_incident_management_features: false)
   end
 
   it_behaves_like 'a panel with uniquely identifiable menu items'
