@@ -705,7 +705,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
                 total_tokens: 0,
                 error_message: combined_review_response["error"]["message"]
               )
-            ).twice
+            )
 
             expect(Gitlab::AppLogger).to receive(:info).with(
               hash_including(
