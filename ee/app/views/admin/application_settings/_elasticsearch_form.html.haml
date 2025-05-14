@@ -317,13 +317,13 @@
         = render Pajamas::CardComponent.new(**component_params) do |c|
           - c.with_header do
             .-gl-mb-3= render Pajamas::SingleStatComponent.new(title: s_('GlobalSearch|Initial indexing queue length'), stat_value: @initial_queue_size, stat_value_testid: 'initial_queue_size', title_tag: 'h3')
-            = render Pajamas::ButtonComponent.new(href: help_page_path('integration/advanced_search/elasticsearch_troubleshooting.md'), button_options: { data: { testid: 'initial_indexing_documentation' } }) do
+            = render Pajamas::ButtonComponent.new(href: help_page_path('integration/elasticsearch/troubleshooting/_index.md'), button_options: { data: { testid: 'initial_indexing_documentation' } }) do
               = s_('AdminArea|Documentation')
       .gl-grow{ class: 'gl-min-w-[1px]' }
         = render Pajamas::CardComponent.new(**component_params) do |c|
           - c.with_header do
             .-gl-mb-3= render Pajamas::SingleStatComponent.new(title: s_('GlobalSearch|Incremental indexing queue length'), stat_value: @incremental_queue_size, stat_value_testid: 'incremental_queue_size', title_tag: 'h3')
-            = render Pajamas::ButtonComponent.new(href: help_page_path('integration/advanced_search/elasticsearch_troubleshooting.md'), button_options: { data: { testid: 'incremental_indexing_documentation' } }) do
+            = render Pajamas::ButtonComponent.new(href: help_page_path('integration/elasticsearch/troubleshooting/_index.md'), button_options: { data: { testid: 'incremental_indexing_documentation' } }) do
               = s_('AdminArea|Documentation')
       - unless ::Gitlab::Saas.feature_available?(:search_indexing_status)
         .gl-grow{ class: 'gl-min-w-[1px]' }
