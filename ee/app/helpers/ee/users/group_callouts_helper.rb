@@ -16,6 +16,7 @@ module EE
           Ability.allowed?(current_user, :admin_group, group) &&
           group.namespace_settings.duo_core_features_enabled.nil? &&
           !user_dismissed_for_group(callouts_feature_name, group) &&
+          GitlabSubscriptions::DuoCore.any_add_on_purchase_for_namespace?(group) &&
           group.paid? && !group.trial?
       end
     end
