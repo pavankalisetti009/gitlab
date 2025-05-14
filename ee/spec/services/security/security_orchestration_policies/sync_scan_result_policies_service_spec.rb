@@ -31,7 +31,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesSe
         stub_const("#{described_class}::PROJECTS_BATCH_SIZE", 1)
       end
 
-      it 'increases delay by 10 seconds for each batch' do
+      it 'increases delay by 10 seconds for each batch',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/524382' do
         expect(sync_project_service).to receive(:execute).with(project1.id, { delay: 0.seconds })
         expect(sync_project_service).to receive(:execute).with(project2.id, { delay: 10.seconds })
         expect(sync_project_service).to receive(:execute).with(project3.id, { delay: 20.seconds })
