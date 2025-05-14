@@ -21543,6 +21543,9 @@ msgstr ""
 msgid "DeployTokens|Allows read, write, and delete access to container images through the dependency proxy."
 msgstr ""
 
+msgid "DeployTokens|Allows read-only access to container images through the dependency proxy and read-only access to virtual registries."
+msgstr ""
+
 msgid "DeployTokens|Allows read-only access to container images through the dependency proxy."
 msgstr ""
 
@@ -65202,7 +65205,7 @@ msgstr ""
 msgid "UsageQuota|Buy storage"
 msgstr ""
 
-msgid "UsageQuota|Cache for frequently-accessed Docker images and packages."
+msgid "UsageQuota|Cache for frequently-accessed Docker images and virtual registries."
 msgstr ""
 
 msgid "UsageQuota|Code packages and container images."
