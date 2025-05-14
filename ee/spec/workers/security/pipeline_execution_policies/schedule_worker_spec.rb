@@ -124,6 +124,17 @@ RSpec.describe Security::PipelineExecutionPolicies::ScheduleWorker, '#perform', 
 
         expect { perform }.to change { schedule.reload.next_run_at }
       end
+
+      it 'tracks the snoozed event', :clean_gitlab_redis_shared_state do
+        expect { perform }
+          .to trigger_internal_events('scheduled_pipeline_execution_policy_snoozed')
+          .with(project: schedule.project, category: 'InternalEventTracking')
+          .and increment_usage_metrics(
+            # rubocop:disable Layout/LineLength -- Long metric names
+            'redis_hll_counters.count_distinct_namespace_id_from_execute_job_scheduled_pipeline_execution_policy_snoozed_monthly'
+            # rubocop:enable Layout/LineLength
+          )
+      end
     end
   end
 
