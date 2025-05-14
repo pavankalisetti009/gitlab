@@ -27,7 +27,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
         end
 
         specify do
-          expect(subject.keys).to eq(%i[secret-detection-0 container-scanning-1])
+          expect(subject.keys).to eq(%i[secret-detection-0 container-scanning-1 variables])
         end
       end
 
@@ -62,7 +62,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
         end
 
         specify do
-          expect(subject.keys).to eq(%i[dast-on-demand-0])
+          expect(subject.keys).to eq(%i[dast-on-demand-0 variables])
         end
       end
     end

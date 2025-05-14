@@ -16,10 +16,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ScanPipelineService,
     let(:service) { described_class.new(context) }
     let(:context) { Gitlab::Ci::Config::External::Context.new(project: project, user: user) }
 
-    subject { service.execute(actions) }
+    subject(:execute) { service.execute(actions) }
 
     shared_examples 'creates scan jobs' do |on_demand_jobs: [], pipeline_scan_job_templates: [], variables: {}|
-      it 'returns created jobs' do
+      it 'calls the services' do
         expect(::Security::SecurityOrchestrationPolicies::CiConfigurationService).to receive(:new)
           .exactly(pipeline_scan_job_templates.size)
           .times
@@ -29,18 +29,40 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ScanPipelineService,
           .times
           .and_call_original
 
-        pipeline_scan_jobs = []
+        execute
+      end
 
-        pipeline_scan_job_templates.each_with_index do |job_template, index|
-          template = ::TemplateFinder.build(:gitlab_ci_ymls, nil, name: job_template).execute
-          jobs = Gitlab::Ci::Config.new(template.content).jobs.keys
-          jobs.each do |job|
-            pipeline_scan_jobs.append(:"#{job.to_s.tr('_', '-')}-#{index}")
+      if pipeline_scan_job_templates.any?
+        it 'returns created pipeline scan jobs' do
+          expected_pipeline_scan_jobs = []
+
+          pipeline_scan_job_templates.each_with_index do |job_template, index|
+            template = ::TemplateFinder.build(:gitlab_ci_ymls, nil, name: job_template).execute
+            jobs = Gitlab::Ci::Config.new(template.content).jobs.keys
+            jobs.each do |job|
+              expected_pipeline_scan_jobs.append(:"#{job.to_s.tr('_', '-')}-#{index}")
+            end
           end
-        end
 
-        expect(pipeline_scan_config.keys).to eq(pipeline_scan_jobs)
-        expect(on_demand_config.keys).to eq(on_demand_jobs)
+          expect(pipeline_scan_config.keys).to eq(expected_pipeline_scan_jobs + %i[variables])
+        end
+      else
+        it 'does not return pipeline scan jobs' do
+          expect(pipeline_scan_config.keys).to be_empty
+        end
+      end
+
+      if on_demand_jobs.any?
+        it 'returns created on demand jobs' do
+          expect(on_demand_config.keys).to eq(on_demand_jobs + %i[variables])
+        end
+      else
+        it 'does not return on demand jobs' do
+          expect(on_demand_config.keys).to be_empty
+        end
+      end
+
+      it 'returns variables' do
         expect(variables_config).to match a_hash_including(variables)
       end
     end
