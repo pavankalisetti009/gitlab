@@ -326,10 +326,13 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entry, type: :model, f
 
     threads = Array.new(count) do
       Thread.new do
-        # A loop to make threads busy until we `join` them
-        true while wait_for_it
+        # each thread must checkout its own connection
+        ApplicationRecord.connection_pool.with_connection do
+          # A loop to make threads busy until we `join` them
+          true while wait_for_it
 
-        yield
+          yield
+        end
       end
     end
 
