@@ -2,6 +2,7 @@
 stage: Application Security Testing
 group: Secret Detection
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
+description: Learn about testing and resolving vulnerabilities.
 title: Get started securing your application
 ---
 
