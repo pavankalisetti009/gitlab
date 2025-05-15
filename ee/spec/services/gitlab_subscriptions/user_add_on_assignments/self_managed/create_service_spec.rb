@@ -13,6 +13,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::SelfManaged::CreateSer
 
   before do
     stub_saas_features(gitlab_com_subscriptions: false)
+    ::Users::Internal.duo_code_review_bot # ensure interal user exists
   end
 
   describe '#execute' do
