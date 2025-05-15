@@ -25,7 +25,7 @@
             .row
               .form-group.col-sm-12
                 = f.label :onboarding_status_role, _('Role')
-                = f.select :onboarding_status_role, ::UserDetail.onboarding_status_roles.map { |role, value| [role.titleize, value] }, { include_blank: _('Select a role') }, class: 'form-control js-track-error', required: true, data: { testid: 'role-dropdown', track_action_for_errors: onboarding_status_presenter.tracking_label }
+                = f.select :onboarding_status_role, ::UserDetail.onboarding_status_roles.map { |role, value| [role.titleize, value] }, { include_blank: s_('MemberRole|Select a role') }, class: 'form-control js-track-error', required: true, data: { testid: 'role-dropdown', track_action_for_errors: onboarding_status_presenter.tracking_label }
             = render 'jobs_to_be_done', f: f
             = render 'joining_project', f: f
             = render 'setup_for_company', f: f

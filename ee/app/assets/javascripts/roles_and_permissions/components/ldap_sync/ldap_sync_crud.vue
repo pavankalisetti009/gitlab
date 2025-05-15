@@ -75,8 +75,8 @@ export default {
     :count="roleLinksCount"
     :is-loading="isRoleLinksLoading"
   >
-    <template v-if="!isRoleLinksLoading" #actions>
-      <div class="gl-flex gl-flex-wrap">
+    <template #actions>
+      <div v-if="!isRoleLinksLoading" class="gl-flex gl-flex-wrap">
         <gl-link v-if="roleLinksCount" class="gl-my-3 gl-mr-4">
           {{ s__('MemberRole|View LDAP synced users') }}
         </gl-link>

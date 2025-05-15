@@ -1,12 +1,9 @@
 <script>
 import { GlCollapsibleListbox } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { s__ } from '~/locale';
 import { initialSelectedRole, roleDropdownItems } from 'ee/members/utils';
 
 export default {
-  i18n: {
-    placeholder: __('Select a role'),
-  },
   components: {
     GlCollapsibleListbox,
   },
@@ -45,7 +42,7 @@ export default {
       return this.accessLevelOptions.flatten.find(({ value }) => value === this.selectedRole);
     },
     toggleText() {
-      return this.selectedRole ? this.selectedItem.text : this.$options.i18n.placeholder;
+      return this.selectedRole ? this.selectedItem.text : s__('MemberRole|Select a role');
     },
   },
   watch: {

@@ -236,3 +236,8 @@ export const ldapAdminRoleLinks = [
     adminMemberRole: { id: 'gid://gitlab/MemberRole/2', name: 'Custom admin role 2' },
   },
 ];
+
+export const ldapServers = [
+  { value: 'ldapmain', text: 'LDAP' },
+  { value: 'ldapalt', text: 'LDAP-alt' },
+];

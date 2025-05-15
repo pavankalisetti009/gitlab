@@ -8,7 +8,7 @@ import GroupSelect from 'ee/ldap/components/group_select.vue';
 import { i18n } from 'ee/ldap/components/constants';
 
 jest.mock('ee/api', () => ({
-  ldapGroups: jest.fn(),
+  ldapGroups: jest.fn().mockResolvedValue({ data: [{ cn: 'test' }] }),
 }));
 
 const mockAlertDismiss = jest.fn();
@@ -22,11 +22,7 @@ describe('GroupSelect', () => {
   let wrapper;
   const providerElement = document.createElement('select');
 
-  const createComponent = ({ props = {}, apiSpy } = {}) => {
-    if (!apiSpy) {
-      Api.ldapGroups.mockResolvedValue([{ cn: 'test' }]);
-    }
-
+  const createComponent = ({ props = {} } = {}) => {
     wrapper = mountExtended(GroupSelect, {
       propsData: { providerElement, ...props },
     });
@@ -67,12 +63,12 @@ describe('GroupSelect', () => {
 
     it('retrieves groups based on a user search query', async () => {
       expect(Api.ldapGroups).toHaveBeenCalledTimes(1);
-      Api.ldapGroups.mockResolvedValue([{ cn: '3' }]);
+      Api.ldapGroups.mockResolvedValue({ data: [{ cn: '3' }] });
       findCollapsibleListbox().vm.$emit('search', '3');
       await nextTick();
       await waitForPromises();
 
-      expect(findCollapsibleListbox().props('items')).toEqual([{ cn: '3', text: '3', value: '3' }]);
+      expect(findCollapsibleListbox().props('items')).toEqual([{ text: '3', value: '3' }]);
       expect(Api.ldapGroups).toHaveBeenCalledTimes(2);
     });
 
@@ -106,7 +102,8 @@ describe('GroupSelect', () => {
 
   describe('error', () => {
     beforeEach(() => {
-      createComponent({ apiSpy: Api.ldapGroups.mockRejectedValue() });
+      Api.ldapGroups.mockRejectedValue();
+      createComponent();
     });
 
     it('does not display the searching spinner', () => {

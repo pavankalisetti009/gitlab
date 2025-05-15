@@ -4,14 +4,15 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import RolesCrud from 'ee/roles_and_permissions/components/roles_table/roles_crud.vue';
 import LdapSyncCrud from 'ee/roles_and_permissions/components/ldap_sync/ldap_sync_crud.vue';
+import { ldapServers as ldapServersData } from '../mock_data';
 
 describe('RoleTabs component', () => {
   let wrapper;
 
-  const createWrapper = ({ isLdapEnabled = true, customAdminRoles = true } = {}) => {
+  const createWrapper = ({ ldapServers = ldapServersData, customAdminRoles = true } = {}) => {
     wrapper = shallowMountExtended(RoleTabs, {
-      propsData: { isLdapEnabled },
       provide: {
+        ldapServers,
         glFeatures: { customAdminRoles },
       },
       stubs: { GlSprintf },
@@ -49,7 +50,7 @@ describe('RoleTabs component', () => {
 
   describe.each`
     phrase                                                | options
-    ${'when ldap is disabled'}                            | ${{ isLdapEnabled: false }}
+    ${'when ldap is disabled'}                            | ${{ ldapServers: null }}
     ${'when custom admin roles feature flag is disabled'} | ${{ customAdminRoles: false }}
   `('$phrase', ({ options }) => {
     beforeEach(() => createWrapper(options));

@@ -23,20 +23,16 @@ describe('Api', () => {
   });
 
   describe('ldapGroups', () => {
-    it('calls callback on completion', async () => {
+    it('returns expected data', async () => {
       const query = 'query';
       const provider = 'provider';
-      const callback = jest.fn();
       const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/ldap/${provider}/groups.json`;
+      const expectedData = [{ name: 'test' }];
 
-      mock.onGet(expectedUrl).reply(HTTP_STATUS_OK, [
-        {
-          name: 'test',
-        },
-      ]);
+      mock.onGet(expectedUrl).reply(HTTP_STATUS_OK, expectedData);
+      const response = await Api.ldapGroups(query, provider);
 
-      const response = await Api.ldapGroups(query, provider, callback);
-      expect(callback).toHaveBeenCalledWith(response);
+      expect(response.data).toEqual(expectedData);
     });
   });
 

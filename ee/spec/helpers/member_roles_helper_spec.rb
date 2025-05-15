@@ -14,16 +14,23 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
     allow(helper).to receive(:current_user).and_return(user)
   end
 
+  shared_examples 'no LDAP servers data' do
+    it 'does not have LDAP servers data' do
+      expect(data).not_to have_key(:ldap_servers)
+    end
+  end
+
   describe '#member_roles_data' do
     context 'when on self-managed' do
       subject(:data) { helper.member_roles_data }
+
+      it_behaves_like 'no LDAP servers data'
 
       it 'matches the expected data' do
         expect(data[:new_role_path]).to be_nil
         expect(data[:group_full_path]).to be_nil
         expect(data[:group_id]).to be_nil
         expect(data[:current_user_email]).to eq user.notification_email_or_default
-        expect(data[:ldap_enabled]).to eq 'false'
       end
 
       context 'with admin member role rights' do
@@ -38,7 +45,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
           expect(data[:group_full_path]).to be_nil
           expect(data[:group_id]).to be_nil
           expect(data[:current_user_email]).to eq user.notification_email_or_default
-          expect(data[:ldap_enabled]).to eq 'true'
+          expect(data[:ldap_servers]).to eq '[{"text":"ldap","value":"ldapmain"}]'
         end
 
         context 'when user cannot manage ldap admin links' do
@@ -46,9 +53,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
             allow(helper).to receive(:can?).with(user, :manage_ldap_admin_links).and_return(false)
           end
 
-          it 'sets ldap_enabled to false' do
-            expect(data[:ldap_enabled]).to eq 'false'
-          end
+          it_behaves_like 'no LDAP servers data'
         end
 
         context 'when LDAP is not enabled for the instance' do
@@ -56,9 +61,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
             allow(Gitlab.config.ldap).to receive(:enabled).and_return(false)
           end
 
-          it 'sets ldap_enabled to false' do
-            expect(data[:ldap_enabled]).to eq 'false'
-          end
+          it_behaves_like 'no LDAP servers data'
         end
       end
     end
@@ -67,12 +70,13 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
       context 'when on group page' do
         subject(:data) { helper.member_roles_data(source) }
 
+        it_behaves_like 'no LDAP servers data'
+
         it 'matches the expected data' do
           expect(data[:new_role_path]).to be_nil
           expect(data[:group_full_path]).to eq source.full_path
           expect(data[:group_id]).to eq source.id
           expect(data[:current_user_email]).to eq user.notification_email_or_default
-          expect(data[:ldap_enabled]).to eq 'false'
         end
 
         context 'with admin member role rights' do
@@ -87,7 +91,6 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
             expect(data[:group_full_path]).to eq source.full_path
             expect(data[:group_id]).to eq source.id
             expect(data[:current_user_email]).to eq user.notification_email_or_default
-            expect(data[:ldap_enabled]).to eq 'false'
           end
         end
       end
