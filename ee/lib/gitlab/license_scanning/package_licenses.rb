@@ -240,7 +240,8 @@ module Gitlab
       end
 
       def supported_for_license_scanning?(purl_type)
-        ::Enums::Sbom.dependency_scanning_purl_type?(purl_type)
+        ::Enums::Sbom.dependency_scanning_purl_type?(purl_type) ||
+          ::Enums::Sbom.container_scanning_purl_type?(purl_type)
       end
 
       def track_events
