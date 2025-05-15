@@ -41,6 +41,7 @@ import NewIssueDropdown from 'ee/issues/list/components/new_issue_dropdown.vue';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 import searchEpicsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/search_epics.query.graphql';
 import ChildEpicIssueIndicator from 'ee/issuable/child_epic_issue_indicator/components/child_epic_issue_indicator.vue';
+import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import {
   mockGroupEpicsQueryResponse,
   mockNamespaceCustomFieldsResponse,
@@ -98,19 +99,32 @@ describe('EE IssuesListApp component', () => {
   defaultQueryResponse.data.project.issues.nodes[0].epic = {
     id: 'gid://gitlab/Epic/1',
   };
+  defaultQueryResponse.data.project.issues.nodes[0].status = {
+    color: '#DD2B0E',
+    iconName: 'status-cancelled',
+    id: 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/4',
+    name: "Won't do",
+    position: 0,
+    __typename: 'WorkItemStatus',
+  };
 
   const findIssuableList = () => wrapper.findComponent(IssuableList);
   const findNewIssueDropdown = () => wrapper.findComponent(NewIssueDropdown);
   const findChildEpicIssueIndicator = () => wrapper.findComponent(ChildEpicIssueIndicator);
+  const findStatusBadge = () => wrapper.findComponent(WorkItemStatusBadge);
   const findIssuesListAppCE = () => wrapper.findComponent(IssuesListAppCE);
 
   const mountComponent = ({
+    noStatus = false,
     provide = {},
     okrsMvc = false,
     issuesQueryResponse = jest.fn().mockResolvedValue(defaultQueryResponse),
     issuesCountsQueryResponse = jest.fn().mockResolvedValue(getIssuesCountsQueryResponse),
     customFieldsQueryHandler = jest.fn().mockResolvedValue(mockNamespaceCustomFieldsResponse),
   } = {}) => {
+    if (noStatus) {
+      defaultQueryResponse.data.project.issues.nodes[0].status = null;
+    }
     return mount(IssuesListApp, {
       apolloProvider: createMockApollo([
         [getIssuesQuery, issuesQueryResponse],
@@ -303,6 +317,24 @@ describe('EE IssuesListApp component', () => {
       await waitForPromises();
 
       expect(findChildEpicIssueIndicator().exists()).toBe(false);
+    });
+  });
+
+  describe('WorkItemStatusBadge component', () => {
+    it('renders `WorkItemStatusBadge` when there is custom status', async () => {
+      wrapper = await mountComponent();
+
+      await waitForPromises();
+
+      expect(findStatusBadge().exists()).toBe(true);
+    });
+
+    it('does not render `WorkItemStatusBadge` when there is no custom status', async () => {
+      wrapper = await mountComponent({ noStatus: true });
+
+      await waitForPromises();
+
+      expect(findStatusBadge().exists()).toBe(false);
     });
   });
 

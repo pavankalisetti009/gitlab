@@ -1,5 +1,6 @@
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
 #import "~/issues/list/queries/issue.fragment.graphql"
+#import "ee/work_items/graphql/work_item_status.fragment.graphql"
 
 query getIssuesEE(
   $hideUsers: Boolean = false
@@ -101,6 +102,9 @@ query getIssuesEE(
         blockingCount
         healthStatus
         weight
+        status {
+          ...WorkItemStatusFragment
+        }
         epic @include(if: $searchByEpic) {
           id
         }
@@ -161,6 +165,9 @@ query getIssuesEE(
         blockingCount
         healthStatus
         weight
+        status {
+          ...WorkItemStatusFragment
+        }
         epic @include(if: $searchByEpic) {
           id
         }
