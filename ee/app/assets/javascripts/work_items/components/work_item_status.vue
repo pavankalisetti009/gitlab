@@ -15,7 +15,7 @@ import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_ite
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
-import { findStatusWidget, newWorkItemId } from '~/work_items/utils';
+import { findStatusWidget, newWorkItemId, newWorkItemFullPath } from '~/work_items/utils';
 import WorkItemStatusBadge from './shared/work_item_status_badge.vue';
 
 export default {
@@ -65,6 +65,11 @@ export default {
   computed: {
     workItemStatus() {
       return findStatusWidget(this.workItem);
+    },
+    workItemFullPath() {
+      return this.createFlow
+        ? newWorkItemFullPath(this.fullPath, this.workItemType)
+        : this.fullPath;
     },
     hasStatus() {
       return Boolean(this.localStatus?.id);
@@ -126,7 +131,7 @@ export default {
       query: workItemByIidQuery,
       variables() {
         return {
-          fullPath: this.fullPath,
+          fullPath: this.workItemFullPath,
           iid: this.workItemIid,
         };
       },
