@@ -54207,6 +54207,9 @@ msgstr ""
 msgid "Secrets|Secret %{secretName} has been deleted."
 msgstr ""
 
+msgid "Secrets|Secret manager user permissions"
+msgstr ""
+
 msgid "Secrets|Secrets"
 msgstr ""
 
