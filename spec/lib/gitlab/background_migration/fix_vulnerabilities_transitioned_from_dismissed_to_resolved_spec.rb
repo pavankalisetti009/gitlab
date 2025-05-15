@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDismissedToResolved, feature_category: :vulnerability_management do
+  # rubocop:disable RSpec/MultipleMemoizedHelpers -- Favoring readability over brevity
   let(:states) do
     {
       detected: 1,
@@ -55,6 +56,7 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
   let(:vulnerabilities) { table(:vulnerabilities, database: :sec) }
   let(:vulnerability_reads) { table(:vulnerability_reads, database: :sec) }
   let(:state_transitions) { table(:vulnerability_state_transitions, database: :sec) }
+  let(:notes) { table(:notes) }
 
   let!(:affected_vulnerability_inside_group) { create_affected_vulnerability(project) }
   let!(:affected_vulnerability_outside_group) { create_affected_vulnerability(outside_project) }
@@ -220,6 +222,28 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
           author_id: security_policy_bot.id,
           vulnerability_id: affected_vulnerability_flapping.id
         )
+
+        expect(::Vulnerabilities::StateTransition.all).to all(be_valid)
+      end
+
+      it 'inserts notes for migrated vulnerabilities' do
+        perform_migration
+
+        [
+          affected_vulnerability_inside_group,
+          affected_vulnerability_outside_group,
+          affected_vulnerability_flapping
+        ].each do |vulnerability|
+          expect(latest_note(vulnerability)).to have_attributes(
+            project_id: vulnerability.project_id,
+            namespace_id: projects.find(vulnerability.project_id).project_namespace_id,
+            system: true,
+            note: described_class::COMMENT,
+            author_id: security_policy_bot.id
+          )
+
+          expect(::Note.all).to all(be_valid)
+        end
       end
     end
 
@@ -239,12 +263,72 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
             .and(not_change { confirmed_vulnerability.reload.state })
         )
       end
+
+      it 'inserts state transitions for migrated vulnerabilities', :aggregate_failures do
+        perform_migration
+
+        expect(latest_transition(affected_vulnerability_inside_group)).to have_attributes(
+          comment: described_class::COMMENT,
+          from_state: states[:resolved],
+          to_state: states[:dismissed],
+          dismissal_reason: 1,
+          author_id: security_policy_bot.id,
+          vulnerability_id: affected_vulnerability_inside_group.id
+        )
+
+        expect(latest_transition(affected_vulnerability_outside_group)).to have_attributes(
+          author_id: security_policy_bot.id,
+          from_state: states[:dismissed],
+          to_state: states[:resolved],
+          comment: 'Auto-resolved by policy'
+        )
+
+        expect(latest_transition(affected_vulnerability_flapping)).to have_attributes(
+          comment: described_class::COMMENT,
+          from_state: states[:detected],
+          to_state: states[:dismissed],
+          dismissal_reason: 1,
+          author_id: security_policy_bot.id,
+          vulnerability_id: affected_vulnerability_flapping.id
+        )
+
+        expect(::Vulnerabilities::StateTransition.all).to all(be_valid)
+      end
+
+      it 'inserts notes for migrated vulnerabilities' do
+        perform_migration
+
+        [
+          affected_vulnerability_inside_group,
+          affected_vulnerability_flapping
+        ].each do |vulnerability|
+          expect(latest_note(vulnerability)).to have_attributes(
+            project_id: vulnerability.project_id,
+            namespace_id: projects.find(vulnerability.project_id).project_namespace_id,
+            system: true,
+            note: described_class::COMMENT,
+            author_id: security_policy_bot.id
+          )
+
+          expect(::Note.all).to all(be_valid)
+        end
+      end
     end
     # rubocop:enable RSpec/MultipleMemoizedHelpers
   end
 
   def latest_transition(vulnerability)
-    state_transitions.where(vulnerability_id: vulnerability.id).order(:id).last
+    state_transitions
+      .where(vulnerability_id: vulnerability.id)
+      .order(:id)
+      .last
+  end
+
+  def latest_note(vulnerability)
+    notes
+      .where(noteable_type: 'Vulnerability', noteable_id: vulnerability.id)
+      .order(:id)
+      .last
   end
 
   def create_affected_vulnerability(project, **vulnerability_attributes)
@@ -328,4 +412,5 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
       projects_limit: 10
     }.merge(attributes))
   end
+  # rubocop:enable RSpec/MultipleMemoizedHelpers
 end
