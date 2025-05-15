@@ -22,7 +22,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
   it 'includes the ee specific fields' do
     expected_fields = %w[
       security_training_providers vulnerabilities vulnerability_scanners requirement_states_count
-      vulnerability_severities_count packages compliance_frameworks vulnerabilities_count_by_day
+      vulnerability_severities_count packages compliance_frameworks security_policies vulnerabilities_count_by_day
       security_dashboard_path iterations iteration_cadences repository_size_excess actual_repository_size_limit
       code_coverage_summary api_fuzzing_ci_configuration corpuses path_locks incident_management_escalation_policies
       incident_management_escalation_policy vulnerability_management_policies

@@ -223,6 +223,14 @@ module EE
           extras: [:lookahead],
           resolver: ::Resolvers::PathLocksResolver
 
+        field :security_policies,
+          ::Types::SecurityOrchestration::SecurityPolicyType.connection_type,
+          calls_gitaly: true,
+          null: true,
+          description: 'All security policies of the project.',
+          resolver: ::Resolvers::SecurityOrchestration::SecurityPolicyResolver,
+          experiment: { milestone: '18.1' }
+
         field :vulnerability_management_policies,
           ::Types::Security::VulnerabilityManagementPolicyType.connection_type,
           calls_gitaly: true,
