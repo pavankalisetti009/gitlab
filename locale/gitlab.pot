@@ -23622,9 +23622,6 @@ msgstr ""
 msgid "Edit Release"
 msgstr ""
 
-msgid "Edit Scheduled Pipeline"
-msgstr ""
-
 msgid "Edit Slack integration"
 msgstr ""
 
@@ -23716,6 +23713,9 @@ msgid "Edit release"
 msgstr ""
 
 msgid "Edit release (%{title})"
+msgstr ""
+
+msgid "Edit scheduled pipeline"
 msgstr ""
 
 msgid "Edit single file"
@@ -40204,9 +40204,6 @@ msgid "New Jira import"
 msgstr ""
 
 msgid "New Label"
-msgstr ""
-
-msgid "New Milestone"
 msgstr ""
 
 msgid "New Pipeline Schedule"
