@@ -1,4 +1,4 @@
-- return if group.marked_for_deletion?
+- return if group.self_deletion_scheduled?
 - remove_form_id = local_assigns.fetch(:remove_form_id, nil)
 - linked_configurations = security_configurations_preventing_group_deletion(group)
 
@@ -10,8 +10,7 @@
   - c.with_body do
     = form_tag(group, method: :delete, id: remove_form_id) do
       - if linked_configurations.empty?
-        %p
-          = safe_format(_("This action will place this group, including its subgroups and projects, in a pending deletion state for %{deletion_delayed_period} days, and delete it permanently on %{date}."), deletion_delayed_period: group.deletion_adjourned_period, date: tag.strong(permanent_deletion_date_formatted))
+        %p= delete_delayed_group_message(group)
 
         = render 'groups/settings/remove_button', group: group, remove_form_id: remove_form_id
       - else

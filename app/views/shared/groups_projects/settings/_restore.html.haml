@@ -1,5 +1,5 @@
 - return unless context.is_a?(Group) || context.is_a?(Project)
-- return unless context.marked_for_deletion?
+- return unless context.self_deletion_scheduled?
 
 - date = permanent_deletion_date_formatted(context)
 

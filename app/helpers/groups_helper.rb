@@ -90,6 +90,27 @@ module GroupsHelper
     }
   end
 
+  def delete_delayed_group_message(group)
+    safe_format(
+      _("This action will place this group, including its subgroups and projects, in a pending deletion state " \
+        "for %{deletion_adjourned_period} days, and delete it permanently on %{date}."),
+      deletion_adjourned_period: group.deletion_adjourned_period,
+      date: tag.strong(permanent_deletion_date_formatted)
+    )
+  end
+
+  def delete_immediately_group_scheduled_for_deletion_message(group)
+    safe_format(
+      _('This group is scheduled for deletion on %{date}. ' \
+        'This action will permanently delete this group, ' \
+        'including its subgroups and projects, %{strongOpen}immediately%{strongClose}. ' \
+        'This action cannot be undone.'),
+      date: tag.strong(permanent_deletion_date_formatted(group)),
+      strongOpen: '<strong>'.html_safe,
+      strongClose: '</strong>'.html_safe
+    )
+  end
+
   def remove_group_message(group, permanently_remove)
     return permanently_delete_group_message(group) if permanently_remove
     return permanently_delete_group_message(group) unless group.adjourned_deletion?

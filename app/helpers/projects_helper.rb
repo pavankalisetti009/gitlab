@@ -757,27 +757,16 @@ module ProjectsHelper
     dashboard_projects_landing_paths.include?(request.path) && !current_user.authorized_projects.exists?
   end
 
-  def scheduled_for_deletion?(project)
-    project.marked_for_deletion_at.present?
+  def delete_delayed_project_message(project)
+    safe_format(
+      _("This action will place this project, including all its resources, in a pending deletion state " \
+        "for %{deletion_adjourned_period} days, and delete it permanently on %{date}."),
+      deletion_adjourned_period: project.deletion_adjourned_period,
+      date: tag.strong(permanent_deletion_date_formatted)
+    )
   end
 
-  def delete_delayed_message(project)
-    if project.delayed_deletion_ready?
-      safe_format(
-        _("This action will place this project, including all its resources, in a pending deletion state " \
-          "for %{deletion_adjourned_period} days, and delete it permanently on %{date}."),
-        deletion_adjourned_period: project.deletion_adjourned_period,
-        date: tag.strong(permanent_deletion_date_formatted)
-      )
-    else
-      delete_permanently_message
-    end
-  end
-
-  def delete_immediately_message(project)
-    return delete_permanently_message unless project.adjourned_deletion?
-    return delete_delayed_message(project) unless project.self_deletion_scheduled?
-
+  def delete_immediately_project_scheduled_for_deletion_message(project)
     safe_format(
       _('This project is scheduled for deletion on %{date}. ' \
         'This action will permanently delete this project, ' \
@@ -786,10 +775,6 @@ module ProjectsHelper
       strongOpen: '<strong>'.html_safe,
       strongClose: '</strong>'.html_safe
     )
-  end
-
-  def delete_permanently_message
-    _('This action will permanently delete this project, including all its resources.')
   end
 
   def project_delete_immediately_button_data(project, button_text = nil)
