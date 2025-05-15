@@ -13,5 +13,11 @@ module Users
     validates :user, presence: true, uniqueness: true
 
     scope :ldap_synced, -> { where(ldap: true) }
+
+    scope :with_identity_provider, ->(provider) do
+      joins(user: :identities).where(identities: { provider: provider })
+    end
+
+    scope :preload_user, -> { preload(:user) }
   end
 end
