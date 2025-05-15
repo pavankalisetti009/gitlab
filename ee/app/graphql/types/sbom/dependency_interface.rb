@@ -11,7 +11,7 @@ module Types
       field :name, GraphQL::Types::String,
         null: false, description: 'Name of the dependency.'
 
-      field :version, GraphQL::Types::String,
+      field :component_version, Types::Sbom::ComponentVersionType,
         null: true, description: 'Version of the dependency.'
 
       field :packager, Types::Sbom::PackageManagerEnum,

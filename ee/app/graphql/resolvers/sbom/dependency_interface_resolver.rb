@@ -67,7 +67,7 @@ module Resolvers
       def preloads
         {
           name: [:component],
-          version: [:component_version],
+          component_version: [:component_version],
           packager: [:source],
           location: [:source]
         }
