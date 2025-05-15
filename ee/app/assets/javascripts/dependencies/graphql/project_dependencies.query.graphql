@@ -26,7 +26,10 @@ query getProjectDependencies(
       nodes {
         id
         name
-        version
+        componentVersion {
+          id
+          version
+        }
         # Note: The packager field is currently associated with an issue, which needs to be resolved before it can be used:
         # https://gitlab.com/gitlab-org/gitlab/-/issues/538181
         # packager

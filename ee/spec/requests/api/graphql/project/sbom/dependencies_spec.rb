@@ -13,7 +13,10 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
     <<~FIELDS
       id
       name
-      version
+      componentVersion {
+        id
+        version
+      }
       packager
       location {
         blobPath
@@ -52,7 +55,10 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
       {
         'id' => occurrence.to_gid.to_s,
         'name' => occurrence.name,
-        'version' => occurrence.version,
+        'componentVersion' => {
+          'id' => occurrence.component_version.to_gid.to_s,
+          'version' => occurrence.version
+        },
         'packager' => package_manager_enum(occurrence.packager),
         'location' => {
           'blobPath' => "/#{project.full_path}/-/blob/#{occurrence.commit_sha}/#{occurrence.source.input_file_path}",
@@ -78,7 +84,10 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
         {
           'id' => occurrence.to_gid.to_s,
           'name' => occurrence.name,
-          'version' => occurrence.version,
+          'componentVersion' => {
+            'id' => occurrence.component_version.to_gid.to_s,
+            'version' => occurrence.version
+          },
           'packager' => nil,
           'location' => {
             'blobPath' => nil,
@@ -102,7 +111,7 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
         {
           'id' => occurrence.to_gid.to_s,
           'name' => occurrence.name,
-          'version' => nil,
+          'componentVersion' => nil,
           'packager' => package_manager_enum(occurrence.packager),
           'location' => {
             'blobPath' => "/#{project.full_path}/-/blob/#{occurrence.commit_sha}/#{occurrence.source.input_file_path}",
