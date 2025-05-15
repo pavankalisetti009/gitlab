@@ -38,6 +38,7 @@ module Ai
 
       alias_attribute :request_id, :request_xid
       alias_attribute :timestamp, :created_at
+      attr_accessor :chunk_id
 
       def self.find_for_user!(xid, user)
         for_id(xid).for_user(user).first!
