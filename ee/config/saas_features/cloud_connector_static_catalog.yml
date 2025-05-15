@@ -1,5 +1,0 @@
----
-name: cloud_connector_static_catalog
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/188279
-milestone: '18.0'
-group: group::cloud connector
