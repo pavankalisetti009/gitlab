@@ -8,17 +8,13 @@ RSpec.describe Emails::ServiceDesk, feature_category: :team_planning do
 
   include_context 'with service desk mailer'
 
-  let_it_be(:project_namespace) { build_stubbed(:project_namespace) }
-  let_it_be(:project) { build_stubbed(:project, project_namespace: project_namespace) }
-  let_it_be(:issue) { build_stubbed(:issue, project: project) }
+  # rubocop:disable RSpec/FactoryBot/AvoidCreate -- Necessary so sent_notifications records are created with a sharding key
+  let_it_be(:project) { create(:project) }
+  let_it_be(:issue) { create(:issue, project: project) }
   let_it_be(:email) { 'someone@gitlab.com' }
   let_it_be(:custom_text) { 'this is some additional custom text' }
 
   let(:template) { instance_double(Gitlab::Template::BaseTemplate, content: template_content) }
-
-  before do
-    allow(Issue).to receive(:find).with(issue.id).and_return(issue)
-  end
 
   shared_examples 'custom template content' do |template_key|
     before do
@@ -65,8 +61,9 @@ RSpec.describe Emails::ServiceDesk, feature_category: :team_planning do
 
   describe '.service_desk_new_note_email' do
     let_it_be(:note) { build_stubbed(:note_on_issue, noteable: issue, project: project) }
-    let_it_be(:issue_email_participant) { build_stubbed(:issue_email_participant, issue: issue, email: email) }
+    let_it_be(:issue_email_participant) { create(:issue_email_participant, issue: issue, email: email) }
     let(:template_content) { 'thank you, new note on issue has been created. %{ADDITIONAL_TEXT}' }
+    # rubocop:enable RSpec/FactoryBot/AvoidCreate
 
     subject { ServiceEmailClass.service_desk_new_note_email(issue.id, note.id, issue_email_participant) }
 
