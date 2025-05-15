@@ -4,6 +4,7 @@ FactoryBot.define do
   factory :user_member_role, aliases: [:admin_member_role], class: 'Users::UserMemberRole' do
     member_role
     user
+    ldap { false }
 
     # Create Admin Member Roles by using the desired permission to enable as a
     # trait. For example:

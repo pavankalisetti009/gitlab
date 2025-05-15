@@ -5,11 +5,17 @@ module Gitlab
     module Ldap
       module Sync
         class AdminRole < ::Gitlab::Auth::Ldap::Sync::Base
+          include Gitlab::Utils::StrongMemoize
+
           class << self
             def execute_all_providers
+              ::Gitlab::AppLogger.debug 'Started LDAP admin role sync for all providers'
+
               ::Gitlab::Auth::Ldap::Config.providers.each do |provider|
                 new(provider).execute
               end
+
+              ::Gitlab::AppLogger.debug 'Finished LDAP admin role sync for all providers'
             end
           end
 
@@ -23,102 +29,169 @@ module Gitlab
           end
 
           def execute
-            return unless sync_enabled?
-
-            ldap_admin_role_links.each do |link|
-              ldap_users = get_member_dns(link)
-
-              gitlab_users_by_dn = resolve_users_from_normalized_dn(for_normalized_dns: ldap_users)
-              users_for_assigning_admin_roles = gitlab_users_by_dn.reject do |_k, v|
-                existing_users_with_admin_roles.include?(v.id)
-              end
-
-              update_existing_admin_roles(link.member_role_id, gitlab_users_by_dn.values.map(&:id))
-              assign_new_admin_roles(users_for_assigning_admin_roles, link.member_role_id)
+            unless sync_enabled?
+              logger.warn(message: 'LDAP admin role sync is not enabled.', provider: provider)
+              return
             end
 
-            true
+            # all syncs for a provider need to be run at the same time,
+            # in case a user exists in multiple LDAP groups
+            # hence, if any of the syncs are running for a provider, skip
+            if ldap_admin_role_links.running.exists?
+              logger.warn(message: 'LDAP admin role sync is already running.', provider: provider)
+              return
+            end
+
+            begin
+              ldap_admin_role_links.mark_syncs_as_running
+
+              computed_admin_roles = {}
+
+              ldap_admin_role_links.each do |admin_role_link|
+                compute_admin_roles!(computed_admin_roles, admin_role_link)
+              end
+
+              update_existing_admin_roles(computed_admin_roles)
+              assign_new_admin_roles(computed_admin_roles)
+
+              ldap_admin_role_links.mark_syncs_as_successful
+
+              logger.debug(message: 'Finished LDAP admin role sync for provider.', provider: provider)
+
+            rescue ::Gitlab::Auth::Ldap::LdapConnectionError => e
+
+              ldap_admin_role_links.mark_syncs_as_failed(e.message)
+
+              logger.error(message: 'Error during LDAP admin role sync for provider.', provider: provider)
+            end
           end
 
           private
 
           def sync_enabled?
             return false unless ::Feature.enabled?(:custom_admin_roles, :instance)
+            return false unless ::License.feature_available?(:custom_roles)
 
             true
           end
 
           def ldap_admin_role_links
-            ::Authz::LdapAdminRoleLink.with_provider(provider)
+            ::Authz::LdapAdminRoleLink.with_provider(provider).preload_admin_role
+          end
+          strong_memoize_attr :ldap_admin_role_links
+
+          def select_and_preload_user_member_roles
+            ::Users::UserMemberRole.with_identity_provider(provider).preload_user
           end
 
-          def update_existing_admin_roles(admin_role_id, gitlab_user_ids)
-            logger.debug "Updating existing admin roles for member_role_id: #{admin_role_id}"
+          def compute_admin_roles!(computed_admin_roles, admin_role_link)
+            ldap_users = get_member_dns(admin_role_link)
+
+            ldap_users.each do |user_dn|
+              # if the user_dn doesn't already exist in computed_admin_roles, only then add
+              computed_admin_roles[user_dn] = admin_role_link.member_role unless computed_admin_roles.has_key?(user_dn)
+            end
+
+            logger.debug(message: 'Computed admin roles', provider: provider)
+          end
+
+          def update_existing_admin_roles(computed_admin_roles)
+            logger.debug(message: 'Updating existing admin roles', provider: provider)
 
             multiple_ldap_providers = ::Gitlab::Auth::Ldap::Config.providers.count > 1
 
-            ldap_identity_by_user_id = resolve_ldap_identities_by_ids(for_user_ids: existing_users_with_admin_roles)
+            existing_user_member_roles = select_and_preload_user_member_roles
+
+            ldap_identity_by_user_id = resolve_ldap_identities(for_users: existing_user_member_roles.map(&:user))
 
             existing_user_member_roles.each do |user_member_role|
               user = user_member_role.user
               identity = ldap_identity_by_user_id[user.id]
 
-              next if multiple_ldap_providers && user.ldap_identity.id != identity&.id
+              # Skip if this is not an LDAP user with a valid `extern_uid`.
+              next unless identity.present? && identity.extern_uid.present?
 
-              user_id = user.id
-              # If user is still in LDAP, keep the role (already synced)
-              # If not, remove the role
-              if gitlab_user_ids.include?(user_id)
-                # update user's role only when the actual member_role_id differs from LDAP
-                if user_member_role.member_role_id != admin_role_id
-                  update_user_member_role(user_member_role, admin_role_id)
-                end
+              user_dn = identity.extern_uid
+
+              # Prevent shifting roles, in case where user is a member
+              # of two LDAP groups from different providers.
+              # This is not ideal, but preserves existing behavior.
+              if multiple_ldap_providers && user.ldap_identity.id != identity.id
+                computed_admin_roles.delete(user_dn)
+                next
+              end
+
+              desired_admin_role = computed_admin_roles[user_dn]
+
+              if desired_admin_role.present?
+                # Delete this entry from the hash now that we're acting on it
+                computed_admin_roles.delete(user_dn)
+
+                # Don't do anything if the user already has the desired admin role
+                next if user_member_role.member_role_id == desired_admin_role.id
+
+                assign_or_update_admin_role(user, desired_admin_role)
               else
-                # User is no longer in LDAP, remove the role
+                # User is no longer in the LDAP group, remove the role
                 user_member_role.destroy
-                logger.info("Successfully removed admin role for user ID: #{user_id}")
+
+                logger.debug(
+                  message: 'Successfully un-assigned admin role from user',
+                  username: user.username
+                )
               end
             end
           end
 
-          def existing_user_member_roles
-            @existing_user_member_roles ||= ::Users::UserMemberRole.ldap_synced
-          end
+          def assign_new_admin_roles(computed_admin_roles)
+            logger.debug(message: 'Assigning admin roles to new users', provider: provider)
 
-          def existing_users_with_admin_roles
-            existing_user_member_roles.map(&:user_id)
-          end
+            return unless computed_admin_roles.present?
 
-          def assign_new_admin_roles(users, admin_role_id)
-            logger.debug "Adding new admin roles for member_role_id: #{admin_role_id}"
+            gitlab_users_by_dn = resolve_users_from_normalized_dn(for_normalized_dns: computed_admin_roles.keys)
 
-            # After update_existing_admin_roles, gitlab_users should only contain users that need new roles
-            users.each_value do |user|
-              next if user.admin? # rubocop: disable Cop/UserAdmin -- Direct admin check is needed for LDAP sync
+            computed_admin_roles.each do |user_dn, admin_role|
+              user = gitlab_users_by_dn[user_dn]
 
-              admin_role_user = ::Users::UserMemberRole.new(user: user, member_role_id: admin_role_id, ldap: true)
+              next if user&.admin? # rubocop: disable Cop/UserAdmin -- Not current_user so no need to check if admin mode is enabled
 
-              if admin_role_user.save
-                logger.info("Successfully created admin role for user ID: #{user.id}")
+              if user.present?
+                assign_or_update_admin_role(user, admin_role)
               else
-                errors = admin_role_user.errors.full_messages.join(', ')
-                logger.error("Failed to save admin role for user ID: #{user.id}. Errors: #{errors}")
+                logger.debug(
+                  message: 'User with DN should have but there is no user in GitLab with that identity',
+                  provider: provider,
+                  user_dn: user_dn
+                )
               end
             end
           end
 
-          def update_user_member_role(user_member_role, member_role_id)
-            user_member_role.member_role_id = member_role_id
+          def assign_or_update_admin_role(user, admin_role)
+            record = ::Users::UserMemberRole.create_or_update(
+              user: user,
+              member_role: admin_role,
+              ldap: true
+            )
 
-            if user_member_role.save
-              logger.info(
-                "Successfully updated admin role for user ID: #{user_member_role.user_id}
-                to member_role_id: #{member_role_id}"
+            if record.valid?
+              logger.debug(
+                message: 'Successfully assigned admin role to user',
+                admin_role_name: admin_role.name,
+                username: user.username
               )
             else
-              errors = user_member_role.errors.full_messages.join(', ')
-              logger.error("Failed to update admin role for user ID: #{user_member_role.user_id}. Errors: #{errors}")
+              logger.error(
+                message: 'Failed to assign admin role to user',
+                admin_role_name: admin_role.name,
+                username: user.username,
+                error_message: record.errors.full_messages.join(', ')
+              )
             end
+          end
+
+          def logger
+            ::Gitlab::AppLogger
           end
         end
       end

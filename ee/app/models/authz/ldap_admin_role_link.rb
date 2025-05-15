@@ -4,6 +4,8 @@ module Authz
   class LdapAdminRoleLink < ApplicationRecord
     include NullifyIfBlank
 
+    MAX_ERROR_LENGTH = 255
+
     self.table_name = 'ldap_admin_role_links'
 
     belongs_to :member_role
@@ -17,7 +19,7 @@ module Authz
     }, default: :never_synced
 
     validates :sync_status, presence: true
-    validates :sync_error, length: { maximum: 255 }
+    validates :sync_error, length: { maximum: MAX_ERROR_LENGTH }
 
     validates :member_role, :provider, presence: true
     validates :provider, :cn, :filter, length: { maximum: 255 }
@@ -36,5 +38,40 @@ module Authz
     nullify_if_blank :cn, :filter
 
     scope :with_provider, ->(provider) { where(provider: provider) }
+
+    scope :preload_admin_role, -> { preload(:member_role) }
+
+    def self.mark_syncs_as_queued
+      update_all(
+        sync_status: :queued,
+        sync_started_at: nil,
+        sync_ended_at: nil,
+        sync_error: nil
+      )
+    end
+
+    def self.mark_syncs_as_running
+      update_all(
+        sync_status: :running,
+        sync_started_at: DateTime.current
+      )
+    end
+
+    def self.mark_syncs_as_successful
+      update_all(
+        sync_status: :successful,
+        sync_ended_at: DateTime.current,
+        last_successful_sync_at: DateTime.current,
+        sync_error: nil
+      )
+    end
+
+    def self.mark_syncs_as_failed(error_message)
+      update_all(
+        sync_status: :failed,
+        sync_ended_at: DateTime.current,
+        sync_error: error_message.truncate(MAX_ERROR_LENGTH)
+      )
+    end
   end
 end

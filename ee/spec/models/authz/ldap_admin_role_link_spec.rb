@@ -88,5 +88,104 @@ RSpec.describe Authz::LdapAdminRoleLink, feature_category: :system_access do
         expect(described_class.with_provider('ldapmain')).to eq([links.first])
       end
     end
+
+    describe '.preload_admin_role' do
+      let_it_be(:ldap_admin_role_link) { create(:ldap_admin_role_link) }
+
+      subject(:relation) { described_class.preload_admin_role }
+
+      it 'loads member role association' do
+        expect(relation.first.association(:member_role)).to be_loaded
+      end
+    end
+  end
+
+  describe '.mark_syncs_as_queued' do
+    before do
+      build_list(:ldap_admin_role_link, 3)
+    end
+
+    subject(:mark_syncs_as_queued) { described_class.mark_syncs_as_queued }
+
+    it 'sets the sync status for all records to queued' do
+      described_class.all.find_each do |record|
+        record.reload
+
+        expect(record.sync_status).to eq('queued')
+        expect(record.sync_started_at).to be_nil
+        expect(record.sync_ended_at).to be_nil
+        expect(record.sync_error).to be_nil
+      end
+    end
+  end
+
+  describe '.mark_syncs_as_running' do
+    before do
+      build_list(:ldap_admin_role_link, 3)
+    end
+
+    subject(:mark_syncs_as_queued) { described_class.mark_syncs_as_running }
+
+    it 'sets the sync status for all records to running', :freeze_time do
+      described_class.all.find_each do |record|
+        record.reload
+
+        expect(record.sync_status).to eq('running')
+        expect(record.sync_started_at).to eq(DateTime.current)
+        expect(record.sync_ended_at).to be_nil
+        expect(record.sync_error).to be_nil
+      end
+    end
+  end
+
+  describe '.mark_syncs_as_successful' do
+    before do
+      build_list(:ldap_admin_role_link, 3)
+    end
+
+    subject(:mark_syncs_as_queued) { described_class.mark_syncs_as_successful }
+
+    it 'sets the sync status for all records to successful', :freeze_time do
+      described_class.all.find_each do |record|
+        record.reload
+
+        expect(record.sync_status).to eq('successful')
+        expect(record.sync_ended_at).to eq(DateTime.current)
+        expect(record.last_successful_sync_at).to eq(DateTime.current)
+        expect(record.sync_error).to be_nil
+      end
+    end
+  end
+
+  describe '.mark_syncs_as_failed' do
+    let(:error_message) { 'Test error' }
+
+    before do
+      build_list(:ldap_admin_role_link, 3)
+    end
+
+    subject(:mark_syncs_as_queued) { described_class.mark_syncs_as_failed(error_message) }
+
+    it 'sets the sync status for all records to error', :freeze_time do
+      described_class.all.find_each do |record|
+        record.reload
+
+        expect(record.sync_status).to eq('successful')
+        expect(record.sync_ended_at).to eq(DateTime.current)
+        expect(record.sync_error).to eq(error_message)
+      end
+    end
+
+    context 'when the error message is too long' do
+      let(:error_message) { 'e' * 300 }
+
+      it 'truncates error message' do
+        described_class.all.find_each do |record|
+          record.reload
+
+          expect(record.sync_error.length).to eq(255)
+        end
+      end
+    end
   end
 end
