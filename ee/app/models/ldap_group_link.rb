@@ -21,6 +21,10 @@ class LdapGroupLink < ApplicationRecord
     validates :cn, absence: true
   end
 
+  validates :filter, length: { maximum: 8192 }, on: :create
+  validates :cn, :provider, length: { maximum: 255 }, on: :create
+
+  validates :group_access, presence: true
   validates :provider, presence: true
 
   scope :with_provider, ->(provider) { where(provider: provider) }

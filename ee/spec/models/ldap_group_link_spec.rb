@@ -7,6 +7,10 @@ RSpec.describe LdapGroupLink do
   let(:ldap_group_link) { build :ldap_group_link }
 
   describe 'validation' do
+    let(:invalid_filter_length) { 8193 }
+    let(:invalid_cn_length) { 256 }
+    let(:invalid_provider_length) { 256 }
+
     describe 'cn' do
       it 'validates uniqueness based on group_id and provider' do
         create(:ldap_group_link, cn: 'group1', group_id: 1, provider: 'ldapmain')
@@ -28,6 +32,18 @@ RSpec.describe LdapGroupLink do
 
         expect(link).not_to be_valid
       end
+
+      it 'validates the CN length' do
+        link = build(:ldap_group_link, group_id: 1, provider: 'ldapmain', cn: ('c' * invalid_cn_length).to_s)
+
+        expect(link).not_to be_valid(:create)
+      end
+
+      it 'existing CN pass length validation' do
+        link = build(:ldap_group_link, group_id: 1, provider: 'ldapmain', cn: ('c' * invalid_cn_length).to_s)
+
+        expect(link).to be_valid(:destroy)
+      end
     end
 
     describe 'filter' do
@@ -45,10 +61,24 @@ RSpec.describe LdapGroupLink do
         expect(group_link).to be_valid
       end
 
-      it 'validates the LDAP filter' do
+      it 'validates the LDAP filter format' do
         link = build(:ldap_group_link, filter: 'invalid', group_id: 1, provider: 'ldapmain', cn: nil)
 
         expect(link).not_to be_valid
+      end
+
+      it 'validates the LDAP filter length' do
+        link = build(:ldap_group_link, filter: "(a=#{'b' * invalid_filter_length})", group_id: 1,
+          provider: 'ldapmain', cn: nil)
+
+        expect(link).not_to be_valid(:create)
+      end
+
+      it 'existing LDAP filter pass length validation' do
+        link = build(:ldap_group_link, filter: "(a=#{'b' * invalid_filter_length})", group_id: 1,
+          provider: 'ldapmain', cn: nil)
+
+        expect(link).to be_valid(:destroy)
       end
     end
 
@@ -61,6 +91,29 @@ RSpec.describe LdapGroupLink do
       it 'defaults to the first ldap server if empty' do
         expect(klass.new.provider).to eql Gitlab::Auth::Ldap::Config.providers.first
       end
+
+      it 'validates the provider length' do
+        link = build(:ldap_group_link, filter: "(a=b)", group_id: 1,
+          provider: ('p' * invalid_provider_length).to_s, cn: nil)
+
+        expect(link).not_to be_valid(:create)
+      end
+
+      it 'existing provider pass length validation' do
+        link = build(:ldap_group_link, filter: "(a=b)", group_id: 1,
+          provider: ('p' * invalid_provider_length).to_s, cn: nil)
+
+        expect(link).to be_valid(:destroy)
+      end
+    end
+  end
+
+  describe 'group_access' do
+    it 'validates the group_access presence' do
+      link = build(:ldap_group_link, filter: "(a=b)",
+        provider: 'provider', cn: nil, group_access: nil)
+
+      expect(link).not_to be_valid
     end
   end
 
