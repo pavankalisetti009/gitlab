@@ -1281,6 +1281,14 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
           api_request
         end
 
+        it 'does not include members in the response' do
+          api_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).to include('id', 'displayName', 'schemas', 'meta')
+          expect(json_response).not_to include('members')
+        end
+
         context 'with existing group members not in the PUT request' do
           let!(:other_user) { create(:user) }
           let!(:other_identity) { create(:scim_identity, user: other_user, extern_uid: 'other-extern-uid', group: nil) }
