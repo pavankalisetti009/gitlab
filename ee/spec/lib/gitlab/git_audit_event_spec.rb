@@ -36,7 +36,7 @@ RSpec.describe Gitlab::GitAuditEvent, feature_category: :source_code_management 
       end
     end
 
-    context 'with disallowed senarios' do
+    context 'with disallowed scenarios' do
       context 'when feature flag is disabled' do
         it 'is disallowed' do
           stub_feature_flags(log_git_streaming_audit_events: false)

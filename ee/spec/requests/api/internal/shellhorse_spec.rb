@@ -11,11 +11,14 @@ RSpec.describe API::Internal::Shellhorse, feature_category: :source_code_managem
     let_it_be(:user, reload: true) { create(:user) }
     let_it_be(:group) { create(:group, :public) }
     let_it_be(:project, reload: true) { create(:project, :repository, :wiki_repo, namespace: group) }
+    let(:allowed_ip) { '150.168.0.1' }
     let(:gl_repository) { "project-#{project.id}" }
     let(:key) { create(:key, user: user) }
 
     before do
       create(:external_audit_event_destination, group: group)
+      create(:ip_restriction, group: group, range: allowed_ip)
+
       allow(::Gitlab::Audit::Auditor).to receive(:audit)
     end
 
@@ -32,15 +35,27 @@ RSpec.describe API::Internal::Shellhorse, feature_category: :source_code_managem
           action: action,
           username: key.user.username,
           gl_repository: gl_repository,
-          packfile_stats: packfile_stats
+          packfile_stats: packfile_stats,
+          check_ip: allowed_ip
         }
       end
 
       let(:expected_msg) { { protocol: protocol, action: action, verb: verb } }
     end
 
-    shared_examples 'logs single streaming audit event' do
+    shared_examples 'logs single streaming audit event' do |protocol|
       using RSpec::Parameterized::TableSyntax
+
+      let(:audit_message) do
+        {
+          name: 'repository_git_operation',
+          stream_only: true,
+          author: user,
+          scope: project,
+          target: project,
+          message: expected_msg
+        }
+      end
 
       where(:action, :verb, :packfile_stats) do
         'git-receive-pack' | 'push'     | {}
@@ -56,14 +71,9 @@ RSpec.describe API::Internal::Shellhorse, feature_category: :source_code_managem
 
       with_them do
         it "logs git #{params[:verb]} streaming audit event for #{params[:action]}" do
-          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(a_hash_including(
-            name: 'repository_git_operation',
-            stream_only: true,
-            author: user,
-            scope: project,
-            target: project,
-            message: expected_msg
-          )).once
+          audit_message[:message][:ip_address] = allowed_ip if protocol == 'ssh'
+
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(a_hash_including(audit_message)).once
 
           subject
 
@@ -72,7 +82,23 @@ RSpec.describe API::Internal::Shellhorse, feature_category: :source_code_managem
           expect(json_response["message"]).to eq(expected_msg.stringify_keys)
         end
 
-        context 'when log_git_streaming_audit_events is disable' do
+        context 'when stream_audit_events_remote_ip_proxy_protocol is disabled' do
+          before do
+            stub_feature_flags(stream_audit_events_remote_ip_proxy_protocol: false)
+          end
+
+          it 'does not send ip_address to audit event' do
+            expect(::Gitlab::Audit::Auditor).to receive(:audit).with(a_hash_including(audit_message)).once
+
+            subject
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response["status"]).to be_truthy
+            expect(json_response["message"]).to eq(expected_msg.stringify_keys)
+          end
+        end
+
+        context 'when log_git_streaming_audit_events is disabled' do
           before do
             stub_feature_flags(log_git_streaming_audit_events: false)
           end
@@ -96,7 +122,7 @@ RSpec.describe API::Internal::Shellhorse, feature_category: :source_code_managem
       end
 
       context "when #{protocol} protocol from #{shell_or_horse} request" do
-        it_behaves_like 'logs single streaming audit event'
+        it_behaves_like 'logs single streaming audit event', protocol: protocol
       end
     end
 
