@@ -42,5 +42,37 @@ RSpec.describe Vulnerabilities::Rake::FixAutoResolvedVulnerabilities, feature_ca
         )
       end
     end
+
+    describe 'validations' do
+      context 'when namespace_id is not a number' do
+        let(:namespace_id) { 'foo' }
+
+        it 'prints error and exits' do
+          expect { execute }.to raise_error(SystemExit)
+            .and output("'foo' is not a number.\n" \
+              "Use `gitlab-rake 'gitlab:vulnerabilities:fix_auto_resolved_vulnerabilities[instance]'` " \
+              "to perform an instance migration.\n").to_stderr
+        end
+      end
+
+      context 'when namespace_id does not exist' do
+        let(:namespace_id) { non_existing_record_id.to_s }
+
+        it 'prints error and exits' do
+          expect { execute }.to raise_error(SystemExit)
+            .and output("Namespace:#{namespace_id} not found.\n").to_stderr
+        end
+      end
+
+      context 'when namespace is a subgroup' do
+        let_it_be(:namespace) { create(:group, :nested) }
+        let_it_be(:namespace_id) { namespace.id.to_s }
+
+        it 'prints error and exits' do
+          expect { execute }.to raise_error(SystemExit)
+            .and output("Namespace must be top-level.\n").to_stderr
+        end
+      end
+    end
   end
 end

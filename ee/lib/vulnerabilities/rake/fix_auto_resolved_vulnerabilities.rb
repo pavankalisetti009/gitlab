@@ -23,8 +23,8 @@ module Vulnerabilities
 
       def validate_args!
         unless /(\d+|instance)/.match?(namespace_id)
-          puts "#{namespace_id} is not a number."
-          puts 'Use `gitlab-rake \'gitlab:vulnerabilities:fix_auto_resolved_vulnerabilities[instance]\'` ' \
+          warn "'#{namespace_id}' is not a number."
+          warn 'Use `gitlab-rake \'gitlab:vulnerabilities:fix_auto_resolved_vulnerabilities[instance]\'` ' \
             'to perform an instance migration.'
           exit 1
         end
@@ -34,13 +34,13 @@ module Vulnerabilities
         namespace = Namespace.find_by_id(namespace_id)
 
         if namespace.blank?
-          puts "Namespace:#{namespace_id} not found."
+          warn "Namespace:#{namespace_id} not found."
           exit 1
         end
 
         return if namespace.parent.blank?
 
-        puts 'Namespace must be top-level.'
+        warn 'Namespace must be top-level.'
         exit 1
       end
 
