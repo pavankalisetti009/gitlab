@@ -43977,6 +43977,9 @@ msgstr ""
 msgid "Pages|Last updated"
 msgstr ""
 
+msgid "Pages|Never expires"
+msgstr ""
+
 msgid "Pages|No deployments yet"
 msgstr ""
 
@@ -43987,9 +43990,6 @@ msgid "Pages|Parallel deployments: %{count}"
 msgstr ""
 
 msgid "Pages|Path prefix"
-msgstr ""
-
-msgid "Pages|Primary deployment"
 msgstr ""
 
 msgid "Pages|Restore"
