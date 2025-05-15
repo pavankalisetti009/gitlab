@@ -6,7 +6,10 @@
           {
             "id": "gid://gitlab/Vulnerabilities::DependencyOccurrence/123",
             "name": "dependency-1",
-            "version": "1.0.0",
+            "componentVersion": {
+              "id": "gid://gitlab/Sbom::ComponentVersion/1",
+              "version": "1.0.0"
+            },
             "packager": "npm",
             "location": {
               "path": "package.json"
@@ -22,7 +25,10 @@
           {
             "id": "gid://gitlab/Vulnerabilities::DependencyOccurrence/456",
             "name": "dependency-2",
-            "version": "2.0.0",
+            "componentVersion": {
+              "id": "gid://gitlab/Sbom::ComponentVersion/7",
+              "version": "1.0.0"
+            },
             "packager": "pip",
             "location": {
               "path": "requirements.txt"

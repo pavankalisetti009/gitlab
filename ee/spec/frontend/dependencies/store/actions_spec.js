@@ -846,6 +846,7 @@ describe('Dependencies actions', () => {
           // Note: This will be mapped to an actual value, once the field has been added to the GraphQL query
           // Related issue: https://gitlab.com/gitlab-org/gitlab/-/issues/532226
           projectCount: 1,
+          version: dependency.componentVersion.version,
         }));
 
       beforeEach(() => {
