@@ -216,6 +216,7 @@ module Gitlab
           def review_bot
             Users::Internal.duo_code_review_bot
           end
+          strong_memoize_attr :review_bot
 
           def merge_request
             # Fallback is needed to handle review state change as much as possible
