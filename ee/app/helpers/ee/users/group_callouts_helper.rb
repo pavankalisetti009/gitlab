@@ -12,7 +12,6 @@ module EE
 
       def show_enable_duo_banner?(group, callouts_feature_name)
         ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) &&
-          ::Feature.enabled?(:allow_duo_base_access, group) &&
           Ability.allowed?(current_user, :admin_group, group) &&
           group.namespace_settings.duo_core_features_enabled.nil? &&
           !user_dismissed_for_group(callouts_feature_name, group) &&

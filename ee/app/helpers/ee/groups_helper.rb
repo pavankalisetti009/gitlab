@@ -79,7 +79,6 @@ module EE
         are_prompt_cache_settings_allowed: group.prompt_cache_settings_allowed?.to_s,
         duo_configuration_path: group_settings_gitlab_duo_configuration_index_path(group),
         are_duo_core_features_enabled: settings.duo_core_features_enabled.to_s,
-        is_duo_base_access_allowed: ::Feature.enabled?(:allow_duo_base_access, group).to_s,
         model_switching_enabled: can?(current_user, :admin_group_model_selection, group).to_s,
         model_switching_path: group_settings_gitlab_duo_model_selection_index_path(group)
       }.merge(code_suggestions_usage_app_data(group))

@@ -90,7 +90,6 @@ RSpec.describe EE::Groups::SettingsHelper do
           duo_core_features_enabled: group.namespace_settings.duo_core_features_enabled.to_s,
           are_duo_settings_locked: group.namespace_settings.duo_features_enabled_locked?.to_s,
           experiment_features_enabled: group.namespace_settings.experiment_features_enabled.to_s,
-          is_duo_base_access_allowed: "true",
           prompt_cache_enabled: group.namespace_settings.model_prompt_cache_enabled.to_s,
           are_experiment_settings_allowed: (group.experiment_settings_allowed? && gitlab_com_subscription?).to_s,
           are_prompt_cache_settings_allowed: (group.prompt_cache_settings_allowed? && gitlab_com_subscription?).to_s,
