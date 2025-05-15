@@ -16,14 +16,14 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, feature_
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ParamsValidator, :and_then],
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ParamsExtractor, :map],
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ParamsToInfosConverter, :map],
-      [RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfosObserver, :map],
+      [RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfosObserver, :inspect_ok],
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesFromAgentInfosUpdater, :map],
-      [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::OrphanedWorkspacesObserver, :map],
+      [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::OrphanedWorkspacesObserver, :inspect_ok],
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesLifecycleManager, :map],
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesToBeReturnedFinder, :map],
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Output::ResponsePayloadBuilder, :map],
       [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesToBeReturnedUpdater, :map],
-      [RemoteDevelopment::WorkspaceOperations::Reconcile::Output::ResponsePayloadObserver, :map]
+      [RemoteDevelopment::WorkspaceOperations::Reconcile::Output::ResponsePayloadObserver, :inspect_ok]
     ]
   end
 

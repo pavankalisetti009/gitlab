@@ -88,7 +88,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
         observability_for_rails_infos: expected_observability_for_rails_infos
       )
 
-      expect(returned_value).to eq(context)
+      expect(returned_value).to be_nil
     end
   end
 

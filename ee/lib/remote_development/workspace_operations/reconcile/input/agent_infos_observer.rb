@@ -9,7 +9,7 @@ module RemoteDevelopment
           ABNORMAL = "abnormal"
 
           # @param [Hash] context
-          # @return [Hash]
+          # @return [void]
           def self.observe(context)
             context => {
               agent: agent, # Skip type checking so we can use fast_spec_helper in the unit test spec
@@ -78,7 +78,7 @@ module RemoteDevelopment
               )
             end
 
-            context
+            nil
           end
         end
       end

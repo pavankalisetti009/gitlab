@@ -6,7 +6,7 @@ module RemoteDevelopment
       module Output
         class ResponsePayloadObserver
           # @param [Hash] context
-          # @return [Hash]
+          # @return [void]
           def self.observe(context)
             context => {
               agent: agent, # Skip type checking so we can use fast_spec_helper in the unit test spec
@@ -48,7 +48,7 @@ module RemoteDevelopment
               observability_for_rails_infos: observability_for_rails_infos
             )
 
-            context
+            nil
           end
         end
       end

@@ -69,7 +69,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::O
         ]
       )
 
-      expect(returned_value).to eq(context)
+      expect(returned_value).to be_nil
     end
   end
 
@@ -83,7 +83,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::O
     it "does not log" do
       expect(logger).not_to receive(:warn)
 
-      expect(returned_value).to eq(context)
+      expect(returned_value).to be_nil
     end
   end
 end

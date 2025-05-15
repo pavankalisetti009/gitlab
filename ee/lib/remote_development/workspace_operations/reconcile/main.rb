@@ -18,14 +18,14 @@ module RemoteDevelopment
               .and_then(Input::ParamsValidator.method(:validate))
               .map(Input::ParamsExtractor.method(:extract))
               .map(Input::ParamsToInfosConverter.method(:convert))
-              .map(Input::AgentInfosObserver.method(:observe))
+              .inspect_ok(Input::AgentInfosObserver.method(:observe))
               .map(Persistence::WorkspacesFromAgentInfosUpdater.method(:update))
-              .map(Persistence::OrphanedWorkspacesObserver.method(:observe))
+              .inspect_ok(Persistence::OrphanedWorkspacesObserver.method(:observe))
               .map(Persistence::WorkspacesLifecycleManager.method(:manage))
               .map(Persistence::WorkspacesToBeReturnedFinder.method(:find))
               .map(Output::ResponsePayloadBuilder.method(:build))
               .map(Persistence::WorkspacesToBeReturnedUpdater.method(:update))
-              .map(Output::ResponsePayloadObserver.method(:observe))
+              .inspect_ok(Output::ResponsePayloadObserver.method(:observe))
               .map(
                 # As the final step, return the response_payload content in a WorkspaceReconcileSuccessful message
                 ->(context) do
