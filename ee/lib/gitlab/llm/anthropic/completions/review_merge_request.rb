@@ -120,6 +120,8 @@ module Gitlab
             parsed_body = ResponseBodyParser.new(response.response_body)
             comments_by_file = parsed_body.comments.group_by(&:file)
 
+            log_comment_metrics(parsed_body.comments)
+
             diff_files.each do |diff_file|
               file_comments = comments_by_file[diff_file.new_path]
               next if file_comments.blank?
@@ -265,6 +267,22 @@ module Gitlab
               output_tokens: output_tokens,
               total_tokens: total_tokens,
               error_message: response&.dig("error", "message")
+            )
+          end
+
+          def log_comment_metrics(comments)
+            return unless duo_code_review_logging_enabled?
+
+            grouped_comments = comments.group_by(&:priority)
+
+            Gitlab::AppLogger.info(
+              message: "LLM response comments metrics",
+              event: "review_merge_request_llm_response_comments",
+              merge_request_id: merge_request&.id,
+              total_comments: comments.count,
+              p1_comments: grouped_comments[1]&.count || 0,
+              p2_comments: grouped_comments[2]&.count || 0,
+              p3_comments: grouped_comments[3]&.count || 0
             )
           end
 

@@ -620,6 +620,11 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       end
 
       context 'when logging LLM response metrics' do
+        before do
+          # Ignore other logs
+          allow(Gitlab::AppLogger).to receive(:info)
+        end
+
         context 'with a successful response containing comments' do
           let(:combined_review_response) do
             {
@@ -836,6 +841,87 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           )
 
           completion.execute
+        end
+      end
+
+      context 'when logging LLM response comments metrics' do
+        let(:combined_review_response) { { content: [{ text: combined_review_answer }] } }
+
+        let(:expected_hash) do
+          {
+            message: "LLM response comments metrics",
+            event: "review_merge_request_llm_response_comments",
+            merge_request_id: merge_request.id,
+            total_comments: 0,
+            p1_comments: 0,
+            p2_comments: 0,
+            p3_comments: 0
+          }
+        end
+
+        before do
+          # Ignore other logs
+          allow(Gitlab::AppLogger).to receive(:info)
+        end
+
+        context 'with a successful response containing comments' do
+          let(:combined_review_answer) do
+            <<~RESPONSE
+              <review>
+              <comment file="UPDATED.md" priority="3" old_line="" new_line="3">first comment</comment>
+              <comment file="UPDATED.md" priority="2" old_line="" new_line="4">second comment</comment>
+              <comment file="NEW.md" priority="1" old_line="" new_line="1">third comment</comment>
+              <comment file="NEW.md" priority="2" old_line="" new_line="2">fourth comment</comment>
+              <comment file="NEW.md" priority="3" old_line="" new_line="3">fifth comment</comment>
+              </review>
+            RESPONSE
+          end
+
+          it 'logs comment metrics' do
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              hash_including(
+                expected_hash.merge(
+                  total_comments: 5,
+                  p1_comments: 1,
+                  p2_comments: 2,
+                  p3_comments: 2
+                )
+              )
+            )
+
+            completion.execute
+          end
+
+          context 'when duo_code_review_response_logging feature flag is disabled' do
+            before do
+              stub_feature_flags(duo_code_review_response_logging: false)
+            end
+
+            it 'does not log comment metrics' do
+              expect(Gitlab::AppLogger).not_to receive(:info).with(
+                hash_including(
+                  message: "LLM response comments metrics",
+                  event: "review_merge_request_llm_response_comments"
+                )
+              )
+
+              completion.execute
+            end
+          end
+        end
+
+        context 'with a successful response containing no comments' do
+          let(:combined_review_answer) do
+            <<~RESPONSE
+              <review></review>
+            RESPONSE
+          end
+
+          it 'log comment metrics' do
+            expect(Gitlab::AppLogger).to receive(:info).with(hash_including(expected_hash))
+
+            completion.execute
+          end
         end
       end
     end
