@@ -51,7 +51,7 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
           it_behaves_like 'deleting a role' do
             let(:audit_event_message) { 'Admin role was deleted' }
             let(:audit_event_type) { 'admin_role_deleted' }
-            let(:audit_event_abilities) { 'read_admin_dashboard' }
+            let(:audit_event_abilities) { 'read_admin_users' }
           end
         end
       end
@@ -86,7 +86,7 @@ RSpec.describe MemberRoles::DeleteService, feature_category: :system_access do
         it_behaves_like 'deleting a role' do
           let(:audit_event_message) { 'Admin role was deleted' }
           let(:audit_event_type) { 'admin_role_deleted' }
-          let(:audit_event_abilities) { 'read_admin_dashboard' }
+          let(:audit_event_abilities) { 'read_admin_users' }
         end
       end
     end

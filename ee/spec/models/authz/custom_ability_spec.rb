@@ -133,17 +133,17 @@ RSpec.describe Authz::CustomAbility, feature_category: :permissions do
         end
 
         context 'with a user assigned to an admin custom role' do
-          let_it_be(:role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
+          let_it_be(:role) { create(:admin_member_role, :read_admin_users, user: user) }
 
-          it { is_expected.to be_allowed(user, :read_admin_dashboard) }
+          it { is_expected.to be_allowed(user, :read_admin_users) }
 
           context 'when the ability is disabled' do
             before do
-              stub_feature_flag_definition("custom_ability_read_admin_dashboard")
-              stub_feature_flags(custom_ability_read_admin_dashboard: false)
+              stub_feature_flag_definition("custom_ability_read_admin_users")
+              stub_feature_flags(custom_ability_read_admin_users: false)
             end
 
-            it { is_expected.not_to be_allowed(user, :read_admin_dashboard) }
+            it { is_expected.not_to be_allowed(user, :read_admin_users) }
           end
         end
 
@@ -181,9 +181,9 @@ RSpec.describe Authz::CustomAbility, feature_category: :permissions do
         it { is_expected.not_to be_allowed(user, ability, root_group) }
 
         context 'with a user assigned to an admin custom role' do
-          let_it_be(:role) { create(:admin_member_role, :read_admin_dashboard, user: user) }
+          let_it_be(:role) { create(:admin_member_role, :read_admin_users, user: user) }
 
-          it { is_expected.not_to be_allowed(user, :read_admin_dashboard) }
+          it { is_expected.not_to be_allowed(user, :read_admin_users) }
         end
       end
     end

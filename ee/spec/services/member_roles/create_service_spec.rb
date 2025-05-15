@@ -66,7 +66,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
             end
 
             context 'with admin custom permissions' do
-              let(:abilities) { { read_admin_dashboard: true } }
+              let(:abilities) { { read_admin_users: true } }
 
               let(:error_message) { 'Namespace must be blank' }
 
@@ -140,7 +140,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
         end
 
         context 'when creating an admin custom role' do
-          let(:abilities) { { read_admin_dashboard: true } }
+          let(:abilities) { { read_admin_users: true } }
 
           it_behaves_like 'custom role creation' do
             let(:fail_condition!) do

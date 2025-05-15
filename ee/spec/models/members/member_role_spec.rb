@@ -103,7 +103,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
         it { is_expected.to validate_absence_of(:namespace) }
 
         context 'when admin permissions are disabled' do
-          subject(:member_role) { build(:member_role, read_admin_dashboard: false) }
+          subject(:member_role) { build(:member_role, read_admin_users: false) }
 
           it { is_expected.not_to validate_absence_of(:namespace) }
         end
@@ -345,7 +345,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
     end
 
     context 'for preventing deletion after admin is associated' do
-      let_it_be_with_reload(:member_role) { create(:member_role, :read_admin_dashboard) }
+      let_it_be_with_reload(:member_role) { create(:member_role, :read_admin_users) }
 
       subject(:destroy_admin_member_role) { member_role.destroy } # rubocop: disable Rails/SaveBang
 
@@ -547,21 +547,21 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
 
       context 'when the admin permission is behind a disabled feature flag' do
         before do
-          stub_feature_flag_definition("custom_ability_read_admin_dashboard")
-          stub_feature_flags(custom_ability_read_admin_dashboard: false)
+          stub_feature_flag_definition("custom_ability_read_admin_users")
+          stub_feature_flags(custom_ability_read_admin_users: false)
         end
 
         it { is_expected.to be false }
       end
 
       context 'when member role has multiple admin permissions enabled' do
-        let(:member_role) { build(:member_role, :read_code, :read_admin_dashboard, :read_admin_monitoring) }
+        let(:member_role) { build(:member_role, :read_code, :read_admin_users, :read_admin_monitoring) }
 
         before do
-          stub_feature_flag_definition("custom_ability_read_admin_dashboard")
+          stub_feature_flag_definition("custom_ability_read_admin_users")
           stub_feature_flag_definition("custom_ability_read_admin_monitoring")
 
-          stub_feature_flags(custom_ability_read_admin_dashboard: true)
+          stub_feature_flags(custom_ability_read_admin_users: true)
           stub_feature_flags(custom_ability_read_admin_monitoring: false)
         end
 

@@ -83,7 +83,7 @@ FactoryBot.define do
       base_access_level { nil }
       namespace_id { nil }
       read_code { false }
-      read_admin_dashboard { true }
+      read_admin_users { true }
     end
   end
 end

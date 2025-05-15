@@ -224,12 +224,6 @@ module EE
         enable :access_git
       end
 
-      rule { custom_role_enables_read_admin_dashboard }.policy do
-        enable :access_admin_area
-        enable :read_application_statistics
-        enable :read_admin_dashboard
-      end
-
       rule { custom_role_enables_read_admin_cicd }.policy do
         enable :access_admin_area
         enable :read_application_statistics

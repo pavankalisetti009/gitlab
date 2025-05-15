@@ -85,7 +85,7 @@ RSpec.describe 'deleting member role', feature_category: :system_access do
       end
 
       context 'when member role is an admin role' do
-        let_it_be(:member_role) { create(:member_role, :read_admin_dashboard) }
+        let_it_be(:member_role) { create(:member_role, :read_admin_users) }
         let_it_be(:current_user) { create(:admin) }
 
         it_behaves_like  'a mutation that returns top-level errors',

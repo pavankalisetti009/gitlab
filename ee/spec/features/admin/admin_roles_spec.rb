@@ -98,7 +98,7 @@ RSpec.describe 'Admin roles', feature_category: :permissions do
 
         context 'when a user is assigned to the role' do
           before do
-            create(:admin_member_role, :read_admin_dashboard)
+            create(:admin_member_role, :read_admin_users)
 
             page.refresh
           end
