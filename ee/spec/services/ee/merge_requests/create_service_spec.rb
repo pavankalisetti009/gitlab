@@ -89,17 +89,24 @@ RSpec.describe MergeRequests::CreateService, feature_category: :code_review_work
     describe 'Automatic Duo Code Review' do
       let(:ai_review_allowed) { true }
       let(:auto_duo_code_review) { true }
+      let(:duo_enabled_project_setting) { true }
       let(:duo) { ::Users::Internal.duo_code_review_bot }
       let(:created_merge_request) { service.execute }
+      let(:duo_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
 
       before do
+        allow(project).to receive(:auto_duo_code_review_enabled).and_return(auto_duo_code_review)
+        allow(project.project_setting).to receive(:duo_features_enabled?).and_return(duo_enabled_project_setting)
+
+        create(:gitlab_subscription_add_on_purchase,
+          namespace: project.namespace,
+          add_on: duo_add_on)
+
         allow_next_instance_of(MergeRequest) do |merge_request|
           allow(merge_request).to receive(:ai_review_merge_request_allowed?)
             .with(user)
             .and_return(ai_review_allowed)
         end
-
-        allow(project).to receive(:auto_duo_code_review_enabled).and_return(auto_duo_code_review)
       end
 
       it 'adds Duo as a reviewer' do
@@ -136,6 +143,24 @@ RSpec.describe MergeRequests::CreateService, feature_category: :code_review_work
 
       context 'when Auto Duo Code Review project setting is disabled' do
         let(:auto_duo_code_review) { false }
+
+        it 'does not add Duo as a reviewer' do
+          expect(created_merge_request.reviewers).to be_empty
+        end
+      end
+
+      context 'when project setting disable duo' do
+        let(:duo_enabled_project_setting) { false }
+
+        it 'does not add Duo as a reviewer' do
+          expect(created_merge_request.reviewers).to be_empty
+        end
+      end
+
+      context 'duo enterprise add on expired' do
+        before do
+          project.namespace.subscription_add_on_purchases.for_duo_enterprise.update!(expires_on: 1.day.ago)
+        end
 
         it 'does not add Duo as a reviewer' do
           expect(created_merge_request.reviewers).to be_empty
