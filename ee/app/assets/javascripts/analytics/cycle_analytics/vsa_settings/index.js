@@ -1,9 +1,13 @@
 import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { parseBoolean, convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
+import { defaultClient } from '~/analytics/shared/graphql/client';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import VSASettingsApp from './components/app.vue';
+
+Vue.use(VueApollo);
 
 export default () => {
   const el = document.getElementById('js-vsa-settings-app');
@@ -13,6 +17,7 @@ export default () => {
     isEditPage,
     vsaPath,
     namespaceFullPath,
+    groupPath,
     defaultStages: rawDefaultStages,
     stageEvents: rawStageEvents,
     valueStream: rawValueStream,
@@ -57,11 +62,15 @@ export default () => {
     }
   }
 
+  const apolloProvider = new VueApollo({ defaultClient });
+
   return new Vue({
     el,
+    apolloProvider,
     provide: {
       vsaPath,
       namespaceFullPath,
+      groupPath,
       stageEvents,
       valueStream,
       defaultStages,
