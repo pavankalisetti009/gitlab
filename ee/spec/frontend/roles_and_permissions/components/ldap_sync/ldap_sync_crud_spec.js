@@ -9,6 +9,7 @@ import ldapAdminRoleLinkDestroyMutation from 'ee/roles_and_permissions/graphql/l
 import LdapSyncCrud from 'ee/roles_and_permissions/components/ldap_sync/ldap_sync_crud.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
+import CreateSyncForm from 'ee/roles_and_permissions/components/ldap_sync/create_sync_form.vue';
 import { ldapAdminRoleLinks } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -54,6 +55,7 @@ describe('LdapSyncCrud component', () => {
   const findRoleLinksList = () => findCrudBody().find('ul');
   const findRoleLinkItems = () => findRoleLinksList().findAll('li');
   const findDeleteModal = () => wrapper.findComponent(ConfirmActionModal);
+  const findCreateSyncForm = () => wrapper.findComponent(CreateSyncForm);
 
   const openDeleteModal = () => {
     findRoleLinkItems().at(0).findComponent(GlButton).vm.$emit('click');
@@ -99,6 +101,10 @@ describe('LdapSyncCrud component', () => {
     it('does not show crud actions', () => {
       expect(findLdapUsersLink().exists()).toBe(false);
       expect(findActionButtons()).toHaveLength(0);
+    });
+
+    it('does not show create sync form', () => {
+      expect(findCreateSyncForm().exists()).toBe(false);
     });
   });
 
@@ -320,6 +326,24 @@ describe('LdapSyncCrud component', () => {
       await confirmDeleteModal();
 
       expect(findDeleteModal().findComponent(GlAlert).text()).toBe(error);
+    });
+  });
+
+  describe('create sync form', () => {
+    beforeEach(async () => {
+      await createWrapper();
+      findActionButtons().at(1).vm.$emit('click');
+    });
+
+    it('shows create sync form when Add synchronization button is clicked', () => {
+      expect(findCreateSyncForm().exists()).toBe(true);
+    });
+
+    it('hides create sync form when form is canceled', async () => {
+      findCreateSyncForm().vm.$emit('cancel');
+      await nextTick();
+
+      expect(findCreateSyncForm().exists()).toBe(false);
     });
   });
 });

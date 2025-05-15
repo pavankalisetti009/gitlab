@@ -35543,6 +35543,12 @@ msgstr ""
 msgid "LDAP|No LDAP synchronizations"
 msgstr ""
 
+msgid "LDAP|Select server"
+msgstr ""
+
+msgid "LDAP|Server"
+msgstr ""
+
 msgid "LDAP|Sync method"
 msgstr ""
 
