@@ -17,6 +17,7 @@ import {
   TOKEN_TYPE_CUSTOM_FIELD,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
+import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_EPIC, TYPENAME_ISSUE } from '~/graphql_shared/constants';
@@ -42,6 +43,7 @@ export default {
     IssuesListApp: () => import('~/issues/list/components/issues_list_app.vue'),
     NewIssueDropdown,
     ChildEpicIssueIndicator,
+    WorkItemStatusBadge,
   },
   mixins: [glFeatureFlagMixin()],
   inject: [
@@ -194,6 +196,18 @@ export default {
     hasFilteredEpicId(apiFilterParams) {
       return Boolean(apiFilterParams.epicId);
     },
+    hasCustomStatus(issuable) {
+      return issuable.status;
+    },
+    customStatusName(issuable) {
+      return issuable.status?.name;
+    },
+    customStatusIconName(issuable) {
+      return issuable.status?.iconName;
+    },
+    customStatusColor(issuable) {
+      return issuable.status?.color;
+    },
     getFilteredEpicId(apiFilterParams) {
       const { epicId } = apiFilterParams;
 
@@ -224,6 +238,14 @@ export default {
         class="gl-ml-2"
         :filtered-epic-id="getFilteredEpicId(apiFilterParams)"
         :issuable="issuable"
+      />
+    </template>
+    <template #custom-status="{ issuable }">
+      <work-item-status-badge
+        v-if="hasCustomStatus(issuable)"
+        :name="customStatusName(issuable)"
+        :icon-name="customStatusIconName(issuable)"
+        :color="customStatusColor(issuable)"
       />
     </template>
   </issues-list-app>
