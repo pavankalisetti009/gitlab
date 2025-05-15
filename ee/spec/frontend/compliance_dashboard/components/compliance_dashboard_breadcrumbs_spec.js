@@ -49,21 +49,31 @@ describe('ComplianceDashboardBreadcrumbs', () => {
     ],
   };
 
-  const createComponent = ($route) => {
+  const createComponent = ($route, props = {}) => {
     wrapper = shallowMountExtended(ComplianceDashboardBreadcrumbs, {
       mocks: {
         $route,
       },
+      propsData: props,
     });
   };
 
   const findGlBreadcrumb = () => wrapper.findComponent(GlBreadcrumb);
 
   describe.each(mockedRoutes)('when route path is $fullPath', ({ name, fullPath }) => {
-    it('passess the correct breadcrumbs items to GlBreadcrumb', () => {
-      createComponent({ name, fullPath });
+    it('passes the correct breadcrumbs items to GlBreadcrumb', () => {
+      const staticBreadcrumb = { text: 'Static breadcrumb', href: '/static' };
+      createComponent(
+        { name, fullPath },
+        {
+          staticBreadcrumbs: { items: [staticBreadcrumb] },
+        },
+      );
 
-      expect(findGlBreadcrumb().props('items')).toMatchObject(breadcrumbItemsDictionary[name]);
+      expect(findGlBreadcrumb().props('items')).toStrictEqual([
+        staticBreadcrumb,
+        ...breadcrumbItemsDictionary[name],
+      ]);
     });
   });
 });
