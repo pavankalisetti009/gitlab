@@ -556,7 +556,7 @@ When this limit is exceeded, pipeline creation fails with the error `downstream 
 
 Increasing this limit is not recommended. The default limit protects your GitLab instance from excessive resource consumption, potential pipeline recursion, and database overload.
 
-Instead of increasing the limit, restructure your CI/CD configuration by splitting large pipeline hierarchies into smaller pipelines or using parallel jobs.
+Instead of increasing the limit, restructure your CI/CD configuration by splitting large pipeline hierarchies into smaller pipelines. Consider using `needs` between jobs or dependent stages within a single pipeline.
 
 {{< /alert >}}
 
