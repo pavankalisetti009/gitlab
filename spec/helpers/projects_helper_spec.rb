@@ -2114,11 +2114,10 @@ RSpec.describe ProjectsHelper, feature_category: :source_code_management do
 
       specify do
         deletion_adjourned_period = ::Gitlab::CurrentSettings.deletion_adjourned_period
-        deletion_date = helper.permanent_deletion_date_formatted(Date.current)
 
         expect(message).to eq "This action will place this project, " \
           "including all its resources, in a pending deletion state for #{deletion_adjourned_period} days, " \
-          "and delete it permanently on <strong>#{deletion_date}</strong>."
+          "and delete it permanently on <strong>#{helper.permanent_deletion_date_formatted}</strong>."
       end
     end
 

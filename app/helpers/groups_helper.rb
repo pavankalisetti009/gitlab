@@ -95,13 +95,12 @@ module GroupsHelper
     return permanently_delete_group_message(group) unless group.adjourned_deletion?
     return permanently_delete_group_message(group) if group.marked_for_deletion?
 
-    date = permanent_deletion_date_formatted(Date.current)
-
-    message = _("The contents of this group, its subgroups and projects will be permanently deleted after " \
-      "%{deletion_adjourned_period} days on %{date}. After this point, your data cannot be recovered.")
-    ERB::Util.html_escape(message) % {
-      date: tag.strong(date), deletion_adjourned_period: group.deletion_adjourned_period
-    }
+    safe_format(
+      _("The contents of this group, its subgroups and projects will be permanently deleted after " \
+        "%{deletion_adjourned_period} days on %{date}. After this point, your data cannot be recovered."),
+      deletion_adjourned_period: group.deletion_adjourned_period,
+      date: tag.strong(permanent_deletion_date_formatted)
+    )
   end
 
   def permanently_delete_group_message(group)
