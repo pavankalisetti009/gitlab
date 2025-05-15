@@ -122,6 +122,31 @@ RSpec.describe 'Groups > Members > List members', feature_category: :groups_and_
         expect(page).not_to have_content(user4.name)
       end
     end
+
+    context 'when new_implementation_of_invite_members_search FF is disabled' do
+      before do
+        stub_feature_flags(new_implementation_of_invite_members_search: false)
+      end
+
+      it 'returns only users with SAML in autocomplete', :js do
+        visit group_group_members_path(group)
+
+        click_on 'Invite members'
+
+        page.within invite_modal_selector do
+          field = find(member_dropdown_selector)
+          field.native.send_keys :tab
+          field.click
+
+          wait_for_requests
+
+          expect(page).to have_content(user1.name)
+          expect(page).to have_content(user2.name)
+          expect(page).not_to have_content(user3.name)
+          expect(page).not_to have_content(user4.name)
+        end
+      end
+    end
   end
 
   context 'when over free user limit', :saas do
