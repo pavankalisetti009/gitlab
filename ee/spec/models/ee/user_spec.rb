@@ -525,7 +525,7 @@ RSpec.describe User, feature_category: :system_access do
           expect(with_provisioning_group).to match_array([user])
         end
 
-        it 'does not find users with a different SAML provider' do
+        it 'does not find users with a different provisioning group' do
           group = create(:group)
 
           expect(described_class.with_provisioning_group(group)).to be_empty
