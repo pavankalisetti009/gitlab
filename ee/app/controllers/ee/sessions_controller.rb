@@ -11,7 +11,7 @@ module EE
       include GoogleSyndicationCSP
 
       before_action :gitlab_geo_logout, only: [:destroy]
-      prepend_before_action :check_and_log_cloudflare_exposed_credentials, only: [:create]
+      prepend_before_action :detect_and_notify_for_compromised_password, only: [:create]
       prepend_before_action :complete_identity_verification, only: :create
     end
 
@@ -85,22 +85,12 @@ module EE
       redirect_to signup_identity_verification_path
     end
 
-    def check_and_log_cloudflare_exposed_credentials
+    def detect_and_notify_for_compromised_password
       user = find_user
 
-      return if !user || !user.valid_password?(user_params[:password]) || user.access_locked?
+      return unless user.present?
 
-      check = ::Gitlab::Auth::CloudflareExposedCredentialChecker.new(request)
-
-      return if check.result.blank?
-      return if check.result == :exact_username
-
-      ::Gitlab::AppLogger.info(
-        message: "User signed in with CloudFlare-detected leaked credentials (#{check.result})",
-        username: user.username,
-        ip: request.remote_ip,
-        check_result: check.result
-      )
+      ::Users::CompromisedPasswords::DetectAndNotifyService.new(user, user_params[:password], request).execute
     end
 
     override :onboarding_status_tracking_label

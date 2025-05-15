@@ -12529,6 +12529,23 @@ CREATE SEQUENCE compliance_requirements_id_seq
 
 ALTER SEQUENCE compliance_requirements_id_seq OWNED BY compliance_requirements.id;
 
+CREATE TABLE compromised_password_detections (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    resolved_at timestamp with time zone,
+    user_id bigint NOT NULL
+);
+
+CREATE SEQUENCE compromised_password_detections_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE compromised_password_detections_id_seq OWNED BY compromised_password_detections.id;
+
 CREATE TABLE container_expiration_policies (
     project_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -27028,6 +27045,8 @@ ALTER TABLE ONLY compliance_requirements ALTER COLUMN id SET DEFAULT nextval('co
 
 ALTER TABLE ONLY compliance_requirements_controls ALTER COLUMN id SET DEFAULT nextval('compliance_requirements_controls_id_seq'::regclass);
 
+ALTER TABLE ONLY compromised_password_detections ALTER COLUMN id SET DEFAULT nextval('compromised_password_detections_id_seq'::regclass);
+
 ALTER TABLE ONLY container_registry_protection_rules ALTER COLUMN id SET DEFAULT nextval('container_registry_protection_rules_id_seq'::regclass);
 
 ALTER TABLE ONLY container_registry_protection_tag_rules ALTER COLUMN id SET DEFAULT nextval('container_registry_protection_tag_rules_id_seq'::regclass);
@@ -29344,6 +29363,9 @@ ALTER TABLE ONLY compliance_requirements_controls
 
 ALTER TABLE ONLY compliance_requirements
     ADD CONSTRAINT compliance_requirements_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY compromised_password_detections
+    ADD CONSTRAINT compromised_password_detections_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY virtual_registries_packages_maven_registry_upstreams
     ADD CONSTRAINT constraint_vreg_pkgs_mvn_reg_upst_on_unique_regid_pos UNIQUE (registry_id, "position") DEFERRABLE INITIALLY DEFERRED;
@@ -34605,6 +34627,8 @@ CREATE INDEX index_compliance_management_frameworks_on_name_trigram ON complianc
 
 CREATE INDEX index_compliance_requirements_on_namespace_id ON compliance_requirements USING btree (namespace_id);
 
+CREATE INDEX index_compromised_password_detections_on_user_id ON compromised_password_detections USING btree (user_id);
+
 CREATE INDEX index_container_expiration_policies_on_next_run_at_and_enabled ON container_expiration_policies USING btree (next_run_at, enabled);
 
 CREATE INDEX index_container_registry_data_repair_details_on_status ON container_registry_data_repair_details USING btree (status);
@@ -37552,6 +37576,8 @@ CREATE INDEX index_unit_test_failures_failed_at ON ci_unit_test_failures USING b
 CREATE UNIQUE INDEX index_unit_test_failures_unique_columns ON ci_unit_test_failures USING btree (unit_test_id, failed_at DESC, build_id);
 
 CREATE UNIQUE INDEX index_unresolved_alerts_on_project_id_and_fingerprint ON alert_management_alerts USING btree (project_id, fingerprint) WHERE ((fingerprint IS NOT NULL) AND (status <> 2));
+
+CREATE UNIQUE INDEX index_unresolved_compromised_password_detection_on_user_id ON compromised_password_detections USING btree (user_id) WHERE (resolved_at IS NULL);
 
 CREATE UNIQUE INDEX index_upcoming_reconciliations_on_namespace_id ON upcoming_reconciliations USING btree (namespace_id);
 
@@ -45492,6 +45518,9 @@ ALTER TABLE ONLY resource_state_events
 
 ALTER TABLE ONLY resource_milestone_events
     ADD CONSTRAINT fk_rails_c940fb9fc5 FOREIGN KEY (milestone_id) REFERENCES milestones(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY compromised_password_detections
+    ADD CONSTRAINT fk_rails_c95dee3ea4 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY gpg_signatures
     ADD CONSTRAINT fk_rails_c97176f5f7 FOREIGN KEY (gpg_key_id) REFERENCES gpg_keys(id) ON DELETE SET NULL;
