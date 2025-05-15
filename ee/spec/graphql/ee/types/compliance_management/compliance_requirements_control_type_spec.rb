@@ -10,6 +10,7 @@ RSpec.describe GitlabSchema.types['ComplianceRequirementsControl'], feature_cate
     name
     expression
     control_type
+    external_control_name
     external_url
   ]
 

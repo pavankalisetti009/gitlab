@@ -96,6 +96,34 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           "control_type" => "internal"
         )
       end
+
+      context 'when using parameters for a valid external compliance control' do
+        let(:external_params) do
+          {
+            external_control_name: 'external control',
+            external_url: 'https://www.external.control.com',
+            secret_token: '123456789'
+          }.merge(params)
+        end
+
+        subject(:control_creator) do
+          described_class.new(requirement: requirement, params: external_params, current_user: current_user)
+        end
+
+        it 'has the expected attributes' do
+          control = control_creator.execute.payload[:control]
+
+          expect(control.attributes).to include(
+            "external_control_name" => "external control",
+            "external_url" => "https://www.external.control.com",
+            "name" => "minimum_approvals_required_2",
+            "compliance_requirement_id" => requirement.id,
+            "namespace_id" => namespace.id,
+            "expression" => control_expression,
+            "control_type" => "internal"
+          )
+        end
+      end
     end
   end
 

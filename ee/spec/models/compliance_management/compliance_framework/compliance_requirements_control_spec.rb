@@ -27,6 +27,35 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
          .scoped_to([:compliance_requirement_id]).ignoring_case_sensitivity
     end
 
+    it 'validates uniqueness of external_control_name scoped to requirement' do
+      is_expected.to validate_uniqueness_of(:external_control_name)
+         .scoped_to([:compliance_requirement_id]).ignoring_case_sensitivity
+    end
+
+    it 'allows multiple records with empty external_control_name' do
+      requirement = create(:compliance_requirement)
+      create(:compliance_requirements_control, :external,
+        compliance_requirement: requirement, external_control_name: '')
+
+      no_external_name = build(:compliance_requirements_control, :external,
+        compliance_requirement: requirement, external_control_name: '')
+
+      expect(no_external_name).to be_valid
+    end
+
+    it 'allows multiple records with no external_control_name provided' do
+      requirement = create(:compliance_requirement)
+      create(:compliance_requirements_control, :external,
+        compliance_requirement: requirement, external_control_name: nil)
+
+      no_external_name = build(:compliance_requirements_control, :external,
+        compliance_requirement: requirement)
+
+      expect(no_external_name).to be_valid
+    end
+
+    it { is_expected.to validate_length_of(:external_control_name).is_at_most(255) }
+
     it { is_expected.to validate_length_of(:expression).is_at_most(255) }
 
     describe '#validate_name_with_expression' do

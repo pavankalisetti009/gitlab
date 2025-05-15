@@ -20,6 +20,11 @@ module Types
         required: false,
         description: 'Type of the compliance control.'
 
+      argument :external_control_name,
+        GraphQL::Types::String,
+        required: false,
+        description: 'Name of the external control.'
+
       argument :external_url,
         GraphQL::Types::String,
         required: false,

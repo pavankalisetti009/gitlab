@@ -24,7 +24,11 @@ module Types
         null: false,
         description: 'Type of the compliance control.'
 
-      field :external_url, GraphQL::Types::String,
+      field :external_control_name, GraphQL::Types::String,
+        null: true,
+        description: 'Name of the external control.'
+
+      field :external_url, GraphQL::Types::String, # rubocop: disable GraphQL/ExtractType -- maintain fields on this level for backwards compatibility
         null: true,
         description: 'URL of the external control.'
     end
