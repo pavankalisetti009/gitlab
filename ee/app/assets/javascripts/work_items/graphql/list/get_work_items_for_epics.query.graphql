@@ -112,6 +112,7 @@ query getWorkItemsForEpics(
             }
           }
           ... on WorkItemWidgetLabels {
+            allowsScopedLabels
             labels {
               nodes {
                 ...Label
