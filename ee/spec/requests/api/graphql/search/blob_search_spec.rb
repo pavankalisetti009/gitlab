@@ -202,7 +202,7 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
       context 'when include_archived is true' do
         let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", include_archived: true } }
 
-        it 'returns archived projects' do
+        it 'returns archived projects', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/541534' do
           post_graphql(query, current_user: current_user)
           expect(graphql_data_at(:blobSearch, :fileCount)).to be > 0
           expect(graphql_data_at(:blobSearch, :files)).not_to be_empty
