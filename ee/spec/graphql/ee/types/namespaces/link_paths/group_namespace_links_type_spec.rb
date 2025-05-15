@@ -8,16 +8,15 @@ RSpec.describe Types::Namespaces::LinkPaths::GroupNamespaceLinksType, feature_ca
 
   let_it_be(:user) { create(:user) }
 
-  it_behaves_like "expose all link paths fields for the namespace"
-
   shared_examples "group namespace link paths values" do
     it_behaves_like "common namespace link paths values"
 
     where(:field, :value) do
-      :issues_list | lazy { "/groups/#{namespace.full_path}/-/issues" }
-      :labels_manage | lazy { "/groups/#{namespace.full_path}/-/labels" }
-      :new_project | lazy { "/projects/new?namespace_id=#{namespace.id}" }
-      :new_comment_template | "/-/profile/comment_templates"
+      :epics_list | lazy { "/groups/#{namespace.full_path}/-/epics" }
+      :group_issues | lazy { "/groups/#{namespace.full_path}/-/issues" }
+      :labels_fetch | lazy do
+        "/groups/#{namespace.full_path}/-/labels.json?include_ancestor_groups=true&only_group_labels=true"
+      end
     end
 
     with_them do
@@ -27,8 +26,8 @@ RSpec.describe Types::Namespaces::LinkPaths::GroupNamespaceLinksType, feature_ca
     end
   end
 
-  context "when fetching public group" do
-    let_it_be(:namespace) { create(:group, :nested, :public, developers: user) }
+  context 'when fetching public group' do
+    let_it_be(:namespace) { create(:group, :nested, :public) }
 
     it_behaves_like "group namespace link paths values"
   end
