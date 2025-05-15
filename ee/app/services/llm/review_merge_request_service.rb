@@ -19,13 +19,11 @@ module Llm
     end
 
     def create_note
-      ::Notes::CreateService.new(
-        resource.project,
-        review_bot,
+      ::SystemNotes::MergeRequestsService.new(
         noteable: resource,
-        note: Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest.review_queued_msg,
-        system: true
-      ).execute
+        container: resource.project,
+        author: review_bot
+      ).duo_code_review_started
     end
 
     def review_bot

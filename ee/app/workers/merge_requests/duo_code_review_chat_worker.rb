@@ -3,6 +3,7 @@
 module MergeRequests
   class DuoCodeReviewChatWorker # rubocop:disable Scalability/IdempotentWorker -- Running worker twice will create duplicate notes
     include ApplicationWorker
+    include ::Gitlab::Utils::StrongMemoize
 
     feature_category :code_review_workflow
     urgency :low
@@ -122,19 +123,18 @@ module MergeRequests
       end
     end
 
-    def create_note_on(note, content, system_note: false)
+    def create_note_on(note, content)
       return if content.blank?
 
       merge_request = note.noteable
 
       ::Notes::CreateService.new(
         merge_request.project,
-        ::Users::Internal.duo_code_review_bot,
+        review_bot,
         noteable: merge_request,
         note: content,
         in_reply_to_discussion_id: note.discussion_id,
-        type: note.type,
-        system: system_note
+        type: note.type
       ).execute
     end
 
@@ -143,7 +143,16 @@ module MergeRequests
     end
 
     def create_progress_note(note)
-      create_note_on(note, s_("DuoCodeReview|is working on a reply"), system_note: true)
+      ::SystemNotes::MergeRequestsService.new(
+        noteable: note.noteable,
+        container: note.project,
+        author: review_bot
+      ).duo_code_review_chat_started(note.discussion)
     end
+
+    def review_bot
+      ::Users::Internal.duo_code_review_bot
+    end
+    strong_memoize_attr :review_bot
   end
 end

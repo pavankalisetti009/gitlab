@@ -37,14 +37,12 @@ RSpec.describe Llm::ReviewMergeRequestService, :saas, feature_category: :code_re
 
       before do
         allow_next_instance_of(
-          ::Notes::CreateService,
-          project,
-          Users::Internal.duo_code_review_bot,
+          ::SystemNotes::MergeRequestsService,
           noteable: resource,
-          note: "is reviewing your merge request and will let you know when it's finished",
-          system: true
-        ) do |create_service|
-          allow(create_service).to receive(:execute).and_return(note)
+          container: project,
+          author: Users::Internal.duo_code_review_bot
+        ) do |system_note_service|
+          allow(system_note_service).to receive(:duo_code_review_started).and_return(note)
         end
       end
 

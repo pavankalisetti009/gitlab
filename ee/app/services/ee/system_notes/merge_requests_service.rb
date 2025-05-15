@@ -25,6 +25,24 @@ module EE
 
         create_note(NoteSummary.new(noteable, project, author, body, action: 'override'))
       end
+
+      def duo_code_review_started
+        create_note(
+          NoteSummary.new(noteable, project, author,
+            s_("DuoCodeReview|is reviewing your merge request and will let you know when it's finished"))
+        )
+      end
+
+      def duo_code_review_chat_started(discussion)
+        discussion = discussion.convert_to_discussion! if discussion.can_convert_to_discussion?
+
+        ::Note.create(discussion.reply_attributes.merge(
+          project: project,
+          author: author,
+          note: s_("DuoCodeReview|is working on a reply"),
+          system: true
+        ))
+      end
     end
   end
 end
