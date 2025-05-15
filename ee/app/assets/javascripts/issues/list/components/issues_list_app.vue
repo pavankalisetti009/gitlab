@@ -6,6 +6,7 @@ import {
   TOKEN_TYPE_EPIC,
   TOKEN_TYPE_ITERATION,
   TOKEN_TYPE_WEIGHT,
+  TOKEN_TYPE_STATUS,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import {
   OPERATORS_IS,
@@ -15,6 +16,7 @@ import {
   TOKEN_TITLE_WEIGHT,
   TOKEN_TYPE_HEALTH,
   TOKEN_TYPE_CUSTOM_FIELD,
+  TOKEN_TITLE_STATUS,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
@@ -36,6 +38,8 @@ const ChildEpicIssueIndicator = () =>
   import('ee/issuable/child_epic_issue_indicator/components/child_epic_issue_indicator.vue');
 const CustomFieldToken = () =>
   import('ee/vue_shared/components/filtered_search_bar/tokens/custom_field_token.vue');
+const WorkItemStatusToken = () =>
+  import('ee/vue_shared/components/filtered_search_bar/tokens/work_item_status_token.vue');
 
 export default {
   name: 'IssuesListAppEE',
@@ -55,6 +59,7 @@ export default {
     'hasIssuableHealthStatusFeature',
     'hasOkrsFeature',
     'isProject',
+    'hasStatusFeature',
   ],
   data() {
     return {
@@ -99,6 +104,9 @@ export default {
     },
     isOkrsEnabled() {
       return this.hasOkrsFeature && this.glFeatures.okrsMvc;
+    },
+    showCustomStatusFilter() {
+      return this.glFeatures.workItemStatusFeatureFlag && this.hasStatusFeature;
     },
     searchTokens() {
       const tokens = [];
@@ -163,6 +171,18 @@ export default {
             operators: OPERATORS_IS,
             unique: true,
           });
+        });
+      }
+
+      if (this.showCustomStatusFilter) {
+        tokens.push({
+          type: TOKEN_TYPE_STATUS,
+          title: TOKEN_TITLE_STATUS,
+          icon: 'status',
+          token: WorkItemStatusToken,
+          fullPath: this.fullPath,
+          unique: true,
+          operators: OPERATORS_IS,
         });
       }
 

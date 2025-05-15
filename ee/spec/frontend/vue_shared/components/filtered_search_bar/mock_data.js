@@ -4,17 +4,20 @@ import {
   TOKEN_TYPE_HEALTH,
   TOKEN_TYPE_ITERATION,
   TOKEN_TYPE_WEIGHT,
+  TOKEN_TYPE_STATUS,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import {
   TOKEN_TITLE_EPIC,
   TOKEN_TITLE_HEALTH,
   TOKEN_TITLE_ITERATION,
   TOKEN_TITLE_WEIGHT,
+  TOKEN_TITLE_STATUS,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import EpicToken from 'ee/vue_shared/components/filtered_search_bar/tokens/epic_token.vue';
 import HealthToken from 'ee/vue_shared/components/filtered_search_bar/tokens/health_token.vue';
 import IterationToken from 'ee/vue_shared/components/filtered_search_bar/tokens/iteration_token.vue';
 import WeightToken from 'ee/vue_shared/components/filtered_search_bar/tokens/weight_token.vue';
+import WorkItemStatusToken from 'ee/vue_shared/components/filtered_search_bar/tokens/work_item_status_token.vue';
 
 export const mockEpics = [
   { iid: 1, id: 1, title: 'Foo', group_full_path: 'gitlab-org' },
@@ -155,6 +158,16 @@ export const mockHealthToken = {
   unique: true,
   operators: OPERATORS_IS,
   token: HealthToken,
+};
+
+export const mockStatusToken = {
+  type: TOKEN_TYPE_STATUS,
+  title: TOKEN_TITLE_STATUS,
+  icon: 'status',
+  token: WorkItemStatusToken,
+  fullPath: `gitlab-org`,
+  unique: true,
+  operators: OPERATORS_IS,
 };
 
 export const mockNamespaceCustomFieldsResponse = {
