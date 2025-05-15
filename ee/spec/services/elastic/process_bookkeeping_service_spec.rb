@@ -465,10 +465,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
           project = create(:project)
           parent_group = create(:group)
           nested_group = create(:group, parent: parent_group)
-          work_item_with_note = create(:work_item)
-          create(:note_on_work_item, project: work_item_with_note.project, noteable: work_item_with_note)
           work_items = [
-            work_item_with_note,
             create(:work_item, project: project, milestone: create(:milestone, project: project)),
             create(:work_item, namespace: group, milestone: create(:milestone, group: group)),
             create(:work_item, namespace: nested_group, milestone: create(:milestone, group: nested_group))
@@ -482,10 +479,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
           project = create(:project)
           parent_group = create(:group)
           nested_group = create(:group, parent: parent_group)
-          work_item_with_note = create(:work_item)
-          create(:note_on_work_item, project: work_item_with_note.project, noteable: work_item_with_note)
           work_items += [
-            work_item_with_note,
             create(:work_item, project: project, milestone: create(:milestone, project: project)),
             create(:work_item, namespace: group, milestone: create(:milestone, group: group)),
             create(:work_item, namespace: nested_group, milestone: create(:milestone, group: nested_group))
@@ -559,14 +553,6 @@ RSpec.describe Elastic::ProcessBookkeepingService,
             described_class.new.execute
           end.not_to exceed_all_query_limit(control)
         end
-      end
-
-      context 'when search work items index notes is disabled' do
-        before do
-          stub_feature_flags(search_work_items_index_notes: false)
-        end
-
-        it_behaves_like 'efficient preloads for work_items'
       end
 
       it_behaves_like 'efficient preloads for work_items'
