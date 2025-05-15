@@ -45,21 +45,15 @@ export default {
     return axios.get(url);
   },
 
-  ldapGroups(query, provider, callback) {
+  ldapGroups(query, provider) {
     const url = Api.buildUrl(this.ldapGroupsPath).replace(':provider', provider);
-    return axios
-      .get(url, {
-        params: {
-          search: query,
-          per_page: DEFAULT_PER_PAGE,
-          active: true,
-        },
-      })
-      .then(({ data }) => {
-        callback(data);
-
-        return data;
-      });
+    return axios.get(url, {
+      params: {
+        search: query,
+        per_page: DEFAULT_PER_PAGE,
+        active: true,
+      },
+    });
   },
 
   createChildEpic({ confidential, groupId, parentEpicId, title }) {

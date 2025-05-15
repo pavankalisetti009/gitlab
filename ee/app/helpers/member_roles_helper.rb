@@ -9,9 +9,8 @@ module MemberRolesHelper
       group_full_path: group&.full_path,
       group_id: group&.id,
       current_user_email: current_user.notification_email_or_default,
-      ldap_enabled: (!gitlab_com_subscription? && Gitlab.config.ldap.enabled && can?(current_user,
-        :manage_ldap_admin_links)).to_s
-    }
+      ldap_servers: ldap_servers&.to_json
+    }.compact
   end
 
   def manage_member_roles_path(source)
@@ -51,5 +50,15 @@ module MemberRolesHelper
     elsif !gitlab_com_subscription? && can?(current_user, :admin_member_role)
       new_admin_application_settings_roles_and_permission_path
     end
+  end
+
+  def ldap_enabled?
+    !gitlab_com_subscription? && Gitlab::Auth::Ldap::Config.enabled? && can?(current_user, :manage_ldap_admin_links)
+  end
+
+  def ldap_servers
+    return unless ldap_enabled?
+
+    ::Gitlab::Auth::Ldap::Config.available_servers.map { |server| { text: server.label, value: server.provider_name } }
   end
 end

@@ -9,15 +9,10 @@ import LdapSyncCrud from './ldap_sync/ldap_sync_crud.vue';
 export default {
   components: { PageHeading, GlTabs, GlTab, RolesCrud, GlSprintf, GlLink, LdapSyncCrud },
   mixins: [glFeatureFlagsMixin()],
-  props: {
-    isLdapEnabled: {
-      type: Boolean,
-      required: true,
-    },
-  },
+  inject: ['ldapServers'],
   computed: {
     showTabs() {
-      return this.isLdapEnabled && this.glFeatures.customAdminRoles;
+      return Boolean(this.ldapServers) && this.glFeatures.customAdminRoles;
     },
   },
   userPermissionsDocPath: helpPagePath('user/permissions'),

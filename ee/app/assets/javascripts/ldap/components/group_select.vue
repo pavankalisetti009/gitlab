@@ -55,8 +55,8 @@ export default {
       this.searching = true;
       const provider = this.providerElement?.value;
       try {
-        const newGroups = await Api.ldapGroups(query, provider, (groups) => groups);
-        this.groups = newGroups.map((g) => ({ ...g, text: g.cn, value: g.cn }));
+        const { data } = await Api.ldapGroups(query, provider);
+        this.groups = data.map(({ cn }) => ({ text: cn, value: cn }));
       } catch {
         this.alert = createAlert({
           message: __('There was an error retrieving LDAP groups. Please try again.'),
