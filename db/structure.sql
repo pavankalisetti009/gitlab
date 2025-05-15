@@ -18814,6 +18814,27 @@ CREATE SEQUENCE organization_user_aliases_id_seq
 
 ALTER SEQUENCE organization_user_aliases_id_seq OWNED BY organization_user_aliases.id;
 
+CREATE TABLE organization_user_details (
+    id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    username text NOT NULL,
+    display_name text NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    CONSTRAINT check_470dbccf9b CHECK ((char_length(display_name) <= 510)),
+    CONSTRAINT check_dc5e9cf6f2 CHECK ((char_length(username) <= 510))
+);
+
+CREATE SEQUENCE organization_user_details_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE organization_user_details_id_seq OWNED BY organization_user_details.id;
+
 CREATE TABLE organization_users (
     id bigint NOT NULL,
     organization_id bigint NOT NULL,
@@ -27743,6 +27764,8 @@ ALTER TABLE ONLY organization_push_rules ALTER COLUMN id SET DEFAULT nextval('or
 
 ALTER TABLE ONLY organization_user_aliases ALTER COLUMN id SET DEFAULT nextval('organization_user_aliases_id_seq'::regclass);
 
+ALTER TABLE ONLY organization_user_details ALTER COLUMN id SET DEFAULT nextval('organization_user_details_id_seq'::regclass);
+
 ALTER TABLE ONLY organization_users ALTER COLUMN id SET DEFAULT nextval('organization_users_id_seq'::regclass);
 
 ALTER TABLE ONLY organizations ALTER COLUMN id SET DEFAULT nextval('organizations_id_seq'::regclass);
@@ -30465,6 +30488,9 @@ ALTER TABLE ONLY organization_settings
 
 ALTER TABLE ONLY organization_user_aliases
     ADD CONSTRAINT organization_user_aliases_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY organization_user_details
+    ADD CONSTRAINT organization_user_details_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY organization_users
     ADD CONSTRAINT organization_users_pkey PRIMARY KEY (id);
@@ -36510,6 +36536,10 @@ CREATE UNIQUE INDEX index_organization_push_rules_on_organization_id ON organiza
 
 CREATE INDEX index_organization_user_aliases_on_user_id ON organization_user_aliases USING btree (user_id);
 
+CREATE INDEX index_organization_user_details_on_lower_username ON organization_user_details USING btree (lower(username));
+
+CREATE INDEX index_organization_user_details_on_user_id ON organization_user_details USING btree (user_id);
+
 CREATE INDEX index_organization_users_on_org_id_access_level_user_id ON organization_users USING btree (organization_id, access_level, user_id);
 
 CREATE INDEX index_organization_users_on_organization_id_and_id ON organization_users USING btree (organization_id, id);
@@ -38913,6 +38943,10 @@ CREATE UNIQUE INDEX unique_namespace_cluster_agent_mappings_for_agent_associatio
 CREATE UNIQUE INDEX unique_organization_user_alias_organization_id_user_id ON organization_user_aliases USING btree (organization_id, user_id);
 
 CREATE UNIQUE INDEX unique_organization_user_alias_organization_id_username ON organization_user_aliases USING btree (organization_id, username);
+
+CREATE UNIQUE INDEX unique_organization_user_details_organization_id_user_id ON organization_user_details USING btree (organization_id, user_id);
+
+CREATE UNIQUE INDEX unique_organization_user_details_organization_id_username ON organization_user_details USING btree (organization_id, username);
 
 CREATE UNIQUE INDEX unique_organizations_on_path_case_insensitive ON organizations USING btree (lower(path));
 
@@ -42611,6 +42645,9 @@ ALTER TABLE ONLY todos
 ALTER TABLE ONLY merge_requests_approval_rules_projects
     ADD CONSTRAINT fk_451a9dfe93 FOREIGN KEY (approval_rule_id) REFERENCES merge_requests_approval_rules(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY organization_user_details
+    ADD CONSTRAINT fk_4533918f8e FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY ai_settings
     ADD CONSTRAINT fk_4571bb0ccc FOREIGN KEY (duo_workflow_oauth_application_id) REFERENCES oauth_applications(id) ON DELETE SET NULL;
 
@@ -42859,6 +42896,9 @@ ALTER TABLE ONLY ci_pipeline_chat_data
 
 ALTER TABLE ONLY cluster_agent_tokens
     ADD CONSTRAINT fk_64f741f626 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY organization_user_details
+    ADD CONSTRAINT fk_657140ae14 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY container_repository_states
     ADD CONSTRAINT fk_6591698505 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
