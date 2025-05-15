@@ -16,10 +16,11 @@ RSpec.describe Types::Namespaces::LinkPaths::ProjectNamespaceLinksType, feature_
     it_behaves_like "common namespace link paths values"
 
     where(:field, :value) do
-      :issues_list | lazy { "/#{namespace.full_path}/-/issues" }
-      :labels_manage | lazy { "/#{namespace.full_path}/-/labels" }
-      :new_project | lazy { "/projects/new?namespace_id=#{group.id}" }
-      :new_comment_template | "/-/profile/comment_templates"
+      :epics_list | lazy { "/groups/#{group.full_path}/-/epics" }
+      :group_issues | lazy { "/groups/#{group.full_path}/-/issues" }
+      :labels_fetch | lazy do
+        "/#{project.full_path}/-/labels.json?include_ancestor_groups=true&only_group_labels=true"
+      end
     end
 
     with_them do
