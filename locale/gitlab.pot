@@ -47128,6 +47128,9 @@ msgstr ""
 msgid "Profiles|Private contributions"
 msgstr ""
 
+msgid "Profiles|Private profile"
+msgstr ""
+
 msgid "Profiles|Profile was successfully updated"
 msgstr ""
 
@@ -47222,6 +47225,9 @@ msgid "Profiles|This information will appear on your profile."
 msgstr ""
 
 msgid "Profiles|Time settings"
+msgstr ""
+
+msgid "Profiles|Timezone"
 msgstr ""
 
 msgid "Profiles|Title"
@@ -47327,6 +47333,9 @@ msgid "Profiles|must contain only a bluesky did:plc identifier."
 msgstr ""
 
 msgid "Profiles|username"
+msgstr ""
+
+msgid "Profiles|what information is hidden?"
 msgstr ""
 
 msgid "Profiles|your account"
