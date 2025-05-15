@@ -16,10 +16,11 @@
       = yield :before_form
 
       = gitlab_ui_form_for '', url: trials_duo_enterprise_path(step: GitlabSubscriptions::Trials::CreateDuoEnterpriseService::TRIAL),
-        class: 'js-saas-duo-enterprise-trial-group', data: { testid: 'trial-form' } do |f|
+        class: 'js-saas-duo-enterprise-trial-group', data: { testid: 'trial-form' } do
         .js-namespace-selector{ data: duo_trial_namespace_selector_data(@eligible_namespaces, local_assigns[:namespace_create_errors]) }
 
-        = render Pajamas::ButtonComponent.new(type: :submit, variant: :confirm) do
+        = render Pajamas::ButtonComponent.new(type: :submit, variant: :confirm,
+          button_options: { class: 'gl-w-full' }) do
           = s_('DuoEnterpriseTrial|Activate my trial')
 
   = render 'advantages_list'

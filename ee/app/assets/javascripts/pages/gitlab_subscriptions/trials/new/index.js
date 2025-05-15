@@ -3,5 +3,5 @@ import { trackSaasTrialSubmit } from 'ee/google_tag_manager';
 import { initNamespaceSelector } from 'ee/trials/init_namespace_selector';
 
 trackSaasTrialSubmit('.js-saas-trial-group', 'saasTrialGroup');
-initTrialCreateLeadForm('saasTrialSubmit');
+initTrialCreateLeadForm('saasTrialSubmit', true);
 initNamespaceSelector();

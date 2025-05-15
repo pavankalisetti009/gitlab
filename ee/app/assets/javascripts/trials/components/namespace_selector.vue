@@ -67,10 +67,11 @@ export default {
       :label="$options.i18n.groupSelectLabel"
       :items="items"
       :default-toggle-text="$options.i18n.defaultToggleText"
+      :block="true"
+      :fluid-width="true"
     />
     <gl-form-group
       v-if="showNewGroupNameField"
-      class="gl-md-form-input-lg"
       :label="$options.i18n.newGroupNameLabel"
       label-for="new_group_name"
       :state="hasValidGroup"
