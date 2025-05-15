@@ -1,6 +1,6 @@
 - title = s_('VirtualRegistry|Virtual registry')
 - page_title title
-- learn_more_path = local_assigns.fetch(:learn_more_path, help_page_path('user/packages/_index.md'))
+- learn_more_path = local_assigns.fetch(:learn_more_path, help_page_path('user/packages/virtual_registry/_index.md'))
 - learn_more_link = link_to _('Learn more.'), learn_more_path
 - registry_data = registry_types(@group, @registry_types_with_counts)
 - has_registry_with_count = @registry_types_with_counts.any? { |type, count| count > 0 }
