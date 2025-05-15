@@ -65961,6 +65961,9 @@ msgstr ""
 msgid "UserMapping|Awaiting reassignment"
 msgstr ""
 
+msgid "UserMapping|Confirm reassignment"
+msgstr ""
+
 msgid "UserMapping|Contribution and membership reassignment cannot be undone. Incorrect reassignment %{linkStart}poses a security risk%{linkEnd}, so check carefully before you reassign."
 msgstr ""
 
@@ -66135,6 +66138,9 @@ msgstr ""
 msgid "UserMapping|Reassignment waiting on user approval."
 msgstr ""
 
+msgid "UserMapping|Reassignments cannot be undone, so check all data carefully before you continue."
+msgstr ""
+
 msgid "UserMapping|Reassignments in %{group} rejected"
 msgstr ""
 
@@ -66163,6 +66169,9 @@ msgid "UserMapping|Something went wrong while uploading the CSV file."
 msgstr ""
 
 msgid "UserMapping|Source name"
+msgstr ""
+
+msgid "UserMapping|The %{strongStart}Skip confirmation when reassigning placeholder users%{strongEnd} setting is enabled. Users do not have to approve the reassignment, and contributions are reassigned immediately."
 msgstr ""
 
 msgid "UserMapping|The file is being processed and you will receive an email when completed."
