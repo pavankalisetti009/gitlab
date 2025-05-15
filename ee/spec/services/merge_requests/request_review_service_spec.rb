@@ -32,7 +32,9 @@ RSpec.describe ::MergeRequests::RequestReviewService, feature_category: :code_re
       it 'does not call ::Llm::ReviewMergeRequestService' do
         expect(Llm::ReviewMergeRequestService).not_to receive(:new)
 
-        service.execute(merge_request, user)
+        response = service.execute(merge_request, user)
+        expect(response[:status]).to eq :error
+        expect(response[:message]).to include "Your account doesn't have GitLab Duo access."
       end
     end
 
