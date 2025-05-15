@@ -135,74 +135,20 @@ RSpec.describe SessionsController, :geo, feature_category: :system_access do
       end
     end
 
-    context 'when CloudFlare leaked credentials header is present' do
+    context 'when Exposed-Credential-Check header is present for successful login' do
       let(:user) { create(:user) }
       let(:operation) { post(:create, params: { user: { login: user.username, password: user.password } }) }
-      let(:check_result) { '1' }
 
       before do
-        request.headers['Exposed-Credential-Check'] = check_result
+        request.headers['Exposed-Credential-Check'] = '1'
       end
 
-      shared_examples 'username and check result value logged' do
-        it 'logs the username and check result value' do
-          allow(Gitlab::AppLogger).to receive(:info).with(an_instance_of(String))
+      it 'calls Users::CompromisedPasswords::DetectAndNotifyService' do
+        expect(::Users::CompromisedPasswords::DetectAndNotifyService).to receive(:new)
+          .with(user, user.password, anything)
+          .and_call_original
 
-          expect(Gitlab::AppLogger).to receive(:info)
-            .with(
-              hash_including(
-                message: "User signed in with CloudFlare-detected leaked credentials (exact_username_and_password)",
-                username: user.username,
-                ip: request.remote_addr,
-                check_result: :exact_username_and_password
-              )
-            )
-
-          operation
-        end
-      end
-
-      shared_examples 'username and check result value not logged' do
-        it 'does not log the username and check result value' do
-          allow(Gitlab::AppLogger).to receive(:info).with(an_instance_of(String))
-
-          expect(Gitlab::AppLogger).not_to receive(:info)
-            .with(
-              hash_including(
-                message: "User signed in with CloudFlare-detected leaked credentials (exact_username_and_password)"
-              )
-            )
-
-          operation
-        end
-      end
-
-      context 'when username/password are valid' do
-        it_behaves_like 'username and check result value logged'
-
-        context 'when user has MFA enabled' do
-          it_behaves_like 'username and check result value logged' do
-            let(:user) { create(:user, :two_factor) }
-          end
-        end
-
-        context 'when check result is exact_username' do
-          it_behaves_like 'username and check result value not logged' do
-            let(:check_result) { '2' }
-          end
-        end
-      end
-
-      context 'when username is valid but password is not' do
-        it_behaves_like 'username and check result value not logged' do
-          let(:operation) { post(:create, params: { user: { login: user.username, password: "111111" } }) }
-        end
-      end
-
-      context 'when username is invalid' do
-        it_behaves_like 'username and check result value not logged' do
-          let(:operation) { post(:create, params: { user: { login: 'foo@bar.com', password: "111111" } }) }
-        end
+        operation
       end
     end
 
