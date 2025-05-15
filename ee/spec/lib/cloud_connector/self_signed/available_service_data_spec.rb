@@ -2,22 +2,25 @@
 
 require 'spec_helper'
 
-RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_category: :cloud_connector do
+RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, :saas, feature_category: :cloud_connector do
   let(:cut_off_date) { 1.month.ago }
   let(:bundled_with) { {} }
   let(:backend) { 'gitlab-ai-gateway' }
 
   let_it_be(:cc_key) { create(:cloud_connector_keys) }
+  let_it_be(:namespace) { create(:group) }
+  let_it_be(:gitlab_add_on) { create(:gitlab_subscription_add_on) }
+  let_it_be(:active_gitlab_purchase) do
+    create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: gitlab_add_on)
+  end
 
   subject(:available_service_data) { described_class.new(:duo_chat, cut_off_date, bundled_with, backend) }
 
   describe '#access_token' do
-    let(:resource) { create(:user) }
     let(:encoded_token_string) { 'token_string' }
     let(:dc_unit_primitives) { [:duo_chat_up1, :duo_chat_up2] }
     let(:duo_pro_scopes) { dc_unit_primitives + [:duo_chat_up3] }
-    let(:duo_extra_scopes) { dc_unit_primitives + [:duo_chat_up4] }
-    let(:bundled_with) { { "duo_pro" => duo_pro_scopes, "duo_extra" => duo_extra_scopes } }
+    let(:bundled_with) { { "duo_pro" => duo_pro_scopes } }
 
     let(:issuer) { 'gitlab.com' }
     let(:instance_id) { 'instance-uuid' }
@@ -83,6 +86,7 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
     end
 
     context 'when signing key is missing' do
+      let(:resource) { namespace }
       let(:fake_key_loader) do
         Class.new(::CloudConnector::CachingKeyLoader) do
           def self.private_jwk
@@ -105,107 +109,68 @@ RSpec.describe CloudConnector::SelfSigned::AvailableServiceData, feature_categor
     end
 
     context 'with free access' do
+      let(:resource) { namespace }
       let(:cut_off_date) { nil }
-      let(:scopes) { duo_pro_scopes | duo_extra_scopes }
+      let(:scopes) { duo_pro_scopes }
 
       include_examples 'issue a token with scopes'
     end
 
     context 'when passing extra claims' do
+      let(:resource) { namespace }
       let(:extra_claims) { { custom: 123 } }
       let(:scopes) { duo_pro_scopes }
 
       subject(:access_token) { available_service_data.access_token(resource, extra_claims: extra_claims) }
 
-      before do
-        allow(available_service_data).to receive(:scopes_for).and_return(duo_pro_scopes)
-      end
-
       include_examples 'issue a token with scopes'
     end
 
     context 'when passed resource is a User' do
+      let(:resource) { create(:user) }
+
       context 'with duo_pro purchased' do
-        let(:scopes) { duo_pro_scopes }
+        context 'when user is part of the namespace' do
+          let(:scopes) { duo_pro_scopes }
 
-        before do
-          allow(available_service_data)
-            .to receive_message_chain(:add_on_purchases, :for_user, :uniq_add_on_names).and_return(%w[duo_pro])
+          before do
+            namespace.add_member(resource, :developer)
+          end
+
+          include_examples 'issue a token with scopes'
+
+          context 'with cloud_connector_new_purchase_lookup disabled' do
+            before do
+              stub_feature_flags(cloud_connector_new_purchase_lookup: false)
+            end
+
+            include_examples 'issue a token with scopes'
+          end
         end
-
-        include_examples 'issue a token with scopes'
       end
 
-      context 'with code_suggestions purchased' do
-        let(:scopes) { duo_pro_scopes }
-
-        before do
-          allow(available_service_data)
-            .to receive_message_chain(:add_on_purchases, :for_user, :uniq_add_on_names)
-            .and_return(%w[code_suggestions])
-        end
-
-        include_examples 'issue a token with scopes'
-      end
-
-      context 'with duo_extra purchased' do
-        let(:scopes) { duo_extra_scopes }
-
-        before do
-          allow(available_service_data)
-            .to receive_message_chain(:add_on_purchases, :for_user, :uniq_add_on_names).and_return(%w[duo_extra])
-        end
-
-        include_examples 'issue a token with scopes'
-      end
-
-      context 'with both duo_pro and duo_extra purchased' do
-        let(:scopes) { duo_pro_scopes | duo_extra_scopes }
-
-        before do
-          allow(available_service_data)
-            .to receive_message_chain(:add_on_purchases, :for_user, :uniq_add_on_names)
-            .and_return(%w[duo_pro duo_extra])
-        end
+      context 'when user is not part of the namespace' do
+        let(:scopes) { [] }
 
         include_examples 'issue a token with scopes'
       end
     end
 
     context 'when passed resource is not a User' do
-      let(:resource) { nil }
+      let(:resource) { namespace }
 
       context 'with duo_pro purchased' do
         let(:scopes) { duo_pro_scopes }
 
-        before do
-          allow(available_service_data)
-            .to receive_message_chain(:add_on_purchases, :uniq_add_on_names).and_return(%w[duo_pro])
-        end
-
         include_examples 'issue a token with scopes'
-      end
 
-      context 'with duo_extra purchased' do
-        let(:scopes) { duo_extra_scopes }
+        context 'with cloud_connector_new_purchase_lookup disabled' do
+          before do
+            stub_feature_flags(cloud_connector_new_purchase_lookup: false)
+          end
 
-        before do
-          allow(available_service_data)
-            .to receive_message_chain(:add_on_purchases, :uniq_add_on_names).and_return(%w[duo_extra])
+          include_examples 'issue a token with scopes'
         end
-
-        include_examples 'issue a token with scopes'
-      end
-
-      context 'with both duo_pro and duo_extra purchased' do
-        let(:scopes) { duo_pro_scopes | duo_extra_scopes }
-
-        before do
-          allow(available_service_data)
-            .to receive_message_chain(:add_on_purchases, :uniq_add_on_names).and_return(%w[duo_pro duo_extra])
-        end
-
-        include_examples 'issue a token with scopes'
       end
     end
   end

@@ -47,6 +47,20 @@ module GitlabSubscriptions
     scope :for_duo_pro_or_duo_enterprise, -> { for_gitlab_duo_pro.or(for_duo_enterprise) }
     # this queries the `AddOn` table *once* for the duo add-ons (`code_suggestions` and `duo_enterprise`)
     scope :for_duo_add_ons, -> { where(subscription_add_on_id: AddOn.duo_add_ons.select(:id)) }
+    scope :for_active_add_ons, ->(add_on_names, resource: nil) do
+      scope = by_add_on_name(add_on_names).active
+
+      # On SM/Dedicated, we do not need to check namespace rules.
+      return scope.for_self_managed unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
+      # On gitlab.com, we support checking either via the user's billable group memberships,
+      # or via the group directly.
+      return scope.for_user(resource) if resource.is_a?(User)
+      return scope.by_namespace(resource.root_ancestor) if resource.is_a?(Group)
+
+      # Fall through to case that allows the caller to apply custom scopes.
+      scope
+    end
     scope :for_seat_assignable_duo_add_ons, -> do
       where(subscription_add_on_id: AddOn.seat_assignable_duo_add_ons.select(:id))
     end

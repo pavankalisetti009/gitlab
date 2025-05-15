@@ -36,48 +36,63 @@ RSpec.describe CloudConnector::BaseAvailableServiceData, feature_category: :clou
   end
 
   describe '#add_on_purchases' do
-    subject(:add_on_purchases) { service_data.add_on_purchases(namespace) }
+    context 'when namespace is passed' do
+      subject(:add_on_purchases) { service_data.add_on_purchases(namespace) }
 
-    context 'when the add_on is purchased and active for a namespace' do
-      it { is_expected.to match_array([active_gitlab_purchase]) }
+      it 'requests active add-on purchases for add-on names and namespace' do
+        expect(GitlabSubscriptions::AddOnPurchase).to(
+          receive(:for_active_add_ons).with(['code_suggestions'], resource: namespace)
+        ).and_return([active_gitlab_purchase])
 
-      it 'calls by_namespace' do
-        expect(GitlabSubscriptions::AddOnPurchase)
-          .to receive(:by_namespace)
-                .with(namespace.self_and_ancestor_ids)
-                .and_call_original
-
-        add_on_purchases
+        expect(add_on_purchases).to match_array([active_gitlab_purchase])
       end
     end
 
-    context 'when tha add_on is purchased and active for a parent namespace' do
-      let(:namespace) { create(:group, parent: active_gitlab_purchase.namespace) }
+    context 'when namespace is not passed' do
+      subject(:add_on_purchases) { service_data.add_on_purchases }
 
-      it { is_expected.to match_array([active_gitlab_purchase]) }
+      it 'requests active add-on purchases for add-on names and no namespace' do
+        expect(GitlabSubscriptions::AddOnPurchase).to(
+          receive(:for_active_add_ons).with(['code_suggestions'], resource: nil)
+        ).and_return([active_gitlab_purchase])
 
-      context 'when provided add-on name is code_suggestions' do
-        let_it_be(:purchased_add_ons) { %w[code_suggestions] }
+        expect(add_on_purchases).to match_array([active_gitlab_purchase])
+      end
+    end
 
+    context 'when cloud_connector_new_purchase_lookup feature is disabled' do
+      subject(:add_on_purchases) { service_data.add_on_purchases(namespace) }
+
+      before do
+        stub_feature_flags(cloud_connector_new_purchase_lookup: false)
+      end
+
+      context 'when the add_on is purchased and active for a namespace' do
         it { is_expected.to match_array([active_gitlab_purchase]) }
       end
-    end
 
-    context 'when the add_on is purchased but expired' do
-      let(:namespace) { expired_gitlab_purchase.namespace }
+      context 'when the add_on is purchased and active for a parent namespace' do
+        let(:namespace) { create(:group, parent: active_gitlab_purchase.namespace) }
 
-      it { is_expected.to match_array([]) }
-    end
+        it { is_expected.to match_array([active_gitlab_purchase]) }
 
-    context 'when the add_on purchase has no namespace' do
-      let(:namespace) { nil }
+        context 'when provided add-on name is code_suggestions' do
+          let_it_be(:purchased_add_ons) { %w[code_suggestions] }
 
-      it { is_expected.to match_array([active_gitlab_purchase]) }
+          it { is_expected.to match_array([active_gitlab_purchase]) }
+        end
+      end
 
-      it 'doesn\'t call by_namespace' do
-        expect(GitlabSubscriptions::AddOnPurchase).not_to receive(:by_namespace)
+      context 'when the add_on is purchased but expired' do
+        let(:namespace) { expired_gitlab_purchase.namespace }
 
-        add_on_purchases
+        it { is_expected.to match_array([]) }
+      end
+
+      context 'when the add_on purchase has no namespace' do
+        let(:namespace) { nil }
+
+        it { is_expected.to match_array([active_gitlab_purchase]) }
       end
     end
   end
@@ -85,11 +100,17 @@ RSpec.describe CloudConnector::BaseAvailableServiceData, feature_category: :clou
   describe '#purchased?' do
     subject(:purchased) { service_data.purchased?(namespace) }
 
-    it { is_expected.to be true }
+    context 'when the service has been purchased for the namespace' do
+      before do
+        allow(GitlabSubscriptions::AddOnPurchase).to(
+          receive(:for_active_add_ons).and_return([active_gitlab_purchase])
+        )
+      end
+
+      it { is_expected.to be true }
+    end
 
     context 'when the service has not been purchased for the namespace' do
-      let(:namespace) { create(:group) }
-
       it { is_expected.to be false }
     end
   end

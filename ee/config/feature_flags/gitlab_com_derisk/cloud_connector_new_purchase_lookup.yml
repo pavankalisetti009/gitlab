@@ -1,0 +1,10 @@
+---
+name: cloud_connector_new_purchase_lookup
+description: Enables a new comprehensive method to look up add-on purchases
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/542422
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/191493
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/543657
+milestone: '18.1'
+group: group::cloud connector
+type: gitlab_com_derisk
+default_enabled: false
