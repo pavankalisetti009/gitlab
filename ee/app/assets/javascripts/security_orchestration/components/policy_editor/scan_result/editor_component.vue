@@ -38,6 +38,7 @@ import ActionSection from './action/action_section.vue';
 import BotCommentAction from './action/bot_message_action.vue';
 import RuleSection from './rule/rule_section.vue';
 import FallbackAndEdgeCasesSection from './advanced_settings/fallback_and_edge_cases_section.vue';
+import PolicyExceptions from './advanced_settings/policy_exceptions/policy_exceptions.vue';
 import {
   ACTION_LISTBOX_ITEMS,
   BLOCK_GROUP_BRANCH_MODIFICATION,
@@ -106,6 +107,7 @@ export default {
     GlCollapse,
     GlEmptyState,
     EditorLayout,
+    PolicyExceptions,
     RuleSection,
     ScanFilterSelector,
     SettingsSection,
@@ -204,6 +206,9 @@ export default {
     };
   },
   computed: {
+    hasBypassOptions() {
+      return this.glFeatures.securityPoliciesBypassOptions;
+    },
     actionError() {
       const actionErrors = this.errorSources.filter(([primaryKey]) => primaryKey === 'action');
       if (actionErrors.length) {
@@ -672,6 +677,9 @@ export default {
 
           <settings-section :rules="policy.rules" :settings="settings" @changed="updateSettings" />
         </disabled-section>
+
+        <policy-exceptions v-if="hasBypassOptions" />
+
         <fallback-and-edge-cases-section
           :has-error="parsingError.fallback"
           :policy="policy"
