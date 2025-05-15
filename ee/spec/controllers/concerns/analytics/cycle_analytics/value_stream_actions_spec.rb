@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Analytics::CycleAnalytics::ValueStreamActions, feature_category: :team_planning do
   let_it_be(:group) { build(:group) }
-  let_it_be(:project) { build(:project) }
+  let_it_be(:project) { build(:project, group: group) }
   let_it_be(:current_user) { build(:user) }
 
   subject(:controller_class) do
@@ -33,6 +33,7 @@ RSpec.describe Analytics::CycleAnalytics::ValueStreamActions, feature_category: 
           :vsa_path,
           :is_edit_page,
           :namespace_full_path,
+          :group_path,
           :stage_events
         )
       end
@@ -50,6 +51,7 @@ RSpec.describe Analytics::CycleAnalytics::ValueStreamActions, feature_category: 
           :is_edit_page,
           :value_stream,
           :namespace_full_path,
+          :group_path,
           :stage_events
         )
       end
@@ -65,6 +67,10 @@ RSpec.describe Analytics::CycleAnalytics::ValueStreamActions, feature_category: 
       it 'returns the correct namespace path' do
         expect(controller.call_data_attributes[:namespace_full_path]).to eq("groups/#{group.full_path}")
       end
+
+      it 'returns the correct group path' do
+        expect(controller.call_data_attributes[:group_path]).to eq(group.full_path)
+      end
     end
 
     describe 'for projects' do
@@ -76,6 +82,10 @@ RSpec.describe Analytics::CycleAnalytics::ValueStreamActions, feature_category: 
 
       it 'returns the correct namespace_full_path' do
         expect(controller.call_data_attributes[:namespace_full_path]).to eq(project.full_path)
+      end
+
+      it 'returns the correct group path' do
+        expect(controller.call_data_attributes[:group_path]).to eq(project.group.full_path)
       end
     end
   end

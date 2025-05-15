@@ -1,4 +1,7 @@
+import { mockLabelsResponse } from 'ee_jest/analytics/cycle_analytics/vsa_settings/mock_data';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import { generateInitialStageData } from '../utils';
+import getCustomStageLabels from '../graphql/get_custom_stage_labels.query.graphql';
 import { defaultStages, stageEvents, valueStream, valueStreamStages } from './stories_constants';
 import ValueStreamFormContent from './value_stream_form_content.vue';
 
@@ -12,11 +15,16 @@ const generateInitialData = (stages) => ({
   stages: generateInitialStageData(defaultStages, stages),
 });
 
+const mockApolloProvider = () =>
+  createMockApollo([[getCustomStageLabels, () => Promise.resolve(mockLabelsResponse)]]);
+
 const Template = (args, { argTypes }) => ({
   components: { ValueStreamFormContent },
+  apolloProvider: mockApolloProvider(),
   provide: {
     vsaPath: '',
     namespaceFullPath: '',
+    groupPath: 'group',
     valueStream,
     stageEvents,
     defaultStages,

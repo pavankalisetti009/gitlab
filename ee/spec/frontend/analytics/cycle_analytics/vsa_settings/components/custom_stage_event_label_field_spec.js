@@ -1,82 +1,79 @@
-import Vue from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
-import MockAdapter from 'axios-mock-adapter';
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox } from '@gitlab/ui';
-import axios from '~/lib/utils/axios_utils';
+import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { HTTP_STATUS_NOT_FOUND, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import waitForPromises from 'helpers/wait_for_promises';
-import { i18n, ERRORS } from 'ee/analytics/cycle_analytics/vsa_settings/constants';
 import CustomStageEventLabelField from 'ee/analytics/cycle_analytics/vsa_settings/components/custom_stage_event_label_field.vue';
-import { groupLabels } from '../../mock_data';
+import getCustomStageLabels from 'ee/analytics/cycle_analytics/vsa_settings/graphql/get_custom_stage_labels.query.graphql';
+import { mockLabels, mockLabelsResponse, createMockLabelsResponse } from '../mock_data';
 
-Vue.use(Vuex);
+Vue.use(VueApollo);
 
 const index = 0;
 const eventType = 'start-event';
-const fieldLabel = i18n.FORM_FIELD_START_EVENT_LABEL;
-const labelError = ERRORS.INVALID_EVENT_PAIRS;
-const [selectedLabel] = groupLabels;
 
 const defaultProps = {
   index,
   eventType,
-  fieldLabel,
+  fieldLabel: 'label',
   requiresLabel: true,
 };
 
 describe('CustomStageEventLabelField', () => {
-  let axiosMock;
-  let resolveGroupLabelsRequest;
+  let wrapper;
 
-  function createComponent({ props = {} } = {}) {
-    return shallowMountExtended(CustomStageEventLabelField, {
-      provide: { namespaceFullPath: '/groups/test' },
+  const selectedLabel = {
+    ...mockLabels[0],
+    id: 1,
+  };
+
+  const createWrapper = ({
+    props = {},
+    labelsResolver = jest.fn().mockResolvedValue(mockLabelsResponse),
+  } = {}) => {
+    const apolloProvider = createMockApollo([[getCustomStageLabels, labelsResolver]]);
+
+    wrapper = shallowMountExtended(CustomStageEventLabelField, {
+      apolloProvider,
+      provide: { namespaceFullPath: '/groups/test', groupPath: 'test' },
       propsData: {
         ...defaultProps,
         ...props,
       },
     });
-  }
 
-  let wrapper = null;
+    jest.advanceTimersByTime(DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
+    return waitForPromises();
+  };
 
   const findEventLabelField = () =>
     wrapper.findByTestId(`custom-stage-${eventType}-label-${index}`);
   const findCollapsibleListbox = () => wrapper.findComponent(GlCollapsibleListbox);
   const findToggleButton = () => wrapper.findByTestId('listbox-toggle-btn');
 
-  beforeEach(() => {
-    axiosMock = new MockAdapter(axios);
-
-    const endpointResponse = new Promise((resolve) => {
-      resolveGroupLabelsRequest = ({ status = HTTP_STATUS_OK, results = groupLabels } = {}) => {
-        resolve([status, results]);
-        return waitForPromises();
-      };
-    });
-
-    axiosMock.onGet().reply(() => endpointResponse);
-  });
-
-  afterEach(() => {
-    axiosMock.restore();
-  });
-
   describe('Label listbox', () => {
     beforeEach(() => {
-      wrapper = createComponent();
+      return createWrapper();
     });
 
     it('renders the form group', () => {
       expect(findEventLabelField().attributes()).toMatchObject({
-        label: fieldLabel,
+        label: defaultProps.fieldLabel,
         state: 'true',
         'invalid-feedback': '',
       });
 
       expect(findToggleButton().classes()).not.toContain('gl-shadow-inner-1-red-500');
+    });
+
+    it('does not show the searching state', () => {
+      expect(findCollapsibleListbox().props().searching).toBe(false);
+    });
+
+    it('shows the labels in the listbox', () => {
+      expect(findCollapsibleListbox().props().items.length).toBe(mockLabels.length);
     });
 
     it('renders with no selected label', () => {
@@ -95,7 +92,7 @@ describe('CustomStageEventLabelField', () => {
 
   describe('with selected label', () => {
     beforeEach(() => {
-      wrapper = createComponent({ props: { selectedLabelId: selectedLabel.id } });
+      return createWrapper({ props: { selectedLabelId: selectedLabel.id } });
     });
 
     it('sets the selected label', () => {
@@ -103,53 +100,44 @@ describe('CustomStageEventLabelField', () => {
     });
   });
 
-  describe('loading labels', () => {
+  describe('when loading', () => {
     beforeEach(() => {
-      wrapper = createComponent();
+      createWrapper();
     });
 
-    it('will show loading state while request is pending', () => {
-      expect(findToggleButton().props().loading).toBe(true);
+    it('shows the listbox searching state', () => {
+      expect(findCollapsibleListbox().props().searching).toBe(true);
+    });
+  });
+
+  describe('when the labels request fails', () => {
+    beforeEach(() => {
+      return createWrapper({ labelsResolver: jest.fn().mockRejectedValue({}) });
     });
 
-    describe('once request succeeds', () => {
-      beforeEach(() => {
-        return resolveGroupLabelsRequest();
-      });
-
-      it('stops the loading state', () => {
-        expect(findToggleButton().props().loading).toBe(false);
-      });
-
-      it('shows the labels in the listbox', () => {
-        expect(findCollapsibleListbox().props().items.length).toBe(groupLabels.length);
-      });
+    it('stops the loading state', () => {
+      expect(findCollapsibleListbox().props().searching).toBe(false);
     });
 
-    describe('once request fails', () => {
-      beforeEach(() => {
-        return resolveGroupLabelsRequest({ status: HTTP_STATUS_NOT_FOUND });
-      });
-
-      it('stops the loading state', () => {
-        expect(findToggleButton().props().loading).toBe(false);
-      });
-
-      it('emits an error', () => {
-        expect(wrapper.emitted('error').length).toBe(1);
-        expect(wrapper.emitted('error')[0]).toEqual([
-          'There was an error fetching label data for the selected group',
-        ]);
-      });
+    it('emits an error', () => {
+      expect(wrapper.emitted('error').length).toBe(1);
+      expect(wrapper.emitted('error')[0]).toEqual([
+        'There was an error fetching label data for the selected group',
+      ]);
     });
   });
 
   describe('when searching', () => {
-    const results = groupLabels.slice(0, 1);
+    const results = mockLabels.slice(0, 1);
 
-    beforeEach(() => {
-      wrapper = createComponent();
+    beforeEach(async () => {
+      await createWrapper({
+        labelsResolver: jest.fn().mockResolvedValue(createMockLabelsResponse(results)),
+      });
+
       findCollapsibleListbox().vm.$emit('search', 'query');
+      await nextTick();
+      jest.advanceTimersByTime(DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
     });
 
     it('will show searching state while request is pending', () => {
@@ -158,7 +146,7 @@ describe('CustomStageEventLabelField', () => {
 
     describe('once request finishes', () => {
       beforeEach(() => {
-        return resolveGroupLabelsRequest({ results });
+        return waitForPromises();
       });
 
       it('stops the loading state', () => {
@@ -173,7 +161,7 @@ describe('CustomStageEventLabelField', () => {
 
   describe('with `requiresLabel=false`', () => {
     beforeEach(() => {
-      wrapper = createComponent({ props: { requiresLabel: false } });
+      createWrapper({ props: { requiresLabel: false } });
     });
 
     it('sets the form group error state', () => {
@@ -182,8 +170,10 @@ describe('CustomStageEventLabelField', () => {
   });
 
   describe('with an event field error', () => {
+    const labelError = 'error';
+
     beforeEach(() => {
-      wrapper = createComponent({
+      createWrapper({
         props: {
           isLabelValid: false,
           labelError,

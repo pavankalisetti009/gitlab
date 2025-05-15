@@ -106,7 +106,8 @@ module EE
               vsa_path: vsa_path,
               is_edit_page: is_edit_page.to_s,
               stage_events: stage_events.to_json,
-              namespace_full_path: project? ? namespace.full_path : "groups/#{namespace.full_path}"
+              namespace_full_path: project? ? namespace.full_path : "groups/#{namespace.full_path}",
+              group_path: project? ? namespace.group.full_path : namespace.full_path
             )
           # rubocop:enable Gitlab/ModuleWithInstanceVariables
         end

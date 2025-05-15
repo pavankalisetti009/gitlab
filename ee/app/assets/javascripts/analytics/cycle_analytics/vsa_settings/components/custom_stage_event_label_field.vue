@@ -1,9 +1,9 @@
 <script>
 import { GlButton, GlIcon, GlFormGroup, GlCollapsibleListbox } from '@gitlab/ui';
-import { debounce } from 'lodash';
 import { __ } from '~/locale';
-import { getGroupLabels } from 'ee/api/analytics_api';
-import { DATA_REFETCH_DELAY } from '../../../shared/constants';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
+import getCustomStageLabels from '../graphql/get_custom_stage_labels.query.graphql';
 
 export default {
   name: 'CustomStageEventLabelField',
@@ -13,7 +13,7 @@ export default {
     GlFormGroup,
     GlCollapsibleListbox,
   },
-  inject: ['namespaceFullPath'],
+  inject: ['groupPath'],
   props: {
     index: {
       type: Number,
@@ -51,11 +51,12 @@ export default {
     return {
       labels: [],
       searchTerm: '',
-      loading: false,
-      searching: false,
     };
   },
   computed: {
+    loading() {
+      return this.$apollo.queries.labels.loading;
+    },
     fieldName() {
       const { eventType, index } = this;
       return `custom-stage-${eventType}-label-${index}`;
@@ -75,39 +76,34 @@ export default {
       },
     },
   },
-  watch: {
-    searchTerm: debounce(function debouncedSearch() {
-      this.search();
-    }, DATA_REFETCH_DELAY),
-  },
-  async created() {
-    this.loading = true;
-    await this.fetchLabels();
-    this.loading = false;
+  apollo: {
+    labels: {
+      query: getCustomStageLabels,
+      debounce: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
+      variables() {
+        return {
+          fullPath: this.groupPath,
+          searchTerm: this.searchTerm,
+        };
+      },
+      update({
+        group: {
+          labels: { nodes },
+        },
+      }) {
+        return nodes.map(({ id, ...rest }) => ({ ...rest, id: getIdFromGraphQLId(id) }));
+      },
+      error() {
+        this.$emit('error', __('There was an error fetching label data for the selected group'));
+      },
+    },
   },
   methods: {
-    async fetchLabels() {
-      try {
-        const { data } = await getGroupLabels(this.namespaceFullPath, {
-          search: this.searchTerm,
-          only_group_labels: true,
-        });
-
-        this.labels = data;
-      } catch {
-        this.$emit('error', this.$options.i18n.fetchError);
-      }
-    },
-    async search() {
-      this.searching = true;
-      await this.fetchLabels();
-      this.searching = false;
+    onSearch(value) {
+      this.searchTerm = value.trim();
     },
   },
-  i18n: {
-    headerText: __('Select a label'),
-    fetchError: __('There was an error fetching label data for the selected group'),
-  },
+  headerText: __('Select a label'),
 };
 </script>
 <template>
@@ -125,10 +121,10 @@ export default {
           block
           searchable
           :name="fieldName"
-          :header-text="$options.i18n.headerText"
-          :searching="searching"
+          :header-text="$options.headerText"
+          :searching="loading"
           :items="items"
-          @search="searchTerm = $event"
+          @search="onSearch"
         >
           <template #toggle>
             <gl-button
@@ -136,7 +132,6 @@ export default {
               block
               button-text-classes="gl-w-full gl-flex gl-justify-between"
               :class="{ 'gl-shadow-inner-1-red-500': !isLabelValid }"
-              :loading="loading"
             >
               <div v-if="selectedLabel">
                 <span
@@ -146,7 +141,7 @@ export default {
                 </span>
                 {{ selectedLabel.title }}
               </div>
-              <div v-else class="gl-text-subtle">{{ $options.i18n.headerText }}</div>
+              <div v-else class="gl-text-subtle">{{ $options.headerText }}</div>
               <gl-icon name="chevron-down" />
             </gl-button>
           </template>

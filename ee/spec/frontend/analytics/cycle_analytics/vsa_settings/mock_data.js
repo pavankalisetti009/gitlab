@@ -63,3 +63,40 @@ export const defaultStages = [
     endEventIdentifier: 'merge_request_created',
   },
 ];
+
+export const mockLabels = [
+  {
+    id: 'gid://gitlab/GroupLabel/1',
+    title: 'Red',
+    color: '#FF0000',
+    textColor: '#FFF',
+    __typename: 'Label',
+  },
+  {
+    id: 'gid://gitlab/GroupLabel/2',
+    title: 'Green',
+    color: '#00FF00',
+    textColor: '#FFF',
+    __typename: 'Label',
+  },
+  {
+    id: 'gid://gitlab/GroupLabel/3',
+    title: 'Blue',
+    color: '#0000FF',
+    textColor: '#FFF',
+    __typename: 'Label',
+  },
+];
+
+export const createMockLabelsResponse = (nodes) => ({
+  data: {
+    group: {
+      id: 'gid://gitlab/Group/1',
+      labels: {
+        nodes,
+      },
+    },
+  },
+});
+
+export const mockLabelsResponse = createMockLabelsResponse(mockLabels);
