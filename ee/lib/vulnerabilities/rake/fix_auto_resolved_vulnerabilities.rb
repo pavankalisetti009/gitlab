@@ -1,0 +1,78 @@
+# frozen_string_literal: true
+
+module Vulnerabilities
+  module Rake
+    class FixAutoResolvedVulnerabilities
+      include Gitlab::Database::Migrations::BatchedBackgroundMigrationHelpers
+
+      MIGRATION = 'FixVulnerabilitiesTransitionedFromDismissedToResolved'
+      INSTANCE_ARG = 'instance'
+
+      def initialize(args)
+        @namespace_id = args[:namespace_id]
+      end
+
+      attr_reader :namespace_id
+
+      def execute
+        validate_args!
+        queue_migration
+      end
+
+      private
+
+      def validate_args!
+        unless /(\d+|instance)/.match?(namespace_id)
+          puts "#{namespace_id} is not a number."
+          puts 'Use `gitlab-rake \'gitlab:vulnerabilities:fix_auto_resolved_vulnerabilities[instance]\'` ' \
+            'to perform an instance migration.'
+          exit 1
+        end
+
+        return if instance_migration?
+
+        namespace = Namespace.find_by_id(namespace_id)
+
+        if namespace.blank?
+          puts "Namespace:#{namespace_id} not found."
+          exit 1
+        end
+
+        return if namespace.parent.blank?
+
+        puts 'Namespace must be top-level.'
+        exit 1
+      end
+
+      def queue_migration
+        queue_batched_background_migration(
+          MIGRATION,
+          :vulnerability_reads,
+          :vulnerability_id,
+          job_args,
+          gitlab_schema: :gitlab_sec
+        )
+      end
+
+      def job_args
+        if instance_migration?
+          INSTANCE_ARG
+        else
+          namespace_id.to_i
+        end
+      end
+
+      def instance_migration?
+        namespace_id == INSTANCE_ARG
+      end
+
+      def version
+        Time.now.utc.strftime("%Y%m%d%H%M%S")
+      end
+
+      def connection
+        SecApplicationRecord.connection
+      end
+    end
+  end
+end
