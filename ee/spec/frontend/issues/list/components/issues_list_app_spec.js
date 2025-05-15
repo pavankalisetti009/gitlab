@@ -34,6 +34,7 @@ import {
   TOKEN_TYPE_CLOSED,
   TOKEN_TYPE_CUSTOM_FIELD,
   TOKEN_TYPE_SUBSCRIBED,
+  TOKEN_TYPE_STATUS,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import BlockingIssuesCount from 'ee/issues/components/blocking_issues_count.vue';
 import IssuesListApp from 'ee/issues/list/components/issues_list_app.vue';
@@ -89,6 +90,7 @@ describe('EE IssuesListApp component', () => {
     groupId: '',
     isGroup: false,
     commentTemplatePaths: [],
+    hasStatusFeature: true,
   };
 
   const defaultQueryResponse = cloneDeep(getIssuesQueryResponse);
@@ -107,6 +109,7 @@ describe('EE IssuesListApp component', () => {
   const mountComponent = ({
     provide = {},
     okrsMvc = false,
+    workItemStatusFeatureFlag = true,
     issuesQueryResponse = jest.fn().mockResolvedValue(defaultQueryResponse),
     issuesCountsQueryResponse = jest.fn().mockResolvedValue(getIssuesCountsQueryResponse),
     customFieldsQueryHandler = jest.fn().mockResolvedValue(mockNamespaceCustomFieldsResponse),
@@ -121,6 +124,7 @@ describe('EE IssuesListApp component', () => {
       provide: {
         glFeatures: {
           okrsMvc,
+          workItemStatusFeatureFlag,
         },
         ...defaultProvide,
         ...provide,
@@ -154,11 +158,12 @@ describe('EE IssuesListApp component', () => {
     };
 
     describe.each`
-      feature            | property                    | tokenName        | type
-      ${'iterations'}    | ${'hasIterationsFeature'}   | ${'Iteration'}   | ${TOKEN_TYPE_ITERATION}
-      ${'epics'}         | ${'groupPath'}              | ${'Epic'}        | ${TOKEN_TYPE_EPIC}
-      ${'weights'}       | ${'hasIssueWeightsFeature'} | ${'Weight'}      | ${TOKEN_TYPE_WEIGHT}
-      ${'custom fields'} | ${'hasCustomFieldsFeature'} | ${'CustomField'} | ${TOKEN_TYPE_CUSTOM_FIELD}
+      feature              | property                    | tokenName                      | type
+      ${'iterations'}      | ${'hasIterationsFeature'}   | ${'Iteration'}                 | ${TOKEN_TYPE_ITERATION}
+      ${'epics'}           | ${'groupPath'}              | ${'Epic'}                      | ${TOKEN_TYPE_EPIC}
+      ${'weights'}         | ${'hasIssueWeightsFeature'} | ${'Weight'}                    | ${TOKEN_TYPE_WEIGHT}
+      ${'custom fields'}   | ${'hasCustomFieldsFeature'} | ${'CustomField'}               | ${TOKEN_TYPE_CUSTOM_FIELD}
+      ${'custom statuses'} | ${'hasStatusFeature'}       | ${'WorkItemCustomStatusToken'} | ${TOKEN_TYPE_STATUS}
     `('when $feature are not available', ({ property, tokenName, type }) => {
       beforeEach(() => {
         wrapper = mountComponent({ provide: { [property]: '' } });
@@ -209,11 +214,24 @@ describe('EE IssuesListApp component', () => {
           { type: TOKEN_TYPE_ORGANIZATION },
           { type: TOKEN_TYPE_RELEASE },
           { type: TOKEN_TYPE_SEARCH_WITHIN },
+          { type: TOKEN_TYPE_STATUS },
           { type: TOKEN_TYPE_SUBSCRIBED },
           { type: TOKEN_TYPE_TYPE },
           { type: TOKEN_TYPE_WEIGHT },
         ]);
       });
+    });
+  });
+
+  describe('custom status token', () => {
+    it('does not render `WorkItemStatusToken` token when the `work_item_status_feature_flag` is off', () => {
+      wrapper = mountComponent({
+        provide: {
+          workItemStatusFeatureFlag: false,
+        },
+      });
+
+      expect(findIssuableList().props('searchTokens')).not.toContain([{ type: TOKEN_TYPE_STATUS }]);
     });
   });
 
@@ -240,7 +258,7 @@ describe('EE IssuesListApp component', () => {
       });
     });
 
-    it('passes custom field tokens to WorkItemsListApp', () => {
+    it('passes custom field tokens to IssuesListApp', () => {
       const expectedTokens = allowedFields.map((field) => ({
         type: `${TOKEN_TYPE_CUSTOM_FIELD}[${field.id.split('/').pop()}]`,
         title: field.name,
@@ -251,7 +269,7 @@ describe('EE IssuesListApp component', () => {
         operators: OPERATORS_IS,
       }));
 
-      expect(findIssuesListAppCE().props('eeSearchTokens').length).toBe(5);
+      expect(findIssuesListAppCE().props('eeSearchTokens').length).toBe(6);
       expect(findIssuesListAppCE().props('eeSearchTokens')[4]).toMatchObject(expectedTokens[0]);
     });
   });

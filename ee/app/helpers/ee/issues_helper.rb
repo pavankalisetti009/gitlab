@@ -42,7 +42,8 @@ module EE
         has_iterations_feature: namespace.feature_available?(:iterations).to_s,
         has_okrs_feature: namespace.feature_available?(:okrs).to_s,
         has_quality_management_feature: namespace.feature_available?(:quality_management).to_s,
-        has_scoped_labels_feature: namespace.feature_available?(:scoped_labels).to_s
+        has_scoped_labels_feature: namespace.feature_available?(:scoped_labels).to_s,
+        has_status_feature: namespace.licensed_feature_available?(:work_item_status).to_s
       )
     end
 
@@ -75,7 +76,8 @@ module EE
         has_iterations_feature: License.feature_available?(:iterations).to_s,
         has_okrs_feature: License.feature_available?(:okrs).to_s,
         has_quality_management_feature: License.feature_available?(:quality_management).to_s,
-        has_scoped_labels_feature: License.feature_available?(:scoped_labels).to_s
+        has_scoped_labels_feature: License.feature_available?(:scoped_labels).to_s,
+        has_status_feature: License.feature_available?(:work_item_status).to_s
       )
     end
   end
