@@ -9,14 +9,21 @@ import {
 } from 'ee/ci/secrets/constants';
 import enableSecretManagerMutation from 'ee/ci/secrets/graphql/mutations/enable_secret_manager.mutation.graphql';
 import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
+import PermissionsSettings from './components/secrets_manager_permissions_settings.vue';
 
 export const POLL_INTERVAL = 2000;
 
 export default {
+  name: 'SecretsManagerSettings',
   components: {
     GlToggle,
+    PermissionsSettings,
   },
   props: {
+    canManageSecretsManager: {
+      type: Boolean,
+      required: true,
+    },
     fullPath: {
       type: String,
       required: true,
@@ -78,7 +85,9 @@ export default {
       return this.secretManagerStatus === SECRET_MANAGER_STATUS_PROVISIONING;
     },
     isToggleDisabled() {
-      return this.isLoading || this.isProvisioning || this.isActive;
+      return (
+        this.isLoading || this.isProvisioning || this.isActive || !this.canManageSecretsManager
+      );
     },
     isToggleLoading() {
       return this.isLoading || this.isProvisioning;
@@ -144,5 +153,6 @@ export default {
     <p v-if="hasError" class="gl-mt-2 gl-text-danger" data-testid="secret-manager-error">
       {{ __('Something went wrong. Please try again.') }}
     </p>
+    <permissions-settings v-if="isActive" :can-manage-secrets-manager="canManageSecretsManager" />
   </div>
 </template>

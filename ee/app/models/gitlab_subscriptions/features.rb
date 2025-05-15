@@ -247,6 +247,7 @@ module GitlabSubscriptions
       jira_issue_association_enforcement
       kubernetes_cluster_vulnerabilities
       license_scanning
+      native_secrets_management
       okrs
       personal_access_token_expiration_policy
       secret_push_protection

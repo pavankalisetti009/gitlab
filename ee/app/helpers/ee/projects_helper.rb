@@ -31,6 +31,7 @@ module EE
       super.merge({
         canManageSecretManager: ::Feature.enabled?(:ci_tanukey_ui, project) &&
           can?(current_user, :admin_project_secrets_manager, project),
+        isSecretsManagerAvailable: project.licensed_feature_available?(:native_secrets_management),
         requirementsAvailable: project.feature_available?(:requirements),
         licensedAiFeaturesAvailable: project.licensed_ai_features_available?,
         amazonQAvailable: Ai::AmazonQ.connected?,

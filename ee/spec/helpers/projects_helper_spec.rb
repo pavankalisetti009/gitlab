@@ -672,8 +672,24 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       end
     end
 
-    describe 'Secret Manager settings' do
+    describe 'Secrets Manager settings' do
       it { is_expected.to include(canManageSecretManager: false) }
+
+      context 'when feature is licensed' do
+        before do
+          stub_licensed_features(native_secrets_management: true)
+        end
+
+        it { is_expected.to include(isSecretsManagerAvailable: true) }
+      end
+
+      context 'when feature is not licenced' do
+        before do
+          stub_licensed_features(native_secrets_management: false)
+        end
+
+        it { is_expected.to include(isSecretsManagerAvailable: false) }
+      end
 
       context 'when ci_tanukey_ui feature flag is disabled' do
         before do

@@ -10,9 +10,10 @@ import {
 } from 'ee/ci/secrets/constants';
 import enableSecretManagerMutation from 'ee/ci/secrets/graphql/mutations/enable_secret_manager.mutation.graphql';
 import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
+import PermissionsSettings from 'ee/pages/projects/shared/permissions/secrets_manager/components/secrets_manager_permissions_settings.vue';
 import SecretManagerSettings, {
   POLL_INTERVAL,
-} from 'ee/pages/projects/shared/permissions/components/secret_manager_settings.vue';
+} from 'ee/pages/projects/shared/permissions/secrets_manager/secrets_manager_settings.vue';
 import {
   initializeSecretManagerSettingsResponse,
   secretManagerSettingsResponse,
@@ -42,6 +43,7 @@ describe('SecretManagerSettings', () => {
     wrapper = shallowMountExtended(SecretManagerSettings, {
       apolloProvider: mockApollo,
       propsData: {
+        canManageSecretsManager: true,
         fullPath,
         ...props,
       },
@@ -58,6 +60,7 @@ describe('SecretManagerSettings', () => {
 
   const findError = () => wrapper.findByTestId('secret-manager-error');
   const findToggle = () => wrapper.findComponent(GlToggle);
+  const findPermissionsSettings = () => wrapper.findComponent(PermissionsSettings);
 
   const advanceToNextFetch = (milliseconds) => {
     jest.advanceTimersByTime(milliseconds);
@@ -84,6 +87,17 @@ describe('SecretManagerSettings', () => {
     mockSecretManagerStatus = jest.fn();
   });
 
+  describe('template', () => {
+    beforeEach(async () => {
+      mockSecretManagerStatus.mockResolvedValue(inactiveResponse);
+      await createComponent({ props: { canManageSecretsManager: false } });
+    });
+
+    it('disables toggle when user does not have permission', () => {
+      expect(findToggle().props('disabled')).toBe(true);
+    });
+  });
+
   describe('when query is loading', () => {
     it('disables toggle and shows loading state', () => {
       createComponent();
@@ -103,6 +117,10 @@ describe('SecretManagerSettings', () => {
       expect(findToggle().props('disabled')).toBe(true);
       expect(findToggle().props('value')).toBe(true);
     });
+
+    it('renders permission settings', () => {
+      expect(findPermissionsSettings().exists()).toBe(true);
+    });
   });
 
   describe('when query receives PROVISIONING status', () => {
@@ -115,6 +133,10 @@ describe('SecretManagerSettings', () => {
       expect(findToggle().props('disabled')).toBe(true);
       expect(findToggle().props('isLoading')).toBe(true);
     });
+
+    it('does not render permission settings', () => {
+      expect(findPermissionsSettings().exists()).toBe(false);
+    });
   });
 
   describe('when query receives NULL status', () => {
@@ -126,6 +148,10 @@ describe('SecretManagerSettings', () => {
     it('shows inactive state', () => {
       expect(findToggle().props('disabled')).toBe(false);
       expect(findToggle().props('value')).toBe(false);
+    });
+
+    it('does not render permission settings', () => {
+      expect(findPermissionsSettings().exists()).toBe(false);
     });
   });
 
