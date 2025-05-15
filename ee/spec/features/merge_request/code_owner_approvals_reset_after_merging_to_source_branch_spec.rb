@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe "Code owner approvals reset after merging to source branch", :js, :sidekiq_inline, feature_category: :code_review_workflow do
+  include RepoHelpers
   let_it_be(:rb_approving_user) { create(:user) }
   let_it_be(:user) { create(:user) }
 
@@ -110,16 +111,11 @@ RSpec.describe "Code owner approvals reset after merging to source branch", :js,
         before do
           visit project_merge_request_path(project, other_merge_request)
           source_branch = merge_request.source_branch
-          oldrev = project.repository.commit(source_branch).sha
-          page.within('.mr-widget-section') do
-            click_button('Merge')
+          simulate_post_receive(project, source_branch, create(:key, user: user).shell_id) do
+            page.within('.mr-widget-section') do
+              click_button('Merge')
+            end
           end
-
-          # Simulate post receive
-          newrev = project.repository.commit(source_branch).sha
-          changes = Base64.encode64("#{oldrev} #{newrev} refs/heads/#{source_branch}")
-          Repositories::PostReceiveWorker.new.perform("project-#{project.id}", create(:key, user: user).shell_id,
-            changes)
         end
 
         context 'and the other merge request contains changes related to code owners' do

@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe "Code owner approvals reset after pushing merge conflict to source branch", :js, :sidekiq_inline, feature_category: :code_review_workflow do
+  include RepoHelpers
   let_it_be(:rb_approving_user) { create(:user, :with_namespace) }
   let_it_be(:user) { create(:user, :with_namespace) }
 
@@ -120,13 +121,9 @@ RSpec.describe "Code owner approvals reset after pushing merge conflict to sourc
 
       context 'and then push results in a merge conflict on a file that requires review from code owners' do
         before do
-          # Simulate post receive
-          oldrev = project.repository.commit(branch_name).sha
-          add_conflict_with_rb_file_to_source_branch
-          newrev = project.repository.commit(branch_name).sha
-          changes = Base64.encode64("#{oldrev} #{newrev} refs/heads/#{branch_name}")
-          Repositories::PostReceiveWorker.new.perform("project-#{project.id}", create(:key, user: user).shell_id,
-            changes)
+          simulate_post_receive(project, branch_name, create(:key, user: user).shell_id) do
+            add_conflict_with_rb_file_to_source_branch
+          end
         end
 
         it 'resets code owner approvals', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472632' do

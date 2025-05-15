@@ -281,14 +281,9 @@ RSpec.describe 'Two merge requests on a merge train', feature_category: :merge_t
 
     def push_commit_to_master
       branch = project.default_branch_or_main
-      oldrev = project.repository.commit(branch).sha
-
-      create_file_in_repo(project, branch, branch, 'test.txt', 'This is a test')
-
-      newrev = project.repository.commit(branch).sha
-      changes = Base64.encode64("#{oldrev} #{newrev} refs/heads/#{branch}")
-
-      Repositories::PostReceiveWorker.new.perform("project-#{project.id}", key.shell_id, changes)
+      simulate_post_receive(project, branch, key.shell_id) do
+        create_file_in_repo(project, branch, branch, 'test.txt', 'This is a test')
+      end
     end
   end
 end
