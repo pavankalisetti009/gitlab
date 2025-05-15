@@ -153,6 +153,12 @@ module Security
         vulnerability_management_policy
     end
 
+    def all_policies_with_type
+      policy_hash.flat_map do |type, policies|
+        policies.map { |policy| policy.merge(type: type.to_s) }
+      end.compact_blank
+    end
+
     def policies_changed?
       yaml_differs_from_db?(security_policies.type_approval_policy, scan_result_policies) ||
         yaml_differs_from_db?(security_policies.type_scan_execution_policy, scan_execution_policy) ||

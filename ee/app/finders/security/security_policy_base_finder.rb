@@ -84,6 +84,8 @@ module Security
         config.scan_result_policies
       when :vulnerability_management_policy
         config.vulnerability_management_policy
+      when :all_policies
+        Feature.enabled?(:security_policies_combined_list, object) ? config.all_policies_with_type : []
       end
     end
 

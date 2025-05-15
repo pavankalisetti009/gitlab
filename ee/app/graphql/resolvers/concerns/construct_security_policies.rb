@@ -7,6 +7,27 @@ module ConstructSecurityPolicies
   POLICY_YAML_ATTRIBUTES = %i[name description enabled actions rules approval_settings policy_scope
     fallback_behavior metadata policy_tuning].freeze
 
+  def construct_security_policies(policies)
+    policies.map do |policy|
+      construct_security_policy(policy)
+    end
+  end
+
+  def construct_security_policy(policy)
+    case policy[:type]
+    when "pipeline_execution_policy"
+      construct_pipeline_execution_policy(policy, true)
+    when "pipeline_execution_schedule_policy"
+      construct_pipeline_execution_schedule_policy(policy, true)
+    when "scan_execution_policy"
+      construct_scan_execution_policy(policy, true)
+    when "scan_result_policy", "approval_policy"
+      construct_scan_result_policy(policy, true)
+    when "vulnerability_management_policy"
+      construct_vulnerability_management_policy(policy, true)
+    end
+  end
+
   def construct_scan_result_policies(policies)
     policies.map do |policy|
       construct_scan_result_policy(policy)

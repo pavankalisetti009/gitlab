@@ -5,6 +5,8 @@ require 'spec_helper'
 RSpec.shared_examples 'security policies finder' do
   subject { described_class.new(actor, object, params).execute }
 
+  let(:expected_extra_attrs) { {} }
+
   shared_examples 'when user does not have developer role in project/group' do
     it 'returns empty collection' do
       is_expected.to be_empty
@@ -45,7 +47,8 @@ RSpec.shared_examples 'security policies finder' do
                 config: policy_configuration,
                 project: object,
                 namespace: nil,
-                inherited: false
+                inherited: false,
+                **expected_extra_attrs
               })])
           end
 
@@ -58,7 +61,8 @@ RSpec.shared_examples 'security policies finder' do
                   config: policy_configuration,
                   project: object,
                   namespace: nil,
-                  inherited: false
+                  inherited: false,
+                  **expected_extra_attrs
                 })])
             end
           end
@@ -103,7 +107,8 @@ RSpec.shared_examples 'security policies finder' do
                     config: policy_configuration,
                     project: object,
                     namespace: nil,
-                    inherited: false
+                    inherited: false,
+                    **expected_extra_attrs
                   })])
               end
             end
@@ -147,7 +152,8 @@ RSpec.shared_examples 'security policies finder' do
                   config: group_policy_configuration,
                   project: nil,
                   namespace: group,
-                  inherited: true
+                  inherited: true,
+                  **expected_extra_attrs
                 })])
             end
           end
@@ -175,14 +181,16 @@ RSpec.shared_examples 'security policies finder' do
                       config: group_policy_configuration,
                       project: nil,
                       namespace: object,
-                      inherited: false
+                      inherited: false,
+                      **expected_extra_attrs
                     }),
                   policy.merge(
                     {
                       config: sub_group_policy_configuration,
                       project: nil,
                       namespace: sub_group,
-                      inherited: true
+                      inherited: true,
+                      **expected_extra_attrs
                     })
                 ])
             end
@@ -214,7 +222,8 @@ RSpec.shared_examples 'security policies finder' do
                   config: policy_configuration,
                   project: object,
                   namespace: nil,
-                  inherited: false
+                  inherited: false,
+                  **expected_extra_attrs
                 })])
             end
           end
@@ -230,14 +239,16 @@ RSpec.shared_examples 'security policies finder' do
                       config: policy_configuration,
                       project: object,
                       namespace: nil,
-                      inherited: false
+                      inherited: false,
+                      **expected_extra_attrs
                     }),
                   policy.merge(
                     {
                       config: group_policy_configuration,
                       project: nil,
                       namespace: group,
-                      inherited: true
+                      inherited: true,
+                      **expected_extra_attrs
                     })
                 ])
             end
@@ -252,7 +263,8 @@ RSpec.shared_examples 'security policies finder' do
                   config: group_policy_configuration,
                   project: nil,
                   namespace: group,
-                  inherited: true
+                  inherited: true,
+                  **expected_extra_attrs
                 })])
             end
           end
@@ -268,7 +280,8 @@ RSpec.shared_examples 'security policies finder' do
                       config: policy_configuration,
                       project: object,
                       namespace: nil,
-                      inherited: false
+                      inherited: false,
+                      **expected_extra_attrs
                     })
                 ])
             end

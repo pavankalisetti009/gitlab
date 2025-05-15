@@ -2857,6 +2857,29 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     end
   end
 
+  describe 'all_policies_with_type' do
+    subject(:policies) { security_orchestration_policy_configuration.all_policies_with_type }
+
+    context 'with all policy types' do
+      let(:policy_yaml) do
+        build(:orchestration_policy_yaml,
+          scan_execution_policy: [build(:scan_execution_policy)],
+          approval_policy: [build(:approval_policy)],
+          pipeline_execution_policy: [build(:pipeline_execution_policy)],
+          vulnerability_management_policy: [build(:vulnerability_management_policy)],
+          pipeline_execution_schedule_policy: [build(:pipeline_execution_schedule_policy)]
+        )
+      end
+
+      it 'has the correct type for each policy' do
+        policies.each do |policy|
+          expect(policy[:type]).to be_present
+          expect(policy[:type]).to be_a(String)
+        end
+      end
+    end
+  end
+
   describe '#delete_scan_finding_rules' do
     subject(:delete_scan_finding_rules) { security_orchestration_policy_configuration.send(:delete_scan_finding_rules) }
 

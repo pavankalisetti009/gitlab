@@ -76,6 +76,14 @@ module EE
           resolver: ::Resolvers::ComplianceManagement::FrameworkResolver,
           authorize: :read_namespace_via_membership
 
+        field :security_policies,
+          ::Types::SecurityOrchestration::SecurityPolicyType.connection_type,
+          calls_gitaly: true,
+          null: true,
+          description: 'List of security policies configured for the namespace.',
+          resolver: ::Resolvers::SecurityOrchestration::SecurityPolicyResolver,
+          experiment: { milestone: '18.1' }
+
         field :pipeline_execution_policies,
           ::Types::SecurityOrchestration::PipelineExecutionPolicyType.connection_type,
           calls_gitaly: true,
