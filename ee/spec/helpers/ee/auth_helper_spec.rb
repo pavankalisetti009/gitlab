@@ -342,7 +342,7 @@ RSpec.describe EE::AuthHelper do
           create: '/api/v4/users/:id/personal_access_tokens',
           revoke: '/api/v4/personal_access_tokens',
           rotate: '/api/v4/personal_access_tokens',
-          show: '/api/v4/personal_access_tokens'
+          show: '/api/v4/personal_access_tokens?user_id=:id'
         }
       }))
     end
