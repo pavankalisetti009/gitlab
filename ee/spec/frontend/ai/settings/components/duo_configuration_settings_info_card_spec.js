@@ -23,7 +23,6 @@ describe('DuoConfigurationSettingsInfoCard', () => {
       betaSelfHostedModelsEnabled = true,
       areExperimentSettingsAllowed = true,
       areDuoCoreFeaturesEnabled = true,
-      isDuoBaseAccessAllowed = true,
     } = {},
     props = {},
   ) => {
@@ -40,7 +39,6 @@ describe('DuoConfigurationSettingsInfoCard', () => {
         betaSelfHostedModelsEnabled,
         areExperimentSettingsAllowed,
         areDuoCoreFeaturesEnabled,
-        isDuoBaseAccessAllowed,
       },
       propsData: {
         duoTier: DUO_ENTERPRISE,
@@ -149,19 +147,6 @@ describe('DuoConfigurationSettingsInfoCard', () => {
       expect(findDuoConfigurationRows().at(0).props('configValue')).toBe(true);
       expect(findDuoConfigurationRows().at(1).props('configValue')).toBe(true);
       expect(findDuoConfigurationRows().at(2).props('configValue')).toBe(true);
-    });
-
-    describe('with disabled FF allow_duo_base_access', () => {
-      it('hides Duo Core activation state information', () => {
-        createComponent(
-          { areDuoCoreFeaturesEnabled: true, isDuoBaseAccessAllowed: false },
-          { duoTier: DUO_ENTERPRISE },
-        );
-
-        expect(findDuoConfigurationRows()).toHaveLength(2);
-        expect(findDuoConfigurationRowTitlePropByRowIdx(0)).toBe('Experiment and beta features');
-        expect(findDuoConfigurationRowTitlePropByRowIdx(1)).toBe('Direct connections');
-      });
     });
 
     describe('with Duo Core', () => {

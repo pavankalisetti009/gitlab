@@ -61,7 +61,6 @@ export default {
     isStandalonePage: { default: false },
     groupId: { default: null },
     duoPagePath: { default: null },
-    isDuoBaseAccessAllowed: { default: false },
   },
   addOnErrorDictionary: ADD_ON_ERROR_DICTIONARY,
   i18n: {
@@ -125,14 +124,8 @@ export default {
     duoTier() {
       return this.addOnPurchase?.name || DUO_CORE;
     },
-    isDuoCoreTier() {
-      return this.duoTier === DUO_CORE;
-    },
     areSeatsAssignable() {
       return this.duoTier === DUO_PRO || this.duoTier === DUO_ENTERPRISE;
-    },
-    ignoreAddOnPurchase() {
-      return this.isDuoCoreTier && !this.isDuoBaseAccessAllowed;
     },
     isDuoTierAmazonQ() {
       // Currently, AmazonQ is available for self-managed customers only, so let's add an extra isSaaS check
@@ -155,14 +148,14 @@ export default {
       return this.isSaaS && !this.isStandalonePage;
     },
     showTitleAndSubtitle() {
-      if (this.ignoreAddOnPurchase || this.shouldForceHideTitle) {
+      if (this.shouldForceHideTitle) {
         return false;
       }
 
       return !this.isLoading && (this.hasAddOnPurchase || this.addOnPurchaseFetchError);
     },
     shouldShowIntro() {
-      return !this.hasAddOnPurchase || this.ignoreAddOnPurchase;
+      return !this.hasAddOnPurchase;
     },
     subtitleText() {
       if (this.subtitle) {
@@ -320,7 +313,7 @@ export default {
       </template>
 
       <duo-amazon-q-info-card v-if="isDuoTierAmazonQ" />
-      <section v-else-if="hasAddOnPurchase && !ignoreAddOnPurchase">
+      <section v-else-if="hasAddOnPurchase">
         <slot name="duo-card" v-bind="{ totalValue, usageValue, duoTier }">
           <template v-if="isSaaS && !isStandalonePage && duoPagePath">
             <gl-alert
