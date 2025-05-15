@@ -35,6 +35,12 @@ export default {
     autofocusonshow,
   },
   inject: ['user', 'submitPath', 'gtmSubmitEventLabel', 'submitButtonText'],
+  props: {
+    border: {
+      type: Boolean,
+      required: true,
+    },
+  },
   data() {
     return this.user;
   },
@@ -62,7 +68,13 @@ export default {
 </script>
 
 <template>
-  <gl-form :action="submitPath" method="post" data-testid="lead-form" @submit="onSubmit">
+  <gl-form
+    :action="submitPath"
+    method="post"
+    :class="{ 'gl-border-1 gl-border-solid gl-border-gray-100 gl-p-6': border }"
+    data-testid="lead-form"
+    @submit="onSubmit"
+  >
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
     <div v-show="showNameFields" class="gl-mt-5 gl-flex gl-flex-col sm:gl-flex-row">
       <gl-form-group
@@ -121,12 +133,7 @@ export default {
         :title="$options.i18n.phoneNumberDescription"
       />
     </gl-form-group>
-    <gl-button
-      type="submit"
-      variant="confirm"
-      data-testid="continue-button"
-      class="gl-w-full md:gl-w-auto"
-    >
+    <gl-button type="submit" variant="confirm" data-testid="continue-button" class="gl-w-full">
       {{ submitButtonText }}
     </gl-button>
 

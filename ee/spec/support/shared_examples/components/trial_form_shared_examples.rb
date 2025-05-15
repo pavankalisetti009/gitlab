@@ -45,7 +45,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::TrialFormComponent do
 
     it 'has body content' do
       is_expected
-        .to have_content(s_('Trials|Create a new group and start your trial of Ultimate with GitLab Duo Enterprise.'))
+        .to have_content(s_('Trials|Create a new group and start your free trial.'))
     end
 
     it { is_expected.to have_content(_('Activate my trial')) }
@@ -94,7 +94,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::TrialFormComponent do
 
     it 'has body content' do
       is_expected
-        .to have_content(s_('Trials|You can apply your trial of Ultimate with GitLab Duo Enterprise to a group.'))
+        .to have_content(s_('Trials|You can apply your free trial to a group.'))
     end
 
     it { is_expected.to have_content(_('Activate my trial')) }

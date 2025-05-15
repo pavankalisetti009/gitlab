@@ -36,9 +36,9 @@ module GitlabSubscriptions
 
       def trial_selection_intro_text
         if eligible_namespaces.any?
-          s_('Trials|You can apply your trial of Ultimate with GitLab Duo Enterprise to a group.')
+          s_('Trials|You can apply your free trial to a group.')
         else
-          s_('Trials|Create a new group and start your trial of Ultimate with GitLab Duo Enterprise.')
+          s_('Trials|Create a new group and start your free trial.')
         end
       end
 

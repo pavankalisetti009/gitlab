@@ -30,6 +30,7 @@ describe('TrialCreateLeadForm', () => {
     mountFunction = shallowMountExtended,
     provide = {},
     formData = FORM_DATA,
+    propsData = { border: false },
   } = {}) =>
     mountFunction(TrialCreateLeadForm, {
       provide: {
@@ -39,6 +40,7 @@ describe('TrialCreateLeadForm', () => {
         submitButtonText,
         ...provide,
       },
+      propsData,
       stubs: {
         CountryOrRegionSelector: stubComponent(CountryOrRegionSelector, {
           template: `<div></div>`,
@@ -81,6 +83,20 @@ describe('TrialCreateLeadForm', () => {
 
       it('has correct terms and conditions content', () => {
         expect(findTermsSprintf().attributes('message')).toBe(TRIAL_TERMS_TEXT);
+      });
+    });
+
+    describe('border prop', () => {
+      it('does not add border classes when border is false', () => {
+        wrapper = createComponent({ propsData: { border: false } });
+
+        expect(findForm().classes()).not.toContain('gl-border-1');
+      });
+
+      it('adds border classes when border is true', () => {
+        wrapper = createComponent({ propsData: { border: true } });
+
+        expect(findForm().classes()).toContain('gl-border-1');
       });
     });
 

@@ -5,17 +5,16 @@
   = render 'layouts/one_trust'
 = render 'layouts/google_tag_manager_body'
 
-.gl-flex.gl-flex-col.md:gl-flex-row.gl-items-center.gl-justify-center
+.gl-max-w-4xl.gl-mx-auto.gl-flex.gl-flex-col.md:gl-flex-row.gl-items-center.gl-justify-center.gl-gap-6.md:gl-gap-0
   .sm:gl-m-8.gl-max-w-80
-    %h2.gl-mt-0
+    %h2.gl-mt-0.gl-text-center
       = title_text
 
-    %p.gl-text-subtle.gl-text-lg
-      = s_('Trial|Please provide the following information to start your trial.')
+    %p.gl-text-subtle.gl-text-lg.gl-text-center
+      = s_('Trial|We need a few more details from you to activate your trial.')
 
     = before_form_content
 
     #js-trial-create-lead-form{ data: form_data }
 
-  .gl-w-48.gl-m-7
-    = image_tag 'illustrations/saas-trial-illustration.svg', alt: 'Trial illustration', class: 'gl-hidden md:gl-inline'
+  = render GitlabSubscriptions::Trials::AdvantagesListComponent.new

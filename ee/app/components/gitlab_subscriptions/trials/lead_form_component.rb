@@ -34,13 +34,13 @@ module GitlabSubscriptions
 
       def group_trial_title
         safe_format(
-          s_('Trial|Start your free Ultimate and GitLab Duo Enterprise trial on %{group_name}'),
+          s_('Trial|Start your free trial on %{group_name}'),
           group_name: group_name
         )
       end
 
       def default_trial_title
-        s_('Trial|Start your free Ultimate and GitLab Duo Enterprise trial')
+        s_('Trial|Start your free trial')
       end
 
       def group_name

@@ -29,13 +29,13 @@ RSpec.shared_examples GitlabSubscriptions::Trials::LeadFormComponent do
   subject { render_inline(described_class.new(**kwargs)) && page }
 
   shared_examples 'displays default trial header' do
-    it { is_expected.to have_content('Start your free Ultimate and GitLab Duo Enterprise trial') }
+    it { is_expected.to have_content('Start your free trial') }
   end
 
   context 'with default content' do
     it_behaves_like 'displays default trial header'
 
-    it { is_expected.to have_content(s_('Trial|Please provide the following information to start your trial.')) }
+    it { is_expected.to have_content(s_('Trial|We need a few more details from you to activate your trial.')) }
 
     it 'renders form with correct attributes' do
       expect_form_data_attribute(expected_form_data_attributes)
@@ -65,7 +65,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::LeadFormComponent do
         allow(eligible_namespaces).to receive(:find_by_id).with(namespace_id).and_return(group)
       end
 
-      it { is_expected.to have_content("Start your free Ultimate and GitLab Duo Enterprise trial on #{group.name}") }
+      it { is_expected.to have_content("Start your free trial on #{group.name}") }
     end
 
     context 'when the group is not eligible' do
@@ -78,7 +78,7 @@ RSpec.shared_examples GitlabSubscriptions::Trials::LeadFormComponent do
       let(:group) { build_stubbed(:group) }
       let(:eligible_namespaces) { [group] }
 
-      it { is_expected.to have_content("Start your free Ultimate and GitLab Duo Enterprise trial on #{group.name}") }
+      it { is_expected.to have_content("Start your free trial on #{group.name}") }
 
       it 'shows activate trial button' do
         expect_form_data_attribute(submit_button_text: 'Activate my trial')

@@ -3,7 +3,7 @@ import TrialCreateLeadForm from 'ee/trials/components/trial_create_lead_form.vue
 import apolloProvider from 'ee/subscriptions/graphql/graphql';
 import { parseBoolean } from '~/lib/utils/common_utils';
 
-export const initTrialCreateLeadForm = (gtmSubmitEventLabel) => {
+export const initTrialCreateLeadForm = (gtmSubmitEventLabel, border = false) => {
   const el = document.querySelector('#js-trial-create-lead-form');
 
   if (!el) {
@@ -42,7 +42,11 @@ export const initTrialCreateLeadForm = (gtmSubmitEventLabel) => {
       submitButtonText,
     },
     render(createElement) {
-      return createElement(TrialCreateLeadForm);
+      return createElement(TrialCreateLeadForm, {
+        props: {
+          border,
+        },
+      });
     },
   });
 };

@@ -32172,9 +32172,6 @@ msgstr ""
 msgid "InProductMarketing|Invite unlimited colleagues"
 msgstr ""
 
-msgid "InProductMarketing|No credit card required"
-msgstr ""
-
 msgid "InProductMarketing|No credit card required."
 msgstr ""
 
@@ -64228,10 +64225,10 @@ msgstr ""
 msgid "TrialsDiscover|Increase security"
 msgstr ""
 
-msgid "Trials|Create a new group and start your trial of Ultimate with GitLab Duo Enterprise."
+msgid "Trials|Create a new group and start your free trial."
 msgstr ""
 
-msgid "Trials|You can apply your trial of Ultimate with GitLab Duo Enterprise to a group."
+msgid "Trials|You can apply your free trial to a group."
 msgstr ""
 
 msgid "Trial|Activate my trial"
@@ -64261,9 +64258,6 @@ msgstr ""
 msgid "Trial|GitLab Subscription Agreement"
 msgstr ""
 
-msgid "Trial|Please provide the following information to start your trial."
-msgstr ""
-
 msgid "Trial|Privacy Statement"
 msgstr ""
 
@@ -64273,7 +64267,10 @@ msgstr ""
 msgid "Trial|Start your free Ultimate and GitLab Duo Enterprise trial"
 msgstr ""
 
-msgid "Trial|Start your free Ultimate and GitLab Duo Enterprise trial on %{group_name}"
+msgid "Trial|Start your free trial"
+msgstr ""
+
+msgid "Trial|Start your free trial on %{group_name}"
 msgstr ""
 
 msgid "Trial|State or province"
