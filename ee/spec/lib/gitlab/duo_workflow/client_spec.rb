@@ -10,16 +10,6 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
       expect(described_class.url).to eq('duo-workflow-svc.runway.gitlab.net:443')
     end
 
-    context 'when new_duo_workflow_service feature flag is disabled' do
-      before do
-        stub_feature_flags(new_duo_workflow_service: false)
-      end
-
-      it 'returns url to legacy Duo Workflow Service fleet' do
-        expect(described_class.url).to eq('duo-workflow.runway.gitlab.net:443')
-      end
-    end
-
     context 'when cloud connector url is staging' do
       before do
         allow(::CloudConnector::Config).to receive(:host).and_return('cloud.staging.gitlab.com')
