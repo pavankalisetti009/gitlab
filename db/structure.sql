@@ -22771,7 +22771,7 @@ CREATE TABLE sent_notifications (
     id bigint NOT NULL,
     issue_email_participant_id bigint,
     created_at timestamp with time zone NOT NULL,
-    namespace_id bigint DEFAULT 0 NOT NULL
+    namespace_id bigint NOT NULL
 );
 
 CREATE SEQUENCE sent_notifications_id_seq
