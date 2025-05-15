@@ -19470,6 +19470,7 @@ CREATE TABLE packages_pypi_metadata (
     CONSTRAINT check_379019d5da CHECK ((char_length(required_python) <= 255)),
     CONSTRAINT check_65d8dbbd9f CHECK ((char_length(author_email) <= 2048)),
     CONSTRAINT check_76afb6d4f3 CHECK ((char_length(summary) <= 255)),
+    CONSTRAINT check_77e2d63abb CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_80308aa9bd CHECK ((char_length(description) <= 4000)),
     CONSTRAINT check_b1f32be96c CHECK ((char_length(description_content_type) <= 128))
 );
