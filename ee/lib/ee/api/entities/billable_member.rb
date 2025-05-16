@@ -26,7 +26,7 @@ module EE
         end
 
         def last_owner?
-          options[:group].last_owner?(object)
+          options[:group].last_owner_in_list?(object, options.fetch(:owners, []))
         end
 
         def removable
