@@ -9,8 +9,6 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
   let_it_be(:personal_namespace) { create(:namespace) }
   let_it_be(:user) { create(:user, namespace: personal_namespace, organizations: [personal_namespace.organization]) }
 
-  it { is_expected.to belong_to(:user) }
-
   it_behaves_like 'common ai_usage_event'
 
   describe '.payload_attributes' do
@@ -20,31 +18,13 @@ RSpec.describe Ai::DuoChatEvent, feature_category: :value_stream_management do
   end
 
   describe 'validations' do
-    it { is_expected.to validate_presence_of(:user_id) }
-    it { is_expected.to validate_presence_of(:timestamp) }
     it { is_expected.to validate_presence_of(:organization_id) }
-
-    it "allows 3 months old timestamp at the most" do
-      is_expected.not_to allow_value(5.months.ago).for(:timestamp).with_message(_('must be 3 months old at the most'))
-    end
-  end
-
-  describe '#timestamp', :freeze_time do
-    it 'defaults to current time' do
-      expect(event.timestamp).to eq(DateTime.current)
-    end
-
-    it 'properly converts from string' do
-      expect(described_class.new(timestamp: DateTime.current.to_s).timestamp).to eq(DateTime.current)
-    end
   end
 
   describe '#organization_id' do
-    subject(:event) { described_class.new(user: user).tap(&:valid?) }
+    subject(:event) { described_class.new(user: user) }
 
-    it 'populates organization_id from user' do
-      expect(event.organization_id).to eq(user.organizations.first.id)
-    end
+    it { is_expected.to populate_sharding_key(:organization_id).with(personal_namespace.organization.id) }
   end
 
   describe '#personal_namespace_id' do

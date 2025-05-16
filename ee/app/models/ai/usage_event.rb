@@ -4,6 +4,7 @@ module Ai
   module UsageEvent
     extend ActiveSupport::Concern
     include ClickHouseModel
+    include PartitionedTable
 
     class_methods do
       def related_event?(event_name)
@@ -21,7 +22,19 @@ module Ai
     end
 
     included do
+      belongs_to :user
+
+      attribute :timestamp, :datetime, default: -> { DateTime.current }
+
+      partitioned_by :timestamp, strategy: :monthly, retain_for: 3.months
+      self.primary_key = :id
+
+      validates :timestamp, :user_id, presence: true
+      validate :validate_recent_timestamp, on: :create
+
       before_validation :floor_timestamp
+
+      validates :payload, json_schema: { filename: "#{model_name.singular}_payload" }, allow_blank: true
     end
 
     def to_clickhouse_csv_row
@@ -41,6 +54,12 @@ module Ai
       super || {}
     end
 
+    def store_to_pg
+      return false unless valid?
+
+      Ai::UsageEventWriteBuffer.add(self.class.name, attributes.compact)
+    end
+
     private
 
     def floor_timestamp
@@ -48,6 +67,12 @@ module Ai
       # That creates consistency between PG and CH until https://gitlab.com/gitlab-org/gitlab/-/issues/527129
       # is resolved
       self.timestamp = timestamp&.floor(3)
+    end
+
+    def validate_recent_timestamp
+      return unless timestamp && timestamp < self.class.partitioning_strategy.retain_for.ago
+
+      errors.add(:timestamp, _('must be 3 months old at the most'))
     end
   end
 end

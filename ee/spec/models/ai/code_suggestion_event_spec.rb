@@ -10,7 +10,6 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   let_it_be(:user) { create(:user, organizations: [organization]) }
 
   it { is_expected.to belong_to(:organization) }
-  it { is_expected.to belong_to(:user) }
 
   it_behaves_like 'common ai_usage_event'
 
@@ -23,26 +22,7 @@ RSpec.describe Ai::CodeSuggestionEvent, feature_category: :code_suggestions do
   end
 
   describe 'validations' do
-    it { is_expected.to validate_presence_of(:user_id) }
-    it { is_expected.to validate_presence_of(:timestamp) }
-
-    it 'validates presence of organization_id' do
-      expect(event).not_to allow_value(nil).for(:organization_id)
-    end
-
-    it do
-      is_expected.not_to allow_value(5.months.ago).for(:timestamp).with_message(_('must be 3 months old at the most'))
-    end
-  end
-
-  describe '#timestamp', :freeze_time do
-    it 'defaults to current time' do
-      expect(event.timestamp).to eq(DateTime.current)
-    end
-
-    it 'properly converts from string' do
-      expect(described_class.new(timestamp: DateTime.current.to_s).timestamp).to eq(DateTime.current)
-    end
+    it { is_expected.to validate_presence_of(:organization_id) }
   end
 
   describe '#organization_id' do
