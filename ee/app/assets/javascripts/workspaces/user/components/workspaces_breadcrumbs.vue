@@ -12,6 +12,13 @@ export default {
   components: {
     GlBreadcrumb,
   },
+  props: {
+    staticBreadcrumbs: {
+      type: Object,
+      default: () => ({ items: [] }),
+      required: false,
+    },
+  },
   computed: {
     crumbs() {
       const crumbs = [
@@ -28,7 +35,9 @@ export default {
         });
       }
 
-      return crumbs;
+      const staticCrumbs = this.staticBreadcrumbs.items;
+
+      return [...staticCrumbs, ...crumbs];
     },
   },
 };
