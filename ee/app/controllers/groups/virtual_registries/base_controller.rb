@@ -28,6 +28,10 @@ module Groups
       def verify_update_virtual_registry!
         access_denied! unless can?(current_user, :update_virtual_registry, @group.virtual_registry_policy_subject)
       end
+
+      def verify_destroy_virtual_registry!
+        access_denied! unless can_destroy_virtual_registry?(@group)
+      end
     end
   end
 end

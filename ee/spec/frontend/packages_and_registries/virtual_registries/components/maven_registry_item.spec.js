@@ -13,7 +13,8 @@ describe('MavenRegistryItem', () => {
   };
 
   const defaultProvide = {
-    basePath: '/groups/gitlab-org/-/virtual_registries/maven',
+    editPathTemplate: '/groups/gitlab-org/-/virtual_registries/maven/:id/edit',
+    showPathTemplate: '/groups/gitlab-org/-/virtual_registries/maven/:id',
     glAbilities: {
       updateVirtualRegistry: true,
     },
@@ -44,12 +45,12 @@ describe('MavenRegistryItem', () => {
     });
 
     it('renders the link to the show page with correct href', () => {
-      const expectedHref = `${defaultProvide.basePath}/${defaultProps.registry.id}`;
+      const expectedHref = `/groups/gitlab-org/-/virtual_registries/maven/${defaultProps.registry.id}`;
       expect(findShowLink().attributes('href')).toBe(expectedHref);
     });
 
     it('renders the edit button with correct href when user has permissions', () => {
-      const expectedHref = `${defaultProvide.basePath}/${defaultProps.registry.id}/edit`;
+      const expectedHref = `/groups/gitlab-org/-/virtual_registries/maven/${defaultProps.registry.id}/edit`;
       expect(findEditButton().exists()).toBe(true);
       expect(findEditButton().attributes('href')).toBe(expectedHref);
     });

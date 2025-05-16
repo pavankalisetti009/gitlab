@@ -6,7 +6,9 @@ module Groups
       class RegistriesController < Groups::VirtualRegistries::BaseController
         before_action :verify_read_virtual_registry!, only: [:index, :show]
         before_action :verify_create_virtual_registry!, only: [:new, :create]
-        before_action :set_registry, only: [:show]
+        before_action :verify_update_virtual_registry!, only: [:edit, :update]
+        before_action :verify_destroy_virtual_registry!, only: [:destroy]
+        before_action :set_registry, only: [:show, :edit, :update, :destroy]
 
         before_action :push_ability, only: [:index]
 
@@ -21,7 +23,7 @@ module Groups
 
         def create
           @maven_registry = ::VirtualRegistries::Packages::Maven::Registry.new(
-            create_params.merge(group:)
+            action_params.merge(group:)
           )
 
           if @maven_registry.save
@@ -34,6 +36,27 @@ module Groups
 
         def show; end
 
+        def edit; end
+
+        def update
+          if @maven_registry.update(action_params)
+            redirect_to group_virtual_registries_maven_registry_path(group, @maven_registry),
+              notice: s_("VirtualRegistry|Maven virtual registry was updated")
+          else
+            render :edit
+          end
+        end
+
+        def destroy
+          if @maven_registry.destroy
+            flash[:notice] = s_('VirtualRegistry|Maven virtual registry was deleted')
+            redirect_to group_virtual_registries_maven_registries_path(group)
+          else
+            flash[:alert] = @maven_registry.errors.full_messages.to_sentence
+            render :edit
+          end
+        end
+
         private
 
         def push_ability
@@ -43,14 +66,14 @@ module Groups
 
         def set_registry
           @maven_registry = ::VirtualRegistries::Packages::Maven::Registry
-            .find_by_id_and_group_id!(show_params[:id], group.id)
+            .find_by_id_and_group_id!(registry_params[:id], group.id)
         end
 
-        def show_params
+        def registry_params
           params.permit(:id)
         end
 
-        def create_params
+        def action_params
           params.require(:maven_registry).permit(:name, :description)
         end
       end
