@@ -23,8 +23,10 @@ module Search
     class ZoektProcessManager
       ZOEKT_INDEX_PORT = 6060
       ZOEKT_SEARCH_PORT = 6070
-      INDEX_DIR = Rails.root.join("tmp/tests/zoekt-index").to_s
-      LOG_DIR = Rails.root.join("tmp/tests/zoekt-logs").to_s
+      INDEX_DIR = Rails.root.join('tmp/tests/zoekt-index').to_s
+      LOG_DIR = Rails.root.join('tmp/tests/zoekt-logs').to_s
+
+      attr_reader :index_base_url, :search_base_url
 
       def self.instance
         @instance ||= new
@@ -52,30 +54,34 @@ module Search
         return if @using_custom_urls
 
         # Return if processes are already running
-        return if @indexer_pid && @webserver_pid && process_running?(@indexer_pid) && process_running?(@webserver_pid)
+        return if @indexer_pid && @webserver_pid && port_ready?(ZOEKT_INDEX_PORT) && port_ready?(ZOEKT_SEARCH_PORT)
 
         stop if @indexer_pid || @webserver_pid
 
         zoekt_binary = Search::Zoekt.bin_path
         # Create a test secret if it doesn't exist
-        secret_dir = Rails.root.join("tmp/tests").to_s
+        secret_dir = Rails.root.join('tmp/tests').to_s
         secret_path = File.join(secret_dir, '.gitlab_shell_secret')
         unless File.exist?(secret_path)
           FileUtils.mkdir_p(secret_dir)
-          File.write(secret_path, SecureRandom.hex(32))
+          File.open(secret_path, 'w') do |f|
+            f.write(SecureRandom.hex(32))
+            f.flush
+            f.fsync
+          end
         end
 
         # Create log files for stdout and stderr
-        indexer_log = File.join(LOG_DIR, "indexer.log")
-        webserver_log = File.join(LOG_DIR, "webserver.log")
+        indexer_log = File.join(LOG_DIR, 'indexer.log')
+        webserver_log = File.join(LOG_DIR, 'webserver.log')
 
         # Start indexer process
         @indexer_pid = spawn(
           zoekt_binary,
           'indexer',
-          "-index_dir", INDEX_DIR,
-          "-listen", ":#{ZOEKT_INDEX_PORT}",
-          "-secret_path", secret_path,
+          '-index_dir', INDEX_DIR,
+          '-listen', ":#{ZOEKT_INDEX_PORT}",
+          '-secret_path', secret_path,
           out: indexer_log,
           err: indexer_log
         )
@@ -84,10 +90,10 @@ module Search
         @webserver_pid = spawn(
           zoekt_binary,
           'webserver',
-          "-index_dir", INDEX_DIR,
-          "-rpc",
-          "-listen", ":#{ZOEKT_SEARCH_PORT}",
-          "-secret_path", secret_path,
+          '-index_dir', INDEX_DIR,
+          '-rpc',
+          '-listen', ":#{ZOEKT_SEARCH_PORT}",
+          '-secret_path', secret_path,
           out: webserver_log,
           err: webserver_log
         )
@@ -104,15 +110,23 @@ module Search
         return if @using_custom_urls
 
         # Kill processes if they exist
-        Process.kill("TERM", @indexer_pid) if @indexer_pid && process_running?(@indexer_pid)
-        Process.kill("TERM", @webserver_pid) if @webserver_pid && process_running?(@webserver_pid)
+        if @indexer_pid && process_running?(@indexer_pid)
+          Process.kill('TERM', @indexer_pid)
+          Process.wait(@indexer_pid)
+        end
 
+        if @webserver_pid && process_running?(@webserver_pid)
+          Process.kill('TERM', @webserver_pid)
+          Process.wait(@webserver_pid)
+        end
         # Reset PIDs
         @indexer_pid = nil
         @webserver_pid = nil
       rescue Errno::ESRCH
         # Process not found, which is fine
       end
+
+      private
 
       def process_running?(pid)
         Process.getpgid(pid)
@@ -126,11 +140,8 @@ module Search
           # If using custom URLs, verify they are reachable
           verify_custom_urls_connectivity
         else
-          # Wait for indexer to start accepting connections
-          wait_for_port(ZOEKT_INDEX_PORT)
-
-          # Wait for webserver to start accepting connections
-          wait_for_port(ZOEKT_SEARCH_PORT)
+          # Wait for indexer and webserver to start accepting connections
+          raise Errno::EHOSTUNREACH unless wait_for_port(ZOEKT_INDEX_PORT) && wait_for_port(ZOEKT_SEARCH_PORT)
         end
       end
 
@@ -156,23 +167,22 @@ module Search
       end
 
       def wait_for_port(port, max_retries = 100, retry_delay = 0.2)
-        retries = 0
-        begin
-          socket = TCPSocket.new('127.0.0.1', port)
-          socket.close
-          true
-        rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
-          retries += 1
-          if retries <= max_retries
-            sleep(retry_delay)
-            retry
-          else
-            false
-          end
+        max_retries.times do
+          return true if port_ready?(port)
+
+          sleep(retry_delay)
         end
+        false
       end
 
-      attr_reader :index_base_url, :search_base_url
+      def port_ready?(port)
+        health_check_path = port == ZOEKT_INDEX_PORT ? '/indexer/health' : '/'
+        Timeout.timeout(5) do
+          ::Gitlab::HTTP.get("http://127.0.0.1:#{port}#{health_check_path}", allow_local_requests: true).success?
+        rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH, Timeout::Error
+          false
+        end
+      end
     end
   end
 end
