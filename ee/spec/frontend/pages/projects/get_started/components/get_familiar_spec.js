@@ -1,4 +1,4 @@
-import { GlCard, GlLink, GlIcon } from '@gitlab/ui';
+import { GlCard, GlButton, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GetFamiliar from 'ee/pages/projects/get_started/components/get_familiar.vue';
 
@@ -46,17 +46,20 @@ describe('Get Familiar component', () => {
     expect(featuresList.attributes('aria-label')).toBe('GitLab Duo code features');
   });
 
-  it('renders walkthrough link with correct text and URL', () => {
-    const link = wrapper.findComponent(GlLink);
-    expect(link.text()).toContain('Try walkthrough');
-    expect(link.attributes('href')).toBe('https://gitlab.navattic.com/gitlab-premium-with-duo');
-    expect(link.attributes('data-testid')).toBe('walkthrough-link');
+  it('renders walkthrough button with correct text and URL', () => {
+    const button = wrapper.findComponent(GlButton);
+    expect(button.exists()).toBe(true);
+    expect(button.text()).toContain('Try walkthrough');
+    expect(button.attributes('data-testid')).toBe('walkthrough-link');
+    expect(button.attributes('href')).toBe('https://gitlab.navattic.com/gitlab-premium-with-duo');
+    expect(button.props('category')).toBe('tertiary');
   });
 
-  it('renders external link icon in the walkthrough link', () => {
+  it('renders external link icon in the walkthrough button', () => {
     const icon = wrapper.findComponent(GlIcon);
     expect(icon.exists()).toBe(true);
     expect(icon.props('name')).toBe('external-link');
-    expect(icon.props('size')).toBe(14);
+    expect(icon.props('size')).toBe(16);
+    expect(icon.classes()).toContain('gl-ml-2');
   });
 });
