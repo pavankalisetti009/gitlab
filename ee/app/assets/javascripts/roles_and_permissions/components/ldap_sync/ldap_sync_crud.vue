@@ -7,6 +7,7 @@ import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue
 import ldapAdminRoleLinksQuery from '../../graphql/ldap_sync/ldap_admin_role_links.query.graphql';
 import ldapAdminRoleLinkDestroyMutation from '../../graphql/ldap_sync/ldap_admin_role_link_destroy.mutation.graphql';
 import CreateSyncForm from './create_sync_form.vue';
+import SyncAllButton from './sync_all_button.vue';
 
 export default {
   components: {
@@ -17,7 +18,9 @@ export default {
     GlLink,
     ConfirmActionModal,
     CreateSyncForm,
+    SyncAllButton,
   },
+  inject: ['ldapUsersPath'],
   data() {
     return {
       ldapAdminRoleLinks: [],
@@ -79,14 +82,12 @@ export default {
   >
     <template #actions="{ showForm }">
       <div v-if="!isRoleLinksLoading" class="gl-flex gl-flex-wrap">
-        <gl-link v-if="roleLinksCount" class="gl-my-3 gl-mr-4">
+        <gl-link v-if="roleLinksCount" :href="ldapUsersPath" class="gl-my-3 gl-mr-4">
           {{ s__('MemberRole|View LDAP synced users') }}
         </gl-link>
 
         <div class="gl-flex gl-flex-wrap gl-gap-3">
-          <gl-button v-if="roleLinksCount" icon="retry">
-            {{ s__('MemberRole|Sync all') }}
-          </gl-button>
+          <sync-all-button v-if="roleLinksCount" />
           <gl-button variant="confirm" @click="showForm">
             {{ s__('LDAP|Add synchronization') }}
           </gl-button>

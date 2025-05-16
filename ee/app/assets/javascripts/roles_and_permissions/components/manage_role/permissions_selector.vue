@@ -241,7 +241,6 @@ export default {
       :items="permissionsList"
       :fields="$options.FIELDS"
       :busy="isLoadingPermissions"
-      hover
       selected-variant=""
       selectable
       stacked="sm"

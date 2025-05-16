@@ -14,9 +14,13 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
     allow(helper).to receive(:current_user).and_return(user)
   end
 
-  shared_examples 'no LDAP servers data' do
+  shared_examples 'no LDAP data' do
     it 'does not have LDAP servers data' do
       expect(data).not_to have_key(:ldap_servers)
+    end
+
+    it 'does not have LDAP users path' do
+      expect(data).not_to have_key(:ldap_users_path)
     end
   end
 
@@ -24,7 +28,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
     context 'when on self-managed' do
       subject(:data) { helper.member_roles_data }
 
-      it_behaves_like 'no LDAP servers data'
+      it_behaves_like 'no LDAP data'
 
       it 'matches the expected data' do
         expect(data[:new_role_path]).to be_nil
@@ -46,6 +50,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
           expect(data[:group_id]).to be_nil
           expect(data[:current_user_email]).to eq user.notification_email_or_default
           expect(data[:ldap_servers]).to eq '[{"text":"ldap","value":"ldapmain"}]'
+          expect(data[:ldap_users_path]).to eq '/admin/users?filter=ldap_sync'
         end
 
         context 'when user cannot manage ldap admin links' do
@@ -53,7 +58,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
             allow(helper).to receive(:can?).with(user, :manage_ldap_admin_links).and_return(false)
           end
 
-          it_behaves_like 'no LDAP servers data'
+          it_behaves_like 'no LDAP data'
         end
 
         context 'when LDAP is not enabled for the instance' do
@@ -61,7 +66,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
             allow(Gitlab.config.ldap).to receive(:enabled).and_return(false)
           end
 
-          it_behaves_like 'no LDAP servers data'
+          it_behaves_like 'no LDAP data'
         end
       end
     end
@@ -70,7 +75,7 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
       context 'when on group page' do
         subject(:data) { helper.member_roles_data(source) }
 
-        it_behaves_like 'no LDAP servers data'
+        it_behaves_like 'no LDAP data'
 
         it 'matches the expected data' do
           expect(data[:new_role_path]).to be_nil

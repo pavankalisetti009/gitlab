@@ -9,6 +9,7 @@ module MemberRolesHelper
       group_full_path: group&.full_path,
       group_id: group&.id,
       current_user_email: current_user.notification_email_or_default,
+      ldap_users_path: ldap_enabled? ? admin_users_path(filter: 'ldap_sync') : nil,
       ldap_servers: ldap_servers&.to_json
     }.compact
   end
