@@ -17,7 +17,8 @@ RSpec.describe Resolvers::ProductAnalytics::DashboardsResolver, feature_category
 
     before do
       allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
-      stub_licensed_features(product_analytics: true, project_level_analytics_dashboard: false)
+      stub_licensed_features(product_analytics: true, project_level_analytics_dashboard: false,
+        project_merge_request_analytics: false)
       project.project_setting.update!(product_analytics_instrumentation_key: "key")
       allow_next_instance_of(::ProductAnalytics::CubeDataQueryService) do |instance|
         allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: {

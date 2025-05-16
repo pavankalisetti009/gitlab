@@ -34,7 +34,8 @@ RSpec.describe 'Query.resource(id).dashboards', feature_category: :product_analy
       stub_licensed_features(
         product_analytics: true,
         project_level_analytics_dashboard: false,
-        group_level_analytics_dashboard: false
+        group_level_analytics_dashboard: false,
+        project_merge_request_analytics: false
       )
     end
 
@@ -42,7 +43,7 @@ RSpec.describe 'Query.resource(id).dashboards', feature_category: :product_analy
       post_graphql(query, current_user: user)
 
       expect(graphql_data_at(resource_parent_type, :customizable_dashboards, :nodes).pluck('slug'))
-        .not_to include('value_stream_dashboard')
+        .not_to match_array(%w[value_stream_dashboard merge_request_analytics])
     end
   end
 
@@ -55,7 +56,8 @@ RSpec.describe 'Query.resource(id).dashboards', feature_category: :product_analy
 
     before do
       allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
-      stub_licensed_features(product_analytics: true, project_level_analytics_dashboard: true)
+      stub_licensed_features(product_analytics: true, project_level_analytics_dashboard: true,
+        project_merge_request_analytics: true)
       resource_parent.project_setting.update!(product_analytics_instrumentation_key: "key")
       allow_next_instance_of(::ProductAnalytics::CubeDataQueryService) do |instance|
         allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: {
@@ -77,7 +79,8 @@ RSpec.describe 'Query.resource(id).dashboards', feature_category: :product_analy
         post_graphql(query, current_user: user)
 
         expect(graphql_data_at(resource_parent_type, :customizable_dashboards, :nodes).pluck('title'))
-          .to match_array(["Behavior", "Audience", "Value Streams Dashboard", "Dashboard Example 1"])
+          .to match_array(["Behavior", "Audience", "Value Streams Dashboard", "Merge request analytics",
+            "Dashboard Example 1"])
       end
 
       context 'when product analytics onboarding is incomplete' do
@@ -89,7 +92,7 @@ RSpec.describe 'Query.resource(id).dashboards', feature_category: :product_analy
           post_graphql(query, current_user: user)
 
           expect(graphql_data_at(resource_parent_type, :customizable_dashboards, :nodes).pluck('title'))
-            .to match_array(["Value Streams Dashboard", "Dashboard Example 1"])
+            .to match_array(["Value Streams Dashboard", "Merge request analytics", "Dashboard Example 1"])
         end
       end
 
@@ -102,7 +105,7 @@ RSpec.describe 'Query.resource(id).dashboards', feature_category: :product_analy
           post_graphql(query, current_user: user)
 
           expect(graphql_data_at(resource_parent_type, :customizable_dashboards, :nodes).pluck('title'))
-            .to match_array(["Value Streams Dashboard", "Dashboard Example 1"])
+            .to match_array(["Value Streams Dashboard", "Merge request analytics", "Dashboard Example 1"])
         end
       end
 

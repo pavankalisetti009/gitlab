@@ -26,6 +26,9 @@ RSpec.describe ProductAnalytics::Dashboard, feature_category: :product_analytics
     allow(Ability).to receive(:allowed?)
       .with(user, :read_dora4_analytics, anything)
       .and_return(true)
+    allow(Ability).to receive(:allowed?)
+      .with(user, :read_project_merge_request_analytics, anything)
+      .and_return(true)
 
     allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
 
@@ -33,7 +36,8 @@ RSpec.describe ProductAnalytics::Dashboard, feature_category: :product_analytics
       product_analytics: true,
       project_level_analytics_dashboard: true,
       group_level_analytics_dashboard: true,
-      dora4_analytics: true
+      dora4_analytics: true,
+      project_merge_request_analytics: true
     )
   end
 
@@ -60,6 +64,21 @@ RSpec.describe ProductAnalytics::Dashboard, feature_category: :product_analytics
 
     it 'returns the correct panels' do
       expect(dashboard.panels.size).to eq(8)
+    end
+  end
+
+  shared_examples 'returns the Merge request analytics dashboard' do
+    it 'returns the merge request analytics dashboard' do
+      expect(dashboard).to be_a(described_class)
+      expect(dashboard.title).to eq('Merge request analytics')
+      expect(dashboard.slug).to eq('merge_request_analytics')
+      expect(dashboard.description).to eq(
+        "MR stats and trends"
+      )
+    end
+
+    it 'returns the correct panels' do
+      expect(dashboard.panels.size).to eq(3)
     end
   end
 
@@ -122,7 +141,8 @@ description: with missing properties
             'Behavior',
             'Value Streams Dashboard',
             'DORA metrics analytics',
-            'AI impact analytics'
+            'AI impact analytics',
+            'Merge request analytics'
           ]
         )
       end
@@ -134,7 +154,7 @@ description: with missing properties
 
         it 'returns custom and builtin dashboards' do
           expect(subject).to be_a(Array)
-          expect(subject.size).to eq(6)
+          expect(subject.size).to eq(7)
           expect(subject.last).to be_a(described_class)
           expect(subject.last.title).to eq('Dashboard Example 1')
           expect(subject.last.slug).to eq('dashboard_example_1')
@@ -172,7 +192,7 @@ description: with missing properties
         it 'excludes the dashboard from the list' do
           expected_dashboards =
             ["Audience", "Behavior", "Value Streams Dashboard", "AI impact analytics",
-              "DORA metrics analytics", "Dashboard Example 1"]
+              "DORA metrics analytics", "Merge request analytics", "Dashboard Example 1"]
 
           expect(subject.map(&:title)).to eq(expected_dashboards)
         end
@@ -184,7 +204,7 @@ description: with missing properties
         end
 
         it 'excludes product analytics dashboards' do
-          expect(subject.size).to eq(4)
+          expect(subject.size).to eq(5)
         end
       end
     end
@@ -352,6 +372,20 @@ description: with missing properties
       let(:dashboard) { described_class.dora_metrics_dashboard(project, config_project) }
 
       it_behaves_like 'returns the DORA Metrics dashboard'
+    end
+  end
+
+  describe '.merge_request_analytics_dashboard' do
+    context 'for groups' do
+      subject { described_class.merge_request_analytics_dashboard(group, config_project, user) }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'for projects' do
+      let(:dashboard) { described_class.merge_request_analytics_dashboard(project, config_project, user) }
+
+      it_behaves_like 'returns the Merge request analytics dashboard'
     end
   end
 

@@ -14,7 +14,6 @@ const expectQueryWithVariables = (variables) =>
   expect(api.queryThroughputData).toHaveBeenCalledWith(expect.objectContaining(variables));
 
 describe('Mean time to merge data source', () => {
-  let mockSetVisualizationOverrides;
   let res;
 
   const namespace = 'test-namespace';
@@ -26,16 +25,11 @@ describe('Mean time to merge data source', () => {
     jest.clearAllMocks();
   });
 
-  beforeEach(() => {
-    mockSetVisualizationOverrides = jest.fn();
-  });
-
   it('can override default query parameters', async () => {
     jest.spyOn(utils, 'getStartDate').mockReturnValue(new Date('2019-08-07'));
     mockResolvedQuery();
 
     res = await fetch({
-      setVisualizationOverrides: mockSetVisualizationOverrides,
       namespace,
       query: {
         ...defaultQueryParams,
@@ -58,32 +52,11 @@ describe('Mean time to merge data source', () => {
     });
   });
 
-  it('will call setVisualizationOverrides to set the title and icon', async () => {
-    mockResolvedQuery();
-
-    res = await fetch({
-      setVisualizationOverrides: mockSetVisualizationOverrides,
-      namespace,
-      query: defaultQueryParams,
-    });
-
-    expect(mockSetVisualizationOverrides).toHaveBeenCalledWith({
-      visualizationOptionOverrides: {
-        title: 'Last 60 days',
-        titleIcon: 'clock',
-      },
-    });
-  });
-
   describe('with data available', () => {
     beforeEach(async () => {
       mockResolvedQuery(mockQueryThroughputDataResponse);
 
-      res = await fetch({
-        setVisualizationOverrides: mockSetVisualizationOverrides,
-        namespace,
-        query: defaultQueryParams,
-      });
+      res = await fetch({ namespace, query: defaultQueryParams });
     });
 
     it('returns a single value representing the mean time to merge', () => {
@@ -95,10 +68,7 @@ describe('Mean time to merge data source', () => {
     beforeEach(async () => {
       mockResolvedQuery();
 
-      res = await fetch({
-        setVisualizationOverrides: mockSetVisualizationOverrides,
-        namespace,
-      });
+      res = await fetch({ namespace });
     });
 
     it('returns a "-"', () => {

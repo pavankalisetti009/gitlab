@@ -57,6 +57,12 @@ module ProductAnalyticsHelpers
     is_a?(Group) && Feature.enabled?(:contributions_analytics_dashboard, self)
   end
 
+  def merge_request_analytics_enabled?(user)
+    is_a?(Project) &&
+      Ability.allowed?(user, :read_project_merge_request_analytics, self) &&
+      Feature.enabled?(:consolidate_mr_analytics_in_shared_dashboards, self)
+  end
+
   def product_analytics_dashboards(user)
     ::ProductAnalytics::Dashboard.for(container: self, user: user)
   end

@@ -84,6 +84,13 @@ module ProductAnalytics
       projects_count
     ].freeze
 
+    MERGE_REQUESTS_VISUALIZATIONS_PATH = 'ee/lib/gitlab/analytics/merge_requests/visualizations'
+    MERGE_REQUESTS_VISUALIZATIONS = %w[
+      mean_time_to_merge
+      merge_requests_over_time
+      merge_requests_throughput_table
+    ].freeze
+
     def self.for(container:, user:)
       config_project =
         container.analytics_dashboards_configuration_project ||
@@ -179,6 +186,10 @@ module ProductAnalytics
       unsafe_load_builtin_visualizations(DORA_METRICS_VISUALIZATIONS, DORA_METRICS_VISUALIZATIONS_PATH, is_project)
     end
 
+    def self.merge_requests_visualizations
+      unsafe_load_builtin_visualizations(MERGE_REQUESTS_VISUALIZATIONS, MERGE_REQUESTS_VISUALIZATIONS_PATH, true)
+    end
+
     def self.builtin_visualizations(container, user)
       is_project = container.is_a?(Project)
 
@@ -200,6 +211,8 @@ module ProductAnalytics
         visualizations << ai_impact_dashboard_visualizations(is_project)
       end
 
+      visualizations << merge_requests_visualizations if container.merge_request_analytics_enabled?(user)
+
       visualizations.flatten
     end
 
@@ -215,6 +228,8 @@ module ProductAnalytics
           CONTRIBUTIONS_DASHBOARD_PATH
         elsif DORA_METRICS_VISUALIZATIONS.include?(data)
           DORA_METRICS_VISUALIZATIONS_PATH
+        elsif MERGE_REQUESTS_VISUALIZATIONS.include?(data)
+          MERGE_REQUESTS_VISUALIZATIONS_PATH
         else
           PRODUCT_ANALYTICS_PATH
         end

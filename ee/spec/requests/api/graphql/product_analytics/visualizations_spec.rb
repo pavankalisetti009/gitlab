@@ -39,7 +39,7 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
   end
 
   before do
-    stub_licensed_features(product_analytics: true)
+    stub_licensed_features(product_analytics: true, project_merge_request_analytics: false)
   end
 
   context 'when current user is a developer' do
@@ -124,7 +124,7 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
                  "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", " \
                  "\"DoraProjectsComparison\", \"AiImpactTable\", \"ContributionsByUserTable\", " \
                  "\"ContributionsPushesChart\", \"ContributionsIssuesChart\", " \
-                   "\"ContributionsMergeRequestsChart\", \"NamespaceMetadata\"]")
+                   "\"ContributionsMergeRequestsChart\", \"NamespaceMetadata\", \"MergeRequestsThroughputTable\"]")
       end
     end
   end

@@ -44,6 +44,11 @@ const fetchMergeRequests = async ({
         result,
         resultKey: QUERY_RESULT_KEY,
       });
+
+      if (!nodes?.length) {
+        return null;
+      }
+
       return {
         list: nodes || [],
         pageInfo: {
