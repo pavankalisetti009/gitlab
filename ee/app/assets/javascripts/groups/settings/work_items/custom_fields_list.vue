@@ -35,7 +35,12 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['fullPath'],
+  props: {
+    fullPath: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
     return {
       customFields: [],
@@ -296,6 +301,7 @@ export default {
 
       <custom-field-form
         v-if="showActive"
+        :full-path="fullPath"
         class="gl-ml-auto"
         @created="$apollo.queries.customFields.refetch()"
       />
@@ -350,6 +356,7 @@ export default {
             v-if="showActive"
             :custom-field-id="item.id"
             :custom-field-name="item.name"
+            :full-path="fullPath"
             data-testid="editButton"
             @updated="$apollo.queries.customFields.refetch()"
           />
