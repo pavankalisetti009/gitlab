@@ -919,6 +919,7 @@ RSpec.shared_examples 'a verifiable replicator' do
     context 'on a primary' do
       before do
         stub_current_geo_node(primary)
+        allow(Gitlab::Geo).to receive(:verification_max_capacity_per_replicator_class).and_return(20)
       end
 
       describe 'background backfill' do
@@ -933,14 +934,12 @@ RSpec.shared_examples 'a verifiable replicator' do
     end
 
     context 'on a secondary' do
-      let(:secondary_with_high_verification_limit) { create(:geo_node, :secondary, verification_max_capacity: 100) }
-
       before do
         # Set the primary checksum
         replicator.verify
 
         stub_current_geo_node(secondary)
-        stub_current_geo_node(secondary_with_high_verification_limit)
+        allow(Gitlab::Geo).to receive(:verification_max_capacity_per_replicator_class).and_return(20)
       end
 
       describe 'background backfill' do
