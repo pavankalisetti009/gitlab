@@ -61,21 +61,25 @@ exports[`Get Familiar component renders correctly 1`] = `
       </ul>
     </div>
     <div
-      class="gl-display-flex gl-justify-content-start gl-pb-6 gl-pl-5 gl-pt-1"
+      class="gl-display-flex gl-justify-content-start gl-pb-6 gl-pt-1"
     >
-      <gl-link-stub
-        class="gl-align-items-center gl-display-inline-flex gl-text-subtle"
+      <gl-button-stub
+        buttontextclasses=""
+        category="tertiary"
         data-testid="walkthrough-link"
         href="https://gitlab.navattic.com/gitlab-premium-with-duo"
+        icon=""
+        size="medium"
+        variant="default"
       >
         Try walkthrough
         <gl-icon-stub
-          class="gl-align-middle gl-ml-2"
+          class="gl-ml-2"
           name="external-link"
-          size="14"
+          size="16"
           variant="current"
         />
-      </gl-link-stub>
+      </gl-button-stub>
     </div>
   </gl-card-stub>
 </div>

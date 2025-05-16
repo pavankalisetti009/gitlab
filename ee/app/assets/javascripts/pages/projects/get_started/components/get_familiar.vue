@@ -1,11 +1,11 @@
 <script>
-import { GlCard, GlLink, GlIcon } from '@gitlab/ui';
+import { GlCard, GlButton, GlIcon } from '@gitlab/ui';
 
 export default {
   name: 'GetFamiliar',
   components: {
     GlCard,
-    GlLink,
+    GlButton,
     GlIcon,
   },
 };
@@ -71,15 +71,15 @@ export default {
       </template>
 
       <template #footer>
-        <div class="gl-display-flex gl-justify-content-start gl-pb-6 gl-pl-5 gl-pt-1">
-          <gl-link
+        <div class="gl-display-flex gl-justify-content-start gl-pb-6 gl-pt-1">
+          <gl-button
             data-testid="walkthrough-link"
+            category="tertiary"
             href="https://gitlab.navattic.com/gitlab-premium-with-duo"
-            class="gl-display-inline-flex gl-align-items-center gl-text-subtle"
           >
             {{ s__('LearnGitLab|Try walkthrough') }}
-            <gl-icon name="external-link" class="gl-ml-2 gl-align-middle" :size="14" />
-          </gl-link>
+            <gl-icon name="external-link" class="gl-ml-2" />
+          </gl-button>
         </div>
       </template>
     </gl-card>
