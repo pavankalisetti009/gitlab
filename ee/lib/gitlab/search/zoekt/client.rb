@@ -18,7 +18,7 @@ module Gitlab
             @instance ||= new
           end
 
-          delegate :search, :search_multi_node, :index, :delete, :truncate, to: :instance
+          delegate :search, :search_multi_node, :index, to: :instance
         end
 
         def search(query, num:, project_ids:, node_id:, search_mode:)
@@ -80,26 +80,6 @@ module Gitlab
           Gitlab::Search::Zoekt::Response.new parse_response(response)
         ensure
           add_request_details(start_time: start, path: PROXY_SEARCH_PATH, body: payload)
-        end
-
-        def delete(node_id:, project_id:)
-          target_node = node(node_id)
-          raise 'Node can not be found' unless target_node
-
-          response = delete_request(join_url(target_node.index_base_url, "/indexer/index/#{project_id}"))
-
-          raise "Request failed with: #{response.inspect}" unless response.success?
-
-          parsed_response = parse_response(response)
-          raise parsed_response['Error'] if parsed_response['Error']
-
-          response
-        end
-
-        def truncate
-          ::Search::Zoekt::Node.find_each do |node|
-            post_request(join_url(node.index_base_url, '/indexer/truncate'))
-          end
         end
 
         private

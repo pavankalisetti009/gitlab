@@ -22,12 +22,13 @@ module Search
       module_function :ensure_zoekt_node!
 
       def zoekt_node
-        ensure_zoekt_node!
+        @zoekt_node ||= ensure_zoekt_node!
       end
       module_function :zoekt_node
 
       def zoekt_truncate_index!
-        ::Gitlab::Search::Zoekt::Client.truncate
+        index_dir = Search::Zoekt::ZoektProcessManager::INDEX_DIR
+        Dir.glob(File.join(index_dir, '*')).each { |file_path| FileUtils.rm_rf(file_path) }
       end
       module_function :zoekt_truncate_index!
 
@@ -83,17 +84,17 @@ module Search
         url = ::Gitlab::Search::Zoekt::Client.new.send(:join_url, node.index_base_url, '/indexer/index')
         ::Gitlab::HTTP.post(url, defaults)
         # Add delay to allow Zoekt webserver to finish the indexing
-        10.times do
+        100.times do
           results = Gitlab::Search::Zoekt::Client.new.search('.*', num: 1, project_ids: [project.id],
             node_id: node.id, search_mode: :regex)
 
-          if results.file_count > 0
+          if results.file_count == project.repository.ls_files('HEAD').count
             Search::Zoekt::Task.index_repo.where(project_identifier: project.id).update_all(state: :done)
             project.zoekt_repositories.update_all(state: :ready)
             break
           end
 
-          sleep 0.01
+          sleep 0.2
         end
       end
     end
