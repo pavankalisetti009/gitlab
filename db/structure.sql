@@ -44770,9 +44770,6 @@ ALTER TABLE ONLY vulnerability_management_policy_rules
 ALTER TABLE ONLY ml_model_version_metadata
     ADD CONSTRAINT fk_rails_6b8fcb2af1 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
-ALTER TABLE ci_runner_taggings
-    ADD CONSTRAINT fk_rails_6d510634c7 FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE;
-
 ALTER TABLE ONLY term_agreements
     ADD CONSTRAINT fk_rails_6ea6520e4a FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
