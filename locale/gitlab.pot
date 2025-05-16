@@ -13504,6 +13504,9 @@ msgstr ""
 msgid "CloudSeed|Create Postgres Instance"
 msgstr ""
 
+msgid "CloudSeed|Create SQL Server Instance"
+msgstr ""
+
 msgid "CloudSeed|Create cluster"
 msgstr ""
 
