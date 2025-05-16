@@ -111,7 +111,7 @@ module Preloaders
 
     def custom_roles_enabled_on
       Hash.new do |hash, namespace|
-        hash[namespace] = namespace&.custom_roles_enabled?
+        hash[namespace] = namespace&.should_process_custom_roles?
       end
     end
     strong_memoize_attr :custom_roles_enabled_on

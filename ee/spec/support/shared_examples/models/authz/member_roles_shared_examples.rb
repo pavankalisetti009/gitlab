@@ -70,6 +70,10 @@ RSpec.shared_examples 'returns expected member role abilities' do
     let(:user) { member.user }
 
     context 'when on SaaS', :saas do
+      before do
+        MemberRole.update_all(namespace_id: group.id)
+      end
+
       context 'when feature-flag `assign_custom_roles_to_group_links_saas` for group is enabled' do
         before do
           stub_feature_flags(assign_custom_roles_to_group_links_saas: [group])
@@ -166,6 +170,10 @@ RSpec.shared_examples 'returns expected member role abilities for the user' do
     end
 
     context 'when on SaaS', :saas do
+      before do
+        MemberRole.update_all(namespace_id: group.id)
+      end
+
       context 'when feature-flag `assign_custom_roles_to_group_links_saas` for group is enabled' do
         before do
           stub_feature_flags(assign_custom_roles_to_group_links_saas: [group])
