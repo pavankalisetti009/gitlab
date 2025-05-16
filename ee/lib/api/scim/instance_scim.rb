@@ -65,6 +65,8 @@ module API
       end
 
       namespace 'application' do
+        before { check_access! }
+
         resource :Users do
           before { check_instance_requirements! }
 
@@ -73,7 +75,6 @@ module API
           end
 
           get do
-            check_access!
             results = ScimFinder.new.search(params)
             response_page = scim_paginate(results)
 
@@ -94,7 +95,6 @@ module API
           end
 
           get ':id', requirements: USER_ID_REQUIREMENTS do
-            check_access!
             identity = ScimIdentity.with_extern_uid(params[:id]).first
             scim_not_found!(message: "Resource #{params[:id]} not found") unless identity
 
@@ -108,7 +108,6 @@ module API
           end
 
           post do
-            check_access!
             parser = ::EE::Gitlab::Scim::ParamsParser.new(params)
             result = ::EE::Gitlab::Scim::ProvisioningService.new(
               parser.post_params.merge(organization_id: ::Current.organization.id)
@@ -136,7 +135,6 @@ module API
           desc 'Updates a SCIM user'
 
           patch ':id', requirements: USER_ID_REQUIREMENTS do
-            check_access!
             identity = find_user_identity(params[:id])
             scim_not_found!(message: "Resource #{params[:id]} not found") unless identity
             updated = update_scim_user(identity)
@@ -153,7 +151,6 @@ module API
           desc 'Removes a SCIM user'
 
           delete ':id', requirements: USER_ID_REQUIREMENTS do
-            check_access!
             identity = find_user_identity(params[:id])
             scim_not_found!(message: "Resource #{params[:id]} not found") unless identity
             patch_deprovision(identity)
@@ -191,8 +188,6 @@ module API
             optional :externalId, type: String, desc: 'SCIM group ID'
           end
           post do
-            check_access!
-
             result = ::EE::Gitlab::Scim::GroupSyncProvisioningService.new(
               saml_group_name: params[:displayName],
               scim_group_uid: params[:externalId] || SecureRandom.uuid
@@ -215,8 +210,6 @@ module API
             requires :id, type: String, desc: 'The SCIM group ID'
           end
           get ':id' do
-            check_access!
-
             group_link = find_group_link(params[:id])
             present group_link, with: ::EE::API::Entities::Scim::Group
           end
@@ -224,9 +217,13 @@ module API
           desc 'Get SCIM groups' do
             success ::EE::API::Entities::Scim::Groups
           end
+          params do
+            optional :filter, type: String, desc: 'Filter string (e.g. displayName eq "Engineering")'
+            optional :count, type: Integer, desc: 'Number of results per page'
+            optional :startIndex, type: Integer, desc: 'Page offset'
+            optional :excludedAttributes, type: String, desc: 'Comma-separated list of attributes to exclude'
+          end
           get do
-            check_access!
-
             results = Authn::ScimGroupFinder.new.search(params)
             response_page = scim_paginate(results)
 
@@ -258,8 +255,6 @@ module API
             end
           end
           patch ':id' do
-            check_access!
-
             saml_group_links = SamlGroupLink.by_scim_group_uid(params[:id])
             scim_not_found!(message: "Group #{params[:id]} not found") unless saml_group_links.exists?
 
@@ -279,8 +274,6 @@ module API
             optional :members, type: Array, desc: 'Group members'
           end
           put ':id' do
-            check_access!
-
             saml_group_links = SamlGroupLink.by_scim_group_uid(params[:id])
             scim_not_found!(message: "Group #{params[:id]} not found") unless saml_group_links.exists?
 
@@ -290,7 +283,7 @@ module API
               display_name: params[:displayName]
             ).execute
 
-            present saml_group_links.first, with: ::EE::API::Entities::Scim::Group
+            present saml_group_links.first, with: ::EE::API::Entities::Scim::Group, excluded_attributes: ['members']
           end
         end
       end
