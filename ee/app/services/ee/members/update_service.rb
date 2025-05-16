@@ -97,9 +97,7 @@ module EE
       end
 
       def handle_member_role_assignement(member)
-        top_level_group = member.source.root_ancestor
-
-        params.delete(:member_role_id) unless top_level_group.custom_roles_enabled?
+        params.delete(:member_role_id) unless member_role_param_allowed?(member)
 
         return unless params[:member_role_id]
 
@@ -113,6 +111,12 @@ module EE
         return if params[:access_level]
 
         params[:access_level] ||= member_role.base_access_level
+      end
+
+      def member_role_param_allowed?(member)
+        return true if params[:member_role_id].nil?
+
+        member.source.root_ancestor.custom_roles_enabled?
       end
 
       def log_audit_event(old_access_level:, old_expiry:, member:)
