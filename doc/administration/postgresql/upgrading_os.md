@@ -54,12 +54,12 @@ Backup and restore recreates the entire database, including the indexes.
 1. Restore the PostgreSQL database from backup.
 1. In all nodes, start GitLab.
 
-**Advantages**:
+Advantages:
 
 - Straightforward.
 - Removes any database bloat in indexes and tables, reducing disk use.
 
-**Disadvantages**:
+Disadvantages:
 
 - Downtime increases with database size, at some point becoming problematic. It depends on many
   factors, but if your database is over 100 GB then it might take on the order of 24 hours.
@@ -119,13 +119,13 @@ Backup and restore recreates the entire database, including the indexes.
 
 1. In all nodes, start GitLab.
 
-**Advantages**:
+Advantages:
 
 - Straightforward.
 - May be faster than backup and restore, depending on many factors.
 - Removes any database bloat in indexes, reducing disk use.
 
-**Disadvantages**:
+Disadvantages:
 
 - Downtime increases with database size, at some point becoming problematic.
 
@@ -195,11 +195,11 @@ different types of indexes were handled, see the blog post about
 
 1. In all nodes, start GitLab.
 
-**Advantages**:
+Advantages:
 
 - Downtime is not spent rebuilding unaffected indexes.
 
-**Disadvantages**:
+Disadvantages:
 
 - More chances for mistakes.
 - Requires expert knowledge of PostgreSQL to handle unexpected problems during migration.
