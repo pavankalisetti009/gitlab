@@ -25076,7 +25076,6 @@ CREATE TABLE vulnerability_occurrences (
     project_id bigint NOT NULL,
     scanner_id bigint NOT NULL,
     primary_identifier_id bigint NOT NULL,
-    project_fingerprint bytea,
     location_fingerprint bytea NOT NULL,
     name character varying NOT NULL,
     metadata_version character varying NOT NULL,

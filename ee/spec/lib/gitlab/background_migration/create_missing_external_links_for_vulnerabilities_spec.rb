@@ -373,7 +373,6 @@ RSpec.describe Gitlab::BackgroundMigration::CreateMissingExternalLinksForVulnera
       severity: 5, # medium
       report_type: 99, # generic
       primary_identifier_id: create_identifier.id,
-      project_fingerprint: SecureRandom.hex(20),
       location_fingerprint: SecureRandom.hex(20),
       uuid: SecureRandom.uuid,
       name: "CVE-2018-1234",
