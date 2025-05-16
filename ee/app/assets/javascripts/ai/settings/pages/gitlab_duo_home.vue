@@ -6,7 +6,7 @@ import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_
 import DuoCoreUpgradeCard from 'ee/ai/settings/components/duo_core_upgrade_card.vue';
 import DuoSeatUtilizationInfoCard from '../components/duo_seat_utilization_info_card.vue';
 import DuoConfigurationSettingsInfoCard from '../components/duo_configuration_settings_info_card.vue';
-import DuoSelfHostedInfoCard from '../components/duo_self_hosted_info_card.vue';
+import DuoModelsConfigurationInfoCard from '../components/duo_models_configuration_info_card.vue';
 import DuoWorkflowSettings from '../components/duo_workflow_settings.vue';
 
 export default {
@@ -17,12 +17,14 @@ export default {
     DuoConfigurationSettingsInfoCard,
     DuoCoreUpgradeCard,
     DuoSeatUtilizationInfoCard,
-    DuoSelfHostedInfoCard,
+    DuoModelsConfigurationInfoCard,
     DuoWorkflowSettings,
   },
   inject: {
     canManageSelfHostedModels: { default: false },
+    duoSelfHostedPath: { default: '' },
     isSaaS: {},
+    modelSwitchingEnabled: { default: false },
     showDuoWorkflowSettings: { default: false },
   },
   i18n: {
@@ -30,6 +32,35 @@ export default {
     gitlabDuoHomeSubtitle: s__(
       'AiPowered|Monitor, manage, and customize AI features to ensure efficient utilization and alignment.',
     ),
+  },
+  computed: {
+    isModelSwitchingEnabled() {
+      return this.isSaaS && this.modelSwitchingEnabled;
+    },
+    isSelfHostedModelsEnabled() {
+      return !this.isSaaS && this.canManageSelfHostedModels;
+    },
+    duoModelsConfigurationProps() {
+      if (this.isModelSwitchingEnabled) {
+        return {
+          header: s__('AiPowered|Model Selection'),
+          description: s__('AiPowered|Assign models to AI-native features.'),
+          buttonText: s__('AiPowered|Configure features'),
+          path: '', // TODO: Add configuration path (not yet implemented)
+        };
+      }
+
+      if (this.isSelfHostedModelsEnabled) {
+        return {
+          header: s__('AiPowered|GitLab Duo Self-Hosted'),
+          description: s__('AiPowered|Assign self-hosted models to specific AI-native features.'),
+          buttonText: s__('AiPowered|Configure GitLab Duo Self-Hosted'),
+          path: this.duoSelfHostedPath,
+        };
+      }
+
+      return {};
+    },
   },
   methods: {
     shouldShowDuoCoreUpgradeCard(duoTier) {
@@ -70,7 +101,10 @@ export default {
           />
           <duo-configuration-settings-info-card :duo-tier="duoTier" />
         </section>
-        <duo-self-hosted-info-card v-if="!isSaaS && canManageSelfHostedModels" />
+        <duo-models-configuration-info-card
+          v-if="isModelSwitchingEnabled || isSelfHostedModelsEnabled"
+          :duo-models-configuration-props="duoModelsConfigurationProps"
+        />
       </template>
     </code-suggestions-usage>
   </div>

@@ -18,6 +18,7 @@ export function initGitLabDuoHome() {
 
       return {
         ...parseProvideData(el),
+        modelSwitchingEnabled: parseBoolean(data.modelSwitchingEnabled),
         duoSeatUtilizationPath: data.duoSeatUtilizationPath,
         duoConfigurationPath: data.duoConfigurationPath,
         duoAvailability: data.duoAvailability,

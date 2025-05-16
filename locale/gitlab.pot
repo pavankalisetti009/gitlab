@@ -5776,6 +5776,9 @@ msgstr ""
 msgid "AiPowered|Are you sure you want to turn off GitLab Duo Workflow?"
 msgstr ""
 
+msgid "AiPowered|Assign models to AI-native features."
+msgstr ""
+
 msgid "AiPowered|Assign seats"
 msgstr ""
 
@@ -5810,6 +5813,9 @@ msgid "AiPowered|Configure AI-native GitLab Duo features. %{linkStart}Which feat
 msgstr ""
 
 msgid "AiPowered|Configure GitLab Duo Self-Hosted"
+msgstr ""
+
+msgid "AiPowered|Configure features"
 msgstr ""
 
 msgid "AiPowered|Configure how long GitLab Duo Chat conversations persist before they expire:"
@@ -5939,6 +5945,9 @@ msgid "AiPowered|Local AI gateway URL"
 msgstr ""
 
 msgid "AiPowered|Might result in requests having higher latency."
+msgstr ""
+
+msgid "AiPowered|Model Selection"
 msgstr ""
 
 msgid "AiPowered|Monitor, manage, and customize AI features to ensure efficient utilization and alignment."

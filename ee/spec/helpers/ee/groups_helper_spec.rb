@@ -369,7 +369,8 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         are_experiment_settings_allowed: 'true',
         are_prompt_cache_settings_allowed: 'true',
         is_duo_base_access_allowed: 'true',
-        are_duo_core_features_enabled: 'true'
+        are_duo_core_features_enabled: 'true',
+        model_switching_enabled: 'true'
       })
     end
 
@@ -390,6 +391,16 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
 
       it 'sets Duo Core flag to false' do
         expect(helper.duo_home_app_data(group)).to include(are_duo_core_features_enabled: 'false')
+      end
+    end
+
+    context 'with feature flag ai_model_switching set to false' do
+      before do
+        stub_feature_flags(ai_model_switching: false)
+      end
+
+      it 'sets model_switching_enabled to false' do
+        expect(helper.duo_home_app_data(group)).to include(model_switching_enabled: 'false')
       end
     end
   end

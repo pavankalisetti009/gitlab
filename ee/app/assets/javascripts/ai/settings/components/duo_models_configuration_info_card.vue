@@ -2,12 +2,17 @@
 import { GlButton, GlCard } from '@gitlab/ui';
 
 export default {
-  name: 'DuoSelfHostedInfoCard',
+  name: 'DuoModelsConfigurationInfoCard',
   components: {
     GlButton,
     GlCard,
   },
-  inject: ['duoSelfHostedPath'],
+  props: {
+    duoModelsConfigurationProps: {
+      type: Object,
+      required: true,
+    },
+  },
 };
 </script>
 <template>
@@ -17,24 +22,24 @@ export default {
   >
     <template #header>
       <h2 class="gl-m-0 gl-text-lg">
-        {{ s__('AiPowered|GitLab Duo Self-Hosted') }}
+        {{ duoModelsConfigurationProps.header }}
       </h2>
       <p
-        data-testid="duo-self-hosted-card-secondary-header"
+        data-testid="model-configuration-card-secondary-header"
         class="gl-m-0 gl-text-size-h-display gl-font-bold"
       >
         {{ s__('AiPowered|Configure AI features') }}
       </p>
     </template>
     <template #default>
-      <p data-testid="duo-self-hosted-card-description" class="gl-mb-0 gl-pb-0 gl-text-subtle">
-        {{ s__('AiPowered|Assign self-hosted models to specific AI-native features.') }}
+      <p data-testid="model-configuration-card-description" class="gl-mb-0 gl-pb-0 gl-text-subtle">
+        {{ duoModelsConfigurationProps.description }}
       </p>
     </template>
     <template #footer>
       <div>
-        <gl-button :to="duoSelfHostedPath" category="primary" variant="confirm"
-          >{{ s__('AiPowered|Configure GitLab Duo Self-Hosted') }}
+        <gl-button :to="duoModelsConfigurationProps.path" category="primary" variant="confirm">
+          {{ duoModelsConfigurationProps.buttonText }}
         </gl-button>
       </div>
     </template>
