@@ -27,7 +27,7 @@ RSpec.describe 'User with manage_group_access_tokens custom role', feature_categ
     describe '#create' do
       let_it_be(:resource) { group }
       let(:access_token_params) do
-        { name: 'TestToken', scopes: ['api'], expires_at: Date.today + 1.month, access_level: access_level }
+        { name: 'TestToken', scopes: ['api'], expires_at: 1.month.from_now, access_level: access_level }
       end
 
       subject(:request) do

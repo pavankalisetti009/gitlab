@@ -25,7 +25,7 @@ RSpec.describe 'User with manage_project_access_tokens custom role', feature_cat
     end
 
     describe 'POST /:namespace/:project/-/settings/access_tokens' do
-      let(:access_token_params) { { name: 'Nerd bot', scopes: ["api"], expires_at: Date.today + 1.month } }
+      let(:access_token_params) { { name: 'Nerd bot', scopes: ["api"], expires_at: 1.month.from_now } }
 
       subject(:submit_form) do
         post project_settings_access_tokens_path(project), params: { resource_access_token: access_token_params }
@@ -34,7 +34,7 @@ RSpec.describe 'User with manage_project_access_tokens custom role', feature_cat
 
       context 'with custom access level same as the current user' do
         let(:access_token_params) do
-          { name: 'Nerd bot', scopes: ["api"], expires_at: Date.today + 1.month, access_level: 10 }
+          { name: 'Nerd bot', scopes: ["api"], expires_at: 1.month.from_now, access_level: 10 }
         end
 
         let(:resource) { project }
@@ -44,7 +44,7 @@ RSpec.describe 'User with manage_project_access_tokens custom role', feature_cat
 
       context 'with custom access level higher than the current user' do
         let(:access_token_params) do
-          { name: 'Nerd bot', scopes: ["api"], expires_at: Date.today + 1.month, access_level: 20 }
+          { name: 'Nerd bot', scopes: ["api"], expires_at: 1.month.from_now, access_level: 20 }
         end
 
         let(:resource) { project }
