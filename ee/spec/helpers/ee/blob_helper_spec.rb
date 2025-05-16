@@ -29,8 +29,8 @@ RSpec.describe BlobHelper, feature_category: :source_code_management do
 
       expect(Gitlab::Template::CustomLicenseTemplate)
         .to receive(:all)
-        .with(project)
-        .and_return([OpenStruct.new(key: 'name', name: 'Name', project_id: project.id)])
+              .with(project)
+              .and_return([OpenStruct.new(key: 'name', name: 'Name', project_id: project.id)])
 
       expect(categories).to contain_exactly(:Popular, :Other, group_category)
       expect(by_group).to contain_exactly({ id: 'name', name: 'Name', key: 'name', project_id: project.id })
@@ -90,25 +90,8 @@ RSpec.describe BlobHelper, feature_category: :source_code_management do
       expect(helper.vue_blob_app_data(project, blob, ref)).to include({
         user_id: '',
         explain_code_available: 'false',
-        new_workspace_path: new_remote_development_workspace_path,
-        show_duo_workflow_action: 'false',
-        duo_workflow_invoke_path: '/api/v4/ai/duo_workflows/workflows'
+        new_workspace_path: new_remote_development_workspace_path
       })
-    end
-
-    context 'when the blob is a Jenkinsfile' do
-      let(:blob) { fake_blob(path: 'Jenkinsfile') }
-      let(:user) { build_stubbed(:user) }
-
-      it 'includes duo workflow action data' do
-        allow(helper).to receive(:show_duo_workflow_action?).with(blob).and_return(true)
-        allow(helper).to receive_messages(current_user: user, selected_branch: ref)
-
-        expect(helper.vue_blob_app_data(project, blob, ref)).to include(
-          show_duo_workflow_action: 'true',
-          duo_workflow_invoke_path: '/api/v4/ai/duo_workflows/workflows'
-        )
-      end
     end
   end
 
