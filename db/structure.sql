@@ -21184,6 +21184,7 @@ CREATE TABLE project_security_settings (
     container_scanning_for_registry_enabled boolean DEFAULT false NOT NULL,
     pre_receive_secret_detection_enabled boolean DEFAULT false NOT NULL,
     secret_push_protection_enabled boolean DEFAULT false,
+    validity_checks_enabled boolean DEFAULT false NOT NULL,
     CONSTRAINT check_20a23efdb6 CHECK ((secret_push_protection_enabled IS NOT NULL))
 );
 
