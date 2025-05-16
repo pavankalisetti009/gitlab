@@ -9537,6 +9537,7 @@ CREATE TABLE audit_events_amazon_s3_configurations (
     encrypted_secret_access_key bytea NOT NULL,
     encrypted_secret_access_key_iv bytea NOT NULL,
     stream_destination_id bigint,
+    active boolean DEFAULT true NOT NULL,
     CONSTRAINT check_3a41f4ea06 CHECK ((char_length(bucket_name) <= 63)),
     CONSTRAINT check_72b5aaa71b CHECK ((char_length(aws_region) <= 50)),
     CONSTRAINT check_90505816db CHECK ((char_length(name) <= 72)),
@@ -9561,6 +9562,7 @@ CREATE TABLE audit_events_external_audit_event_destinations (
     verification_token text,
     name text NOT NULL,
     stream_destination_id bigint,
+    active boolean DEFAULT true NOT NULL,
     CONSTRAINT check_2feafb9daf CHECK ((char_length(destination_url) <= 255)),
     CONSTRAINT check_8ec80a7d06 CHECK ((char_length(verification_token) <= 24)),
     CONSTRAINT check_c52ff8e90e CHECK ((char_length(name) <= 72))
@@ -9587,6 +9589,7 @@ CREATE TABLE audit_events_google_cloud_logging_configurations (
     encrypted_private_key_iv bytea NOT NULL,
     name text NOT NULL,
     stream_destination_id bigint,
+    active boolean DEFAULT true NOT NULL,
     CONSTRAINT check_0ef835c61e CHECK ((char_length(client_email) <= 254)),
     CONSTRAINT check_55783c7c19 CHECK ((char_length(google_project_id_name) <= 30)),
     CONSTRAINT check_898a76b005 CHECK ((char_length(log_id_name) <= 511)),
@@ -9613,6 +9616,7 @@ CREATE TABLE audit_events_group_external_streaming_destinations (
     encrypted_secret_token bytea NOT NULL,
     encrypted_secret_token_iv bytea NOT NULL,
     legacy_destination_ref bigint,
+    active boolean DEFAULT true NOT NULL,
     CONSTRAINT check_97d157fbd0 CHECK ((char_length(name) <= 72))
 );
 
@@ -9664,6 +9668,7 @@ CREATE TABLE audit_events_instance_amazon_s3_configurations (
     encrypted_secret_access_key bytea NOT NULL,
     encrypted_secret_access_key_iv bytea NOT NULL,
     stream_destination_id bigint,
+    active boolean DEFAULT true NOT NULL,
     CONSTRAINT check_1a908bd36f CHECK ((char_length(name) <= 72)),
     CONSTRAINT check_8083750c42 CHECK ((char_length(bucket_name) <= 63)),
     CONSTRAINT check_d2ca3eb90e CHECK ((char_length(aws_region) <= 50)),
@@ -9688,6 +9693,7 @@ CREATE TABLE audit_events_instance_external_audit_event_destinations (
     encrypted_verification_token_iv bytea NOT NULL,
     name text NOT NULL,
     stream_destination_id bigint,
+    active boolean DEFAULT true NOT NULL,
     CONSTRAINT check_433fbb3305 CHECK ((char_length(name) <= 72)),
     CONSTRAINT check_4dc67167ce CHECK ((char_length(destination_url) <= 255))
 );
@@ -9711,6 +9717,7 @@ CREATE TABLE audit_events_instance_external_streaming_destinations (
     encrypted_secret_token bytea NOT NULL,
     encrypted_secret_token_iv bytea NOT NULL,
     legacy_destination_ref bigint,
+    active boolean DEFAULT true NOT NULL,
     CONSTRAINT check_219decfb51 CHECK ((char_length(name) <= 72))
 );
 
@@ -9734,6 +9741,7 @@ CREATE TABLE audit_events_instance_google_cloud_logging_configurations (
     encrypted_private_key bytea NOT NULL,
     encrypted_private_key_iv bytea NOT NULL,
     stream_destination_id bigint,
+    active boolean DEFAULT true NOT NULL,
     CONSTRAINT check_0da5c76c49 CHECK ((char_length(client_email) <= 254)),
     CONSTRAINT check_74fd943192 CHECK ((char_length(log_id_name) <= 511)),
     CONSTRAINT check_ab65f57721 CHECK ((char_length(google_project_id_name) <= 30)),
