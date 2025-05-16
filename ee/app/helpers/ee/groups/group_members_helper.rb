@@ -44,7 +44,7 @@ module EE::Groups::GroupMembersHelper
         return cannot_invite_member_subtext(group.name, "group owner")
       end
 
-      return cannot_invite_member_subtext(group.name, "administrator")
+      return cannot_invite_member_subtext(group.name, "instance administrator")
 
     end
 
@@ -70,7 +70,8 @@ module EE::Groups::GroupMembersHelper
 
   def cannot_invite_member_subtext(group_name, actor)
     safe_format(
-      _("You cannot invite a new member to %{strong_start}%{group_name}%{strong_end} since its disabled by %{actor}."),
+      _("You cannot invite a new member to %{strong_start}%{group_name}%{strong_end}. " \
+        "User invitations are disabled by the %{actor}."),
       tag_pair(tag.strong, :strong_start, :strong_end), group_name: group_name, actor: actor)
   end
 end

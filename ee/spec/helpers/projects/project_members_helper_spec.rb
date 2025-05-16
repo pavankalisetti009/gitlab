@@ -167,8 +167,8 @@ RSpec.describe Projects::ProjectMembersHelper do
 
   describe '#project_member_header_subtext', feature_category: :groups_and_projects do
     let(:base_subtext) { "You can invite a new member to <strong>#{current_project.name}</strong> or invite another group." }
-    let(:cannot_invite_subtext_for_com) { "You cannot invite a new member to #{current_project.name}. User invitations are disabled by the group owner." }
-    let(:cannot_invite_subtext_for_self_managed) { "You cannot invite a new member to #{current_project.name}. User invitations are disabled by the instance administrator." }
+    let(:cannot_invite_subtext_for_com) { "You cannot invite a new member to <strong>#{current_project.name}</strong>. User invitations are disabled by the group owner." }
+    let(:cannot_invite_subtext_for_self_managed) { "You cannot invite a new member to <strong>#{current_project.name}</strong>. User invitations are disabled by the instance administrator." }
     let(:standard_subtext) { "^#{base_subtext}$" }
     let(:enforcement_subtext) { "^#{base_subtext}<br />To manage seats for all members" }
 

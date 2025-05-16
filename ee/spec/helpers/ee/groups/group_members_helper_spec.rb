@@ -208,8 +208,15 @@ RSpec.describe Groups::GroupMembersHelper, feature_category: :groups_and_project
 
   describe '#group_member_header_subtext' do
     let(:base_subtext) { "You're viewing members of <strong>#{group.name}</strong>." }
-    let(:cannot_invite_subtext_for_com) { "You cannot invite a new member to <strong>#{group.name}</strong> since its disabled by group owner." }
-    let(:cannot_invite_subtext_for_self_managed) { "You cannot invite a new member to <strong>#{group.name}</strong> since its disabled by administrator." }
+    let(:cannot_invite_subtext_for_com) do
+      "You cannot invite a new member to <strong>#{group.name}</strong>. " \
+        "User invitations are disabled by the group owner."
+    end
+
+    let(:cannot_invite_subtext_for_self_managed) do
+      "You cannot invite a new member to <strong>#{group.name}</strong>. " \
+        "User invitations are disabled by the instance administrator."
+    end
 
     let(:standard_subtext) { "^#{base_subtext}$" }
     let(:enforcement_subtext) { "^#{base_subtext}<br />To manage seats for all members" }
