@@ -159,7 +159,7 @@ A valid certificate is not required for domain verification. You can ignore erro
 After you create a new domain, the verification code prompts you. Copy the values from GitLab
 and paste them in your domain's control panel as a `TXT` record.
 
-![Get the verification code](../img/get_domain_verification_code_v16_0.png)
+![Get the verification code](img/get_domain_verification_code_v16_0.png)
 
 #### 3. Verify the domain's ownership
 
@@ -169,7 +169,7 @@ After you have added all the DNS records:
 1. Select **Settings > Domain Verification**.
 1. On the domain table row, Select **Retry verification** ({{< icon name="retry" >}}).
 
-![Verify your domain](../img/retry_domain_verification_v16_0.png)
+![Verify your domain](img/retry_domain_verification_v16_0.png)
 
 {{< alert type="warning" >}}
 
