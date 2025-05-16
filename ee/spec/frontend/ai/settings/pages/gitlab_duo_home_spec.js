@@ -3,7 +3,7 @@ import { stubComponent } from 'helpers/stub_component';
 import CodeSuggestionsUsage from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage.vue';
 import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
 import DuoSeatUtilizationInfoCard from 'ee/ai/settings/components/duo_seat_utilization_info_card.vue';
-import DuoSelfHostedInfoCard from 'ee/ai/settings/components/duo_self_hosted_info_card.vue';
+import DuoModelsConfigurationInfoCard from 'ee/ai/settings/components/duo_models_configuration_info_card.vue';
 import DuoCoreUpgradeCard from 'ee/ai/settings/components/duo_core_upgrade_card.vue';
 import DuoWorkflowSettings from 'ee/ai/settings/components/duo_workflow_settings.vue';
 import GitlabDuoHome from 'ee/ai/settings/pages/gitlab_duo_home.vue';
@@ -22,14 +22,18 @@ describe('GitLab Duo Home', () => {
     isSaaS = true,
     canManageSelfHostedModels = false,
     customSlotProps = {},
+    duoSelfHostedPath = '/admin/ai/duo_self_hosted',
     showDuoWorkflowSettings = false,
+    modelSwitchingEnabled = false,
   } = {}) => {
     wrapper = shallowMount(GitlabDuoHome, {
       propsData: {},
       provide: {
         isSaaS,
         canManageSelfHostedModels,
+        duoSelfHostedPath,
         showDuoWorkflowSettings,
+        modelSwitchingEnabled,
       },
       stubs: {
         CodeSuggestionsUsage: stubComponent(CodeSuggestionsUsage, {
@@ -51,7 +55,8 @@ describe('GitLab Duo Home', () => {
   const findCodeSuggestionsUsage = () => wrapper.findComponent(CodeSuggestionsUsage);
   const findHealthCheckList = () => wrapper.findComponent(HealthCheckList);
   const findDuoSeatUtilizationInfoCard = () => wrapper.findComponent(DuoSeatUtilizationInfoCard);
-  const findDuoSelfHostedInfoCard = () => wrapper.findComponent(DuoSelfHostedInfoCard);
+  const findDuoModelsConfigurationCard = () =>
+    wrapper.findComponent(DuoModelsConfigurationInfoCard);
   const findDuoCoreUpgradeCard = () => wrapper.findComponent(DuoCoreUpgradeCard);
   const findDuoWorkflowSettings = () => wrapper.findComponent(DuoWorkflowSettings);
 
@@ -79,8 +84,18 @@ describe('GitLab Duo Home', () => {
         expect(findHealthCheckList().exists()).toBe(false);
       });
 
-      it('does not render DuoSelfHostedInfoCard', () => {
-        expect(findDuoSelfHostedInfoCard().exists()).toBe(false);
+      describe('when modelSwitchingEnabled is true', () => {
+        it('renders model switching card', () => {
+          createComponent({ modelSwitchingEnabled: true });
+
+          const duoModelsConfigurationCard = findDuoModelsConfigurationCard();
+          expect(duoModelsConfigurationCard.props('duoModelsConfigurationProps')).toMatchObject({
+            header: 'Model Selection',
+            description: 'Assign models to AI-native features.',
+            buttonText: 'Configure features',
+            path: '',
+          });
+        });
       });
     });
 
@@ -92,10 +107,16 @@ describe('GitLab Duo Home', () => {
       });
 
       describe('when canManageSelfHostedModels is true', () => {
-        it('renders DuoSelfHostedInfoCard', () => {
+        it('renders Duo self-hosted info card', () => {
           createComponent({ isSaaS: false, canManageSelfHostedModels: true });
 
-          expect(findDuoSelfHostedInfoCard().exists()).toBe(true);
+          const duoModelsConfigurationCard = findDuoModelsConfigurationCard();
+          expect(duoModelsConfigurationCard.props('duoModelsConfigurationProps')).toMatchObject({
+            header: 'GitLab Duo Self-Hosted',
+            description: 'Assign self-hosted models to specific AI-native features.',
+            buttonText: 'Configure GitLab Duo Self-Hosted',
+            path: '/admin/ai/duo_self_hosted',
+          });
         });
       });
     });
