@@ -654,57 +654,87 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
       end
     end
 
-    describe 'JiraTitleDescriptionUpdateEvent' do
+    describe 'AutoMerge::TitleDescriptionUpdateEvent' do
       let(:has_jira_key) { true }
+      let(:auto_merge_enabled) { true }
+      let(:title_regex) { nil }
 
       before do
         allow(merge_request).to receive(:has_jira_issue_keys?).and_return(has_jira_key)
+        merge_request.update!(auto_merge_enabled: true, merge_user: user) if auto_merge_enabled
+        project.update!(merge_request_title_regex: title_regex)
       end
 
       context 'when the description changes' do
-        context 'when the description or title has a jira key' do
-          it 'publishes a JiraTitleDescriptionUpdateEvent' do
-            expected_data = {
-              current_user_id: user.id,
-              merge_request_id: merge_request.id
-            }
+        let(:update_params) { { description: 'New description' } }
 
-            expect do
-              update_merge_request(description: 'New description')
-            end.to publish_event(MergeRequests::JiraTitleDescriptionUpdateEvent).with(expected_data)
+        context 'when the MR has a jira key' do
+          it_behaves_like 'it publishes the AutoMerge::TitleDescriptionUpdateEvent once'
+
+          context 'when auto merge is not enabled' do
+            let(:auto_merge_enabled) { false }
+
+            it_behaves_like 'it does not publish the AutoMerge::TitleDescriptionUpdateEvent'
           end
         end
 
         context 'when the description or title does not have a jira key' do
           let(:has_jira_key) { false }
 
-          it 'does not publish a JiraTitleDescriptionUpdateEvent' do
-            expect do
-              update_merge_request(description: 'New description')
-            end.not_to publish_event(MergeRequests::JiraTitleDescriptionUpdateEvent)
-          end
+          it_behaves_like 'it does not publish the AutoMerge::TitleDescriptionUpdateEvent'
         end
       end
 
       context 'when the title changes' do
-        it 'publishes a JiraTitleDescriptionUpdateEvent' do
-          expected_data = {
-            current_user_id: user.id,
-            merge_request_id: merge_request.id
-          }
+        let(:update_params) { { title: 'New title' } }
 
-          expect do
-            update_merge_request(title: 'New title')
-          end.to publish_event(MergeRequests::JiraTitleDescriptionUpdateEvent).with(expected_data)
+        context 'when the MR has a jira key' do
+          context 'when project has no required regex' do
+            let(:title_regex) { nil }
+
+            it_behaves_like 'it publishes the AutoMerge::TitleDescriptionUpdateEvent once'
+
+            context 'when auto merge is not enabled' do
+              let(:auto_merge_enabled) { false }
+
+              it_behaves_like 'it does not publish the AutoMerge::TitleDescriptionUpdateEvent'
+            end
+          end
+
+          context 'when project has a required regex' do
+            let(:title_regex) { 'test' }
+
+            it_behaves_like 'it publishes the AutoMerge::TitleDescriptionUpdateEvent once'
+          end
         end
 
-        context 'when the description or title does not have a jira key' do
+        context 'when the MR does not have a jira key' do
           let(:has_jira_key) { false }
 
-          it 'does not publish a JiraTitleDescriptionUpdateEvent' do
-            expect do
-              update_merge_request(description: 'New description')
-            end.not_to publish_event(MergeRequests::JiraTitleDescriptionUpdateEvent)
+          context 'when the project has no required regex' do
+            let(:title_regex) { nil }
+
+            it_behaves_like 'it does not publish the AutoMerge::TitleDescriptionUpdateEvent'
+          end
+
+          context 'when project has a required regex' do
+            let(:title_regex) { 'test' }
+
+            context 'when merge_request_title_regex ff is off' do
+              before do
+                stub_feature_flags(merge_request_title_regex: false)
+              end
+
+              it_behaves_like 'it does not publish the AutoMerge::TitleDescriptionUpdateEvent'
+            end
+
+            it_behaves_like 'it publishes the AutoMerge::TitleDescriptionUpdateEvent once'
+
+            context 'when auto merge is not enabled' do
+              let(:auto_merge_enabled) { false }
+
+              it_behaves_like 'it does not publish the AutoMerge::TitleDescriptionUpdateEvent'
+            end
           end
         end
       end
