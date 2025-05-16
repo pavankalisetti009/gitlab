@@ -22,7 +22,14 @@ export const initCustomRolesApp = () => {
 
   initPlannerRoleBanner();
 
-  const { groupFullPath, groupId, newRolePath, currentUserEmail, ldapServers = null } = el.dataset;
+  const {
+    groupFullPath,
+    groupId,
+    newRolePath,
+    currentUserEmail,
+    ldapUsersPath,
+    ldapServers = null,
+  } = el.dataset;
 
   return new Vue({
     el,
@@ -34,6 +41,7 @@ export const initCustomRolesApp = () => {
       currentUserEmail,
       groupFullPath,
       newRolePath,
+      ldapUsersPath,
       ldapServers: JSON.parse(ldapServers),
     },
     mounted() {

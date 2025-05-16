@@ -7,6 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import ldapAdminRoleLinksQuery from 'ee/roles_and_permissions/graphql/ldap_sync/ldap_admin_role_links.query.graphql';
 import ldapAdminRoleLinkDestroyMutation from 'ee/roles_and_permissions/graphql/ldap_sync/ldap_admin_role_link_destroy.mutation.graphql';
 import LdapSyncCrud from 'ee/roles_and_permissions/components/ldap_sync/ldap_sync_crud.vue';
+import SyncAllButton from 'ee/roles_and_permissions/components/ldap_sync/sync_all_button.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import CreateSyncForm from 'ee/roles_and_permissions/components/ldap_sync/create_sync_form.vue';
@@ -40,6 +41,7 @@ describe('LdapSyncCrud component', () => {
         [ldapAdminRoleLinksQuery, roleLinksHandler],
         [ldapAdminRoleLinkDestroyMutation, destroyHandler],
       ]),
+      provide: { ldapUsersPath: 'ldap/users/path' },
       stubs: { CrudComponent, GlSprintf, ConfirmActionModal },
     });
 
@@ -51,7 +53,8 @@ describe('LdapSyncCrud component', () => {
   const findCrudActions = () => wrapper.findByTestId('crud-actions');
   const findCrudBody = () => wrapper.findByTestId('crud-body');
   const findLdapUsersLink = () => findCrudActions().findComponent(GlLink);
-  const findActionButtons = () => findCrudActions().findAllComponents(GlButton);
+  const findAddSyncButton = () => findCrudActions().findComponent(GlButton);
+  const findSyncAllButton = () => wrapper.findComponent(SyncAllButton);
   const findRoleLinksList = () => findCrudBody().find('ul');
   const findRoleLinkItems = () => findRoleLinksList().findAll('li');
   const findDeleteModal = () => wrapper.findComponent(ConfirmActionModal);
@@ -98,9 +101,18 @@ describe('LdapSyncCrud component', () => {
       expect(findCrudComponent().props('isLoading')).toBe(true);
     });
 
-    it('does not show crud actions', () => {
-      expect(findLdapUsersLink().exists()).toBe(false);
-      expect(findActionButtons()).toHaveLength(0);
+    describe('crud actions', () => {
+      it('does not show ldap users link', () => {
+        expect(findLdapUsersLink().exists()).toBe(false);
+      });
+
+      it('does not show Sync all button', () => {
+        expect(findSyncAllButton().exists()).toBe(false);
+      });
+
+      it('does not show Add Synchronization button', () => {
+        expect(findAddSyncButton().exists()).toBe(false);
+      });
     });
 
     it('does not show create sync form', () => {
@@ -149,10 +161,12 @@ describe('LdapSyncCrud component', () => {
         expect(findLdapUsersLink().exists()).toBe(false);
       });
 
-      it('only shows Add synchronization button', () => {
-        expect(findActionButtons()).toHaveLength(1);
-        expect(findActionButtons().at(0).props('variant')).toBe('confirm');
-        expect(findActionButtons().at(0).text()).toBe('Add synchronization');
+      it('does not show Sync all button', () => {
+        expect(findSyncAllButton().exists()).toBe(false);
+      });
+
+      it('shows Add Synchronization button', () => {
+        expect(findAddSyncButton().exists()).toBe(true);
       });
     });
   });
@@ -175,22 +189,18 @@ describe('LdapSyncCrud component', () => {
     });
 
     describe('crud actions', () => {
-      it('shows "View LDAP synced users" link', () => {
+      it('shows ldap users link', () => {
         expect(findLdapUsersLink().text()).toBe('View LDAP synced users');
+        expect(findLdapUsersLink().props('href')).toBe('ldap/users/path');
       });
 
       it('shows Sync all button', () => {
-        const button = findActionButtons().at(0);
-
-        expect(button.props('icon')).toBe('retry');
-        expect(button.text()).toBe('Sync all');
+        expect(findSyncAllButton().exists()).toBe(true);
       });
 
       it('shows Add Synchronization button', () => {
-        const button = findActionButtons().at(1);
-
-        expect(button.props('variant')).toBe('confirm');
-        expect(button.text()).toBe('Add synchronization');
+        expect(findAddSyncButton().props('variant')).toBe('confirm');
+        expect(findAddSyncButton().text()).toBe('Add synchronization');
       });
     });
 
@@ -332,7 +342,7 @@ describe('LdapSyncCrud component', () => {
   describe('create sync form', () => {
     beforeEach(async () => {
       await createWrapper();
-      findActionButtons().at(1).vm.$emit('click');
+      findAddSyncButton().vm.$emit('click');
     });
 
     it('shows create sync form when Add synchronization button is clicked', () => {

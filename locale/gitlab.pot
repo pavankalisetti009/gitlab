@@ -37598,6 +37598,9 @@ msgstr ""
 msgid "MemberRole|Failed to save role: %{error}"
 msgstr ""
 
+msgid "MemberRole|Failed to schedule LDAP sync. Please retry syncing."
+msgstr ""
+
 msgid "MemberRole|Group cn:"
 msgstr ""
 
@@ -37697,6 +37700,9 @@ msgstr ""
 msgid "MemberRole|Sync all"
 msgstr ""
 
+msgid "MemberRole|Sync scheduled"
+msgstr ""
+
 msgid "MemberRole|The CSV report contains a list of users, assigned role and access in all groups, subgroups, and projects. When the export is completed, it will be sent as an attachment to %{email}."
 msgstr ""
 
@@ -37704,6 +37710,9 @@ msgid "MemberRole|The Developer role gives users access to contribute code while
 msgstr ""
 
 msgid "MemberRole|The Guest role is for users who need visibility into a project or group but should not have the ability to make changes, such as external stakeholders."
+msgstr ""
+
+msgid "MemberRole|The LDAP sync has been scheduled. Refresh the page to view sync status."
 msgstr ""
 
 msgid "MemberRole|The Maintainer role is primarily used for managing code reviews, approvals, and administrative settings for projects. This role can also manage project memberships."
