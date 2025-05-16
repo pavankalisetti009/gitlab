@@ -27,6 +27,6 @@ RSpec.describe MergeRequests::ProcessAutoMergeFromEventWorker, feature_category:
   end
 
   it_behaves_like 'process auto merge from event worker' do
-    let(:event) { MergeRequests::JiraTitleDescriptionUpdateEvent.new(data: data) }
+    let(:event) { MergeRequests::AutoMerge::TitleDescriptionUpdateEvent.new(data: data) }
   end
 end
