@@ -221,7 +221,7 @@ module Elastic
         items = response.map do |result|
           container = get_container_from_containers_hash(type, result, containers)
 
-          if container.nil? || container.pending_delete?
+          if container.nil? || container.deletion_in_progress_or_scheduled_in_hierarchy_chain?
             total_count -= 1
             next
           end

@@ -13,7 +13,7 @@ module EE
         if params[:controller] == "projects" && params[:action] == "restore"
           super
         else
-          ->(project) { !project.pending_delete_or_hidden? }
+          ->(project) { !project.self_deletion_in_progress_or_hidden? }
         end
       end
     end
