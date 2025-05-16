@@ -172,7 +172,7 @@ describe('RunnerTagsDropdown', () => {
         getUniqueTagListFromEdges(RUNNER_TAG_LIST_MOCK).length,
       );
 
-      await findSearchBox().vm.$emit('input', 'macos');
+      await findSearchBox().setValue('macos');
 
       expect(handlers.projectRequestHandler).toHaveBeenCalledWith({
         fullPath: 'gitlab-org/testPath',
