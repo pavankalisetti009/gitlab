@@ -16,7 +16,7 @@ module EE
         @auto_ban_enabled = auto_ban_enabled
 
         if group.present?
-          @ban_scope = _('your group (%{group_name})' % { group_name: group.name })
+          @ban_scope = _('your group (%{group_name})') % { group_name: group.name }
           @settings_page_url = group_settings_reporting_url(group)
           @banned_page_url = group_group_members_url(group, tab: 'banned')
         else
