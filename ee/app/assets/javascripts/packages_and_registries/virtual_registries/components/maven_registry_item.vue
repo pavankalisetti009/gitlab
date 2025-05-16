@@ -17,7 +17,7 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   mixins: [glAbilitiesMixin()],
-  inject: ['basePath'],
+  inject: ['editPathTemplate', 'showPathTemplate'],
   props: {
     registry: {
       type: Object,
@@ -29,10 +29,10 @@ export default {
       return this.glAbilities.updateVirtualRegistry;
     },
     editUrl() {
-      return `${this.basePath}/${this.registry.id}/edit`;
+      return this.editPathTemplate.replace(':id', this.registry.id);
     },
     showUrl() {
-      return `${this.basePath}/${this.registry.id}`;
+      return this.showPathTemplate.replace(':id', this.registry.id);
     },
   },
 };

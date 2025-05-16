@@ -17,10 +17,34 @@ module VirtualRegistryHelper
     can?(current_user, :create_virtual_registry, group.virtual_registry_policy_subject)
   end
 
+  def can_destroy_virtual_registry?(group)
+    can?(current_user, :destroy_virtual_registry, group.virtual_registry_policy_subject)
+  end
+
   def maven_registries_data(group)
     {
       fullPath: group.full_path,
-      basePath: group_virtual_registries_maven_registries_path(group)
+      editPathTemplate: edit_group_virtual_registries_maven_registry_path(group, ':id'),
+      showPathTemplate: group_virtual_registries_maven_registry_path(group, ':id')
     }.to_json
+  end
+
+  def delete_registry_modal_data(group, maven_registry)
+    {
+      path: group_virtual_registries_maven_registry_path(group, maven_registry),
+      method: 'delete',
+      modal_attributes: {
+        title: s_('VirtualRegistry|Delete Maven registry'),
+        size: 'sm',
+        messageHtml: format(
+          s_('VirtualRegistry|Are you sure you want to delete %{strongOpen}%{name}%{strongClose}?'),
+          name: maven_registry.name,
+          strongOpen: '<strong>'.html_safe,
+          strongClose: '</strong>'.html_safe
+        ),
+        okVariant: 'danger',
+        okTitle: _('Delete')
+      }
+    }
   end
 end

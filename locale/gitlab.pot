@@ -67165,6 +67165,9 @@ msgstr ""
 msgid "VirtualRegistry|Add upstream"
 msgstr ""
 
+msgid "VirtualRegistry|Are you sure you want to delete %{strongOpen}%{name}%{strongClose}?"
+msgstr ""
+
 msgid "VirtualRegistry|Cache: %{size}"
 msgstr ""
 
@@ -67183,10 +67186,19 @@ msgstr ""
 msgid "VirtualRegistry|Create upstream"
 msgstr ""
 
+msgid "VirtualRegistry|Delete Maven registry"
+msgstr ""
+
+msgid "VirtualRegistry|Delete registry"
+msgstr ""
+
 msgid "VirtualRegistry|Delete upstream"
 msgstr ""
 
 msgid "VirtualRegistry|Description (optional)"
+msgstr ""
+
+msgid "VirtualRegistry|Edit registry"
 msgstr ""
 
 msgid "VirtualRegistry|Edit upstream"
@@ -67214,6 +67226,12 @@ msgid "VirtualRegistry|Maven virtual registry"
 msgstr ""
 
 msgid "VirtualRegistry|Maven virtual registry was created"
+msgstr ""
+
+msgid "VirtualRegistry|Maven virtual registry was deleted"
+msgstr ""
+
+msgid "VirtualRegistry|Maven virtual registry was updated"
 msgstr ""
 
 msgid "VirtualRegistry|Move upstream down"

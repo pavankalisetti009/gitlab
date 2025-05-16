@@ -52,6 +52,30 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
     end
   end
 
+  describe '#can_destroy_virtual_registry?' do
+    let(:group) { build_stubbed(:group) }
+    let(:user) { build_stubbed(:user) }
+    let(:policy_subject) { instance_double(::VirtualRegistries::Packages::Policies::Group) }
+
+    before do
+      allow(helper).to receive(:current_user) { user }
+      allow(group).to receive(:virtual_registry_policy_subject).and_return(policy_subject)
+      allow(Ability).to receive(:allowed?).with(user, :destroy_virtual_registry,
+        policy_subject).and_return(allow_destroy_virtual_registry)
+    end
+
+    subject { helper.can_destroy_virtual_registry?(group) }
+
+    where(:allow_destroy_virtual_registry, :result) do
+      true  | true
+      false | false
+    end
+
+    with_them do
+      it { is_expected.to eq(result) }
+    end
+  end
+
   describe '#maven_registries_data' do
     let(:group) { build_stubbed(:group) }
 
@@ -59,8 +83,33 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
       json_data = ::Gitlab::Json.parse(helper.maven_registries_data(group))
       expect(json_data).to include(
         'fullPath' => group.full_path,
-        'basePath' => group_virtual_registries_maven_registries_path(group)
+        'editPathTemplate' => edit_group_virtual_registries_maven_registry_path(group, ':id'),
+        'showPathTemplate' => group_virtual_registries_maven_registry_path(group, ':id')
       )
+    end
+  end
+
+  describe '#delete_registry_modal_data' do
+    let(:maven_registry) do
+      build_stubbed(:virtual_registries_packages_maven_registry, group: group, name: 'test-registry')
+    end
+
+    let(:group) { build_stubbed(:group) }
+
+    subject(:modal_data) { helper.delete_registry_modal_data(group, maven_registry) }
+
+    it 'returns the JSON data for modal to delete registry' do
+      expect(modal_data).to eq({
+        path: group_virtual_registries_maven_registry_path(group, maven_registry),
+        method: 'delete',
+        modal_attributes: {
+          title: 'Delete Maven registry',
+          size: 'sm',
+          messageHtml: 'Are you sure you want to delete <strong>test-registry</strong>?',
+          okVariant: 'danger',
+          okTitle: 'Delete'
+        }
+      })
     end
   end
 end
