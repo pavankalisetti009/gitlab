@@ -45,7 +45,7 @@ describe('DuoSelfHostedApp', () => {
     createComponent();
 
     expect(wrapper.text()).toMatch(
-      'Manage GitLab Duo by configuring and assigning self-hosted models to AI-powered features.',
+      'Manage GitLab Duo by configuring and assigning self-hosted models to AI-native features.',
     );
   });
 
@@ -77,7 +77,7 @@ describe('DuoSelfHostedApp', () => {
     it('renders the correct name', () => {
       createComponent();
 
-      expect(findFeatureSettingsTab().text()).toBe('AI-powered features');
+      expect(findFeatureSettingsTab().text()).toBe('AI-native features');
     });
 
     it('navigates to AI feature settings when tab is clicked', async () => {

@@ -93,7 +93,7 @@ describe('AiCommonSettings', () => {
     it('renders the settings block description text', () => {
       expect(findGeneralSettingsDescriptionText().exists()).toBe(true);
       expect(findGeneralSettingsDescriptionText().text()).toContain(
-        'Configure AI-powered GitLab Duo features',
+        'Configure AI-native GitLab Duo features',
       );
     });
   });

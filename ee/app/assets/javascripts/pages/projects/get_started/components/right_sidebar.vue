@@ -31,7 +31,7 @@ export default {
         <p class="gl-my-3">
           {{
             s__(
-              'LearnGitLab|In this tutorial, we explore 10 tips and best practices to integrate GitLab Duo Chat into your AI-powered DevSecOps workflows and refine your prompts for the best results.',
+              'LearnGitLab|In this tutorial, we explore 10 tips and best practices to integrate GitLab Duo Chat into your AI-native DevSecOps workflows and refine your prompts for the best results.',
             )
           }}
         </p>

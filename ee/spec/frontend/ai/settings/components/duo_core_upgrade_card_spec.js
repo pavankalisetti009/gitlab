@@ -25,7 +25,7 @@ describe('DuoCoreUpgradeCard', () => {
       expect(wrapper.text()).toContain('Upgrade to');
       expect(wrapper.text()).toContain('GitLab Duo Pro or Enterprise');
       expect(wrapper.text()).toContain(
-        'Unlock advanced AI-powered capabilities with the Premium or Ultimate tier designed for your development needs',
+        'Unlock advanced AI-native capabilities with the Premium or Ultimate tier designed for your development needs',
       );
     });
 

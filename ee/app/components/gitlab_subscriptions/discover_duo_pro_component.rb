@@ -44,7 +44,7 @@ module GitlabSubscriptions
           body: safe_format(
             s_(
               "DuoProDiscover|The GitLab %{link_start}AI Transparency Center%{link_end} details how we uphold " \
-                "ethics and transparency in our AI-powered features."
+                "ethics and transparency in our AI-native features."
             ),
             tag_pair(
               link_to(
@@ -108,11 +108,11 @@ module GitlabSubscriptions
         {
           header: s_('DuoProDiscover|Modernize code faster'),
           body: s_(
-            "DuoProDiscover|Streamline the refactoring process with AI-powered recommendations to optimize " \
+            "DuoProDiscover|Streamline the refactoring process with AI-native recommendations to optimize " \
               "code structure and improve readability."
           ),
           footer: render_footer_link(
-            link_text: s_('DuoProDiscover|Refactor code into modern languages with AI-powered GitLab Duo'),
+            link_text: s_('DuoProDiscover|Refactor code into modern languages with AI-native GitLab Duo'),
             link_path: 'https://about.gitlab.com/blog/2024/08/26/refactor-code-into-modern-languages-with-ai-powered-gitlab-duo/',
             track_label: 'modernize_code_feature',
             track_action: documentation_link_track_action

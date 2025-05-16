@@ -26,7 +26,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       .to receive(:find_by_name).with(:code_suggestions).and_return(code_suggestions_service)
   end
 
-  describe 'AI-Powered features settings for Self-Managed instances' do
+  describe 'AI-native features settings for Self-Managed instances' do
     describe '#admin_ai_configuration_settings_helper_data' do
       subject(:admin_ai_configuration_settings_helper_data) { helper.admin_ai_configuration_settings_helper_data }
 
