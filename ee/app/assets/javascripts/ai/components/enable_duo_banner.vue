@@ -35,14 +35,7 @@ export default {
     ConfirmActionModal,
   },
   mixins: [InternalEvents.mixin()],
-  inject: [
-    'bannerTitle',
-    'enableButtonHref',
-    'groupId',
-    'groupPlan',
-    'calloutsPath',
-    'calloutsFeatureName',
-  ],
+  inject: ['bannerTitle', 'groupId', 'groupPlan', 'calloutsPath', 'calloutsFeatureName'],
   data() {
     return {
       isDismissed: false,

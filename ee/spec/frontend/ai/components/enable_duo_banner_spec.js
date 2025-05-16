@@ -19,7 +19,6 @@ describe('EnableDuoBanner', () => {
 
   const provide = {
     bannerTitle: 'Get started with AI-native features',
-    enableButtonHref: '/activate_link',
     learnMoreHref: '/learn_more_link',
     groupId: 1,
     groupPlan: 'Ultimate',
