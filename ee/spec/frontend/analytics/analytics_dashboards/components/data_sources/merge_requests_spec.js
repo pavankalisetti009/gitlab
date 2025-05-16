@@ -137,17 +137,8 @@ describe('Merge requests data source', () => {
       });
     });
 
-    it('returns an empty object', () => {
-      expect(res).toEqual({
-        list: [],
-        pageInfo: {
-          currentPage: 1,
-          firstPageSize: 20,
-          lastPageSize: null,
-          nextPageCursor: '',
-          prevPageCursor: '',
-        },
-      });
+    it('returns null', () => {
+      expect(res).toBeNull();
     });
   });
 });

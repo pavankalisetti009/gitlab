@@ -64,12 +64,21 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
     ]
   end
 
+  let(:mr_analytics_available_visualizations) do
+    %w[
+      mean_time_to_merge
+      merge_requests_over_time
+      merge_requests_throughput_table
+    ]
+  end
+
   before do
     allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
     stub_licensed_features(
       product_analytics: true,
       project_level_analytics_dashboard: true,
-      group_level_analytics_dashboard: true
+      group_level_analytics_dashboard: true,
+      project_merge_request_analytics: true
     )
     project.project_setting.update!(product_analytics_instrumentation_key: "key")
     allow_next_instance_of(::ProductAnalytics::CubeDataQueryService) do |instance|
@@ -80,6 +89,9 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
 
     allow(Ability).to receive(:allowed?)
                   .with(user, :read_dora4_analytics, anything)
+                  .and_return(false)
+    allow(Ability).to receive(:allowed?)
+                  .with(user, :read_project_merge_request_analytics, anything)
                   .and_return(false)
   end
 
@@ -116,6 +128,18 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
     end
   end
 
+  shared_examples_for 'shows Merge request analytics visualizations when available' do
+    before do
+      allow(Ability).to receive(:allowed?)
+                    .with(user, :read_project_merge_request_analytics, anything)
+                    .and_return(true)
+    end
+
+    it 'includes built in visualizations for Merge request analytics dashboard' do
+      expect(subject.map(&:slug)).to include(*mr_analytics_available_visualizations)
+    end
+  end
+
   describe '#slug' do
     subject { described_class.for(container: project, user: user) }
 
@@ -147,7 +171,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
         expect(subject.map { |v| v.config['type'] }).to include('BarChart', 'LineChart')
       end
 
-      it 'returns the available project vsd visualizations' do
+      it 'returns the available project visualizations' do
         expect(subject.map(&:slug)).to include(*project_vsd_available_visualizations)
 
         expect(subject.map(&:slug)).not_to include(*group_only_visualizations)
@@ -192,7 +216,8 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
         end
 
         it 'returns all visualizations stored in the project but no built in product analytics visualizations' do
-          available_visualizations_count = num_custom_visualizations + project_vsd_available_visualizations.length
+          available_visualizations_count = num_custom_visualizations +
+            project_vsd_available_visualizations.length
 
           expect(subject.count).to eq(available_visualizations_count)
           expect(subject.map { |v| v.config['type'] }).to include('BarChart', 'LineChart')
@@ -200,6 +225,7 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
       end
 
       it_behaves_like 'shows AI impact visualizations when available'
+      it_behaves_like 'shows Merge request analytics visualizations when available'
     end
 
     context 'when resource_parent is a group' do
@@ -333,6 +359,14 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
     end
   end
 
+  describe '.merge_requests_visualizations' do
+    subject { described_class.merge_requests_visualizations }
+
+    it 'returns the merge request analytics dashboard builtin visualizations' do
+      expect(subject.count).to eq(3)
+    end
+  end
+
   context 'when dashboard is a built-in dashboard' do
     let(:dashboard) { dashboards.find { |d| d.title == 'Audience' } }
 
@@ -403,7 +437,8 @@ RSpec.describe ProductAnalytics::Visualization, feature_category: :product_analy
                   "[\"AreaChart\", \"LineChart\", \"ColumnChart\", \"DataTable\", \"SingleStat\", " \
                   "\"DORAChart\", \"UsageOverview\", \"DoraPerformersScore\", \"DoraProjectsComparison\", " \
                   "\"AiImpactTable\", \"ContributionsByUserTable\", \"ContributionsPushesChart\", " \
-                  "\"ContributionsIssuesChart\", \"ContributionsMergeRequestsChart\", \"NamespaceMetadata\"]"]
+                  "\"ContributionsIssuesChart\", \"ContributionsMergeRequestsChart\", \"NamespaceMetadata\", " \
+                  "\"MergeRequestsThroughputTable\"]"]
       expect(vis&.errors).to match_array(expected)
     end
   end

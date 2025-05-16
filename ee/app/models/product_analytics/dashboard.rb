@@ -167,6 +167,20 @@ module ProductAnalytics
       )
     end
 
+    def self.merge_request_analytics_dashboard(container, config_project, user)
+      return unless container.merge_request_analytics_enabled?(user)
+
+      config = load_yaml_dashboard_config('dashboard', 'ee/lib/gitlab/analytics/merge_requests/dashboards')
+
+      new(
+        slug: 'merge_request_analytics',
+        container: container,
+        config: config,
+        config_project: config_project,
+        user_defined: false
+      )
+    end
+
     def self.builtin_dashboards(container, config_project, user)
       builtin = []
 
@@ -175,6 +189,7 @@ module ProductAnalytics
       builtin << ai_impact_dashboard(container, config_project, user)
       builtin << contributions_dashboard(container, config_project)
       builtin << dora_metrics_dashboard(container, config_project) if container.dora_metrics_dashboard_enabled?(user)
+      builtin << merge_request_analytics_dashboard(container, config_project, user)
 
       builtin.flatten
     end
