@@ -98,6 +98,57 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
         end
       end
     end
+
+    describe 'admin role assignment' do
+      let_it_be(:admin_role) { create(:member_role, :admin) }
+
+      context 'when custom roles is not licensed' do
+        it 'does not show admin roles dropdown' do
+          visit path_to_visit
+
+          expect(page).not_to have_content('Access summary for Regular user')
+        end
+      end
+
+      context 'when custom roles is licensed' do
+        before do
+          stub_licensed_features(custom_roles: true)
+        end
+
+        it 'allows the admin to assign and unassign an admin role', :js do
+          visit path_to_visit
+
+          expect(page).to have_content('Access summary for Regular user')
+
+          within('[data-testid="summary-header"] + section') do
+            find_by_testid('base-dropdown-toggle').click
+            within_testid('base-dropdown-menu') do
+              find('.gl-new-dropdown-item', text: admin_role.name).click
+            end
+          end
+
+          click_button submit_button_selector
+
+          expect(page).to have_content(_('User was successfully updated.'))
+
+          # reload the page to make sure we have correct data
+          visit path_to_visit
+
+          within('[data-testid="summary-header"] + section') do
+            expect(find_by_testid('base-dropdown-toggle')).to have_content(admin_role.name)
+
+            find_by_testid('base-dropdown-toggle').click
+            within_testid('base-dropdown-menu') do
+              find('.gl-new-dropdown-item', text: 'No access').click
+            end
+          end
+
+          click_button submit_button_selector
+
+          expect(page).to have_content(_('User was successfully updated.'))
+        end
+      end
+    end
   end
 
   describe 'GET /admin/users/new', :js do
