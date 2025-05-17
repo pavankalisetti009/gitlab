@@ -235,6 +235,25 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
       end
 
       describe 'search index integrity' do
+        shared_examples 'does not call index integrity workers' do
+          it 'does nothing' do
+            expect(::Search::NamespaceIndexIntegrityWorker).not_to receive(:perform_async)
+            expect(::Search::ProjectIndexIntegrityWorker).not_to receive(:perform_async)
+
+            send_search_request(params)
+          end
+        end
+
+        context 'when the search_type is zoekt', :zoekt, :zoekt_settings_enabled do
+          let(:params) { { search: 'test', scope: 'blobs', project_id: project.id } }
+
+          before do
+            zoekt_ensure_project_indexed!(project)
+          end
+
+          it_behaves_like 'does not call index integrity workers'
+        end
+
         context 'when project is present and group is not present' do
           let(:params) { { search: 'test', scope: 'blobs', project_id: project.id } }
 
@@ -249,12 +268,7 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
         context 'when project is not present and group is not present' do
           let(:params) { { search: 'test', scope: 'blobs' } }
 
-          it 'does nothing' do
-            expect(::Search::NamespaceIndexIntegrityWorker).not_to receive(:perform_async)
-            expect(::Search::ProjectIndexIntegrityWorker).not_to receive(:perform_async)
-
-            send_search_request(params)
-          end
+          it_behaves_like 'does not call index integrity workers'
         end
 
         context 'when project is not present and group is present' do
@@ -291,23 +305,13 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
               ensure_elasticsearch_index!
             end
 
-            it 'does nothing' do
-              expect(::Search::NamespaceIndexIntegrityWorker).not_to receive(:perform_async)
-              expect(::Search::ProjectIndexIntegrityWorker).not_to receive(:perform_async)
-
-              send_search_request(params)
-            end
+            it_behaves_like 'does not call index integrity workers'
           end
 
           context 'when scope is not blobs' do
             let(:params) { { search: 'test', scope: 'issues', project_id: project.id, group_id: group.id } }
 
-            it 'does nothing' do
-              expect(::Search::NamespaceIndexIntegrityWorker).not_to receive(:perform_async)
-              expect(::Search::ProjectIndexIntegrityWorker).not_to receive(:perform_async)
-
-              send_search_request(params)
-            end
+            it_behaves_like 'does not call index integrity workers'
           end
         end
       end

@@ -114,23 +114,21 @@ module EE
         'meta.search.filters.not_author_username' => filter_params.dig(:not, :author_username))
     end
 
-    # rubocop:disable Gitlab/ModuleWithInstanceVariables
     def no_results_for_group_or_project_blobs_advanced_search?
-      return false unless @scope == 'blobs'
-      return false unless @project || @group
-      return false unless search_service.use_elasticsearch?
+      return false unless search_service.scope == 'blobs'
+      return false unless search_service.project || search_service.group
+      return false unless search_type == 'advanced'
 
-      @search_objects.blank?
+      search_service.search_objects.blank?
     end
 
     def run_index_integrity_worker
-      if @project.present?
-        ::Search::ProjectIndexIntegrityWorker.perform_async(@project.id)
+      if search_service.project.present?
+        ::Search::ProjectIndexIntegrityWorker.perform_async(search_service.project.id)
       else
-        ::Search::NamespaceIndexIntegrityWorker.perform_async(@group.id)
+        ::Search::NamespaceIndexIntegrityWorker.perform_async(search_service.group.id)
       end
     end
-    # rubocop:enable Gitlab/ModuleWithInstanceVariables
 
     override :filter_params
     def filter_params
