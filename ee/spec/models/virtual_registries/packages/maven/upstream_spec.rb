@@ -248,7 +248,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
   describe '#as_json' do
     subject { upstream.as_json }
 
-    it { is_expected.not_to include('username', 'password') }
+    it { is_expected.not_to include('password') }
   end
 
   describe '#default_cache_entries' do

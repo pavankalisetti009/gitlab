@@ -83,7 +83,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
   describe 'POST /api/v4/virtual_registries/packages/maven/registries/:id/upstreams' do
     let(:registry_id) { registry.id }
     let(:url) { "/virtual_registries/packages/maven/registries/#{registry_id}/upstreams" }
-    let(:params) { { url: 'http://example.com', name: 'foo' } }
+    let(:params) { { url: 'http://example.com', name: 'foo', username: 'user', password: 'test' } }
     let(:upstream_as_json) do
       upstream_model.last.as_json.merge(
         registry_upstream: upstream_model.last.registry_upstream.slice(:id, :position)
