@@ -24,11 +24,9 @@ export default {
     },
   },
   methods: {
+    // eslint-disable-next-line vue/no-unused-properties -- show() is part of the component's public API.
     show() {
       this.$refs.modal.show();
-    },
-    hide() {
-      this.$refs.modal.hide();
     },
     handleCSVFile(e) {
       const [file] = e.target.files;

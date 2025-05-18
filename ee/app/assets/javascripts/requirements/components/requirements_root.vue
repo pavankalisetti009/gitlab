@@ -118,10 +118,6 @@ export default {
       type: Boolean,
       required: true,
     },
-    requirementsWebUrl: {
-      type: String,
-      required: true,
-    },
     importCsvPath: {
       type: String,
       required: true,

@@ -58,7 +58,6 @@ export default () => {
         archived,
         all,
         canCreateRequirement,
-        requirementsWebUrl,
         requirementsImportCsvPath: importCsvPath,
         currentUserEmail,
       } = el.dataset;
@@ -85,7 +84,6 @@ export default () => {
         emptyStatePath,
         projectPath,
         canCreateRequirement,
-        requirementsWebUrl,
         importCsvPath,
         currentUserEmail,
       };
@@ -105,7 +103,6 @@ export default () => {
           next: this.next,
           emptyStatePath: this.emptyStatePath,
           canCreateRequirement: parseBoolean(this.canCreateRequirement),
-          requirementsWebUrl: this.requirementsWebUrl,
           importCsvPath: this.importCsvPath,
           currentUserEmail: this.currentUserEmail,
         },
