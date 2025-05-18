@@ -14,7 +14,7 @@ module Security
 
     feature_category :security_policy_management
 
-    def perform(configuration_id)
+    def perform(configuration_id, _params = {})
       configuration = Security::OrchestrationPolicyConfiguration.find_by_id(configuration_id)
 
       return unless configuration
