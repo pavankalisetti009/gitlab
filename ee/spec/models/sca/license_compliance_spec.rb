@@ -848,6 +848,52 @@ RSpec.describe SCA::LicenseCompliance, feature_category: :software_composition_a
         end
       end
 
+      context 'when when base_report has new dependencies for the same denied license' do
+        before do
+          report.add_license(id: 'MIT', name: 'MIT').add_dependency(name: 'Old dependency')
+          base_report.add_license(id: 'MIT', name: 'MIT').add_dependency(name: 'New dependency')
+
+          allow(license_compliance).to receive(:license_scanning_report).and_return(report)
+          allow(base_compliance).to receive(:license_scanning_report).and_return(base_report)
+        end
+
+        context 'when the feature flag static_licenses is enabled' do
+          before do
+            create(:software_license_policy, :denied,
+              project: project,
+              software_license_spdx_identifier: mit_spdx_identifier,
+              scan_result_policy_read: scan_result_policy_read_without_inclusion
+            )
+          end
+
+          it 'returns differences with denied status' do
+            added = diff[:added]
+
+            expect(added[0].spdx_identifier).to eq('MIT')
+            expect(added[0].classification).to eq('denied')
+          end
+        end
+
+        context 'when the feature flag static_licenses is disabled' do
+          before do
+            stub_feature_flags(static_licenses: false)
+
+            create(:software_license_policy, :denied,
+              project: project,
+              software_license: mit,
+              scan_result_policy_read: scan_result_policy_read_without_inclusion
+            )
+          end
+
+          it 'returns differences with denied status' do
+            added = diff[:added]
+
+            expect(added[0].spdx_identifier).to eq('MIT')
+            expect(added[0].classification).to eq('denied')
+          end
+        end
+      end
+
       context 'when base_report does not have denied licenses' do
         before do
           base_report.add_license(id: mit_spdx_identifier, name: mit_name)

@@ -42,7 +42,7 @@ module SCA
       other_report = other.license_scanning_report
       denied_policies_from_other_report = denied_license_policies_from_report(other_report)
 
-      license_scanning_report.diff_with(other_report).transform_values do |reported_licenses|
+      license_scanning_report_diff(other_report).transform_values do |reported_licenses|
         reported_licenses.map do |reported_license|
           build_policy_with_denied_licenses(denied_policies_from_other_report, reported_license)
         end
@@ -56,6 +56,10 @@ module SCA
     end
 
     private
+
+    def license_scanning_report_diff(other_report)
+      license_scanning_report.diff_with_including_new_dependencies_for_unchanged_licenses(other_report)
+    end
 
     attr_reader :project, :pipeline, :scanner
 
