@@ -199,7 +199,9 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
           end
 
           it 'reports new licenses' do
-            expect(subject[:data]['new_licenses']).to match([a_hash_including('name' => 'Apache License 2.0')])
+            expect(subject[:data]['new_licenses']).to match([a_hash_including('name' => 'Apache License 2.0'),
+              a_hash_including('name' => 'BSD 4-Clause "Original" or "Old" License'),
+              a_hash_including('name' => 'unknown')])
           end
 
           it 'reports new licenses statuses' do
@@ -228,7 +230,9 @@ RSpec.describe Ci::CompareLicenseScanningReportsService, feature_category: :soft
         end
 
         it 'reports new licenses' do
-          expect(subject[:data]['new_licenses']).to match([a_hash_including('name' => 'Apache License 2.0')])
+          expect(subject[:data]['new_licenses']).to match([a_hash_including('name' => 'Apache License 2.0'),
+            a_hash_including('name' => 'BSD 4-Clause "Original" or "Old" License'),
+            a_hash_including('name' => 'unknown')])
         end
 
         it 'reports new licenses statuses' do
