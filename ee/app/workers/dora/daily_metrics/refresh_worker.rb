@@ -12,7 +12,8 @@ module Dora
       deduplicate :until_executing
       idempotent!
       queue_namespace :dora_metrics
-      feature_category :continuous_delivery
+      feature_category :dora_metrics
+      loggable_arguments 0, 1
 
       def perform(environment_id, date, _event = nil)
         Environment.find_by_id(environment_id).try do |environment|

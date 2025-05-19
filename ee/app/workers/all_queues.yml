@@ -955,7 +955,7 @@
   :queue_namespace: :deployment
 - :name: dora_metrics:dora_daily_metrics_refresh
   :worker_name: Dora::DailyMetrics::RefreshWorker
-  :feature_category: :continuous_delivery
+  :feature_category: :dora_metrics
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown
