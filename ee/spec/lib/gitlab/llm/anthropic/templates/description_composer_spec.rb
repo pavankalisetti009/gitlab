@@ -7,13 +7,16 @@ RSpec.describe Gitlab::Llm::Anthropic::Templates::DescriptionComposer, feature_c
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:merge_request) { create(:merge_request, source_project: project) }
 
+  let(:previous_response) { '' }
+
   let(:params) do
     {
       description: 'Client merge request description',
       user_prompt: 'Hello world from user prompt',
       title: merge_request.title,
       source_branch: merge_request.source_branch,
-      target_branch: merge_request.target_branch
+      target_branch: merge_request.target_branch,
+      previous_response: previous_response
     }
   end
 
@@ -36,6 +39,20 @@ RSpec.describe Gitlab::Llm::Anthropic::Templates::DescriptionComposer, feature_c
 
     it 'includes description sent from client' do
       expect(template.to_prompt[:messages][0][:content]).to include('Client merge request description')
+    end
+
+    context 'with previous_response' do
+      let(:previous_response) { 'This is the previous responses result' }
+
+      it 'includes previous result in prompt' do
+        expect(template.to_prompt[:messages][0][:content]).to include(
+          <<~CONTENT
+          <previous_response>
+          This is the previous responses result
+          </previous_response>
+          CONTENT
+        )
+      end
     end
 
     context 'with source_project_id' do

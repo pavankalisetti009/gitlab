@@ -24,6 +24,10 @@ module Gitlab
             %<diff>s
             </diffs>
 
+            <previous_response>
+            %<previous_response>s
+            </previous_response>
+
             Your goal is to update only the part of the description that is enclosed in <selected-text> tags. The user has provided a prompt to guide this update:
 
             <user_prompt>
@@ -43,6 +47,7 @@ module Gitlab
               - Keeps the same tone and style as the original description
             6. Do not modify any part of the description outside of the <selected-text> tags.
             7. Return only the updated content that should replace the original <selected-text> section. Do not include the <selected-text> tags in your response.
+            8. If a previous response exists, use it as the base for any updates.
 
             Your response should contain only the updated text, without any additional explanation or commentary. Ensure that the updated text flows seamlessly with the surrounding content in the original description.
             PROMPT
@@ -68,7 +73,8 @@ module Gitlab
               diff: extracted_diff,
               description: params[:description],
               title: params[:title],
-              user_prompt: params[:user_prompt]
+              user_prompt: params[:user_prompt],
+              previous_response: params[:previous_response] || ''
             }
           end
 

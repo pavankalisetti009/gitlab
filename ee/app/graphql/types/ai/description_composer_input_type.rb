@@ -28,6 +28,12 @@ module Types
       argument :user_prompt, GraphQL::Types::String,
         required: true,
         description: 'Prompt from user.'
+
+      argument :previous_response, GraphQL::Types::String,
+        required: false,
+        description: <<~DESC
+          Previously AI-generated description content used for context in iterative refinements or follow-up prompts.
+        DESC
     end
   end
 end
