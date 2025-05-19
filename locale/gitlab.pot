@@ -616,6 +616,9 @@ msgstr ""
 msgid "%{attribute} already taken."
 msgstr ""
 
+msgid "%{author_container_start}%{author}requested to merge %{author_container_end}%{source_branch} %{copy_button} into %{target_branch} %{target_copy_button} %{created_at}"
+msgstr ""
+
 msgid "%{author_link} cloned %{original_issue} to %{new_issue}."
 msgstr ""
 
@@ -632,9 +635,6 @@ msgid "%{author} commented %{time}"
 msgstr ""
 
 msgid "%{author} has created a merge request that you can approve."
-msgstr ""
-
-msgid "%{author} requested to merge %{source_branch} %{copy_button} into %{target_branch} %{target_copy_button} %{created_at}"
 msgstr ""
 
 msgid "%{board_target} not found"
