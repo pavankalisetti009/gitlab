@@ -88,7 +88,7 @@ module EE
 
       def show_explore_duo_core_banner?(merge_request, namespace)
         merge_request.assignees.include?(current_user) &&
-          duo_core_available?(namespace) &&
+          ::GitlabSubscriptions::DuoCore.available?(current_user, namespace) &&
           !user_dismissed?(EXPLORE_DUO_CORE_BANNER)
       end
 
@@ -115,15 +115,6 @@ module EE
 
       def show_ultimate_trial_suitable_env?
         ::Gitlab.com? && !::Gitlab::Database.read_only?
-      end
-
-      def duo_core_available?(namespace)
-        if ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
-          ::Feature.enabled?(:reveal_duo_core_feature, namespace) &&
-            current_user.can?(:access_duo_core_features, namespace)
-        else
-          current_user.can?(:access_duo_core_features)
-        end
       end
     end
   end

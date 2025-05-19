@@ -127,7 +127,17 @@ module Billing
     end
 
     def plans_data
+      duo_core_features = [
+        {
+          title: s_("BillingPlans|AI Chat in the IDE")
+        },
+        {
+          title: s_("BillingPlans|AI Code Suggestions in the IDE")
+        }
+      ]
+
       premium_features = [
+        *duo_core_features,
         {
           title: s_("BillingPlans|Code Ownership and Protected Branches")
         },
@@ -152,6 +162,7 @@ module Billing
       ]
 
       ultimate_features = [
+        *duo_core_features,
         {
           title: s_("BillingPlans|Suggested Reviewers")
         },
@@ -192,20 +203,6 @@ module Billing
           title: s_("BillingPlans|Free guest users")
         }
       ]
-
-      if ::Feature.enabled?(:reveal_duo_core_feature, namespace)
-        duo_core_features = [
-          {
-            title: s_("BillingPlans|AI Chat in the IDE")
-          },
-          {
-            title: s_("BillingPlans|AI Code Suggestions in the IDE")
-          }
-        ]
-
-        premium_features.unshift(*duo_core_features)
-        ultimate_features.unshift(*duo_core_features)
-      end
 
       {
         'free' => {

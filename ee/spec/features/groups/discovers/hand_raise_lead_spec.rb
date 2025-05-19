@@ -15,7 +15,6 @@ RSpec.describe 'Groups > Discovers > Hand Raise Lead', :js, :saas, feature_categ
 
   before do
     stub_saas_features(subscriptions_trials: true)
-    stub_feature_flags(reveal_duo_core_feature: true)
 
     sign_in(user)
 
