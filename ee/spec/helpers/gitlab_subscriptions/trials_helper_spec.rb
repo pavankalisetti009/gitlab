@@ -50,12 +50,23 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
     subject(:selector_data) { helper.duo_trial_namespace_selector_data(eligible_namespaces, nil) }
 
     context 'when there are eligible namespaces' do
-      let(:namespace) { build(:namespace) }
-      let(:eligible_namespaces) { [namespace] }
+      let(:eligible_namespaces) do
+        [
+          build_stubbed(:namespace),
+          build_stubbed(:namespace, name: 'name', path: 'path'),
+          build_stubbed(:namespace, name: 'name', path: 'path2')
+        ]
+      end
 
       it 'returns selector data with the eligible namespace' do
         is_expected.to include(any_trial_eligible_namespaces: 'true')
-        expect(parsed_selector_data).to eq([{ 'text' => namespace.name, 'value' => namespace.id.to_s }])
+
+        selector = [
+          { 'text' => eligible_namespaces.first.name, 'value' => eligible_namespaces.first.id.to_s },
+          { 'text' => 'name (/path)', 'value' => eligible_namespaces.second.id.to_s },
+          { 'text' => 'name (/path2)', 'value' => eligible_namespaces.third.id.to_s }
+        ]
+        expect(parsed_selector_data).to eq(selector)
       end
     end
 

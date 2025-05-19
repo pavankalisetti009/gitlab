@@ -3,6 +3,8 @@
 module GitlabSubscriptions
   module Trials
     class TrialFormComponent < ViewComponent::Base
+      include TrialFormDisplayUtilities
+
       # @param [Form Params] form params for the form on submission failure
 
       def initialize(**kwargs)
@@ -61,7 +63,7 @@ module GitlabSubscriptions
       end
 
       def namespace_options_for_listbox
-        group_options = current_namespaces_for_selector
+        group_options = format_namespaces_for_selector(eligible_namespaces)
         options = [
           {
             text: _('New'),
@@ -77,10 +79,6 @@ module GitlabSubscriptions
         options.push(text: _('Groups'), options: group_options) unless group_options.empty?
 
         options
-      end
-
-      def current_namespaces_for_selector
-        eligible_namespaces.map { |n| { text: n.name, value: n.id.to_s } }
       end
     end
   end

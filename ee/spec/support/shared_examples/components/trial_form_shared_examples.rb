@@ -61,7 +61,14 @@ RSpec.shared_examples GitlabSubscriptions::Trials::TrialFormComponent do
   end
 
   describe 'with eligible namespaces' do
-    let(:eligible_namespaces) { [build(:group)] }
+    let(:eligible_namespaces) do
+      [
+        build_stubbed(:group),
+        build_stubbed(:group, name: 'name', path: 'path'),
+        build_stubbed(:group, name: 'name', path: 'path2')
+      ]
+    end
+
     let(:expected_form_data_attributes) do
       {
         new_group_name: 'new group name',
@@ -83,6 +90,14 @@ RSpec.shared_examples GitlabSubscriptions::Trials::TrialFormComponent do
               {
                 text: eligible_namespaces.first.name,
                 value: eligible_namespaces.first.id.to_s
+              },
+              {
+                text: 'name (/path)',
+                value: eligible_namespaces.second.id.to_s
+              },
+              {
+                text: 'name (/path2)',
+                value: eligible_namespaces.third.id.to_s
               }
             ]
           }
@@ -101,6 +116,18 @@ RSpec.shared_examples GitlabSubscriptions::Trials::TrialFormComponent do
 
     it 'renders form with correct attributes' do
       expect_form_data_attribute(expected_form_data_attributes)
+    end
+
+    it 'has values for the option value attribute' do
+      element = component.find('.js-namespace-selector')
+      items = ::Gitlab::Json.parse(element['data-items'])
+
+      items.flat_map { |item| item['options'] }.each do |option|
+        msg = "Group selector option '#{option['text']}' has non-numeric value '#{option['value']}', " \
+          "which could cause issues with form submission"
+
+        expect(option['value']).to match(/^\d+$/), msg
+      end
     end
   end
 
