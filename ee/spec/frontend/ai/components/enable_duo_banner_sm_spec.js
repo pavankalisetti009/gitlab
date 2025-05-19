@@ -22,10 +22,6 @@ describe('EnableDuoBanner', () => {
   const defaultUpdateAiSettingsMutationHandler = jest.fn().mockResolvedValue({
     data: {
       duoSettingsUpdate: {
-        duoSettings: {
-          aiGatewayUrl: '',
-          duoCoreFeaturesEnabled: true,
-        },
         errors: [],
       },
     },
@@ -149,10 +145,6 @@ describe('EnableDuoBanner', () => {
       updateAiSettingsMutationHandler: jest.fn().mockResolvedValue({
         data: {
           duoSettingsUpdate: {
-            duoSettings: {
-              aiGatewayUrl: '',
-              duoCoreFeaturesEnabled: false,
-            },
             errors: ['error'],
           },
         },
