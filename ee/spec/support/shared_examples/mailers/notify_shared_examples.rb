@@ -26,11 +26,10 @@ RSpec.shared_examples 'an epic email starting a new thread with reply-by-email e
 
   RSpec.shared_examples 'having group identification headers' do
     it 'has specific group headers' do
-      full_path_as_domain = "#{project.path}.#{project.namespace.path}"
       is_expected.to have_header 'X-GitLab-Group-Id', /#{group.id}/
       is_expected.to have_header 'X-GitLab-Group-Path', /#{group.full_path}/
       is_expected.to have_header 'List-Id',
-        /#{group.full_path} <#{group.id}.#{full_path_as_domain}.#{Gitlab.config.gitlab.host}>/
+        /#{group.full_path} <#{group.id}.#{group.path}.#{Gitlab.config.gitlab.host}>/
     end
   end
 end
