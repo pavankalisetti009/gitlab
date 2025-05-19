@@ -69,7 +69,7 @@ module WorkItems
     private
 
     def action(event)
-      event.is_a?(Epics::EpicCreatedEvent) || event.is_a?(WorkItems::WorkItemCreatedEvent) ? 'create' : 'update'
+      event.is_a?(WorkItems::WorkItemCreatedEvent) ? 'create' : 'update'
     end
 
     def find_epic_and_work_item_from_event(event)
@@ -77,7 +77,7 @@ module WorkItems
       # mismatches due to race conditions.
       work_item_preloaded_associations = [:dates_source, :parent_link, :color]
 
-      if event.is_a?(Epics::EpicCreatedEvent) || event.is_a?(Epics::EpicUpdatedEvent)
+      if event.is_a?(Epics::EpicUpdatedEvent)
         # rubocop: disable CodeReuse/ActiveRecord -- this is a one-off preload we don't re-use.
         epic = Epic.with_work_item.preload(work_item: work_item_preloaded_associations).find_by_id(event.data[:id])
         # rubocop: enable CodeReuse/ActiveRecord

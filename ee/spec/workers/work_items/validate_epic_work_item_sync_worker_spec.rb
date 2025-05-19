@@ -9,7 +9,6 @@ RSpec.describe WorkItems::ValidateEpicWorkItemSyncWorker, feature_category: :tea
 
   let(:epic_event_data) { { id: epic.id, group_id: group.id } }
   let(:work_item_event_data) { { id: work_item.id, namespace_id: group.id } }
-  let(:epic_created_event) { Epics::EpicCreatedEvent.new(data: epic_event_data) }
   let(:epic_updated_event) { Epics::EpicUpdatedEvent.new(data: epic_event_data) }
   let(:work_item_created_event) { WorkItems::WorkItemCreatedEvent.new(data: work_item_event_data) }
   let(:work_item_updated_event) { WorkItems::WorkItemUpdatedEvent.new(data: work_item_event_data) }
@@ -114,10 +113,6 @@ RSpec.describe WorkItems::ValidateEpicWorkItemSyncWorker, feature_category: :tea
     end
 
     it_behaves_like 'subscribes to event' do
-      let(:event) { epic_created_event }
-    end
-
-    it_behaves_like 'subscribes to event' do
       let(:event) { epic_updated_event }
     end
 
@@ -148,10 +143,6 @@ RSpec.describe WorkItems::ValidateEpicWorkItemSyncWorker, feature_category: :tea
   context 'when validate_epic_work_item_sync is not enabled for group' do
     before do
       stub_feature_flags(validate_epic_work_item_sync: false)
-    end
-
-    it_behaves_like 'ignores the published event' do
-      let(:event) { epic_created_event }
     end
 
     it_behaves_like 'ignores the published event' do
@@ -188,25 +179,9 @@ RSpec.describe WorkItems::ValidateEpicWorkItemSyncWorker, feature_category: :tea
 
   context 'for epic events' do
     it_behaves_like 'logs sync and mismatches' do
-      let(:event) { epic_created_event }
-      let(:expected_sync_message) { "Epic and work item attributes are in sync after create" }
-      let(:expected_mismatch_message) { "Epic and work item attributes are not in sync after create" }
-    end
-
-    it_behaves_like 'logs sync and mismatches' do
       let(:event) { epic_updated_event }
       let(:expected_sync_message) { "Epic and work item attributes are in sync after update" }
       let(:expected_mismatch_message) { "Epic and work item attributes are not in sync after update" }
-    end
-
-    context 'when no epic eixsts for the given id' do
-      let(:epic_event_data) { { id: non_existing_record_id, group_id: group.id } }
-
-      it 'does not calculate the diff' do
-        expect(Gitlab::EpicWorkItemSync::Diff).not_to receive(:new)
-
-        consume_event(subscriber: described_class, event: epic_created_event)
-      end
     end
   end
 

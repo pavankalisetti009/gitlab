@@ -15,23 +15,6 @@ module Epics
       imported_from
     ].freeze
 
-    def create_work_item_for(epic)
-      work_item = WorkItem.create(create_params(epic))
-
-      if work_item.errors.any?
-        track_error(:create, work_item.errors.full_messages.to_sentence)
-        return work_item
-      end
-
-      sync_color(epic, work_item)
-      sync_dates_on_epic_creation(epic, work_item)
-
-      work_item.save!(touch: false)
-      work_item
-    rescue StandardError => error
-      raise_error!(:create, error)
-    end
-
     def update_work_item_for!(epic)
       return true unless epic.work_item
 
@@ -45,11 +28,6 @@ module Epics
     end
 
     private
-
-    def create_params(epic)
-      ALLOWED_PARAMS.index_with { |attr| epic[attr] }
-        .merge(work_item_type: WorkItems::Type.default_by_type(:epic), namespace_id: group.id)
-    end
 
     def update_params(epic)
       filtered_attributes = changed_attributes(epic)
@@ -71,24 +49,6 @@ module Epics
         work_item_color.color = epic.color
         work_item.color = work_item_color
       end
-    end
-
-    def sync_dates_on_epic_creation(epic, work_item)
-      dates_source = work_item.dates_source || work_item.build_dates_source
-
-      dates_source.start_date = epic.start_date
-      dates_source.start_date_fixed = epic.start_date_fixed
-      dates_source.start_date_is_fixed = epic.start_date_is_fixed || false
-      dates_source.start_date_sourcing_milestone_id = epic.start_date_sourcing_milestone_id
-      dates_source.start_date_sourcing_work_item_id = epic.start_date_sourcing_epic&.issue_id
-
-      dates_source.due_date = epic.due_date
-      dates_source.due_date_fixed = epic.due_date_fixed
-      dates_source.due_date_is_fixed = epic.due_date_is_fixed || false
-      dates_source.due_date_sourcing_milestone_id = epic.due_date_sourcing_milestone_id
-      dates_source.due_date_sourcing_work_item_id = epic.due_date_sourcing_epic&.issue_id
-
-      work_item.dates_source = dates_source
     end
 
     def sync_dates_on_epic_update(epic, work_item)
