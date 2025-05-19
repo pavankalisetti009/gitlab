@@ -50,11 +50,21 @@ module Onboarding
           message += ' and their onboarding has already been marked as completed in redis'
         end
 
-        ::Gitlab::ErrorTracking.track_exception(
-          ::Onboarding::StepUrlError.new(message),
-          onboarding_status: current_user.onboarding_status.to_json,
-          onboarding_in_progress: current_user.onboarding_in_progress
-        )
+        begin
+          ::Gitlab::ErrorTracking.track_exception(
+            ::Onboarding::StepUrlError.new(message),
+            onboarding_status: current_user.onboarding_status.to_json,
+            onboarding_in_progress: current_user.onboarding_in_progress,
+            db_host: User.connection.load_balancer.host.host,
+            # pg_wal_lsn_diff to tell if one is behind the other
+            db_lsn: User.connection.load_balancer.host.database_replica_location
+          )
+        rescue NotImplementedError, NoMethodError
+          # For non production SaaS instances like test/CI and staging as there is only a primary and no replicas.
+          # database_replica_location throws NotImplementedError
+          # User.connection.load_balancer.host.host throws NoMethodError
+          nil
+        end
 
         Onboarding::FinishService.new(current_user).execute
         return true

@@ -79,35 +79,56 @@ RSpec.describe ApplicationController, type: :request, feature_category: :shared 
             user.update!(onboarding_status_setup_for_company: true)
           end
 
-          it 'does not redirect for a request away from onboarding and tracks the error' do
-            expect(Gitlab::ErrorTracking)
-              .to receive(:track_exception).with(
-                instance_of(::Onboarding::StepUrlError),
-                onboarding_status: user.onboarding_status.to_json,
-                onboarding_in_progress: user.onboarding_in_progress
-              )
-
-            expect { get root_path }.to change { user.reload.onboarding_in_progress }.to(false)
-
-            expect(response).not_to be_redirect
-          end
-
-          context 'when this differs from what is in cache', :use_clean_rails_memory_store_caching do
+          context 'for environments with replicas' do
             before do
-              Rails.cache.write("user_onboarding_in_progress:#{user.id}", false)
+              allow(User.connection.load_balancer.host)
+                .to receive_messages(host: 'host', database_replica_location: 'ABC')
             end
 
             it 'does not redirect for a request away from onboarding and tracks the error' do
-              expect(Gitlab::ErrorTracking).to receive(:track_exception) do |exception, metadata|
-                expect(exception).to be_a(::Onboarding::StepUrlError)
-                expect(exception.message).to include('and their onboarding has already been marked')
-
-                result_metadata = {
+              expect(Gitlab::ErrorTracking)
+                .to receive(:track_exception).with(
+                  instance_of(::Onboarding::StepUrlError),
                   onboarding_status: user.onboarding_status.to_json,
-                  onboarding_in_progress: user.onboarding_in_progress
-                }
-                expect(metadata).to eq(result_metadata)
+                  onboarding_in_progress: user.onboarding_in_progress,
+                  db_host: instance_of(String),
+                  db_lsn: instance_of(String)
+                )
+
+              expect { get root_path }.to change { user.reload.onboarding_in_progress }.to(false)
+
+              expect(response).not_to be_redirect
+            end
+
+            context 'when this differs from what is in cache', :use_clean_rails_memory_store_caching do
+              before do
+                Rails.cache.write("user_onboarding_in_progress:#{user.id}", false)
               end
+
+              it 'does not redirect for a request away from onboarding and tracks the error' do
+                expect(Gitlab::ErrorTracking).to receive(:track_exception) do |exception, metadata|
+                  expect(exception).to be_a(::Onboarding::StepUrlError)
+                  expect(exception.message).to include('and their onboarding has already been marked')
+
+                  result_metadata = {
+                    onboarding_status: user.onboarding_status.to_json,
+                    onboarding_in_progress: user.onboarding_in_progress,
+                    db_host: 'host',
+                    db_lsn: 'ABC'
+                  }
+                  expect(metadata).to eq(result_metadata)
+                end
+
+                expect { get root_path }.to change { user.reload.onboarding_in_progress }.to(false)
+
+                expect(response).not_to be_redirect
+              end
+            end
+          end
+
+          context 'for environments without replicas' do
+            it 'does not redirect for a request away from onboarding and tracks the error' do
+              expect(Gitlab::ErrorTracking).not_to receive(:track_exception)
 
               expect { get root_path }.to change { user.reload.onboarding_in_progress }.to(false)
 

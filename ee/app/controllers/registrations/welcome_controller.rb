@@ -89,13 +89,7 @@ module Registrations
     end
 
     def update_success_path
-      Gitlab::AppLogger.info(
-        message: 'Welcome update success path',
-        username: current_user.username,
-        onboarding_in_progress: current_user.onboarding_in_progress,
-        onboarding_status: current_user.onboarding_status.to_json,
-        user_id: current_user.id
-      )
+      log_success if ::Feature.enabled?(:stop_welcome_redirection, current_user)
 
       ::Onboarding.cache_onboarding_in_progress(current_user)
 
@@ -109,6 +103,21 @@ module Registrations
         # Invites will come here too if there is more than 1.
         path_for_signed_in_user
       end
+    end
+
+    def log_success
+      Gitlab::AppLogger.info(
+        message: 'Welcome update success path',
+        username: current_user.username,
+        onboarding_in_progress: current_user.onboarding_in_progress,
+        onboarding_status: current_user.onboarding_status.to_json,
+        user_id: current_user.id,
+        db_lsn: User.connection.load_balancer.primary_write_location
+      )
+    rescue StandardError
+      # For non production SaaS instances like test/CI and staging as there is only a primary and no replicas.
+      # User.connection.load_balancer.primary_write_location can throw an error
+      nil
     end
 
     def signup_onboarding_path
