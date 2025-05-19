@@ -27,6 +27,10 @@ export const subgroupsAndProjects = {
             },
           },
         ],
+        pageInfo: {
+          hasNextPage: false,
+          endCursor: null,
+        },
       },
       projects: {
         nodes: [
@@ -73,6 +77,10 @@ export const subgroupsAndProjects = {
             },
           },
         ],
+        pageInfo: {
+          hasNextPage: false,
+          endCursor: null,
+        },
       },
     },
   },

@@ -5,7 +5,8 @@ import createDefaultClient from '~/lib/graphql';
 
 Vue.use(VueApollo);
 
-const defaultClient = createDefaultClient(
+const defaultClient = createDefaultClient();
+const appendGroupsClient = createDefaultClient(
   {},
   {
     cacheConfig: {
@@ -20,4 +21,9 @@ const defaultClient = createDefaultClient(
   },
 );
 
-export default new VueApollo({ defaultClient });
+export default new VueApollo({
+  defaultClient,
+  clients: {
+    appendGroupsClient,
+  },
+});

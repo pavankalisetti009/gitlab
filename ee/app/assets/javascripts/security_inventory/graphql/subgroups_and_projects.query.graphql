@@ -1,7 +1,21 @@
-query SubgroupsAndProjects($fullPath: ID!) {
+query SubgroupsAndProjects(
+  $fullPath: ID!
+  $subgroupsFirst: Int
+  $subgroupsAfter: String
+  $projectsFirst: Int
+  $projectsAfter: String
+) {
   group(fullPath: $fullPath) {
     id
-    descendantGroups(includeParentDescendants: false, first: 10) {
+    descendantGroups(
+      includeParentDescendants: false
+      first: $subgroupsFirst
+      after: $subgroupsAfter
+    ) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         __typename
         id
@@ -22,7 +36,11 @@ query SubgroupsAndProjects($fullPath: ID!) {
         }
       }
     }
-    projects(first: 10) {
+    projects(first: $projectsFirst, after: $projectsAfter) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
       nodes {
         __typename
         id

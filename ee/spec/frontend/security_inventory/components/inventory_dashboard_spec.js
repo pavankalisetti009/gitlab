@@ -20,6 +20,7 @@ import ToolCoverageCell from 'ee/security_inventory/components/tool_coverage_cel
 import ActionCell from 'ee/security_inventory/components/action_cell.vue';
 import SecurityInventoryTable from 'ee/security_inventory/components/security_inventory_table.vue';
 import { subgroupsAndProjects } from '../mock_data';
+import { createGroupResponse, createPaginatedHandler } from '../mock_pagination_helpers';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
@@ -65,6 +66,7 @@ describe('InventoryDashboard', () => {
   const findSidebar = () => wrapper.findComponent(SubgroupSidebar);
   const findSidebarToggleButton = () => wrapper.findComponent(GlButton);
   const findInventoryTable = () => wrapper.findComponent(SecurityInventoryTable);
+  const loadMoreButton = () => wrapper.findByTestId('load-more-button');
 
   /* eslint-disable no-underscore-dangle */
   const getIndexByType = (children, type) => {
@@ -243,18 +245,23 @@ describe('InventoryDashboard', () => {
       window.location.hash = `#${newFullPath}`;
 
       await createComponent();
-      expect(requestHandler).toHaveBeenCalledWith({
-        fullPath: newFullPath,
-      });
+
+      expect(requestHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fullPath: newFullPath,
+        }),
+      );
     });
 
     it('fallback to groupFullPath when hash is removed', async () => {
       window.location.hash = '';
 
       await createComponent();
-      expect(requestHandler).toHaveBeenCalledWith({
-        fullPath: defaultProvide.groupFullPath,
-      });
+      expect(requestHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fullPath: defaultProvide.groupFullPath,
+        }),
+      );
     });
   });
 
@@ -306,6 +313,96 @@ describe('InventoryDashboard', () => {
 
     it('has auto-resize enabled for breadcrumb', () => {
       expect(findBreadcrumb().props('autoResize')).toBe(true);
+    });
+  });
+
+  describe('Load more functionality', () => {
+    it('does not render the Load more button by default', () => {
+      expect(loadMoreButton().exists()).toBe(false);
+    });
+
+    it('shows Load more button when more subgroups are available', async () => {
+      const resolver = jest.fn().mockResolvedValue(
+        createGroupResponse({
+          subgroupsPageInfo: { hasNextPage: true, endCursor: 'abc123' },
+        }),
+      );
+
+      await createComponent({ resolver });
+      await waitForPromises();
+
+      expect(loadMoreButton().exists()).toBe(true);
+    });
+
+    it('shows Load more button when more projects are available and subgroups are fully loaded', async () => {
+      const resolver = jest.fn().mockResolvedValue(
+        createGroupResponse({
+          subgroups: [],
+          subgroupsPageInfo: { hasNextPage: false, endCursor: null },
+          projectsPageInfo: { hasNextPage: true, endCursor: 'def456' },
+        }),
+      );
+
+      await createComponent({ resolver });
+      await waitForPromises();
+
+      expect(loadMoreButton().exists()).toBe(true);
+    });
+
+    it('fetches more projects when Load more button is clicked during project pagination', async () => {
+      const handler = createPaginatedHandler({
+        first: {
+          subgroups: [],
+          subgroupsPageInfo: { hasNextPage: false, endCursor: null },
+          projectsPageInfo: { hasNextPage: true, endCursor: 'project-cursor-123' },
+        },
+        second: {
+          projects: [],
+          projectsPageInfo: { hasNextPage: false, endCursor: null },
+        },
+      });
+
+      await createComponent({ resolver: handler });
+      await waitForPromises();
+
+      loadMoreButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(handler.mock.calls[1][0]).toEqual({
+        fullPath: defaultProvide.groupFullPath,
+        subgroupsFirst: 0,
+        subgroupsAfter: null,
+        projectsFirst: 20,
+        projectsAfter: 'project-cursor-123',
+      });
+    });
+
+    it('fetches more subgroups when Load more button is clicked during subgroup pagination', async () => {
+      const handler = createPaginatedHandler({
+        first: {
+          subgroupsPageInfo: { hasNextPage: true, endCursor: 'subgroup-cursor-999' },
+          projects: [],
+        },
+        second: {
+          subgroups: [],
+          subgroupsPageInfo: { hasNextPage: false, endCursor: null },
+          projects: [],
+        },
+      });
+
+      await createComponent({ resolver: handler });
+      await waitForPromises();
+
+      loadMoreButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(handler.mock.calls[1][0]).toEqual({
+        fullPath: defaultProvide.groupFullPath,
+        subgroupsFirst: 20,
+        subgroupsAfter: 'subgroup-cursor-999',
+        projectsFirst: 0,
+        projectsAfter: null,
+      });
     });
   });
 });
