@@ -83,7 +83,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     stub_const('CodeSuggestions::Tasks::Base::AI_GATEWAY_CONTENT_SIZE', 3)
     stub_feature_flags(incident_fail_over_completion_provider: false)
     stub_feature_flags(use_claude_code_completion: false)
-    stub_feature_flags(use_fireworks_codestral_code_completion: false)
     stub_feature_flags(code_completion_opt_out_fireworks: false)
   end
 
@@ -127,11 +126,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
       )
     end
 
-    context 'when Fireworks/Codestral FF is enabled' do
-      before do
-        stub_feature_flags(use_fireworks_codestral_code_completion: true)
-      end
-
+    context 'when using Fireworks/Codestral' do
       let(:request_body_for_fireworks_codestral) do
         request_body_without_model_details.merge(
           "model_name" => "codestral-2501",
@@ -204,16 +199,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
             let(:expected_feature_name) { :code_suggestions }
           end
         end
-      end
-    end
-
-    context 'when Fireworks/Codestral beta FF is disabled' do
-      before do
-        stub_feature_flags(use_fireworks_codestral_code_completion: false)
-      end
-
-      it_behaves_like 'code suggestion task' do
-        let(:expected_body) { request_body_without_model_details }
       end
     end
   end

@@ -57,7 +57,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
     stub_feature_flags(incident_fail_over_completion_provider: false)
     stub_feature_flags(use_claude_code_completion: false)
-    stub_feature_flags(use_fireworks_codestral_code_completion: false)
     stub_feature_flags(code_completion_opt_out_fireworks: false)
   end
 
@@ -196,6 +195,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           content_below_cursor: ''
         },
         stream: false,
+        model_name: 'codestral-2501',
+        model_provider: 'fireworks_ai',
         **additional_params
       }
     end
@@ -387,11 +388,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
         end
 
-        context 'when Fireworks/Codestral beta FF is enabled' do
-          before do
-            stub_feature_flags(use_fireworks_codestral_code_completion: true)
-          end
-
+        context 'when using Fireworks/Codestral' do
           let(:fireworks_codestral_model_details) do
             {
               'model_provider' => 'fireworks_ai',
@@ -834,7 +831,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
           describe 'Fireworks/Codestral opt out by ops FF' do
             before do
-              stub_feature_flags(use_fireworks_codestral_code_completion: true)
               stub_feature_flags(code_completion_opt_out_fireworks: user_duo_group)
             end
 
@@ -966,7 +962,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'base_url' => ::Gitlab::AiGateway.url,
               'expires_at' => expected_expiration,
               'token' => token,
-              'headers' => expected_headers
+              'headers' => expected_headers,
+              'model_details' => { 'model_name' => 'codestral-2501', 'model_provider' => 'fireworks_ai' }
             }
           end
 
@@ -977,11 +974,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(json_response).to match(expected_response)
           end
 
-          context 'when Fireworks/Codestral beta FF is enabled' do
-            before do
-              stub_feature_flags(use_fireworks_codestral_code_completion: true)
-            end
-
+          context 'when using Fireworks/Codestral' do
             it 'includes the fireworks/codestral model metadata in the direct access details' do
               post_api
 
@@ -1100,7 +1093,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                 .and_return({ status: :success, token: token, expires_at: expected_expiration })
             end
 
-            stub_feature_flags(use_fireworks_codestral_code_completion: true)
             stub_feature_flags(code_completion_opt_out_fireworks: user_duo_group)
           end
 
