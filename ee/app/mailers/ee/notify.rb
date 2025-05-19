@@ -39,6 +39,7 @@ module EE
     def add_group_headers
       headers['X-GitLab-Group-Id'] = group.id
       headers['X-GitLab-Group-Path'] = group.full_path
+      headers['List-Id'] = "#{group.full_path} <#{create_list_id_string(group)}>"
     end
   end
 end
