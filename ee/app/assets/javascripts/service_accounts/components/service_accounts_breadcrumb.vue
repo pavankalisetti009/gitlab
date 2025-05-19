@@ -7,9 +7,17 @@ export default {
   components: {
     GlBreadcrumb,
   },
+  props: {
+    staticBreadcrumbs: {
+      type: Object,
+      default: () => ({ items: [] }),
+      required: false,
+    },
+  },
   computed: {
     breadcrumbs() {
       const breadcrumbs = [
+        ...this.staticBreadcrumbs.items,
         {
           text: s__('ServiceAccounts|Service accounts'),
           to: '/',

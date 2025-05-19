@@ -7,11 +7,12 @@ describe('ServiceAccountsBreadcrumb', () => {
 
   const findBreadcrumb = () => wrapper.findComponent(GlBreadcrumb);
 
-  const createComponent = ({ $route = {} } = {}) => {
+  const createComponent = ({ $route = {}, props } = {}) => {
     wrapper = shallowMount(ServiceAccountsBreadcrumb, {
       mocks: {
         $route,
       },
+      propsData: props,
     });
   };
 
@@ -28,5 +29,21 @@ describe('ServiceAccountsBreadcrumb', () => {
       { text: 'Service accounts', to: '/' },
       { text: 'Personal access tokens', to: '/72/access_tokens' },
     ]);
+  });
+
+  describe('when static breadcrumbs are provided', () => {
+    it('should render the static breadcrumbs', () => {
+      const staticBreadcrumb = { text: 'Static breadcrumb', href: '/static' };
+      createComponent({
+        props: {
+          staticBreadcrumbs: { items: [staticBreadcrumb] },
+        },
+      });
+
+      expect(findBreadcrumb().props('items')).toStrictEqual([
+        staticBreadcrumb,
+        { text: 'Service accounts', to: '/' },
+      ]);
+    });
   });
 });
