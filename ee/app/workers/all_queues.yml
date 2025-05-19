@@ -2731,7 +2731,8 @@
   :resource_boundary: :memory
   :weight: 1
   :idempotent: false
-  :tags: []
+  :tags:
+  - :import_shared_storage
   :queue_namespace:
 - :name: projects_deregister_suggested_reviewers_project
   :worker_name: Projects::DeregisterSuggestedReviewersProjectWorker
