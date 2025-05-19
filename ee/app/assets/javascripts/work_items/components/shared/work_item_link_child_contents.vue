@@ -38,6 +38,11 @@ export default {
       required: false,
       default: true,
     },
+    contextualViewEnabled: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     metadataWidgets() {
@@ -75,6 +80,7 @@ export default {
     :show-labels="showLabels"
     :work-item-full-path="workItemFullPath"
     :show-weight="showWeight"
+    :contextual-view-enabled="contextualViewEnabled"
     @click="$emit('click', $event)"
     @removeChild="$emit('removeChild', childItem)"
   >
