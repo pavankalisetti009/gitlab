@@ -2570,21 +2570,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     subject(:pipeline) { merge_request.comparison_base_pipeline(service_class) }
 
-    context 'when the service class is not `Ci::CompareSecurityReportsService`' do
-      let(:service_class) { ::Ci::CompareCodequalityReportsService }
-
-      before do
-        allow(merge_request).to receive_messages(merge_base_pipeline: nil, base_pipeline: nil)
-      end
-
-      it 'follows the normal execution order' do
-        pipeline
-
-        expect(merge_request).to have_received(:merge_base_pipeline)
-        expect(merge_request).to have_received(:base_pipeline)
-      end
-    end
-
     context 'when the service class is `Ci::CompareSecurityReportsService`' do
       let(:service_class) { ::Ci::CompareSecurityReportsService }
 
@@ -3080,37 +3065,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       it 'returns nil' do
         expect(pipeline).to be_nil
       end
-    end
-  end
-
-  describe '#find_pipeline_with_dependency_scanning_reports' do
-    let_it_be(:merge_request) { create(:merge_request) }
-    let_it_be(:pipeline_with_ds) { create(:ee_ci_pipeline, :with_dependency_scanning_feature_branch) }
-    let_it_be(:pipeline_without_ds) { create(:ee_ci_pipeline) }
-
-    it 'returns the pipeline with dependency_scanning reports' do
-      pipelines = [pipeline_without_ds, pipeline_with_ds]
-
-      result = merge_request.find_pipeline_with_dependency_scanning_reports(pipelines)
-
-      expect(result).to eq(pipeline_with_ds)
-    end
-
-    it 'returns nil if no pipeline has dependency_scanning reports' do
-      pipelines = [pipeline_without_ds]
-
-      result = merge_request.find_pipeline_with_dependency_scanning_reports(pipelines)
-
-      expect(result).to be_nil
-    end
-
-    it 'returns the first pipeline with dependency_scanning reports if multiple exist' do
-      another_pipeline_with_ds = create(:ee_ci_pipeline, :with_dependency_scanning_feature_branch)
-      pipelines = [pipeline_without_ds, pipeline_with_ds, another_pipeline_with_ds]
-
-      result = merge_request.find_pipeline_with_dependency_scanning_reports(pipelines)
-
-      expect(result).to eq(pipeline_with_ds)
     end
   end
 
