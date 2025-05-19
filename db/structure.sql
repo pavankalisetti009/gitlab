@@ -36487,6 +36487,8 @@ CREATE INDEX index_p_ci_job_annotations_on_project_id ON ONLY p_ci_job_annotatio
 
 CREATE INDEX index_p_ci_job_artifact_reports_on_project_id ON ONLY p_ci_job_artifact_reports USING btree (project_id);
 
+CREATE INDEX index_p_ci_pipeline_variables_on_project_id ON ONLY p_ci_pipeline_variables USING btree (project_id);
+
 CREATE INDEX index_p_ci_pipelines_config_on_project_id ON ONLY p_ci_pipelines_config USING btree (project_id);
 
 CREATE INDEX index_p_ci_runner_machine_builds_on_project_id ON ONLY p_ci_runner_machine_builds USING btree (project_id);
