@@ -7,11 +7,12 @@ import Tracking from '~/tracking';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 import {
   I18N_WORK_ITEM_ERROR_UPDATING,
-  sprintfWorkItem,
+  NAME_TO_TEXT_LOWERCASE_MAP,
   TRACKING_CATEGORY_SHOW,
   WORK_ITEM_TYPE_NAME_OBJECTIVE,
 } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
+import { sprintf } from '~/locale';
 
 export default {
   minValue: 0,
@@ -130,7 +131,12 @@ export default {
         })
         .catch((error) => {
           this.resetProgress();
-          this.$emit('error', sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType));
+          this.$emit(
+            'error',
+            sprintf(I18N_WORK_ITEM_ERROR_UPDATING, {
+              workItemType: NAME_TO_TEXT_LOWERCASE_MAP[this.workItemType],
+            }),
+          );
           Sentry.captureException(error);
         })
         .finally(() => {

@@ -8,13 +8,13 @@ import {
   GlPopover,
 } from '@gitlab/ui';
 import { validateHexColor } from '~/lib/utils/color_utils';
-import { __, s__ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import {
   DEFAULT_EPIC_COLORS,
   EPIC_COLORS,
   I18N_WORK_ITEM_ERROR_UPDATING,
-  sprintfWorkItem,
+  NAME_TO_TEXT_LOWERCASE_MAP,
   TRACKING_CATEGORY_SHOW,
   WIDGET_TYPE_COLOR,
 } from '~/work_items/constants';
@@ -187,7 +187,9 @@ export default {
         }
         this.track('updated_color');
       } catch {
-        const msg = sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType);
+        const msg = sprintf(I18N_WORK_ITEM_ERROR_UPDATING, {
+          workItemType: NAME_TO_TEXT_LOWERCASE_MAP[this.workItemType],
+        });
         this.$emit('error', msg);
       } finally {
         this.isEditing = false;

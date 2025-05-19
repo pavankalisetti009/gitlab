@@ -7,10 +7,10 @@ import {
   healthStatusDropdownOptions,
 } from 'ee/sidebar/constants';
 import {
-  I18N_WORK_ITEM_ERROR_UPDATING,
-  sprintfWorkItem,
-  TRACKING_CATEGORY_SHOW,
   i18n,
+  I18N_WORK_ITEM_ERROR_UPDATING,
+  NAME_TO_TEXT_LOWERCASE_MAP,
+  TRACKING_CATEGORY_SHOW,
 } from '~/work_items/constants';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
@@ -18,6 +18,7 @@ import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutati
 import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import { newWorkItemId, newWorkItemFullPath, findHealthStatusWidget } from '~/work_items/utils';
 import Tracking from '~/tracking';
+import { sprintf } from '~/locale';
 
 export default {
   HEALTH_STATUS_I18N_HEALTH_STATUS,
@@ -143,7 +144,9 @@ export default {
           }
         })
         .catch((error) => {
-          const msg = sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType);
+          const msg = sprintf(I18N_WORK_ITEM_ERROR_UPDATING, {
+            workItemType: NAME_TO_TEXT_LOWERCASE_MAP[this.workItemType],
+          });
           this.$emit('error', msg);
           Sentry.captureException(error);
         })
