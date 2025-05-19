@@ -424,5 +424,17 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         end
       end
     end
+
+    context 'for position sync' do
+      let_it_be(:upstream_2) { create(:virtual_registries_packages_maven_upstream, registry:) }
+
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      it 'syncs the position' do
+        expect { api_request }.to change { upstream_2.registry_upstream.reset.position }.by(-1)
+      end
+    end
   end
 end

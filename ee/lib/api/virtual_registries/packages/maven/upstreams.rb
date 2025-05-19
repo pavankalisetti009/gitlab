@@ -167,7 +167,16 @@ module API
                 delete do
                   authorize! :destroy_virtual_registry, upstream
 
-                  destroy_conditionally!(upstream)
+                  # Revisit when implementing shareable upstreams
+                  # https://gitlab.com/gitlab-org/gitlab/-/issues/541117
+                  registry_upstream = upstream.registry_upstream
+
+                  destroy_conditionally!(upstream) do
+                    upstream.transaction do
+                      upstream.destroy
+                      registry_upstream.sync_higher_positions
+                    end
+                  end
                 end
               end
             end
