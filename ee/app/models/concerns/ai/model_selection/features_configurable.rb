@@ -20,13 +20,15 @@ module Ai
         summarize_new_merge_request: 9,
         duo_chat_explain_vulnerability: 10,
         resolve_vulnerability: 11,
-        summarize_review: 12,
-        duo_chat_summarize_comments: 14
+        summarize_review: 12
       }.freeze
       # Duo CLI should be number 13
       # But it has been disabled here because its context not namespaced
       # See full feature list at ee/app/models/ai/feature_setting.rb
       # For more context see https://gitlab.com/groups/gitlab-org/-/epics/17570#note_2487671188
+
+      # duo_chat_summarize_comments: 14 commented out for this iteration.
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/537651#note_2489453634 for more context
 
       included do
         enum :feature, FEATURES, validate: true
