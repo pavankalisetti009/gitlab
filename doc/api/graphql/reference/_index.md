@@ -747,6 +747,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="querygroupsactive"></a>`active` | [`Boolean`](#boolean) | When `nil` (default value), returns all groups. When `true`, returns only groups that are not pending deletion. When `false`, only returns groups that are pending deletion. |
 | <a id="querygroupsallavailable"></a>`allAvailable` | [`Boolean`](#boolean) | When `true`, returns all accessible groups. When `false`, returns only groups where the user is a member. Unauthenticated requests always return all public groups. The `owned_only` argument takes precedence. |
 | <a id="querygroupsids"></a>`ids` | [`[ID!]`](#id) | Filter groups by IDs. |
 | <a id="querygroupsmarkedfordeletionon"></a>`markedForDeletionOn` | [`Date`](#date) | Date when the group was marked for deletion. |
@@ -16388,6 +16389,7 @@ The connection type for [`Group`](#group).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="groupconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="groupconnectionedges"></a>`edges` | [`[GroupEdge]`](#groupedge) | A list of edges. |
 | <a id="groupconnectionnodes"></a>`nodes` | [`[Group]`](#group) | A list of nodes. |
 | <a id="groupconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
@@ -33888,6 +33890,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="organizationgroupsactive"></a>`active` | [`Boolean`](#boolean) | When `nil` (default value), returns all groups. When `true`, returns only groups that are not pending deletion. When `false`, only returns groups that are pending deletion. |
 | <a id="organizationgroupsallavailable"></a>`allAvailable` | [`Boolean`](#boolean) | When `true`, returns all accessible groups. When `false`, returns only groups where the user is a member. Unauthenticated requests always return all public groups. The `owned_only` argument takes precedence. |
 | <a id="organizationgroupsids"></a>`ids` | [`[ID!]`](#id) | Filter groups by IDs. |
 | <a id="organizationgroupsmarkedfordeletionon"></a>`markedForDeletionOn` | [`Date`](#date) | Date when the group was marked for deletion. |
