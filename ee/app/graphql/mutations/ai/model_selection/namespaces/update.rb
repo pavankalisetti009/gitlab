@@ -1,0 +1,93 @@
+# frozen_string_literal: true
+
+module Mutations
+  module Ai
+    module ModelSelection
+      module Namespaces
+        class Update < BaseMutation
+          graphql_name 'AiModelSelectionNamespaceUpdate'
+          description "Updates or creates settings for AI features for a namespace."
+          authorize :admin_group
+
+          field :ai_feature_settings,
+            [::Types::Ai::ModelSelection::Namespaces::FeatureSettingType],
+            null: false,
+            description: 'List of AI feature settings after mutation.',
+            experiment: { milestone: '18.1' }
+
+          argument :group_id, ::Types::GlobalIDType[::Group],
+            required: true,
+            description: 'Group for the model selection.'
+
+          argument :features, [::Types::Ai::ModelSelection::FeaturesEnum],
+            required: true,
+            description: 'Array of AI features being configured (for single or batch update).'
+
+          argument :offered_model_ref, GraphQL::Types::String,
+            required: true,
+            description: 'Identifier of the selected model for the feature.'
+
+          def resolve(**args)
+            @group_id = args[:group_id]
+
+            check_feature_access!
+
+            return { ai_feature_settings: [], errors: ['At least one feature is required'] } if args[:features].empty?
+
+            upsert_args = args.except(:features, :group_id)
+
+            results = args[:features].map do |feature|
+              upsert_feature_setting(upsert_args.merge(feature: feature))
+            end
+
+            errors = results.select(&:error?).flat_map(&:errors)
+            feature_settings = results.reject(&:error?).flat_map(&:payload)
+
+            decorated_feature_settings = ::Gitlab::Graphql::Representation::ModelSelection::FeatureSetting
+                                           .decorate(feature_settings)
+
+            {
+              ai_feature_settings: decorated_feature_settings,
+              errors: errors
+            }
+          end
+
+          private
+
+          attr_reader :group_id
+
+          def check_feature_access!
+            return if ::Feature.enabled?(:ai_model_switching, associated_group) &&
+              associated_group&.namespace_settings&.duo_features_enabled?
+
+            raise_resource_not_available_error!
+          end
+
+          def associated_group
+            @associated_group ||= begin
+              group = authorized_find!(id: group_id)
+              raise_sub_group_error! unless group.root?
+              group
+            end
+          end
+
+          def upsert_feature_setting(args)
+            feature_setting = find_or_initialize_object(feature: args[:feature])
+
+            ::Ai::ModelSelection::UpdateService.new(
+              feature_setting, current_user, args
+            ).execute
+          end
+
+          def find_or_initialize_object(feature:)
+            ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(associated_group, feature)
+          end
+
+          def raise_sub_group_error!
+            raise_resource_not_available_error!(_('Model selection is only available for top-level namespaces.'))
+          end
+        end
+      end
+    end
+  end
+end
