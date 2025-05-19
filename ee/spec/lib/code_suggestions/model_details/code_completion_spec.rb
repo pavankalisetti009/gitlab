@@ -23,13 +23,11 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
   shared_examples 'selects the correct model' do
     before do
       stub_feature_flags(use_claude_code_completion: false)
-      stub_feature_flags(use_fireworks_codestral_code_completion: false)
     end
 
-    context 'when Fireworks/Codestral FF is enabled' do
+    context 'when using Fireworks/Codestral' do
       before do
         stub_feature_flags(code_completion_opt_out_fireworks: false)
-        stub_feature_flags(use_fireworks_codestral_code_completion: true)
       end
 
       context 'on GitLab self-managed' do
@@ -114,8 +112,6 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
           model_name: 'codestral-2501'
         }
       end
-
-      let(:expected_default_result) { {} }
 
       let(:expected_claude_result) { {} }
 
