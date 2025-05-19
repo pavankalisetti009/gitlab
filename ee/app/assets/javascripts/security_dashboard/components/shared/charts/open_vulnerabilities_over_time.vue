@@ -12,28 +12,16 @@ export default {
       validator(value) {
         return value.every(({ name, data }) => {
           // Each series must have a name (string) and data (array)
-          if (typeof name === 'string' && Array.isArray(data)) {
-            return true;
-          }
-
-          return false;
+          return typeof name === 'string' && Array.isArray(data);
         });
       },
     },
   },
   computed: {
     chartStartDate() {
-      if (!this.chartSeries?.length || !this.chartSeries[0]?.data?.length) {
-        return null;
-      }
-
-      const firstSeriesEntry = this.chartSeries[0].data[0];
-      if (!firstSeriesEntry) {
-        return null;
-      }
-
-      const firstDay = firstSeriesEntry[0];
-      return firstDay;
+      // Chart data structure: chartSeries = [{ name: 'Series Name', data: [[date, value], [date, value], ...] }, ...]
+      // This extracts the date (first element) from the first data point of the first series
+      return this.chartSeries?.[0]?.data?.[0]?.[0] ?? null;
     },
     chartOptions() {
       return {
