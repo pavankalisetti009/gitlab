@@ -25,6 +25,7 @@ describe('GitLab Duo Home', () => {
     duoSelfHostedPath = '/admin/ai/duo_self_hosted',
     showDuoWorkflowSettings = false,
     modelSwitchingEnabled = false,
+    modelSwitchingPath = 'groups/test/-/settings/gitlab_duo/model_selection',
   } = {}) => {
     wrapper = shallowMount(GitlabDuoHome, {
       propsData: {},
@@ -34,6 +35,7 @@ describe('GitLab Duo Home', () => {
         duoSelfHostedPath,
         showDuoWorkflowSettings,
         modelSwitchingEnabled,
+        modelSwitchingPath,
       },
       stubs: {
         CodeSuggestionsUsage: stubComponent(CodeSuggestionsUsage, {
@@ -93,7 +95,7 @@ describe('GitLab Duo Home', () => {
             header: 'Model Selection',
             description: 'Assign models to AI-native features.',
             buttonText: 'Configure features',
-            path: '',
+            path: 'groups/test/-/settings/gitlab_duo/model_selection',
           });
         });
       });
