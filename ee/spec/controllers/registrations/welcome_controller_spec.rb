@@ -218,6 +218,27 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             end.to change { Rails.cache.read("user_onboarding_in_progress:#{user.id}") }.from(nil).to(true)
           end
 
+          context 'when stop_welcome_redirection feature flag is disabled' do
+            before do
+              stub_feature_flags(stop_welcome_redirection: false)
+            end
+
+            it 'does not log for onboarding information' do
+              expect(Gitlab::AppLogger).not_to receive(:info)
+
+              patch_update
+            end
+          end
+
+          context 'for environments without replicas' do
+            it 'does not log' do
+              allow(User.connection.load_balancer).to receive(:primary_write_location).and_raise(RuntimeError)
+              expect(Gitlab::AppLogger).to receive(:info).once.and_call_original
+
+              patch_update
+            end
+          end
+
           context 'when joining_project is "true"' do
             let(:joining_project) { 'true' }
 
