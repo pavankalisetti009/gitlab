@@ -18,8 +18,10 @@ module Gitlab
         project.group.external_audit_event_destinations.exists?
     end
 
-    def send_audit_event(msg)
+    def send_audit_event(message)
       return if user.blank? || project.blank?
+
+      ip_address = message.delete(:ip_address) if message.is_a?(Hash)
 
       audit_context = {
         name: 'repository_git_operation',
@@ -27,8 +29,10 @@ module Gitlab
         author: author,
         scope: project,
         target: project,
-        message: msg
+        message: message
       }
+
+      audit_context[:ip_address] = ip_address if ip_address
 
       ::Gitlab::Audit::Auditor.audit(audit_context)
     end

@@ -222,10 +222,16 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
       context 'with or without check_ip parameter' do
         using RSpec::Parameterized::TableSyntax
 
-        where(:check_ip_present, :ip, :status) do
-          false | nil           | 200
-          true  | '150.168.0.1' | 200
-          true  | '150.168.0.2' | 404
+        before do
+          stub_feature_flags(log_git_streaming_audit_events: false)
+
+          allow(Gitlab::Audit::Auditor).to receive(:audit)
+        end
+
+        where(:check_ip_present, :ip, :status, :should_set_client_ip) do
+          false | nil           | 200 | false
+          true  | '150.168.0.1' | 200 | true
+          true  | '150.168.0.2' | 404 | false
         end
 
         with_them do
@@ -241,6 +247,28 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
             subject
 
             expect(response).to have_gitlab_http_status(status)
+          end
+
+          it 'sends an audit event including the ip_address' do
+            if should_set_client_ip
+              expect(Gitlab::Audit::Auditor).to receive(:audit).with(a_hash_including(ip_address: ip))
+            else
+              expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(a_hash_including(ip_address: ip))
+            end
+
+            subject
+          end
+
+          context 'when stream_audit_events_remote_ip_proxy_protocol is disabled' do
+            before do
+              stub_feature_flags(stream_audit_events_remote_ip_proxy_protocol: false)
+            end
+
+            it 'does not send ip_address to audit event' do
+              expect(Gitlab::Audit::Auditor).not_to receive(:audit).with(hash_including(ip_address: ip))
+
+              subject
+            end
           end
         end
       end
