@@ -1,6 +1,6 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
-import { __, sprintf } from '~/locale';
+import { __ } from '~/locale';
 import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 
@@ -55,13 +55,7 @@ export default {
         .post(this.duoWorkflowInvokePath, requestData)
         .then(({ data }) => {
           createAlert({
-            message: sprintf(
-              __(`Workflow started successfully, pipeline: %{pipelineHref}`),
-              {
-                pipelineHref: `<a href="${encodeURI(data.pipeline.path)}">${data.pipeline.id}</a>`,
-              },
-              false,
-            ),
+            message: __(`Workflow started successfully`),
             captureError: true,
             variant: 'success',
             data,
