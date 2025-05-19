@@ -59,28 +59,6 @@ RSpec.describe Clusters::Agent, feature_category: :deployment_management do
     describe '#resource_management_enabled?' do
       subject { agent_1.resource_management_enabled? }
 
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(gitlab_managed_cluster_resources: false)
-        end
-
-        context 'when licensed feature is not available' do
-          before do
-            stub_licensed_features(agent_managed_resources: false)
-          end
-
-          it { is_expected.to be_falsey }
-        end
-
-        context 'when licensed feature is available' do
-          before do
-            stub_licensed_features(agent_managed_resources: true)
-          end
-
-          it { is_expected.to be_falsey }
-        end
-      end
-
       context 'when licensed feature is not available' do
         before do
           stub_licensed_features(agent_managed_resources: false)
