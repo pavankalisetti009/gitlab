@@ -26,6 +26,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         ::MergeRequests::CreatedEvent,
         ::MergeRequests::ReopenedEvent,
         ::MergeRequests::UpdatedEvent,
+        ::MergeRequests::DraftNotePublishedEvent,
         ::GitlabSubscriptions::RenewedEvent,
         ::Repositories::DefaultBranchChangedEvent,
         ::NamespaceSettings::AiRelatedSettingsChangedEvent,
