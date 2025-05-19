@@ -35413,8 +35413,6 @@ CREATE INDEX index_issuable_metric_images_on_issue_id ON issuable_metric_images 
 
 CREATE INDEX index_issuable_metric_images_on_namespace_id ON issuable_metric_images USING btree (namespace_id);
 
-CREATE INDEX index_issuable_resource_links_on_issue_id ON issuable_resource_links USING btree (issue_id);
-
 CREATE INDEX index_issuable_resource_links_on_namespace_id ON issuable_resource_links USING btree (namespace_id);
 
 CREATE UNIQUE INDEX index_issuable_severities_on_issue_id ON issuable_severities USING btree (issue_id);
@@ -37519,7 +37517,7 @@ CREATE UNIQUE INDEX index_unique_ci_runner_projects_on_runner_id_and_project_id 
 
 CREATE UNIQUE INDEX index_unique_epics_on_issue_id ON epics USING btree (issue_id);
 
-CREATE UNIQUE INDEX index_unique_issuable_resource_links_on_unique_issue_link ON issuable_resource_links USING btree (issue_id, link) WHERE is_unique;
+CREATE UNIQUE INDEX index_unique_issuable_resource_links_on_issue_id_and_link ON issuable_resource_links USING btree (issue_id, link);
 
 CREATE UNIQUE INDEX index_unique_issue_link_id_on_related_epic_links ON related_epic_links USING btree (issue_link_id);
 
