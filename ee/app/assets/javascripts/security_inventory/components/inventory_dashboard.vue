@@ -7,9 +7,12 @@ import { getLocationHash, PATH_SEPARATOR } from '~/lib/utils/url_utility';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 import { SIDEBAR_VISIBLE_STORAGE_KEY } from '../constants';
 import SubgroupsAndProjectsQuery from '../graphql/subgroups_and_projects.query.graphql';
+import { getData, getPageInfo } from '../graphql/helper';
 import SubgroupSidebar from './sidebar/subgroup_sidebar.vue';
 import EmptyState from './empty_state.vue';
 import SecurityInventoryTable from './security_inventory_table.vue';
+
+const PAGE_SIZE = 20;
 
 export default {
   components: {
@@ -25,41 +28,85 @@ export default {
     errorFetchingChildren: s__(
       'SecurityInventory||An error occurred while fetching subgroups and projects. Please try again.',
     ),
+    loadMore: s__('SecurityInventory|Load more'),
   },
   data() {
     return {
-      children: [],
       activeFullPath: this.groupFullPath,
       sidebarVisible: true,
+      // displayItems is the combined list of Project and Subgroups to be shown in the UI.
+      displayItems: [],
+      subgroupItems: [],
+      projectItems: [],
+      subgroupsPageInfo: {
+        hasNextPage: false,
+        endCursor: null,
+      },
+      projectsPageInfo: {
+        hasNextPage: false,
+        endCursor: null,
+      },
+      isLoadingMore: false,
+      projectsInitialized: false,
     };
   },
   apollo: {
-    children: {
+    subgroupItems: {
       query: SubgroupsAndProjectsQuery,
       variables() {
         return {
           fullPath: this.activeFullPath,
+          subgroupsFirst: PAGE_SIZE,
+          subgroupsAfter: null,
+          projectsFirst: PAGE_SIZE,
+          projectsAfter: null,
         };
       },
       update(data) {
-        return this.transformData(data);
+        const groupData = getData(data, 'group');
+        if (!groupData) return [];
+
+        return getData(groupData, 'descendantGroups.nodes', []);
+      },
+      result({ data }) {
+        const groupData = getData(data, 'group');
+        if (!groupData) return;
+
+        this.subgroupsPageInfo = getPageInfo(groupData, 'descendantGroups.pageInfo');
+        this.projectsPageInfo = getPageInfo(groupData, 'projects.pageInfo');
+
+        const subgroups = getData(groupData, 'descendantGroups.nodes', []);
+        this.projectItems = getData(groupData, 'projects.nodes', []);
+        this.projectsInitialized = true;
+
+        // Initially, populate items with only subgroups
+        this.displayItems = [...subgroups];
+
+        // Once all subgroups are loaded, display both subgroups and projects
+        if (!this.hasMoreSubgroups) {
+          this.displayItems = [...subgroups, ...this.projectItems];
+        }
       },
       error(error) {
-        createAlert({
-          message: this.$options.i18n.errorFetchingChildren,
-          error,
-          captureError: true,
-        });
-        Sentry.captureException(error);
+        this.handleError(error);
       },
     },
   },
   computed: {
+    hasMoreSubgroups() {
+      return this.subgroupsPageInfo.hasNextPage;
+    },
+    hasMoreProjects() {
+      return this.projectsPageInfo.hasNextPage;
+    },
     isLoading() {
-      return this.$apollo.queries.children.loading;
+      return this.$apollo.queries.subgroupItems.loading && !this.isLoadingMore;
     },
     hasChildren() {
-      return this.children.length > 0;
+      return this.displayItems.length > 0;
+    },
+    showLoadMoreButton() {
+      return this.hasMoreSubgroups || this.hasMoreProjects;
     },
     showEmptyState() {
       return !this.isLoading && !this.hasChildren;
@@ -87,22 +134,125 @@ export default {
     window.removeEventListener('hashchange', this.handleLocationHashChange);
   },
   methods: {
-    transformData(data) {
-      const groupData = data?.group;
-      if (!groupData) return [];
-
-      const descendantGroups = groupData?.descendantGroups?.nodes || [];
-      const projects = groupData?.projects?.nodes || [];
-
-      return [...descendantGroups, ...projects];
+    handleError(error) {
+      createAlert({
+        message: this.$options.i18n.errorFetchingChildren,
+        error,
+        captureError: true,
+      });
+      Sentry.captureException(error);
     },
+
     handleLocationHashChange() {
       let hash = getLocationHash();
       if (!hash) {
         hash = this.groupFullPath;
       }
-      this.activeFullPath = hash;
+
+      if (this.activeFullPath !== hash) {
+        this.activeFullPath = hash;
+        this.resetData();
+      }
     },
+
+    resetData() {
+      this.displayItems = [];
+      this.subgroupItems = [];
+      this.projectItems = [];
+      this.subgroupsPageInfo = {
+        hasNextPage: false,
+        endCursor: null,
+      };
+      this.projectsPageInfo = {
+        hasNextPage: false,
+        endCursor: null,
+      };
+      this.isLoadingMore = false;
+      this.projectsInitialized = false;
+    },
+
+    async loadMore() {
+      if (this.isLoadingMore) return;
+      this.isLoadingMore = true;
+
+      try {
+        if (this.hasMoreSubgroups) {
+          await this.loadMoreSubgroups();
+        } else {
+          await this.loadMoreProjects();
+        }
+      } catch (error) {
+        this.handleError(error);
+      } finally {
+        this.isLoadingMore = false;
+      }
+    },
+
+    /**
+     * Abstracts the GraphQL query for fetching subgroups and projects
+     * @param {Object} options - Query options
+     * @param {Number} options.subgroupsFirst - Number of subgroups to fetch
+     * @param {String} options.subgroupsAfter - Cursor for subgroups pagination
+     * @param {Number} options.projectsFirst - Number of projects to fetch
+     * @param {String} options.projectsAfter - Cursor for projects pagination
+     * @returns {Promise} Apollo query promise
+     */
+    async fetchSubgroupsAndProjects(options = {}) {
+      const {
+        subgroupsFirst = 0,
+        subgroupsAfter = null,
+        projectsFirst = 0,
+        projectsAfter = null,
+      } = options;
+
+      return this.$apollo.query({
+        query: SubgroupsAndProjectsQuery,
+        variables: {
+          fullPath: this.activeFullPath,
+          subgroupsFirst,
+          subgroupsAfter,
+          projectsFirst,
+          projectsAfter,
+        },
+      });
+    },
+
+    async loadMoreSubgroups() {
+      const { data } = await this.fetchSubgroupsAndProjects({
+        subgroupsFirst: PAGE_SIZE,
+        subgroupsAfter: this.subgroupsPageInfo.endCursor,
+      });
+
+      const groupData = getData(data, 'group');
+      if (!groupData) return;
+
+      const newSubgroups = getData(groupData, 'descendantGroups.nodes', []);
+      this.subgroupsPageInfo = getPageInfo(groupData, 'descendantGroups.pageInfo');
+      this.subgroupItems = [...this.subgroupItems, ...newSubgroups];
+
+      if (!this.hasMoreSubgroups) {
+        this.displayItems = [...this.subgroupItems, ...this.projectItems];
+      } else {
+        this.displayItems = [...this.subgroupItems];
+      }
+    },
+
+    async loadMoreProjects() {
+      const { data } = await this.fetchSubgroupsAndProjects({
+        projectsFirst: PAGE_SIZE,
+        projectsAfter: this.projectsPageInfo.endCursor,
+      });
+
+      const groupData = getData(data, 'group');
+      if (!groupData) return;
+
+      const newProjects = getData(groupData, 'projects.nodes', []);
+      this.projectsPageInfo = getPageInfo(groupData, 'projects.pageInfo');
+      this.projectItems = [...this.projectItems, ...newProjects];
+
+      this.displayItems = [...this.subgroupItems, ...this.projectItems];
+    },
+
     toggleSidebar(value = !this.sidebarVisible) {
       this.sidebarVisible = value;
     },
@@ -128,7 +278,12 @@ export default {
       <div class="gl-w-auto gl-grow" :class="{ 'gl-pl-5': sidebarVisible }">
         <gl-breadcrumb :items="crumbs" :auto-resize="true" size="md" class="gl-my-5" />
         <empty-state v-if="showEmptyState" />
-        <security-inventory-table v-else :items="children" :is-loading="isLoading" />
+        <security-inventory-table v-else :items="displayItems" :is-loading="isLoading" />
+        <div v-if="showLoadMoreButton" class="gl-mt-5 gl-flex gl-justify-center">
+          <gl-button data-testid="load-more-button" :loading="isLoadingMore" @click="loadMore">
+            {{ $options.i18n.loadMore }}
+          </gl-button>
+        </div>
       </div>
     </div>
   </div>

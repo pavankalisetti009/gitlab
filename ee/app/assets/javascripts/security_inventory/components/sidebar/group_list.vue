@@ -40,6 +40,7 @@ export default {
   apollo: {
     group: {
       query: SubgroupsQuery,
+      client: 'appendGroupsClient',
       variables() {
         return {
           fullPath: this.groupFullPath,
