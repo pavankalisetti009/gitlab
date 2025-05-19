@@ -50,11 +50,10 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
   end
 
   describe '#update_position' do
-    let_it_be(:group) { create(:group) }
-    let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group:) }
+    let_it_be(:registry) { create(:virtual_registries_packages_maven_registry) }
 
     let_it_be(:registry_upstreams) do
-      create_list(:virtual_registries_packages_maven_registry_upstream, 4, registry: registry)
+      create_list(:virtual_registries_packages_maven_registry_upstream, 4, registry:)
     end
 
     context 'when position is unchanged' do
@@ -125,8 +124,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
     end
 
     context 'when there are multiple registries' do
-      let_it_be(:other_group) { create(:group) }
-      let_it_be(:other_registry) { create(:virtual_registries_packages_maven_registry, group: other_group) }
+      let_it_be(:other_registry) { create(:virtual_registries_packages_maven_registry) }
       let_it_be_with_reload(:other_registry_upstreams) do
         create_list(:virtual_registries_packages_maven_registry_upstream, 2, registry: other_registry)
       end
@@ -147,9 +145,35 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
         expect(other_registry_upstreams[1].position).to eq(2)
       end
     end
+  end
 
-    def reload_positions
-      described_class.where(registry:).pluck(:id, :position).to_h
+  describe '#sync_higher_positions' do
+    let_it_be(:registry) { create(:virtual_registries_packages_maven_registry) }
+
+    let_it_be(:registry_upstreams) do
+      create_list(:virtual_registries_packages_maven_registry_upstream, 4, registry:)
     end
+
+    it 'decrements positions of all registry upstreams with higher positions' do
+      expect(reload_positions).to eq({
+        registry_upstreams[0].id => 1,
+        registry_upstreams[1].id => 2,
+        registry_upstreams[2].id => 3,
+        registry_upstreams[3].id => 4
+      })
+
+      registry_upstreams[1].destroy!
+      registry_upstreams[1].sync_higher_positions
+
+      expect(reload_positions).to eq({
+        registry_upstreams[0].id => 1,
+        registry_upstreams[2].id => 2,
+        registry_upstreams[3].id => 3
+      })
+    end
+  end
+
+  def reload_positions
+    described_class.where(registry:).pluck(:id, :position).to_h
   end
 end

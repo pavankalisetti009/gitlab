@@ -47,6 +47,14 @@ module VirtualRegistries
           relation.update_all(position: case_clause)
         end
 
+        def sync_higher_positions
+          return if position == MAX_UPSTREAMS_COUNT
+
+          self.class
+            .where(registry_id: registry_id, position: (position + 1)..)
+            .update_all(position: Arel.sql('position - 1'))
+        end
+
         private
 
         def set_position
