@@ -27,7 +27,7 @@ module Search
       def completed?
         doc_count = remaining_documents_count
 
-        log "Checking the number of documents without fields", field_names: field_names, remaining_count: doc_count
+        log "Checking the number of documents without fields", field_names: field_names, documents_remaining: doc_count
 
         doc_count == 0
       end
@@ -49,7 +49,7 @@ module Search
         results = client.search(index: index_name, body: query)
         count = results.dig('aggregations', 'documents', 'doc_count')
 
-        set_migration_state(remaining_count: count)
+        set_migration_state(documents_remaining: count)
 
         count
       end

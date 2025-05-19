@@ -43,7 +43,7 @@ RSpec.shared_examples 'migration backfills fields' do
         # track calls are batched in groups of 100
         expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!)
           .once.and_call_original do |*tracked_refs|
-          expect(tracked_refs.count).to eq(3)
+          expect(tracked_refs.count).to eq(objects.size)
         end
 
         subject
@@ -73,7 +73,11 @@ RSpec.shared_examples 'migration backfills fields' do
       it 'processes in batches', :aggregate_failures do
         allow(migration).to receive_messages(batch_size: 2, update_batch_size: 1)
 
-        expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!).exactly(3).times.and_call_original
+        # the migration is run two times, so expect at most 4 calls to track!
+        expected_track_calls = [objects.size, 4].min
+
+        expect(::Elastic::ProcessInitialBookkeepingService)
+          .to receive(:track!).exactly(expected_track_calls).times.and_call_original
 
         # cannot use subject in spec because it is memoized
         migration.migrate
@@ -161,14 +165,15 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
   let_it_be(:client) { Gitlab::Search::Client.new }
   let(:migration) { described_class.new(version) }
   let(:klass) { objects.first.class }
-  let(:index_name) { klass.__elasticsearch__.index_name }
+  let(:index_name) { migration.index_name }
+  let(:bookkeeping_service) { migration.send(:bookkeeping_service) }
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     set_elasticsearch_migration_to(version, including: false)
 
     # ensure objects are indexed
-    objects
+    bookkeeping_service.track!(*objects)
 
     ensure_elasticsearch_index!
   end
@@ -191,7 +196,7 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
 
     context 'when migration is already completed' do
       it 'does not modify data' do
-        expect(::Elastic::ProcessInitialBookkeepingService).not_to receive(:track!)
+        expect(bookkeeping_service).not_to receive(:track!)
 
         assert_objects_have_new_schema_version(objects)
 
@@ -211,7 +216,8 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
         end
 
         it 'logs a message' do
-          expect(migration).to receive(:log_raise).with('migrate failed', error_class: StandardError, error_mesage: 'E')
+          expect(migration).to receive(:log_raise)
+            .with('migrate failed', error_class: StandardError, error_message: 'E')
           subject
         end
       end
@@ -229,9 +235,8 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
       context 'when all documents needs to be updated' do
         it 'updates all documents' do
           # track calls are batched in groups of 100
-          expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!)
-            .once.and_call_original do |*tracked_refs|
-            expect(tracked_refs.count).to eq(3)
+          expect(bookkeeping_service).to receive(:track!).once.and_call_original do |*tracked_refs|
+            expect(tracked_refs.count).to eq(objects.size)
           end
 
           subject
@@ -253,7 +258,7 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
         end
 
         it 'only updates documents whose schema_version is old', :aggregate_failures do
-          expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!)
+          expect(bookkeeping_service).to receive(:track!)
             .once.and_call_original do |*tracked_refs|
             expect(tracked_refs.count).to eq(1)
             ref = ::Search::Elastic::Reference.deserialize(tracked_refs.first)
@@ -273,7 +278,10 @@ RSpec.shared_examples 'migration reindex based on schema_version' do
       it 'processes in batches', :aggregate_failures do
         allow(migration).to receive_messages(batch_size: 2, update_batch_size: 1)
 
-        expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!).exactly(3).times.and_call_original
+        # the migration is run two times, so expect at most 4 calls to track!
+        expected_track_calls = [objects.size, 4].min
+
+        expect(bookkeeping_service).to receive(:track!).exactly(expected_track_calls).times.and_call_original
 
         # cannot use subject in spec because it is memoized
         migration.migrate
@@ -817,7 +825,7 @@ RSpec.shared_examples 'migration removes field' do
   let_it_be(:client) { ::Gitlab::Search::Client.new }
   let(:migration) { described_class.new(version) }
   let(:klass) { objects.first.class }
-  let(:index_name) { klass.__elasticsearch__.index_name }
+  let(:index_name) { migration.index_name }
   let(:value) { 1 }
   let(:mapping) { { type: type } }
 

@@ -9,10 +9,17 @@ module Search
       include Search::Elastic::IndexName
 
       UPDATE_BATCH_SIZE = 100
+      QUEUE_THRESHOLD = 50_000
 
       def migrate
         if completed?
           log 'Skipping migration since it is already applied', index_name: index_name
+
+          return
+        end
+
+        if queue_full?
+          log 'Migration is throttled due to full queue'
 
           return
         end
@@ -23,23 +30,31 @@ module Search
 
         log 'Reindexing batch has been processed', index_name: index_name, documents_count: document_references.size
       rescue StandardError => e
-        log_raise 'migrate failed', error_class: e.class, error_mesage: e.message
+        log_raise 'migrate failed', error_class: e.class, error_message: e.message
       end
 
       def completed?
         doc_count = remaining_documents_count
 
-        log 'Checking the number of documents left with old schema_version', remaining_count: doc_count
+        log 'Checking the number of documents left with old schema_version', documents_remaining: doc_count
 
         doc_count == 0
       end
 
       private
 
+      def bookkeeping_service
+        ::Elastic::ProcessInitialBookkeepingService
+      end
+
+      def queue_full?
+        bookkeeping_service.queue_size > QUEUE_THRESHOLD
+      end
+
       def remaining_documents_count
         helper.refresh_index(index_name: index_name)
         count = client.count(index: index_name, body: query_with_old_schema_version)['count']
-        set_migration_state(remaining_count: count)
+        set_migration_state(documents_remaining: count)
         count
       end
 
@@ -72,7 +87,7 @@ module Search
         end
 
         document_references.each_slice(update_batch_size) do |refs|
-          ::Elastic::ProcessInitialBookkeepingService.track!(*refs)
+          bookkeeping_service.track!(*refs)
         end
 
         document_references
