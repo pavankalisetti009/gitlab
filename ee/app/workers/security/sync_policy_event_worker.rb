@@ -22,6 +22,8 @@ module Security
         sync_rules_for_protected_branch_event(event)
       when ::Repositories::DefaultBranchChangedEvent
         sync_rules_for_default_branch_changed_event(event)
+      when ::Projects::ComplianceFrameworkChangedEvent
+        sync_rules_for_compliance_framework_changed_event(event)
       else
         raise ArgumentError, "Unknown event: #{event.class}"
       end
@@ -54,6 +56,30 @@ module Security
           sync_rules_for_project(configuration, project_or_group, event, SYNC_SERVICE_DELAY_INTERVAL)
         end
       end
+    end
+
+    def sync_rules_for_compliance_framework_changed_event(event)
+      project = Project.find_by_id(event.data[:project_id])
+      framework = ComplianceManagement::Framework.find_by_id(event.data[:compliance_framework_id])
+      return unless project && framework
+
+      policy_configuration_ids = project.all_security_orchestration_policy_configuration_ids
+      return unless policy_configuration_ids.any?
+
+      framework
+        .security_orchestration_policy_configurations
+        .with_security_policies.id_in(policy_configuration_ids)
+        .find_each do |config|
+          Security::ProcessScanResultPolicyWorker.perform_async(project.id, config.id)
+
+          config.security_policies.undeleted.find_each do |security_policy|
+            Security::SecurityOrchestrationPolicies::SyncPolicyEventService.new(
+              project: project,
+              security_policy: security_policy,
+              event: event
+            ).execute
+          end
+        end
     end
 
     def sync_rules_for_group(configuration, group, event)
