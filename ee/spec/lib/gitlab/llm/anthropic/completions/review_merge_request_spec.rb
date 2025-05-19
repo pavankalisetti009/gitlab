@@ -201,11 +201,11 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       let(:summary_answer) { 'Helpful review summary' }
       let(:summary_response) { { content: [{ text: summary_answer }] } }
 
-      it 'filters by priority and creates diff notes on new and updated files' do
+      it 'creates diff notes on new and updated files' do
         completion.execute
 
         diff_notes = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).reorder(:id)
-        expect(diff_notes.count).to eq 3
+        expect(diff_notes.count).to eq 4
 
         first_note = diff_notes[0]
         expect(first_note.note).to eq 'Second comment with suggestions'
@@ -238,7 +238,10 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         })
 
         third_note = diff_notes[2]
-        expect(third_note.note).to eq <<~NOTE_CONTENT
+        expect(third_note.note).to eq 'Fourth comment with suggestions'
+
+        fourth_note = diff_notes[3]
+        expect(fourth_note.note).to eq <<~NOTE_CONTENT
           First comment with suggestions
           With additional line
           ```suggestion:-0+1
@@ -248,7 +251,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           Some more comments
         NOTE_CONTENT
 
-        expect(third_note.position.to_h).to eq({
+        expect(fourth_note.position.to_h).to eq({
           base_sha: diff_refs.base_sha,
           start_sha: diff_refs.start_sha,
           head_sha: diff_refs.head_sha,
@@ -262,6 +265,73 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         })
       end
 
+      context 'when duo_code_review_show_all_comments is disabled' do
+        before do
+          stub_feature_flags(duo_code_review_show_all_comments: false)
+        end
+
+        it 'filters by priority and creates diff notes on new and updated files' do
+          completion.execute
+
+          diff_notes = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).reorder(:id)
+          expect(diff_notes.count).to eq 3
+
+          first_note = diff_notes[0]
+          expect(first_note.note).to eq 'Second comment with suggestions'
+          expect(first_note.position.to_h).to eq({
+            base_sha: diff_refs.base_sha,
+            start_sha: diff_refs.start_sha,
+            head_sha: diff_refs.head_sha,
+            old_path: 'NEW.md',
+            new_path: 'NEW.md',
+            position_type: 'text',
+            old_line: nil,
+            new_line: 1,
+            line_range: nil,
+            ignore_whitespace_change: false
+          })
+
+          second_note = diff_notes[1]
+          expect(second_note.note).to eq 'Third comment with suggestions'
+          expect(second_note.position.to_h).to eq({
+            base_sha: diff_refs.base_sha,
+            start_sha: diff_refs.start_sha,
+            head_sha: diff_refs.head_sha,
+            old_path: 'NEW.md',
+            new_path: 'NEW.md',
+            position_type: 'text',
+            old_line: nil,
+            new_line: 2,
+            line_range: nil,
+            ignore_whitespace_change: false
+          })
+
+          third_note = diff_notes[2]
+          expect(third_note.note).to eq <<~NOTE_CONTENT
+          First comment with suggestions
+          With additional line
+          ```suggestion:-0+1
+              first improved line
+                second improved line
+          ```
+          Some more comments
+          NOTE_CONTENT
+
+          expect(third_note.position.to_h).to eq({
+            base_sha: diff_refs.base_sha,
+            start_sha: diff_refs.start_sha,
+            head_sha: diff_refs.head_sha,
+            old_path: 'UPDATED.md',
+            new_path: 'UPDATED.md',
+            position_type: 'text',
+            old_line: nil,
+            new_line: 2,
+            line_range: nil,
+            ignore_whitespace_change: false
+          })
+        end
+      end
+
       it 'destroys progress note' do
         completion.execute
 
@@ -271,7 +341,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       it 'performs review and creates a note' do
         expect do
           completion.execute
-        end.to change { merge_request.notes.diff_notes.count }.by(3)
+        end.to change { merge_request.notes.diff_notes.count }.by(4)
           .and not_change { merge_request.notes.non_diff_notes.count }
 
         expect(merge_request.notes.non_diff_notes.last.note).to eq(summary_answer)
@@ -282,9 +352,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         let(:summary_response) { nil }
         let(:combined_review_answer) do
           <<~RESPONSE
-            <review>
-            <comment file="UPDATED.md" priority="2" old_line="" new_line="2">High priority comment</comment>
-            </review>
+            <review></review>
           RESPONSE
         end
 
@@ -346,7 +414,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         it 'creates progress note and finish review as expected' do
           expect do
             completion.execute
-          end.to change { merge_request.notes.diff_notes.count }.by(3)
+          end.to change { merge_request.notes.diff_notes.count }.by(4)
             .and change { merge_request.notes.non_diff_notes.count }.by(1)
 
           expect(merge_request.notes.non_diff_notes.last.note).to eq(summary_answer)
@@ -497,8 +565,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           it 'creates a note with an error message' do
             completion.execute
 
-            expect(merge_request.notes.count).to eq 4
-            expect(merge_request.notes.diff_notes.count).to eq 3
+            expect(merge_request.notes.count).to eq 5
+            expect(merge_request.notes.diff_notes.count).to eq 4
             expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.error_msg)
           end
         end
@@ -509,8 +577,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           it 'creates a note with an error message' do
             completion.execute
 
-            expect(merge_request.notes.count).to eq 4
-            expect(merge_request.notes.diff_notes.count).to eq 3
+            expect(merge_request.notes.count).to eq 5
+            expect(merge_request.notes.diff_notes.count).to eq 4
             expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.error_msg)
           end
         end
@@ -521,8 +589,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           it 'creates a note with an error message' do
             completion.execute
 
-            expect(merge_request.notes.count).to eq 4
-            expect(merge_request.notes.diff_notes.count).to eq 3
+            expect(merge_request.notes.count).to eq 5
+            expect(merge_request.notes.diff_notes.count).to eq 4
             expect(merge_request.notes.non_diff_notes.last.note).to eq(described_class.error_msg)
           end
         end
