@@ -15,13 +15,9 @@ module CodeSuggestions
         # if self-hosted, the model details are provided by the client
         return {} if self_hosted?
 
-        return fireworks_codestral_2501_model_details if use_fireworks_codestral_for_code_completions?
-
         return vertex_codestral_2501_model_details if code_completion_opt_out_fireworks?
 
-        # the default behavior is returning an empty hash
-        # AI Gateway will fall back to a default model if model details are not provided
-        {}
+        fireworks_codestral_2501_model_details
       end
 
       def saas_primary_model_class
@@ -31,13 +27,9 @@ module CodeSuggestions
           return CodeSuggestions::Prompts::CodeCompletion::Anthropic::ClaudeHaiku
         end
 
-        if use_fireworks_codestral_for_code_completions?
-          return CodeSuggestions::Prompts::CodeCompletion::FireworksCodestral
-        end
-
         return CodeSuggestions::Prompts::CodeCompletion::VertexCodestral if code_completion_opt_out_fireworks?
 
-        CodeSuggestions::Prompts::CodeCompletion::Default
+        CodeSuggestions::Prompts::CodeCompletion::FireworksCodestral
       end
 
       # We check :use_claude_code_completion by the top level group
@@ -61,12 +53,6 @@ module CodeSuggestions
           model_provider: CodeSuggestions::Prompts::CodeCompletion::VertexCodestral::MODEL_PROVIDER,
           model_name: CodeSuggestions::Prompts::CodeCompletion::VertexCodestral::MODEL_NAME
         }
-      end
-
-      def use_fireworks_codestral_for_code_completions?
-        return false if Feature.disabled?(:use_fireworks_codestral_code_completion, current_user, type: :beta)
-
-        !code_completion_opt_out_fireworks?
       end
 
       # For :code_completion_opt_out_fireworks

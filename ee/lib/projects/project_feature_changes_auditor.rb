@@ -29,6 +29,31 @@ module Projects
       model_registry_access_level: 'project_feature_model_registry_access_level_updated'
     }.freeze
 
+    COLUMNS_HUMAN_NAME = {
+      merge_requests_access_level: 'merge requests',
+      forking_access_level: 'forks',
+      issues_access_level: 'issues',
+      wiki_access_level: 'wiki',
+      snippets_access_level: 'snippets',
+      builds_access_level: 'CI/CD',
+      repository_access_level: 'repository',
+      package_registry_access_level: 'package registry',
+      pages_access_level: 'pages',
+      metrics_dashboard_access_level: 'metrics dashboard',
+      analytics_access_level: 'analytics',
+      operations_access_level: 'operations access',
+      requirements_access_level: 'requirements',
+      security_and_compliance_access_level: 'security and compliance',
+      container_registry_access_level: 'container registry',
+      monitor_access_level: 'monitor',
+      infrastructure_access_level: 'infrastructure',
+      feature_flags_access_level: 'feature flags',
+      environments_access_level: 'environments',
+      releases_access_level: 'releases',
+      model_experiments_access_level: 'model experiments',
+      model_registry_access_level: 'model registry'
+    }.with_indifferent_access.freeze
+
     def initialize(current_user, model, project)
       @project = project
 
@@ -37,7 +62,7 @@ module Projects
 
     def execute
       COLUMNS_EVENT_TYPE_HASH.each do |column, event_name|
-        audit_changes(column, as: column.to_s, entity: @project, model: model,
+        audit_changes(column, as: COLUMNS_HUMAN_NAME.fetch(column, column).to_s, entity: @project, model: model,
           event_type: event_name)
       end
     end

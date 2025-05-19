@@ -37,7 +37,7 @@ RSpec.describe Projects::ProjectFeatureChangesAuditor, feature_category: :groups
         event = AuditEvent.last
         expect(event.details[:from]).to eq ProjectFeature.str_from_access_level(previous_value)
         expect(event.details[:to]).to eq ProjectFeature.str_from_access_level(new_value)
-        expect(event.details[:change]).to eq column
+        expect(event.details[:change]).to eq described_class::COLUMNS_HUMAN_NAME.fetch(column).to_s
       end
     end
 
@@ -57,7 +57,7 @@ RSpec.describe Projects::ProjectFeatureChangesAuditor, feature_category: :groups
       event = AuditEvent.last
       expect(event.details[:from]).to eq ProjectFeature.str_from_access_level(previous_value)
       expect(event.details[:to]).to eq 'public'
-      expect(event.details[:change]).to eq column
+      expect(event.details[:change]).to eq 'pages'
     end
 
     it 'audits ProjectFeature::PRIVATE levels' do
@@ -76,7 +76,7 @@ RSpec.describe Projects::ProjectFeatureChangesAuditor, feature_category: :groups
       event = AuditEvent.last
       expect(event.details[:from]).to eq ProjectFeature.str_from_access_level(previous_value)
       expect(event.details[:to]).to eq 'private'
-      expect(event.details[:change]).to eq column
+      expect(event.details[:change]).to eq 'merge requests'
     end
   end
 end
