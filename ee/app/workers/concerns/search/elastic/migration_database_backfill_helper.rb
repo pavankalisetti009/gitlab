@@ -31,10 +31,10 @@ module Search
           maximum_id = documents_after_current_id.maximum(document_primary_key).to_i
           documents_remaining_approximate = maximum_id - current_id
 
-          set_migration_state(maximum_id: maximum_id, documents_remaining_approximate: documents_remaining_approximate)
+          set_migration_state(maximum_id: maximum_id, documents_remaining: documents_remaining_approximate)
 
           log 'Migration is not finished', maximum_id: maximum_id, current_id: current_id,
-            documents_remaining_approximate: documents_remaining_approximate
+            documents_remaining: documents_remaining_approximate
         end
 
         completed

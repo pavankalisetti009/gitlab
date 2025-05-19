@@ -37,13 +37,13 @@ module Search
 
         log 'Start deleting', index_name: index_name, batch_size: batch_size
         delete_documents
-        log 'Deletion batch has been processed', index_name: index_name, remaining_count: remaining_documents_count
+        log 'Deletion batch has been processed', index_name: index_name, documents_remaining: remaining_documents_count
       end
 
       def completed?
         doc_count = remaining_documents_count
 
-        log 'Checking the number of documents left with old schema_version', remaining_count: doc_count
+        log 'Checking the number of documents left with old schema_version', documents_remaining: doc_count
 
         doc_count == 0
       end
