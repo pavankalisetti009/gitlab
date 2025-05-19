@@ -208,7 +208,7 @@ RSpec.describe Repositories::GitHttpController, feature_category: :source_code_m
   context 'track Geo secondary git operations' do
     include_context 'with public deploy keys and Geo proxied request'
 
-    let(:geo_node_id) { 2 }
+    let(:geo_node_id) { ::Gitlab::Geo.current_node.id + 1 }
 
     let(:post_git_receive_pack) do
       post :git_receive_pack, params: { repository_path: repository_path, geo_node_id: geo_node_id }
