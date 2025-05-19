@@ -5,8 +5,7 @@
   = render ::Layouts::CrudComponent.new(s_('GitLabPages|Domains'),
     icon: 'earth',
     count: @domains.size,
-    count_options: { class: 'js-admin-labels-count' },
-    options: { class: 'gl-mt-5' }) do |c|
+    count_options: { class: 'js-admin-labels-count' }) do |c|
     - c.with_actions do
       - if can_add_new_domain
         = render Pajamas::ButtonComponent.new(size: :small, href: new_project_pages_domain_path(@project)) do
