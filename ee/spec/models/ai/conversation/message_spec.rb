@@ -279,17 +279,6 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
         expect(message.extras).to eq(expected_output)
       end
     end
-
-    context 'when duo_chat_read_directly_from_db feature flag is disabled' do
-      it 'returns raw value' do
-        stub_feature_flags(duo_chat_read_directly_from_db: false)
-
-        raw_extras = '{}'
-        message.extras = raw_extras
-
-        expect(message.extras).to eq(raw_extras)
-      end
-    end
   end
 
   describe '#error_details' do
@@ -307,17 +296,6 @@ RSpec.describe Ai::Conversation::Message, feature_category: :duo_chat do
         message.error_details = input
 
         expect(message.error_details).to eq(expected_output)
-      end
-    end
-
-    context 'when duo_chat_read_directly_from_db feature flag is disabled' do
-      it 'returns raw value' do
-        stub_feature_flags(duo_chat_read_directly_from_db: false)
-
-        raw_error_details = '[]'
-        message.error_details = raw_error_details
-
-        expect(message.error_details).to eq(raw_error_details)
       end
     end
   end
