@@ -41,8 +41,24 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       let_it_be(:offline_node) { create(:zoekt_node, last_seen_at: 10.minutes.ago) }
       let_it_be(:lost_node) { create(:zoekt_node, :lost) }
 
-      it 'returns all the lost nodes' do
-        expect(described_class.lost).to contain_exactly(lost_node)
+      context 'when there is lost node threshold' do
+        before do
+          allow(::Search::Zoekt::Settings).to receive(:lost_node_threshold).and_return(30.minutes)
+        end
+
+        it 'returns all the lost nodes' do
+          expect(described_class.lost).to contain_exactly(lost_node)
+        end
+      end
+
+      context 'when there is no node threshold' do
+        before do
+          allow(::Search::Zoekt::Settings).to receive(:lost_node_threshold).and_return(nil)
+        end
+
+        it 'returns all the lost nodes' do
+          expect(described_class.lost).to be_empty
+        end
       end
     end
 
@@ -327,6 +343,10 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
   end
 
   describe '.marking_lost_enabled?', :zoekt_settings_enabled do
+    before do
+      allow(::Search::Zoekt::Settings).to receive(:lost_node_threshold).and_return(12.hours)
+    end
+
     it 'returns true' do
       expect(described_class.marking_lost_enabled?).to be true
     end
@@ -351,9 +371,9 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       end
     end
 
-    context 'when application setting zoekt_auto_delete_lost_nodes? is disabled' do
+    context 'when application setting zoekt_lost_node_threshold is disabled' do
       before do
-        stub_ee_application_setting(zoekt_auto_delete_lost_nodes: false)
+        allow(::Search::Zoekt::Settings).to receive(:lost_node_threshold).and_return(nil)
       end
 
       it 'returns false' do

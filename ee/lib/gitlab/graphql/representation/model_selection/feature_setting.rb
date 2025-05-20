@@ -6,13 +6,13 @@ module Gitlab
       module ModelSelection
         class FeatureSetting < SimpleDelegator
           class << self
-            def decorate(feature_settings)
+            def decorate(feature_settings, model_definitions: nil)
               return [] unless feature_settings.present?
 
               feature_settings.map do |feature_setting|
-                decorator = new(feature_setting)
+                decorator = new(feature_setting, model_definitions: model_definitions)
 
-                if feature_setting.model_definitions.present?
+                if model_definitions.present? || feature_setting.model_definitions.present?
                   decorator.decorate_default_model
 
                   decorator.decorate_selectable_models
@@ -23,12 +23,11 @@ module Gitlab
             end
           end
 
-          attr_accessor :feature_setting, :default_model, :selectable_models
+          attr_accessor :feature_setting, :default_model, :selectable_models, :model_definitions
 
-          def initialize(feature_setting, default_model: {}, selectable_models: [])
+          def initialize(feature_setting, model_definitions: nil)
             @feature_setting = feature_setting
-            @default_model = default_model
-            @selectable_models = selectable_models
+            @model_definitions = model_definitions || feature_setting.model_definitions
 
             super(feature_setting)
           end
@@ -70,10 +69,6 @@ module Gitlab
 
           def model_data_list
             @model_data_list ||= model_definitions['models']
-          end
-
-          def model_definitions
-            @model_definition ||= feature_setting.model_definitions
           end
         end
       end

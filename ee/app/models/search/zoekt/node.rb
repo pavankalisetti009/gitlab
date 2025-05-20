@@ -8,7 +8,6 @@ module Search
 
       DEFAULT_CONCURRENCY_LIMIT = 20
       MAX_CONCURRENCY_LIMIT = 200
-      LOST_DURATION_THRESHOLD = 12.hours
       ONLINE_DURATION_THRESHOLD = 1.minute
       WATERMARK_LIMIT_LOW = 0.6
       WATERMARK_LIMIT_HIGH = 0.75
@@ -44,7 +43,15 @@ module Search
       attribute :metadata, ::Gitlab::Database::Type::IndifferentJsonb.new # for indifferent access
 
       scope :by_name, ->(*names) { where("metadata->>'name' IN (?)", names) }
-      scope :lost, -> { where(last_seen_at: ..LOST_DURATION_THRESHOLD.ago) }
+      scope :lost, -> {
+        threshold = ::Search::Zoekt::Settings.lost_node_threshold
+
+        if threshold
+          where(last_seen_at: ...threshold.ago)
+        else
+          none
+        end
+      }
       scope :online, -> { where(last_seen_at: ONLINE_DURATION_THRESHOLD.ago..) }
       scope :searchable, -> { online }
       scope :searchable_for_project, ->(project) do
@@ -91,7 +98,7 @@ module Search
       def self.marking_lost_enabled?
         return false if Gitlab::CurrentSettings.zoekt_indexing_paused?
         return false unless Gitlab::CurrentSettings.zoekt_indexing_enabled?
-        return false unless Gitlab::CurrentSettings.zoekt_auto_delete_lost_nodes?
+        return false unless ::Search::Zoekt::Settings.lost_node_threshold.present?
 
         true
       end
@@ -152,7 +159,10 @@ module Search
       end
 
       def lost?
-        last_seen_at <= LOST_DURATION_THRESHOLD.ago
+        threshold = ::Search::Zoekt::Settings.lost_node_threshold
+        return false unless threshold
+
+        last_seen_at <= threshold.ago
       end
 
       def task_pull_frequency

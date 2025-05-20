@@ -8,32 +8,6 @@ RSpec.describe 'Updating a Namespace Model Selection Feature setting', feature_c
   let_it_be(:group_owner) { create(:user) }
   let_it_be(:group) { create(:group) }
 
-  let(:model_definitions) do
-    {
-      'models' => [
-        { 'name' => 'Claude Sonnet 3.5', 'identifier' => 'claude_sonnet_3_5' },
-        { 'name' => 'Claude Sonnet 3.7', 'identifier' => 'claude_sonnet_3_7' },
-        { 'name' => 'OpenAI Chat GPT 4o', 'identifier' => 'openai_chatgpt_4o' }
-      ],
-      'unit_primitives' => [
-        {
-          'feature_setting' => 'duo_chat',
-          'default_model' => 'claude_sonnet_3_5',
-          'selectable_models' => %w[claude_sonnet_3_5 claude_sonnet_3_7 openai_chatgpt_4o],
-          'beta_models' => []
-        },
-        {
-          'feature_setting' => 'code_completions',
-          'default_model' => 'claude_sonnet_3_5',
-          'selectable_models' => %w[claude_sonnet_3_5 claude_sonnet_3_7 openai_chatgpt_4o],
-          'beta_models' => []
-        }
-      ]
-    }
-  end
-
-  let(:model_definitions_response) { model_definitions.to_json }
-
   let(:current_user) { group_owner }
   let(:user) { current_user }
 
@@ -56,7 +30,7 @@ RSpec.describe 'Updating a Namespace Model Selection Feature setting', feature_c
 
   let(:mutation) { graphql_mutation(mutation_name, mutation_params) }
 
-  include_context 'with the model selections fetch definition service as side-effect'
+  include_context 'with model selections fetch definition service side-effect context'
 
   before_all do
     group.add_owner(group_owner)

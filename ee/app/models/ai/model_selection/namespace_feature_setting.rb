@@ -14,7 +14,7 @@ module Ai
 
       validate :validate_root_namespace
 
-      scope :for_namespace, ->(self_hosted_model_id) { where(namespace_id: self_hosted_model_id) }
+      scope :for_namespace, ->(namespace_id) { where(namespace_id: namespace_id) }
 
       def self.find_or_initialize_by_feature(namespace, feature)
         return unless ::Feature.enabled?(:ai_model_switching, namespace)

@@ -27,6 +27,42 @@ RSpec.shared_context 'with model selection definitions' do
   end
 end
 
+RSpec.shared_context 'with model selections fetch definition service side-effect context' do
+  let(:model_definitions) do
+    {
+      'models' => [
+        { 'name' => 'Claude Sonnet 3.5', 'identifier' => 'claude_sonnet_3_5' },
+        { 'name' => 'Claude Sonnet 3.7', 'identifier' => 'claude_sonnet_3_7' },
+        { 'name' => 'OpenAI Chat GPT 4o', 'identifier' => 'openai_chatgpt_4o' }
+      ],
+      'unit_primitives' => [
+        {
+          'feature_setting' => 'code_completions',
+          'default_model' => 'claude_sonnet_3_5',
+          'selectable_models' => %w[claude_sonnet_3_5 claude_sonnet_3_7 openai_chatgpt_4o],
+          'beta_models' => []
+        },
+        {
+          'feature_setting' => 'code_generations',
+          'default_model' => 'claude_sonnet_3_5',
+          'selectable_models' => %w[claude_sonnet_3_5 claude_sonnet_3_7 openai_chatgpt_4o],
+          'beta_models' => []
+        },
+        {
+          'feature_setting' => 'duo_chat',
+          'default_model' => 'claude_sonnet_3_5',
+          'selectable_models' => %w[claude_sonnet_3_5 claude_sonnet_3_7 openai_chatgpt_4o],
+          'beta_models' => []
+        }
+      ]
+    }
+  end
+
+  let(:model_definitions_response) { model_definitions.to_json }
+
+  include_context 'with the model selections fetch definition service as side-effect'
+end
+
 RSpec.shared_context 'with the model selections fetch definition service as side-effect' do
   let(:base_url) { 'http://0.0.0.0:5052' }
   let(:code_suggestions_service) { instance_double(::CloudConnector::BaseAvailableServiceData, name: :any_name) }

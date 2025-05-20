@@ -318,6 +318,13 @@ module EE
           description: 'LDAP admin links. Available only for GitLab Self-Managed.',
           resolver: ::Resolvers::Authz::LdapAdminRoleLinksResolver,
           experiment: { milestone: '17.11' }
+
+        field :ai_model_selection_namespace_settings,
+          ::Types::Ai::ModelSelection::Namespaces::FeatureSettingType.connection_type,
+          null: true,
+          description: 'List of configurable AI features for namespace Model Selection.',
+          resolver: ::Resolvers::Ai::ModelSelection::Namespaces::FeatureSettingsResolver,
+          experiment: { milestone: '18.1' }
       end
 
       def vulnerability(id:)

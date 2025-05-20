@@ -131,7 +131,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         telesign_intelligence_enabled: true,
         unverified_account_group_creation_limit: 2,
         virtual_registries_endpoints_api_limit: 1000,
-        zoekt_auto_delete_lost_nodes: true,
         zoekt_auto_index_root_namespace: false,
         zoekt_cache_response: true,
         zoekt_cpu_to_tasks_ratio: 1.0,
@@ -140,6 +139,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         zoekt_indexing_paused: false,
         zoekt_rollout_batch_size: 32,
         zoekt_rollout_retry_interval: Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL,
+        zoekt_lost_node_threshold: Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD,
         zoekt_search_enabled: false
       )
     end
