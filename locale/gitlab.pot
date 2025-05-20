@@ -28366,6 +28366,9 @@ msgstr ""
 msgid "GitLabPages|Domains"
 msgstr ""
 
+msgid "GitLabPages|Domains & settings"
+msgstr ""
+
 msgid "GitLabPages|Don’t enforce a primary domain"
 msgstr ""
 
