@@ -341,4 +341,45 @@ RSpec.describe Users::UpdateService, feature_category: :user_profile do
       update_user_as(user, user, opts)
     end
   end
+
+  describe '#execute', :saas do
+    context 'updating email' do
+      context 'if email was changed' do
+        context 'when check_password is true' do
+          def update_user(user, opts)
+            described_class.new(user, opts.merge(user: user)).execute(check_password: true)
+          end
+
+          context 'when password authentication is disabled by enterprise group' do
+            before do
+              stub_licensed_features(domain_verification: true)
+            end
+
+            let_it_be(:enterprise_group) { create(:group) }
+            let_it_be(:saml_provider) do
+              create(
+                :saml_provider,
+                group: enterprise_group,
+                enabled: true,
+                disable_password_authentication_for_enterprise_users: true
+              )
+            end
+
+            let_it_be(:project) { create(:project, group: enterprise_group) }
+            let_it_be(:verified_domain) { create(:pages_domain, project: project) }
+            let_it_be(:user) { create(:enterprise_user, enterprise_group: enterprise_group) }
+
+            it 'does not require password for enterprise users', :aggregate_failures do
+              result = {}
+
+              expect do
+                result = update_user(user, { email: "example@#{verified_domain.domain}" })
+              end.to change { user.reload.unconfirmed_email }
+              expect(result[:status]).to eq(:success)
+            end
+          end
+        end
+      end
+    end
+  end
 end
