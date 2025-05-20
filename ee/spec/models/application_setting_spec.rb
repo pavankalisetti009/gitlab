@@ -19,48 +19,130 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
   end
 
   describe 'default values' do
-    it { expect(setting.receptive_cluster_agents_enabled).to be false }
-    it { expect(setting.security_approval_policies_limit).to eq(5) }
-    it { expect(setting.zoekt_auto_delete_lost_nodes).to be true }
-    it { expect(setting.zoekt_auto_index_root_namespace).to be false }
-    it { expect(setting.zoekt_cpu_to_tasks_ratio).to eq(1.0) }
-    it { expect(setting.zoekt_rollout_batch_size).to eq(32) }
-    it { expect(setting.zoekt_indexing_enabled).to be false }
-    it { expect(setting.zoekt_indexing_paused).to be false }
-    it { expect(setting.zoekt_search_enabled).to be false }
-    it { expect(setting.scan_execution_policies_action_limit).to be(0) }
-    it { expect(setting.scan_execution_policies_schedule_limit).to be(0) }
-    it { expect(setting.allow_all_integrations).to be true }
-    it { expect(setting.allowed_integrations).to eq([]) }
-    it { expect(setting.seat_control).to eq(0) }
-    it { expect(setting.soft_phone_verification_transactions_daily_limit).to eq(16000) }
-    it { expect(setting.phone_verification_enabled).to be true }
-    it { expect(setting.credit_card_verification_enabled).to be true }
-    it { expect(setting.arkose_labs_enabled).to be true }
-    it { expect(setting.arkose_labs_data_exchange_enabled).to be true }
-    it { expect(setting.ci_requires_identity_verification_on_free_plan).to be true }
-    it { expect(setting.secret_detection_service_url).to eq('') }
-    it { expect(setting.secret_detection_service_auth_token).to be_nil }
-    it { expect(setting.unverified_account_group_creation_limit).to eq(2) }
-    it { expect(setting.hard_phone_verification_transactions_daily_limit).to eq(20000) }
-    it { expect(setting.telesign_intelligence_enabled).to be true }
-    it { expect(setting.duo_chat_expiration_column).to eq('last_updated_at') }
-    it { expect(setting.duo_chat_expiration_days).to eq(30) }
-    it { expect(setting.fetch_observability_alerts_from_cloud).to be true }
-    it { expect(setting.global_search_code_enabled).to be(true) }
-    it { expect(setting.global_search_commits_enabled).to be(true) }
-    it { expect(setting.global_search_epics_enabled).to be(true) }
-    it { expect(setting.global_search_issues_enabled).to be(true) }
-    it { expect(setting.global_search_merge_requests_enabled).to be(true) }
-    it { expect(setting.global_search_snippet_titles_enabled).to be(true) }
-    it { expect(setting.global_search_users_enabled).to be(true) }
-    it { expect(setting.global_search_wiki_enabled).to be(true) }
-    it { expect(setting.global_search_block_anonymous_searches_enabled).to be(false) }
-    it { expect(setting.global_search_limited_indexing_enabled).to be(false) }
-    it { expect(setting.virtual_registries_endpoints_api_limit).to eq(1000) }
-    it { expect(setting.elastic_migration_worker_enabled).to be(true) }
-    it { expect(setting.anonymous_searches_allowed).to be(true) }
-    it { expect(setting.disable_invite_members).to be(false) }
+    context 'with ELASTIC_URL environment variable set' do
+      let(:elastic_url) { 'http://elastic:12345' }
+
+      before do
+        stub_env('ELASTIC_URL', elastic_url)
+      end
+
+      it { expect(setting.elasticsearch_url).to eq([URI.parse(elastic_url)]) }
+    end
+
+    it 'has correct default values' do
+      is_expected.to have_attributes(
+        allow_all_integrations: true,
+        allow_group_owners_to_manage_ldap: true,
+        allowed_integrations: [],
+        anonymous_searches_allowed: true,
+        arkose_labs_data_exchange_enabled: true,
+        arkose_labs_enabled: true,
+        auto_ban_user_on_excessive_projects_download: false,
+        automatic_purchased_storage_allocation: false,
+        ci_requires_identity_verification_on_free_plan: true,
+        credit_card_verification_enabled: true,
+        cube_api_base_url: nil,
+        cube_api_key: nil,
+        custom_project_templates_group_id: nil,
+        dashboard_limit: 0,
+        dashboard_limit_enabled: false,
+        default_project_deletion_protection: false,
+        disable_invite_members: false,
+        disable_personal_access_tokens: false,
+        disabled_direct_code_suggestions: false,
+        duo_chat_expiration_column: 'last_updated_at',
+        duo_chat_expiration_days: 30,
+        duo_workflow_oauth_application_id: nil,
+        elastic_migration_worker_enabled: true,
+        elasticsearch_analyzers_kuromoji_enabled: false,
+        elasticsearch_analyzers_kuromoji_search: false,
+        elasticsearch_analyzers_smartcn_enabled: false,
+        elasticsearch_analyzers_smartcn_search: false,
+        elasticsearch_aws: false,
+        elasticsearch_aws_access_key: nil,
+        elasticsearch_aws_region: 'us-east-1',
+        elasticsearch_aws_role_arn: nil,
+        elasticsearch_aws_secret_access_key: nil,
+        elasticsearch_client_request_timeout: 0,
+        elasticsearch_indexed_field_length_limit: 0,
+        elasticsearch_indexed_file_size_limit_kb: 1024,
+        elasticsearch_indexing: false,
+        elasticsearch_limit_indexing: false,
+        elasticsearch_max_bulk_concurrency: 10,
+        elasticsearch_max_bulk_size_mb: 10,
+        elasticsearch_max_code_indexing_concurrency: 30,
+        elasticsearch_password: nil,
+        elasticsearch_pause_indexing: false,
+        elasticsearch_requeue_workers: false,
+        elasticsearch_retry_on_failure: 0,
+        elasticsearch_search: false,
+        elasticsearch_username: nil,
+        elasticsearch_worker_number_of_shards: 2,
+        email_additional_text: nil,
+        enforce_namespace_storage_limit: false,
+        fetch_observability_alerts_from_cloud: true,
+        future_subscriptions: [],
+        geo_node_allowed_ips: '0.0.0.0/0, ::/0',
+        git_rate_limit_users_alertlist: [],
+        git_rate_limit_users_allowlist: [],
+        git_two_factor_session_expiry: 15,
+        global_search_block_anonymous_searches_enabled: false,
+        global_search_code_enabled: true,
+        global_search_commits_enabled: true,
+        global_search_epics_enabled: true,
+        global_search_issues_enabled: true,
+        global_search_limited_indexing_enabled: false,
+        global_search_merge_requests_enabled: true,
+        global_search_snippet_titles_enabled: true,
+        global_search_users_enabled: true,
+        global_search_wiki_enabled: true,
+        globally_allowed_ips: '',
+        hard_phone_verification_transactions_daily_limit: 20_000,
+        instance_level_ai_beta_features_enabled: false,
+        license_usage_data_exported: false,
+        lock_memberships_to_ldap: false,
+        lock_memberships_to_saml: false,
+        maintenance_mode: false,
+        max_number_of_repository_downloads: 0,
+        max_number_of_repository_downloads_within_time_period: 0,
+        max_personal_access_token_lifetime: nil,
+        max_ssh_key_lifetime: nil,
+        mirror_capacity_threshold: Settings.gitlab['mirror_capacity_threshold'],
+        mirror_max_capacity: Settings.gitlab['mirror_max_capacity'],
+        mirror_max_delay: Settings.gitlab['mirror_max_delay'],
+        phone_verification_enabled: true,
+        pipeline_execution_policies_per_configuration_limit: 5,
+        product_analytics_configurator_connection_string: nil,
+        product_analytics_data_collector_host: nil,
+        product_analytics_enabled: false,
+        receptive_cluster_agents_enabled: false,
+        repository_size_limit: 0,
+        scan_execution_policies_action_limit: 0,
+        scan_execution_policies_schedule_limit: 0,
+        seat_control: 0,
+        secret_detection_revocation_token_types_url: nil,
+        secret_detection_service_auth_token: nil,
+        secret_detection_service_url: '',
+        secret_detection_token_revocation_enabled: false,
+        secret_detection_token_revocation_token: nil,
+        secret_detection_token_revocation_url: nil,
+        security_approval_policies_limit: 5,
+        soft_phone_verification_transactions_daily_limit: 16_000,
+        telesign_intelligence_enabled: true,
+        unverified_account_group_creation_limit: 2,
+        virtual_registries_endpoints_api_limit: 1000,
+        zoekt_auto_delete_lost_nodes: true,
+        zoekt_auto_index_root_namespace: false,
+        zoekt_cache_response: true,
+        zoekt_cpu_to_tasks_ratio: 1.0,
+        zoekt_indexing_enabled: false,
+        zoekt_indexing_parallelism: 1,
+        zoekt_indexing_paused: false,
+        zoekt_rollout_batch_size: 32,
+        zoekt_rollout_retry_interval: Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL,
+        zoekt_search_enabled: false
+      )
+    end
   end
 
   describe 'validations' do
