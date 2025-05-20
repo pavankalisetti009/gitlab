@@ -39,7 +39,6 @@ export default {
     betaSelfHostedModelsEnabled: { default: false },
     areExperimentSettingsAllowed: {},
     areDuoCoreFeaturesEnabled: { default: false },
-    isDuoBaseAccessAllowed: { default: false },
   },
   props: {
     duoTier: {
@@ -98,7 +97,7 @@ export default {
           <span data-testid="configuration-status">{{ getAvailabilityStatus }}</span>
         </p>
       </section>
-      <section v-if="isDuoBaseAccessAllowed && !isDuoCoreTier">
+      <section v-if="!isDuoCoreTier">
         <duo-configuration-settings-row
           :duo-configuration-settings-row-type-title="$options.i18n.duoCoreAvailabilityText"
           :config-value="areDuoCoreFeaturesEnabled"

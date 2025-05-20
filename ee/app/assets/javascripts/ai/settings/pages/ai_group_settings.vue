@@ -19,7 +19,7 @@ export default {
       'An error occurred while retrieving your settings. Reload the page to try again.',
     ),
   },
-  inject: ['showEarlyAccessBanner', 'onGeneralSettingsPage', 'isDuoBaseAccessAllowed'],
+  inject: ['showEarlyAccessBanner', 'onGeneralSettingsPage'],
   provide: {
     isSaaS: true,
   },
@@ -51,7 +51,7 @@ export default {
           model_prompt_cache_enabled: promptCacheEnabled,
         };
 
-        if (!this.onGeneralSettingsPage && this.isDuoBaseAccessAllowed) {
+        if (!this.onGeneralSettingsPage) {
           input.duo_core_features_enabled = duoCoreFeaturesEnabled;
         }
 
