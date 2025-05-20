@@ -4,6 +4,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import CreateSyncForm from 'ee/roles_and_permissions/components/ldap_sync/create_sync_form.vue';
 import ServerFormGroup from 'ee/roles_and_permissions/components/ldap_sync/server_form_group.vue';
 import SyncMethodFormGroup from 'ee/roles_and_permissions/components/ldap_sync/sync_method_form_group.vue';
+import UserFilterFormGroup from 'ee/roles_and_permissions/components/ldap_sync/user_filter_form_group.vue';
 
 describe('CreateSyncForm component', () => {
   let wrapper;
@@ -15,6 +16,7 @@ describe('CreateSyncForm component', () => {
   const findForm = () => wrapper.findComponent(GlForm);
   const findServerFormGroup = () => wrapper.findComponent(ServerFormGroup);
   const findSyncMethodFormGroup = () => wrapper.findComponent(SyncMethodFormGroup);
+  const findUserFilterFormGroup = () => wrapper.findComponent(UserFilterFormGroup);
 
   const findFormButtons = () => wrapper.findAllComponents(GlButton);
   const findCancelButton = () => findFormButtons().at(0);
@@ -31,6 +33,11 @@ describe('CreateSyncForm component', () => {
 
   const selectSyncMethod = (value = 'group_cn') => {
     findSyncMethodFormGroup().vm.$emit('input', value);
+    return nextTick();
+  };
+
+  const fillUserFilter = () => {
+    findUserFilterFormGroup().vm.$emit('input', 'uid=john,ou=people,dc=example,dc=com');
   };
 
   beforeEach(() => createWrapper());
@@ -46,6 +53,14 @@ describe('CreateSyncForm component', () => {
       ${'sync method'} | ${findSyncMethodFormGroup}
     `('shows $name form group', ({ findFormGroup }) => {
       expect(findFormGroup().props()).toMatchObject({ value: null, state: true });
+    });
+
+    describe('when User filter is the selected sync method', () => {
+      beforeEach(() => selectSyncMethod('user_filter'));
+
+      it('shows user filter form group', () => {
+        expect(findUserFilterFormGroup().props()).toMatchObject({ value: null, state: true });
+      });
     });
 
     describe('Cancel button', () => {
@@ -72,24 +87,30 @@ describe('CreateSyncForm component', () => {
         expect(wrapper.emitted('submit')).toBeUndefined();
       });
 
-      it('emits submit event when all fields are filled', () => {
+      it('emits submit event when all fields are filled', async () => {
         selectServer();
-        selectSyncMethod();
+        await selectSyncMethod('user_filter');
+        fillUserFilter();
         submitForm();
 
         expect(wrapper.emitted('submit')).toHaveLength(1);
-        expect(wrapper.emitted('submit')[0][0]).toEqual({ server: 'ldapmain' });
+        expect(wrapper.emitted('submit')[0][0]).toEqual({
+          server: 'ldapmain',
+          userFilter: 'uid=john,ou=people,dc=example,dc=com',
+        });
       });
     });
 
     describe('form validation', () => {
       describe.each`
-        name             | findFormGroup              | fillField           | expectedValue
-        ${'server'}      | ${findServerFormGroup}     | ${selectServer}     | ${'ldapmain'}
-        ${'sync method'} | ${findSyncMethodFormGroup} | ${selectSyncMethod} | ${'group_cn'}
-      `('$name form group', ({ findFormGroup, fillField, expectedValue }) => {
+        name             | findFormGroup              | syncMethod       | fillField                             | expectedValue
+        ${'server'}      | ${findServerFormGroup}     | ${null}          | ${selectServer}                       | ${'ldapmain'}
+        ${'sync method'} | ${findSyncMethodFormGroup} | ${null}          | ${() => selectSyncMethod('group_cn')} | ${'group_cn'}
+        ${'user filter'} | ${findUserFilterFormGroup} | ${'user_filter'} | ${fillUserFilter}                     | ${'uid=john,ou=people,dc=example,dc=com'}
+      `('$name form group', ({ syncMethod, findFormGroup, fillField, expectedValue }) => {
         beforeEach(() => {
           createWrapper();
+          return selectSyncMethod(syncMethod);
         });
 
         it('shows form group as valid on page load', () => {
