@@ -19,6 +19,7 @@ module API
         Gitlab::AiGateway.push_feature_flag(:duo_workflow_claude_3_7, current_user)
         Gitlab::AiGateway.push_feature_flag(:duo_workflow_better_tool_messages, current_user)
         Gitlab::AiGateway.push_feature_flag(:duo_workflow_chat_mutation_tools, current_user)
+        Gitlab::AiGateway.push_feature_flag(:duo_workflow_commit_tools, current_user)
       end
     end
   end
