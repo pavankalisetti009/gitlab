@@ -36,7 +36,9 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
   end
 
   describe '.update_policy_configuration' do
-    subject(:execute) { worker.update_policy_configuration(configuration) }
+    let(:force_resync) { false }
+
+    subject(:execute) { worker.update_policy_configuration(configuration, force_resync) }
 
     context 'when policy is valid' do
       let(:rules) do
@@ -126,7 +128,7 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
             end
 
             it 'does not persist policies' do
-              expect(persistence_worker).not_to receive(:perform_async).with(configuration.id)
+              expect(persistence_worker).not_to receive(:perform_async).with(configuration.id, { force_resync: false })
 
               execute
             end
@@ -141,6 +143,16 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
             it 'updates configuration.configured_at to the current time', :freeze_time do
               expect { execute }.to change { configuration.reload.configured_at }.from(nil).to(Time.current)
             end
+
+            context 'when force_resync is true' do
+              let(:force_resync) { true }
+
+              it 'persists policies' do
+                expect(persistence_worker).to receive(:perform_async).with(configuration.id, { force_resync: true })
+
+                execute
+              end
+            end
           end
 
           context 'when policies_changed? is true' do
@@ -149,7 +161,7 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
             end
 
             it 'persists policies' do
-              expect(persistence_worker).to receive(:perform_async).with(configuration.id)
+              expect(persistence_worker).to receive(:perform_async).with(configuration.id, { force_resync: false })
 
               execute
             end

@@ -11,6 +11,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
       .execute
   end
 
+  def persist_with_force_resync!
+    described_class
+      .new(policy_configuration: policy_configuration, policies: policies, policy_type: policy_type, force_resync: true)
+      .execute
+  end
+
   shared_examples "persists attributes" do
     before do
       persist
@@ -83,9 +89,11 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
 
       it 'calls EventPublisher with created policies' do
         expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
+          db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
           created_policies: policy_configuration.security_policies.reload.type_approval_policy,
           policies_changes: [],
-          deleted_policies: []
+          deleted_policies: [],
+          force_resync: false
         }).and_call_original
 
         persist
@@ -300,12 +308,28 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
 
         it 'calls EventPublisher with deleted policies' do
           expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
+            db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
             created_policies: [],
             policies_changes: [],
-            deleted_policies: [Security::Policy.first]
+            deleted_policies: [Security::Policy.first],
+            force_resync: false
           }).and_call_original
 
           persist
+        end
+
+        context 'with force_resync' do
+          it 'calls EventPublisher with force_resync set to true' do
+            expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
+              db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
+              created_policies: [],
+              policies_changes: [],
+              deleted_policies: [Security::Policy.first],
+              force_resync: true
+            }).and_call_original
+
+            persist_with_force_resync!
+          end
         end
 
         it 'sets negative index for deleted policies' do
@@ -382,12 +406,28 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
 
         it 'calls EventPublisher with deleted policies' do
           expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
+            db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
             created_policies: [],
             policies_changes: [an_instance_of(Security::SecurityOrchestrationPolicies::PolicyComparer)],
-            deleted_policies: []
+            deleted_policies: [],
+            force_resync: false
           }).and_call_original
 
           persist
+        end
+
+        context 'with force_resync' do
+          it 'calls EventPublisher with force_resync set to true' do
+            expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
+              db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
+              created_policies: [],
+              policies_changes: [an_instance_of(Security::SecurityOrchestrationPolicies::PolicyComparer)],
+              deleted_policies: [],
+              force_resync: true
+            }).and_call_original
+
+            persist_with_force_resync!
+          end
         end
       end
     end
