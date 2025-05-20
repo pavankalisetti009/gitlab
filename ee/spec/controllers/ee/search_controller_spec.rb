@@ -168,7 +168,7 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
 
       before do
         stub_ee_application_setting(zoekt_search_enabled: true)
-        allow(user).to receive(:has_zoekt_indexed_namespace?).and_return(true)
+        allow(user).to receive(:has_exact_code_search?).and_return(true)
       end
 
       context 'when multi match should be returned' do
