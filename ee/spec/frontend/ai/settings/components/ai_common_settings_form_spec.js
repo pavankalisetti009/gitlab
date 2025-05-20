@@ -21,7 +21,6 @@ describe('AiCommonSettingsForm', () => {
         ...props,
       },
       provide: {
-        isDuoBaseAccessAllowed: false,
         onGeneralSettingsPage: false,
         shouldShowDuoAvailability: true,
         ...provide,
@@ -38,7 +37,7 @@ describe('AiCommonSettingsForm', () => {
   const findSaveButton = () => wrapper.findComponent(GlButton);
 
   beforeEach(() => {
-    createComponent({ provide: { isDuoBaseAccessAllowed: true } });
+    createComponent();
   });
 
   describe('component rendering', () => {
@@ -46,18 +45,8 @@ describe('AiCommonSettingsForm', () => {
       expect(findForm().exists()).toBe(true);
     });
 
-    describe('when isDuoBaseAccessAllowed is false', () => {
-      it('does not render the duo core features form', () => {
-        createComponent({ provide: { isDuoBaseAccessAllowed: false } });
-        expect(findDuoCoreFeaturesForm().exists()).toBe(false);
-      });
-    });
-
-    describe('when isDuoBaseAccessAllowed is true', () => {
-      it('renders the duo core features form', () => {
-        createComponent({ provide: { isDuoBaseAccessAllowed: true } });
-        expect(findDuoCoreFeaturesForm().exists()).toBe(true);
-      });
+    it('renders the duo core features form', () => {
+      expect(findDuoCoreFeaturesForm().exists()).toBe(true);
     });
 
     it('renders DuoExperimentBetaFeatures component', () => {

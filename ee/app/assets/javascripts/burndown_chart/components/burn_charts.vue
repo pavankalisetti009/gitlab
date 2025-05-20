@@ -186,8 +186,12 @@ export default {
       return this.issuesSelected ? FILTER_BY_ISSUES : FILTER_BY_ISSUE_WEIGHT;
     },
     filterByOptions() {
-      const countFilterText = this.glFeatures.workItemsAlpha ? __('Count') : __('Issue count');
-      const weightFilterText = this.glFeatures.workItemsAlpha ? __('Weight') : __('Issue weight');
+      const countFilterText = this.glFeatures.workItemEpicMilestones
+        ? __('Count')
+        : __('Issue count');
+      const weightFilterText = this.glFeatures.workItemEpicMilestones
+        ? __('Weight')
+        : __('Issue weight');
       return [
         {
           value: FILTER_BY_ISSUES,
