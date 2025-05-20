@@ -107,14 +107,6 @@ module BillingPlansHelper
     }
   end
 
-  def start_free_trial_data
-    {
-      track_action: 'click_button',
-      track_label: 'start_trial',
-      testid: 'start-your-free-trial-button'
-    }
-  end
-
   def add_namespace_plan_to_group_instructions
     link_end = '</a>'.html_safe
     move_link_url = help_page_path 'user/project/settings/migrate_projects.md', anchor: "transfer-a-project-to-another-namespace"
