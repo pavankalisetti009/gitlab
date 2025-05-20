@@ -44,6 +44,8 @@ exports[`Project compliance framework empty state matches the snapshot when "add
         href="/edit-group"
         icon=""
         size="medium"
+        tag="button"
+        type="button"
         variant="confirm"
       >
         Add framework in group-name

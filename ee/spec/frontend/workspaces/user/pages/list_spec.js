@@ -1,4 +1,5 @@
 import { mount, shallowMount } from '@vue/test-utils';
+import VueRouter from 'vue-router';
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
 import { GlAlert, GlButton, GlLink, GlTabs } from '@gitlab/ui';
@@ -15,6 +16,7 @@ import List from 'ee/workspaces/user/pages/list.vue';
 import { ROUTES } from 'ee/workspaces/user/constants';
 import { WORKSPACE_STATES } from 'ee/workspaces/common/constants';
 import MonitorTerminatingWorkspace from 'ee/workspaces/common/components/monitor_terminating_workspace.vue';
+import createRouter from 'ee/workspaces/user/router/index';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import {
   USER_WORKSPACES_TAB_LIST_QUERY_RESULT,
@@ -26,6 +28,7 @@ import {
 jest.mock('~/lib/logger');
 
 Vue.use(VueApollo);
+Vue.use(VueRouter);
 
 const SVG_PATH = '/assets/illustrations/empty_states/empty_workspaces.svg';
 
@@ -36,9 +39,6 @@ describe('workspaces/user/pages/list.vue', () => {
   let getProjectsDetailsQueryHandler;
   let getWorkspaceStateQueryHandler;
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
-  const mockRouter = {
-    push: jest.fn(),
-  };
 
   const buildMockApollo = () => {
     userWorkspacesTabListQueryHandler = jest
@@ -57,12 +57,10 @@ describe('workspaces/user/pages/list.vue', () => {
   const createWrapper = ({ mountFn = shallowMount, stubs = {} } = {}) => {
     // noinspection JSCheckFunctionSignatures - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
     wrapper = mountFn(List, {
+      router: createRouter({ base: '/' }),
       apolloProvider: mockApollo,
       provide: {
         emptyStateSvgPath: SVG_PATH,
-      },
-      mocks: {
-        $router: mockRouter,
       },
       stubs,
     });

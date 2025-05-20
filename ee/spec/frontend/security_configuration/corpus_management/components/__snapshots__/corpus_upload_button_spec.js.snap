@@ -10,6 +10,8 @@ exports[`Corpus Upload Button component renders header 1`] = `
     role="button"
     size="medium"
     tabindex="0"
+    tag="button"
+    type="button"
     variant="confirm"
   >
     New corpus

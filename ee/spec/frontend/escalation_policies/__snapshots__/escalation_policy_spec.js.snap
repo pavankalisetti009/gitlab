@@ -18,7 +18,9 @@ exports[`EscalationPolicy renders a policy with rules 1`] = `
           class="!gl-p-0 gl-mr-2"
           icon=""
           size="medium"
+          tag="button"
           title="Collapse"
+          type="button"
           variant="default"
         >
           <gl-icon-stub
@@ -43,7 +45,9 @@ exports[`EscalationPolicy renders a policy with rules 1`] = `
             role="button"
             size="medium"
             tabindex="0"
+            tag="button"
             title="Edit escalation policy"
+            type="button"
             variant="default"
           />
           <gl-button-stub
@@ -54,7 +58,9 @@ exports[`EscalationPolicy renders a policy with rules 1`] = `
             role="button"
             size="medium"
             tabindex="0"
+            tag="button"
             title="Delete escalation policy"
+            type="button"
             variant="default"
           />
         </gl-button-group-stub>

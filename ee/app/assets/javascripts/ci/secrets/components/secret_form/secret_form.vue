@@ -174,7 +174,10 @@ export default {
           return;
         }
 
-        this.$router.push({ name: DETAILS_ROUTE_NAME, params: { secretName: this.secret.name } });
+        await this.$router.push({
+          name: DETAILS_ROUTE_NAME,
+          params: { secretName: this.secret.name },
+        });
       } catch (e) {
         createAlert({ message: __('Something went wrong on our end. Please try again.') });
       } finally {
@@ -210,7 +213,10 @@ export default {
         }
 
         this.showUpdateToastMessage();
-        this.$router.push({ name: DETAILS_ROUTE_NAME, params: { secretName: this.secret.name } });
+        await this.$router.push({
+          name: DETAILS_ROUTE_NAME,
+          params: { secretName: this.secret.name },
+        });
       } catch (e) {
         createAlert({ message: __('Something went wrong on our end. Please try again.') });
       } finally {

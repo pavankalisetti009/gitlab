@@ -43,6 +43,8 @@ exports[`SiteProfileSelector renders properly with no profiles 1`] = `
     data-testid="select-profile-action-btn"
     icon=""
     size="medium"
+    tag="button"
+    type="button"
     variant="confirm"
   >
     Select site profile
@@ -93,6 +95,8 @@ exports[`SiteProfileSelector renders properly with profiles 1`] = `
     data-testid="select-profile-action-btn"
     icon=""
     size="medium"
+    tag="button"
+    type="button"
     variant="confirm"
   >
     Select site profile

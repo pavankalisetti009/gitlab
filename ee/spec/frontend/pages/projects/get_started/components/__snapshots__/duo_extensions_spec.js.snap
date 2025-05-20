@@ -22,6 +22,8 @@ exports[`DuoExtensions component renders correctly 1`] = `
     href="/help/editor_extensions/visual_studio_code/setup.md"
     icon=""
     size="medium"
+    tag="button"
+    type="button"
     variant="default"
   >
     VS Code
@@ -34,6 +36,8 @@ exports[`DuoExtensions component renders correctly 1`] = `
     href="/help/editor_extensions/jetbrains_ide/setup.md"
     icon=""
     size="medium"
+    tag="button"
+    type="button"
     variant="default"
   >
     Jetbrains
@@ -46,6 +50,8 @@ exports[`DuoExtensions component renders correctly 1`] = `
     href="/help/editor_extensions/visual_studio/setup.md"
     icon=""
     size="medium"
+    tag="button"
+    type="button"
     variant="default"
   >
     Visual Studio
@@ -58,6 +64,8 @@ exports[`DuoExtensions component renders correctly 1`] = `
     href="/help/editor_extensions/eclipse/setup.md"
     icon=""
     size="medium"
+    tag="button"
+    type="button"
     variant="default"
   >
     Eclipse
@@ -70,6 +78,8 @@ exports[`DuoExtensions component renders correctly 1`] = `
     href="/help/editor_extensions/neovim/setup.md"
     icon=""
     size="medium"
+    tag="button"
+    type="button"
     variant="default"
   >
     Neovim
@@ -82,6 +92,8 @@ exports[`DuoExtensions component renders correctly 1`] = `
     href="/help/editor_extensions/gitlab_cli/_index.md"
     icon=""
     size="medium"
+    tag="button"
+    type="button"
     variant="default"
   >
     GitLab CLI
