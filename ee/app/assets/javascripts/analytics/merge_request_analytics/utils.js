@@ -10,6 +10,15 @@ import {
   isValidDate,
 } from '~/lib/utils/datetime_utility';
 import {
+  TOKEN_TYPE_ASSIGNEE,
+  TOKEN_TYPE_AUTHOR,
+  TOKEN_TYPE_LABEL,
+  TOKEN_TYPE_MILESTONE,
+  TOKEN_TYPE_SOURCE_BRANCH,
+  TOKEN_TYPE_TARGET_BRANCH,
+} from '~/vue_shared/components/filtered_search_bar/constants';
+import { filterToQueryObject } from '~/vue_shared/components/filtered_search_bar/filtered_search_utils';
+import {
   THROUGHPUT_CHART_STRINGS,
   DEFAULT_NUMBER_OF_DAYS,
   UNITS,
@@ -184,4 +193,34 @@ export const toDateRange = (startDateParam, endDateParam) => {
     });
     return getDefaultDateRange();
   }
+};
+
+/**
+ * Takes a filter object and converts it into an MR throughput query object
+ *
+ * @param {Object} filters
+ * @returns {Object} query object with filters for MR throughput GraphQL query
+ */
+export const filterToMRThroughputQueryObject = (filters = {}) => {
+  const {
+    [TOKEN_TYPE_LABEL]: labels,
+    [`not[${TOKEN_TYPE_LABEL}]`]: notLabels,
+    [TOKEN_TYPE_SOURCE_BRANCH]: sourceBranches,
+    [TOKEN_TYPE_TARGET_BRANCH]: targetBranches,
+    [TOKEN_TYPE_MILESTONE]: milestoneTitle,
+    [`not[${TOKEN_TYPE_MILESTONE}]`]: notMilestoneTitle,
+    [TOKEN_TYPE_ASSIGNEE]: assigneeUsername,
+    [TOKEN_TYPE_AUTHOR]: authorUsername,
+  } = filterToQueryObject(filters);
+
+  return {
+    labels,
+    notLabels,
+    sourceBranches,
+    targetBranches,
+    milestoneTitle: milestoneTitle?.at(0),
+    notMilestoneTitle: notMilestoneTitle?.at(0),
+    assigneeUsername: assigneeUsername?.at(0),
+    authorUsername: authorUsername?.at(0),
+  };
 };

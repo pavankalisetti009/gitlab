@@ -5,6 +5,10 @@ import {
   DATE_RANGE_OPTION_LAST_60_DAYS,
   DATE_RANGE_OPTION_LAST_365_DAYS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
+import {
+  mockThroughputFiltersQueryObject,
+  mockThroughputSearchFilters,
+} from 'ee_jest/analytics/merge_request_analytics/mock_data';
 import { mockQueryThroughputDataResponse } from '../../mock_data';
 
 const mockMRCountsResponse = [
@@ -66,6 +70,27 @@ describe('Merge request counts data source', () => {
       labels: ['a', 'b'],
       milestoneTitle: '101',
       authorUsername: 'Dr. Gero',
+    });
+  });
+
+  it('can transform search filters into correct query parameters', async () => {
+    jest.spyOn(utils, 'getStartDate').mockReturnValue(new Date('2020-05-08'));
+    mockResolvedQuery();
+
+    res = await fetch({
+      setVisualizationOverrides: mockSetVisualizationOverrides,
+      namespace,
+      query: defaultQueryParams,
+      filters: {
+        searchFilters: mockThroughputSearchFilters,
+      },
+    });
+
+    expectQueryWithVariables({
+      namespace,
+      startDate: new Date('2020-05-08'),
+      endDate: new Date('2020-07-07'),
+      ...mockThroughputFiltersQueryObject,
     });
   });
 

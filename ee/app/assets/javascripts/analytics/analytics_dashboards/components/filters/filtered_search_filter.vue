@@ -2,14 +2,19 @@
 import { pick } from 'lodash';
 import FilteredSearchBar from '~/vue_shared/components/filtered_search_bar/filtered_search_bar_root.vue';
 import {
+  OPERATORS_IS,
   TOKEN_TITLE_ASSIGNEE,
   TOKEN_TITLE_AUTHOR,
   TOKEN_TITLE_LABEL,
   TOKEN_TITLE_MILESTONE,
+  TOKEN_TITLE_SOURCE_BRANCH,
+  TOKEN_TITLE_TARGET_BRANCH,
   TOKEN_TYPE_ASSIGNEE,
   TOKEN_TYPE_AUTHOR,
   TOKEN_TYPE_LABEL,
   TOKEN_TYPE_MILESTONE,
+  TOKEN_TYPE_SOURCE_BRANCH,
+  TOKEN_TYPE_TARGET_BRANCH,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import MilestoneToken from '~/vue_shared/components/filtered_search_bar/tokens/milestone_token.vue';
 import LabelToken from '~/vue_shared/components/filtered_search_bar/tokens/label_token.vue';
@@ -19,11 +24,15 @@ import {
   processFilters,
 } from '~/vue_shared/components/filtered_search_bar/filtered_search_utils';
 import searchLabelsQuery from 'ee/analytics/analytics_dashboards/graphql/queries/search_labels.query.graphql';
+import searchBranchesQuery from 'ee/analytics/analytics_dashboards/graphql/queries/search_branches.query.graphql';
 import {
   FILTERED_SEARCH_MAX_LABELS,
   FILTERED_SEARCH_OPERATORS,
+  FILTERED_SEARCH_PROJECT_ONLY_TOKENS,
   FILTERED_SEARCH_SUPPORTED_TOKENS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
+import BranchToken from '~/vue_shared/components/filtered_search_bar/tokens/branch_token.vue';
+import { dasherize } from '~/lib/utils/text_utility';
 
 export default {
   name: 'FilteredSearchFilter',
@@ -105,19 +114,48 @@ export default {
         },
       ];
     },
+    availableTokens() {
+      return [
+        ...this.defaultTokens,
+        {
+          icon: 'branch',
+          title: TOKEN_TITLE_SOURCE_BRANCH,
+          type: TOKEN_TYPE_SOURCE_BRANCH,
+          token: BranchToken,
+          unique: true,
+          operators: OPERATORS_IS,
+          fetchBranches: this.fetchBranches,
+        },
+        {
+          icon: 'branch',
+          title: TOKEN_TITLE_TARGET_BRANCH,
+          type: TOKEN_TYPE_TARGET_BRANCH,
+          token: BranchToken,
+          unique: true,
+          operators: OPERATORS_IS,
+          fetchBranches: this.fetchBranches,
+        },
+      ].filter(({ type }) => {
+        if (this.isProject) return true;
+
+        return !FILTERED_SEARCH_PROJECT_ONLY_TOKENS.includes(type);
+      });
+    },
     tokens() {
-      const { options, defaultTokens } = this;
+      const { options, defaultTokens, availableTokens } = this;
 
       if (!options.length) return defaultTokens;
 
-      return defaultTokens.reduce((acc, defaultToken) => {
-        const tokenOption = options.find(({ token }) => token === defaultToken.type);
+      return options.reduce((acc, tokenOption) => {
+        const availableToken = availableTokens.find(
+          ({ type }) => dasherize(tokenOption.token) === type,
+        );
 
-        if (tokenOption) {
+        if (availableToken) {
           const { token, operator, ...restTokenOptionProps } = tokenOption;
-          const operators = FILTERED_SEARCH_OPERATORS[operator];
+          const operators = FILTERED_SEARCH_OPERATORS[operator] ?? availableToken.operators;
 
-          return [...acc, { ...defaultToken, operators, ...restTokenOptionProps }];
+          return [...acc, { ...availableToken, operators, ...restTokenOptionProps }];
         }
 
         return acc;
@@ -144,6 +182,21 @@ export default {
           },
         })
         .then(({ data }) => data?.[this.namespaceType]?.labels?.nodes ?? []);
+    },
+    fetchBranches(searchTerm) {
+      return this.$apollo
+        .query({
+          query: searchBranchesQuery,
+          variables: {
+            searchPattern: searchTerm ? `*${searchTerm}*` : '*',
+            fullPath: this.namespaceFullPath,
+          },
+        })
+        .then(({ data }) => {
+          const branchNames = data?.project?.repository?.branchNames ?? [];
+
+          return { data: branchNames.map((name) => ({ name })) };
+        });
     },
   },
 };
