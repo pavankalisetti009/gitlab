@@ -25,12 +25,7 @@ module ActiveRecord
         # rubocop:disable Database/MultipleDatabases -- From Rails base code which doesn't follow our style guide
         conn = ActiveRecord::Base.connection
 
-        versions =
-          if ::Gitlab.next_rails?
-            conn.schema_migration.versions.map(&:to_i)
-          else
-            ActiveRecord::SchemaMigration.all_versions.map(&:to_i)
-          end
+        versions = conn.schema_migration.versions.map(&:to_i)
 
         conn.migration_context.migrations.sort_by(&:version).map do |m|
           [
