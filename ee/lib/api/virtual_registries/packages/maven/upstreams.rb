@@ -34,7 +34,7 @@ module API
                   desc 'List all maven virtual registry upstreams' do
                     detail 'This feature was introduced in GitLab 17.4. \
                         This feature is currently in experiment state. \
-                        This feature behind the `virtual_registry_maven` feature flag.'
+                        This feature behind the `maven_virtual_registry` feature flag.'
                     success code: 200
                     failure [
                       { code: 400, message: 'Bad Request' },
@@ -55,7 +55,7 @@ module API
                   desc 'Add a maven virtual registry upstream' do
                     detail 'This feature was introduced in GitLab 17.4. \
                         This feature is currently in experiment state. \
-                        This feature behind the `virtual_registry_maven` feature flag.'
+                        This feature behind the `maven_virtual_registry` feature flag.'
                     success code: 201, model: ::API::Entities::VirtualRegistries::Packages::Maven::Upstream
                     failure [
                       { code: 400, message: 'Bad Request' },
@@ -99,7 +99,7 @@ module API
                 desc 'Get a specific maven virtual registry upstream' do
                   detail 'This feature was introduced in GitLab 17.4. \
                         This feature is currently in experiment state. \
-                        This feature behind the `virtual_registry_maven` feature flag.'
+                        This feature behind the `maven_virtual_registry` feature flag.'
                   success ::API::Entities::VirtualRegistries::Packages::Maven::Upstream
                   failure [
                     { code: 400, message: 'Bad Request' },
@@ -119,7 +119,7 @@ module API
                 desc 'Update a maven virtual registry upstream' do
                   detail 'This feature was introduced in GitLab 17.4. \
                         This feature is currently in experiment state. \
-                        This feature behind the `virtual_registry_maven` feature flag.'
+                        This feature behind the `maven_virtual_registry` feature flag.'
                   success code: 200
                   failure [
                     { code: 400, message: 'Bad Request' },
@@ -153,7 +153,7 @@ module API
                 desc 'Delete a maven virtual registry upstream' do
                   detail 'This feature was introduced in GitLab 17.4. \
                         This feature is currently in experiment state. \
-                        This feature behind the `virtual_registry_maven` feature flag.'
+                        This feature behind the `maven_virtual_registry` feature flag.'
                   success code: 204
                   failure [
                     { code: 400, message: 'Bad Request' },

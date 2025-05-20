@@ -26,7 +26,7 @@ module API
                 desc 'Update an upstream within a specific maven virtual registry' do
                   detail 'This feature was introduced in GitLab 18.0. \
                       This feature is currently in experiment state. \
-                      This feature behind the `virtual_registry_maven` feature flag.'
+                      This feature behind the `maven_virtual_registry` feature flag.'
                   success code: 200
                   failure [
                     { code: 400, message: 'Bad Request' },

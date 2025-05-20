@@ -23,9 +23,9 @@ RSpec.shared_examples 'disallowed access to virtual registry' do
     it_behaves_like 'returning response status', :not_found
   end
 
-  context 'when feature flag virtual_registry_maven is disabled' do
+  context 'when feature flag maven_virtual_registry is disabled' do
     before do
-      stub_feature_flags(virtual_registry_maven: false)
+      stub_feature_flags(maven_virtual_registry: false)
     end
 
     it_behaves_like 'returning response status', :not_found
