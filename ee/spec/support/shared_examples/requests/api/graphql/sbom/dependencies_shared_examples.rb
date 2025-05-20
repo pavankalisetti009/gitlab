@@ -173,3 +173,49 @@ RSpec.shared_examples 'when dependencies graphql query filtered by component ver
     end
   end
 end
+
+RSpec.shared_examples 'when dependencies graphql query filtered by not component versions' do
+  let_it_be(:excluded_component_versions) { ['1.2.3', '1.2.5', '1.2.7'] }
+  let_it_be(:included_component_version) { '4.5.6' }
+  let_it_be(:excluded_occurrences) do
+    excluded_component_versions.map do |version|
+      create(:sbom_occurrence, project: project,
+        component_version: create(:sbom_component_version, version: version))
+    end
+  end
+
+  let_it_be(:included_occurrence) do
+    create(:sbom_occurrence, project: project,
+      component_version: create(:sbom_component_version, version: included_component_version))
+  end
+
+  let(:queried_not_component_version) { excluded_component_versions }
+  let(:not_component_version_query_payload) { { not_component_versions: queried_not_component_version } }
+  let(:dependencies_query) { pagination_query(not_component_version_query_payload) }
+
+  it 'returns only records not matching the specified component version(s)' do
+    post_graphql(dependencies_query, current_user: current_user)
+
+    result_nodes = graphql_data_at(*nodes_path)
+    versions_in_result = result_nodes.map { |node| node.dig('componentVersion', 'version') }
+
+    expect(versions_in_result).to include(included_component_version)
+    expect(versions_in_result).not_to include(*excluded_component_versions)
+  end
+
+  context 'when the component version filtering feature flag is disabled for the project' do
+    before do
+      stub_feature_flags(version_filtering_on_project_level_dependency_list: false)
+    end
+
+    it 'ignores the component filter and returns all relevant records' do
+      post_graphql(dependencies_query, current_user: current_user)
+
+      result_nodes = graphql_data_at(*nodes_path)
+      component_versions_in_result = result_nodes.map { |node| node.dig('componentVersion', 'version') }
+
+      expect(component_versions_in_result).to include(*excluded_component_versions, included_component_version)
+      expect(result_nodes.size).to eq(project.sbom_occurrences.count)
+    end
+  end
+end
