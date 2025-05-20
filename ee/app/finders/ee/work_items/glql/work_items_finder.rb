@@ -23,7 +23,8 @@ module EE
         extend ::Gitlab::Utils::Override
 
         CONTROL_KEYS = [:sort, :include_ancestors, :include_descendants, :exclude_projects].freeze
-        ALLOWED_ES_FILTERS = [:label_name, :group_id, :project_id, :state, :confidential].freeze
+        ALLOWED_ES_FILTERS = [:label_name, :group_id, :project_id, :state, :confidential, :author_username, :not].freeze
+        NOT_FILTERS = [:author_username].freeze
 
         attr_reader :current_user, :context, :params
         attr_accessor :resource_parent
@@ -78,7 +79,9 @@ module EE
             label_name: params[:label_name],
             sort: 'created_desc',
             state: params[:state],
-            confidential: params[:confidential]
+            confidential: params[:confidential],
+            author_username: params[:author_username],
+            not_author_username: params.dig(:not, :author_username)
           }
         end
 
@@ -136,9 +139,20 @@ module EE
         end
 
         def elasticsearch_fields_supported?
+          allowed_main_filters? && allowed_not_filters?
+        end
+
+        def allowed_main_filters?
           filter_keys = params.keys - CONTROL_KEYS
 
           (filter_keys - ALLOWED_ES_FILTERS).empty?
+        end
+
+        def allowed_not_filters?
+          return true unless params[:not].present?
+          return false unless params[:not].is_a?(Hash)
+
+          (params[:not].keys - NOT_FILTERS).empty?
         end
       end
     end

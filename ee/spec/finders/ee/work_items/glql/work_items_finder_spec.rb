@@ -8,7 +8,7 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:resource_parent) { group }
-  let(:current_user)     { create(:user) }
+  let_it_be(:current_user)    { create(:user) }
 
   let(:context)          { instance_double(GraphQL::Query::Context) }
   let(:request_params)   { { 'operationName' => 'GLQL' } }
@@ -27,7 +27,9 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
     {
       label_name: ['test-label'],
       state: 'opened',
-      confidential: false
+      confidential: false,
+      author_username: current_user.username,
+      not: {}
     }
   end
 
@@ -84,6 +86,30 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
           expect(finder.use_elasticsearch_finder?).to be_falsey
         end
       end
+
+      context 'when `not` operator is used with supported filter' do
+        let(:params) { { not: { author_username: current_user.username } } }
+
+        it 'returns true' do
+          expect(finder.use_elasticsearch_finder?).to be_truthy
+        end
+      end
+
+      context 'when `not` operator is used with not supported filter' do
+        let(:params) { { not: { not_suported: 'something' } } }
+
+        it 'returns false' do
+          expect(finder.use_elasticsearch_finder?).to be_falsey
+        end
+      end
+
+      context 'when `not` operator is not a hash' do
+        let(:params) { { not: 'something' } }
+
+        it 'returns false' do
+          expect(finder.use_elasticsearch_finder?).to be_falsey
+        end
+      end
     end
 
     context 'when using ES finder' do
@@ -134,7 +160,7 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
   end
 
   describe '#execute' do
-    let_it_be(:work_item1) { create(:work_item, project: project) }
+    let_it_be(:work_item1) { create(:work_item, project: project, author: current_user) }
     let_it_be(:work_item2) { create(:work_item, :satisfied_status, project: project) }
     let(:search_params) do
       {
@@ -143,7 +169,9 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
         per_page: 100,
         search: '*',
         sort: 'created_desc',
-        state: 'opened'
+        state: 'opened',
+        author_username: current_user.username,
+        not_author_username: nil
       }
     end
 
@@ -174,6 +202,17 @@ RSpec.describe WorkItems::Glql::WorkItemsFinder, feature_category: :markdown do
     context 'when resource_parent is a Group' do
       before do
         search_params.merge!(group_id: group.id)
+      end
+
+      it 'executes ES search service with expected params' do
+        expect(finder.execute).to contain_exactly(work_item1, work_item2)
+      end
+    end
+
+    context 'when not_author_username param provided' do
+      before do
+        params[:not][:author_username] = current_user.username
+        search_params.merge!(not_author_username: current_user.username, group_id: group.id)
       end
 
       it 'executes ES search service with expected params' do
