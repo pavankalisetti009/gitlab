@@ -23,6 +23,7 @@ RSpec.describe Search::Zoekt::LostNodeEventWorker, :zoekt_settings_enabled, feat
   it_behaves_like 'an idempotent worker' do
     before do
       allow(Search::Zoekt::Node).to receive(:marking_lost_enabled?).and_return true
+      allow(::Search::Zoekt::Settings).to receive(:lost_node_threshold).and_return(12.hours)
     end
 
     context 'when node can not be found' do

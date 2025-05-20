@@ -323,7 +323,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     let_it_be(:application_setting) { build(:application_setting) }
 
     before do
-      application_setting.zoekt_auto_delete_lost_nodes = true
+      application_setting.zoekt_lost_node_threshold = Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD
       application_setting.zoekt_auto_index_root_namespace = false
       application_setting.zoekt_indexing_enabled = true
       application_setting.zoekt_indexing_paused = false
@@ -339,8 +339,6 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         expect(result[2]).not_to have_checked_field('Pause indexing', with: 1)
         expect(result[3]).not_to have_checked_field('Index root namespaces automatically', with: 1)
         expect(result[4]).to have_checked_field(
-          "Delete offline nodes after #{::Search::Zoekt::Node::LOST_DURATION_THRESHOLD.inspect}", with: 1)
-        expect(result[5]).to have_checked_field(
           format(_("Cache search results for %{label}"), label: ::Search::Zoekt::Cache.humanize_expires_in), with: 1
         )
       end
@@ -353,6 +351,7 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     before do
       application_setting.zoekt_cpu_to_tasks_ratio = 1.5
       application_setting.zoekt_rollout_batch_size = 100
+      application_setting.zoekt_lost_node_threshold = '12h'
       helper.instance_variable_set(:@application_setting, application_setting)
     end
 
@@ -368,10 +367,14 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         expect(result[4]).to have_selector('label', text: _('Number of namespaces per indexing rollout'))
         expect(result[5])
           .to have_selector('input[type="number"][name="application_setting[zoekt_rollout_batch_size]"][value="100"]')
-        expect(result[6]).to have_selector('label', text: _('Retry interval for failed namespaces'))
+        expect(result[6]).to have_selector('label', text: _('Offline nodes automatically deleted after'))
+        selector = 'input[type="text"][name="application_setting[zoekt_lost_node_threshold]"]' \
+          "[value=\"#{Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD}\"]"
+        expect(result[7]).to have_selector(selector)
+        expect(result[8]).to have_selector('label', text: _('Retry interval for failed namespaces'))
         selector = 'input[type="text"][name="application_setting[zoekt_rollout_retry_interval]"]' \
           "[value=\"#{Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL}\"]"
-        expect(result[7]).to have_selector(selector)
+        expect(result[9]).to have_selector(selector)
       end
     end
 

@@ -30,7 +30,6 @@ module EE
         elastic_migration_worker_enabled: [:boolean, { default: true }]
 
       jsonb_accessor :zoekt_settings,
-        zoekt_auto_delete_lost_nodes: [:boolean, { default: true }],
         zoekt_cache_response: [:boolean, { default: true }],
         zoekt_indexing_enabled: [:boolean, { default: false }],
         zoekt_indexing_paused: [:boolean, { default: false }],
@@ -39,7 +38,8 @@ module EE
         zoekt_cpu_to_tasks_ratio: [:float, { default: 1.0 }],
         zoekt_indexing_parallelism: [:integer, { default: 1 }],
         zoekt_rollout_batch_size: [:integer, { default: 32 }],
-        zoekt_rollout_retry_interval: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL }]
+        zoekt_rollout_retry_interval: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL }],
+        zoekt_lost_node_threshold: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD }]
 
       jsonb_accessor :code_creation, disabled_direct_code_suggestions: [:boolean, { default: false }]
 
@@ -308,7 +308,11 @@ module EE
       validates :zoekt_indexing_parallelism, numericality: { greater_than: 0 }
       validates :zoekt_rollout_batch_size, numericality: { greater_than: 0 }
       validates :zoekt_rollout_retry_interval, format: {
-        with: ::Search::Zoekt::Settings::ROLLOUT_RETRY_INTERVAL_REGEX,
+        with: ::Search::Zoekt::Settings::DURATION_INTERVAL_REGEX,
+        message: N_('Must be in the following format: `30m`, `2h`, or `1d`')
+      }
+      validates :zoekt_lost_node_threshold, format: {
+        with: ::Search::Zoekt::Settings::DURATION_INTERVAL_REGEX,
         message: N_('Must be in the following format: `30m`, `2h`, or `1d`')
       }
 

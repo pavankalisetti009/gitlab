@@ -22,7 +22,7 @@ FactoryBot.define do
     end
 
     trait :lost do
-      last_seen_at { (Search::Zoekt::Node::LOST_DURATION_THRESHOLD + 1.minute).ago }
+      last_seen_at { 1.year.ago }
     end
 
     trait :not_enough_free_space do

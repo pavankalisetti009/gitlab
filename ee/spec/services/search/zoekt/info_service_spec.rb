@@ -18,13 +18,13 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
       zoekt_indexing_enabled: true,
       zoekt_search_enabled: true,
       zoekt_indexing_paused: false,
-      zoekt_auto_delete_lost_nodes: true,
       zoekt_cache_response: true,
       zoekt_auto_index_root_namespace: true,
       zoekt_cpu_to_tasks_ratio: 1.5,
       zoekt_indexing_parallelism: 1,
       zoekt_rollout_batch_size: 32,
-      zoekt_rollout_retry_interval: '1d'
+      zoekt_rollout_retry_interval: '1d',
+      zoekt_lost_node_threshold: '24h'
     )
     allow(Gitlab).to receive(:version_info).and_return(version_info)
     allow(Feature).to receive_messages(
@@ -75,7 +75,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
         expect(logger).to have_received(:info).with(/Pause indexing:.+no/)
         expect(logger).to have_received(:info).with(/Index root namespaces automatically:.+#{Rainbow('yes').green}/)
         expect(logger).to have_received(:info).with(
-          /Delete offline nodes after 12 hours:.+#{Rainbow('yes').green}/
+          /Offline nodes automatically deleted after:.+24h/
         )
         expect(logger).to have_received(:info).with(/Indexing CPU to tasks multiplier:.+1.5/)
       end

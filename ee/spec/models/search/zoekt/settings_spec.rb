@@ -10,7 +10,7 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         :zoekt_search_enabled,
         :zoekt_indexing_paused,
         :zoekt_auto_index_root_namespace,
-        :zoekt_auto_delete_lost_nodes,
+        :zoekt_lost_node_threshold,
         :zoekt_cpu_to_tasks_ratio
       )
     end
@@ -29,8 +29,7 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         :zoekt_indexing_enabled,
         :zoekt_search_enabled,
         :zoekt_indexing_paused,
-        :zoekt_auto_index_root_namespace,
-        :zoekt_auto_delete_lost_nodes
+        :zoekt_auto_index_root_namespace
       ]
 
       boolean_settings.each do |setting|
@@ -67,7 +66,6 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         :zoekt_search_enabled,
         :zoekt_indexing_paused,
         :zoekt_auto_index_root_namespace,
-        :zoekt_auto_delete_lost_nodes,
         :zoekt_cache_response
       )
 
@@ -83,6 +81,7 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
 
       expected_list = %i[
         zoekt_cpu_to_tasks_ratio zoekt_indexing_parallelism zoekt_rollout_batch_size zoekt_rollout_retry_interval
+        zoekt_lost_node_threshold
       ]
       expect(input_settings.keys).to match_array(expected_list)
 
@@ -92,26 +91,96 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
     end
   end
 
-  describe '.rollout_retry_interval' do
-    let_it_be(:_) { create(:application_setting) }
-
-    before do
-      stub_ee_application_setting(zoekt_rollout_retry_interval: interval)
-    end
-
+  describe '.parse_duration' do
     using RSpec::Parameterized::TableSyntax
 
-    where(:interval, :duration_interval) do
-      '0'   | nil # nil for 0 means retry is disabled
-      '1x'  | 1.day # default for invalid interval
-      '5m'  | 5.minutes
-      '2h'  | 2.hours
-      '3d'  | 3.days
+    where(:setting_value, :default, :result) do
+      '0'   | '1d'  | nil # nil for 0 means disabled
+      '1x'  | '1d'  | 1.day # default for invalid interval
+      '5m'  | '2d'  | 5.minutes
+      '2h'  | '3d'  | 2.hours
+      '3d'  | '4d'  | 3.days
     end
 
     with_them do
-      it 'returns the correct duration_interval' do
-        expect(described_class.rollout_retry_interval).to eq(duration_interval)
+      it 'parses the duration correctly' do
+        expect(described_class.parse_duration(setting_value, default)).to eq(result)
+      end
+    end
+  end
+
+  describe '.rollout_retry_interval' do
+    let_it_be(:_) { create(:application_setting) }
+
+    context 'with various intervals' do
+      before do
+        stub_ee_application_setting(zoekt_rollout_retry_interval: interval)
+      end
+
+      using RSpec::Parameterized::TableSyntax
+
+      where(:interval, :duration_interval) do
+        '0'   | nil # nil for 0 means retry is disabled
+        '1x'  | 1.day # default for invalid interval
+        '5m'  | 5.minutes
+        '2h'  | 2.hours
+        '3d'  | 3.days
+      end
+
+      with_them do
+        it 'returns the correct duration_interval' do
+          expect(described_class.rollout_retry_interval).to eq(duration_interval)
+        end
+      end
+    end
+
+    context 'when delegated to parse_duration' do
+      before do
+        allow(ApplicationSetting).to receive_message_chain(:current, :zoekt_rollout_retry_interval).and_return('1d')
+      end
+
+      it 'calls parse_duration with correct arguments' do
+        expect(described_class).to receive(:parse_duration)
+          .with('1d', described_class::DEFAULT_ROLLOUT_RETRY_INTERVAL)
+
+        described_class.rollout_retry_interval
+      end
+    end
+  end
+
+  describe '.lost_node_threshold' do
+    let_it_be(:_) { create(:application_setting) }
+
+    before do
+      stub_ee_application_setting(zoekt_lost_node_threshold: interval)
+    end
+
+    context 'with various intervals' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:interval, :duration_interval) do
+        '0'   | nil # nil for 0 means disabled
+        '1x'  | 12.hours # default for invalid interval
+        '5m'  | 5.minutes
+        '2h'  | 2.hours
+        '3d'  | 3.days
+      end
+
+      with_them do
+        it 'returns the correct duration_interval' do
+          expect(described_class.lost_node_threshold).to eq(duration_interval)
+        end
+      end
+    end
+
+    context 'when delegated to parse_duration' do
+      let(:interval) { '1h' }
+
+      it 'calls parse_duration with correct arguments' do
+        expect(described_class).to receive(:parse_duration)
+          .with('1h', described_class::DEFAULT_LOST_NODE_THRESHOLD)
+
+        described_class.lost_node_threshold
       end
     end
   end
