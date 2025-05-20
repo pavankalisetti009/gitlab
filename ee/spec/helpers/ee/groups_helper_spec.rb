@@ -7,7 +7,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
 
   let(:owner) { create(:user, group_view: :security_dashboard) }
   let(:current_user) { owner }
-  let(:group) { create(:group, :private) }
+  let(:group) { create(:group, :private, name: 'Test Group') }
 
   before do
     allow(helper).to receive(:current_user) { current_user }
@@ -347,8 +347,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     subject(:duo_home_app_data) { helper.duo_home_app_data(group) }
 
     before do
-      allow(helper).to receive(:group_settings_gitlab_duo_seat_utilization_index_path).with(group).and_return('/groups/my-group/-/settings/gitlab_duo/seat_utilization')
-      allow(helper).to receive(:group_settings_gitlab_duo_configuration_index_path).with(group).and_return('/groups/my-group/-/settings/gitlab_duo/configuration')
       allow(helper).to receive(:code_suggestions_usage_app_data).and_return({ code_suggestions: 'data' })
     end
 
@@ -360,17 +358,18 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
       )
 
       expect(helper.duo_home_app_data(group)).to eq({
-        duo_seat_utilization_path: '/groups/my-group/-/settings/gitlab_duo/seat_utilization',
+        duo_seat_utilization_path: '/groups/test_group/-/settings/gitlab_duo/seat_utilization',
         duo_availability: 'default_on',
         experiment_features_enabled: 'true',
         prompt_cache_enabled: 'true',
-        duo_configuration_path: '/groups/my-group/-/settings/gitlab_duo/configuration',
+        duo_configuration_path: '/groups/test_group/-/settings/gitlab_duo/configuration',
         code_suggestions: 'data',
         are_experiment_settings_allowed: 'true',
         are_prompt_cache_settings_allowed: 'true',
         is_duo_base_access_allowed: 'true',
         are_duo_core_features_enabled: 'true',
-        model_switching_enabled: 'true'
+        model_switching_enabled: 'true',
+        model_switching_path: '/groups/test_group/-/settings/gitlab_duo/model_selection'
       })
     end
 

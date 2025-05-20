@@ -25,6 +25,7 @@ export default {
     duoSelfHostedPath: { default: '' },
     isSaaS: {},
     modelSwitchingEnabled: { default: false },
+    modelSwitchingPath: { default: '' },
     showDuoWorkflowSettings: { default: false },
   },
   i18n: {
@@ -46,7 +47,7 @@ export default {
           header: s__('AiPowered|Model Selection'),
           description: s__('AiPowered|Assign models to AI-native features.'),
           buttonText: s__('AiPowered|Configure features'),
-          path: '', // TODO: Add configuration path (not yet implemented)
+          path: this.modelSwitchingPath,
         };
       }
 

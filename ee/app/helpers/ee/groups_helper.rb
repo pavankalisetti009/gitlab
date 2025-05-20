@@ -80,7 +80,8 @@ module EE
         duo_configuration_path: group_settings_gitlab_duo_configuration_index_path(group),
         are_duo_core_features_enabled: settings.duo_core_features_enabled.to_s,
         is_duo_base_access_allowed: ::Feature.enabled?(:allow_duo_base_access, group).to_s,
-        model_switching_enabled: ::Feature.enabled?(:ai_model_switching).to_s # rubocop:disable Gitlab/FeatureFlagWithoutActor -- global feature flag
+        model_switching_enabled: ::Feature.enabled?(:ai_model_switching).to_s, # rubocop:disable Gitlab/FeatureFlagWithoutActor -- global feature flag
+        model_switching_path: group_settings_gitlab_duo_model_selection_index_path(group)
       }.merge(code_suggestions_usage_app_data(group))
     end
 
