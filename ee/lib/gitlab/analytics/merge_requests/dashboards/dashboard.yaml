@@ -14,6 +14,18 @@ filters:
       - 365d
       - custom
     numberOfDaysLimit: 365
+  filteredSearch:
+    enabled: true
+    options:
+      - token: source_branch
+      - token: target_branch
+      - token: milestone
+      - token: label
+      - token: author
+        operator: is
+      - token: assignee
+        operator: is
+        unique: true
 panels:
   - title: Mean time to merge
     visualization: mean_time_to_merge

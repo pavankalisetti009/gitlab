@@ -280,7 +280,9 @@
             "assignee",
             "author",
             "label",
-            "milestone"
+            "milestone",
+            "target_branch",
+            "source_branch"
           ]
         },
         "operator": {

@@ -12,8 +12,12 @@ import {
   mockFilteredSearchChangePayload,
   mockGroupLabelsResponse,
   mockProjectLabelsResponse,
+  mockRepositoryBranchNamesResponse,
+  mockSourceBranchToken,
+  mockTargetBranchToken,
 } from 'ee_jest/analytics/analytics_dashboards/mock_data';
 import searchLabelsQuery from 'ee/analytics/analytics_dashboards/graphql/queries/search_labels.query.graphql';
+import searchBranchesQuery from 'ee/analytics/analytics_dashboards/graphql/queries/search_branches.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
@@ -24,11 +28,14 @@ import {
   TOKEN_TYPE_AUTHOR,
   TOKEN_TYPE_LABEL,
   TOKEN_TYPE_MILESTONE,
+  TOKEN_TYPE_SOURCE_BRANCH,
+  TOKEN_TYPE_TARGET_BRANCH,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import {
   FILTERED_SEARCH_OPERATOR_IS,
   FILTERED_SEARCH_OPERATOR_IS_NOT,
   FILTERED_SEARCH_OPERATOR_IS_NOT_OR,
+  FILTERED_SEARCH_SUPPORTED_TOKENS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 
 Vue.use(VueApollo);
@@ -50,8 +57,18 @@ describe('FilteredSearchFilter', () => {
     termsAsTokens: true,
   };
 
+  const allTokenOptions = FILTERED_SEARCH_SUPPORTED_TOKENS.map((token) => ({
+    token,
+  }));
+
+  const projectOnlyTokenOptions = [
+    { token: TOKEN_TYPE_SOURCE_BRANCH },
+    { token: TOKEN_TYPE_TARGET_BRANCH },
+  ];
+
   const groupLabelsQueryHandler = jest.fn().mockResolvedValue(mockGroupLabelsResponse);
   const projectLabelsQueryHandler = jest.fn().mockResolvedValue(mockProjectLabelsResponse);
+  const repoBranchesQueryHandler = jest.fn().mockResolvedValue(mockRepositoryBranchNamesResponse);
 
   const createWrapper = ({
     props = {},
@@ -59,7 +76,10 @@ describe('FilteredSearchFilter', () => {
     isProject = false,
     labelsQueryHandler = groupLabelsQueryHandler,
   } = {}) => {
-    const mockApollo = createMockApollo([[searchLabelsQuery, labelsQueryHandler]]);
+    const mockApollo = createMockApollo([
+      [searchLabelsQuery, labelsQueryHandler],
+      [searchBranchesQuery, repoBranchesQueryHandler],
+    ]);
 
     wrapper = shallowMountExtended(FilteredSearchFilter, {
       apolloProvider: mockApollo,
@@ -161,7 +181,7 @@ describe('FilteredSearchFilter', () => {
   });
 
   describe('options', () => {
-    it('overrides default tokens', () => {
+    it('overrides default tokens in correct order', () => {
       const mockTokenOptions = [
         { token: TOKEN_TYPE_ASSIGNEE, unique: true },
         { token: TOKEN_TYPE_MILESTONE, maxSuggestions: 10 },
@@ -169,12 +189,10 @@ describe('FilteredSearchFilter', () => {
 
       createWrapper({ props: { options: mockTokenOptions } });
 
-      expect(findFilteredSearchBar().props('tokens')).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ ...mockAssigneeToken, unique: true }),
-          expect.objectContaining({ ...mockMilestoneToken, maxSuggestions: 10 }),
-        ]),
-      );
+      expect(findFilteredSearchBar().props('tokens')).toEqual([
+        expect.objectContaining({ ...mockAssigneeToken, unique: true }),
+        expect.objectContaining({ ...mockMilestoneToken, maxSuggestions: 10 }),
+      ]);
     });
 
     it.each`
@@ -182,8 +200,9 @@ describe('FilteredSearchFilter', () => {
       ${FILTERED_SEARCH_OPERATOR_IS}        | ${OPERATORS_IS}
       ${FILTERED_SEARCH_OPERATOR_IS_NOT}    | ${OPERATORS_IS_NOT}
       ${FILTERED_SEARCH_OPERATOR_IS_NOT_OR} | ${OPERATORS_IS_NOT_OR}
+      ${undefined}                          | ${undefined}
     `(
-      "sets correct operator when token option's operator enum value is `$operatorEnumValue`",
+      "sets correct operator when token option's operator value is `$operatorEnumValue`",
       ({ operatorEnumValue, expectedOperator }) => {
         const mockTokenOption = { token: TOKEN_TYPE_MILESTONE, operator: operatorEnumValue };
 
@@ -201,5 +220,60 @@ describe('FilteredSearchFilter', () => {
         );
       },
     );
+
+    describe.each`
+      isProject | expectedTokensLength
+      ${true}   | ${allTokenOptions.length}
+      ${false}  | ${allTokenOptions.length - projectOnlyTokenOptions.length}
+    `('isProject=$isProject', ({ isProject, expectedTokensLength }) => {
+      beforeEach(() => {
+        createWrapper({
+          props: { options: allTokenOptions },
+          isProject,
+        });
+      });
+
+      it('passes correct number of tokens to filtered search bar', () => {
+        expect(findFilteredSearchBar().props('tokens')).toHaveLength(expectedTokensLength);
+      });
+    });
+
+    describe.each`
+      branchTokenOption  | branchToken
+      ${'source_branch'} | ${mockSourceBranchToken}
+      ${'target_branch'} | ${mockTargetBranchToken}
+    `('with `$branchTokenOption` token', ({ branchTokenOption, branchToken }) => {
+      beforeEach(() => {
+        createWrapper({ props: { options: [{ token: branchTokenOption }] }, isProject: true });
+      });
+
+      it('passes branch token to filtered search bar', () => {
+        expect(findFilteredSearchBar().props('tokens')).toEqual(
+          expect.arrayContaining([expect.objectContaining(branchToken)]),
+        );
+      });
+
+      it('fetches all branches when token selected', async () => {
+        findToken(branchToken.type).fetchBranches();
+
+        await waitForPromises();
+
+        expect(repoBranchesQueryHandler).toHaveBeenCalledWith({
+          fullPath: namespaceFullPath,
+          searchPattern: '*',
+        });
+      });
+
+      it('searches for branch names that match the search pattern', async () => {
+        findToken(branchToken.type).fetchBranches('test');
+
+        await waitForPromises();
+
+        expect(repoBranchesQueryHandler).toHaveBeenCalledWith({
+          fullPath: namespaceFullPath,
+          searchPattern: '*test*',
+        });
+      });
+    });
   });
 });

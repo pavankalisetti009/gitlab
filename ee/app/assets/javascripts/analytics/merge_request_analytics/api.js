@@ -50,6 +50,7 @@ export const queryThroughputData = async ({
   targetBranches = null,
   // The rest should not be set to null
   milestoneTitle,
+  notMilestoneTitle,
   assigneeUsername,
   authorUsername,
 }) => {
@@ -66,6 +67,7 @@ export const queryThroughputData = async ({
       sourceBranches,
       targetBranches,
       milestoneTitle,
+      notMilestoneTitle,
       assigneeUsername,
       authorUsername,
     }),

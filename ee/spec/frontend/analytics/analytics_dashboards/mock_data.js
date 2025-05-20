@@ -2,20 +2,26 @@ import { TEST_HOST } from 'spec/test_constants';
 import { getUniquePanelId } from '~/vue_shared/components/customizable_dashboard/utils';
 import {
   FILTERED_SEARCH_TERM,
+  OPERATORS_IS,
   TOKEN_TITLE_ASSIGNEE,
   TOKEN_TITLE_AUTHOR,
   TOKEN_TITLE_LABEL,
   TOKEN_TITLE_MILESTONE,
+  TOKEN_TITLE_SOURCE_BRANCH,
+  TOKEN_TITLE_TARGET_BRANCH,
   TOKEN_TYPE_ASSIGNEE,
   TOKEN_TYPE_AUTHOR,
   TOKEN_TYPE_LABEL,
   TOKEN_TYPE_MILESTONE,
+  TOKEN_TYPE_SOURCE_BRANCH,
+  TOKEN_TYPE_TARGET_BRANCH,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import MilestoneToken from '~/vue_shared/components/filtered_search_bar/tokens/milestone_token.vue';
 import LabelToken from '~/vue_shared/components/filtered_search_bar/tokens/label_token.vue';
 import UserToken from '~/vue_shared/components/filtered_search_bar/tokens/user_token.vue';
 import { FILTERED_SEARCH_MAX_LABELS } from 'ee/analytics/analytics_dashboards/components/filters/constants';
 import { NULL_SERIES_ID } from 'ee/analytics/shared/constants';
+import BranchToken from '~/vue_shared/components/filtered_search_bar/tokens/branch_token.vue';
 
 export const TEST_TRACKING_KEY = 'gid://gitlab/Project/2';
 
@@ -1149,6 +1155,24 @@ export const mockAssigneeToken = {
   unique: false,
 };
 
+export const mockSourceBranchToken = {
+  icon: 'branch',
+  title: TOKEN_TITLE_SOURCE_BRANCH,
+  type: TOKEN_TYPE_SOURCE_BRANCH,
+  token: BranchToken,
+  unique: true,
+  operators: OPERATORS_IS,
+};
+
+export const mockTargetBranchToken = {
+  icon: 'branch',
+  title: TOKEN_TITLE_TARGET_BRANCH,
+  type: TOKEN_TYPE_TARGET_BRANCH,
+  token: BranchToken,
+  unique: true,
+  operators: OPERATORS_IS,
+};
+
 export const mockFilteredSearchFilters = [
   {
     type: TOKEN_TYPE_AUTHOR,
@@ -1358,4 +1382,27 @@ export const mockQueryThroughputDataResponse = {
   Jul_2020: { count: 8, totalTimeToMerge: 1337000 },
   Jun_2020: { count: 0, totalTimeToMerge: null },
   May_2020: { count: 0, totalTimeToMerge: null },
+};
+
+export const mockRepositoryBranchNamesResponse = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/34',
+      repository: {
+        branchNames: [
+          'master',
+          "'test'",
+          '2-mb-file',
+          'Amfunc-Trynt-320',
+          'Aquafunc-Panapod-382',
+          'NDC-Sosync-649',
+          'Onesync-DNF-249',
+          'Phant-Techbalt-941',
+          'Phest-Phieck-278',
+          'Phiestwood-Phyckwood-340',
+        ],
+        __typename: 'Repository',
+      },
+    },
+  },
 };

@@ -2,6 +2,7 @@ import * as utils from 'ee/analytics/merge_request_analytics/utils';
 import { EXCLUDED_DATA_KEYS } from 'ee/analytics/merge_request_analytics/constants';
 import { useFakeDate } from 'helpers/fake_date';
 import { createAlert, VARIANT_WARNING } from '~/alert';
+import { filterToMRThroughputQueryObject } from 'ee/analytics/merge_request_analytics/utils';
 import {
   expectedMonthData,
   throughputChartData,
@@ -9,6 +10,8 @@ import {
   throughputChartNoData,
   formattedMttmData,
   formattedMttmNoData,
+  mockThroughputSearchFilters,
+  mockThroughputFiltersQueryObject,
 } from './mock_data';
 
 jest.mock('~/alert');
@@ -137,5 +140,17 @@ describe('toDateRange', () => {
         variant: VARIANT_WARNING,
       });
     });
+  });
+});
+
+describe('filterToMRThroughputQueryObject', () => {
+  it('converts filter tokens to filter object as expected', () => {
+    expect(filterToMRThroughputQueryObject(mockThroughputSearchFilters)).toEqual(
+      mockThroughputFiltersQueryObject,
+    );
+  });
+
+  it('returns empty object if no filters have been applied', () => {
+    expect(filterToMRThroughputQueryObject({})).toEqual({});
   });
 });
