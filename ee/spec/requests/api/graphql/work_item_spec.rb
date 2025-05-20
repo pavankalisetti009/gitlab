@@ -348,10 +348,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
       describe 'status widget' do
         let_it_be(:namespace) { group }
-        let_it_be(:work_item) { create(:work_item, :task, project: project) }
-        let_it_be(:work_item_type) { create(:work_item_type, :task) }
         let_it_be(:custom_status) { create(:work_item_custom_status) }
-        let_it_be(:global_id) { work_item.to_global_id }
 
         let(:work_item_fields) do
           <<~GRAPHQL
@@ -371,16 +368,72 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           GRAPHQL
         end
 
-        context 'when feature is licensed' do
-          before do
-            stub_licensed_features(work_item_status: true)
-          end
+        shared_examples 'work item with status widget' do
+          context 'when feature is licensed' do
+            before do
+              stub_licensed_features(work_item_status: true)
+            end
 
-          context 'with current status' do
-            context 'with system-defined status' do
-              let_it_be(:current_status) { create(:work_item_current_status, :system_defined, work_item: work_item) }
+            context 'with current status' do
+              context 'with system-defined status' do
+                let_it_be(:current_status) { create(:work_item_current_status, :system_defined, work_item: work_item) }
 
-              it 'returns system-defined status data' do
+                it 'returns system-defined status data' do
+                  post_graphql(query, current_user: current_user)
+
+                  expect(work_item_data).to include(
+                    'id' => work_item.to_gid.to_s,
+                    'widgets' => include(
+                      hash_including(
+                        'type' => 'STATUS',
+                        'status' => {
+                          'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
+                          'name' => 'To do',
+                          'iconName' => 'status-waiting',
+                          'color' => "#737278",
+                          'position' => 0
+                        }
+                      )
+                    )
+                  )
+                end
+              end
+
+              context 'with custom status' do
+                let_it_be(:lifecycle) do
+                  create(:work_item_custom_lifecycle, namespace: namespace, default_open_status: custom_status)
+                end
+
+                it 'returns custom status data' do
+                  create(:work_item_type_custom_lifecycle,
+                    lifecycle: lifecycle, work_item_type: work_item.work_item_type, namespace: namespace)
+
+                  current_status = create(:work_item_current_status, :custom, custom_status: custom_status,
+                    work_item: work_item)
+
+                  post_graphql(query, current_user: current_user)
+
+                  expect(work_item_data).to include(
+                    'id' => work_item.to_gid.to_s,
+                    'widgets' => include(
+                      hash_including(
+                        'type' => 'STATUS',
+                        'status' => {
+                          'id' => current_status.custom_status.to_gid.to_s,
+                          'name' => custom_status.name,
+                          'iconName' => 'status-waiting',
+                          'color' => "#737278",
+                          'position' => 0
+                        }
+                      )
+                    )
+                  )
+                end
+              end
+            end
+
+            context 'without current status' do
+              it 'does not return status data' do
                 post_graphql(query, current_user: current_user)
 
                 expect(work_item_data).to include(
@@ -388,99 +441,57 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                   'widgets' => include(
                     hash_including(
                       'type' => 'STATUS',
-                      'status' => {
-                        'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
-                        'name' => 'To do',
-                        'iconName' => 'status-waiting',
-                        'color' => "#737278",
-                        'position' => 0
-                      }
+                      'status' => nil
                     )
                   )
                 )
               end
             end
 
-            context 'with custom status' do
-              let_it_be(:lifecycle) do
-                create(:work_item_custom_lifecycle, namespace: namespace, default_open_status: custom_status)
-              end
+            context 'without authorized access' do
+              let(:current_user) { nil }
 
-              it 'returns custom status data' do
-                create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item_type,
-                  namespace: namespace)
-
-                current_status = create(:work_item_current_status, :custom, custom_status: custom_status,
-                  work_item: work_item)
-
+              it 'returns nil' do
                 post_graphql(query, current_user: current_user)
 
-                expect(work_item_data).to include(
-                  'id' => work_item.to_gid.to_s,
-                  'widgets' => include(
-                    hash_including(
-                      'type' => 'STATUS',
-                      'status' => {
-                        'id' => "gid://gitlab/WorkItems::Statuses::Custom::Status/#{current_status.custom_status_id}",
-                        'name' => custom_status.name,
-                        'iconName' => 'status-waiting',
-                        'color' => "#737278",
-                        'position' => 0
-                      }
-                    )
-                  )
+                expect(work_item_data).to be_blank
+                expect(graphql_errors.first["message"]).to eq(
+                  "The resource that you are attempting to access does not exist or you don't have " \
+                    "permission to perform this action"
                 )
               end
             end
           end
 
-          context 'without current status' do
-            it 'does not return status data' do
+          context 'when feature is unlicensed' do
+            before do
+              stub_licensed_features(work_item_status: false, epics: true)
+
               post_graphql(query, current_user: current_user)
+            end
 
-              expect(work_item_data).to include(
-                'id' => work_item.to_gid.to_s,
+            it 'does not return status widget' do
+              expect(work_item_data).not_to include(
                 'widgets' => include(
                   hash_including(
-                    'type' => 'STATUS',
-                    'status' => nil
+                    'type' => 'STATUS'
                   )
                 )
-              )
-            end
-          end
-
-          context 'without authorized access' do
-            let_it_be(:current_user) { nil }
-
-            it 'returns nil' do
-              post_graphql(query, current_user: current_user)
-
-              expect(work_item_data).to be_blank
-              expect(graphql_errors.first["message"]).to eq(
-                "The resource that you are attempting to access does not exist or you don't have " \
-                  "permission to perform this action"
               )
             end
           end
         end
 
-        context 'when feature is unlicensed' do
-          before do
-            stub_licensed_features(work_item_status: false)
+        context 'with task' do
+          let_it_be(:work_item) { create(:work_item, :task, project: project) }
 
-            post_graphql(query, current_user: current_user)
-          end
+          it_behaves_like 'work item with status widget'
+        end
 
-          it 'does not return status widget' do
-            expect(work_item_data).not_to include(
-              'widgets' => include(
-                hash_including(
-                  'type' => 'STATUS'
-                )
-              )
-            )
-          end
+        context 'with issue' do
+          let_it_be(:work_item) { create(:work_item, :issue, project: project) }
+
+          it_behaves_like 'work item with status widget'
         end
       end
 

@@ -44,7 +44,7 @@ RSpec.describe WorkItems::TypeCustomLifecycle, feature_category: :team_planning 
     end
 
     context 'when work item type does not support status widget' do
-      let(:work_item_type) { create(:work_item_type, :issue, namespace: group) }
+      let(:work_item_type) { create(:work_item_type, :requirement, namespace: group) }
 
       it 'is invalid' do
         expect(type_custom_lifecycle).to be_invalid
