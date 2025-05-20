@@ -30,6 +30,7 @@ module Search
         query_hash = ::Search::Elastic::Filters.by_label_ids(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_archived(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_work_item_type_ids(query_hash: query_hash, options: options)
+        query_hash = ::Search::Elastic::Filters.by_author(query_hash: query_hash, options: options)
 
         if hybrid_work_item_search?
           query_hash = ::Search::Elastic::Filters.by_knn(query_hash: query_hash, options: options)

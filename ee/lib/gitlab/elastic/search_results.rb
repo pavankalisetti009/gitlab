@@ -386,7 +386,10 @@ module Gitlab
             index_name: ::Search::Elastic::References::WorkItem.index,
             not_work_item_type_ids: [::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[:epic]).id]
           },
-          filters.slice(:order_by, :sort, :confidential, :state, :label_name, :include_archived, :fields)
+          filters.slice(
+            :order_by, :sort, :confidential, :state, :label_name, :include_archived, :fields,
+            :author_username, :not_author_username
+          )
         )
 
         if filters[:type].present?

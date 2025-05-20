@@ -415,6 +415,34 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         end
       end
     end
+
+    describe 'author_username' do
+      it 'does not include author_username filter by default' do
+        assert_names_in_query(build, without: %w[filters:author])
+      end
+
+      context 'when author_username option is provided' do
+        let(:options) { base_options.merge(author_username: [user.username]) }
+
+        it 'applies author_username filters' do
+          assert_names_in_query(build, with: %w[filters:author])
+        end
+      end
+    end
+
+    describe 'not_author_username' do
+      it 'does not include not_author_username filter by default' do
+        assert_names_in_query(build, without: %w[filters:not_author])
+      end
+
+      context 'when not_author_username option is provided' do
+        let(:options) { base_options.merge(not_author_username: [user.username]) }
+
+        it 'applies not_author_username filters' do
+          assert_names_in_query(build, with: %w[filters:not_author])
+        end
+      end
+    end
   end
 
   it_behaves_like 'a sorted query'
