@@ -15,13 +15,13 @@ import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { s__, __, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import InputCopyToggleVisibility from '~/vue_shared/components/input_copy_toggle_visibility/input_copy_toggle_visibility.vue';
+import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import {
   SELF_HOSTED_MODEL_PLATFORMS,
   BEDROCK_DUMMY_ENDPOINT,
   CLOUD_PROVIDER_MODELS,
 } from '../constants';
 import { RELEASE_STATES } from '../../constants';
-import ModelSelectDropdown from '../../shared/model_select_dropdown.vue';
 import TestConnectionButton from './test_connection_button.vue';
 
 const bedrockIdentifierPrefix = 'bedrock/';
