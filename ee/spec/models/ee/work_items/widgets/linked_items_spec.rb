@@ -11,7 +11,7 @@ RSpec.describe ::WorkItems::Widgets::LinkedItems, feature_category: :portfolio_m
 
   describe '.sorting_keys' do
     specify do
-      expect(described_class.sorting_keys.keys).to contain_exactly(:blocking_items_asc, :blocking_items_desc)
+      expect(described_class.sorting_keys.keys).to contain_exactly(:blocking_issues_asc, :blocking_issues_desc)
     end
   end
 end
