@@ -8,7 +8,7 @@ import AdminRoleDropdown from 'ee/admin/users/components/user_type/admin_role_dr
 import adminRolesQuery from 'ee/admin/users/graphql/admin_roles.query.graphql';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { adminRoles } from '../mock_data';
+import { adminRoles, adminRole, ldapRole } from '../mock_data';
 
 Vue.use(VueApollo);
 jest.mock('~/lib/utils/url_utility');
@@ -20,14 +20,15 @@ describe('AdminRoleDropdown component', () => {
     jest.fn().mockResolvedValue({ data: { adminMemberRoles: { nodes: roles } } });
   const defaultAdminRolesHandler = getAdminRolesHandler(adminRoles);
 
-  const createWrapper = ({ adminRolesHandler = defaultAdminRolesHandler, roleId = 1 } = {}) => {
+  const createWrapper = ({
+    adminRolesHandler = defaultAdminRolesHandler,
+    role = adminRole,
+  } = {}) => {
     wrapper = mountExtended(AdminRoleDropdown, {
       apolloProvider: createMockApollo([[adminRolesQuery, adminRolesHandler]]),
       provide: { manageRolesPath: 'manage/roles/path' },
-      propsData: { roleId },
+      propsData: { role },
     });
-
-    return waitForPromises();
   };
 
   const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
@@ -37,33 +38,75 @@ describe('AdminRoleDropdown component', () => {
   const findAlert = () => wrapper.findComponent(GlAlert);
 
   describe('on page load', () => {
+    beforeEach(() => createWrapper({ role: null }));
+
+    it('shows dropdown', () => {
+      expect(findDropdown().props()).toMatchObject({
+        headerText: 'Change access',
+        resetButtonLabel: 'Manage roles',
+        infiniteScrollLoading: false,
+        toggleText: '',
+      });
+    });
+
+    it('does not run admin roles query', () => {
+      expect(defaultAdminRolesHandler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when there is a role', () => {
+    beforeEach(() => createWrapper({ role: adminRole }));
+
+    it('shows role name in dropdown button', () => {
+      expect(findDropdown().props('toggleText')).toBe('Custom admin role');
+    });
+
+    it('enables dropdown', () => {
+      expect(findDropdown().props('disabled')).toBe(false);
+    });
+  });
+
+  describe('when there is a LDAP-assigned role', () => {
+    beforeEach(() => createWrapper({ role: ldapRole }));
+
+    it('shows role name in dropdown button', () => {
+      expect(findDropdown().props('toggleText')).toBe('LDAP assigned role');
+    });
+
+    it('disables dropdown', () => {
+      expect(findDropdown().props('disabled')).toBe(true);
+    });
+  });
+
+  describe('when the dropdown is opened', () => {
     beforeEach(() => {
       createWrapper();
-    });
-
-    it('shows header text', () => {
-      expect(findDropdown().props('headerText')).toBe('Change access');
-    });
-
-    it('shows reset button label', () => {
-      expect(findDropdown().props('resetButtonLabel')).toBe('Manage roles');
-    });
-
-    it('sets dropdown as loading', () => {
-      expect(findDropdown().props('loading')).toBe(true);
-    });
-
-    it('shows loading message in dropdown button', () => {
-      expect(findDropdown().props('toggleText')).toBe('Loading…');
+      findDropdown().vm.$emit('shown');
     });
 
     it('runs admin roles query', () => {
       expect(defaultAdminRolesHandler).toHaveBeenCalledTimes(1);
     });
+
+    it('shows loading spinner in dropdown', () => {
+      expect(findDropdown().props('infiniteScrollLoading')).toBe(true);
+    });
+
+    it('shows role name in dropdown button', () => {
+      expect(findDropdown().props('toggleText')).toBe('Custom admin role');
+    });
+
+    it('does not show empty roles message in dropdown footer', () => {
+      expect(findDropdown().text()).not.toContain('Create admin role to populate this list.');
+    });
   });
 
   describe('after roles are loaded', () => {
-    beforeEach(() => createWrapper());
+    beforeEach(() => {
+      createWrapper();
+      findDropdown().vm.$emit('shown');
+      return waitForPromises();
+    });
 
     it('shows roles in dropdown', () => {
       const roles = adminRoles.map((role) => ({
@@ -83,8 +126,6 @@ describe('AdminRoleDropdown component', () => {
     });
 
     it('clears dropdown button text override', () => {
-      // When the dropdown is loading, we set toggleText to the loading message. After it's done loading, we clear
-      // toggleText so that the button reverts to its default behavior of showing the selected item's text.
       expect(findDropdown().props('toggleText')).toBe('');
     });
 
@@ -180,7 +221,7 @@ describe('AdminRoleDropdown component', () => {
   });
 
   describe('when there are no roles', () => {
-    it('shows no roles help message', () => {
+    it('shows empty roles message in dropdown footer', () => {
       createWrapper({ adminRolesHandler: getAdminRolesHandler([]) });
 
       expect(findDropdown().text()).toContain('Create admin role to populate this list.');
@@ -188,7 +229,11 @@ describe('AdminRoleDropdown component', () => {
   });
 
   describe('when roles could not be loaded', () => {
-    beforeEach(() => createWrapper({ adminRolesHandler: jest.fn().mockRejectedValue() }));
+    beforeEach(() => {
+      createWrapper({ adminRolesHandler: jest.fn().mockRejectedValue() });
+      findDropdown().vm.$emit('shown');
+      return waitForPromises();
+    });
 
     it('shows alert', () => {
       expect(findAlert().text()).toBe('Could not load custom admin roles.');

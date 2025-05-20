@@ -1,3 +1,4 @@
+import { GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import AdminRoleDropdown from 'ee/admin/users/components/user_type/admin_role_dropdown.vue';
@@ -12,6 +13,7 @@ import RegularAccessSummary from '~/admin/users/components/user_type/regular_acc
 import AuditorAccessSummary from 'ee/admin/users/components/user_type/auditor_access_summary.vue';
 import AdminAccessSummary from '~/admin/users/components/user_type/admin_access_summary.vue';
 import { RENDER_ALL_SLOTS_TEMPLATE, stubComponent } from 'helpers/stub_component';
+import { adminRole as adminRoleData, ldapRole } from '../mock_data';
 
 describe('UserTypeSelector component', () => {
   let wrapper;
@@ -19,14 +21,18 @@ describe('UserTypeSelector component', () => {
   const createWrapper = ({
     userType = 'regular',
     licenseAllowsAuditorUser = true,
-    adminRoleId = 1,
+    adminRole = adminRoleData,
     customRoles = true,
     customAdminRoles = true,
   } = {}) => {
     wrapper = shallowMountExtended(UserTypeSelector, {
-      propsData: { userType, licenseAllowsAuditorUser, adminRoleId, isCurrentUser: true },
-      provide: { glFeatures: { customRoles, customAdminRoles } },
+      propsData: { userType, licenseAllowsAuditorUser, adminRole, isCurrentUser: true },
+      provide: {
+        manageRolesPath: 'manage/roles/path',
+        glFeatures: { customRoles, customAdminRoles },
+      },
       stubs: {
+        GlSprintf,
         UserTypeSelectorCe: stubComponent(UserTypeSelectorCe, {
           template: RENDER_ALL_SLOTS_TEMPLATE,
         }),
@@ -41,6 +47,7 @@ describe('UserTypeSelector component', () => {
   const findAuditorAccessSummary = () => wrapper.findComponent(AuditorAccessSummary);
   const findAdminAccessSummary = () => wrapper.findComponent(AdminAccessSummary);
   const findDescription = () => wrapper.findByTestId('slot-description');
+  const findLdapAlert = () => wrapper.findComponent(GlAlert);
 
   it('renders CE UserTypeSelector', () => {
     createWrapper();
@@ -107,8 +114,28 @@ describe('UserTypeSelector component', () => {
       });
 
       it('shows admin role dropdown in access summary', () => {
-        expect(findAccessSummary().findComponent(AdminRoleDropdown).props('roleId')).toBe(1);
+        expect(findAccessSummary().findComponent(AdminRoleDropdown).props('role')).toBe(
+          adminRoleData,
+        );
       });
+    });
+  });
+
+  describe('when admin role is ldap-assigned', () => {
+    beforeEach(() => createWrapper({ adminRole: ldapRole }));
+
+    it('shows alert', () => {
+      expect(findLdapAlert().props('dismissible')).toBe(false);
+      expect(findLdapAlert().text()).toBe(
+        `This user's access level is managed with LDAP. Remove user's mapping or change group's role in LDAP synchronization to modify access.`,
+      );
+    });
+
+    it('shows link to manage roles page', () => {
+      const link = findLdapAlert().findComponent(GlLink);
+
+      expect(link.text()).toBe('LDAP synchronization');
+      expect(link.props('href')).toBe('manage/roles/path?tab=ldap');
     });
   });
 

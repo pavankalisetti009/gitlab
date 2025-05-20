@@ -1,4 +1,5 @@
 <script>
+import { GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import UserTypeSelectorCe, {
   USER_TYPE_REGULAR,
   USER_TYPE_ADMIN,
@@ -7,6 +8,7 @@ import RegularAccessSummary from '~/admin/users/components/user_type/regular_acc
 import AdminAccessSummary from '~/admin/users/components/user_type/admin_access_summary.vue';
 import { s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { LDAP_TAB_QUERYSTRING_VALUE } from 'ee/roles_and_permissions/components/role_tabs.vue';
 import AuditorAccessSummary from './auditor_access_summary.vue';
 import AdminRoleDropdown from './admin_role_dropdown.vue';
 
@@ -25,8 +27,12 @@ export default {
     RegularAccessSummary,
     AuditorAccessSummary,
     AdminAccessSummary,
+    GlAlert,
+    GlSprintf,
+    GlLink,
   },
   mixins: [glFeatureFlagsMixin()],
+  inject: ['manageRolesPath'],
   props: {
     userType: {
       type: String,
@@ -40,10 +46,10 @@ export default {
       type: Boolean,
       required: true,
     },
-    adminRoleId: {
-      type: Number,
+    adminRole: {
+      type: Object,
       required: false,
-      default: undefined,
+      default: null,
     },
   },
   data() {
@@ -73,6 +79,12 @@ export default {
         (this.isRegularSelected || this.isAuditorSelected)
       );
     },
+    shouldShowLdapAlert() {
+      return Boolean(this.shouldShowAdminRoleDropdown && this.adminRole?.ldap);
+    },
+    manageLdapSyncUrl() {
+      return `${this.manageRolesPath}?tab=${LDAP_TAB_QUERYSTRING_VALUE}`;
+    },
   },
 };
 </script>
@@ -90,12 +102,26 @@ export default {
       </p>
     </template>
 
+    <gl-alert v-if="shouldShowLdapAlert" :dismissible="false" class="gl-mb-4">
+      <gl-sprintf
+        :message="
+          s__(
+            `AdminUsers|This user's access level is managed with LDAP. Remove user's mapping or change group's role in %{linkStart}LDAP synchronization%{linkEnd} to modify access.`,
+          )
+        "
+      >
+        <template #link="{ content }">
+          <gl-link :href="manageLdapSyncUrl">{{ content }}</gl-link>
+        </template>
+      </gl-sprintf>
+    </gl-alert>
+
     <regular-access-summary v-if="isRegularSelected">
-      <admin-role-dropdown v-if="shouldShowAdminRoleDropdown" :role-id="adminRoleId" />
+      <admin-role-dropdown v-if="shouldShowAdminRoleDropdown" :role="adminRole" />
     </regular-access-summary>
 
     <auditor-access-summary v-else-if="isAuditorSelected">
-      <admin-role-dropdown v-if="shouldShowAdminRoleDropdown" :role-id="adminRoleId" />
+      <admin-role-dropdown v-if="shouldShowAdminRoleDropdown" :role="adminRole" />
     </auditor-access-summary>
 
     <admin-access-summary v-else-if="isAdminSelected" />
