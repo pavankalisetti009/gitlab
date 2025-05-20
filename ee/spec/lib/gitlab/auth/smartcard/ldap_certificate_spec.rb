@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, :with_current_organization, feature_category: :system_access do
+RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :system_access do
   include LdapHelpers
 
-  let_it_be(:organization) { create(:organization, :default) }
+  let_it_be(:organization) { create(:organization) }
   let(:certificate_header) { 'certificate' }
   let(:openssl_certificate_store) { instance_double(OpenSSL::X509::Store) }
   let(:user_build_service) { instance_double(Users::BuildService) }
@@ -57,7 +57,7 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, :with_current_organizat
 
   describe '#find_or_create_user' do
     subject(:find_or_create_user) do
-      described_class.new(ldap_provider, certificate_header, current_organization).find_or_create_user
+      described_class.new(ldap_provider, certificate_header, organization).find_or_create_user
     end
 
     context 'user not found on ldap server' do
@@ -247,7 +247,7 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, :with_current_organizat
 
         expect(user).not_to be_nil
         expect(user.email).to eql(ldap_person_email)
-        expect(user.namespace.organization).to eq(current_organization)
+        expect(user.namespace.organization).to eq(organization)
       end
 
       it 'creates identity' do
