@@ -90,19 +90,21 @@ RSpec.shared_examples 'graphql work item type list request spec EE' do
           )
         end
 
-        let(:work_item_type) { create(:work_item_type, :task) }
+        let(:supported_item_types) { [create(:work_item_type, :task), create(:work_item_type, :issue)] }
 
-        let(:type_custom_lifecycle) do
-          if status_widget_supported?(work_item_type.name)
-            create(:work_item_type_custom_lifecycle,
-              lifecycle: lifecycle,
-              work_item_type: work_item_type,
-              namespace: root_namespace)
+        let(:type_custom_lifecycles) do
+          supported_item_types.filter_map do |work_item_type|
+            if status_widget_supported?(work_item_type.name)
+              create(:work_item_type_custom_lifecycle,
+                lifecycle: lifecycle,
+                work_item_type: work_item_type,
+                namespace: root_namespace)
+            end
           end
         end
 
         it 'returns custom statuses for supported work item types' do
-          skip "Work item type doesn't support status widget" unless type_custom_lifecycle
+          skip "No work item types support status widget" if type_custom_lifecycles.empty?
 
           post_graphql(query, current_user: current_user)
 
