@@ -19,7 +19,8 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
       subject(:service_result) { service.execute }
 
       before do
-        stub_licensed_features(epics: true, subepics: true, epic_colors: true, custom_file_templates: true)
+        stub_licensed_features(epics: true, subepics: true, epic_colors: true, custom_file_templates: true,
+          work_item_status: true)
       end
 
       context 'when user is not allowed to create a work item in the container' do
@@ -118,6 +119,32 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
                 expect(service_result[:work_item].color.color.to_s).to eq('#c91c00')
                 expect(service_result[:status]).to be(:success)
               end
+            end
+          end
+        end
+
+        describe 'for custom statuses widget' do
+          let(:status) { build(:work_item_system_defined_status, :to_do) }
+
+          context "with status widget params" do
+            let(:widget_params) { { status_widget: { status: status } } }
+
+            it 'creates new work item and sets current status' do
+              expect { service_result }.to change { WorkItem.count }.by(1).and(
+                change { WorkItems::Statuses::CurrentStatus.count }.by(1)
+              )
+              expect(service_result[:status]).to be(:success)
+            end
+          end
+
+          context "without status widget params" do
+            let(:widget_params) { {} }
+
+            it 'creates new work item and sets current status' do
+              expect { service_result }.to change { WorkItem.count }.by(1).and(
+                change { WorkItems::Statuses::CurrentStatus.count }.by(1)
+              )
+              expect(service_result[:status]).to be(:success)
             end
           end
         end

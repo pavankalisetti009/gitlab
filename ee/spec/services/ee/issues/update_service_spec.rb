@@ -56,6 +56,30 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
       end
     end
 
+    context "when handling status" do
+      let(:status) { build(:work_item_system_defined_status, :wont_do) }
+
+      before do
+        project.add_developer(user)
+      end
+
+      context "without status params" do
+        let(:params) { {} }
+
+        it 'creates current_status record' do
+          expect { update_issue(params) }.not_to change { WorkItems::Statuses::CurrentStatus.count }
+        end
+      end
+
+      context "with status params" do
+        let(:params) { { status: status } }
+
+        it 'creates current_status record' do
+          expect { update_issue(params) }.to change { WorkItems::Statuses::CurrentStatus.count }.by(1)
+        end
+      end
+    end
+
     context 'update health_status' do
       before do
         stub_licensed_features(issuable_health_status: true)
