@@ -4,6 +4,7 @@ import { extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { startOfTomorrow } from 'ee/analytics/dora/components/static_data/shared';
 import { getStartDate } from 'ee/analytics/analytics_dashboards/components/filters/utils';
 import { DATE_RANGE_OPTION_LAST_365_DAYS } from 'ee/analytics/analytics_dashboards/components/filters/constants';
+import { filterToMRThroughputQueryObject } from 'ee/analytics/merge_request_analytics/utils';
 import { defaultClient } from '../graphql/client';
 
 const QUERY_RESULT_KEY = 'mergeRequests';
@@ -19,6 +20,7 @@ const fetchMergeRequests = async ({
   pagination = INITIAL_PAGINATION_STATE,
   // The rest should not be set to null
   milestoneTitle,
+  notMilestoneTitle,
   assigneeUsername,
   authorUsername,
 }) =>
@@ -34,6 +36,7 @@ const fetchMergeRequests = async ({
         sourceBranches,
         targetBranches,
         milestoneTitle,
+        notMilestoneTitle,
         assigneeUsername,
         authorUsername,
         ...pagination,
@@ -62,7 +65,7 @@ export default function fetch({
   namespace,
   query: { dateRange = DATE_RANGE_OPTION_LAST_365_DAYS },
   queryOverrides = {},
-  filters: { startDate: filtersStartDate, endDate = startOfTomorrow } = {},
+  filters: { startDate: filtersStartDate, endDate = startOfTomorrow, searchFilters } = {},
 }) {
   const startDate = filtersStartDate || getStartDate(dateRange);
 
@@ -70,6 +73,7 @@ export default function fetch({
     namespace,
     startDate,
     endDate,
+    ...filterToMRThroughputQueryObject(searchFilters),
     ...queryOverrides,
   });
 }

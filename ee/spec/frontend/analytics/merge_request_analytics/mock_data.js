@@ -184,3 +184,61 @@ export const stats = [
     value: '23',
   },
 ];
+
+export const mockThroughputSearchFilters = {
+  milestone: [
+    {
+      value: '101',
+      operator: '=',
+    },
+    {
+      value: '102',
+      operator: '!=',
+    },
+  ],
+  label: [
+    {
+      value: 'Broure-Phensfunc-896',
+      operator: '=',
+    },
+    {
+      value: 'Panafunc-Trene-461',
+      operator: '!=',
+    },
+  ],
+  author: [
+    {
+      value: 'Dr. Gero',
+      operator: '=',
+    },
+  ],
+  assignee: [
+    {
+      value: 'Android 21',
+      operator: '=',
+    },
+  ],
+  'source-branch': [
+    {
+      value: 'test',
+      operator: '=',
+    },
+  ],
+  'target-branch': [
+    {
+      value: 'master',
+      operator: '=',
+    },
+  ],
+};
+
+export const mockThroughputFiltersQueryObject = {
+  labels: ['Broure-Phensfunc-896'],
+  notLabels: ['Panafunc-Trene-461'],
+  sourceBranches: ['test'],
+  targetBranches: ['master'],
+  milestoneTitle: '101',
+  notMilestoneTitle: '102',
+  authorUsername: 'Dr. Gero',
+  assigneeUsername: 'Android 21',
+};

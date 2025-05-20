@@ -5,7 +5,11 @@ import {
   DATE_RANGE_OPTION_LAST_60_DAYS,
   DATE_RANGE_OPTION_LAST_365_DAYS,
 } from 'ee/analytics/analytics_dashboards/components/filters/constants';
-import { throughputTableData } from 'ee_jest/analytics/merge_request_analytics/mock_data';
+import {
+  mockThroughputFiltersQueryObject,
+  mockThroughputSearchFilters,
+  throughputTableData,
+} from 'ee_jest/analytics/merge_request_analytics/mock_data';
 
 const mockPageInfo = {
   hasNextPage: false,
@@ -85,6 +89,28 @@ describe('Merge requests data source', () => {
       labels: ['a', 'b'],
       milestoneTitle: '101',
       authorUsername: 'Dr. Gero',
+    });
+
+    expect(defaultClient.query).toHaveBeenCalledTimes(1);
+  });
+
+  it('can transform search filters into correct query parameters', async () => {
+    mockResolvedQuery();
+
+    res = await fetch({
+      setVisualizationOverrides: mockSetVisualizationOverrides,
+      namespace,
+      query: defaultQueryParams,
+      filters: {
+        searchFilters: mockThroughputSearchFilters,
+      },
+    });
+
+    expectQueryWithVariables({
+      fullPath: namespace,
+      startDate: new Date('2020-05-13'),
+      endDate: new Date('2020-07-07'),
+      ...mockThroughputFiltersQueryObject,
     });
 
     expect(defaultClient.query).toHaveBeenCalledTimes(1);
