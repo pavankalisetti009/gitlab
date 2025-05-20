@@ -1,4 +1,4 @@
-- return unless ::Feature.enabled?(:virtual_registry_maven, current_user) && ::Gitlab.config.dependency_proxy.enabled && ::License.feature_available?(:packages_virtual_registry)
+- return unless ::Gitlab.config.dependency_proxy.enabled && ::License.feature_available?(:packages_virtual_registry)
 = render ::Layouts::SettingsBlockComponent.new(s_('VirtualRegistries|Virtual Registries'), id: 'js-virtual-registries', expanded: expanded_by_default?) do |c|
   - c.with_description do
     = s_('VirtualRegistries|Configure Virtual Registries settings.')

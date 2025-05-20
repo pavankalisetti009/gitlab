@@ -11,7 +11,7 @@ module Groups
 
       def ensure_feature!
         render_404 unless @group.root?
-        render_404 unless ::Feature.enabled?(:virtual_registry_maven, @group)
+        render_404 unless ::Feature.enabled?(:maven_virtual_registry, @group)
         render_404 unless ::Feature.enabled?(:ui_for_virtual_registries, @group)
         render_404 unless ::Gitlab.config.dependency_proxy.enabled
         render_404 unless @group.licensed_feature_available?(:packages_virtual_registry)

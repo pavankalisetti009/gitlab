@@ -216,7 +216,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
         it_behaves_like 'returning the workhorse send_dependency response'
       end
 
-      it_behaves_like 'disabled virtual_registry_maven feature flag'
+      it_behaves_like 'disabled maven_virtual_registry feature flag'
       it_behaves_like 'maven virtual registry disabled dependency proxy'
     end
 
@@ -328,7 +328,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
         it_behaves_like 'returning response status', :bad_request
       end
 
-      it_behaves_like 'disabled virtual_registry_maven feature flag'
+      it_behaves_like 'disabled maven_virtual_registry feature flag'
       it_behaves_like 'maven virtual registry disabled dependency proxy'
     end
 

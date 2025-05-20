@@ -69,7 +69,7 @@ module API
             desc 'Download endpoint of the Maven virtual registry.' do
               detail 'This feature was introduced in GitLab 17.3. \
                       This feature is currently in experiment state. \
-                      This feature is behind the `virtual_registry_maven` feature flag.'
+                      This feature is behind the `maven_virtual_registry` feature flag.'
               success [
                 { code: 200 }
               ]
@@ -99,7 +99,7 @@ module API
             desc 'Workhorse upload endpoint of the Maven virtual registry. Only workhorse can access it.' do
               detail 'This feature was introduced in GitLab 17.4. \
                       This feature is currently in experiment state. \
-                      This feature is behind the `virtual_registry_maven` feature flag.'
+                      This feature is behind the `maven_virtual_registry` feature flag.'
               success [
                 { code: 200 }
               ]

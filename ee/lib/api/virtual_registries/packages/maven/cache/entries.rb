@@ -40,7 +40,7 @@ module API
                     desc 'List maven virtual registry upstream cache entries' do
                       detail 'This feature was introduced in GitLab 17.4. \
                             This feature is currently in an experimental state. \
-                            This feature is behind the `virtual_registry_maven` feature flag.'
+                            This feature is behind the `maven_virtual_registry` feature flag.'
                       success ::API::Entities::VirtualRegistries::Packages::Maven::Cache::Entry
                       failure [
                         { code: 400, message: 'Bad Request' },
@@ -71,7 +71,7 @@ module API
                 desc 'Delete a maven virtual registry upstream cache entry' do
                   detail 'This feature was introduced in GitLab 17.4. \
                           This feature is currently in an experimental state. \
-                          This feature is behind the `virtual_registry_maven` feature flag.'
+                          This feature is behind the `maven_virtual_registry` feature flag.'
                   success code: 204
                   failure [
                     { code: 400, message: 'Bad Request' },
