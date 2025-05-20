@@ -1,7 +1,8 @@
 import { GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import ScheduleForm from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/schedule_form.vue';
 import BranchSelection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/branch_selection.vue';
+import ScheduleForm from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/schedule_form.vue';
+import SnoozeForm from 'ee/security_orchestration/components/policy_editor/pipeline_execution/rule/snooze_form.vue';
 import TimezoneDropdown from '~/vue_shared/components/timezone_dropdown/timezone_dropdown.vue';
 import {
   DEFAULT_TIME_PER_UNIT,
@@ -42,6 +43,7 @@ describe('ScheduleForm', () => {
   const findWeekdayDropdown = () => wrapper.findByTestId('weekday-dropdown');
   const findMonthlyDaysDropdown = () => wrapper.findByTestId('monthly-days-dropdown');
   const findDurationInput = () => wrapper.findByTestId('duration-input');
+  const findSnoozeForm = () => wrapper.findComponent(SnoozeForm);
   const findTimeUnitDropdown = () => wrapper.findByTestId('time-unit-dropdown');
 
   describe('rendering', () => {
@@ -204,6 +206,17 @@ describe('ScheduleForm', () => {
       it('uses minimum value of 10 when duration would be 0', () => {
         createComponent({ schedule: { time_window: { value: 0 } } });
         expect(findDurationInput().props('value')).toBe(10);
+      });
+    });
+
+    describe('SnoozeForm', () => {
+      it('passes snooze data to SnoozeForm component', () => {
+        const snoozeData = {
+          until: '2025-06-01T00:00:00Z',
+          reason: 'Maintenance period',
+        };
+        createComponent({ schedule: { snooze: snoozeData } });
+        expect(findSnoozeForm().props('data')).toEqual(snoozeData);
       });
     });
   });
@@ -382,6 +395,25 @@ describe('ScheduleForm', () => {
 
         // Should not emit a change event for empty input
         expect(wrapper.emitted('changed')).toBe(undefined);
+      });
+    });
+
+    describe('snooze form', () => {
+      it('handles update events', () => {
+        createComponent();
+
+        const snoozeData = {
+          until: '2025-06-01T00:00:00Z',
+          reason: 'Maintenance period',
+        };
+
+        findSnoozeForm().vm.$emit('update', snoozeData);
+
+        expect(wrapper.emitted('changed')).toHaveLength(1);
+        expect(wrapper.emitted('changed')[0][0]).toEqual({
+          ...defaultSchedule,
+          snooze: snoozeData,
+        });
       });
     });
   });
