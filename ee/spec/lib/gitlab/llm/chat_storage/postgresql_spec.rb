@@ -84,20 +84,6 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
     end
   end
 
-  describe '#set_has_feedback' do
-    let(:message) { build(:ai_chat_message, payload) }
-
-    before do
-      storage.add(message)
-    end
-
-    it 'marks the message as having feedback' do
-      storage.set_has_feedback(message)
-
-      expect(storage.messages.last.extras['has_feedback']).to be(true)
-    end
-  end
-
   describe '#messages' do
     let_it_be(:thread) { create(:ai_conversation_thread, user: user, organization: organization) }
 
@@ -121,15 +107,6 @@ RSpec.describe Gitlab::Llm::ChatStorage::Postgresql, :clean_gitlab_redis_chat, f
       it 'retrieves messages within the max limit' do
         expect(storage.messages.map(&:content)).to eq(%w[msg2])
       end
-    end
-
-    it 'returns ChatMessage if feature flag is disabled' do
-      stub_feature_flags(duo_chat_read_directly_from_db: false)
-
-      results = storage.messages
-
-      expect(results).to all(be_an(Gitlab::Llm::ChatMessage))
-      expect(results.map(&:content)).to eq(%w[msg1 msg2])
     end
   end
 

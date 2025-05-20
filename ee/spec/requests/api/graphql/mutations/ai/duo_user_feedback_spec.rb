@@ -140,12 +140,4 @@ RSpec.describe 'DuoUserFeedback', feature_category: :ai_abstraction_layer do
   end
 
   it_behaves_like "process feedback"
-
-  context "when duo_chat_read_directly_from_db is disabled" do
-    before do
-      stub_feature_flags(duo_chat_read_directly_from_db: false)
-    end
-
-    it_behaves_like "process feedback"
-  end
 end

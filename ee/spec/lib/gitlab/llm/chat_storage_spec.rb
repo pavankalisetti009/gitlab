@@ -39,16 +39,6 @@ RSpec.describe Gitlab::Llm::ChatStorage, feature_category: :duo_chat do
     end
   end
 
-  describe '#set_has_feedback' do
-    it 'updates the feedback flag in PostgreSQL' do
-      subject.add(message)
-      subject.set_has_feedback(message)
-
-      expect(subject.messages.find { |m| m.message_xid == message.id }.extras['has_feedback']).to be(true)
-      expect(postgres_storage.messages.first.extras['has_feedback']).to be true
-    end
-  end
-
   shared_examples_for '#messages' do
     before do
       subject.add(build(:ai_chat_message, payload.merge(content: 'msg1', role: 'user', request_id: '1')))

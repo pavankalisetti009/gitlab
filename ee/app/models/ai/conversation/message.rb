@@ -13,11 +13,8 @@ module Ai
       delegate :user, to: :thread, allow_nil: true
 
       validates :content, :role, :thread_id, presence: true
-      validates :extras, json_schema: { filename: "ai_conversation_message_extras", parse_json: true },
-        if: -> { new_record? || extras_changed? }, unless: :duo_chat_read_directly_from_db_enabled?
-      # for the feature flag transition period where extras outputs from String to Hash
       validates :extras, json_schema: { filename: "ai_conversation_message_extras" },
-        if: -> { (new_record? || extras_changed?) && duo_chat_read_directly_from_db_enabled? }
+        if: -> { new_record? || extras_changed? }
 
       scope :for_thread, ->(thread) { where(thread: thread) }
       scope :for_user, ->(user) { joins(:thread).where(ai_conversation_threads: { user_id: user.id }) }
@@ -65,11 +62,7 @@ module Ai
       end
 
       def extras
-        extras_hash = self[:extras]
-
-        return extras_hash unless duo_chat_read_directly_from_db_enabled?
-
-        extras_hash ||= {}
+        extras_hash = self[:extras] || {}
 
         begin
           extras_hash = ::Gitlab::Json.parse(extras_hash) if extras_hash.is_a?(String)
@@ -82,11 +75,7 @@ module Ai
       end
 
       def error_details
-        errors_array = self[:error_details]
-
-        return errors_array unless duo_chat_read_directly_from_db_enabled?
-
-        errors_array ||= []
+        errors_array = self[:error_details] || []
 
         begin
           errors_array = ::Gitlab::Json.parse(errors_array) if errors_array.is_a?(String)
@@ -102,11 +91,6 @@ module Ai
       def populate_organization
         self.organization ||= thread.organization
       end
-
-      def duo_chat_read_directly_from_db_enabled?
-        Feature.enabled?(:duo_chat_read_directly_from_db, user)
-      end
-      strong_memoize_attr :duo_chat_read_directly_from_db_enabled?
     end
   end
 end

@@ -32,33 +32,10 @@ module Gitlab
           result
         end
 
-        def set_has_feedback(message)
-          user.ai_conversation_messages.for_id(message.id).update!(has_feedback: true)
-          clear_memoization(:messages)
-        end
-
         def messages
           return [] unless current_thread
 
-          messages = current_thread.messages.recent(MAX_MESSAGES)
-          return messages if Feature.enabled?(:duo_chat_read_directly_from_db, user)
-
-          messages.map do |message|
-            data = message.as_json
-
-            data['id'] = data.delete('message_xid') if data['message_xid']
-            data['errors'] = data.delete('error_details') if data['error_details']
-            data['request_id'] = data['request_xid'] if data['request_xid']
-            data['timestamp'] = data['created_at']
-
-            msg = load_message(data)
-
-            msg.extras['has_feedback'] = data.delete('has_feedback') if data['has_feedback']
-            msg.active_record = message
-            msg.thread = current_thread
-
-            msg
-          end
+          current_thread.messages.recent(MAX_MESSAGES)
         end
         strong_memoize_attr :messages
 
