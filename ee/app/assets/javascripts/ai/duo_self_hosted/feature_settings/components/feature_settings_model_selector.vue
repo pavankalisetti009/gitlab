@@ -1,11 +1,11 @@
 <script>
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
+import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import { RELEASE_STATES } from '../../constants';
 import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from '../../self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
-import ModelSelectDropdown from '../../shared/model_select_dropdown.vue';
 import { PROVIDERS } from '../constants';
 
 export default {

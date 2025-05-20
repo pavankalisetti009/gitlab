@@ -1,7 +1,7 @@
 <script>
 import { GlBadge, GlButton, GlCollapsibleListbox, GlExperimentBadge, GlIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { RELEASE_STATES } from '../constants';
+import { RELEASE_STATES } from './constants';
 
 export default {
   name: 'ModelSelectDropdown',

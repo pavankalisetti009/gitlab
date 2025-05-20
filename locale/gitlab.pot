@@ -4048,6 +4048,9 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|Feature"
 msgstr ""
 
+msgid "AdminAIPoweredFeatures|GitLab Default"
+msgstr ""
+
 msgid "AdminAIPoweredFeatures|GitLab Duo Chat"
 msgstr ""
 
@@ -39512,6 +39515,12 @@ msgid "ModelRegistry|version"
 msgstr ""
 
 msgid "ModelRegistry|versions"
+msgstr ""
+
+msgid "ModelSelection|Manage GitLab Duo by configuring and assigning models to AI-native features."
+msgstr ""
+
+msgid "ModelSelection|Model Selection"
 msgstr ""
 
 msgid "Modified"
