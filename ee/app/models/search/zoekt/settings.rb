@@ -16,8 +16,9 @@ module Search
     # 2. The setting will automatically appear in all relevant places
     module Settings
       DEFAULT_ROLLOUT_RETRY_INTERVAL = '1d'
-      ROLLOUT_RETRY_DISABLED_VALUE = '0'
-      ROLLOUT_RETRY_INTERVAL_REGEX = %r{\A(?:0|([1-9]\d*)([mhd]))\z}
+      DEFAULT_LOST_NODE_THRESHOLD = '12h'
+      DISABLED_VALUE = '0'
+      DURATION_INTERVAL_REGEX = %r{\A(?:0|([1-9]\d*)([mhd]))\z}
 
       SETTINGS = {
         zoekt_indexing_enabled: {
@@ -39,14 +40,6 @@ module Search
           type: :boolean,
           default: false,
           label: -> { _('Index root namespaces automatically') }
-        },
-        zoekt_auto_delete_lost_nodes: {
-          type: :boolean,
-          default: true,
-          label: -> {
-            format(_("Delete offline nodes after %{label}"),
-              label: ::Search::Zoekt::Node::LOST_DURATION_THRESHOLD.inspect)
-          }
         },
         zoekt_cache_response: {
           type: :boolean,
@@ -74,6 +67,17 @@ module Search
           label: -> { _('Number of namespaces per indexing rollout') },
           input_type: :number_field
         },
+        zoekt_lost_node_threshold: {
+          type: :text,
+          default: DEFAULT_LOST_NODE_THRESHOLD,
+          label: -> { _('Offline nodes automatically deleted after') },
+          input_options: {
+            placeholder: format(
+              N_("Must be in the following format: `30m`, `2h`, or `1d`. Set to `%{val}` to disable."),
+              val: DISABLED_VALUE)
+          },
+          input_type: :text_field
+        },
         zoekt_rollout_retry_interval: {
           type: :text,
           default: DEFAULT_ROLLOUT_RETRY_INTERVAL,
@@ -81,7 +85,7 @@ module Search
           input_options: {
             placeholder: format(
               N_("Must be in the following format: `30m`, `2h`, or `1d`. Set to `%{val}` for no retries."),
-              val: ROLLOUT_RETRY_DISABLED_VALUE)
+              val: DISABLED_VALUE)
           },
           input_type: :text_field
         }
@@ -100,11 +104,12 @@ module Search
         SETTINGS.select { |_, config| type_values.include?(config[:type]) }
       end
 
-      def self.rollout_retry_interval
-        return if ApplicationSetting.current.zoekt_rollout_retry_interval == ROLLOUT_RETRY_DISABLED_VALUE
+      def self.parse_duration(setting_value, default_value)
+        return if setting_value.blank?
+        return if setting_value == DISABLED_VALUE
 
-        match = ApplicationSetting.current.zoekt_rollout_retry_interval.match(ROLLOUT_RETRY_INTERVAL_REGEX)
-        match ||= DEFAULT_ROLLOUT_RETRY_INTERVAL.match(ROLLOUT_RETRY_INTERVAL_REGEX)
+        match = setting_value.match(DURATION_INTERVAL_REGEX)
+        match ||= default_value.match(DURATION_INTERVAL_REGEX)
 
         value = match[1].to_i
         unit = match[2]
@@ -114,6 +119,14 @@ module Search
         when 'h' then value.hour
         when 'd' then value.day
         end
+      end
+
+      def self.rollout_retry_interval
+        parse_duration(ApplicationSetting.current&.zoekt_rollout_retry_interval, DEFAULT_ROLLOUT_RETRY_INTERVAL)
+      end
+
+      def self.lost_node_threshold
+        parse_duration(ApplicationSetting.current&.zoekt_lost_node_threshold, DEFAULT_LOST_NODE_THRESHOLD)
       end
     end
   end

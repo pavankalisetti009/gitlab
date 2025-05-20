@@ -554,6 +554,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
     before do
       create(:zoekt_node)
+      allow(::Search::Zoekt::Settings).to receive(:lost_node_threshold).and_return(12.hours)
     end
 
     it 'publishes LostNodeEvent' do

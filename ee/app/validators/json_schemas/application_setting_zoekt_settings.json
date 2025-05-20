@@ -43,6 +43,10 @@
     "zoekt_rollout_retry_interval": {
       "type": "string",
       "description": "Retry interval for the namespaces which could not be rollout in first attempt"
+    },
+    "zoekt_lost_node_threshold": {
+      "type": "string",
+      "description": "Lost node threshold"
     }
   }
 }
