@@ -7,13 +7,13 @@ import {
   GlTooltipDirective,
   GlTruncate,
 } from '@gitlab/ui';
-import { n__ } from '~/locale';
+import { n__, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { newWorkItemId } from '~/work_items/utils';
 import {
   CUSTOM_FIELDS_TYPE_TEXT,
   I18N_WORK_ITEM_ERROR_UPDATING,
-  sprintfWorkItem,
+  NAME_TO_TEXT_LOWERCASE_MAP,
 } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
 import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
@@ -181,7 +181,12 @@ export default {
         })
         .catch((error) => {
           this.resetText();
-          this.$emit('error', sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType));
+          this.$emit(
+            'error',
+            sprintf(I18N_WORK_ITEM_ERROR_UPDATING, {
+              workItemType: NAME_TO_TEXT_LOWERCASE_MAP[this.workItemType],
+            }),
+          );
           Sentry.captureException(error);
         })
         .finally(() => {

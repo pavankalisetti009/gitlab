@@ -7,7 +7,7 @@ module Gitlab
 
       POSTGRESQL_STORAGE = "postgresql"
 
-      delegate :messages, :current_thread, :add, :set_has_feedback, :clear!, to: :postgres_storage
+      delegate :messages, :current_thread, :add, :clear!, to: :postgres_storage
 
       def initialize(user, agent_version_id = nil, thread = nil, thread_fallback: true)
         @user = user

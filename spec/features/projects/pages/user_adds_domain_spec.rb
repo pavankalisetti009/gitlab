@@ -33,7 +33,7 @@ RSpec.describe 'User adds pages domain', :js, feature_category: :pages do
       visit project_pages_path(project)
       click_link('Domains & settings')
 
-      expect(page).to have_content('New domain')
+      expect(page).to have_content('Add domain')
     end
 
     it_behaves_like 'adds new domain'
@@ -141,7 +141,8 @@ RSpec.describe 'User adds pages domain', :js, feature_category: :pages do
 
         visit_domains_tab(project)
 
-        expect(page).to have_content('my.test.domain.com is not verified')
+        expect(page).to have_content('DNS check unsuccessful')
+        expect(page).to have_content('Domain ownership verification required.')
       end
     end
 

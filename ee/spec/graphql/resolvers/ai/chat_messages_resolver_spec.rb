@@ -29,23 +29,6 @@ RSpec.describe Resolvers::Ai::ChatMessagesResolver, feature_category: :duo_chat 
         it 'returns the message' do
           expect(resolver).to match([message])
         end
-
-        it 'returns the message hash if feature flag is disabled' do
-          stub_feature_flags(duo_chat_read_directly_from_db: false)
-
-          expect(resolver).to match([
-            a_hash_including({
-              "additional_context" => [],
-              "ai_action" => "chat",
-              "content" => "Message content",
-              "errors" => [],
-              "extras" => {},
-              "id" => 'message_xid',
-              "role" => "user",
-              "timestamp" => message.created_at
-            })
-          ])
-        end
       end
 
       it_behaves_like 'message response'
