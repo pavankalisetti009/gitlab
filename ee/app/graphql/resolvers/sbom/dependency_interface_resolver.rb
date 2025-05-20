@@ -48,6 +48,11 @@ module Resolvers
         required: false,
         description: 'Filter dependencies by component versions.'
 
+      argument :not_component_versions, [GraphQL::Types::String],
+        required: false,
+        description: 'Filter dependencies to exclude the specified component versions.',
+        experiment: { milestone: '18.1' }
+
       validates mutually_exclusive: [:component_names, :component_ids]
 
       alias_method :project_or_namespace, :object
@@ -86,8 +91,15 @@ module Resolvers
       end
 
       def mapped_params(params)
-        sort_params = SORT_TO_PARAMS_MAP.fetch(params[:sort], {})
-        params.merge(sort_params)
+        result = params.except(:sort, :not_component_versions)
+        result.merge!(SORT_TO_PARAMS_MAP.fetch(params[:sort], {}))
+
+        if params[:not_component_versions].present?
+          result[:not] =
+            { component_versions: params[:not_component_versions] }
+        end
+
+        result
       end
 
       def track_event
