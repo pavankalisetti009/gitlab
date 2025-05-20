@@ -16,10 +16,10 @@ module EE
 
           def sorting_keys
             {
-              blocking_items_asc: {
+              blocking_issues_asc: {
                 description: 'Blocking items count by ascending order.'
               },
-              blocking_items_desc: {
+              blocking_issues_desc: {
                 description: 'Blocking items count by descending order.'
               }
             }
