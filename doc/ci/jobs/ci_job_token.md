@@ -406,9 +406,10 @@ curl --verbose --request POST --form "token=$CI_JOB_TOKEN" --form ref=master "ht
 
 Additionally, there are multiple valid methods for passing the job token in the request:
 
-- `--form "token=$CI_JOB_TOKEN"`
-- `--header "JOB-TOKEN: $CI_JOB_TOKEN"`
-- `--data "job_token=$CI_JOB_TOKEN"`
+- Form: `--form "token=$CI_JOB_TOKEN"`
+- Header: `--header "JOB-TOKEN: $CI_JOB_TOKEN"`
+- Data: `--data "job_token=$CI_JOB_TOKEN"`
+- Query string in the URL: `?job_token=$CI_JOB_TOKEN`
 
 <!--- start_remove The following content will be removed on remove_date: '2025-08-15' -->
 
