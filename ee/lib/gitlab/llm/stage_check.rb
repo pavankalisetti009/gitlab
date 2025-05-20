@@ -49,6 +49,8 @@ module Gitlab
           case feature
           when :chat
             :ai_chat
+          when :agentic_chat
+            :agentic_chat
           when :duo_workflow
             :ai_workflows
           when :glab_ask_git_command

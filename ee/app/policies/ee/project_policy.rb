@@ -1141,6 +1141,18 @@ module EE
         enable :access_duo_chat
       end
 
+      condition(:duo_agentic_chat_enabled) do
+        ::Feature.enabled?(:duo_agentic_chat, @user)
+      end
+
+      condition(:agentic_chat_allowed) do
+        ::Gitlab::Llm::StageCheck.available?(@subject, :agentic_chat)
+      end
+
+      rule { can?(:access_duo_chat) & duo_agentic_chat_enabled & agentic_chat_allowed }.policy do
+        enable :access_duo_agentic_chat
+      end
+
       rule { can?(:read_project) & duo_features_enabled }.enable :access_duo_features
 
       rule { can?(:read_project) & duo_core_features_enabled & duo_core_available_for_user }.enable :access_duo_core_features

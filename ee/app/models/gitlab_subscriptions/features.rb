@@ -85,6 +85,7 @@ module GitlabSubscriptions
       ai_chat
       admin_audit_log
       agent_managed_resources
+      agentic_chat
       auditor_user
       blocking_merge_requests
       board_assignee_lists

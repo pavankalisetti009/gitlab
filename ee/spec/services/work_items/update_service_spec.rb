@@ -365,6 +365,31 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
           end
         end
       end
+
+      context 'for custom statuses widget' do
+        let_it_be(:work_item, refind: true) { create(:work_item, :task, project: project) }
+        let(:status) { build(:work_item_system_defined_status, :to_do) }
+
+        before do
+          stub_licensed_features(work_item_status: true)
+        end
+
+        context "with status widget params" do
+          let(:widget_params) { { status_widget: { status: status } } }
+
+          it 'creates a new current status record' do
+            expect { update_work_item }.to change { WorkItems::Statuses::CurrentStatus.count }.by(1)
+          end
+        end
+
+        context "without status widget params" do
+          let(:widget_params) { {} }
+
+          it 'creates a new current status record' do
+            expect { update_work_item }.not_to change { WorkItems::Statuses::CurrentStatus.count }
+          end
+        end
+      end
     end
 
     context 'with a synced epic' do

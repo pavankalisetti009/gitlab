@@ -2032,6 +2032,7 @@ Input type: `AiActionInput`
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mutationaiactionagenticchat"></a>`agenticChat` | [`AiAgenticChatInput`](#aiagenticchatinput) | Input for agentic_chat AI action. |
 | <a id="mutationaiactionchat"></a>`chat` | [`AiChatInput`](#aichatinput) | Input for chat AI action. |
 | <a id="mutationaiactionclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationaiactionclientsubscriptionid"></a>`clientSubscriptionId` | [`String`](#string) | Client generated ID that can be subscribed to, to receive a response for the mutation. |
@@ -35347,6 +35348,7 @@ Project-level settings for product analytics provider.
 | <a id="projectdescriptionhtml"></a>`descriptionHtml` | [`String`](#string) | GitLab Flavored Markdown rendering of `description`. |
 | <a id="projectdetailedimportstatus"></a>`detailedImportStatus` | [`DetailedImportStatus`](#detailedimportstatus) | Detailed import status of the project. |
 | <a id="projectdora"></a>`dora` | [`Dora`](#dora) | Project's DORA metrics. |
+| <a id="projectduoagenticchatavailable"></a>`duoAgenticChatAvailable` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 18.1. **Status**: Experiment. User access to Duo agentic Chat feature. |
 | <a id="projectduofeaturesenabled"></a>`duoFeaturesEnabled` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Introduced** in GitLab 16.9. **Status**: Experiment. Indicates whether GitLab Duo features are enabled for the project. |
 | <a id="projectduoworkflowstatuscheck"></a>`duoWorkflowStatusCheck` {{< icon name="warning-solid" >}} | [`DuoWorkflowEnablement`](#duoworkflowenablement) | **Introduced** in GitLab 17.7. **Status**: Experiment. Indicates whether GitLab Duo Workflow is enabled for the project. |
 | <a id="projectexplorecatalogpath"></a>`exploreCatalogPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.6. **Status**: Experiment. Path to the project catalog resource. |
@@ -49353,6 +49355,18 @@ see the associated mutation type above.
 | <a id="aiadditionalcontextinputcontent"></a>`content` | [`String!`](#string) | Content of the additional context. |
 | <a id="aiadditionalcontextinputid"></a>`id` | [`String!`](#string) | ID of the additional context. |
 | <a id="aiadditionalcontextinputmetadata"></a>`metadata` | [`JSON`](#json) | Metadata of the additional context. |
+
+### `AiAgenticChatInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aiagenticchatinputadditionalcontext"></a>`additionalContext` | [`[AiAdditionalContextInput!]`](#aiadditionalcontextinput) | Additional context to be passed for the chat. |
+| <a id="aiagenticchatinputcontent"></a>`content` | [`String!`](#string) | Content of the message. |
+| <a id="aiagenticchatinputcurrentfile"></a>`currentFile` | [`AiCurrentFileInput`](#aicurrentfileinput) | Information about currently selected text which can be passed for additional context. |
+| <a id="aiagenticchatinputnamespaceid"></a>`namespaceId` | [`NamespaceID`](#namespaceid) | Global ID of the namespace the user is acting on. |
+| <a id="aiagenticchatinputresourceid"></a>`resourceId` | [`AiModelID!`](#aimodelid) | Global ID of the resource to mutate. |
 
 ### `AiChatInput`
 
