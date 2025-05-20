@@ -117,11 +117,19 @@ export default {
     </gl-alert>
 
     <regular-access-summary v-if="isRegularSelected">
-      <admin-role-dropdown v-if="shouldShowAdminRoleDropdown" :role="adminRole" />
+      <admin-role-dropdown
+        v-if="shouldShowAdminRoleDropdown"
+        :role="adminRole"
+        class="gl-ml-1 gl-mt-2"
+      />
     </regular-access-summary>
 
     <auditor-access-summary v-else-if="isAuditorSelected">
-      <admin-role-dropdown v-if="shouldShowAdminRoleDropdown" :role="adminRole" />
+      <admin-role-dropdown
+        v-if="shouldShowAdminRoleDropdown"
+        :role="adminRole"
+        class="gl-ml-1 gl-mt-2"
+      />
     </auditor-access-summary>
 
     <admin-access-summary v-else-if="isAdminSelected" />

@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlCollapsibleListbox, GlListboxItem, GlAlert, GlIcon } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlListboxItem, GlAlert, GlIcon, GlSkeletonLoader } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -29,59 +29,29 @@ describe('AdminRoleDropdown component', () => {
       provide: { manageRolesPath: 'manage/roles/path' },
       propsData: { role },
     });
+
+    return waitForPromises();
   };
 
   const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
   const findDropdownItemAt = (index) => wrapper.findAllComponents(GlListboxItem).at(index);
-  const findPermissionAt = (index) => wrapper.findByTestId('permissions').findAll('li').at(index);
+  const findPermissions = () => wrapper.findByTestId('permissions');
+  const findPermissionAt = (index) => findPermissions().findAll('li').at(index);
   const getHiddenInputValue = () => wrapper.find('input[type="hidden"]').element.value;
   const findAlert = () => wrapper.findComponent(GlAlert);
+  const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
 
-  describe('on page load', () => {
-    beforeEach(() => createWrapper({ role: null }));
+  describe('on page load before roles are loaded', () => {
+    beforeEach(() => {
+      createWrapper();
+    });
 
     it('shows dropdown', () => {
       expect(findDropdown().props()).toMatchObject({
         headerText: 'Change access',
         resetButtonLabel: 'Manage roles',
-        infiniteScrollLoading: false,
-        toggleText: '',
+        infiniteScrollLoading: true,
       });
-    });
-
-    it('does not run admin roles query', () => {
-      expect(defaultAdminRolesHandler).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('when there is a role', () => {
-    beforeEach(() => createWrapper({ role: adminRole }));
-
-    it('shows role name in dropdown button', () => {
-      expect(findDropdown().props('toggleText')).toBe('Custom admin role');
-    });
-
-    it('enables dropdown', () => {
-      expect(findDropdown().props('disabled')).toBe(false);
-    });
-  });
-
-  describe('when there is a LDAP-assigned role', () => {
-    beforeEach(() => createWrapper({ role: ldapRole }));
-
-    it('shows role name in dropdown button', () => {
-      expect(findDropdown().props('toggleText')).toBe('LDAP assigned role');
-    });
-
-    it('disables dropdown', () => {
-      expect(findDropdown().props('disabled')).toBe(true);
-    });
-  });
-
-  describe('when the dropdown is opened', () => {
-    beforeEach(() => {
-      createWrapper();
-      findDropdown().vm.$emit('shown');
     });
 
     it('runs admin roles query', () => {
@@ -92,20 +62,61 @@ describe('AdminRoleDropdown component', () => {
       expect(findDropdown().props('infiniteScrollLoading')).toBe(true);
     });
 
-    it('shows role name in dropdown button', () => {
-      expect(findDropdown().props('toggleText')).toBe('Custom admin role');
-    });
-
     it('does not show empty roles message in dropdown footer', () => {
       expect(findDropdown().text()).not.toContain('Create admin role to populate this list.');
     });
   });
 
-  describe('after roles are loaded', () => {
+  describe('when there is no role', () => {
     beforeEach(() => {
-      createWrapper();
-      findDropdown().vm.$emit('shown');
-      return waitForPromises();
+      createWrapper({ role: null });
+    });
+
+    it('uses default text behavior for dropdown button', () => {
+      expect(findDropdown().props('toggleText')).toBe('');
+    });
+
+    it('does not show permissions skeleton loader', () => {
+      // No role means that No access is selected by default, which does not have permissions to show.
+      expect(findSkeletonLoader().exists()).toBe(false);
+    });
+
+    it('does not show permissions after roles are loaded', async () => {
+      await waitForPromises();
+
+      expect(findPermissions().exists()).toBe(false);
+    });
+  });
+
+  describe('when there is a role', () => {
+    beforeEach(() => {
+      createWrapper({ role: adminRole });
+    });
+
+    it('shows role name in dropdown button', () => {
+      expect(findDropdown().props('toggleText')).toBe('Custom admin role');
+    });
+
+    it('enables dropdown', () => {
+      expect(findDropdown().props('disabled')).toBe(false);
+    });
+
+    it('shows permissions loading skeleton', () => {
+      expect(findSkeletonLoader().exists()).toBe(true);
+    });
+  });
+
+  it('disables dropdown when the role is LDAP assigned', () => {
+    createWrapper({ role: ldapRole });
+
+    expect(findDropdown().props('disabled')).toBe(true);
+  });
+
+  describe('after roles are loaded', () => {
+    beforeEach(() => createWrapper());
+
+    it('does not show permissions skeleton loader', () => {
+      expect(findSkeletonLoader().exists()).toBe(false);
     });
 
     it('shows roles in dropdown', () => {
@@ -123,6 +134,11 @@ describe('AdminRoleDropdown component', () => {
         },
         { text: 'Custom admin roles', options: roles },
       ]);
+    });
+
+    it('shows permissions for selected role', () => {
+      expect(findPermissionAt(0).text()).toBe('A');
+      expect(findPermissionAt(1).text()).toBe('B');
     });
 
     it('clears dropdown button text override', () => {
@@ -180,7 +196,7 @@ describe('AdminRoleDropdown component', () => {
         });
 
         it('does not show permissions list', () => {
-          expect(wrapper.findByTestId('permissions').exists()).toBe(false);
+          expect(findPermissions().exists()).toBe(false);
         });
       });
     });
@@ -221,8 +237,8 @@ describe('AdminRoleDropdown component', () => {
   });
 
   describe('when there are no roles', () => {
-    it('shows empty roles message in dropdown footer', () => {
-      createWrapper({ adminRolesHandler: getAdminRolesHandler([]) });
+    it('shows empty roles message in dropdown footer', async () => {
+      await createWrapper({ adminRolesHandler: getAdminRolesHandler([]) });
 
       expect(findDropdown().text()).toContain('Create admin role to populate this list.');
     });
