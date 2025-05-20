@@ -1227,6 +1227,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="queryprojectsactive"></a>`active` | [`Boolean`](#boolean) | Filters by projects that are not archived and not marked for deletion. |
 | <a id="queryprojectsaimedfordeletion"></a>`aimedForDeletion` | [`Boolean`](#boolean) | Return only projects marked for deletion. |
 | <a id="queryprojectsarchived"></a>`archived` | [`ProjectArchived`](#projectarchived) | Filter projects by archived status. |
 | <a id="queryprojectsfullpaths"></a>`fullPaths` | [`[String!]`](#string) | Filter projects by full paths. You cannot provide more than 50 full paths. |
@@ -34111,6 +34112,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="organizationprojectsactive"></a>`active` | [`Boolean`](#boolean) | Filters by projects that are not archived and not marked for deletion. |
 | <a id="organizationprojectsaimedfordeletion"></a>`aimedForDeletion` | [`Boolean`](#boolean) | Return only projects marked for deletion. |
 | <a id="organizationprojectsarchived"></a>`archived` | [`ProjectArchived`](#projectarchived) | Filter projects by archived status. |
 | <a id="organizationprojectsfullpaths"></a>`fullPaths` | [`[String!]`](#string) | Filter projects by full paths. You cannot provide more than 50 full paths. |
