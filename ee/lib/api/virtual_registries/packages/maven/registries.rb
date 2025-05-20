@@ -38,7 +38,7 @@ module API
               desc 'Get the list of all maven virtual registries' do
                 detail 'This feature was introduced in GitLab 17.4. \
                     This feature is currently in an experimental state. \
-                    This feature is behind the `virtual_registry_maven` feature flag.'
+                    This feature is behind the `maven_virtual_registry` feature flag.'
                 success ::API::Entities::VirtualRegistries::Packages::Maven::Registry
                 failure [
                   { code: 400, message: 'Bad Request' },
@@ -61,7 +61,7 @@ module API
               desc 'Create a new maven virtual registry' do
                 detail 'This feature was introduced in GitLab 17.4. \
                     This feature is currently in an experimental state. \
-                    This feature is behind the `virtual_registry_maven` feature flag.'
+                    This feature is behind the `maven_virtual_registry` feature flag.'
                 success ::API::Entities::VirtualRegistries::Packages::Maven::Registry
                 failure [
                   { code: 400, message: 'Bad request' },
@@ -96,7 +96,7 @@ module API
               desc 'Get a specific maven virtual registry' do
                 detail 'This feature was introduced in GitLab 17.4. \
                   This feature is currently in an experimental state. \
-                  This feature is behind the `virtual_registry_maven` feature flag.'
+                  This feature is behind the `maven_virtual_registry` feature flag.'
                 success ::API::Entities::VirtualRegistries::Packages::Maven::Registry
                 failure [
                   { code: 400, message: 'Bad request' },
@@ -116,7 +116,7 @@ module API
               desc 'Update a specific maven virtual registry' do
                 detail 'This feature was introduced in GitLab 18.0. \
                         This feature is currently in experiment state. \
-                        This feature behind the `virtual_registry_maven` feature flag.'
+                        This feature behind the `maven_virtual_registry` feature flag.'
                 success code: 200
                 failure [
                   { code: 400, message: 'Bad Request' },
@@ -147,7 +147,7 @@ module API
               desc 'Delete a specific maven virtual registry' do
                 detail 'This feature was introduced in GitLab 17.4. \
                   This feature is currently in an experimental state. \
-                  This feature is behind the `virtual_registry_maven` feature flag.'
+                  This feature is behind the `maven_virtual_registry` feature flag.'
                 success code: 204
                 failure [
                   { code: 400, message: 'Bad request' },
