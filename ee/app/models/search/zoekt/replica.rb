@@ -43,8 +43,12 @@ module Search
       end
 
       def self.search_enabled?(namespace_id)
-        joins(:zoekt_enabled_namespace).where(zoekt_enabled_namespace: { search: true })
-          .for_namespace(namespace_id).ready.exists?
+        joins(:zoekt_enabled_namespace, indices: :node)
+          .where(zoekt_enabled_namespace: { search: true })
+          .merge(Search::Zoekt::Node.online)
+          .for_namespace(namespace_id)
+          .ready
+          .exists?
       end
 
       def fetch_repositories_with_project_identifier(project_id)
