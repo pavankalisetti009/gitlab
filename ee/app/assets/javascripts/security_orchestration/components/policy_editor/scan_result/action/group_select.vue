@@ -34,22 +34,31 @@ export default {
         };
       },
       update(data) {
-        if (!this.globalGroupApproversEnabled) {
-          const { __typename, avatarUrl, id, fullName, fullPath } = data.group;
-          const rootGroupMatches = fullName.includes(this.search);
-
-          const descendantGroups = (data?.group?.descendantGroups?.nodes || [])
+        // Handle global group approvers case (searchNamespaceGroups query)
+        if (this.globalGroupApproversEnabled) {
+          const groups = (data?.groups?.nodes || [])
             .filter((group) => group)
             .map(createGroupObject);
-
-          if (!rootGroupMatches) return descendantGroups;
-
-          const rootGroup = createGroupObject({ __typename, avatarUrl, id, fullName, fullPath });
-          return uniqBy([...this.groups, rootGroup, ...descendantGroups], 'id');
+          return uniqBy([...this.groups, ...groups], 'id');
         }
 
-        const groups = (data?.groups?.nodes || []).filter((group) => group).map(createGroupObject);
-        return uniqBy([...this.groups, ...groups], 'id');
+        if (!data?.group) {
+          return [];
+        }
+
+        // Handle descendant groups case (searchDescendantGroups query)
+        const { __typename, avatarUrl, id, fullName, fullPath } = data.group;
+
+        const descendantGroups = (data?.group?.descendantGroups?.nodes || [])
+          .filter((group) => group)
+          .map(createGroupObject);
+
+        // If root group doesn't match search criteria, return only descendant groups
+        if (!fullName.includes(this.search)) return descendantGroups;
+
+        // Include root group with descendants when it matches search
+        const rootGroup = createGroupObject({ __typename, avatarUrl, id, fullName, fullPath });
+        return uniqBy([...this.groups, rootGroup, ...descendantGroups], 'id');
       },
       debounce: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
       error() {
