@@ -111,6 +111,16 @@ RSpec.describe ComplianceManagement::Frameworks::JsonImportService, feature_cate
         expect(framework.color).to eq('#808080')
       end
 
+      context 'when requirements are empty' do
+        it 'skips creating requirments' do
+          json_payload["requirements"] = nil
+
+          expect { service.execute }.not_to change {
+            ComplianceManagement::ComplianceFramework::ComplianceRequirement.count
+          }
+        end
+      end
+
       it 'creates the requirements' do
         expect { service.execute }.to change {
           ComplianceManagement::ComplianceFramework::ComplianceRequirement.count
@@ -132,6 +142,16 @@ RSpec.describe ComplianceManagement::Frameworks::JsonImportService, feature_cate
           "name" => "CC1.1.2 - Control Environment - Integrity and Ethical Values",
           "description" => "Established standards of conduct are communicated and enforced"
         )
+      end
+
+      context 'when controls are empty' do
+        it 'skips creating controls' do
+          json_payload["requirements"].first["controls"] = nil
+
+          expect { service.execute }.not_to change {
+            ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl.count
+          }
+        end
       end
 
       it 'creates the controls' do
