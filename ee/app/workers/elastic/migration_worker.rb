@@ -5,9 +5,7 @@ module Elastic
     include ApplicationWorker
     include Search::Worker
     include Gitlab::ExclusiveLeaseHelpers
-    # There is no onward scheduling and this cron handles work from across the
-    # application, so there's no useful context to add.
-    include CronjobQueue # rubocop:disable Scalability/CronWorkerContext
+    include CronjobQueue # rubocop:disable Scalability/CronWorkerContext -- no relevant metadata to add
     include ActionView::Helpers::NumberHelper
     prepend ::Geo::SkipSecondary
 
@@ -24,10 +22,6 @@ module Elastic
       return false unless preflight_check_successful?
 
       in_lock(self.class.name.underscore, ttl: LOCK_TIMEOUT, retries: LOCK_RETRIES, sleep_sec: LOCK_SLEEP_SEC) do
-        # migration index should be checked before pulling the current_migration because if no migrations_index exists,
-        # current_migration will return nil
-        create_migrations_index_if_not_exists
-
         migration = Elastic::MigrationRecord.current_migration
 
         unless migration
@@ -100,9 +94,10 @@ module Elastic
     end
 
     def preflight_check_successful?
+      return false unless ::Gitlab::CurrentSettings.elasticsearch_indexing?
       return false unless ::Gitlab::CurrentSettings.elastic_migration_worker_enabled?
-      return false unless Gitlab::CurrentSettings.elasticsearch_indexing?
       return false unless helper.alias_exists?
+      return false unless helper.migrations_index_exists?
       return false if Search::Elastic::ReindexingTask.current
 
       if helper.unsupported_version?
@@ -195,15 +190,8 @@ module Elastic
       migration.save_state!(halted_indexing_unpaused: true) if migration.halted?
     end
 
-    def create_migrations_index_if_not_exists
-      return if helper.migrations_index_exists?
-
-      log message: 'MigrationWorker: creating migrations index'
-      helper.create_migrations_index
-    end
-
     def helper
-      Gitlab::Elastic::Helper.default
+      @helper ||= Gitlab::Elastic::Helper.default
     end
 
     def logger

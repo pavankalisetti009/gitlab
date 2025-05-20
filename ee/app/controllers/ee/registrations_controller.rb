@@ -137,7 +137,7 @@ module EE
     def onboarding_status_params
       base_params = params.permit(:invite_email, *::Onboarding::StatusPresenter::GLM_PARAMS)
 
-      return base_params.to_h.deep_symbolize_keys unless params[:user].present? # rubocop:disable Rails/StrongParams -- false positive, we are really checking here just need to detect difference on get vs post
+      return base_params.to_h.deep_symbolize_keys if request.get?
 
       params.require(:user)
             .permit(:onboarding_status_email_opt_in).merge(base_params).to_h.deep_symbolize_keys
