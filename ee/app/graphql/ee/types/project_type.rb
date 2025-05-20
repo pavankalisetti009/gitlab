@@ -624,6 +624,12 @@ module EE
           null: true,
           description: 'Status for all analyzers in the project.',
           experiment: { milestone: '18.0' }
+
+        field :duo_agentic_chat_available, ::GraphQL::Types::Boolean,
+          null: true,
+          resolver: ::Resolvers::Ai::ProjectAgenticChatAccessResolver,
+          experiment: { milestone: '18.1' },
+          description: 'User access to Duo agentic Chat feature.'
       end
 
       def tracking_key
