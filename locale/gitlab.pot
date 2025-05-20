@@ -26605,6 +26605,9 @@ msgstr ""
 msgid "File tree"
 msgstr ""
 
+msgid "File tree browser"
+msgstr ""
+
 msgid "File upload error."
 msgstr ""
 
@@ -51345,6 +51348,9 @@ msgstr ""
 msgid "Repository: %{counter_repositories} / Wikis: %{counter_wikis} / Build Artifacts: %{counter_build_artifacts} / Pipeline Artifacts: %{counter_pipeline_artifacts} / LFS: %{counter_lfs_objects} / Snippets: %{counter_snippets} / Packages: %{counter_packages} / Uploads: %{counter_uploads}"
 msgstr ""
 
+msgid "Repository|Filter (e.g. *.vue)"
+msgstr ""
+
 msgid "Repository|New branch"
 msgstr ""
 
@@ -51355,9 +51361,6 @@ msgid "Repository|New file"
 msgstr ""
 
 msgid "Repository|New tag"
-msgstr ""
-
-msgid "Repository|Search (e.g. *.vue) (%{modifierKey}P)"
 msgstr ""
 
 msgid "Repository|This directory"
