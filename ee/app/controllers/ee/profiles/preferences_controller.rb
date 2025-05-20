@@ -11,7 +11,7 @@ module EE::Profiles::PreferencesController
   def preferences_param_names_ee
     params_ee = []
     params_ee.push(:group_view) if License.feature_available?(:security_dashboard)
-    params_ee.push(:enabled_zoekt) if user.has_zoekt_indexed_namespace?
+    params_ee.push(:enabled_zoekt) if user.has_exact_code_search?
 
     params_ee
   end

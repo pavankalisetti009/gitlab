@@ -53,7 +53,7 @@ module EE
     end
 
     def show_exact_code_search_settings?(user)
-      ::Gitlab::CurrentSettings.zoekt_search_enabled? && user.has_zoekt_indexed_namespace?
+      ::Gitlab::CurrentSettings.zoekt_search_enabled? && user.has_exact_code_search?
     end
 
     private

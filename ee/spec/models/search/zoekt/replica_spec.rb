@@ -176,8 +176,24 @@ RSpec.describe Search::Zoekt::Replica, feature_category: :global_search do
           end
         end
 
-        it 'returns true' do
-          expect(described_class.search_enabled?(namespace.id)).to be true
+        context 'when there are no online nodes' do
+          it 'returns false' do
+            expect(described_class.search_enabled?(namespace.id)).to be false
+          end
+        end
+
+        context 'when there are online nodes' do
+          let!(:node) { create(:zoekt_node) }
+          let!(:index) do
+            create(:zoekt_index,
+              replica: zoekt_replica,
+              node: node,
+              zoekt_enabled_namespace: zoekt_enabled_namespace)
+          end
+
+          it 'returns true' do
+            expect(described_class.search_enabled?(namespace.id)).to be true
+          end
         end
       end
     end

@@ -133,7 +133,7 @@ RSpec.describe PreferencesHelper, feature_category: :shared do
 
     before do
       stub_ee_application_setting(zoekt_search_enabled: true)
-      allow(user).to receive(:has_zoekt_indexed_namespace?).and_return(true)
+      allow(user).to receive(:has_exact_code_search?).and_return(true)
     end
 
     it { is_expected.to eq(true) }
@@ -146,9 +146,9 @@ RSpec.describe PreferencesHelper, feature_category: :shared do
       it { is_expected.to eq(false) }
     end
 
-    context 'when has_zoekt_indexed_namespace? is false for a user' do
+    context 'when has_exact_code_search? is false for a user' do
       before do
-        allow(user).to receive(:has_zoekt_indexed_namespace?).and_return(false)
+        allow(user).to receive(:has_exact_code_search?).and_return(false)
       end
 
       it { is_expected.to eq(false) }

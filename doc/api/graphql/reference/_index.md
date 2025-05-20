@@ -20608,6 +20608,7 @@ A user with add-on data.
 | <a id="addonuserdiscord"></a>`discord` | [`String`](#string) | Discord ID of the user. |
 | <a id="addonuseremail"></a>`email` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 13.7. This was renamed. Use: [`User.publicEmail`](#userpublicemail). |
 | <a id="addonuseremails"></a>`emails` | [`EmailConnection`](#emailconnection) | User's email addresses. (see [Connections](#connections)) |
+| <a id="addonusergithub"></a>`github` | [`String`](#string) | GitHub profile name of the user. |
 | <a id="addonusergitpodenabled"></a>`gitpodEnabled` | [`Boolean`](#boolean) | Whether Gitpod is enabled at the user level. |
 | <a id="addonusergroupcount"></a>`groupCount` | [`Int`](#int) | Group count for the user. |
 | <a id="addonusergroupmemberships"></a>`groupMemberships` | [`GroupMemberConnection`](#groupmemberconnection) | Group memberships of the user. (see [Connections](#connections)) |
@@ -21745,6 +21746,7 @@ Core representation of a GitLab user.
 | <a id="autocompleteduserdiscord"></a>`discord` | [`String`](#string) | Discord ID of the user. |
 | <a id="autocompleteduseremail"></a>`email` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 13.7. This was renamed. Use: [`User.publicEmail`](#userpublicemail). |
 | <a id="autocompleteduseremails"></a>`emails` | [`EmailConnection`](#emailconnection) | User's email addresses. (see [Connections](#connections)) |
+| <a id="autocompletedusergithub"></a>`github` | [`String`](#string) | GitHub profile name of the user. |
 | <a id="autocompletedusergitpodenabled"></a>`gitpodEnabled` | [`Boolean`](#boolean) | Whether Gitpod is enabled at the user level. |
 | <a id="autocompletedusergroupcount"></a>`groupCount` | [`Int`](#int) | Group count for the user. |
 | <a id="autocompletedusergroupmemberships"></a>`groupMemberships` | [`GroupMemberConnection`](#groupmemberconnection) | Group memberships of the user. (see [Connections](#connections)) |
@@ -24699,6 +24701,7 @@ The currently authenticated GitLab user.
 | <a id="currentuserduocodesuggestionsavailable"></a>`duoCodeSuggestionsAvailable` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 16.8. **Status**: Experiment. User access to code suggestions feature. |
 | <a id="currentuseremail"></a>`email` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 13.7. This was renamed. Use: [`User.publicEmail`](#userpublicemail). |
 | <a id="currentuseremails"></a>`emails` | [`EmailConnection`](#emailconnection) | User's email addresses. (see [Connections](#connections)) |
+| <a id="currentusergithub"></a>`github` | [`String`](#string) | GitHub profile name of the user. |
 | <a id="currentusergitpodenabled"></a>`gitpodEnabled` | [`Boolean`](#boolean) | Whether Gitpod is enabled at the user level. |
 | <a id="currentusergroupcount"></a>`groupCount` | [`Int`](#int) | Group count for the user. |
 | <a id="currentusergroupmemberships"></a>`groupMemberships` | [`GroupMemberConnection`](#groupmemberconnection) | Group memberships of the user. (see [Connections](#connections)) |
@@ -31273,6 +31276,7 @@ A user assigned to a merge request.
 | <a id="mergerequestassigneediscord"></a>`discord` | [`String`](#string) | Discord ID of the user. |
 | <a id="mergerequestassigneeemail"></a>`email` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 13.7. This was renamed. Use: [`User.publicEmail`](#userpublicemail). |
 | <a id="mergerequestassigneeemails"></a>`emails` | [`EmailConnection`](#emailconnection) | User's email addresses. (see [Connections](#connections)) |
+| <a id="mergerequestassigneegithub"></a>`github` | [`String`](#string) | GitHub profile name of the user. |
 | <a id="mergerequestassigneegitpodenabled"></a>`gitpodEnabled` | [`Boolean`](#boolean) | Whether Gitpod is enabled at the user level. |
 | <a id="mergerequestassigneegroupcount"></a>`groupCount` | [`Int`](#int) | Group count for the user. |
 | <a id="mergerequestassigneegroupmemberships"></a>`groupMemberships` | [`GroupMemberConnection`](#groupmemberconnection) | Group memberships of the user. (see [Connections](#connections)) |
@@ -31695,6 +31699,7 @@ The author of the merge request.
 | <a id="mergerequestauthordiscord"></a>`discord` | [`String`](#string) | Discord ID of the user. |
 | <a id="mergerequestauthoremail"></a>`email` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 13.7. This was renamed. Use: [`User.publicEmail`](#userpublicemail). |
 | <a id="mergerequestauthoremails"></a>`emails` | [`EmailConnection`](#emailconnection) | User's email addresses. (see [Connections](#connections)) |
+| <a id="mergerequestauthorgithub"></a>`github` | [`String`](#string) | GitHub profile name of the user. |
 | <a id="mergerequestauthorgitpodenabled"></a>`gitpodEnabled` | [`Boolean`](#boolean) | Whether Gitpod is enabled at the user level. |
 | <a id="mergerequestauthorgroupcount"></a>`groupCount` | [`Int`](#int) | Group count for the user. |
 | <a id="mergerequestauthorgroupmemberships"></a>`groupMemberships` | [`GroupMemberConnection`](#groupmemberconnection) | Group memberships of the user. (see [Connections](#connections)) |
@@ -32168,6 +32173,7 @@ A user participating in a merge request.
 | <a id="mergerequestparticipantdiscord"></a>`discord` | [`String`](#string) | Discord ID of the user. |
 | <a id="mergerequestparticipantemail"></a>`email` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 13.7. This was renamed. Use: [`User.publicEmail`](#userpublicemail). |
 | <a id="mergerequestparticipantemails"></a>`emails` | [`EmailConnection`](#emailconnection) | User's email addresses. (see [Connections](#connections)) |
+| <a id="mergerequestparticipantgithub"></a>`github` | [`String`](#string) | GitHub profile name of the user. |
 | <a id="mergerequestparticipantgitpodenabled"></a>`gitpodEnabled` | [`Boolean`](#boolean) | Whether Gitpod is enabled at the user level. |
 | <a id="mergerequestparticipantgroupcount"></a>`groupCount` | [`Int`](#int) | Group count for the user. |
 | <a id="mergerequestparticipantgroupmemberships"></a>`groupMemberships` | [`GroupMemberConnection`](#groupmemberconnection) | Group memberships of the user. (see [Connections](#connections)) |
@@ -32609,6 +32615,7 @@ A user assigned to a merge request as a reviewer.
 | <a id="mergerequestreviewerdiscord"></a>`discord` | [`String`](#string) | Discord ID of the user. |
 | <a id="mergerequestrevieweremail"></a>`email` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 13.7. This was renamed. Use: [`User.publicEmail`](#userpublicemail). |
 | <a id="mergerequestrevieweremails"></a>`emails` | [`EmailConnection`](#emailconnection) | User's email addresses. (see [Connections](#connections)) |
+| <a id="mergerequestreviewergithub"></a>`github` | [`String`](#string) | GitHub profile name of the user. |
 | <a id="mergerequestreviewergitpodenabled"></a>`gitpodEnabled` | [`Boolean`](#boolean) | Whether Gitpod is enabled at the user level. |
 | <a id="mergerequestreviewergroupcount"></a>`groupCount` | [`Int`](#int) | Group count for the user. |
 | <a id="mergerequestreviewergroupmemberships"></a>`groupMemberships` | [`GroupMemberConnection`](#groupmemberconnection) | Group memberships of the user. (see [Connections](#connections)) |
@@ -40177,6 +40184,7 @@ Core representation of a GitLab user.
 | <a id="usercorediscord"></a>`discord` | [`String`](#string) | Discord ID of the user. |
 | <a id="usercoreemail"></a>`email` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 13.7. This was renamed. Use: [`User.publicEmail`](#userpublicemail). |
 | <a id="usercoreemails"></a>`emails` | [`EmailConnection`](#emailconnection) | User's email addresses. (see [Connections](#connections)) |
+| <a id="usercoregithub"></a>`github` | [`String`](#string) | GitHub profile name of the user. |
 | <a id="usercoregitpodenabled"></a>`gitpodEnabled` | [`Boolean`](#boolean) | Whether Gitpod is enabled at the user level. |
 | <a id="usercoregroupcount"></a>`groupCount` | [`Int`](#int) | Group count for the user. |
 | <a id="usercoregroupmemberships"></a>`groupMemberships` | [`GroupMemberConnection`](#groupmemberconnection) | Group memberships of the user. (see [Connections](#connections)) |
@@ -48861,6 +48869,7 @@ Implementations:
 | <a id="userdiscord"></a>`discord` | [`String`](#string) | Discord ID of the user. |
 | <a id="useremail"></a>`email` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 13.7. This was renamed. Use: [`User.publicEmail`](#userpublicemail). |
 | <a id="useremails"></a>`emails` | [`EmailConnection`](#emailconnection) | User's email addresses. (see [Connections](#connections)) |
+| <a id="usergithub"></a>`github` | [`String`](#string) | GitHub profile name of the user. |
 | <a id="usergitpodenabled"></a>`gitpodEnabled` | [`Boolean`](#boolean) | Whether Gitpod is enabled at the user level. |
 | <a id="usergroupcount"></a>`groupCount` | [`Int`](#int) | Group count for the user. |
 | <a id="usergroupmemberships"></a>`groupMemberships` | [`GroupMemberConnection`](#groupmemberconnection) | Group memberships of the user. (see [Connections](#connections)) |

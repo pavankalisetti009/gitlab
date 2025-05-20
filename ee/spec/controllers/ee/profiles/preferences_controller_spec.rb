@@ -58,37 +58,5 @@ RSpec.describe Profiles::PreferencesController, feature_category: :user_profile 
         end
       end
     end
-
-    context 'on zoekt enabled namespaces', feature_category: :global_search do
-      context 'when user is not a member of any zoekt enabled namespaces' do
-        before do
-          allow(::Search::Zoekt::EnabledNamespace).to receive(:where).and_return([])
-        end
-
-        it 'does not update enabled_zoekt preference of user' do
-          prefs = { enabled_zoekt: false }
-
-          go params: prefs
-          user.reload
-
-          expect(user.enabled_zoekt).to eq(true)
-        end
-      end
-
-      context 'when user is a member of a zoekt enabled namespace' do
-        before do
-          allow(::Search::Zoekt::EnabledNamespace).to receive(:where).and_return([build(:zoekt_enabled_namespace)])
-        end
-
-        it 'updates enabled_zoekt preference of user' do
-          prefs = { enabled_zoekt: false }
-
-          go params: prefs
-          user.reload
-
-          expect(user.enabled_zoekt).to eq(false)
-        end
-      end
-    end
   end
 end

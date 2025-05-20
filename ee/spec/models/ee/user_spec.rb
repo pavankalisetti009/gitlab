@@ -2334,13 +2334,13 @@ RSpec.describe User, feature_category: :system_access do
       end
     end
 
-    describe '#has_zoekt_indexed_namespace?' do
-      it 'returns true if there are zoekt_indexed_namespaces' do
-        allow(user).to receive(:zoekt_indexed_namespaces).and_return([zoekt_enabled_namespace])
-        expect(user).to be_has_zoekt_indexed_namespace
+    describe '#has_exact_code_search?' do
+      it 'returns true if zoekt search is enabled in application settings' do
+        stub_ee_application_setting(zoekt_search_enabled: true)
+        expect(user).to be_has_exact_code_search
 
-        allow(user).to receive(:zoekt_indexed_namespaces).and_return([])
-        expect(user).not_to be_has_zoekt_indexed_namespace
+        stub_ee_application_setting(zoekt_search_enabled: false)
+        expect(user).not_to be_has_exact_code_search
       end
     end
   end
