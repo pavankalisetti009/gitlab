@@ -12366,6 +12366,9 @@ msgstr ""
 msgid "Change confidentiality"
 msgstr ""
 
+msgid "Change display preferences"
+msgstr ""
+
 msgid "Change failure rate"
 msgstr ""
 
@@ -22848,9 +22851,6 @@ msgstr ""
 msgid "Display name"
 msgstr ""
 
-msgid "Display preferences"
-msgstr ""
-
 msgid "Display progress of child issues"
 msgstr ""
 
@@ -29783,9 +29783,6 @@ msgstr ""
 msgid "Group membership expiration date removed"
 msgstr ""
 
-msgid "Group merge requests by workflow or by your role ('Reviews and Your Merge Requests'), and manage label visibility."
-msgstr ""
-
 msgid "Group milestone"
 msgstr ""
 
@@ -29835,6 +29832,9 @@ msgid "Group wikis"
 msgstr ""
 
 msgid "Group work item bulk edit is a licensed feature not available for this group."
+msgstr ""
+
+msgid "Group your merge requests by %{boldStart}workflow%{boldEnd} or your %{boldStart}role%{boldEnd}, and manage label visibility."
 msgstr ""
 
 msgid "Group-level MFA enforcement"
