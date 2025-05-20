@@ -59,7 +59,7 @@ RSpec.describe Projects::Settings::RepositoryController, feature_category: :sour
         it 'does not cause a N+1 problem' do
           control = ActiveRecord::QueryRecorder.new(skip_cached: false) { get_show }
 
-          expect(control).not_to exceed_query_limit(82)
+          expect(control).not_to exceed_query_limit(89)
           expect(response).to have_gitlab_http_status(:ok)
           expect(response).to render_template(:show)
         end

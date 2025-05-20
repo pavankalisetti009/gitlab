@@ -379,4 +379,54 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
       end
     end
   end
+
+  describe '.feature_for_unit_primitive' do
+    let_it_be(:feature_setting) do
+      create(:ai_feature_setting, feature: :duo_chat, provider: :self_hosted)
+    end
+
+    context 'when unit primitive does not exist in feature metadata' do
+      it 'returns nil' do
+        expect(described_class.feature_for_unit_primitive('non_existent_unit_primitive')).to be_nil
+      end
+    end
+
+    context 'when unit primitive exists in feature metadata' do
+      it 'returns the feature' do
+        expect(described_class.feature_for_unit_primitive('include_issue_context')).to eq(feature_setting)
+      end
+    end
+  end
+
+  describe '.unit_primitive_to_feature_name_map' do
+    it 'returns the feature' do
+      expect(described_class.unit_primitive_to_feature_name_map).to eq(
+        {
+          "complete_code" => "code_completions",
+          "generate_code" => "code_generations",
+          "duo_chat" => "duo_chat",
+          "chat" => "duo_chat",
+          "include_file_context" => "duo_chat",
+          "include_snippet_context" => "duo_chat",
+          "include_merge_request_context" => "duo_chat",
+          "include_issue_context" => "duo_chat", "include_dependency_context" => "duo_chat",
+          "include_local_git_context" => "duo_chat",
+          "include_terminal_context" => "duo_chat",
+          "include_repository_context" => "duo_chat",
+          "explain_code" => "duo_chat_explain_code",
+          "write_tests" => "duo_chat_write_tests",
+          "refactor_code" => "duo_chat_refactor_code",
+          "fix_code" => "duo_chat_fix_code",
+          "troubleshoot_job" => "duo_chat_troubleshoot_job",
+          "explain_vulnerability" => "duo_chat_explain_vulnerability",
+          "summarize_comments" => "duo_chat_summarize_comments",
+          "generate_commit_message" => "generate_commit_message",
+          "summarize_new_merge_request" => "summarize_new_merge_request",
+          "resolve_vulnerability" => "resolve_vulnerability",
+          "summarize_review" => "summarize_review",
+          "glab_ask_git_command" => "glab_ask_git_command"
+        }
+      )
+    end
+  end
 end

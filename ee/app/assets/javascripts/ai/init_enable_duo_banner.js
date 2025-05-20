@@ -8,14 +8,12 @@ export default function initEnableDuoBannerTrigger() {
     return false;
   }
 
-  const { bannerTitle, enableButtonHref, groupId, groupPlan, calloutsPath, calloutsFeatureName } =
-    el.dataset;
+  const { bannerTitle, groupId, groupPlan, calloutsPath, calloutsFeatureName } = el.dataset;
 
   return new Vue({
     el,
     provide: {
       bannerTitle,
-      enableButtonHref,
       groupId,
       groupPlan,
       calloutsPath,

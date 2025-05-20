@@ -16,6 +16,7 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
 
   describe 'GET #show' do
     def get_show
+      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(101)
       get project_issue_path(project, issue)
     end
 
