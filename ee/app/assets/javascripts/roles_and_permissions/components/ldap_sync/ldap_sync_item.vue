@@ -1,45 +1,65 @@
 <script>
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 
 export default {
-  components: { GlButton },
+  components: { GlButton, GlIcon },
+  directives: {
+    GlTooltip: GlTooltipDirective,
+  },
   props: {
     roleLink: {
       type: Object,
       required: true,
     },
   },
+  computed: {
+    isUnknownLdapServer() {
+      return !this.roleLink.provider.label;
+    },
+  },
 };
 </script>
 
 <template>
-  <li class="!gl-py-5">
-    <div class="gl-flex gl-flex-wrap gl-items-center gl-justify-end gl-gap-5">
-      <dl class="gl-mb-0 gl-grid gl-flex-1 gl-grid-cols-[auto_1fr] gl-gap-x-5 gl-whitespace-nowrap">
-        <dt>{{ s__('MemberRole|Server:') }}</dt>
-        <dd class="gl-text-subtle">{{ roleLink.provider.label }}</dd>
+  <li class="gl-flex-row-reverse gl-items-center sm:!gl-flex">
+    <gl-button
+      variant="danger"
+      category="secondary"
+      icon="remove"
+      :aria-label="s__('MemberRole|Remove sync')"
+      class="gl-float-right gl-ml-3 gl-mt-2"
+      @click="$emit('delete')"
+    />
 
-        <template v-if="roleLink.filter">
-          <dt>{{ s__('MemberRole|User filter:') }}</dt>
-          <dd class="gl-text-subtle">{{ roleLink.filter }}</dd>
-        </template>
+    <dl class="gl-mb-0 gl-flex-1 gl-grid-cols-[auto_1fr] gl-gap-x-5 sm:gl-grid">
+      <dt class="gl-mb-1">{{ s__('MemberRole|Server:') }}</dt>
+      <dd class="gl-mb-4 gl-text-subtle" :class="{ 'gl-text-warning': isUnknownLdapServer }">
+        {{ roleLink.provider.label || roleLink.provider.id }}
+        <gl-icon
+          v-if="isUnknownLdapServer"
+          v-gl-tooltip.d0="
+            s__('MemberRole|Unknown LDAP server. Please check your server settings.')
+          "
+          name="warning-solid"
+          variant="warning"
+          class="gl-ml-1"
+        />
+      </dd>
 
-        <template v-else-if="roleLink.cn">
-          <dt>{{ s__('MemberRole|Group cn:') }}</dt>
-          <dd class="gl-text-subtle">{{ roleLink.cn }}</dd>
-        </template>
+      <template v-if="roleLink.filter">
+        <dt class="gl-mb-1">{{ s__('MemberRole|User filter:') }}</dt>
+        <dd class="gl-text-subtle">{{ roleLink.filter }}</dd>
+      </template>
 
-        <dt>{{ s__('MemberRole|Custom admin role:') }}</dt>
-        <dd class="gl-mb-0 gl-text-subtle">{{ roleLink.adminMemberRole.name }}</dd>
-      </dl>
+      <template v-else-if="roleLink.cn">
+        <dt class="gl-mb-1">{{ s__('MemberRole|Group cn:') }}</dt>
+        <dd class="gl-text-subtle">{{ roleLink.cn }}</dd>
+      </template>
 
-      <gl-button
-        variant="danger"
-        category="secondary"
-        icon="remove"
-        :aria-label="s__('MemberRole|Remove sync')"
-        @click="$emit('delete')"
-      />
-    </div>
+      <dt class="gl-mb-1">{{ s__('MemberRole|Custom admin role:') }}</dt>
+      <dd class="gl-mb-0 gl-text-subtle">
+        {{ roleLink.adminMemberRole.name }}
+      </dd>
+    </dl>
   </li>
 </template>
