@@ -9,7 +9,7 @@ module Security
     deduplicate :until_executed, if_deduplicated: :reschedule_once
     feature_category :security_policy_management
 
-    def perform(configuration_id)
+    def perform(configuration_id, _params = {})
       configuration = Security::OrchestrationPolicyConfiguration.find_by_id(configuration_id) || return
 
       configuration.invalidate_policy_yaml_cache
