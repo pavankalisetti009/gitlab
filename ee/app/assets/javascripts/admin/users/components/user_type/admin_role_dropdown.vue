@@ -89,6 +89,7 @@ export default {
       :items="dropdownItems"
       :header-text="s__('AdminUsers|Change access')"
       :reset-button-label="s__('MemberRole|Manage roles')"
+      data-testid="admin-role-dropdown"
       @reset="goToManageRolesPage"
     >
       <template #list-item="{ item }">

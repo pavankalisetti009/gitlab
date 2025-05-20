@@ -120,7 +120,7 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
 
           expect(page).to have_content('Access summary for Regular user')
 
-          within('[data-testid="summary-header"] + section') do
+          within_testid('admin-role-dropdown') do
             find_by_testid('base-dropdown-toggle').click
             within_testid('base-dropdown-menu') do
               find('.gl-new-dropdown-item', text: admin_role.name).click
@@ -134,7 +134,7 @@ RSpec.describe 'Admin::Users', :with_current_organization, feature_category: :us
           # reload the page to make sure we have correct data
           visit path_to_visit
 
-          within('[data-testid="summary-header"] + section') do
+          within_testid('admin-role-dropdown') do
             expect(find_by_testid('base-dropdown-toggle')).to have_content(admin_role.name)
 
             find_by_testid('base-dropdown-toggle').click
