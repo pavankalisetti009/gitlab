@@ -52,7 +52,7 @@ module EE
             unavailable_widgets << ::WorkItems::Widgets::Assignees
           end
 
-          if epic? && !resource_parent.try(:work_items_alpha_feature_flag_enabled?)
+          if epic? && !resource_parent.try(:work_item_epic_milestones_feature_flag_enabled?)
             unavailable_widgets << ::WorkItems::Widgets::Milestone
           end
 

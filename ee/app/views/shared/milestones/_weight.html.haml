@@ -12,7 +12,7 @@
       - else
         = _('None')
   .title.hide-collapsed
-    - if Feature.enabled?(:work_items_alpha, current_user)
+    - if Feature.enabled?(:work_item_epic_milestones, current_user)
       = _('Total weight')
     - else
       = _('Total issue weight')
