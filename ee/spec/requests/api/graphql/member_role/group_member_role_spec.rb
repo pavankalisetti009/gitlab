@@ -30,7 +30,9 @@ RSpec.describe 'Query.group_member_role', feature_category: :permissions do
   let_it_be(:group_member_role_2) { create(:member_role, namespace: root_group, read_vulnerability: true) }
   let_it_be(:group_2_member_role) { create(:member_role) }
 
-  let_it_be(:user) { create(:user, owner_of: root_group) }
+  let_it_be(:group_owner) { create(:user, owner_of: root_group) }
+
+  let(:user) { group_owner }
 
   subject do
     graphql_data.dig('group', 'memberRoles', 'nodes')
@@ -167,6 +169,42 @@ RSpec.describe 'Query.group_member_role', feature_category: :permissions do
       let(:group) { sub_group }
 
       it_behaves_like 'returns member roles'
+
+      context 'when user is a member only in sub group' do
+        let_it_be(:subgroup_owner) { create(:user, owner_of: sub_group) }
+
+        let(:user) { subgroup_owner }
+
+        it_behaves_like 'returns member roles'
+      end
+
+      context 'when user is a not a member in the group hiearachy' do
+        let_it_be(:another_user) { create(:user) }
+
+        let(:user) { another_user }
+
+        context 'when on SaaS' do
+          before do
+            stub_saas_features(gitlab_com_subscriptions: true)
+
+            post_graphql(member_roles_query(group), current_user: user)
+          end
+
+          it 'does not return any member roles' do
+            expect(subject).to be_nil
+          end
+        end
+
+        context 'when on self-managed' do
+          before do
+            post_graphql(member_roles_query(group), current_user: user)
+          end
+
+          it 'does not return any member roles' do
+            expect(subject).to be_nil
+          end
+        end
+      end
     end
   end
 
@@ -178,7 +216,7 @@ RSpec.describe 'Query.group_member_role', feature_category: :permissions do
     end
 
     it 'does not return any member roles' do
-      expect(subject).to be_empty
+      expect(subject).to be_nil
     end
   end
 end

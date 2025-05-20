@@ -253,6 +253,8 @@ module EE
         field :member_roles, ::Types::MemberRoles::MemberRoleType.connection_type,
           null: true, description: 'Custom roles available for the group.',
           resolver: ::Resolvers::MemberRoles::RolesResolver,
+          authorize: :read_member_role,
+          skip_type_authorization: :read_member_role,
           experiment: { milestone: '16.5' }
 
         field :standard_role, ::Types::Members::StandardRoleType,
