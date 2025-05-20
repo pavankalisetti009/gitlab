@@ -1,12 +1,12 @@
 <script>
 import { GlIcon } from '@gitlab/ui';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
-import { s__, __ } from '~/locale';
+import { s__, __, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { InternalEvents } from '~/tracking';
 import {
   I18N_WORK_ITEM_ERROR_UPDATING,
-  sprintfWorkItem,
+  NAME_TO_TEXT_LOWERCASE_MAP,
   WIDGET_TYPE_STATUS,
 } from '~/work_items/constants';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
@@ -226,7 +226,9 @@ export default {
           throw new Error(errors.join('\n'));
         }
       } catch (error) {
-        const msg = sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType);
+        const msg = sprintf(I18N_WORK_ITEM_ERROR_UPDATING, {
+          workItemType: NAME_TO_TEXT_LOWERCASE_MAP[this.workItemType],
+        });
         this.localStatus = this.workItemStatus.status || {};
         this.$emit('error', msg);
         Sentry.captureException(error);

@@ -8,12 +8,12 @@ import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_i
 import projectIterationsQuery from 'ee/work_items/graphql/project_iterations.query.graphql';
 import groupIterationsQuery from 'ee/sidebar/queries/group_iterations.query.graphql';
 import { STATUS_OPEN } from '~/issues/constants';
-import { s__ } from '~/locale';
+import { s__, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import Tracking from '~/tracking';
 import {
   I18N_WORK_ITEM_ERROR_UPDATING,
-  sprintfWorkItem,
+  NAME_TO_TEXT_LOWERCASE_MAP,
   TRACKING_CATEGORY_SHOW,
 } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
@@ -202,7 +202,9 @@ export default {
           throw new Error(errors.join('\n'));
         }
       } catch (error) {
-        const msg = sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType);
+        const msg = sprintf(I18N_WORK_ITEM_ERROR_UPDATING, {
+          workItemType: NAME_TO_TEXT_LOWERCASE_MAP[this.workItemType],
+        });
         this.$emit('error', msg);
         this.localIteration = this.iteration;
         Sentry.captureException(error);

@@ -6,11 +6,12 @@ import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_side
 import {
   CUSTOM_FIELDS_TYPE_NUMBER,
   I18N_WORK_ITEM_ERROR_UPDATING,
-  sprintfWorkItem,
+  NAME_TO_TEXT_LOWERCASE_MAP,
 } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
 import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
 import { isPositiveInteger } from '~/lib/utils/number_utils';
+import { sprintf } from '~/locale';
 
 export default {
   directives: {
@@ -144,7 +145,12 @@ export default {
         .catch((error) => {
           this.resetNumber();
           // Send error event up to work_item_detail to show alert on page
-          this.$emit('error', sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType));
+          this.$emit(
+            'error',
+            sprintf(I18N_WORK_ITEM_ERROR_UPDATING, {
+              workItemType: NAME_TO_TEXT_LOWERCASE_MAP[this.workItemType],
+            }),
+          );
           Sentry.captureException(error);
         })
         .finally(() => {

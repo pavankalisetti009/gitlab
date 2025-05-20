@@ -7,8 +7,8 @@ import { formatSelectOptionForCustomField, newWorkItemId } from '~/work_items/ut
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
   CUSTOM_FIELDS_TYPE_SINGLE_SELECT,
-  sprintfWorkItem,
   I18N_WORK_ITEM_ERROR_UPDATING,
+  NAME_TO_TEXT_LOWERCASE_MAP,
 } from '~/work_items/constants';
 import updateWorkItemCustomFieldsMutation from 'ee/work_items/graphql/update_work_item_custom_fields.mutation.graphql';
 import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
@@ -190,7 +190,9 @@ export default {
             },
           })
           .catch((error) => {
-            const msg = sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType);
+            const msg = sprintf(I18N_WORK_ITEM_ERROR_UPDATING, {
+              workItemType: NAME_TO_TEXT_LOWERCASE_MAP[this.workItemType],
+            });
             this.$emit('error', msg);
             Sentry.captureException(error);
           })
@@ -222,7 +224,9 @@ export default {
           }
         })
         .catch((error) => {
-          const msg = sprintfWorkItem(I18N_WORK_ITEM_ERROR_UPDATING, this.workItemType);
+          const msg = sprintf(I18N_WORK_ITEM_ERROR_UPDATING, {
+            workItemType: NAME_TO_TEXT_LOWERCASE_MAP[this.workItemType],
+          });
           this.$emit('error', msg);
           Sentry.captureException(error);
         })
