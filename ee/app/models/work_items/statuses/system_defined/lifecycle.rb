@@ -31,7 +31,7 @@ module WorkItems
 
         class << self
           def of_work_item_base_type(base_type)
-            all.find { |item| item.for_base_type?(base_type) }
+            all.find { |item| item.for_base_type?(base_type.to_sym) }
           end
         end
 

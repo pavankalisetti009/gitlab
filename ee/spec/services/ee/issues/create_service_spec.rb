@@ -532,6 +532,34 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
       end
     end
 
+    context "when handling status" do
+      let(:other_status) { build(:work_item_system_defined_status, :wont_do) }
+
+      before do
+        project.add_developer(user)
+      end
+
+      context "without status params" do
+        let(:additional_params) { {} }
+
+        it 'creates new issue and creates a current status record' do
+          expect { created_issue }.to change { Issue.count }.by(1).and(
+            change { WorkItems::Statuses::CurrentStatus.count }.by(1)
+          )
+        end
+      end
+
+      context "with status params" do
+        let(:additional_params) { { status: other_status } }
+
+        it 'creates new issue and creates a current status recor' do
+          expect { created_issue }.to change { Issue.count }.by(1).and(
+            change { WorkItems::Statuses::CurrentStatus.count }.by(1)
+          )
+        end
+      end
+    end
+
     it_behaves_like 'new issuable with scoped labels' do
       let(:parent) { project }
       let(:service_result) { described_class.new(**args).execute }

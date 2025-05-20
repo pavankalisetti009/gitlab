@@ -10,6 +10,13 @@ module EE
 
       ALLOWED_ITERATION_WILDCARDS = [::Iteration::Predefined::Current.title].freeze
 
+      override :available_callbacks
+      def available_callbacks
+        super + [
+          ::WorkItems::Callbacks::Status
+        ]
+      end
+
       def filter_epic(issue)
         return unless epic_param_present?
 

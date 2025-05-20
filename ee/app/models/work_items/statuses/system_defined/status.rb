@@ -72,6 +72,8 @@ module WorkItems
           lifecycle = Lifecycle.of_work_item_base_type(work_item.work_item_type.base_type.to_sym)
           return false unless lifecycle.present?
 
+          # Doesn't rely on widget availability but on the list of supported types.
+          # Widget availability controls which data is exposed and whether system notes are created.
           lifecycle.has_status_id?(id)
         end
 
