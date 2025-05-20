@@ -8,7 +8,11 @@ module Resolvers
       private
 
       def dependencies(params)
-        apply_lookahead(::Sbom::DependenciesFinder.new(object, params: mapped_params(params)).execute)
+        result = ::Sbom::DependenciesFinder.new(object, params: mapped_params(params)).execute
+
+        result = result.with_version if params[:component_versions].present? || params[:not_component_versions].present?
+
+        apply_lookahead(result)
       end
     end
   end
