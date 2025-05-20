@@ -6,6 +6,13 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
   subject(:worker) { described_class.new }
 
   let(:logger) { ::Gitlab::Elasticsearch::Logger.build }
+  let(:helper) { ::Gitlab::Elastic::Helper.default }
+
+  before do
+    allow(Search::ClusterHealthCheck::Elastic).to receive(:healthy?).and_return(true)
+    allow(::Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
+    allow(helper).to receive_messages(unsupported_version?: false, alias_exists?: true, migrations_index_exists?: true)
+  end
 
   describe '#perform' do
     let(:migration) { Elastic::DataMigrationService.migrations(exclude_skipped: true).last }
@@ -37,11 +44,8 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
     end
 
     context 'when on an unsupported elasticsearch version' do
-      let(:helper) { Gitlab::Elastic::Helper.default }
-
       before do
-        allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
-        allow(helper).to receive_messages(unsupported_version?: true, alias_exists?: true)
+        allow(helper).to receive(:unsupported_version?).and_return(true)
       end
 
       it 'pauses indexing and does not execute migration' do
@@ -52,13 +56,9 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
     end
 
     context 'when cluster is unhealthy' do
-      let(:helper) { Gitlab::Elastic::Helper.default }
-
       before do
-        allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
         allow(Search::ClusterHealthCheck::Elastic).to receive(:healthy?).and_return(false)
         allow(::Gitlab::Elasticsearch::Logger).to receive(:build).and_return(logger)
-        allow(helper).to receive_messages(unsupported_version?: false, alias_exists?: true)
       end
 
       it 'raises an error and does not execute migration' do
@@ -69,14 +69,6 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
     end
 
     context 'when reindexing task is in progress' do
-      let(:helper) { Gitlab::Elastic::Helper.default }
-
-      before do
-        allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
-        allow(Search::ClusterHealthCheck::Elastic).to receive(:healthy?).and_return(false)
-        allow(helper).to receive_messages(unsupported_version?: false, alias_exists?: true)
-      end
-
       it 'returns without execution' do
         create(:elastic_reindexing_task)
 
@@ -91,11 +83,13 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
           allow(Elastic::MigrationRecord).to receive(:current_migration).and_return(migration)
         end
 
-        it 'creates an index if it does not exist' do
-          Gitlab::Elastic::Helper.default.delete_migrations_index
+        context 'when migrations index does not exist' do
+          it 'skips execution' do
+            allow(helper).to receive(:migrations_index_exists?).and_return(false)
+            expect(helper).not_to receive(:create_migrations_index)
 
-          expect { worker.perform }
-            .to change { Gitlab::Elastic::Helper.default.migrations_index_exists? }.from(false).to(true)
+            expect(worker.perform).to be_falsey
+          end
         end
 
         context 'when migration is halted' do
@@ -228,13 +222,11 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
           end
 
           context 'when space_requirements migration option is set' do
-            let(:helper) { Gitlab::Elastic::Helper.default }
             let(:started) { false }
             let(:completed) { false }
             let(:batched) { false }
 
             before do
-              allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
               allow(migration).to receive_messages(space_requirements?: true, space_required_bytes: 10)
             end
 
@@ -270,7 +262,7 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
 
       context 'when there are no unexecuted migrations' do
         before do
-          allow(worker).to receive(:current_migration).and_return(nil)
+          allow(Elastic::MigrationRecord).to receive(:current_migration).and_return(nil)
         end
 
         it 'skips execution' do
@@ -281,12 +273,7 @@ RSpec.describe Elastic::MigrationWorker, feature_category: :global_search do
       end
 
       context 'when there are no executed migrations' do
-        let(:helper) { Gitlab::Elastic::Helper.default }
-
         before do
-          allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
-          allow(Search::ClusterHealthCheck::Elastic).to receive(:healthy?).and_return(true)
-          allow(helper).to receive_messages(unsupported_version?: false, alias_exists?: true)
           allow(Elastic::MigrationRecord).to receive(:load_versions).and_return([])
           allow(Elastic::DataMigrationService).to receive(:migrations).and_return([migration])
           allow(migration).to receive_messages(space_requirements?: false, started?: false, batched?: false)
