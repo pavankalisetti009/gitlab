@@ -469,20 +469,6 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
     end
   end
 
-  describe '#start_free_trial_data' do
-    let(:data) do
-      {
-        track_action: 'click_button',
-        track_label: 'start_trial',
-        testid: 'start-your-free-trial-button'
-      }
-    end
-
-    it 'has expected data' do
-      expect(helper.start_free_trial_data).to eq data
-    end
-  end
-
   describe '#add_namespace_plan_to_group_instructions' do
     let_it_be(:current_user) { create :user }
 

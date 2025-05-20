@@ -10,10 +10,6 @@ module QA
               element 'billing-plan-header-content'
             end
 
-            view 'ee/app/helpers/billing_plans_helper.rb' do
-              element 'start-your-free-trial-button'
-            end
-
             def billing_plan_header
               find_element('billing-plan-header-content').text
             end
