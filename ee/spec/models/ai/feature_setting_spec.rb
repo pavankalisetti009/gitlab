@@ -158,10 +158,12 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
       expect(build(:ai_feature_setting, provider: :self_hosted).base_url).to eq(url)
     end
 
-    it 'returns Gitlab::AiGateway.cloud_connector_url for vendored features' do
-      expect(Gitlab::AiGateway).to receive(:cloud_connector_url).and_return(url)
+    it 'returns `nil` for vendored features' do
+      expect(build(:ai_feature_setting, provider: :vendored).base_url).to be_nil
+    end
 
-      expect(build(:ai_feature_setting, provider: :vendored).base_url).to eq(url)
+    it 'returns `nil` for disabled features' do
+      expect(build(:ai_feature_setting, provider: :disabled).base_url).to be_nil
     end
   end
 
