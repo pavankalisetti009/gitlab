@@ -6995,6 +6995,9 @@ msgstr ""
 msgid "An error occurred fetching the public deploy keys. Please try again."
 msgstr ""
 
+msgid "An error occurred loading the group counts."
+msgstr ""
+
 msgid "An error occurred loading the project counts."
 msgstr ""
 
