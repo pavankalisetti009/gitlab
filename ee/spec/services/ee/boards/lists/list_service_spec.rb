@@ -13,7 +13,13 @@ RSpec.describe Boards::Lists::ListService, feature_category: :portfolio_manageme
     end
 
     shared_examples 'list service for board with assignee lists' do
-      let!(:assignee_list) { build(:user_list, board: board).tap { |l| l.save!(validate: false) } }
+      let!(:assignee_list) do
+        build(:user_list, board: board).tap do |l|
+          l.send(:ensure_group_or_project) # Necessary as this is called on a before_validation callback
+          l.save!(validate: false)
+        end
+      end
+
       let!(:backlog_list) { board.lists.backlog.first }
       let!(:list) { create(:list, board: board, label: label) }
 
@@ -35,7 +41,13 @@ RSpec.describe Boards::Lists::ListService, feature_category: :portfolio_manageme
     end
 
     shared_examples 'list service for board with milestone lists' do
-      let!(:milestone_list) { build(:milestone_list, board: board).tap { |l| l.save!(validate: false) } }
+      let!(:milestone_list) do
+        build(:milestone_list, board: board).tap do |l|
+          l.send(:ensure_group_or_project) # Necessary as this is called on a before_validation callback
+          l.save!(validate: false)
+        end
+      end
+
       let!(:backlog_list) { board.lists.backlog.first }
       let!(:list) { create(:list, board: board, label: label) }
 
@@ -58,7 +70,13 @@ RSpec.describe Boards::Lists::ListService, feature_category: :portfolio_manageme
     end
 
     shared_examples 'list service for board with iteration lists' do
-      let!(:iteration_list) { build(:iteration_list, board: board).tap { |l| l.save!(validate: false) } }
+      let!(:iteration_list) do
+        build(:iteration_list, board: board).tap do |l|
+          l.send(:ensure_group_or_project) # Necessary as this is called on a before_validation callback
+          l.save!(validate: false)
+        end
+      end
+
       let!(:backlog_list) { board.lists.backlog.first }
       let!(:list) { create(:list, board: board, label: label) }
 
