@@ -12,16 +12,17 @@ export default {
   components: { GlCollapsibleListbox, GlAlert, GlIcon },
   inject: ['manageRolesPath'],
   props: {
-    roleId: {
-      type: Number,
+    role: {
+      type: Object,
       required: false,
-      default: NO_ACCESS_VALUE,
+      default: null,
     },
   },
   data() {
     return {
       adminRoles: [],
-      currentRoleId: this.roleId,
+      currentRoleId: this.role?.id || NO_ACCESS_VALUE,
+      hasDropdownBeenOpened: false,
     };
   },
   apollo: {
@@ -36,6 +37,9 @@ export default {
       },
       error() {
         this.adminRoles = null;
+      },
+      skip() {
+        return !this.hasDropdownBeenOpened;
       },
     },
   },
@@ -55,6 +59,11 @@ export default {
           options: this.adminRoles,
         },
       ];
+    },
+    toggleText() {
+      // Until we've loaded the admin roles, show the role name if there is one. Otherwise, return
+      // an empty string to use the dropdown's default behavior.
+      return !this.hasDropdownBeenOpened || this.isLoadingAdminRoles ? this.role?.name : '';
     },
     rolePermissions() {
       const role = this.adminRoles.find(({ value }) => value === this.currentRoleId);
@@ -81,16 +90,17 @@ export default {
   <div v-else>
     <gl-collapsible-listbox
       v-model="currentRoleId"
-      class="gl-w-28"
+      class="gl-max-w-28"
       block
-      positioning-strategy="fixed"
-      :loading="isLoadingAdminRoles"
-      :toggle-text="isLoadingAdminRoles ? __('Loading…') : ''"
+      :infinite-scroll-loading="isLoadingAdminRoles"
+      :disabled="role && role.ldap"
+      :toggle-text="toggleText"
       :items="dropdownItems"
       :header-text="s__('AdminUsers|Change access')"
       :reset-button-label="s__('MemberRole|Manage roles')"
       data-testid="admin-role-dropdown"
       @reset="goToManageRolesPage"
+      @shown="hasDropdownBeenOpened = true"
     >
       <template #list-item="{ item }">
         <div
@@ -104,8 +114,8 @@ export default {
         </div>
       </template>
 
-      <template v-if="!adminRoles.length" #footer>
-        <div class="gl-px-4 gl-pb-3 gl-text-sm gl-text-subtle">
+      <template v-if="!adminRoles.length && !isLoadingAdminRoles" #footer>
+        <div class="gl-px-4 gl-pb-4 gl-text-sm gl-text-subtle">
           {{ s__('AdminUsers|Create admin role to populate this list.') }}
         </div>
       </template>

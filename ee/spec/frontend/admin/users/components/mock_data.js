@@ -16,3 +16,6 @@ export const adminRoles = [
     },
   },
 ];
+
+export const adminRole = { id: 12, name: 'Custom admin role', ldap: false };
+export const ldapRole = { id: 14, name: 'LDAP assigned role', ldap: true };

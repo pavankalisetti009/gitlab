@@ -1,9 +1,10 @@
 - return unless Feature.enabled?(:custom_admin_roles, :instance)
 
+- role = @user.user_member_roles.first
+
 #js-user-type{ data: {
   user_type: @user.access_level,
-  admin_role_id: @user.user_member_roles.first&.member_role_id,
-  admin_role_ldap: @user.user_member_roles.first&.ldap.to_s,
+  admin_role: role && { id: role.member_role.id, name: role.member_role.name, ldap: role.ldap }.to_json,
   is_current_user: is_current_user.to_s,
   license_allows_auditor_user: license_allows_auditor_user?.to_s,
   manage_roles_path: admin_application_settings_roles_and_permissions_path

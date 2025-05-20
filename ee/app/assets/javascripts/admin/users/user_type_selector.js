@@ -14,8 +14,13 @@ export const initUserTypeSelector = () => {
   const el = document.getElementById('js-user-type');
   if (!el) return null;
 
-  const { userType, isCurrentUser, licenseAllowsAuditorUser, adminRoleId, manageRolesPath } =
-    el.dataset;
+  const {
+    userType,
+    isCurrentUser,
+    licenseAllowsAuditorUser,
+    adminRole = null,
+    manageRolesPath,
+  } = el.dataset;
 
   return new Vue({
     el,
@@ -28,7 +33,7 @@ export const initUserTypeSelector = () => {
           userType,
           isCurrentUser: parseBoolean(isCurrentUser),
           licenseAllowsAuditorUser: parseBoolean(licenseAllowsAuditorUser),
-          adminRoleId: Number(adminRoleId) || undefined,
+          adminRole: JSON.parse(adminRole),
         },
       });
     },

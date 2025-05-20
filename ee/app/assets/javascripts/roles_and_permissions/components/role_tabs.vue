@@ -6,6 +6,8 @@ import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import RolesCrud from './roles_table/roles_crud.vue';
 import LdapSyncCrud from './ldap_sync/ldap_sync_crud.vue';
 
+export const LDAP_TAB_QUERYSTRING_VALUE = 'ldap';
+
 export default {
   components: { PageHeading, GlTabs, GlTab, RolesCrud, GlSprintf, GlLink, LdapSyncCrud },
   mixins: [glFeatureFlagsMixin()],
@@ -16,6 +18,7 @@ export default {
     },
   },
   userPermissionsDocPath: helpPagePath('user/permissions'),
+  LDAP_TAB_QUERYSTRING_VALUE,
 };
 </script>
 
@@ -41,7 +44,11 @@ export default {
       <gl-tab :title="__('Roles')" query-param-value="roles" lazy>
         <roles-crud class="gl-mt-5" />
       </gl-tab>
-      <gl-tab :title="__('LDAP Synchronization')" query-param-value="ldap" lazy>
+      <gl-tab
+        :title="__('LDAP Synchronization')"
+        :query-param-value="$options.LDAP_TAB_QUERYSTRING_VALUE"
+        lazy
+      >
         <ldap-sync-crud class="gl-mt-5" />
       </gl-tab>
     </gl-tabs>
