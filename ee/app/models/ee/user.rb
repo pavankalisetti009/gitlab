@@ -470,10 +470,8 @@ module EE
         .any?
     end
 
-    # Returns true if the user is a Reporter or higher on any namespace
-    # that is associated as a Zoekt::EnabledNamespace
-    def has_zoekt_indexed_namespace?
-      zoekt_indexed_namespaces.any?
+    def has_exact_code_search?
+      ::Gitlab::CurrentSettings.zoekt_search_enabled?
     end
 
     def zoekt_indexed_namespaces
