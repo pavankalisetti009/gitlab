@@ -30,6 +30,7 @@ import {
   determineTimeUnit,
   getValueWithinLimits,
 } from './utils';
+import SnoozeForm from './snooze_form.vue';
 
 export default {
   name: 'ScheduleForm',
@@ -65,6 +66,7 @@ export default {
     GlSprintf,
     TimezoneDropdown,
     GlFormInput,
+    SnoozeForm,
   },
   inject: ['timezones'],
   props: {
@@ -154,6 +156,9 @@ export default {
   methods: {
     handleMonthlyDaysInput(selectedDays) {
       this.updatePolicy('days_of_month', sortBy(selectedDays));
+    },
+    handleSnoozeUpdate(snoozeData) {
+      this.updatePolicy('snooze', snoozeData);
     },
     handleWeeklyDaysInput(selectedDays) {
       this.updatePolicy('days', selectedDays);
@@ -304,5 +309,6 @@ export default {
         </template>
       </gl-sprintf>
     </div>
+    <snooze-form :data="schedule.snooze" @update="handleSnoozeUpdate" />
   </div>
 </template>
