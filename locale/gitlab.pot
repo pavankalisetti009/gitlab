@@ -50090,6 +50090,15 @@ msgstr[1] ""
 msgid "RapidDiffs|Added line %d"
 msgstr ""
 
+msgid "RapidDiffs|Changes view"
+msgstr ""
+
+msgid "RapidDiffs|Diff file controls"
+msgstr ""
+
+msgid "RapidDiffs|Diff files"
+msgstr ""
+
 msgid "RapidDiffs|Diff line"
 msgstr ""
 
@@ -50129,6 +50138,9 @@ msgid "RapidDiffs|Show lines before"
 msgstr ""
 
 msgid "RapidDiffs|Show options"
+msgstr ""
+
+msgid "RapidDiffs|View controls"
 msgstr ""
 
 msgid "Rate Limits"
