@@ -8,15 +8,21 @@ module Vulnerabilities
       MIGRATION = 'FixVulnerabilitiesTransitionedFromDismissedToResolved'
       INSTANCE_ARG = 'instance'
 
-      def initialize(args)
+      def initialize(args, revert: false)
         @namespace_id = args[:namespace_id]
+        @revert = revert
       end
 
-      attr_reader :namespace_id
+      attr_reader :namespace_id, :revert
 
       def execute
         validate_args!
-        queue_migration
+
+        if revert
+          delete_migration
+        else
+          queue_migration
+        end
       end
 
       private
@@ -52,6 +58,14 @@ module Vulnerabilities
           job_args,
           gitlab_schema: :gitlab_sec
         )
+
+        puts "Enqueued background migration: #{MIGRATION}, job_args: #{job_args}"
+      end
+
+      def delete_migration
+        delete_batched_background_migration(MIGRATION, :vulnerability_reads, :vulnerability_id, [job_args])
+
+        puts "Deleted background migration: #{MIGRATION}, job_args: #{job_args}"
       end
 
       def job_args

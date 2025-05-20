@@ -24,4 +24,18 @@ RSpec.describe 'vulnerabilities rake tasks', feature_category: :vulnerability_ma
       task
     end
   end
+
+  describe 'fix_auto_resolved_vulnerabilities:revert' do
+    let(:args) { ['123456'] }
+
+    subject(:task) { run_rake_task('gitlab:vulnerabilities:fix_auto_resolved_vulnerabilities:revert', args) }
+
+    it 'calls rake service with args' do
+      expect_next_instance_of(Vulnerabilities::Rake::FixAutoResolvedVulnerabilities, args, revert: true) do |instance|
+        expect(instance).to receive(:execute)
+      end
+
+      task
+    end
+  end
 end

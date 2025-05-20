@@ -6,5 +6,9 @@ namespace :gitlab do
     task :fix_auto_resolved_vulnerabilities, [:namespace_id] => :environment do |_, args|
       Vulnerabilities::Rake::FixAutoResolvedVulnerabilities.new(args).execute
     end
+
+    task 'fix_auto_resolved_vulnerabilities:revert', [:namespace_id] => :environment do |_, args|
+      Vulnerabilities::Rake::FixAutoResolvedVulnerabilities.new(args, revert: true).execute
+    end
   end
 end

@@ -10,13 +10,19 @@ RSpec.describe Vulnerabilities::Rake::FixAutoResolvedVulnerabilities, feature_ca
   describe 'execute' do
     let(:batched_migration) { described_class::MIGRATION }
 
-    subject(:execute) { described_class.new(args).execute }
+    def up
+      described_class.new(args).execute
+    end
+
+    def down
+      described_class.new(args, revert: true).execute
+    end
 
     context 'when performing an instance migration' do
       let(:namespace_id) { 'instance' }
 
       it 'schedules migration' do
-        execute
+        up
 
         expect(batched_migration).to have_scheduled_batched_migration(
           table_name: :vulnerability_reads,
@@ -24,6 +30,10 @@ RSpec.describe Vulnerabilities::Rake::FixAutoResolvedVulnerabilities, feature_ca
           gitlab_schema: :gitlab_sec,
           job_arguments: [namespace_id]
         )
+
+        down
+
+        expect(batched_migration).not_to have_scheduled_batched_migration
       end
     end
 
@@ -32,7 +42,7 @@ RSpec.describe Vulnerabilities::Rake::FixAutoResolvedVulnerabilities, feature_ca
       let_it_be(:namespace_id) { namespace.id.to_s }
 
       it 'schedules migration with parsed namespace_id' do
-        execute
+        up
 
         expect(batched_migration).to have_scheduled_batched_migration(
           table_name: :vulnerability_reads,
@@ -40,6 +50,10 @@ RSpec.describe Vulnerabilities::Rake::FixAutoResolvedVulnerabilities, feature_ca
           gitlab_schema: :gitlab_sec,
           job_arguments: [namespace_id.to_i]
         )
+
+        down
+
+        expect(batched_migration).not_to have_scheduled_batched_migration
       end
     end
 
@@ -48,7 +62,7 @@ RSpec.describe Vulnerabilities::Rake::FixAutoResolvedVulnerabilities, feature_ca
         let(:namespace_id) { 'foo' }
 
         it 'prints error and exits' do
-          expect { execute }.to raise_error(SystemExit)
+          expect { up }.to raise_error(SystemExit)
             .and output("'foo' is not a number.\n" \
               "Use `gitlab-rake 'gitlab:vulnerabilities:fix_auto_resolved_vulnerabilities[instance]'` " \
               "to perform an instance migration.\n").to_stderr
@@ -59,7 +73,7 @@ RSpec.describe Vulnerabilities::Rake::FixAutoResolvedVulnerabilities, feature_ca
         let(:namespace_id) { non_existing_record_id.to_s }
 
         it 'prints error and exits' do
-          expect { execute }.to raise_error(SystemExit)
+          expect { up }.to raise_error(SystemExit)
             .and output("Namespace:#{namespace_id} not found.\n").to_stderr
         end
       end
@@ -69,7 +83,7 @@ RSpec.describe Vulnerabilities::Rake::FixAutoResolvedVulnerabilities, feature_ca
         let_it_be(:namespace_id) { namespace.id.to_s }
 
         it 'prints error and exits' do
-          expect { execute }.to raise_error(SystemExit)
+          expect { up }.to raise_error(SystemExit)
             .and output("Namespace must be top-level.\n").to_stderr
         end
       end
