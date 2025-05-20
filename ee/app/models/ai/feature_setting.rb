@@ -30,7 +30,14 @@ module Ai
     FEATURE_METADATA_PATH = Rails.root.join('ee/lib/gitlab/ai/feature_settings/feature_metadata.yml')
     FEATURE_METADATA = YAML.load_file(FEATURE_METADATA_PATH)
 
-    FeatureMetadata = Struct.new(:title, :main_feature, :compatible_llms, :release_state, keyword_init: true)
+    FeatureMetadata = Struct.new(
+      :title,
+      :main_feature,
+      :compatible_llms,
+      :release_state,
+      :unit_primitives,
+      keyword_init: true
+    )
 
     belongs_to :self_hosted_model, foreign_key: :ai_self_hosted_model_id, inverse_of: :feature_settings
 
@@ -53,38 +60,59 @@ module Ai
 
     delegate :title, :main_feature, :compatible_llms, :release_state, to: :metadata, allow_nil: true
 
-    def self.code_suggestions_self_hosted?
-      exists?(feature: [:code_generations, :code_completions], provider: :self_hosted)
-    end
+    class << self
+      include Gitlab::Utils::StrongMemoize
 
-    def self.provider_titles
-      {
-        disabled: s_('AdminAiPoweredFeatures|Disabled'),
-        vendored: s_('AdminAiPoweredFeatures|AI vendor'),
-        self_hosted: s_('AdminAiPoweredFeatures|Self-hosted model')
-      }.with_indifferent_access.freeze
-    end
-
-    def self.allowed_features
-      allowed_features = STABLE_FEATURES
-
-      # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
-      if Feature.enabled?(:ai_duo_chat_sub_features_settings) && ::Ai::TestingTermsAcceptance.has_accepted?
-        # FLAGGED_FEATURES are in beta status. We must ensure the GitLab Testing Terms
-        # have been accepted by the user in order for them to be used.
-        # https://handbook.gitlab.com/handbook/legal/testing-agreement/
-        allowed_features = allowed_features.merge(FLAGGED_FEATURES)
-      end
-      # rubocop:enable Gitlab/FeatureFlagWithoutActor
-
-      if ::License.current&.premium?
-        allowed_features.except!(
-          :duo_chat_explain_vulnerability,
-          :resolve_vulnerability
-        )
+      def code_suggestions_self_hosted?
+        exists?(feature: [:code_generations, :code_completions], provider: :self_hosted)
       end
 
-      allowed_features.stringify_keys
+      def provider_titles
+        {
+          disabled: s_('AdminAiPoweredFeatures|Disabled'),
+          vendored: s_('AdminAiPoweredFeatures|AI vendor'),
+          self_hosted: s_('AdminAiPoweredFeatures|Self-hosted model')
+        }.with_indifferent_access.freeze
+      end
+
+      def allowed_features
+        allowed_features = STABLE_FEATURES
+
+        if Feature.enabled?(:ai_duo_chat_sub_features_settings, :instance) && ::Ai::TestingTermsAcceptance.has_accepted?
+          # FLAGGED_FEATURES are in beta status. We must ensure the GitLab Testing Terms
+          # have been accepted by the user in order for them to be used.
+          # https://handbook.gitlab.com/handbook/legal/testing-agreement/
+          allowed_features = allowed_features.merge(FLAGGED_FEATURES)
+        end
+
+        if ::License.current&.premium?
+          allowed_features.except!(
+            :duo_chat_explain_vulnerability,
+            :resolve_vulnerability
+          )
+        end
+
+        allowed_features.stringify_keys
+      end
+
+      def feature_for_unit_primitive(unit_primitive)
+        return unless unit_primitive
+
+        feature_name = unit_primitive_to_feature_name_map[unit_primitive.to_s]
+
+        return unless feature_name
+
+        find_by_feature(feature_name)
+      end
+
+      def unit_primitive_to_feature_name_map
+        FEATURE_METADATA.each_with_object({}) do |(feature_name, metadata), result|
+          metadata['unit_primitives'].each do |unit_primitive|
+            result[unit_primitive] = feature_name
+          end
+        end
+      end
+      strong_memoize_attr(:unit_primitive_to_feature_name_map)
     end
 
     def provider_title

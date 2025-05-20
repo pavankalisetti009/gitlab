@@ -12,6 +12,8 @@ code_generations:
     - llama3
     - claude_3
     - gpt
+  unit_primitives:
+    - generate_code
 code_completions:
   title: Code Completion
   release_state: GA
@@ -26,6 +28,8 @@ code_completions:
     - llama3
     - claude_3
     - gpt
+  unit_primitives:
+    - complete_code
 duo_chat:
   title: General Chat
   release_state: GA
@@ -36,6 +40,17 @@ duo_chat:
     - claude_3
     - gpt
     - llama3
+  unit_primitives:
+    - duo_chat
+    - chat
+    - include_file_context
+    - include_snippet_context
+    - include_merge_request_context
+    - include_issue_context
+    - include_dependency_context
+    - include_local_git_context
+    - include_terminal_context
+    - include_repository_context
 duo_chat_explain_code:
   title: Explain Code
   release_state: GA
@@ -46,6 +61,8 @@ duo_chat_explain_code:
     - claude_3
     - gpt
     - llama3
+  unit_primitives:
+    - explain_code
 duo_chat_write_tests:
   title: Write Test
   release_state: GA
@@ -57,6 +74,8 @@ duo_chat_write_tests:
     - gpt
     - codestral
     - llama3
+  unit_primitives:
+    - write_tests
 duo_chat_refactor_code:
   title: Refactor Code
   release_state: GA
@@ -68,6 +87,8 @@ duo_chat_refactor_code:
     - gpt
     - codestral
     - llama3
+  unit_primitives:
+    - refactor_code
 duo_chat_fix_code:
   title: Fix Code
   release_state: GA
@@ -79,6 +100,8 @@ duo_chat_fix_code:
     - gpt
     - codestral
     - llama3
+  unit_primitives:
+    - fix_code
 duo_chat_troubleshoot_job:
   title: Troubleshoot Job
   release_state: BETA
@@ -89,6 +112,8 @@ duo_chat_troubleshoot_job:
     - claude_3
     - gpt
     - llama3
+  unit_primitives:
+    - troubleshoot_job
 duo_chat_explain_vulnerability:
   title: Explain Vulnerability
   release_state: BETA
@@ -99,6 +124,8 @@ duo_chat_explain_vulnerability:
     - claude_3
     - gpt
     - llama3
+  unit_primitives:
+    - explain_vulnerability
 duo_chat_summarize_comments:
   title: Summarize Comments
   release_state: BETA
@@ -109,6 +136,8 @@ duo_chat_summarize_comments:
     - claude_3
     - gpt
     - llama3
+  unit_primitives:
+    - summarize_comments
 generate_commit_message:
   title: Generate Commit Message
   release_state: BETA
@@ -119,6 +148,8 @@ generate_commit_message:
     - claude_3
     - gpt
     - llama3
+  unit_primitives:
+    - generate_commit_message
 summarize_new_merge_request:
   title: Summarize New Merge Request
   release_state: BETA
@@ -129,6 +160,8 @@ summarize_new_merge_request:
     - claude_3
     - gpt
     - llama3
+  unit_primitives:
+    - summarize_new_merge_request
 resolve_vulnerability:
   title: Resolve Vulnerability
   release_state: BETA
@@ -139,6 +172,8 @@ resolve_vulnerability:
     - claude_3
     - gpt
     - llama3
+  unit_primitives:
+    - resolve_vulnerability
 summarize_review:
   title: Summarize Review
   release_state: EXPERIMENT
@@ -149,6 +184,8 @@ summarize_review:
     - claude_3
     - gpt
     - llama3
+  unit_primitives:
+    - summarize_review
 glab_ask_git_command:
   title: GitLab Duo for CLI
   release_state: BETA
@@ -159,3 +196,5 @@ glab_ask_git_command:
     - claude_3
     - gpt
     - llama3
+  unit_primitives:
+    - glab_ask_git_command

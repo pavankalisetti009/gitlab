@@ -97,5 +97,19 @@ RSpec.describe CloudConnector::AvailableServices, feature_category: :cloud_conne
         expect(service).to be_instance_of(CloudConnector::MissingServiceData)
       end
     end
+
+    context 'when service is a self hosted service' do
+      before do
+        create(:ai_feature_setting, feature: :duo_chat, provider: :self_hosted)
+      end
+
+      context 'when feature is configured for self-hosted usage' do
+        it 'fetches the self_hosted service' do
+          expect(described_class).to receive(:select_reader).with(:self_hosted_models).and_return(access_data_reader)
+
+          described_class.find_by_name(:include_issue_context)
+        end
+      end
+    end
   end
 end

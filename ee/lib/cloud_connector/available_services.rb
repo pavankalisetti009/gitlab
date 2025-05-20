@@ -4,7 +4,12 @@ module CloudConnector
   class AvailableServices
     class << self
       def find_by_name(service_name)
+        if service_name != :self_hosted_models && service_is_self_hosted?(service_name)
+          service_name = :self_hosted_models
+        end
+
         reader = select_reader(service_name)
+
         service_data_map = reader.read_available_services
         if service_data_map.empty? || !service_data_map[service_name].present?
           return CloudConnector::MissingServiceData.new
@@ -34,6 +39,12 @@ module CloudConnector
         Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
       end
       # rubocop:enable Gitlab/AvoidGitlabInstanceChecks
+
+      def service_is_self_hosted?(service_name)
+        return false if Gitlab.org_or_com? # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Not related to SaaS offerings
+
+        ::Ai::FeatureSetting.feature_for_unit_primitive(service_name)&.self_hosted?
+      end
     end
   end
 end
