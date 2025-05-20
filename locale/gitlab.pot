@@ -3585,6 +3585,12 @@ msgstr ""
 msgid "Achievements|Avatar"
 msgstr ""
 
+msgid "Achievements|Award"
+msgstr ""
+
+msgid "Achievements|Award achievements"
+msgstr ""
+
 msgid "Achievements|Awarded %{timeAgo} by %{namespace}"
 msgstr ""
 
@@ -3610,6 +3616,9 @@ msgid "Achievements|View your achievements on your %{link_start}profile%{link_en
 msgstr ""
 
 msgid "Achievements|View your achievements on your profile."
+msgstr ""
+
+msgid "Achievements|You're awarding users the %{achievementName} achievement"
 msgstr ""
 
 msgid "Acknowledge"
