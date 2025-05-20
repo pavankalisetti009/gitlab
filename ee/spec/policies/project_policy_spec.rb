@@ -5119,4 +5119,34 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to expected_result }
     end
   end
+
+  describe 'access_duo_agentic_chat' do
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+
+    subject { described_class.new(current_user, project) }
+
+    context 'for all environments' do
+      where(:can_access_duo_chat, :duo_agentic_chat_enabled, :agentic_chat_allowed, :duo_agentic_chat_matcher) do
+        true  | true  | true  | be_allowed(:access_duo_agentic_chat)
+        true  | true  | false | be_disallowed(:access_duo_agentic_chat)
+        true  | false | false | be_disallowed(:access_duo_agentic_chat)
+        false | false | false | be_disallowed(:access_duo_agentic_chat)
+        false | false | true  | be_disallowed(:access_duo_agentic_chat)
+        false | true  | true  | be_disallowed(:access_duo_agentic_chat)
+      end
+
+      with_them do
+        before do
+          allow(subject).to receive(:allowed?).and_call_original
+          allow(subject).to receive(:allowed?).with(:access_duo_chat).and_return(can_access_duo_chat)
+          stub_feature_flags(duo_agentic_chat: duo_agentic_chat_enabled)
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :agentic_chat).and_return(agentic_chat_allowed)
+        end
+
+        it { is_expected.to duo_agentic_chat_matcher }
+      end
+    end
+  end
 end

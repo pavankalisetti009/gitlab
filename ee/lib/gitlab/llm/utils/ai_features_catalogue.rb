@@ -160,6 +160,15 @@ module Gitlab
             self_managed: true,
             internal: true
           },
+          agentic_chat: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :duo_chat,
+            execute_method: nil,
+            maturity: :experimental,
+            self_managed: true,
+            internal: false
+          },
           # The proxies are not features per-se, but an entry in the catalogue is required when building the AI
           # Gateway headers. See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/168117#note_2142272386
           anthropic_proxy: {
