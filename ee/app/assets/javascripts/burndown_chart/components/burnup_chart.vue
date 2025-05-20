@@ -72,7 +72,7 @@ export default {
       return series;
     },
     yAxisTitle() {
-      return this.glFeatures.workItemsAlpha ? __('Work items') : __('Issues');
+      return this.glFeatures.workItemEpicMilestones ? __('Work items') : __('Issues');
     },
     options() {
       return merge({}, commonChartOptions, {
@@ -114,7 +114,7 @@ export default {
         completedText = sprintf(__('%{completedCount} completed weight'), { completedCount });
       }
 
-      if (this.glFeatures.workItemsAlpha) {
+      if (this.glFeatures.workItemEpicMilestones) {
         totalText = sprintf(__('%{count} total'), { count });
         completedText = sprintf(__('%{completedCount} completed'), { completedCount });
       }

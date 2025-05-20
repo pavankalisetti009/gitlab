@@ -94,7 +94,7 @@ export default {
       return series;
     },
     yAxisTitle() {
-      return this.glFeatures.workItemsAlpha ? __('Work items') : __('Issues');
+      return this.glFeatures.workItemEpicMilestones ? __('Work items') : __('Issues');
     },
     options() {
       return merge({}, commonChartOptions, {
@@ -122,7 +122,7 @@ export default {
 
       if (this.issuesSelected) {
         this.tooltip.content = n__('%d remaining', '%d remaining', seriesData.value[1]);
-      } else if (this.glFeatures.workItemsAlpha) {
+      } else if (this.glFeatures.workItemEpicMilestones) {
         this.tooltip.content = sprintf(__('%{total} remaining weight'), {
           total: seriesData.value[1],
         });
