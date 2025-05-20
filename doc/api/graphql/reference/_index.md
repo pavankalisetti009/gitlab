@@ -234,6 +234,27 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryaimessagesroles"></a>`roles` | [`[AiMessageRole!]`](#aimessagerole) | Array of roles to fetch. |
 | <a id="queryaimessagesthreadid"></a>`threadId` | [`AiConversationThreadID`](#aiconversationthreadid) | Global Id of the existing thread.If it is not specified, the last thread for the specified conversation_type will be retrieved. |
 
+### `Query.aiModelSelectionNamespaceSettings`
+
+List of configurable AI features for namespace Model Selection.
+
+{{< details >}}
+**Introduced** in GitLab 18.1.
+**Status**: Experiment.
+{{< /details >}}
+
+Returns [`AiModelSelectionNamespaceFeatureSettingConnection`](#aimodelselectionnamespacefeaturesettingconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryaimodelselectionnamespacesettingsgroupid"></a>`groupId` | [`GroupID!`](#groupid) | Group for the model selection. |
+
 ### `Query.aiSelfHostedModels`
 
 Returns the self-hosted model if an ID is provided, otherwise returns all models.
@@ -13431,6 +13452,29 @@ The edge type for [`AiMessage`](#aimessage).
 | ---- | ---- | ----------- |
 | <a id="aimessageedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="aimessageedgenode"></a>`node` | [`AiMessage`](#aimessage) | The item at the end of the edge. |
+
+#### `AiModelSelectionNamespaceFeatureSettingConnection`
+
+The connection type for [`AiModelSelectionNamespaceFeatureSetting`](#aimodelselectionnamespacefeaturesetting).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aimodelselectionnamespacefeaturesettingconnectionedges"></a>`edges` | [`[AiModelSelectionNamespaceFeatureSettingEdge]`](#aimodelselectionnamespacefeaturesettingedge) | A list of edges. |
+| <a id="aimodelselectionnamespacefeaturesettingconnectionnodes"></a>`nodes` | [`[AiModelSelectionNamespaceFeatureSetting]`](#aimodelselectionnamespacefeaturesetting) | A list of nodes. |
+| <a id="aimodelselectionnamespacefeaturesettingconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AiModelSelectionNamespaceFeatureSettingEdge`
+
+The edge type for [`AiModelSelectionNamespaceFeatureSetting`](#aimodelselectionnamespacefeaturesetting).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aimodelselectionnamespacefeaturesettingedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="aimodelselectionnamespacefeaturesettingedgenode"></a>`node` | [`AiModelSelectionNamespaceFeatureSetting`](#aimodelselectionnamespacefeaturesetting) | The item at the end of the edge. |
 
 #### `AiSelfHostedModelConnection`
 
