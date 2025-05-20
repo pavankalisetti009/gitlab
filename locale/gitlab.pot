@@ -28105,6 +28105,9 @@ msgstr ""
 msgid "GitHub repository URL."
 msgstr ""
 
+msgid "GitHub:"
+msgstr ""
+
 msgid "GitHubImporter|*Merged by: %{author} at %{timestamp}*"
 msgstr ""
 
