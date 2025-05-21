@@ -56,7 +56,7 @@ module EE
           description: 'Fields related to the current license.'
         field :devops_adoption_enabled_namespaces,
           null: true,
-          description: 'Get configured DevOps adoption namespaces. **Status:** Beta. This endpoint is subject to ' \
+          description: 'Get configured DevOps adoption namespaces. **Status**: Beta. This endpoint is subject to ' \
                        'change without notice.',
           resolver: ::Resolvers::Analytics::DevopsAdoption::EnabledNamespacesResolver
         field :epic_board_list, ::Types::Boards::EpicListType,
