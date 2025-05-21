@@ -57,6 +57,9 @@ export default {
       skip() {
         return this.isGroup;
       },
+      error() {
+        this.$emit('linked-spp-query-error');
+      },
     },
   },
   props: {

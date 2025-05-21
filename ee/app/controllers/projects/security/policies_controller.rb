@@ -19,6 +19,7 @@ module Projects
         push_frontend_feature_flag(:security_policies_split_view, project.group)
         push_frontend_feature_flag(:security_policy_approval_warn_mode, project.group)
         push_frontend_feature_flag(:flexible_scan_execution_policy, project.group)
+        push_frontend_feature_flag(:security_policies_combined_list, project)
       end
 
       feature_category :security_policy_management

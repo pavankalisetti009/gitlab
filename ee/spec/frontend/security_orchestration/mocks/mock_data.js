@@ -138,5 +138,3 @@ export const createMockGroups = (length = 2) =>
     fullPath: `group full path ${id}`,
     avatarUrl: `group avatar url ${id}`,
   }));
-
-export const TOP_LEVEL_GROUPS = [1, 2, 3].map(createMockGroup);

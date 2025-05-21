@@ -280,6 +280,36 @@ export const mockProjectScanResultPolicy = {
   },
 };
 
+export const mockProjectScanResultPolicyCombinedList = {
+  __typename: 'ScanResultPolicy',
+  policyAttributes: {
+    __typename: 'ApprovalPolicyAttributesType',
+    actionApprovers: [],
+    deprecatedProperties: [],
+    source: {
+      __typename: 'ProjectSecurityPolicySource',
+      project: {
+        fullPath: 'project/path',
+      },
+    },
+  },
+  name: `${mockDefaultBranchesScanResultObject.name}-project`,
+  updatedAt: new Date('2021-06-07T00:00:00.000Z'),
+  yaml: mockDefaultBranchesScanResultManifest,
+  deprecatedProperties: [],
+  editPath: '/policies/policy-name/edit?type="approval_policy"',
+  enabled: false,
+  actionApprovers: [],
+  type: 'approval_policy',
+  ...POLICY_SCOPE_MOCK,
+  source: {
+    __typename: 'ProjectSecurityPolicySource',
+    project: {
+      fullPath: 'project/path',
+    },
+  },
+};
+
 export const mockGroupScanResultPolicy = {
   __typename: 'ScanResultPolicy',
   name: `${mockDefaultBranchesScanResultObject.name}-group`,
@@ -290,6 +320,44 @@ export const mockGroupScanResultPolicy = {
   enabled: mockDefaultBranchesScanResultObject.enabled,
   actionApprovers: [],
   ...POLICY_SCOPE_MOCK,
+  source: {
+    __typename: 'GroupSecurityPolicySource',
+    inherited: true,
+    namespace: {
+      __typename: 'Namespace',
+      id: '1',
+      fullPath: 'parent-group-path',
+      name: 'parent-group-name',
+    },
+  },
+};
+
+export const mockGroupScanResultPolicyCombinedList = {
+  __typename: 'ScanResultPolicy',
+  name: `${mockDefaultBranchesScanResultObject.name}-group`,
+  policyAttributes: {
+    __typename: 'ApprovalPolicyAttributesType',
+    deprecatedProperties: [],
+    actionApprovers: [],
+    source: {
+      __typename: 'GroupSecurityPolicySource',
+      inherited: true,
+      namespace: {
+        __typename: 'Namespace',
+        id: '1',
+        fullPath: 'parent-group-path',
+        name: 'parent-group-name',
+      },
+    },
+  },
+  updatedAt: new Date('2021-06-07T00:00:00.000Z'),
+  yaml: mockDefaultBranchesScanResultManifest,
+  deprecatedProperties: [],
+  editPath: '/policies/policy-name/edit?type="approval_policy"',
+  enabled: mockDefaultBranchesScanResultObject.enabled,
+  actionApprovers: [],
+  ...POLICY_SCOPE_MOCK,
+  type: 'approval_policy',
   source: {
     __typename: 'GroupSecurityPolicySource',
     inherited: true,
