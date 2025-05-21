@@ -71,3 +71,20 @@ export const ERROR_MESSAGE_MAP = {
   [POLICY_ACTION_BUILDER_TAGS_ERROR_KEY]: RUNNER_TAGS_PARSING_ERROR,
   [POLICY_ACTION_BUILDER_DAST_PROFILES_ERROR_KEY]: DAST_SCANNERS_PARSING_ERROR,
 };
+
+export const PIPELINE_SOURCE_OPTIONS = [
+  { value: 'api', text: s__('SecurityOrchestration|API request') },
+  { value: 'chat', text: s__('SecurityOrchestration|ChatOps command') },
+  { value: 'external', text: s__('SecurityOrchestration|External event') },
+  {
+    value: 'external_pull_request_event',
+    text: s__('SecurityOrchestration|External pull request'),
+  },
+  { value: 'merge_request_event', text: s__('SecurityOrchestration|Merge request pipeline') },
+  { value: 'pipeline', text: s__('SecurityOrchestration|Manual pipeline run') },
+  { value: 'push', text: s__('SecurityOrchestration|Code push') },
+  { value: 'schedule', text: s__('SecurityOrchestration|Scheduled pipeline') },
+  { value: 'trigger', text: s__('SecurityOrchestration|Trigger') },
+  { value: 'web', text: s__('SecurityOrchestration|Web UI') },
+  { value: 'unknown', text: s__('SecurityOrchestration|Unknown source') },
+];
