@@ -2,7 +2,7 @@
 
 module Security
   module Configuration
-    class SetGroupSecretPushProtectionService < SetSecretPushProtectionBaseService
+    class SetGroupSecretPushProtectionService < SetProjectSecuritySettingBaseService
       private
 
       def subject_project_ids
@@ -28,6 +28,10 @@ module Security
         )
 
         ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
+
+      def setting_key
+        :secret_push_protection_enabled
       end
 
       def fetch_filtered_out_projects_full_path
