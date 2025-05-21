@@ -52,7 +52,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener,
           "- (root): Additional property random is not allowed\n"
       message = result.unwrap_err
       expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreateDevfileFlattenFailed)
-      expect(message.content).to eq(details: expected_error_message)
+      expect(message.content).to eq({ details: expected_error_message, context: context })
     end
   end
 end

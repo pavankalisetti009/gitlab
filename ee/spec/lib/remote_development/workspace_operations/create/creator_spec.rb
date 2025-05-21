@@ -18,7 +18,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, featur
 
   describe "happy path" do
     let(:expected_value) do
-      Gitlab::Fp::Result.ok(Messages::WorkspaceCreateSuccessful.new(context_passed_along_steps))
+      Gitlab::Fp::Result.ok(context_passed_along_steps)
     end
 
     it "returns expected response" do
@@ -35,7 +35,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, featur
 
   describe "error cases" do
     let(:error_details) { "some error details" }
-    let(:err_message_content) { { errors: error_details } }
+    let(:err_message_content) { { errors: error_details, context: context_passed_along_steps } }
 
     shared_examples "rop invocation with error response" do
       it "returns expected response" do

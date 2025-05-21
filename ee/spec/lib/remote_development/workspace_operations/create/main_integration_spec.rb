@@ -2,6 +2,35 @@
 
 require 'spec_helper'
 
+RSpec.shared_examples 'tracks successful workspace creation event' do
+  it "tracks creation event" do
+    expect { response }
+      .to trigger_internal_events('create_workspace_result')
+      .with(
+        category: 'RemoteDevelopment::WorkspaceOperations::Create::WorkspaceObserver',
+        user: user,
+        project: project,
+        additional_properties: { label: 'succeed' }
+      )
+  end
+end
+
+RSpec.shared_examples 'tracks failed workspace creation event' do |error_message|
+  it "tracks failed creation event with proper error details" do
+    expect { response }
+      .to trigger_internal_events('create_workspace_result')
+      .with(
+        category: 'RemoteDevelopment::WorkspaceOperations::Create::WorkspaceErrorsObserver',
+        user: user,
+        project: project,
+        additional_properties: {
+          label: 'failed',
+          property: error_message
+        }
+      )
+  end
+end
+
 # NOTE: This spec cannot use let_it_be because, because that doesn't work when using the `custom_repo` trait of
 #       the project factory and subsequently modifying it, because it's a real on-disk repo at `tmp/tests/gitlab-test/`,
 #       and any changes made to it are not reverted by let it be (even with reload). This means we also cannot use
@@ -83,6 +112,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
     {
       user: user,
       params: params,
+      internal_events_class: Gitlab::InternalEvents,
       settings: settings,
       vscode_extension_marketplace: vscode_extension_marketplace,
       vscode_extension_marketplace_metadata: { enabled: vscode_extension_marketplace_metadata_enabled }
@@ -153,6 +183,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         end
       end
 
+      it_behaves_like 'tracks successful workspace creation event'
+
       context 'with versioned workspaces_agent_configs behavior' do
         before do
           agent.unversioned_latest_workspaces_agent_config.touch
@@ -164,6 +196,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
           workspace = response.fetch(:payload).fetch(:workspace)
           expect(workspace.workspaces_agent_config_version).to eq(expected_workspaces_agent_config_version)
         end
+
+        it_behaves_like 'tracks successful workspace creation event'
       end
 
       context "with shared namespace" do
@@ -179,6 +213,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
           workspace = response.fetch(:payload).fetch(:workspace)
           expect(workspace.namespace).to eq("default")
         end
+
+        it_behaves_like 'tracks successful workspace creation event'
       end
     end
 
@@ -190,6 +226,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
         expect(workspace.devfile).to eq(default_devfile_yaml)
       end
+
+      it_behaves_like 'tracks successful workspace creation event'
     end
 
     context 'when devfile is not valid', :aggregate_failures do
@@ -204,6 +242,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
           reason: :bad_request
         })
       end
+
+      it_behaves_like 'tracks failed workspace creation event', 'WorkspaceCreateDevfileValidationFailed'
     end
   end
 
@@ -225,6 +265,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
           reason: :bad_request
         })
       end
+
+      it_behaves_like 'tracks failed workspace creation event', 'WorkspaceCreateDevfileLoadFailed'
     end
 
     context 'when agent has no associated config' do
@@ -251,6 +293,8 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
           reason: :bad_request
         })
       end
+
+      it_behaves_like 'tracks failed workspace creation event', 'WorkspaceCreateParamsValidationFailed'
     end
   end
 
@@ -269,5 +313,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
                          .dig(:container, :image)
       expect(image_from_processed_devfile).to eq(tools_injector_image_from_settings)
     end
+
+    it_behaves_like 'tracks successful workspace creation event'
   end
 end

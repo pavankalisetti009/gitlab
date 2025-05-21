@@ -56,7 +56,19 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, feature_
 
   describe "error cases" do
     let(:error_details) { "some error details" }
-    let(:err_message_content) { { details: error_details } }
+    let(:err_message_content) { { details: error_details, context: context_passed_along_steps } }
+    let(:rop_steps) do
+      [
+        [RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ParamsValidator, :and_then],
+        [RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ParamsExtractor, :map],
+        [RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ParamsToInfosConverter, :map],
+        [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesFromAgentInfosUpdater, :map],
+        [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesLifecycleManager, :map],
+        [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesToBeReturnedFinder, :map],
+        [RemoteDevelopment::WorkspaceOperations::Reconcile::Output::ResponsePayloadBuilder, :map],
+        [RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesToBeReturnedUpdater, :map]
+      ]
+    end
 
     shared_examples "rop invocation with error response" do
       it "returns expected response" do

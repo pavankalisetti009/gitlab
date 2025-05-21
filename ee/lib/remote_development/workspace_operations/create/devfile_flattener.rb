@@ -15,7 +15,7 @@ module RemoteDevelopment
             devfile_yaml = YAML.dump(devfile.deep_stringify_keys)
             flattened_devfile_yaml = Devfile::Parser.flatten(devfile_yaml)
           rescue Devfile::CliError => e
-            return Gitlab::Fp::Result.err(WorkspaceCreateDevfileFlattenFailed.new(details: e.message))
+            return Gitlab::Fp::Result.err(WorkspaceCreateDevfileFlattenFailed.new(details: e.message, context: context))
           end
 
           # NOTE: We do not attempt to rescue any exceptions from YAML.safe_load here because we assume that the

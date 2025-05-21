@@ -6,6 +6,7 @@ module RemoteDevelopment
   class CommonService
     extend Gitlab::Fp::RopHelpers
     extend ServiceResponseFactory
+    include Gitlab::InternalEvents
 
     # NOTE: This service intentionally does not follow the conventions for object-based service classes as documented in
     #       https://docs.gitlab.com/ee/development/reusing_abstractions.html#service-classes.
@@ -28,9 +29,10 @@ module RemoteDevelopment
 
       settings = RemoteDevelopment::Settings.get(RemoteDevelopment::Settings::DefaultSettings.default_settings.keys)
       logger = RemoteDevelopment::Logger.build
+      internal_events_class = Gitlab::InternalEvents
 
       response_hash = domain_main_class.singleton_method(main_class_method).call(
-        **domain_main_class_args.merge(settings: settings, logger: logger)
+        **domain_main_class_args.merge(settings: settings, logger: logger, internal_events_class: internal_events_class)
       )
 
       create_service_response(response_hash)

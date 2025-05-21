@@ -30,7 +30,8 @@ module RemoteDevelopment
 
           unless agent.unversioned_latest_workspaces_agent_config
             return Gitlab::Fp::Result.err(WorkspaceCreateParamsValidationFailed.new(
-              details: "No WorkspacesAgentConfig found for agent '#{agent.name}'"
+              details: "No WorkspacesAgentConfig found for agent '#{agent.name}'",
+              context: context
             ))
           end
 
@@ -73,13 +74,17 @@ module RemoteDevelopment
           unless devfile_blob
             return Gitlab::Fp::Result.err(WorkspaceCreateDevfileLoadFailed.new(
               details: "Devfile path '#{devfile_path}' at ref '#{project_ref}' " \
-                "does not exist in the project repository"
+                "does not exist in the project repository",
+              context: context
             ))
           end
 
           unless devfile_blob.data.present?
             return Gitlab::Fp::Result.err(
-              WorkspaceCreateDevfileLoadFailed.new(details: "Devfile could not be loaded from project")
+              WorkspaceCreateDevfileLoadFailed.new(
+                details: "Devfile could not be loaded from project",
+                context: context
+              )
             )
           end
 
@@ -102,7 +107,8 @@ module RemoteDevelopment
             devfile = devfile_to_json_and_back_to_yaml.to_h.deep_symbolize_keys
           rescue RuntimeError, JSON::GeneratorError => e
             return Gitlab::Fp::Result.err(WorkspaceCreateDevfileYamlParseFailed.new(
-              details: "Devfile YAML could not be parsed: #{e.message}"
+              details: "Devfile YAML could not be parsed: #{e.message}",
+              context: context
             ))
           end
 

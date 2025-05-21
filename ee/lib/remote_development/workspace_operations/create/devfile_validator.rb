@@ -60,7 +60,8 @@ module RemoteDevelopment
             devfile_schema_version = Gem::Version.new(devfile_schema_version_string)
           rescue ArgumentError
             return err(
-              format(_("Invalid 'schemaVersion' '%{schema_version}'"), schema_version: devfile_schema_version_string)
+              format(_("Invalid 'schemaVersion' '%{schema_version}'"), schema_version: devfile_schema_version_string),
+              context
             )
           end
 
@@ -71,7 +72,8 @@ module RemoteDevelopment
                 _("'schemaVersion' '%{given_version}' is not supported, it must be '%{required_version}'"),
                 given_version: devfile_schema_version_string,
                 required_version: REQUIRED_DEVFILE_SCHEMA_VERSION
-              )
+              ),
+              context
             )
           end
 
@@ -83,7 +85,7 @@ module RemoteDevelopment
         def self.validate_parent(context)
           devfile = devfile_to_validate(context)
 
-          return err(format(_("Inheriting from 'parent' is not yet supported"))) if devfile[:parent]
+          return err(format(_("Inheriting from 'parent' is not yet supported")), context) if devfile[:parent]
 
           Gitlab::Fp::Result.ok(context)
         end
@@ -93,8 +95,8 @@ module RemoteDevelopment
         def self.validate_projects(context)
           devfile = devfile_to_validate(context)
 
-          return err(_("'starterProjects' is not yet supported")) if devfile[:starterProjects]
-          return err(_("'projects' is not yet supported")) if devfile[:projects]
+          return err(_("'starterProjects' is not yet supported"), context) if devfile[:starterProjects]
+          return err(_("'projects' is not yet supported"), context) if devfile[:projects]
 
           Gitlab::Fp::Result.ok(context)
         end
@@ -104,7 +106,7 @@ module RemoteDevelopment
         def self.validate_root_attributes(context)
           devfile = devfile_to_validate(context)
 
-          return err(_("Attribute 'pod-overrides' is not yet supported")) if devfile.dig(:attributes,
+          return err(_("Attribute 'pod-overrides' is not yet supported"), context) if devfile.dig(:attributes,
             :"pod-overrides")
 
           Gitlab::Fp::Result.ok(context)
@@ -117,7 +119,7 @@ module RemoteDevelopment
 
           components = devfile[:components]
 
-          return err(_("No components present in devfile")) if components.blank?
+          return err(_("No components present in devfile"), context) if components.blank?
 
           injected_main_components = components.select do |component|
             component.dig(:attributes, MAIN_COMPONENT_INDICATOR_ATTRIBUTE.to_sym)
@@ -125,7 +127,8 @@ module RemoteDevelopment
 
           if injected_main_components.empty?
             return err(
-              format(_("No component has '%{attribute}' attribute"), attribute: MAIN_COMPONENT_INDICATOR_ATTRIBUTE)
+              format(_("No component has '%{attribute}' attribute"), attribute: MAIN_COMPONENT_INDICATOR_ATTRIBUTE),
+              context
             )
           end
 
@@ -135,12 +138,13 @@ module RemoteDevelopment
                 _("Multiple components '%{name}' have '%{attribute}' attribute"),
                 name: injected_main_components.pluck(:name), # rubocop:disable CodeReuse/ActiveRecord -- this pluck isn't from ActiveRecord, it's from ActiveSupport
                 attribute: MAIN_COMPONENT_INDICATOR_ATTRIBUTE
-              )
+              ),
+              context
             )
           end
 
           components_all_have_names = components.all? { |component| component[:name].present? }
-          return err(_("Components must have a 'name'")) unless components_all_have_names
+          return err(_("Components must have a 'name'"), context) unless components_all_have_names
 
           components.each do |component|
             component_name = component.fetch(:name)
@@ -150,19 +154,22 @@ module RemoteDevelopment
                 _("Component name '%{component}' must not start with '%{prefix}'"),
                 component: component_name,
                 prefix: RESTRICTED_PREFIX
-              ))
+              ), context)
             end
 
             UNSUPPORTED_COMPONENT_TYPES.each do |unsupported_component_type|
               if component[unsupported_component_type]
-                return err(format(_("Component type '%{type}' is not yet supported"), type: unsupported_component_type))
+                return err(
+                  format(_("Component type '%{type}' is not yet supported"), type: unsupported_component_type),
+                  context
+                )
               end
             end
 
-            return err(_("Attribute 'container-overrides' is not yet supported")) if component.dig(
+            return err(_("Attribute 'container-overrides' is not yet supported"), context) if component.dig(
               :attributes, :"container-overrides")
 
-            return err(_("Attribute 'pod-overrides' is not yet supported")) if component.dig(:attributes,
+            return err(_("Attribute 'pod-overrides' is not yet supported"), context) if component.dig(:attributes,
               :"pod-overrides")
           end
 
@@ -185,7 +192,8 @@ module RemoteDevelopment
                 format(
                   _("Property 'dedicatedPod' of component '%{name}' is not yet supported"),
                   name: component.fetch(:name)
-                )
+                ),
+                context
               )
             end
           end
@@ -217,7 +225,8 @@ module RemoteDevelopment
                   endpoint: endpoint_name,
                   component: component.fetch(:name),
                   prefix: RESTRICTED_PREFIX
-                )
+                ),
+                context
               )
             end
           end
@@ -241,7 +250,8 @@ module RemoteDevelopment
                   _("Command id '%{command}' must not start with '%{prefix}'"),
                   command: command_id,
                   prefix: RESTRICTED_PREFIX
-                )
+                ),
+                context
               )
             end
 
@@ -259,7 +269,8 @@ module RemoteDevelopment
                   component: component_name,
                   command: command_id,
                   prefix: RESTRICTED_PREFIX
-                )
+                ),
+                context
               )
             end
           end
@@ -278,7 +289,7 @@ module RemoteDevelopment
             if SUPPORTED_EVENTS.exclude?(event_type) && event_type_events.present?
               err_msg = format(_("Event type '%{type}' is not yet supported"), type: event_type)
               # The entries for unsupported events may be defined, but they must be blank.
-              return err(err_msg)
+              return err(err_msg, context)
             end
 
             # Ensure no event starts with restricted_prefix
@@ -291,7 +302,8 @@ module RemoteDevelopment
                   event: event,
                   event_type: event_type,
                   prefix: RESTRICTED_PREFIX
-                )
+                ),
+                context
               )
             end
           end
@@ -316,7 +328,8 @@ module RemoteDevelopment
                   _("Variable name '%{variable}' must not start with '%{prefix}'"),
                   variable: variable,
                   prefix: prefix
-                )
+                ),
+                context
               )
             end
           end
@@ -325,9 +338,12 @@ module RemoteDevelopment
         end
 
         # @param [String] details
+        # @param [Hash] context
         # @return [Gitlab::Fp::Result]
-        def self.err(details)
-          Gitlab::Fp::Result.err(WorkspaceCreateDevfileValidationFailed.new({ details: details }))
+        def self.err(details, context)
+          Gitlab::Fp::Result.err(WorkspaceCreateDevfileValidationFailed.new(
+            { details: details, context: context }
+          ))
         end
         private_class_method :devfile_to_validate, :validate_schema_version, :validate_parent,
           :validate_projects, :validate_components, :validate_containers,
