@@ -16,8 +16,13 @@ describe('Metric table cell', () => {
   const filterLabels = ['frontend', 'UX'];
   const labelParams = '?label_name[]=frontend&label_name[]=UX';
 
-  const createWrapper = (props = {}) => {
+  const createWrapper = (props = {}, doraMetricsDashboard = false) => {
     wrapper = mountExtended(MetricTableCell, {
+      provide: {
+        glFeatures: {
+          doraMetricsDashboard,
+        },
+      },
       propsData: {
         identifier,
         requestPath: groupRequestPath,
@@ -126,6 +131,25 @@ describe('Metric table cell', () => {
       },
     );
   });
+
+  describe.each`
+    metric                    | doraMetricsDashboard | url
+    ${'issues'}               | ${false}             | ${'/groups/test/-/issues_analytics'}
+    ${'issues'}               | ${true}              | ${'/groups/test/-/issues_analytics'}
+    ${'deployment_frequency'} | ${false}             | ${'/groups/test/-/analytics/ci_cd?tab=deployment-frequency'}
+    ${'deployment_frequency'} | ${true}              | ${'/groups/test/-/analytics/dashboards/dora_metrics'}
+  `(
+    'for the `$metric` metric when doraMetricsDashboard=$doraMetricsDashboard',
+    ({ metric, doraMetricsDashboard, url }) => {
+      beforeEach(() => {
+        createWrapper({ identifier: metric }, doraMetricsDashboard);
+      });
+
+      it('should render the correct link URL', () => {
+        expect(findMetricLabel().attributes('href')).toBe(url);
+      });
+    },
+  );
 
   describe('popover', () => {
     beforeEach(() => {

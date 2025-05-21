@@ -13,6 +13,7 @@ module Projects
       before_action do
         push_frontend_feature_flag(:customizable_dashboards, project.group)
         push_frontend_feature_flag(:duo_rca_usage_rate, project.group)
+        push_frontend_feature_flag(:dora_metrics_dashboard, project.group)
 
         [:read_dora4_analytics, :read_cycle_analytics, :read_security_resource].each do |ability|
           push_frontend_ability(ability: ability, resource: project.group, user: current_user)
