@@ -76,6 +76,10 @@ module Ai
         end
       end
 
+      def chat?
+        workflow_definition == 'chat'
+      end
+
       private
 
       def only_known_pre_approved_agent_privileges

@@ -4,27 +4,65 @@ require 'spec_helper'
 
 RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category: :duo_workflow do
   describe '#execute' do
+    subject(:result) { described_class.new(workflow: workflow, current_user: user, status_event: "finish").execute }
+
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
     let_it_be(:user) { create(:user, maintainer_of: project) }
     let_it_be(:another_user) { create(:user) }
     let(:workflow_initial_status_enum) { 1 }
-    let(:workflow) do
+
+    let(:duo_workflow) do
       create(:duo_workflows_workflow, project: project, user: user, status: workflow_initial_status_enum)
     end
 
-    context "when feature flag is disabled" do
+    let(:chat_workflow) do
+      create(:duo_workflows_workflow, :agentic_chat, project: project, user: user, status: workflow_initial_status_enum)
+    end
+
+    let(:workflow) { duo_workflow }
+
+    context "when workflow feature flag is disabled" do
       before do
         stub_feature_flags(duo_workflow: false)
       end
 
       it "returns not found", :aggregate_failures do
-        result = described_class.new(workflow: workflow, current_user: user, status_event: "finish").execute
-
         expect(result[:status]).to eq(:error)
         expect(result[:message]).to eq("Can not update workflow")
         expect(result[:reason]).to eq(:not_found)
         expect(workflow.reload.human_status_name).to eq("running")
+      end
+
+      context "for agentic chat" do
+        let(:workflow) { chat_workflow }
+
+        it "skips not found check", :aggregate_failures do
+          expect(result[:reason]).to eq(:unauthorized)
+        end
+      end
+    end
+
+    context "when agentic_chat feature flag is disabled" do
+      before do
+        stub_feature_flags(duo_agentic_chat: false)
+      end
+
+      it "skips not found check", :aggregate_failures do
+        expect(result[:reason]).to eq(:unauthorized)
+      end
+
+      context "for agentic chat" do
+        let(:workflow) { chat_workflow }
+
+        it "returns not found", :aggregate_failures do
+          result = described_class.new(workflow: workflow, current_user: user, status_event: "finish").execute
+
+          expect(result[:status]).to eq(:error)
+          expect(result[:message]).to eq("Can not update workflow")
+          expect(result[:reason]).to eq(:not_found)
+          expect(workflow.reload.human_status_name).to eq("running")
+        end
       end
     end
 

@@ -8,5 +8,9 @@ FactoryBot.define do
     agent_privileges { [Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES] }
     pre_approved_agent_privileges { [] }
     workflow_definition { "software_development" }
+
+    trait :agentic_chat do
+      workflow_definition { "chat" }
+    end
   end
 end

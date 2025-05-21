@@ -10,9 +10,7 @@ module Ai
       end
 
       def execute
-        unless Feature.enabled?(:duo_workflow, @current_user)
-          return error_response("Can not update workflow", :not_found)
-        end
+        return error_response("Can not update workflow", :not_found) unless feature_flag_enabled?
 
         unless @current_user.can?(:update_duo_workflow, @workflow)
           return error_response("Can not update workflow", :unauthorized)
@@ -42,6 +40,14 @@ module Ai
 
       def error_response(message, reason = :bad_request)
         ServiceResponse.error(message: message, reason: reason)
+      end
+
+      def feature_flag_enabled?
+        if @workflow.chat?
+          Feature.enabled?(:duo_agentic_chat, @current_user)
+        else
+          Feature.enabled?(:duo_workflow, @current_user)
+        end
       end
     end
   end
