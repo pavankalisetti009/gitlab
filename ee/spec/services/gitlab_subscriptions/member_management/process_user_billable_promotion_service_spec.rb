@@ -10,7 +10,10 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
 
   let(:status) { :approved }
   let(:skip_authorization) { false }
-  let(:service) { described_class.new(current_user, user, status, skip_authorization) }
+  let(:service) do
+    described_class.new(user, current_user, { status: status, skip_authorization: skip_authorization })
+  end
+
   let(:group) { create(:group) }
   let(:project) { create(:project, group: group) }
   let(:another_group) { create(:group) }
