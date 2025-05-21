@@ -12,8 +12,8 @@ describe('EE Blob Header', () => {
   let wrapper;
 
   const testBlob = {
-    path: 'test/path.js',
-    rawPath: '/raw/test/path.js',
+    path: 'test/Jenkinsfile',
+    rawPath: '/raw/test/Jenkinsfile',
     externalStorageUrl: null,
   };
   const testProps = {
@@ -66,7 +66,7 @@ describe('EE Blob Header', () => {
         projectId: 123,
         title: 'Convert to GitLab CI/CD',
         hoverMessage: 'Convert Jenkins to GitLab CI/CD using Duo',
-        goal: 'Jenkinsfile',
+        goal: 'test/Jenkinsfile',
         workflowDefinition: 'convert_to_gitlab_ci',
         agentPrivileges: [1, 2, 3, 4, 5],
       });
