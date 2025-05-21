@@ -345,6 +345,12 @@ module Vulnerabilities
       super.as_json(only: [:summary], methods: [:diff])
     end
 
+    def token_type
+      return unless metadata['identifiers']
+
+      metadata['identifiers'].find { |hash| hash['type'] == 'gitleaks_rule_id' }&.dig('value')
+    end
+
     def cve_enrichment
       return unless cve_value
 
