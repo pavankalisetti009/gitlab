@@ -1,4 +1,5 @@
 import { uniqueId } from 'lodash';
+import { SPECIFIC_BRANCHES } from 'ee/security_orchestration/components/policy_editor/constants';
 import { SCAN_EXECUTION_PIPELINE_RULE, SCAN_EXECUTION_SCHEDULE_RULE } from '../constants';
 import { CRON_DEFAULT_TIME } from './cron';
 
@@ -22,4 +23,50 @@ export const buildDefaultScheduleRule = () => {
 export const RULE_KEY_MAP = {
   [SCAN_EXECUTION_PIPELINE_RULE]: buildDefaultPipeLineRule,
   [SCAN_EXECUTION_SCHEDULE_RULE]: buildDefaultScheduleRule,
+};
+
+/**
+ * Handles branch type selection and updates the rule accordingly
+ *
+ * @param {Object} options
+ * @param {string} options.branchType - The selected branch type
+ * @param {Object} options.rule - The current rule object
+ * @param {string} options.pipelineRuleKey - The key identifying pipeline rules
+ * @param {Array<string>} options.targetBranches - Branch types that support pipeline sources
+ * @returns {Object} The updated rule object
+ */
+export const handleBranchTypeSelect = ({
+  branchType,
+  rule,
+  pipelineRuleKey,
+  targetBranches = [],
+}) => {
+  if (branchType === SPECIFIC_BRANCHES.value) {
+    /**
+     * Pipeline rule and Schedule rule have different default values
+     * Pipeline rule supports wildcard for branches
+     */
+    const branches = rule.type === pipelineRuleKey ? ['*'] : [];
+
+    // Create a new rule with branches and without branch_type
+    const updatedRule = { ...rule, branches };
+    delete updatedRule.branch_type;
+
+    return updatedRule;
+  }
+
+  /**
+   * Either branch of branch_type property
+   * is simultaneously allowed on rule object
+   * Based on value we remove one and
+   * set another and vice versa
+   */
+  const updatedRule = { ...rule, branch_type: branchType };
+  delete updatedRule.branches;
+
+  if (updatedRule.pipeline_sources && !targetBranches.includes(branchType)) {
+    delete updatedRule.pipeline_sources;
+  }
+
+  return updatedRule;
 };

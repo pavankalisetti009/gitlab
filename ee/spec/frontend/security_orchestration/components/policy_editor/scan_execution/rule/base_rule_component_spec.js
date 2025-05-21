@@ -4,6 +4,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import BaseRuleComponent from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/base_rule_component.vue';
 import BranchTypeSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/branch_type_selector.vue';
 import BranchExceptionSelector from 'ee/security_orchestration/components/policy_editor/branch_exception_selector.vue';
+import PipelineSourceSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/pipeline_source_selector.vue';
 import {
   SCAN_EXECUTION_SCHEDULE_RULE,
   SCAN_EXECUTION_PIPELINE_RULE,
@@ -13,6 +14,7 @@ import {
   ALL_PROTECTED_BRANCHES,
   SPECIFIC_BRANCHES,
   VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS,
+  TARGET_DEFAULT,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
@@ -39,11 +41,12 @@ describe('BaseRuleComponent', () => {
     });
   };
 
-  const findDeleteButton = () => wrapper.findByTestId('remove-rule');
-  const findRuleTypeDropDown = () => wrapper.findComponent(GlCollapsibleListbox);
   const findBranchesLabel = () => wrapper.findByTestId('rule-branches-label');
   const findBranchTypeSelector = () => wrapper.findComponent(BranchTypeSelector);
   const findBranchExceptionSelector = () => wrapper.findComponent(BranchExceptionSelector);
+  const findDeleteButton = () => wrapper.findByTestId('remove-rule');
+  const findPipelineSourceSelector = () => wrapper.findComponent(PipelineSourceSelector);
+  const findRuleTypeDropDown = () => wrapper.findComponent(GlCollapsibleListbox);
 
   const selectBranches = async (branches) => {
     findBranchTypeSelector().vm.$emit('input', branches);
@@ -276,6 +279,72 @@ describe('BaseRuleComponent', () => {
           },
         ],
       ]);
+    });
+  });
+
+  describe('pipeline source dropdown', () => {
+    describe('rendering', () => {
+      it('displays pipeline source dropdown when target branch type is selected', () => {
+        createComponent({
+          props: {
+            initRule: {
+              type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+              branch_type: TARGET_DEFAULT,
+            },
+          },
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+
+        expect(findPipelineSourceSelector().exists()).toBe(true);
+      });
+
+      it('does not display pipeline source dropdown when non-target branch type is selected', () => {
+        createComponent({
+          props: {
+            initRule: {
+              type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+              branches: ['*'],
+            },
+          },
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+
+        expect(findPipelineSourceSelector().exists()).toBe(false);
+      });
+    });
+
+    describe('pipeline source selection', () => {
+      it('updates the rule when pipeline sources are selected', async () => {
+        createComponent({
+          props: {
+            initRule: {
+              type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+              branch_type: TARGET_DEFAULT,
+            },
+          },
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+        const pipelineSources = { pipeline_sources: { including: ['web', 'api'] } };
+        await findPipelineSourceSelector().vm.$emit('select', pipelineSources);
+
+        expect(wrapper.emitted('changed')[0][0]).toEqual(expect.objectContaining(pipelineSources));
+      });
+    });
+
+    describe('with feature flag disabled', () => {
+      it('does not show pipeline source selector when feature flag is disabled', () => {
+        createComponent({
+          props: {
+            initRule: {
+              type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+              branch_type: TARGET_DEFAULT,
+            },
+          },
+          provide: { glFeatures: { flexibleScanExecutionPolicy: false } },
+        });
+
+        expect(findPipelineSourceSelector().exists()).toBe(false);
+      });
     });
   });
 });

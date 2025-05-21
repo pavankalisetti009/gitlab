@@ -1,20 +1,32 @@
 <script>
 import { GlButton, GlSprintf, GlCollapsibleListbox } from '@gitlab/ui';
 import { s__, n__ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   ALL_PROTECTED_BRANCHES,
   BRANCH_EXCEPTIONS_KEY,
   SPECIFIC_BRANCHES,
+  TARGET_BRANCHES,
 } from 'ee/security_orchestration/components/policy_editor/constants';
-import { SCAN_EXECUTION_RULES_LABELS, SCAN_EXECUTION_RULES_PIPELINE_KEY } from '../constants';
+import { handleBranchTypeSelect } from '../lib';
+import {
+  PIPELINE_SOURCE_OPTIONS,
+  SCAN_EXECUTION_RULES_LABELS,
+  SCAN_EXECUTION_RULES_PIPELINE_KEY,
+} from '../constants';
 import BranchExceptionSelector from '../../branch_exception_selector.vue';
 import BranchTypeSelector from './branch_type_selector.vue';
+import PipelineSourceSelector from './pipeline_source_selector.vue';
 
 export default {
+  PIPELINE_SOURCE_OPTIONS,
   SCAN_EXECUTION_RULES_LABELS,
   i18n: {
     pipelineRule: s__(
       'ScanExecutionPolicy|%{rules} every time a pipeline runs for %{scopes} %{branches} %{branchExceptions} %{agents} %{namespaces}',
+    ),
+    pipelineSourceRule: s__(
+      'ScanExecutionPolicy|%{rules} every time a pipeline runs for %{scopes} %{branches} %{sources} %{branchExceptions} %{agents} %{namespaces}',
     ),
     scheduleRule: s__(
       'ScanExecutionPolicy|%{rules} actions for %{scopes} %{branches} %{agents} %{branchExceptions} %{namespaces} %{period}',
@@ -28,7 +40,9 @@ export default {
     GlButton,
     GlCollapsibleListbox,
     GlSprintf,
+    PipelineSourceSelector,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: ['namespaceType'],
   props: {
     initRule: {
@@ -76,6 +90,12 @@ export default {
     branchExceptions() {
       return this.initRule.branch_exceptions;
     },
+    pipelineSources() {
+      return this.initRule.pipeline_sources || {};
+    },
+    hasFlexibleScanExecutionPolicyFeatureFlag() {
+      return this.glFeatures.flexibleScanExecutionPolicy;
+    },
     rulesListBoxItems() {
       return Object.entries(this.$options.SCAN_EXECUTION_RULES_LABELS).map(([value, text]) => ({
         value,
@@ -88,9 +108,16 @@ export default {
         : this.initRule.branches?.filter((element) => element?.trim()).join(',');
     },
     message() {
-      return this.initRule.type === SCAN_EXECUTION_RULES_PIPELINE_KEY
-        ? this.$options.i18n.pipelineRule
-        : this.$options.i18n.scheduleRule;
+      if (this.initRule.type !== SCAN_EXECUTION_RULES_PIPELINE_KEY) {
+        return this.$options.i18n.scheduleRule;
+      }
+
+      return this.hasFlexibleScanExecutionPolicyFeatureFlag
+        ? this.$options.i18n.pipelineSourceRule
+        : this.$options.i18n.pipelineRule;
+    },
+    showPipelineSourcesDropdown() {
+      return TARGET_BRANCHES.includes(this.selectedBranchType);
     },
   },
   methods: {
@@ -114,26 +141,12 @@ export default {
     handleBranchTypeSelect(branchType) {
       this.selectedBranchType = branchType;
 
-      if (branchType === SPECIFIC_BRANCHES.value) {
-        /**
-         * Pipeline rule and Schedule rule have different default values
-         * Pipeline rule supports wildcard for branches
-         */
-        const branches = this.initRule.type === SCAN_EXECUTION_RULES_PIPELINE_KEY ? ['*'] : [];
-
-        this.handleBranchesToAddChange(branches);
-
-        return;
-      }
-
-      /**
-       * Either branch of branch_type property
-       * is simultaneously allowed on rule object
-       * Based on value we remove one and
-       * set another and vice versa
-       */
-      const updatedRule = { ...this.initRule, branch_type: branchType };
-      delete updatedRule.branches;
+      const updatedRule = handleBranchTypeSelect({
+        branchType,
+        rule: this.initRule,
+        pipelineRuleKey: SCAN_EXECUTION_RULES_PIPELINE_KEY,
+        targetBranches: TARGET_BRANCHES,
+      });
 
       this.$emit('changed', updatedRule);
     },
@@ -145,7 +158,7 @@ export default {
 
       this.$emit('changed', rule);
     },
-    setBranchException(value) {
+    updateRule(value) {
       this.$emit('changed', { ...this.initRule, ...value });
     },
   },
@@ -189,11 +202,19 @@ export default {
             </template>
           </template>
 
+          <template #sources>
+            <pipeline-source-selector
+              v-if="showPipelineSourcesDropdown"
+              :pipeline-sources="pipelineSources"
+              @select="updateRule"
+            />
+          </template>
+
           <template #branchExceptions>
             <branch-exception-selector
               :selected-exceptions="branchExceptions"
               @remove="removeExceptions"
-              @select="setBranchException"
+              @select="updateRule"
             />
           </template>
 

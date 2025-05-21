@@ -156,20 +156,26 @@ export const ALL_PROTECTED_BRANCHES = {
   value: 'protected',
 };
 
+export const TARGET_PROTECTED = 'target_protected';
+
 export const TARGET_PROTECTED_BRANCHES = {
   text: __('target all protected branches'),
-  value: 'target_protected',
+  value: TARGET_PROTECTED,
 };
+
+export const TARGET_DEFAULT = 'target_default';
 
 export const PROJECT_TARGET_DEFAULT_BRANCH = {
   text: __('target default branch'),
-  value: 'target_default',
+  value: TARGET_DEFAULT,
 };
 
 export const GROUP_TARGET_DEFAULT_BRANCHES = {
   text: __('target all default branches'),
-  value: 'target_default',
+  value: TARGET_DEFAULT,
 };
+
+export const TARGET_BRANCHES = [TARGET_DEFAULT, TARGET_PROTECTED];
 
 export const ANY_COMMIT = 'any';
 export const ANY_UNSIGNED_COMMIT = 'unsigned';
@@ -229,6 +235,8 @@ export const VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS = [
   ALL_BRANCHES.value,
   ALL_PROTECTED_BRANCHES.value,
   GROUP_DEFAULT_BRANCHES.value,
+  TARGET_DEFAULT,
+  TARGET_PROTECTED,
 ];
 
 export const VALID_SCAN_RESULT_BRANCH_TYPE_OPTIONS = [
