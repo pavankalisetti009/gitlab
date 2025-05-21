@@ -35554,6 +35554,9 @@ msgstr ""
 msgid "LDAP|Config for LDAP server %{provider} is not present in GitLab"
 msgstr ""
 
+msgid "LDAP|Could not fetch LDAP groups. Please try again."
+msgstr ""
+
 msgid "LDAP|Default, minimum permission level for LDAP group members of %{group_name}."
 msgstr ""
 
@@ -35579,6 +35582,9 @@ msgid "LDAP|LDAP user filter"
 msgstr ""
 
 msgid "LDAP|No LDAP synchronizations"
+msgstr ""
+
+msgid "LDAP|Select LDAP group"
 msgstr ""
 
 msgid "LDAP|Select server"

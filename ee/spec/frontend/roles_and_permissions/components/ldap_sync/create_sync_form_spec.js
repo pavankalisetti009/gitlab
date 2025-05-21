@@ -4,6 +4,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import CreateSyncForm from 'ee/roles_and_permissions/components/ldap_sync/create_sync_form.vue';
 import ServerFormGroup from 'ee/roles_and_permissions/components/ldap_sync/server_form_group.vue';
 import SyncMethodFormGroup from 'ee/roles_and_permissions/components/ldap_sync/sync_method_form_group.vue';
+import GroupCnFormGroup from 'ee/roles_and_permissions/components/ldap_sync/group_cn_form_group.vue';
 import UserFilterFormGroup from 'ee/roles_and_permissions/components/ldap_sync/user_filter_form_group.vue';
 
 describe('CreateSyncForm component', () => {
@@ -16,6 +17,7 @@ describe('CreateSyncForm component', () => {
   const findForm = () => wrapper.findComponent(GlForm);
   const findServerFormGroup = () => wrapper.findComponent(ServerFormGroup);
   const findSyncMethodFormGroup = () => wrapper.findComponent(SyncMethodFormGroup);
+  const findGroupCnFormGroup = () => wrapper.findComponent(GroupCnFormGroup);
   const findUserFilterFormGroup = () => wrapper.findComponent(UserFilterFormGroup);
 
   const findFormButtons = () => wrapper.findAllComponents(GlButton);
@@ -36,6 +38,10 @@ describe('CreateSyncForm component', () => {
     return nextTick();
   };
 
+  const selectGroup = () => {
+    findGroupCnFormGroup().vm.$emit('input', 'group1');
+  };
+
   const fillUserFilter = () => {
     findUserFilterFormGroup().vm.$emit('input', 'uid=john,ou=people,dc=example,dc=com');
   };
@@ -47,20 +53,39 @@ describe('CreateSyncForm component', () => {
       expect(findForm().exists()).toBe(true);
     });
 
-    it.each`
-      name             | findFormGroup
-      ${'server'}      | ${findServerFormGroup}
-      ${'sync method'} | ${findSyncMethodFormGroup}
-    `('shows $name form group', ({ findFormGroup }) => {
-      expect(findFormGroup().props()).toMatchObject({ value: null, state: true });
+    describe.each`
+      syncMethod       | isGroupCnShown | isUserFilterShown
+      ${'group_cn'}    | ${true}        | ${false}
+      ${'user_filter'} | ${false}       | ${true}
+    `(
+      'when the selected sync method is $syncMethod',
+      ({ syncMethod, isGroupCnShown, isUserFilterShown }) => {
+        beforeEach(() => selectSyncMethod(syncMethod));
+
+        it('shows/hides group cn form group', () => {
+          expect(findGroupCnFormGroup().exists()).toBe(isGroupCnShown);
+        });
+
+        it('shows/hides user filter form group', () => {
+          expect(findUserFilterFormGroup().exists()).toBe(isUserFilterShown);
+        });
+      },
+    );
+
+    it('passes server to group cn form group', async () => {
+      selectServer();
+      await selectSyncMethod('group_cn');
+
+      expect(findGroupCnFormGroup().props('server')).toBe('ldapmain');
     });
 
-    describe('when User filter is the selected sync method', () => {
-      beforeEach(() => selectSyncMethod('user_filter'));
+    it('clears selected group when server is changed', async () => {
+      await selectSyncMethod('group_cn');
+      findServerFormGroup().vm.$emit('ldapmain');
+      findGroupCnFormGroup().vm.$emit('group1');
+      findServerFormGroup().vm.$emit('ldapalt');
 
-      it('shows user filter form group', () => {
-        expect(findUserFilterFormGroup().props()).toMatchObject({ value: null, state: true });
-      });
+      expect(findGroupCnFormGroup().props('value')).toBe(null);
     });
 
     describe('Cancel button', () => {
@@ -87,34 +112,42 @@ describe('CreateSyncForm component', () => {
         expect(wrapper.emitted('submit')).toBeUndefined();
       });
 
-      it('emits submit event when all fields are filled', async () => {
-        selectServer();
-        await selectSyncMethod('user_filter');
-        fillUserFilter();
-        submitForm();
+      it.each`
+        syncMethod       | fillField         | expectedFieldData
+        ${'group_cn'}    | ${selectGroup}    | ${{ groupCn: 'group1' }}
+        ${'user_filter'} | ${fillUserFilter} | ${{ userFilter: 'uid=john,ou=people,dc=example,dc=com' }}
+      `(
+        'emits submit event when sync method is $syncMethod and all fields are filled',
+        async ({ syncMethod, fillField, expectedFieldData }) => {
+          selectServer();
+          await selectSyncMethod(syncMethod);
+          fillField();
+          submitForm();
 
-        expect(wrapper.emitted('submit')).toHaveLength(1);
-        expect(wrapper.emitted('submit')[0][0]).toEqual({
-          server: 'ldapmain',
-          userFilter: 'uid=john,ou=people,dc=example,dc=com',
-        });
-      });
+          expect(wrapper.emitted('submit')).toHaveLength(1);
+          expect(wrapper.emitted('submit')[0][0]).toEqual({
+            server: 'ldapmain',
+            ...expectedFieldData,
+          });
+        },
+      );
     });
 
-    describe('form validation', () => {
+    describe('form groups and validation', () => {
       describe.each`
-        name             | findFormGroup              | syncMethod       | fillField                             | expectedValue
-        ${'server'}      | ${findServerFormGroup}     | ${null}          | ${selectServer}                       | ${'ldapmain'}
-        ${'sync method'} | ${findSyncMethodFormGroup} | ${null}          | ${() => selectSyncMethod('group_cn')} | ${'group_cn'}
-        ${'user filter'} | ${findUserFilterFormGroup} | ${'user_filter'} | ${fillUserFilter}                     | ${'uid=john,ou=people,dc=example,dc=com'}
+        name             | findFormGroup              | syncMethod       | fillField           | expectedValue
+        ${'server'}      | ${findServerFormGroup}     | ${null}          | ${selectServer}     | ${'ldapmain'}
+        ${'sync method'} | ${findSyncMethodFormGroup} | ${null}          | ${selectSyncMethod} | ${'group_cn'}
+        ${'group cn'}    | ${findGroupCnFormGroup}    | ${'group_cn'}    | ${selectGroup}      | ${'group1'}
+        ${'user filter'} | ${findUserFilterFormGroup} | ${'user_filter'} | ${fillUserFilter}   | ${'uid=john,ou=people,dc=example,dc=com'}
       `('$name form group', ({ syncMethod, findFormGroup, fillField, expectedValue }) => {
         beforeEach(() => {
           createWrapper();
           return selectSyncMethod(syncMethod);
         });
 
-        it('shows form group as valid on page load', () => {
-          expect(findFormGroup().props('state')).toBe(true);
+        it('shows form group', () => {
+          expect(findFormGroup().props()).toMatchObject({ value: null, state: true });
         });
 
         it('shows form group as invalid when form is submitted', async () => {
@@ -139,5 +172,45 @@ describe('CreateSyncForm component', () => {
         });
       });
     });
+
+    describe.each`
+      oldSyncMethod    | findOldFormGroup           | newSyncMethod    | findNewFormGroup
+      ${'group_cn'}    | ${findGroupCnFormGroup}    | ${'user_filter'} | ${findUserFilterFormGroup}
+      ${'user_filter'} | ${findUserFilterFormGroup} | ${'group_cn'}    | ${findGroupCnFormGroup}
+    `(
+      'when $oldSyncMethod is selected and form is submitted',
+      ({ oldSyncMethod, findOldFormGroup, newSyncMethod, findNewFormGroup }) => {
+        beforeEach(async () => {
+          createWrapper();
+          await selectSyncMethod(oldSyncMethod);
+          return submitForm();
+        });
+
+        it('shows old form group as invalid', () => {
+          expect(findOldFormGroup().props('state')).toBe(false);
+        });
+
+        describe(`when sync method is changed to ${newSyncMethod}`, () => {
+          beforeEach(() => selectSyncMethod(newSyncMethod));
+
+          it('shows new form group as valid', () => {
+            expect(findNewFormGroup().props('state')).toBe(true);
+          });
+
+          it('shows new form group as invalid when input becomes invalid', async () => {
+            findNewFormGroup().vm.$emit('input', '');
+            await nextTick();
+
+            expect(findNewFormGroup().props('state')).toBe(false);
+          });
+
+          it('shows new form group as invalid when form is submitted without valid value', async () => {
+            await submitForm();
+
+            expect(findNewFormGroup().props('state')).toBe(false);
+          });
+        });
+      },
+    );
   });
 });
