@@ -78,6 +78,7 @@ export default {
       :group="subgroup"
       :active-full-path="activeFullPath"
       :indentation="indentation"
+      class="gl-w-auto"
       @selectSubgroup="selectSubgroup"
     />
     <gl-loading-icon v-if="$apollo.queries.group.loading" class="gl-pt-3" />
