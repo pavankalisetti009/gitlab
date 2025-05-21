@@ -26,8 +26,7 @@ exports[`buildReplicableItemQuery query fields shows correct fields when verific
       }
     }
   }
-}
-"
+}"
 `;
 
 exports[`buildReplicableItemQuery query fields shows correct fields when verification=true 1`] = `
@@ -56,6 +55,5 @@ exports[`buildReplicableItemQuery query fields shows correct fields when verific
       }
     }
   }
-}
-"
+}"
 `;

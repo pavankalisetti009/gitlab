@@ -116,8 +116,7 @@ export const throughputChartQuery = `query ($fullPath: ID!, $labels: [String!], 
       totalTimeToMerge
     }
   }
-}
-`;
+}`;
 
 export const throughputTableHeaders = [
   'Merge Request',

@@ -21,7 +21,7 @@ export default {
 
     return {
       selectableModels,
-      selectedModel: selectedModel.ref,
+      selectedModel: selectedModel?.ref || '',
       isSaving: false,
     };
   },
@@ -33,7 +33,7 @@ export default {
       }));
 
       const defaultModelOption = {
-        value: 'gitlab',
+        value: '', // the GitLab Default model is represented by an empty string
         text: s__('AdminAIPoweredFeatures|GitLab Default'),
       };
 

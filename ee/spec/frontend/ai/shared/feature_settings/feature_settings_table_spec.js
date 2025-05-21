@@ -5,7 +5,7 @@ import {
   mockCodeSuggestionsFeatureSettings,
   mockDuoChatFeatureSettings,
   mockOtherDuoFeaturesSettings,
-  mockFeatureSettings,
+  mockAiFeatureSettings,
 } from './mock_data';
 
 describe('FeatureSettingsTable', () => {
@@ -14,7 +14,7 @@ describe('FeatureSettingsTable', () => {
   const createComponent = ({ props = {}, stubs = {} } = {}) => {
     wrapper = shallowMountExtended(FeatureSettingsTable, {
       propsData: {
-        featureSettings: mockFeatureSettings,
+        featureSettings: mockAiFeatureSettings,
         isLoading: false,
         ...props,
       },

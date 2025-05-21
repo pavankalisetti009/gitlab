@@ -16,10 +16,15 @@ function mountModelSelectionApp() {
     return null;
   }
 
+  const { groupId } = JSON.parse(el.dataset.viewModel);
+
   return new Vue({
     el,
     name: 'ModelSelectionApp',
     apolloProvider,
+    provide: {
+      groupId,
+    },
     render(createElement) {
       return createElement(ModelSelectionApp);
     },
