@@ -8,8 +8,11 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
     let_it_be(:organization) { create(:organization) }
     let_it_be(:user) { create(:admin, organizations: [organization]) }
     let_it_be(:doorkeeper_application) { create(:doorkeeper_application) }
+    let_it_be(:base_params) do
+      { role_arn: 'a', availability: 'default_on', auto_review_enabled: true, organization_id: organization.id }
+    end
 
-    let(:params) { { role_arn: 'a', availability: 'default_on', auto_review_enabled: true } }
+    let(:params) { base_params }
     let(:status) { 200 }
     let(:body) { 'success' }
 
@@ -24,7 +27,7 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
     subject(:instance) { described_class.new(user, params) }
 
     context 'with missing role_arn param' do
-      let(:params) { { availability: 'b' } }
+      let(:params) { base_params.except(:role_arn) }
 
       it 'returns ServiceResponse.error with expected error message' do
         expect(instance.execute).to have_attributes(
@@ -35,7 +38,7 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
     end
 
     context 'with missing availability param' do
-      let(:params) { { role_arn: 'a' } }
+      let(:params) { base_params.except(:availability) }
 
       it 'returns ServiceResponse.error with expected error message' do
         expect(instance.execute).to have_attributes(
@@ -46,7 +49,7 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
     end
 
     context 'with invalid availability param' do
-      let(:params) { { role_arn: 'a', availability: 'z' } }
+      let(:params) { base_params.merge(availability: 'a') }
 
       it 'does not change duo_availability' do
         expect { instance.execute }
@@ -62,7 +65,7 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
     end
 
     context 'when setting availability to never_on' do
-      let(:params) { { role_arn: 'a', availability: 'never_on' } }
+      let(:params) { base_params.merge(availability: 'never_on') }
 
       it 'blocks service account' do
         instance.execute
@@ -70,6 +73,17 @@ RSpec.describe Ai::AmazonQ::CreateService, feature_category: :ai_agents do
         service_account = Ai::Setting.instance.amazon_q_service_account_user
 
         expect(service_account.blocked?).to be true
+      end
+    end
+
+    context 'with missing organization_id param' do
+      let(:params) { base_params.except(:organization_id) }
+
+      it 'returns ServiceResponse.error with expected error message' do
+        expect(instance.execute).to have_attributes(
+          success?: false,
+          message: 'Missing organization_id parameter'
+        )
       end
     end
 
