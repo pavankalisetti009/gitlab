@@ -50,7 +50,8 @@ RSpec.describe 'Query.ciCatalogResource', feature_category: :pipeline_compositio
           webPath: "/#{project.full_path}",
           verificationLevel: "UNVERIFIED",
           starCount: project.star_count,
-          last30DayUsageCount: resource.last_30_day_usage_count
+          last30DayUsageCount: resource.last_30_day_usage_count,
+          archived: project.archived
         )
       )
     end
