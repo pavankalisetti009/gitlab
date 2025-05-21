@@ -49,7 +49,7 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
 
     it 'generates a valid yaml ci config' do
       lint = Gitlab::Ci::Lint.new(project: project, current_user: bot_user)
-      result = lint.validate(pipeline_config)
+      result = lint.legacy_validate(pipeline_config)
 
       expect(result).to be_valid
     end
