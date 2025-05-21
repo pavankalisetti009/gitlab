@@ -6261,7 +6261,10 @@ Input type: `GeoRegistriesBulkUpdateInput`
 | ---- | ---- | ----------- |
 | <a id="mutationgeoregistriesbulkupdateaction"></a>`action` | [`GeoRegistriesBulkAction!`](#georegistriesbulkaction) | Action to be executed on Geo registries. |
 | <a id="mutationgeoregistriesbulkupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationgeoregistriesbulkupdateids"></a>`ids` | [`[GeoBaseRegistryID!]`](#geobaseregistryid) | Execute the action on registries selected by their ID. |
 | <a id="mutationgeoregistriesbulkupdateregistryclass"></a>`registryClass` | [`GeoRegistryClass!`](#georegistryclass) | Class of the Geo registries to be updated. |
+| <a id="mutationgeoregistriesbulkupdatereplicationstate"></a>`replicationState` | [`ReplicationStateEnum`](#replicationstateenum) | Execute the action on registries selected by their replication state. |
+| <a id="mutationgeoregistriesbulkupdateverificationstate"></a>`verificationState` | [`VerificationStateEnum`](#verificationstateenum) | Execute the action on registries selected by their verification state. |
 
 #### Fields
 

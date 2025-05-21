@@ -96,5 +96,42 @@ RSpec.describe Mutations::Geo::Registries::BulkUpdate, feature_category: :geo_re
     context 'with reverify_all action' do
       it_behaves_like 'a registries update action', 'REVERIFY_ALL'
     end
+
+    context 'with optional arguments' do
+      before do
+        stub_current_geo_node(secondary)
+      end
+
+      # rubocop:disable Rails/SaveBang -- this is a factory
+      let(:registry1) { create(registry_factory_name(registry_class)) }
+      let(:registry2) { create(registry_factory_name(registry_class)) }
+      # rubocop:enable Rails/SaveBang
+
+      let(:arguments) do
+        { registry_class: registry_class_argument,
+          action: 'RESYNC_ALL',
+          ids: [registry1.to_global_id, registry2.to_global_id],
+          replication_state: 'SYNCED',
+          verification_state: 'SUCCEEDED' }
+      end
+
+      let(:mutation) { graphql_mutation(mutation_name, arguments) }
+
+      it 'processes the mutation with the expected arguments' do
+        expected_action = :resync_all
+        expected_class = registry_class.to_s
+        expected_arguments = {
+          ids: [registry1.id.to_s, registry2.id.to_s],
+          replication_state: ::Types::Geo::ReplicationStateEnum.values['SYNCED'].value,
+          verification_state: ::Types::Geo::VerificationStateEnum.values['SUCCEEDED'].value
+        }
+
+        expect(Geo::RegistryBulkUpdateService)
+          .to receive(:new)
+                .with(expected_action, expected_class, expected_arguments).and_call_original
+
+        post_graphql_mutation(mutation, current_user: current_user)
+      end
+    end
   end
 end
