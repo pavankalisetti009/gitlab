@@ -174,8 +174,6 @@ class Groups::EpicsController < Groups::ApplicationController
   end
 
   def work_item_view?
-    return false if params[:force_legacy_view].present? && params[:force_legacy_view]
-
     epic_work_items_enabled?
   end
 
