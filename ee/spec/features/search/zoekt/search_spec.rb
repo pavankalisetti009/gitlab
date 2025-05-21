@@ -18,9 +18,6 @@ RSpec.describe 'Zoekt search', :js, :disable_rate_limiter, :zoekt_settings_enabl
   end
 
   before do
-    # FF stubbing should be removed after this issue gets resolved https://gitlab.com/gitlab-org/gitlab/-/issues/525276
-    stub_feature_flags(zoekt_search_proxy: false)
-
     zoekt_ensure_project_indexed!(project1)
     zoekt_ensure_project_indexed!(project2)
     zoekt_ensure_project_indexed!(project3)
