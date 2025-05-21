@@ -39,7 +39,7 @@ module RemoteDevelopment
 
             if workspace_variable.errors.present?
               return Gitlab::Fp::Result.err(
-                WorkspaceVariablesModelCreateFailed.new({ errors: workspace_variable.errors })
+                WorkspaceVariablesModelCreateFailed.new({ errors: workspace_variable.errors, context: context })
               )
             end
           end

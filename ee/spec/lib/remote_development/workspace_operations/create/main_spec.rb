@@ -16,12 +16,16 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
       [RemoteDevelopment::WorkspaceOperations::Create::MainComponentUpdater, :map],
       [RemoteDevelopment::WorkspaceOperations::Create::ProjectClonerComponentInserter, :map],
       [RemoteDevelopment::WorkspaceOperations::Create::VolumeComponentInserter, :map],
-      [RemoteDevelopment::WorkspaceOperations::Create::Creator, :and_then]
+      [RemoteDevelopment::WorkspaceOperations::Create::Creator, :and_then],
+      [observer_class, observer_method],
+      [RemoteDevelopment::WorkspaceOperations::Create::WorkspaceSuccessfulResponseBuilder, :and_then]
     ]
   end
 
   describe "happy path" do
     let(:ok_message_content) { { ok_details: "Everything is OK!" } }
+    let(:observer_class) { RemoteDevelopment::WorkspaceOperations::Create::WorkspaceObserver }
+    let(:observer_method) { :inspect_ok }
 
     let(:expected_response) do
       {
@@ -40,7 +44,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
               .with_context_passed_along_steps(context_passed_along_steps)
               .with_ok_result_for_step(
                 {
-                  step_class: RemoteDevelopment::WorkspaceOperations::Create::Creator,
+                  step_class: RemoteDevelopment::WorkspaceOperations::Create::WorkspaceSuccessfulResponseBuilder,
                   returned_message: RemoteDevelopment::Messages::WorkspaceCreateSuccessful.new(ok_message_content)
                 }
               )
@@ -51,6 +55,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
   describe "error cases" do
     let(:error_details) { "some error details" }
     let(:err_message_content) { { details: error_details } }
+    let(:observer_class) { RemoteDevelopment::WorkspaceOperations::Create::WorkspaceErrorsObserver }
+    let(:observer_method) { :inspect_err }
 
     shared_examples "rop invocation with error response" do
       it "returns expected response" do
