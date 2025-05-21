@@ -30,6 +30,7 @@ module Ai
         with_status(:running).where(updated_at: ...time).order(updated_at: :asc, id: :asc)
       }
 
+      scope :with_workflow_definition, ->(definition) { where(workflow_definition: definition) }
       class AgentPrivileges
         READ_WRITE_FILES  = 1
         READ_ONLY_GITLAB  = 2
