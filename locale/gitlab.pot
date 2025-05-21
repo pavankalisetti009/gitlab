@@ -44099,7 +44099,13 @@ msgstr ""
 msgid "Pages|URL"
 msgstr ""
 
+msgid "Pages|Visit site"
+msgstr ""
+
 msgid "Pages|We did not find any projects with parallel Pages deployments in this namespace."
+msgstr ""
+
+msgid "Pages|Your Pages site is live at"
 msgstr ""
 
 msgid "Pagination|First"
