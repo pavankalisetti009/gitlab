@@ -158,12 +158,11 @@ module Search
                        search_mode: search_mode
                      )
                    else
-                     ::Gitlab::Search::Zoekt::Client.search_multi_node(
+                     ::Gitlab::Search::Zoekt::Client.search_zoekt_proxy(
                        query,
                        num: ZOEKT_COUNT_LIMIT,
                        targets: zoekt_targets,
-                       search_mode: search_mode,
-                       use_proxy: Feature.enabled?(:zoekt_search_proxy, current_user)
+                       search_mode: search_mode
                      )
                    end
 

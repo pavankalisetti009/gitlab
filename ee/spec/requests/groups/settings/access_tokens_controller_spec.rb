@@ -12,7 +12,7 @@ RSpec.describe Groups::Settings::AccessTokensController, feature_category: :syst
   end
 
   describe 'POST /:namespace/-/settings/access_tokens' do
-    let(:access_token_params) { { name: 'Nerd bot', scopes: ["api"], expires_at: Date.today + 1.month } }
+    let(:access_token_params) { { name: 'Nerd bot', scopes: ["api"], expires_at: 1.month.from_now } }
     let(:ultimate_plan) { build(:ultimate_plan) }
 
     subject(:request) do

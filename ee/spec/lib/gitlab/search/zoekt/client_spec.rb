@@ -178,7 +178,7 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt, feature_category: :globa
     it_behaves_like 'with connection errors', :post
   end
 
-  describe '#search_multi_node' do
+  describe '#search_zoekt_proxy' do
     let(:project_ids) { [project_1.id, project_2.id] }
     let(:query) { 'use.*egex' }
     let(:node) { ::Search::Zoekt::Node.last }
@@ -187,7 +187,7 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt, feature_category: :globa
     let(:targets) { { node_id => project_ids } }
 
     subject(:search) do
-      client.search_multi_node(query, num: 10, targets: targets, search_mode: search_mode)
+      client.search_zoekt_proxy(query, num: 10, targets: targets, search_mode: search_mode)
     end
 
     before do
@@ -202,15 +202,7 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt, feature_category: :globa
 
     it_behaves_like 'with relative base_url', :post do
       let(:make_request) { search }
-      let(:expected_path) { '/api/search' }
-    end
-
-    context 'when too many targets' do
-      let(:targets) { Array.new(described_class::MAXIMUM_THREADS + 1) { |i| [i, i] }.to_h }
-
-      it 'raises an error' do
-        expect { search }.to raise_error(/Too many targets/)
-      end
+      let(:expected_path) { '/webserver/api/v2/search' }
     end
   end
 end

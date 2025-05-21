@@ -6,19 +6,15 @@ module Gitlab
       class Client # rubocop:disable Search/NamespacedClass
         include ::Gitlab::Loggable
 
-        INDEXING_TIMEOUT_S = 30.minutes.to_i
-        MAXIMUM_THREADS = 16
         CONTEXT_LINES_COUNT = 1
         PROXY_SEARCH_PATH = '/webserver/api/v2/search'
-
-        TooManyRequestsError = Class.new(StandardError)
 
         class << self
           def instance
             @instance ||= new
           end
 
-          delegate :search, :search_multi_node, :index, to: :instance
+          delegate :search, :search_zoekt_proxy, to: :instance
         end
 
         def search(query, num:, project_ids:, node_id:, search_mode:)
@@ -44,23 +40,6 @@ module Gitlab
           add_request_details(start_time: start, path: path, body: payload)
         end
 
-        def search_multi_node(query, num:, targets:, search_mode:, use_proxy: false)
-          return search_zoekt_proxy(query, num: num, targets: targets, search_mode: search_mode) if use_proxy
-
-          if targets.size > MAXIMUM_THREADS
-            raise ArgumentError, "Too many targets #{targets.size}, maximum allowed #{MAXIMUM_THREADS}"
-          end
-
-          threads = targets.map do |node_id, project_ids|
-            Thread.new do
-              response = search(query, num: num, project_ids: project_ids, node_id: node_id, search_mode: search_mode)
-              [node_id, response]
-            end
-          end
-
-          Gitlab::Search::Zoekt::MultiNodeResponse.new threads.each(&:join).map(&:value).to_h
-        end
-
         def search_zoekt_proxy(query, num:, targets:, search_mode:)
           start = Time.current
           payload = build_search_payload(query, num: num, search_mode: search_mode)
@@ -74,8 +53,7 @@ module Gitlab
           proxy_node = node(node_id)
           raise 'Node can not be found' unless proxy_node
 
-          search_url = join_url(proxy_node.search_base_url, PROXY_SEARCH_PATH)
-          response = post_request(search_url, payload, timeout: INDEXING_TIMEOUT_S)
+          response = post_request(join_url(proxy_node.search_base_url, PROXY_SEARCH_PATH), payload)
           log_error('Zoekt search failed', status: response.code, response: response.body) unless response.success?
           Gitlab::Search::Zoekt::Response.new parse_response(response)
         ensure
@@ -91,24 +69,7 @@ module Gitlab
             allow_local_requests: true,
             basic_auth: basic_auth_params
           }
-          ::Gitlab::HTTP.post(
-            url,
-            defaults.merge(options)
-          )
-        rescue *Gitlab::HTTP::HTTP_ERRORS => e
-          logger.error(message: e.message)
-          raise ::Search::Zoekt::Errors::ClientConnectionError, e.message
-        end
-
-        def delete_request(url, **options)
-          defaults = {
-            allow_local_requests: true,
-            basic_auth: basic_auth_params
-          }
-          ::Gitlab::HTTP.delete(
-            url,
-            defaults.merge(options)
-          )
+          ::Gitlab::HTTP.post(url, defaults.merge(options))
         rescue *Gitlab::HTTP::HTTP_ERRORS => e
           logger.error(message: e.message)
           raise ::Search::Zoekt::Errors::ClientConnectionError, e.message

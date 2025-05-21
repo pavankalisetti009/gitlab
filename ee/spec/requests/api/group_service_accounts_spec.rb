@@ -807,7 +807,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
   describe "POST /groups/:id/service_accounts/:user_id/personal_access_tokens" do
     let(:name) { 'new pat' }
     let(:description) { 'description' }
-    let(:expires_at) { 3.days.from_now.to_date.to_s }
+    let(:expires_at) { 3.days.from_now }
     let(:scopes) { %w[api read_user] }
     let(:params) { { name: name, description: description, expires_at: expires_at, scopes: scopes } }
 
@@ -838,7 +838,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             expect(json_response['name']).to eq(name)
             expect(json_response['description']).to eq(description)
             expect(json_response['scopes']).to eq(scopes)
-            expect(json_response['expires_at']).to eq(expires_at)
+            expect(json_response['expires_at']).to eq(expires_at.to_date.iso8601)
             expect(json_response['id']).to be_present
             expect(json_response['created_at']).to be_present
             expect(json_response['active']).to be_truthy
@@ -1152,7 +1152,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             expect(response).to have_gitlab_http_status(:ok)
             expect(token.reload.revoked?).to be_truthy
             expect(json_response['token']).not_to eq(token.token)
-            expect(json_response['expires_at']).to eq((Time.zone.now.to_date + 1.week).to_s)
+            expect(json_response['expires_at']).to eq(1.week.from_now.to_date.iso8601)
           end
         end
       end
@@ -1169,11 +1169,11 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
             expect(response).to have_gitlab_http_status(:ok)
             expect(token.reload.revoked?).to be_truthy
             expect(json_response['token']).not_to eq(token.token)
-            expect(json_response['expires_at']).to eq((Time.zone.now.to_date + 1.week).to_s)
+            expect(json_response['expires_at']).to eq(1.week.from_now.to_date.iso8601)
           end
 
           context 'when expiry is defined' do
-            let(:expiry_date) { Date.today + 1.month }
+            let(:expiry_date) { 1.month.from_now }
             let(:params) { { expires_at: expiry_date } }
 
             it "allows owner to rotate token", :freeze_time do
@@ -1182,7 +1182,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
               expect(response).to have_gitlab_http_status(:ok)
               expect(token.reload.revoked?).to be_truthy
               expect(json_response['token']).not_to eq(token.token)
-              expect(json_response['expires_at']).to eq(expiry_date.to_s)
+              expect(json_response['expires_at']).to eq(expiry_date.to_date.iso8601)
             end
           end
 

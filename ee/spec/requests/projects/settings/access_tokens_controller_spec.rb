@@ -32,7 +32,7 @@ RSpec.describe Projects::Settings::AccessTokensController, :saas, feature_catego
   end
 
   describe 'POST /:namespace/:project/-/settings/access_tokens' do
-    let_it_be(:access_token_params) { { name: 'Nerd bot', scopes: ["api"], expires_at: Date.today + 1.month } }
+    let_it_be(:access_token_params) { { name: 'Nerd bot', scopes: ["api"], expires_at: 1.month.from_now } }
 
     subject(:request) do
       post project_settings_access_tokens_path(resource), params: { resource_access_token: access_token_params }

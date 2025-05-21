@@ -11089,6 +11089,7 @@ Input type: `TodoDeleteAllDoneInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationtododeletealldoneclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationtododeletealldoneupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | To-do items marked as done before the timestamp will be deleted. |
 
 #### Fields
 
@@ -24621,6 +24622,7 @@ Represents a vulnerability. The connection type is countable.
 | <a id="countablevulnerabilitydismissedby"></a>`dismissedBy` | [`UserCore`](#usercore) | User that dismissed the vulnerability. |
 | <a id="countablevulnerabilityexternalissuelinks"></a>`externalIssueLinks` | [`VulnerabilityExternalIssueLinkConnection!`](#vulnerabilityexternalissuelinkconnection) | List of external issue links related to the vulnerability. (see [Connections](#connections)) |
 | <a id="countablevulnerabilityfalsepositive"></a>`falsePositive` | [`Boolean`](#boolean) | Indicates whether the vulnerability is a false positive. |
+| <a id="countablevulnerabilityfindingtokenstatus"></a>`findingTokenStatus` | [`VulnerabilityFindingTokenStatus`](#vulnerabilityfindingtokenstatus) | Status of the secret token associated with this vulnerability. Returns `null` if the `validity_checks` feature flag is disabled. |
 | <a id="countablevulnerabilityhasremediations"></a>`hasRemediations` | [`Boolean`](#boolean) | Indicates whether there is a remediation available for the vulnerability. |
 | <a id="countablevulnerabilityid"></a>`id` | [`ID!`](#id) | GraphQL ID of the vulnerability. |
 | <a id="countablevulnerabilityidentifiers"></a>`identifiers` | [`[VulnerabilityIdentifier!]!`](#vulnerabilityidentifier) | Identifiers of the vulnerability. |
@@ -40945,6 +40947,7 @@ Represents a vulnerability.
 | <a id="vulnerabilitydismissedby"></a>`dismissedBy` | [`UserCore`](#usercore) | User that dismissed the vulnerability. |
 | <a id="vulnerabilityexternalissuelinks"></a>`externalIssueLinks` | [`VulnerabilityExternalIssueLinkConnection!`](#vulnerabilityexternalissuelinkconnection) | List of external issue links related to the vulnerability. (see [Connections](#connections)) |
 | <a id="vulnerabilityfalsepositive"></a>`falsePositive` | [`Boolean`](#boolean) | Indicates whether the vulnerability is a false positive. |
+| <a id="vulnerabilityfindingtokenstatus"></a>`findingTokenStatus` | [`VulnerabilityFindingTokenStatus`](#vulnerabilityfindingtokenstatus) | Status of the secret token associated with this vulnerability. Returns `null` if the `validity_checks` feature flag is disabled. |
 | <a id="vulnerabilityhasremediations"></a>`hasRemediations` | [`Boolean`](#boolean) | Indicates whether there is a remediation available for the vulnerability. |
 | <a id="vulnerabilityid"></a>`id` | [`ID!`](#id) | GraphQL ID of the vulnerability. |
 | <a id="vulnerabilityidentifiers"></a>`identifiers` | [`[VulnerabilityIdentifier!]!`](#vulnerabilityidentifier) | Identifiers of the vulnerability. |
@@ -41333,6 +41336,19 @@ Represents an external issue link of a vulnerability.
 | <a id="vulnerabilityexternalissuelinkexternalissue"></a>`externalIssue` | [`ExternalIssue`](#externalissue) | The external issue attached to the issue link. |
 | <a id="vulnerabilityexternalissuelinkid"></a>`id` | [`VulnerabilitiesExternalIssueLinkID!`](#vulnerabilitiesexternalissuelinkid) | GraphQL ID of the external issue link. |
 | <a id="vulnerabilityexternalissuelinklinktype"></a>`linkType` | [`VulnerabilityExternalIssueLinkType!`](#vulnerabilityexternalissuelinktype) | Type of the external issue link. |
+
+### `VulnerabilityFindingTokenStatus`
+
+Represents the status of a secret token found in a vulnerability.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="vulnerabilityfindingtokenstatuscreatedat"></a>`createdAt` | [`Time!`](#time) | When the token status was created. |
+| <a id="vulnerabilityfindingtokenstatusid"></a>`id` | [`ID!`](#id) | ID of the finding token status. |
+| <a id="vulnerabilityfindingtokenstatusstatus"></a>`status` | [`VulnerabilityFindingTokenStatusState!`](#vulnerabilityfindingtokenstatusstate) | Status of the token (unknown, active, inactive). |
+| <a id="vulnerabilityfindingtokenstatusupdatedat"></a>`updatedAt` | [`Time!`](#time) | When the token status was last updated. |
 
 ### `VulnerabilityIdentifier`
 
@@ -46456,6 +46472,16 @@ The type of the external issue link related to a vulnerability.
 | Value | Description |
 | ----- | ----------- |
 | <a id="vulnerabilityexternalissuelinktypecreated"></a>`CREATED` | Created link type. |
+
+### `VulnerabilityFindingTokenStatusState`
+
+Status of a secret token found in a vulnerability.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="vulnerabilityfindingtokenstatusstateactive"></a>`ACTIVE` | Token is active and can be exploited. |
+| <a id="vulnerabilityfindingtokenstatusstateinactive"></a>`INACTIVE` | Token is inactive and cannot be exploited. |
+| <a id="vulnerabilityfindingtokenstatusstateunknown"></a>`UNKNOWN` | Token status is unknown. |
 
 ### `VulnerabilityGrade`
 
