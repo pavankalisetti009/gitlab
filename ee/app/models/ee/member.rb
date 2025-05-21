@@ -9,8 +9,6 @@ module EE
     prepended do
       include Elastic::ApplicationVersionedSearch
       include MemberRoles::MemberRoleRelation
-      include ::GitlabSubscriptions::SubscriptionHelper
-      include ::GitlabSubscriptions::BillableUsersUtils
 
       base_access_level_attr :access_level
 

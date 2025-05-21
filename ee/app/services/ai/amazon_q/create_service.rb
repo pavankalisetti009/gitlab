@@ -6,6 +6,9 @@ module Ai
       DEFAULT_USERNAME = 'amazon-q'
 
       def execute
+        return ServiceResponse.error(message: 'Missing organization_id parameter') \
+          unless params[:organization_id].present?
+
         return ServiceResponse.error(message: 'Missing role_arn parameter') unless params[:role_arn].present?
         return availability_param_error if availability_param_error
 
@@ -51,7 +54,7 @@ module Ai
               username: username,
               avatar: Users::Internal.bot_avatar(image: 'q_avatar.png'),
               composite_identity_enforced: true,
-              organization_id: @user.organizations.first.id,
+              organization_id: params[:organization_id],
               private_profile: true
             }
           ).execute

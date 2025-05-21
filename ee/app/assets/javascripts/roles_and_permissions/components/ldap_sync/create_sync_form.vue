@@ -1,7 +1,8 @@
 <script>
 import { GlForm, GlButton } from '@gitlab/ui';
 import ServerFormGroup from './server_form_group.vue';
-import SyncMethodFormGroup, { USER_FILTER } from './sync_method_form_group.vue';
+import SyncMethodFormGroup, { GROUP_CN, USER_FILTER } from './sync_method_form_group.vue';
+import GroupCnFormGroup from './group_cn_form_group.vue';
 import UserFilterFormGroup from './user_filter_form_group.vue';
 
 export default {
@@ -10,14 +11,17 @@ export default {
     GlButton,
     ServerFormGroup,
     SyncMethodFormGroup,
+    GroupCnFormGroup,
     UserFilterFormGroup,
   },
   data() {
     return {
       server: null,
       syncMethod: null,
+      groupCn: null,
       userFilter: null,
       isValidationEnabled: false,
+      isSelectedSyncMethodValidationEnabled: false,
     };
   },
   computed: {
@@ -27,23 +31,61 @@ export default {
     isSyncMethodValid() {
       return !this.isValidationEnabled || Boolean(this.syncMethod);
     },
+    isGroupCnSelected() {
+      return this.syncMethod === GROUP_CN;
+    },
+    isUserFilterSelected() {
+      return this.syncMethod === USER_FILTER;
+    },
+    shouldRunSelectedSyncMethodValidation() {
+      // Both validations must be enabled to run the validation for either group cn or user filter, depending on which
+      // is selected as the sync method. This fixes an issue where toggling the sync method after submitting the form
+      // with errors, will show the new field as invalid even though the user didn't interact with it yet.
+      return this.isValidationEnabled && this.isSelectedSyncMethodValidationEnabled;
+    },
+    isGroupCnValid() {
+      return this.shouldRunSelectedSyncMethodValidation && this.isGroupCnSelected
+        ? Boolean(this.groupCn)
+        : true;
+    },
     isUserFilterValid() {
-      return !this.isValidationEnabled || Boolean(this.userFilter);
+      return this.shouldRunSelectedSyncMethodValidation && this.isUserFilterSelected
+        ? Boolean(this.userFilter)
+        : true;
+    },
+  },
+  watch: {
+    server() {
+      // Clear the selected group when the server is changed because the group may not exist on the
+      // other server.
+      this.groupCn = null;
+    },
+    syncMethod() {
+      this.isSelectedSyncMethodValidationEnabled = false;
     },
   },
   methods: {
     emitFormData() {
       this.isValidationEnabled = true;
+      this.isSelectedSyncMethodValidationEnabled = true;
 
-      if (this.isServerValid && this.isUserFilterValid) {
+      if (this.isServerValid && (this.isGroupCnValid || this.isUserFilterValid)) {
         this.$emit('submit', {
           server: this.server,
-          userFilter: this.userFilter,
+          ...(this.isGroupCnSelected ? { groupCn: this.groupCn } : {}),
+          ...(this.isUserFilterSelected ? { userFilter: this.userFilter } : {}),
         });
       }
     },
+    updateGroupCn(value) {
+      this.isSelectedSyncMethodValidationEnabled = true;
+      this.groupCn = value;
+    },
+    updateUserFilter(value) {
+      this.isSelectedSyncMethodValidationEnabled = true;
+      this.userFilter = value.trim();
+    },
   },
-  USER_FILTER,
 };
 </script>
 
@@ -52,10 +94,18 @@ export default {
     <server-form-group v-model="server" :state="isServerValid" />
     <sync-method-form-group v-model="syncMethod" :state="isSyncMethodValid" />
 
+    <group-cn-form-group
+      v-if="isGroupCnSelected"
+      :value="groupCn"
+      :state="isGroupCnValid"
+      :server="server"
+      @input="updateGroupCn"
+    />
     <user-filter-form-group
-      v-if="syncMethod === $options.USER_FILTER"
-      v-model.trim="userFilter"
+      v-else-if="isUserFilterSelected"
+      :value="userFilter"
       :state="isUserFilterValid"
+      @input="updateUserFilter"
     />
 
     <div class="gl-mt-7 gl-flex gl-flex-wrap gl-gap-3">
