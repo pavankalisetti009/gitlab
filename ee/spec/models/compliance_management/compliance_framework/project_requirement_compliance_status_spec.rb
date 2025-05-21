@@ -1028,4 +1028,86 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectRequirementComp
       end
     end
   end
+
+  describe '#control_statuses' do
+    let_it_be(:namespace) { create(:group) }
+    let_it_be(:project) { create(:project, namespace: namespace) }
+    let_it_be(:project2) { create(:project, namespace: namespace) }
+    let_it_be(:compliance_framework) { create(:compliance_framework, namespace: namespace) }
+    let_it_be(:requirement) { create(:compliance_requirement, framework: compliance_framework) }
+    let_it_be(:requirement2) { create(:compliance_requirement, framework: compliance_framework) }
+
+    let_it_be(:requirement_status) do
+      create(:project_requirement_compliance_status,
+        project: project,
+        compliance_requirement: requirement,
+        compliance_framework: compliance_framework,
+        namespace: namespace
+      )
+    end
+
+    let_it_be(:requirement_status2) do
+      create(:project_requirement_compliance_status,
+        project: project2,
+        compliance_requirement: requirement,
+        compliance_framework: compliance_framework,
+        namespace: namespace
+      )
+    end
+
+    let_it_be(:requirement_status3) do
+      create(:project_requirement_compliance_status,
+        project: project,
+        compliance_requirement: requirement2,
+        compliance_framework: compliance_framework,
+        namespace: namespace
+      )
+    end
+
+    let_it_be(:control1) { create(:compliance_requirements_control, compliance_requirement: requirement) }
+    let_it_be(:control2) { create(:compliance_requirements_control, :external, compliance_requirement: requirement) }
+    let_it_be(:control3) do
+      create(:compliance_requirements_control, :project_visibility_not_internal, compliance_requirement: requirement)
+    end
+
+    let_it_be(:control4) { create(:compliance_requirements_control, compliance_requirement: requirement2) }
+
+    context 'when there are no control statuses' do
+      it 'returns an empty array' do
+        expect(requirement_status.control_statuses).to be_empty
+      end
+    end
+
+    context 'when there are control statuses' do
+      let_it_be(:control_status1) do
+        create(:project_control_compliance_status, status: 'pass',
+          compliance_requirements_control: control1, compliance_requirement: requirement, project: project)
+      end
+
+      let_it_be(:control_status2) do
+        create(:project_control_compliance_status, status: 'fail',
+          compliance_requirements_control: control2, compliance_requirement: requirement, project: project)
+      end
+
+      let_it_be(:control_status3) do
+        create(:project_control_compliance_status, status: 'pending',
+          compliance_requirements_control: control3, compliance_requirement: requirement, project: project)
+      end
+
+      let_it_be(:control_status4) do
+        create(:project_control_compliance_status, status: 'pending',
+          compliance_requirements_control: control4, compliance_requirement: requirement2, project: project)
+      end
+
+      let_it_be(:project2_control_status) do
+        create(:project_control_compliance_status, status: 'pending',
+          compliance_requirements_control: control1, compliance_requirement: requirement, project: project2)
+      end
+
+      it 'returns all status values' do
+        expect(requirement_status.control_statuses).to contain_exactly(control_status1, control_status2,
+          control_status3)
+      end
+    end
+  end
 end

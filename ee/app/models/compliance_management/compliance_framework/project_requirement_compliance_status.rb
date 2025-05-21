@@ -95,12 +95,16 @@ module ComplianceManagement
       end
 
       def control_status_values
-        compliance_requirement
-          .project_control_compliance_statuses
-          .for_projects(project_id)
+        control_statuses
           .limit(ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl::
               MAX_COMPLIANCE_CONTROLS_PER_REQUIREMENT_COUNT)
           .pluck(:status)
+      end
+
+      def control_statuses
+        compliance_requirement
+          .project_control_compliance_statuses
+          .for_projects(project_id)
       end
 
       private
