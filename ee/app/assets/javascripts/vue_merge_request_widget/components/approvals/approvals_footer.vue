@@ -29,10 +29,7 @@ export default {
 </script>
 
 <template>
-  <div
-    class="mr-widget-extension gl-rounded-bl-base gl-rounded-br-base gl-border-t-0"
-    data-testid="approvals-footer"
-  >
+  <div class="mr-widget-extension gl-rounded-b-lg gl-border-t-0" data-testid="approvals-footer">
     <approvals-list
       :code-coverage-check-help-page-path="codeCoverageCheckHelpPagePath"
       :eligible-approvers-docs-path="eligibleApproversDocsPath"
