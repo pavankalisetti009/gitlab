@@ -3,4 +3,4 @@
 - breadcrumb_title configuration_text
 - add_to_breadcrumbs _('GitLab Duo'), group_settings_gitlab_duo_path(@group)
 
-#js-gitlab-duo-model-selection{ data: {} }
+#js-gitlab-duo-model-selection{ data: { view_model: { groupId: @group.to_gid }.to_json } }

@@ -1,7 +1,9 @@
 <script>
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import { createAlert } from '~/alert';
+import { s__ } from '~/locale';
 import FeatureSettingsTable from 'ee/ai/shared/feature_settings/feature_settings_table.vue';
-import { mockFeatureSettings } from '../../../../../spec/frontend/ai/shared/feature_settings/mock_data';
+import aiNamespaceFeatureSettingsQuery from './graphql/get_ai_namepace_feature_settings.query.graphql';
 
 export default {
   name: 'ModelSelectionApp',
@@ -9,12 +11,36 @@ export default {
     FeatureSettingsTable,
     PageHeading,
   },
+  inject: ['groupId'],
   data() {
     return {
-      // Temporarily return mock data until the gql query is implemented
-      aiFeatureSettings: mockFeatureSettings,
-      isLoading: false,
+      aiNamespaceFeatureSettings: [],
     };
+  },
+  computed: {
+    isLoading() {
+      return this.$apollo.queries.aiNamespaceFeatureSettings.loading;
+    },
+  },
+  apollo: {
+    aiNamespaceFeatureSettings: {
+      query: aiNamespaceFeatureSettingsQuery,
+      variables() {
+        return { groupId: this.groupId };
+      },
+      update(data) {
+        return data.aiModelSelectionNamespaceSettings?.nodes || [];
+      },
+      error(error) {
+        createAlert({
+          message: s__(
+            'ModelSelection|An error occurred while loading the AI feature settings. Please try again.',
+          ),
+          error,
+          captureError: true,
+        });
+      },
+    },
   },
 };
 </script>
@@ -32,6 +58,9 @@ export default {
         )
       }}</template>
     </page-heading>
-    <feature-settings-table :feature-settings="aiFeatureSettings" :is-loading="isLoading" />
+    <feature-settings-table
+      :feature-settings="aiNamespaceFeatureSettings"
+      :is-loading="isLoading"
+    />
   </div>
 </template>
