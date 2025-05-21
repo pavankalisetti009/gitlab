@@ -92,8 +92,6 @@ module Gitlab
       end
 
       def affected_vulnerability_data(vulnerability_reads)
-        batch_timestamp = Time.current
-
         Vulnerability
           .id_in(vulnerability_reads.pluck(:vulnerability_id))
           .transitioned_at_least_once
@@ -106,8 +104,7 @@ module Gitlab
             {
               vulnerability: vulnerability,
               bug_transition: bug_transition,
-              original_dismissal_transition: original_dismissal(vulnerability, bug_transition),
-              timestamp: batch_timestamp
+              original_dismissal_transition: original_dismissal(vulnerability, bug_transition)
             }
           end
       end

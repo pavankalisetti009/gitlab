@@ -72,7 +72,7 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
         },
         {
           author_id: security_policy_bot.id,
-          from_state: states[:dismissed],
+          from_state: states[:detected],
           to_state: states[:resolved],
           comment: 'Auto-resolved by policy'
         },
@@ -83,7 +83,7 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
         },
         {
           author_id: security_policy_bot.id,
-          from_state: states[:dismissed],
+          from_state: states[:detected],
           to_state: states[:resolved],
           comment: 'Auto-resolved by policy'
         },

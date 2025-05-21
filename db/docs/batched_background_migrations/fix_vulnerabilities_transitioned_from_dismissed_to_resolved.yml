@@ -6,6 +6,6 @@ description: >
   It accepts a namespace_id as a job argument, and migrates only records that are in that namespace.
 feature_category: vulnerability_management
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/190859
-milestone: '18.0'
-queued_migration_version: 20250509154604
+milestone: '18.1'
+queued_migration_version: 00000000000000 # This migration was enqueued via rake task and can't be finalized.
 finalized_by: # version of the migration that finalized this BBM
