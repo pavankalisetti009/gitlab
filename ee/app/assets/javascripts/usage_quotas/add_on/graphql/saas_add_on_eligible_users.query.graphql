@@ -38,7 +38,7 @@ query getAddOnEligibleUsers(
         membershipType @client
         addOnAssignments(addOnPurchaseIds: $addOnPurchaseIds) {
           nodes {
-            # eslint-disable-next-line @graphql-eslint/require-id-when-available
+            # eslint-disable-next-line @graphql-eslint/require-selections
             addOnPurchase {
               name
             }
