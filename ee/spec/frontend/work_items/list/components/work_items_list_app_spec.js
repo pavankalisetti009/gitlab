@@ -8,7 +8,8 @@ import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/pages/work_items_list_app.vue';
 import { WORK_ITEM_TYPE_NAME_EPIC } from '~/work_items/constants';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
-import getWorkItemsForEpicsQuery from 'ee/work_items/graphql/list/get_work_items_for_epics.query.graphql';
+import getWorkItemsForEpicsFullQuery from 'ee/work_items/graphql/list/get_work_items_for_epics_full.query.graphql';
+import getWorkItemsForEpicsSlimQuery from 'ee/work_items/graphql/list/get_work_items_for_epics_slim.query.graphql';
 
 const skipReason = new SkipReason({
   name: 'WorkItemsListApp EE component',
@@ -146,9 +147,15 @@ describeSkipVue3(skipReason, () => {
     });
   });
 
-  it('passes the eeEpicListQuery prop down to WorkItemsListApp', () => {
+  it('passes the eeEpicListFullQuery prop down to WorkItemsListApp', () => {
     mountComponent();
 
-    expect(findWorkItemsListApp().props('eeEpicListQuery')).toBe(getWorkItemsForEpicsQuery);
+    expect(findWorkItemsListApp().props('eeEpicListFullQuery')).toBe(getWorkItemsForEpicsFullQuery);
+  });
+
+  it('passes the eeEpicListSlimQuery prop down to WorkItemsListApp', () => {
+    mountComponent();
+
+    expect(findWorkItemsListApp().props('eeEpicListSlimQuery')).toBe(getWorkItemsForEpicsSlimQuery);
   });
 });

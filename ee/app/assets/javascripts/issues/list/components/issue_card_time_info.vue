@@ -25,6 +25,11 @@ export default {
       required: false,
       default: false,
     },
+    detailLoading: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     healthStatus() {
@@ -47,7 +52,7 @@ export default {
 </script>
 
 <template>
-  <issue-card-time-info :issue="issue">
+  <issue-card-time-info :issue="issue" :detail-loading="detailLoading">
     <template #weight>
       <work-item-attribute
         v-if="showWeight"
