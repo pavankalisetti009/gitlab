@@ -59,8 +59,7 @@ module EE
         end
 
         def resource_management_enabled?
-          ::Feature.enabled?(:gitlab_managed_cluster_resources, project) &&
-            project.licensed_feature_available?(:agent_managed_resources)
+          project.licensed_feature_available?(:agent_managed_resources)
         end
       end
     end
