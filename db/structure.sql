@@ -16197,7 +16197,8 @@ CREATE TABLE issue_user_mentions (
     mentioned_projects_ids bigint[],
     mentioned_groups_ids bigint[],
     note_id bigint,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_34b2c10b9c CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE issue_user_mentions_id_seq
