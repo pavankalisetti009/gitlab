@@ -22724,6 +22724,7 @@ Check user's permission for the car.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="cicatalogresourcearchived"></a>`archived` | [`Boolean`](#boolean) | Indicates the archived status of the project. |
 | <a id="cicatalogresourcedescription"></a>`description` | [`String`](#string) | Description of the catalog resource. |
 | <a id="cicatalogresourcefullpath"></a>`fullPath` {{< icon name="warning-solid" >}} | [`ID`](#id) | **Introduced** in GitLab 16.11. **Status**: Experiment. Full project path of the catalog resource. |
 | <a id="cicatalogresourceicon"></a>`icon` | [`String`](#string) | Icon for the catalog resource. |
