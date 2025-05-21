@@ -59,7 +59,7 @@ module SubscriptionPortalHelpers
   def stub_subscription_management_data(namespace_id, can_add_seats: true, can_renew: true, next_term_start_date: nil)
     stub_full_request(graphql_url, method: :post)
       .with(
-        body: "{\"operationName\":\"getSubscriptionData\",\"variables\":{\"namespaceId\":#{namespace_id}},\"query\":\"query getSubscriptionData($namespaceId: ID!) {\\n  subscription(namespaceId: $namespaceId) {\\n    canAddSeats\\n    canRenew\\n    nextTermStartDate\\n    __typename\\n  }\\n}\\n\"}"
+        body: "{\"operationName\":\"getSubscriptionData\",\"variables\":{\"namespaceId\":#{namespace_id}},\"query\":\"query getSubscriptionData($namespaceId: ID!) {\\n  subscription(namespaceId: $namespaceId) {\\n    canAddSeats\\n    canRenew\\n    nextTermStartDate\\n    __typename\\n  }\\n}\"}"
       )
       .to_return(status: 200, body: {
         data: {
@@ -85,7 +85,7 @@ module SubscriptionPortalHelpers
   def stub_subscription_permissions_data(namespace_id, can_add_seats: true, can_add_duo_pro_seats: true, can_renew: true, community_plan: false, reason: 'MANAGED_BY_RESELLER')
     stub_full_request(graphql_url, method: :post)
       .with(
-        body: "{\"operationName\":\"getSubscriptionPermissionsData\",\"variables\":{\"namespaceId\":#{namespace_id}},\"query\":\"query getSubscriptionPermissionsData($namespaceId: ID, $subscriptionName: String) {\\n  subscription(namespaceId: $namespaceId, subscriptionName: $subscriptionName) {\\n    canAddSeats\\n    canAddDuoProSeats\\n    canRenew\\n    communityPlan\\n    __typename\\n  }\\n  userActionAccess(namespaceId: $namespaceId, subscriptionName: $subscriptionName) {\\n    limitedAccessReason\\n    __typename\\n  }\\n}\\n\"}"
+        body: "{\"operationName\":\"getSubscriptionPermissionsData\",\"variables\":{\"namespaceId\":#{namespace_id}},\"query\":\"query getSubscriptionPermissionsData($namespaceId: ID, $subscriptionName: String) {\\n  subscription(namespaceId: $namespaceId, subscriptionName: $subscriptionName) {\\n    canAddSeats\\n    canAddDuoProSeats\\n    canRenew\\n    communityPlan\\n    __typename\\n  }\\n  userActionAccess(namespaceId: $namespaceId, subscriptionName: $subscriptionName) {\\n    limitedAccessReason\\n    __typename\\n  }\\n}\"}"
       )
       .to_return(status: 200, body: {
         data: {
@@ -105,7 +105,7 @@ module SubscriptionPortalHelpers
   def stub_temporary_extension_data(namespace_id)
     stub_full_request(graphql_url, method: :post)
       .with(
-        body: "{\"operationName\":\"getTemporaryExtensionData\",\"variables\":{\"namespaceId\":#{namespace_id}},\"query\":\"query getTemporaryExtensionData($namespaceId: ID!) {\\n  temporaryExtension(namespaceId: $namespaceId) {\\n    endDate\\n    __typename\\n  }\\n}\\n\"}"
+        body: "{\"operationName\":\"getTemporaryExtensionData\",\"variables\":{\"namespaceId\":#{namespace_id}},\"query\":\"query getTemporaryExtensionData($namespaceId: ID!) {\\n  temporaryExtension(namespaceId: $namespaceId) {\\n    endDate\\n    __typename\\n  }\\n}\"}"
       )
       .to_return(status: 200, body: {
         data: {

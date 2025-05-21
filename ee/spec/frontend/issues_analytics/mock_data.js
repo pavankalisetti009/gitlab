@@ -315,8 +315,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
       }
     }
   }
-}
-`;
+}`;
 
 export const getMockIssuesOpenedCountsResponse = ({ isProject = false, isEmpty = false } = {}) => ({
   id: 'fake-id',
