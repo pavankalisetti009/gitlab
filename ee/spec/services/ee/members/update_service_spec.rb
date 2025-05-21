@@ -341,89 +341,117 @@ RSpec.describe Members::UpdateService, feature_category: :groups_and_projects do
 
       let(:params) { { member_role_id: target_member_role&.id, source: source } }
 
-      before do
-        stub_licensed_features(custom_roles: true)
-        stub_saas_features(gitlab_com_subscriptions: true)
-      end
-
-      context 'when the member does not have any member role assigned yet' do
-        let(:initial_member_role) { nil }
-        let(:target_member_role) { member_role_guest }
-
-        let(:audit_role_to) { "Custom role: #{member_role_guest.name}" }
-        let(:audit_role_as) { "Custom role: #{member_role_guest.name}" }
-
-        it_behaves_like 'correct member role assignment'
-
-        it_behaves_like 'logs an audit event'
-      end
-
-      context 'when the user does not have access to the member role' do
-        let(:initial_member_role) { nil }
-        let(:target_member_role) { create(:member_role, :guest, namespace: create(:group)) }
-
-        it 'returns not found error' do
-          expect(update_member[:status]).to eq(:error)
-          expect(update_member[:message]).to eq('Member role not found')
+      context 'when custom_roles feature is not licensed' do
+        before do
+          stub_licensed_features(custom_roles: false)
         end
-      end
 
-      context 'when assigning the user to an instance-level member role' do
-        let(:current_user) { admin }
-        let(:initial_member_role) { nil }
-        let(:target_member_role) { create(:member_role, :guest, :instance) }
+        context 'when the member does not have any member role assigned yet' do
+          let(:initial_member_role) { nil }
+          let(:target_member_role) { member_role_guest }
 
-        context 'on self-managed', :enable_admin_mode do
-          before do
-            stub_saas_features(gitlab_com_subscriptions: false)
+          it 'does not assign the role' do
+            expect { update_member }.not_to change { member.reload.member_role }
           end
+        end
+
+        context 'when downgrading to static role' do
+          before do
+            member.update!(member_role: initial_member_role)
+          end
+
+          let(:initial_member_role) { member_role_guest }
+          let(:target_member_role) { nil }
 
           it_behaves_like 'correct member role assignment'
         end
       end
 
-      context 'when the member has a member role assigned' do
+      context 'when custom_roles feature is licensed' do
         before do
-          member.update!(member_role: initial_member_role)
+          stub_licensed_features(custom_roles: true)
+          stub_saas_features(gitlab_com_subscriptions: true)
         end
 
-        let(:initial_member_role) { member_role_guest }
-        let(:target_member_role) { member_role_reporter }
+        context 'when the member does not have any member role assigned yet' do
+          let(:initial_member_role) { nil }
+          let(:target_member_role) { member_role_guest }
 
-        let(:audit_role_from) { "Custom role: #{member_role_guest.name}" }
-        let(:audit_role_to) { "Custom role: #{member_role_reporter.name}" }
-        let(:audit_role_as) { "Custom role: #{member_role_reporter.name}" }
+          let(:audit_role_to) { "Custom role: #{member_role_guest.name}" }
+          let(:audit_role_as) { "Custom role: #{member_role_guest.name}" }
 
-        it_behaves_like 'correct member role assignment'
+          it_behaves_like 'correct member role assignment'
 
-        it_behaves_like 'logs an audit event'
-
-        it 'changes the access level of the member accordingly' do
-          update_member
-
-          expect(member.reload.access_level).to eq(target_member_role.base_access_level)
+          it_behaves_like 'logs an audit event'
         end
 
-        context 'when invalid access_level is provided' do
-          let(:params) do
-            { member_role_id: target_member_role&.id, access_level: GroupMember::DEVELOPER, source: source }
-          end
+        context 'when the user does not have access to the member role' do
+          let(:initial_member_role) { nil }
+          let(:target_member_role) { create(:member_role, :guest, namespace: create(:group)) }
 
-          it 'returns error' do
+          it 'returns not found error' do
             expect(update_member[:status]).to eq(:error)
+            expect(update_member[:message]).to eq('Member role not found')
           end
         end
-      end
 
-      context 'when downgrading to static role' do
-        before do
-          member.update!(member_role: initial_member_role)
+        context 'when assigning the user to an instance-level member role' do
+          let(:current_user) { admin }
+          let(:initial_member_role) { nil }
+          let(:target_member_role) { create(:member_role, :guest, :instance) }
+
+          context 'on self-managed', :enable_admin_mode do
+            before do
+              stub_saas_features(gitlab_com_subscriptions: false)
+            end
+
+            it_behaves_like 'correct member role assignment'
+          end
         end
 
-        let(:initial_member_role) { member_role_guest }
-        let(:target_member_role) { nil }
+        context 'when the member has a member role assigned' do
+          before do
+            member.update!(member_role: initial_member_role)
+          end
 
-        it_behaves_like 'correct member role assignment'
+          let(:initial_member_role) { member_role_guest }
+          let(:target_member_role) { member_role_reporter }
+
+          let(:audit_role_from) { "Custom role: #{member_role_guest.name}" }
+          let(:audit_role_to) { "Custom role: #{member_role_reporter.name}" }
+          let(:audit_role_as) { "Custom role: #{member_role_reporter.name}" }
+
+          it_behaves_like 'correct member role assignment'
+
+          it_behaves_like 'logs an audit event'
+
+          it 'changes the access level of the member accordingly' do
+            update_member
+
+            expect(member.reload.access_level).to eq(target_member_role.base_access_level)
+          end
+
+          context 'when invalid access_level is provided' do
+            let(:params) do
+              { member_role_id: target_member_role&.id, access_level: GroupMember::DEVELOPER, source: source }
+            end
+
+            it 'returns error' do
+              expect(update_member[:status]).to eq(:error)
+            end
+          end
+        end
+
+        context 'when downgrading to static role' do
+          before do
+            member.update!(member_role: initial_member_role)
+          end
+
+          let(:initial_member_role) { member_role_guest }
+          let(:target_member_role) { nil }
+
+          it_behaves_like 'correct member role assignment'
+        end
       end
     end
   end
