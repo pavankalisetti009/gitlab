@@ -15,6 +15,7 @@ import { BUCKETING_INTERVAL_ALL } from '~/analytics/shared/graphql/constants';
 import { dasherize } from '~/lib/utils/text_utility';
 import { formatNumber, s__ } from '~/locale';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { AI_IMPACT_TABLE_TRACKING_PROPERTY } from 'ee/analytics/analytics_dashboards/constants';
 import VulnerabilitiesQuery from '../graphql/vulnerabilities.query.graphql';
 import FlowMetricsQuery from '../graphql/flow_metrics.query.graphql';
@@ -79,7 +80,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glAbilitiesMixin()],
+  mixins: [glAbilitiesMixin(), glFeatureFlagsMixin()],
   props: {
     namespace: {
       type: String,
@@ -115,11 +116,18 @@ export default {
         },
       ].filter(({ metrics }) => !this.areAllMetricsSkipped(metrics));
     },
+    duoRcaUsageRateEnabled() {
+      return this.glFeatures?.duoRcaUsageRate;
+    },
     restrictedMetrics() {
       return getRestrictedTableMetrics(this.excludeMetrics, this.glAbilities);
     },
     skippedMetrics() {
-      return uniq([...this.restrictedMetrics, ...this.excludeMetrics]);
+      return uniq([
+        ...(!this.duoRcaUsageRateEnabled ? [AI_METRICS.DUO_RCA_USAGE_RATE] : []),
+        ...this.restrictedMetrics,
+        ...this.excludeMetrics,
+      ]);
     },
   },
   async mounted() {

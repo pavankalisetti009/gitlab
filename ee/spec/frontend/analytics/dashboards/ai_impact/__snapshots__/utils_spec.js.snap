@@ -199,6 +199,13 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
       "value": "Duo Chat: Unique users",
     },
   },
+  {
+    "invertTrendColor": undefined,
+    "metric": {
+      "identifier": "duo_rca_usage_rate",
+      "value": "Duo RCA: Unique users",
+    },
+  },
 ]
 `;
 

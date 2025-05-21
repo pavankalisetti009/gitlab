@@ -372,6 +372,68 @@ exports[`Metric table for the duo_chat_usage_rate table row when the data is loa
 }
 `;
 
+exports[`Metric table for the duo_rca_usage_rate table row when the data is loaded renders the metric values 1`] = `
+"Duo RCA: Unique users  
+    Monthly user engagement with Duo Root Cause Analysis. Percentage ratio calculated as total monthly unique Duo Root Cause Analysis users / monthly unique Duo Chat users.
+    
+      Go to docs
+      
+        33.3%
+       5/15
+        85.7%
+       6/7
+        73.3%
+       11/15
+        66.7%
+       12/18
+        41.2%
+       7/17
+        50.0%
+       6/12
+  23.5%
+    %"
+`;
+
+exports[`Metric table for the duo_rca_usage_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jan 6 - Feb 6",
+      33.3,
+    ],
+    [
+      "Feb 6 - Mar 6",
+      85.7,
+    ],
+    [
+      "Mar 6 - Apr 6",
+      73.3,
+    ],
+    [
+      "Apr 6 - May 6",
+      66.7,
+    ],
+    [
+      "May 6 - Jun 6",
+      41.2,
+    ],
+    [
+      "Jun 6 - Jul 6",
+      50,
+    ],
+  ],
+  "gradient": [
+    "#499767",
+    "#5252B5",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "%",
+}
+`;
+
 exports[`Metric table for the lead_time table row when the data is loaded renders the metric values 1`] = `
 "Lead time  
     Median time from issue created to issue closed.

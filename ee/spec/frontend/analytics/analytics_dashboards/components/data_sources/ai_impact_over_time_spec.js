@@ -11,6 +11,7 @@ import {
   LAST_30_DAYS,
   LAST_180_DAYS,
 } from 'ee/analytics/dora/components/static_data/shared';
+import { AI_IMPACT_OVER_TIME_METRICS } from 'ee/analytics/dashboards/ai_impact/constants';
 
 describe('AI Impact Over Time Data Source', () => {
   let res;
@@ -63,7 +64,7 @@ describe('AI Impact Over Time Data Source', () => {
     });
 
     describe('setVisualizationOverrides callback', () => {
-      describe.each(Object.values(AI_METRICS))('for %s metric', (metric) => {
+      describe.each(Object.keys(AI_IMPACT_OVER_TIME_METRICS))('for %s metric', (metric) => {
         let mockSetVisualizationOverrides;
 
         describe.each`

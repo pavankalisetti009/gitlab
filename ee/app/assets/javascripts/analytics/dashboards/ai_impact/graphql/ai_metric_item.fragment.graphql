@@ -8,4 +8,5 @@ fragment AiMetricItem on AiMetrics {
   duoChatContributorsCount
   duoAssignedUsersCount
   duoUsedCount
+  rootCauseAnalysisUsersCount
 }
