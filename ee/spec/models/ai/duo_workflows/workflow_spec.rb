@@ -62,6 +62,20 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
       end
     end
 
+    describe '.with_workflow_definition' do
+      let!(:chat_workflow) { create(:duo_workflows_workflow, workflow_definition: 'chat') }
+      let!(:dev_workflow) { create(:duo_workflows_workflow, workflow_definition: 'software_development') }
+
+      it 'finds workflows with the given workflow definition' do
+        expect(described_class.with_workflow_definition('chat')).to contain_exactly(chat_workflow)
+        expect(described_class.with_workflow_definition('software_development')).to contain_exactly(dev_workflow)
+      end
+
+      it 'returns empty when no workflows match the definition' do
+        expect(described_class.with_workflow_definition('nonexistent')).to be_empty
+      end
+    end
+
     describe '#only_known_pre_approved_agent_priviliges' do
       let(:agent_privileges) { [] }
       let(:pre_approved_agent_privileges) { [] }
