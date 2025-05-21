@@ -291,12 +291,8 @@ module Search
         filtered_projects = projects.without_order
         filtered_projects = filtered_projects.non_archived unless filters[:include_archived]
 
-        # explicit checks are to ensure backwards compatibility
         # default behavior is to exclude forks
-        # `include_forked` is deprecated
-        if (filters[:exclude_forks].nil? && filters[:include_forked].nil?) ||
-            (filters[:exclude_forks] == true) ||
-            (filters[:exclude_forks].nil? && filters[:include_forked] == false)
+        if filters[:exclude_forks].nil? || (filters[:exclude_forks] == true)
           filtered_projects = filtered_projects.not_a_fork
         end
 
