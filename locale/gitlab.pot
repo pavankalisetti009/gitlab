@@ -21200,9 +21200,6 @@ msgstr ""
 msgid "Deleting branches"
 msgstr ""
 
-msgid "Deleting project '%{project_name}'. All data will be removed on %{date}."
-msgstr ""
-
 msgid "Deleting protected branches is blocked by security policies"
 msgstr ""
 
@@ -62725,9 +62722,6 @@ msgstr ""
 msgid "This action will permanently delete this group, including its subgroups and projects."
 msgstr ""
 
-msgid "This action will permanently delete this project, including all its resources."
-msgstr ""
-
 msgid "This action will place this group, including its subgroups and projects, in a pending deletion state for %{deletion_adjourned_period} days, and delete it permanently on %{date}."
 msgstr ""
 
@@ -71063,9 +71057,6 @@ msgid "You are being redirected away from GitLab"
 msgstr ""
 
 msgid "You are currently offline, or the GitLab instance is not reachable."
-msgstr ""
-
-msgid "You are going to delete %{project_full_name}. Deleted projects CANNOT be restored! Are you ABSOLUTELY sure?"
 msgstr ""
 
 msgid "You are going to remove the fork relationship from %{project_full_name}. Are you ABSOLUTELY sure?"

@@ -365,9 +365,8 @@ module Types
 
     field :is_adjourned_deletion_enabled, GraphQL::Types::Boolean,
       null: false,
-      description: 'Indicates if delayed group deletion is enabled.',
-      method: :adjourned_deletion?,
-      experiment: { milestone: '16.11' }
+      deprecated: { reason: 'It is always enabled since 18.0', milestone: '18.0' },
+      description: 'Indicates if delayed group deletion is enabled.'
 
     field :permanent_deletion_date, GraphQL::Types::String,
       null: true,
@@ -472,14 +471,14 @@ module Types
     end
 
     def marked_for_deletion_on
-      return unless group.adjourned_deletion?
-
       group.marked_for_deletion_on
     end
 
-    def permanent_deletion_date
-      return unless group.adjourned_deletion?
+    def is_adjourned_deletion_enabled # rubocop:disable Naming/PredicateName -- back-compatibility
+      true
+    end
 
+    def permanent_deletion_date
       permanent_deletion_date_formatted(group) || permanent_deletion_date_formatted
     end
 

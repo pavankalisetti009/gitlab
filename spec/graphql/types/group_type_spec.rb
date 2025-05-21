@@ -322,59 +322,31 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
       }
     end
 
-    context 'with adjourned deletion disabled' do
-      before do
-        allow_next_found_instance_of(Group) do |group|
-          allow(group).to receive_messages(adjourned_deletion?: false)
-        end
-      end
+    it 'marked_for_deletion_on returns correct date' do
+      marked_for_deletion_on_time = Time.zone.parse(group_data[:marked_for_deletion_on])
 
-      it 'marked_for_deletion_on returns nil' do
-        expect(group_data[:marked_for_deletion_on]).to be_nil
-      end
+      expect(marked_for_deletion_on_time).to eq(pending_delete_group.marked_for_deletion_on.iso8601)
+    end
 
-      it 'is_adjourned_deletion_enabled returns false' do
-        expect(group_data[:is_adjourned_deletion_enabled]).to be false
-      end
+    it 'is_adjourned_deletion_enabled returns true' do
+      expect(group_data[:is_adjourned_deletion_enabled]).to be true
+    end
 
-      it 'permanent_deletion_date returns nil' do
-        expect(group_data[:permanent_deletion_date]).to be_nil
+    context 'when group is scheduled for deletion' do
+      it 'returns date group will be permanently deleted for permanent_deletion_date' do
+        expect(group_data[:permanent_deletion_date])
+          .to eq(
+            ::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(marked_for_deletion_on).strftime('%F')
+          )
       end
     end
 
-    context 'with adjourned deletion enabled' do
-      before do
-        allow_next_found_instance_of(Group) do |group|
-          allow(group).to receive_messages(adjourned_deletion?: true)
-        end
-      end
+    context 'when group is not scheduled for deletion' do
+      let(:group_full_path) { group.full_path }
 
-      it 'marked_for_deletion_on returns correct date' do
-        marked_for_deletion_on_time = Time.zone.parse(group_data[:marked_for_deletion_on])
-
-        expect(marked_for_deletion_on_time).to eq(pending_delete_group.marked_for_deletion_on.iso8601)
-      end
-
-      it 'is_adjourned_deletion_enabled returns true' do
-        expect(group_data[:is_adjourned_deletion_enabled]).to be true
-      end
-
-      context 'when group is scheduled for deletion' do
-        it 'returns date group will be permanently deleted for permanent_deletion_date' do
-          expect(group_data[:permanent_deletion_date])
-            .to eq(
-              ::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(marked_for_deletion_on).strftime('%F')
-            )
-        end
-      end
-
-      context 'when group is not scheduled for deletion' do
-        let(:group_full_path) { group.full_path }
-
-        it 'returns theoretical date group will be permanently deleted for permanent_deletion_date' do
-          expect(group_data[:permanent_deletion_date])
-            .to eq(::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(Date.current).strftime('%F'))
-        end
+      it 'returns theoretical date group will be permanently deleted for permanent_deletion_date' do
+        expect(group_data[:permanent_deletion_date])
+          .to eq(::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(Date.current).strftime('%F'))
       end
     end
   end
