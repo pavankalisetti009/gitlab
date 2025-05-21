@@ -7,24 +7,41 @@ RSpec.describe Security::SecretDetection::TokenLookupService, feature_category: 
 
   describe '#find' do
     context 'with multiple personal access tokens and PAT routable tokens' do
-      let(:token_values) do
+      let_it_be(:raw_token_values) do
         Array.new(4) { |i| format('glpat-%020d', i) } +
           Array.new(4) { |i| format('glpat-%027d', i) }
       end
 
-      let(:personal_access_tokens) { create_list(:personal_access_token, token_values.size) }
+      let_it_be(:personal_access_tokens) { create_list(:personal_access_token, raw_token_values.size) }
 
       before do
-        token_values.each_with_index do |value, index|
+        raw_token_values.each_with_index do |value, index|
           personal_access_tokens[index].update_column(:token_digest, Gitlab::CryptoHelper.sha256(value))
         end
       end
 
       it 'finds the tokens' do
-        result = service.find('gitlab_personal_access_token', token_values)
-        expect(result.size).to eq(token_values.size)
-        token_values.each_with_index do |_, index|
-          expect(result[index].token_digest).to eq(personal_access_tokens[index].token_digest)
+        results = service.find('gitlab_personal_access_token', raw_token_values)
+        expect(results.size).to eq(raw_token_values.size)
+
+        raw_token_values.each_with_index do |token_value, i|
+          found_token = results[token_value]
+          expect(found_token.token_digest).to eq(personal_access_tokens[i].token_digest)
+        end
+      end
+    end
+
+    context 'with multiple deploy tokens' do
+      let(:deploy_tokens) { create_list(:deploy_token, 4) }
+      let(:raw_token_values) { deploy_tokens.map(&:token) }
+
+      it 'finds multiple tokens by their values and type' do
+        results = service.find('gitlab_deploy_token', raw_token_values)
+
+        expect(results.size).to eq(raw_token_values.size)
+        raw_token_values.each_with_index do |token_value, i|
+          found_token = results[token_value]
+          expect(found_token).to eq(deploy_tokens[i])
         end
       end
     end
@@ -45,14 +62,7 @@ RSpec.describe Security::SecretDetection::TokenLookupService, feature_category: 
         result = service.find('gitlab_personal_access_token', all_token_values)
 
         expect(result.size).to eq(existing_token_values.size)
-        existing_token_values.each_with_index do |_, index|
-          expect(result).to include(existing_tokens[index])
-        end
-
-        non_existing_token_values.each do |value|
-          digest = Gitlab::CryptoHelper.sha256(value)
-          expect(result.map(&:token_digest)).not_to include(digest)
-        end
+        expect(existing_token_values).to eql(result.keys)
       end
     end
 

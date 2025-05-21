@@ -1145,6 +1145,26 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       it { is_expected.to eq(expected_location) }
     end
 
+    describe '#token_type' do
+      subject { finding.token_type }
+
+      context 'with a secret detection finding with PAT' do
+        let(:finding) { build(:vulnerabilities_finding, :with_secret_detection_pat) }
+
+        it 'returns the gitleaks_rule_id value from metadata' do
+          is_expected.to eq('gitlab_personal_access_token')
+        end
+      end
+
+      context 'with a non-secret detection finding' do
+        let(:finding) { build(:vulnerabilities_finding, :sast) }
+
+        it 'returns nil' do
+          is_expected.to be_nil
+        end
+      end
+    end
+
     describe '#evidence' do
       subject { finding.evidence }
 
