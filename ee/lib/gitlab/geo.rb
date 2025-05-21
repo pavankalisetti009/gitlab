@@ -189,7 +189,7 @@ module Gitlab
 
       # Note: The env argument is not needed after the first call within a request context.
       #       All subsequent calls within a request should return the same GeoNode record.
-      strong_memoize(:proxied_site) do
+      SafeRequestStore.fetch(:proxied_site) do
         signed_data = Gitlab::Geo::SignedData.new
         signed_data.decode_data(env[GEO_PROXIED_EXTRA_DATA_HEADER])
 
