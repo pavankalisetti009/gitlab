@@ -159,7 +159,7 @@ const humanizePipelineRule = (rule) => {
     : humanizeBranches(rule.branches);
 
   if (hasBranchType(rule) && !hasValidBranchType(rule)) {
-    return INVALID_RULE_MESSAGE;
+    return { summary: INVALID_RULE_MESSAGE };
   }
 
   return {
@@ -262,5 +262,5 @@ export const humanizeRules = (rules) => {
       : acc;
   }, []);
 
-  return humanizedRules.length ? humanizedRules : [NO_RULE_MESSAGE];
+  return humanizedRules.length ? humanizedRules : [{ summary: NO_RULE_MESSAGE }];
 };

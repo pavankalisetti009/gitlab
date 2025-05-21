@@ -186,11 +186,11 @@ describe('humanizeActions', () => {
 
 describe('humanizeRules', () => {
   it('returns the empty rules message in an Array if no rules are specified', () => {
-    expect(humanizeRules([])).toStrictEqual([NO_RULE_MESSAGE]);
+    expect(humanizeRules([])).toStrictEqual([{ summary: NO_RULE_MESSAGE }]);
   });
 
   it('returns the empty rules message in an Array if a single rule is passed in without a branch or agent', () => {
-    expect(humanizeRules([mockRules[0]])).toStrictEqual([NO_RULE_MESSAGE]);
+    expect(humanizeRules([mockRules[0]])).toStrictEqual([{ summary: NO_RULE_MESSAGE }]);
   });
 
   it('returns rules with different number of branches as human-readable strings', () => {
@@ -259,12 +259,14 @@ describe('humanizeRules', () => {
   });
 
   it('returns the empty rules message in an Array if a single rule is passed in without an invalid branch type', () => {
-    expect(humanizeRules([mockRulesBranchType[0]])).toStrictEqual([INVALID_RULE_MESSAGE]);
+    expect(humanizeRules([mockRulesBranchType[0]])).toStrictEqual([
+      { summary: INVALID_RULE_MESSAGE },
+    ]);
   });
 
   it('returns rules with different branch types as human-readable strings', () => {
     expect(humanizeRules(mockRulesBranchType)).toStrictEqual([
-      INVALID_RULE_MESSAGE,
+      { summary: INVALID_RULE_MESSAGE },
       {
         branchExceptions: [],
         summary: 'Every time a pipeline runs for any protected branch',
