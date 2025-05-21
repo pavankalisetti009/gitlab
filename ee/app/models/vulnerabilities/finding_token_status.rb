@@ -24,6 +24,8 @@ module Vulnerabilities
     # Ensure the project_id is always set from the finding
     before_validation :set_project_id, on: :create, if: -> { project_id.nil? && finding.present? }
 
+    scope :with_vulnerability_occurrence_ids, ->(ids) { where(vulnerability_occurrence_id: ids) }
+
     private
 
     def set_project_id

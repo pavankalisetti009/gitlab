@@ -260,6 +260,7 @@ export const generateVulnerabilities = () => [
     },
     reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
+    findingTokenStatus: null,
   },
   {
     id: 'id_1',
@@ -302,6 +303,7 @@ export const generateVulnerabilities = () => [
     },
     reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
+    findingTokenStatus: null,
   },
   {
     id: 'id_2',
@@ -340,6 +342,7 @@ export const generateVulnerabilities = () => [
     },
     reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
+    findingTokenStatus: null,
   },
   {
     id: 'id_3',
@@ -374,6 +377,7 @@ export const generateVulnerabilities = () => [
     },
     reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
+    findingTokenStatus: null,
   },
   {
     id: 'id_4',
@@ -406,6 +410,7 @@ export const generateVulnerabilities = () => [
     },
     reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
+    findingTokenStatus: null,
   },
   {
     id: 'id_5',
@@ -440,6 +445,7 @@ export const generateVulnerabilities = () => [
     },
     reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
+    findingTokenStatus: null,
   },
   {
     id: 'id_6',
@@ -475,6 +481,7 @@ export const generateVulnerabilities = () => [
     },
     reachability: 'UNKNOWN',
     __typename: 'Vulnerability',
+    findingTokenStatus: null,
   },
 ];
 
