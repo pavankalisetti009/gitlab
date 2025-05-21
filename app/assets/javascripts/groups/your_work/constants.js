@@ -37,6 +37,11 @@ export const INACTIVE_TAB = {
   text: __('Inactive'),
   value: 'inactive',
   variables: { active: false },
+  emptyStateComponentProps: {
+    svgPath: groupsEmptyStateIllustration,
+    title: s__("Groups|You don't have any inactive groups."),
+    description: s__('Groups|Groups that are archived or pending deletion will appear here.'),
+  },
 };
 
 export const SORT_OPTION_NAME = {
