@@ -7,12 +7,16 @@ import { mockCodeSuggestionsFeatureSettings } from './mock_data';
 describe('FeatureSettingsTableRows', () => {
   let wrapper;
 
+  const groupId = 'gid://gitlab/Group/1';
   const createComponent = (props = {}) => {
     wrapper = mountExtended(FeatureSettingsTableRows, {
       propsData: {
         aiFeatureSettings: mockCodeSuggestionsFeatureSettings,
         isLoading: false,
         ...props,
+      },
+      provide: {
+        groupId,
       },
     });
   };

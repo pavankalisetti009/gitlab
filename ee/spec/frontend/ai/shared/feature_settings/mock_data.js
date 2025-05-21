@@ -52,10 +52,7 @@ export const mockDuoChatFeatureSettings = [
     feature: 'duo_chat',
     title: 'General Chat',
     mainFeature: 'GitLab Duo Chat',
-    selectedModel: {
-      ref: 'claude_sonnet_3_7_20250219',
-      name: 'Claude Sonnet 3.7 - Anthropic',
-    },
+    selectedModel: null,
     selectableModels: [
       {
         ref: 'claude_sonnet_3_7_20250219',
