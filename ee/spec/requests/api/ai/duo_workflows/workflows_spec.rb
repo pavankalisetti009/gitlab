@@ -32,6 +32,29 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       }
     end
 
+    context 'when workflow is chat' do
+      let(:workflow_definition) { 'chat' }
+
+      before do
+        allow(Gitlab::AiGateway).to receive(:public_headers)
+          .with(user: user, service_name: :duo_workflow)
+          .and_return({ 'x-gitlab-enabled-feature-flags' => 'test-feature' })
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(user, :access_duo_agentic_chat, project).and_return(true)
+      end
+
+      it 'creates the Ai::DuoWorkflows::Workflow' do
+        expect do
+          post api(path, user), params: params
+          expect(response).to have_gitlab_http_status(:created)
+        end.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+
+        created_workflow = Ai::DuoWorkflows::Workflow.last
+
+        expect(created_workflow.workflow_definition).to eq(workflow_definition)
+      end
+    end
+
     context 'when success' do
       before do
         allow(Gitlab::AiGateway).to receive(:public_headers)
@@ -273,9 +296,10 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       })
     end
 
-    context 'when the duo_workflows feature flag is disabled for the user' do
+    context 'when the duo_workflows and agentic_chat feature flag is disabled for the user' do
       before do
         stub_feature_flags(duo_workflow: false)
+        stub_feature_flags(duo_agentic_chat: false)
       end
 
       it 'returns not found' do
