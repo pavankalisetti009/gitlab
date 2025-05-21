@@ -630,9 +630,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     let(:service) { described_class.new(user, project, search: 'Goodbye').execute }
 
     before do
-      # this flag is default off and all related code will be removed and replaced by search_work_item_queries_notes
-      stub_feature_flags(advanced_search_work_item_uses_note_fields: false)
-
       Elastic::ProcessInitialBookkeepingService.track!(issue, note)
       ensure_elasticsearch_index!
     end
