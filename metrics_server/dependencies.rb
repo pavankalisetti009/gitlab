@@ -9,6 +9,7 @@ require 'active_support/inflector'
 require 'active_support/core_ext/numeric/bytes'
 
 require 'prometheus/client'
+require 'gitlab-labkit'
 require 'rack'
 
 require 'gitlab/utils/all'
