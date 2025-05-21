@@ -6,7 +6,8 @@ import { WORK_ITEM_TYPE_NAME_EPIC, WORK_ITEM_TYPE_NAME_ISSUE } from '~/work_item
 import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 
-import epicListQuery from '../graphql/list/get_work_items_for_epics.query.graphql';
+import epicListFullQuery from '../graphql/list/get_work_items_for_epics_full.query.graphql';
+import epicListSlimQuery from '../graphql/list/get_work_items_for_epics_slim.query.graphql';
 
 export default {
   emptyStateSvg,
@@ -48,14 +49,16 @@ export default {
       this.workItemUpdateCount += 1;
     },
   },
-  epicListQuery,
+  epicListFullQuery,
+  epicListSlimQuery,
 };
 </script>
 
 <template>
   <work-items-list-app
     :ee-work-item-update-count="workItemUpdateCount"
-    :ee-epic-list-query="$options.epicListQuery"
+    :ee-epic-list-full-query="$options.epicListFullQuery"
+    :ee-epic-list-slim-query="$options.epicListSlimQuery"
     :with-tabs="withTabs"
     :new-comment-template-paths="newCommentTemplatePaths"
   >
