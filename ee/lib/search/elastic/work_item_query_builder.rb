@@ -57,9 +57,7 @@ module Search
       def fields
         return options[:fields] if options[:fields].presence
 
-        return FIELDS unless Feature.enabled?(:advanced_search_work_item_uses_note_fields, options[:current_user])
-
-        FIELDS + %w[notes notes_internal]
+        FIELDS
       end
 
       def related_ids

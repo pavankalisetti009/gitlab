@@ -150,20 +150,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
               work_item:multi_match_phrase:search_terms])
         end
       end
-
-      context 'when search_uses_note_fields feature flag is disabled' do
-        before do
-          stub_feature_flags(advanced_search_work_item_uses_note_fields: false)
-        end
-
-        it 'returns the expected query without the note fields' do
-          assert_fields_in_query(build, without: %w[notes notes_internal])
-        end
-      end
-
-      it 'returns the expected query with the note fields' do
-        assert_fields_in_query(build, with: %w[notes notes_internal])
-      end
     end
   end
 
@@ -277,7 +263,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
           simple_qs_with_boost = {
             simple_query_string: {
               _name: "work_item:match:search_terms",
-              fields: ["iid^50", "title^2", "description", "notes", "notes_internal"],
+              fields: described_class::FIELDS,
               query: query,
               lenient: true,
               default_operator: :and,

@@ -79,20 +79,6 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
               work_item:multi_match_phrase:search_terms])
         end
       end
-
-      context 'when search_uses_note_fields feature flag is disabled' do
-        before do
-          stub_feature_flags(advanced_search_work_item_uses_note_fields: false)
-        end
-
-        it 'returns the expected query without the note fields' do
-          assert_fields_in_query(build, without: %w[notes notes_internal])
-        end
-      end
-
-      it 'returns the expected query with the note fields' do
-        assert_fields_in_query(build, with: %w[notes notes_internal])
-      end
     end
   end
 

@@ -9,6 +9,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
   let_it_be(:user) { create(:user) }
   let_it_be_with_reload(:group) { create(:group) }
+  let_it_be_with_refind(:project) { create(:project, :public, :repository, namespace: group) }
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -72,16 +73,22 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       let_it_be(:other_project) { create(:project, :public, namespace: nested_group, name: 'OtherProject') }
 
       # These projects should be found
-      let_it_be(:project1) { create(:project, :internal, namespace: nested_group, name: "Inner #{term} 1") }
-      let_it_be(:project2) { create(:project, :internal, namespace: nested_group, name: "Inner #{term} 2") }
-      let_it_be(:project3) do
+      let_it_be(:internal_project_1) do
+        create(:project, :internal, namespace: nested_group, name: "Inner #{term} 1")
+      end
+
+      let_it_be(:internal_project_2) do
+        create(:project, :internal, namespace: nested_group, name: "Inner #{term} 2")
+      end
+
+      let_it_be(:internal_project_3) do
         create(:project, :internal, namespace: nested_group.parent, name: "Outer #{term}")
       end
 
       before_all do
         # Ensure these are present when the index is refreshed
         Elastic::ProcessInitialBookkeepingService.track!(
-          outside_project, private_project, other_project, project1, project2, project3
+          outside_project, private_project, other_project, internal_project_1, internal_project_2, internal_project_3
         )
 
         ensure_elasticsearch_index!
@@ -92,28 +99,23 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       context 'in parent group' do
         let(:search_group) { nested_group.parent }
 
-        it { is_expected.to match_array([project1, project2, project3]) }
+        it { is_expected.to match_array([internal_project_1, internal_project_2, internal_project_3]) }
       end
 
       context 'in subgroup' do
         let(:search_group) { nested_group }
 
-        it { is_expected.to match_array([project1, project2]) }
+        it { is_expected.to match_array([internal_project_1, internal_project_2]) }
       end
     end
 
     context 'for issues scope' do
-      let_it_be(:project3) { create(:project, :public, :in_group) }
-      let_it_be(:issue) { create(:issue, project: project3, title: 'Hello world, here I am!') }
+      let(:term) { 'Goodbye' }
+      let(:search_group) { group }
+      let_it_be(:issue) { create(:issue, project: project, title: 'Hello world, here I am!') }
       let_it_be(:note) { create(:note_on_issue, note: 'Goodbye moon', noteable: issue, project: issue.project) }
 
-      let(:term) { 'Goodbye' }
-      let(:search_group) { project3.group }
-
       before do
-        # this flag is default off and all related code will be removed and replaced by search_work_item_queries_notes
-        stub_feature_flags(advanced_search_work_item_uses_note_fields: false)
-
         Elastic::ProcessInitialBookkeepingService.track!(issue, note)
         ensure_elasticsearch_index!
       end
@@ -335,7 +337,6 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
   describe 'visibility', :elastic_delete_by_query do
     include_context 'ProjectPolicyTable context'
 
-    let_it_be_with_refind(:project) { create(:project, :repository, namespace: group) }
     let_it_be_with_refind(:project2) { create(:project, :repository) }
 
     let(:user) { create_user_from_membership(project, membership) }
@@ -507,8 +508,6 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     end
 
     context 'for projects' do
-      let_it_be_with_reload(:project) { create(:project, namespace: group) }
-
       where(:project_level, :membership, :expected_count) do
         permission_table_for_project_access
       end
@@ -534,15 +533,17 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       end
     end
 
-    context 'on epic', :sidekiq_inline do
+    context 'for epics', :sidekiq_inline do
       # sidekiq is needed for the group association worker updates
       include_context 'for GroupPolicyTable context'
 
-      let(:user_in_group) { create_user_from_membership(group, membership) }
+      let_it_be_with_reload(:epic_group) { create(:group) }
+      let(:user_in_group) { create_user_from_membership(epic_group, membership) }
       let(:scope) { 'epics' }
       let(:search) { 'chosen epic title' }
+      let(:search_level) { epic_group } # search_level is used in the shared example
       let_it_be(:epic) do
-        create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: 'chosen epic title')
+        create(:work_item, :group_level, :epic_with_legacy_epic, namespace: epic_group, title: 'chosen epic title')
       end
 
       where(:group_level, :membership, :admin_mode, :expected_count) do
@@ -553,8 +554,8 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
         it 'respects visibility' do
           enable_admin_mode!(user_in_group) if admin_mode
 
+          epic_group.update!(visibility_level: Gitlab::VisibilityLevel.level_value(group_level.to_s))
           ::Elastic::ProcessBookkeepingService.track!(epic)
-          group.update!(visibility_level: Gitlab::VisibilityLevel.level_value(group_level.to_s))
           ensure_elasticsearch_index!
           expect_search_results(user_in_group, scope, expected_count: expected_count) do |user|
             described_class.new(user, search_level, search: search).execute
@@ -566,8 +567,6 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
   context 'when sorting', :elastic do
     context 'for issues' do
-      let_it_be(:project) { create(:project, :public, group: group) }
-
       let_it_be(:old_result) { create(:work_item, project: project, title: 'sorted old', created_at: 1.month.ago) }
       let_it_be(:new_result) { create(:work_item, project: project, title: 'sorted recent', created_at: 1.day.ago) }
       let_it_be(:very_old_result) do
@@ -595,8 +594,6 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
     context 'for merge requests' do
       let(:scope) { 'merge_requests' }
-      let_it_be(:project) { create(:project, :public, group: group) }
-
       let_it_be(:new_result) do
         create(:merge_request, :opened, source_project: project,
           source_branch: 'new-1', title: 'sorted recent', created_at: 1.day.ago)
