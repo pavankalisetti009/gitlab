@@ -22764,6 +22764,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="cicatalogresourcecomponentid"></a>`id` | [`CiCatalogResourcesComponentID!`](#cicatalogresourcescomponentid) | ID of the component. |
 | <a id="cicatalogresourcecomponentincludepath"></a>`includePath` | [`String`](#string) | Path used to include the component. |
 | <a id="cicatalogresourcecomponentinputs"></a>`inputs` | [`[CiInputsSpec!]`](#ciinputsspec) | Inputs for the component. |
+| <a id="cicatalogresourcecomponentlast30dayusagecount"></a>`last30DayUsageCount` | [`Int`](#int) | Number of times the component has been used in the last 30 days in a pipeline using `include`. |
 | <a id="cicatalogresourcecomponentname"></a>`name` | [`String`](#string) | Name of the component. |
 
 ### `CiCatalogResourceComponentUsage`
