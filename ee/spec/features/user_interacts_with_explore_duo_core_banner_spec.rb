@@ -9,6 +9,9 @@ RSpec.describe "User interacts with explore duo core banner", :js, feature_categ
 
       page.within('.explore-duo-core-banner') do
         find('.gl-banner-close').click
+        # Need to wait for requests or else the queries from this request will get
+        # added to the query transaction count and overflow the limit
+        wait_for_all_requests
       end
 
       expect_banner_dismissed
@@ -19,6 +22,7 @@ RSpec.describe "User interacts with explore duo core banner", :js, feature_categ
 
       page.within('.explore-duo-core-banner') do
         click_link 'Explore GitLab Duo Core'
+        wait_for_all_requests
       end
 
       expect_banner_dismissed
@@ -67,8 +71,6 @@ RSpec.describe "User interacts with explore duo core banner", :js, feature_categ
     end
 
     before do
-      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(115)
-
       sign_in(user)
 
       visit(merge_request_path(merge_request))
