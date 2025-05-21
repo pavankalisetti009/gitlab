@@ -39,7 +39,7 @@ RSpec.describe Nav::NewDropdownHelper, feature_category: :navigation do
       end
     end
 
-    shared_examples 'legacy epic menu' do
+    shared_examples 'epic menu' do
       it 'shows create epic menu item' do
         epic_item = {
           title: 'In this group',
@@ -47,7 +47,7 @@ RSpec.describe Nav::NewDropdownHelper, feature_category: :navigation do
             ::Gitlab::Nav::TopNavMenuItem.build(
               id: 'create_epic',
               title: 'New epic',
-              href: "/groups/#{group.path}/-/epics/new",
+              component: 'create_new_work_item_modal',
               data: {
                 track_action: 'click_link_new_epic',
                 track_label: 'plus_menu_dropdown',
@@ -66,28 +66,20 @@ RSpec.describe Nav::NewDropdownHelper, feature_category: :navigation do
         stub_licensed_features(epics: true)
       end
 
-      context 'when namespace_level_work_items flags is enabled' do
+      context 'when work_item_planning_view flags is enabled' do
         before do
-          stub_feature_flags(work_item_epics: false, namespace_level_work_items: true)
+          stub_feature_flags(work_item_planning_view: true)
         end
 
         it_behaves_like 'work item menu'
       end
 
-      context 'when work_item_epics and namespace_level_work_items flags are disabled' do
+      context 'when work_item_planning_view is disabled' do
         before do
-          stub_feature_flags(work_item_epics: false, namespace_level_work_items: false, work_item_planning_view: false)
+          stub_feature_flags(work_item_planning_view: false)
         end
 
-        it_behaves_like 'legacy epic menu'
-      end
-
-      context 'when work_item_epics is enabled and namespace_level_work_items is disabled' do
-        before do
-          stub_feature_flags(work_item_epics: true, namespace_level_work_items: false)
-        end
-
-        it_behaves_like 'work item menu'
+        it_behaves_like 'epic menu'
       end
     end
   end
