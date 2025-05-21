@@ -8,8 +8,12 @@ require 'active_support/concern'
 require 'active_support/inflector'
 require 'active_support/core_ext/numeric/bytes'
 
-require 'prometheus/client'
-require 'gitlab-labkit'
+if ENV["LABKIT_METRICS_ENABLED"] == "true"
+  require 'gitlab-labkit'
+else
+  require 'prometheus/client'
+end
+
 require 'rack'
 
 require 'gitlab/utils/all'

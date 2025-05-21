@@ -83,7 +83,16 @@ module Gitlab
             use Rack::Deflater
             use Gitlab::Metrics::Exporter::MetricsMiddleware, pid
             use Gitlab::Metrics::Exporter::GcRequestMiddleware if gc_requests
-            use ::Prometheus::Client::Rack::Exporter if ::Gitlab::Metrics.metrics_folder_present?
+
+            if ::Gitlab::Metrics.metrics_enabled?
+              if ::Gitlab::Metrics::LABKIT_METRICS_ENABLED
+                require 'labkit/metrics/rack_exporter'
+                use Labkit::Metrics::RackExporter
+              else
+                use ::Prometheus::Client::Rack::Exporter
+              end
+            end
+
             run ->(env) { [404, {}, ['']] }
           end
         end

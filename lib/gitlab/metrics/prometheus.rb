@@ -8,12 +8,14 @@ module Gitlab
       REGISTRY_MUTEX = Mutex.new
       PROVIDER_MUTEX = Mutex.new
 
+      LABKIT_METRICS_ENABLED = ENV.fetch('LABKIT_METRICS_ENABLED', 'false') == 'true'
+
       class_methods do
         include Gitlab::Utils::StrongMemoize
 
         # TODO: remove when we move away from Prometheus::Client to Labkit::Metrics::Client completely
         # https://gitlab.com/gitlab-com/gl-infra/observability/team/-/issues/4160
-        if ENV.fetch('LABKIT_METRIC_ENABLED', 'false') == 'true'
+        if LABKIT_METRICS_ENABLED
           def client
             Labkit::Metrics::Client
           end
