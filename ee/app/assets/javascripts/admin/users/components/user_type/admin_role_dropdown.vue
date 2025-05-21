@@ -1,5 +1,5 @@
 <script>
-import { GlCollapsibleListbox, GlAlert, GlIcon } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlAlert, GlIcon, GlSkeletonLoader } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
@@ -9,7 +9,7 @@ const NO_ACCESS_VALUE = -1;
 const NO_ACCESS_TEXT = __('No access');
 
 export default {
-  components: { GlCollapsibleListbox, GlAlert, GlIcon },
+  components: { GlCollapsibleListbox, GlAlert, GlIcon, GlSkeletonLoader },
   inject: ['manageRolesPath'],
   props: {
     role: {
@@ -22,7 +22,6 @@ export default {
     return {
       adminRoles: [],
       currentRoleId: this.role?.id || NO_ACCESS_VALUE,
-      hasDropdownBeenOpened: false,
     };
   },
   apollo: {
@@ -37,9 +36,6 @@ export default {
       },
       error() {
         this.adminRoles = null;
-      },
-      skip() {
-        return !this.hasDropdownBeenOpened;
       },
     },
   },
@@ -61,9 +57,9 @@ export default {
       ];
     },
     toggleText() {
-      // Until we've loaded the admin roles, show the role name if there is one. Otherwise, return
-      // an empty string to use the dropdown's default behavior.
-      return !this.hasDropdownBeenOpened || this.isLoadingAdminRoles ? this.role?.name : '';
+      // If we're loading roles, show the role name if there is one. Otherwise, return an empty
+      // string to use the dropdown's default behavior of showing the selected option's text.
+      return this.isLoadingAdminRoles ? this.role?.name : '';
     },
     rolePermissions() {
       const role = this.adminRoles.find(({ value }) => value === this.currentRoleId);
@@ -100,7 +96,6 @@ export default {
       :reset-button-label="s__('MemberRole|Manage roles')"
       data-testid="admin-role-dropdown"
       @reset="goToManageRolesPage"
-      @shown="hasDropdownBeenOpened = true"
     >
       <template #list-item="{ item }">
         <div
@@ -123,15 +118,14 @@ export default {
 
     <input name="user[admin_role_id]" :value="roleIdValue" type="hidden" />
 
-    <ul
-      v-if="rolePermissions"
-      class="gl-mb-0 gl-mt-3 gl-list-none gl-pl-0"
-      data-testid="permissions"
-    >
-      <li v-for="{ name } in rolePermissions" :key="name">
-        <gl-icon name="check" variant="success" />
-        <span class="gl-text-subtle">{{ name }}</span>
-      </li>
-    </ul>
+    <div v-if="roleIdValue" class="gl-mt-3">
+      <gl-skeleton-loader v-if="isLoadingAdminRoles" :lines="2" />
+      <ul v-else class="gl-mb-0 gl-list-none gl-pl-0" data-testid="permissions">
+        <li v-for="{ name } in rolePermissions" :key="name">
+          <gl-icon name="check" variant="success" />
+          <span class="gl-text-subtle">{{ name }}</span>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
