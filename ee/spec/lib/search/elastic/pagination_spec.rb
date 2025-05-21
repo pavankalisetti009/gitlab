@@ -320,4 +320,60 @@ RSpec.describe ::Search::Elastic::Pagination, feature_category: :global_search d
       })
     end
   end
+
+  context 'when sort contains more than one sort properties' do
+    before do
+      query_hash[:sort] = { severity: { order: :asc }, vulnerability_id: { order: :desc } }
+    end
+
+    let(:paginator) { described_class.new(query_hash) }
+
+    subject(:first_10_records_query) { paginator.after(2, 100).first(10) }
+
+    it 'generates the query based on second sort property as the tie-breaker property' do
+      expect(first_10_records_query).to eq({
+        query: {
+          bool: {
+            should: [],
+            must_not: [],
+            must: [],
+            filter: [
+              {
+                bool: {
+                  should: [
+                    {
+                      range: {
+                        severity: { gt: 2 }
+                      }
+                    },
+                    {
+                      bool: {
+                        must: [
+                          {
+                            term: {
+                              severity: 2
+                            }
+                          },
+                          {
+                            range: {
+                              vulnerability_id: { lt: 100 }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        sort: [
+          { severity: { order: :asc } },
+          { vulnerability_id: { order: :desc } }
+        ],
+        size: 10
+      })
+    end
+  end
 end
