@@ -208,4 +208,20 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
 
     expect(workflow.reload.workloads).to contain_exactly(workload1, workload2)
   end
+
+  describe '#chat?' do
+    subject { workflow.chat? }
+
+    context 'when workflow_definition is chat' do
+      let(:workflow) { build(:duo_workflows_workflow, workflow_definition: 'chat') }
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when workflow_definition is different from chat' do
+      let(:workflow) { build(:duo_workflows_workflow, workflow_definition: 'awesome workflow') }
+
+      it { is_expected.to be_falsey }
+    end
+  end
 end

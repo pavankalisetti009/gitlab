@@ -24,8 +24,12 @@ module API
             forbidden!
           end
 
-          def authorize_run_workflows!(project)
-            return if can?(current_user, :duo_workflow, project)
+          def authorize_run_workflows!(project, workflow_definition)
+            if workflow_definition == 'chat'
+              return if can?(current_user, :access_duo_agentic_chat, project)
+            elsif can?(current_user, :duo_workflow, project)
+              return
+            end
 
             forbidden!
           end
@@ -106,7 +110,8 @@ module API
               end
 
               post do
-                not_found! unless Feature.enabled?(:duo_workflow, current_user)
+                not_found! unless Feature.enabled?(:duo_workflow, current_user) ||
+                  Feature.enabled?(:duo_agentic_chat, current_user)
 
                 check_rate_limit!(:duo_workflow_direct_access, scope: current_user) do
                   render_api_error!(_('This endpoint has been requested too many times. Try again later.'), 429)
@@ -160,7 +165,7 @@ module API
               end
               post do
                 project = find_project!(params[:project_id])
-                authorize_run_workflows!(project)
+                authorize_run_workflows!(project, params[:workflow_definition])
 
                 service = ::Ai::DuoWorkflows::CreateWorkflowService.new(project: project, current_user: current_user,
                   params: create_workflow_params)

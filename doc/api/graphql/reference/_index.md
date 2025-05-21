@@ -12862,6 +12862,7 @@ Input type: `WorkItemExportInput`
 | <a id="mutationworkitemexportmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="mutationworkitemexportnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="mutationworkitemexportor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="mutationworkitemexportparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="mutationworkitemexportprojectpath"></a>`projectPath` | [`ID!`](#id) | Full project path. |
 | <a id="mutationworkitemexportsearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="mutationworkitemexportselectedfields"></a>`selectedFields` | [`[AvailableExportFields!]`](#availableexportfields) | List of selected fields to be exported. Omit to export all available fields. |
@@ -13041,6 +13042,7 @@ Input type: `WorkItemsCsvExportInput`
 | <a id="mutationworkitemscsvexportmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="mutationworkitemscsvexportnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="mutationworkitemscsvexportor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="mutationworkitemscsvexportparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="mutationworkitemscsvexportprojectpath"></a>`projectPath` | [`ID!`](#id) | Full project path. |
 | <a id="mutationworkitemscsvexportsearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="mutationworkitemscsvexportselectedfields"></a>`selectedFields` | [`[AvailableExportFields!]`](#availableexportfields) | List of selected fields to be exported. Omit to export all available fields. |
@@ -25250,6 +25252,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserworkitemsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="currentuserworkitemsnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="currentuserworkitemsor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="currentuserworkitemsparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="currentuserworkitemssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="currentuserworkitemssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
 | <a id="currentuserworkitemsstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the work item. |
@@ -27912,6 +27915,7 @@ GPG signature for a signed commit.
 | <a id="grouptotalrepositorysizeexcess"></a>`totalRepositorySizeExcess` | [`Float`](#float) | Total excess repository size of all projects in the root namespace in bytes. This only applies to namespaces under Project limit enforcement. |
 | <a id="grouptwofactorgraceperiod"></a>`twoFactorGracePeriod` | [`Int`](#int) | Time before two-factor authentication is enforced. |
 | <a id="groupupdatedat"></a>`updatedAt` | [`Time`](#time) | Timestamp of when the group was last updated. |
+| <a id="groupuserlevelpermissions"></a>`userLevelPermissions` {{< icon name="warning-solid" >}} | [`UserLevelPermissions`](#userlevelpermissions) | **Introduced** in GitLab 18.1. **Status**: Experiment. User permissions on the namespace. |
 | <a id="groupuserpermissions"></a>`userPermissions` | [`GroupPermissions!`](#grouppermissions) | Permissions for the current user on the resource. |
 | <a id="groupvaluestreamanalytics"></a>`valueStreamAnalytics` | [`ValueStreamAnalytics`](#valuestreamanalytics) | Information about Value Stream Analytics within the group. |
 | <a id="groupvisibility"></a>`visibility` | [`String`](#string) | Visibility of the namespace. |
@@ -29575,6 +29579,7 @@ Returns [`WorkItemStateCountsType`](#workitemstatecountstype).
 | <a id="groupworkitemstatecountsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="groupworkitemstatecountsnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="groupworkitemstatecountsor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="groupworkitemstatecountsparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="groupworkitemstatecountsrequirementlegacywidget"></a>`requirementLegacyWidget` {{< icon name="warning-solid" >}} | [`RequirementLegacyFilterInput`](#requirementlegacyfilterinput) | **Deprecated** in GitLab 15.9. Use work item IID filter instead. |
 | <a id="groupworkitemstatecountssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="groupworkitemstatecountssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
@@ -29647,6 +29652,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupworkitemsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="groupworkitemsnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="groupworkitemsor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="groupworkitemsparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="groupworkitemsrequirementlegacywidget"></a>`requirementLegacyWidget` {{< icon name="warning-solid" >}} | [`RequirementLegacyFilterInput`](#requirementlegacyfilterinput) | **Deprecated** in GitLab 15.9. Use work item IID filter instead. |
 | <a id="groupworkitemssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="groupworkitemssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
@@ -29846,6 +29852,17 @@ Limited group data accessible to users without full group read access (e.g. non-
 | <a id="groupnamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
 | <a id="groupnamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="groupnamespacelinkssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
+
+### `GroupNamespaceUserLevelPermissions`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupnamespaceuserlevelpermissionscanadminlabel"></a>`canAdminLabel` | [`Boolean`](#boolean) | Whether the current user can admin labels in the namespace. |
+| <a id="groupnamespaceuserlevelpermissionscanbulkeditepics"></a>`canBulkEditEpics` | [`Boolean`](#boolean) | Whether the current user can bulk edit epics in the group. |
+| <a id="groupnamespaceuserlevelpermissionscancreateepic"></a>`canCreateEpic` | [`Boolean`](#boolean) | Whether the current user can create epics in the group. |
+| <a id="groupnamespaceuserlevelpermissionscancreateprojects"></a>`canCreateProjects` | [`Boolean`](#boolean) | Whether the current user can create projects in the namespace. |
 
 ### `GroupPermissions`
 
@@ -33429,6 +33446,7 @@ Product analytics events for a specific month and year.
 | <a id="namespacetimelogcategories"></a>`timelogCategories` {{< icon name="warning-solid" >}} | [`TimeTrackingTimelogCategoryConnection`](#timetrackingtimelogcategoryconnection) | **Introduced** in GitLab 15.3. **Status**: Experiment. Timelog categories for the namespace. |
 | <a id="namespacetotalrepositorysize"></a>`totalRepositorySize` | [`Float`](#float) | Total repository size of all projects in the root namespace in bytes. |
 | <a id="namespacetotalrepositorysizeexcess"></a>`totalRepositorySizeExcess` | [`Float`](#float) | Total excess repository size of all projects in the root namespace in bytes. This only applies to namespaces under Project limit enforcement. |
+| <a id="namespaceuserlevelpermissions"></a>`userLevelPermissions` {{< icon name="warning-solid" >}} | [`UserLevelPermissions`](#userlevelpermissions) | **Introduced** in GitLab 18.1. **Status**: Experiment. User permissions on the namespace. |
 | <a id="namespaceuserpermissions"></a>`userPermissions` | [`NamespacePermissions!`](#namespacepermissions) | Permissions for the current user on the resource. |
 | <a id="namespacevisibility"></a>`visibility` | [`String`](#string) | Visibility of the namespace. |
 | <a id="namespaceweburl"></a>`webUrl` | [`String`](#string) | URL of the object. |
@@ -37656,6 +37674,7 @@ Returns [`WorkItemStateCountsType`](#workitemstatecountstype).
 | <a id="projectworkitemstatecountsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="projectworkitemstatecountsnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="projectworkitemstatecountsor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="projectworkitemstatecountsparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="projectworkitemstatecountsrequirementlegacywidget"></a>`requirementLegacyWidget` {{< icon name="warning-solid" >}} | [`RequirementLegacyFilterInput`](#requirementlegacyfilterinput) | **Deprecated** in GitLab 15.9. Use work item IID filter instead. |
 | <a id="projectworkitemstatecountssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="projectworkitemstatecountssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
@@ -37724,6 +37743,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectworkitemsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="projectworkitemsnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="projectworkitemsor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="projectworkitemsparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="projectworkitemsrequirementlegacywidget"></a>`requirementLegacyWidget` {{< icon name="warning-solid" >}} | [`RequirementLegacyFilterInput`](#requirementlegacyfilterinput) | **Deprecated** in GitLab 15.9. Use work item IID filter instead. |
 | <a id="projectworkitemssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="projectworkitemssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
@@ -37864,6 +37884,17 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | <a id="projectnamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
 | <a id="projectnamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="projectnamespacelinkssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
+
+### `ProjectNamespaceUserLevelPermissions`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectnamespaceuserlevelpermissionscanadminlabel"></a>`canAdminLabel` | [`Boolean`](#boolean) | Whether the current user can admin labels in the namespace. |
+| <a id="projectnamespaceuserlevelpermissionscanbulkeditepics"></a>`canBulkEditEpics` | [`Boolean`](#boolean) | Whether the current user can bulk edit epics in the group. |
+| <a id="projectnamespaceuserlevelpermissionscancreateepic"></a>`canCreateEpic` | [`Boolean`](#boolean) | Whether the current user can create epics in the group. |
+| <a id="projectnamespaceuserlevelpermissionscancreateprojects"></a>`canCreateProjects` | [`Boolean`](#boolean) | Whether the current user can create projects in the namespace. |
 
 ### `ProjectPermissions`
 
@@ -40683,6 +40714,17 @@ fields relate to interactions between the two entities.
 | <a id="usernamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
 | <a id="usernamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="usernamespacelinkssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
+
+### `UserNamespaceUserLevelPermissions`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="usernamespaceuserlevelpermissionscanadminlabel"></a>`canAdminLabel` | [`Boolean`](#boolean) | Whether the current user can admin labels in the namespace. |
+| <a id="usernamespaceuserlevelpermissionscanbulkeditepics"></a>`canBulkEditEpics` | [`Boolean`](#boolean) | Whether the current user can bulk edit epics in the group. |
+| <a id="usernamespaceuserlevelpermissionscancreateepic"></a>`canCreateEpic` | [`Boolean`](#boolean) | Whether the current user can create epics in the group. |
+| <a id="usernamespaceuserlevelpermissionscancreateprojects"></a>`canCreateProjects` | [`Boolean`](#boolean) | Whether the current user can create projects in the namespace. |
 
 ### `UserPermissions`
 
@@ -49328,6 +49370,23 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="useruserachievementsincludehidden"></a>`includeHidden` | [`Boolean`](#boolean) | Indicates whether or not achievements hidden from the profile should be included in the result. |
+
+#### `UserLevelPermissions`
+
+Implementations:
+
+- [`GroupNamespaceUserLevelPermissions`](#groupnamespaceuserlevelpermissions)
+- [`ProjectNamespaceUserLevelPermissions`](#projectnamespaceuserlevelpermissions)
+- [`UserNamespaceUserLevelPermissions`](#usernamespaceuserlevelpermissions)
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="userlevelpermissionscanadminlabel"></a>`canAdminLabel` | [`Boolean`](#boolean) | Whether the current user can admin labels in the namespace. |
+| <a id="userlevelpermissionscanbulkeditepics"></a>`canBulkEditEpics` | [`Boolean`](#boolean) | Whether the current user can bulk edit epics in the group. |
+| <a id="userlevelpermissionscancreateepic"></a>`canCreateEpic` | [`Boolean`](#boolean) | Whether the current user can create epics in the group. |
+| <a id="userlevelpermissionscancreateprojects"></a>`canCreateProjects` | [`Boolean`](#boolean) | Whether the current user can create projects in the namespace. |
 
 #### `VulnerabilityStatisticInterface`
 
