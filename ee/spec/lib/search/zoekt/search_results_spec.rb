@@ -411,18 +411,14 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
       describe 'fork filters' do
         using RSpec::Parameterized::TableSyntax
 
-        where(:include_forked, :exclude_forks, :expected_project_ids) do
-          nil   | nil   | ref(:non_forked_project_ids) # forked excluded per default
-          true  | nil   | ref(:non_archived_project_ids)
-          false | nil   | ref(:non_forked_project_ids)
-          nil   | true  | ref(:non_forked_project_ids)
-          nil   | false | ref(:non_archived_project_ids)
-          true  | true  | ref(:non_forked_project_ids) # prefer new param
-          false | false | ref(:non_archived_project_ids) # prefer new param
+        where(:exclude_forks, :expected_project_ids) do
+          nil   | ref(:non_forked_project_ids) # forked excluded per default
+          true  | ref(:non_forked_project_ids)
+          false | ref(:non_archived_project_ids)
         end
 
         with_them do
-          let(:filters) { { include_forked: include_forked, exclude_forks: exclude_forks } }
+          let(:filters) { { exclude_forks: exclude_forks } }
 
           it 'calls search on Gitlab::Search::Zoekt::Client with the correct list of project ids' do
             expect(Gitlab::Search::Zoekt::Client).to receive(:search).with(
