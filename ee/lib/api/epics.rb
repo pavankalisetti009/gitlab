@@ -2,6 +2,7 @@
 
 module API
   class Epics < ::API::Base
+    include ::API::Concerns::AiWorkflowsAccess
     include APIGuard
     include PaginationParams
 
@@ -14,9 +15,7 @@ module API
       authorize_epics_feature!
     end
 
-    allow_access_with_scope :ai_workflows, if: ->(request) do
-      request.get? || request.head? || request.post? || request.put?
-    end
+    allow_ai_workflows_access
 
     helpers ::API::Helpers::EpicsHelpers
 
