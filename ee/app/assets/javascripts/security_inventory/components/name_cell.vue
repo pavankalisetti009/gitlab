@@ -57,7 +57,7 @@ export default {
       :project-avatar-url="item.avatarUrl"
     />
     <div class="gl-flex gl-flex-col">
-      <span class="gl-text-base gl-font-bold">{{ item.name }}</span>
+      <span class="gl-text-base gl-font-bold gl-wrap-anywhere">{{ item.name }}</span>
       <span v-if="isSubGroup(item)" class="gl-font-normal gl-text-subtle">
         {{ projectAndSubgroupCountText(item) }}
       </span>
