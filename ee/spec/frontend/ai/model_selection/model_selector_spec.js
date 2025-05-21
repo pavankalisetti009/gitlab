@@ -45,7 +45,7 @@ describe('ModelSelector', () => {
         { value: 'claude_sonnet_3_7_20250219', text: 'Claude Sonnet 3.7 - Anthropic' },
         { value: 'claude_3_5_sonnet_20240620', text: 'Claude Sonnet 3.5 - Anthropic' },
         { value: 'claude_3_haiku_20240307', text: 'Claude Haiku 3 - Anthropic' },
-        { value: 'gitlab', text: 'GitLab Default' },
+        { value: '', text: 'GitLab Default' },
       ]);
     });
   });
@@ -67,7 +67,7 @@ describe('ModelSelector', () => {
       it('updates the dropdown toggle text', async () => {
         expect(findDropdownToggleText()).toBe('Claude Sonnet 3.7 - Anthropic');
 
-        findModelSelectDropdown().vm.$emit('select', 'gitlab');
+        findModelSelectDropdown().vm.$emit('select', '');
 
         await nextTick();
 

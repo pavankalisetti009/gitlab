@@ -3,14 +3,9 @@ export const mockCodeSuggestionsFeatureSettings = [
     feature: 'code_completions',
     title: 'Code Completion',
     mainFeature: 'Code Suggestions',
-    releaseState: 'GA',
     selectedModel: {
       ref: 'gitlab',
       name: 'GitLab Default',
-    },
-    namespace: {
-      id: 'gid://gitlab/Group/95',
-      name: 'Custom Models',
     },
     selectableModels: [
       {
@@ -31,14 +26,9 @@ export const mockCodeSuggestionsFeatureSettings = [
     feature: 'code_generations',
     title: 'Code Generation',
     mainFeature: 'Code Suggestions',
-    releaseState: 'GA',
     selectedModel: {
       ref: 'gitlab',
       name: 'GitLab Default',
-    },
-    namespace: {
-      id: 'gid://gitlab/Group/95',
-      name: 'Custom Models',
     },
     selectableModels: [
       {
@@ -62,14 +52,9 @@ export const mockDuoChatFeatureSettings = [
     feature: 'duo_chat',
     title: 'General Chat',
     mainFeature: 'GitLab Duo Chat',
-    releaseState: 'GA',
     selectedModel: {
       ref: 'claude_sonnet_3_7_20250219',
       name: 'Claude Sonnet 3.7 - Anthropic',
-    },
-    namespace: {
-      id: 'gid://gitlab/Group/95',
-      name: 'Custom Models',
     },
     selectableModels: [
       {
@@ -97,10 +82,6 @@ export const mockOtherDuoFeaturesSettings = [
       ref: 'claude_3_5_sonnet_20240620',
       name: 'Claude Sonnet 3.5 - Anthropic',
     },
-    namespace: {
-      id: 'gid://gitlab/Group/95',
-      name: 'Custom Models',
-    },
     selectableModels: [
       {
         ref: 'claude_sonnet_3_7_20250219',
@@ -118,7 +99,7 @@ export const mockOtherDuoFeaturesSettings = [
   },
 ];
 
-export const mockFeatureSettings = [
+export const mockAiFeatureSettings = [
   ...mockCodeSuggestionsFeatureSettings,
   ...mockDuoChatFeatureSettings,
   ...mockOtherDuoFeaturesSettings,
