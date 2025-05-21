@@ -6,6 +6,8 @@ module Security
       include ApplicationWorker
 
       idempotent!
+      deduplicate :until_executing, including_scheduled: true,
+        ttl: Security::PipelineExecutionProjectSchedule::MAX_TIME_WINDOW
 
       data_consistency :sticky
       feature_category :security_policy_management

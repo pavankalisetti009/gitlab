@@ -4,6 +4,8 @@ module Security
   class PipelineExecutionProjectSchedule < ApplicationRecord
     include EachBatch
 
+    MAX_TIME_WINDOW = 1.month.freeze
+
     before_create :set_next_run_at
 
     self.table_name = 'security_pipeline_execution_project_schedules'
@@ -15,7 +17,7 @@ module Security
     validates :cron, cron: true
     validates :cron_timezone, cron_timezone: true
     validates :time_window_seconds,
-      numericality: { greater_than_or_equal_to: 10.minutes.to_i, less_than_or_equal_to: 1.month.to_i,
+      numericality: { greater_than_or_equal_to: 10.minutes.to_i, less_than_or_equal_to: MAX_TIME_WINDOW.to_i,
                       only_integer: true }
 
     validate :security_policy_is_pipeline_execution_schedule_policy
