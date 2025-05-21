@@ -19,7 +19,7 @@ RSpec.describe Security::PipelineExecutionProjectSchedule, feature_category: :se
       is_expected.to(
         validate_numericality_of(:time_window_seconds)
           .is_greater_than_or_equal_to(10.minutes.to_i)
-          .is_less_than_or_equal_to(1.month.to_i)
+          .is_less_than_or_equal_to(Security::PipelineExecutionProjectSchedule::MAX_TIME_WINDOW.to_i)
           .only_integer
       )
     end
