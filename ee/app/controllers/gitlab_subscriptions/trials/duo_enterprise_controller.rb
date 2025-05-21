@@ -12,7 +12,8 @@ module GitlabSubscriptions
         if general_params[:step] == GitlabSubscriptions::Trials::CreateDuoEnterpriseService::TRIAL
           track_event('render_duo_enterprise_trial_page')
 
-          render :step_namespace
+          render GitlabSubscriptions::Trials::DuoEnterprise::TrialFormComponent
+                           .new(eligible_namespaces: eligible_namespaces, params: trial_params)
         else
           track_event('render_duo_enterprise_lead_page')
 
@@ -51,14 +52,19 @@ module GitlabSubscriptions
                      eligible_namespaces: eligible_namespaces,
                      submit_path: trial_submit_path,
                      form_params: lead_form_params,
-                     errors: @result.errors
+                     errors: @result.errors,
+                     reason: @result.reason
                    )
 
         else
           # trial creation failed
           params[:namespace_id] = @result.payload[:namespace_id] # rubocop:disable Rails/StrongParams -- Not working for assignment
 
-          render :trial_failed
+          render GitlabSubscriptions::Trials::DuoEnterprise::TrialFormWithErrorsComponent
+                           .new(eligible_namespaces: eligible_namespaces,
+                             params: trial_params,
+                             errors: @result.errors,
+                             reason: @result.reason)
         end
       end
 
