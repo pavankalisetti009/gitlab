@@ -274,6 +274,35 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
         end
       end
     end
+
+    describe 'ai_resolution_enabled' do
+      subject(:ai_resolution_enabled) { vulnerability_details[:ai_resolution_enabled] }
+
+      context 'when vulnerability_read is present' do
+        let(:has_vulnerability_resolution) { true }
+
+        before do
+          vulnerability.vulnerability_read.update!(has_vulnerability_resolution: has_vulnerability_resolution)
+        end
+
+        it { is_expected.to be_truthy }
+
+        context 'when has_vulnerability_resolution is false' do
+          let(:has_vulnerability_resolution) { false }
+
+          it { is_expected.to be_falsey }
+        end
+      end
+
+      context 'when vulnerability_read is not present' do
+        before do
+          vulnerability.vulnerability_read.destroy!
+          vulnerability.reload
+        end
+
+        it { is_expected.to be_nil }
+      end
+    end
   end
 
   describe '#create_jira_issue_url_for' do
@@ -468,7 +497,6 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
         merge_request_links: kind_of(Array),
         ai_explanation_available: finding.ai_explanation_available?,
         ai_resolution_available: finding.ai_resolution_available?,
-        ai_resolution_enabled: finding.ai_resolution_enabled?,
         belongs_to_public_project: vulnerability.project.public?,
         cve_enrichment: {
           epss_score: cve_enrichment_object.epss_score,

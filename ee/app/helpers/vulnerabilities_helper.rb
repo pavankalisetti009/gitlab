@@ -139,7 +139,6 @@ module VulnerabilitiesHelper
     data[:solution_html] = markdown(vulnerability.present.solution)
     data[:ai_explanation_available] = finding.ai_explanation_available?
     data[:ai_resolution_available] = finding.ai_resolution_available?
-    data[:ai_resolution_enabled] = finding.ai_resolution_enabled?
     data[:belongs_to_public_project] = vulnerability.project.public?
     data[:cve_enrichment] = cve_enrichment(finding)
     data[:cvss] = cvss(finding)
