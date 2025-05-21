@@ -24,7 +24,7 @@ module GitlabSubscriptions
                         .exists?
 
         ::GitlabSubscriptions::MemberManagement::ProcessUserBillablePromotionService
-          .new(nil, member_user, :approved, true).execute
+          .new(member_user, nil, { status: :approved, skip_authorization: true }).execute
       end
     end
   end

@@ -26,7 +26,7 @@ module Mutations
           user = Gitlab::Graphql::Lazy.force(GitlabSchema.find_by_gid(user_id))
 
           result = ::GitlabSubscriptions::MemberManagement::ProcessUserBillablePromotionService
-                       .new(current_user, user, status).execute
+                       .new(user, current_user, { status: status }).execute
 
           { result: result.payload[:result], errors: result.errors }
         end
