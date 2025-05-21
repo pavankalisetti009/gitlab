@@ -6,7 +6,8 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
   codeSuggestionsAcceptedCount: 0,
   codeSuggestionsShownCount: 20,
   duoChatContributorsCount: 0,
-  duoAssignedUsersCount: 50
+  duoAssignedUsersCount: 50,
+  rootCauseAnalysisUsersCount: 0
 } 1`] = `
 {
   "code_suggestions_acceptance_rate": {
@@ -24,6 +25,11 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
     "tooltip": "0/50",
     "value": 0,
   },
+  "duo_rca_usage_rate": {
+    "identifier": "duo_rca_usage_rate",
+    "tooltip": "0/50",
+    "value": 0,
+  },
 }
 `;
 
@@ -33,7 +39,8 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
   codeSuggestionsAcceptedCount: 3,
   codeSuggestionsShownCount: undefined,
   duoChatContributorsCount: 4,
-  duoAssignedUsersCount: undefined
+  duoAssignedUsersCount: undefined,
+  rootCauseAnalysisUsersCount: 10
 } 1`] = `
 {
   "code_suggestions_acceptance_rate": {
@@ -51,6 +58,11 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
     "tooltip": "No data",
     "value": "-",
   },
+  "duo_rca_usage_rate": {
+    "identifier": "duo_rca_usage_rate",
+    "tooltip": "No data",
+    "value": "-",
+  },
 }
 `;
 
@@ -60,7 +72,8 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
   codeSuggestionsAcceptedCount: 3,
   codeSuggestionsShownCount: 4,
   duoChatContributorsCount: 7,
-  duoAssignedUsersCount: 8
+  duoAssignedUsersCount: 8,
+  rootCauseAnalysisUsersCount: 5
 } 1`] = `
 {
   "code_suggestions_acceptance_rate": {
@@ -78,6 +91,11 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
     "tooltip": "7/8",
     "value": 87.5,
   },
+  "duo_rca_usage_rate": {
+    "identifier": "duo_rca_usage_rate",
+    "tooltip": "5/8",
+    "value": 62.5,
+  },
 }
 `;
 
@@ -87,7 +105,8 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
   codeSuggestionsAcceptedCount: undefined,
   codeSuggestionsShownCount: 4,
   duoChatContributorsCount: undefined,
-  duoAssignedUsersCount: 3
+  duoAssignedUsersCount: 3,
+  rootCauseAnalysisUsersCount: undefined
 } 1`] = `
 {
   "code_suggestions_acceptance_rate": {
@@ -102,6 +121,11 @@ exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly wh
   },
   "duo_chat_usage_rate": {
     "identifier": "duo_chat_usage_rate",
+    "tooltip": "No data",
+    "value": "-",
+  },
+  "duo_rca_usage_rate": {
+    "identifier": "duo_rca_usage_rate",
     "tooltip": "No data",
     "value": "-",
   },
