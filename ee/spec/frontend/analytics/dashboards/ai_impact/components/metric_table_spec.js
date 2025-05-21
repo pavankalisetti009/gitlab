@@ -105,6 +105,7 @@ describe('Metric table', () => {
   const createWrapper = ({
     props = {},
     glAbilities = {},
+    glFeatures = {},
     apolloProvider = createMockApolloProvider(),
   } = {}) => {
     wrapper = mountExtended(MetricTable, {
@@ -122,6 +123,10 @@ describe('Metric table', () => {
           ...mockGlAbilities,
           ...glAbilities,
         },
+        glFeatures: {
+          duoRcaUsageRate: true,
+          ...glFeatures,
+        },
       },
     });
 
@@ -136,6 +141,7 @@ describe('Metric table', () => {
   const codeSuggestionsUsageRateTestId = 'ai-impact-metric-code-suggestions-usage-rate';
   const codeSuggestionsAcceptanceRateTestId = 'ai-impact-metric-code-suggestions-acceptance-rate';
   const duoChatUsageRateTestId = 'ai-impact-metric-duo-chat-usage-rate';
+  const duoRcaUsageRateTestId = 'ai-impact-metric-duo-rca-usage-rate';
 
   const findTableRow = (rowTestId) => wrapper.findByTestId(rowTestId);
   const findMetricTableCell = (rowTestId) => findTableRow(rowTestId).findComponent(MetricTableCell);
@@ -169,6 +175,7 @@ describe('Metric table', () => {
     ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${codeSuggestionsUsageRateTestId}      | ${''}        | ${''}
     ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${codeSuggestionsAcceptanceRateTestId} | ${''}        | ${''}
     ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${duoChatUsageRateTestId}              | ${''}        | ${''}
+    ${AI_METRICS.DUO_RCA_USAGE_RATE}               | ${duoRcaUsageRateTestId}               | ${''}        | ${''}
   `('for the $identifier table row', ({ identifier, testId, requestPath, trackingProperty }) => {
     beforeEach(() => {
       createWrapper();
@@ -191,6 +198,7 @@ describe('Metric table', () => {
     ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${'Code Suggestions usage'}             | ${codeSuggestionsUsageRateTestId}
     ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${'Code Suggestions acceptance rate'}   | ${codeSuggestionsAcceptanceRateTestId}
     ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${'Duo Chat: Unique users'}             | ${duoChatUsageRateTestId}
+    ${AI_METRICS.DUO_RCA_USAGE_RATE}               | ${'Duo RCA: Unique users'}              | ${duoRcaUsageRateTestId}
   `('for the $identifier table row', ({ name, testId }) => {
     describe('when loading data', () => {
       beforeEach(() => {
@@ -436,6 +444,18 @@ describe('Metric table', () => {
           expect(apiRequest).toHaveBeenCalled();
         });
       });
+    });
+  });
+
+  describe('`duoRcaUsageRate` feature flag is disabled', () => {
+    beforeEach(() => {
+      return createWrapper({
+        glFeatures: { duoRcaUsageRate: false },
+      });
+    });
+
+    it(`does not render ${AI_METRICS.DUO_RCA_USAGE_RATE}`, () => {
+      expect(findTableRow(duoRcaUsageRateTestId).exists()).toBe(false);
     });
   });
 
