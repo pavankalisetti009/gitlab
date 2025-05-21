@@ -20,6 +20,12 @@ module Security
 
       DEFAULT_BATCH_SIZE = 100
 
+      SECRET_TYPE_MAPPING = {
+        'gitlab_personal_access_token' => 'gitlab_personal_access_token',
+        'gitlab_personal_access_token_routable' => 'gitlab_personal_access_token',
+        'gitlab_deploy_token' => 'gitlab_deploy_token'
+      }.freeze
+
       # Creates or updates FindingTokenStatus records for secret detection findings in a pipeline.
       #
       # @param [Integer] pipeline_id ID of the pipeline containing security scan results
@@ -47,17 +53,18 @@ module Security
       def process_findings_batch(findings)
         return if findings.empty?
 
-        token_status_attr_by_sha = build_token_status_attributes_by_token_sha(findings)
-        finding_raw_tokens = findings.filter_map { |finding| finding.metadata['raw_source_code_extract'] }
-        tokens = @token_lookup_service.find('gitlab_personal_access_token', finding_raw_tokens) # rubocop:disable Gitlab/NoFindInWorkers -- find is not an active record find
+        tokens_by_raw_token = get_tokens_by_raw_token_value(findings)
 
-        tokens.each do |token|
-          token_status_attr_by_sha[token.token_digest].each do |finding_token_status_attr|
+        token_status_attr_by_raw_token = build_token_status_attributes_by_raw_token(findings)
+
+        # Set token status on token status attributes
+        tokens_by_raw_token.each do |raw_token, token|
+          token_status_attr_by_raw_token[raw_token].each do |finding_token_status_attr|
             finding_token_status_attr[:status] = token_status(token)
           end
         end
 
-        attributes_to_upsert = token_status_attr_by_sha.values.flatten
+        attributes_to_upsert = token_status_attr_by_raw_token.values.flatten
         return if attributes_to_upsert.empty?
 
         begin
@@ -86,6 +93,33 @@ module Security
         end
       end
 
+      # Retrieves token objects by their raw token values from findings
+      #
+      # @param findings [ActiveRecord::Relation] Secret detection findings containing token information
+      # @return [Hash] A hash mapping raw token values to their corresponding token objects
+      #
+      # This method:
+      # 1. Groups findings by token type (PAT, Deploy Token, etc.)
+      # 2. Performs separate lookups for each token type using the appropriate lookup method
+      # 3. Returns a combined hash of all found tokens indexed by their raw values
+      def get_tokens_by_raw_token_value(findings)
+        # organise detected tokens by type
+        raw_token_values_by_token_type = findings.each_with_object({}) do |finding, result|
+          finding_type = finding.token_type
+          finding_type = SECRET_TYPE_MAPPING[finding_type]
+          result[finding_type] = [] unless result[finding_type]
+          result[finding_type] << finding.metadata['raw_source_code_extract']
+
+          result
+        end
+
+        # Find tokens and index by raw token
+        raw_token_values_by_token_type.each_with_object({}) do |(token_type, raw_token_values), result_hash|
+          type_tokens = @token_lookup_service.find(token_type, raw_token_values) # rubocop:disable Gitlab/NoFindInWorkers -- find is not an active record find
+          result_hash.merge!(type_tokens) if type_tokens
+        end
+      end
+
       # Determines the appropriate status value for a FindingTokenStatus based on a personal access token.
       #
       # @param [PersonalAccessToken, nil] token The token to check, or nil if not found
@@ -100,14 +134,15 @@ module Security
       #
       # @param [ActiveRecord::Relation] latest_secret_findings Secret detection findings
       # @return [Hash] A hash mapping token SHAs to arrays of FindingTokenStatus attributes
-      def build_token_status_attributes_by_token_sha(findings)
+      def build_token_status_attributes_by_raw_token(findings)
         now = Time.current
-        findings.each_with_object({}) do |finding, attr_by_sha|
+        findings.each_with_object({}) do |finding, attr_by_raw_token|
           token_value = finding.metadata['raw_source_code_extract']
-          token_sha = Gitlab::CryptoHelper.sha256(token_value)
 
-          attr_by_sha[token_sha] ||= []
-          attr_by_sha[token_sha] << build_finding_token_status_attributes(finding, now)
+          next unless SECRET_TYPE_MAPPING.key?(finding.token_type)
+
+          attr_by_raw_token[token_value] ||= []
+          attr_by_raw_token[token_value] << build_finding_token_status_attributes(finding, now)
         end
       end
 

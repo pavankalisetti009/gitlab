@@ -262,6 +262,21 @@ FactoryBot.define do
       end
     end
 
+    trait :with_secret_detection_pat do
+      with_secret_detection
+
+      transient do
+        token_value { "glpat-00000000000000000000" }
+      end
+
+      after(:build) do |finding, evaluator|
+        metadata = Gitlab::Json.parse(finding.raw_metadata)
+        metadata['raw_source_code_extract'] = evaluator.token_value
+        metadata['identifiers'].first['value'] = "gitlab_personal_access_token"
+        finding.raw_metadata = metadata.to_json
+      end
+    end
+
     trait :with_remediation do
       after(:build) do |finding|
         raw_metadata = Gitlab::Json.parse(finding.raw_metadata)
