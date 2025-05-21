@@ -28,6 +28,9 @@ module RemoteDevelopment
               .map(ProjectClonerComponentInserter.method(:insert))
               .map(VolumeComponentInserter.method(:insert))
               .and_then(Creator.method(:create))
+              .inspect_ok(WorkspaceObserver.method(:observe))
+              .inspect_err(WorkspaceErrorsObserver.method(:observe))
+              .and_then(WorkspaceSuccessfulResponseBuilder.method(:build))
 
           # rubocop:disable Lint/DuplicateBranch -- Rubocop doesn't know the branches are different due to destructuring
           case result

@@ -33,7 +33,8 @@ module RemoteDevelopment
               WorkspaceCreateParamsValidationFailed.new(
                 details: "Cannot use agent '#{agent.name}' as an organization mapped agent, the provided agent " \
                   "is not mapped in organization '#{project.organization.name}'. It also cannot be used as a " \
-                  "namespace mapped agent, it is not mapped to an ancestor namespace of the workspaces' project."
+                  "namespace mapped agent, it is not mapped to an ancestor namespace of the workspaces' project.",
+                context: context
               )
             )
           end
@@ -51,7 +52,8 @@ module RemoteDevelopment
                   "is not mapped in organization '#{project.organization.name}'. It also cannot be used as a " \
                   "namespace mapped agent, #{relevant_namespace_mappings.size} mapping(s) exist between the " \
                   "provided agent and the ancestor namespaces of the workspaces' project, but the agent does not " \
-                  "reside within the hierarchy of any of the mapped ancestor namespaces."
+                  "reside within the hierarchy of any of the mapped ancestor namespaces.",
+                context: context
               )
             )
           end

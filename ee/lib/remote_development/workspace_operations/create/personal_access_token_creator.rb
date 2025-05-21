@@ -30,7 +30,9 @@ module RemoteDevelopment
 
           if personal_access_token.errors.present?
             return Gitlab::Fp::Result.err(
-              PersonalAccessTokenModelCreateFailed.new({ errors: personal_access_token.errors })
+              PersonalAccessTokenModelCreateFailed.new(
+                { errors: personal_access_token.errors, context: context }
+              )
             )
           end
 

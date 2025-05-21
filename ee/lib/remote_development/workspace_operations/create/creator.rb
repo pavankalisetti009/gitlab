@@ -36,9 +36,11 @@ module RemoteDevelopment
             end
           end
 
-          return Gitlab::Fp::Result.err(WorkspaceCreateFailed.new({ errors: model_errors })) if model_errors.present?
+          if model_errors.present?
+            return Gitlab::Fp::Result.err(WorkspaceCreateFailed.new({ errors: model_errors, context: context }))
+          end
 
-          Gitlab::Fp::Result.ok(WorkspaceCreateSuccessful.new(updated_value))
+          Gitlab::Fp::Result.ok(updated_value)
         end
       end
     end
