@@ -638,6 +638,14 @@ module EE
       root_ancestor.licensed_feature_available?(:custom_roles)
     end
 
+    # This method is used to optimize preloading of custom roles on SaaS
+    # where custom roles are required to be defined at the root group.
+    # If there are no roles defined for the group, we return false and custom role queries are skipped.
+    def should_process_custom_roles?
+      custom_roles_enabled? && MemberRole.should_query_custom_roles?(root_ancestor)
+    end
+    strong_memoize_attr :should_process_custom_roles?
+
     def okrs_mvc_feature_flag_enabled?
       ::Feature.enabled?(:okrs_mvc, self)
     end

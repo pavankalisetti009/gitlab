@@ -526,6 +526,54 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
     end
   end
 
+  describe '.should_query_custom_roles?' do
+    let_it_be(:namespace) { create(:group) }
+
+    subject { described_class.should_query_custom_roles?(namespace) }
+
+    it { is_expected.to be true }
+
+    context 'when on SaaS', :saas do
+      context 'when namespace does not have a custom role' do
+        it { is_expected.to be false }
+
+        context 'with caching', :use_clean_rails_redis_caching do
+          it 'invalidates the cache when a new custom role is created' do
+            expect(described_class.should_query_custom_roles?(namespace)).to be false
+
+            create(:member_role, namespace: namespace)
+
+            expect(described_class.should_query_custom_roles?(namespace)).to be true
+          end
+        end
+      end
+
+      context 'when namespace has a custom role' do
+        let_it_be(:custom_role) { create(:member_role, namespace: namespace) }
+
+        it { is_expected.to be true }
+
+        context 'with caching', :use_clean_rails_redis_caching do
+          it 'invalidates the cache when a new custom role is destroyed' do
+            expect(described_class.should_query_custom_roles?(namespace)).to be true
+
+            custom_role.destroy!
+
+            expect(described_class.should_query_custom_roles?(namespace)).to be false
+          end
+        end
+      end
+
+      context 'when skip_custom_roles_queries is disabled' do
+        before do
+          stub_feature_flags(skip_custom_roles_queries: false)
+        end
+
+        it { is_expected.to be true }
+      end
+    end
+  end
+
   describe '#admin_related_role?' do
     let_it_be(:admin_member_role) { build(:member_role, :admin) }
     let_it_be(:standard_member_role) { build(:member_role, :instance) }

@@ -33,7 +33,7 @@ module Preloaders
       ::Namespaces::Preloaders::GroupRootAncestorPreloader.new(group_relation).execute
 
       groups_with_traversal_ids = group_relation.filter_map do |group|
-        next unless group.custom_roles_enabled?
+        next unless group.root_ancestor.should_process_custom_roles?
 
         [group.id, Arel.sql("ARRAY[#{group.traversal_ids_as_sql}]")]
       end

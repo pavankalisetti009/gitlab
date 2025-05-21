@@ -2474,6 +2474,48 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#should_process_custom_roles?', feature_category: :system_access do
+    let_it_be(:namespace, refind: true) { create(:group) }
+
+    before do
+      stub_licensed_features(custom_roles: true)
+    end
+
+    subject { namespace.should_process_custom_roles? }
+
+    it { is_expected.to be true }
+
+    context 'when licensed feature is not available' do
+      before do
+        stub_licensed_features(custom_roles: false)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when on SaaS', :saas do
+      context 'when namespace does not have a custom role' do
+        it { is_expected.to be false }
+      end
+
+      context 'when namespace has a custom role' do
+        before_all do
+          create(:member_role, namespace: namespace)
+        end
+
+        it { is_expected.to be true }
+
+        context 'when namespace is a sub-group' do
+          let(:subgroup) { create(:group, parent: namespace) }
+
+          it 'returns true' do
+            expect(subgroup.should_process_custom_roles?).to be true
+          end
+        end
+      end
+    end
+  end
+
   describe '#allow_stale_runner_pruning?' do
     subject { namespace.allow_stale_runner_pruning? }
 

@@ -32,6 +32,11 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
   validate :validate_requirements
 
   before_save :set_occupies_seat
+  before_destroy :prevent_delete_if_member_associated
+
+  after_commit on: [:create, :destroy] do
+    self.class.expire_member_role_exists_cache!(namespace) if namespace
+  end
 
   scope :elevating, -> do
     return none if elevating_permissions.empty?
@@ -66,8 +71,6 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
       .select(MemberRole.default_select_columns)
       .select('COUNT(DISTINCT members.user_id) AS users_count')
   end
-
-  before_destroy :prevent_delete_if_member_associated
 
   jsonb_accessor :permissions, Gitlab::CustomRoles::Definition.all.keys.index_with(:boolean)
 
@@ -107,6 +110,30 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
 
     def customizable_permissions_exempt_from_consuming_seat
       MemberRole.all_customizable_permissions.select { |_k, v| v[:skip_seat_consumption] }.keys
+    end
+
+    # This always returns true for self-managed instances.
+    # This is only used on SaaS to optimize preloading of custom roles.
+    def should_query_custom_roles?(namespace)
+      return true unless Feature.enabled?(:skip_custom_roles_queries, namespace)
+      return true unless GitlabSubscriptions::SubscriptionHelper.gitlab_com_subscription?
+
+      Rails.cache.fetch(member_role_exists_cache_key(namespace)) do
+        namespace.member_roles.exists?
+      end
+    end
+
+    def expire_member_role_exists_cache!(namespace)
+      return unless Feature.enabled?(:skip_custom_roles_queries, namespace)
+      return unless GitlabSubscriptions::SubscriptionHelper.gitlab_com_subscription?
+
+      Rails.cache.delete(member_role_exists_cache_key(namespace))
+    end
+
+    private
+
+    def member_role_exists_cache_key(namespace)
+      ['namespace', namespace.id, 'member_role_exists']
     end
   end
 
