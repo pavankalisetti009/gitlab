@@ -622,8 +622,7 @@ export const filterLabelsGroupQuery = `query ($fullPath: ID!) {
       }
     }
   }
-}
-`;
+}`;
 
 export const filterLabelsProjectQuery = `query ($fullPath: ID!) {
   namespace: project(fullPath: $fullPath) {
@@ -643,8 +642,7 @@ export const filterLabelsProjectQuery = `query ($fullPath: ID!) {
       }
     }
   }
-}
-`;
+}`;
 
 export const mockGroup = {
   id: 'gid://gitlab/Group/10',
