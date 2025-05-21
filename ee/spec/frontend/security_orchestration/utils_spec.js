@@ -1,19 +1,23 @@
 /* eslint-disable no-underscore-dangle */
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { getPolicyType, removeUnnecessaryDashes } from 'ee/security_orchestration/utils';
-import { mockProjectScanExecutionPolicy } from './mocks/mock_scan_execution_policy_data';
+import {
+  mockProjectScanExecutionPolicy,
+  mockProjectScanExecutionPolicyCombinedList,
+} from './mocks/mock_scan_execution_policy_data';
 
 describe('getPolicyType', () => {
   it.each`
-    typeName                                     | field             | output
-    ${''}                                        | ${undefined}      | ${undefined}
-    ${'UnknownPolicyType'}                       | ${undefined}      | ${undefined}
-    ${mockProjectScanExecutionPolicy.__typename} | ${undefined}      | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value}
-    ${mockProjectScanExecutionPolicy.__typename} | ${'urlParameter'} | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter}
+    typeName                                           | field             | output                                                      | useLegacy
+    ${''}                                              | ${undefined}      | ${undefined}                                                | ${true}
+    ${'UnknownPolicyType'}                             | ${undefined}      | ${undefined}                                                | ${true}
+    ${mockProjectScanExecutionPolicy.__typename}       | ${undefined}      | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value}        | ${true}
+    ${mockProjectScanExecutionPolicy.__typename}       | ${'urlParameter'} | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter} | ${true}
+    ${mockProjectScanExecutionPolicyCombinedList.type} | ${'urlParameter'} | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter} | ${false}
   `(
     'returns $output when used on typeName: $typeName and field: $field',
-    ({ typeName, field, output }) => {
-      expect(getPolicyType(typeName, field)).toBe(output);
+    ({ typeName, field, output, useLegacy }) => {
+      expect(getPolicyType(typeName, field, useLegacy)).toBe(output);
     },
   );
 });

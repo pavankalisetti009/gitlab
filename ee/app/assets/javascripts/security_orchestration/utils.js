@@ -5,11 +5,14 @@ import { POLICY_TYPE_COMPONENT_OPTIONS } from './components/constants';
  * Get a property from a policy's typename
  * @param {String} typeName policy's typename from GraphQL
  * @param {String} field
+ * @param {Boolean} useLegacy
  * @returns {String|null} policy property if available
  */
-export const getPolicyType = (typeName = '', field = 'value') => {
+export const getPolicyType = (typeName = '', field = 'value', useLegacy = true) => {
+  const key = useLegacy ? 'typeName' : 'urlParameter';
+
   return Object.values(POLICY_TYPE_COMPONENT_OPTIONS).find(
-    (component) => component.typeName === typeName,
+    (component) => component[key] === typeName,
   )?.[field];
 };
 

@@ -318,6 +318,36 @@ export const mockProjectPipelineExecutionPolicy = {
   },
 };
 
+export const mockProjectPipelineExecutionPolicyCombinedList = {
+  __typename: 'PipelineExecutionPolicy',
+  name: `${mockPipelineScanExecutionObject.name}-project`,
+  policyAttributes: {
+    __typename: 'PipelineExecutionPolicyAttributesType',
+    policyBlobFilePath: '/path/to/project/-/blob/main/pipeline_execution_jobs.yml',
+    source: {
+      __typename: 'ProjectSecurityPolicySource',
+      project: {
+        fullPath: 'project/path',
+      },
+    },
+    warnings: [],
+  },
+  updatedAt: new Date('2021-06-07T00:00:00.000Z'),
+  yaml: mockPipelineExecutionManifest,
+  editPath: '/policies/policy-name/edit?type="pipeline_execution_policy"',
+  enabled: true,
+  ...POLICY_SCOPE_MOCK,
+  type: 'pipeline_execution_policy',
+  policyBlobFilePath: '/path/to/project/-/blob/main/pipeline_execution_jobs.yml',
+  source: {
+    __typename: 'ProjectSecurityPolicySource',
+    project: {
+      fullPath: 'project/path',
+    },
+  },
+  warnings: [],
+};
+
 export const mockProjectPipelineExecutionWithConfigurationPolicy = {
   ...mockProjectPipelineExecutionPolicy,
   yaml: mockPipelineExecutionWithConfigurationManifest,
@@ -343,11 +373,51 @@ export const mockGroupPipelineExecutionPolicy = {
   },
 };
 
+export const mockGroupPipelineExecutionPolicyCombinedList = {
+  ...mockProjectPipelineExecutionPolicy,
+  policyAttributes: {
+    __typename: 'PipelineExecutionPolicyAttributesType',
+    policyBlobFilePath: '/path/to/project/-/blob/main/pipeline_execution_jobs.yml',
+    source: {
+      __typename: 'GroupSecurityPolicySource',
+      inherited: true,
+      namespace: {
+        __typename: 'Namespace',
+        id: '1',
+        fullPath: 'parent-group-path',
+        name: 'parent-group-name',
+      },
+    },
+    warnings: [],
+  },
+  enabled: false,
+  policyBlobFilePath: '/path/to/project/-/blob/main/pipeline_execution_jobs.yml',
+  source: {
+    __typename: 'GroupSecurityPolicySource',
+    inherited: true,
+    namespace: {
+      __typename: 'Namespace',
+      id: '1',
+      fullPath: 'parent-group-path',
+      name: 'parent-group-name',
+    },
+  },
+  warnings: [],
+};
+
 export const mockProjectPipelineExecutionSchedulePolicy = {
   ...mockProjectPipelineExecutionPolicy,
   editPath: '/policies/policy-name/edit?type="pipeline_execution_schedule_policy"',
   yaml: mockSchedulePipelineExecutionWithTypeManifest,
   __typename: 'PipelineExecutionSchedulePolicy',
+};
+
+export const mockProjectPipelineExecutionSchedulePolicyCombinedList = {
+  ...mockProjectPipelineExecutionPolicyCombinedList,
+  editPath: '/policies/policy-name/edit?type="pipeline_execution_schedule_policy"',
+  yaml: mockSchedulePipelineExecutionWithTypeManifest,
+  __typename: 'PipelineExecutionSchedulePolicy',
+  type: 'pipeline_execution_schedule_policy',
 };
 
 export const mockSnoozePipelineExecutionSchedulePolicy = {
@@ -358,6 +428,22 @@ export const mockSnoozePipelineExecutionSchedulePolicy = {
 
 export const mockGroupPipelineExecutionSchedulePolicy = {
   ...mockProjectPipelineExecutionSchedulePolicy,
+  source: {
+    __typename: 'GroupSecurityPolicySource',
+    inherited: true,
+    namespace: {
+      __typename: 'Namespace',
+      id: '1',
+      fullPath: 'parent-group-path',
+      name: 'parent-group-name',
+    },
+  },
+};
+
+export const mockGroupPipelineExecutionSchedulePolicyCombinedList = {
+  ...mockGroupPipelineExecutionPolicyCombinedList,
+  __typename: 'PipelineExecutionSchedulePolicy',
+  type: 'pipeline_execution_schedule_policy',
   source: {
     __typename: 'GroupSecurityPolicySource',
     inherited: true,

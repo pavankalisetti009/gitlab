@@ -27,11 +27,21 @@ import projectPipelineExecutionSchedulePoliciesQuery from 'ee/security_orchestra
 import groupPipelineExecutionSchedulePoliciesQuery from 'ee/security_orchestration/graphql/queries/group_pipeline_execution_schedule_policies.query.graphql';
 import projectVulnerabilityManagementPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_vulnerability_management_policies.query.graphql';
 import groupVulnerabilityManagementPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_vulnerability_management_policies.query.graphql';
+import projectSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_security_policies.query.graphql';
+import groupSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_security_policies.query.graphql';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import {
+  mockGroupPipelineExecutionPolicyCombinedList,
+  mockGroupPipelineExecutionSchedulePolicyCombinedList,
   mockPipelineExecutionPoliciesResponse,
   mockPipelineExecutionSchedulePoliciesResponse,
+  mockProjectPipelineExecutionPolicyCombinedList,
+  mockProjectPipelineExecutionSchedulePolicyCombinedList,
 } from '../../mocks/mock_pipeline_execution_policy_data';
-import { mockVulnerabilityManagementPoliciesResponse } from '../../mocks/mock_vulnerability_management_policy_data';
+import {
+  mockProjectVulnerabilityManagementPolicyCombinedList,
+  mockVulnerabilityManagementPoliciesResponse,
+} from '../../mocks/mock_vulnerability_management_policy_data';
 import {
   projectScanExecutionPolicies,
   groupScanExecutionPolicies,
@@ -44,15 +54,22 @@ import {
   projectVulnerabilityManagementPolicies,
   groupVulnerabilityManagementPolicies,
   mockLinkedSppItemsResponse,
+  groupSecurityPolicies,
+  projectSecurityPolicies,
+  groupByType,
 } from '../../mocks/mock_apollo';
 import {
+  mockGroupScanExecutionPolicyCombinedList,
   mockProjectScanExecutionPolicy,
+  mockProjectScanExecutionPolicyCombinedList,
   mockScanExecutionPoliciesResponse,
   mockScanExecutionPoliciesWithSameNamesDifferentSourcesResponse,
 } from '../../mocks/mock_scan_execution_policy_data';
 import {
   mockScanResultPoliciesResponse,
   mockProjectScanResultPolicy,
+  mockGroupScanResultPolicyCombinedList,
+  mockProjectScanResultPolicyCombinedList,
 } from '../../mocks/mock_scan_result_policy_data';
 
 jest.mock('~/alert');
@@ -82,6 +99,27 @@ const groupVulnerabilityManagementPoliciesSpy = groupVulnerabilityManagementPoli
   mockVulnerabilityManagementPoliciesResponse,
 );
 
+const combinedGroupPolicyList = [
+  mockProjectVulnerabilityManagementPolicyCombinedList,
+  mockGroupPipelineExecutionPolicyCombinedList,
+  mockGroupPipelineExecutionSchedulePolicyCombinedList,
+  mockGroupScanResultPolicyCombinedList,
+  mockGroupScanExecutionPolicyCombinedList,
+];
+
+const combinedProjectPolicyList = [
+  mockProjectVulnerabilityManagementPolicyCombinedList,
+  mockProjectPipelineExecutionPolicyCombinedList,
+  mockProjectPipelineExecutionSchedulePolicyCombinedList,
+  mockProjectScanResultPolicyCombinedList,
+  mockProjectScanExecutionPolicyCombinedList,
+];
+
+const groupSecurityPoliciesSpy = groupSecurityPolicies(combinedGroupPolicyList);
+const projectSecurityPoliciesSpy = projectSecurityPolicies(combinedProjectPolicyList);
+
+const flattenedProjectSecurityPolicies = groupByType(combinedProjectPolicyList);
+
 const linkedSppItemsResponseSpy = mockLinkedSppItemsResponse();
 const defaultRequestHandlers = {
   projectScanExecutionPolicies: projectScanExecutionPoliciesSpy,
@@ -95,6 +133,8 @@ const defaultRequestHandlers = {
   projectVulnerabilityManagementPolicies: projectVulnerabilityManagementPoliciesSpy,
   groupVulnerabilityManagementPolicies: groupVulnerabilityManagementPoliciesSpy,
   linkedSppItemsResponse: linkedSppItemsResponseSpy,
+  groupSecurityPolicies: groupSecurityPoliciesSpy,
+  projectSecurityPolicies: projectSecurityPoliciesSpy,
 };
 
 describe('App', () => {
@@ -112,7 +152,10 @@ describe('App', () => {
       provide: {
         assignedPolicyProject,
         enabledExperiments: ['pipeline_execution_schedule_policy'],
-        glFeatures: { scheduledPipelineExecutionPolicies: true },
+        glFeatures: {
+          scheduledPipelineExecutionPolicies: true,
+          securityPoliciesCombinedList: false,
+        },
         namespacePath,
         namespaceType: NAMESPACE_TYPES.PROJECT,
         maxScanExecutionPolicyActions: MAX_SCAN_EXECUTION_ACTION_COUNT,
@@ -144,6 +187,8 @@ describe('App', () => {
             groupVulnerabilityManagementPoliciesQuery,
             requestHandlers.groupVulnerabilityManagementPolicies,
           ],
+          [groupSecurityPoliciesQuery, requestHandlers.groupSecurityPolicies],
+          [projectSecurityPoliciesQuery, requestHandlers.projectSecurityPolicies],
         ],
         {},
         { typePolicies: { ScanExecutionPolicy: { keyFields: ['name', 'updatedAt'] } } },
@@ -414,5 +459,77 @@ describe('App', () => {
         expect(requestHandlers.projectPipelineExecutionSchedulePolicies).not.toHaveBeenCalled();
       },
     );
+  });
+
+  describe('combined policy list', () => {
+    const policiesByType = {
+      [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]:
+        flattenedProjectSecurityPolicies[POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter],
+      [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]:
+        flattenedProjectSecurityPolicies[POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter],
+      [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]:
+        flattenedProjectSecurityPolicies[
+          POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter
+        ],
+      [POLICY_TYPE_FILTER_OPTIONS.VULNERABILITY_MANAGEMENT.value]:
+        flattenedProjectSecurityPolicies[
+          POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter
+        ],
+    };
+
+    it('loads combined list without scheduled policies', async () => {
+      createWrapper({
+        provide: {
+          glFeatures: {
+            scheduledPipelineExecutionPolicies: false,
+            securityPoliciesCombinedList: true,
+          },
+        },
+      });
+
+      await waitForPromises();
+
+      expect(requestHandlers.projectSecurityPolicies).toHaveBeenCalledTimes(1);
+      expect(requestHandlers.projectPipelineExecutionSchedulePolicies).toHaveBeenCalledTimes(0);
+
+      expect(findPoliciesList().props('policiesByType')).toEqual(policiesByType);
+    });
+
+    it('loads full combined policy list', async () => {
+      createWrapper({
+        provide: {
+          enabledExperiments: ['pipeline_execution_schedule_policy'],
+          glFeatures: {
+            scheduledPipelineExecutionPolicies: true,
+            securityPoliciesCombinedList: true,
+          },
+        },
+      });
+      await waitForPromises();
+
+      expect(requestHandlers.projectSecurityPolicies).toHaveBeenCalledTimes(1);
+      expect(requestHandlers.projectVulnerabilityManagementPolicies).toHaveBeenCalledTimes(0);
+      expect(requestHandlers.projectScanResultPolicies).toHaveBeenCalledTimes(0);
+      expect(requestHandlers.projectScanExecutionPolicies).toHaveBeenCalledTimes(0);
+      expect(requestHandlers.projectPipelineExecutionPolicies).toHaveBeenCalledTimes(0);
+      expect(requestHandlers.projectPipelineExecutionSchedulePolicies).toHaveBeenCalledTimes(0);
+
+      expect(findPoliciesList().props()).toEqual(
+        expect.objectContaining({
+          shouldUpdatePolicyList: false,
+          hasPolicyProject: false,
+          selectedPolicySource: POLICY_SOURCE_OPTIONS.ALL.value,
+          selectedPolicyType: POLICY_TYPE_FILTER_OPTIONS.ALL.value,
+        }),
+      );
+
+      expect(findPoliciesList().props('policiesByType')).toEqual({
+        ...policiesByType,
+        [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION_SCHEDULE.value]:
+          flattenedProjectSecurityPolicies[
+            POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecutionSchedule.urlParameter
+          ],
+      });
+    });
   });
 });
