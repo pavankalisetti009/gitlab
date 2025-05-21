@@ -424,4 +424,73 @@ RSpec.describe Repository, feature_category: :source_code_management do
       it { expect(repository.group).to eq(expected_value) }
     end
   end
+
+  describe '#commit_files' do
+    let_it_be_with_refind(:project) { create(:project, :repository) }
+    let(:target_sha) { repository.commit('master').sha }
+    let(:user) { project.owner }
+    let(:expected_params) do
+      [
+        user, # user
+       'master', # branch_name
+       'commit message', # commit_message
+       [], # actions
+       'author email', # author_email
+       'author name', # author_name
+       nil, # start_branch_name
+       nil, # start_repository
+       true, # force
+       nil, # start_sha
+       expected_sign, # sign
+       target_sha # target_sha
+      ]
+    end
+
+    let(:params) do
+      {
+        branch_name: 'master',
+        message: 'commit message',
+        author_name: 'author name',
+        author_email: 'author email',
+        actions: [],
+        force: true
+      }
+    end
+
+    subject(:commit_files) do
+      repository.commit_files(user, **params)
+    end
+
+    using RSpec::Parameterized::TableSyntax
+    where(
+      :repositories_web_based_commit_signing,
+      :web_based_commit_signing_enabled,
+      :use_web_based_commit_signing_enabled,
+      :expected_sign) do
+      true  | false | true  | false
+      true  | true  | true  | true
+      true  | false | false | true
+      true  | true  | false | true
+      false | false | true  | true
+      false | true  | true  | true
+      false | false | false | true
+      false | true  | false | true
+    end
+
+    with_them do
+      before do
+        stub_saas_features(repositories_web_based_commit_signing: repositories_web_based_commit_signing)
+        stub_feature_flags(use_web_based_commit_signing_enabled: use_web_based_commit_signing_enabled)
+        project.web_based_commit_signing_enabled = web_based_commit_signing_enabled
+      end
+
+      it 'calls UserCommitFiles with the expected value for sign' do
+        expect_next_instance_of(Gitlab::GitalyClient::OperationService) do |client|
+          expect(client).to receive(:user_commit_files).with(*expected_params)
+        end
+
+        commit_files
+      end
+    end
+  end
 end
