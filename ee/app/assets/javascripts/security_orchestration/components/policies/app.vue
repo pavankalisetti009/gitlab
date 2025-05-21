@@ -1,4 +1,5 @@
 <script>
+import { groupBy } from 'lodash';
 import { s__ } from '~/locale';
 import getSppLinkedProjectsGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_groups.graphql';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
@@ -11,6 +12,9 @@ import {
   extractSourceParameter,
   extractTypeParameter,
 } from 'ee/security_orchestration/components/policies/utils';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import projectSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_security_policies.query.graphql';
+import groupSecurityPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_security_policies.query.graphql';
 import { isGroup } from '../utils';
 import projectScanExecutionPoliciesQuery from '../../graphql/queries/project_scan_execution_policies.query.graphql';
 import groupScanExecutionPoliciesQuery from '../../graphql/queries/group_scan_execution_policies.query.graphql';
@@ -51,6 +55,11 @@ const NAMESPACE_QUERY_DICT = {
     [NAMESPACE_TYPES.PROJECT]: projectVulnerabilityManagementPoliciesQuery,
     [NAMESPACE_TYPES.GROUP]: groupVulnerabilityManagementPoliciesQuery,
   },
+};
+
+const NAMESPACE_QUERY_DICT_COMBINED_LIST = {
+  [NAMESPACE_TYPES.PROJECT]: projectSecurityPoliciesQuery,
+  [NAMESPACE_TYPES.GROUP]: groupSecurityPoliciesQuery,
 };
 
 const createPolicyFetchError = ({ gqlError, networkError }) => {
@@ -98,6 +107,27 @@ export default {
       },
       error: createPolicyFetchError,
     },
+    securityPolicies: {
+      query() {
+        return NAMESPACE_QUERY_DICT_COMBINED_LIST[this.namespaceType];
+      },
+      variables() {
+        return {
+          fullPath: this.namespacePath,
+          relationship: this.selectedPolicySource,
+        };
+      },
+      result({ data }) {
+        this.pageInfo = data?.namespace?.securityPolicies?.pageInfo ?? {};
+      },
+      update(data) {
+        return data?.namespace?.securityPolicies?.nodes ?? [];
+      },
+      skip() {
+        return !this.hasCombinedList;
+      },
+      error: createPolicyFetchError,
+    },
     scanExecutionPolicies: {
       query() {
         return NAMESPACE_QUERY_DICT.scanExecution[this.namespaceType];
@@ -112,26 +142,10 @@ export default {
         return data?.namespace?.scanExecutionPolicies?.nodes ?? [];
       },
       result({ data }) {
-        const policies = data?.namespace?.scanExecutionPolicies?.nodes ?? [];
-        this.hasDeprecatedCustomScanPolicies = policies.some((policy) =>
-          policy.deprecatedProperties.includes(DEPRECATED_CUSTOM_SCAN_PROPERTY),
-        );
-
-        this.hasExceedingActionLimitPolicies = policies.some(({ yaml }) =>
-          exceedsActionLimit({
-            policyType: POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.text,
-            yaml,
-            maxScanExecutionPolicyActions: ACTION_LIMIT,
-          }),
-        );
-
-        this.hasExceedingScheduledLimitPolicies = policies.some(({ yaml }) =>
-          exceedsScheduleRulesLimit({
-            policyType: POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.text,
-            yaml,
-            maxScanExecutionPolicySchedules: this.maxScanExecutionPolicySchedules,
-          }),
-        );
+        return data?.namespace?.scanExecutionPolicies?.nodes ?? [];
+      },
+      skip() {
+        return this.hasCombinedList;
       },
       error: createPolicyFetchError,
     },
@@ -149,10 +163,10 @@ export default {
         return data?.namespace?.scanResultPolicies?.nodes ?? [];
       },
       result({ data }) {
-        const policies = data?.namespace?.scanResultPolicies?.nodes ?? [];
-        this.hasInvalidPolicies = policies.some((policy) =>
-          policy.deprecatedProperties.some((prop) => prop !== 'scan_result_policy'),
-        );
+        return data?.namespace?.scanResultPolicies?.nodes ?? [];
+      },
+      skip() {
+        return this.hasCombinedList;
       },
       error: createPolicyFetchError,
     },
@@ -168,6 +182,9 @@ export default {
       },
       update(data) {
         return data?.namespace?.pipelineExecutionPolicies?.nodes ?? [];
+      },
+      skip() {
+        return this.hasCombinedList;
       },
       error: createPolicyFetchError,
     },
@@ -185,10 +202,7 @@ export default {
         return data?.namespace?.pipelineExecutionSchedulePolicies?.nodes ?? [];
       },
       skip() {
-        return !(
-          this.enabledExperiments.includes('pipeline_execution_schedule_policy') &&
-          this.glFeatures.scheduledPipelineExecutionPolicies
-        );
+        return this.hasCombinedList || !this.hasScheduledPoliciesEnabled;
       },
       error: createPolicyFetchError,
     },
@@ -205,6 +219,9 @@ export default {
       update(data) {
         return data?.namespace?.vulnerabilityManagementPolicies?.nodes ?? [];
       },
+      skip() {
+        return this.hasCombinedList;
+      },
       error: createPolicyFetchError,
     },
   },
@@ -213,10 +230,6 @@ export default {
     const selectedPolicyType = extractTypeParameter(getParameterByName('type'));
 
     return {
-      hasExceedingActionLimitPolicies: false,
-      hasExceedingScheduledLimitPolicies: false,
-      hasInvalidPolicies: false,
-      hasDeprecatedCustomScanPolicies: false,
       hasPolicyProject: Boolean(this.assignedPolicyProject?.id),
       selectedPolicySource,
       selectedPolicyType,
@@ -227,10 +240,84 @@ export default {
       scanExecutionPolicies: [],
       scanResultPolicies: [],
       vulnerabilityManagementPolicies: [],
+      pageInfo: {},
+      securityPolicies: [],
     };
   },
   computed: {
-    policiesByType() {
+    hasExceedingScheduledLimitPolicies() {
+      return this.policiesByType[POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]?.some(
+        ({ yaml }) =>
+          exceedsScheduleRulesLimit({
+            policyType: POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.text,
+            yaml,
+            maxScanExecutionPolicySchedules: this.maxScanExecutionPolicySchedules,
+          }),
+      );
+    },
+    hasDeprecatedCustomScanPolicies() {
+      return this.policiesByType[POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]?.some((policy) =>
+        policy.deprecatedProperties.includes(DEPRECATED_CUSTOM_SCAN_PROPERTY),
+      );
+    },
+    hasExceedingActionLimitPolicies() {
+      return this.policiesByType[POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]?.some(
+        ({ yaml }) =>
+          exceedsActionLimit({
+            policyType: POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.text,
+            yaml,
+            maxScanExecutionPolicyActions: ACTION_LIMIT,
+          }),
+      );
+    },
+    hasInvalidPolicies() {
+      return this.policiesByType[POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]?.some((policy) =>
+        policy.deprecatedProperties?.some((prop) => prop !== 'scan_result_policy'),
+      );
+    },
+    hasCombinedList() {
+      return Boolean(this.glFeatures.securityPoliciesCombinedList);
+    },
+    hasScheduledPoliciesEnabled() {
+      return (
+        this.enabledExperiments.includes('pipeline_execution_schedule_policy') &&
+        this.glFeatures.scheduledPipelineExecutionPolicies
+      );
+    },
+    flattenedPolicies() {
+      return (
+        this.securityPolicies?.map(({ policyAttributes = {}, ...policy }) => ({
+          ...policy,
+          ...policyAttributes,
+        })) || []
+      );
+    },
+    policiesByTypeCombinedList() {
+      const groupedPolicies = groupBy(this.flattenedPolicies, 'type');
+
+      const policiesByType = {
+        [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]:
+          groupedPolicies[POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter] || [],
+        [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]:
+          groupedPolicies[POLICY_TYPE_COMPONENT_OPTIONS.approval.urlParameter] || [],
+        [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]:
+          groupedPolicies[POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter] || [],
+        [POLICY_TYPE_FILTER_OPTIONS.VULNERABILITY_MANAGEMENT.value]:
+          groupedPolicies[POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.urlParameter] || [],
+      };
+
+      if (this.hasScheduledPoliciesEnabled) {
+        return {
+          ...policiesByType,
+          [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION_SCHEDULE.value]:
+            groupedPolicies[POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecutionSchedule.urlParameter] ||
+            [],
+        };
+      }
+
+      return policiesByType;
+    },
+    policiesByTypeMultipleLists() {
       return {
         [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]: this.scanExecutionPolicies,
         [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]: this.scanResultPolicies,
@@ -241,7 +328,16 @@ export default {
           this.vulnerabilityManagementPolicies,
       };
     },
+    policiesByType() {
+      return this.hasCombinedList
+        ? this.policiesByTypeCombinedList
+        : this.policiesByTypeMultipleLists;
+    },
     isLoadingPolicies() {
+      if (this.hasCombinedList) {
+        return this.$apollo.queries.securityPolicies.loading;
+      }
+
       return (
         this.$apollo.queries.scanExecutionPolicies.loading ||
         this.$apollo.queries.scanResultPolicies.loading ||

@@ -1,3 +1,4 @@
+import { groupBy } from 'lodash';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPE_COMPLIANCE_FRAMEWORK } from '~/graphql_shared/constants';
 
@@ -22,6 +23,19 @@ const mockPolicyResponse = ({ nodes = [], namespaceType, policyType }) =>
     },
   });
 
+const mockPoliciesResponse = ({ nodes = [], pageInfo = defaultPageInfo }) =>
+  jest.fn().mockResolvedValue({
+    data: {
+      namespace: {
+        id: '1',
+        securityPolicies: {
+          nodes,
+          pageInfo,
+        },
+      },
+    },
+  });
+
 export const projectScanExecutionPolicies = (nodes) =>
   mockPolicyResponse({ nodes, namespaceType: 'Project', policyType: 'scanExecutionPolicies' });
 export const groupScanExecutionPolicies = (nodes) =>
@@ -36,6 +50,11 @@ export const projectPipelineResultPolicies = (nodes) =>
   mockPolicyResponse({ nodes, namespaceType: 'Project', policyType: 'pipelineExecutionPolicies' });
 export const groupPipelineResultPolicies = (nodes) =>
   mockPolicyResponse({ nodes, namespaceType: 'Group', policyType: 'pipelineExecutionPolicies' });
+
+export const projectSecurityPolicies = (nodes, pageIfo = defaultPageInfo) =>
+  mockPoliciesResponse({ nodes, pageIfo });
+export const groupSecurityPolicies = (nodes, pageIfo = defaultPageInfo) =>
+  mockPoliciesResponse({ nodes, pageIfo });
 
 export const projectPipelineExecutionSchedulePolicies = (nodes) =>
   mockPolicyResponse({
@@ -176,6 +195,14 @@ export const complianceFrameworksResponse = [
   },
 ];
 
+export const groupByType = (list) => {
+  const flattenedList = list.map(({ policyAttributes = {}, ...policy }) => ({
+    ...policy,
+    ...policyAttributes,
+  }));
+  return groupBy(flattenedList, 'type');
+};
+
 export const mockLinkedSppItemsResponse = ({
   projects = [],
   namespaces = [],
@@ -185,6 +212,7 @@ export const mockLinkedSppItemsResponse = ({
   jest.fn().mockResolvedValue({
     data: {
       project: {
+        __typename: 'Project',
         id: '1',
         securityPolicyProjectLinkedProjects: {
           nodes: projects,

@@ -13,6 +13,7 @@ import { createAlert } from '~/alert';
 import { getSecurityPolicyListUrl } from '~/editor/extensions/source_editor_security_policy_schema_ext';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { DATE_ONLY_FORMAT } from '~/lib/utils/datetime_utility';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
 import getGroupProjectsCount from 'ee/security_orchestration/graphql/queries/get_group_project_count.query.graphql';
 import {
@@ -82,6 +83,7 @@ export default {
     TimeAgoTooltip,
     StatusIcon,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: [
     'assignedPolicyProject',
     'namespacePath',
@@ -138,6 +140,9 @@ export default {
     };
   },
   computed: {
+    hasCombinedList() {
+      return this.glFeatures.securityPoliciesCombinedList;
+    },
     isBusy() {
       return this.isLoadingPolicies || this.isProcessingAction;
     },
@@ -166,8 +171,14 @@ export default {
       return this.$options.i18n.projectTypeLabel;
     },
     policyTypeFromSelectedPolicy() {
-      // eslint-disable-next-line no-underscore-dangle
-      return this.selectedPolicy ? getPolicyType(this.selectedPolicy.__typename) : '';
+      if (!this.selectedPolicy) {
+        return '';
+      }
+
+      return this.hasCombinedList
+        ? getPolicyType(this.selectedPolicy.type, 'value', false)
+        : // eslint-disable-next-line no-underscore-dangle
+          getPolicyType(this.selectedPolicy.__typename);
     },
     hasExistingPolicies() {
       return !(
@@ -259,16 +270,18 @@ export default {
       if (this.alert) this.alert.dismiss();
       this.isProcessingAction = true;
 
+      const policyType = this.hasCombinedList
+        ? getPolicyType(policy.type, 'urlParameter', false)
+        : // eslint-disable-next-line no-underscore-dangle
+          getPolicyType(policy.__typename, 'urlParameter');
+
       try {
         await goToPolicyMR({
           action,
           assignedPolicyProject: this.assignedPolicyProject,
           name: policy.name,
           namespacePath: this.namespacePath,
-          yamlEditorValue: policy.yaml.concat(
-            // eslint-disable-next-line no-underscore-dangle
-            `type: ${getPolicyType(policy.__typename, 'urlParameter')}`,
-          ),
+          yamlEditorValue: policy.yaml.concat(`type: ${policyType}`),
         });
       } catch (e) {
         this.alert = createAlert({ message: e.message });

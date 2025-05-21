@@ -8,7 +8,7 @@ export const DEFAULT_PROVIDE = {
   emptyFilterSvgPath: 'path/to/svg',
   emptyListSvgPath: 'path/to/list.svg',
   enabledExperiments: [],
-  glFeatures: {},
+  glFeatures: { securityPoliciesCombinedList: false },
   namespacePath: 'path/to/namespace',
   namespaceType: NAMESPACE_TYPES.PROJECT,
   newPolicyPath: '/-/security/policies/new',

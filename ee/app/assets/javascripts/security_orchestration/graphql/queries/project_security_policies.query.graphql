@@ -1,0 +1,78 @@
+#import "../fragments/scan_policy_source.fragment.graphql"
+#import "../fragments/policy_scope.fragment.graphql"
+#import "~/graphql_shared/fragments/page_info.fragment.graphql"
+
+query projectSecurityPolicies(
+  $fullPath: ID!
+  $relationship: SecurityPolicyRelationType = INHERITED
+) {
+  namespace: project(fullPath: $fullPath) {
+    id
+    securityPolicies(relationship: $relationship) {
+      nodes {
+        name
+        yaml
+        type
+        editPath
+        enabled
+        policyScope {
+          ...PolicyScope
+        }
+        updatedAt
+        policyAttributes {
+          ... on ScanExecutionPolicyAttributesType {
+            deprecatedProperties
+            source {
+              ...SecurityPolicySource
+            }
+          }
+          ... on ApprovalPolicyAttributesType {
+            source {
+              ...SecurityPolicySource
+            }
+            deprecatedProperties
+            actionApprovers {
+              allGroups {
+                id
+                webUrl
+                fullPath
+              }
+              customRoles {
+                id
+                name
+              }
+              roles
+              users {
+                id
+                webUrl
+                name
+              }
+            }
+          }
+          ... on PipelineExecutionPolicyAttributesType {
+            source {
+              ...SecurityPolicySource
+            }
+            policyBlobFilePath
+            warnings
+          }
+          ... on PipelineExecutionScheduledPolicyAttributesType {
+            source {
+              ...SecurityPolicySource
+            }
+            policyBlobFilePath
+            warnings
+          }
+          ... on VulnerabilityManagementPolicyAttributesType {
+            source {
+              ...SecurityPolicySource
+            }
+          }
+        }
+      }
+      pageInfo {
+        ...PageInfo
+      }
+    }
+  }
+}

@@ -192,6 +192,34 @@ export const mockProjectScanExecutionPolicy = {
   },
 };
 
+export const mockProjectScanExecutionPolicyCombinedList = {
+  __typename: 'ScanExecutionPolicy',
+  name: `${mockDastScanExecutionObject.name}-project`,
+  policyAttributes: {
+    __typename: 'ScanExecutionPolicyAttributesType',
+    deprecatedProperties: [],
+    source: {
+      __typename: 'ProjectSecurityPolicySource',
+      project: {
+        fullPath: 'project/path',
+      },
+    },
+  },
+  updatedAt: new Date('2021-06-07T00:00:00.000Z'),
+  yaml: mockDastScanExecutionManifest,
+  editPath: '/policies/policy-name/edit?type="scan_execution_policy"',
+  enabled: true,
+  ...POLICY_SCOPE_MOCK,
+  type: 'scan_execution_policy',
+  deprecatedProperties: [],
+  source: {
+    __typename: 'ProjectSecurityPolicySource',
+    project: {
+      fullPath: 'project/path',
+    },
+  },
+};
+
 export const mockProjectScanExecutionPolicyWithWrapper = {
   ...mockProjectScanExecutionPolicy,
   yaml: mockScanExecutionPolicyManifestWithWrapper,
@@ -216,6 +244,37 @@ export const mockGroupScanExecutionPolicy = {
   ...mockProjectScanExecutionPolicy,
   name: `${mockDastScanExecutionObject.name}-group`,
   enabled: false,
+  source: {
+    __typename: 'GroupSecurityPolicySource',
+    inherited: true,
+    namespace: {
+      __typename: 'Namespace',
+      id: '1',
+      fullPath: 'parent-group-path',
+      name: 'parent-group-name',
+    },
+  },
+};
+
+export const mockGroupScanExecutionPolicyCombinedList = {
+  ...mockProjectScanExecutionPolicy,
+  policyAttributes: {
+    __typename: 'ScanExecutionPolicyAttributesType',
+    deprecatedProperties: [],
+    source: {
+      __typename: 'GroupSecurityPolicySource',
+      inherited: true,
+      namespace: {
+        __typename: 'Namespace',
+        id: '1',
+        fullPath: 'parent-group-path',
+        name: 'parent-group-name',
+      },
+    },
+  },
+  name: `${mockDastScanExecutionObject.name}-group`,
+  enabled: false,
+  deprecatedProperties: [],
   source: {
     __typename: 'GroupSecurityPolicySource',
     inherited: true,

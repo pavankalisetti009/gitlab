@@ -262,7 +262,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-mt-5">
+  <div class="-gl-mb-10 gl-mt-5">
     <div
       class="gl-w-full gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-bg-subtle gl-border-b-solid gl-border-t-solid"
     >
