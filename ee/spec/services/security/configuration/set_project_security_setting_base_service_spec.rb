@@ -2,16 +2,18 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::Configuration::SetSecretPushProtectionBaseService, feature_category: :security_testing_configuration do
+RSpec.describe Security::Configuration::SetProjectSecuritySettingBaseService, feature_category: :security_testing_configuration do
   let_it_be(:user) { create(:user) }
   let_it_be(:project_1) { create(:project) }
-  let(:service) { described_class.new(subject: project_1, enable: true, current_user: user) }
+  let(:service) do
+    described_class.new(subject: project_1, enable: true, current_user: user)
+  end
 
   describe '#execute' do
     context 'when the call is valid' do
       it 'executes the transaction and returns the enable value' do
         allow(service).to receive_messages(valid_request?: true, subject_project_ids: [project_1.id],
-          audit: nil)
+          audit: nil, setting_key: :secret_push_protection_enabled)
         expect { service.execute }.to change {
           project_1.security_setting.reload.secret_push_protection_enabled
         }.from(false).to(true)
@@ -22,7 +24,7 @@ RSpec.describe Security::Configuration::SetSecretPushProtectionBaseService, feat
     context 'when the call is invalid' do
       it 'does nothing and returns nil' do
         allow(service).to receive_messages(valid_request?: false, subject_project_ids: [project_1.id],
-          audit: nil)
+          audit: nil, setting_key: :secret_push_protection_enabled)
         expect { service.execute }.not_to change {
           project_1.security_setting.reload.secret_push_protection_enabled
         }
@@ -40,6 +42,12 @@ RSpec.describe Security::Configuration::SetSecretPushProtectionBaseService, feat
   describe '#subject_project_ids' do
     it 'requires a subclass overrides it' do
       expect { service.send(:subject_project_ids) }.to raise_error(NotImplementedError)
+    end
+  end
+
+  describe '#setting_key' do
+    it 'requires a subclass overrides it' do
+      expect { service.send(:setting_key) }.to raise_error(NotImplementedError)
     end
   end
 end

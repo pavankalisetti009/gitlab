@@ -2,9 +2,11 @@
 
 module Security
   module Configuration
-    class SetSecretPushProtectionBaseService
+    class SetProjectSecuritySettingBaseService
       PROJECTS_BATCH_SIZE = 100
-      def initialize(subject:, enable:, current_user:, excluded_projects_ids: [])
+
+      def initialize(
+        subject:, enable:, current_user:, excluded_projects_ids: [])
         @subject = subject
         @enable = enable
         @current_user = current_user
@@ -24,6 +26,7 @@ module Security
           end
           audit if any_updated
         end
+
         @enable
       end
 
@@ -35,10 +38,10 @@ module Security
 
       def update_security_setting(project_ids)
         # rubocop:disable CodeReuse/ActiveRecord -- Specific use-case for this service
-        updated_records = ProjectSecuritySetting.for_projects(project_ids)
-                              .where(secret_push_protection_enabled: !@enable)
-                                .update_all(secret_push_protection_enabled: @enable,
-                                  updated_at: Time.current)
+        updated_records = ProjectSecuritySetting
+                            .for_projects(project_ids)
+                            .where(setting_key => !@enable)
+                            .update_all(setting_key => @enable, updated_at: Time.current)
         # rubocop:enable CodeReuse/ActiveRecord
 
         create_missing_security_setting(project_ids) + updated_records
@@ -49,7 +52,7 @@ module Security
         security_setting_attributes = projects_without_security_setting.map do |project|
           {
             project_id: project.id,
-            secret_push_protection_enabled: @enable,
+            setting_key => @enable,
             updated_at: Time.current
           }
         end
@@ -73,6 +76,10 @@ module Security
       end
 
       def subject_project_ids
+        raise NotImplementedError
+      end
+
+      def setting_key
         raise NotImplementedError
       end
     end

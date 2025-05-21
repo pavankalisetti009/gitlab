@@ -2,8 +2,12 @@
 
 module Security
   module Configuration
-    class SetProjectSecretPushProtectionService < SetSecretPushProtectionBaseService
+    class SetProjectSecretPushProtectionService < SetProjectSecuritySettingBaseService
       private
+
+      def setting_key
+        :secret_push_protection_enabled
+      end
 
       def subject_project_ids
         [@subject.id] - @excluded_projects_ids
