@@ -42,6 +42,7 @@ module EE
           cloud_connector_self_signed_tokens
           group_disable_invite_members
           notify_compromised_passwords
+          repositories_web_based_commit_signing
         ].freeze
 
       CONFIG_FILE_ROOT = 'ee/config/saas_features'

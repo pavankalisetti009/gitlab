@@ -139,6 +139,14 @@ module EE
 
     private
 
+    override :sign_commits?
+    def sign_commits?
+      return super unless ::Feature.enabled?(:use_web_based_commit_signing_enabled, project)
+      return super unless ::Gitlab::Saas.feature_available?(:repositories_web_based_commit_signing)
+
+      project.web_based_commit_signing_enabled
+    end
+
     def diverged?(branch_name, remote_ref)
       branch_commit = commit("refs/heads/#{branch_name}")
       upstream_commit = commit("refs/remotes/#{remote_ref}/#{branch_name}")
