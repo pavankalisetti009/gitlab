@@ -238,6 +238,8 @@ Some project items are excluded from migration because they:
   - Environments
   - Feature flags
   - Infrastructure registry
+  - Instance administrators in branch protection rules when migrating
+    from GitLab Self-Managed to GitLab.com or GitLab Dedicated
   - Linked issues
   - Merge request approval rules
 

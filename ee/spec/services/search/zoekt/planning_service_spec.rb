@@ -20,7 +20,7 @@ RSpec.describe Search::Zoekt::PlanningService, :freeze_time, feature_category: :
     [create(:project, namespace: group2, statistics: create(:project_statistics, repository_size: 2.gigabytes))]
   end
 
-  let(:max_indices_per_replica) { 5 }
+  let(:max_indices_per_replica) { Search::Zoekt::MAX_INDICES_PER_REPLICA }
 
   describe '.plan' do
     subject(:plan) do
