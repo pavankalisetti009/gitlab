@@ -201,12 +201,6 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
                 expect(response.media_type).to eq 'text/html'
                 expect(response).to render_template expected_template
               end
-
-              it 'renders legacy template when forcing it' do
-                get :show, params: { group_id: group, id: epic.to_param, force_legacy_view: true }
-
-                expect(response).to render_template 'groups/epics/show'
-              end
             end
           end
 

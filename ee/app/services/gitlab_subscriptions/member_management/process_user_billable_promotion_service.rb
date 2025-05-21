@@ -5,13 +5,13 @@ module GitlabSubscriptions
     class ProcessUserBillablePromotionService < BaseService
       include GitlabSubscriptions::MemberManagement::PromotionManagementUtils
 
-      def initialize(current_user, user, status, skip_authorization = false)
+      def initialize(user, current_user, params)
         @current_user = current_user
         @user = user
-        @status = status
+        @status = params[:status]
+        @skip_authorization = params[:skip_authorization] || false
         @failed_member_approvals = []
         @successful_promotion_count = 0
-        @skip_authorization = skip_authorization
       end
 
       def execute

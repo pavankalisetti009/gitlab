@@ -100,13 +100,6 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
               expect(response.body).to have_pushed_frontend_feature_flags(workItemEpics: true)
             end
 
-            it 'renders legacy page when forcing the legacy view' do
-              get group_epic_path(group, epic, { force_legacy_view: true })
-
-              expect(response).to render_template(:show)
-              expect(response.body).to have_pushed_frontend_feature_flags(workItemEpics: false)
-            end
-
             it 'renders json when requesting json response' do
               get group_epic_path(group, epic, format: :json)
 
