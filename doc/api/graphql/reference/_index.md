@@ -12862,6 +12862,7 @@ Input type: `WorkItemExportInput`
 | <a id="mutationworkitemexportmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="mutationworkitemexportnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="mutationworkitemexportor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="mutationworkitemexportparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="mutationworkitemexportprojectpath"></a>`projectPath` | [`ID!`](#id) | Full project path. |
 | <a id="mutationworkitemexportsearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="mutationworkitemexportselectedfields"></a>`selectedFields` | [`[AvailableExportFields!]`](#availableexportfields) | List of selected fields to be exported. Omit to export all available fields. |
@@ -13041,6 +13042,7 @@ Input type: `WorkItemsCsvExportInput`
 | <a id="mutationworkitemscsvexportmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="mutationworkitemscsvexportnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="mutationworkitemscsvexportor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="mutationworkitemscsvexportparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="mutationworkitemscsvexportprojectpath"></a>`projectPath` | [`ID!`](#id) | Full project path. |
 | <a id="mutationworkitemscsvexportsearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="mutationworkitemscsvexportselectedfields"></a>`selectedFields` | [`[AvailableExportFields!]`](#availableexportfields) | List of selected fields to be exported. Omit to export all available fields. |
@@ -25250,6 +25252,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserworkitemsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="currentuserworkitemsnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="currentuserworkitemsor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="currentuserworkitemsparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="currentuserworkitemssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="currentuserworkitemssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
 | <a id="currentuserworkitemsstate"></a>`state` | [`IssuableState`](#issuablestate) | Current state of the work item. |
@@ -29576,6 +29579,7 @@ Returns [`WorkItemStateCountsType`](#workitemstatecountstype).
 | <a id="groupworkitemstatecountsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="groupworkitemstatecountsnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="groupworkitemstatecountsor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="groupworkitemstatecountsparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="groupworkitemstatecountsrequirementlegacywidget"></a>`requirementLegacyWidget` {{< icon name="warning-solid" >}} | [`RequirementLegacyFilterInput`](#requirementlegacyfilterinput) | **Deprecated** in GitLab 15.9. Use work item IID filter instead. |
 | <a id="groupworkitemstatecountssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="groupworkitemstatecountssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
@@ -29648,6 +29652,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupworkitemsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="groupworkitemsnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="groupworkitemsor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="groupworkitemsparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="groupworkitemsrequirementlegacywidget"></a>`requirementLegacyWidget` {{< icon name="warning-solid" >}} | [`RequirementLegacyFilterInput`](#requirementlegacyfilterinput) | **Deprecated** in GitLab 15.9. Use work item IID filter instead. |
 | <a id="groupworkitemssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="groupworkitemssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
@@ -37669,6 +37674,7 @@ Returns [`WorkItemStateCountsType`](#workitemstatecountstype).
 | <a id="projectworkitemstatecountsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="projectworkitemstatecountsnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="projectworkitemstatecountsor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="projectworkitemstatecountsparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="projectworkitemstatecountsrequirementlegacywidget"></a>`requirementLegacyWidget` {{< icon name="warning-solid" >}} | [`RequirementLegacyFilterInput`](#requirementlegacyfilterinput) | **Deprecated** in GitLab 15.9. Use work item IID filter instead. |
 | <a id="projectworkitemstatecountssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="projectworkitemstatecountssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
@@ -37737,6 +37743,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectworkitemsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. Wildcard values `NONE` and `ANY` are supported. |
 | <a id="projectworkitemsnot"></a>`not` | [`NegatedWorkItemFilterInput`](#negatedworkitemfilterinput) | Negated work item arguments. |
 | <a id="projectworkitemsor"></a>`or` | [`UnionedWorkItemFilterInput`](#unionedworkitemfilterinput) | List of arguments with inclusive `OR`. |
+| <a id="projectworkitemsparentids"></a>`parentIds` | [`[WorkItemID!]`](#workitemid) | Filter work items by global IDs of their parent items (maximum is 100 items). |
 | <a id="projectworkitemsrequirementlegacywidget"></a>`requirementLegacyWidget` {{< icon name="warning-solid" >}} | [`RequirementLegacyFilterInput`](#requirementlegacyfilterinput) | **Deprecated** in GitLab 15.9. Use work item IID filter instead. |
 | <a id="projectworkitemssearch"></a>`search` | [`String`](#string) | Search query for title or description. |
 | <a id="projectworkitemssort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort work items by criteria. |
