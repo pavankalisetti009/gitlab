@@ -11,8 +11,46 @@ module Gitlab
       class_methods do
         include Gitlab::Utils::StrongMemoize
 
+        # TODO: remove when we move away from Prometheus::Client to Labkit::Metrics::Client completely
+        # https://gitlab.com/gitlab-com/gl-infra/observability/team/-/issues/4160
+        if ENV.fetch('LABKIT_METRIC_ENABLED', 'false') == 'true'
+          def client
+            Labkit::Metrics::Client
+          end
+
+          def null_metric
+            Labkit::Metrics::Null.instance
+          end
+
+          def get_metric(metric_type, metric_name, *args)
+            Labkit::Metrics::Client.send(metric_type, metric_name, *args) # rubocop:disable GitlabSecurity/PublicSend -- temporary workaround
+            # Temporarily dynamically dispatching to avoid creating a long list of client methods.
+            # The methods counter, gauge, histogram, summary, will be replaced with Labkit::Metrics::Client.
+          end
+
+          def metrics_enabled?
+            client.enabled?
+          end
+        else
+          def client
+            ::Prometheus::Client
+          end
+
+          def null_metric
+            NullMetric.instance
+          end
+
+          def get_metric(metric_type, metric_name, *args)
+            registry.get(metric_name) || registry.method(metric_type).call(metric_name, *args)
+          end
+
+          def metrics_enabled?
+            !error? && metrics_folder_present?
+          end
+        end
+
         def metrics_folder_present?
-          multiprocess_files_dir = ::Prometheus::Client.configuration.multiprocess_files_dir
+          multiprocess_files_dir = client.configuration.multiprocess_files_dir
 
           multiprocess_files_dir &&
             ::Dir.exist?(multiprocess_files_dir) &&
@@ -30,7 +68,7 @@ module Gitlab
 
           REGISTRY_MUTEX.synchronize do
             ::Prometheus::Client.cleanup!
-            ::Prometheus::Client.reset!
+            client.reset!
           end
         end
 
@@ -60,12 +98,20 @@ module Gitlab
           safe_provide_metric(:histogram, name, docstring, base_labels, buckets)
         end
 
+        # TODO: remove when we move away from Prometheus::Client to Labkit::Metrics::Client completely
+        # https://gitlab.com/gitlab-com/gl-infra/observability/team/-/issues/4160
         def error_detected!
           set_error!(true)
+          Labkit::Metrics::Client.disable!
         end
 
+        # Used only in specs to reset the error state
+        #
+        # TODO: remove when we move away from Prometheus::Client to Labkit::Metrics::Client completely
+        # https://gitlab.com/gitlab-com/gl-infra/observability/team/-/issues/4160
         def clear_errors!
           set_error!(false)
+          Labkit::Metrics::Client.enable!
         end
 
         def set_error!(status)
@@ -78,25 +124,22 @@ module Gitlab
 
         private
 
-        def safe_provide_metric(method, name, *args)
-          metric = provide_metric(name)
-          return metric if metric
-
+        def safe_provide_metric(metric_type, metric_name, *args)
           PROVIDER_MUTEX.synchronize do
-            provide_metric(name) || registry.method(method).call(name, *args)
+            provide_metric(metric_type, metric_name, *args)
           end
         end
 
-        def provide_metric(name)
+        def provide_metric(metric_type, metric_name, *args)
           if prometheus_metrics_enabled?
-            registry.get(name)
+            get_metric(metric_type, metric_name, *args)
           else
-            NullMetric.instance
+            null_metric
           end
         end
 
         def prometheus_metrics_enabled_unmemoized
-          (!error? && metrics_folder_present? && Gitlab::CurrentSettings.prometheus_metrics_enabled) || false
+          (metrics_enabled? && Gitlab::CurrentSettings.prometheus_metrics_enabled) || false
         end
       end
     end

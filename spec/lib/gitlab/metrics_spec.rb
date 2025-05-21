@@ -38,6 +38,7 @@ RSpec.describe Gitlab::Metrics do
       context 'when metrics folder is missing' do
         before do
           allow(described_class).to receive(:metrics_folder_present?).and_return(false)
+          Labkit::Metrics::Client.disable!
         end
 
         it 'metrics are disabled' do
@@ -207,38 +208,33 @@ RSpec.describe Gitlab::Metrics do
   context 'prometheus metrics disabled' do
     before do
       allow(described_class).to receive(:prometheus_metrics_enabled?).and_return(false)
+      Labkit::Metrics::Client.disable!
     end
 
     it_behaves_like 'prometheus metrics API'
 
-    describe '#null_metric' do
-      subject { described_class.send(:provide_metric, :test) }
-
-      it { is_expected.to be_a(Gitlab::Metrics::NullMetric) }
-    end
-
     describe '#counter' do
       subject { described_class.counter(:counter, 'doc') }
 
-      it { is_expected.to be_a(Gitlab::Metrics::NullMetric) }
+      it { is_expected.to eq(described_class.null_metric) }
     end
 
     describe '#summary' do
       subject { described_class.summary(:summary, 'doc') }
 
-      it { is_expected.to be_a(Gitlab::Metrics::NullMetric) }
+      it { is_expected.to eq(described_class.null_metric) }
     end
 
     describe '#gauge' do
       subject { described_class.gauge(:gauge, 'doc') }
 
-      it { is_expected.to be_a(Gitlab::Metrics::NullMetric) }
+      it { is_expected.to eq(described_class.null_metric) }
     end
 
     describe '#histogram' do
       subject { described_class.histogram(:histogram, 'doc') }
 
-      it { is_expected.to be_a(Gitlab::Metrics::NullMetric) }
+      it { is_expected.to eq(described_class.null_metric) }
     end
   end
 
@@ -248,38 +244,33 @@ RSpec.describe Gitlab::Metrics do
     before do
       stub_const('Prometheus::Client::Multiprocdir', metrics_multiproc_dir)
       allow(described_class).to receive(:prometheus_metrics_enabled?).and_return(true)
+      Labkit::Metrics::Client.enable!
     end
 
     it_behaves_like 'prometheus metrics API'
 
-    describe '#null_metric' do
-      subject { described_class.send(:provide_metric, :test) }
-
-      it { is_expected.to be_nil }
-    end
-
     describe '#counter' do
       subject { described_class.counter(:name, 'doc') }
 
-      it { is_expected.not_to be_a(Gitlab::Metrics::NullMetric) }
+      it { is_expected.not_to eq(described_class.null_metric) }
     end
 
     describe '#summary' do
       subject { described_class.summary(:name, 'doc') }
 
-      it { is_expected.not_to be_a(Gitlab::Metrics::NullMetric) }
+      it { is_expected.not_to eq(described_class.null_metric) }
     end
 
     describe '#gauge' do
       subject { described_class.gauge(:name, 'doc') }
 
-      it { is_expected.not_to be_a(Gitlab::Metrics::NullMetric) }
+      it { is_expected.not_to eq(described_class.null_metric) }
     end
 
     describe '#histogram' do
       subject { described_class.histogram(:name, 'doc') }
 
-      it { is_expected.not_to be_a(Gitlab::Metrics::NullMetric) }
+      it { is_expected.not_to eq(described_class.null_metric) }
     end
   end
 
