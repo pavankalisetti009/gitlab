@@ -27910,6 +27910,7 @@ GPG signature for a signed commit.
 | <a id="grouptotalrepositorysizeexcess"></a>`totalRepositorySizeExcess` | [`Float`](#float) | Total excess repository size of all projects in the root namespace in bytes. This only applies to namespaces under Project limit enforcement. |
 | <a id="grouptwofactorgraceperiod"></a>`twoFactorGracePeriod` | [`Int`](#int) | Time before two-factor authentication is enforced. |
 | <a id="groupupdatedat"></a>`updatedAt` | [`Time`](#time) | Timestamp of when the group was last updated. |
+| <a id="groupuserlevelpermissions"></a>`userLevelPermissions` {{< icon name="warning-solid" >}} | [`UserLevelPermissions`](#userlevelpermissions) | **Introduced** in GitLab 18.1. **Status**: Experiment. User permissions on the namespace. |
 | <a id="groupuserpermissions"></a>`userPermissions` | [`GroupPermissions!`](#grouppermissions) | Permissions for the current user on the resource. |
 | <a id="groupvaluestreamanalytics"></a>`valueStreamAnalytics` | [`ValueStreamAnalytics`](#valuestreamanalytics) | Information about Value Stream Analytics within the group. |
 | <a id="groupvisibility"></a>`visibility` | [`String`](#string) | Visibility of the namespace. |
@@ -29844,6 +29845,17 @@ Limited group data accessible to users without full group read access (e.g. non-
 | <a id="groupnamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
 | <a id="groupnamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="groupnamespacelinkssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
+
+### `GroupNamespaceUserLevelPermissions`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupnamespaceuserlevelpermissionscanadminlabel"></a>`canAdminLabel` | [`Boolean`](#boolean) | Whether the current user can admin labels in the namespace. |
+| <a id="groupnamespaceuserlevelpermissionscanbulkeditepics"></a>`canBulkEditEpics` | [`Boolean`](#boolean) | Whether the current user can bulk edit epics in the group. |
+| <a id="groupnamespaceuserlevelpermissionscancreateepic"></a>`canCreateEpic` | [`Boolean`](#boolean) | Whether the current user can create epics in the group. |
+| <a id="groupnamespaceuserlevelpermissionscancreateprojects"></a>`canCreateProjects` | [`Boolean`](#boolean) | Whether the current user can create projects in the namespace. |
 
 ### `GroupPermissions`
 
@@ -33427,6 +33439,7 @@ Product analytics events for a specific month and year.
 | <a id="namespacetimelogcategories"></a>`timelogCategories` {{< icon name="warning-solid" >}} | [`TimeTrackingTimelogCategoryConnection`](#timetrackingtimelogcategoryconnection) | **Introduced** in GitLab 15.3. **Status**: Experiment. Timelog categories for the namespace. |
 | <a id="namespacetotalrepositorysize"></a>`totalRepositorySize` | [`Float`](#float) | Total repository size of all projects in the root namespace in bytes. |
 | <a id="namespacetotalrepositorysizeexcess"></a>`totalRepositorySizeExcess` | [`Float`](#float) | Total excess repository size of all projects in the root namespace in bytes. This only applies to namespaces under Project limit enforcement. |
+| <a id="namespaceuserlevelpermissions"></a>`userLevelPermissions` {{< icon name="warning-solid" >}} | [`UserLevelPermissions`](#userlevelpermissions) | **Introduced** in GitLab 18.1. **Status**: Experiment. User permissions on the namespace. |
 | <a id="namespaceuserpermissions"></a>`userPermissions` | [`NamespacePermissions!`](#namespacepermissions) | Permissions for the current user on the resource. |
 | <a id="namespacevisibility"></a>`visibility` | [`String`](#string) | Visibility of the namespace. |
 | <a id="namespaceweburl"></a>`webUrl` | [`String`](#string) | URL of the object. |
@@ -37863,6 +37876,17 @@ Returns [`UserMergeRequestInteraction`](#usermergerequestinteraction).
 | <a id="projectnamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="projectnamespacelinkssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
 
+### `ProjectNamespaceUserLevelPermissions`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectnamespaceuserlevelpermissionscanadminlabel"></a>`canAdminLabel` | [`Boolean`](#boolean) | Whether the current user can admin labels in the namespace. |
+| <a id="projectnamespaceuserlevelpermissionscanbulkeditepics"></a>`canBulkEditEpics` | [`Boolean`](#boolean) | Whether the current user can bulk edit epics in the group. |
+| <a id="projectnamespaceuserlevelpermissionscancreateepic"></a>`canCreateEpic` | [`Boolean`](#boolean) | Whether the current user can create epics in the group. |
+| <a id="projectnamespaceuserlevelpermissionscancreateprojects"></a>`canCreateProjects` | [`Boolean`](#boolean) | Whether the current user can create projects in the namespace. |
+
 ### `ProjectPermissions`
 
 #### Fields
@@ -40681,6 +40705,17 @@ fields relate to interactions between the two entities.
 | <a id="usernamespacelinksregister"></a>`register` | [`String`](#string) | Namespace register_path. |
 | <a id="usernamespacelinksreportabuse"></a>`reportAbuse` | [`String`](#string) | Namespace report_abuse. |
 | <a id="usernamespacelinkssignin"></a>`signIn` | [`String`](#string) | Namespace sign_in_path. |
+
+### `UserNamespaceUserLevelPermissions`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="usernamespaceuserlevelpermissionscanadminlabel"></a>`canAdminLabel` | [`Boolean`](#boolean) | Whether the current user can admin labels in the namespace. |
+| <a id="usernamespaceuserlevelpermissionscanbulkeditepics"></a>`canBulkEditEpics` | [`Boolean`](#boolean) | Whether the current user can bulk edit epics in the group. |
+| <a id="usernamespaceuserlevelpermissionscancreateepic"></a>`canCreateEpic` | [`Boolean`](#boolean) | Whether the current user can create epics in the group. |
+| <a id="usernamespaceuserlevelpermissionscancreateprojects"></a>`canCreateProjects` | [`Boolean`](#boolean) | Whether the current user can create projects in the namespace. |
 
 ### `UserPermissions`
 
@@ -49302,6 +49337,23 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="useruserachievementsincludehidden"></a>`includeHidden` | [`Boolean`](#boolean) | Indicates whether or not achievements hidden from the profile should be included in the result. |
+
+#### `UserLevelPermissions`
+
+Implementations:
+
+- [`GroupNamespaceUserLevelPermissions`](#groupnamespaceuserlevelpermissions)
+- [`ProjectNamespaceUserLevelPermissions`](#projectnamespaceuserlevelpermissions)
+- [`UserNamespaceUserLevelPermissions`](#usernamespaceuserlevelpermissions)
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="userlevelpermissionscanadminlabel"></a>`canAdminLabel` | [`Boolean`](#boolean) | Whether the current user can admin labels in the namespace. |
+| <a id="userlevelpermissionscanbulkeditepics"></a>`canBulkEditEpics` | [`Boolean`](#boolean) | Whether the current user can bulk edit epics in the group. |
+| <a id="userlevelpermissionscancreateepic"></a>`canCreateEpic` | [`Boolean`](#boolean) | Whether the current user can create epics in the group. |
+| <a id="userlevelpermissionscancreateprojects"></a>`canCreateProjects` | [`Boolean`](#boolean) | Whether the current user can create projects in the namespace. |
 
 #### `VulnerabilityStatisticInterface`
 
