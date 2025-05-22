@@ -12973,6 +12973,7 @@ Input type: `WorkItemUserPreferenceUpdateInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationworkitemuserpreferenceupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationworkitemuserpreferenceupdatedisplaysettings"></a>`displaySettings` | [`JSON`](#json) | Display settings for the work item lists. |
 | <a id="mutationworkitemuserpreferenceupdatenamespacepath"></a>`namespacePath` | [`ID!`](#id) | Full path of the namespace on which the preference is set. |
 | <a id="mutationworkitemuserpreferenceupdatesort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort order for work item lists. |
 | <a id="mutationworkitemuserpreferenceupdateworkitemtypeid"></a>`workItemTypeId` | [`WorkItemsTypeID`](#workitemstypeid) | Global ID of a work item type. |
@@ -41927,6 +41928,7 @@ Represents Depth limit reached for the allowed work item type.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="workitemtypesuserpreferencedisplaysettings"></a>`displaySettings` | [`JSON`](#json) | Display settings for the work item lists. |
 | <a id="workitemtypesuserpreferencenamespace"></a>`namespace` | [`Namespace!`](#namespace) | Namespace for the user preference. |
 | <a id="workitemtypesuserpreferencesort"></a>`sort` | [`WorkItemSort`](#workitemsort) | Sort order for work item lists. |
 | <a id="workitemtypesuserpreferenceworkitemtype"></a>`workItemType` | [`WorkItemType`](#workitemtype) | Type assigned to the work item. |
