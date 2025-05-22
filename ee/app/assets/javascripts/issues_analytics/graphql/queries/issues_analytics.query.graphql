@@ -1,3 +1,7 @@
+# @graphql-eslint/eslint-plugin@4.0.0 reports missing IDs in `FragmentDefinition`. For now, we are
+# ignoring the newly uncovered error on this fragment. Please consider addressing the violation
+# if you are modifying this file and it turns out selecting the ID makes sense here.
+# eslint-disable-next-line @graphql-eslint/require-selections
 fragment Issue on Issue {
   iid
   title
@@ -13,24 +17,44 @@ fragment Issue on Issue {
   }
   createdAt
   state
+  # @graphql-eslint/eslint-plugin@4.0.0 reports missing IDs in `FragmentDefinition`. For now, we are
+  # ignoring the newly uncovered error on this fragment. Please consider addressing the violation
+  # if you are modifying this file and it turns out selecting the ID makes sense here.
+  # eslint-disable-next-line @graphql-eslint/require-selections
   epic {
     iid
   }
+  # @graphql-eslint/eslint-plugin@4.0.0 reports missing IDs in `FragmentDefinition`. For now, we are
+  # ignoring the newly uncovered error on this fragment. Please consider addressing the violation
+  # if you are modifying this file and it turns out selecting the ID makes sense here.
+  # eslint-disable-next-line @graphql-eslint/require-selections
   milestone {
     title
   }
+  # @graphql-eslint/eslint-plugin@4.0.0 reports missing IDs in `FragmentDefinition`. For now, we are
+  # ignoring the newly uncovered error on this fragment. Please consider addressing the violation
+  # if you are modifying this file and it turns out selecting the ID makes sense here.
+  # eslint-disable-next-line @graphql-eslint/require-selections
   iteration {
     title
   }
   weight
   dueDate
   assignees {
+    # @graphql-eslint/eslint-plugin@4.0.0 reports missing IDs in `FragmentDefinition`. For now, we are
+    # ignoring the newly uncovered error on this fragment. Please consider addressing the violation
+    # if you are modifying this file and it turns out selecting the ID makes sense here.
+    # eslint-disable-next-line @graphql-eslint/require-selections
     nodes {
       name
       webUrl
       avatarUrl
     }
   }
+  # @graphql-eslint/eslint-plugin@4.0.0 reports missing IDs in `FragmentDefinition`. For now, we are
+  # ignoring the newly uncovered error on this fragment. Please consider addressing the violation
+  # if you are modifying this file and it turns out selecting the ID makes sense here.
+  # eslint-disable-next-line @graphql-eslint/require-selections
   author {
     name
     webUrl
