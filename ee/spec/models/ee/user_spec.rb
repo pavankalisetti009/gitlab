@@ -730,6 +730,26 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
+  describe '#dismiss_compromised_password_detection_alerts' do
+    let(:user) { create(:user) }
+
+    context 'when password is changed' do
+      it 'calls Users::CompromisedPasswords::ResolveDetectionForUserService' do
+        expect(::Users::CompromisedPasswords::ResolveDetectionForUserService).to receive(:new).with(user).and_call_original
+
+        user.update!(password: described_class.random_password)
+      end
+    end
+
+    context 'when password is not changed' do
+      it 'does not call Users::CompromisedPasswords::ResolveDetectionForUserService' do
+        expect(::Users::CompromisedPasswords::ResolveDetectionForUserService).not_to receive(:new)
+
+        user.update!(name: 'New name')
+      end
+    end
+  end
+
   describe '.find_by_smartcard_identity' do
     let!(:user) { create(:user) }
     let!(:smartcard_identity) { create(:smartcard_identity, user: user) }
