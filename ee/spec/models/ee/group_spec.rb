@@ -3860,7 +3860,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#code_suggestions_purchased?', :with_cloud_connector do
+  describe '#code_suggestions_purchased?', :saas do
     let(:group) { create(:group) }
 
     context 'when code suggestions purchase exists' do

@@ -280,31 +280,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
 
           expect(response).to have_gitlab_http_status(:unauthorized)
         end
-
-        context 'with personal namespace' do
-          let(:user_namespace) { create(:user).namespace }
-          let(:job_in_user_namespace) { create(:ci_build, :running, namespace: user_namespace) }
-          let(:api_url) { "/internal/jobs/#{job_in_user_namespace.id}/x_ray/scan" }
-
-          let(:params) do
-            {
-              token: job_in_user_namespace.token,
-              prompt_components: [{ payload: "test" }]
-            }
-          end
-
-          let(:namespace_workhorse_headers) do
-            {
-              "X-Gitlab-Saas-Namespace-Ids" => [user_namespace.id.to_s]
-            }
-          end
-
-          it 'returns UNAUTHORIZED status' do
-            post_api
-
-            expect(response).to have_gitlab_http_status(:unauthorized)
-          end
-        end
       end
     end
   end
@@ -510,17 +485,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
             post_api
 
             expect(response).to have_gitlab_http_status(:unauthorized)
-          end
-
-          context 'with personal namespace' do
-            let(:user_namespace) { create(:user).namespace }
-            let(:current_job) { create(:ci_build, :running, namespace: user_namespace) }
-
-            it 'responds with unauthorized' do
-              post_api
-
-              expect(response).to have_gitlab_http_status(:unauthorized)
-            end
           end
         end
       end

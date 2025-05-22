@@ -454,6 +454,60 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       end
     end
 
+    describe '.for_active_add_ons' do
+      using RSpec::Parameterized::TableSyntax
+
+      subject(:active_add_on_purchases) { described_class.for_active_add_ons(add_on_names, resource: resource) }
+
+      let_it_be(:user) { create(:user) }
+      let_it_be(:group_1) { create(:group) }
+      let_it_be(:group_2) { create(:group) }
+
+      let_it_be(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
+      let_it_be(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
+
+      let_it_be(:active_pro_purchase_for_group_1) do
+        create(:gitlab_subscription_add_on_purchase, :active, add_on: gitlab_duo_pro_add_on, namespace: group_1)
+      end
+
+      let_it_be(:active_pro_purchase_for_group_2) do
+        create(:gitlab_subscription_add_on_purchase, :active, add_on: gitlab_duo_pro_add_on, namespace: group_2)
+      end
+
+      let_it_be(:active_analytics_purchase_for_group_2) do
+        create(:gitlab_subscription_add_on_purchase, :active, add_on: product_analytics_add_on, namespace: group_2)
+      end
+
+      let_it_be(:active_analytics_purchase_for_self_managed) do
+        create(:gitlab_subscription_add_on_purchase, :active, :self_managed, add_on: product_analytics_add_on)
+      end
+
+      # rubocop:disable Layout/LineLength -- for better readability
+      where(:gitlab_com, :resource, :add_on_names, :result) do
+        true  | ref(:group_1) | %w[code_suggestions product_analytics] | [ref(:active_pro_purchase_for_group_1)]
+        true  | ref(:group_2) | %w[code_suggestions product_analytics] | [ref(:active_pro_purchase_for_group_2), ref(:active_analytics_purchase_for_group_2)]
+        true  | ref(:group_1) | %w[product_analytics]                  | []
+        true  | ref(:user)    | %w[code_suggestions product_analytics] | [ref(:active_pro_purchase_for_group_1)]
+        true  | nil           | %w[code_suggestions]                   | [ref(:active_pro_purchase_for_group_1), ref(:active_pro_purchase_for_group_2)]
+        false | ref(:group_1) | %w[code_suggestions product_analytics] | [ref(:active_analytics_purchase_for_self_managed)]
+        false | nil           | %w[product_analytics]                  | [ref(:active_analytics_purchase_for_self_managed)]
+        false | nil           | %w[code_suggestions]                   | []
+      end
+      # rubocop:enable Layout/LineLength
+
+      with_them do
+        before do
+          stub_saas_features(gitlab_com_subscriptions: gitlab_com)
+
+          group_1.add_member(user, :developer)
+        end
+
+        it 'returns the expected results' do
+          expect(active_add_on_purchases).to match_array(result)
+        end
+      end
+    end
+
     describe '.for_seat_assignable_duo_add_ons' do
       subject(:seat_assignable_duo_add_on_purchases) { described_class.for_seat_assignable_duo_add_ons }
 
