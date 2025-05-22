@@ -15,7 +15,7 @@ export default (base) => {
       name: ROUTES.accessTokens,
       component: AccessTokens,
       props: ({ params: { id } }) => {
-        return { id: Number(id) };
+        return { id: Number(id), showAvatar: true };
       },
     },
   ];
