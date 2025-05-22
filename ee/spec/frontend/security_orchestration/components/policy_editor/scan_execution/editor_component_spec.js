@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlEmptyState, GlToggle } from '@gitlab/ui';
+import { GlCard, GlEmptyState, GlToggle } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import EditorComponent from 'ee/security_orchestration/components/policy_editor/scan_execution/editor_component.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/rule_section.vue';
@@ -53,6 +53,7 @@ import {
 } from 'ee/security_orchestration/components/constants';
 import { policyBodyToYaml } from 'ee/security_orchestration/components/policy_editor/utils';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
+import OptimizedScanSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/optimized_scan_selector.vue';
 import { goToYamlMode } from '../policy_editor_helper';
 
 jest.mock('lodash/uniqueId');
@@ -132,6 +133,14 @@ describe('EditorComponent', () => {
   const findDisabledAction = () => wrapper.findByTestId('disabled-action');
   const findDisabledRule = () => wrapper.findByTestId('disabled-rule');
   const findSkipCiSelector = () => wrapper.findComponent(SkipCiSelector);
+  const findActionBuilderDefaultConfig = () => wrapper.findByTestId('default-action-config');
+  const findActionBuilderDefaultConfigRadioButton = () =>
+    wrapper.findByTestId('default-action-config-radio-button');
+  const findActionBuilderCustomConfig = () => wrapper.findByTestId('custom-action-config');
+  const findActionBuilderCustomConfigRadioButton = () =>
+    wrapper.findByTestId('default-action-config-radio-button');
+  const findOptimizedScanSelector = () => wrapper.findComponent(OptimizedScanSelector);
+  const findCards = () => wrapper.findAllComponents(GlCard);
 
   const selectScheduleRule = async () => {
     await findRuleSection().vm.$emit('changed', buildDefaultScheduleRule());
@@ -145,7 +154,7 @@ describe('EditorComponent', () => {
     beforeEach(() => {
       factory();
     });
-    describe('policy scope', () => {
+    describe('scope', () => {
       it.each`
         namespaceType              | manifest
         ${NAMESPACE_TYPES.GROUP}   | ${SCAN_EXECUTION_DEFAULT_POLICY_WITH_SCOPE}
@@ -260,7 +269,7 @@ enabled: true`;
     });
   });
 
-  describe('policy rule builder', () => {
+  describe('rule builder', () => {
     beforeEach(() => {
       uniqueId.mockRestore();
     });
@@ -354,9 +363,235 @@ enabled: true`;
     });
   });
 
-  describe('policy action builder', () => {
+  describe('action builder', () => {
     beforeEach(() => {
       uniqueId.mockRestore();
+    });
+
+    afterAll(() => {
+      window.gon = { features: {} };
+    });
+
+    describe('default', () => {
+      it('shows default and custom cards', () => {
+        factory({
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+        expect(findCards()).toHaveLength(2);
+      });
+
+      it('checks optimized scanner by default', () => {
+        factory({
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+        expect(findActionBuilderDefaultConfigRadioButton().props('checked')).toBe('default');
+      });
+    });
+
+    describe('default configuration', () => {
+      it('does not show custom configuration section', () => {
+        factory({
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+        expect(findActionBuilderDefaultConfig().exists()).toBe(true);
+        expect(findActionBuilderCustomConfig().exists()).toBe(false);
+      });
+
+      it('renders optimized scan selector', () => {
+        window.gon = { features: { flexibleScanExecutionPolicy: true } };
+        factory({
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+        expect(findOptimizedScanSelector().exists()).toBe(true);
+        expect(findOptimizedScanSelector().props()).toEqual({
+          disabled: false,
+          actions: [expect.objectContaining({ scan: 'secret_detection', template: 'latest' })],
+        });
+      });
+
+      it('adds new action when selected', async () => {
+        window.gon = { features: { flexibleScanExecutionPolicy: true } };
+        factory({
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+        await findOptimizedScanSelector().vm.$emit('change', {
+          scanner: 'sast',
+          enabled: true,
+        });
+        const finalValue = [
+          buildScannerAction({ scanner: DEFAULT_SCANNER, isOptimized: true }),
+          buildScannerAction({ scanner: 'sast', isOptimized: true }),
+        ];
+        expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
+        expect(
+          fromYaml({
+            manifest: findPolicyEditorLayout().props('yamlEditorValue'),
+            type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+          }).actions,
+        ).toStrictEqual(finalValue);
+      });
+
+      it('removes action when deselected', async () => {
+        factory({
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+        await findOptimizedScanSelector().vm.$emit('change', {
+          scanner: 'secret_detection',
+          enabled: false,
+        });
+        expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual([]);
+        expect(
+          fromYaml({
+            manifest: findPolicyEditorLayout().props('yamlEditorValue'),
+            type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+          }).actions,
+        ).toStrictEqual([]);
+      });
+    });
+
+    describe('custom configuration', () => {
+      it('does not show default configuration section', async () => {
+        factory({
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+        expect(findActionBuilderDefaultConfig().exists()).toBe(false);
+        expect(findActionBuilderCustomConfig().exists()).toBe(true);
+      });
+
+      it('adds new action', async () => {
+        factory({ provide: { glFeatures: { flexibleScanExecutionPolicy: true } } });
+        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+
+        const initialValue = [buildScannerAction({ scanner: DEFAULT_SCANNER })];
+        expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
+        expect(
+          fromYaml({
+            manifest: findPolicyEditorLayout().props('yamlEditorValue'),
+            type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+          }).actions,
+        ).toStrictEqual(initialValue);
+
+        findAddActionButton().vm.$emit('click');
+        await nextTick();
+
+        const finalValue = [
+          buildScannerAction({ scanner: DEFAULT_SCANNER }),
+          buildScannerAction({ scanner: DEFAULT_SCANNER }),
+        ];
+        expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
+        expect(
+          fromYaml({
+            manifest: findPolicyEditorLayout().props('yamlEditorValue'),
+            type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+          }).actions,
+        ).toStrictEqual(finalValue);
+      });
+
+      it('adds a new action if the action property does not exist', async () => {
+        factory({
+          propsData: { existingPolicy: { name: 'test' }, isEditing: true },
+          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
+        });
+        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+
+        expect(findAllActionBuilders()).toHaveLength(0);
+
+        findAddActionButton().vm.$emit('click');
+        await nextTick();
+
+        expect(findAddActionButtonWrapper().attributes('title')).toBe('');
+        expect(findAllActionBuilders()).toHaveLength(1);
+      });
+
+      it('updates action', async () => {
+        factory({ provide: { glFeatures: { flexibleScanExecutionPolicy: true } } });
+        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+
+        const initialValue = [buildScannerAction({ scanner: DEFAULT_SCANNER })];
+        expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
+        expect(
+          fromYaml({
+            manifest: findPolicyEditorLayout().props('yamlEditorValue'),
+            type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+          }).actions,
+        ).toStrictEqual(initialValue);
+
+        const finalValue = [buildScannerAction({ scanner: 'sast' })];
+        findActionBuilder().vm.$emit('changed', finalValue[0]);
+        await nextTick();
+
+        expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
+        expect(
+          fromYaml({
+            manifest: findPolicyEditorLayout().props('yamlEditorValue'),
+            type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+          }).actions,
+        ).toStrictEqual(finalValue);
+      });
+
+      it('removes action', async () => {
+        factory({ provide: { glFeatures: { flexibleScanExecutionPolicy: true } } });
+        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+        findAddActionButton().vm.$emit('click');
+        await nextTick();
+
+        expect(findAllActionBuilders()).toHaveLength(2);
+        expect(findPolicyEditorLayout().props('policy').actions).toHaveLength(2);
+        expect(
+          fromYaml({
+            manifest: findPolicyEditorLayout().props('yamlEditorValue'),
+            type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+          }).actions,
+        ).toHaveLength(2);
+
+        findActionBuilder().vm.$emit('remove', 1);
+        await nextTick();
+
+        expect(findAllActionBuilders()).toHaveLength(1);
+        expect(findPolicyEditorLayout().props('policy').actions).toHaveLength(1);
+        expect(
+          fromYaml({
+            manifest: findPolicyEditorLayout().props('yamlEditorValue'),
+            type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+          }).actions,
+        ).toHaveLength(1);
+      });
+
+      it('limits number of actions', async () => {
+        const MAX_ACTIONS = 3;
+        factory({
+          provide: {
+            maxScanExecutionPolicyActions: MAX_ACTIONS,
+            glFeatures: { flexibleScanExecutionPolicy: true },
+          },
+        });
+        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+
+        expect(findAddActionButton().attributes().disabled).toBeUndefined();
+        expect(findAllActionBuilders()).toHaveLength(1);
+
+        await findAddActionButton().vm.$emit('click');
+        await findAddActionButton().vm.$emit('click');
+
+        expect(findAllActionBuilders()).toHaveLength(MAX_ACTIONS);
+        expect(findAddActionButton().attributes().disabled).toBe('true');
+        expect(findAddActionButtonWrapper().attributes('title')).toBe(
+          'Policy has reached the maximum of 3 actions',
+        );
+        expect(findAllActionBuilders()).toHaveLength(3);
+      });
+    });
+  });
+
+  describe('action builder without flexibleScanExecutionPolicy feature flag', () => {
+    beforeEach(() => {
+      uniqueId.mockRestore();
+    });
+
+    it('does not show custom cards', () => {
+      factory();
+      expect(findCards()).toHaveLength(0);
     });
 
     it('should add new action', async () => {
@@ -678,29 +913,6 @@ enabled: true`;
 
         expect(findOverloadWarningModal().props('visible')).toBe(false);
         expect(wrapper.emitted('save')[0]).toHaveLength(1);
-      });
-    });
-
-    describe('project actions', () => {
-      it('should limit number of actions for a project', async () => {
-        factory({
-          provide: {
-            namespaceType: NAMESPACE_TYPES.PROJECT,
-            maxScanExecutionPolicyActions: 1,
-          },
-        });
-
-        expect(findAddActionButton().attributes().disabled).toBeUndefined();
-        expect(findAllActionBuilders()).toHaveLength(1);
-
-        findAddActionButton().vm.$emit('click');
-        await nextTick();
-
-        expect(findAddActionButton().attributes().disabled).toBe('true');
-        expect(findAddActionButtonWrapper().attributes('title')).toBe(
-          'Policy has reached the maximum of 1 action',
-        );
-        expect(findAllActionBuilders()).toHaveLength(1);
       });
     });
   });
