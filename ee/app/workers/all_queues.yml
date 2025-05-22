@@ -2213,6 +2213,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: gitlab_subscriptions_seat_assignments_group_links_create_or_update_seats
+  :worker_name: GitlabSubscriptions::SeatAssignments::GroupLinks::CreateOrUpdateSeatsWorker
+  :feature_category: :seat_cost_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: gitlab_subscriptions_self_managed_duo_core_todo_notification
   :worker_name: GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker
   :feature_category: :acquisition
