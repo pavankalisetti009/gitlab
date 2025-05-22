@@ -46,4 +46,36 @@ RSpec.describe 'getting a repository in a project', feature_category: :source_co
         .to eq("/#{project.full_path}/-/blob/with-codeowners/docs/CODEOWNERS")
     end
   end
+
+  describe 'blob fields for Duo Workflow' do
+    let(:current_user) { project.first_owner }
+
+    let(:ref) { 'master' }
+    let(:path) { 'README.md' }
+
+    let(:query) do
+      graphql_query_for(
+        :project, { full_path: project.full_path }, query_graphql_field(
+          :repository, {}, query_graphql_field(
+            :blobs, { ref: ref, paths: [path] }, query_graphql_field(
+              :nodes, {}, [
+                :id,
+                :show_duo_workflow_action,
+                :duo_workflow_invoke_path
+              ]
+            )
+          )
+        )
+      )
+    end
+
+    let(:blob_data) { graphql_data.dig('project', 'repository', 'blobs', 'nodes')&.first }
+
+    it 'returns duo workflow data' do
+      post_graphql(query, current_user: current_user)
+
+      expect(blob_data['showDuoWorkflowAction']).to be(false)
+      expect(blob_data['duoWorkflowInvokePath']).to eq('/api/v4/ai/duo_workflows/workflows')
+    end
+  end
 end
