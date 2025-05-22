@@ -4800,4 +4800,44 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       end
     end
   end
+
+  describe 'admin_group_model_selection' do
+    let(:feature_flags_enabled) { true }
+    let(:namespace_duo_enabled) { true }
+
+    before do
+      stub_feature_flags(ai_model_switching: feature_flags_enabled)
+
+      group.namespace_settings.update!(duo_features_enabled: namespace_duo_enabled)
+    end
+
+    context 'when user can not admin the group' do
+      let(:current_user) { maintainer }
+
+      it { is_expected.to be_disallowed(:admin_group_model_selection) }
+    end
+
+    context 'with sub-groups' do
+      let(:current_user) { owner }
+      let(:parent_group) { create(:group) }
+      let(:group) { create(:group, parent: parent_group) }
+
+      it { is_expected.to be_disallowed(:admin_group_model_selection) }
+    end
+
+    context 'when user can admin the group' do
+      let(:current_user) { owner }
+
+      where(:feature_flags_enabled, :namespace_duo_enabled, :enabled_for_user) do
+        false  | false | be_disallowed(:admin_group_model_selection)
+        true   | false | be_disallowed(:admin_group_model_selection)
+        false  | true  | be_disallowed(:admin_group_model_selection)
+        true   | true  | be_allowed(:admin_group_model_selection)
+      end
+
+      with_them do
+        it { is_expected.to enabled_for_user }
+      end
+    end
+  end
 end
