@@ -33,7 +33,10 @@ module WorkItems
 
         validates :namespace, :category, presence: true
         validates :name, presence: true, length: { maximum: 255 }
-        validates :name, uniqueness: { scope: :namespace_id }
+        # Note that currently all statuses are created at root group level, if we would ever want to allow statuses
+        # to be created at subgroup level, but unique across groups hierarchy, then this validation would need
+        # to be adjusted to compute the uniqueness across hierarchy.
+        validates :name, custom_uniqueness: { unique_sql: 'TRIM(BOTH FROM lower(?))', scope: :namespace_id }
         validates :color, presence: true, length: { maximum: 7 }, color: true
         # Update doesn't change the overall status per namespace count
         # because you won't be able to change the namespace through the API.
