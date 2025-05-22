@@ -19,7 +19,7 @@ jest.mock('ee/ai/settings/components/early_access_program_banner.vue', () => ({
 
 let wrapper;
 
-const createComponent = (props = {}, provide = {}) => {
+const createComponent = ({ props = {}, provide = {} } = {}) => {
   wrapper = shallowMount(AiGroupSettings, {
     propsData: {
       redirectPath: '/groups/test-group',
@@ -54,7 +54,7 @@ describe('AiGroupSettings', () => {
     });
 
     it('is true it renders EarlyAccessProgramBanner', async () => {
-      createComponent({}, { showEarlyAccessBanner: true });
+      createComponent({ provide: { showEarlyAccessBanner: true } });
       await nextTick();
       await nextTick();
       expect(findEarlyAccessBanner().exists()).toBe(true);
@@ -119,7 +119,7 @@ describe('AiGroupSettings', () => {
 
     describe('when on general settings section', () => {
       it('does not update duo core setting', async () => {
-        createComponent({}, { onGeneralSettingsPage: true });
+        createComponent({ provide: { onGeneralSettingsPage: true } });
 
         updateGroupSettings.mockResolvedValue({});
         await findAiCommonSettings().vm.$emit('submit', {
