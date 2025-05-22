@@ -3,23 +3,12 @@
 module Types
   module ComplianceManagement
     module ComplianceFramework
-      class GroupProjectRequirementStatusInputType < BaseInputObject
+      class GroupProjectRequirementStatusInputType < ProjectRequirementStatusInputType
         graphql_name 'GroupProjectRequirementComplianceStatusInput'
 
         argument :project_id, ::Types::GlobalIDType[::Project],
           required: false,
           description: 'Filter compliance requirement statuses by project.',
-          prepare: ->(id, _ctx) { id.model_id }
-
-        argument :requirement_id,
-          ::Types::GlobalIDType[::ComplianceManagement::ComplianceFramework::ComplianceRequirement],
-          required: false,
-          description: 'Filter compliance requirement statuses by compliance requirement.',
-          prepare: ->(id, _ctx) { id.model_id }
-
-        argument :framework_id, ::Types::GlobalIDType[::ComplianceManagement::Framework],
-          required: false,
-          description: 'Filter compliance requirement statuses by compliance framework.',
           prepare: ->(id, _ctx) { id.model_id }
       end
     end
