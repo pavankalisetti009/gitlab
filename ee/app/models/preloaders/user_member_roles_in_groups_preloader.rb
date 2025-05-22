@@ -50,7 +50,7 @@ module Preloaders
         ) AS custom_permissions
       SQL
 
-      grouped_by_group = ApplicationRecord.connection.execute(sql).to_a.group_by do |h|
+      grouped_by_group = ApplicationRecord.connection.select_all(sql).to_a.group_by do |h|
         h['namespace_id']
       end
 
