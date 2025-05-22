@@ -3,8 +3,8 @@ import { subgroupsAndProjects } from './mock_data';
 export const mockGroup = subgroupsAndProjects.data.group;
 
 export const createGroupResponse = ({
-  subgroups = mockGroup.descendantGroups.nodes,
-  projects = mockGroup.projects.nodes,
+  subgroups = mockGroup.descendantGroups.nodes || [],
+  projects = mockGroup.projects.nodes || [],
   subgroupsPageInfo = { hasNextPage: false, endCursor: null },
   projectsPageInfo = { hasNextPage: false, endCursor: null },
 } = {}) => ({

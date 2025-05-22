@@ -7,6 +7,12 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { stubComponent } from 'helpers/stub_component';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import {
+  getLocationHash,
+  queryToObject,
+  setUrlParams,
+  updateHistory,
+} from '~/lib/utils/url_utility';
 import InventoryDashboard from 'ee/security_inventory/components/inventory_dashboard.vue';
 import VulnerabilityIndicator from 'ee/security_inventory/components/vulnerability_indicator.vue';
 import GroupToolCoverageIndicator from 'ee/security_inventory/components/group_tool_coverage_indicator.vue';
@@ -19,11 +25,26 @@ import vulnerabilityCell from 'ee/security_inventory/components/vulnerability_ce
 import ToolCoverageCell from 'ee/security_inventory/components/tool_coverage_cell.vue';
 import ActionCell from 'ee/security_inventory/components/action_cell.vue';
 import SecurityInventoryTable from 'ee/security_inventory/components/security_inventory_table.vue';
+import InventoryDashboardFilteredSearchBar from 'ee/security_inventory/components/inventory_dashboard_filtered_search_bar.vue';
 import { subgroupsAndProjects } from '../mock_data';
 import { createGroupResponse, createPaginatedHandler } from '../mock_pagination_helpers';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
+jest.mock('~/lib/utils/url_utility', () => ({
+  getLocationHash: jest.fn().mockReturnValue(''),
+  PATH_SEPARATOR: '/',
+  queryToObject: jest.fn().mockReturnValue({}),
+  setUrlParams: jest.fn().mockReturnValue(''),
+  updateHistory: jest.fn(),
+}));
+
+const setupDefaultUrlMocks = () => {
+  getLocationHash.mockReturnValue('');
+  queryToObject.mockReturnValue({});
+  setUrlParams.mockReturnValue('');
+  updateHistory.mockImplementation(() => {});
+};
 
 describe('InventoryDashboard', () => {
   let wrapper;
@@ -51,6 +72,7 @@ describe('InventoryDashboard', () => {
         provide: defaultProvide,
         stubs: {
           SubgroupSidebar: stubComponent(SubgroupSidebar),
+          InventoryDashboardFilteredSearchBar: stubComponent(InventoryDashboardFilteredSearchBar),
         },
       });
       await waitForPromises();
@@ -67,6 +89,7 @@ describe('InventoryDashboard', () => {
   const findSidebarToggleButton = () => wrapper.findComponent(GlButton);
   const findInventoryTable = () => wrapper.findComponent(SecurityInventoryTable);
   const loadMoreButton = () => wrapper.findByTestId('load-more-button');
+  const findFilteredSearchBar = () => wrapper.findComponent(InventoryDashboardFilteredSearchBar);
 
   /* eslint-disable no-underscore-dangle */
   const getIndexByType = (children, type) => {
@@ -75,6 +98,7 @@ describe('InventoryDashboard', () => {
   /* eslint-enable no-underscore-dangle */
 
   beforeEach(async () => {
+    setupDefaultUrlMocks();
     await createComponent();
   });
 
@@ -84,6 +108,7 @@ describe('InventoryDashboard', () => {
     expect(findEmptyState().exists()).toBe(false);
     expect(findInventoryTable().exists()).toBe(true);
     expect(findInventoryTable().props('isLoading')).toBe(false);
+    expect(findFilteredSearchBar().exists()).toBe(true);
   });
 
   describe('Loading state', () => {
@@ -242,10 +267,9 @@ describe('InventoryDashboard', () => {
   describe('opening subgroup details', () => {
     it('refetches data when URL hash changes', async () => {
       const newFullPath = 'new-group';
-      window.location.hash = `#${newFullPath}`;
+      getLocationHash.mockReturnValue(newFullPath);
 
       await createComponent();
-
       expect(requestHandler).toHaveBeenCalledWith(
         expect.objectContaining({
           fullPath: newFullPath,
@@ -254,7 +278,7 @@ describe('InventoryDashboard', () => {
     });
 
     it('fallback to groupFullPath when hash is removed', async () => {
-      window.location.hash = '';
+      getLocationHash.mockReturnValue('');
 
       await createComponent();
       expect(requestHandler).toHaveBeenCalledWith(
@@ -285,8 +309,7 @@ describe('InventoryDashboard', () => {
     });
 
     it('updates breadcrumb when activeFullPath changes', async () => {
-      window.location.hash = 'group/project/subgroup';
-
+      getLocationHash.mockReturnValue('group/project/subgroup');
       await createComponent();
 
       expect(findBreadcrumb().props('items')).toEqual([
@@ -374,6 +397,8 @@ describe('InventoryDashboard', () => {
         subgroupsAfter: null,
         projectsFirst: 20,
         projectsAfter: 'project-cursor-123',
+        hasSearch: false,
+        search: '',
       });
     });
 
@@ -402,7 +427,75 @@ describe('InventoryDashboard', () => {
         subgroupsAfter: 'subgroup-cursor-999',
         projectsFirst: 0,
         projectsAfter: null,
+        hasSearch: false,
+        search: '',
       });
+    });
+  });
+
+  describe('filtered search', () => {
+    it('passes the filters to the filtered search bar', async () => {
+      queryToObject.mockReturnValue({ search: 'test-search' });
+      await createComponent();
+
+      expect(findFilteredSearchBar().props('initialFilters')).toEqual({ search: 'test-search' });
+    });
+
+    it('passes the namespace to the filtered search bar', async () => {
+      getLocationHash.mockReturnValue('group/project');
+      await createComponent();
+
+      expect(findFilteredSearchBar().props('namespace')).toBe('group/project');
+    });
+
+    it('updates query variables when filter changes', async () => {
+      const searchParams = { search: 'test query' };
+      await createFullComponent();
+
+      findFilteredSearchBar().vm.$emit('filterSubgroupsAndProjects', searchParams);
+      await nextTick();
+      expect(requestHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          hasSearch: true,
+          search: 'test query',
+        }),
+      );
+    });
+
+    it('preserves hash when updating URL with search parameters', async () => {
+      getLocationHash.mockReturnValue('group/path');
+      setUrlParams.mockReturnValue('http://localhost?search=test');
+
+      findFilteredSearchBar().vm.$emit('filterSubgroupsAndProjects', { search: 'test' });
+      await nextTick();
+      expect(updateHistory).toHaveBeenCalledWith({
+        url: expect.stringContaining('#group/path'),
+      });
+    });
+
+    it('sets hasSearch flag based on filter value', async () => {
+      findFilteredSearchBar().vm.$emit('filterSubgroupsAndProjects', { search: 'test' });
+      await nextTick();
+      findFilteredSearchBar().vm.$emit('filterSubgroupsAndProjects', { search: '' });
+      await nextTick();
+      expect(requestHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          hasSearch: false,
+        }),
+      );
+    });
+
+    it('includes hasSearch in query variables', async () => {
+      await createComponent();
+      findFilteredSearchBar().vm.$emit('filterSubgroupsAndProjects', { search: 'test' });
+
+      await nextTick();
+      expect(requestHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          hasSearch: true,
+          search: 'test',
+        }),
+      );
     });
   });
 });

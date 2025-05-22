@@ -1,9 +1,16 @@
 <script>
 import { GlBreadcrumb, GlButton } from '@gitlab/ui';
+import { debounce } from 'lodash';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
-import { getLocationHash, PATH_SEPARATOR } from '~/lib/utils/url_utility';
+import {
+  getLocationHash,
+  PATH_SEPARATOR,
+  queryToObject,
+  setUrlParams,
+  updateHistory,
+} from '~/lib/utils/url_utility';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 import { SIDEBAR_VISIBLE_STORAGE_KEY } from '../constants';
 import SubgroupsAndProjectsQuery from '../graphql/subgroups_and_projects.query.graphql';
@@ -11,6 +18,7 @@ import { getData, getPageInfo } from '../graphql/helper';
 import SubgroupSidebar from './sidebar/subgroup_sidebar.vue';
 import EmptyState from './empty_state.vue';
 import SecurityInventoryTable from './security_inventory_table.vue';
+import InventoryDashboardFilteredSearchBar from './inventory_dashboard_filtered_search_bar.vue';
 
 const PAGE_SIZE = 20;
 
@@ -22,6 +30,7 @@ export default {
     GlButton,
     EmptyState,
     SecurityInventoryTable,
+    InventoryDashboardFilteredSearchBar,
   },
   inject: ['groupFullPath', 'newProjectPath'],
   i18n: {
@@ -34,6 +43,9 @@ export default {
     return {
       activeFullPath: this.groupFullPath,
       sidebarVisible: true,
+      filters: {
+        search: this.getSearchParams(),
+      },
       // displayItems is the combined list of Project and Subgroups to be shown in the UI.
       displayItems: [],
       subgroupItems: [],
@@ -56,6 +68,8 @@ export default {
       variables() {
         return {
           fullPath: this.activeFullPath,
+          search: this.filters.search || '',
+          hasSearch: this.hasSearch,
           subgroupsFirst: PAGE_SIZE,
           subgroupsAfter: null,
           projectsFirst: PAGE_SIZE,
@@ -94,13 +108,16 @@ export default {
   },
   computed: {
     hasMoreSubgroups() {
-      return this.subgroupsPageInfo.hasNextPage;
+      return this.subgroupsPageInfo?.hasNextPage;
     },
     hasMoreProjects() {
-      return this.projectsPageInfo.hasNextPage;
+      return this.projectsPageInfo?.hasNextPage;
     },
     isLoading() {
       return this.$apollo.queries.subgroupItems.loading && !this.isLoadingMore;
+    },
+    hasSearch() {
+      return Boolean(this.filters.search);
     },
     hasChildren() {
       return this.displayItems.length > 0;
@@ -127,7 +144,8 @@ export default {
     },
   },
   created() {
-    this.handleLocationHashChange();
+    this.debouncedFilter = debounce(this.performFilter, 50);
+    this.initializeFromUrl();
     window.addEventListener('hashchange', this.handleLocationHashChange);
   },
   beforeDestroy() {
@@ -142,19 +160,23 @@ export default {
       });
       Sentry.captureException(error);
     },
-
+    getSearchParams() {
+      return queryToObject(window.location.search).search;
+    },
+    initializeFromUrl() {
+      this.handleLocationHashChange();
+      this.filters.search = this.getSearchParams();
+    },
     handleLocationHashChange() {
       let hash = getLocationHash();
       if (!hash) {
         hash = this.groupFullPath;
       }
-
       if (this.activeFullPath !== hash) {
         this.activeFullPath = hash;
         this.resetData();
       }
     },
-
     resetData() {
       this.displayItems = [];
       this.subgroupItems = [];
@@ -170,7 +192,6 @@ export default {
       this.isLoadingMore = false;
       this.projectsInitialized = false;
     },
-
     async loadMore() {
       if (this.isLoadingMore) return;
       this.isLoadingMore = true;
@@ -187,7 +208,6 @@ export default {
         this.isLoadingMore = false;
       }
     },
-
     /**
      * Abstracts the GraphQL query for fetching subgroups and projects
      * @param {Object} options - Query options
@@ -209,6 +229,8 @@ export default {
         query: SubgroupsAndProjectsQuery,
         variables: {
           fullPath: this.activeFullPath,
+          search: this.filters.search || '',
+          hasSearch: this.hasSearch,
           subgroupsFirst,
           subgroupsAfter,
           projectsFirst,
@@ -216,7 +238,6 @@ export default {
         },
       });
     },
-
     async loadMoreSubgroups() {
       const { data } = await this.fetchSubgroupsAndProjects({
         subgroupsFirst: PAGE_SIZE,
@@ -236,7 +257,6 @@ export default {
         this.displayItems = [...this.subgroupItems];
       }
     },
-
     async loadMoreProjects() {
       const { data } = await this.fetchSubgroupsAndProjects({
         projectsFirst: PAGE_SIZE,
@@ -252,9 +272,20 @@ export default {
 
       this.displayItems = [...this.subgroupItems, ...this.projectItems];
     },
-
     toggleSidebar(value = !this.sidebarVisible) {
       this.sidebarVisible = value;
+    },
+    filterSubgroupsAndProjects(filters) {
+      this.filters = filters;
+      this.debouncedFilter(filters);
+    },
+    performFilter(filters) {
+      const currentHash = getLocationHash();
+      const newUrl = setUrlParams(filters, window.location.href, true);
+      const urlWithHashPreserved = newUrl.split('#')[0] + (currentHash ? `#${currentHash}` : '');
+      updateHistory({
+        url: urlWithHashPreserved,
+      });
     },
   },
   SIDEBAR_VISIBLE_STORAGE_KEY,
@@ -264,9 +295,15 @@ export default {
 <template>
   <div class="-gl-mb-10 gl-mt-5">
     <div
-      class="gl-w-full gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-bg-subtle gl-border-b-solid gl-border-t-solid"
+      class="gl-flex gl-w-full gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-bg-subtle gl-border-b-solid gl-border-t-solid"
     >
       <gl-button icon="sidebar" icon-only class="gl-m-3" @click="toggleSidebar()" />
+      <inventory-dashboard-filtered-search-bar
+        class="gl-flex-auto gl-items-center"
+        :initial-filters="filters"
+        :namespace="activeFullPath"
+        @filterSubgroupsAndProjects="filterSubgroupsAndProjects"
+      />
     </div>
     <local-storage-sync
       v-model="sidebarVisible"
@@ -278,7 +315,12 @@ export default {
       <div class="gl-w-auto gl-grow" :class="{ 'gl-pl-5': sidebarVisible }">
         <gl-breadcrumb :items="crumbs" :auto-resize="true" size="md" class="gl-my-5" />
         <empty-state v-if="showEmptyState" />
-        <security-inventory-table v-else :items="displayItems" :is-loading="isLoading" />
+        <security-inventory-table
+          v-else
+          :items="displayItems"
+          :is-loading="isLoading"
+          :has-search="hasSearch"
+        />
         <div v-if="showLoadMoreButton" class="gl-mt-5 gl-flex gl-justify-center">
           <gl-button data-testid="load-more-button" :loading="isLoadingMore" @click="loadMore">
             {{ $options.i18n.loadMore }}

@@ -4,6 +4,8 @@ query SubgroupsAndProjects(
   $subgroupsAfter: String
   $projectsFirst: Int
   $projectsAfter: String
+  $search: String
+  $hasSearch: Boolean!
 ) {
   group(fullPath: $fullPath) {
     id
@@ -11,7 +13,7 @@ query SubgroupsAndProjects(
       includeParentDescendants: false
       first: $subgroupsFirst
       after: $subgroupsAfter
-    ) {
+    ) @skip(if: $hasSearch) {
       pageInfo {
         hasNextPage
         endCursor
@@ -26,6 +28,7 @@ query SubgroupsAndProjects(
         fullPath
         avatarUrl
         webUrl
+        updatedAt
         vulnerabilityNamespaceStatistic {
           critical
           high
@@ -36,7 +39,12 @@ query SubgroupsAndProjects(
         }
       }
     }
-    projects(first: $projectsFirst, after: $projectsAfter) {
+    projects(
+      first: $projectsFirst
+      after: $projectsAfter
+      search: $search
+      includeSubgroups: $hasSearch
+    ) {
       pageInfo {
         hasNextPage
         endCursor
@@ -49,6 +57,7 @@ query SubgroupsAndProjects(
         fullPath
         avatarUrl
         webUrl
+        updatedAt
         vulnerabilityStatistic {
           critical
           high
