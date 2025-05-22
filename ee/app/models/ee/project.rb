@@ -608,6 +608,10 @@ module EE
       !!import_state&.last_update_succeeded?
     end
 
+    def duo_enterprise_features_available?
+      project_setting.duo_features_enabled? && namespace.has_active_add_on_purchase?(:duo_enterprise)
+    end
+
     def mirror_last_update_failed?
       !!import_state&.last_update_failed?
     end

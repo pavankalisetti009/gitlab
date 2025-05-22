@@ -5189,4 +5189,45 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
     end
   end
+
+  describe '#duo_enterprise_features_available?' do
+    let(:project) { create(:project, group: namespace) }
+    let(:parent) { create(:group) }
+    let(:namespace) { create(:group, parent: parent) }
+    let!(:duo_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+
+    context "duo_feature enabled" do
+      before do
+        allow(project.project_setting).to receive(:duo_features_enabled?).and_return(true)
+      end
+
+      context "duo_enterprise purchased" do
+        before do
+          create(:gitlab_subscription_add_on_purchase,
+            namespace: parent,
+            add_on: duo_add_on)
+        end
+
+        it 'enables duo_enterprise_features_available?' do
+          expect(project).to be_duo_enterprise_features_available
+        end
+      end
+
+      context "duo_enterprise not purchased" do
+        it 'disables duo_enterprise_features_available?' do
+          expect(project).not_to be_duo_enterprise_features_available
+        end
+      end
+    end
+
+    context "duo_feature not enabled" do
+      before do
+        allow(project.project_setting).to receive(:duo_features_enabled?).and_return(false)
+      end
+
+      it 'disables duo_enterprise_features_available?' do
+        expect(project).not_to be_duo_enterprise_features_available
+      end
+    end
+  end
 end
