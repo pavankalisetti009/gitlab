@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlToast } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -12,7 +11,6 @@ import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import { mockDuoChatFeatureSettings } from '../shared/feature_settings/mock_data';
 
 Vue.use(VueApollo);
-Vue.use(GlToast);
 
 jest.mock('~/alert');
 
@@ -21,6 +19,7 @@ describe('ModelSelector', () => {
 
   const aiFeatureSetting = mockDuoChatFeatureSettings[0];
   const groupId = 'gid://gitlab/Group/1';
+  const mockToastShow = jest.fn();
   const updateAiNamespaceFeatureSettingsSuccessHandler = jest.fn().mockResolvedValue({
     data: {
       aiModelSelectionNamespaceUpdate: {
@@ -49,7 +48,7 @@ describe('ModelSelector', () => {
         },
         mocks: {
           $toast: {
-            show: jest.fn(),
+            show: mockToastShow,
           },
         },
       }),
@@ -102,7 +101,7 @@ describe('ModelSelector', () => {
 
         await waitForPromises();
 
-        expect(wrapper.vm.$toast.show).toHaveBeenCalledWith(
+        expect(mockToastShow).toHaveBeenCalledWith(
           'Successfully updated GitLab Duo Chat / General Chat',
         );
       });
