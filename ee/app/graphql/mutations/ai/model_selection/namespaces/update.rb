@@ -7,7 +7,7 @@ module Mutations
         class Update < BaseMutation
           graphql_name 'AiModelSelectionNamespaceUpdate'
           description "Updates or creates settings for AI features for a namespace."
-          authorize :admin_group
+          authorize :admin_group_model_selection
 
           field :ai_feature_settings,
             [::Types::Ai::ModelSelection::Namespaces::FeatureSettingType],
@@ -30,14 +30,14 @@ module Mutations
           def resolve(**args)
             @group_id = args[:group_id]
 
-            check_feature_access!
+            group = authorized_find!(id: group_id)
 
             return { ai_feature_settings: [], errors: ['At least one feature is required'] } if args[:features].empty?
 
             upsert_args = args.except(:features, :group_id)
 
             results = args[:features].map do |feature|
-              upsert_feature_setting(upsert_args.merge(feature: feature))
+              upsert_feature_setting(group, upsert_args.merge(feature: feature))
             end
 
             errors = results.select(&:error?).flat_map(&:errors)
@@ -56,35 +56,16 @@ module Mutations
 
           attr_reader :group_id
 
-          def check_feature_access!
-            return if ::Feature.enabled?(:ai_model_switching, associated_group) &&
-              associated_group&.namespace_settings&.duo_features_enabled?
-
-            raise_resource_not_available_error!
-          end
-
-          def associated_group
-            @associated_group ||= begin
-              group = authorized_find!(id: group_id)
-              raise_sub_group_error! unless group.root?
-              group
-            end
-          end
-
-          def upsert_feature_setting(args)
-            feature_setting = find_or_initialize_object(feature: args[:feature])
+          def upsert_feature_setting(group, args)
+            feature_setting = find_or_initialize_object(group, feature: args[:feature])
 
             ::Ai::ModelSelection::UpdateService.new(
               feature_setting, current_user, args
             ).execute
           end
 
-          def find_or_initialize_object(feature:)
-            ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(associated_group, feature)
-          end
-
-          def raise_sub_group_error!
-            raise_resource_not_available_error!(_('Model selection is only available for top-level namespaces.'))
+          def find_or_initialize_object(group, feature:)
+            ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(group, feature)
           end
         end
       end

@@ -7,7 +7,7 @@ module Resolvers
         class FeatureSettingsResolver < BaseResolver
           include Gitlab::Graphql::Authorize::AuthorizeResource
 
-          authorize :admin_group
+          authorize :admin_group_model_selection
 
           type ::Types::Ai::ModelSelection::Namespaces::FeatureSettingType.connection_type, null: false
 
@@ -17,8 +17,6 @@ module Resolvers
 
           def resolve(group_id: nil)
             group = authorized_find!(id: group_id)
-
-            check_feature_access!(group)
 
             model_definitions = fetch_model_definitions(group)
             feature_settings = get_feature_settings(group)
@@ -41,13 +39,6 @@ module Resolvers
             return fetched_result.payload if fetched_result.success?
 
             raise_resource_not_available_error!(fetched_result.message)
-          end
-
-          def check_feature_access!(group)
-            return if ::Feature.enabled?(:ai_model_switching, group) &&
-              group.namespace_settings&.duo_features_enabled?
-
-            raise_resource_not_available_error!
           end
         end
       end

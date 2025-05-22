@@ -1005,6 +1005,16 @@ module EE
       rule do
         generate_description_enabled & can?(:create_work_item)
       end.enable :generate_description
+
+      with_scope :subject
+      condition(:group_model_selection_enabled) do
+        next false unless subject.root?
+        next false unless ::Feature.enabled?(:ai_model_switching, subject)
+
+        subject.namespace_settings&.duo_features_enabled?
+      end
+
+      rule { can?(:admin_group) & group_model_selection_enabled }.enable :admin_group_model_selection
     end
 
     override :lookup_access_level!

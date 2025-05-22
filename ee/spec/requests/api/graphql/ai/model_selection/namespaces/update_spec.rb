@@ -88,15 +88,7 @@ RSpec.describe 'Updating a Namespace Model Selection Feature setting', feature_c
           sub_group.add_owner(group_owner)
         end
 
-        it 'raises a top-level access error' do
-          request
-
-          expect(graphql_errors).to be_present
-
-          error_messages = graphql_errors.pluck('message')
-
-          expect(error_messages).to match_array(['Model selection is only available for top-level namespaces.'])
-        end
+        it_behaves_like 'a mutation that returns a top-level access error'
       end
     end
 
