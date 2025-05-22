@@ -45,6 +45,14 @@ module EE
           current_user.pipl_user.initial_email_sent_at.present?
       end
 
+      def show_compromised_password_detection_alert?
+        return false unless ::Gitlab::Saas.feature_available?(:notify_compromised_passwords)
+
+        return false unless ::Feature.enabled?(:notify_compromised_passwords, current_user)
+
+        current_user&.compromised_password_detections&.unresolved&.exists?
+      end
+
       def show_new_user_signups_cap_reached?
         return false unless current_user&.can_admin_all_resources?
         return false if user_dismissed?(NEW_USER_SIGNUPS_CAP_REACHED)

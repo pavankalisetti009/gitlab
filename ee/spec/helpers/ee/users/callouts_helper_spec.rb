@@ -236,6 +236,68 @@ RSpec.describe EE::Users::CalloutsHelper do
     end
   end
 
+  describe '#show_compromised_password_detection_alert?' do
+    let_it_be(:user) { create(:user) }
+
+    subject(:show_compromised_password_detection_alert?) { helper.show_compromised_password_detection_alert? }
+
+    before do
+      allow(helper).to receive(:current_user).and_return(user)
+    end
+
+    shared_examples 'alert shows' do
+      it 'shows the alert' do
+        expect(show_compromised_password_detection_alert?).to be(true)
+      end
+    end
+
+    shared_examples 'alert does not show' do
+      it 'does not show the alert' do
+        expect(show_compromised_password_detection_alert?).to be(false)
+      end
+    end
+
+    context 'when SaaS', :saas do
+      context 'when user has a CompromisedPasswordDetection' do
+        let(:resolved_at) { nil }
+
+        before do
+          create(:compromised_password_detection, user: user, resolved_at: resolved_at)
+        end
+
+        context 'when notify_compromised_passwords is enabled' do
+          before do
+            stub_feature_flags(notify_compromised_passwords: true)
+          end
+
+          it_behaves_like 'alert shows'
+
+          context 'when the compromised password detection is resolved' do
+            let(:resolved_at) { 1.day.ago }
+
+            it_behaves_like 'alert does not show'
+          end
+        end
+
+        context 'when notify_compromised_passwords is disabled' do
+          before do
+            stub_feature_flags(notify_compromised_passwords: false)
+          end
+
+          it_behaves_like 'alert does not show'
+        end
+      end
+
+      context 'when user does not have a CompromisedPasswordDetection' do
+        it_behaves_like 'alert does not show'
+      end
+    end
+
+    context 'when self-managed' do
+      it_behaves_like 'alert does not show'
+    end
+  end
+
   describe '#web_hook_disabled_dismissed?', feature_category: :webhooks do
     let_it_be(:user, refind: true) { create(:user) }
 
