@@ -58,8 +58,7 @@ module EE
           })
         end
 
-        if project.project_setting.duo_features_enabled? &&
-            project.namespace.has_active_add_on_purchase?(:duo_enterprise)
+        if project.duo_enterprise_features_available?
           settings.push({
             text: s_("DuoCodeReview|GitLab Duo Code Review"),
             href: project_settings_merge_requests_path(project, anchor: 'merge-request-duo-code-review-settings')
