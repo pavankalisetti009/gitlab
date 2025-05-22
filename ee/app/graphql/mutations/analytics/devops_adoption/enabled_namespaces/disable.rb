@@ -6,7 +6,7 @@ module Mutations
       module EnabledNamespaces
         class Disable < BaseMutation
           graphql_name 'DisableDevopsAdoptionNamespace'
-          description '**Status:** Beta'
+          description '**Status**: Beta'
 
           include Mixins::CommonMethods
 

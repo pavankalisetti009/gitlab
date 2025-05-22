@@ -6,7 +6,7 @@ module Mutations
       module EnabledNamespaces
         class BulkEnable < BaseMutation
           graphql_name 'BulkEnableDevopsAdoptionNamespaces'
-          description '**Status:** Beta'
+          description '**Status**: Beta'
 
           include Mixins::CommonMethods
 
