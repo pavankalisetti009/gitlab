@@ -24,7 +24,6 @@ module Admin
         add_duo_pro_seats_url: add_duo_pro_seats_url(subscription_name),
         subscription_name: subscription_name,
         is_bulk_add_on_assignment_enabled: 'true',
-        is_duo_base_access_allowed: Feature.enabled?(:allow_duo_base_access, :instance).to_s,
         subscription_start_date: License.current.starts_at,
         subscription_end_date: License.current.expires_at,
         duo_availability: duo_availability,
@@ -98,7 +97,6 @@ module Admin
         duo_chat_expiration_column: current_application_settings.duo_chat_expiration_column,
         duo_chat_expiration_days: current_application_settings.duo_chat_expiration_days.to_s,
         duo_core_features_enabled: ::Ai::Setting.instance.duo_core_features_enabled?.to_s,
-        is_duo_base_access_allowed: Feature.enabled?(:allow_duo_base_access, :instance).to_s,
         duo_pro_or_duo_enterprise_tier: active_self_managed_duo_pro_or_duo_enterprise_tier,
         should_show_duo_availability: should_show_duo_availability_application_settings?.to_s
       }

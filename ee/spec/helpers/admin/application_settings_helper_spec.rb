@@ -99,7 +99,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
             duo_chat_expiration_column: duo_chat_expiration_column,
             duo_chat_expiration_days: duo_chat_expiration_days.to_s,
             duo_core_features_enabled: expected_duo_core_features_enabled.to_s,
-            is_duo_base_access_allowed: 'true',
             duo_pro_or_duo_enterprise_tier: nil,
             should_show_duo_availability: 'false'
           }
@@ -147,16 +146,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
         it 'returns the expected data' do
           is_expected.to eq(expected_settings_helper_data)
-        end
-
-        context 'with feature flag allow_duo_base_access set to false' do
-          before do
-            stub_feature_flags(allow_duo_base_access: false)
-          end
-
-          it 'sets is_duo_base_access_allowed to false' do
-            expect(helper.ai_settings_helper_data).to include(is_duo_base_access_allowed: 'false')
-          end
         end
       end
 
@@ -317,7 +306,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
         add_duo_pro_seats_url: 'https://customers.staging.gitlab.com/gitlab/subscriptions/A-S00613274/duo_pro_seats',
         subscription_name: 'Test Subscription Name',
         is_bulk_add_on_assignment_enabled: 'true',
-        is_duo_base_access_allowed: 'true',
         subscription_start_date: starts_at,
         subscription_end_date: expires_at,
         duo_availability: 'default_off',
@@ -364,16 +352,6 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
       it 'sets can_manage_self_hosted_models to false' do
         expect(helper.admin_duo_home_app_data[:can_manage_self_hosted_models]).to eq('false')
-      end
-    end
-
-    context 'with feature flag allow_duo_base_access set to false' do
-      before do
-        stub_feature_flags(allow_duo_base_access: false)
-      end
-
-      it 'sets is_duo_base_access_allowed to false' do
-        expect(helper.admin_duo_home_app_data).to include(is_duo_base_access_allowed: 'false')
       end
     end
 

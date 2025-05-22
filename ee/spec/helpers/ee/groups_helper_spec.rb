@@ -366,21 +366,10 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         code_suggestions: 'data',
         are_experiment_settings_allowed: 'true',
         are_prompt_cache_settings_allowed: 'true',
-        is_duo_base_access_allowed: 'true',
         are_duo_core_features_enabled: 'true',
         model_switching_enabled: 'true',
         model_switching_path: '/groups/test_group/-/settings/gitlab_duo/model_selection'
       })
-    end
-
-    context 'with feature flag allow_duo_base_access set to false' do
-      before do
-        stub_feature_flags(allow_duo_base_access: false)
-      end
-
-      it 'sets is_duo_base_access_allowed to false' do
-        expect(helper.duo_home_app_data(group)).to include(is_duo_base_access_allowed: 'false')
-      end
     end
 
     context 'with disabled duo_nano_features_enabled' do

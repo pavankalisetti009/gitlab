@@ -68,16 +68,6 @@ RSpec.describe Users::GroupCalloutsHelper, :saas, feature_category: :groups_and_
       end
     end
 
-    context 'when feature flag `allow_duo_base_access` is not enabled' do
-      before do
-        stub_feature_flags(allow_duo_base_access: false)
-      end
-
-      it 'returns false' do
-        expect(show_enable_duo_banner?).to be false
-      end
-    end
-
     context 'when the current user is not an admin' do
       before do
         allow(Ability).to receive(:allowed?).with(user, :admin_group, group).and_return(false)

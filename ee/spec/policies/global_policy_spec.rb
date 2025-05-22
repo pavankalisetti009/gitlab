@@ -940,17 +940,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
           ::Ai::Setting.instance.update!(duo_core_features_enabled: true)
         end
 
-        context 'when allow_duo_base_access flag is off' do
-          before do
-            stub_feature_flags(allow_duo_base_access: false)
-          end
-
-          it { is_expected.to be_disallowed(:access_duo_core_features) }
-        end
-
-        context 'when allow_duo_base_access flag is on' do
-          it { is_expected.to be_allowed(:access_duo_core_features) }
-        end
+        it { is_expected.to be_allowed(:access_duo_core_features) }
       end
     end
   end

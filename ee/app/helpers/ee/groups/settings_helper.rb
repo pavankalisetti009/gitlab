@@ -61,7 +61,6 @@ module EE
           prompt_cache_enabled: @group.namespace_settings.model_prompt_cache_enabled.to_s,
           are_experiment_settings_allowed: (@group.experiment_settings_allowed? && gitlab_com_subscription?).to_s,
           are_prompt_cache_settings_allowed: (@group.prompt_cache_settings_allowed? && gitlab_com_subscription?).to_s,
-          is_duo_base_access_allowed: ::Feature.enabled?(:allow_duo_base_access, @group).to_s,
           show_early_access_banner: show_early_access_program_banner?.to_s,
           early_access_path: group_early_access_opt_in_path(@group),
           update_id: @group.id,

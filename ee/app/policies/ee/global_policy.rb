@@ -134,8 +134,6 @@ module EE
       end
 
       condition(:duo_core_features_enabled) do
-        next false if ::Feature.disabled?(:allow_duo_base_access, :instance)
-
         ::Ai::Setting.duo_core_features_enabled?
       end
 
