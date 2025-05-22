@@ -10,8 +10,15 @@ RSpec.describe 'layouts/_tanuki_bot_chat', feature_category: :duo_chat do
     allow(::Gitlab::Llm::TanukiBot).to receive_messages(
       enabled_for?: true,
       resource_id: 'test_resource_id',
-      project_id: 'test_project_id'
+      project_id: 'test_project_id',
+      root_namespace_id: 'test_root_namespace_id'
     )
+  end
+
+  it 'includes the root_namespace_id in the data attributes' do
+    render
+
+    expect(rendered).to have_css("#js-tanuki-bot-chat-app[data-root-namespace-id='test_root_namespace_id']")
   end
 
   context 'when AmazonQ is enabled' do

@@ -75,6 +75,11 @@ export default {
       required: false,
       default: null,
     },
+    rootNamespaceId: {
+      type: String,
+      required: false,
+      default: null,
+    },
     chatTitle: {
       type: String,
       required: false,
@@ -354,6 +359,7 @@ export default {
         projectId: this.projectId,
         threadId: this.activeThread,
         conversationType: MULTI_THREADED_CONVERSATION_TYPE,
+        rootNamespaceId: this.rootNamespaceId,
         ...variables,
       };
 

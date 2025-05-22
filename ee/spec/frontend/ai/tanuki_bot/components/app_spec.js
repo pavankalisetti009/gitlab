@@ -328,6 +328,7 @@ describeSkipVue3(skipReason, () => {
         resourceId: 'command::1',
         projectId: null,
         conversationType: 'DUO_CHAT',
+        rootNamespaceId: null,
         threadId: undefined,
       });
     });
@@ -398,6 +399,7 @@ describeSkipVue3(skipReason, () => {
           resourceId: MOCK_USER_ID,
           projectId: 'project-123',
           conversationType: 'DUO_CHAT',
+          rootNamespaceId: null,
           threadId: undefined,
         });
       });
@@ -417,6 +419,7 @@ describeSkipVue3(skipReason, () => {
           resourceId: MOCK_RESOURCE_ID,
           projectId: null,
           conversationType: 'DUO_CHAT',
+          rootNamespaceId: null,
           threadId: undefined,
         });
       });
@@ -464,6 +467,7 @@ describeSkipVue3(skipReason, () => {
             clientSubscriptionId: '123',
             projectId: null,
             conversationType: 'DUO_CHAT',
+            rootNamespaceId: null,
             threadId: undefined,
           });
         });
@@ -850,6 +854,7 @@ describeSkipVue3(skipReason, () => {
           resourceId: 'gid://gitlab/Issue/1',
           projectId: null,
           conversationType: 'DUO_CHAT',
+          rootNamespaceId: null,
         });
       });
 
@@ -869,7 +874,32 @@ describeSkipVue3(skipReason, () => {
           resourceId: MOCK_RESOURCE_ID,
           projectId: null,
           conversationType: 'DUO_CHAT',
+          rootNamespaceId: null,
           threadId: mockThreadId,
+        });
+      });
+      it('passes rootNamespaceId when provided in props', async () => {
+        // Create component with rootNamespaceId in props
+        createComponent({
+          propsData: {
+            userId: MOCK_USER_ID,
+            resourceId: MOCK_RESOURCE_ID,
+            rootNamespaceId: 'namespace-123',
+          },
+        });
+
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+
+        await nextTick();
+
+        expect(chatMutationHandlerMock).toHaveBeenCalledWith({
+          clientSubscriptionId: '123',
+          question: MOCK_USER_MESSAGE.content,
+          resourceId: MOCK_RESOURCE_ID,
+          projectId: null,
+          conversationType: 'DUO_CHAT',
+          rootNamespaceId: 'namespace-123',
+          threadId: undefined,
         });
       });
     });

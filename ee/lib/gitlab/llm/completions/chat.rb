@@ -53,7 +53,11 @@ module Gitlab
         end
 
         def ai_request
-          ::Gitlab::Llm::Chain::Requests::AiGateway.new(user, tracking_context: tracking_context)
+          ::Gitlab::Llm::Chain::Requests::AiGateway.new(
+            user,
+            tracking_context: tracking_context,
+            root_namespace: resource.try(:resource_parent)&.root_ancestor || find_root_namespace
+          )
         end
 
         def execute
@@ -97,6 +101,13 @@ module Gitlab
         # allows conditional logic e.g. feature flagging
         def tools
           TOOLS
+        end
+
+        def find_root_namespace
+          return unless options[:root_namespace_id]
+
+          root_namespace_id = GlobalID.parse(options[:root_namespace_id])
+          ::Gitlab::Graphql::Lazy.force(GitlabSchema.find_by_gid(root_namespace_id))
         end
 
         def response_post_processing

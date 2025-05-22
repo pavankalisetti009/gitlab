@@ -50,6 +50,30 @@ RSpec.describe Gitlab::Llm::AiGateway::ModelMetadata, feature_category: :ai_abst
 
       it { is_expected.to be_nil }
     end
+
+    context 'when feature_setting is a NamespaceFeatureSetting' do
+      let_it_be(:root_namespace) { create(:group) }
+
+      let(:feature_name) { 'duo_chat' }
+      let(:model_ref) { 'claude-3-7-sonnet-20250219' }
+
+      let(:feature_setting) do
+        create(
+          :ai_namespace_feature_setting,
+          namespace: root_namespace,
+          feature: feature_name,
+          offered_model_ref: model_ref
+        )
+      end
+
+      it 'returns the correct namespace_settings_params' do
+        is_expected.to eq({
+          provider: 'gitlab',
+          identifier: model_ref,
+          feature_setting: 'duo_chat'
+        })
+      end
+    end
   end
 
   describe '#self_hosted_params' do
