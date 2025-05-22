@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: :groups_and_projects do
   let_it_be(:shared_with_group) { create(:group, :private) }
-  let_it_be(:group) { create(:group, :private) }
+  let_it_be_with_refind(:group) { create(:group, :private) }
 
   let_it_be(:user) { create(:user) }
 
@@ -186,6 +186,74 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
         it 'does not assign member role to group link' do
           expect(create_service[:link][:member_role_id]).to be_nil
         end
+      end
+    end
+  end
+
+  describe 'seat assignments', :sidekiq_inline do
+    let_it_be(:user_b) { create(:user) }
+
+    before_all do
+      group.add_owner(user)
+      shared_with_group.add_guest(user)
+      shared_with_group.add_developer(user_b)
+    end
+
+    context 'in a saas environment' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
+
+      it 'creates seat assignments for the new group link' do
+        create_service
+
+        expect(group.subscription_seat_assignments.map(&:user_id)).to include(user_b.id)
+      end
+
+      it 'does nothing when the feature flag is off' do
+        stub_feature_flags(sam_group_links: false)
+
+        create_service
+
+        expect(group.subscription_seat_assignments.map(&:user_id)).not_to include(user_b.id)
+      end
+
+      it 'does nothing when the feature flag is on for the invited group' do
+        stub_feature_flags(sam_group_links: shared_with_group)
+
+        create_service
+
+        expect(group.subscription_seat_assignments.map(&:user_id)).not_to include(user_b.id)
+      end
+
+      it 'creates seat assignments when the feature flag is on for the shared group' do
+        stub_feature_flags(sam_group_links: group)
+
+        create_service
+
+        expect(group.subscription_seat_assignments.map(&:user_id)).to include(user_b.id)
+      end
+
+      context 'when the group is invited to a subgroup' do
+        let_it_be(:subgroup) { create(:group, :private, parent: group) }
+
+        let(:service) { described_class.new(subgroup, shared_with_group, user, opts) }
+
+        it 'creates seat assignments when the feature flag is on for the shared subgroup root ancestor' do
+          stub_feature_flags(sam_group_links: group)
+
+          create_service
+
+          expect(group.subscription_seat_assignments.map(&:user_id)).to include(user_b.id)
+        end
+      end
+    end
+
+    context 'in a self-managed environment' do
+      it 'does nothing' do
+        create_service
+
+        expect(group.subscription_seat_assignments.map(&:user_id)).not_to include(user_b.id)
       end
     end
   end
