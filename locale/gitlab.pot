@@ -27356,9 +27356,6 @@ msgid_plural "Geo|%d shards selected"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "Geo|%{action} %{replicableType}"
-msgstr ""
-
 msgid "Geo|%{boldStart}Not applicable%{boldEnd}: Geo does not verify this component yet. See the %{linkStart}data types we plan to support%{linkEnd}."
 msgstr ""
 
@@ -27794,10 +27791,16 @@ msgstr ""
 msgid "Geo|Resync all"
 msgstr ""
 
+msgid "Geo|Resync all %{type}"
+msgstr ""
+
 msgid "Geo|Reverify"
 msgstr ""
 
 msgid "Geo|Reverify all"
+msgstr ""
+
+msgid "Geo|Reverify all %{type}"
 msgstr ""
 
 msgid "Geo|Review replication status, and resynchronize and reverify items with the primary site."
@@ -27932,7 +27935,10 @@ msgstr ""
 msgid "Geo|This GitLab instance is subscribed to the %{insufficient_license} tier. Geo is only available for users who have at least a Premium subscription."
 msgstr ""
 
-msgid "Geo|This will %{action} %{replicableType}. It may take some time to complete. Are you sure you want to continue?"
+msgid "Geo|This will resync all %{type}. It may take some time to complete. Are you sure you want to continue?"
+msgstr ""
+
+msgid "Geo|This will reverify all %{type}. It may take some time to complete. Are you sure you want to continue?"
 msgstr ""
 
 msgid "Geo|Time in seconds"

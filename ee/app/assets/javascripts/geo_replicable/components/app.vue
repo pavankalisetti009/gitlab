@@ -2,6 +2,7 @@
 import { GlLoadingIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
+import GeoListBulkActions from 'ee/geo_shared/list/components/geo_list_bulk_actions.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { visitUrl, pathSegments, queryToObject, setUrlParams } from '~/lib/utils/url_utility';
 import {
@@ -10,12 +11,11 @@ import {
   getReplicableTypeFilter,
   processFilters,
 } from '../filters';
-import { REPLICATION_STATUS_STATES_ARRAY } from '../constants';
+import { REPLICATION_STATUS_STATES_ARRAY, BULK_ACTIONS } from '../constants';
 import GeoReplicable from './geo_replicable.vue';
 import GeoReplicableEmptyState from './geo_replicable_empty_state.vue';
 import GeoReplicableFilterBar from './geo_replicable_filter_bar.vue';
 import GeoReplicableFilteredSearchBar from './geo_replicable_filtered_search_bar.vue';
-import GeoReplicableBulkActions from './geo_replicable_bulk_actions.vue';
 import GeoFeedbackBanner from './geo_feedback_banner.vue';
 
 export default {
@@ -26,7 +26,7 @@ export default {
     GeoReplicableFilteredSearchBar,
     GeoReplicable,
     GeoReplicableEmptyState,
-    GeoReplicableBulkActions,
+    GeoListBulkActions,
     GeoFeedbackBanner,
   },
   mixins: [glFeatureFlagsMixin()],
@@ -55,7 +55,7 @@ export default {
     this.fetchReplicableItems();
   },
   methods: {
-    ...mapActions(['fetchReplicableItems', 'setStatusFilter']),
+    ...mapActions(['fetchReplicableItems', 'setStatusFilter', 'initiateAllReplicableAction']),
     getFiltersFromQuery() {
       const filters = [];
       const url = new URL(window.location.href);
@@ -74,7 +74,11 @@ export default {
 
       visitUrl(setUrlParams(query, url.href, true));
     },
+    onBulkAction(action) {
+      this.initiateAllReplicableAction({ action });
+    },
   },
+  BULK_ACTIONS,
 };
 </script>
 
@@ -84,9 +88,11 @@ export default {
     <geo-replicable-filter-bar v-if="!glFeatures.geoReplicablesFilteredListView" />
     <template v-else>
       <geo-replicable-filtered-search-bar :active-filters="activeFilters" @search="onSearch" />
-      <geo-replicable-bulk-actions
+      <geo-list-bulk-actions
         v-if="hasReplicableItems"
+        :bulk-actions="$options.BULK_ACTIONS"
         class="gl-my-5 gl-flex gl-justify-end"
+        @bulkAction="onBulkAction"
       />
     </template>
 

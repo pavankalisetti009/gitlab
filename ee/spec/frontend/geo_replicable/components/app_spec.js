@@ -1,15 +1,16 @@
 import { GlLoadingIcon } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import { BULK_ACTIONS } from 'ee/geo_replicable/constants';
 import GeoFeedbackBanner from 'ee/geo_replicable/components/geo_feedback_banner.vue';
 import GeoReplicableApp from 'ee/geo_replicable/components/app.vue';
 import GeoReplicable from 'ee/geo_replicable/components/geo_replicable.vue';
 import GeoReplicableEmptyState from 'ee/geo_replicable/components/geo_replicable_empty_state.vue';
 import GeoReplicableFilterBar from 'ee/geo_replicable/components/geo_replicable_filter_bar.vue';
 import GeoReplicableFilteredSearchBar from 'ee/geo_replicable/components/geo_replicable_filtered_search_bar.vue';
-import GeoReplicableBulkActions from 'ee/geo_replicable/components/geo_replicable_bulk_actions.vue';
+import GeoListBulkActions from 'ee/geo_shared/list/components/geo_list_bulk_actions.vue';
 import initStore from 'ee/geo_replicable/store';
 import { processFilters } from 'ee/geo_replicable/filters';
 import { TEST_HOST } from 'spec/test_constants';
@@ -72,8 +73,8 @@ describe('GeoReplicableApp', () => {
     findGeoReplicableContainer().findComponent(GeoReplicableFilterBar);
   const findGeoReplicableFilteredSearchBar = () =>
     findGeoReplicableContainer().findComponent(GeoReplicableFilteredSearchBar);
-  const findGeoReplicableBulkActions = () =>
-    findGeoReplicableContainer().findComponent(GeoReplicableBulkActions);
+  const findGeoListBulkActions = () =>
+    findGeoReplicableContainer().findComponent(GeoListBulkActions);
   const findGeoFeedbackBanner = () => wrapper.findComponent(GeoFeedbackBanner);
 
   describe.each`
@@ -213,7 +214,7 @@ describe('GeoReplicableApp', () => {
       });
 
       it('does not render bulk actions', () => {
-        expect(findGeoReplicableBulkActions().exists()).toBe(false);
+        expect(findGeoListBulkActions().exists()).toBe(false);
       });
     });
 
@@ -229,7 +230,7 @@ describe('GeoReplicableApp', () => {
         });
 
         it('does not render bulk actions', () => {
-          expect(findGeoReplicableBulkActions().exists()).toBe(false);
+          expect(findGeoListBulkActions().exists()).toBe(false);
         });
       });
 
@@ -238,8 +239,17 @@ describe('GeoReplicableApp', () => {
           store.state.replicableItems = MOCK_BASIC_GRAPHQL_DATA;
         });
 
-        it('does render bulk actions', () => {
-          expect(findGeoReplicableBulkActions().exists()).toBe(true);
+        it('does render bulk actions with correct actions', () => {
+          expect(findGeoListBulkActions().props('bulkActions')).toStrictEqual(BULK_ACTIONS);
+        });
+
+        it('when bulk actions emits @bulkAction, initiateAllReplicableAction is called with correct action', async () => {
+          findGeoListBulkActions().vm.$emit('bulkAction', BULK_ACTIONS[0].action);
+          await nextTick();
+
+          expect(store.dispatch).toHaveBeenCalledWith('initiateAllReplicableAction', {
+            action: BULK_ACTIONS[0].action,
+          });
         });
       });
     });

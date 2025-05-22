@@ -105,3 +105,28 @@ export const FILTERED_SEARCH_TOKEN_DEFINITIONS = [
     unique: true,
   },
 ];
+
+export const BULK_ACTIONS = [
+  {
+    id: 'geo-bulk-action-resync',
+    action: ACTION_TYPES.RESYNC_ALL,
+    text: s__('Geo|Resync all'),
+    modal: {
+      title: s__('Geo|Resync all %{type}'),
+      description: s__(
+        'Geo|This will resync all %{type}. It may take some time to complete. Are you sure you want to continue?',
+      ),
+    },
+  },
+  {
+    id: 'geo-bulk-action-reverify',
+    action: ACTION_TYPES.REVERIFY_ALL,
+    text: s__('Geo|Reverify all'),
+    modal: {
+      title: s__('Geo|Reverify all %{type}'),
+      description: s__(
+        'Geo|This will reverify all %{type}. It may take some time to complete. Are you sure you want to continue?',
+      ),
+    },
+  },
+];
