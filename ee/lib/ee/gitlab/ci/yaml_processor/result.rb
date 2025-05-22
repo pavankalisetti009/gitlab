@@ -18,15 +18,15 @@ module EE
                 options: {
                   dast_configuration: job[:dast_configuration],
                   identity: job[:identity],
-                  execution_policy_job: execution_policy_job_option
+                  **execution_policy_job_options
                 }.compact,
                 secrets: job[:secrets]
               }.compact
             )
           end
 
-          def execution_policy_job_option
-            ci_config&.pipeline_policy_context&.creating_policy_pipeline? || nil
+          def execution_policy_job_options
+            ci_config&.pipeline_policy_context&.pipeline_execution_context&.job_options || {}
           end
         end
       end

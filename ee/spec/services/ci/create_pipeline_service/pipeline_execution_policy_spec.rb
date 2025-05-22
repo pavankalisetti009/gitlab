@@ -802,6 +802,100 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       expect(get_job_variable(project_test_job, 'TEST_TOKEN')).to eq('run token')
     end
 
+    context 'when policies use `variables_override` setting' do
+      let(:project_policy) do
+        build(:pipeline_execution_policy,
+          variables_override: variables_override,
+          content: { include: [{
+            project: compliance_project.full_path,
+            file: project_policy_file,
+            ref: compliance_project.default_branch_or_main
+          }] })
+      end
+
+      context 'when override is allowed' do
+        let(:variables_override) { { allowed: true } }
+
+        it 'uses run variables for project policy but not for namespace policy' do
+          stages = execute.payload.stages
+          test_stage = stages.find_by(name: 'test')
+
+          project_policy_job = test_stage.builds.find_by(name: 'project_policy_job')
+          expect(get_job_variable(project_policy_job, 'TEST_TOKEN')).to eq('run token')
+
+          namespace_policy_job = test_stage.builds.find_by(name: 'namespace_policy_job')
+          expect(get_job_variable(namespace_policy_job, 'TEST_TOKEN')).to eq('namespace policy token')
+        end
+
+        context 'with exception' do
+          let(:variables_override) { { allowed: true, exceptions: ['TEST_TOKEN'] } }
+
+          it 'ignores run variables' do
+            stages = execute.payload.stages
+            test_stage = stages.find_by(name: 'test')
+
+            project_policy_job = test_stage.builds.find_by(name: 'project_policy_job')
+            expect(get_job_variable(project_policy_job, 'TEST_TOKEN')).to eq('project policy token')
+          end
+        end
+
+        context 'when feature flag "security_policies_optional_variables_control" is disabled' do
+          before do
+            stub_feature_flags(security_policies_optional_variables_control: false)
+          end
+
+          it 'ignores run variables' do
+            stages = execute.payload.stages
+            test_stage = stages.find_by(name: 'test')
+
+            project_policy_job = test_stage.builds.find_by(name: 'project_policy_job')
+            expect(get_job_variable(project_policy_job, 'TEST_TOKEN')).to eq('project policy token')
+          end
+        end
+      end
+
+      context 'when override is disallowed' do
+        let(:variables_override) { { allowed: false } }
+
+        it 'ignores run variables for both project and namespace policies' do
+          stages = execute.payload.stages
+          test_stage = stages.find_by(name: 'test')
+
+          project_policy_job = test_stage.builds.find_by(name: 'project_policy_job')
+          expect(get_job_variable(project_policy_job, 'TEST_TOKEN')).to eq('project policy token')
+
+          namespace_policy_job = test_stage.builds.find_by(name: 'namespace_policy_job')
+          expect(get_job_variable(namespace_policy_job, 'TEST_TOKEN')).to eq('namespace policy token')
+        end
+
+        context 'with exception' do
+          let(:variables_override) { { allowed: false, exceptions: ['TEST_TOKEN'] } }
+
+          it 'uses run variables' do
+            stages = execute.payload.stages
+            test_stage = stages.find_by(name: 'test')
+
+            project_policy_job = test_stage.builds.find_by(name: 'project_policy_job')
+            expect(get_job_variable(project_policy_job, 'TEST_TOKEN')).to eq('run token')
+          end
+
+          context 'when feature flag "security_policies_optional_variables_control" is disabled' do
+            before do
+              stub_feature_flags(security_policies_optional_variables_control: false)
+            end
+
+            it 'ignores run variables' do
+              stages = execute.payload.stages
+              test_stage = stages.find_by(name: 'test')
+
+              project_policy_job = test_stage.builds.find_by(name: 'project_policy_job')
+              expect(get_job_variable(project_policy_job, 'TEST_TOKEN')).to eq('project policy token')
+            end
+          end
+        end
+      end
+    end
+
     it 'does not leak policy variables into the project jobs and other policy jobs', :aggregate_failures do
       stages = execute.payload.stages
 

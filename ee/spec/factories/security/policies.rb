@@ -99,7 +99,8 @@ FactoryBot.define do
         {
           content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
           pipeline_config_strategy: 'inject_ci',
-          skip_ci: { allowed: false }
+          skip_ci: { allowed: false },
+          variables_override: { allowed: false }
         }
       end
     end
@@ -249,7 +250,7 @@ FactoryBot.define do
 
   factory :pipeline_execution_policy,
     class: Struct.new(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope, :metadata,
-      :suffix, :skip_ci) do
+      :suffix, :skip_ci, :variables_override) do
     skip_create
 
     initialize_with do
@@ -262,8 +263,12 @@ FactoryBot.define do
       metadata = attributes[:metadata]
       suffix = attributes[:suffix]
       skip_ci = attributes[:skip_ci]
+      variables_override = attributes[:variables_override]
 
-      new(name, description, enabled, pipeline_config_strategy, content, policy_scope, metadata, suffix, skip_ci).to_h
+      new(name, description, enabled, pipeline_config_strategy, content, policy_scope, metadata, suffix, skip_ci,
+        variables_override).to_h.tap do |result|
+        result.delete(:variables_override) if result[:variables_override].blank?
+      end
     end
 
     sequence(:name) { |n| "test-pipeline-execution-policy-#{n}" }
@@ -275,6 +280,7 @@ FactoryBot.define do
     metadata { {} }
     suffix { nil }
     skip_ci { { allowed: false } }
+    variables_override { nil }
 
     trait :override_project_ci do
       pipeline_config_strategy { 'override_project_ci' }
@@ -298,6 +304,10 @@ FactoryBot.define do
 
     trait :skip_ci_disallowed do
       skip_ci { { allowed: false } }
+    end
+
+    trait :variables_override_disallowed do
+      variables_override { { allowed: false } }
     end
 
     trait :with_policy_scope do

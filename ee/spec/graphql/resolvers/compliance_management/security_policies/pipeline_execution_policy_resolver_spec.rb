@@ -16,7 +16,9 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::PipelineExecut
   let_it_be(:ref_project) { create(:project, :repository) }
   let_it_be(:content) { { project: ref_project.full_path, file: 'pipeline_execution_policy.yml' } }
   let_it_be(:policy) do
-    build(:pipeline_execution_policy, name: 'Run my custom script in every pipeline', policy_scope: policy_scope,
+    build(:pipeline_execution_policy, :variables_override_disallowed,
+      name: 'Run my custom script in every pipeline',
+      policy_scope: policy_scope,
       content: { include: [content] }
     )
   end

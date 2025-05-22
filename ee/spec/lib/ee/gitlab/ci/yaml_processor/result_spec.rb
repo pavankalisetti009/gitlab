@@ -55,5 +55,58 @@ RSpec.describe Gitlab::Ci::YamlProcessor::Result, feature_category: :pipeline_co
         end
       end
     end
+
+    describe 'execution_policy_variables_override' do
+      include_context 'with pipeline policy context'
+
+      let(:creating_policy_pipeline) { true }
+      let(:ci_config) do
+        Gitlab::Ci::Config.new(config_content, user: user, pipeline_policy_context: pipeline_policy_context)
+      end
+
+      let(:config_content) do
+        YAML.dump(
+          test: { stage: 'test', script: 'echo' }
+        )
+      end
+
+      context 'when policy does not have variables_override' do
+        let(:current_policy) { FactoryBot.build(:pipeline_execution_policy_config) }
+
+        it 'does not set `execution_policy_variables_override` option' do
+          expect(build.dig(:options, :execution_policy_variables_override)).to be_nil
+        end
+      end
+
+      context 'when policy has variables_override' do
+        let(:current_policy) { FactoryBot.build(:pipeline_execution_policy_config, :variables_override_disallowed) }
+
+        it 'sets `execution_policy_variables_override` option' do
+          expect(build.dig(:options, :execution_policy_variables_override)).to eq({ allowed: false })
+        end
+
+        context 'when feature flag "security_policies_optional_variables_control" is disabled' do
+          before do
+            stub_feature_flags(security_policies_optional_variables_control: false)
+          end
+
+          it 'sets the `execution_policy_job` option' do
+            expect(build.dig(:options, :execution_policy_job)).to eq true
+          end
+
+          it 'does not set `execution_policy_variables_override` option' do
+            expect(build.dig(:options, :execution_policy_variables_override)).to be_nil
+          end
+        end
+      end
+
+      context 'when creating_policy_pipeline? is false' do
+        let(:creating_policy_pipeline) { false }
+
+        it 'does not set `execution_policy_variables_override` option' do
+          expect(build.dig(:options, :execution_policy_variables_override)).to be_nil
+        end
+      end
+    end
   end
 end

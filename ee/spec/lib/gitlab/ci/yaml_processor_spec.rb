@@ -547,6 +547,7 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
     describe 'execution_policy_job option' do
       include_context 'with pipeline policy context'
 
+      let(:current_policy) { build(:pipeline_execution_policy_config, :variables_override_disallowed) }
       let(:opts) { { pipeline_policy_context: pipeline_policy_context } }
       let(:config) do
         { rspec: { script: 'rspec' } }
@@ -560,7 +561,11 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
         let(:creating_policy_pipeline) { true }
 
         it 'marks the build as `execution_policy_job` in :options' do
-          expect(builds).to match([a_hash_including(options: { script: ['rspec'], execution_policy_job: true })])
+          expect(builds).to match([a_hash_including(options: {
+            script: ['rspec'],
+            execution_policy_job: true,
+            execution_policy_variables_override: { allowed: false }
+          })])
         end
       end
     end

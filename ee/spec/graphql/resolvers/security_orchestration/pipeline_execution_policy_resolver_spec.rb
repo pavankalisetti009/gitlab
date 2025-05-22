@@ -10,7 +10,11 @@ RSpec.describe Resolvers::SecurityOrchestration::PipelineExecutionPolicyResolver
   let_it_be(:ref_project) { create(:project, :repository) }
   let(:content) { { project: ref_project.full_path, file: 'pipeline_execution_policy.yml' } }
   let(:project_full_path) { content[:project] }
-  let(:policy) { build(:pipeline_execution_policy, name: 'Run custom pipeline', content: { include: [content] }) }
+  let(:policy) do
+    build(:pipeline_execution_policy, :variables_override_disallowed,
+      name: 'Run custom pipeline', content: { include: [content] })
+  end
+
   let(:policy_yaml) { build(:orchestration_policy_yaml, pipeline_execution_policy: [policy]) }
   let(:expected_resolved) do
     [
