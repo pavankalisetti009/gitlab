@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_planning do
+  let_it_be(:group) { create(:group) }
+
   subject(:custom_status) { build_stubbed(:work_item_custom_status) }
 
   describe 'associations' do
@@ -13,21 +15,20 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
 
   describe 'scopes' do
     describe '.ordered_for_lifecycle' do
-      let_it_be(:namespace) { create(:group) }
-      let_it_be(:open_status) { create(:work_item_custom_status, :open, namespace: namespace) }
-      let_it_be(:closed_status) { create(:work_item_custom_status, :closed, namespace: namespace) }
-      let_it_be(:duplicate_status) { create(:work_item_custom_status, :duplicate, namespace: namespace) }
+      let_it_be(:open_status) { create(:work_item_custom_status, :open, namespace: group) }
+      let_it_be(:closed_status) { create(:work_item_custom_status, :closed, namespace: group) }
+      let_it_be(:duplicate_status) { create(:work_item_custom_status, :duplicate, namespace: group) }
       let_it_be(:in_review_status) do
-        create(:work_item_custom_status, category: :in_progress, name: 'In review', namespace: namespace)
+        create(:work_item_custom_status, category: :in_progress, name: 'In review', namespace: group)
       end
 
       let_it_be(:in_dev_status) do
-        create(:work_item_custom_status, category: :in_progress, name: 'In dev', namespace: namespace)
+        create(:work_item_custom_status, category: :in_progress, name: 'In dev', namespace: group)
       end
 
       let_it_be(:custom_lifecycle) do
         create(:work_item_custom_lifecycle,
-          namespace: namespace,
+          namespace: group,
           default_open_status: open_status,
           default_closed_status: closed_status,
           default_duplicate_status: duplicate_status
@@ -64,14 +65,20 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
     it { is_expected.to validate_length_of(:color).is_at_most(7) }
     it { is_expected.to validate_presence_of(:category) }
 
-    context 'with uniqueness validations' do
-      subject(:custom_status) { create(:work_item_custom_status) }
+    context 'with name uniqueness' do
+      it 'validates uniqueness with a custom validator' do
+        create(:work_item_custom_status, name: "Test Status", namespace: group)
 
-      it { is_expected.to validate_uniqueness_of(:name).scoped_to(:namespace_id) }
+        duplicate_status = build(:work_item_custom_status, name: " test status ", namespace: group)
+        expect(duplicate_status).to be_invalid
+        expect(duplicate_status.errors.full_messages).to include('Name has already been taken')
+
+        new_status = build(:work_item_custom_status, name: "Test Status", namespace: create(:group))
+        expect(new_status).to be_valid
+      end
     end
 
     describe 'status per namespace limit validations' do
-      let_it_be(:group) { create(:group) }
       let_it_be(:existing_status) { create(:work_item_custom_status, namespace: group) }
 
       before do
