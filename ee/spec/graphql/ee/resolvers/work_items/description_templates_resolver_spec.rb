@@ -26,7 +26,7 @@ RSpec.describe Resolvers::WorkItems::DescriptionTemplatesResolver, feature_categ
   end
 
   let_it_be(:project) do
-    create(:project, :public, :custom_repo, files: template_files, group: group)
+    create(:project, :custom_repo, files: template_files, group: group)
        .tap { |p| group.file_template_project_id = p.id }
   end
 
@@ -63,31 +63,12 @@ RSpec.describe Resolvers::WorkItems::DescriptionTemplatesResolver, feature_categ
       end
     end
 
-    context 'when the requesting user is not a member of the project' do
-      let_it_be(:non_member_user) { create(:user) }
+    context 'when user does not have access to the template project' do
+      let_it_be(:unauthorized_user) { create(:user) }
 
-      it 'returns templates if project does not have restricted repository access' do
-        templates = resolve_templates(current_user: non_member_user, group: group)
-        templates.items.each_with_index do |template, index|
-          expect(".gitlab/issue_templates/#{template.name}.md").to eq(template_files.to_a[index][0])
-          expect(template.content).to eq(template_files.to_a[index][1])
-          expect(template.category).to eq("Group #{group.name}")
-          expect(template.project_id).to eq(project.id)
-        end
-      end
-
-      context 'and the project has limited repository access' do
-        before do
-          project.project_feature.update!(
-            repository_access_level: ProjectFeature::PRIVATE,
-            merge_requests_access_level: ProjectFeature::PRIVATE,
-            builds_access_level: ProjectFeature::PRIVATE
-          )
-        end
-
-        it 'raises Gitlab::Graphql::Errors::ResourceNotAvailable' do
-          result = resolve_templates(current_user: non_member_user, group: group)
-          expect(result.class).to eq(Gitlab::Graphql::Errors::ResourceNotAvailable)
+      it 'does not fetch templates' do
+        expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ResourceNotAvailable) do
+          resolve_templates(current_user: unauthorized_user)
         end
       end
     end
