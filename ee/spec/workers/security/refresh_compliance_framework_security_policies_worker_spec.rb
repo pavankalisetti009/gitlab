@@ -45,16 +45,6 @@ RSpec.describe ::Security::RefreshComplianceFrameworkSecurityPoliciesWorker, fea
     end
   end
 
-  it_behaves_like 'subscribes to event' do
-    let(:event) { compliance_framework_changed_event }
-
-    it 'receives the event' do
-      expect(described_class).to receive(:perform_async).with('Projects::ComplianceFrameworkChangedEvent',
-        compliance_framework_changed_event.data.deep_stringify_keys)
-      ::Gitlab::EventStore.publish(event)
-    end
-  end
-
   it 'invokes Security::ProcessScanResultPolicyWorker with the project_id and configuration_id' do
     expect(Security::ProcessScanResultPolicyWorker).to receive(:perform_async).once.with(project.id,
       policy_configuration.id)

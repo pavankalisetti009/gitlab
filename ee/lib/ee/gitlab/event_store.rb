@@ -59,8 +59,6 @@ module EE
           store.subscribe ::Security::ScanResultPolicies::AddApproversToRulesWorker,
             to: ::ProjectAuthorizations::AuthorizationsAddedEvent,
             if: ->(event) { ::Security::ScanResultPolicies::AddApproversToRulesWorker.dispatch?(event) }
-          store.subscribe ::Security::RefreshComplianceFrameworkSecurityPoliciesWorker,
-            to: ::Projects::ComplianceFrameworkChangedEvent
           store.subscribe ::AppSec::ContainerScanning::ScanImageWorker,
             to: ::ContainerRegistry::ImagePushedEvent,
             delay: 1.minute,
@@ -100,6 +98,7 @@ module EE
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchCreatedEvent
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchDestroyedEvent
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::DefaultBranchChangedEvent
+          store.subscribe ::Security::SyncPolicyEventWorker, to: ::Projects::ComplianceFrameworkChangedEvent
 
           store.subscribe ::Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker,
             to: ::MergeRequests::ClosedEvent
