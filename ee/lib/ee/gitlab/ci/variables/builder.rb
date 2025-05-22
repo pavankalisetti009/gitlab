@@ -21,7 +21,9 @@ module EE
               variables.concat(scan_execution_policies_variables_builder.variables(job_attr[:name]))
             end
 
-            replace_pipeline_execution_policy_variables(variables, job_attr[:options], job_attr[:yaml_variables])
+            ::Security::PipelineExecutionPolicy::VariablesOverride
+              .new(project: project, job_options: job_attr[:options])
+              .apply_highest_precedence(variables, job_attr[:yaml_variables])
           end
 
           # When adding new variables, consider either adding or commenting out them in the following methods:
@@ -33,19 +35,21 @@ module EE
               variables.concat(scan_execution_policies_variables_builder.variables(job.name))
             end
 
-            # Reapply the PEP job YAML variables at the end to enforce the highest precedence
-            replace_pipeline_execution_policy_variables(variables, job.options, job.yaml_variables)
+            ::Security::PipelineExecutionPolicy::VariablesOverride
+              .new(project: project, job_options: job.options)
+              .apply_highest_precedence(variables, job.yaml_variables)
           end
 
           private
 
           attr_reader :scan_execution_policies_variables_builder
 
-          def replace_pipeline_execution_policy_variables(variables, options, yaml_variables)
-            return variables unless !!options&.dig(:execution_policy_job)
-
-            yaml_variable_keys = yaml_variables.pluck(:key).to_set # rubocop: disable CodeReuse/ActiveRecord -- this is not a DB query
-            variables.reject { |var| yaml_variable_keys.include?(var.key) }.concat(yaml_variables)
+          override :user_defined_variables
+          def user_defined_variables(
+            options:, environment:, job_variables: nil, expose_group_variables: protected_ref?,
+            expose_project_variables: protected_ref?)
+            ::Security::PipelineExecutionPolicy::VariablesOverride.new(project: project, job_options: options)
+                                                                  .apply_variables_override(super)
           end
         end
       end

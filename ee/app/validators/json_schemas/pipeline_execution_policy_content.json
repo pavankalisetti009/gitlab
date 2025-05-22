@@ -92,6 +92,25 @@
       "required": [
         "allowed"
       ]
+    },
+    "variables_override": {
+      "description": "Defines whether variables can be overridden and the exceptions.",
+      "type": "object",
+      "properties": {
+        "allowed": {
+          "type": "boolean"
+        },
+        "exceptions": {
+          "type": "array",
+          "description": "A list of variables that are excepted from the enforcement.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "allowed"
+      ]
     }
   },
   "additionalProperties": false

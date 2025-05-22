@@ -39,5 +39,9 @@ FactoryBot.define do
     trait :skip_ci_disallowed do
       policy factory: [:pipeline_execution_policy, :skip_ci_disallowed]
     end
+
+    trait :variables_override_disallowed do
+      policy factory: [:pipeline_execution_policy, :variables_override_disallowed]
+    end
   end
 end

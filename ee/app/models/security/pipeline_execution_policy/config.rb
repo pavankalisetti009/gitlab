@@ -13,7 +13,7 @@ module Security
       POLICY_JOB_SUFFIX = ':policy'
 
       attr_reader :content, :config_strategy, :suffix_strategy, :policy_project_id, :policy_index, :name,
-        :skip_ci_strategy
+        :skip_ci_strategy, :variables_override_strategy
 
       def initialize(policy:, policy_project_id:, policy_index:)
         @content = policy.fetch(:content).to_yaml
@@ -23,6 +23,7 @@ module Security
         @suffix_strategy = policy[:suffix] || DEFAULT_SUFFIX_STRATEGY
         @name = policy.fetch(:name)
         @skip_ci_strategy = policy[:skip_ci].presence || DEFAULT_SKIP_CI_STRATEGY
+        @variables_override_strategy = policy[:variables_override]
       end
 
       def strategy_override_project_ci?

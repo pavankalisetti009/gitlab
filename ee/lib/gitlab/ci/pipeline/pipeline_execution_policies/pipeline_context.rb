@@ -120,6 +120,16 @@ module Gitlab
             ReservedStagesInjector::STAGES.exclude?(stage)
           end
 
+          def job_options
+            return {} unless creating_policy_pipeline?
+
+            { execution_policy_job: true }.tap do |options|
+              if Feature.enabled?(:security_policies_optional_variables_control, project)
+                options[:execution_policy_variables_override] = current_policy.variables_override_strategy
+              end
+            end
+          end
+
           private
 
           attr_reader :project, :command, :current_policy
