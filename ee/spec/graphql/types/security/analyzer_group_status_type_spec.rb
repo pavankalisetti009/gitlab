@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSchema.types['AnalyzerGroupStatusType'], feature_category: :security_asset_inventories do
-  let(:expected_fields) { %i[namespace_id analyzer_type success failure] }
+  let(:expected_fields) { %i[namespace_id analyzer_type success failure updatedAt] }
 
   subject { described_class }
 
