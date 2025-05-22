@@ -62,8 +62,7 @@ module Ai
           DUO_WORKFLOW_GIT_HTTP_BASE_URL: Gitlab.config.gitlab.url,
           DUO_WORKFLOW_GIT_HTTP_PASSWORD: @params[:workflow_oauth_token],
           DUO_WORKFLOW_GIT_HTTP_USER: "oauth",
-          GITLAB_BASE_URL: Gitlab.config.gitlab.url,
-          GITLAB_CI: true
+          GITLAB_BASE_URL: Gitlab.config.gitlab.url
         }
       end
 
@@ -72,6 +71,7 @@ module Ai
           %(echo $DUO_WORKFLOW_DEFINITION),
           %(echo $DUO_WORKFLOW_GOAL),
           %(git checkout $CI_WORKLOAD_REF),
+          %(echo Starting Workflow #{String(@params[:workflow_id])}),
           %(wget #{Gitlab::DuoWorkflow::Executor.executor_binary_url} -O /tmp/duo-workflow-executor.tar.gz),
           %(tar xf /tmp/duo-workflow-executor.tar.gz --directory /tmp),
           %(chmod +x /tmp/duo-workflow-executor),
