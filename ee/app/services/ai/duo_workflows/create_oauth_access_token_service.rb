@@ -12,7 +12,7 @@ module Ai
 
       def execute
         return error('Duo workflow is not enabled for user', :forbidden) unless Feature.enabled?(:duo_workflow,
-          current_user)
+          current_user) || Feature.enabled?(:duo_agentic_chat, current_user)
 
         ensure_oauth_application!
         token = create_oauth_access_token

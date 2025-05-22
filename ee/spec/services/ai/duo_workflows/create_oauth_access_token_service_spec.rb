@@ -63,6 +63,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
       context 'when the user does not have the duo_workflow feature flag enabled' do
         it 'returns an error' do
           stub_feature_flags(duo_workflow: false)
+          stub_feature_flags(duo_agentic_chat: false)
 
           expect(execute).to be_error
         end
