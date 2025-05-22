@@ -10,7 +10,12 @@ module EE
       attr_accessor :blocking_merge_requests_params, :suggested_reviewer_ids
 
       def assign_duo_as_reviewer(merge_request)
-        return unless merge_request.project.auto_duo_code_review_enabled
+        project = merge_request.project
+        unless project.auto_duo_code_review_enabled &&
+            project.project_setting.duo_features_enabled? &&
+            project.namespace.has_active_add_on_purchase?(:duo_enterprise)
+          return
+        end
 
         if merge_request.ai_review_merge_request_allowed?(current_user)
           duo_bot = ::Users::Internal.duo_code_review_bot

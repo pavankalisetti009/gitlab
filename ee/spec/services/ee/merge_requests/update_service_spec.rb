@@ -743,8 +743,10 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
     describe 'Automatic Duo Code Review' do
       let(:ai_review_allowed) { true }
       let(:auto_duo_code_review) { true }
+      let(:duo_enabled_project_setting) { true }
       let(:duo) { ::Users::Internal.duo_code_review_bot }
       let(:old_title) { 'Draft: Awesome merge_request' }
+      let(:duo_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
 
       let(:merge_request) do
         create(
@@ -758,11 +760,16 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
       end
 
       before do
+        allow(project).to receive(:auto_duo_code_review_enabled).and_return(auto_duo_code_review)
+        allow(project.project_setting).to receive(:duo_features_enabled?).and_return(duo_enabled_project_setting)
+
+        create(:gitlab_subscription_add_on_purchase,
+          namespace: project.namespace,
+          add_on: duo_add_on)
+
         allow(merge_request).to receive(:ai_review_merge_request_allowed?)
           .with(user)
           .and_return(ai_review_allowed)
-
-        allow(project).to receive(:auto_duo_code_review_enabled).and_return(auto_duo_code_review)
       end
 
       context 'when it became ready by wip_event the MR title changes' do
@@ -815,6 +822,28 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
 
             expect(merge_request.reviewers).to be_empty
           end
+        end
+      end
+
+      context 'when project setting disable duo' do
+        let(:duo_enabled_project_setting) { false }
+
+        it 'does not add Duo as a reviewer' do
+          update_merge_request({ title: 'Awesome merge_request' })
+
+          expect(merge_request.reviewers).to be_empty
+        end
+      end
+
+      context 'duo enterprise add on expired' do
+        before do
+          project.namespace.subscription_add_on_purchases.for_duo_enterprise.update!(expires_on: 1.day.ago)
+        end
+
+        it 'does not add Duo as a reviewer' do
+          update_merge_request({ title: 'Awesome merge_request' })
+
+          expect(merge_request.reviewers).to be_empty
         end
       end
 
