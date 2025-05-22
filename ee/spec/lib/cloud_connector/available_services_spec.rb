@@ -112,4 +112,26 @@ RSpec.describe CloudConnector::AvailableServices, feature_category: :cloud_conne
       end
     end
   end
+
+  describe 'memoization behaviour' do
+    let(:service_name) { :duo_chat }
+
+    context 'with Self-Signed reader', :saas do
+      it 'returns the same object instance on subsequent calls' do
+        first  = described_class.find_by_name(service_name)
+        second = described_class.find_by_name(service_name)
+
+        expect(first).to equal(second)
+      end
+    end
+
+    context 'with Self-Managed reader', :with_cloud_connector do
+      it 'returns a new object instance on each call' do
+        first  = described_class.find_by_name(service_name)
+        second = described_class.find_by_name(service_name)
+
+        expect(first).not_to equal(second)
+      end
+    end
+  end
 end

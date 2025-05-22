@@ -20,28 +20,32 @@ module CloudConnector
 
       def select_reader(service_name)
         if use_self_signed_token?(service_name) # gitlab.com or self-hosted AI Gateway
-          SelfSigned::AccessDataReader.new
+          self_signed_access_data_reader
         else
-          SelfManaged::AccessDataReader.new
+          self_managed_access_data_reader
         end
+      end
+
+      def self_signed_access_data_reader
+        @self_signed_access_data_reader ||= SelfSigned::AccessDataReader.new
+      end
+
+      def self_managed_access_data_reader
+        @self_managed_access_data_reader ||= SelfManaged::AccessDataReader.new
       end
 
       private
 
-      # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- we don't have dedicated SM/.com Cloud Connector features
-      # or other checks that would allow us to identify where the code is running. We rely on instance checks for now.
-      # Will be addressed in https://gitlab.com/gitlab-org/gitlab/-/issues/437725
       def use_self_signed_token?(service_name)
-        return true if Gitlab.org_or_com?
+        return true if ::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
         return true if service_name == :self_hosted_models
 
         # All remaining code paths require requesting self-signed tokens.
         Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
       end
-      # rubocop:enable Gitlab/AvoidGitlabInstanceChecks
 
       def service_is_self_hosted?(service_name)
-        return false if Gitlab.org_or_com? # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Not related to SaaS offerings
+        return false if ::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
 
         ::Ai::FeatureSetting.feature_for_unit_primitive(service_name)&.self_hosted?
       end
