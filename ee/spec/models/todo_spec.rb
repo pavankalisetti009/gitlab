@@ -5,6 +5,26 @@ require 'spec_helper'
 RSpec.describe Todo, feature_category: :notifications do
   let_it_be(:current_user) { create(:user) }
 
+  describe '#action_name' do
+    let(:todo) { build(:todo) }
+
+    it 'includes a duo act ion' do
+      todo.action = described_class::DUO_PRO_ACCESS_GRANTED
+      expect(todo.action_name).to eq(:duo_pro_access_granted)
+    end
+  end
+
+  describe '#parentless_type?' do
+    let(:todo) { build(:todo) }
+
+    it 'returns true for a duo action type' do
+      parentless_action = described_class::DUO_PRO_ACCESS_GRANTED
+      todo.action = parentless_action
+
+      expect(todo).to be_parentless_type
+    end
+  end
+
   describe '#target_url' do
     subject { todo.target_url }
 
@@ -30,34 +50,15 @@ RSpec.describe Todo, feature_category: :notifications do
       end
     end
 
-    context 'when todo is for Duo Pro access being granted' do
-      let(:todo) do
-        build(:todo, target: current_user, action: Todo::DUO_PRO_ACCESS_GRANTED, user: current_user)
-      end
+    context 'when todo is for any Duo access type being granted (Pro, Enterprise, or Core)' do
+      let(:url) { ::Gitlab::Routing.url_helpers.help_page_path('user/get_started/getting_started_gitlab_duo.md') }
 
-      it "uses getting started path" do
-        is_expected.to eq ::Gitlab::Routing.url_helpers.help_page_path('user/get_started/getting_started_gitlab_duo.md')
-      end
-    end
+      where(:duo_type) { %i[duo_pro_access duo_enterprise_access duo_core_access] }
 
-    context 'when todo is for Duo Enterprise access being granted' do
-      let(:todo) do
-        build(:todo, target: current_user, action: Todo::DUO_ENTERPRISE_ACCESS_GRANTED, group: nil, project: nil,
-          user: current_user)
-      end
+      with_them do
+        let(:todo) { build(:todo, duo_type) }
 
-      it "uses getting started path" do
-        is_expected.to eq ::Gitlab::Routing.url_helpers.help_page_path('user/get_started/getting_started_gitlab_duo.md')
-      end
-    end
-
-    context 'when todo is for Duo Core access being granted' do
-      let(:todo) do
-        build(:todo, :duo_core_access)
-      end
-
-      it 'uses getting started path' do
-        is_expected.to eq ::Gitlab::Routing.url_helpers.help_page_path('user/get_started/getting_started_gitlab_duo.md')
+        it { is_expected.to eq url }
       end
     end
 
