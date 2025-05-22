@@ -4,6 +4,7 @@ import ServerFormGroup from './server_form_group.vue';
 import SyncMethodFormGroup, { GROUP_CN, USER_FILTER } from './sync_method_form_group.vue';
 import GroupCnFormGroup from './group_cn_form_group.vue';
 import UserFilterFormGroup from './user_filter_form_group.vue';
+import AdminRoleFormGroup from './admin_role_form_group.vue';
 
 export default {
   components: {
@@ -13,6 +14,7 @@ export default {
     SyncMethodFormGroup,
     GroupCnFormGroup,
     UserFilterFormGroup,
+    AdminRoleFormGroup,
   },
   data() {
     return {
@@ -20,6 +22,7 @@ export default {
       syncMethod: null,
       groupCn: null,
       userFilter: null,
+      roleId: null,
       isValidationEnabled: false,
       isSelectedSyncMethodValidationEnabled: false,
     };
@@ -53,6 +56,9 @@ export default {
         ? Boolean(this.userFilter)
         : true;
     },
+    isRoleIdValid() {
+      return !this.isValidationEnabled || Boolean(this.roleId);
+    },
   },
   watch: {
     server() {
@@ -69,11 +75,16 @@ export default {
       this.isValidationEnabled = true;
       this.isSelectedSyncMethodValidationEnabled = true;
 
-      if (this.isServerValid && (this.isGroupCnValid || this.isUserFilterValid)) {
+      if (
+        this.isServerValid &&
+        (this.isGroupCnValid || this.isUserFilterValid) &&
+        this.isRoleIdValid
+      ) {
         this.$emit('submit', {
           server: this.server,
           ...(this.isGroupCnSelected ? { groupCn: this.groupCn } : {}),
           ...(this.isUserFilterSelected ? { userFilter: this.userFilter } : {}),
+          roleId: this.roleId,
         });
       }
     },
@@ -107,6 +118,8 @@ export default {
       :state="isUserFilterValid"
       @input="updateUserFilter"
     />
+
+    <admin-role-form-group v-model="roleId" :state="isRoleIdValid" />
 
     <div class="gl-mt-7 gl-flex gl-flex-wrap gl-gap-3">
       <gl-button @click="$emit('cancel')">{{ __('Cancel') }}</gl-button>

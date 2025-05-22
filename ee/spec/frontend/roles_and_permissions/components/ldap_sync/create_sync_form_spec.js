@@ -6,6 +6,7 @@ import ServerFormGroup from 'ee/roles_and_permissions/components/ldap_sync/serve
 import SyncMethodFormGroup from 'ee/roles_and_permissions/components/ldap_sync/sync_method_form_group.vue';
 import GroupCnFormGroup from 'ee/roles_and_permissions/components/ldap_sync/group_cn_form_group.vue';
 import UserFilterFormGroup from 'ee/roles_and_permissions/components/ldap_sync/user_filter_form_group.vue';
+import AdminRoleFormGroup from 'ee/roles_and_permissions/components/ldap_sync/admin_role_form_group.vue';
 
 describe('CreateSyncForm component', () => {
   let wrapper;
@@ -19,6 +20,7 @@ describe('CreateSyncForm component', () => {
   const findSyncMethodFormGroup = () => wrapper.findComponent(SyncMethodFormGroup);
   const findGroupCnFormGroup = () => wrapper.findComponent(GroupCnFormGroup);
   const findUserFilterFormGroup = () => wrapper.findComponent(UserFilterFormGroup);
+  const findAdminRoleFormGroup = () => wrapper.findComponent(AdminRoleFormGroup);
 
   const findFormButtons = () => wrapper.findAllComponents(GlButton);
   const findCancelButton = () => findFormButtons().at(0);
@@ -44,6 +46,10 @@ describe('CreateSyncForm component', () => {
 
   const fillUserFilter = () => {
     findUserFilterFormGroup().vm.$emit('input', 'uid=john,ou=people,dc=example,dc=com');
+  };
+
+  const selectAdminRole = () => {
+    findAdminRoleFormGroup().vm.$emit('input', 'gid://gitlab/MemberRole/1');
   };
 
   beforeEach(() => createWrapper());
@@ -122,12 +128,14 @@ describe('CreateSyncForm component', () => {
           selectServer();
           await selectSyncMethod(syncMethod);
           fillField();
+          selectAdminRole();
           submitForm();
 
           expect(wrapper.emitted('submit')).toHaveLength(1);
           expect(wrapper.emitted('submit')[0][0]).toEqual({
             server: 'ldapmain',
             ...expectedFieldData,
+            roleId: 'gid://gitlab/MemberRole/1',
           });
         },
       );
@@ -140,6 +148,7 @@ describe('CreateSyncForm component', () => {
         ${'sync method'} | ${findSyncMethodFormGroup} | ${null}          | ${selectSyncMethod} | ${'group_cn'}
         ${'group cn'}    | ${findGroupCnFormGroup}    | ${'group_cn'}    | ${selectGroup}      | ${'group1'}
         ${'user filter'} | ${findUserFilterFormGroup} | ${'user_filter'} | ${fillUserFilter}   | ${'uid=john,ou=people,dc=example,dc=com'}
+        ${'admin role'}  | ${findAdminRoleFormGroup}  | ${null}          | ${selectAdminRole}  | ${'gid://gitlab/MemberRole/1'}
       `('$name form group', ({ syncMethod, findFormGroup, fillField, expectedValue }) => {
         beforeEach(() => {
           createWrapper();
