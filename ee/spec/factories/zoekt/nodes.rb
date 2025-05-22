@@ -18,7 +18,7 @@ FactoryBot.define do
     end
 
     trait :offline do
-      last_seen_at { (Search::Zoekt::Node::ONLINE_DURATION_THRESHOLD + 1.minute).ago }
+      last_seen_at { (Search::Zoekt::Node::ONLINE_DURATION_THRESHOLD + 1.day).ago }
     end
 
     trait :lost do
