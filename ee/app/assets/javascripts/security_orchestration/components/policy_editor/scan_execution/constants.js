@@ -88,3 +88,8 @@ export const PIPELINE_SOURCE_OPTIONS = [
   { value: 'web', text: s__('SecurityOrchestration|Web UI') },
   { value: 'unknown', text: s__('SecurityOrchestration|Unknown source') },
 ];
+
+export const SELECTION_CONFIG = {
+  DEFAULT: 'default',
+  CUSTOM: 'custom',
+};

@@ -6,9 +6,9 @@ export const mockScanExecutionManifest = `scan_execution_policy:
     description: ''
     enabled: true
     rules:
-    - type: pipeline
-      branches:
-        - '*'
+      - type: pipeline
+        branches:
+          - '*'
     actions:
       - scan: secret_detection
     skip_ci:

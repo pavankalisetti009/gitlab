@@ -39,4 +39,14 @@ describe('buildScannerAction', () => {
       });
     });
   });
+
+  describe('optimized scanning', () => {
+    it('adds template property when isOptimized is true', () => {
+      expect(buildScannerAction({ scanner: 'sast', isOptimized: true })).toEqual({
+        scan: 'sast',
+        id: 'action_0',
+        template: 'latest',
+      });
+    });
+  });
 });
