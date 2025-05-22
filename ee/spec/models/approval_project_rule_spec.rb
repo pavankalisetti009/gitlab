@@ -747,6 +747,36 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
         end
       end
     end
+
+    context 'logging' do
+      let(:scan_result_policy_read) { create(:scan_result_policy_read, project: project) }
+
+      let(:approval_rule) do
+        create(:approval_project_rule, :scan_finding, :requires_approval,
+          project: project,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration,
+          approval_policy_rule: approval_policy_rule, scan_result_policy_read: scan_result_policy_read)
+      end
+
+      it 'logs when security_orchestration_policy_configuration_id is present' do
+        allow(Gitlab::AppJsonLogger).to receive(:info)
+
+        returned_rule = approval_rule.apply_report_approver_rules_to(merge_request)
+
+        expect(Gitlab::AppJsonLogger).to have_received(:info).with(
+          hash_including(
+            event: 'approval_merge_request_rule_changed',
+            approval_project_rule_id: approval_rule.id,
+            approval_merge_request_rule_id: returned_rule.id,
+            merge_request_iid: merge_request.iid,
+            approvals_required: returned_rule.approvals_required,
+            security_orchestration_policy_configuration_id: approval_rule.security_orchestration_policy_configuration_id,
+            scan_result_policy_id: returned_rule.scan_result_policy_id,
+            project_path: project.full_path
+          )
+        )
+      end
+    end
   end
 
   describe "validation" do
