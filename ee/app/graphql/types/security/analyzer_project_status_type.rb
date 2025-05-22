@@ -31,6 +31,11 @@ module Types
         type: GraphQL::Types::Int,
         null: true,
         description: 'Build ID.'
+
+      field :updated_at,
+        type: GraphQL::Types::ISO8601DateTime,
+        null: false,
+        description: 'Timestamp of when the status was last updated.'
     end
   end
 end

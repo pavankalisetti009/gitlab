@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSchema.types['AnalyzerProjectStatusType'], feature_category: :security_asset_inventories do
-  let(:expected_fields) { %i[projectId analyzerType status lastCall buildId] }
+  let(:expected_fields) { %i[projectId analyzerType status lastCall buildId updatedAt] }
 
   subject { described_class }
 
