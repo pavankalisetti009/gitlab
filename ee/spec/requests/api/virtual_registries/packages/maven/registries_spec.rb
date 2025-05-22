@@ -128,12 +128,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Registries, :aggregate_f
           group.add_maintainer(user)
         end
 
-        it 'returns a bad request' do
-          api_request
-
-          expect(response).to have_gitlab_http_status(:bad_request)
-          expect(json_response).to eq({ 'message' => { 'group' => ['has already been taken'] } })
-        end
+        it_behaves_like 'successful response'
       end
 
       context 'for authentication' do

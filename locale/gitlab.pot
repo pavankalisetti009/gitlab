@@ -823,6 +823,9 @@ msgid_plural "%{count} projects have access"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%{count} registries is the maximum allowed per group."
+msgstr ""
+
 msgid "%{count} related %{pluralized_subject}: %{links}"
 msgstr ""
 

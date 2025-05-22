@@ -38704,7 +38704,7 @@ CREATE INDEX user_uploads_uploader_path_idx ON user_uploads USING btree (uploade
 
 CREATE UNIQUE INDEX virtual_reg_packages_maven_reg_upstreams_on_unique_upstream_ids ON virtual_registries_packages_maven_registry_upstreams USING btree (upstream_id);
 
-CREATE UNIQUE INDEX virtual_registries_pkgs_maven_registries_on_unique_group_ids ON virtual_registries_packages_maven_registries USING btree (group_id);
+CREATE UNIQUE INDEX virtual_reg_pkgs_mvn_registries_on_unique_group_id_and_name ON virtual_registries_packages_maven_registries USING btree (group_id, name);
 
 CREATE INDEX vulnerability_archive_export__model_id_model_type_uploader__idx ON vulnerability_archive_export_uploads USING btree (model_id, model_type, uploader, created_at);
 
