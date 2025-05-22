@@ -190,7 +190,7 @@ module Resolvers
     end
 
     def vulnerabilities_from_es(filters)
-      ::Security::VulnerabilityReadsElasticFinder.new(vulnerable, filters).execute
+      ::Security::VulnerabilityElasticFinder.new(vulnerable, filters).execute
     end
   end
 end

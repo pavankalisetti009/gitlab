@@ -51,7 +51,9 @@ module Resolvers
       end
 
       def search_from_es(args)
-        ::Security::VulnerabilityReadsElasticFinder.new(object).search_identifier_name(args[:name])
+        ::Security::VulnerabilityElasticAggregationFinder.new(
+          object,
+          { partial_identifier_name: args[:name] }).execute(:search_identifier_name)
       end
     end
   end
