@@ -10,6 +10,11 @@ module Gitlab
         class PipelineContext
           include ::Gitlab::Utils::StrongMemoize
 
+          HISTOGRAMS = {
+            single_pipeline: :gitlab_security_policies_pipeline_execution_policy_dry_run_pipeline,
+            all_pipelines: :gitlab_security_policies_pipeline_execution_policy_build_policy_pipelines
+          }.freeze
+
           attr_reader :policy_pipelines, :override_policy_stages, :injected_policy_stages
 
           def initialize(context:, project:, command: nil)
@@ -25,17 +30,19 @@ module Gitlab
             return if creating_policy_pipeline?
             return if policies.empty?
 
-            policies.each do |policy|
-              response = create_pipeline(policy, partition_id)
-              pipeline = response.payload
+            measure(HISTOGRAMS.fetch(:all_pipelines), labels: { policy_count: policies.size }) do
+              policies.each do |policy|
+                response = create_pipeline(policy, partition_id)
+                pipeline = response.payload
 
-              if response.success?
-                @policy_pipelines << ::Security::PipelineExecutionPolicy::Pipeline.new(
-                  pipeline: pipeline, policy_config: policy)
-              elsif pipeline.filtered_as_empty?
+                if response.success?
+                  @policy_pipelines << ::Security::PipelineExecutionPolicy::Pipeline.new(
+                    pipeline: pipeline, policy_config: policy)
+                elsif pipeline.filtered_as_empty?
                 # no-op: we ignore empty pipelines
-              elsif block_given?
-                yield response.message
+                elsif block_given?
+                  yield response.message
+                end
               end
             end
           end
@@ -126,25 +133,27 @@ module Gitlab
           strong_memoize_attr :policies
 
           def create_pipeline(policy, partition_id)
-            with_policy_context(policy) do
-              ::Ci::CreatePipelineService
-                .new(project, command.current_user,
-                  ref: command.ref,
-                  before: command.before_sha,
-                  after: command.after_sha,
-                  source_sha: command.source_sha,
-                  checkout_sha: command.checkout_sha,
-                  target_sha: command.target_sha,
-                  partition_id: partition_id,
-                  variables_attributes: command.variables_attributes)
-                .execute(command.source,
-                  content: policy.content,
-                  pipeline_policy_context: @context, # propagates parent context inside the policy pipeline creation
-                  merge_request: command.merge_request, # This is for supporting merge request pipelines,
-                  schedule: command.schedule,
-                  ignore_skip_ci: true # We can exit early from `Chain::Skip` by setting this parameter
-                  # Additional parameters will be added in https://gitlab.com/gitlab-org/gitlab/-/issues/462004
-                )
+            measure(HISTOGRAMS.fetch(:single_pipeline)) do
+              with_policy_context(policy) do
+                ::Ci::CreatePipelineService
+                  .new(project, command.current_user,
+                    ref: command.ref,
+                    before: command.before_sha,
+                    after: command.after_sha,
+                    source_sha: command.source_sha,
+                    checkout_sha: command.checkout_sha,
+                    target_sha: command.target_sha,
+                    partition_id: partition_id,
+                    variables_attributes: command.variables_attributes)
+                  .execute(command.source,
+                    content: policy.content,
+                    pipeline_policy_context: @context, # propagates parent context inside the policy pipeline creation
+                    merge_request: command.merge_request, # This is for supporting merge request pipelines,
+                    schedule: command.schedule,
+                    ignore_skip_ci: true # We can exit early from `Chain::Skip` by setting this parameter
+                    # Additional parameters will be added in https://gitlab.com/gitlab-org/gitlab/-/issues/462004
+                  )
+              end
             end
           end
 
@@ -186,6 +195,8 @@ module Gitlab
           def stages_compatible?(stages, target_stages)
             stages == target_stages & stages
           end
+
+          delegate :measure, to: ::Security::SecurityOrchestrationPolicies::ObserveHistogramsService
         end
       end
     end

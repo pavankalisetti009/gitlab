@@ -35,6 +35,14 @@ module Security
         gitlab_security_policies_pipeline_execution_policy_scheduling_duration_seconds: {
           description: 'The amount of time to schedule due pipeline execution policy project schedules',
           buckets: [5, 15, 30, 60, 120, 180, 300].freeze
+        },
+        gitlab_security_policies_pipeline_execution_policy_dry_run_pipeline: {
+          description: 'The amount of time to dry-run single pipeline execution policy pipelines',
+          buckets: [1, 2, 4, 8, 15, 25, 35, 45, 55, 60].freeze
+        },
+        gitlab_security_policies_pipeline_execution_policy_build_policy_pipelines: {
+          description: 'The amount of time to build all pipeline execution policy pipelines',
+          buckets: [10, 30, 60, 120, 180, 300, 600].freeze
         }
       }.freeze
 

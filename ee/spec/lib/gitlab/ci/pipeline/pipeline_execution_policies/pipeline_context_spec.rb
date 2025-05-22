@@ -89,6 +89,9 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
       end
     end
 
+    it_behaves_like 'policy metrics histogram', described_class::HISTOGRAMS.fetch(:single_pipeline)
+    it_behaves_like 'policy metrics histogram', described_class::HISTOGRAMS.fetch(:all_pipelines)
+
     context 'with variables_attributes' do
       let(:command_attributes) do
         { variables_attributes: [{ key: 'CF_STANDALONE', secret_value: 'true', variable_type: 'env_var' }] }
