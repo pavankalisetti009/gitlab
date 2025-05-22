@@ -1,4 +1,5 @@
 #import "~/graphql_shared/fragments/issue.fragment.graphql"
+#import "ee/work_items/graphql/work_item_status.fragment.graphql"
 
 fragment Issue on Issue {
   ...IssueNode
@@ -27,4 +28,7 @@ fragment Issue on Issue {
     }
   }
   healthStatus
+  status {
+    ...WorkItemStatusFragment
+  }
 }

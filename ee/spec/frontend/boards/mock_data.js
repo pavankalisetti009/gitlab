@@ -281,6 +281,7 @@ export const rawIssue = {
   blockedByCount: 0,
   healthStatus: null,
   iteration: null,
+  status: null,
   labels: {
     nodes: [
       {
