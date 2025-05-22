@@ -111,7 +111,7 @@ export default {
         :project-id="projectIdAsNumber"
         :title="__('Convert to GitLab CI/CD')"
         :hover-message="__('Convert Jenkins to GitLab CI/CD using Duo')"
-        goal="Jenkinsfile"
+        :goal="blob.path"
         workflow-definition="convert_to_gitlab_ci"
         :agent-privileges="agentPrivileges"
       />
