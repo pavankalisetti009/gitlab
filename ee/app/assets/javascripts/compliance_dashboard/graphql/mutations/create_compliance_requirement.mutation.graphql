@@ -9,6 +9,7 @@ mutation createComplianceRequirement($input: CreateComplianceRequirementInput!) 
           id
           name
           controlType
+          externalControlName
           externalUrl
           expression
         }

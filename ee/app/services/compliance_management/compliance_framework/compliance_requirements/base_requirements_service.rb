@@ -75,7 +75,8 @@ module ComplianceManagement
             expression: control_params[:expression],
             control_type: control_params[:control_type] || 'internal',
             secret_token: control_params[:secret_token],
-            external_url: control_params[:external_url]
+            external_url: control_params[:external_url],
+            external_control_name: control_params[:external_control_name]
           )
         end
 

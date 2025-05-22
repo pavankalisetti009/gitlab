@@ -15598,6 +15598,9 @@ msgstr ""
 msgid "ComplianceFrameworks|External"
 msgstr ""
 
+msgid "ComplianceFrameworks|External Control Name"
+msgstr ""
+
 msgid "ComplianceFrameworks|External URL"
 msgstr ""
 
@@ -15671,6 +15674,9 @@ msgid "ComplianceFrameworks|Optional"
 msgstr ""
 
 msgid "ComplianceFrameworks|Please enter a valid URL"
+msgstr ""
+
+msgid "ComplianceFrameworks|Please enter a valid name"
 msgstr ""
 
 msgid "ComplianceFrameworks|Policies"

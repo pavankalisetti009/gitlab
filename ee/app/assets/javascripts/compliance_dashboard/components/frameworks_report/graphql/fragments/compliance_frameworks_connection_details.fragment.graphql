@@ -76,6 +76,7 @@ fragment ComplianceFrameworkConnectionDetails on ComplianceFrameworkConnection {
             name
             controlType
             expression
+            externalControlName
             externalUrl
           }
         }

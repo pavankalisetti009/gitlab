@@ -524,6 +524,7 @@ export const mockRequirements = [
           id: 'gid://gitlab/ComplianceManagement::Control/1',
           name: 'minimum_approvals_required',
           controlType: 'internal',
+          externalControlName: null,
           externalUrl: null,
           expression: {
             field: 'minimum_approvals_required',
@@ -536,6 +537,7 @@ export const mockRequirements = [
           id: 'gid://gitlab/ComplianceManagement::Control/2',
           name: 'scanner_sast_running',
           controlType: 'internal',
+          externalControlName: null,
           externalUrl: null,
           expression: {
             field: 'scanner_sast_running',
@@ -558,6 +560,7 @@ export const mockRequirements = [
           id: 'gid://gitlab/ComplianceManagement::Control/3',
           name: 'external_control',
           controlType: 'external',
+          externalControlName: 'external_name',
           externalUrl: 'https://example.com',
           expression: null,
         },
