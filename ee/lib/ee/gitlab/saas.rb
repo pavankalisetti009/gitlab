@@ -10,6 +10,7 @@ module EE
       FEATURES =
         %i[
           ai_vertex_embeddings
+          cloud_connector_static_catalog
           experimentation
           marketing_google_tag_manager
           marketing_site_language
