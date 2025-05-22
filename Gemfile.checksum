@@ -654,7 +654,7 @@
 {"name":"ruby2_keywords","version":"0.0.5","platform":"ruby","checksum":"ffd13740c573b7301cf7a2e61fc857b2a8e3d3aff32545d6f8300d8bae10e3ef"},
 {"name":"rubyntlm","version":"0.6.3","platform":"ruby","checksum":"5b321456dba3130351f7451f8669f1afa83a0d26fd63cdec285b7b88e667102d"},
 {"name":"rubypants","version":"0.2.0","platform":"ruby","checksum":"f07e38eac793655a0323fe91946081052341b9e69807026fcf102346589eedee"},
-{"name":"rubyzip","version":"2.3.2","platform":"ruby","checksum":"3f57e3935dc2255c414484fbf8d673b4909d8a6a57007ed754dde39342d2373f"},
+{"name":"rubyzip","version":"2.4.1","platform":"ruby","checksum":"8577c88edc1fde8935eb91064c5cb1aef9ad5494b940cf19c775ee833e075615"},
 {"name":"rugged","version":"1.6.3","platform":"ruby","checksum":"362631de8dc6f1074242f21e01148ac70b7fe8cdb17f85eee91d4ea83457cb04"},
 {"name":"safe_yaml","version":"1.0.4","platform":"ruby","checksum":"248193992ef1730a0c9ec579999ef2256a2b3a32a9bd9d708a1e12544a489ec2"},
 {"name":"safety_net_attestation","version":"0.4.0","platform":"ruby","checksum":"96be2d74e7ed26453a51894913449bea0e072f44490021545ac2d1c38b0718ce"},
