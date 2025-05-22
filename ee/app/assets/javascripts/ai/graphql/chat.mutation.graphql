@@ -7,6 +7,7 @@ mutation chat(
   $currentFileContext: AiCurrentFileInput
   $conversationType: AiConversationsThreadsConversationType
   $threadId: AiConversationThreadID
+  $rootNamespaceId: NamespaceID
 ) {
   aiAction(
     input: {
@@ -20,6 +21,7 @@ mutation chat(
       clientSubscriptionId: $clientSubscriptionId
       conversationType: $conversationType
       threadId: $threadId
+      rootNamespaceId: $rootNamespaceId
     }
   ) {
     requestId

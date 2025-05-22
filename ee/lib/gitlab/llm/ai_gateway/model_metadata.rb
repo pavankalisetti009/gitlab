@@ -9,6 +9,8 @@ module Gitlab
         end
 
         def to_params
+          return namespace_settings_params if feature_setting.is_a?(::Ai::ModelSelection::NamespaceFeatureSetting)
+
           return self_hosted_params if feature_setting&.self_hosted?
 
           amazon_q_params if ::Ai::AmazonQ.connected?
@@ -31,6 +33,14 @@ module Gitlab
         private
 
         attr_reader :feature_setting
+
+        def namespace_settings_params
+          {
+            provider: feature_setting.provider,
+            identifier: feature_setting.offered_model_ref,
+            feature_setting: feature_setting.feature
+          }
+        end
 
         def amazon_q_params
           {
