@@ -3,8 +3,8 @@
 module Users
   module CompromisedPasswords
     class DetectAndNotifyService
-      def initialize(current_user, request_password, request)
-        @user = current_user
+      def initialize(user, request_password, request)
+        @user = user
         @request_password = request_password
         @request = request
       end
@@ -15,6 +15,7 @@ module Users
         return unless create_detection?
 
         increment_metric
+        send_notification
       end
 
       private
@@ -59,6 +60,10 @@ module Users
         )
 
         false
+      end
+
+      def send_notification
+        ::Users::CompromisedPasswordDetectionMailer.compromised_password_detection_email(user).deliver_later
       end
     end
   end

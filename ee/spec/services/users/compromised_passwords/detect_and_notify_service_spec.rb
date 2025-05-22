@@ -41,6 +41,8 @@ RSpec.describe Users::CompromisedPasswords::DetectAndNotifyService, :aggregate_f
               user.compromised_password_detections.unresolved.count
             }
         .by(1)
+        .and change { ActionMailer::Base.deliveries.count }
+        .by(1)
     end
   end
 
@@ -56,6 +58,7 @@ RSpec.describe Users::CompromisedPasswords::DetectAndNotifyService, :aggregate_f
         .to not_change {
               user.compromised_password_detections.unresolved.count
             }
+        .and not_change { ActionMailer::Base.deliveries.count }
     end
   end
 
