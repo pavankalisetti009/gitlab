@@ -27,6 +27,11 @@ export default {
       required: false,
       default: false,
     },
+    hasSearch: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     displayItems() {
@@ -52,7 +57,7 @@ export default {
         <rect x="34" y="10" width="100" height="10" rx="3" />
         <rect x="34" y="25" width="200" height="10" rx="3" />
       </gl-skeleton-loader>
-      <name-cell v-else :item="item" />
+      <name-cell v-else :item="item" :show-search-param="hasSearch" />
     </template>
 
     <template #cell(vulnerabilities)="{ item, index }">

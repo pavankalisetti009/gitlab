@@ -15,6 +15,11 @@ export default {
       type: Object,
       required: true,
     },
+    showSearchParam: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     componentName() {
@@ -22,6 +27,14 @@ export default {
     },
     linkHref() {
       return isSubGroup(this.item) && this.item.fullPath ? `#${this.item.fullPath}` : undefined;
+    },
+    fullPath() {
+      const lastSlashIndex = this.item.fullPath?.lastIndexOf('/');
+      const parentPath = this.item.fullPath?.substring(0, lastSlashIndex);
+      return !isSubGroup(this.item) ? parentPath : '';
+    },
+    showFullPath() {
+      return this.showSearchParam && this.fullPath;
     },
   },
   methods: {
@@ -57,10 +70,18 @@ export default {
       :project-avatar-url="item.avatarUrl"
     />
     <div class="gl-flex gl-flex-col">
-      <span class="gl-text-base gl-font-bold gl-wrap-anywhere">{{ item.name }}</span>
+      <span class="gl-text-base gl-font-bold gl-wrap-anywhere" data-testid="name-cell-item-name">{{
+        item.name
+      }}</span>
       <span v-if="isSubGroup(item)" class="gl-font-normal gl-text-subtle">
         {{ projectAndSubgroupCountText(item) }}
       </span>
+      <span
+        v-if="showFullPath"
+        class="gl-text-link gl-wrap-anywhere"
+        data-testid="name-cell-item-path"
+        >{{ fullPath }}</span
+      >
     </div>
   </component>
 </template>
