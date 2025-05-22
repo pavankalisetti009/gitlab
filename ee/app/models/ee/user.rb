@@ -43,6 +43,7 @@ module EE
       after_create :perform_user_cap_check
       after_create :associate_with_enterprise_group
       after_update :email_changed_hook, if: :saved_change_to_email?
+      after_update :dismiss_compromised_password_detection_alerts, if: :saved_change_to_encrypted_password?
 
       delegate :shared_runners_minutes_limit, :shared_runners_minutes_limit=,
         :extra_shared_runners_minutes_limit, :extra_shared_runners_minutes_limit=,
@@ -853,6 +854,12 @@ module EE
         if enterprise_user?
           ::Groups::EnterpriseUsers::DisassociateWorker.perform_async(id)
         end
+      end
+    end
+
+    def dismiss_compromised_password_detection_alerts
+      run_after_commit do
+        ::Users::CompromisedPasswords::ResolveDetectionForUserService.new(self).execute
       end
     end
 
