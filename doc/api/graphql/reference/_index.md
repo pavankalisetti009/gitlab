@@ -46187,24 +46187,24 @@ Values for sorting timelogs.
 
 | Value | Description |
 | ----- | ----------- |
-| <a id="todoactionenumadded_approver"></a>`added_approver` | User is eligible to approve a merge request. |
-| <a id="todoactionenumapproval_required"></a>`approval_required` | User is eligible to approve a merge request. |
-| <a id="todoactionenumassigned"></a>`assigned` | User was assigned. |
-| <a id="todoactionenumbuild_failed"></a>`build_failed` | Build triggered by the user failed. |
-| <a id="todoactionenumdirectly_addressed"></a>`directly_addressed` | User was directly addressed. |
-| <a id="todoactionenumduo_core_access_granted"></a>`duo_core_access_granted` | Access to Duo Core has been granted to the user. |
-| <a id="todoactionenumduo_enterprise_access_granted"></a>`duo_enterprise_access_granted` | Access to Duo Enterprise has been granted to the user. |
-| <a id="todoactionenumduo_pro_access_granted"></a>`duo_pro_access_granted` | Access to Duo Pro has been granted to the user. |
-| <a id="todoactionenummarked"></a>`marked` | User added a to-do item. |
-| <a id="todoactionenummember_access_requested"></a>`member_access_requested` | Group or project access requested from the user. |
-| <a id="todoactionenummentioned"></a>`mentioned` | User was mentioned. |
-| <a id="todoactionenummerge_train_removed"></a>`merge_train_removed` | Merge request authored by the user was removed from the merge train. |
-| <a id="todoactionenumokr_checkin_requested"></a>`okr_checkin_requested` | An OKR assigned to the user requires an update. |
-| <a id="todoactionenumreview_requested"></a>`review_requested` | Review was requested from the user. |
-| <a id="todoactionenumreview_submitted"></a>`review_submitted` | Merge request authored by the user received a review. |
-| <a id="todoactionenumssh_key_expired"></a>`ssh_key_expired` | SSH key of the user has expired. |
-| <a id="todoactionenumssh_key_expiring_soon"></a>`ssh_key_expiring_soon` | SSH key of the user will expire soon. |
-| <a id="todoactionenumunmergeable"></a>`unmergeable` | Merge request authored by the user could not be merged. |
+| <a id="todoactionenumadded_approver"></a>`added_approver` | Todo action name for added_approver. |
+| <a id="todoactionenumapproval_required"></a>`approval_required` | Todo action name for approval_required. |
+| <a id="todoactionenumassigned"></a>`assigned` | Todo action name for assigned. |
+| <a id="todoactionenumbuild_failed"></a>`build_failed` | Todo action name for build_failed. |
+| <a id="todoactionenumdirectly_addressed"></a>`directly_addressed` | Todo action name for directly_addressed. |
+| <a id="todoactionenumduo_core_access_granted"></a>`duo_core_access_granted` | Todo action name for duo_core_access_granted. |
+| <a id="todoactionenumduo_enterprise_access_granted"></a>`duo_enterprise_access_granted` | Todo action name for duo_enterprise_access_granted. |
+| <a id="todoactionenumduo_pro_access_granted"></a>`duo_pro_access_granted` | Todo action name for duo_pro_access_granted. |
+| <a id="todoactionenummarked"></a>`marked` | Todo action name for marked. |
+| <a id="todoactionenummember_access_requested"></a>`member_access_requested` | Todo action name for member_access_requested. |
+| <a id="todoactionenummentioned"></a>`mentioned` | Todo action name for mentioned. |
+| <a id="todoactionenummerge_train_removed"></a>`merge_train_removed` | Todo action name for merge_train_removed. |
+| <a id="todoactionenumokr_checkin_requested"></a>`okr_checkin_requested` | Todo action name for okr_checkin_requested. |
+| <a id="todoactionenumreview_requested"></a>`review_requested` | Todo action name for review_requested. |
+| <a id="todoactionenumreview_submitted"></a>`review_submitted` | Todo action name for review_submitted. |
+| <a id="todoactionenumssh_key_expired"></a>`ssh_key_expired` | Todo action name for ssh_key_expired. |
+| <a id="todoactionenumssh_key_expiring_soon"></a>`ssh_key_expiring_soon` | Todo action name for ssh_key_expiring_soon. |
+| <a id="todoactionenumunmergeable"></a>`unmergeable` | Todo action name for unmergeable. |
 
 ### `TodoSort`
 
