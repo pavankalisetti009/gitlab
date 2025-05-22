@@ -65,12 +65,10 @@ export default {
     },
   },
   methods: {
+    // eslint-disable-next-line vue/no-unused-properties -- show() is part of the component's public API.
     show() {
       this.selectedFields = this.$options.fields.map((f) => f.key);
       this.$refs.modal.show();
-    },
-    hide() {
-      this.$refs.modal.hide();
     },
     handleExport() {
       this.$emit('export', this.selectedFields);

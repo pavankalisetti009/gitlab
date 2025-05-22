@@ -65,7 +65,6 @@ const defaultProps = {
   showCreateRequirement: false,
   emptyStatePath: '/assets/illustrations/empty-state/requirements.svg',
   canCreateRequirement: true,
-  requirementsWebUrl: '/gitlab-org/gitlab-shell/-/requirements',
   importCsvPath: '/gitlab-org/gitlab-shell/-/requirements/import_csv',
   currentUserEmail: 'admin@example.com',
 };
