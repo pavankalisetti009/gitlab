@@ -113,19 +113,13 @@ RSpec.describe MergeRequestDiff, feature_category: :geo_replication do
     end
   end
 
-  describe '.with_files_stored_locally' do
-    it 'includes states with local storage' do
-      create(:merge_request, source_project: project)
-
-      expect(described_class.with_files_stored_locally).to have_attributes(count: 1)
+  it_behaves_like 'object storable' do
+    let(:create_local) do
+      create(:external_merge_request_diff, described_class::STORE_COLUMN => ObjectStorage::Store::LOCAL)
     end
 
-    it 'excludes states with local storage' do
-      stub_external_diffs_object_storage(ExternalDiffUploader, direct_upload: true)
-
-      create(:merge_request, source_project: project)
-
-      expect(described_class.with_files_stored_locally).to have_attributes(count: 0)
+    let(:create_remote) do
+      create_local.update_column(described_class::STORE_COLUMN, ObjectStorage::Store::REMOTE)
     end
   end
 

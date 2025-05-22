@@ -35,8 +35,6 @@ module EE
         with_file_types(valid_file_types)
       end
 
-      scope :with_files_stored_locally, -> { where(file_store: ::ObjectStorage::Store::LOCAL) }
-      scope :with_files_stored_remotely, -> { where(file_store: ::ObjectStorage::Store::REMOTE) }
       scope :with_verification_state, ->(state) { joins(:job_artifact_state).where(verification_arel_table[:verification_state].eq(verification_state_value(state))) }
       scope :checksummed, -> { joins(:job_artifact_state).where.not(verification_arel_table[:verification_checksum].eq(nil)) }
       scope :not_checksummed, -> { joins(:job_artifact_state).where(verification_arel_table[:verification_checksum].eq(nil)) }

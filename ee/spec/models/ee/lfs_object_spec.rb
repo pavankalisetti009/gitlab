@@ -63,11 +63,13 @@ RSpec.describe ::LfsObject, feature_category: :geo_replication do
     end
   end
 
-  describe '.with_files_stored_locally' do
-    let_it_be(:lfs_object) { create(:lfs_object, :with_file) }
+  it_behaves_like 'object storable' do
+    let(:create_local) do
+      create(:lfs_object, described_class::STORE_COLUMN => ObjectStorage::Store::LOCAL)
+    end
 
-    it 'includes states with local storage' do
-      expect(described_class.with_files_stored_locally).to have_attributes(count: 1)
+    let(:create_remote) do
+      create_local.update_column(described_class::STORE_COLUMN, ObjectStorage::Store::REMOTE)
     end
   end
 
