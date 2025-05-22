@@ -1023,7 +1023,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
       let(:current_user) { authorized_user }
       let(:expected_expiration) { Time.now.to_i + 3600 }
-      let(:duo_seat_count) { '0' }
       let(:enablement_type) { 'duo_pro' }
 
       let(:base_headers) do
@@ -1034,7 +1033,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           'X-Gitlab-Realm' => gitlab_realm,
           'X-Gitlab-Version' => Gitlab.version_info.to_s,
           'X-Gitlab-Authentication-Type' => 'oidc',
-          'X-Gitlab-Duo-Seat-Count' => duo_seat_count,
           'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => enabled_by_namespace_ids.join(','),
           "X-Gitlab-Feature-Enablement-Type" => enablement_type,
           'x-gitlab-enabled-feature-flags' => '',
@@ -1066,7 +1064,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       context 'when user belongs to a namespace with an active code suggestions purchase' do
         let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
         let_it_be(:enabled_by_namespace_ids) { [add_on_purchase.namespace_id] }
-        let(:duo_seat_count) { '1' }
 
         let(:headers) do
           {
@@ -1127,7 +1124,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
         end
 
-        # rubocop:disable RSpec/MultipleMemoizedHelpers -- We need extra helpers to define tables
         # First, define the shared example outside the contexts
         shared_examples 'model prompt cache enabled setting' do |setting_level, cache_value|
           let(:cache) { cache_value }
@@ -1175,7 +1171,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
         end
       end
-      # rubocop:enable RSpec/MultipleMemoizedHelpers
 
       context 'when not SaaS' do
         let_it_be(:active_token) { create(:service_access_token, :active) }

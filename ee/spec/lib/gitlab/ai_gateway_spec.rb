@@ -112,7 +112,6 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
         'X-Gitlab-Global-User-Id' => '123ABC',
         'X-Gitlab-Realm' => 'self-managed',
         'X-Gitlab-Version' => '17.1.0',
-        'X-Gitlab-Duo-Seat-Count' => "50",
         'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => namespace_ids.join(',')
       }
     end
@@ -225,7 +224,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     let(:user) { build(:user, id: 1) }
     let(:service_name) { :test }
     let(:enabled_feature_flags) { %w[feature_a feature_b] }
-    let(:ai_headers) { { 'X-Gitlab-Duo-Seat-Count' => 1, 'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '' } }
+    let(:ai_headers) { { 'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '' } }
 
     subject(:public_headers) { described_class.public_headers(user: user, service_name: service_name) }
 
@@ -248,7 +247,6 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
 
     it 'returns headers with enabled feature flags and AI headers' do
       expected_headers = {
-        'X-Gitlab-Duo-Seat-Count' => 1,
         'X-Gitlab-Feature-Enablement-Type' => enablement_type,
         'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
         'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b',
@@ -263,7 +261,6 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
 
       it 'returns headers with empty feature flags string' do
         expected_headers = {
-          'X-Gitlab-Duo-Seat-Count' => 1,
           'X-Gitlab-Feature-Enablement-Type' => enablement_type,
           'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
           'x-gitlab-enabled-feature-flags' => '',
@@ -279,7 +276,6 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
 
       it 'returns headers with unique feature flags' do
         expected_headers = {
-          'X-Gitlab-Duo-Seat-Count' => 1,
           'X-Gitlab-Feature-Enablement-Type' => enablement_type,
           'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '',
           'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b',
