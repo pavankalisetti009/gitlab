@@ -2,11 +2,22 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt, feature_category: :global_search do
+RSpec.describe ::Gitlab::Search::Zoekt::Client, feature_category: :global_search do
   let_it_be(:project_1) { create(:project, :public, :repository) }
   let_it_be(:project_2) { create(:project, :public, :repository) }
   let_it_be(:project_3) { create(:project, :public, :repository) }
   let(:client) { described_class.new }
+
+  before_all do
+    zoekt_truncate_index!
+    zoekt_ensure_project_indexed!(project_1)
+    zoekt_ensure_project_indexed!(project_2)
+    zoekt_ensure_project_indexed!(project_3)
+  end
+
+  after(:all) do
+    zoekt_truncate_index!
+  end
 
   shared_examples 'an authenticated zoekt request' do
     context 'when basicauth username and password are present' do
@@ -88,12 +99,6 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt, feature_category: :globa
 
     subject(:search) do
       client.search(query, num: 10, project_ids: project_ids, node_id: node_id, search_mode: search_mode)
-    end
-
-    before do
-      zoekt_ensure_project_indexed!(project_1)
-      zoekt_ensure_project_indexed!(project_2)
-      zoekt_ensure_project_indexed!(project_3)
     end
 
     it 'returns the matching files from all searched projects' do
@@ -188,12 +193,6 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt, feature_category: :globa
 
     subject(:search) do
       client.search_zoekt_proxy(query, num: 10, targets: targets, search_mode: search_mode)
-    end
-
-    before do
-      zoekt_ensure_project_indexed!(project_1)
-      zoekt_ensure_project_indexed!(project_2)
-      zoekt_ensure_project_indexed!(project_3)
     end
 
     it_behaves_like 'an authenticated zoekt request' do

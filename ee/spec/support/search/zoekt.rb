@@ -84,17 +84,18 @@ module Search
         url = ::Gitlab::Search::Zoekt::Client.new.send(:join_url, node.index_base_url, '/indexer/index')
         ::Gitlab::HTTP.post(url, defaults)
         # Add delay to allow Zoekt webserver to finish the indexing
-        100.times do
+        all_files_count = project.repository.ls_files('HEAD').count
+        1000.times do
           results = Gitlab::Search::Zoekt::Client.new.search('.*', num: 1, project_ids: [project.id],
             node_id: node.id, search_mode: :regex)
 
-          if results.file_count == project.repository.ls_files('HEAD').count
+          if results.file_count == all_files_count
             Search::Zoekt::Task.index_repo.where(project_identifier: project.id).update_all(state: :done)
             project.zoekt_repositories.update_all(state: :ready)
             break
           end
 
-          sleep 0.2
+          sleep 0.1
         end
       end
     end
@@ -102,6 +103,8 @@ module Search
 
   RSpec.configure do |config|
     config.before do
+      # The Default threshold is 1 minute; This is to ensure nodes are always online in tests.
+      stub_const('Search::Zoekt::Node::ONLINE_DURATION_THRESHOLD', 1.day)
       # This feature flag is by default disabled and should be used to disable Zoekt search for SaaS customers on demand
       stub_feature_flags(disable_zoekt_search_for_saas: false)
     end

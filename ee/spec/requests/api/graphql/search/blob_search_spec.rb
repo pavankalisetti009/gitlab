@@ -2,14 +2,16 @@
 
 require 'spec_helper'
 
-RSpec.describe 'getting a collection of blobs with multiple matches in a single file', :zoekt_settings_enabled,
-  feature_category: :global_search do
+RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, feature_category: :global_search do
   include GraphqlHelpers
+
   let_it_be(:current_user) { create(:user) }
   let_it_be(:group) { create(:group) }
-  let_it_be_with_reload(:project) { create(:project, :public, :repository, name: 'awesome project', group: group) }
+  let_it_be_with_reload(:project) { create(:project, :public, :small_repo, group: group) }
   let(:fields) { all_graphql_fields_for(Types::Search::Blob::BlobSearchType, max_depth: 4) }
-  let(:arguments) { { search: 'maintainers', group_id: "gid://gitlab/Group/#{group.id}", chunk_count: 3 } }
+  let(:arguments) do
+    { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", chunk_count: 3 }
+  end
 
   let(:query) { graphql_query_for(:blobSearch, arguments, fields) }
 
@@ -17,8 +19,9 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
     stub_licensed_features(zoekt_code_search: true)
   end
 
-  context 'when zoekt is enabled for a group', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/541536' do
+  context 'when zoekt is enabled for a group' do
     before_all do
+      zoekt_truncate_index!
       zoekt_ensure_project_indexed!(project)
     end
 
@@ -26,6 +29,10 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
       before do
         post_graphql(query, current_user: current_user)
       end
+    end
+
+    after(:all) do
+      zoekt_truncate_index!
     end
 
     describe 'validation for verify_repository_ref!' do
@@ -93,27 +100,24 @@ RSpec.describe 'getting a collection of blobs with multiple matches in a single 
       expect(graphql_data_at(:blobSearch, :searchType)).to eq('ZOEKT')
       expect(graphql_data_at(:blobSearch, :searchLevel)).to eq('GROUP')
 
-      # rubocop:disable Layout/LineLength -- Keep it readable
       expected_file = {
-        'path' => 'PROCESS.md',
-        'fileUrl' => "http://localhost/#{project.full_path}/-/blob/master/PROCESS.md",
-        'blameUrl' => "http://localhost/#{project.full_path}/-/blame/master/PROCESS.md",
-        'matchCountTotal' => 2,
-        'matchCount' => 2,
+        'path' => 'test.txt',
+        'fileUrl' => "http://localhost/#{project.full_path}/-/blob/master/test.txt",
+        'blameUrl' => "http://localhost/#{project.full_path}/-/blame/master/test.txt",
+        'matchCountTotal' => 1,
+        'matchCount' => 1,
         'projectPath' => project.full_path,
-        'language' => 'Markdown',
-        'chunks' => [{
-          'matchCountInChunk' => 2,
-          'lines' => [
-            { 'highlights' => nil, 'lineNumber' => 4, 'text' => '' },
-            { 'highlights' => [[116, 126], [188, 198]],
-              'lineNumber' => 5, 'text' => "Below we describe the contributing process to GitLab for two reasons. So that contributors know what to expect from maintainers (possible responses, friendly treatment, etc.). And so that maintainers know what to expect from contributors (use the latest version, ensure that the issue is addressed, friendly treatment, etc.).\n" },
-            { 'highlights' => nil, 'lineNumber' => 6, 'text' => '' }
-          ]
-        }]
+        'language' => 'Text',
+        'chunks' => [
+          {
+            'lines' => [
+              { 'highlights' => [[0, 3]], 'lineNumber' => 1, 'text' => 'test' },
+              { 'highlights' => nil, 'lineNumber' => 2, 'text' => '' }
+            ],
+            'matchCountInChunk' => 1
+          }
+        ]
       }
-      # rubocop:enable Layout/LineLength
-
       expect(graphql_data_at(:blobSearch, :files).first).to eq(expected_file)
     end
 
