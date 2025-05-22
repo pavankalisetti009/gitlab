@@ -6,10 +6,12 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import IssueWeight from 'ee_component/issues/components/issue_weight.vue';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
+import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import EpicCountables from 'ee/vue_shared/components/epic_countables/epic_countables.vue';
 import BoardCardInner from '~/boards/components/board_card_inner.vue';
 import isShowingLabelsQuery from '~/graphql_shared/client/is_showing_labels.query.graphql';
 import { TYPE_ISSUE } from '~/issues/constants';
+import { mockWorkItemStatus } from 'ee_else_ce_jest/work_items/mock_data';
 import { mockIterations } from './mock_data';
 
 Vue.use(VueApollo);
@@ -27,10 +29,16 @@ describe('Board card component', () => {
   const findEpicBadgeProgress = () => wrapper.findByTestId('epic-progress');
   const findEpicCountablesTotalWeight = () => wrapper.findByTestId('epic-countables-total-weight');
   const findEpicProgressPopover = () => wrapper.findByTestId('epic-progress-popover-content');
+  const findIssueStatusBadge = () => wrapper.findComponent(WorkItemStatusBadge);
 
   const mockApollo = createMockApollo();
 
-  const createComponent = ({ props = {}, isShowingLabels = true, isEpicBoard = false } = {}) => {
+  const createComponent = ({
+    props = {},
+    isShowingLabels = true,
+    isEpicBoard = false,
+    workItemStatusFeatureFlagEnabled = false,
+  } = {}) => {
     mockApollo.clients.defaultClient.cache.writeQuery({
       query: isShowingLabelsQuery,
       data: {
@@ -56,10 +64,14 @@ describe('Board card component', () => {
         issuableType: TYPE_ISSUE,
         isGroupBoard: true,
         disabled: false,
+        glFeatures: {
+          workItemStatusFeatureFlag: workItemStatusFeatureFlagEnabled,
+        },
       },
       stubs: {
         GlSprintf,
         EpicCountables,
+        WorkItemStatusBadge,
       },
     });
   };
@@ -173,6 +185,44 @@ describe('Board card component', () => {
       await waitForPromises();
 
       expect(wrapper.findByTestId('issue-iteration').exists()).toBe(true);
+    });
+  });
+
+  describe('custom status', () => {
+    it('does not render status if issue has custom status and FF disabled', () => {
+      createComponent({
+        workItemStatusFeatureFlagEnabled: false,
+        props: {
+          item: {
+            ...issue,
+            status: mockWorkItemStatus,
+          },
+        },
+      });
+
+      expect(findIssueStatusBadge().exists()).toBe(false);
+    });
+
+    it('does not render status if issue has no custom status and FF enabled', () => {
+      createComponent({
+        workItemStatusFeatureFlagEnabled: true,
+      });
+
+      expect(findIssueStatusBadge().exists()).toBe(false);
+    });
+
+    it('renders status badge if issue has an status assigned', () => {
+      createComponent({
+        workItemStatusFeatureFlagEnabled: true,
+        props: {
+          item: {
+            ...issue,
+            status: mockWorkItemStatus,
+          },
+        },
+      });
+
+      expect(findIssueStatusBadge().exists()).toBe(true);
     });
   });
 

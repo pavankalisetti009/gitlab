@@ -226,6 +226,7 @@ export const listIssuablesQueries = {
       type: 'ISSUE',
       webUrl: '',
       weight: null,
+      status: null,
       linkedWorkItems: { nodes: [], __typename: 'LinkedWorkItemTypeConnection' },
       __typename: TYPENAME_ISSUE,
     },
