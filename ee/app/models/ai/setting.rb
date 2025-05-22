@@ -4,11 +4,12 @@ module Ai
   class Setting < ApplicationRecord
     self.table_name = "ai_settings"
 
+    include SingletonRecord
+
     validates :ai_gateway_url, length: { maximum: 2048 }, allow_nil: true
     validates :amazon_q_role_arn, length: { maximum: 2048 }, allow_nil: true
 
     validate :validate_ai_gateway_url
-    validate :validates_singleton
 
     validates :duo_nano_features_enabled,
       inclusion: { in: [true, false] },
@@ -23,16 +24,6 @@ module Ai
     alias_attribute :duo_core_features_enabled, :duo_nano_features_enabled
 
     after_commit :trigger_todo_creation, on: :update, if: :saved_change_to_duo_nano_features_enabled?
-
-    def self.instance
-      # rubocop:disable Performance/ActiveRecordSubtransactionMethods -- only
-      # uses a subtransaction if creating a record, which should only happen
-      # once per instance
-      safe_find_or_create_by(singleton: true) do |setting|
-        setting.assign_attributes(defaults)
-      end
-      # rubocop:enable Performance/ActiveRecordSubtransactionMethods
-    end
 
     def self.defaults
       {
@@ -62,12 +53,6 @@ module Ai
 
       GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker
         .perform_in(GitlabSubscriptions::DuoCore::DELAY_TODO_NOTIFICATION)
-    end
-
-    def validates_singleton
-      return unless self.class.count > 0 && self != self.class.first
-
-      errors.add(:base, "There can only be one Settings record")
     end
 
     def validate_ai_gateway_url

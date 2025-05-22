@@ -22710,6 +22710,24 @@ CREATE SEQUENCE security_policy_requirements_id_seq
 
 ALTER SEQUENCE security_policy_requirements_id_seq OWNED BY security_policy_requirements.id;
 
+CREATE TABLE security_policy_settings (
+    id bigint NOT NULL,
+    csp_namespace_id bigint,
+    singleton boolean DEFAULT true NOT NULL,
+    CONSTRAINT check_singleton CHECK ((singleton IS TRUE))
+);
+
+COMMENT ON COLUMN security_policy_settings.singleton IS 'Always true, used for singleton enforcement';
+
+CREATE SEQUENCE security_policy_settings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE security_policy_settings_id_seq OWNED BY security_policy_settings.id;
+
 CREATE TABLE security_scans (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -27818,6 +27836,8 @@ ALTER TABLE ONLY security_policy_project_links ALTER COLUMN id SET DEFAULT nextv
 
 ALTER TABLE ONLY security_policy_requirements ALTER COLUMN id SET DEFAULT nextval('security_policy_requirements_id_seq'::regclass);
 
+ALTER TABLE ONLY security_policy_settings ALTER COLUMN id SET DEFAULT nextval('security_policy_settings_id_seq'::regclass);
+
 ALTER TABLE ONLY security_scans ALTER COLUMN id SET DEFAULT nextval('security_scans_id_seq'::regclass);
 
 ALTER TABLE ONLY security_training_providers ALTER COLUMN id SET DEFAULT nextval('security_training_providers_id_seq'::regclass);
@@ -30826,6 +30846,9 @@ ALTER TABLE ONLY security_policy_project_links
 
 ALTER TABLE ONLY security_policy_requirements
     ADD CONSTRAINT security_policy_requirements_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY security_policy_settings
+    ADD CONSTRAINT security_policy_settings_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY security_scans
     ADD CONSTRAINT security_scans_pkey PRIMARY KEY (id);
@@ -37171,6 +37194,10 @@ CREATE INDEX index_security_policy_project_links_on_project_id ON security_polic
 CREATE INDEX index_security_policy_requirements_on_compliance_requirement_id ON security_policy_requirements USING btree (compliance_requirement_id);
 
 CREATE INDEX index_security_policy_requirements_on_namespace_id ON security_policy_requirements USING btree (namespace_id);
+
+CREATE INDEX index_security_policy_settings_on_csp_namespace_id ON security_policy_settings USING btree (csp_namespace_id);
+
+CREATE UNIQUE INDEX index_security_policy_settings_on_singleton ON security_policy_settings USING btree (singleton);
 
 CREATE INDEX index_security_scans_for_non_purged_records ON security_scans USING btree (created_at, id) WHERE (status <> 6);
 
