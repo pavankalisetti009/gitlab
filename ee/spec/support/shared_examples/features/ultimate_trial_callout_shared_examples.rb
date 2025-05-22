@@ -25,6 +25,7 @@ RSpec.shared_examples 'dashboard ultimate trial callout' do
       allow_any_instance_of(EE::DashboardHelper).to receive(:user_default_dashboard?).and_return(true)
 
       visit page_path
+      wait_for_all_requests
 
       expect(page).to have_selector '[data-testid="start-trial-banner"]'
       expect(page).to have_selector('[data-track-action=render]')
