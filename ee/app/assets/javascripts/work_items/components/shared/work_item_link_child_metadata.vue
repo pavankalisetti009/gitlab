@@ -136,7 +136,7 @@ export default {
 
 <template>
   <work-item-link-child-metadata :reference="reference" :metadata-widgets="metadataWidgets">
-    <template #left-metadata>
+    <template #weight-metadata>
       <work-item-attribute
         v-if="shouldShowWeight"
         anchor-id="item-weight"
@@ -152,6 +152,8 @@ export default {
           </span>
         </template>
       </work-item-attribute>
+    </template>
+    <template #left-metadata>
       <work-item-iteration-attribute v-if="iteration" :iteration="iteration" />
       <work-item-attribute
         v-if="showDate"
