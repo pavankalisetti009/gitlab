@@ -145,6 +145,10 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
   end
 
+  describe 'associations' do
+    it { is_expected.to belong_to(:file_template_project).class_name('Project') }
+  end
+
   describe 'validations' do
     describe 'mirror', feature_category: :source_code_management do
       it { is_expected.to validate_numericality_of(:mirror_max_delay).only_integer }
