@@ -93,12 +93,6 @@ module GitlabSubscriptions
       end
     end
 
-    def member_role
-      strong_memoize("member_role") do
-        MemberRole.find_by_id(member_role_id)
-      end
-    end
-
     def seats_in_subscription
       @seats_in_subscription ||= target_namespace.gitlab_subscription&.seats || 0
     end
