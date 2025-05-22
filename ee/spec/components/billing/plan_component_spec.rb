@@ -88,18 +88,6 @@ RSpec.describe Billing::PlanComponent, :aggregate_failures, type: :component, fe
 
     it_behaves_like 'plan tracking'
 
-    context 'when reveal_duo_core_feature is not enabled' do
-      before do
-        stub_feature_flags(reveal_duo_core_feature: false)
-      end
-
-      it 'does not have duo core feature' do
-        within(find_by_testid('feature-list')) do
-          expect(page).not_to have_content('AI Chat in the ID')
-        end
-      end
-    end
-
     context 'with trial as current plan' do
       let(:current_plan_code) { ::Plan::ULTIMATE_TRIAL }
 
@@ -143,18 +131,6 @@ RSpec.describe Billing::PlanComponent, :aggregate_failures, type: :component, fe
     end
 
     it_behaves_like 'plan tracking'
-
-    context 'when reveal_duo_core_feature is not enabled' do
-      before do
-        stub_feature_flags(reveal_duo_core_feature: false)
-      end
-
-      it 'does not have duo core feature' do
-        within(find_by_testid('feature-list')) do
-          expect(page).not_to have_content('AI Chat in the ID')
-        end
-      end
-    end
 
     context 'with trial as current plan' do
       let(:current_plan_code) { ::Plan::ULTIMATE_TRIAL }

@@ -372,17 +372,15 @@ RSpec.describe EE::Users::CalloutsHelper do
     end
 
     context 'with saas', :saas do
-      where(:is_assignee, :reveal_duo_core_feature, :user_can_access_duo_core, :user_dismissed, :expected_result) do
-        true | true | true | false | true
-        false | true | true | false | false
-        true | false | true | false | false
-        true | true | false | false | false
-        true | true | true | true | false
+      where(:is_assignee, :user_can_access_duo_core, :user_dismissed, :expected_result) do
+        true  | true  | false | true
+        false | true  | false | false
+        true  | false | false | false
+        true  | true  | true  | false
       end
 
       with_them do
         before do
-          stub_feature_flags(reveal_duo_core_feature: reveal_duo_core_feature)
           allow(user).to receive(:can?).with(:access_duo_core_features, group).and_return(user_can_access_duo_core)
         end
 

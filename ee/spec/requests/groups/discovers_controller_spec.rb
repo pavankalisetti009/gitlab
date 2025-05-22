@@ -14,7 +14,6 @@ RSpec.describe Groups::DiscoversController, :saas, feature_category: :activation
   describe 'GET show' do
     before do
       stub_saas_features(subscriptions_trials: true)
-      stub_feature_flags(reveal_duo_core_feature: false)
     end
 
     subject { response }
@@ -34,30 +33,6 @@ RSpec.describe Groups::DiscoversController, :saas, feature_category: :activation
       end
 
       it 'renders index with 200 status code' do
-        get group_discover_path(group)
-
-        is_expected.to have_gitlab_http_status(:ok)
-      end
-
-      it 'renders DiscoverTrialComponent when reveal_duo_core_feature is false' do
-        stub_feature_flags(reveal_duo_core_feature: false)
-
-        expect(GitlabSubscriptions::DiscoverTrialComponent).to receive(:new)
-                                                                 .with(namespace: group)
-                                                                 .and_call_original
-
-        get group_discover_path(group)
-
-        is_expected.to have_gitlab_http_status(:ok)
-      end
-
-      it 'renders index with 200 status code with reveal_duo_core_feature set to true' do
-        stub_feature_flags(reveal_duo_core_feature: true)
-
-        expect(GitlabSubscriptions::DiscoverDuoCoreTrialComponent).to receive(:new)
-                                                                        .with(namespace: group)
-                                                                        .and_call_original
-
         get group_discover_path(group)
 
         is_expected.to have_gitlab_http_status(:ok)
