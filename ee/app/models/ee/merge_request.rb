@@ -550,8 +550,8 @@ module EE
     end
 
     def latest_comparison_pipeline_with_sbom_reports
-      find_target_branch_pipeline_by_sha_in_order_of_preference([diff_head_pipeline&.target_sha, diff_base_sha],
-        :has_sbom_reports?)
+      target_shas = [diff_head_pipeline&.target_sha, diff_base_sha, diff_start_sha]
+      find_target_branch_pipeline_by_sha_in_order_of_preference(target_shas, :has_sbom_reports?)
     end
 
     def latest_scan_finding_comparison_pipeline
@@ -608,7 +608,7 @@ module EE
     def comparison_base_pipeline(service_class)
       return super unless security_comparision?(service_class)
 
-      find_common_ancestor_pipeline_with_security_reports
+      latest_scan_finding_comparison_pipeline
     end
 
     def blocking_merge_requests_feature_available?
@@ -679,11 +679,6 @@ module EE
 
     def security_comparision?(service_class)
       service_class == ::Ci::CompareSecurityReportsService
-    end
-
-    def find_common_ancestor_pipeline_with_security_reports
-      find_target_branch_pipeline_by_sha_in_order_of_preference([diff_head_pipeline&.target_sha, diff_base_sha],
-        :has_security_reports?)
     end
 
     def find_target_branch_pipeline_by_sha_in_order_of_preference(shas, predicate)

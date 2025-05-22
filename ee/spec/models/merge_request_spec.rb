@@ -2688,6 +2688,62 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           end
         end
       end
+
+      context 'when there is no base pipeline' do
+        let_it_be(:old_start_pipeline) do
+          create(:ci_pipeline,
+            :success,
+            project: project,
+            ref: merge_request.target_branch,
+            sha: merge_request.diff_start_sha
+          )
+        end
+
+        let_it_be(:most_recent_start_pipeline) do
+          create(:ci_pipeline,
+            :success,
+            project: project,
+            ref: merge_request.target_branch,
+            sha: merge_request.diff_start_sha
+          )
+        end
+
+        context 'when all pipelines have security reports' do
+          before do
+            build_1 = build(:ci_build,
+              :sast_report,
+              pipeline: old_start_pipeline,
+              project: project)
+
+            build_2 = build(:ci_build,
+              :sast_report,
+              pipeline: most_recent_start_pipeline,
+              project: project)
+
+            old_start_pipeline.builds << build_1
+            most_recent_start_pipeline.builds << build_2
+          end
+
+          it 'returns the most recent diff start pipeline' do
+            expect(pipeline).to eq(most_recent_start_pipeline)
+          end
+        end
+
+        context 'when the most recent pipeline does not have security reports' do
+          before do
+            build = build(:ci_build,
+              :sast_report,
+              pipeline: old_start_pipeline,
+              project: project)
+
+            old_start_pipeline.builds << build
+          end
+
+          it 'returns the latest start pipeline with security reports' do
+            expect(pipeline).to eq(old_start_pipeline)
+          end
+        end
+      end
     end
   end
 
