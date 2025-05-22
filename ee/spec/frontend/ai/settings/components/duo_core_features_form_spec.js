@@ -46,7 +46,6 @@ describe('DuoCoreFeaturesForm', () => {
   });
 
   it('renders the checkbox with correct label', () => {
-    expect(findFormCheckbox().exists()).toBe(true);
     expect(findFormCheckbox().text()).toContain('Turn on IDE features');
   });
 

@@ -9,7 +9,7 @@ import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 describe('AiCommonSettings', () => {
   let wrapper;
 
-  const createComponent = (props = {}, provide = {}) => {
+  const createComponent = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(AiCommonSettings, {
       propsData: {
         hasParentFormChanged: false,
@@ -75,7 +75,7 @@ describe('AiCommonSettings', () => {
 
   describe('when on general settings page', () => {
     beforeEach(() => {
-      createComponent({}, { onGeneralSettingsPage: true });
+      createComponent({ provide: { onGeneralSettingsPage: true } });
     });
 
     it('renders SettingsBlock component', () => {
@@ -91,7 +91,6 @@ describe('AiCommonSettings', () => {
     });
 
     it('renders the settings block description text', () => {
-      expect(findGeneralSettingsDescriptionText().exists()).toBe(true);
       expect(findGeneralSettingsDescriptionText().text()).toContain(
         'Configure AI-native GitLab Duo features',
       );
@@ -100,7 +99,7 @@ describe('AiCommonSettings', () => {
 
   describe('when not on general settings page', () => {
     beforeEach(() => {
-      createComponent({}, { onGeneralSettingsPage: false });
+      createComponent({ provide: { onGeneralSettingsPage: false } });
     });
 
     it('renders PageHeading component', () => {
