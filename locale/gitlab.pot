@@ -27745,9 +27745,6 @@ msgstr ""
 msgid "Geo|Resync all"
 msgstr ""
 
-msgid "Geo|Retry count"
-msgstr ""
-
 msgid "Geo|Reverify"
 msgstr ""
 
@@ -27793,9 +27790,6 @@ msgstr ""
 msgid "Geo|Shards to synchronize"
 msgstr ""
 
-msgid "Geo|Show more"
-msgstr ""
-
 msgid "Geo|Site name can't be blank"
 msgstr ""
 
@@ -27827,9 +27821,6 @@ msgid "Geo|Synced"
 msgstr ""
 
 msgid "Geo|Synchronization"
-msgstr ""
-
-msgid "Geo|Synchronization failed - %{error}"
 msgstr ""
 
 msgid "Geo|Synchronization settings"
@@ -27926,9 +27917,6 @@ msgid "Geo|Verification"
 msgstr ""
 
 msgid "Geo|Verification concurrency limit"
-msgstr ""
-
-msgid "Geo|Verification failed - %{error}"
 msgstr ""
 
 msgid "Geo|Verification information"
