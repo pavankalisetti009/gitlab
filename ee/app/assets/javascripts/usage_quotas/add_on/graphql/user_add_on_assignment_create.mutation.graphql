@@ -15,7 +15,7 @@ mutation userAddOnAssignmentCreate(
       id
       addOnAssignments(addOnPurchaseIds: [$addOnPurchaseId]) {
         nodes {
-          # eslint-disable-next-line @graphql-eslint/require-id-when-available
+          # eslint-disable-next-line @graphql-eslint/require-selections
           addOnPurchase {
             name
           }
