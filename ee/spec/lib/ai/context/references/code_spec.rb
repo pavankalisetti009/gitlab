@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Ai::Context::References::Code, feature_category: :code_suggestions do
   let(:identifier) { 'hash1' }
+  let(:unit_primitive) { described_class::UNIT_PRIMITIVE }
   let(:routing) { 1 }
   let_it_be(:collection) { create(:ai_active_context_collection, include_ref_fields: false) }
   let(:reference) { described_class.new(collection_id: collection.id, routing: routing, args: identifier) }
@@ -59,7 +60,8 @@ RSpec.describe Ai::Context::References::Code, feature_category: :code_suggestion
       allow(::ActiveContext).to receive_message_chain(:adapter, :client, :search).and_return(search_response)
       # mock the call to embeddings generation which calls AIGW
       allow(ActiveContext::Embeddings).to receive(:generate_embeddings)
-        .with(%w[content_1 content_2], model: 'mock_embedding_model').and_return([embedding_1, embedding_2])
+        .with(%w[content_1 content_2], model: 'mock_embedding_model', unit_primitive: unit_primitive)
+        .and_return([embedding_1, embedding_2])
 
       # mock the ref embedding versions
       allow(reference).to receive(:embedding_versions).and_return(embedding_versions)
@@ -131,7 +133,7 @@ RSpec.describe Ai::Context::References::Code, feature_category: :code_suggestion
 
       before do
         allow(ActiveContext::Embeddings).to receive(:generate_embeddings)
-          .with(%w[content_1], model: 'mock_embedding_model').and_return([embedding_1])
+          .with(%w[content_1], model: 'mock_embedding_model', unit_primitive: unit_primitive).and_return([embedding_1])
       end
 
       it 'puts the refs in the correct groups' do

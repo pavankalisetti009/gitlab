@@ -4,6 +4,8 @@ module Ai
   module Context
     module References
       class Code < ::ActiveContext::Reference
+        UNIT_PRIMITIVE = 'generate_embeddings_codebase'
+
         add_preprocessor :get_content do |refs|
           identifiers = refs.map(&:identifier)
           query = ::ActiveContext::Query.filter(id: identifiers)
@@ -12,7 +14,7 @@ module Ai
         end
 
         add_preprocessor :embeddings do |refs|
-          apply_embeddings(refs: refs, remove_content: false)
+          apply_embeddings(refs: refs, remove_content: false, unit_primitive: UNIT_PRIMITIVE)
         end
 
         def self.serialize_data(data)
