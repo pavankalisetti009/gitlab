@@ -44,7 +44,8 @@ module ComplianceManagement
           return if requirement_status.update(
             pass_count: status_counts.fetch("pass", 0),
             fail_count: status_counts.fetch("fail", 0),
-            pending_count: status_counts.fetch("pending", 0)
+            pending_count: status_counts.fetch("pending", 0),
+            updated_at: Time.current
           )
 
           raise RefreshStatusError, requirement_status.errors.full_messages.join(",")

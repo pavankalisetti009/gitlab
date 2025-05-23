@@ -24,65 +24,67 @@ module ComplianceManagement
       framework = ::ComplianceManagement::Framework.find_by_id(framework_id)
       return unless framework
 
-      controls = controls_for(framework)
-
       # Intersection with framework.project_ids makes sure that the framework is still associated with the projects
       # to be processed
       projects = ::Project.id_in(project_ids & framework.project_ids)
-      evaluation_results = []
 
       projects.each do |project|
         approval_settings = framework.approval_settings_from_security_policies(project)
 
-        controls.each do |control|
-          if control.external?
-            ::ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService
-              .new(project, control).execute
-          else
-            status = ::ComplianceManagement::ComplianceRequirements::ExpressionEvaluator.new(control,
-              project, approval_settings).evaluate
-            evaluation_results << {
-              project: project,
-              control: control,
-              status_value: status ? 'pass' : 'fail'
-            }
+        framework.compliance_requirements.each do |requirement|
+          requirement.compliance_requirements_controls.each do |control|
+            if control.external?
+              ::ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService
+                .new(project, control).execute
+            else
+              status = ::ComplianceManagement::ComplianceRequirements::ExpressionEvaluator.new(control,
+                project, approval_settings).evaluate
+
+              update_control_status(project, control, status_value(status))
+            end
+          rescue StandardError => e
+            Gitlab::ErrorTracking.log_exception(
+              e,
+              framework_id: control.compliance_requirement.framework_id,
+              control_id: control.id,
+              project_id: project.id
+            )
           end
-        rescue StandardError => e
-          Gitlab::ErrorTracking.log_exception(
-            e,
-            framework_id: control.compliance_requirement.framework_id,
-            control_id: control.id,
-            project_id: project.id
-          )
+
+          update_requirement_status(project, requirement)
         end
       end
-
-      update_all_control_statuses(evaluation_results)
     end
 
     private
 
-    def controls_for(framework)
-      ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl.for_framework(framework.id)
+    def status_value(status)
+      status ? 'pass' : 'fail'
     end
 
-    def update_all_control_statuses(evaluation_results)
-      evaluation_results.each do |result|
-        ComplianceManagement::ComplianceFramework::ComplianceRequirementsControls::UpdateStatusService.new(
-          current_user: ::Gitlab::Audit::UnauthenticatedAuthor.new,
-          control: result[:control],
-          project: result[:project],
-          status_value: result[:status_value]
-        ).execute
-      rescue StandardError => e
-        Gitlab::ErrorTracking.log_exception(
-          e,
-          framework_id: result[:control].compliance_requirement.framework_id,
-          control_id: result[:control].id,
-          project_id: result[:project].id,
-          status_value: result[:status_value]
-        )
-      end
+    def update_control_status(project, control, status)
+      ComplianceManagement::ComplianceFramework::ComplianceRequirementsControls::UpdateStatusService.new(
+        current_user: ::Gitlab::Audit::UnauthenticatedAuthor.new,
+        control: control,
+        project: project,
+        status_value: status
+      ).execute
+    rescue StandardError => e
+      Gitlab::ErrorTracking.log_exception(
+        e,
+        framework_id: control.compliance_requirement.framework_id,
+        control_id: control.id,
+        project_id: project.id,
+        status_value: status
+      )
+    end
+
+    def update_requirement_status(project, requirement)
+      requirement_status = ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus
+        .find_or_create_project_and_requirement(project, requirement)
+
+      ComplianceManagement::ComplianceFramework::ComplianceRequirements::RefreshStatusService.new(requirement_status)
+        .execute
     end
   end
 end
