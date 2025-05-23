@@ -154,6 +154,7 @@ export default {
               description,
               title: document.querySelector('.js-issuable-title')?.value ?? '',
               userPrompt: this.userPrompt || '',
+              previousResponse: this.aiContentPreview ?? '',
             },
             clientSubscriptionId: this.composerSubscriptionID,
           },
