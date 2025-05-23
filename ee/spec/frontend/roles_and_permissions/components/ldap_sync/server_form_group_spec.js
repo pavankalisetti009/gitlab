@@ -7,9 +7,9 @@ import { glFormGroupStub } from './helpers';
 describe('ServerFormGroup component', () => {
   let wrapper;
 
-  const createWrapper = ({ value, state = true } = {}) => {
+  const createWrapper = ({ value, state = true, disabled = false } = {}) => {
     wrapper = shallowMountExtended(ServerFormGroup, {
-      propsData: { value, state },
+      propsData: { value, state, disabled },
       provide: { ldapServers },
       stubs: { GlFormGroup: glFormGroupStub },
     });
@@ -43,6 +43,12 @@ describe('ServerFormGroup component', () => {
       findDropdown().vm.$emit('select', 'group1');
 
       expect(wrapper.emitted('input')[0][0]).toBe('group1');
+    });
+
+    it.each([true, false])('passes disabled prop with value %s to dropdown', async (disabled) => {
+      await wrapper.setProps({ disabled });
+
+      expect(findDropdown().props('disabled')).toBe(disabled);
     });
   });
 

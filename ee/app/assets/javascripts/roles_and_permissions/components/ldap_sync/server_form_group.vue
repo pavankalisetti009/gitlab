@@ -14,6 +14,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    disabled: {
+      type: Boolean,
+      required: true,
+    },
   },
 };
 </script>
@@ -29,6 +33,7 @@ export default {
       :items="ldapServers"
       :toggle-text="value ? '' : s__('LDAP|Select server')"
       :variant="state ? 'default' : 'danger'"
+      :disabled="disabled"
       class="gl-max-w-30"
       category="secondary"
       block

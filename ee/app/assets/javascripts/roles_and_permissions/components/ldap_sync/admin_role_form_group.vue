@@ -16,6 +16,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    disabled: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
@@ -50,6 +54,7 @@ export default {
       :selected="value"
       :items="adminMemberRoles"
       :loading="$apollo.queries.adminMemberRoles.loading"
+      :disabled="disabled"
       category="secondary"
       :variant="state ? 'default' : 'danger'"
       :toggle-text="value ? '' : s__('MemberRole|Select a role')"

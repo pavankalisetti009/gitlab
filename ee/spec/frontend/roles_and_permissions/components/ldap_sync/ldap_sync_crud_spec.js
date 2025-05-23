@@ -5,17 +5,24 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import ldapAdminRoleLinksQuery from 'ee/roles_and_permissions/graphql/ldap_sync/ldap_admin_role_links.query.graphql';
+import ldapAdminRoleLinkCreateMutation from 'ee/roles_and_permissions/graphql/ldap_sync/ldap_admin_role_link_create.mutation.graphql';
 import ldapAdminRoleLinkDestroyMutation from 'ee/roles_and_permissions/graphql/ldap_sync/ldap_admin_role_link_destroy.mutation.graphql';
 import LdapSyncCrud from 'ee/roles_and_permissions/components/ldap_sync/ldap_sync_crud.vue';
 import SyncAllButton from 'ee/roles_and_permissions/components/ldap_sync/sync_all_button.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import CreateSyncForm from 'ee/roles_and_permissions/components/ldap_sync/create_sync_form.vue';
+import { createAlert } from '~/alert';
 import { ldapAdminRoleLinks } from '../../mock_data';
 
 Vue.use(VueApollo);
 
-jest.mock('~/alert');
+const mockAlertDismiss = jest.fn();
+jest.mock('~/alert', () => ({
+  createAlert: jest.fn().mockImplementation(() => ({
+    dismiss: mockAlertDismiss,
+  })),
+}));
 
 describe('LdapSyncCrud component', () => {
   let wrapper;
@@ -24,21 +31,27 @@ describe('LdapSyncCrud component', () => {
     jest.fn().mockResolvedValue({ data: { ldapAdminRoleLinks: { nodes } } });
   const defaultRoleLinksHandler = getRoleLinksHandler();
 
+  const getCreateHandler = (error) =>
+    jest.fn().mockResolvedValue({
+      data: { ldapAdminRoleLinkCreate: { errors: error ? [error] : [] } },
+    });
+  const defaultCreateHandler = getCreateHandler();
+
   const getDestroyHandler = (error) =>
     jest.fn().mockResolvedValue({
-      data: {
-        ldapAdminRoleLinkDestroy: { errors: error ? [error] : [] },
-      },
+      data: { ldapAdminRoleLinkDestroy: { errors: error ? [error] : [] } },
     });
   const defaultDestroyHandler = getDestroyHandler();
 
   const createWrapper = ({
     roleLinksHandler = defaultRoleLinksHandler,
+    createHandler = defaultCreateHandler,
     destroyHandler = defaultDestroyHandler,
   } = {}) => {
     wrapper = shallowMountExtended(LdapSyncCrud, {
       apolloProvider: createMockApollo([
         [ldapAdminRoleLinksQuery, roleLinksHandler],
+        [ldapAdminRoleLinkCreateMutation, createHandler],
         [ldapAdminRoleLinkDestroyMutation, destroyHandler],
       ]),
       provide: { ldapUsersPath: 'ldap/users/path' },
@@ -339,13 +352,13 @@ describe('LdapSyncCrud component', () => {
     });
   });
 
-  describe('create sync form', () => {
+  describe('when Add synchronization button is clicked', () => {
     beforeEach(async () => {
       await createWrapper();
       findAddSyncButton().vm.$emit('click');
     });
 
-    it('shows create sync form when Add synchronization button is clicked', () => {
+    it('shows create sync form', () => {
       expect(findCreateSyncForm().exists()).toBe(true);
     });
 
@@ -354,6 +367,71 @@ describe('LdapSyncCrud component', () => {
       await nextTick();
 
       expect(findCreateSyncForm().exists()).toBe(false);
+    });
+
+    describe.each([{ cn: 'group1' }, { filter: 'cn=group1,ou=groups,dc=example,dc=com' }])(
+      'when form is submitted with %s',
+      (data) => {
+        const submitData = {
+          provider: 'ldapmain',
+          adminMemberRoleId: 'gid://gitlab/MemberRole/1',
+          ...data,
+        };
+
+        beforeEach(() => {
+          findCreateSyncForm().vm.$emit('submit', submitData);
+        });
+
+        it('calls create mutation', () => {
+          expect(defaultCreateHandler).toHaveBeenCalledTimes(1);
+          expect(defaultCreateHandler).toHaveBeenCalledWith(submitData);
+        });
+
+        it('marks form as busy', () => {
+          expect(findCreateSyncForm().props('busy')).toBe(true);
+        });
+
+        it('does not close form', () => {
+          expect(findCreateSyncForm().exists()).toBe(true);
+        });
+
+        describe('when mutation succeeds', () => {
+          beforeEach(() => waitForPromises());
+
+          it('closes form', () => {
+            expect(findCreateSyncForm().exists()).toBe(false);
+          });
+
+          it('refreshes sync list', () => {
+            expect(defaultRoleLinksHandler).toHaveBeenCalledTimes(2);
+          });
+        });
+      },
+    );
+
+    describe.each`
+      phrase                                 | createHandler
+      ${'an exception'}                      | ${jest.fn().mockRejectedValue(new Error('some error'))}
+      ${'an error in the mutation response'} | ${getCreateHandler('some error')}
+    `('when create mutation fails due to $phrase', ({ createHandler }) => {
+      beforeEach(async () => {
+        await createWrapper({ createHandler });
+        findAddSyncButton().vm.$emit('click');
+        await nextTick();
+        findCreateSyncForm().vm.$emit('submit');
+        return waitForPromises();
+      });
+
+      it('shows error message', () => {
+        expect(createAlert).toHaveBeenCalledTimes(1);
+        expect(createAlert).toHaveBeenCalledWith({ message: 'some error' });
+      });
+
+      it('dismisses existing error message when form is submitted', () => {
+        findCreateSyncForm().vm.$emit('submit');
+
+        expect(mockAlertDismiss).toHaveBeenCalledTimes(1);
+      });
     });
   });
 });

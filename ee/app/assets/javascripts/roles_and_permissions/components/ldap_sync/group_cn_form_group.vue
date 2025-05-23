@@ -1,6 +1,6 @@
 <script>
 import debounce from 'lodash/debounce';
-import { GlFormGroup, GlCollapsibleListbox } from '@gitlab/ui';
+import { GlFormGroup, GlCollapsibleListbox, GlTooltipDirective } from '@gitlab/ui';
 import Api from 'ee/api';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { s__ } from '~/locale';
@@ -8,6 +8,9 @@ import { createAlert } from '~/alert';
 
 export default {
   components: { GlFormGroup, GlCollapsibleListbox },
+  directives: {
+    GlTooltip: GlTooltipDirective,
+  },
   props: {
     value: {
       type: String,
@@ -22,6 +25,10 @@ export default {
       type: String,
       required: false,
       default: null,
+    },
+    disabled: {
+      type: Boolean,
+      required: true,
     },
   },
   data() {
@@ -71,10 +78,11 @@ export default {
     :invalid-feedback="__('This field is required')"
   >
     <gl-collapsible-listbox
+      v-gl-tooltip.d0="server ? '' : s__('LDAP|Select a server to fetch groups.')"
       :selected="value"
       :items="groups"
       :searching="isLoading"
-      :disabled="!server"
+      :disabled="!server || disabled"
       category="secondary"
       :variant="state ? 'default' : 'danger'"
       :toggle-text="value || s__('LDAP|Select LDAP group')"

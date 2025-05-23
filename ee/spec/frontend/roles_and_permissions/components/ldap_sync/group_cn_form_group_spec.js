@@ -3,6 +3,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GroupCnFormGroup from 'ee/roles_and_permissions/components/ldap_sync/group_cn_form_group.vue';
 import Api from 'ee/api';
 import { createAlert } from '~/alert';
+import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import { glFormGroupStub } from './helpers';
 
 jest.mock('~/alert');
@@ -14,10 +15,20 @@ describe('GroupCnFormGroup component', () => {
   let wrapper;
   let debounceSpy;
 
-  const createWrapper = ({ value, server = 'ldapmain', state = true } = {}) => {
+  const createWrapper = ({
+    value,
+    server = 'ldapmain',
+    state = true,
+    disabled = false,
+    mockTooltipDirective = true,
+  } = {}) => {
     wrapper = shallowMountExtended(GroupCnFormGroup, {
-      propsData: { value, server, state },
+      propsData: { value, server, state, disabled },
       stubs: { GlFormGroup: glFormGroupStub },
+      // For some reason, mocking the tooltip directive causes Vue 3 to fail the "fetches group data
+      // for new server with search term" test because the search term is reset. So we need to skip
+      // the mock directive, otherwise the test will pass using Vue 2 but not Vue 3.
+      directives: mockTooltipDirective ? { GlTooltip: createMockDirective('gl-tooltip') } : null,
     });
 
     debounceSpy = jest.spyOn(wrapper.vm, 'debouncedFetchGroups');
@@ -25,6 +36,7 @@ describe('GroupCnFormGroup component', () => {
 
   const findFormGroup = () => wrapper.findComponent(GlFormGroup);
   const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findTooltip = () => getBinding(findDropdown().element, 'gl-tooltip');
 
   it('shows form group', () => {
     createWrapper();
@@ -54,6 +66,12 @@ describe('GroupCnFormGroup component', () => {
     createWrapper({ value: 'group1' });
 
     expect(findDropdown().props('selected')).toBe('group1');
+  });
+
+  it.each([true, false])('passes disabled prop with value %s to dropdown', (disabled) => {
+    createWrapper({ disabled });
+
+    expect(findDropdown().props('disabled')).toBe(disabled);
   });
 
   describe.each`
@@ -97,6 +115,13 @@ describe('GroupCnFormGroup component', () => {
     it('disables the dropdown', () => {
       expect(findDropdown().props('disabled')).toBe(true);
     });
+
+    it('shows tooltip', () => {
+      expect(findTooltip()).toEqual({
+        value: 'Select a server to fetch groups.',
+        modifiers: { d0: true },
+      });
+    });
   });
 
   describe('when server prop has a value', () => {
@@ -110,6 +135,10 @@ describe('GroupCnFormGroup component', () => {
 
     it('enables the dropdown', () => {
       expect(findDropdown().props('disabled')).toBe(false);
+    });
+
+    it('does not show tooltip', () => {
+      expect(findTooltip().value).toBe('');
     });
   });
 
@@ -144,12 +173,12 @@ describe('GroupCnFormGroup component', () => {
 
   describe('when user enters a search term', () => {
     beforeEach(() => {
-      createWrapper({ value: 'group1' });
+      createWrapper({ value: 'group1', mockTooltipDirective: false });
       findDropdown().vm.$emit('search', 'ex');
     });
 
     it('fetches group data with search term after a small delay', () => {
-      expect(Api.ldapGroups).toHaveBeenCalledWith('ex', 'ldapmain');
+      expect(Api.ldapGroups).toHaveBeenLastCalledWith('ex', 'ldapmain');
       expect(debounceSpy).toHaveBeenCalledTimes(1);
     });
 
@@ -163,7 +192,7 @@ describe('GroupCnFormGroup component', () => {
       beforeEach(() => wrapper.setProps({ server: 'ldapalt' }));
 
       it('fetches group data for new server with search term', () => {
-        expect(Api.ldapGroups).toHaveBeenCalledWith('ex', 'ldapalt');
+        expect(Api.ldapGroups).toHaveBeenLastCalledWith('ex', 'ldapalt');
       });
     });
   });

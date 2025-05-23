@@ -6,9 +6,9 @@ import { glFormGroupStub, glRadioGroupStub } from './helpers';
 describe('SyncMethodFormGroup component', () => {
   let wrapper;
 
-  const createWrapper = ({ value, state = true } = {}) => {
+  const createWrapper = ({ value, state = true, disabled = false } = {}) => {
     wrapper = shallowMountExtended(SyncMethodFormGroup, {
-      propsData: { value, state },
+      propsData: { value, state, disabled },
       stubs: {
         GlFormGroup: glFormGroupStub,
         GlFormRadioGroup: glRadioGroupStub,
@@ -44,13 +44,17 @@ describe('SyncMethodFormGroup component', () => {
 
       expect(wrapper.emitted('input')[0][0]).toBe('group_cn');
     });
-  });
 
-  describe('value prop', () => {
-    it.each([null, 'group_cn', 'user_filter'])('passes %s value to radio group', (value) => {
-      createWrapper({ value });
+    it.each([null, 'group_cn', 'user_filter'])('passes %s value to radio group', async (value) => {
+      await wrapper.setProps({ value });
 
       expect(findRadioGroup().props('checked')).toBe(value);
+    });
+
+    it.each([true, false])('passes disabled prop with value %s to dropdown', async (disabled) => {
+      await createWrapper({ disabled });
+
+      expect(findRadioGroup().props('disabled')).toBe(disabled);
     });
   });
 

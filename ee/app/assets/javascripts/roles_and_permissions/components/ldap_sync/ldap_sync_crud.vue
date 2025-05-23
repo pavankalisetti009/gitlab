@@ -4,7 +4,9 @@ import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { getTimeago } from '~/lib/utils/datetime_utility';
 import { __ } from '~/locale';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
+import { createAlert } from '~/alert';
 import ldapAdminRoleLinksQuery from '../../graphql/ldap_sync/ldap_admin_role_links.query.graphql';
+import ldapAdminRoleLinkCreateMutation from '../../graphql/ldap_sync/ldap_admin_role_link_create.mutation.graphql';
 import ldapAdminRoleLinkDestroyMutation from '../../graphql/ldap_sync/ldap_admin_role_link_destroy.mutation.graphql';
 import CreateSyncForm from './create_sync_form.vue';
 import SyncAllButton from './sync_all_button.vue';
@@ -25,6 +27,8 @@ export default {
     return {
       ldapAdminRoleLinks: [],
       linkToDelete: null,
+      alert: null,
+      isSavingLink: false,
     };
   },
   apollo: {
@@ -49,6 +53,29 @@ export default {
   methods: {
     getTimeAgo(timestamp) {
       return timestamp ? getTimeago().format(timestamp) : __('Never');
+    },
+    async createLink(data, hideFormFn) {
+      try {
+        this.alert?.dismiss();
+        this.isSavingLink = true;
+
+        const response = await this.$apollo.mutate({
+          mutation: ldapAdminRoleLinkCreateMutation,
+          variables: data,
+        });
+
+        const error = response.data.ldapAdminRoleLinkCreate.errors[0];
+        if (error) {
+          this.alert = createAlert({ message: error });
+        } else {
+          this.$apollo.queries.ldapAdminRoleLinks.refetch();
+          hideFormFn();
+        }
+      } catch ({ message }) {
+        this.alert = createAlert({ message });
+      } finally {
+        this.isSavingLink = false;
+      }
     },
     async deleteLink() {
       const response = await this.$apollo.mutate({
@@ -118,7 +145,11 @@ export default {
     </template>
 
     <template #form="{ hideForm }">
-      <create-sync-form @cancel="hideForm" />
+      <create-sync-form
+        :busy="isSavingLink"
+        @submit="createLink($event, hideForm)"
+        @cancel="hideForm"
+      />
     </template>
 
     <ul v-if="ldapAdminRoleLinks.length" class="content-list">

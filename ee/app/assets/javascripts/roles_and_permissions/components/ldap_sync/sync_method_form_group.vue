@@ -22,6 +22,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    disabled: {
+      type: Boolean,
+      required: true,
+    },
   },
   SYNC_METHODS,
 };
@@ -37,6 +41,7 @@ export default {
       :checked="value"
       :state="state ? null : false"
       :options="$options.SYNC_METHODS"
+      :disabled="disabled"
       @input="$emit('input', $event)"
     />
   </gl-form-group>
