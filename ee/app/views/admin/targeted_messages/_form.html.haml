@@ -9,4 +9,6 @@
   .form-group
     = f.label :namespace_ids_csv, s_('TargetedMessages|Upload a csv file for targeted namespaces')
     = f.file_field :namespace_ids_csv, class: 'form-control'
+    .form-text.gl-text-subtle
+      = safe_format(s_('TargetedMessage|Namespace IDs are limited to a maximum of %{limit}.'), limit: number_with_delimiter(Notifications::TargetedMessages::NamespaceIdsBuilder::MAX_NAMESPACE_IDS))
   = f.submit submit_text, pajamas_button: true

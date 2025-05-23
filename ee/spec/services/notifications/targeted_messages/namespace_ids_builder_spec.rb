@@ -88,5 +88,26 @@ RSpec.describe Notifications::TargetedMessages::NamespaceIdsBuilder, feature_cat
         )
       end
     end
+
+    context 'with large number of namespace ids' do
+      it 'batches the namespace id validation' do
+        stub_const('Notifications::TargetedMessages::NamespaceIdsBuilder::NAMESPACE_IDS_BATCH', 1)
+
+        expect(Namespace).to receive(:id_in).exactly(3).times.and_call_original
+
+        result
+      end
+
+      it 'raises error when namespace ids limit is exceeded' do
+        stub_const('Notifications::TargetedMessages::NamespaceIdsBuilder::MAX_NAMESPACE_IDS', 1)
+
+        expect(result[:success]).to be(false)
+        expect(result[:valid_namespace_ids]).to be_empty
+        expect(result[:invalid_namespace_ids]).to be_empty
+        expect(result[:message]).to eq(
+          'Failed to assign namespaces due to error processing CSV: namespace ids exceed the maximum limit.'
+        )
+      end
+    end
   end
 end
