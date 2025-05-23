@@ -5,6 +5,15 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 describe('RegistryUpstreamForm', () => {
   let wrapper;
 
+  const upstream = {
+    id: 1,
+    name: 'foo',
+    url: 'https://example.com',
+    description: 'bar',
+    username: 'bax',
+    cacheValidityHours: 12,
+  };
+
   const createComponent = (props = {}) => {
     wrapper = shallowMountExtended(RegistryUpstreamForm, {
       propsData: props,
@@ -18,7 +27,7 @@ describe('RegistryUpstreamForm', () => {
   const findUsernameInput = () => wrapper.findByTestId('username-input');
   const findPasswordInput = () => wrapper.findByTestId('password-input');
   const findCacheValidityHoursInput = () => wrapper.findByTestId('cache-validity-hours-input');
-  const findCreateUpstreamButton = () => wrapper.findByTestId('create-upstream-button');
+  const findSubmitButton = () => wrapper.findByTestId('submit-button');
   const findCancelButton = () => wrapper.findByTestId('cancel-button');
   const findTestUpstreamButton = () => wrapper.findByTestId('test-upstream-button');
 
@@ -53,13 +62,45 @@ describe('RegistryUpstreamForm', () => {
       });
 
       it('renders Cache validity hours input', () => {
-        expect(findCacheValidityHoursInput().exists()).toBe(true);
+        expect(findCacheValidityHoursInput().props('value')).toBe(24);
+      });
+    });
+
+    describe('inputs when upstream prop is set', () => {
+      beforeEach(() => {
+        createComponent({
+          upstream,
+        });
+      });
+
+      it('renders Name input', () => {
+        expect(findNameInput().props('value')).toBe('foo');
+      });
+
+      it('renders Upstream URL input', () => {
+        expect(findUpstreamUrlInput().props('value')).toBe('https://example.com');
+      });
+
+      it('renders Description input', () => {
+        expect(findDescriptionInput().props('value')).toBe('bar');
+      });
+
+      it('renders Username input', () => {
+        expect(findUsernameInput().props('value')).toBe('bax');
+      });
+
+      it('renders Password input', () => {
+        expect(findPasswordInput().props('value')).toBe('');
+      });
+
+      it('renders Cache validity hours input', () => {
+        expect(findCacheValidityHoursInput().props('value')).toBe(12);
       });
     });
 
     describe('buttons', () => {
       it('renders Create upstream button', () => {
-        expect(findCreateUpstreamButton().exists()).toBe(true);
+        expect(findSubmitButton().text()).toBe('Create upstream');
       });
 
       it('renders Cancel button', () => {
@@ -75,17 +116,22 @@ describe('RegistryUpstreamForm', () => {
         createComponent({ canTestUpstream: false });
         expect(findTestUpstreamButton().exists()).toBe(false);
       });
+
+      it('renders `Save changes` button when upstream exists', () => {
+        createComponent({ upstream });
+        expect(findSubmitButton().text()).toBe('Save changes');
+      });
     });
   });
 
   describe('emits events', () => {
-    it('emits createUpstream event when form is submitted', () => {
+    it('emits submit event when form is submitted', () => {
       findForm().vm.$emit('submit', { preventDefault: () => {} });
-      expect(Boolean(wrapper.emitted('createUpstream'))).toBe(true);
-      expect(wrapper.emitted('createUpstream')[0]).toEqual([
+      expect(Boolean(wrapper.emitted('submit'))).toBe(true);
+      expect(wrapper.emitted('submit')[0]).toEqual([
         {
           name: '',
-          upstreamUrl: '',
+          url: '',
           description: '',
           username: '',
           password: '',
@@ -107,7 +153,7 @@ describe('RegistryUpstreamForm', () => {
       expect(wrapper.emitted('testUpstream')[0]).toEqual([
         {
           name: '',
-          upstreamUrl: '',
+          url: '',
           description: '',
           username: '',
           password: '',
