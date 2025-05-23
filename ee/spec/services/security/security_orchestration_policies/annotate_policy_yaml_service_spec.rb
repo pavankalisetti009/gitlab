@@ -156,6 +156,53 @@ RSpec.describe Security::SecurityOrchestrationPolicies::AnnotatePolicyYamlServic
       end
     end
 
+    context 'when policy_yaml contains compliance_framework ids' do
+      let_it_be(:test_framework) { create(:compliance_framework, namespace: org_group, name: 'GDPR') }
+
+      let(:policy_yaml) do
+        <<~YAML
+        approval_policy:
+        - name: Framework Policy
+          policy_scope:
+            compliance_frameworks:
+              including:
+                - id: #{test_framework.id}
+        YAML
+      end
+
+      let(:expected_yaml) do
+        <<~YAML
+        approval_policy:
+        - name: Framework Policy
+          policy_scope:
+            compliance_frameworks:
+              including:
+                - id: #{test_framework.id} # #{annotation_string}
+        YAML
+      end
+
+      before do
+        stub_licensed_features(custom_compliance_frameworks: true)
+      end
+
+      context 'when the user is authorized to read the compliance framework' do
+        let(:annotation_string) { 'GDPR' }
+
+        it_behaves_like 'annotating the yaml'
+      end
+
+      context 'when the user is not authorized to read the compliance framework' do
+        before do
+          test_project.update!(visibility_level: Gitlab::VisibilityLevel::PRIVATE)
+          org_group.update!(visibility_level: Gitlab::VisibilityLevel::PRIVATE)
+        end
+
+        let(:annotation_string) { described_class::NOT_FOUND_STRING }
+
+        it_behaves_like 'annotating the yaml'
+      end
+    end
+
     context 'when policy_yaml contains block_group_branch_modification ids' do
       let(:policy_yaml) do
         <<~YAML
