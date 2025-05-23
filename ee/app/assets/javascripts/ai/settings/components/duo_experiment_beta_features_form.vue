@@ -61,9 +61,9 @@ export default {
       <template #help>
         <gl-sprintf :message="$options.i18n.checkboxHelpText">
           <template #link="{ content }">
-            <promo-page-link :path="$options.testingAgreementPath" target="_blank">
-              {{ content }}
-            </promo-page-link>
+            <promo-page-link :path="$options.testingAgreementPath" target="_blank">{{
+              content
+            }}</promo-page-link>
           </template>
         </gl-sprintf>
       </template>
