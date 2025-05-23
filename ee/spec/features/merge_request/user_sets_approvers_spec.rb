@@ -221,7 +221,7 @@ RSpec.describe 'Merge request > User sets approvers', :js, feature_category: :co
         # project setting in the beginning on the show MR page
         expect(page).to have_content("Requires 2 approvals from eligible users")
 
-        find('.detail-page-header-actions').click_on 'Edit'
+        find('.detail-page-header').click_on 'Edit'
         click_button('Approval rules')
         within(find_by_testid('approvals-table-controls')) do
           click_button 'Edit'
@@ -242,7 +242,7 @@ RSpec.describe 'Merge request > User sets approvers', :js, feature_category: :co
         expect(page).to have_content("Requires 3 approvals from eligible users")
 
         # new MR setting on the edit MR page
-        find('.detail-page-header-actions').click_on 'Edit'
+        find('.detail-page-header').click_on 'Edit'
         click_button('Approval rules')
         within(find_by_testid('approvals-table-controls')) do
           click_button 'Edit'
