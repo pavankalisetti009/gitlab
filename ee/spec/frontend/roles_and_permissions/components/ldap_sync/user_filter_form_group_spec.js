@@ -7,9 +7,9 @@ import { glFormGroupStub, glFormTextareaStub } from './helpers';
 describe('UserFilterFormGroup component', () => {
   let wrapper;
 
-  const createWrapper = ({ value, state = true } = {}) => {
+  const createWrapper = ({ value, state = true, disabled = false } = {}) => {
     wrapper = shallowMountExtended(UserFilterFormGroup, {
-      propsData: { value, state },
+      propsData: { value, state, disabled },
       stubs: {
         GlSprintf,
         GlFormGroup: glFormGroupStub,
@@ -67,6 +67,12 @@ describe('UserFilterFormGroup component', () => {
         await wrapper.setProps({ value: 'some text' });
 
         expect(findTextarea().props('value')).toBe('some text');
+      });
+
+      it.each([true, false])('passes disabled prop with value %s to dropdown', async (disabled) => {
+        await wrapper.setProps({ disabled });
+
+        expect(findTextarea().props('disabled')).toBe(disabled);
       });
     });
   });

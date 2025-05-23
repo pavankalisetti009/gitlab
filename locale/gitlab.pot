@@ -35620,6 +35620,9 @@ msgstr ""
 msgid "LDAP|Select LDAP group"
 msgstr ""
 
+msgid "LDAP|Select a server to fetch groups."
+msgstr ""
+
 msgid "LDAP|Select server"
 msgstr ""
 

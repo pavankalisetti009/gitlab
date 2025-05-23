@@ -14,6 +14,10 @@ export default {
       type: Boolean,
       required: true,
     },
+    disabled: {
+      type: Boolean,
+      required: true,
+    },
   },
 };
 </script>
@@ -42,6 +46,7 @@ export default {
       :no-resize="false"
       :state="state"
       :placeholder="s__('LDAP|Start typing')"
+      :disabled="disabled"
       class="gl-max-w-48"
       @update="$emit('input', $event)"
     />

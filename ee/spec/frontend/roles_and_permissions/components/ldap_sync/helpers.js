@@ -7,9 +7,9 @@ export const glFormGroupStub = stubComponent(GlFormGroup, {
 });
 
 export const glRadioGroupStub = stubComponent(GlFormRadioGroup, {
-  props: ['checked', 'state', 'options'],
+  props: ['checked', 'state', 'options', 'disabled'],
 });
 
 export const glFormTextareaStub = stubComponent(GlFormTextarea, {
-  props: ['value', 'state', 'noResize', 'placeholder', 'rows'],
+  props: ['value', 'state', 'noResize', 'placeholder', 'rows', 'disabled'],
 });

@@ -24,10 +24,11 @@ describe('AdminRoleDropdown component', () => {
   const createWrapper = ({
     value,
     state = true,
+    disabled = false,
     adminRolesHandler = defaultAdminRolesHandler,
   } = {}) => {
     wrapper = shallowMountExtended(AdminRoleFormGroup, {
-      propsData: { value, state },
+      propsData: { value, state, disabled },
       apolloProvider: createMockApollo([[adminRolesQuery, adminRolesHandler]]),
       stubs: { GlFormGroup: glFormGroupStub, GlCollapsibleListbox },
     });
@@ -65,6 +66,12 @@ describe('AdminRoleDropdown component', () => {
 
     it('runs admin roles query', () => {
       expect(defaultAdminRolesHandler).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([true, false])('passes disabled prop with value %s to dropdown', async (disabled) => {
+      await wrapper.setProps({ disabled });
+
+      expect(findDropdown().props('disabled')).toBe(disabled);
     });
   });
 
