@@ -1,4 +1,4 @@
-import { isBoolean } from 'lodash';
+import { isBoolean, isUndefined } from 'lodash';
 import { CUSTOM_STRATEGY_OPTIONS_KEYS } from '../constants';
 
 export const validateStrategyValues = (value) => CUSTOM_STRATEGY_OPTIONS_KEYS.includes(value);
@@ -21,5 +21,6 @@ export const doesVariablesOverrideHasValidStructure = (variablesOverride = {}) =
     return false;
   }
 
-  return Array.isArray(variablesOverride.exceptions);
+  // `exceptions` are optional
+  return isUndefined(variablesOverride.exceptions) || Array.isArray(variablesOverride.exceptions);
 };

@@ -19,6 +19,7 @@ describe('validateStrategyValues', () => {
     description                                  | input                                          | expected
     ${'valid structure with both keys'}          | ${{ allowed: true, exceptions: [] }}           | ${true}
     ${'valid structure with different values'}   | ${{ allowed: false, exceptions: ['test'] }}    | ${true}
+    ${'valid structure without exceptions'}      | ${{ allowed: false }}                          | ${true}
     ${'invalid structure with disallowed keys'}  | ${{ allowed: true, exceptions: [], other: 1 }} | ${false}
     ${'invalid structure with wrong allowed'}    | ${{ allowed: 'true', exceptions: [] }}         | ${false}
     ${'invalid structure with wrong exceptions'} | ${{ allowed: true, exceptions: 'not-array' }}  | ${false}
