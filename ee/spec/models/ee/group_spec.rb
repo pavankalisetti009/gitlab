@@ -1416,6 +1416,20 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         end
       end
     end
+
+    context 'with duplicate users across group hierarchies' do
+      let_it_be(:another_sub_group) { create(:group, parent: group) }
+
+      before_all do
+        another_sub_group.add_developer(developer)
+      end
+
+      it 'returns distinct users even if they belong to multiple groups in the hierarchy' do
+        expect(group.billed_group_users.count)
+          .to eq(group.billed_group_users.distinct.count)
+        expect(group.billed_group_users).to include(developer)
+      end
+    end
   end
 
   describe '#billed_group_members' do
@@ -1537,6 +1551,21 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         expect(group.billed_project_users).to exclude(banned, sub_banned)
       end
     end
+
+    context 'with duplicate users across projects' do
+      let_it_be(:another_project) { create(:project, namespace: group) }
+
+      before_all do
+        another_project.add_developer(developer)
+      end
+
+      it 'returns distinct users even if they belong to multiple projects' do
+        expect(group.billed_project_users.count)
+          .to eq(group.billed_project_users.distinct.count)
+
+        expect(group.billed_project_users).to include(developer)
+      end
+    end
   end
 
   describe '#billed_project_members' do
@@ -1654,6 +1683,22 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
       it 'excludes members that are banned in group' do
         expect(group.billed_shared_group_users).to exclude(banned)
+      end
+    end
+
+    context 'with duplicate users across shared groups' do
+      let_it_be(:another_shared_group) { create(:group) }
+
+      before_all do
+        another_shared_group.add_developer(invited_developer)
+        create(:group_group_link, { shared_with_group: another_shared_group, shared_group: group })
+      end
+
+      it 'returns distinct users even if they belong to multiple shared groups' do
+        expect(group.billed_shared_group_users.count)
+          .to eq(group.billed_shared_group_users.distinct.count)
+
+        expect(group.billed_shared_group_users).to include(invited_developer)
       end
     end
   end
@@ -1996,6 +2041,22 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
       it 'excludes members that are banned in group' do
         expect(group.billed_invited_group_to_project_users).to exclude(banned)
+      end
+    end
+
+    context 'with duplicate users across invited groups' do
+      let_it_be(:another_invited_group) { create(:group) }
+
+      before_all do
+        another_invited_group.add_developer(invited_developer)
+        create(:project_group_link, project: project, group: another_invited_group)
+      end
+
+      it 'returns distinct users even if they belong to multiple invited groups' do
+        expect(group.billed_invited_group_to_project_users.count)
+          .to eq(group.billed_invited_group_to_project_users.distinct.count)
+
+        expect(group.billed_invited_group_to_project_users).to include(invited_developer)
       end
     end
   end

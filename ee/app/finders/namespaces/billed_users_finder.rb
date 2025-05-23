@@ -42,7 +42,7 @@ module Namespaces
       scope = yield(scope) if block_given?
 
       scope = scope.allow_cross_joins_across_databases(url: CROSS_JOIN_ISSUE_URL)
-      scope.pluck(:id).to_set # rubocop:disable CodeReuse/ActiveRecord -- ids are relevant only for these records
+      scope.pluck(:id) # rubocop:disable CodeReuse/ActiveRecord -- ids are relevant only for these records
     end
   end
 end
