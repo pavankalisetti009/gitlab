@@ -2,7 +2,13 @@ import { mockLabelsResponse } from 'ee_jest/analytics/cycle_analytics/vsa_settin
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { generateInitialStageData } from '../utils';
 import getCustomStageLabels from '../graphql/get_custom_stage_labels.query.graphql';
-import { defaultStages, stageEvents, valueStream, valueStreamStages } from './stories_constants';
+import {
+  defaultStages,
+  stageEvents,
+  valueStream,
+  valueStreamGid,
+  valueStreamStages,
+} from './stories_constants';
 import ValueStreamFormContent from './value_stream_form_content.vue';
 
 export default {
@@ -25,31 +31,28 @@ const Template = (args, { argTypes }) => ({
     vsaPath: '',
     namespaceFullPath: '',
     groupPath: 'group',
-    valueStream,
+    valueStreamGid: args.valueStreamGid ?? valueStreamGid,
     stageEvents,
     defaultStages,
-    isEditing: args.isEditing || false,
   },
   props: Object.keys(argTypes),
   template: '<value-stream-form-content v-bind="$props" />',
 });
 
 export const NewValueStream = Template.bind({});
+NewValueStream.args = { valueStreamGid: '' };
 
 export const EditValueStream = Template.bind({});
 EditValueStream.args = {
-  isEditing: true,
   initialData: generateInitialData(valueStreamStages()),
 };
 
 export const EditValueStreamWithCustomStages = Template.bind({});
 EditValueStreamWithCustomStages.args = {
-  isEditing: true,
   initialData: generateInitialData(valueStreamStages({ addCustomStage: true })),
 };
 
 export const EditValueStreamWithHiddenStages = Template.bind({});
 EditValueStreamWithHiddenStages.args = {
-  isEditing: true,
   initialData: generateInitialData(valueStreamStages({ addCustomStage: true, hideStages: true })),
 };

@@ -1,6 +1,7 @@
 <script>
 import { GlButton } from '@gitlab/ui';
 import { mergeUrlParams } from '~/lib/utils/url_utility';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { s__ } from '~/locale';
 
 export default {
@@ -8,7 +9,7 @@ export default {
   components: {
     GlButton,
   },
-  inject: ['vsaPath', 'valueStream', 'isEditing'],
+  inject: ['vsaPath', 'valueStreamGid'],
   props: {
     isLoading: {
       type: Boolean,
@@ -17,14 +18,17 @@ export default {
     },
   },
   computed: {
+    isEditing() {
+      return Boolean(this.valueStreamGid);
+    },
     primaryButtonText() {
       return this.isEditing
         ? s__('CreateValueStreamForm|Save value stream')
         : s__('CreateValueStreamForm|New value stream');
     },
     cancelHref() {
-      return this.isEditing && this.valueStream?.id > 0
-        ? mergeUrlParams({ value_stream_id: this.valueStream.id }, this.vsaPath)
+      return this.isEditing
+        ? mergeUrlParams({ value_stream_id: getIdFromGraphQLId(this.valueStreamGid) }, this.vsaPath)
         : this.vsaPath;
     },
   },

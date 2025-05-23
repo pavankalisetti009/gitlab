@@ -121,23 +121,11 @@ export const stageEvents = [
   },
 ];
 
+export const valueStreamGid = 'gid://gitlab/ValueStream/16';
 export const valueStream = { id: 16, name: 'Cool value stream', isCustom: true };
 
-const startEventLabel = {
-  id: 1,
-  title: 'in-dev',
-  color: '#4018cc',
-  project_id: null,
-  text_color: '#FFFFFF',
-};
-
-const endEventLabel = {
-  id: 2,
-  title: 'in-review',
-  color: '#48b29d',
-  project_id: null,
-  text_color: '#FFFFFF',
-};
+const startEventLabel = { id: 'gid://gitlab/GroupLabel/1' };
+const endEventLabel = { id: 'gid://gitlab/GroupLabel/2' };
 
 export const customStage = {
   hidden: false,

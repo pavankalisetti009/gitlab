@@ -24,10 +24,7 @@ const defaultProps = {
 describe('CustomStageEventLabelField', () => {
   let wrapper;
 
-  const selectedLabel = {
-    ...mockLabels[0],
-    id: 1,
-  };
+  const [selectedLabel] = mockLabels;
 
   const createWrapper = ({
     props = {},
@@ -37,7 +34,7 @@ describe('CustomStageEventLabelField', () => {
 
     wrapper = shallowMountExtended(CustomStageEventLabelField, {
       apolloProvider,
-      provide: { namespaceFullPath: '/groups/test', groupPath: 'test' },
+      provide: { groupPath: 'test' },
       propsData: {
         ...defaultProps,
         ...props,
