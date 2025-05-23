@@ -1,10 +1,15 @@
-query Subgroups($fullPath: ID!, $after: String) {
+query Subgroups($fullPath: ID!, $after: String, $search: String, $hasSearch: Boolean = false) {
   group(fullPath: $fullPath) {
     id
     name
     fullPath
     avatarUrl
-    descendantGroups(includeParentDescendants: false, first: 10, after: $after) {
+    descendantGroups(
+      includeParentDescendants: $hasSearch
+      first: 10
+      after: $after
+      search: $search
+    ) {
       edges {
         node {
           id

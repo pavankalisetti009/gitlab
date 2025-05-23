@@ -147,3 +147,21 @@ export const groupWithSubgroups = {
     },
   },
 };
+
+export const groupWithoutSubgroups = {
+  data: {
+    group: {
+      id: 'gid://gitlab/Group/4',
+      name: 'B group',
+      fullPath: 'b-group',
+      avatarUrl: 'b_group_avatar.png',
+      descendantGroups: {
+        edges: [],
+        pageInfo: {
+          hasNextPage: false,
+          endCursor: 'END_CURSOR',
+        },
+      },
+    },
+  },
+};

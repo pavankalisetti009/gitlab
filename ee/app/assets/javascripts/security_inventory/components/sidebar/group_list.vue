@@ -1,8 +1,10 @@
 <script>
-import { GlIntersectionObserver, GlLoadingIcon } from '@gitlab/ui';
+import { GlIntersectionObserver, GlLoadingIcon, GlEmptyState } from '@gitlab/ui';
+import { debounce } from 'lodash';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
+import { SIDEBAR_SEARCH_DEBOUNCE } from '../../constants';
 import SubgroupsQuery from '../../graphql/subgroups.query.graphql';
 import ExpandableGroup from './expandable_group.vue';
 
@@ -11,6 +13,7 @@ export default {
     ExpandableGroup,
     GlIntersectionObserver,
     GlLoadingIcon,
+    GlEmptyState,
   },
   props: {
     groupFullPath: {
@@ -18,6 +21,11 @@ export default {
       required: true,
     },
     activeFullPath: {
+      type: String,
+      required: false,
+      default: '',
+    },
+    search: {
       type: String,
       required: false,
       default: '',
@@ -44,6 +52,8 @@ export default {
       variables() {
         return {
           fullPath: this.groupFullPath,
+          hasSearch: this.hasSearch,
+          search: this.hasSearch ? this.search : '',
         };
       },
       error(error) {
@@ -57,6 +67,21 @@ export default {
         Sentry.captureException(error);
       },
     },
+  },
+  computed: {
+    isEmpty() {
+      return !this.$apollo.queries.group.loading && !this.group.descendantGroups.edges.length;
+    },
+    hasSearch() {
+      return Boolean(this.search?.length >= 3);
+    },
+  },
+  watch: {
+    search: debounce(function debouncedSubgroupSearch() {
+      if (this.search.length === 0 || this.hasSearch) {
+        this.$apollo.queries.group.refetch();
+      }
+    }, SIDEBAR_SEARCH_DEBOUNCE),
   },
   methods: {
     selectSubgroup(subgroupFullPath) {
@@ -78,9 +103,18 @@ export default {
       :group="subgroup"
       :active-full-path="activeFullPath"
       :indentation="indentation"
+      :has-search="hasSearch"
       class="gl-w-auto"
       @selectSubgroup="selectSubgroup"
     />
+    <gl-empty-state
+      v-if="isEmpty"
+      :description="s__(`SecurityInventory|This group doesn't have any subgroups.`)"
+    >
+      <template #title>
+        <strong>{{ s__('SecurityInventory|No subgroups found') }}</strong>
+      </template>
+    </gl-empty-state>
     <gl-loading-icon v-if="$apollo.queries.group.loading" class="gl-pt-3" />
     <gl-intersection-observer v-else @appear="fetchMoreSubgroups" />
   </div>

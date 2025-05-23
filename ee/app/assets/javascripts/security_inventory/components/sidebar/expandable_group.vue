@@ -28,6 +28,11 @@ export default {
       required: false,
       default: 0,
     },
+    hasSearch: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -40,6 +45,9 @@ export default {
     },
     containsActiveGroup() {
       return this.activeFullPath.startsWith(`${this.group.fullPath}/`);
+    },
+    showExpandButton() {
+      return this.group.descendantGroupsCount && !this.hasSearch;
     },
   },
   watch: {
@@ -68,11 +76,14 @@ export default {
 <template>
   <div>
     <div
-      class="gl-relative gl-flex gl-h-8 gl-cursor-pointer gl-items-center gl-gap-4 gl-rounded-base gl-px-3 hover:!gl-bg-status-neutral"
+      class="gl-relative gl-m-1 gl-flex gl-h-8 gl-cursor-pointer gl-items-center gl-gap-4 gl-rounded-base gl-px-3 hover:!gl-bg-status-neutral"
       :class="{ 'gl-bg-strong': isActiveGroup }"
       data-testid="subgroup"
       :style="{ left: `${indentation}px` }"
+      tabindex="0"
+      role="button"
       @click="selectSubgroup(group.fullPath)"
+      @keydown.enter.space.prevent="selectSubgroup(group.fullPath)"
     >
       <gl-icon name="subgroup" variant="subtle" class="gl-mx-2 gl-shrink-0" />
       <div
@@ -89,8 +100,9 @@ export default {
         </gl-badge>
 
         <gl-button
-          v-if="group.descendantGroupsCount"
+          v-if="showExpandButton"
           :icon="expanded ? 'chevron-down' : 'chevron-right'"
+          :aria-label="expanded ? __('Collapse') : __('Expand')"
           category="tertiary"
           size="small"
           icon-only
@@ -99,7 +111,7 @@ export default {
       </div>
     </div>
     <group-list
-      v-if="expanded"
+      v-if="expanded && !hasSearch"
       :group-full-path="group.fullPath"
       :active-full-path="activeFullPath"
       :selected-subgroup="activeFullPath"

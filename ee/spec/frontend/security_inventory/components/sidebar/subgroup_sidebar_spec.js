@@ -1,5 +1,6 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import { GlSearchBoxByType } from '@gitlab/ui';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -20,6 +21,8 @@ describe('SubgroupSidebar', () => {
 
   const findPanelWidth = () => wrapper.findByTestId('panel').element.style.width;
   const resizePanel = (size) => wrapper.findComponent(PanelResizer).vm.$emit('update:size', size);
+  const findGroupList = () => wrapper.findComponent(GroupList);
+  const findSearchBox = () => wrapper.findComponent(GlSearchBoxByType);
 
   const createComponent = async ({
     groupFullPath = 'a-group',
@@ -60,7 +63,7 @@ describe('SubgroupSidebar', () => {
     });
 
     it('shows a list of subgroups of the main group', () => {
-      expect(wrapper.findComponent(GroupList).props()).toStrictEqual({
+      expect(findGroupList().props()).toMatchObject({
         groupFullPath: 'a-group',
         activeFullPath: 'a-group',
         indentation: 0,
@@ -72,7 +75,7 @@ describe('SubgroupSidebar', () => {
 
       expect(window.location.hash).toBe('');
 
-      wrapper.findComponent(GroupList).vm.$emit('selectSubgroup', subgroup.fullPath);
+      findGroupList().vm.$emit('selectSubgroup', subgroup.fullPath);
 
       expect(window.location.hash).toBe(`#${subgroup.fullPath}`);
     });
@@ -111,6 +114,17 @@ describe('SubgroupSidebar', () => {
       await waitForPromises();
 
       expect(findPanelWidth()).toBe('400px');
+    });
+  });
+
+  describe('search box', () => {
+    it('passes search down to group list', async () => {
+      createComponent();
+
+      findSearchBox().vm.$emit('input', 'group A ');
+      await nextTick();
+
+      expect(findGroupList().props('search')).toBe('group A');
     });
   });
 });

@@ -35,7 +35,7 @@ export default {
   inject: ['groupFullPath', 'newProjectPath'],
   i18n: {
     errorFetchingChildren: s__(
-      'SecurityInventory||An error occurred while fetching subgroups and projects. Please try again.',
+      'SecurityInventory|An error occurred while fetching subgroups and projects. Please try again.',
     ),
     loadMore: s__('SecurityInventory|Load more'),
   },
@@ -297,7 +297,13 @@ export default {
     <div
       class="gl-flex gl-w-full gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-bg-subtle gl-border-b-solid gl-border-t-solid"
     >
-      <gl-button icon="sidebar" icon-only class="gl-m-3" @click="toggleSidebar()" />
+      <gl-button
+        icon="sidebar"
+        icon-only
+        class="gl-m-3"
+        :aria-label="sidebarVisible ? __('Collapse sidebar') : __('Expand sidebar')"
+        @click="toggleSidebar()"
+      />
       <inventory-dashboard-filtered-search-bar
         class="gl-flex-auto gl-items-center"
         :initial-filters="filters"

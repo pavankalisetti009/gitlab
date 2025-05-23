@@ -29,12 +29,14 @@ describe('ExpandableGroup', () => {
     group = { ...subgroups[0].node },
     activeFullPath = 'a-group',
     indentation = 0,
+    propsData = {},
   } = {}) => {
     wrapper = shallowMountExtended(ExpandableGroup, {
       propsData: {
         group,
         activeFullPath,
         indentation,
+        ...propsData,
       },
       stubs: {
         GroupList: stubComponent(GroupList, {
@@ -106,7 +108,7 @@ describe('ExpandableGroup', () => {
       expect(findExpandButtonIcon()).toBe('chevron-down');
       expect(findGroupList().exists()).toBe(true);
 
-      expect(findGroupList().props()).toStrictEqual({
+      expect(findGroupList().props()).toMatchObject({
         activeFullPath: 'a-group',
         groupFullPath: 'a-group/subgroup-with-projects-and-subgroups',
         indentation: 20,
@@ -158,6 +160,20 @@ describe('ExpandableGroup', () => {
       await nextTick();
 
       expect(findExpandButtonIcon()).toBe('chevron-down');
+    });
+  });
+
+  describe('when search is active', () => {
+    beforeEach(() => {
+      createComponent({ propsData: { hasSearch: true } });
+    });
+
+    it('does not render the expand button', () => {
+      expect(findExpandButton().exists()).toBe(false);
+    });
+
+    it('does not render the group list', () => {
+      expect(findGroupList().exists()).toBe(false);
     });
   });
 });

@@ -16,6 +16,7 @@ export const SIDEBAR_WIDTH_MINIMUM = 200;
 export const SIDEBAR_WIDTH_STORAGE_KEY = 'security_inventory_sidebar_width';
 export const SIDEBAR_VISIBLE_STORAGE_KEY = 'security_inventory_sidebar_visible';
 export const SIDEBAR_INDENTATION_INCREMENT = 20; // pixels
+export const SIDEBAR_SEARCH_DEBOUNCE = 500; // milliseconds
 
 const SAST_LABEL = s__('SecurityInventory|SAST');
 const DAST_LABEL = s__('SecurityInventory|DAST');
