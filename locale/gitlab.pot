@@ -23933,6 +23933,9 @@ msgstr ""
 msgid "Email the pipeline status to a list of recipients."
 msgstr ""
 
+msgid "Email verification for locked accounts"
+msgstr ""
+
 msgid "Email:"
 msgstr ""
 
@@ -51537,7 +51540,13 @@ msgstr ""
 msgid "Require administrators to enable 2FA"
 msgstr ""
 
+msgid "Require email verification when account is locked."
+msgstr ""
+
 msgid "Require expiration date"
+msgstr ""
+
+msgid "Require users to verify their email address when their account is locked."
 msgstr ""
 
 msgid "Required approvals (%{approvals_given} of %{required} given)"
