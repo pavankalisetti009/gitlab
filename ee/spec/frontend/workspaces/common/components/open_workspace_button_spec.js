@@ -2,9 +2,11 @@ import { shallowMount } from '@vue/test-utils';
 import { GlButton } from '@gitlab/ui';
 import OpenWorkspaceButton from 'ee/workspaces/common/components/open_workspace_button.vue';
 import { WORKSPACE_STATES } from 'ee/workspaces/common/constants';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 describe('OpenWorkspaceButton', () => {
   let wrapper;
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createWrapper = ({ workspaceDisplayState, workspaceUrl }) => {
     wrapper = shallowMount(OpenWorkspaceButton, {
@@ -24,6 +26,18 @@ describe('OpenWorkspaceButton', () => {
         });
 
         expect(wrapper.findComponent(GlButton).text()).toContain('Open workspace');
+      });
+
+      it('calls trackEvent method when clicked on "Open Workspace" button', () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        createWrapper({
+          workspaceDisplayState: WORKSPACE_STATES.running,
+          workspaceUrl: 'http://example.com/',
+        });
+
+        wrapper.findComponent(GlButton).vm.$emit('click');
+
+        expect(trackEventSpy).toHaveBeenCalledWith('click_open_workspace_button', {}, undefined);
       });
     });
 
