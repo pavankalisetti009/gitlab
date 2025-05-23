@@ -178,7 +178,7 @@ module Gitlab
 
           group.namespace_settings.update!(
             duo_features_enabled: true,
-            duo_nano_features_enabled: true
+            duo_core_features_enabled: true
           )
         end
       end

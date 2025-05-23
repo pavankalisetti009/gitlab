@@ -354,7 +354,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
       namespace_settings.update!(
         duo_availability: 'default_on',
         experiment_features_enabled: true,
-        duo_nano_features_enabled: true
+        duo_core_features_enabled: true
       )
 
       expect(helper.duo_home_app_data(group)).to eq({
@@ -372,9 +372,9 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
       })
     end
 
-    context 'with disabled duo_nano_features_enabled' do
+    context 'with disabled duo_core_features_enabled' do
       before do
-        namespace_settings.update!(duo_nano_features_enabled: false)
+        namespace_settings.update!(duo_core_features_enabled: false)
       end
 
       it 'sets Duo Core flag to false' do

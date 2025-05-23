@@ -153,7 +153,7 @@ module Ai
             enablement_type: duo_core_add_on_purchase.normalized_add_on_name,
             authorized_by_duo_core: true
           )
-        elsif !saas? && ::Ai::Setting.instance.duo_nano_features_enabled?
+        elsif !saas? && ::Ai::Setting.instance.duo_core_features_enabled?
           Response.new(
             allowed?: true,
             namespace_ids: [],

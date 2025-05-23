@@ -7,7 +7,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
   describe '#allowed_to_use' do
     let(:ai_feature) { :my_feature }
-    let(:duo_nano_features_enabled) { true }
+    let(:duo_core_features_enabled) { true }
     let(:service_name) { ai_feature }
     let(:maturity) { :ga }
     let(:free_access) { true }
@@ -151,8 +151,8 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
             it { is_expected.to eq expected_response }
           end
 
-          context 'when duo_nano_features_enabled is false' do
-            let(:duo_nano_features_enabled) { false }
+          context 'when duo_core_features_enabled is false' do
+            let(:duo_core_features_enabled) { false }
 
             it { is_expected.to eq expected_response }
           end
@@ -197,7 +197,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
         before do
           active_gitlab_purchase.namespace.namespace_settings.update!(
-            duo_nano_features_enabled: duo_nano_features_enabled
+            duo_core_features_enabled: duo_core_features_enabled
           )
         end
       end
@@ -305,7 +305,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
           # returns nil in SM instances if add-on
           # purchases are associated with namespaces
           active_gitlab_purchase.update!(namespace: nil)
-          ::Ai::Setting.instance.update!(duo_nano_features_enabled: duo_nano_features_enabled)
+          ::Ai::Setting.instance.update!(duo_core_features_enabled: duo_core_features_enabled)
         end
       end
 

@@ -312,25 +312,25 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
           expect(GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker)
             .to receive(:perform_in).with(7.days, setting.namespace_id)
 
-          setting.update!(duo_nano_features_enabled: true)
+          setting.update!(duo_core_features_enabled: true)
         end
 
         context 'when duo core features are disabled' do
           it 'does not trigger the todo creation for nil update' do
             expect(GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
 
-            setting.update!(duo_nano_features_enabled: false)
+            setting.update!(duo_core_features_enabled: false)
           end
 
           context 'when changed from true to false' do
             before do
-              setting.update!(duo_nano_features_enabled: true)
+              setting.update!(duo_core_features_enabled: true)
             end
 
             it 'does not trigger the todo creation' do
               expect(GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
 
-              setting.update!(duo_nano_features_enabled: false)
+              setting.update!(duo_core_features_enabled: false)
             end
           end
         end
@@ -341,7 +341,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
           it 'does not trigger the todo creation' do
             expect(GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
 
-            setting.update!(duo_nano_features_enabled: true)
+            setting.update!(duo_core_features_enabled: true)
           end
         end
 
@@ -358,7 +358,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         it 'does not trigger the todo creation' do
           expect(GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
 
-          create(:namespace_settings, namespace: build(:group), duo_nano_features_enabled: true)
+          create(:namespace_settings, namespace: build(:group), duo_core_features_enabled: true)
         end
       end
     end

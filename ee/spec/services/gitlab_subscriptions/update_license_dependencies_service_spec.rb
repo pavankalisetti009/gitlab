@@ -137,7 +137,7 @@ RSpec.describe GitlabSubscriptions::UpdateLicenseDependenciesService, feature_ca
       let(:license_key) { build(:gitlab_license, :cloud).export }
 
       it 'does not auto enable the Duo Core features setting' do
-        expect { execute_service }.to not_change(Ai::Setting.instance, :duo_nano_features_enabled)
+        expect { execute_service }.to not_change(Ai::Setting.instance, :duo_core_features_enabled)
       end
     end
 
@@ -146,7 +146,7 @@ RSpec.describe GitlabSubscriptions::UpdateLicenseDependenciesService, feature_ca
         it 'does not enable the Duo Core features setting' do
           ai_setting = Ai::Setting.instance
 
-          expect { execute_service }.not_to change { ai_setting.reload.duo_nano_features_enabled }
+          expect { execute_service }.not_to change { ai_setting.reload.duo_core_features_enabled }
         end
       end
 
@@ -164,17 +164,17 @@ RSpec.describe GitlabSubscriptions::UpdateLicenseDependenciesService, feature_ca
 
       context 'when user already updated the Duo Core features setting' do
         before do
-          Ai::Setting.instance.update!(duo_nano_features_enabled: duo_nano_features_enabled)
+          Ai::Setting.instance.update!(duo_core_features_enabled: duo_core_features_enabled)
         end
 
         context 'when the Duo Core features are already enabled' do
-          let(:duo_nano_features_enabled) { true }
+          let(:duo_core_features_enabled) { true }
 
           it_behaves_like 'do not enable Duo Core features setting'
         end
 
         context 'when the Duo Core features are disabled' do
-          let(:duo_nano_features_enabled) { false }
+          let(:duo_core_features_enabled) { false }
 
           it_behaves_like 'do not enable Duo Core features setting'
         end
@@ -228,7 +228,7 @@ RSpec.describe GitlabSubscriptions::UpdateLicenseDependenciesService, feature_ca
       it 'auto enables the Duo Core features setting' do
         ai_setting = Ai::Setting.instance
 
-        expect { execute_service }.to change { ai_setting.reload.duo_nano_features_enabled }.from(nil).to(true)
+        expect { execute_service }.to change { ai_setting.reload.duo_core_features_enabled }.from(nil).to(true)
       end
     end
   end

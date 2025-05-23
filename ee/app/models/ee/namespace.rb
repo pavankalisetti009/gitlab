@@ -141,7 +141,7 @@ module EE
 
       scope :namespace_settings_with_duo_core_features_enabled, -> do
         joins(:namespace_settings)
-          .where(namespace_settings: { duo_nano_features_enabled: true })
+          .where(namespace_settings: { duo_core_features_enabled: true })
       end
 
       scope :with_ai_supported_plan, ->(feature = :ai_features) do

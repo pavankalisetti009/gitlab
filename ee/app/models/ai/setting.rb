@@ -11,9 +11,9 @@ module Ai
 
     validate :validate_ai_gateway_url
 
-    validates :duo_nano_features_enabled,
+    validates :duo_core_features_enabled,
       inclusion: { in: [true, false] },
-      if: :will_save_change_to_duo_nano_features_enabled?
+      if: :will_save_change_to_duo_core_features_enabled?
 
     belongs_to :amazon_q_oauth_application, class_name: 'Doorkeeper::Application', optional: true
     belongs_to :amazon_q_service_account_user, class_name: 'User', optional: true
@@ -23,7 +23,7 @@ module Ai
 
     alias_attribute :duo_core_features_enabled, :duo_nano_features_enabled
 
-    after_commit :trigger_todo_creation, on: :update, if: :saved_change_to_duo_nano_features_enabled?
+    after_commit :trigger_todo_creation, on: :update, if: :saved_change_to_duo_core_features_enabled?
 
     def self.defaults
       {
@@ -38,11 +38,6 @@ module Ai
 
     def self.duo_core_features_enabled?
       !!instance.duo_core_features_enabled
-    end
-
-    # Define duo_core_features_enabled as an alias to duo_nano_features_enabled till we renamed the column
-    def duo_core_features_enabled?
-      duo_nano_features_enabled?
     end
 
     private

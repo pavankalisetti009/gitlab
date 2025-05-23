@@ -470,7 +470,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
       before do
         group.namespace_settings.update!(
-          duo_nano_features_enabled: duo_core_features_enabled
+          duo_core_features_enabled: duo_core_features_enabled
         )
       end
 
@@ -2614,7 +2614,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
     end
 
-    context 'when namespace_settings has duo_nano_features disabled' do
+    context 'when namespace_settings has duo_core_features disabled' do
       before do
         group.namespace_settings.update!(
           duo_core_features_enabled: false
@@ -2630,7 +2630,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
     end
 
-    context 'when namespace_settings has duo_nano_features as null' do
+    context 'when namespace_settings has duo_core_features as null' do
       before do
         group.namespace_settings.update!(
           duo_core_features_enabled: nil

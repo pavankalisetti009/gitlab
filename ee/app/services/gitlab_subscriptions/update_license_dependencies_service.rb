@@ -45,7 +45,7 @@ module GitlabSubscriptions
     def auto_enable_duo_core_features
       return unless auto_enable_duo_core_features?
 
-      ai_setting.update!(duo_nano_features_enabled: true)
+      ai_setting.update!(duo_core_features_enabled: true)
     rescue ActiveRecord::ActiveRecordError => err
       Gitlab::ErrorTracking.track_and_raise_for_dev_exception(err)
     end
@@ -60,7 +60,7 @@ module GitlabSubscriptions
     end
 
     def no_user_action_on_duo_core_setting?
-      ai_setting.duo_nano_features_enabled.nil?
+      ai_setting.duo_core_features_enabled.nil?
     end
 
     def ai_setting

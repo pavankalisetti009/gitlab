@@ -11,7 +11,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
     create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, :self_managed)
   end
 
-  let!(:duo_settings) { create(:ai_settings, duo_nano_features_enabled: false) }
+  let!(:duo_settings) { create(:ai_settings, duo_core_features_enabled: false) }
 
   let(:mutation_name) { :duo_settings_update }
   let(:mutation_params) { { ai_gateway_url: "http://new-ai-gateway-url", duo_core_features_enabled: true } }
@@ -129,7 +129,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
           expect(result['errors']).to eq([])
 
           expect { duo_settings.reload }.to change { duo_settings.ai_gateway_url }.to("http://new-ai-gateway-url")
-            .and change { duo_settings.duo_nano_features_enabled }.to(true)
+            .and change { duo_settings.duo_core_features_enabled }.to(true)
         end
 
         context 'when ai_gateway_url arg is a blank string' do
@@ -169,7 +169,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
             add_on_purchase.update!(expires_on: Date.yesterday)
           end
 
-          it 'updates the duo_nano_features_enabled setting and returns nil for ai_gateway_url' do
+          it 'updates the duo_core_features_enabled setting and returns nil for ai_gateway_url' do
             request
 
             result = json_response['data']['duoSettingsUpdate']
@@ -180,19 +180,19 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
             )
             expect(result['errors']).to eq([])
 
-            expect { duo_settings.reload }.to change { duo_settings.duo_nano_features_enabled }.to(true)
+            expect { duo_settings.reload }.to change { duo_settings.duo_core_features_enabled }.to(true)
               .and not_change { duo_settings.ai_gateway_url }
           end
         end
 
-        context 'when the user has no read permission for duo_nano_features_enabled' do
+        context 'when the user has no read permission for duo_core_features_enabled' do
           let(:mutation_params) { { ai_gateway_url: "http://new-ai-gateway-url" } }
 
           before do
             stub_licensed_features(code_suggestions: false, ai_chat: false)
           end
 
-          it 'updates the ai_gateway_url setting and returns nil for duo_nano_features_enabled' do
+          it 'updates the ai_gateway_url setting and returns nil for duo_core_features_enabled' do
             request
 
             result = json_response['data']['duoSettingsUpdate']
@@ -204,7 +204,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
             expect(result['errors']).to eq([])
 
             expect { duo_settings.reload }.to change { duo_settings.ai_gateway_url }.to('http://new-ai-gateway-url')
-              .and not_change { duo_settings.duo_nano_features_enabled }
+              .and not_change { duo_settings.duo_core_features_enabled }
           end
         end
       end
