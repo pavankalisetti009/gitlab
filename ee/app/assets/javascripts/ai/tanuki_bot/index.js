@@ -27,7 +27,7 @@ export const initTanukiBotChatDrawer = () => {
     });
   }
 
-  const { userId, resourceId, projectId, chatTitle, rootNamespaceId } = el.dataset;
+  const { userId, resourceId, projectId, chatTitle } = el.dataset;
 
   return new Vue({
     el,
@@ -40,7 +40,6 @@ export const initTanukiBotChatDrawer = () => {
           resourceId,
           projectId,
           chatTitle,
-          rootNamespaceId,
         },
       });
     },

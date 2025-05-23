@@ -101,14 +101,6 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
         stream_response_handler: stream_response_handler
       ]
 
-      expect(Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).with(
-        user,
-        hash_including(
-          tracking_context: anything,
-          root_namespace: expected_container&.root_ancestor
-        )
-      ).and_return(ai_request)
-
       expect_next_instance_of(::Gitlab::Duo::Chat::ReactExecutor, *expected_params) do |instance|
         expect(instance).to receive(:execute).and_return(answer)
       end
@@ -218,71 +210,12 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
   end
 
   describe '.initialize' do
-    let_it_be(:root_group) { create(:group) }
-    let_it_be(:subgroup) { create(:group, parent: root_group) }
-    let_it_be(:project) { create(:project, namespace: subgroup) }
-    let_it_be(:issue) { create(:issue, project: project) }
-    let_it_be(:user) { create(:user) }
-
-    let(:resource) { issue }
-    let(:prompt_message) do
-      build(:ai_chat_message, user: user, resource: resource, request_id: 'uuid', content: content, thread: thread)
-    end
-
-    let(:options) do
-      {
-        current_file: nil,
-        additional_context: [],
-        started_at: Time.current,
-        agent_version_id: nil,
-        extra_resource: {},
-        tracking_context: {},
-        resource: resource,
-        user: user
-      }
-    end
-
-    subject(:instance) do
-      described_class.new(prompt_message, nil, **options)
-    end
+    subject { described_class.new(prompt_message, nil, **options) }
 
     it 'trims additional context' do
-      expect(::CodeSuggestions::Context).to receive(:new).with([]).and_call_original
-      instance
-    end
+      expect(::CodeSuggestions::Context).to receive(:new).with(additional_context).and_call_original
 
-    it 'sets root_namespace correctly on ai_request' do
-      expect(instance.send(:context).ai_request.root_namespace).to eq(root_group)
-    end
-
-    context 'when resource has no resource_parent, fallback is used via root_namespace_global_id' do
-      let_it_be(:fallback_namespace) { create(:group) }
-
-      let(:prompt_message) do
-        build(:ai_chat_message, user: user, resource: user, request_id: 'uuid', content: content, thread: thread)
-      end
-
-      let(:options) do
-        {
-          current_file: nil,
-          additional_context: [],
-          started_at: Time.current,
-          agent_version_id: nil,
-          extra_resource: {},
-          tracking_context: {},
-          resource: user,
-          user: user,
-          root_namespace_id: fallback_namespace.to_global_id.to_s
-        }
-      end
-
-      subject(:instance) do
-        described_class.new(prompt_message, nil, **options)
-      end
-
-      it 'uses root_namespace_global_id fallback when resource_parent is nil' do
-        expect(instance.send(:context).ai_request.root_namespace).to eq(fallback_namespace)
-      end
+      subject
     end
   end
 

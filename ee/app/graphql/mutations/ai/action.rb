@@ -28,10 +28,6 @@ module Mutations
         required: false,
         description: "Global ID of the project the user is acting on."
 
-      argument :root_namespace_id, ::Types::GlobalIDType[::Namespace],
-        required: false,
-        description: "Global ID of the top-level namespace the user is acting on."
-
       argument :conversation_type, Types::Ai::Conversations::Threads::ConversationTypeEnum,
         required: false,
         description: 'Conversation type of the thread.'
@@ -178,7 +174,7 @@ module Mutations
 
       def extract_method_params!(attributes)
         options = attributes.extract!(:client_subscription_id, :platform_origin, :project_id,
-          :conversation_type, :thread_id, :root_namespace_id)
+          :conversation_type, :thread_id)
         methods = methods(attributes.transform_values(&:to_h))
 
         # At this point, we only have one method since we filtered it in `#ready?`

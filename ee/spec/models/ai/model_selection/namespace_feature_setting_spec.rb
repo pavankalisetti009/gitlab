@@ -28,22 +28,17 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
     let(:existing_feature) { ai_feature_setting.feature.to_sym }
     let(:new_feature_enum) { :code_completions }
 
-    context 'when namespace is nil' do
-      it 'returns nil' do
-        result = described_class.find_or_initialize_by_feature(nil, existing_feature)
-        expect(result).to be_nil
-      end
-    end
-
     it 'returns existing setting when one exists for the feature' do
       ai_feature_setting.save!
       result = described_class.find_or_initialize_by_feature(group, existing_feature)
+
       expect(result).to eq(ai_feature_setting)
     end
 
     it 'initializes a new setting when none exists for the feature' do
       new_feature = :code_completions
       result = described_class.find_or_initialize_by_feature(group, new_feature_enum)
+
       expect(result).to be_a(described_class)
       expect(result).to be_new_record
       expect(result.namespace).to eq(group)
@@ -57,60 +52,6 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
 
       it 'returns nil' do
         result = described_class.find_or_initialize_by_feature(group, existing_feature)
-        expect(result).to be_nil
-      end
-    end
-  end
-
-  describe '.find_by_feature' do
-    let(:feature_name) { "duo_chat" }
-    let(:offered_model_ref) { "claude-3-7-sonnet-20250219" }
-
-    subject(:ai_feature_setting) do
-      create(:ai_namespace_feature_setting,
-        namespace: group,
-        feature: feature_name,
-        offered_model_ref: offered_model_ref)
-    end
-
-    before do
-      ai_feature_setting
-    end
-
-    context 'when namespace is nil' do
-      it 'returns nil' do
-        result = described_class.find_by_feature(nil, feature_name)
-        expect(result).to be_nil
-      end
-    end
-
-    context 'when namespace is not a root namespace' do
-      let(:subgroup) { create(:group, parent: group) }
-
-      it 'returns nil' do
-        result = described_class.find_by_feature(subgroup, feature_name)
-        expect(result).to be_nil
-      end
-    end
-
-    it 'returns existing setting when one exists for the feature' do
-      result = described_class.find_by_feature(group, feature_name)
-      expect(result).to eq(ai_feature_setting)
-    end
-
-    it 'returns nil when no setting exists for the feature' do
-      non_existent_feature = 'code_generations'
-      result = described_class.find_by_feature(group, non_existent_feature)
-      expect(result).to be_nil
-    end
-
-    context 'when the feature is not enabled' do
-      let(:ff_enabled) { false }
-
-      subject(:ai_feature_setting) { build(:ai_namespace_feature_setting) }
-
-      it 'returns nil' do
-        result = described_class.find_by_feature(group, feature_name)
         expect(result).to be_nil
       end
     end

@@ -11,7 +11,7 @@ module Gitlab
           include ::Gitlab::Llm::Concerns::AllowedParams
           include ::Gitlab::Llm::Concerns::EventTracking
 
-          attr_reader :ai_client, :tracking_context, :root_namespace
+          attr_reader :ai_client, :tracking_context
 
           ENDPOINT = '/v1/chat/agent'
           BASE_ENDPOINT = '/v1/chat'
@@ -22,10 +22,9 @@ module Gitlab
           STOP_WORDS = ["\n\nHuman", "Observation:"].freeze
           DEFAULT_MAX_TOKENS = 4096
 
-          def initialize(user, service_name: :duo_chat, tracking_context: {}, root_namespace: nil)
+          def initialize(user, service_name: :duo_chat, tracking_context: {})
             @user = user
             @tracking_context = tracking_context
-            @root_namespace = root_namespace
             @ai_client = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: processed_service_name(service_name),
               tracking_context: tracking_context)
           end
@@ -104,11 +103,11 @@ module Gitlab
               request_body_agent(inputs: options[:inputs], unit_primitive: unit_primitive,
                 prompt_version: options[:prompt_version])
             else
-              request_body(prompt: prompt[:prompt], options: options, unit_primitive: unit_primitive)
+              request_body(prompt: prompt[:prompt], options: options)
             end
           end
 
-          def request_body(prompt:, options: {}, unit_primitive: nil)
+          def request_body(prompt:, options: {})
             {
               prompt_components: [{
                 type: DEFAULT_TYPE,
@@ -118,7 +117,7 @@ module Gitlab
                 },
                 payload: {
                   content: prompt
-                }.merge(payload_params(options)).merge(model_params(options, unit_primitive))
+                }.merge(payload_params(options)).merge(model_params(options))
               }],
               stream: true
             }
@@ -130,17 +129,16 @@ module Gitlab
               inputs: inputs
             }
 
-            feature_setting = namespace_feature_setting(unit_primitive) ||
-              chat_feature_setting(unit_primitive: unit_primitive)
+            feature_setting = chat_feature_setting(unit_primitive: unit_primitive)
 
-            model_metadata = model_metadata(feature_setting)
-            params[:model_metadata] = model_metadata if model_metadata.present?
+            model_metadata_params =
+              ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).to_params
+            params[:model_metadata] = model_metadata_params if model_metadata_params.present?
 
-            model_family = model_metadata && model_metadata[:name]
+            model_family = model_metadata_params && model_metadata_params[:name]
             default_version = ::Gitlab::Llm::PromptVersions.version_for_prompt("chat/#{unit_primitive}", model_family)
 
-            is_self_hosted = feature_setting.is_a?(::Ai::FeatureSetting) && feature_setting.self_hosted?
-            params[:prompt_version] = if is_self_hosted || ::Ai::AmazonQ.connected?
+            params[:prompt_version] = if feature_setting&.self_hosted? || ::Ai::AmazonQ.connected?
                                         default_version
                                       else
                                         prompt_version || default_version
@@ -149,47 +147,23 @@ module Gitlab
             params
           end
 
-          def model_metadata(feature_setting)
-            ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).to_params
-          end
+          def model_params(options)
+            if chat_feature_setting&.self_hosted?
+              self_hosted_model = chat_feature_setting.self_hosted_model
 
-          def namespace_feature_setting(unit_primitive)
-            feature = unit_primitive ? "duo_chat_#{unit_primitive}" : "duo_chat"
-            ::Ai::ModelSelection::NamespaceFeatureSetting.find_by_feature(root_namespace, feature)
-          end
-
-          def model_params(options, unit_primitive = nil)
-            unit_primitive ||= options[:unit_primitive]
-            feature_setting = namespace_feature_setting(unit_primitive) ||
-              chat_feature_setting(unit_primitive: unit_primitive)
-
-            # Handle self-hosted model settings
-            if feature_setting.is_a?(::Ai::FeatureSetting) && feature_setting.self_hosted?
-              self_hosted_model = feature_setting.self_hosted_model
-              return {
+              {
                 provider: :litellm,
                 model: self_hosted_model.model,
                 model_endpoint: self_hosted_model.endpoint,
                 model_api_key: self_hosted_model.api_token,
                 model_identifier: self_hosted_model.identifier
               }
-            end
-
-            # Handle namespace feature settings
-            if feature_setting.is_a?(::Ai::ModelSelection::NamespaceFeatureSetting)
-              return {
-                provider: feature_setting.provider,
-                feature_setting: feature_setting.feature,
-                identifier: feature_setting.offered_model_ref
+            else
+              {
+                provider: provider(options),
+                model: model(options)
               }
-
             end
-
-            # Default model parameters
-            {
-              provider: provider(options),
-              model: model(options)
-            }
           end
 
           def payload_params(options)
