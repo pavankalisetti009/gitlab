@@ -3,7 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Security::AnalyzersStatus::DiffService, feature_category: :vulnerability_management do
-  let_it_be(:project) { create(:project) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, namespace: group) }
+  let_it_be(:diff_metadata) do
+    {
+      namespace_id: group.id,
+      traversal_ids: group.traversal_ids
+    }
+  end
 
   describe '.calculate_diff' do
     let(:new_analyzer_statuses) { {} }
@@ -25,10 +32,10 @@ RSpec.describe Security::AnalyzersStatus::DiffService, feature_category: :vulner
       end
 
       it 'calculates the diff for new statuses' do
-        expected_diff = {
+        expected_diff = diff_metadata.merge({ diff: {
           sast: { 'success' => 1 },
           dast: { 'failed' => 1 }
-        }
+        } })
 
         expect(calculate_diff).to eq(expected_diff)
       end
@@ -66,11 +73,11 @@ RSpec.describe Security::AnalyzersStatus::DiffService, feature_category: :vulner
         end
 
         it 'calculates the correct diff' do
-          expected_diff = {
+          expected_diff = diff_metadata.merge({ diff: {
             sast: { 'success' => -1, 'failed' => 1 },
             dast: { 'failed' => -1, 'not_configured' => 1 },
             dependency_scanning: { 'success' => 1 }
-          }
+          } })
 
           expect(calculate_diff).to eq(expected_diff)
         end
@@ -85,11 +92,11 @@ RSpec.describe Security::AnalyzersStatus::DiffService, feature_category: :vulner
         end
 
         it 'sets the missing status to not_configured' do
-          expected_diff = {
+          expected_diff = diff_metadata.merge({ diff: {
             sast: { 'success' => -1, 'failed' => 1 },
             dast: { 'failed' => -1, 'not_configured' => 1 },
             dependency_scanning: { 'success' => 1 }
-          }
+          } })
 
           expect(calculate_diff).to eq(expected_diff)
         end
@@ -99,10 +106,10 @@ RSpec.describe Security::AnalyzersStatus::DiffService, feature_category: :vulner
         let(:new_analyzer_statuses) { {} }
 
         it 'calculates the correct diff' do
-          expected_diff = {
+          expected_diff = diff_metadata.merge({ diff: {
             sast: { 'success' => -1, 'not_configured' => 1 },
             dast: { 'failed' => -1, 'not_configured' => 1 }
-          }
+          } })
 
           expect(calculate_diff).to eq(expected_diff)
         end

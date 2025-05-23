@@ -17,7 +17,7 @@ RSpec.describe Security::AnalyzersStatus::AncestorsUpdateService, feature_catego
     end
 
     it 'instantiates the service object and calls `execute`' do
-      described_class.execute(project, nil)
+      described_class.execute(nil)
 
       expect(mock_service_object).to have_received(:execute)
     end
@@ -26,9 +26,9 @@ RSpec.describe Security::AnalyzersStatus::AncestorsUpdateService, feature_catego
   describe '#execute' do
     context 'when diffs are not provided' do
       context 'when diffs is nil' do
-        let(:diffs) { nil }
+        let(:diffs_with_metadata) { nil }
 
-        subject(:namespace_update_service) { described_class.execute(project, diffs) }
+        subject(:namespace_update_service) { described_class.execute(diffs_with_metadata) }
 
         it 'does not change the db' do
           expect { namespace_update_service }
@@ -36,10 +36,21 @@ RSpec.describe Security::AnalyzersStatus::AncestorsUpdateService, feature_catego
         end
       end
 
-      context 'when diffs are an empty hash' do
-        let(:diffs) { {} }
+      context 'when diffs_with_metadata are an empty hash' do
+        let(:diffs_with_metadata) { {} }
 
-        subject(:namespace_update_service) { described_class.execute(project, diffs) }
+        subject(:namespace_update_service) { described_class.execute(diffs_with_metadata) }
+
+        it 'does not change the db' do
+          expect { namespace_update_service }
+            .to not_change { Security::AnalyzerNamespaceStatus.count }.from(0)
+        end
+      end
+
+      context 'when metadata exists' do
+        let(:diffs_with_metadata) { { namespace_id: non_existing_record_id, traversal_ids: [1, 2, 3] } }
+
+        subject(:namespace_update_service) { described_class.execute(diffs_with_metadata) }
 
         it 'does not change the db' do
           expect { namespace_update_service }
@@ -48,20 +59,59 @@ RSpec.describe Security::AnalyzersStatus::AncestorsUpdateService, feature_catego
       end
     end
 
-    context 'when diffs are provided' do
-      let(:diffs) do
+    context 'when metadata is not provided' do
+      context 'when metadata is nil' do
+        let(:diffs_with_metadata) { { diff: { sast: { "success" => 2, "failed" => 1 } } } }
+
+        subject(:namespace_update_service) { described_class.execute(diffs_with_metadata) }
+
+        it 'does not change the db' do
+          expect { namespace_update_service }
+            .to not_change { Security::AnalyzerNamespaceStatus.count }.from(0)
+        end
+      end
+
+      context 'when namespace_id is nil' do
+        let(:diffs_with_metadata) { { diff: { sast: { "success" => 2, "failed" => 1 } }, traversal_ids: [1, 2, 3] } }
+
+        subject(:namespace_update_service) { described_class.execute(diffs_with_metadata) }
+
+        it 'does not change the db' do
+          expect { namespace_update_service }
+            .to not_change { Security::AnalyzerNamespaceStatus.count }.from(0)
+        end
+      end
+
+      context 'when traversal_ids are nil' do
+        let(:diffs_with_metadata) { { diff: { sast: { "success" => 2, "failed" => 1 } }, namespace_id: 1 } }
+
+        subject(:namespace_update_service) { described_class.execute(diffs_with_metadata) }
+
+        it 'does not change the db' do
+          expect { namespace_update_service }
+            .to not_change { Security::AnalyzerNamespaceStatus.count }.from(0)
+        end
+      end
+    end
+
+    context 'when diffs_with_metadata are provided' do
+      let(:diffs_with_metadata) do
         {
-          sast: { "success" => 2, "failed" => 1 },
-          dast: { "success" => 1, "failed" => 2 }
+          namespace_id: subgroup2.id,
+          traversal_ids: subgroup2.traversal_ids,
+          diff: {
+            sast: { "success" => 2, "failed" => 1 },
+            dast: { "success" => 1, "failed" => 2 }
+          }
         }
       end
 
-      subject(:namespace_update_service) { described_class.execute(project, diffs) }
+      subject(:namespace_update_service) { described_class.execute(diffs_with_metadata) }
 
       context 'when there are no statistics in the table' do
         it 'inserts new rows to the table' do
           expect { namespace_update_service }.to change { Security::AnalyzerNamespaceStatus.count }
-            .from(0).to(number_of_groups * diffs.keys.length)
+            .from(0).to(number_of_groups * diffs_with_metadata[:diff].keys.length)
 
           expect(Security::AnalyzerNamespaceStatus.find_by(namespace_id: root_group.id, analyzer_type: "sast")
             .attributes).to include({ "success" => 2, "failure" => 1 })
@@ -107,7 +157,7 @@ RSpec.describe Security::AnalyzersStatus::AncestorsUpdateService, feature_catego
 
         it 'upserts new counts to the table' do
           expect { namespace_update_service }.to not_change { Security::AnalyzerNamespaceStatus.count }
-            .from(number_of_groups * diffs.keys.length)
+            .from(number_of_groups * diffs_with_metadata[:diff].keys.length)
 
           expect(subgroup2_sast_status.reload.attributes).to include({ "success" => 3, "failure" => 1 })
           expect(subgroup2_dast_status.reload.attributes).to include({ "success" => 1, "failure" => 5 })
@@ -129,7 +179,7 @@ RSpec.describe Security::AnalyzersStatus::AncestorsUpdateService, feature_catego
 
         it 'inserts missing statistics and upserts new counts to the table' do
           expect { namespace_update_service }.to change { Security::AnalyzerNamespaceStatus.count }.from(2)
-            .to(number_of_groups * diffs.keys.length)
+            .to(number_of_groups * diffs_with_metadata[:diff].keys.length)
 
           expect(root_group_sast_status.reload.attributes).to include({ "success" => 3, "failure" => 2 })
           expect(Security::AnalyzerNamespaceStatus.find_by(namespace_id: root_group.id, analyzer_type: "dast")
@@ -145,12 +195,16 @@ RSpec.describe Security::AnalyzersStatus::AncestorsUpdateService, feature_catego
         end
       end
 
-      context 'when diffs contain entries with zero success and zero failure' do
-        let(:diffs) do
+      context 'when diffs_with_metadata contain entries with zero success and zero failure' do
+        let(:diffs_with_metadata) do
           {
-            sast: { "success" => 2, "failed" => 1 },
-            dast: { "success" => 0, "failed" => 0 },
-            secret_detection: { "success" => 1, "failed" => 1 }
+            namespace_id: subgroup2.id,
+            traversal_ids: subgroup2.traversal_ids,
+            diff: {
+              sast: { "success" => 2, "failed" => 1 },
+              dast: { "success" => 0, "failed" => 0 },
+              secret_detection: { "success" => 1, "failed" => 1 }
+            }
           }
         end
 

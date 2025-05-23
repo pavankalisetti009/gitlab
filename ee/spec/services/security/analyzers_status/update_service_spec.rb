@@ -12,7 +12,13 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
   let(:service) { described_class.new(pipeline) }
   let(:diff_service) { instance_double(Security::AnalyzersStatus::DiffService) }
   let(:ancestors_update_service) { class_double(Security::AnalyzersStatus::AncestorsUpdateService) }
-  let(:status_diff) { { sast: { 'success' => 1 }, dast: { 'failed' => 1 } } }
+  let(:status_diff) do
+    {
+      namespace_id: group.id,
+      traversal_ids: group.traversal_ids,
+      diff: { sast: { 'success' => 1 }, dast: { 'failed' => 1 } }
+    }
+  end
 
   before do
     allow(Security::AnalyzersStatus::DiffService).to receive(:new).and_return(diff_service)
@@ -31,7 +37,7 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
         kind_of(Hash)
       )
       expect(diff_service).to have_received(:execute)
-      expect(ancestors_update_service).to have_received(:execute).with(project, status_diff)
+      expect(ancestors_update_service).to have_received(:execute).with(status_diff)
     end
   end
 

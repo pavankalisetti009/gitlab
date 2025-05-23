@@ -13,7 +13,7 @@ module Security
         process_new_statuses
         process_removed_statuses
 
-        diff
+        diff_with_metadata
       end
 
       attr_reader :project, :new_analyzer_statuses, :diff
@@ -69,6 +69,16 @@ module Security
 
         diff[analyzer_type][old_status] ||= 0
         diff[analyzer_type][old_status] -= 1
+      end
+
+      def diff_with_metadata
+        return {} unless diff.present?
+
+        {
+          namespace_id: project.namespace.id,
+          traversal_ids: project.namespace.traversal_ids,
+          diff: diff
+        }
       end
     end
   end

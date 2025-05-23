@@ -58,29 +58,32 @@ module Security
           updated_at = excluded.updated_at
       SQL
 
-      def self.execute(project, diffs)
-        new(project, diffs).execute
+      def self.execute(diffs_with_metadata)
+        new(diffs_with_metadata).execute
       end
 
-      def initialize(project, diffs)
-        @diffs = diffs
-        @project = project
+      def initialize(diffs_with_metadata)
+        @diffs_with_metadata = diffs_with_metadata
       end
 
       def execute
-        return if filtered_diffs.blank?
+        return if filtered_diffs.blank? || !valid_metadata?
 
         update_statistics_based_on_diff
       end
 
       private
 
-      attr_reader :diffs, :project
+      attr_reader :diffs_with_metadata
 
       delegate :connection, to: AnalyzerProjectStatus, private: true
 
       def filtered_diffs
-        @filtered_diffs ||= diffs&.select { |_, stats| valid_stats?(stats) }
+        @filtered_diffs ||= (diffs_with_metadata&.dig(:diff) || {}).select { |_, stats| valid_stats?(stats) }
+      end
+
+      def valid_metadata?
+        diffs_with_metadata[:namespace_id].present? && Array(diffs_with_metadata[:traversal_ids]).any?
       end
 
       def valid_stats?(stats)
@@ -108,8 +111,8 @@ module Security
           failure = stats["failed"] || 0
 
           values << [
-            project.namespace_id,
-            Arel.sql("'{#{project.namespace.traversal_ids.join(',')}}'::bigint[]"),
+            diffs_with_metadata[:namespace_id],
+            Arel.sql("'{#{diffs_with_metadata[:traversal_ids].join(',')}}'::bigint[]"),
             Enums::Security.analyzer_types[analyzer_type],
             success,
             failure
