@@ -16,7 +16,7 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
       project_path: project.full_path,
       name: 'TEST_SECRET',
       description: 'test description',
-      value: 'the-secret-value',
+      secret: 'the-secret-value',
       branch: 'main',
       environment: 'prod'
     }
@@ -103,7 +103,7 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
           project_path: project.full_path,
           name: 'TEST_SECRET_1234',
           description: 'test description',
-          value: "x" * 10001,
+          secret: "x" * 10001,
           branch: 'main',
           environment: 'prod'
         }
@@ -123,7 +123,7 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, feature_categor
           project_path: project.full_path,
           name: '../../OTHER_SECRET',
           description: 'test description',
-          value: 'Secret123',
+          secret: 'Secret123',
           branch: 'main',
           environment: 'prod'
         }

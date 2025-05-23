@@ -115,7 +115,7 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, feature_categor
         {
           project_path: project.full_path,
           name: project_secret_attributes[:name],
-          value: 'new-secret-value'
+          secret: 'new-secret-value'
         }
       end
 
