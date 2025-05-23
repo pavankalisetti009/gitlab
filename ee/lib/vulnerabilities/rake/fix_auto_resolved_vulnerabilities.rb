@@ -18,11 +18,17 @@ module Vulnerabilities
       def execute
         validate_args!
 
-        if revert
-          delete_migration
-        else
-          queue_migration
+        Gitlab::Database::SharedModel.using_connection(connection) do
+          if revert
+            delete_migration
+          else
+            queue_migration
+          end
         end
+      end
+
+      def allowed_gitlab_schemas
+        [:gitlab_sec]
       end
 
       private

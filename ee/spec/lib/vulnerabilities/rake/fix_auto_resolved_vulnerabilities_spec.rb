@@ -9,6 +9,7 @@ RSpec.describe Vulnerabilities::Rake::FixAutoResolvedVulnerabilities, feature_ca
 
   describe 'execute' do
     let(:batched_migration) { described_class::MIGRATION }
+    let(:connection) { SecApplicationRecord.connection }
 
     def up
       described_class.new(args).execute
@@ -24,16 +25,20 @@ RSpec.describe Vulnerabilities::Rake::FixAutoResolvedVulnerabilities, feature_ca
       it 'schedules migration' do
         up
 
-        expect(batched_migration).to have_scheduled_batched_migration(
-          table_name: :vulnerability_reads,
-          column_name: :vulnerability_id,
-          gitlab_schema: :gitlab_sec,
-          job_arguments: [namespace_id]
-        )
+        Gitlab::Database::SharedModel.using_connection(connection) do
+          expect(batched_migration).to have_scheduled_batched_migration(
+            table_name: :vulnerability_reads,
+            column_name: :vulnerability_id,
+            gitlab_schema: :gitlab_sec,
+            job_arguments: [namespace_id]
+          )
+        end
 
         down
 
-        expect(batched_migration).not_to have_scheduled_batched_migration
+        Gitlab::Database::SharedModel.using_connection(connection) do
+          expect(batched_migration).not_to have_scheduled_batched_migration
+        end
       end
     end
 
@@ -44,16 +49,20 @@ RSpec.describe Vulnerabilities::Rake::FixAutoResolvedVulnerabilities, feature_ca
       it 'schedules migration with parsed namespace_id' do
         up
 
-        expect(batched_migration).to have_scheduled_batched_migration(
-          table_name: :vulnerability_reads,
-          column_name: :vulnerability_id,
-          gitlab_schema: :gitlab_sec,
-          job_arguments: [namespace_id.to_i]
-        )
+        Gitlab::Database::SharedModel.using_connection(connection) do
+          expect(batched_migration).to have_scheduled_batched_migration(
+            table_name: :vulnerability_reads,
+            column_name: :vulnerability_id,
+            gitlab_schema: :gitlab_sec,
+            job_arguments: [namespace_id.to_i]
+          )
+        end
 
         down
 
-        expect(batched_migration).not_to have_scheduled_batched_migration
+        Gitlab::Database::SharedModel.using_connection(connection) do
+          expect(batched_migration).not_to have_scheduled_batched_migration
+        end
       end
     end
 
