@@ -52087,6 +52087,9 @@ msgstr ""
 msgid "Runners|%{upgradeLinkStart}Upgrade GitLab Runner%{upgradeLinkEnd} to match your GitLab version. This upgrade is highly recommended for this runner and may contain security or compatibility fixes. %{versionLinkStart}Major and minor versions%{versionLinkEnd} must match."
 msgstr ""
 
+msgid "Runners|+%{count} more"
+msgstr ""
+
 msgid "Runners|1. Configure your Google Cloud project"
 msgstr ""
 
@@ -52886,6 +52889,9 @@ msgid "Runners|Separate multiple tags with a comma. For example, %{example}."
 msgstr ""
 
 msgid "Runners|Setup instructions"
+msgstr ""
+
+msgid "Runners|Show %{count} more tags"
 msgstr ""
 
 msgid "Runners|Show only inherited"
