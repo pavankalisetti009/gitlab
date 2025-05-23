@@ -33540,6 +33540,10 @@ CREATE INDEX index_ci_runner_machines_on_executor_type ON ONLY ci_runner_machine
 
 CREATE INDEX index_012094097c ON instance_type_ci_runner_machines USING btree (executor_type);
 
+CREATE INDEX index_ci_runner_machines_on_ip_address ON ONLY ci_runner_machines USING btree (ip_address);
+
+CREATE INDEX index_053d12f7ee ON project_type_ci_runner_machines USING btree (ip_address);
+
 CREATE INDEX index_p_ci_builds_on_execution_config_id ON ONLY p_ci_builds USING btree (execution_config_id) WHERE (execution_config_id IS NOT NULL);
 
 CREATE INDEX index_0928d9f200 ON ci_builds USING btree (execution_config_id) WHERE (execution_config_id IS NOT NULL);
@@ -34640,6 +34644,8 @@ CREATE UNIQUE INDEX index_customer_relations_contacts_on_unique_email_per_group 
 
 CREATE UNIQUE INDEX index_cycle_analytics_stage_event_hashes_on_org_id_sha_256 ON analytics_cycle_analytics_stage_event_hashes USING btree (organization_id, hash_sha256);
 
+CREATE INDEX index_d2746151f0 ON instance_type_ci_runner_machines USING btree (ip_address);
+
 CREATE INDEX index_d58435d85e ON project_type_ci_runner_machines USING btree (executor_type);
 
 CREATE INDEX p_ci_pipelines_trigger_id_id_desc_idx ON ONLY p_ci_pipelines USING btree (trigger_id, id DESC);
@@ -34911,6 +34917,8 @@ CREATE INDEX index_early_access_program_tracking_events_on_event_label ON early_
 CREATE INDEX index_early_access_program_tracking_events_on_event_name ON early_access_program_tracking_events USING btree (event_name);
 
 CREATE INDEX index_early_access_program_tracking_events_on_user_id ON early_access_program_tracking_events USING btree (user_id);
+
+CREATE INDEX index_ee7c87e634 ON group_type_ci_runner_machines USING btree (ip_address);
 
 CREATE UNIQUE INDEX index_elastic_index_settings_on_alias_name ON elastic_index_settings USING btree (alias_name);
 
@@ -40642,6 +40650,8 @@ ALTER INDEX index_uploads_9ba88c4165_on_uploader_and_path ATTACH PARTITION impor
 
 ALTER INDEX index_ci_runner_machines_on_executor_type ATTACH PARTITION index_012094097c;
 
+ALTER INDEX index_ci_runner_machines_on_ip_address ATTACH PARTITION index_053d12f7ee;
+
 ALTER INDEX index_p_ci_builds_on_execution_config_id ATTACH PARTITION index_0928d9f200;
 
 ALTER INDEX index_ci_runner_machines_on_executor_type ATTACH PARTITION index_aa3b4fe8c6;
@@ -40724,9 +40734,13 @@ ALTER INDEX p_ci_pipelines_user_id_id_idx ATTACH PARTITION index_ci_pipelines_on
 
 ALTER INDEX p_ci_pipelines_user_id_id_idx1 ATTACH PARTITION index_ci_pipelines_on_user_id_and_id_desc_and_user_not_verified;
 
+ALTER INDEX index_ci_runner_machines_on_ip_address ATTACH PARTITION index_d2746151f0;
+
 ALTER INDEX index_ci_runner_machines_on_executor_type ATTACH PARTITION index_d58435d85e;
 
 ALTER INDEX p_ci_pipelines_trigger_id_id_desc_idx ATTACH PARTITION index_d8ae6ea3f3;
+
+ALTER INDEX index_ci_runner_machines_on_ip_address ATTACH PARTITION index_ee7c87e634;
 
 ALTER INDEX p_ci_builds_user_id_name_idx ATTACH PARTITION index_partial_ci_builds_on_user_id_name_parser_features;
 
