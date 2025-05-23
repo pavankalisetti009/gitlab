@@ -151,8 +151,8 @@ module Gitlab
 
           plan = Plan.find_or_create_by(name: "ultimate", title: "Ultimate")
 
-          GitlabSubscription.find_or_create_by(namespace: group, hosted_plan: plan).tap do |subscription|
-            GitlabSubscription.where(namespace: group).update_all(hosted_plan_id: plan.id) if subscription.errors.any?
+          GitlabSubscription.find_or_create_by(namespace: group).tap do |subscription|
+            subscription.update!(hosted_plan_id: plan.id, seats: 100)
           end
         end
         # rubocop:enable CodeReuse/ActiveRecord
@@ -223,6 +223,11 @@ module Gitlab
 
           Gitlab::Duo::Developments::FeatureFlagEnabler.execute
           ::Feature.enable(:enable_hamilton_in_user_preferences)
+
+          # this feature flag is for making staging-ref act like a self-managed instance.
+          # when enabled, it makes SaaS mode like Self-Managed mode when it comes to
+          # certain Duo things so best to disable
+          ::Feature.disable(:allow_self_hosted_features_for_com)
         end
 
         def ensure_license!
