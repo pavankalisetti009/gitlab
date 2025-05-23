@@ -15,21 +15,6 @@ module CloudConnector
       cut_off_date.nil? || cut_off_date&.future?
     end
 
-    # Returns the active add-on purchases for the add-on names associated with this service
-    #
-    # namespace - Namespace
-    def add_on_purchases(namespace = nil)
-      if Feature.enabled?(:cloud_connector_new_purchase_lookup, Feature.current_request)
-        GitlabSubscriptions::AddOnPurchase.for_active_add_ons(@add_on_names, resource: namespace)
-      else
-        results = GitlabSubscriptions::AddOnPurchase.by_add_on_name(@add_on_names).active
-
-        results = results.by_namespace(namespace.self_and_ancestor_ids) if namespace
-
-        results
-      end
-    end
-
     # Returns true if service is purchased.
     # For provided namespace, it will check if add-on is purchased for the provided group/project or its ancestors.
     #
@@ -37,7 +22,7 @@ module CloudConnector
     #
     # namespace - Namespace
     def purchased?(namespace = nil)
-      add_on_purchases(namespace).any?
+      GitlabSubscriptions::AddOnPurchase.for_active_add_ons(@add_on_names, resource: namespace).any?
     end
 
     # Returns CloudConnector access JWT token.

@@ -61,11 +61,7 @@ module CloudConnector
       end
 
       def add_on_purchases_for(resource = nil)
-        if Feature.enabled?(:cloud_connector_new_purchase_lookup, Feature.current_request)
-          GitlabSubscriptions::AddOnPurchase.for_active_add_ons(add_on_names, resource: resource)
-        else
-          resource.is_a?(User) ? add_on_purchases.for_user(resource) : add_on_purchases(resource)
-        end
+        GitlabSubscriptions::AddOnPurchase.for_active_add_ons(add_on_names, resource: resource)
       end
 
       def allowed_scopes_during_free_access
