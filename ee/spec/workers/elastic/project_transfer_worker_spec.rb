@@ -20,15 +20,13 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
 
     describe '#perform' do
       context 'when elasticsearch_limit_indexing is on' do
+        let_it_be(:es_indexed_namespace) { create(:elasticsearch_indexed_namespace, namespace: indexed_namespace) }
+
         before do
           stub_ee_application_setting(elasticsearch_limit_indexing: true)
         end
 
         context 'when transferring from a non-existent namespace to an indexed namespace' do
-          before do
-            create(:elasticsearch_indexed_namespace, namespace: indexed_namespace)
-          end
-
           it 'invalidates cache when an namespace is not found' do
             expect(Elastic::ProcessInitialBookkeepingService).to receive(:track!).once
             expect(Elastic::ProcessInitialBookkeepingService).to receive(:backfill_projects!)
@@ -39,17 +37,17 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
             expect(::Gitlab::CurrentSettings)
               .to receive(:invalidate_elasticsearch_indexes_cache_for_project!)
               .with(project.id).and_call_original
-            expect(worker).to receive(:delete_vulnerabilities_with_old_routing).with(project)
+            expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
+              task: :all,
+              project_id: project.id,
+              traversal_id: project.namespace.elastic_namespace_ancestry
+            })
 
             worker.perform(project.id, non_existing_record_id, indexed_namespace.id)
           end
         end
 
         context 'when transferring from a non-indexed namespace to an indexed namespace' do
-          before do
-            create(:elasticsearch_indexed_namespace, namespace: indexed_namespace)
-          end
-
           it 'invalidates the cache and indexes the project and all associated data and deletes the old project' do
             expect(Elastic::ProcessInitialBookkeepingService).to receive(:track!).once
             expect(Elastic::ProcessInitialBookkeepingService).to receive(:backfill_projects!)
@@ -60,7 +58,11 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
             expect(::Gitlab::CurrentSettings)
               .to receive(:invalidate_elasticsearch_indexes_cache_for_project!)
               .with(project.id).and_call_original
-            expect(worker).to receive(:delete_vulnerabilities_with_old_routing).with(project)
+            expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
+              task: :all,
+              project_id: project.id,
+              traversal_id: project.namespace.elastic_namespace_ancestry
+            })
 
             worker.perform(project.id, non_indexed_namespace.id, indexed_namespace.id)
           end
@@ -71,10 +73,6 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
           # non-indexed namespace which would have occurred prior to this worker being invoked
           let_it_be(:project) { create(:project, namespace: non_indexed_namespace) }
 
-          before do
-            create(:elasticsearch_indexed_namespace, namespace: indexed_namespace)
-          end
-
           it 'invalidates the cache and removes only the associated data from the index' do
             expect(Elastic::ProcessInitialBookkeepingService).to receive(:track!).with(project)
             expect(Elastic::ProcessInitialBookkeepingService).not_to receive(:backfill_projects!)
@@ -83,7 +81,11 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
             expect(::Gitlab::CurrentSettings)
               .to receive(:invalidate_elasticsearch_indexes_cache_for_project!)
                 .with(project.id).and_call_original
-            expect(worker).to receive(:delete_vulnerabilities_with_old_routing).with(project)
+            expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
+              task: :all,
+              project_id: project.id,
+              traversal_id: project.namespace.elastic_namespace_ancestry
+            })
 
             worker.perform(project.id, non_indexed_namespace.id, indexed_namespace.id)
           end
@@ -95,7 +97,6 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
           let_it_be(:another_indexed_namespace) { create(:group) }
 
           before do
-            create(:elasticsearch_indexed_namespace, namespace: indexed_namespace)
             create(:elasticsearch_indexed_namespace, namespace: another_indexed_namespace)
           end
 
@@ -107,7 +108,11 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
             expect(ElasticDeleteProjectWorker).to receive(:perform_async)
               .with(project.id, "project_#{project.id}",
                 { project_only: true, namespace_routing_id: another_indexed_namespace.id })
-            expect(worker).to receive(:delete_vulnerabilities_with_old_routing).with(project)
+            expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
+              task: :all,
+              project_id: project.id,
+              traversal_id: project.namespace.elastic_namespace_ancestry
+            })
 
             worker.perform(project.id, another_indexed_namespace.id, indexed_namespace.id)
           end
@@ -128,31 +133,35 @@ RSpec.describe Elastic::ProjectTransferWorker, :elastic, feature_category: :glob
           expect(ElasticDeleteProjectWorker).to receive(:perform_async)
             .with(project.id, "project_#{project.id}",
               { project_only: true, namespace_routing_id: non_indexed_namespace.id })
-          expect(worker).to receive(:delete_vulnerabilities_with_old_routing).with(project)
+          expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
+            task: :all,
+            project_id: project.id,
+            traversal_id: project.namespace.elastic_namespace_ancestry
+          })
 
           worker.perform(project.id, non_indexed_namespace.id, indexed_namespace.id)
         end
       end
+    end
+  end
 
-      describe '#delete_old_project' do
-        it 'calls ElasticDeleteProjectWorker with correct parameters' do
-          options = { namespace_routing_id: non_indexed_namespace.id }
+  describe '#delete_old_project' do
+    it 'calls ElasticDeleteProjectWorker with correct parameters' do
+      options = { namespace_routing_id: non_indexed_namespace.id }
 
-          expect(ElasticDeleteProjectWorker).to receive(:perform_async)
-            .with(project.id, project.es_id, options)
+      expect(ElasticDeleteProjectWorker).to receive(:perform_async)
+        .with(project.id, project.es_id, options)
 
-          worker.send(:delete_old_project, project, non_indexed_namespace.id)
-        end
+      worker.send(:delete_old_project, project, non_indexed_namespace.id)
+    end
 
-        it 'calls ElasticDeleteProjectWorker with project_only option when specified' do
-          options = { project_only: true, namespace_routing_id: non_indexed_namespace.id }
+    it 'calls ElasticDeleteProjectWorker with project_only option when specified' do
+      options = { project_only: true, namespace_routing_id: non_indexed_namespace.id }
 
-          expect(ElasticDeleteProjectWorker).to receive(:perform_async)
-            .with(project.id, project.es_id, options)
+      expect(ElasticDeleteProjectWorker).to receive(:perform_async)
+        .with(project.id, project.es_id, options)
 
-          worker.send(:delete_old_project, project, non_indexed_namespace.id, project_only: true)
-        end
-      end
+      worker.send(:delete_old_project, project, non_indexed_namespace.id, project_only: true)
     end
   end
 end

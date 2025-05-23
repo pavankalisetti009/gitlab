@@ -35,13 +35,13 @@ RSpec.describe Search::Elastic::DeleteWorker, :elastic_helpers, feature_category
       end
 
       context 'when we pass valid task' do
-        context 'with delete_project_associations task' do
+        context 'with delete_project_work_items task' do
           subject(:perform) do
-            described_class.new.perform({ task: :delete_project_associations })
+            described_class.new.perform({ task: :delete_project_work_items })
           end
 
           it 'calls the corresponding service' do
-            expect(::Search::Elastic::Delete::ProjectAssociationsService).to receive(:execute)
+            expect(::Search::Elastic::Delete::ProjectWorkItemsService).to receive(:execute)
             perform
           end
         end

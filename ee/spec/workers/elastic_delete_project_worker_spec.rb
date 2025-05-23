@@ -44,7 +44,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
       options: { project_id: project.id })).not_to be_empty
 
     expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
-      task: :delete_project_associations,
+      task: :delete_project_work_items,
       project_id: project.id
     }).once.and_call_original
 
@@ -74,7 +74,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
     allow(helper).to receive(:index_exists?).and_return(false)
 
     expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
-      task: :delete_project_associations,
+      task: :delete_project_work_items,
       project_id: 1
     }).once
     expect(helper.client).to receive(:delete_by_query).with(a_hash_including(index: Project.index_name))
@@ -164,7 +164,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
         options: { project_id: project.id })).not_to be_empty
 
       expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
-        task: :delete_project_associations,
+        task: :delete_project_work_items,
         project_id: project.id
       }).once.and_call_original
 
@@ -214,7 +214,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
       expect(helper.client).to receive(:delete).with(a_hash_including(index: Project.index_name)).once.and_call_original
 
       expect(::Search::Elastic::DeleteWorker).not_to receive(:perform_async).with({
-        task: :delete_project_associations,
+        task: :delete_project_work_items,
         project_id: project.id
       })
 
