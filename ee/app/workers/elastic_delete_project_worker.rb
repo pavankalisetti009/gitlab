@@ -19,7 +19,7 @@ class ElasticDeleteProjectWorker
 
     remove_children_documents(project_id, es_id, options)
     # WorkItems have different routing that's why one more query is needed.
-    ::Search::Elastic::DeleteWorker.perform_async(task: :delete_project_associations, project_id: project_id)
+    ::Search::Elastic::DeleteWorker.perform_async(task: :delete_project_work_items, project_id: project_id)
     helper.remove_wikis_from_the_standalone_index(project_id, 'Project', options[:namespace_routing_id]) # Wikis have different routing that's why one more query is needed.
     IndexStatus.for_project(project_id).delete_all
   end

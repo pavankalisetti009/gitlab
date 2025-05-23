@@ -4,7 +4,6 @@ module Elastic
   class ProjectTransferWorker
     include ApplicationWorker
     include Search::Worker
-    include ::Search::Elastic::VulnerabilityManagementHelper
     prepend ::Geo::SkipSecondary
 
     data_consistency :delayed
@@ -13,7 +12,9 @@ module Elastic
     urgency :throttled
 
     def perform(project_id, old_namespace_id, new_namespace_id)
-      project = Project.find(project_id)
+      project = Project.find_by_id(project_id)
+      return unless project
+
       should_invalidate_elasticsearch_indexes_cache = should_invalidate_elasticsearch_indexes_cache?(
         old_namespace_id, new_namespace_id
       )
@@ -21,25 +22,29 @@ module Elastic
       project.invalidate_elasticsearch_indexes_cache! if should_invalidate_elasticsearch_indexes_cache
 
       if project.maintaining_elasticsearch? && project.maintaining_indexed_associations?
-        # If the project is indexed, the project and all associated data are queued for indexing
-        # to make sure the namespace_ancestry field gets updated in each document.
-        # Delete the project record with old routing from the index
-        ::Elastic::ProcessInitialBookkeepingService.track!(project)
+        # if the new namespace is indexed:
+        #   1. queue all project associated data for indexing to update the namespace ancestry field
+        #   2. delete the project record with old routing from the index
         ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project, skip_projects: true)
 
         delete_old_project(project, old_namespace_id, project_only: true)
       elsif should_invalidate_elasticsearch_indexes_cache && ::Gitlab::CurrentSettings.elasticsearch_indexing?
-        # If the new namespace isn't indexed, the project's associated records should no longer exist in the index
-        # and will be deleted asynchronously. Queue the project for indexing
-        # to update the namespace field and remove the old document from the index.
-        ::Elastic::ProcessInitialBookkeepingService.track!(project)
+        # if the new namespace isn't indexed:
+        #   1. delete the project associated data from the index asynchronously
 
         delete_old_project(project, old_namespace_id)
       end
 
-      # Vulnerability honours only ::Gitlab::CurrentSettings.elasticsearch_indexing?.
-      # Should always run on project/group transfer so keeping it outside the if, elsif.
-      delete_vulnerabilities_with_old_routing(project)
+      # projects are always indexed
+      # queue for indexing after transfer to update the namespace ancestry field
+      ::Elastic::ProcessInitialBookkeepingService.track!(project)
+
+      # delete all project associated documents with old namespace ancestry asynchronously
+      ::Search::Elastic::DeleteWorker.perform_async(
+        task: :all,
+        traversal_id: project.namespace.elastic_namespace_ancestry,
+        project_id: project.id
+      )
     end
 
     private

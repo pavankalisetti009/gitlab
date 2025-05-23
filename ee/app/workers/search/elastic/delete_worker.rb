@@ -13,7 +13,7 @@ module Search
       idempotent!
 
       TASKS = {
-        delete_project_associations: ::Search::Elastic::Delete::ProjectAssociationsService,
+        delete_project_work_items: ::Search::Elastic::Delete::ProjectWorkItemsService,
         delete_project_vulnerabilities: ::Search::Elastic::Delete::VulnerabilityService
       }.freeze
 

@@ -53,78 +53,7 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
     end
   end
 
-  describe 'elasticsearch indexing' do
-    context 'when we transfer from group_namespace to group_namespace' do
-      let_it_be(:new_group) { create(:group) }
-      let_it_be(:project) { create(:project, namespace: group) }
-
-      before do
-        new_group.add_owner(user)
-      end
-
-      it 'call to ::Search::Elastic::DeleteWorker to remove duplicate work items' do
-        expect(project.namespace).to eq(group)
-        expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
-          task: :delete_project_associations,
-          project_id: project.id,
-          traversal_id: new_group.elastic_namespace_ancestry
-        }).once
-
-        subject.execute(new_group)
-        expect(project.namespace).to eq(new_group)
-      end
-    end
-
-    context 'when we transfer from group_namespace to user_namespace' do
-      let_it_be(:project) { create(:project, namespace: group) }
-
-      it 'call to ::Search::Elastic::DeleteWorker to remove duplicate work items' do
-        expect(project.namespace).to eq(group)
-        expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
-          task: :delete_project_associations,
-          project_id: project.id,
-          traversal_id: user.namespace.elastic_namespace_ancestry
-        }).once
-
-        subject.execute(user.namespace)
-        expect(project.namespace).to eq(user.namespace)
-      end
-    end
-
-    context 'when we transfer from user_namespace to group_namespace' do
-      it 'call to ::Search::Elastic::DeleteWorker to remove duplicate work items' do
-        expect(project.namespace).to eq(user.namespace)
-        expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
-          task: :delete_project_associations,
-          project_id: project.id,
-          traversal_id: group.elastic_namespace_ancestry
-        }).once
-
-        subject.execute(group)
-        expect(project.namespace).to eq(group)
-      end
-    end
-
-    context 'when we transfer from user_namespace to user_namespace' do
-      let_it_be(:new_user) { create(:user) }
-
-      before do
-        project.add_owner(new_user)
-      end
-
-      it 'call to ::Search::Elastic::DeleteWorker to remove duplicate work items' do
-        expect(project.namespace).to eq(user.namespace)
-        expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
-          task: :delete_project_associations,
-          project_id: project.id,
-          traversal_id: new_user.namespace.elastic_namespace_ancestry
-        }).once
-
-        described_class.new(project, new_user).execute(new_user.namespace)
-        expect(project.namespace).to eq(new_user.namespace)
-      end
-    end
-
+  describe 'elasticsearch indexing', feature_category: :global_search do
     it 'delegates transfer to Elastic::ProjectTransferWorker and ::Search::Zoekt::ProjectTransferWorker' do
       expect(::Elastic::ProjectTransferWorker).to receive(:perform_async).with(project.id, project.namespace.id, group.id).once
       expect(::Search::Zoekt::ProjectTransferWorker).to receive(:perform_async).with(project.id, project.namespace.id).once

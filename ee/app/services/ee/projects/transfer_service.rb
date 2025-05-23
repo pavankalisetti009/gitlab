@@ -25,11 +25,6 @@ module EE
       def post_update_hooks(project, old_group)
         super
 
-        ::Search::Elastic::DeleteWorker.perform_async(
-          task: :delete_project_associations,
-          traversal_id: project.namespace.elastic_namespace_ancestry,
-          project_id: project.id
-        )
         ::Elastic::ProjectTransferWorker.perform_async(project.id, old_namespace.id, new_namespace.id)
         ::Search::Zoekt::ProjectTransferWorker.perform_async(project.id, old_namespace.id)
 
