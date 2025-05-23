@@ -19,15 +19,6 @@ module Gitlab
       job_arguments :namespace_id
       operation_name :fix_vulnerabilities_transitioned_from_dismissed_to_resolved
       feature_category :vulnerability_management
-      scope_to ->(vulnerability_reads) {
-        relation = vulnerability_reads.where(state: [Vulnerability.states[:detected], Vulnerability.states[:resolved]])
-
-        return relation if namespace_id == 'instance'
-
-        relation
-          .where(vulnerability_reads.arel_table[:traversal_ids].gteq([namespace_id]))
-          .where(vulnerability_reads.arel_table[:traversal_ids].lt([namespace_id.next]))
-      }
 
       class Vulnerability < ::SecApplicationRecord
         self.table_name = 'vulnerabilities'
@@ -79,7 +70,11 @@ module Gitlab
       end
 
       def perform
-        each_sub_batch do |vulnerability_reads|
+        each_sub_batch do |batch|
+          vulnerability_reads = scoped_vulnerability_reads(batch)
+
+          next if vulnerability_reads.blank?
+
           data = affected_vulnerability_data(vulnerability_reads)
 
           next if data.blank?
@@ -89,6 +84,16 @@ module Gitlab
           transition_states(data, batch_timestamp)
           insert_notes(data, batch_timestamp)
         end
+      end
+
+      def scoped_vulnerability_reads(vulnerability_reads)
+        relation = vulnerability_reads.where(state: [Vulnerability.states[:detected], Vulnerability.states[:resolved]])
+
+        return relation if namespace_id == 'instance'
+
+        relation
+          .where(vulnerability_reads.arel_table[:traversal_ids].gteq([namespace_id]))
+          .where(vulnerability_reads.arel_table[:traversal_ids].lt([namespace_id.next]))
       end
 
       def affected_vulnerability_data(vulnerability_reads)
