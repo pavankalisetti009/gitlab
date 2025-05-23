@@ -61,8 +61,10 @@ module ComplianceManagement
           ).execute
 
           if result.success?
-            import_controls(requirement: result.payload[:requirement],
-              controls: requirement[:controls])
+            import_controls(
+              requirement: result.payload[:requirement],
+              controls: Array.wrap(requirement[:controls])
+            )
           end
 
           next unless result.error?
@@ -77,7 +79,7 @@ module ComplianceManagement
       end
 
       def requirements_payload
-        json_payload[:requirements]
+        Array.wrap json_payload[:requirements]
       end
 
       def import_controls(requirement:, controls:)
