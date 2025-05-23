@@ -39974,10 +39974,10 @@ msgstr ""
 msgid "Must start with letter, digit, emoji, or underscore. Can also contain periods, dashes, spaces, and parentheses."
 msgstr ""
 
-msgid "My awesome group"
+msgid "My company or team"
 msgstr ""
 
-msgid "My company or team"
+msgid "My group"
 msgstr ""
 
 msgid "My reaction"
@@ -43074,9 +43074,6 @@ msgstr ""
 msgid "Organization|Change organization URL"
 msgstr ""
 
-msgid "Organization|Changing an organization's URL can have unintended side effects."
-msgstr ""
-
 msgid "Organization|Choose organization visibility level."
 msgstr ""
 
@@ -43204,7 +43201,7 @@ msgid_plural "Organization|Organizations must have at least one owner. To delete
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "Organization|Perform advanced options such as deleting the organization."
+msgid "Organization|Perform advanced options such as changing the organization URL."
 msgstr ""
 
 msgid "Organization|Private - The organization can only be viewed by members."
@@ -43243,7 +43240,7 @@ msgstr ""
 msgid "Organization|Unable to fetch organizations. Reload the page to try again."
 msgstr ""
 
-msgid "Organization|Update your organization name, description, and avatar."
+msgid "Organization|Update your organization name, description, and avatar. %{linkStart}Learn more about organizations%{linkEnd}."
 msgstr ""
 
 msgid "Organization|View all"
@@ -49093,7 +49090,7 @@ msgstr ""
 msgid "ProjectsNewEdit|Must start with a letter, digit, emoji, or underscore. Can also contain periods, dashes, spaces, and parentheses."
 msgstr ""
 
-msgid "ProjectsNewEdit|My awesome project"
+msgid "ProjectsNewEdit|My project"
 msgstr ""
 
 msgid "ProjectsNewEdit|Project description"
@@ -49245,7 +49242,7 @@ msgstr ""
 msgid "ProjectsNew|Must start with a lowercase or uppercase letter, digit, emoji, or underscore. Can also contain dots, pluses, dashes, or spaces."
 msgstr ""
 
-msgid "ProjectsNew|My awesome project"
+msgid "ProjectsNew|My project"
 msgstr ""
 
 msgid "ProjectsNew|New project"
