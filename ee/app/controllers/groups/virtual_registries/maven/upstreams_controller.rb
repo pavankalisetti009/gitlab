@@ -7,6 +7,7 @@ module Groups
         before_action :verify_read_virtual_registry!, only: [:show]
         before_action :verify_update_virtual_registry!, only: [:edit]
         before_action :set_upstream, only: [:edit, :show]
+        before_action :push_ability, only: [:edit]
 
         feature_category :virtual_registry
         urgency :low
@@ -24,6 +25,11 @@ module Groups
 
         def find_params
           params.permit(:id)
+        end
+
+        def push_ability
+          push_frontend_ability(ability: :destroy_virtual_registry,
+            resource: group.virtual_registry_policy_subject, user: current_user)
         end
       end
     end

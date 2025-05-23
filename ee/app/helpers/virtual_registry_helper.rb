@@ -47,4 +47,25 @@ module VirtualRegistryHelper
       }
     }
   end
+
+  def edit_upstream_template_data(maven_upstream)
+    {
+      upstream: maven_upstream_attributes(maven_upstream),
+      registryPath: group_virtual_registries_maven_registry_path(maven_upstream.group, maven_upstream.registry),
+      upstreamPath: group_virtual_registries_maven_upstream_path(maven_upstream.group, maven_upstream)
+    }.to_json
+  end
+
+  private
+
+  def maven_upstream_attributes(maven_upstream)
+    {
+      id: maven_upstream.id,
+      name: maven_upstream.name,
+      url: maven_upstream.url,
+      description: maven_upstream.description,
+      username: maven_upstream.username,
+      cacheValidityHours: maven_upstream.cache_validity_hours
+    }
+  end
 end

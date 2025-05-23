@@ -3,9 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_registry do
+  include Spec::Support::Helpers::ModalHelpers
+
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :private) }
-  let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, group: group) }
+  let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
+  let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, group: group, registry: registry) }
 
   before do
     stub_config(dependency_proxy: { enabled: true })
@@ -69,10 +72,50 @@ RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_re
 
       it_behaves_like 'virtual registry is unavailable'
 
-      it 'renders edit maven virtual registry upstream page' do
-        visit url
+      describe 'behaviour', :aggregate_failures, :js do
+        it 'allows updation of existing maven upstream' do
+          visit url
 
-        expect(page).to have_selector('h1', text: 'Edit upstream')
+          expect(page).to have_selector('h1', text: 'Edit upstream')
+          fill_in 'Name', with: 'test maven upstream'
+          fill_in 'Description (optional)', with: 'This is a test maven upstream'
+          fill_in 'Password (optional)', with: 'mypassword1234'
+          click_button 'Save changes'
+
+          expect(page).to have_current_path(group_virtual_registries_maven_upstream_path(group, upstream))
+          expect(page).to have_title('test maven upstream')
+          expect(page).to have_content('Maven upstream has been updated.')
+        end
+
+        it 'shows error when virtual upstream name is too long' do
+          visit url
+
+          fill_in 'Name', with: 'test maven registry' * 20
+          click_button 'Save changes'
+
+          expect(page).to have_content('Request failed with status code 400')
+        end
+
+        it 'allows deletion' do
+          visit url
+
+          click_button 'Delete upstream'
+
+          within_modal do
+            click_button 'Delete'
+          end
+
+          expect(page).to have_current_path(group_virtual_registries_maven_registry_path(group, registry))
+          expect(page).to have_content('Maven upstream has been deleted.')
+        end
+
+        it 'passes accessibility tests' do
+          visit url
+
+          wait_for_requests
+
+          expect(page).to be_axe_clean
+        end
       end
     end
   end

@@ -347,8 +347,8 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
         'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | nil | :ok
         nil   | nil   | nil                  | nil    | nil    | 3   | :ok
         'foo' | 'bar' | 'http://example.com' | 'test' | 'test' | 3   | :ok
+        'foo' | ''    | 'http://example.com' | 'test' | 'test' | 3   | :ok
         ''    | 'bar' | 'http://example.com' | 'test' | 'test' | 3   | :bad_request
-        'foo' | ''    | 'http://example.com' | 'test' | 'test' | 3   | :bad_request
         'foo' | 'bar' | ''                   | 'test' | 'test' | 3   | :bad_request
         'foo' | 'bar' | 'http://example.com' | ''     | 'test' | 3   | :bad_request
         'foo' | 'bar' | 'http://example.com' | 'test' | ''     | 3   | :bad_request

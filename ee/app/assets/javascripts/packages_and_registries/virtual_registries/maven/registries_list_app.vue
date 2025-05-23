@@ -5,7 +5,7 @@ import { getMavenVirtualRegistriesList } from 'ee/api/virtual_registries_api';
 import MavenRegistryItem from 'ee/packages_and_registries/virtual_registries/components/maven_registry_item.vue';
 
 export default {
-  name: 'MavenUpstreamListApp',
+  name: 'MavenRegistriesListApp',
   components: {
     GlAlert,
     GlEmptyState,
