@@ -2,7 +2,12 @@
 
 # rubocop:disable Rails/Date -- e2e specs do not set the timezone
 module QA
-  RSpec.describe 'Plan', product_group: :product_planning do
+  RSpec.describe 'Plan', product_group: :product_planning, feature_flag: { name: :work_item_epics } do
+    before do
+      Runtime::Feature.enable(:work_item_epics)
+      Runtime::Feature.enable(:create_group_level_work_items)
+    end
+
     include_context 'work item epics migration'
     include Support::API
 

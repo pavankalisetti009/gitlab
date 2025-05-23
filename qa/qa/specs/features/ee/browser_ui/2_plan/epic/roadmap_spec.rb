@@ -1,7 +1,12 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', product_group: :product_planning do
+  RSpec.describe 'Plan', product_group: :product_planning, feature_flag: { name: :work_item_epics } do
+    before do
+      Runtime::Feature.enable(:work_item_epics)
+      Runtime::Feature.enable(:create_group_level_work_items)
+    end
+
     describe 'Epics roadmap' do
       include_context 'work item epics migration'
       include Support::Dates
