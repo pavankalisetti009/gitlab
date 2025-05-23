@@ -34,6 +34,7 @@ describe('ValueStreamFormContent', () => {
   let trackingSpy = null;
 
   const mockValueStream = { id: 13 };
+  const valueStreamGid = 'gid://gitlab/ValueStream/13';
   const namespacePath = 'fake/group/path';
   const streamName = 'Cool stream';
   const formSubmissionErrors = {
@@ -58,7 +59,7 @@ describe('ValueStreamFormContent', () => {
         namespaceFullPath: namespacePath,
         stageEvents,
         defaultStages,
-        isEditing: false,
+        valueStreamGid: '',
         ...provide,
       },
       propsData: props,
@@ -340,7 +341,7 @@ describe('ValueStreamFormContent', () => {
     beforeEach(() => {
       wrapper = createComponent({
         provide: {
-          isEditing: true,
+          valueStreamGid,
         },
         props: {
           initialData,
@@ -392,7 +393,7 @@ describe('ValueStreamFormContent', () => {
       beforeEach(() => {
         wrapper = createComponent({
           provide: {
-            isEditing: true,
+            valueStreamGid,
           },
           props: {
             initialData: { ...initialData, stages: [...initialData.stages, ...hiddenStages] },
@@ -433,7 +434,7 @@ describe('ValueStreamFormContent', () => {
       beforeEach(() => {
         wrapper = createComponent({
           provide: {
-            isEditing: true,
+            valueStreamGid,
           },
           props: {
             initialData,
@@ -474,7 +475,7 @@ describe('ValueStreamFormContent', () => {
 
           wrapper = createComponent({
             provide: {
-              isEditing: true,
+              valueStreamGid,
             },
             props: {
               initialData,
@@ -527,7 +528,7 @@ describe('ValueStreamFormContent', () => {
 
           wrapper = createComponent({
             provide: {
-              isEditing: true,
+              valueStreamGid,
             },
             props: {
               initialData,

@@ -9,9 +9,9 @@ describe('ValueStreamFormContentActions', () => {
   const findPrimaryBtn = () => wrapper.findByTestId('primary-button');
   const findCancelBtn = () => wrapper.findByTestId('cancel-button');
 
-  const createComponent = ({ props = {}, isEditing = false, valueStreamId = -1 } = {}) => {
+  const createComponent = ({ props = {}, valueStreamGid = '' } = {}) => {
     wrapper = shallowMountExtended(ValueStreamFormContentActions, {
-      provide: { vsaPath, isEditing, valueStream: { id: valueStreamId } },
+      provide: { vsaPath, valueStreamGid },
       propsData: {
         ...props,
       },
@@ -19,50 +19,46 @@ describe('ValueStreamFormContentActions', () => {
   };
 
   describe.each`
-    isEditing | valueStreamId | text                   | cancelHref
-    ${false}  | ${-1}         | ${'New value stream'}  | ${vsaPath}
-    ${true}   | ${-1}         | ${'Save value stream'} | ${vsaPath}
-    ${true}   | ${13}         | ${'Save value stream'} | ${`/mockVsaPath/test?value_stream_id=13`}
-  `(
-    'when `valueStreamId` is `$valueStreamId`',
-    ({ isEditing, valueStreamId, text, cancelHref }) => {
+    valueStreamGid                   | text                   | cancelHref
+    ${''}                            | ${'New value stream'}  | ${vsaPath}
+    ${'gid://gitlab/ValueStream/13'} | ${'Save value stream'} | ${`/mockVsaPath/test?value_stream_id=13`}
+  `('when `valueStreamGid` is `$valueStreamGid`', ({ valueStreamGid, text, cancelHref }) => {
+    beforeEach(() => {
+      createComponent({ valueStreamGid });
+    });
+
+    it('renders primary action correctly', () => {
+      expect(findPrimaryBtn().text()).toBe(text);
+      expect(findPrimaryBtn().props()).toMatchObject({
+        variant: 'confirm',
+        loading: false,
+        disabled: false,
+      });
+    });
+
+    it('emits `clickPrimaryAction` event when primary action is selected', () => {
+      findPrimaryBtn().vm.$emit('click');
+
+      expect(wrapper.emitted('clickPrimaryAction')).toHaveLength(1);
+    });
+
+    it('renders cancel button link correctly', () => {
+      expect(findCancelBtn().props('disabled')).toBe(false);
+      expect(findCancelBtn().attributes('href')).toBe(cancelHref);
+    });
+
+    describe('isLoading=true', () => {
       beforeEach(() => {
-        createComponent({ valueStreamId, isEditing });
+        createComponent({ valueStreamGid, props: { isLoading: true } });
       });
 
-      it('renders primary action correctly', () => {
-        expect(findPrimaryBtn().text()).toBe(text);
-        expect(findPrimaryBtn().props()).toMatchObject({
-          variant: 'confirm',
-          loading: false,
-          disabled: false,
-        });
+      it('sets primary action to a loading state', () => {
+        expect(findPrimaryBtn().props('loading')).toBe(true);
       });
 
-      it('emits `clickPrimaryAction` event when primary action is selected', () => {
-        findPrimaryBtn().vm.$emit('click');
-
-        expect(wrapper.emitted('clickPrimaryAction')).toHaveLength(1);
+      it('disables all other actions', () => {
+        expect(findCancelBtn().props('disabled')).toBe(true);
       });
-
-      it('renders cancel button link correctly', () => {
-        expect(findCancelBtn().props('disabled')).toBe(false);
-        expect(findCancelBtn().attributes('href')).toBe(cancelHref);
-      });
-
-      describe('isLoading=true', () => {
-        beforeEach(() => {
-          createComponent({ valueStreamId, isEditing, props: { isLoading: true } });
-        });
-
-        it('sets primary action to a loading state', () => {
-          expect(findPrimaryBtn().props('loading')).toBe(true);
-        });
-
-        it('disables all other actions', () => {
-          expect(findCancelBtn().props('disabled')).toBe(true);
-        });
-      });
-    },
-  );
+    });
+  });
 });

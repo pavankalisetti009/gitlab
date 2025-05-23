@@ -153,8 +153,8 @@ describe('formatStageDataForSubmission', () => {
     name: 'Fake new stage',
     startEventIdentifier: 'issue_created',
     endEventIdentifier: 'issue_closed',
-    startEventLabelId: 'label A',
-    endEventLabelId: 'label B',
+    startEventLabelId: 'gid://gitlab/GroupLabel/1',
+    endEventLabelId: 'gid://gitlab/GroupLabel/2',
   };
 
   describe('default stages', () => {
@@ -220,6 +220,20 @@ describe('formatStageDataForSubmission', () => {
       expect(res.custom).toBe(true);
     });
   });
+
+  describe('converts label GIDs to integers', () => {
+    beforeEach(() => {
+      [res] = formatStageDataForSubmission([{ ...fakeStage, custom: true }]);
+    });
+
+    it('start label', () => {
+      expect(res.start_event_label_id).toBe(1);
+    });
+
+    it('end label', () => {
+      expect(res.end_event_label_id).toBe(2);
+    });
+  });
 });
 
 describe('generateInitialStageData', () => {
@@ -244,10 +258,10 @@ describe('generateInitialStageData', () => {
     startEventIdentifier: 'merge_request_created',
     endEventIdentifier: 'merge_request_closed',
     startEventLabel: {
-      id: 'label_added',
+      id: 'gid://gitlab/GroupLabel/1',
     },
     endEventLabel: {
-      id: 'label_removed',
+      id: 'gid://gitlab/GroupLabel/2',
     },
     custom: true,
   };

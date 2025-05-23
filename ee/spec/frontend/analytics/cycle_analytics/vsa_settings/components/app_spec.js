@@ -1,35 +1,42 @@
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import { GlLoadingIcon, GlAlert } from '@gitlab/ui';
-import MockAdapter from 'axios-mock-adapter';
-import axios from '~/lib/utils/axios_utils';
-import { HTTP_STATUS_OK, HTTP_STATUS_NOT_FOUND } from '~/lib/utils/http_status';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import VSASettingsApp from 'ee/analytics/cycle_analytics/vsa_settings/components/app.vue';
 import ValueStreamFormContent from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form_content.vue';
+import getValueStream from 'ee/analytics/cycle_analytics/vsa_settings/graphql/get_value_stream.query.graphql';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import {
-  endpoints,
-  valueStreams,
-  customizableStagesAndEvents,
-} from 'ee_jest/analytics/cycle_analytics/mock_data';
-import { defaultStages } from '../mock_data';
+import { defaultStages, mockStages, mockValueStreamResponse } from '../mock_data';
 
-const [valueStream] = valueStreams;
+Vue.use(VueApollo);
+
+const valueStreamGid = 'gid://gitlab/ValueStream/13';
 
 describe('VSA settings app', () => {
-  let axiosMock;
   let wrapper;
 
-  const createWrapper = ({ props = {}, provide = {} } = {}) => {
+  const createWrapper = ({
+    props = {},
+    provide = {},
+    valueStreamProvider = jest.fn().mockResolvedValue(mockValueStreamResponse),
+  } = {}) => {
+    const apolloProvider = createMockApollo([[getValueStream, valueStreamProvider]]);
+
     wrapper = shallowMountExtended(VSASettingsApp, {
+      apolloProvider,
       provide: {
-        namespaceFullPath: 'fake/path',
-        valueStream: undefined,
+        isProject: false,
+        valueStreamGid,
+        fullPath: 'weeeee',
         defaultStages,
-        isEditing: false,
         ...provide,
       },
       propsData: props,
     });
+
+    return waitForPromises();
   };
 
   const findPageHeader = () => wrapper.findByTestId('vsa-settings-page-header');
@@ -38,12 +45,19 @@ describe('VSA settings app', () => {
   const findErrorAlert = () => wrapper.findComponent(GlAlert);
 
   beforeEach(() => {
-    axiosMock = new MockAdapter(axios);
+    jest.spyOn(Sentry, 'captureException');
+  });
+
+  afterEach(() => {
+    Sentry.captureException.mockRestore();
   });
 
   describe('new value stream', () => {
+    let mockProvider;
+
     beforeEach(() => {
-      createWrapper();
+      mockProvider = jest.fn();
+      createWrapper({ provide: { valueStreamGid: null }, valueStreamProvider: mockProvider });
     });
 
     it('renders the page header', () => {
@@ -51,7 +65,7 @@ describe('VSA settings app', () => {
     });
 
     it('does not send any requests', () => {
-      expect(axiosMock.history.get).toHaveLength(0);
+      expect(mockProvider).not.toHaveBeenCalled();
     });
 
     it('does not render loading icon', () => {
@@ -72,24 +86,11 @@ describe('VSA settings app', () => {
   describe('edit value stream', () => {
     describe('when loading', () => {
       beforeEach(() => {
-        axiosMock
-          .onGet(endpoints.baseStagesEndpoint)
-          .reply(HTTP_STATUS_OK, customizableStagesAndEvents);
-
-        createWrapper({
-          provide: { valueStream, isEditing: true },
-        });
+        createWrapper();
       });
 
       it('renders the page header', () => {
         expect(findPageHeader().text()).toBe('Edit value stream');
-      });
-
-      it('sends a request to fetch the stages', () => {
-        expect(axiosMock.history.get).toHaveLength(1);
-        expect(axiosMock.history.get[0].url).toEqual(
-          '/fake/path/-/analytics/value_stream_analytics/value_streams/1/stages',
-        );
       });
 
       it('renders loading icon', () => {
@@ -103,45 +104,39 @@ describe('VSA settings app', () => {
       it('does not render form content component', () => {
         expect(findFormContent().exists()).toBe(false);
       });
+    });
 
-      describe('when loaded', () => {
-        beforeEach(() => {
-          return waitForPromises();
+    describe('when loaded', () => {
+      beforeEach(() => {
+        return createWrapper();
+      });
+
+      it('does not render loading icon', () => {
+        expect(findLoadingIcon().exists()).toBe(false);
+      });
+
+      it('does not render an alert', () => {
+        expect(findErrorAlert().exists()).toBe(false);
+      });
+
+      it('renders form content component', () => {
+        expect(findFormContent().props()).toMatchObject({
+          initialData: {
+            id: 1,
+            name: 'oink',
+            stages: expect.any(Array),
+          },
         });
 
-        it('does not render loading icon', () => {
-          expect(findLoadingIcon().exists()).toBe(false);
-        });
-
-        it('does not render an alert', () => {
-          expect(findErrorAlert().exists()).toBe(false);
-        });
-
-        it('renders form content component', () => {
-          expect(findFormContent().props()).toMatchObject({
-            initialData: {
-              id: valueStream.id,
-              name: valueStream.name,
-              stages: expect.any(Array),
-            },
-          });
-
-          expect(findFormContent().props().initialData.stages).toHaveLength(
-            customizableStagesAndEvents.stages.length,
-          );
-        });
+        expect(findFormContent().props().initialData.stages).toHaveLength(
+          mockStages.length + defaultStages.length,
+        );
       });
     });
 
-    describe('when an error is thrown', () => {
+    describe('when there is a request error', () => {
       beforeEach(() => {
-        axiosMock.onGet(endpoints.baseStagesEndpoint).reply(HTTP_STATUS_NOT_FOUND);
-
-        createWrapper({
-          provide: { valueStream, isEditing: true },
-        });
-
-        return waitForPromises();
+        return createWrapper({ valueStreamProvider: jest.fn().mockRejectedValue({}) });
       });
 
       it('does not render loading icon', () => {
@@ -149,14 +144,40 @@ describe('VSA settings app', () => {
       });
 
       it('renders an alert', () => {
-        expect(findErrorAlert().text()).toBe(
-          'There was an error fetching value stream analytics stages.',
-        );
+        expect(findErrorAlert().text()).toBe('There was an error fetching the value stream.');
+      });
+
+      it('reports the error to Sentry', () => {
+        expect(Sentry.captureException).toHaveBeenCalledTimes(1);
       });
 
       it('does not render form content component', () => {
         expect(findFormContent().exists()).toBe(false);
       });
+    });
+  });
+
+  describe('when there is a response parsing error', () => {
+    beforeEach(() => {
+      return createWrapper({
+        valueStreamProvider: jest.fn().mockResolvedValue({ data: { group: null } }),
+      });
+    });
+
+    it('does not render loading icon', () => {
+      expect(findLoadingIcon().exists()).toBe(false);
+    });
+
+    it('renders an alert', () => {
+      expect(findErrorAlert().text()).toBe('There was an error fetching the value stream.');
+    });
+
+    it('reports the error to Sentry', () => {
+      expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not render form content component', () => {
+      expect(findFormContent().exists()).toBe(false);
     });
   });
 });

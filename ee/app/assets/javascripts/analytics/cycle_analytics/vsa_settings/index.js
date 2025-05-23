@@ -14,13 +14,14 @@ export default () => {
   if (!el) return false;
 
   const {
-    isEditPage,
     vsaPath,
+    fullPath,
+    isProject,
     namespaceFullPath,
     groupPath,
     defaultStages: rawDefaultStages,
     stageEvents: rawStageEvents,
-    valueStream: rawValueStream,
+    valueStreamGid,
   } = el.dataset;
 
   let stageEvents = [];
@@ -33,18 +34,6 @@ export default () => {
       message: s__('CycleAnalytics|Failed to parse stage events.'),
     });
     return false;
-  }
-
-  let valueStream = {};
-  if (rawValueStream) {
-    try {
-      valueStream = convertObjectPropsToCamelCase(JSON.parse(rawValueStream));
-    } catch (e) {
-      createAlert({
-        message: s__('CycleAnalytics|Failed to parse value stream.'),
-      });
-      return false;
-    }
   }
 
   let defaultStages = [];
@@ -69,12 +58,13 @@ export default () => {
     apolloProvider,
     provide: {
       vsaPath,
+      fullPath,
+      isProject: parseBoolean(isProject),
       namespaceFullPath,
       groupPath,
       stageEvents,
-      valueStream,
+      valueStreamGid,
       defaultStages,
-      isEditing: parseBoolean(isEditPage),
     },
     render: (createElement) => createElement(VSASettingsApp),
   });

@@ -100,3 +100,68 @@ export const createMockLabelsResponse = (nodes) => ({
 });
 
 export const mockLabelsResponse = createMockLabelsResponse(mockLabels);
+
+export const mockStages = [
+  {
+    id: 'gid://gitlab/ValueStream::Stage/1',
+    name: 'default',
+    custom: false,
+    hidden: false,
+    startEventHtmlDescription: 'description',
+    endEventHtmlDescription: 'description',
+    startEventIdentifier: 'ISSUE_CREATED',
+    endEventIdentifier: 'ISSUE_CLOSED',
+    startEventLabel: null,
+    endEventLabel: null,
+    __typename: 'ValueStreamStage',
+  },
+  {
+    id: 'gid://gitlab/ValueStream::Stage/2',
+    name: 'custom',
+    custom: true,
+    hidden: false,
+    startEventHtmlDescription: 'description',
+    endEventHtmlDescription: 'description',
+    startEventIdentifier: 'ISSUE_LABEL_ADDED',
+    endEventIdentifier: 'ISSUE_LABEL_REMOVED',
+    startEventLabel: { id: mockLabels[0].id },
+    endEventLabel: { id: mockLabels[1].id },
+    __typename: 'ValueStreamStage',
+  },
+  {
+    id: 'gid://gitlab/ValueStream::Stage/3',
+    name: 'hidden',
+    custom: false,
+    hidden: true,
+    startEventHtmlDescription: 'description',
+    endEventHtmlDescription: 'description',
+    startEventIdentifier: 'MERGE_REQUEST_CREATED',
+    endEventIdentifier: 'MERGE_REQUEST_CLOSED',
+    startEventLabel: null,
+    endEventLabel: null,
+    __typename: 'ValueStreamStage',
+  },
+];
+
+export const mockValueStream = {
+  id: 'gid://gitlab/ValueStream/1',
+  name: 'oink',
+  stages: mockStages,
+  __typename: 'ValueStream',
+};
+
+export const createMockValueStreamResponse = (valueStream) => ({
+  data: {
+    group: {
+      id: 'gid://gitlab/Group/1',
+      valueStreams: {
+        nodes: [valueStream],
+        __typename: 'ValueStreamConnection',
+      },
+      __typename: 'Group',
+    },
+    project: null,
+  },
+});
+
+export const mockValueStreamResponse = createMockValueStreamResponse(mockValueStream);

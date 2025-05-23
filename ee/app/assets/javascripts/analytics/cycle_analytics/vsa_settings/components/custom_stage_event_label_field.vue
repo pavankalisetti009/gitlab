@@ -1,7 +1,6 @@
 <script>
 import { GlButton, GlIcon, GlFormGroup, GlCollapsibleListbox } from '@gitlab/ui';
 import { __ } from '~/locale';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import getCustomStageLabels from '../graphql/get_custom_stage_labels.query.graphql';
 
@@ -24,7 +23,7 @@ export default {
       required: true,
     },
     selectedLabelId: {
-      type: Number,
+      type: String,
       required: false,
       default: null,
     },
@@ -91,7 +90,7 @@ export default {
           labels: { nodes },
         },
       }) {
-        return nodes.map(({ id, ...rest }) => ({ ...rest, id: getIdFromGraphQLId(id) }));
+        return nodes;
       },
       error() {
         this.$emit('error', __('There was an error fetching label data for the selected group'));

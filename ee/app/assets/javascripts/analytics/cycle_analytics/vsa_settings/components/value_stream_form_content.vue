@@ -59,7 +59,7 @@ export default {
     ValueStreamFormContentActions,
   },
   mixins: [Tracking.mixin()],
-  inject: ['vsaPath', 'namespaceFullPath', 'isEditing', 'stageEvents', 'defaultStages'],
+  inject: ['vsaPath', 'namespaceFullPath', 'valueStreamGid', 'stageEvents', 'defaultStages'],
   props: {
     initialData: {
       type: Object,
@@ -82,12 +82,15 @@ export default {
       stageErrors: [{}],
       showSubmitError: false,
       isSubmitting: false,
-      stages: this.isEditing
+      stages: this.valueStreamGid
         ? initializeEditingStages(initialStages)
         : initializeStages(defaultStages),
     };
   },
   computed: {
+    isEditing() {
+      return Boolean(this.valueStreamGid);
+    },
     isValueStreamNameValid() {
       return !this.nameErrors?.length;
     },

@@ -88,15 +88,8 @@ module EE
         end
 
         def data_attributes
-          is_edit_page = action_name == 'edit'
-
           request_params = { namespace: namespace, current_user: current_user }
           slice_attrs = [:default_stages, :namespace]
-
-          if is_edit_page
-            request_params[:value_stream] = value_stream
-            slice_attrs << :value_stream
-          end
 
           # rubocop:disable Gitlab/ModuleWithInstanceVariables -- Required by the view
           @data_attributes = ::Gitlab::Analytics::CycleAnalytics::RequestParams.new(request_params)
@@ -104,10 +97,12 @@ module EE
             .slice(*slice_attrs)
             .merge(
               vsa_path: vsa_path,
-              is_edit_page: is_edit_page.to_s,
               stage_events: stage_events.to_json,
               namespace_full_path: project? ? namespace.full_path : "groups/#{namespace.full_path}",
-              group_path: project? ? namespace.group.full_path : namespace.full_path
+              group_path: project? ? namespace.group.full_path : namespace.full_path,
+              value_stream_gid: action_name == 'edit' ? value_stream.to_global_id : nil,
+              full_path: namespace.full_path,
+              is_project: project?.to_s
             )
           # rubocop:enable Gitlab/ModuleWithInstanceVariables
         end

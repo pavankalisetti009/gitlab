@@ -1,10 +1,10 @@
 <script>
 import { GlLoadingIcon, GlAlert } from '@gitlab/ui';
-import { I18N_VSA_ERROR_STAGES } from '~/analytics/cycle_analytics/constants';
 import { s__ } from '~/locale';
-import { getStagesAndEvents } from 'ee/api/analytics_api';
-import { transformRawStages } from '../../utils';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { generateInitialStageData } from '../utils';
+import getValueStream from '../graphql/get_value_stream.query.graphql';
 import ValueStreamFormContent from './value_stream_form_content.vue';
 
 export default {
@@ -14,19 +14,25 @@ export default {
     GlLoadingIcon,
     GlAlert,
   },
-  inject: ['isEditing', 'valueStream', 'defaultStages', 'namespaceFullPath'],
+  inject: ['defaultStages', 'fullPath', 'isProject', 'valueStreamGid'],
   data() {
     return {
-      isLoading: false,
-      showError: false,
+      valueStream: {},
       stages: [],
+      showError: false,
     };
   },
   computed: {
+    isEditing() {
+      return Boolean(this.valueStreamGid);
+    },
     pageHeader() {
       return this.isEditing
         ? s__('CreateValueStreamForm|Edit value stream')
         : s__('CreateValueStreamForm|New value stream');
+    },
+    isLoading() {
+      return this.$apollo.queries.valueStream.loading;
     },
     initialData() {
       return this.isEditing
@@ -40,32 +46,53 @@ export default {
           };
     },
   },
-  created() {
-    if (this.isEditing) {
-      this.fetchStages();
-    }
-  },
-  methods: {
-    async fetchStages() {
-      this.isLoading = true;
+  apollo: {
+    valueStream: {
+      query: getValueStream,
+      variables() {
+        return {
+          fullPath: this.fullPath,
+          isProject: this.isProject,
+          valueStreamId: this.valueStreamGid,
+        };
+      },
+      skip() {
+        return !this.isEditing;
+      },
+      update({ group, project }) {
+        try {
+          const {
+            valueStreams: {
+              nodes: [valueStream],
+            },
+          } = group || project;
 
-      try {
-        const {
-          data: { stages = [] },
-        } = await getStagesAndEvents({
-          namespacePath: this.namespaceFullPath,
-          valueStreamId: this.valueStream.id,
-        });
-
-        this.stages = transformRawStages(stages);
-      } catch {
-        this.showError = true;
-      } finally {
-        this.isLoading = false;
-      }
+          const { id, name, stages } = valueStream;
+          this.stages = stages.map(
+            ({ id: stageId, startEventIdentifier, endEventIdentifier, ...rest }) => ({
+              id: getIdFromGraphQLId(stageId),
+              startEventIdentifier: startEventIdentifier.toLowerCase(),
+              endEventIdentifier: endEventIdentifier.toLowerCase(),
+              ...rest,
+            }),
+          );
+          return { id: getIdFromGraphQLId(id), name };
+        } catch (e) {
+          this.handleError(e);
+          return {};
+        }
+      },
+      error(e) {
+        this.handleError(e);
+      },
     },
   },
-  I18N_VSA_ERROR_STAGES,
+  methods: {
+    handleError(e) {
+      this.showError = true;
+      Sentry.captureException(e);
+    },
+  },
 };
 </script>
 <template>
@@ -75,7 +102,7 @@ export default {
     </h1>
     <gl-loading-icon v-if="isLoading" class="gl-pt-7" size="lg" />
     <gl-alert v-else-if="showError" variant="danger" :dismissible="false">
-      {{ $options.I18N_VSA_ERROR_STAGES }}
+      {{ s__('CreateValueStreamForm|There was an error fetching the value stream.') }}
     </gl-alert>
     <value-stream-form-content v-else :initial-data="initialData" />
   </div>
