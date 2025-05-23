@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Ai
-  module Context
+  module ActiveContext
     module Queues
       class Code
         class << self

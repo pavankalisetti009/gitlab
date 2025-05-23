@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Ai
-  module Context
+  module ActiveContext
     module References
       class Code < ::ActiveContext::Reference
         UNIT_PRIMITIVE = 'generate_embeddings_codebase'
@@ -10,7 +10,7 @@ module Ai
           identifiers = refs.map(&:identifier)
           query = ::ActiveContext::Query.filter(id: identifiers)
 
-          fetch_content(refs: refs, query: query, collection: Ai::Context::Collections::Code)
+          fetch_content(refs: refs, query: query, collection: Collections::Code)
         end
 
         add_preprocessor :embeddings do |refs|

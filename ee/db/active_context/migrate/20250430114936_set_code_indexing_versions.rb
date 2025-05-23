@@ -12,6 +12,6 @@ class SetCodeIndexingVersions < ActiveContext::Migration[1.0]
   end
 
   def collection
-    Ai::Context::Collections::Code
+    Ai::ActiveContext::Collections::Code
   end
 end
