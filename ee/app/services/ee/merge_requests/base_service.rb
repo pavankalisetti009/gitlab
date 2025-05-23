@@ -11,11 +11,8 @@ module EE
 
       def assign_duo_as_reviewer(merge_request)
         project = merge_request.project
-        unless project.auto_duo_code_review_enabled &&
-            project.project_setting.duo_features_enabled? &&
-            project.namespace.has_active_add_on_purchase?(:duo_enterprise)
-          return
-        end
+        return unless project.auto_duo_code_review_enabled
+        return unless project.duo_enterprise_features_available?
 
         if merge_request.ai_review_merge_request_allowed?(current_user)
           duo_bot = ::Users::Internal.duo_code_review_bot
