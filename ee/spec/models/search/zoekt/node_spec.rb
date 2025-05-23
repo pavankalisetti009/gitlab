@@ -19,6 +19,17 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
   end
 
   describe 'validations' do
+    it { is_expected.to validate_presence_of(:index_base_url) }
+    it { is_expected.to validate_presence_of(:search_base_url) }
+    it { is_expected.to validate_presence_of(:uuid) }
+    it { is_expected.to validate_presence_of(:last_seen_at) }
+    it { is_expected.to validate_presence_of(:indexed_bytes) }
+    it { is_expected.to validate_presence_of(:used_bytes) }
+    it { is_expected.to validate_presence_of(:total_bytes) }
+    it { is_expected.to validate_presence_of(:usable_storage_bytes) }
+    it { is_expected.to validate_presence_of(:schema_version) }
+    it { is_expected.to validate_uniqueness_of(:uuid).case_insensitive }
+
     describe 'metadata JSON schema validation' do
       it 'allows null values in version field' do
         node = build(:zoekt_node)

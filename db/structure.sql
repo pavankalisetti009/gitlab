@@ -26330,6 +26330,7 @@ CREATE TABLE zoekt_nodes (
     indexed_bytes bigint DEFAULT 0 NOT NULL,
     usable_storage_bytes bigint DEFAULT 0 NOT NULL,
     usable_storage_bytes_locked_until timestamp with time zone,
+    schema_version smallint DEFAULT 0 NOT NULL,
     CONSTRAINT check_32f39efba3 CHECK ((char_length(search_base_url) <= 1024)),
     CONSTRAINT check_38c354a3c2 CHECK ((char_length(index_base_url) <= 1024))
 );
@@ -26373,6 +26374,7 @@ CREATE TABLE zoekt_repositories (
     size_bytes bigint DEFAULT 0 NOT NULL,
     index_file_count integer DEFAULT 0 NOT NULL,
     retries_left smallint DEFAULT 10 NOT NULL,
+    schema_version smallint DEFAULT 0 NOT NULL,
     CONSTRAINT c_zoekt_repositories_on_project_id_and_project_identifier CHECK (((project_id IS NULL) OR (project_identifier = project_id))),
     CONSTRAINT c_zoekt_repositories_on_retries_left CHECK (((retries_left > 0) OR ((retries_left = 0) AND (state >= 200))))
 );

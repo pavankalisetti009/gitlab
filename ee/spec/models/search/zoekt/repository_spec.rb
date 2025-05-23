@@ -42,6 +42,10 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
       zoekt_repo2 = build(:zoekt_repository, project: nil, project_identifier: project.id, zoekt_index: zoekt_index)
       expect(zoekt_repo2).to be_invalid
     end
+
+    it { is_expected.to validate_presence_of(:zoekt_index_id) }
+    it { is_expected.to validate_presence_of(:state) }
+    it { is_expected.to validate_presence_of(:schema_version) }
   end
 
   describe 'scope' do
