@@ -549,6 +549,10 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       let_it_be(:self_hosted_model) { create(:ai_self_hosted_model, api_token: 'test_token') }
       let_it_be(:ai_feature) { create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :duo_chat) }
 
+      before do
+        stub_feature_flags(ai_model_switching: false)
+      end
+
       it 'sends the self-hosted model metadata' do
         params = step_params
         params[:model_metadata] = {
@@ -557,6 +561,47 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
           name: "mistral",
           provider: :openai,
           identifier: "provider/some-model"
+        }
+
+        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+          expect(react_agent).to receive(:step).with(params)
+            .and_yield(action_event).and_return([action_event])
+        end
+
+        agent.execute
+      end
+    end
+
+    context 'when Duo chat model is selected at namespace level' do
+      let_it_be(:root_namespace) { create(:group) }
+      let(:ai_request) { instance_double(::Gitlab::Llm::Chain::Requests::AiGateway, root_namespace: root_namespace) }
+      let(:context) do
+        Gitlab::Llm::Chain::GitlabContext.new(
+          current_user: user,
+          container: nil,
+          resource: resource,
+          ai_request: ai_request,
+          extra_resource: extra_resource,
+          started_at: started_at_timestamp,
+          current_file: current_file,
+          agent_version: nil,
+          additional_context: additional_context
+        )
+      end
+
+      let_it_be(:feature_setting) do
+        create(:ai_namespace_feature_setting,
+          namespace: root_namespace,
+          feature: :duo_chat,
+          offered_model_ref: 'claude-3-7-sonnet-20250219')
+      end
+
+      it 'sends the namespace model metadata' do
+        params = step_params
+        params[:model_metadata] = {
+          provider: 'gitlab',
+          identifier: 'claude-3-7-sonnet-20250219',
+          feature_setting: 'duo_chat'
         }
 
         expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
