@@ -4880,6 +4880,28 @@ CREATE TABLE p_ci_finished_pipeline_ch_sync_events (
 )
 PARTITION BY LIST (partition);
 
+CREATE TABLE p_knowledge_graph_enabled_namespaces (
+    id bigint NOT NULL,
+    namespace_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    state smallint DEFAULT 0 NOT NULL
+)
+PARTITION BY RANGE (namespace_id);
+
+CREATE TABLE p_knowledge_graph_replicas (
+    id bigint NOT NULL,
+    namespace_id bigint NOT NULL,
+    knowledge_graph_enabled_namespace_id bigint,
+    zoekt_node_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    state smallint DEFAULT 0 NOT NULL,
+    retries_left smallint NOT NULL,
+    CONSTRAINT c_p_knowledge_graph_replicas_retries_status CHECK (((retries_left > 0) OR ((retries_left = 0) AND (state >= 200))))
+)
+PARTITION BY RANGE (namespace_id);
+
 CREATE TABLE project_audit_events (
     id bigint DEFAULT nextval('shared_audit_event_id_seq'::regclass) NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -18896,6 +18918,24 @@ CREATE SEQUENCE p_ci_workloads_id_seq
 
 ALTER SEQUENCE p_ci_workloads_id_seq OWNED BY p_ci_workloads.id;
 
+CREATE SEQUENCE p_knowledge_graph_enabled_namespaces_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE p_knowledge_graph_enabled_namespaces_id_seq OWNED BY p_knowledge_graph_enabled_namespaces.id;
+
+CREATE SEQUENCE p_knowledge_graph_replicas_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE p_knowledge_graph_replicas_id_seq OWNED BY p_knowledge_graph_replicas.id;
+
 CREATE TABLE packages_build_infos (
     id bigint NOT NULL,
     package_id bigint NOT NULL,
@@ -27669,6 +27709,10 @@ ALTER TABLE ONLY p_ci_builds_metadata ALTER COLUMN id SET DEFAULT nextval('ci_bu
 
 ALTER TABLE ONLY p_ci_workloads ALTER COLUMN id SET DEFAULT nextval('p_ci_workloads_id_seq'::regclass);
 
+ALTER TABLE ONLY p_knowledge_graph_enabled_namespaces ALTER COLUMN id SET DEFAULT nextval('p_knowledge_graph_enabled_namespaces_id_seq'::regclass);
+
+ALTER TABLE ONLY p_knowledge_graph_replicas ALTER COLUMN id SET DEFAULT nextval('p_knowledge_graph_replicas_id_seq'::regclass);
+
 ALTER TABLE ONLY packages_build_infos ALTER COLUMN id SET DEFAULT nextval('packages_build_infos_id_seq'::regclass);
 
 ALTER TABLE ONLY packages_conan_file_metadata ALTER COLUMN id SET DEFAULT nextval('packages_conan_file_metadata_id_seq'::regclass);
@@ -30432,6 +30476,12 @@ ALTER TABLE ONLY p_ci_stages
 
 ALTER TABLE ONLY p_ci_workloads
     ADD CONSTRAINT p_ci_workloads_pkey PRIMARY KEY (id, partition_id);
+
+ALTER TABLE ONLY p_knowledge_graph_enabled_namespaces
+    ADD CONSTRAINT p_knowledge_graph_enabled_namespaces_pkey PRIMARY KEY (id, namespace_id);
+
+ALTER TABLE ONLY p_knowledge_graph_replicas
+    ADD CONSTRAINT p_knowledge_graph_replicas_pkey PRIMARY KEY (id, namespace_id);
 
 ALTER TABLE ONLY packages_build_infos
     ADD CONSTRAINT packages_build_infos_pkey PRIMARY KEY (id);
@@ -36444,6 +36494,16 @@ CREATE INDEX index_p_ci_runner_machine_builds_on_runner_machine_id ON ONLY p_ci_
 
 CREATE INDEX index_p_ci_workloads_on_project_id ON ONLY p_ci_workloads USING btree (project_id);
 
+CREATE UNIQUE INDEX index_p_knowledge_graph_enabled_namespaces_on_namespace_id ON ONLY p_knowledge_graph_enabled_namespaces USING btree (namespace_id);
+
+CREATE INDEX index_p_knowledge_graph_enabled_namespaces_on_state ON ONLY p_knowledge_graph_enabled_namespaces USING btree (state);
+
+CREATE UNIQUE INDEX index_p_knowledge_graph_replicas_on_namespace_id ON ONLY p_knowledge_graph_replicas USING btree (namespace_id);
+
+CREATE INDEX index_p_knowledge_graph_replicas_on_state ON ONLY p_knowledge_graph_replicas USING btree (state);
+
+CREATE INDEX index_p_knowledge_graph_replicas_on_zoekt_node_id ON ONLY p_knowledge_graph_replicas USING btree (zoekt_node_id);
+
 CREATE INDEX index_packages_build_infos_on_pipeline_id ON packages_build_infos USING btree (pipeline_id);
 
 CREATE INDEX index_packages_build_infos_on_project_id ON packages_build_infos USING btree (project_id);
@@ -38435,6 +38495,8 @@ CREATE INDEX p_ci_stages_pipeline_id_position_idx ON ONLY p_ci_stages USING btre
 CREATE INDEX p_ci_stages_project_id_idx ON ONLY p_ci_stages USING btree (project_id);
 
 CREATE UNIQUE INDEX p_ci_workloads_pipeline_id_idx ON ONLY p_ci_workloads USING btree (pipeline_id, partition_id);
+
+CREATE UNIQUE INDEX p_knowledge_graph_replicas_namespace_id_and_zoekt_node_id ON ONLY p_knowledge_graph_replicas USING btree (knowledge_graph_enabled_namespace_id, zoekt_node_id, namespace_id);
 
 CREATE INDEX package_name_index ON packages_packages USING btree (name);
 
@@ -41301,6 +41363,8 @@ CREATE TRIGGER p_ci_builds_loose_fk_trigger AFTER DELETE ON p_ci_builds REFERENC
 CREATE TRIGGER p_ci_pipelines_loose_fk_trigger AFTER DELETE ON p_ci_pipelines REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records_override_table('p_ci_pipelines');
 
 CREATE TRIGGER p_ci_workloads_loose_fk_trigger AFTER DELETE ON p_ci_workloads REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records_override_table('p_ci_workloads');
+
+CREATE TRIGGER p_knowledge_graph_enabled_namespaces_loose_fk_trigger AFTER DELETE ON p_knowledge_graph_enabled_namespaces REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records_override_table('p_knowledge_graph_enabled_namespaces');
 
 CREATE TRIGGER plans_loose_fk_trigger AFTER DELETE ON plans REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
 
@@ -44564,6 +44628,9 @@ ALTER TABLE ONLY duo_workflows_checkpoint_writes
 ALTER TABLE ONLY issuable_resource_links
     ADD CONSTRAINT fk_rails_3f0ec6b1cf FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE;
 
+ALTER TABLE p_knowledge_graph_replicas
+    ADD CONSTRAINT fk_rails_3f20642c2f FOREIGN KEY (zoekt_node_id) REFERENCES zoekt_nodes(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY analytics_cycle_analytics_stage_aggregations
     ADD CONSTRAINT fk_rails_3f409802fc FOREIGN KEY (stage_id) REFERENCES analytics_cycle_analytics_group_stages(id) ON DELETE CASCADE;
 
@@ -45067,6 +45134,9 @@ ALTER TABLE ONLY personal_access_token_last_used_ips
 
 ALTER TABLE ONLY clusters_kubernetes_namespaces
     ADD CONSTRAINT fk_rails_7e7688ecaf FOREIGN KEY (cluster_id) REFERENCES clusters(id) ON DELETE CASCADE;
+
+ALTER TABLE p_knowledge_graph_enabled_namespaces
+    ADD CONSTRAINT fk_rails_801c561c42 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY security_policies
     ADD CONSTRAINT fk_rails_802ceea0c8 FOREIGN KEY (security_orchestration_policy_configuration_id) REFERENCES security_orchestration_policy_configurations(id) ON DELETE CASCADE;

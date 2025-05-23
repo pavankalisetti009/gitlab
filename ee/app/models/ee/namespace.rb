@@ -69,6 +69,8 @@ module EE
 
       has_one :zoekt_enabled_namespace, class_name: '::Search::Zoekt::EnabledNamespace',
         foreign_key: :root_namespace_id, inverse_of: :namespace
+      has_one :knowledge_graph_enabled_namespace, class_name: '::Ai::KnowledgeGraph::EnabledNamespace',
+        foreign_key: :namespace_id, inverse_of: :namespace
       has_many :namespace_cluster_agent_mappings,
         class_name: 'RemoteDevelopment::NamespaceClusterAgentMapping',
         foreign_key: 'namespace_id',

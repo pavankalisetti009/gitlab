@@ -34,6 +34,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     it { is_expected.to have_many(:tasks).inverse_of(:node) }
     it { is_expected.to have_many(:enabled_namespaces).through(:indices) }
     it { is_expected.to have_many(:zoekt_repositories).through(:indices) }
+    it { is_expected.to have_many(:knowledge_graph_replicas) }
   end
 
   describe 'scopes' do
