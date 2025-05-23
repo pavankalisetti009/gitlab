@@ -7,7 +7,8 @@ module EE
     def duo_core_access_granted(users)
       attributes = {
         target_type: ::User,
-        action: ::Todo::DUO_CORE_ACCESS_GRANTED
+        action: ::Todo::DUO_CORE_ACCESS_GRANTED,
+        author_id: ::Users::Internal.duo_code_review_bot.id
       }
 
       excluded_user_ids = excluded_user_ids(users, attributes)
@@ -23,7 +24,7 @@ module EE
         target_id: user.id,
         target_type: ::User,
         action: ::Todo::DUO_PRO_ACCESS_GRANTED,
-        author_id: user.id
+        author_id: ::Users::Internal.duo_code_review_bot.id
       }
       create_todos(user, attributes, nil, nil)
     end
@@ -33,7 +34,7 @@ module EE
         target_id: user.id,
         target_type: ::User,
         action: ::Todo::DUO_ENTERPRISE_ACCESS_GRANTED,
-        author_id: user.id
+        author_id: ::Users::Internal.duo_code_review_bot.id
       }
       create_todos(user, attributes, nil, nil)
     end
@@ -90,7 +91,7 @@ module EE
 
     def bulk_insert_todos_for_user_target_type(users, attributes)
       bulk_insert_todos(users, attributes) do |user, attrs|
-        attrs.merge(user_id: user.id, target_id: user.id, author_id: user.id)
+        attrs.merge(user_id: user.id, target_id: user.id)
       end
     end
   end

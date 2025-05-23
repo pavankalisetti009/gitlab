@@ -14,6 +14,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::Saas::CreateWithoutNot
 
   before do
     stub_saas_features(gitlab_com_subscriptions: true)
+    ::Users::Internal.duo_code_review_bot # ensure interal user exists
   end
 
   describe '#execute' do
