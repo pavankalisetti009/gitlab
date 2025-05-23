@@ -2,6 +2,10 @@
 
 module GitlabSubscriptions
   module Duo
+    def self.todo_message
+      s_('Todos|You now have access to AI-native features. Learn how to set up Code Suggestions and Chat in your IDE')
+    end
+
     def self.enterprise_or_pro_for_namespace(namespace)
       # If both add-on types are present, prioritize Enterprise over Pro. This is for cases where, for example,
       # a namespace has purchased a Duo Pro add-on but simultaneously has a Duo Enterprise add-on trial.

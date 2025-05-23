@@ -3,6 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::Duo, feature_category: :"add-on_provisioning" do
+  describe '.todo_message' do
+    it 'returns a message about AI-native features' do
+      message = described_class.todo_message
+
+      expect(message).to include(s_('Todos|You now have access to AI-native features.'))
+    end
+  end
+
   describe '.enterprise_or_pro_for_namespace' do
     subject { described_class.enterprise_or_pro_for_namespace(namespace) }
 

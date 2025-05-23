@@ -37,6 +37,13 @@ module EE
       end
     end
 
+    override :body
+    def body
+      return ::GitlabSubscriptions::Duo.todo_message if for_duo_access_granted?
+
+      super
+    end
+
     override :target_url
     def target_url
       return if target.nil?

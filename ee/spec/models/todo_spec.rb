@@ -25,6 +25,25 @@ RSpec.describe Todo, feature_category: :notifications do
     end
   end
 
+  describe '#body' do
+    context 'for duo notification' do
+      it 'returns enterprise duo message' do
+        todo = build(:todo, :duo_enterprise_access, user: current_user)
+
+        expect(todo.body).to include s_('Todos|You now have access to AI-native features')
+      end
+    end
+
+    context 'for non duo notification' do
+      it 'returns enterprise duo message' do
+        issue = build(:issue)
+        todo = build(:todo, target: issue)
+
+        expect(todo.body).to eq(issue.title)
+      end
+    end
+  end
+
   describe '#target_url' do
     subject { todo.target_url }
 
