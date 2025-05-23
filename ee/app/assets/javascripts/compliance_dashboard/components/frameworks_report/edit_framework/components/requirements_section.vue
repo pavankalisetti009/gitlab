@@ -7,6 +7,7 @@ import {
   GlDisclosureDropdownItem,
   GlBadge,
   GlTooltip,
+  GlPagination,
 } from '@gitlab/ui';
 
 import { s__, __, sprintf } from '~/locale';
@@ -31,6 +32,7 @@ export default {
     GlDisclosureDropdownItem,
     GlBadge,
     GlTooltip,
+    GlPagination,
   },
   props: {
     requirements: {
@@ -63,6 +65,8 @@ export default {
     return {
       requirementToEdit: {},
       complianceRequirementControls: [],
+      currentPage: 1,
+      perPage: 10,
     };
   },
   computed: {
@@ -88,6 +92,9 @@ export default {
         { maxRequirementsNumber },
       );
     },
+    showPagination() {
+      return this.requirements.length > this.perPage;
+    },
   },
   methods: {
     showRequirementModal(requirement, index = null) {
@@ -106,6 +113,9 @@ export default {
     },
     getControls(requirementControlNodes) {
       return getControls(requirementControlNodes, this.complianceRequirementControls);
+    },
+    pageChanged(newPage) {
+      this.currentPage = newPage;
     },
   },
   tableFields: [
@@ -162,11 +172,14 @@ export default {
       class="requirements-table gl-mb-6"
       :items="requirementsWithControls"
       :fields="$options.tableFields"
+      :per-page="perPage"
+      :current-page="currentPage"
       responsive
       stacked="md"
       hover
       select-mode="single"
       selected-variant="primary"
+      data-testid="requirements-table"
     >
       <template #cell(name)="{ item }">
         {{ item.name }}
@@ -218,6 +231,18 @@ export default {
         <gl-loading-icon size="lg" />
       </template>
     </gl-table>
+
+    <gl-pagination
+      v-if="showPagination"
+      :value="currentPage"
+      :per-page="perPage"
+      :total-items="requirements.length"
+      align="center"
+      class="gl-mt-5"
+      data-testid="requirements-pagination"
+      @input="pageChanged"
+    />
+
     <gl-tooltip
       v-if="addingRequirementsDisabled"
       placement="right"
