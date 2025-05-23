@@ -19,8 +19,8 @@
     - if current_plan
       = render 'top_level_billing_plan_header', namespace: @group, current_plan: current_plan
 
-      - if @show_targetted_message
-        = render Pajamas::BannerComponent.new(banner_options: { class: 'gl-mt-7'}, close_options: { class: '!gl-hidden'},
+      - if @targeted_message_id.present?
+        = render Pajamas::BannerComponent.new(banner_options: { class: 'gl-mt-6 js-targeted-message', data: { namespace_id: @group.id, targeted_message_id: @targeted_message_id, dismiss_endpoint: targeted_message_dismissals_path } }, close_options: { class: 'js-close' },
           button_text: s_('TargettedMessages|Get in Touch'),
           button_link: "#{ApplicationHelper.promo_url}/pricing/smb-promo/") do |c|
           - c.with_title do
