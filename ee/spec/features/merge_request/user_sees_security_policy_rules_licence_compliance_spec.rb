@@ -14,6 +14,8 @@ RSpec.describe 'Merge request > User sees security policy rules license complian
   let_it_be(:approver_roles) { ['maintainer'] }
 
   before do
+    allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(125)
+
     sign_in(user)
   end
 
