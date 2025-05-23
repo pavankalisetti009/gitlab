@@ -1,0 +1,10 @@
+---
+name: duo_workflow_claude_sonnet_4
+description: Controls the availability of Claude Sonnet 4 model in Duo Workflow
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/545193
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/192307
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/545195
+milestone: '18.1'
+group: group::duo workflow
+type: gitlab_com_derisk
+default_enabled: false
