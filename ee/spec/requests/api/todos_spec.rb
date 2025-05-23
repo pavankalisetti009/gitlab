@@ -56,6 +56,22 @@ RSpec.describe API::Todos, feature_category: :notifications do
         )
       end
     end
+
+    context 'when there is a duo todo' do
+      let!(:todo) { create(:todo, :pending, :duo_enterprise_access, user: user) }
+
+      before do
+        get api('/todos', personal_access_token: pat)
+      end
+
+      specify do
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      it 'includes the todo message in the body' do
+        expect(json_response).to include(a_hash_including('body' => ::GitlabSubscriptions::Duo.todo_message))
+      end
+    end
   end
 
   describe 'POST :id/epics/:epic_iid/todo' do
