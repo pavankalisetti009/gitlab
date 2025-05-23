@@ -39,6 +39,12 @@ module Security
           finder: ->(current_user, ids) {
             ::MemberRoles::RolesFinder.new(current_user, id: ids)
           }
+        },
+        compliance_frameworks: {
+          annotation_method: :name,
+          finder: ->(current_user, ids) {
+            ::ComplianceManagement::FrameworksFinder.new(current_user, ids: ids)
+          }
         }
       }.freeze
 
