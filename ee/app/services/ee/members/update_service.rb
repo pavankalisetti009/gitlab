@@ -91,12 +91,12 @@ module EE
 
       override :update_member
       def update_member(member, permission)
-        handle_member_role_assignement(member) if params.key?(:member_role_id)
+        handle_member_role_assignment(member) if params.key?(:member_role_id)
 
         super
       end
 
-      def handle_member_role_assignement(member)
+      def handle_member_role_assignment(member)
         params.delete(:member_role_id) unless member_role_param_allowed?(member)
 
         return unless params[:member_role_id]
