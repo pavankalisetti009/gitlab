@@ -21,7 +21,7 @@ module Mutations
         required: false,
         description: 'New description of the project secret.'
 
-      argument :value, GraphQL::Types::String,
+      argument :secret, GraphQL::Types::String,
         required: false,
         description: 'New value of the project secret.'
 
@@ -50,7 +50,7 @@ module Mutations
           .execute(
             name: name,
             description: args[:description],
-            value: args[:value],
+            value: args[:secret],
             environment: args[:environment],
             branch: args[:branch]
           )
