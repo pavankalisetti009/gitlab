@@ -1693,6 +1693,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: compliance_management_compliance_framework_projects_compliance_enqueue
+  :worker_name: ComplianceManagement::ComplianceFramework::ProjectsComplianceEnqueueWorker
+  :feature_category: :compliance_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: compliance_management_framework_export_mailer
   :worker_name: ComplianceManagement::FrameworkExportMailerWorker
   :feature_category: :compliance_management

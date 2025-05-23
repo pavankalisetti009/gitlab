@@ -28,6 +28,7 @@ module ComplianceManagement
             return ServiceResponse.error(message: e.message, payload: e.message)
           end
 
+          enqueue_project_framework_evaluation
           audit_create
 
           success

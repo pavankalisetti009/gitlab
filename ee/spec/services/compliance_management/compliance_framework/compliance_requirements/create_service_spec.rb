@@ -230,6 +230,13 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         end
       end
 
+      it 'enqueues project framework evaluation for the framework' do
+        expect(ComplianceManagement::ComplianceFramework::ProjectsComplianceEnqueueWorker)
+          .to receive(:perform_async).with(framework.id).once
+
+        requirement_creator_response
+      end
+
       shared_examples 'creates requirement without controls' do |controls_value|
         let(:controls) { controls_value }
 
@@ -245,6 +252,11 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           expect { requirement_creator_response }.not_to change {
             ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl.count
           }
+        end
+
+        it 'does not enqueue projects compliance evaluation for the framework' do
+          expect(ComplianceManagement::ComplianceFramework::ProjectsComplianceEnqueueWorker)
+            .not_to receive(:perform_async)
         end
       end
 
