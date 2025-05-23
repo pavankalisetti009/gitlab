@@ -170,6 +170,10 @@ module Gitlab
           }
         end
       end
+
+      def connection
+        ::SecApplicationRecord.connection
+      end
     end
   end
 end
