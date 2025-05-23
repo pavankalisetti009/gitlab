@@ -45,6 +45,31 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, feature_category: :global_search
         make_request
       end
     end
+
+    context 'when JWT authentication is enabled' do
+      let(:auth_token) { 'test-jwt-token' }
+
+      before do
+        allow(Search::Zoekt::JwtAuth).to receive(:jwt_token).and_return(auth_token)
+      end
+
+      it 'includes JWT authorization header in the request' do
+        headers = { described_class::JWT_HEADER => "Bearer #{auth_token}" }
+        expect(::Gitlab::HTTP).to receive(:post)
+          .with(anything, hash_including(headers: hash_including(headers)))
+          .and_call_original
+
+        make_request
+      end
+
+      it 'includes basic auth even when JWT is enabled' do
+        expect(::Gitlab::HTTP).to receive(:post)
+          .with(anything, hash_including(basic_auth: instance_of(Hash)))
+          .and_call_original
+
+        make_request
+      end
+    end
   end
 
   shared_examples 'with relative base_url' do |method|
