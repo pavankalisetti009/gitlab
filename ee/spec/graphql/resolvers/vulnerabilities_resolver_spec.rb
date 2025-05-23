@@ -30,6 +30,21 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
     let(:extra_context) { {} }
     let(:vulnerable) { project }
 
+    shared_examples_for "a resolver with proper association preloading" do
+      it "preloads necessary associations" do
+        records = resolved.to_a
+
+        expect do
+          records.first.project.namespace
+          records.first.project.group
+          records.first.project.route
+          records.first.finding.scanner
+          records.first.finding.identifiers
+          records.first.vulnerability_read
+        end.not_to exceed_query_limit(0)
+      end
+    end
+
     context 'when given sort' do
       context 'when sorting descending by severity' do
         let(:params) { { sort: :severity_desc } }
@@ -419,6 +434,20 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
             vuln_read_with_owasp_top_10_second
           ].map(&:vulnerability))
         end
+
+        it 'avoids N+1 queries', :use_sql_query_cache do
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+            resolve(described_class, obj: vulnerable, args: params, ctx: { current_user: current_user }).to_a
+          end
+
+          create(:vulnerability, :with_findings, project: project)
+          .tap { |v| v.vulnerability_read.update!(identifier_names: ['A1:2021-Broken Access Control']) }
+          ensure_elasticsearch_index!
+
+          expect do
+            resolve(described_class, obj: vulnerable, args: params, ctx: { current_user: current_user }).to_a
+          end.not_to exceed_query_limit(control)
+        end
       end
     end
 
@@ -539,6 +568,36 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
     end
 
     it_behaves_like 'vulnerability filterable', :params
+
+    describe "association preloading" do
+      context "when filtering by postgres" do
+        it_behaves_like "a resolver with proper association preloading"
+      end
+
+      context "when filtering by elasticsearch", :elastic do
+        let(:params) do
+          { owasp_top_ten_2021: ['A1:2021-Broken Access Control'] }
+        end
+
+        let_it_be(:vuln) do
+          create(:vulnerability, :with_findings, project: project)
+          .tap { |v| v.vulnerability_read.update!(identifier_names: ['A1:2021-Broken Access Control']) }
+        end
+
+        before do
+          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+          Elastic::ProcessBookkeepingService.track!(
+            vuln.vulnerability_read
+          )
+          ensure_elasticsearch_index!
+
+          allow(current_user).to receive(:can?).with(:access_advanced_vulnerability_management, vulnerable).and_return(true)
+        end
+
+        it_behaves_like "a resolver with proper association preloading"
+      end
+    end
   end
 
   describe 'event tracking' do

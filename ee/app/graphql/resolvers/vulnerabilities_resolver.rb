@@ -114,33 +114,66 @@ module Resolvers
       disabled_filters = context.response_extensions["disabled_filters"] ||= []
       disabled_filters << :identifier_name unless search_by_identifier_allowed_on_db?(vulnerable: vulnerable)
 
-      return vulnerabilities_from_es(args) if use_elasticsearch?(args)
+      set_data_source(args)
 
-      vulnerabilities(args)
-        .with_findings_scanner_and_identifiers
+      fetch_vulnerabilities(args)
     end
 
     def unconditional_includes
-      [{ vulnerability: [{ project: [:namespace, :group] }, :findings, :vulnerability_read] }]
+      if using_elasticsearch # With ES we directly return Vulnerability records
+        return [{ project: [:namespace, :group, :route] }, { findings: [:scanner, :identifiers] }, :vulnerability_read]
+      end
+
+      # project: [:route] is added in the as_vulnerabilities method.
+      [{ vulnerability: [{ project: [:namespace, :group] }, { findings: [:scanner, :identifiers] }, :vulnerability_read] }]
     end
 
     def preloads
-      {
-        has_remediations: { vulnerability: { findings: :remediations } },
-        merge_request: { vulnerability: :merge_requests },
-        state_comment: { vulnerability: :state_transitions },
-        state_transitions: { vulnerability: :state_transitions },
-        false_positive: { vulnerability: { findings: :vulnerability_flags } },
-        representation_information: { vulnerability: :representation_information }
+      base_associations = {
+        has_remediations: { findings: :remediations },
+        merge_request: :merge_requests,
+        state_comment: :state_transitions,
+        state_transitions: :state_transitions,
+        false_positive: { findings: :vulnerability_flags },
+        representation_information: :representation_information,
+        location: { findings: :latest_finding_pipeline }
       }
+
+      return base_associations if using_elasticsearch # With ES we directly return Vulnerability records
+
+      wrap_with_vulnerability(base_associations)
     end
 
     private
 
-    def vulnerabilities(params)
-      finder_params = params.merge(before_severity: before_severity, after_severity: after_severity)
+    attr_reader :using_elasticsearch
 
+    def set_data_source(args)
+      @using_elasticsearch = use_elasticsearch?(args)
+    end
+
+    def fetch_vulnerabilities(args)
+      finder_params = args.merge(before_severity: before_severity, after_severity: after_severity)
+
+      if using_elasticsearch
+        vulnerabilities_from_es(finder_params)
+      else
+        vulnerabilities(finder_params)
+      end
+    end
+
+    def vulnerabilities(finder_params)
       apply_lookahead(::Security::VulnerabilityReadsFinder.new(vulnerable, finder_params).execute.as_vulnerabilities)
+    end
+
+    def vulnerabilities_from_es(finder_params)
+      apply_lookahead(::Security::VulnerabilityElasticFinder.new(vulnerable, finder_params).execute)
+    end
+
+    def wrap_with_vulnerability(associations)
+      associations.transform_values do |association|
+        { vulnerability: association }
+      end
     end
 
     def vulnerable_to_actor
@@ -187,10 +220,6 @@ module Resolvers
           label: 'graphql'
         }
       )
-    end
-
-    def vulnerabilities_from_es(filters)
-      ::Security::VulnerabilityElasticFinder.new(vulnerable, filters).execute
     end
   end
 end
