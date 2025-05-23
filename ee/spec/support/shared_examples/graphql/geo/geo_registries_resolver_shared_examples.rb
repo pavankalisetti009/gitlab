@@ -42,6 +42,20 @@ RSpec.shared_examples_for 'a Geo registries resolver' do |registry_factory_name|
 
               expect(resolve_registries(args).to_a).to eq(expected)
             end
+
+            it 'returns an error if the id is not supported' do
+              requested_ids = [registry3.id, registry1.id]
+              args = { ids: requested_ids }
+
+              expect(resolve_registries(args)).to be_a(::GraphQL::CoercionError)
+            end
+
+            it 'returns an error if the id type does not match the registry' do
+              requested_id = [create(:project).to_global_id]
+              args = { ids: requested_id }
+
+              expect(resolve_registries(args)).to be_a(::GraphQL::CoercionError)
+            end
           end
 
           context 'when the replication_state argument is present' do
