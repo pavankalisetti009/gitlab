@@ -73,7 +73,8 @@ export const DOC_PATH_VULNERABILITY_REPORT = helpPagePath(
   'user/application_security/vulnerability_report/_index',
 );
 export const DOC_PATH_SECURITY_CONFIGURATION = helpPagePath(
-  'user/application_security/configuration/_index',
+  'user/application_security/detect/security_configuration',
+  { anchor: 'with-the-ui' },
 );
 export const DOC_PATH_SECURITY_SCANNER_INTEGRATION_REPORT = helpPagePath(
   'development/integrations/secure',
