@@ -134,6 +134,126 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyCommitService, fea
             expect(updated_policy_yaml[:scan_execution_policy]).to be_empty
           end
         end
+
+        describe 'policy YAML annotation' do
+          let(:operation) { :replace }
+          let(:input_policy_yaml) do
+            <<~YAML
+              ---
+              type: scan_execution_policy
+              name: Updated Policy
+              description: #{policy_hash[:description]}
+              enabled: true
+              actions:
+              - scan: dast
+                site_profile: Site Profile
+                scanner_profile: Scanner Profile
+              rules:
+              - type: pipeline
+                branches:
+                - master
+              policy_scope: {}
+              metadata: {}
+              skip_ci:
+                allowed: false
+                allowlist:
+                  users:
+                  - id: #{current_user.id}
+            YAML
+          end
+
+          let(:annotated_updated_policy_yaml) do
+            <<~YAML
+              ---
+              scan_execution_policy:
+              - name: Updated Policy
+                description: #{policy_hash[:description]}
+                enabled: true
+                actions:
+                - scan: dast
+                  site_profile: Site Profile
+                  scanner_profile: Scanner Profile
+                rules:
+                - type: pipeline
+                  branches:
+                  - master
+                policy_scope: {}
+                metadata: {}
+                skip_ci:
+                  allowed: false
+                  allowlist:
+                    users:
+                    - id: #{current_user.id} # #{current_user.username}
+            YAML
+          end
+
+          it 'calls the AnnotatePolicyYamlService service' do
+            expect_next_instance_of(Security::SecurityOrchestrationPolicies::AnnotatePolicyYamlService) do |instance|
+              expect(instance).to receive(:execute).and_call_original
+            end
+
+            service.execute
+          end
+
+          it 'commits the annotated policy yaml', :aggregate_failures do
+            response = service.execute
+
+            expect(response[:status]).to eq(:success)
+            expect(response[:message]).to be_nil
+            expect(response[:branch]).not_to be_nil
+
+            updated_policy_blob = policy_management_project.repository.blob_data_at(response[:branch], Security::OrchestrationPolicyConfiguration::POLICY_PATH)
+            expect(updated_policy_blob).to eq(annotated_updated_policy_yaml)
+          end
+
+          context 'when the feature flag is disabled' do
+            before do
+              stub_feature_flags(annotate_security_orchestration_policy_yaml: false)
+            end
+
+            let(:updated_policy_yaml) do
+              <<~YAML
+                ---
+                scan_execution_policy:
+                - name: Updated Policy
+                  description: #{policy_hash[:description]}
+                  enabled: true
+                  actions:
+                  - scan: dast
+                    site_profile: Site Profile
+                    scanner_profile: Scanner Profile
+                  rules:
+                  - type: pipeline
+                    branches:
+                    - master
+                  policy_scope: {}
+                  metadata: {}
+                  skip_ci:
+                    allowed: false
+                    allowlist:
+                      users:
+                      - id: #{current_user.id}
+              YAML
+            end
+
+            it 'does not call the AnnotatePolicyYamlService' do
+              expect(::Security::SecurityOrchestrationPolicies::AnnotatePolicyYamlService).not_to receive(:new)
+
+              service.execute
+            end
+
+            it 'commits the updated policy yaml without annotations', :aggregate_failures do
+              response = service.execute
+
+              expect(response[:status]).to eq(:success)
+              expect(response[:message]).to be_nil
+              expect(response[:branch]).not_to be_nil
+
+              updated_policy_blob = policy_management_project.repository.blob_data_at(response[:branch], Security::OrchestrationPolicyConfiguration::POLICY_PATH)
+              expect(updated_policy_blob).to eq(updated_policy_yaml)
+            end
+          end
+        end
       end
 
       context 'with branch_name as parameter' do
