@@ -5,8 +5,8 @@ import { __, s__ } from '~/locale';
 import HelpPopover from '~/vue_shared/components/help_popover.vue';
 import checkedRunnerIdsQuery from '../graphql/list/checked_runner_ids.query.graphql';
 import { tableField } from '../utils';
-import RunnerBulkDelete from './runner_bulk_delete.vue';
-import RunnerBulkDeleteCheckbox from './runner_bulk_delete_checkbox.vue';
+import RunnerBulkActions from './runner_bulk_actions.vue';
+import RunnerBulkActionsCheckbox from './runner_bulk_actions_checkbox.vue';
 import RunnerConfigurationPopover from './runner_configuration_popover.vue';
 import RunnerSummaryCell from './cells/runner_summary_cell.vue';
 import RunnerStatusCell from './cells/runner_status_cell.vue';
@@ -25,8 +25,8 @@ export default {
     GlTableLite,
     GlSkeletonLoader,
     HelpPopover,
-    RunnerBulkDelete,
-    RunnerBulkDeleteCheckbox,
+    RunnerBulkActions,
+    RunnerBulkActionsCheckbox,
     RunnerConfigurationPopover,
     RunnerSummaryCell,
     RunnerStatusCell,
@@ -69,7 +69,7 @@ export default {
       required: true,
     },
   },
-  emits: ['deleted'],
+  emits: ['deleted', 'toggledPaused'],
   data() {
     return { checkedRunnerIds: [] };
   },
@@ -101,6 +101,9 @@ export default {
     canDelete(runner) {
       return runner.userPermissions?.deleteRunner;
     },
+    onToggledPaused(event) {
+      this.$emit('toggledPaused', event);
+    },
     onDeleted(event) {
       this.$emit('deleted', event);
     },
@@ -126,7 +129,12 @@ export default {
 </script>
 <template>
   <div>
-    <runner-bulk-delete v-if="checkable" :runners="runners" @deleted="onDeleted" />
+    <runner-bulk-actions
+      v-if="checkable"
+      :runners="runners"
+      @deleted="onDeleted"
+      @toggledPaused="onToggledPaused"
+    />
     <gl-table-lite
       :aria-busy="loading"
       :class="tableClass"
@@ -139,7 +147,7 @@ export default {
       primary-key="id"
     >
       <template #head(checkbox)>
-        <runner-bulk-delete-checkbox :runners="runners" />
+        <runner-bulk-actions-checkbox :runners="runners" />
       </template>
 
       <template #cell(checkbox)="{ item }">
