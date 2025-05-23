@@ -51,6 +51,11 @@ module Gitlab
         project_path = Gitlab::ApplicationContext.current_context_attribute(:project).presence
         Project.find_by_full_path(project_path).try(:to_global_id) if project_path
       end
+
+      def self.root_namespace_id
+        namespace_path = Gitlab::ApplicationContext.current_context_attribute(:root_namespace).presence
+        Group.find_by_full_path(namespace_path).try(:to_global_id) if namespace_path
+      end
     end
   end
 end
