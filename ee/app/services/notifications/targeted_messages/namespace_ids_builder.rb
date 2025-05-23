@@ -5,13 +5,20 @@ require 'csv'
 module Notifications
   module TargetedMessages
     class NamespaceIdsBuilder
+      MAX_NAMESPACE_IDS = 50_000
+
       def initialize(file)
         @file = file
       end
 
       def build
         namespace_ids_from_file = parsed_namespace_ids
-        valid_namespace_ids = Namespace.id_in(namespace_ids_from_file).ids # rubocop: disable CodeReuse/ActiveRecord -- we need to fetch ids
+
+        valid_namespace_ids = []
+        namespace_ids_from_file.each_slice(NAMESPACE_IDS_BATCH) do |batch|
+          valid_namespace_ids.concat(Namespace.id_in(batch).ids) # rubocop: disable CodeReuse/ActiveRecord -- we need to fetch ids
+        end
+
         @invalid_namespace_ids = namespace_ids_from_file - valid_namespace_ids
 
         {
@@ -20,7 +27,7 @@ module Notifications
           message: build_message,
           success: true
         }
-      rescue StandardError => e
+      rescue NamespaceLimitError, StandardError => e
         message = format(
           s_('TargetedMessages|Failed to assign namespaces due to error processing CSV: %{error_message}'),
           error_message: e.message
@@ -35,6 +42,12 @@ module Notifications
       end
 
       private
+
+      NAMESPACE_IDS_BATCH = 10_000
+
+      NamespaceLimitError = Class.new(StandardError)
+
+      private_constant :NAMESPACE_IDS_BATCH, :NamespaceLimitError
 
       attr_reader :file, :invalid_namespace_ids
 
@@ -69,6 +82,8 @@ module Notifications
         CSV.new(file.tempfile, headers: false).each do |row|
           id = Integer(row.first, exception: false)
           namespace_ids.add(id) if id
+
+          raise NamespaceLimitError, 'namespace ids exceed the maximum limit.' if namespace_ids.size > MAX_NAMESPACE_IDS
         end
 
         namespace_ids.to_a

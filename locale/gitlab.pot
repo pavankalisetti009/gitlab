@@ -60749,6 +60749,9 @@ msgstr ""
 msgid "TargetedMessages|the following namespace ids were invalid and have been ignored: %{invalid_ids_message}"
 msgstr ""
 
+msgid "TargetedMessage|Namespace IDs are limited to a maximum of %{limit}."
+msgstr ""
+
 msgid "TargettedMessages|Get access to both GitLab Premium and Duo Pro for %{strike}$48%{end_strike} $19 a month for a year!"
 msgstr ""
 
