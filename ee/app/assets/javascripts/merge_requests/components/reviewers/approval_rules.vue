@@ -75,7 +75,7 @@ export default {
     toggleApprovalSections() {
       this.showApprovalSections = !this.showApprovalSections;
     },
-    visibleReviewersForRule(rule) {
+    reviewersEligibleForRule(rule) {
       let visible = rule.reviewers;
 
       if (rule.type.toLowerCase() === RULE_TYPE_ANY_APPROVER) {
@@ -163,7 +163,7 @@ export default {
                 <div class="gl-flex gl-justify-end">
                   <reviewer-dropdown
                     :selected-reviewers="reviewers"
-                    :visible-reviewers="visibleReviewersForRule(rule)"
+                    :eligible-reviewers="reviewersEligibleForRule(rule)"
                     :users="rule.eligibleApprovers"
                     :unique-id="rule.id"
                   />
