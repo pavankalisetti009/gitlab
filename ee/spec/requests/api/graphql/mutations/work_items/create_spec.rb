@@ -20,6 +20,76 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
     Users::Internal.support_bot_id
   end
 
+  # key results are only available on projects
+  shared_examples 'key results creation' do
+    let_it_be(:parent) { create(:work_item, :objective, **container_params) }
+
+    let(:fields) do
+      <<~FIELDS
+        workItem {
+          id
+          workItemType {
+            name
+          }
+          widgets {
+            type
+            ... on WorkItemWidgetHierarchy {
+              parent {
+                id
+              }
+            }
+          }
+        }
+        errors
+      FIELDS
+    end
+
+    let(:input) do
+      {
+        title: 'key result',
+        workItemTypeId: WorkItems::Type.default_by_type(:key_result).to_global_id.to_s,
+        hierarchyWidget: { 'parentId' => parent.to_global_id.to_s }
+      }
+    end
+
+    context 'when okrs are available' do
+      before do
+        stub_licensed_features(epics: true, okrs: true)
+      end
+
+      it 'creates the work item' do
+        expect do
+          post_graphql_mutation(mutation, current_user: current_user)
+        end.to change { WorkItem.count }.by(1)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(type_response).to include({ 'name' => 'Key Result' })
+        expect(widgets_response).to include(
+          {
+            'parent' => { 'id' => parent.to_global_id.to_s },
+            'type' => 'HIERARCHY'
+          }
+        )
+      end
+    end
+
+    context 'when okrs are not available' do
+      before do
+        stub_licensed_features(epics: true, okrs: false)
+      end
+
+      it 'returns error' do
+        expect do
+          post_graphql_mutation(mutation, current_user: current_user)
+        end.to not_change(WorkItem, :count)
+
+        expect(mutation_response['errors'])
+          .to contain_exactly(/cannot be added: it's not allowed to add this type of parent item/)
+        expect(mutation_response['workItem']).to be_nil
+      end
+    end
+  end
+
   context 'when user has permissions to create a work item' do
     let(:current_user) { developer }
 
@@ -94,75 +164,6 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
             end.to change { WorkItem.count }.by(0)
 
             expect(mutation_response).to be_nil
-          end
-        end
-      end
-
-      context 'when creating a key result' do
-        let_it_be(:parent) { create(:work_item, :objective, **container_params) }
-
-        let(:fields) do
-          <<~FIELDS
-            workItem {
-              id
-              workItemType {
-                name
-              }
-              widgets {
-                type
-                ... on WorkItemWidgetHierarchy {
-                  parent {
-                    id
-                  }
-                }
-              }
-            }
-            errors
-          FIELDS
-        end
-
-        let(:input) do
-          {
-            title: 'key result',
-            workItemTypeId: WorkItems::Type.default_by_type(:key_result).to_global_id.to_s,
-            hierarchyWidget: { 'parentId' => parent.to_global_id.to_s }
-          }
-        end
-
-        context 'when okrs are available' do
-          before do
-            stub_licensed_features(epics: true, okrs: true)
-          end
-
-          it 'creates the work item' do
-            expect do
-              post_graphql_mutation(mutation, current_user: current_user)
-            end.to change { WorkItem.count }.by(1)
-
-            expect(response).to have_gitlab_http_status(:success)
-            expect(type_response).to include({ 'name' => 'Key Result' })
-            expect(widgets_response).to include(
-              {
-                'parent' => { 'id' => parent.to_global_id.to_s },
-                'type' => 'HIERARCHY'
-              }
-            )
-          end
-        end
-
-        context 'when okrs are not available' do
-          before do
-            stub_licensed_features(epics: true, okrs: false)
-          end
-
-          it 'returns error' do
-            expect do
-              post_graphql_mutation(mutation, current_user: current_user)
-            end.to not_change(WorkItem, :count)
-
-            expect(mutation_response['errors'])
-              .to contain_exactly(/cannot be added: it's not allowed to add this type of parent item/)
-            expect(mutation_response['workItem']).to be_nil
           end
         end
       end
@@ -344,7 +345,10 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         context 'with task type' do
           let(:work_item_type) { :task }
 
-          it_behaves_like 'creates work item with iteration widget'
+          it_behaves_like 'creates work item with iteration widget' do
+            it_behaves_like 'key results creation'
+          end
+
           it_behaves_like 'creates work item with weight widget'
           it_behaves_like 'creates work item linked to a vulnerability'
         end
@@ -423,7 +427,10 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         let(:mutation) { graphql_mutation(:workItemCreate, input.merge(namespacePath: project.full_path), fields) }
         let(:work_item_type) { :task }
 
-        it_behaves_like 'creates work item with iteration widget'
+        it_behaves_like 'creates work item with iteration widget' do
+          it_behaves_like 'key results creation'
+        end
+
         it_behaves_like 'creates work item with weight widget'
         it_behaves_like 'creates work item linked to a vulnerability'
       end
@@ -906,13 +913,15 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
               stub_feature_flags(work_item_epics: false)
             end
 
-            it 'creates the work item epic' do
+            it 'does not create the work item epic' do
               expect do
                 post_graphql_mutation(mutation, current_user: current_user)
-              end.to change { WorkItem.count }.by(1)
+              end.to change { WorkItem.count }.by(0)
 
               expect(response).to have_gitlab_http_status(:success)
-              expect(type_response).to include({ 'name' => 'Epic' })
+              expect_graphql_errors_to_include(
+                "Epic type is not available for the given group"
+              )
             end
           end
         end
