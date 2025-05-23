@@ -8,6 +8,7 @@ module Gitlab
 
         CONTEXT_LINES_COUNT = 1
         PROXY_SEARCH_PATH = '/webserver/api/v2/search'
+        JWT_HEADER = 'Gitlab-Zoekt-Api-Request'
 
         class << self
           def instance
@@ -64,7 +65,7 @@ module Gitlab
 
         def post_request(url, payload = {}, **options)
           defaults = {
-            headers: { 'Content-Type' => 'application/json' },
+            headers: request_headers,
             body: payload.to_json,
             allow_local_requests: true,
             basic_auth: basic_auth_params
@@ -73,6 +74,13 @@ module Gitlab
         rescue *Gitlab::HTTP::HTTP_ERRORS => e
           logger.error(message: e.message)
           raise ::Search::Zoekt::Errors::ClientConnectionError, e.message
+        end
+
+        def request_headers
+          {
+            'Content-Type' => 'application/json',
+            JWT_HEADER => ::Search::Zoekt::JwtAuth.authorization_header
+          }
         end
 
         def basic_auth_params
