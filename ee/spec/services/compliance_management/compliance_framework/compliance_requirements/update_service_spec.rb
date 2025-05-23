@@ -43,6 +43,13 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
     end
   end
 
+  shared_examples 'do not enqueue project compliance evaluation for framework' do
+    it 'does not enqueue projects compliance evaluation for the framework' do
+      expect(ComplianceManagement::ComplianceFramework::ProjectsComplianceEnqueueWorker)
+        .not_to receive(:perform_async)
+    end
+  end
+
   context 'when feature is disabled' do
     before do
       stub_licensed_features(custom_compliance_frameworks: false)
@@ -98,6 +105,10 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
     context 'when current user is namespace owner' do
       let(:controls) { nil }
+      let_it_be(:external_control) do
+        create(:compliance_requirements_control, :external, compliance_requirement: requirement)
+      end
+
       let_it_be_with_refind(:other_requirement) do
         create(:compliance_requirement, framework: framework, name: 'other_requirement')
       end
@@ -109,7 +120,6 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       before do
         create(:compliance_requirements_control, compliance_requirement: requirement)
         create(:compliance_requirements_control, :project_visibility_not_internal, compliance_requirement: requirement)
-        create(:compliance_requirements_control, :external, compliance_requirement: requirement)
 
         create(:compliance_requirements_control, compliance_requirement: other_requirement)
       end
@@ -165,6 +175,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           it 'does not update existing control entries' do
             expect { service.execute }.not_to change { requirement.compliance_requirements_controls }
           end
+
+          it_behaves_like 'do not enqueue project compliance evaluation for framework'
         end
 
         context 'with empty controls array param' do
@@ -179,6 +191,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           it 'does not delete controls of other requirements' do
             expect { service.execute }.not_to change { other_requirement.compliance_requirements_controls }
           end
+
+          it_behaves_like 'do not enqueue project compliance evaluation for framework'
         end
 
         context 'with controls that need update, delete, and add operations' do
@@ -231,6 +245,13 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
             end
 
             expect(requirement_controls.where(control_type: 'external').count).to eq(0)
+          end
+
+          it 'enqueues project framework evaluation for the framework' do
+            expect(ComplianceManagement::ComplianceFramework::ProjectsComplianceEnqueueWorker)
+              .to receive(:perform_async).with(framework.id).once
+
+            service.execute
           end
         end
 

@@ -59,6 +59,14 @@ module ComplianceManagement
           raise InvalidControlError, _("Duplicate entries found for compliance controls for the requirement.")
         end
 
+        def enqueue_project_framework_evaluation
+          return unless controls.any?
+
+          ComplianceManagement::ComplianceFramework::ProjectsComplianceEnqueueWorker.perform_async(
+            requirement.framework_id
+          )
+        end
+
         def build_control(control_params)
           ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl.new(
             compliance_requirement: requirement,
