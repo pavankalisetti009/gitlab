@@ -43,14 +43,14 @@ module EE
       if project && can?(current_user, :create_saved_replies, project)
         template_paths << {
           text: _('Project comment templates'),
-          href: project_comment_templates_path(project)
+          href: ::Gitlab::Routing.url_helpers.project_comment_templates_path(project)
         }
       end
 
       if group && can?(current_user, :create_saved_replies, group)
         template_paths << {
           text: _('Group comment templates'),
-          href: group_comment_templates_path(group)
+          href: ::Gitlab::Routing.url_helpers.group_comment_templates_path(group)
         }
       end
 
