@@ -54868,6 +54868,9 @@ msgstr ""
 msgid "SecurityInventory|Add projects to this group to start tracking their security posture."
 msgstr ""
 
+msgid "SecurityInventory|An error occurred while fetching subgroups and projects. Please try again."
+msgstr ""
+
 msgid "SecurityInventory|An error occurred while fetching subgroups. Please try again."
 msgstr ""
 
@@ -54919,6 +54922,9 @@ msgstr ""
 msgid "SecurityInventory|No projects found"
 msgstr ""
 
+msgid "SecurityInventory|No subgroups found"
+msgstr ""
+
 msgid "SecurityInventory|Pipeline secret detection"
 msgstr ""
 
@@ -54929,6 +54935,9 @@ msgid "SecurityInventory|SAST"
 msgstr ""
 
 msgid "SecurityInventory|SD"
+msgstr ""
+
+msgid "SecurityInventory|Search subgroups (3 char min)"
 msgstr ""
 
 msgid "SecurityInventory|Secret detection"
@@ -54943,6 +54952,9 @@ msgstr ""
 msgid "SecurityInventory|Static application security testing (SAST)"
 msgstr ""
 
+msgid "SecurityInventory|This group doesn't have any subgroups."
+msgstr ""
+
 msgid "SecurityInventory|Tool coverage: %{coverage}%%"
 msgstr ""
 
@@ -54950,9 +54962,6 @@ msgid "SecurityInventory|View security coverage and vulnerabilities for all the 
 msgstr ""
 
 msgid "SecurityInventory|View vulnerability report"
-msgstr ""
-
-msgid "SecurityInventory||An error occurred while fetching subgroups and projects. Please try again."
 msgstr ""
 
 msgid "SecurityOrchestration| and "

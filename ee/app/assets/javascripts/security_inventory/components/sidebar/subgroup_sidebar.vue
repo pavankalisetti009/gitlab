@@ -1,4 +1,5 @@
 <script>
+import { GlSearchBoxByType } from '@gitlab/ui';
 import { setLocationHash } from '~/lib/utils/url_utility';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__ } from '~/locale';
@@ -21,6 +22,7 @@ export default {
     PanelResizer,
     LocalStorageSync,
     ProjectAvatar,
+    GlSearchBoxByType,
   },
   directives: {
     TooltipOnTruncate,
@@ -37,6 +39,7 @@ export default {
       group: {
         name: '',
       },
+      search: '',
       panelWidth: SIDEBAR_WIDTH_INITIAL,
     };
   },
@@ -104,8 +107,16 @@ export default {
       />
 
       <div class="gl-sticky gl-top-10 gl-h-screen gl-overflow-auto gl-pb-10 gl-pr-3">
+        <gl-search-box-by-type
+          v-model.trim="search"
+          :placeholder="s__('SecurityInventory|Search subgroups (3 char min)')"
+          class="gl-m-2"
+        />
+
         <div
-          class="gl-relative gl-flex gl-h-8 gl-cursor-pointer gl-items-center gl-gap-4 gl-rounded-base gl-px-3 hover:!gl-bg-status-neutral"
+          class="gl-relative gl-ml-1 gl-mt-6 gl-flex gl-h-8 gl-cursor-pointer gl-items-center gl-gap-4 gl-rounded-base gl-px-3 hover:!gl-bg-status-neutral"
+          tabindex="0"
+          role="button"
           :class="{ 'gl-bg-strong': isActiveGroup }"
           @click="selectSubgroup(group.fullPath)"
         >
@@ -121,10 +132,10 @@ export default {
             {{ group.name }}
           </div>
         </div>
-
         <group-list
           :group-full-path="groupFullPath"
           :active-full-path="activeFullPath"
+          :search="search"
           @selectSubgroup="selectSubgroup"
         />
       </div>
