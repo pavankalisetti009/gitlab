@@ -23329,7 +23329,8 @@ CREATE TABLE status_page_published_incidents (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     issue_id bigint NOT NULL,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_8ab6fb2f34 CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE status_page_published_incidents_id_seq
