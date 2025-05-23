@@ -7,7 +7,7 @@ RSpec.describe Vulnerabilities::NamespaceStatistics::AdjustmentService, feature_
   let_it_be(:group) { create(:group, parent: root_group) }
   let_it_be(:sub_group) { create(:group, parent: group) }
   let_it_be(:group_project) { create(:project, namespace: group) }
-  let(:sub_group_project) { create(:project, namespace: sub_group) }
+  let_it_be(:sub_group_project) { create(:project, namespace: sub_group) }
 
   def group_statistics(group)
     statistic = Vulnerabilities::NamespaceStatistic

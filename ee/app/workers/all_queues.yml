@@ -793,6 +793,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:security_analyzer_namespace_statuses_schedule
+  :worker_name: Security::AnalyzerNamespaceStatuses::ScheduleWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:security_create_orchestration_policy
   :worker_name: Security::CreateOrchestrationPolicyWorker
   :feature_category: :security_policy_management
@@ -3159,6 +3169,16 @@
   :feature_category: :secrets_management
   :has_external_dependencies: false
   :urgency: :high
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: security_analyzer_namespace_statuses_adjustment
+  :worker_name: Security::AnalyzerNamespaceStatuses::AdjustmentWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
