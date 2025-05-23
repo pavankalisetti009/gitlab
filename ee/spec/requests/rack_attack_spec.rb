@@ -31,6 +31,7 @@ RSpec.describe 'Rack Attack EE throttles', feature_category: :system_access do
       end
 
       stub_application_setting(settings_to_set)
+      stub_feature_flags(hide_incident_management_features: false)
     end
 
     context 'limits set' do
