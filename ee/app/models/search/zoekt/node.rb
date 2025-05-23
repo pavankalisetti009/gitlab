@@ -31,6 +31,9 @@ module Search
       has_many :zoekt_repositories,
         through: :indices, source: :zoekt_repositories, class_name: '::Search::Zoekt::Repository'
 
+      has_many :knowledge_graph_replicas,
+        foreign_key: :zoekt_node_id, inverse_of: :zoekt_node, class_name: '::Ai::KnowledgeGraph::Replica'
+
       validates :index_base_url, presence: true
       validates :search_base_url, presence: true
       validates :uuid, presence: true, uniqueness: true
