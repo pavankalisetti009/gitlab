@@ -237,38 +237,4 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
       end
     end
   end
-
-  describe '.root_namespace_id' do
-    let_it_be(:group) { create(:group) }
-
-    context 'with current context including root_namespace' do
-      let(:result) do
-        ::Gitlab::ApplicationContext.with_raw_context(root_namespace: group.full_path) do
-          described_class.root_namespace_id
-        end
-      end
-
-      it 'returns the global ID of the root namespace when found' do
-        expect(result).to eq(group.to_global_id)
-      end
-    end
-
-    context 'when root_namespace is not found' do
-      let(:result) do
-        ::Gitlab::ApplicationContext.with_raw_context(root_namespace: 'non_existent_namespace') do
-          described_class.root_namespace_id
-        end
-      end
-
-      it 'returns nil' do
-        expect(result).to be_nil
-      end
-    end
-
-    context 'when root_namespace is not present in the context' do
-      it 'returns nil' do
-        expect(described_class.root_namespace_id).to be_nil
-      end
-    end
-  end
 end

@@ -17,17 +17,10 @@ module Ai
       scope :for_namespace, ->(namespace_id) { where(namespace_id: namespace_id) }
 
       def self.find_or_initialize_by_feature(namespace, feature)
-        return unless namespace.present? && ::Feature.enabled?(:ai_model_switching, namespace)
+        return unless ::Feature.enabled?(:ai_model_switching, namespace)
         return unless namespace.root?
 
         find_or_initialize_by(namespace_id: namespace.id, feature: feature)
-      end
-
-      def self.find_by_feature(namespace, feature)
-        return unless namespace.present? && ::Feature.enabled?(:ai_model_switching, namespace)
-        return unless namespace.root?
-
-        find_by(namespace: namespace, feature: feature)
       end
 
       def model_selection_scope
