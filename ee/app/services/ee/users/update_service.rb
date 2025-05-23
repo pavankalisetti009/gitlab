@@ -105,13 +105,6 @@ module EE
       def can_make_profile_private?
         can?(current_user, :make_profile_private, model)
       end
-
-      override :require_password_check?
-      def require_password_check?
-        return false if model.password_authentication_disabled_by_enterprise_group?
-
-        super
-      end
     end
   end
 end
