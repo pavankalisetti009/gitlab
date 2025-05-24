@@ -36,6 +36,7 @@ module EE
           ci_runners_allowed_plans
           secret_detection_service
           ci_component_usages_in_projects
+          disable_ropc_for_new_applications
           deduplicate_ci_tags
           targeted_messages
           instance_push_limit
