@@ -2,12 +2,7 @@
 
 module QA
   # Add :smoke back once proven reliable
-  RSpec.describe 'Plan', product_group: :product_planning, feature_flag: { name: :work_item_epics } do
-    before do
-      Runtime::Feature.enable(:work_item_epics)
-      Runtime::Feature.enable(:create_group_level_work_items)
-    end
-
+  RSpec.describe 'Plan', product_group: :product_planning do
     describe 'Epics Management' do
       include_context 'work item epics migration'
 
@@ -65,28 +60,28 @@ module QA
 
           it 'adds/removes issue to/from epic',
             testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347983' do
-              if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
-                EE::Page::Group::WorkItem::Epic::Show.perform do |show|
-                  show.add_child_issue_to_epic(issue)
+            if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
+              EE::Page::Group::WorkItem::Epic::Show.perform do |show|
+                show.add_child_issue_to_epic(issue)
 
-                  expect(show).to have_child_issue_item
+                expect(show).to have_child_issue_item
 
-                  show.remove_child_issue_from_epic(issue)
+                show.remove_child_issue_from_epic(issue)
 
-                  expect(show).to have_no_child_issue_item
-                end
-              else
-                EE::Page::Group::Epic::Show.perform do |show|
-                  show.add_issue_to_epic(issue.web_url)
+                expect(show).to have_no_child_issue_item
+              end
+            else
+              EE::Page::Group::Epic::Show.perform do |show|
+                show.add_issue_to_epic(issue.web_url)
 
-                  expect(show).to have_related_issue_item
+                expect(show).to have_related_issue_item
 
-                  show.remove_issue_from_epic
+                show.remove_issue_from_epic
 
-                  expect(show).to have_no_related_issue_item
-                end
+                expect(show).to have_no_related_issue_item
               end
             end
+          end
 
           it 'comments on epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347982' do
             comment = 'My Epic Comment'
@@ -107,68 +102,68 @@ module QA
 
           it 'closes and reopens an epic',
             testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347984' do
-              if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
-                EE::Page::Group::WorkItem::Epic::Show.perform do |show|
-                  show.close_epic
+            if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
+              EE::Page::Group::WorkItem::Epic::Show.perform do |show|
+                show.close_epic
 
-                  expect { show.has_system_note?('closed') }.to eventually_be_truthy.within(max_duration: 60),
-                    "Expected 'closed' system note but it did not appear."
+                expect { show.has_system_note?('closed') }.to eventually_be_truthy.within(max_duration: 60),
+                  "Expected 'closed' system note but it did not appear."
 
-                  show.reopen_epic
+                show.reopen_epic
 
-                  expect { show.has_system_note?('opened') }.to eventually_be_truthy.within(max_duration: 60),
-                    "Expected 'opened' system note but it did not appear."
-                end
-              else
-                EE::Page::Group::Epic::Show.perform do |show|
-                  show.close_epic
+                expect { show.has_system_note?('opened') }.to eventually_be_truthy.within(max_duration: 60),
+                  "Expected 'opened' system note but it did not appear."
+              end
+            else
+              EE::Page::Group::Epic::Show.perform do |show|
+                show.close_epic
 
-                  expect { show.has_system_note?('closed') }.to eventually_be_truthy.within(max_duration: 60),
-                    "Expected 'closed' system note but it did not appear."
+                expect { show.has_system_note?('closed') }.to eventually_be_truthy.within(max_duration: 60),
+                  "Expected 'closed' system note but it did not appear."
 
-                  show.reopen_epic
+                show.reopen_epic
 
-                  expect { show.has_system_note?('opened') }.to eventually_be_truthy.within(max_duration: 60),
-                    "Expected 'opened' system note but it did not appear."
-                end
+                expect { show.has_system_note?('opened') }.to eventually_be_truthy.within(max_duration: 60),
+                  "Expected 'opened' system note but it did not appear."
               end
             end
+          end
         end
 
         it 'adds/removes issue to/from epic using quick actions',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347981' do
-            issue.visit!
+          issue.visit!
 
-            work_item_enabled = Page::Project::Issue::Show.perform(&:work_item_enabled?)
+          work_item_enabled = Page::Project::Issue::Show.perform(&:work_item_enabled?)
 
-            if work_item_enabled
-              Page::Project::WorkItem::Show.perform do |show|
-                show.wait_for_child_items_to_load
-                show.comment("/set_parent #{issue.project.group.web_url}/-/epics/#{epic.iid}")
-                show.comment("/remove_parent")
-              end
-            else
-              Page::Project::Issue::Show.perform do |show|
-                show.wait_for_related_issues_to_load
-                show.comment("/epic #{issue.project.group.web_url}/-/epics/#{epic.iid}")
-                show.comment("/remove_epic")
-              end
+          if work_item_enabled
+            Page::Project::WorkItem::Show.perform do |show|
+              show.wait_for_child_items_to_load
+              show.comment("/set_parent #{issue.project.group.web_url}/-/epics/#{epic.iid}")
+              show.comment("/remove_parent")
             end
-
-            epic.visit!
-
-            if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
-              EE::Page::Group::WorkItem::Epic::Show.perform do |show|
-                expect(show).to have_system_note(/(added)([\w\-# ]+)(issue)/)
-                expect(show).to have_system_note('removed')
-              end
-            else
-              EE::Page::Group::Epic::Show.perform do |show|
-                expect(show).to have_system_note('added')
-                expect(show).to have_system_note('removed')
-              end
+          else
+            Page::Project::Issue::Show.perform do |show|
+              show.wait_for_related_issues_to_load
+              show.comment("/epic #{issue.project.group.web_url}/-/epics/#{epic.iid}")
+              show.comment("/remove_epic")
             end
           end
+
+          epic.visit!
+
+          if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
+            EE::Page::Group::WorkItem::Epic::Show.perform do |show|
+              expect(show).to have_system_note(/(added)([\w\-# ]+)(issue)/)
+              expect(show).to have_system_note('removed')
+            end
+          else
+            EE::Page::Group::Epic::Show.perform do |show|
+              expect(show).to have_system_note('added')
+              expect(show).to have_system_note('removed')
+            end
+          end
+        end
 
         def create_issue_resource
           project = create(:project, :private, name: 'project-for-issues', description: 'project for adding issues')
