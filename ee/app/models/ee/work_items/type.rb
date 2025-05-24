@@ -33,24 +33,13 @@ module EE
       class_methods do
         extend ::Gitlab::Utils::Override
 
-        private
+        override :allowed_group_level_types
+        def allowed_group_level_types(resource_parent)
+          allowed_types = super
 
-        override :filter_okr
-        def filter_okr(types, resource_parent)
-          if project_resource_parent?(resource_parent) && resource_parent.okrs_mvc_feature_flag_enabled?
-            types.union(%w[key_result objective])
-          else
-            super
-          end
-        end
+          allowed_types << 'epic' if resource_parent.licensed_feature_available?(:epics)
 
-        override :filter_epic
-        def filter_epic(types, resource_parent)
-          if !project_resource_parent?(resource_parent) && resource_parent.root_ancestor.work_item_epics_enabled?
-            types.union(%w[epic])
-          else
-            super
-          end
+          allowed_types
         end
       end
 

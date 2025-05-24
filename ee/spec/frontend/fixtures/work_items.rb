@@ -18,14 +18,15 @@ RSpec.describe "Work items", '(JavaScript fixtures)', type: :request, feature_ca
 
   before do
     stub_licensed_features(
-      blocked_work_items: true,
       epics: true,
       issue_weights: true,
       iterations: true,
       okrs: true,
       subepics: true,
+      blocked_work_items: true,
       work_item_status: true
     )
+    stub_feature_flags(okrs_mvc: true)
   end
 
   it 'graphql/work_items/group_namespace_work_item_types.query.graphql.json' do
@@ -37,6 +38,17 @@ RSpec.describe "Work items", '(JavaScript fixtures)', type: :request, feature_ca
   end
 
   context 'with okrs' do
+    before do
+      stub_licensed_features(
+        epics: true,
+        issue_weights: true,
+        iterations: true,
+        okrs: true,
+        blocked_work_items: true
+      )
+      stub_feature_flags(okrs_mvc: true)
+    end
+
     let_it_be(:project) { create(:project, :public, namespace: group) }
 
     it 'graphql/work_items/okrs/namespace_work_item_types.query.graphql.json' do
