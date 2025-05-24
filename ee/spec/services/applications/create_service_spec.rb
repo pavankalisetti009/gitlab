@@ -2,19 +2,18 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Applications::CreateService do
+RSpec.describe ::Applications::CreateService, feature_category: :system_access do
   include TestRequestHelpers
+  using RSpec::Parameterized::TableSyntax
 
   let_it_be(:user) { create(:user) }
 
   let(:group) { create(:group) }
-  let(:params) { attributes_for(:application) }
+  let(:params) { attributes_for(:application, scopes: ['read_user']) }
 
-  subject { described_class.new(user, params) }
+  subject(:service) { described_class.new(user, params) }
 
   describe '#audit_event_service' do
-    using RSpec::Parameterized::TableSyntax
-
     where(:case_name, :owner, :entity_type) do
       'instance application' | nil         | 'User'
       'group application'    | ref(:group) | 'Group'
@@ -30,6 +29,26 @@ RSpec.describe ::Applications::CreateService do
       it 'creates AuditEvent with correct entity type' do
         expect { subject.execute(test_request) }.to change(AuditEvent, :count).by(1)
         expect(AuditEvent.last.entity_type).to eq(entity_type)
+      end
+    end
+  end
+
+  context 'for ROPC' do
+    where(:saas_feature_available, :feature_enabled, :ropc_enabled) do
+      false | false | true
+      false | true  | true
+      true  | false | true
+      true  | true  | false
+    end
+
+    with_them do
+      before do
+        stub_saas_features(disable_ropc_for_new_applications: saas_feature_available)
+        stub_feature_flags(disable_ropc_for_new_applications: feature_enabled)
+      end
+
+      it 'sets ropc_enabled? correctly' do
+        expect(service.execute(test_request).ropc_enabled?).to eq(ropc_enabled)
       end
     end
   end

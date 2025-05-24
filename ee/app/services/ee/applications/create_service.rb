@@ -5,6 +5,22 @@ module EE
     module CreateService
       extend ::Gitlab::Utils::Override
 
+      def self.prepended(base)
+        base.singleton_class.prepend(ClassMethods)
+      end
+
+      module ClassMethods
+        extend ::Gitlab::Utils::Override
+
+        # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Must be instance-level
+        override :disable_ropc_available?
+        def disable_ropc_available?
+          ::Gitlab::Saas.feature_available?(:disable_ropc_for_new_applications) &&
+            ::Feature.enabled?(:disable_ropc_for_new_applications)
+        end
+        # rubocop:enable Gitlab/FeatureFlagWithoutActor
+      end
+
       override :execute
       def execute(request)
         super.tap do |application|
