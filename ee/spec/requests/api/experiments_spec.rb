@@ -62,6 +62,7 @@ RSpec.describe API::Experiments, feature_category: :acquisition do
               feature_issue_url: nil,
               introduced_by_url: 'https://gitlab.com/gitlab-org/gitlab/-/merge_requests/45840',
               rollout_issue_url: nil,
+              intended_to_rollout_by: nil,
               milestone: '13.7',
               type: 'experiment',
               group: 'group::acquisition',
