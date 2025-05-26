@@ -17461,6 +17461,12 @@ msgstr ""
 msgid "ContainerRegistry|Protected container repositories"
 msgstr ""
 
+msgid "ContainerRegistry|Protection rule created."
+msgstr ""
+
+msgid "ContainerRegistry|Protection rule updated."
+msgstr ""
+
 msgid "ContainerRegistry|Protection type"
 msgstr ""
 
