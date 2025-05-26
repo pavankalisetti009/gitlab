@@ -25,5 +25,5 @@ export default function mountBranchRules(el) {
     targetBranch: getParameterByName('branch'),
   });
 
-  mount(el, store, true);
+  mount(el, store, gon.licensed_features?.branchRuleSquashOptions);
 }
