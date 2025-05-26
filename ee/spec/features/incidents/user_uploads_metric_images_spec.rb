@@ -7,6 +7,10 @@ RSpec.describe 'User uploads metrics to incident', :js, feature_category: :incid
   let_it_be(:project) { incident.project }
   let_it_be(:user) { create(:user, developer_of: project) }
 
+  before do
+    stub_feature_flags(hide_incident_management_features: false)
+  end
+
   context 'when feature is available' do
     before do
       stub_licensed_features(incident_metric_upload: true)
