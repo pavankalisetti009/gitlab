@@ -6,6 +6,7 @@ module Search
       attr_reader :max_batch_size
 
       ResourcePool = Struct.new(:enabled_namespaces, :nodes)
+      MAX_PROJECTS_PER_NAMESPACE = 30_000
 
       def self.execute(**kwargs)
         new(**kwargs).execute
@@ -24,10 +25,10 @@ module Search
 
       private
 
-      def fetch_enabled_namespace_for_indexing(project_count_limit: 20_000)
+      def fetch_enabled_namespace_for_indexing
         [].tap do |batch|
           ::Search::Zoekt::EnabledNamespace.with_missing_indices.with_rollout_allowed.find_each do |ns|
-            next if ::Namespace.by_root_id(ns.root_namespace_id).project_namespaces.count > project_count_limit
+            next if ::Namespace.by_root_id(ns.root_namespace_id).project_namespaces.count > MAX_PROJECTS_PER_NAMESPACE
 
             batch << ns
             break if batch.count >= max_batch_size
