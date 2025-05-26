@@ -10,6 +10,7 @@ module Security
     enum :type, { scan_finding: 0, license_finding: 1, any_merge_request: 2 }, prefix: true
 
     belongs_to :security_policy, class_name: 'Security::Policy', inverse_of: :approval_policy_rules
+    belongs_to :security_policy_management_project, class_name: 'Project'
 
     has_many :approval_policy_rule_project_links, class_name: 'Security::ApprovalPolicyRuleProjectLink'
     has_many :projects, through: :approval_policy_rule_project_links
@@ -40,6 +41,31 @@ module Security
 
     def license_types
       typed_content['license_types']
+    end
+
+    def branches_exempted_by_policy?(source_branch, target_branch)
+      return false unless Feature.enabled?(:approval_policy_branch_exceptions, security_policy_management_project)
+
+      branch_exceptions = typed_content['branch_exceptions']
+      return false if branch_exceptions.blank?
+
+      branch_exceptions.any? do |branch_exception|
+        source_branch_exception = branch_exception['source']
+        target_branch_exception = branch_exception['target']
+
+        branch_matches_exception?(source_branch, source_branch_exception) &&
+          branch_matches_exception?(target_branch, target_branch_exception)
+      end
+    end
+
+    private
+
+    def branch_matches_exception?(branch, exception)
+      if exception['name'].present?
+        branch == exception['name']
+      elsif exception['pattern'].present?
+        RefMatcher.new(exception['pattern']).matches?(branch)
+      end
     end
   end
 end

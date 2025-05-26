@@ -1145,11 +1145,43 @@
                           "full_path": {
                             "type": "string",
                             "minLength": 1
+                          },
+                          "source": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "pattern": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "target": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "pattern": {
+                                "type": "string"
+                              }
+                            }
                           }
                         },
-                        "required": [
-                          "name",
-                          "full_path"
+                        "oneOf": [
+                          {
+                            "required": [
+                              "name",
+                              "full_path"
+                            ]
+                          },
+                          {
+                            "required": [
+                              "source",
+                              "target"
+                            ]
+                          }
                         ]
                       }
                     ]

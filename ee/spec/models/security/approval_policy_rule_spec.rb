@@ -10,6 +10,7 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
 
   describe 'associations' do
     it { is_expected.to belong_to(:security_policy) }
+    it { is_expected.to belong_to(:security_policy_management_project) }
     it { is_expected.to have_one(:approval_project_rule) }
     it { is_expected.to have_many(:approval_merge_request_rules) }
     it { is_expected.to have_many(:violations) }
@@ -195,6 +196,104 @@ RSpec.describe Security::ApprovalPolicyRule, feature_category: :security_policy_
       it 'returns the list of licenses' do
         expect(license_types).to eq(expected_license_types)
       end
+    end
+  end
+
+  describe '#branches_exempted_by_policy?' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:source_branch) { 'feature' }
+    let_it_be(:target_branch) { 'main' }
+
+    let_it_be(:approval_policy_rule) do
+      create(:approval_policy_rule, :scan_finding, security_policy_management_project: project)
+    end
+
+    subject(:branches_exempted_by_policy) do
+      approval_policy_rule.branches_exempted_by_policy?(source_branch, target_branch)
+    end
+
+    context 'when the feature flag is enabled' do
+      before do
+        stub_feature_flags(approval_policy_branch_exceptions: project)
+      end
+
+      context 'when branch_exceptions is nil' do
+        before do
+          approval_policy_rule.content.delete(:branch_exceptions)
+        end
+
+        it { is_expected.to be false }
+      end
+
+      context 'when branch_exceptions is blank' do
+        before do
+          approval_policy_rule.content[:branch_exceptions] = []
+        end
+
+        it { is_expected.to be false }
+      end
+
+      context 'when branch_exceptions has a matching source and target' do
+        before do
+          approval_policy_rule.content[:branch_exceptions] = [
+            { 'source' => { 'name' => 'feature' }, 'target' => { 'name' => 'main' } }
+          ]
+        end
+
+        it { is_expected.to be true }
+      end
+
+      context 'when branch_exceptions uses a pattern for source and target' do
+        before do
+          approval_policy_rule.content[:branch_exceptions] = [
+            { 'source' => { 'pattern' => 'feat*' }, 'target' => { 'pattern' => 'ma*' } }
+          ]
+        end
+
+        it { is_expected.to be true }
+
+        context 'when source does not match the pattern' do
+          let_it_be(:source_branch) { 'bugfix' }
+
+          it { is_expected.to be false }
+        end
+
+        context 'when target does not match the pattern' do
+          let_it_be(:target_branch) { 'develop' }
+
+          it { is_expected.to be false }
+        end
+      end
+
+      context 'when branch_exceptions does not match source or target' do
+        before do
+          approval_policy_rule.content[:branch_exceptions] = [
+            { 'source' => { 'name' => 'other' }, 'target' => { 'name' => 'main' } },
+            { 'source' => { 'name' => 'feature' }, 'target' => { 'name' => 'develop' } }
+          ]
+        end
+
+        it { is_expected.to be false }
+      end
+
+      context 'when branch_exceptions partially matches (only source or only target)' do
+        before do
+          approval_policy_rule.content[:branch_exceptions] = [
+            { 'source' => { 'name' => 'feature' }, 'target' => { 'name' => 'develop' } },
+            { 'source' => { 'name' => 'other' }, 'target' => { 'name' => 'main' } }
+          ]
+        end
+
+        it { is_expected.to be false }
+      end
+    end
+
+    context 'when the feature flag is disabled' do
+      before do
+        stub_feature_flags(approval_policy_branch_exceptions: false)
+      end
+
+      it { is_expected.to be false }
     end
   end
 end

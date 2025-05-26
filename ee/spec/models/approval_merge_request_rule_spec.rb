@@ -676,6 +676,26 @@ RSpec.describe ApprovalMergeRequestRule, factory_default: :keep, feature_categor
       it { is_expected.to be_truthy }
     end
 
+    context 'with approval policy branch exceptions' do
+      let_it_be(:approval_policy_rule) do
+        create(:approval_policy_rule, :scan_finding)
+      end
+
+      let_it_be(:rule) do
+        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule)
+      end
+
+      before do
+        approval_policy_rule.content[:branch_exceptions] = [{
+          source: { name: merge_request.source_branch }, target: { name: merge_request.target_branch }
+        }]
+      end
+
+      it 'returns false' do
+        expect(rule.applicable_to_branch?(branch)).to be_falsey
+      end
+    end
+
     context 'when there are no associated source rules' do
       it_behaves_like 'with applicable rules to specified branch'
     end
