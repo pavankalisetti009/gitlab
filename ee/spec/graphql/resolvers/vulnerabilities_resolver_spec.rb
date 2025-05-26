@@ -266,7 +266,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
         end
       end
 
-      context 'when filtering vulnerabilities with owasp_top_10_2021', :elastic_clean do
+      context 'when filtering vulnerabilities with owasp_top_10_2021', :elastic do
         let(:params) { { owasp_top_ten_2021: ['A1:2021-Broken Access Control'] } }
         let(:error_msg) { "Feature is not supported for InstanceSecurityDashboard" }
 
@@ -373,7 +373,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       end
     end
 
-    context 'when filtering vulnerabilities with owasp_top_10_2021', :elastic_clean do
+    context 'when filtering vulnerabilities with owasp_top_10_2021', :elastic do
       let(:params) do
         { owasp_top_ten_2021: ['A1:2021-Broken Access Control'] }
       end
@@ -466,7 +466,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
       let(:params) { { identifier_name: identifier_name } }
 
-      shared_examples_for 'when elasticsearch is available', :elastic_clean do
+      shared_examples_for 'when elasticsearch is available', :elastic do
         before do
           stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
 
