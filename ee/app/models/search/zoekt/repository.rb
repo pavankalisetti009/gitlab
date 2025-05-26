@@ -21,7 +21,7 @@ module Search
 
       before_validation :set_project_identifier
 
-      validates_presence_of :zoekt_index_id, :project_identifier, :state
+      validates_presence_of :zoekt_index_id, :project_identifier, :state, :schema_version
 
       validate :project_id_matches_project_identifier
 

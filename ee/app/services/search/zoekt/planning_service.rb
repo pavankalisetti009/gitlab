@@ -9,8 +9,7 @@ module Search
         new(**kwargs).plan
       end
 
-      def initialize(
-        enabled_namespaces:, nodes:, **options)
+      def initialize(enabled_namespaces:, nodes:, **options)
         @enabled_namespaces = Array(enabled_namespaces)
         @nodes = format_nodes(nodes)
         @options = options

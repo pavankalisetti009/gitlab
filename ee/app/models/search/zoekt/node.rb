@@ -38,10 +38,12 @@ module Search
       validates :search_base_url, presence: true
       validates :uuid, presence: true, uniqueness: true
       validates :last_seen_at, presence: true
+      validates :indexed_bytes, presence: true
       validates :used_bytes, presence: true
       validates :total_bytes, presence: true
       validates :metadata, json_schema: { filename: 'zoekt_node_metadata' }
       validates :usable_storage_bytes, presence: true, numericality: { only_integer: true }
+      validates :schema_version, presence: true
 
       attribute :metadata, ::Gitlab::Database::Type::IndifferentJsonb.new # for indifferent access
 
