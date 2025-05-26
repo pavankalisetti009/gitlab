@@ -3,11 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Security::Orchestration::AssignService, feature_category: :security_policy_management do
-  let_it_be(:project, reload: true) { create(:project) }
+  let_it_be(:project, refind: true) { create(:project) }
   let_it_be(:another_project) { create(:project) }
   let_it_be(:current_user) { create(:user) }
 
-  let_it_be(:namespace, reload: true) { create(:group) }
+  let_it_be(:namespace, refind: true) { create(:group) }
   let_it_be(:another_namespace) { create(:group) }
 
   let_it_be(:policy_project) { create(:project) }

@@ -2144,15 +2144,89 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#designated_as_csp?' do
+    include Security::PolicyCspHelpers
+
+    subject { group.designated_as_csp? }
+
+    let(:group) { create(:group) }
+
+    it { is_expected.to be(false) }
+
+    context 'when the group is designated as a CSP group' do
+      before do
+        stub_csp_group(group)
+      end
+
+      it { is_expected.to be(true) }
+
+      context 'when feature flag "security_policies_csp" is disabled' do
+        before do
+          stub_feature_flags(security_policies_csp: false)
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
+  end
+
+  describe '#self_ancestor_ids_with_csp' do
+    subject { subgroup.self_and_ancestor_ids_with_csp }
+
+    let_it_be(:group) { create(:group) }
+    let_it_be_with_refind(:subgroup) { create(:group, parent: group) }
+    let_it_be(:sub_subgroup) { create(:group, parent: subgroup) }
+
+    it { is_expected.to contain_exactly(group.id, subgroup.id) }
+
+    context 'with a CSP group' do
+      include_context 'with csp group configuration'
+
+      it { is_expected.to contain_exactly(csp_group.id, group.id, subgroup.id) }
+
+      context 'with feature flag "security_policies_csp" disabled' do
+        before do
+          stub_feature_flags(security_policies_csp: false)
+        end
+
+        it { is_expected.to contain_exactly(group.id, subgroup.id) }
+      end
+    end
+  end
+
+  describe '#ancestor_ids_with_csp' do
+    subject { subgroup.ancestor_ids_with_csp }
+
+    let_it_be(:group) { create(:group) }
+    let_it_be_with_refind(:subgroup) { create(:group, parent: group) }
+    let_it_be(:sub_subgroup) { create(:group, parent: subgroup) }
+
+    it { is_expected.to contain_exactly(group.id) }
+
+    context 'with a CSP group' do
+      include_context 'with csp group configuration'
+
+      it { is_expected.to contain_exactly(csp_group.id, group.id) }
+
+      context 'with feature flag "security_policies_csp" disabled' do
+        before do
+          stub_feature_flags(security_policies_csp: false)
+        end
+
+        it { is_expected.to contain_exactly(group.id) }
+      end
+    end
+  end
+
   describe '#all_security_orchestration_policy_configurations' do
-    subject { child_group_2.all_security_orchestration_policy_configurations }
+    subject(:configurations) { child_group_2.all_security_orchestration_policy_configurations }
 
-    let!(:parent_group) { create(:group) }
-    let!(:child_group) { create(:group, parent: parent_group) }
-    let!(:child_group_2) { create(:group, parent: child_group) }
+    let_it_be(:parent_group) { create(:group) }
+    let_it_be(:child_group) { create(:group, parent: parent_group) }
+    let_it_be_with_refind(:child_group_2) { create(:group, parent: child_group) }
 
-    let!(:parent_security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: parent_group) }
-    let!(:child_security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: child_group_2) }
+    let_it_be(:parent_security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: parent_group) }
+    let_it_be(:child_security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: child_group_2) }
 
     context 'when configuration is invalid' do
       before do
@@ -2162,7 +2236,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
 
       it 'returns empty list' do
-        expect(subject).to be_empty
+        expect(configurations).to be_empty
       end
 
       context 'when including invalid configurations' do
@@ -2174,37 +2248,66 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
     context 'when configuration is valid' do
       before do
-        allow_next_found_instances_of(Security::OrchestrationPolicyConfiguration, 2) do |configuration|
+        allow_next_found_instances_of(Security::OrchestrationPolicyConfiguration, 3) do |configuration|
           allow(configuration).to receive(:policy_configuration_valid?).and_return(true)
         end
       end
 
       it 'returns security policy configurations for all valid parent groups' do
-        expect(subject).to match_array(
+        expect(configurations).to match_array(
           [
             parent_security_orchestration_policy_configuration,
             child_security_orchestration_policy_configuration
           ]
         )
       end
+
+      context 'with a designated CSP group' do
+        include_context 'with csp group configuration'
+
+        it 'returns security policy configurations including the CSP configuration' do
+          expect(configurations).to match_array(
+            [
+              csp_security_orchestration_policy_configuration,
+              parent_security_orchestration_policy_configuration,
+              child_security_orchestration_policy_configuration
+            ]
+          )
+        end
+
+        context 'when feature flag "security_policies_csp" is disabled' do
+          before do
+            stub_feature_flags(security_policies_csp: false)
+          end
+
+          it 'does not include the CSP configuration' do
+            expect(configurations).to match_array(
+              [
+                parent_security_orchestration_policy_configuration,
+                child_security_orchestration_policy_configuration
+              ]
+            )
+          end
+        end
+      end
     end
   end
 
   describe '#all_inherited_security_orchestration_policy_configurations' do
-    subject { child_group_2.all_inherited_security_orchestration_policy_configurations }
+    subject(:configurations) { child_group_2.all_inherited_security_orchestration_policy_configurations }
 
     let_it_be(:parent_group) { create(:group) }
     let_it_be(:child_group) { create(:group, parent: parent_group) }
-    let_it_be(:child_group_2) { create(:group, parent: child_group) }
+    let_it_be_with_refind(:child_group_2) { create(:group, parent: child_group) }
 
     let_it_be(:parent_security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: parent_group) }
     let_it_be(:child_security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: child_group_2) }
 
     context 'when there is no configuration for group ancestors' do
-      subject { parent_group.all_inherited_security_orchestration_policy_configurations }
+      subject(:configurations) { parent_group.all_inherited_security_orchestration_policy_configurations }
 
       it 'returns empty list' do
-        expect(subject).to be_empty
+        expect(configurations).to be_empty
       end
     end
 
@@ -2216,23 +2319,50 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
 
       it 'returns empty list' do
-        expect(subject).to be_empty
+        expect(configurations).to be_empty
       end
     end
 
     context 'when configuration is valid' do
       before do
-        allow_next_found_instances_of(Security::OrchestrationPolicyConfiguration, 2) do |configuration|
+        allow_next_found_instances_of(Security::OrchestrationPolicyConfiguration, 3) do |configuration|
           allow(configuration).to receive(:policy_configuration_valid?).and_return(true)
         end
       end
 
       it 'returns security policy configurations for all valid parent groups' do
-        expect(subject).to match_array(
+        expect(configurations).to match_array(
           [
             parent_security_orchestration_policy_configuration
           ]
         )
+      end
+
+      context 'with a designated CSP group' do
+        include_context 'with csp group configuration'
+
+        it 'returns security policy configurations including the CSP configuration' do
+          expect(configurations).to match_array(
+            [
+              csp_security_orchestration_policy_configuration,
+              parent_security_orchestration_policy_configuration
+            ]
+          )
+        end
+
+        context 'when feature flag "security_policies_csp" is disabled' do
+          before do
+            stub_feature_flags(security_policies_csp: false)
+          end
+
+          it 'does not include the CSP configuration' do
+            expect(configurations).to match_array(
+              [
+                parent_security_orchestration_policy_configuration
+              ]
+            )
+          end
+        end
       end
     end
   end
