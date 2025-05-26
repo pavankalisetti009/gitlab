@@ -1042,5 +1042,92 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         expect { completion.execute }.not_to raise_error
       end
     end
+
+    context 'when tracking Duo Code Review internal events' do
+      let(:combined_review_response) { { content: [{ text: combined_review_answer }] } }
+      let(:combined_review_answer) do
+        <<~RESPONSE
+          <review>
+          <comment file="UPDATED.md" priority="3" old_line="" new_line="2">First comment</comment>
+          </review>
+        RESPONSE
+      end
+
+      let(:summary_response) { { content: [{ text: 'Summary' }] } }
+
+      before do
+        allow(merge_request).to receive(:ai_reviewable_diff_files).and_return([instance_double(Gitlab::Diff::File,
+          new_path: 'UPDATED.md',
+          new_file?: false,
+          old_path: 'UPDATED.md',
+          old_blob: instance_double(Blob, data: 'content'),
+          raw_diff: '@@ -1,2 +1,2 @@ existing line',
+          diff_lines: [instance_double(Gitlab::Diff::Line, old_line: nil, new_line: 2)],
+          deleted_file?: false
+        )])
+      end
+
+      context 'when Duo Code Review posts a diff comment' do
+        before do
+          allow_next_instance_of(described_class) do |instance|
+            allow(instance).to receive(:trimmed_draft_note_params).and_return([
+              { merge_request: merge_request, author: duo_code_review_bot, note: 'First diff comment' },
+              { merge_request: merge_request, author: duo_code_review_bot, note: 'Second diff comment' }
+            ])
+          end
+        end
+
+        it 'tracks the diff comments event appropriately' do
+          expect { completion.execute }
+            .to trigger_internal_events('post_comment_duo_code_review_on_diff')
+            .with(user: user, project: merge_request.project, additional_properties: { value: 2 })
+            .and increment_usage_metrics('counts.count_total_post_comment_duo_code_review_on_diff').by(2)
+        end
+      end
+
+      context 'when no issues are found after review' do
+        before do
+          allow_next_instance_of(described_class) do |instance|
+            allow(instance).to receive(:trimmed_draft_note_params).and_return([])
+          end
+        end
+
+        it 'tracks the no issues found event' do
+          expect { completion.execute }
+            .to trigger_internal_events('find_no_issues_duo_code_review_after_review')
+            .with(user: user, project: merge_request.project)
+            .exactly(1).times
+        end
+      end
+
+      context 'when there are no reviewable diff files' do
+        before do
+          allow(merge_request).to receive(:ai_reviewable_diff_files).and_return([])
+        end
+
+        it 'tracks nothing to review event' do
+          expect { completion.execute }
+            .to trigger_internal_events('find_nothing_to_review_duo_code_review_on_mr')
+            .with(user: user, project: merge_request.project)
+            .exactly(1).times
+        end
+      end
+
+      context 'when an error occurs during review' do
+        before do
+          error = StandardError.new("Test error")
+          allow_next_instance_of(Gitlab::Llm::Anthropic::Client) do |client|
+            allow(client).to receive(:messages_complete).and_raise(error)
+          end
+        end
+
+        it 'tracks the error event' do
+          expect { completion.execute }
+            .to trigger_internal_events('encounter_duo_code_review_error_during_review')
+            .with(user: user, project: merge_request.project)
+            .exactly(1).times
+        end
+      end
+    end
   end
 end
