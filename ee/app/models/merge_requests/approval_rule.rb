@@ -79,16 +79,7 @@ module MergeRequests
     # enabled on project settings.
     # @return [Array<User>]
     def approvers
-      scope_or_array = filter_inactive_approvers(with_role_approvers)
-
-      return scope_or_array unless merge_request.author
-      return scope_or_array if project.merge_requests_author_approval?
-
-      if scope_or_array.respond_to?(:where)
-        scope_or_array.where.not(id: merge_request.author)
-      else
-        scope_or_array - [merge_request.author]
-      end
+      filter_inactive_approvers(with_role_approvers)
     end
     strong_memoize_attr :approvers
 

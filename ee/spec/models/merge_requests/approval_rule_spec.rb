@@ -164,8 +164,7 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
       create(
         :merge_requests_approval_rule,
         merge_request: merge_request,
-        project_id: project.id,
-        project: project
+        project_id: project.id
       )
     end
 
@@ -182,51 +181,6 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
         it 'returns users that are only active' do
           refreshed_rule = described_class.find(rule.id)
           expect(refreshed_rule.approvers).to match_array(active_users)
-        end
-      end
-    end
-
-    context 'with author in approver group' do
-      before do
-        create(:group) do |group|
-          group.add_guest(merge_request.author)
-          rule.approver_groups << group
-        end
-      end
-
-      context 'when project merge_requests_author_approval is true' do
-        before do
-          project.update!(merge_requests_author_approval: true)
-        end
-
-        it 'contains author' do
-          expect(described_class.find(rule.id).approvers).to contain_exactly(merge_request.author)
-        end
-      end
-
-      context 'when project merge_requests_author_approval is false' do
-        before do
-          project.update!(merge_requests_author_approval: false)
-        end
-
-        it 'does not contain author' do
-          expect(described_class.find(rule.id).approvers).to be_empty
-        end
-
-        context 'when the rules users have already been loaded' do
-          before do
-            rule.approver_users.to_a
-            rule.group_users.to_a
-          end
-
-          it 'does not perform any new queries when all users are loaded already' do
-            # single query is triggered for license check
-            expect { rule.approvers }.not_to exceed_query_limit(1)
-          end
-
-          it 'does not contain the author' do
-            expect(rule.approvers).to be_empty
-          end
         end
       end
     end
