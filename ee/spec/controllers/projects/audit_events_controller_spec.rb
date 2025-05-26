@@ -265,7 +265,7 @@ RSpec.describe Projects::AuditEventsController, feature_category: :audit_events 
               .to receive(:track_event)
               .with('user_perform_visit', hash_including(additional_properties: hash_including(
                 page_name: 'audit_events',
-                'with_active_compliance_frameworks' => 'true'
+                with_active_compliance_frameworks: 'true'
               )))
 
             request
