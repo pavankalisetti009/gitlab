@@ -24,7 +24,7 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
   end
 
   before do
-    stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
+    stub_feature_flags(work_item_epics: true, namespace_level_work_items: false, work_item_epics_list: false)
     stub_licensed_features(epics: true, subepics: true, epic_colors: true)
 
     sign_in(user)
@@ -32,7 +32,6 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
 
   describe 'from work item to epic' do
     before do
-      stub_feature_flags(work_item_epics_list: false, work_item_epics: true)
       # TODO: remove threshold after epic-work item sync
       # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
       allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(130)
@@ -42,50 +41,46 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
       visit group_epics_path(group)
       find_by_testid('new-epic-button').click
 
-      find_by_testid('title-input').fill_in with: epic_title
+      find_by_testid('work-item-title-input').fill_in with: epic_title
       find_by_testid('markdown-editor-form-field').native.send_keys(description_input)
       find_by_testid('confidential-checkbox').set(true)
 
       click_button 'Create epic'
     end
 
-    shared_examples 'creates an epic work item' do
-      it 'creates an epic work item on the /new page' do
-        visit new_group_epic_path(group)
+    it 'creates an epic work item on the /new page' do
+      visit new_group_epic_path(group)
 
-        find_by_testid('title-input').fill_in with: epic_title
-        find_by_testid('markdown-editor-form-field').native.send_keys(description_input)
-        find_by_testid('confidential-checkbox').set(true)
+      find_by_testid('work-item-title-input').fill_in with: epic_title
+      find_by_testid('markdown-editor-form-field').native.send_keys(description_input)
+      find_by_testid('confidential-checkbox').set(true)
 
-        click_button 'Create epic'
+      click_button 'Create epic'
 
-        wait_for_requests
+      wait_for_requests
 
-        expect(find_by_testid('work-item-title').text).to eq(epic_title)
-      end
-
-      it 'creates work item and a legacy epic that are in sync' do
-        expect { create_epic_work_item }.to change { Epic.count }.by(1).and change { WorkItem.count }.by(1)
-
-        wait_for_requests
-        # We don't show the new epic work item in the list immediately.
-        visit group_epics_path(group)
-        expect(find('a', text: epic_title)).to be_visible
-
-        work_item = WorkItem.last
-        epic = work_item.synced_epic
-
-        visit group_work_item_path(group, work_item.iid)
-        expect(find_by_testid('work-item-title').text).to eq(work_item.title)
-
-        expect(work_item.title).to eq(epic_title)
-        expect(work_item.description).to eq(description)
-        expect(work_item).to be_confidential
-        expect(Gitlab::EpicWorkItemSync::Diff.new(epic, epic.work_item, strict_equal: true).attributes).to be_empty
-      end
+      expect(find_by_testid('work-item-title').text).to eq(epic_title)
     end
 
-    it_behaves_like 'creates an epic work item'
+    it 'creates work item and a legacy epic that are in sync' do
+      expect { create_epic_work_item }.to change { Epic.count }.by(1).and change { WorkItem.count }.by(1)
+
+      wait_for_requests
+      # We don't show the new epic work item in the list immediately.
+      visit group_epics_path(group)
+      expect(find('a', text: epic_title)).to be_visible
+
+      work_item = WorkItem.last
+      epic = work_item.synced_epic
+
+      visit group_work_item_path(group, work_item.iid)
+      expect(find_by_testid('work-item-title').text).to eq(work_item.title)
+
+      expect(work_item.title).to eq(epic_title)
+      expect(work_item.description).to eq(description)
+      expect(work_item).to be_confidential
+      expect(Gitlab::EpicWorkItemSync::Diff.new(epic, epic.work_item, strict_equal: true).attributes).to be_empty
+    end
 
     it 'updates the legacy epic when the work item is updated', :sidekiq_inline do
       create_epic_work_item

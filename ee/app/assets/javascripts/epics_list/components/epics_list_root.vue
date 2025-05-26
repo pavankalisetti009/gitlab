@@ -63,7 +63,6 @@ export default {
     'next',
     'initialState',
     'initialSortBy',
-    'epicNewPath',
     'groupFullPath',
     'listEpicsPath',
     'groupMilestonesPath',
@@ -349,21 +348,12 @@ export default {
           >{{ __('Bulk edit') }}</gl-button
         >
         <create-work-item-modal
-          v-if="canCreateEpic && glFeatures.namespaceLevelWorkItems"
+          v-if="canCreateEpic"
           class="gl-grow"
           is-group
           :preselected-work-item-type="$options.WORK_ITEM_TYPE_NAME_EPIC"
           @workItemCreated="handleWorkItemCreated"
         />
-        <gl-button
-          v-else-if="canCreateEpic"
-          category="primary"
-          variant="confirm"
-          class="!gl-w-auto gl-grow"
-          :href="epicNewPath"
-          data-testid="new-epic-button"
-          >{{ __('New epic') }}</gl-button
-        >
       </div>
     </template>
     <template #bulk-edit-actions="{ checkedIssuables }">

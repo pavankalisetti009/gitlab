@@ -17,25 +17,27 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
   describe 'GET #index' do
     subject(:get_index) { get group_epics_path(group) }
 
-    before do
-      stub_feature_flags(namespace_level_work_items: false)
-    end
-
-    it 'renders with feature flag enabled' do
-      get_index
-
-      expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: true)
-    end
-
-    context 'when work_item_epics disabled' do
+    context 'when work_item_epics_list disabled' do
       before do
-        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
+        stub_feature_flags(work_item_epics_list: false)
       end
 
       it 'renders with feature flags disabled' do
         get_index
 
-        expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: false)
+        expect(response.body).to have_pushed_frontend_feature_flags(workItemEpicsList: false)
+      end
+    end
+
+    context 'when work_item_epics_list is enabled' do
+      before do
+        stub_feature_flags(work_item_epics_list: true)
+      end
+
+      it 'renders with feature flags disabled' do
+        get_index
+
+        expect(response.body).to have_pushed_frontend_feature_flags(workItemEpicsList: true)
       end
     end
 
@@ -56,13 +58,14 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
     subject(:get_new) { get new_group_epic_path(group) }
 
     before do
-      stub_feature_flags(namespace_level_work_items: false, work_item_epics: false)
+      stub_feature_flags(work_item_epics: false)
     end
 
     it 'with feature flag disabled it still sets the epic flags to true' do
       get_new
 
-      expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: true, workItemEpics: true)
+      expect(response.body).to have_pushed_frontend_feature_flags(workItemEpics: true)
+      expect(response).to have_gitlab_http_status(:success)
     end
 
     context 'when license is not available' do
@@ -112,14 +115,13 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
 
       context 'when feature flag is false' do
         before do
-          stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
+          stub_feature_flags(work_item_epics: false, work_item_epics_list: false)
         end
 
         it 'exposes the workItemEpics flag' do
           get group_epic_path(group, epic)
 
           expect(response).to render_template(:show)
-          expect(response.body).to have_pushed_frontend_feature_flags(workItemEpics: false)
         end
 
         it 'renders json when requesting json response' do

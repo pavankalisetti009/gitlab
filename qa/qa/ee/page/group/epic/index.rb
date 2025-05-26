@@ -10,7 +10,7 @@ module QA
               element 'issuable-title-link'
             end
 
-            view 'ee/app/assets/javascripts/epics_list/components/epics_list_root.vue' do
+            view 'app/assets/javascripts/work_items/components/create_work_item_modal.vue' do
               element 'new-epic-button'
             end
 
