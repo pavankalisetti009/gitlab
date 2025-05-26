@@ -277,10 +277,12 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
       before do
         allow(tool).to receive(:provider_prompt_class).and_return(prompt_class)
 
-        allow(Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).with(user, {
+        allow(Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).with(
+          user,
           service_name: :troubleshoot_job,
-          tracking_context: { request_id: nil, action: 'troubleshoot_job' }
-        }).and_return(ai_request_double)
+          tracking_context: { request_id: nil, action: 'troubleshoot_job' },
+          root_namespace: project.root_ancestor
+        ).and_return(ai_request_double)
       end
 
       context 'when FF is enabled' do
@@ -290,10 +292,18 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
 
         it 'receives the new prompt version' do
           expect(ai_request_double).to receive(:request).with(
-            hash_including(options: hash_including(prompt_version: '0.0.1-dev')), unit_primitive: 'troubleshoot_job'
+            hash_including(options: hash_including(prompt_version: '0.0.1-dev')),
+            unit_primitive: 'troubleshoot_job'
           )
 
           tool.execute
+
+          expect(Gitlab::Llm::Chain::Requests::AiGateway).to have_received(:new).with(
+            user,
+            service_name: :troubleshoot_job,
+            tracking_context: { request_id: nil, action: 'troubleshoot_job' },
+            root_namespace: project.root_ancestor
+          )
         end
       end
 
@@ -304,10 +314,18 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
 
         it 'uses the old prompt version' do
           expect(ai_request_double).to receive(:request).with(
-            hash_including(options: hash_including(prompt_version: '^1.0.0')), unit_primitive: 'troubleshoot_job'
+            hash_including(options: hash_including(prompt_version: '^1.0.0')),
+            unit_primitive: 'troubleshoot_job'
           )
 
           tool.execute
+
+          expect(Gitlab::Llm::Chain::Requests::AiGateway).to have_received(:new).with(
+            user,
+            service_name: :troubleshoot_job,
+            tracking_context: { request_id: nil, action: 'troubleshoot_job' },
+            root_namespace: project.root_ancestor
+          )
         end
       end
     end
