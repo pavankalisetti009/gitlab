@@ -13,6 +13,7 @@ import getAiMessages from 'ee/ai/graphql/get_ai_messages.query.graphql';
 import getAiConversationThreads from 'ee/ai/graphql/get_ai_conversation_threads.query.graphql';
 import getAiMessagesWithThread from 'ee/ai/graphql/get_ai_messages_with_thread.query.graphql';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
+import chatWithNamespaceMutation from 'ee/ai/graphql/chat_with_namespace.mutation.graphql';
 import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.graphql';
 import { InternalEvents } from '~/tracking';
 import deleteConversationThreadMutation from 'ee/ai/graphql/delete_conversation_thread.mutation.graphql';
@@ -71,6 +72,11 @@ export default {
       default: null,
     },
     projectId: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    rootNamespaceId: {
       type: String,
       required: false,
       default: null,
@@ -347,6 +353,7 @@ export default {
         this.setLoading(true);
       }
 
+      const mutationName = this.rootNamespaceId ? chatWithNamespaceMutation : chatMutation;
       const mutationVariables = {
         question,
         resourceId,
@@ -354,12 +361,13 @@ export default {
         projectId: this.projectId,
         threadId: this.activeThread,
         conversationType: MULTI_THREADED_CONVERSATION_TYPE,
+        ...(this.rootNamespaceId && { rootNamespaceId: this.rootNamespaceId }),
         ...variables,
       };
 
       this.$apollo
         .mutate({
-          mutation: chatMutation,
+          mutation: mutationName,
           variables: mutationVariables,
           context: {
             headers: {

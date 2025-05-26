@@ -248,8 +248,20 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
         end
       end
 
-      it 'returns the global ID of the root namespace when found' do
-        expect(result).to eq(group.to_global_id)
+      context 'when ai_model_switching feature flag is enabled' do
+        it 'returns the global ID of the root namespace when found' do
+          expect(result).to eq(group.to_global_id)
+        end
+      end
+
+      context 'when ai_model_switching feature flag is disabled' do
+        before do
+          stub_feature_flags(ai_model_switching: false)
+        end
+
+        it 'returns nil even when namespace exists' do
+          expect(result).to be_nil
+        end
       end
     end
 
