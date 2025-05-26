@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
+RSpec.describe 'new tables missing sharding_key', feature_category: :organization do
   include ShardingKeySpecHelpers
 
   let(:allowed_sharding_key_referenced_tables) { %w[projects namespaces organizations] }

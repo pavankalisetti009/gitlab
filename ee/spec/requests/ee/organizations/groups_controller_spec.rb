@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Organizations::GroupsController, feature_category: :cell do
+RSpec.describe Organizations::GroupsController, feature_category: :organization do
   let_it_be(:organization) { create(:organization) }
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :public, organization: organization) }

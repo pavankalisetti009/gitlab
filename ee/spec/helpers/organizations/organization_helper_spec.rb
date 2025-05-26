@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Organizations::OrganizationHelper, feature_category: :cell do
+RSpec.describe Organizations::OrganizationHelper, feature_category: :organization do
   let_it_be(:organization_detail) { build_stubbed(:organization_detail, description_html: '<em>description</em>') }
   let_it_be(:organization) { organization_detail.organization }
   let_it_be(:activity_organization_path) { '/-/organizations/default/activity.json' }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'getting organization information', feature_category: :cell do
+RSpec.describe 'getting organization information', feature_category: :organization do
   include ::GraphqlHelpers
 
   let(:query) { graphql_query_for(:organization, { id: organization.to_global_id }, organization_fields) }
