@@ -263,6 +263,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:click_house_user_addon_assignment_versions_sync
+  :worker_name: ClickHouse::UserAddonAssignmentVersionsSyncWorker
+  :feature_category: :seat_cost_management
+  :has_external_dependencies: true
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:cloud_connector_sync_service_token
   :worker_name: CloudConnector::SyncServiceTokenWorker
   :feature_category: :cloud_connector
