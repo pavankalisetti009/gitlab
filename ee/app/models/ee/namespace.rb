@@ -592,10 +592,30 @@ module EE
       false
     end
 
-    def all_security_orchestration_policy_configurations(include_invalid: false)
-      return Array.wrap(security_orchestration_policy_configuration) if self_and_ancestor_ids.blank?
+    def designated_as_csp?
+      return false unless csp_enabled?(self)
 
-      security_orchestration_policies_for_namespaces(self_and_ancestor_ids, include_invalid: include_invalid)
+      ::Security::PolicySetting.instance.csp_namespace_id == id
+    end
+
+    def self_and_ancestor_ids_with_csp
+      return self_and_ancestor_ids unless csp_enabled?(self)
+
+      [::Security::PolicySetting.instance.csp_namespace_id, *self_and_ancestor_ids].compact.uniq
+    end
+    strong_memoize_attr :self_and_ancestor_ids_with_csp
+
+    def ancestor_ids_with_csp
+      return ancestor_ids unless csp_enabled?(self)
+
+      [::Security::PolicySetting.instance.csp_namespace_id, *ancestor_ids].compact.uniq
+    end
+    strong_memoize_attr :ancestor_ids_with_csp
+
+    def all_security_orchestration_policy_configurations(include_invalid: false)
+      return Array.wrap(security_orchestration_policy_configuration) if self_and_ancestor_ids_with_csp.blank?
+
+      security_orchestration_policies_for_namespaces(self_and_ancestor_ids_with_csp, include_invalid: include_invalid)
     end
 
     def all_descendant_security_orchestration_policy_configurations(include_invalid: false)
@@ -608,9 +628,9 @@ module EE
     end
 
     def all_inherited_security_orchestration_policy_configurations(include_invalid: false)
-      return [] if ancestor_ids.blank?
+      return [] if ancestor_ids_with_csp.blank?
 
-      security_orchestration_policies_for_namespaces(ancestor_ids, include_invalid: include_invalid)
+      security_orchestration_policies_for_namespaces(ancestor_ids_with_csp, include_invalid: include_invalid)
     end
 
     def all_projects_pages_domains(only_verified: false)
@@ -670,6 +690,8 @@ module EE
     end
 
     private
+
+    delegate :csp_enabled?, to: ::Security::PolicySetting
 
     def has_paid_hosted_plan?
       has_subscription? && gitlab_subscription.has_a_paid_hosted_plan?

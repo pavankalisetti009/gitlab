@@ -75,4 +75,46 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
       end
     end
   end
+
+  describe '.csp_enabled?' do
+    include Security::PolicyCspHelpers
+
+    subject { described_class.csp_enabled?(group) }
+
+    let(:group) { top_level_group }
+    let_it_be(:top_level_group) { create(:group) }
+    let_it_be(:subgroup) { create(:group, parent: top_level_group) }
+
+    it { is_expected.to be(false) }
+
+    context 'when the group is designated as a CSP group' do
+      before do
+        stub_csp_group(group)
+      end
+
+      it { is_expected.to be(true) }
+
+      context 'when on GitLab.com', :saas do
+        it { is_expected.to be(false) }
+      end
+
+      context 'when feature flag "security_policies_csp" is disabled' do
+        before do
+          stub_feature_flags(security_policies_csp: false)
+        end
+
+        it { is_expected.to be(false) }
+      end
+
+      context 'with subgroup and feature flag "security_policies_csp" enabled for the root ancestor' do
+        let(:group) { subgroup }
+
+        before do
+          stub_feature_flags(security_policies_csp: top_level_group)
+        end
+
+        it { is_expected.to be(true) }
+      end
+    end
+  end
 end

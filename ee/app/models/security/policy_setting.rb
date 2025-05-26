@@ -13,6 +13,15 @@ module Security
     # A group for managing Centralized Security Policies
     belongs_to :csp_namespace, class_name: 'Group', optional: true
 
+    def self.csp_enabled?(group)
+      return false if GitlabSubscriptions::SubscriptionHelper.gitlab_com_subscription?
+
+      instance.csp_namespace_id.present? && (
+        ::Feature.enabled?(:security_policies_csp, group) ||
+          ::Feature.enabled?(:security_policies_csp, group&.root_ancestor)
+      )
+    end
+
     private
 
     def validate_csp_is_group

@@ -1275,8 +1275,13 @@ module EE
       ci_cd_settings.auto_rollback_enabled?
     end
 
+    # Only Top-Level Groups can be designated as CSP
+    def designated_as_csp?
+      false
+    end
+
     def affected_by_security_policy_management_project?(management_project)
-      all_parent_groups = group&.self_and_ancestor_ids
+      all_parent_groups = security_orchestration_policy_configuration_parent_group_ids
       policies = ::Security::OrchestrationPolicyConfiguration
         .for_management_project(management_project)
         .for_project(id)
@@ -1292,7 +1297,7 @@ module EE
     end
 
     def all_security_orchestration_policy_configurations(include_invalid: false)
-      all_parent_groups = group&.self_and_ancestor_ids
+      all_parent_groups = security_orchestration_policy_configuration_parent_group_ids
       return [] if all_parent_groups.blank? && !security_orchestration_policy_configuration&.policy_configuration_valid? && !include_invalid
       return Array.wrap(security_orchestration_policy_configuration) if all_parent_groups.blank?
 
@@ -1308,7 +1313,7 @@ module EE
     end
 
     def all_inherited_security_orchestration_policy_configurations(include_invalid: false)
-      all_parent_groups = group&.self_and_ancestor_ids
+      all_parent_groups = security_orchestration_policy_configuration_parent_group_ids
       return [] if all_parent_groups.blank?
 
       security_policies = ::Security::OrchestrationPolicyConfiguration.for_namespace(all_parent_groups)
@@ -1487,6 +1492,8 @@ module EE
 
     private
 
+    delegate :csp_enabled?, to: ::Security::PolicySetting
+
     def path_locks_changed_epoch_cache_key
       "project:#{id}:path_locks_changed_epoch"
     end
@@ -1510,6 +1517,13 @@ module EE
       return configurations if include_invalid
 
       configurations.select { |configuration| configuration&.policy_configuration_valid? }
+    end
+
+    def security_orchestration_policy_configuration_parent_group_ids
+      # Even if project has no group, the CSP group should be returned if enabled
+      return [::Security::PolicySetting.instance.csp_namespace_id] if !group && csp_enabled?(group)
+
+      group&.self_and_ancestor_ids_with_csp
     end
 
     def ci_minutes_project_usage
