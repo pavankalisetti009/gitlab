@@ -69,7 +69,6 @@ const mockProvide = {
   next: '',
   initialState: 'opened',
   initialSortBy: 'created_desc',
-  epicNewPath: '/groups/gitlab-org/-/epics/new',
   groupFullPath: 'gitlab-org',
   groupLabelsPath: '/gitlab-org/-/labels.json',
   groupMilestonesPath: '/gitlab-org/-/milestone.json',
@@ -420,13 +419,10 @@ describe('EpicsListRoot', () => {
     });
   });
 
-  it('renders create work item modal when the user has permissions and the feature is enabled', () => {
+  it('renders create work item modal when the user has permissions', () => {
     createComponent({
       provide: {
         ...mockProvide,
-        glFeatures: {
-          namespaceLevelWorkItems: true,
-        },
       },
     });
 
@@ -436,13 +432,21 @@ describe('EpicsListRoot', () => {
     });
   });
 
+  it('does not render create work item modal when the user has no permissions', () => {
+    createComponent({
+      provide: {
+        ...mockProvide,
+        canCreateEpic: false,
+      },
+    });
+
+    expect(findCreateWorkItemModal().exists()).toBe(false);
+  });
+
   it('refetches the list if a new work item is created', async () => {
     createComponent({
       provide: {
         ...mockProvide,
-        glFeatures: {
-          namespaceLevelWorkItems: true,
-        },
       },
     });
     await waitForPromises();

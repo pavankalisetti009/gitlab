@@ -1,6 +1,6 @@
 import { WORKSPACE_GROUP } from '~/issues/constants';
 
-if (gon.features.workItemEpicsList && gon.features.namespaceLevelWorkItems) {
+if (gon.features.workItemEpicsList) {
   import(/* webpackChunkName: 'workItemsApp' */ '~/work_items/index')
     .then(({ initWorkItemsRoot }) => {
       initWorkItemsRoot({ workspaceType: WORKSPACE_GROUP });
