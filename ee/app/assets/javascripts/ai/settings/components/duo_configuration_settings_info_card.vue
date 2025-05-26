@@ -1,7 +1,7 @@
 <script>
 import { GlCard, GlButton } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
-import { DUO_CORE, DUO_IDENTIFIERS, DUO_TITLES } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_CORE, DUO_IDENTIFIERS, DUO_TITLES } from 'ee/constants/duo';
 import { AVAILABILITY_OPTIONS } from '../constants';
 import DuoConfigurationSettingsRow from './duo_configuration_settings_row.vue';
 

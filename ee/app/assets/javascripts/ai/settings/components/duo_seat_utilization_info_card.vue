@@ -2,7 +2,7 @@
 import { GlCard, GlButton, GlIcon } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
-import { DUO_PRO, DUO_IDENTIFIERS, DUO_TITLES } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_IDENTIFIERS, DUO_TITLES } from 'ee/constants/duo';
 import { InternalEvents } from '~/tracking';
 import { formatDate } from '~/lib/utils/datetime_utility';
 

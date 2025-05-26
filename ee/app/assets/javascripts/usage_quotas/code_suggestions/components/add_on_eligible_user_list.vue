@@ -27,9 +27,9 @@ import {
 import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { DUO_IDENTIFIERS } from 'ee/constants/duo';
 import {
   DUO_ADD_ONS,
-  DUO_IDENTIFIERS,
   addOnEligibleUserListTableFields,
   ASSIGN_SEATS_BULK_ACTION,
   UNASSIGN_SEATS_BULK_ACTION,

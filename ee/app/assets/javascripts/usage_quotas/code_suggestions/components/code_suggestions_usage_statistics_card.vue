@@ -2,11 +2,8 @@
 import { GlCard } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
-import {
-  codeSuggestionsLearnMoreLink,
-  DUO_IDENTIFIERS,
-  DUO_TITLES,
-} from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_IDENTIFIERS, DUO_TITLES } from 'ee/constants/duo';
+import { codeSuggestionsLearnMoreLink } from 'ee/usage_quotas/code_suggestions/constants';
 
 export default {
   name: 'CodeSuggestionsUsageStatisticsCard',

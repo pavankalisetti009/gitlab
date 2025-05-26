@@ -7,7 +7,7 @@ import DuoModelsConfigurationInfoCard from 'ee/ai/settings/components/duo_models
 import DuoCoreUpgradeCard from 'ee/ai/settings/components/duo_core_upgrade_card.vue';
 import DuoWorkflowSettings from 'ee/ai/settings/components/duo_workflow_settings.vue';
 import GitlabDuoHome from 'ee/ai/settings/pages/gitlab_duo_home.vue';
-import { DUO_CORE, DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_CORE, DUO_PRO, DUO_ENTERPRISE } from 'ee/constants/duo';
 
 describe('GitLab Duo Home', () => {
   const defaultSlotProps = {

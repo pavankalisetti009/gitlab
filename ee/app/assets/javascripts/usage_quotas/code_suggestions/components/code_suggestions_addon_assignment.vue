@@ -2,7 +2,7 @@
 import { GlToggle } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
-import { DUO_TITLES, DUO_IDENTIFIERS } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_TITLES, DUO_IDENTIFIERS } from 'ee/constants/duo';
 import {
   CANNOT_ASSIGN_ADDON_ERROR_CODE,
   CANNOT_UNASSIGN_ADDON_ERROR_CODE,
