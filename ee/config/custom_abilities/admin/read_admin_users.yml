@@ -1,7 +1,7 @@
 ---
 title: View users
 name: read_admin_users
-description: Allows read access to the user list and user details in the Admin area
+description: Read the user list and user details in the Admin area.
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/508782
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/177514
 feature_category: admin
