@@ -113,27 +113,25 @@ class ApprovalProjectRule < ApplicationRecord
     nil
   end
 
-  def apply_report_approver_rules_to(merge_request)
-    ApplicationRecord.transaction do
-      rule = merge_request_report_approver_rule(merge_request)
-      rule_attributes = report_approver_attributes
-
-      yield(rule_attributes) if block_given?
-
-      rule.update!(rule_attributes)
-
-      next rule unless rule.scan_result_policy_id
-
-      Security::ScanResultPolicyViolation.upsert_all(
-        [merge_request_id: merge_request.id,
-         scan_result_policy_id: rule.scan_result_policy_id,
-         approval_policy_rule_id: rule.approval_policy_rule_id,
-         status: Security::ScanResultPolicyViolation.statuses[:running],
-         project_id: merge_request.project_id],
-        unique_by: %w[scan_result_policy_id merge_request_id])
-
-      rule
+  def apply_report_approver_rules_to(merge_request, &block)
+    rule = ApplicationRecord.transaction do
+      update_report_approver_rule_for_merge_request(merge_request, &block)
     end
+
+    if rule.security_orchestration_policy_configuration_id
+      Gitlab::AppJsonLogger.info(
+        event: 'approval_merge_request_rule_changed',
+        approval_project_rule_id: id,
+        approval_merge_request_rule_id: rule.id,
+        merge_request_iid: merge_request.iid,
+        approvals_required: rule.approvals_required,
+        security_orchestration_policy_configuration_id: rule.security_orchestration_policy_configuration_id,
+        scan_result_policy_id: rule.scan_result_policy_id,
+        project_path: project&.full_path
+      )
+    end
+
+    rule
   end
 
   def audit_add(model)
@@ -256,4 +254,25 @@ class ApprovalProjectRule < ApplicationRecord
     project.all_protected_branches
   end
   strong_memoize_attr :all_protected_branches_for_project
+
+  def update_report_approver_rule_for_merge_request(merge_request, &block)
+    rule = merge_request_report_approver_rule(merge_request)
+    rule_attributes = report_approver_attributes
+
+    yield(rule_attributes) if block
+
+    rule.update!(rule_attributes)
+
+    if rule.scan_result_policy_id
+      Security::ScanResultPolicyViolation.upsert_all(
+        [merge_request_id: merge_request.id,
+         scan_result_policy_id: rule.scan_result_policy_id,
+         approval_policy_rule_id: rule.approval_policy_rule_id,
+         status: Security::ScanResultPolicyViolation.statuses[:running],
+         project_id: merge_request.project_id],
+        unique_by: %w[scan_result_policy_id merge_request_id])
+    end
+
+    rule
+  end
 end
