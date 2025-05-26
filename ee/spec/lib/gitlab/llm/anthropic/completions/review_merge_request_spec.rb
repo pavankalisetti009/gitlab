@@ -435,7 +435,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
 
           it 'does not execute review and raise exception' do
             expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
-              StandardError.new("Unable to perform Duo Code Review: progress_note and resource not found")
+              StandardError.new("Unable to perform Duo Code Review: progress_note and resource not found"),
+              unit_primitive: 'review_merge_request'
             )
 
             expect do
@@ -732,6 +733,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
               hash_including(
                 message: "LLM response metrics",
                 event: "review_merge_request_llm_response_received",
+                unit_primitive: 'review_merge_request',
                 merge_request_id: merge_request.id,
                 response_id: "msg_01NnknffDsPVts8FAQ6tyh47",
                 stop_reason: "end_turn",
@@ -754,6 +756,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
               hash_including(
                 message: "LLM response metrics",
                 event: "review_merge_request_llm_response_received",
+                unit_primitive: 'review_merge_request',
                 merge_request_id: merge_request.id,
                 input_tokens: nil,
                 output_tokens: nil,
@@ -779,6 +782,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
               hash_including(
                 message: "LLM response metrics",
                 event: "review_merge_request_llm_response_received",
+                unit_primitive: 'review_merge_request',
                 merge_request_id: merge_request.id,
                 response_id: "err_01NnknffDsPVts8FAQ6tyh48",
                 input_tokens: nil,
@@ -792,6 +796,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
               hash_including(
                 message: "Review request failed with files content, retrying without file content",
                 event: "review_merge_request_retry_without_content",
+                unit_primitive: 'review_merge_request',
                 merge_request_id: merge_request.id,
                 error: ["Some error occurred"]
               )
@@ -825,6 +830,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
               hash_including(
                 message: "LLM response metrics",
                 event: "review_merge_request_llm_response_received",
+                unit_primitive: 'review_merge_request',
                 merge_request_id: merge_request.id,
                 response_id: "msg_01NnknffDsPVts8FAQ6tyh49",
                 stop_reason: "end_turn",
@@ -927,6 +933,7 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           {
             message: "LLM response comments metrics",
             event: "review_merge_request_llm_response_comments",
+            unit_primitive: 'review_merge_request',
             merge_request_id: merge_request.id,
             total_comments: 0,
             p1_comments: 0,
