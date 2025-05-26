@@ -74,7 +74,7 @@ RSpec.describe Projects::Security::VulnerabilitiesController, feature_category: 
         expect(response.body).to have_css("#js-vulnerability-main")
       end
 
-      it_behaves_like 'tracks govern usage event', 'users_visiting_security_vulnerabilities' do
+      it_behaves_like 'tracks govern usage event', 'security_vulnerabilities' do
         let(:request) { show_vulnerability }
       end
     end
@@ -90,7 +90,7 @@ RSpec.describe Projects::Security::VulnerabilitiesController, feature_category: 
         expect(response.body).to have_text(vulnerability.title)
       end
 
-      it_behaves_like 'tracks govern usage event', 'users_visiting_security_vulnerabilities' do
+      it_behaves_like 'tracks govern usage event', 'security_vulnerabilities' do
         let(:request) { show_vulnerability }
       end
     end

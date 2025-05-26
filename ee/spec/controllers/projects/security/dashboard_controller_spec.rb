@@ -68,7 +68,7 @@ RSpec.describe Projects::Security::DashboardController, feature_category: :vulne
       end
     end
 
-    it_behaves_like 'tracks govern usage event', 'users_visiting_security_dashboard' do
+    it_behaves_like 'tracks govern usage event', 'security_dashboard' do
       let(:request) { show_security_dashboard }
     end
 

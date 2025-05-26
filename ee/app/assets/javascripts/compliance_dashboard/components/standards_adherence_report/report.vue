@@ -40,9 +40,12 @@ export default {
     };
   },
   mounted() {
-    this.track('visit_standards_adherence', {
-      property: this.activeComplianceFrameworks ? 'with_active_compliance_frameworks' : '',
-    });
+    const additionalProperties = this.activeComplianceFrameworks
+      ? {
+          with_active_compliance_frameworks: 'true',
+        }
+      : {};
+    this.track('user_perform_visit', additionalProperties);
   },
   methods: {
     updateReportVersion(value) {

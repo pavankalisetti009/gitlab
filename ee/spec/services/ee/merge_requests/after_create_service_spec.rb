@@ -146,10 +146,14 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
 
     describe 'usage activity tracking' do
       let(:user) { merge_request.author }
+      let(:event_name) { 'users_creating_merge_requests_with_security_policies' }
 
       context 'when project has no security policy configuration' do
-        it_behaves_like "doesn't track govern usage service event",
-          'users_creating_merge_requests_with_security_policies'
+        it "doesn't count event users_creating_merge_requests_with_security_policies" do
+          expect(Gitlab::UsageDataCounters::HLLRedisCounter).not_to receive(:track_event).with(event_name, any_args)
+
+          execute
+        end
       end
 
       context 'with project security_orchestration_policy_configuration' do
@@ -158,7 +162,12 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
           create(:scan_result_policy_read, security_orchestration_policy_configuration: configuration, project: project)
         end
 
-        it_behaves_like 'tracks govern usage service event', 'users_creating_merge_requests_with_security_policies'
+        it 'tracks users_creating_merge_requests_with_security_policies counter' do
+          allow(Gitlab::UsageDataCounters::HLLRedisCounter).to receive(:track_event)
+          expect(Gitlab::UsageDataCounters::HLLRedisCounter).to receive(:track_event).with(event_name, values: user.id)
+
+          execute
+        end
       end
 
       context "with group security_orchestration_policy_configuration" do
@@ -169,7 +178,12 @@ RSpec.describe MergeRequests::AfterCreateService, feature_category: :code_review
           project.update!(namespace: configuration.namespace)
         end
 
-        it_behaves_like 'tracks govern usage service event', 'users_creating_merge_requests_with_security_policies'
+        it 'tracks users_creating_merge_requests_with_security_policies counter' do
+          allow(Gitlab::UsageDataCounters::HLLRedisCounter).to receive(:track_event)
+          expect(Gitlab::UsageDataCounters::HLLRedisCounter).to receive(:track_event).with(event_name, values: user.id)
+
+          execute
+        end
       end
     end
 

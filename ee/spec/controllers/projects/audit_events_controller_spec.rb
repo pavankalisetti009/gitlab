@@ -250,8 +250,27 @@ RSpec.describe Projects::AuditEventsController, feature_category: :audit_events 
         )
       end
 
-      it_behaves_like 'tracks govern usage event', 'users_visiting_audit_events' do
-        let(:user) { auditor }
+      context 'govern usage tracking' do
+        it_behaves_like 'tracks govern usage event', 'audit_events'
+
+        context 'with active frameworks' do
+          let_it_be(:framework) { create :compliance_framework }
+          let_it_be(:group) { framework.namespace }
+          let_it_be(:project) { create :project, namespace: group }
+
+          it 'tracks with_active_compliance_frameworks' do
+            create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework)
+
+            expect(Gitlab::InternalEvents)
+              .to receive(:track_event)
+              .with('user_perform_visit', hash_including(additional_properties: hash_including(
+                page_name: 'audit_events',
+                'with_active_compliance_frameworks' => 'true'
+              )))
+
+            request
+          end
+        end
       end
     end
 
@@ -279,7 +298,7 @@ RSpec.describe Projects::AuditEventsController, feature_category: :audit_events 
         )
       end
 
-      it_behaves_like 'tracks govern usage event', 'users_visiting_audit_events' do
+      it_behaves_like 'tracks govern usage event', 'audit_events' do
         let(:user) { maintainer }
       end
     end

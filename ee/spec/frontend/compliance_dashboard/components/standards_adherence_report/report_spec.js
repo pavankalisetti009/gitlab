@@ -54,9 +54,7 @@ describe('ComplianceStandardsAdherenceReport component', () => {
 
       it('tracks without property', () => {
         expect(trackingSpy).toHaveBeenCalledTimes(1);
-        expect(trackingSpy).toHaveBeenCalledWith(undefined, 'visit_standards_adherence', {
-          property: '',
-        });
+        expect(trackingSpy).toHaveBeenCalledWith(undefined, 'user_perform_visit', {});
       });
     });
 
@@ -68,8 +66,8 @@ describe('ComplianceStandardsAdherenceReport component', () => {
 
       it('tracks when mounted', () => {
         expect(trackingSpy).toHaveBeenCalledTimes(1);
-        expect(trackingSpy).toHaveBeenCalledWith(undefined, 'visit_standards_adherence', {
-          property: 'with_active_compliance_frameworks',
+        expect(trackingSpy).toHaveBeenCalledWith(undefined, 'user_perform_visit', {
+          with_active_compliance_frameworks: 'true',
         });
       });
     });

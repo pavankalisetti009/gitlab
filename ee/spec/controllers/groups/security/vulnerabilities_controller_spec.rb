@@ -25,7 +25,7 @@ RSpec.describe Groups::Security::VulnerabilitiesController, feature_category: :v
 
         it { is_expected.to have_gitlab_http_status(:ok) }
 
-        it_behaves_like 'tracks govern usage event', 'users_visiting_security_vulnerabilities' do
+        it_behaves_like 'tracks govern usage event', 'security_vulnerabilities' do
           let(:request) { show_vulnerability_dashboard }
         end
 
@@ -53,7 +53,7 @@ RSpec.describe Groups::Security::VulnerabilitiesController, feature_category: :v
         it { is_expected.to have_gitlab_http_status(:ok) }
         it { is_expected.to render_template(:unavailable) }
 
-        it_behaves_like "doesn't track govern usage event", 'users_visiting_security_vulnerabilities' do
+        it_behaves_like "doesn't track govern usage event", 'security_vulnerabilities' do
           let(:request) { show_vulnerability_dashboard }
         end
 
@@ -67,7 +67,7 @@ RSpec.describe Groups::Security::VulnerabilitiesController, feature_category: :v
       it { is_expected.to have_gitlab_http_status(:ok) }
       it { is_expected.to render_template(:unavailable) }
 
-      it_behaves_like "doesn't track govern usage event", 'users_visiting_security_vulnerabilities' do
+      it_behaves_like "doesn't track govern usage event", 'security_vulnerabilities' do
         let(:request) { show_vulnerability_dashboard }
       end
 

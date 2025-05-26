@@ -248,7 +248,7 @@ RSpec.describe Groups::AuditEventsController, feature_category: :audit_events do
         end
 
         it_behaves_like 'when audit_events feature is available'
-        it_behaves_like 'tracks govern usage event', 'users_visiting_audit_events' do
+        it_behaves_like 'tracks govern usage event', 'audit_events' do
           let(:user) { owner }
         end
       end
@@ -272,7 +272,7 @@ RSpec.describe Groups::AuditEventsController, feature_category: :audit_events do
         end
 
         it_behaves_like 'when audit_events feature is available'
-        it_behaves_like 'tracks govern usage event', 'users_visiting_audit_events' do
+        it_behaves_like 'tracks govern usage event', 'audit_events' do
           let(:user) { auditor }
         end
       end
@@ -299,7 +299,45 @@ RSpec.describe Groups::AuditEventsController, feature_category: :audit_events do
         expect(response).to have_gitlab_http_status(:not_found)
       end
 
-      it_behaves_like "doesn't track govern usage event", 'users_visiting_audit_events'
+      it_behaves_like "doesn't track govern usage event", 'audit_events'
+    end
+  end
+
+  context 'govern usage tracking' do
+    let(:request) { get :index, params: { group_id: group.to_param } }
+    let(:user) { owner }
+
+    context 'unauthorized' do
+      it_behaves_like "doesn't track govern usage event", 'audit_events'
+    end
+
+    context 'authorized' do
+      before do
+        stub_licensed_features(audit_events: true)
+        group.add_owner(owner)
+        sign_in(user)
+      end
+
+      it_behaves_like 'tracks govern usage event', 'audit_events'
+
+      context 'with active frameworks' do
+        let_it_be(:framework) { create :compliance_framework }
+        let_it_be(:group) { framework.namespace }
+        let_it_be(:project) { create :project, namespace: group }
+
+        it 'tracks with_active_compliance_frameworks' do
+          create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework)
+
+          expect(Gitlab::InternalEvents)
+            .to receive(:track_event)
+            .with('user_perform_visit', hash_including(additional_properties: hash_including(
+              page_name: 'audit_events',
+              'with_active_compliance_frameworks' => 'true'
+            )))
+
+          request
+        end
+      end
     end
   end
 end

@@ -1,18 +1,21 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples_for 'tracks govern usage event' do |event_name|
+RSpec.shared_examples_for 'tracks govern usage event' do |page_name|
   it 'tracks unique event' do
     # allow other method calls in addition to the expected one
-    allow(Gitlab::UsageDataCounters::HLLRedisCounter).to receive(:track_event)
-    expect(Gitlab::UsageDataCounters::HLLRedisCounter).to receive(:track_event).with(event_name, values: user.id)
+    allow(Gitlab::InternalEvents).to receive(:track_event).with(any_args)
+
+    expect(Gitlab::InternalEvents).to receive(:track_event)
+      .with('user_perform_visit', hash_including(additional_properties: hash_including(page_name: page_name)))
 
     request
   end
 end
 
-RSpec.shared_examples_for "doesn't track govern usage event" do |event_name|
+RSpec.shared_examples_for "doesn't track govern usage event" do |page_name|
   it "doesn't tracks event" do
-    expect(Gitlab::UsageDataCounters::HLLRedisCounter).not_to receive(:track_event).with(event_name, any_args)
+    expect(Gitlab::InternalEvents).not_to receive(:track_event)
+      .with(hash_including(additional_properties: hash_including(page_name: page_name)), any_args)
 
     request
   end
