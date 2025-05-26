@@ -33,6 +33,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyCommitService, fea
       freeze_time { example.run }
     end
 
+    before do
+      policy_configuration.clear_memoization(:policy_blob)
+    end
+
     shared_examples 'commits policy to associated project' do
       context 'when policy_yaml is invalid' do
         let(:invalid_input_policy_yaml) do
@@ -80,16 +84,16 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyCommitService, fea
       end
 
       context 'when policy already exists in policy project' do
+        let(:policy_file) { { Security::OrchestrationPolicyConfiguration::POLICY_PATH => policy_yaml } }
+
+        around do |example|
+          create_and_delete_files(policy_management_project, policy_file) do
+            example.run
+          end
+        end
+
         before do
-          create_file_in_repo(
-            policy_management_project,
-            policy_management_project.default_branch_or_main,
-            policy_management_project.default_branch_or_main,
-            Security::OrchestrationPolicyConfiguration::POLICY_PATH,
-            policy_yaml
-          )
           policy_configuration.security_policy_management_project.add_developer(current_user)
-          policy_configuration.clear_memoization(:policy_blob)
         end
 
         context 'append' do
@@ -137,6 +141,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyCommitService, fea
 
         describe 'policy YAML annotation' do
           let(:operation) { :replace }
+          let(:experiments) { nil }
+          let(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [policy_hash], experiments: experiments) }
           let(:input_policy_yaml) do
             <<~YAML
               ---
@@ -162,54 +168,114 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyCommitService, fea
             YAML
           end
 
-          let(:annotated_updated_policy_yaml) do
-            <<~YAML
-              ---
-              scan_execution_policy:
-              - name: Updated Policy
-                description: #{policy_hash[:description]}
-                enabled: true
-                actions:
-                - scan: dast
-                  site_profile: Site Profile
-                  scanner_profile: Scanner Profile
-                rules:
-                - type: pipeline
-                  branches:
-                  - master
-                policy_scope: {}
-                metadata: {}
-                skip_ci:
-                  allowed: false
-                  allowlist:
-                    users:
-                    - id: #{current_user.id} # #{current_user.username}
-            YAML
-          end
+          shared_examples 'committing the updated policy yaml without annotations' do
+            it 'does not call the AnnotatePolicyYamlService' do
+              expect(::Security::SecurityOrchestrationPolicies::AnnotatePolicyYamlService).not_to receive(:new)
 
-          it 'calls the AnnotatePolicyYamlService service' do
-            expect_next_instance_of(Security::SecurityOrchestrationPolicies::AnnotatePolicyYamlService) do |instance|
-              expect(instance).to receive(:execute).and_call_original
+              service.execute
             end
 
-            service.execute
-          end
+            it 'commits the updated policy yaml without annotations', :aggregate_failures do
+              response = service.execute
 
-          it 'commits the annotated policy yaml', :aggregate_failures do
-            response = service.execute
+              expect(response[:status]).to eq(:success)
+              expect(response[:message]).to be_nil
+              expect(response[:branch]).not_to be_nil
 
-            expect(response[:status]).to eq(:success)
-            expect(response[:message]).to be_nil
-            expect(response[:branch]).not_to be_nil
-
-            updated_policy_blob = policy_management_project.repository.blob_data_at(response[:branch], Security::OrchestrationPolicyConfiguration::POLICY_PATH)
-            expect(updated_policy_blob).to eq(annotated_updated_policy_yaml)
-          end
-
-          context 'when the feature flag is disabled' do
-            before do
-              stub_feature_flags(annotate_security_orchestration_policy_yaml: false)
+              updated_policy_blob = policy_management_project.repository.blob_data_at(response[:branch], Security::OrchestrationPolicyConfiguration::POLICY_PATH)
+              expect(updated_policy_blob).to eq(updated_policy_yaml)
             end
+          end
+
+          context 'when the experiment option is enabled' do
+            let(:experiments) { { annotate_ids: { enabled: true } } }
+
+            let(:annotated_updated_policy_yaml) do
+              <<~YAML
+                ---
+                scan_execution_policy:
+                - name: Updated Policy
+                  description: #{policy_hash[:description]}
+                  enabled: true
+                  actions:
+                  - scan: dast
+                    site_profile: Site Profile
+                    scanner_profile: Scanner Profile
+                  rules:
+                  - type: pipeline
+                    branches:
+                    - master
+                  policy_scope: {}
+                  metadata: {}
+                  skip_ci:
+                    allowed: false
+                    allowlist:
+                      users:
+                      - id: #{current_user.id} # #{current_user.username}
+                experiments:
+                  annotate_ids:
+                    enabled: true
+              YAML
+            end
+
+            it 'calls the AnnotatePolicyYamlService service' do
+              expect_next_instance_of(Security::SecurityOrchestrationPolicies::AnnotatePolicyYamlService) do |instance|
+                expect(instance).to receive(:execute).and_call_original
+              end
+
+              service.execute
+            end
+
+            it 'commits the annotated policy yaml', :aggregate_failures do
+              response = service.execute
+
+              expect(response[:status]).to eq(:success)
+              expect(response[:message]).to be_nil
+              expect(response[:branch]).not_to be_nil
+
+              updated_policy_blob = policy_management_project.repository.blob_data_at(response[:branch], Security::OrchestrationPolicyConfiguration::POLICY_PATH)
+              expect(updated_policy_blob).to eq(annotated_updated_policy_yaml)
+            end
+
+            context 'when the feature flag is disabled' do
+              before do
+                stub_feature_flags(annotate_security_orchestration_policy_yaml: false)
+              end
+
+              let(:updated_policy_yaml) do
+                <<~YAML
+                  ---
+                  scan_execution_policy:
+                  - name: Updated Policy
+                    description: #{policy_hash[:description]}
+                    enabled: true
+                    actions:
+                    - scan: dast
+                      site_profile: Site Profile
+                      scanner_profile: Scanner Profile
+                    rules:
+                    - type: pipeline
+                      branches:
+                      - master
+                    policy_scope: {}
+                    metadata: {}
+                    skip_ci:
+                      allowed: false
+                      allowlist:
+                        users:
+                        - id: #{current_user.id}
+                  experiments:
+                    annotate_ids:
+                      enabled: true
+                YAML
+              end
+
+              it_behaves_like 'committing the updated policy yaml without annotations'
+            end
+          end
+
+          context 'when the experiment option is disabled' do
+            let(:experiments) { { annotate_ids: { enabled: false } } }
 
             let(:updated_policy_yaml) do
               <<~YAML
@@ -233,24 +299,31 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyCommitService, fea
                     allowlist:
                       users:
                       - id: #{current_user.id}
+                experiments:
+                  annotate_ids:
+                    enabled: false
               YAML
             end
 
-            it 'does not call the AnnotatePolicyYamlService' do
-              expect(::Security::SecurityOrchestrationPolicies::AnnotatePolicyYamlService).not_to receive(:new)
+            it_behaves_like 'committing the updated policy yaml without annotations'
 
-              service.execute
+            context 'when the feature flag is disabled' do
+              before do
+                stub_feature_flags(annotate_security_orchestration_policy_yaml: false)
+              end
+
+              it_behaves_like 'committing the updated policy yaml without annotations'
             end
+          end
 
-            it 'commits the updated policy yaml without annotations', :aggregate_failures do
+          context 'when the experiment option is not defined' do
+            let(:experiments) { { annotate_ids: {} } }
+
+            it 'returns error', :aggregate_failures do
               response = service.execute
-
-              expect(response[:status]).to eq(:success)
-              expect(response[:message]).to be_nil
-              expect(response[:branch]).not_to be_nil
-
-              updated_policy_blob = policy_management_project.repository.blob_data_at(response[:branch], Security::OrchestrationPolicyConfiguration::POLICY_PATH)
-              expect(updated_policy_blob).to eq(updated_policy_yaml)
+              expect(response[:status]).to eq(:error)
+              expect(response[:message]).to eq("Invalid policy YAML")
+              expect(response[:http_status]).to eq(:bad_request)
             end
           end
         end
@@ -258,7 +331,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyCommitService, fea
 
       context 'with branch_name as parameter' do
         let(:branch_name) { 'main' }
-        let(:operation) { :replace }
         let(:params) { { policy_yaml: input_policy_yaml, operation: operation, branch_name: branch_name } }
 
         it 'returns error', :aggregate_failures do
