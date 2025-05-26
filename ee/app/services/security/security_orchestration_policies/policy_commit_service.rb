@@ -49,7 +49,7 @@ module Security
 
       def commit_policy(policy_hash)
         policy_yaml = YAML.dump(policy_hash.deep_stringify_keys)
-        yaml_to_commit = if Feature.enabled?(:annotate_security_orchestration_policy_yaml, container)
+        yaml_to_commit = if policy_yaml_annotation_enabled?(policy_hash)
                            SecurityOrchestrationPolicies::AnnotatePolicyYamlService.new(current_user, policy_yaml).execute[:annotated_yaml]
                          else
                            policy_yaml
@@ -60,6 +60,11 @@ module Security
         end
 
         create_commit(::Files::CreateService, yaml_to_commit)
+      end
+
+      def policy_yaml_annotation_enabled?(policy_hash)
+        Feature.enabled?(:annotate_security_orchestration_policy_yaml, container) &&
+          policy_hash.dig(:experiments, :annotate_ids, :enabled)
       end
 
       def create_commit(service, policy_yaml)
