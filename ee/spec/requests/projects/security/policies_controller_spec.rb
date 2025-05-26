@@ -32,7 +32,7 @@ RSpec.describe Projects::Security::PoliciesController, type: :request, feature_c
         expect(response).to have_gitlab_http_status(:not_found)
       end
 
-      it_behaves_like "doesn't track govern usage event", 'users_visiting_security_policies'
+      it_behaves_like "doesn't track govern usage event", 'security_policies'
     end
   end
 
@@ -46,7 +46,7 @@ RSpec.describe Projects::Security::PoliciesController, type: :request, feature_c
         expect(response).to have_gitlab_http_status(:forbidden)
       end
 
-      it_behaves_like "doesn't track govern usage event", 'users_visiting_security_policies'
+      it_behaves_like "doesn't track govern usage event", 'security_policies'
     end
 
     include_context 'when feature is not licensed'
@@ -75,7 +75,7 @@ RSpec.describe Projects::Security::PoliciesController, type: :request, feature_c
       end
     end
 
-    it_behaves_like "doesn't track govern usage event", 'users_visiting_security_policies'
+    it_behaves_like "doesn't track govern usage event", 'security_policies'
   end
 
   describe 'GET #edit' do
@@ -197,7 +197,7 @@ RSpec.describe Projects::Security::PoliciesController, type: :request, feature_c
           end
         end
 
-        it_behaves_like 'tracks govern usage event', 'users_visiting_security_policies'
+        it_behaves_like 'tracks govern usage event', 'security_policies'
       end
 
       include_context 'when feature is not licensed'
@@ -233,7 +233,7 @@ RSpec.describe Projects::Security::PoliciesController, type: :request, feature_c
           expect(response).to render_template(:new)
         end
 
-        it_behaves_like 'tracks govern usage event', 'users_visiting_security_policies'
+        it_behaves_like 'tracks govern usage event', 'security_policies'
       end
 
       include_context 'when feature is not licensed'
@@ -268,7 +268,7 @@ RSpec.describe Projects::Security::PoliciesController, type: :request, feature_c
           expect(response).to render_template(:index)
         end
 
-        it_behaves_like 'tracks govern usage event', 'users_visiting_security_policies'
+        it_behaves_like 'tracks govern usage event', 'security_policies'
       end
 
       include_context 'when feature is not licensed'

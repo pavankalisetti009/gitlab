@@ -254,7 +254,7 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
           end
         end
 
-        it_behaves_like 'tracks govern usage event', 'users_visiting_dependencies' do
+        it_behaves_like 'tracks govern usage event', 'dependencies' do
           let(:request) { get project_dependencies_path(project, format: :html) }
         end
 
@@ -290,7 +290,7 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
           expect(response).to have_gitlab_http_status(:not_found)
         end
 
-        it_behaves_like "doesn't track govern usage event", 'users_visiting_dependencies' do
+        it_behaves_like "doesn't track govern usage event", 'dependencies' do
           let(:request) { get project_dependencies_path(project, format: :html) }
         end
 
@@ -321,7 +321,7 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
         expect(response).to have_gitlab_http_status(:not_found)
       end
 
-      it_behaves_like "doesn't track govern usage event", 'users_visiting_dependencies' do
+      it_behaves_like "doesn't track govern usage event", 'dependencies' do
         let(:request) { get project_dependencies_path(project, format: :html) }
       end
 

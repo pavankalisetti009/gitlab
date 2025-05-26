@@ -8,6 +8,7 @@ class Admin::AuditLogsController < Admin::ApplicationController
   include AuditEvents::DateRange
   include Gitlab::Tracking
   include ProductAnalyticsTracking
+  include GovernUsageTracking
 
   authorize! :read_admin_audit_log, only: :index
   before_action :check_license_admin_audit_event_available!
@@ -17,6 +18,8 @@ class Admin::AuditLogsController < Admin::ApplicationController
     action: 'visit_instance_compliance_audit_events',
     label: 'redis_hll_counters.compliance.compliance_total_unique_counts_monthly',
     destinations: [:redis_hll, :snowplow]
+
+  track_govern_activity 'audit_events', :index
 
   feature_category :audit_events
 
@@ -41,7 +44,17 @@ class Admin::AuditLogsController < Admin::ApplicationController
     Gitlab::Tracking.event(self.class.name, 'search_audit_event', user: current_user)
   end
 
+  def additional_properties_for_tracking
+    return {} unless instance_active_frameworks?
+
+    { 'with_active_compliance_frameworks' => 'true' }
+  end
+
   private
+
+  def instance_active_frameworks?
+    ::ComplianceManagement::ComplianceFramework::ProjectSettings.any?
+  end
 
   def tracking_namespace_source
     nil

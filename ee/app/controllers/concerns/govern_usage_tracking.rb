@@ -6,12 +6,19 @@ module GovernUsageTracking
 
   included do
     def self.track_govern_activity(page_name, *controller_actions, conditions: nil)
-      track_event(*controller_actions,
-        name: "users_visiting_#{page_name}",
-        action: 'user_perform_visit',
-        label: "redis_hll_counters.govern.users_visiting_#{page_name}_monthly",
+      track_internal_event(*controller_actions,
+        name: 'user_perform_visit',
         conditions: conditions,
-        destinations: %i[redis_hll snowplow]) { |context| context.current_user&.id }
+        additional_properties: ->(controller) {
+          {
+            page_name: page_name
+          }.merge(controller.additional_properties_for_tracking)
+        }
+      )
+    end
+
+    def additional_properties_for_tracking
+      {}
     end
   end
 end

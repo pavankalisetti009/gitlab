@@ -35,7 +35,17 @@ class Groups::AuditEventsController < Groups::ApplicationController
     Gitlab::Tracking.event(self.class.name, 'search_audit_event', user: current_user, namespace: group)
   end
 
+  def additional_properties_for_tracking
+    return {} unless active_compliance_frameworks?
+
+    { 'with_active_compliance_frameworks' => 'true' }
+  end
+
   private
+
+  def active_compliance_frameworks?
+    group.root_ancestor.active_compliance_frameworks?
+  end
 
   def check_audit_events_available!
     render_404 unless can?(current_user, :read_group_audit_events, group) &&

@@ -64,6 +64,35 @@ RSpec.describe Admin::AuditLogsController, feature_category: :audit_events do
         end
       end
 
+      context 'govern usage tracking' do
+        let(:index_request) { get :index }
+
+        it 'tracks without frameworks' do
+          expect(Gitlab::InternalEvents)
+            .to receive(:track_event)
+            .with('user_perform_visit', hash_including(additional_properties: hash_including(
+              page_name: 'audit_events'
+            )))
+
+          index_request
+        end
+
+        context 'with active frameworks' do
+          it 'tracks with framework status' do
+            create :compliance_framework_project_setting
+
+            expect(Gitlab::InternalEvents)
+              .to receive(:track_event)
+              .with('user_perform_visit', hash_including(additional_properties: hash_including(
+                page_name: 'audit_events',
+                'with_active_compliance_frameworks' => 'true'
+              )))
+
+            index_request
+          end
+        end
+      end
+
       context 'when invalid date' do
         where(:created_before, :created_after) do
           'invalid-date' | nil

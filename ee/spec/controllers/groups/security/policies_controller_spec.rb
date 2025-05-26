@@ -218,12 +218,13 @@ RSpec.describe Groups::Security::PoliciesController, type: :request, feature_cat
           end
         end
 
-        it_behaves_like 'tracks govern usage event', 'users_visiting_security_policies' do
+        it_behaves_like 'tracks govern usage event', 'security_policies' do
           let(:execute) { request }
         end
       end
 
       include_context 'when feature is not licensed'
+      it_behaves_like "doesn't track govern usage event", 'security_policies'
     end
 
     context 'with unauthorized user' do
@@ -232,6 +233,7 @@ RSpec.describe Groups::Security::PoliciesController, type: :request, feature_cat
       end
 
       it_behaves_like 'an unauthorized user'
+      it_behaves_like "doesn't track govern usage event", 'security_policies'
     end
 
     context 'with anonymous user' do
@@ -257,7 +259,7 @@ RSpec.describe Groups::Security::PoliciesController, type: :request, feature_cat
           expect(response).to render_template(:index)
         end
 
-        it_behaves_like 'tracks govern usage event', 'users_visiting_security_policies'
+        it_behaves_like 'tracks govern usage event', 'security_policies'
       end
 
       include_context 'when feature is not licensed'
@@ -268,6 +270,7 @@ RSpec.describe Groups::Security::PoliciesController, type: :request, feature_cat
         group.add_reporter(user)
       end
 
+      it_behaves_like "doesn't track govern usage event", 'security_policies'
       it_behaves_like 'an unauthorized user'
     end
 

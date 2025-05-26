@@ -34,7 +34,7 @@ RSpec.describe Projects::PipelinesController do
           expect(response).to render_template :show
         end
 
-        it_behaves_like 'tracks govern usage event', 'users_visiting_pipeline_security'
+        it_behaves_like 'tracks govern usage event', 'pipeline_security'
       end
 
       context 'with feature disabled' do
@@ -44,7 +44,7 @@ RSpec.describe Projects::PipelinesController do
           expect(response).to redirect_to(pipeline_path(pipeline))
         end
 
-        it_behaves_like "doesn't track govern usage event", 'users_visiting_pipeline_security'
+        it_behaves_like "doesn't track govern usage event", 'pipeline_security'
       end
     end
 
