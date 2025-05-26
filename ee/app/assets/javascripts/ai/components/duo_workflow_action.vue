@@ -11,7 +11,6 @@ export default {
   components: {
     GlButton,
   },
-  inject: ['duoWorkflowInvokePath'],
   props: {
     projectId: {
       type: Number,
@@ -39,6 +38,10 @@ export default {
       type: Array,
       required: false,
       default: () => [1, 2],
+    },
+    duoWorkflowInvokePath: {
+      type: String,
+      required: true,
     },
   },
   methods: {

@@ -29,6 +29,7 @@ describe('DuoWorkflowAction component', () => {
     goal: 'Jenkinsfile',
     workflowDefinition: 'convert_to_gitlab_ci',
     agentPrivileges: [1, 2, 3, 4, 5],
+    duoWorkflowInvokePath,
   };
 
   const createComponent = (props = {}) => {
@@ -36,9 +37,6 @@ describe('DuoWorkflowAction component', () => {
       propsData: {
         ...defaultProps,
         ...props,
-      },
-      provide: {
-        duoWorkflowInvokePath,
       },
     });
   };

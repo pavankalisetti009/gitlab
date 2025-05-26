@@ -1,0 +1,18 @@
+query getBlobDuoWorkflowInfo($projectPath: ID!, $filePath: [String!]!) {
+  project(fullPath: $projectPath) {
+    __typename
+    id
+    repository {
+      __typename
+      empty
+      blobs(paths: $filePath) {
+        __typename
+        nodes {
+          id
+          showDuoWorkflowAction
+          duoWorkflowInvokePath
+        }
+      }
+    }
+  }
+}
