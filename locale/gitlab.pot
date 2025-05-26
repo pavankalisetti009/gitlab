@@ -4885,7 +4885,7 @@ msgstr ""
 msgid "AdminSettings|Size and domain settings for Pages static sites."
 msgstr ""
 
-msgid "AdminSettings|Skip confirmation when reassigning placeholder users"
+msgid "AdminSettings|Skip confirmation when administrators reassign placeholder users %{link_start}%{icon}%{link_end}"
 msgstr ""
 
 msgid "AdminSettings|The URL of your Cube instance."
@@ -4943,6 +4943,9 @@ msgid "AdminSettings|Use AWS OpenSearch Service with IAM credentials"
 msgstr ""
 
 msgid "AdminSettings|Use for cluster and index migrations. When indexing is paused, GitLab still tracks changes."
+msgstr ""
+
+msgid "AdminSettings|User impersonation is not enabled on the GitLab instance."
 msgstr ""
 
 msgid "AdminSettings|Users and groups must accept the invitation before they're added to a group or project."
@@ -66366,7 +66369,7 @@ msgstr ""
 msgid "UserMapping|Source name"
 msgstr ""
 
-msgid "UserMapping|The %{strongStart}Skip confirmation when reassigning placeholder users%{strongEnd} setting is enabled. Users do not have to approve the reassignment, and contributions are reassigned immediately."
+msgid "UserMapping|The %{strongStart}Skip confirmation when administrators reassign placeholder users%{strongEnd} setting is enabled. Users do not have to approve the reassignment, and contributions are reassigned immediately."
 msgstr ""
 
 msgid "UserMapping|The file is being processed and you will receive an email when completed."
