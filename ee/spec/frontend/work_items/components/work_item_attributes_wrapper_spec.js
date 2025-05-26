@@ -72,6 +72,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
     confidentialityMock = [updateWorkItemMutation, jest.fn()],
     featureFlags = {},
     hasSubepicsFeature = true,
+    hasStatusFeature = true,
     workItemParticipantsQueryHandler = workItemParticipantsQuerySuccessHandler,
     groupPath = 'flightjs',
   } = {}) => {
@@ -94,6 +95,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
         hasIterationsFeature: true,
         hasSubepicsFeature,
         hasIssuableHealthStatusFeature: true,
+        hasStatusFeature,
         glFeatures: featureFlags,
       },
     });
@@ -335,6 +337,17 @@ describe('EE WorkItemAttributesWrapper component', () => {
       createComponent({
         featureFlags: { workItemStatusFeatureFlag: true },
       });
+      await waitForPromises();
+
+      expect(findWorkItemCustomStatus().exists()).toBe(false);
+    });
+
+    it('does not render when flag `workItemStatusFeatureFlag` is enabled and license is false', async () => {
+      createComponent({
+        featureFlags: { workItemStatusFeatureFlag: true },
+        hasStatusFeature: false,
+      });
+
       await waitForPromises();
 
       expect(findWorkItemCustomStatus().exists()).toBe(false);

@@ -106,6 +106,7 @@ describe('EE Create work item component', () => {
         hasIssuableHealthStatusFeature: false,
         hasIterationsFeature: true,
         hasIssueWeightsFeature: true,
+        hasStatusFeature: true,
         glFeatures: {
           workItemStatusFeatureFlag,
         },
@@ -149,12 +150,7 @@ describe('EE Create work item component', () => {
       expect(findParentWidget().exists()).toBe(true);
     });
 
-    it('renders the work item custom field widget', async () => {
-      createComponent({
-        preselectedWorkItemType: WORK_ITEM_TYPE_NAME_EPIC,
-      });
-      await waitForPromises();
-
+    it('renders the work item custom field widget', () => {
       expect(findCustomFieldsWidget().exists()).toBe(true);
     });
   });
@@ -181,12 +177,17 @@ describe('EE Create work item component', () => {
       expect(findParentWidget().exists()).toBe(true);
     });
 
-    it('renders the work item custom field widget', async () => {
+    it('renders the work item status widget when flag is true', async () => {
       createComponent({
         preselectedWorkItemType: WORK_ITEM_TYPE_NAME_ISSUE,
+        workItemStatusFeatureFlag: true,
       });
       await waitForPromises();
 
+      expect(findStatusWidget().exists()).toBe(true);
+    });
+
+    it('renders the work item custom field widget', () => {
       expect(findCustomFieldsWidget().exists()).toBe(true);
     });
   });
