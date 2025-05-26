@@ -10,6 +10,10 @@ class Groups::Security::DashboardController < Groups::ApplicationController
   track_internal_event :show, name: 'visit_security_dashboard', category: name,
     conditions: -> { dashboard_available? }
 
+  before_action only: :show do
+    push_frontend_feature_flag(:group_security_dashboard_new, group)
+  end
+
   def show
     render :unavailable unless dashboard_available?
   end
