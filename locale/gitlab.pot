@@ -50199,6 +50199,9 @@ msgstr ""
 msgid "RapidDiffs|Line %d"
 msgstr ""
 
+msgid "RapidDiffs|Loading image diff..."
+msgstr ""
+
 msgid "RapidDiffs|Original line"
 msgstr ""
 
