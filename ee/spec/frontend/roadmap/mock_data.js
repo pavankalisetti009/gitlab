@@ -250,6 +250,7 @@ export const mockRawEpic = {
     __typename: 'EpicDescendantCount',
   },
   group: mockGroup1,
+  namespace: mockGroup1,
   labels: {
     nodes: [
       {
@@ -331,17 +332,7 @@ export const mockFormattedEpic = {
   endDateOutOfRange: false,
   confidential: false,
   isChildEpic: false,
-  linkedWorkItems: {
-    __typename: 'LinkedWorkItemTypeConnection',
-    nodes: [
-      {
-        linkId: 'gid://gitlab/WorkItems::RelatedWorkItemLink/103',
-        linkType: 'blocks',
-        workItemState: 'OPEN',
-        __typename: 'LinkedWorkItemType',
-      },
-    ],
-  },
+  blockingCount: 1,
 };
 
 export const mockFormattedEpic2 = {

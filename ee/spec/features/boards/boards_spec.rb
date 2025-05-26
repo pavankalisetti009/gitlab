@@ -365,7 +365,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
       end
 
       page.within(find('.gl-popover')) do
-        expect(page).to have_content('Blocked by')
+        expect(page).to have_content('blocked by')
         expect(page).to have_content(issue2.title)
       end
     end

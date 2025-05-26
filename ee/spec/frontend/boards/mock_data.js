@@ -279,6 +279,7 @@ export const rawIssue = {
   path: '/gitlab-org/test-subgroup/gitlab-test/-/issues/27',
   blocked: false,
   blockedByCount: 0,
+  blockingCount: 0,
   healthStatus: null,
   iteration: null,
   status: null,

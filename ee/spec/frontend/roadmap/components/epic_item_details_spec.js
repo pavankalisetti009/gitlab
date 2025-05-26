@@ -101,7 +101,7 @@ describe('EpicItemDetails', () => {
 
   const epicWithNoLinkedItems = {
     ...mockFormattedEpic,
-    linkedWorkItems: { ...mockFormattedEpic.linkedWorkItems, nodes: [] },
+    blockingCount: 0,
   };
 
   describe('epic title', () => {

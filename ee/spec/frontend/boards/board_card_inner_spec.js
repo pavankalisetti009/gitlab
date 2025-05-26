@@ -94,7 +94,7 @@ describe('Board card component', () => {
     issue = {
       title: 'Testing',
       id: 1,
-      iid: 1,
+      iid: '1',
       confidential: false,
       labels: [list.label],
       assignees: [],
@@ -104,6 +104,7 @@ describe('Board card component', () => {
       blocked: true,
       blockedByCount: 2,
       healthStatus: 'onTrack',
+      type: 'issue',
     };
   });
 

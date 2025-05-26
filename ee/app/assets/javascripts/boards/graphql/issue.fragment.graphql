@@ -7,6 +7,7 @@ fragment Issue on Issue {
   weight
   blocked
   blockedByCount
+  blockingCount
   epic {
     id
   }

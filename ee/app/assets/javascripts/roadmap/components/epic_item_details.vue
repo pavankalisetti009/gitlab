@@ -6,7 +6,6 @@ import { getIdFromGraphQLId, getNodesOrDefault } from '~/graphql_shared/utils';
 import { convertObjectPropsToCamelCase, isScopedLabel } from '~/lib/utils/common_utils';
 import { queryToObject, updateHistory } from '~/lib/utils/url_utility';
 import { __, n__ } from '~/locale';
-import { LINKED_CATEGORIES_MAP, STATE_CLOSED } from '~/work_items/constants';
 import WorkItemRelationshipIcons from '~/work_items/components/shared/work_item_relationship_icons.vue';
 import { EPIC_LEVEL_MARGIN, UNSUPPORTED_ROADMAP_PARAMS } from '../constants';
 import updateLocalRoadmapSettingsMutation from '../queries/update_local_roadmap_settings.mutation.graphql';
@@ -127,13 +126,14 @@ export default {
     hasLabels() {
       return this.epicLabels.length > 0;
     },
-    filteredLinkedItems() {
-      const linkedItems = this.epic.linkedWorkItems?.nodes || [];
-      return linkedItems.filter((item) => {
-        return (
-          item.linkType !== LINKED_CATEGORIES_MAP.RELATES_TO && item.workItemState !== STATE_CLOSED
-        );
-      });
+    blockingCount() {
+      return this.epic?.blockingCount || 0;
+    },
+    blockedByCount() {
+      return this.epic?.blockedByCount || 0;
+    },
+    hasBlockingRelationships() {
+      return this.blockingCount > 0 || this.blockedByCount > 0;
     },
   },
   methods: {
@@ -272,12 +272,13 @@ export default {
           </gl-tooltip>
         </div>
         <work-item-relationship-icons
-          v-if="filteredLinkedItems.length"
+          v-if="hasBlockingRelationships"
           work-item-type="epic"
-          :linked-work-items="filteredLinkedItems"
           :work-item-full-path="workItemFullPath"
           :work-item-iid="epicIid"
           :work-item-web-url="epicWebUrl"
+          :blocking-count="blockingCount"
+          :blocked-by-count="blockedByCount"
         />
       </div>
     </div>

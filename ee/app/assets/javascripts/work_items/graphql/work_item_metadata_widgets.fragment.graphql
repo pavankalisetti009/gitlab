@@ -58,6 +58,8 @@ fragment WorkItemMetadataWidgets on WorkItemWidget {
         workItemState
       }
     }
+    blockedByCount
+    blockingCount
   }
   ... on WorkItemWidgetIteration {
     iteration {
