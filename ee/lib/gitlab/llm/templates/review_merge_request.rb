@@ -8,6 +8,7 @@ module Gitlab
         include Gitlab::Utils::StrongMemoize
 
         OUTPUT_MAX_TOKENS = 8192
+        TIMEOUT = 60.seconds
 
         SYSTEM_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_system(
           <<~PROMPT.chomp
@@ -193,7 +194,8 @@ module Gitlab
             ),
             system: Gitlab::Llm::Chain::Utils::Prompt.no_role_text([SYSTEM_MESSAGE], {}),
             model: model_version,
-            max_tokens: OUTPUT_MAX_TOKENS
+            max_tokens: OUTPUT_MAX_TOKENS,
+            timeout: TIMEOUT
           }
         end
 

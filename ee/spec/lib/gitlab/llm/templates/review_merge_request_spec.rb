@@ -119,6 +119,10 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
       expect(prompt[:max_tokens]).to eq(described_class::OUTPUT_MAX_TOKENS)
     end
 
+    it 'specifies timeout' do
+      expect(prompt[:timeout]).to eq(described_class::TIMEOUT)
+    end
+
     context 'with multiple files' do
       before do
         stub_feature_flags(duo_code_review_multi_file: true)
