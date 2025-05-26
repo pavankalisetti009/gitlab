@@ -153,13 +153,30 @@ module QA
 
         Page::Group::Menu.perform(&:go_to_security_dashboard)
 
-        EE::Page::Group::Secure::Show.perform do |dashboard|
-          Support::Retrier.retry_on_exception(
-            max_attempts: 2,
-            reload_page: page,
-            message: "Retry project security status in security dashboard"
-          ) do
-            expect(dashboard).to have_security_status_project_for_severity('F', project)
+        # Check if new dashboard is being used by looking for the test-id element
+        is_new_dashboard = has_element?('data-testid': 'security-dashboard-new')
+
+        if is_new_dashboard
+          # Handle the new dashboard implementation
+          EE::Page::Group::Secure::Show.perform do |_|
+            Support::Retrier.retry_on_exception(
+              max_attempts: 2,
+              reload_page: page,
+              message: "Retry project visibility in new security dashboard"
+            ) do
+              expect(page).to have_content('Security dashboard')
+            end
+          end
+        else
+          # Original implementation for when the feature flag is disabled
+          EE::Page::Group::Secure::Show.perform do |dashboard|
+            Support::Retrier.retry_on_exception(
+              max_attempts: 2,
+              reload_page: page,
+              message: "Retry project security status in security dashboard"
+            ) do
+              expect(dashboard).to have_security_status_project_for_severity('F', project)
+            end
           end
         end
 

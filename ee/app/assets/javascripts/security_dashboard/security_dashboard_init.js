@@ -13,6 +13,7 @@ import groupVulnerabilityHistoryQuery from 'ee/security_dashboard/graphql/querie
 import instanceVulnerabilityGradesQuery from 'ee/security_dashboard/graphql/queries/instance_vulnerability_grades.query.graphql';
 import instanceVulnerabilityHistoryQuery from 'ee/security_dashboard/graphql/queries/instance_vulnerability_history.query.graphql';
 import SecurityDashboard from './components/shared/security_dashboard.vue';
+import SecurityDashboardNew from './components/shared/security_dashboard_new.vue';
 import ProjectSecurityCharts from './components/project/project_security_dashboard.vue';
 import UnavailableState from './components/shared/empty_states/unavailable_state.vue';
 import apolloProvider from './graphql/provider';
@@ -58,7 +59,16 @@ export default (el, dashboardType) => {
   let component;
 
   if (dashboardType === DASHBOARD_TYPE_GROUP) {
-    component = hasProjects ? SecurityDashboard : ReportNotConfiguredGroup;
+    const isGroupSecurityDashboardNewEnabled = gon.features.groupSecurityDashboardNew;
+
+    if (!hasProjects) {
+      component = ReportNotConfiguredGroup;
+    } else if (isGroupSecurityDashboardNewEnabled) {
+      component = SecurityDashboardNew;
+    } else {
+      component = SecurityDashboard;
+    }
+
     props = {
       historyQuery: groupVulnerabilityHistoryQuery,
       gradesQuery: groupVulnerabilityGradesQuery,

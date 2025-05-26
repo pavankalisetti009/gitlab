@@ -67,12 +67,6 @@ describe('OpenVulnerabilitiesOverTimeChart', () => {
       });
     });
 
-    it('configures series with smooth lines', () => {
-      expect(findLineChart().props('option').series).toMatchObject({
-        smooth: true,
-      });
-    });
-
     it('configures dataZoom with the correct start date when chartStartDate is available', () => {
       expect(findLineChart().props('option').dataZoom[0].startValue).toBe(firstDayOfChartSeries);
     });

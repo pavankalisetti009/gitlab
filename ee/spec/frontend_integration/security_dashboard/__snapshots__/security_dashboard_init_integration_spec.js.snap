@@ -112,6 +112,55 @@ exports[`Security Dashboard default states sets up group-level 1`] = `
 </div>
 `;
 
+exports[`Security Dashboard default states sets up group-level with \`groupSecurityDashboardNew\` feature flag set to \`true\` 1`] = `
+<div>
+  <div
+    data-testid="security-dashboard-new"
+  >
+    <section
+      class="gl-flex gl-items-center gl-my-4"
+    >
+      <div
+        class="gl-flex gl-flex-col gl-w-full"
+      >
+        <div
+          class="gl-flex gl-items-center"
+        >
+          <h2
+            class="gl-my-0"
+            data-testid="title"
+          >
+            Security dashboard
+          </h2>
+        </div>
+        <div
+          class="gl-flex gl-mt-3"
+        >
+          <p
+            class="gl-mb-0"
+            data-testid="description"
+          >
+            This dashboard provides an overview of your security vulnerabilities.
+          </p>
+        </div>
+      </div>
+    </section>
+    <div
+      class="gl-flex"
+    >
+      <div
+        class="gl-flex gl-flex-col gl-grow"
+      >
+        <div
+          class="-gl-mx-3 grid-stack"
+          data-testid="gridstack-grid"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
 exports[`Security Dashboard default states sets up instance-level 1`] = `
 <div>
   <div>
@@ -219,6 +268,52 @@ exports[`Security Dashboard default states sets up instance-level 1`] = `
           />
         </div>
       </section>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Security Dashboard default states sets up project-level 1`] = `
+<div>
+  <div>
+    <header
+      class="gl-flex gl-flex-wrap gl-gap-y-3 gl-items-center gl-justify-between gl-my-5"
+    >
+      <div
+        class="gl-flex gl-flex-wrap gl-gap-x-5 gl-gap-y-3 gl-justify-between gl-w-full md:gl-flex-nowrap"
+      >
+        <h1
+          class="!gl-m-0 gl-heading-1"
+          data-testid="page-heading"
+        >
+          Security dashboard
+        </h1>
+      </div>
+      <div
+        class="gl-text-subtle gl-w-full"
+        data-testid="page-heading-description"
+      >
+        Historical view of open vulnerabilities in the default branch. Excludes vulnerabilities that were resolved or dismissed.
+        <a
+          class="gl-link"
+          href="/help/user/application_security/security_dashboard/_index#project-security-dashboard"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Learn more.
+        </a>
+      </div>
+    </header>
+    <div>
+      <div
+        aria-label="Loading"
+        class="gl-mt-6 gl-spinner-container"
+        role="status"
+      >
+        <span
+          class="!gl-align-text-bottom gl-spinner gl-spinner-dark gl-spinner-lg"
+        />
+      </div>
     </div>
   </div>
 </div>

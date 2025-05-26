@@ -25,6 +25,16 @@ export default {
     },
     chartOptions() {
       return {
+        // Note: This is a workaround to remove the extra whitespace when the chart has no title
+        // Once https://gitlab.com/gitlab-org/gitlab-ui/-/issues/3191 has been fixed, this can be removed
+        grid: {
+          left: '10x',
+          right: '10px',
+          bottom: '10px',
+          top: '10px',
+          // Setting `containLabel` to `true` ensures the grid area is large enough to contain the labels
+          containLabel: true,
+        },
         xAxis: {
           // Setting the `name` to `null` hides the axis name
           name: null,
@@ -36,9 +46,6 @@ export default {
           key: 'vulnerabilities',
           type: 'value',
           minInterval: 1,
-        },
-        series: {
-          smooth: true,
         },
         ...(this.chartStartDate !== null && {
           dataZoom: [
