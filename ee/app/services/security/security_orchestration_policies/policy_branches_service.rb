@@ -50,7 +50,9 @@ module Security
         exceptions_for_project = exceptions.filter_map do |exception|
           case exception
           when String then exception
-          when Hash then exception[:name] if exception[:full_path] == project.full_path
+          when Hash then if exception[:full_path].present? && exception[:full_path] == project.full_path
+                           exception[:name]
+                         end
           end
         end
 

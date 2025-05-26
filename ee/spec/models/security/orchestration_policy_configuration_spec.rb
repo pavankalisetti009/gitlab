@@ -1738,6 +1738,32 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
               "property '/approval_policy/0/rules/0' is missing required keys: branches")
           end
         end
+
+        context "with branch_exceptions" do
+          before do
+            rule[:branch_exceptions] = [
+              { 'source' => { 'pattern' => 'feat*' }, 'target' => { 'pattern' => 'ma*' } }
+            ]
+          end
+
+          specify { expect(errors).to be_empty }
+
+          context "with invalid branch_exceptions" do
+            before do
+              rule[:branch_exceptions] = [
+                { 'source' => 'feature', 'target' => 'main' }
+              ]
+            end
+
+            specify do
+              expect(errors).to contain_exactly(
+                "property '/approval_policy/0/rules/0/branch_exceptions/0' is not of type: string",
+                "property '/approval_policy/0/rules/0/branch_exceptions/0/source' is not of type: object",
+                "property '/approval_policy/0/rules/0/branch_exceptions/0/target' is not of type: object"
+              )
+            end
+          end
+        end
       end
 
       context "with scan_finding type" do

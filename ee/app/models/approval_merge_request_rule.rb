@@ -131,6 +131,7 @@ class ApprovalMergeRequestRule < ApplicationRecord
   end
 
   def applicable_to_branch?(branch)
+    return false if branches_exempted_by_policy?
     return true unless self.approval_project_rule.present?
     return true if self.modified_from_project_rule
 
@@ -208,5 +209,10 @@ class ApprovalMergeRequestRule < ApplicationRecord
     return if merge_request.project == approval_project_rule.project
 
     errors.add(:approval_project_rule, 'must be for the same project')
+  end
+
+  def branches_exempted_by_policy?
+    approval_policy_rule.present? &&
+      approval_policy_rule.branches_exempted_by_policy?(merge_request.source_branch, merge_request.target_branch)
   end
 end
