@@ -33,7 +33,7 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
       before do
         # For the eligible namespace, the project count will be low (default).
         # For the ineligible namespace, stub its associated namespace so that
-        # project_namespaces.count returns 25_000 (above the 20,000 threshold).
+        # project_namespaces.count returns more than MAX_PROJECTS_PER_NAMESPACE
         allow(::Namespace).to receive(:by_root_id)
           .with(eligible_namespace.root_namespace_id)
           .and_return(::Namespace.where(id: eligible_namespace.root_namespace_id))
@@ -48,7 +48,7 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
 
         allow(ineligible_namespace.namespace)
           .to receive_message_chain(:project_namespaces, :count)
-          .and_return(25_000)
+          .and_return(described_class::MAX_PROJECTS_PER_NAMESPACE.next)
 
         allow(::Namespace).to receive(:by_root_id)
           .with(ineligible_namespace.root_namespace_id)
@@ -56,7 +56,7 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
       end
 
       # eligible namespaces are for which last_rollout_failed_at is nil or older than zoekt_rollout_retry_interval
-      # project_count is less than the allowed limit (default 20_000)
+      # project_count is less than the MAX_PROJECTS_PER_NAMESPACE
       it 'includes all eligible namespaces' do
         expect(resource_pool.enabled_namespaces).to include(eligible_namespace)
         expect(resource_pool.enabled_namespaces).not_to include(ineligible_namespace, ineligible_namespace2)
@@ -116,11 +116,11 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
 
     context 'when no eligible namespaces exist' do
       before do
-        # Create namespaces but stub each so that project_namespaces.count returns 30_000.
+        # Create namespaces but stub each so that project_namespaces.count returns more than MAX_PROJECTS_PER_NAMESPACE.
         create_list(:zoekt_enabled_namespace, 2).each do |ns|
           allow(ns.namespace.root_ancestor)
             .to receive_message_chain(:project_namespaces, :count)
-            .and_return(30_000)
+            .and_return(described_class::MAX_PROJECTS_PER_NAMESPACE.next)
           allow(::Namespace).to receive(:by_root_id)
             .with(ns.root_namespace_id)
             .and_return(ns.namespace.root_ancestor)
