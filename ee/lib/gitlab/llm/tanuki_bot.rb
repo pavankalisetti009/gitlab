@@ -54,7 +54,13 @@ module Gitlab
 
       def self.root_namespace_id
         namespace_path = Gitlab::ApplicationContext.current_context_attribute(:root_namespace).presence
-        Group.find_by_full_path(namespace_path).try(:to_global_id) if namespace_path
+        return unless namespace_path
+
+        namespace = Group.find_by_full_path(namespace_path)
+        return unless namespace
+        return unless ::Feature.enabled?(:ai_model_switching, namespace)
+
+        namespace.to_global_id
       end
     end
   end

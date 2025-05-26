@@ -15,6 +15,7 @@ import {
 } from 'ee/ai/constants';
 import { TANUKI_BOT_TRACKING_EVENT_NAME, WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
+import chatWithNamespaceMutation from 'ee/ai/graphql/chat_with_namespace.mutation.graphql';
 import duoUserFeedbackMutation from 'ee/ai/graphql/duo_user_feedback.mutation.graphql';
 import deleteConversationThreadMutation from 'ee/ai/graphql/delete_conversation_thread.mutation.graphql';
 import getAiMessages from 'ee/ai/graphql/get_ai_messages.query.graphql';
@@ -69,6 +70,9 @@ describeSkipVue3(skipReason, () => {
   };
 
   const chatMutationHandlerMock = jest.fn().mockResolvedValue(MOCK_TANUKI_BOT_MUTATATION_RES);
+  const chatWithNamespaceMutationHandlerMock = jest
+    .fn()
+    .mockResolvedValue(MOCK_TANUKI_BOT_MUTATATION_RES);
   const duoUserFeedbackMutationHandlerMock = jest.fn().mockResolvedValue({});
   const deleteConversationThreadMutationHandlerMock = jest.fn().mockResolvedValue({});
   const queryHandlerMock = jest.fn().mockResolvedValue(MOCK_CHAT_CACHED_MESSAGES_RES);
@@ -111,6 +115,7 @@ describeSkipVue3(skipReason, () => {
 
     const apolloProvider = createMockApollo([
       [chatMutation, chatMutationHandlerMock],
+      [chatWithNamespaceMutation, chatWithNamespaceMutationHandlerMock],
       [duoUserFeedbackMutation, duoUserFeedbackMutationHandlerMock],
       [deleteConversationThreadMutation, deleteConversationThreadMutationHandlerMock],
       [getAiMessages, queryHandlerMock],
@@ -871,6 +876,56 @@ describeSkipVue3(skipReason, () => {
           conversationType: 'DUO_CHAT',
           threadId: mockThreadId,
         });
+      });
+    });
+
+    describe('rootNamespaceId handling', () => {
+      it('uses chatWithNamespaceMutation when rootNamespaceId is provided', async () => {
+        createComponent({
+          propsData: {
+            userId: MOCK_USER_ID,
+            resourceId: MOCK_RESOURCE_ID,
+            rootNamespaceId: 'namespace-123',
+          },
+        });
+
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await nextTick();
+
+        expect(chatWithNamespaceMutationHandlerMock).toHaveBeenCalledWith({
+          clientSubscriptionId: '123',
+          question: MOCK_USER_MESSAGE.content,
+          resourceId: MOCK_RESOURCE_ID,
+          projectId: null,
+          conversationType: 'DUO_CHAT',
+          rootNamespaceId: 'namespace-123',
+          threadId: undefined,
+        });
+
+        expect(chatMutationHandlerMock).not.toHaveBeenCalled();
+      });
+
+      it('uses chatMutation when rootNamespaceId is not provided', async () => {
+        createComponent({
+          propsData: {
+            userId: MOCK_USER_ID,
+            resourceId: MOCK_RESOURCE_ID,
+          },
+        });
+
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await nextTick();
+
+        expect(chatMutationHandlerMock).toHaveBeenCalledWith({
+          clientSubscriptionId: '123',
+          question: MOCK_USER_MESSAGE.content,
+          resourceId: MOCK_RESOURCE_ID,
+          projectId: null,
+          conversationType: 'DUO_CHAT',
+          threadId: undefined,
+        });
+
+        expect(chatWithNamespaceMutationHandlerMock).not.toHaveBeenCalled();
       });
     });
 
