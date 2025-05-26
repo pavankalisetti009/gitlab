@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'view audit events', feature_category: :audit_events do
   describe 'GET /groups/:group/-/audit_events' do
-    let_it_be(:group) { create(:group) }
+    let_it_be(:group) { create :group }
     let_it_be(:user) { create(:user) }
     let_it_be(:audit_event) { create(:group_audit_event, entity_id: group.id) }
 
@@ -22,6 +22,18 @@ RSpec.describe 'view audit events', feature_category: :audit_events do
       send_request
 
       expect(response).to have_gitlab_http_status(:ok)
+    end
+
+    context 'with active frameworks' do
+      let_it_be(:framework) { create :compliance_framework, namespace_id: group.id }
+      let_it_be(:project) { create :project, namespace: group }
+
+      it 'returns 200 response' do
+        create(:compliance_framework_project_setting, project: project, compliance_management_framework: framework)
+        send_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
     end
 
     it 'avoids N+1 DB queries', :request_store do

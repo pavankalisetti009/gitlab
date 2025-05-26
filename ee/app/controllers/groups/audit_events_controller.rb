@@ -38,7 +38,7 @@ class Groups::AuditEventsController < Groups::ApplicationController
   def additional_properties_for_tracking
     return {} unless active_compliance_frameworks?
 
-    { 'with_active_compliance_frameworks' => 'true' }
+    { with_active_compliance_frameworks: 'true' }
   end
 
   private
