@@ -750,7 +750,7 @@ GEM
     gitlab-crystalball (0.8.2)
       git (< 4)
       ostruct (< 1)
-    gitlab-dangerfiles (4.9.1)
+    gitlab-dangerfiles (4.9.2)
       danger (>= 9.3.0)
       danger-gitlab (>= 8.0.0)
       rake (~> 13.0)
