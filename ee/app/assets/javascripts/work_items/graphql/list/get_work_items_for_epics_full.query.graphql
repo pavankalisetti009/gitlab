@@ -126,12 +126,8 @@ query getWorkItemsForEpicsFull(
             healthStatus
           }
           ... on WorkItemWidgetLinkedItems {
-            linkedItems {
-              nodes {
-                linkId
-                linkType
-              }
-            }
+            blockingCount
+            blockedByCount
           }
           ... on WorkItemWidgetAwardEmoji {
             upvotes

@@ -203,6 +203,7 @@ export const listIssuablesQueries = {
       assignees: { nodes: [], __typename: 'UserCoreConnection' },
       blocked: false,
       blockedByCount: 0,
+      blockingCount: 0,
       closedAt: null,
       confidential: false,
       dueDate: null,
@@ -238,6 +239,7 @@ export const listIssuablesQueries = {
     optimisticResponse: {
       blocked: false,
       blockedByCount: 0,
+      blockingCount: 0,
       closedAt: null,
       confidential: false,
       createdAt: null,
