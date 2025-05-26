@@ -24,6 +24,8 @@ module ComplianceManagement
       has_many :project_control_compliance_statuses,
         class_name: 'ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus'
 
+      has_many :project_compliance_violations, class_name: 'ComplianceManagement::Projects::ComplianceViolation'
+
       enum :name, ComplianceManagement::ComplianceFramework::Controls::Registry.enum_definitions
 
       enum :control_type, {
