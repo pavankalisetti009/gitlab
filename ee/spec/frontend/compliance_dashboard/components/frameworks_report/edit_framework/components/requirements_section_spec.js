@@ -45,6 +45,7 @@ describe('Requirements section', () => {
   const findRequirementModal = () => wrapper.findComponent(RequirementModal);
   const findDeleteAction = () => wrapper.findByTestId('delete-action');
   const findEditAction = () => wrapper.findByTestId('edit-action');
+  const findPagination = () => wrapper.findByTestId('requirements-pagination');
 
   const createComponent = async ({
     controlsQueryHandlerMockResponse = controlsQueryHandler,
@@ -323,6 +324,57 @@ describe('Requirements section', () => {
       });
       expect(wrapper.emitted('update')).toEqual([[{ requirement: updatedRequirement, index }]]);
       expect(findRequirementModal().exists()).toBe(false);
+    });
+  });
+
+  describe('paginate requirements', () => {
+    const generateRequirements = (count) => {
+      return Array(count)
+        .fill()
+        .map((_, i) => ({ ...mockRequirements[0], name: `Requirement ${i + 1}` }));
+    };
+
+    beforeEach(() => {
+      controlsQueryHandler = jest.fn().mockResolvedValue({
+        data: {
+          complianceRequirementControls: {
+            controlExpressions: mockGitLabStandardControls,
+          },
+        },
+      });
+    });
+
+    it('does not render pagination when there are fewer items than per-page limit', async () => {
+      const fewRequirements = generateRequirements(10);
+      await createComponent({ requirements: fewRequirements });
+      expect(findPagination().exists()).toBe(false);
+    });
+
+    it('renders pagination when there are more items than per-page limit', async () => {
+      const manyRequirements = generateRequirements(15);
+      await createComponent({ requirements: manyRequirements });
+      expect(findPagination().exists()).toBe(true);
+    });
+
+    it('passes correct props to pagination component', async () => {
+      const manyRequirements = generateRequirements(25);
+      await createComponent({ requirements: manyRequirements });
+
+      expect(findPagination().props()).toMatchObject({
+        value: 1,
+        perPage: 10,
+        totalItems: 25,
+        align: 'center',
+      });
+    });
+
+    it('updates currentPage when pagination is changed', async () => {
+      const manyRequirements = generateRequirements(25);
+      await createComponent({ requirements: manyRequirements });
+
+      expect(wrapper.vm.currentPage).toBe(1);
+      await findPagination().vm.$emit('input', 2);
+      expect(wrapper.vm.currentPage).toBe(2);
     });
   });
 });
