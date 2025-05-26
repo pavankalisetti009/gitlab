@@ -13,6 +13,7 @@ RSpec.describe 'Incident details', :js, feature_category: :incident_management d
   let(:escalation_status_container) { find_by_testid('escalation_status_container') }
 
   before do
+    stub_feature_flags(hide_incident_management_features: false)
     sign_in(current_user)
   end
 
