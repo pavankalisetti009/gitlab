@@ -62,7 +62,7 @@ export default {
       return this.rolesData?.standardRoles.nodes || [];
     },
     customRoles() {
-      return this.rolesData?.memberRoles.nodes || [];
+      return this.rolesData?.memberRoles?.nodes || [];
     },
     adminRoles() {
       // Only self-managed has admin roles, SaaS does not.
