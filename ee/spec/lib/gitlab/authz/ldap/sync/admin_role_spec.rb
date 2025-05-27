@@ -250,7 +250,7 @@ RSpec.describe Gitlab::Authz::Ldap::Sync::AdminRole, feature_category: :permissi
 
     context 'when syncing by cn (LDAP group)' do
       let_it_be_with_reload(:admin_role_link) do
-        create(:ldap_admin_role_link, member_role: admin_role, cn: 'ldap_group1')
+        create(:ldap_admin_role_link, :skip_validate, member_role: admin_role, cn: 'ldap_group1')
       end
 
       let(:ldap_group1) { ldap_group_entry(member_dn) }
@@ -268,7 +268,7 @@ RSpec.describe Gitlab::Authz::Ldap::Sync::AdminRole, feature_category: :permissi
         let(:ldap_group2) { ldap_group_entry(user_dn(user.username)) }
 
         let_it_be(:admin_role_link_2) do
-          create(:ldap_admin_role_link, member_role: admin_role_2, cn: 'ldap_group2')
+          create(:ldap_admin_role_link, :skip_validate, member_role: admin_role_2, cn: 'ldap_group2')
         end
 
         before do
@@ -299,7 +299,7 @@ RSpec.describe Gitlab::Authz::Ldap::Sync::AdminRole, feature_category: :permissi
 
     context 'when syncing by filter' do
       let_it_be_with_reload(:admin_role_link) do
-        create(:ldap_admin_role_link, member_role: admin_role, filter: '(a=b)', cn: nil)
+        create(:ldap_admin_role_link, :skip_validate, member_role: admin_role, filter: '(a=b)', cn: nil)
       end
 
       before do
@@ -315,7 +315,7 @@ RSpec.describe Gitlab::Authz::Ldap::Sync::AdminRole, feature_category: :permissi
         let(:member_dn) { user_dn(user.username) }
 
         let_it_be(:admin_role_link_2) do
-          create(:ldap_admin_role_link, member_role: admin_role_2, filter: '(x=y)', cn: nil)
+          create(:ldap_admin_role_link, :skip_validate, member_role: admin_role_2, filter: '(x=y)', cn: nil)
         end
 
         before do
@@ -356,11 +356,11 @@ RSpec.describe Gitlab::Authz::Ldap::Sync::AdminRole, feature_category: :permissi
       let(:user_3_dn) { user_dn(user_3.username) }
 
       let_it_be(:admin_role_link) do
-        create(:ldap_admin_role_link, member_role: admin_role, cn: 'ldap_group1')
+        create(:ldap_admin_role_link, :skip_validate, member_role: admin_role, cn: 'ldap_group1')
       end
 
       let_it_be(:admin_role_link_2) do
-        create(:ldap_admin_role_link, member_role: admin_role_2, filter: '(a=b)', cn: nil)
+        create(:ldap_admin_role_link, :skip_validate, member_role: admin_role_2, filter: '(a=b)', cn: nil)
       end
 
       let(:ldap_group1) do
@@ -415,7 +415,7 @@ RSpec.describe Gitlab::Authz::Ldap::Sync::AdminRole, feature_category: :permissi
 
       context 'when user has multiple identities' do
         before do
-          create(:ldap_admin_role_link, member_role: admin_role, cn: 'ldap_group1')
+          create(:ldap_admin_role_link, :skip_validate, member_role: admin_role, cn: 'ldap_group1')
 
           create(:identity, user: user, extern_uid: user_dn(user.username), provider: 'ldapalt')
         end

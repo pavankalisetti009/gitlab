@@ -3,12 +3,18 @@
 require 'spec_helper'
 
 RSpec.describe Authz::LdapAdminRoleLink, feature_category: :system_access do
+  let_it_be(:providers) { ['ldapprovider'] }
+
+  before do
+    allow(::Gitlab::Auth::Ldap::Config).to receive_messages(providers: providers)
+  end
+
   describe 'associations' do
     it { is_expected.to belong_to(:member_role) }
   end
 
-  describe 'validation' do
-    subject(:ldap_admin_role_link) { build(:ldap_admin_role_link) }
+  describe 'validations' do
+    subject(:ldap_admin_role_link) { build(:ldap_admin_role_link, provider: 'ldapprovider') }
 
     it { is_expected.to validate_presence_of(:member_role) }
     it { is_expected.to validate_presence_of(:provider) }
@@ -33,11 +39,11 @@ RSpec.describe Authz::LdapAdminRoleLink, feature_category: :system_access do
     describe 'cn' do
       context 'when cn is duplicated for the same provider' do
         before do
-          create(:ldap_admin_role_link, cn: 'cn', provider: 'ldapmain')
+          create(:ldap_admin_role_link, cn: 'cn', provider: 'ldapprovider')
         end
 
         it 'returns an error' do
-          duplicate_admin_link = build(:ldap_admin_role_link, cn: 'cn', provider: 'ldapmain')
+          duplicate_admin_link = build(:ldap_admin_role_link, cn: 'cn', provider: 'ldapprovider')
 
           expect(duplicate_admin_link).not_to be_valid
           expect(duplicate_admin_link.errors.messages).to eq(cn: ['has already been taken'])
@@ -46,7 +52,7 @@ RSpec.describe Authz::LdapAdminRoleLink, feature_category: :system_access do
 
       context 'when filter is also provided' do
         it 'returns an error' do
-          admin_link = build(:ldap_admin_role_link, cn: 'cn', filter: '(a=b)')
+          admin_link = build(:ldap_admin_role_link, cn: 'cn', filter: '(a=b)', provider: 'ldapprovider')
 
           expect(admin_link).not_to be_valid
           expect(admin_link.errors.messages).to eq(filter: ['One and only one of [cn, filter] arguments is required'])
@@ -57,11 +63,11 @@ RSpec.describe Authz::LdapAdminRoleLink, feature_category: :system_access do
     describe 'filter' do
       context 'when filter is duplicated for the same provider' do
         before do
-          create(:ldap_admin_role_link, cn: nil, filter: '(a=b)', provider: 'ldapmain')
+          create(:ldap_admin_role_link, cn: nil, filter: '(a=b)', provider: 'ldapprovider')
         end
 
         it 'returns an error' do
-          duplicate_admin_link = build(:ldap_admin_role_link, cn: nil, filter: '(a=b)', provider: 'ldapmain')
+          duplicate_admin_link = build(:ldap_admin_role_link, cn: nil, filter: '(a=b)', provider: 'ldapprovider')
 
           expect(duplicate_admin_link).not_to be_valid
           expect(duplicate_admin_link.errors.messages).to eq(filter: ["has already been taken"])
@@ -70,10 +76,21 @@ RSpec.describe Authz::LdapAdminRoleLink, feature_category: :system_access do
 
       context 'when invalid filter is provided' do
         it 'returns an error' do
-          admin_link = build(:ldap_admin_role_link, cn: nil, filter: 'invalid filter')
+          admin_link = build(:ldap_admin_role_link, cn: nil, filter: 'invalid filter', provider: 'ldapprovider')
 
           expect(admin_link).not_to be_valid
           expect(admin_link.errors.messages).to eq(filter: ['must be a valid filter'])
+        end
+      end
+    end
+
+    describe 'provider' do
+      context 'when provider is invalid' do
+        it 'returns an error' do
+          admin_link = build(:ldap_admin_role_link, cn: 'cn', provider: 'invalidldapprovider')
+
+          expect(admin_link).not_to be_valid
+          expect(admin_link.errors.messages).to eq(provider: ['is invalid'])
         end
       end
     end
@@ -81,20 +98,22 @@ RSpec.describe Authz::LdapAdminRoleLink, feature_category: :system_access do
 
   describe 'scopes' do
     describe '.with_provider' do
-      it 'returns ldap admin role links for the specified provider' do
-        links = [create(:ldap_admin_role_link, provider: 'ldapmain'),
-          create(:ldap_admin_role_link, provider: 'ldapother')]
+      let_it_be(:providers) { %w[ldapprovider ldapproviderother] }
 
-        expect(described_class.with_provider('ldapmain')).to eq([links.first])
+      it 'returns ldap admin role links for the specified provider' do
+        links = [create(:ldap_admin_role_link, provider: 'ldapprovider'),
+          create(:ldap_admin_role_link, provider: 'ldapproviderother')]
+
+        expect(described_class.with_provider('ldapprovider')).to eq([links.first])
       end
     end
 
     describe '.preload_admin_role' do
-      let_it_be(:ldap_admin_role_link) { create(:ldap_admin_role_link) }
-
       subject(:relation) { described_class.preload_admin_role }
 
       it 'loads member role association' do
+        create(:ldap_admin_role_link, provider: 'ldapprovider')
+
         expect(relation.first.association(:member_role)).to be_loaded
       end
     end

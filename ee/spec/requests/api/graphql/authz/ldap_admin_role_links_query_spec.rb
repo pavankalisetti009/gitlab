@@ -8,7 +8,7 @@ RSpec.describe 'Query LDAP admin links', feature_category: :permissions do
   let_it_be(:admin) { create(:admin) }
 
   let_it_be(:admin_member_role) { create(:member_role, :admin, name: 'Admin role') }
-  let_it_be(:ldap_admin_link) { create(:ldap_admin_role_link, member_role: admin_member_role) }
+  let_it_be(:ldap_admin_link) { create(:ldap_admin_role_link, :skip_validate, member_role: admin_member_role) }
 
   let(:arguments) { {} }
   let(:current_user) { admin }

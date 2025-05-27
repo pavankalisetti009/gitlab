@@ -17,6 +17,10 @@ RSpec.describe Authz::LdapAdminRoleLinks::CreateService, :enable_admin_mode, fea
 
     let(:params) { default_params }
 
+    before do
+      allow(::Gitlab::Auth::Ldap::Config).to receive_messages(providers: ['ldap'])
+    end
+
     subject(:create_admin_link) { described_class.new(user, params).execute }
 
     context 'without the custom roles feature' do

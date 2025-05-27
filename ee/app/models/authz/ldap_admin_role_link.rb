@@ -24,6 +24,8 @@ module Authz
     validates :member_role, :provider, presence: true
     validates :provider, :cn, :filter, length: { maximum: 255 }
 
+    validate :provider_is_valid, if: -> { provider.present? }
+
     with_options if: :cn do
       validates :cn, uniqueness: { scope: [:provider] }
       validates :cn, presence: true
@@ -72,6 +74,14 @@ module Authz
         sync_ended_at: DateTime.current,
         sync_error: error_message.truncate(MAX_ERROR_LENGTH)
       )
+    end
+
+    private
+
+    def provider_is_valid
+      return if Gitlab::Auth::Ldap::Config.valid_provider?(provider)
+
+      errors.add(:provider, 'is invalid')
     end
   end
 end
