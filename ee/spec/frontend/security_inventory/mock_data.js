@@ -52,10 +52,14 @@ export const subgroupsAndProjects = {
               medium: 48,
               unknown: 7,
             },
-            securityScanners: {
-              enabled: ['SAST', 'SAST_ADVANCED'],
-              pipelineRun: ['SAST'],
-            },
+            analyzerStatuses: [
+              {
+                status: 'SUCCESS',
+                analyzerType: 'SAST',
+                lastCall: '2025-01-01T10:20:14Z',
+                buildId: 472,
+              },
+            ],
           },
           {
             __typename: 'Project',
@@ -74,10 +78,20 @@ export const subgroupsAndProjects = {
               medium: 0,
               unknown: 0,
             },
-            securityScanners: {
-              enabled: ['SAST', 'SAST_ADVANCED'],
-              pipelineRun: [],
-            },
+            analyzerStatuses: [
+              {
+                status: 'FAILED',
+                analyzerType: 'SAST',
+                lastCall: '2025-01-01T10:20:14Z',
+                buildId: 472,
+              },
+              {
+                status: 'FAILED',
+                analyzerType: 'SAST_ADVANCED',
+                lastCall: '2025-01-01T10:20:14Z',
+                buildId: 472,
+              },
+            ],
           },
         ],
         pageInfo: {

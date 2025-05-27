@@ -1,6 +1,5 @@
 <script>
 import { GlBadge, GlPopover } from '@gitlab/ui';
-import { filterSecurityScanners } from 'ee/security_inventory/utils';
 import { SCANNER_POPOVER_GROUPS, SCANNER_TYPES } from '../constants';
 import ToolCoverageDetails from './tool_coverage_details.vue';
 
@@ -8,73 +7,35 @@ export default {
   components: { GlBadge, GlPopover, ToolCoverageDetails },
   props: {
     securityScanners: {
-      type: Object,
+      type: Array,
       required: false,
-      default: () => ({
-        enabled: [],
-        pipelineRun: [],
-      }),
+      default: () => [],
     },
     projectName: {
       type: String,
       required: true,
     },
-    // TODO: switch to object with status enum
-    //    scanners: {
-    //      type: Object,
-    //      required: false,
-    //      default: () => ({
-    //        SAST: {
-    //          status: 'SCANNER_DISABLED'
-    //        },
-    //        DAST: {
-    //          status: 'SCANNER_DISABLED'
-    //        },
-    //        SAST_IAC: {
-    //          status: 'SCANNER_DISABLED'
-    //        },
-    //        SECRET_DETECTION: {
-    //          status: 'SCANNER_DISABLED'
-    //        },
-    //        DEPENDENCY_SCANNING: {
-    //          status: 'SCANNER_DISABLED'
-    //        },
-    //        CONTAINER_SCANNING: {
-    //          status: 'SCANNER_DISABLED'
-    //        },
-    //      })
-    //    }
   },
   methods: {
-    isEnabled(scannerTypes) {
-      return (
-        scannerTypes.some((item) => this.securityScanners.enabled?.includes(item)) &&
-        scannerTypes.some((item) => this.securityScanners.pipelineRun?.includes(item))
-      );
-    },
-    isFailed(scannerTypes) {
-      return (
-        scannerTypes.some((item) => this.securityScanners.enabled?.includes(item)) &&
-        !scannerTypes.some((item) => this.securityScanners.pipelineRun?.includes(item))
-      );
+    getRelevantStatuses(scannerTypes) {
+      return scannerTypes.map((type) => {
+        const existingStatus = this.securityScanners.find((status) => status.analyzerType === type);
+        return existingStatus || { analyzerType: type };
+      });
     },
     scannerStyling(scannerTypes) {
-      if (this.isEnabled(scannerTypes)) {
-        // TODO: replace with this.scanners[scanner].status === 'SCANNER_ENABLED'
-        return { variant: 'success', class: 'gl-border-transparent' };
-      }
-      if (this.isFailed(scannerTypes)) {
-        // TODO: replace with this.scanners[scanner].status === 'SCANNER_FAILED'
+      const relevantStatuses = this.getRelevantStatuses(scannerTypes);
+      if (relevantStatuses.some((status) => status.status === 'FAILED')) {
         return { variant: 'danger', class: 'gl-border-red-600' };
+      }
+      if (relevantStatuses.some((status) => status.status === 'SUCCESS')) {
+        return { variant: 'success', class: 'gl-border-transparent' };
       }
       // otherwise assume status is SCANNER_DISABLED
       return { class: '!gl-bg-default !gl-text-neutral-600 gl-border-gray-200 gl-border-dashed' };
     },
     getToolCoverageTitle(key) {
       return SCANNER_TYPES[key].name;
-    },
-    getSecurityScanner(scannerTypes) {
-      return filterSecurityScanners(scannerTypes, this.securityScanners);
     },
     getLabel(key) {
       return SCANNER_TYPES[key].textLabel;
@@ -102,7 +63,7 @@ export default {
         :data-testid="`popover-${key}-${projectName}`"
         show-close-button
       >
-        <tool-coverage-details :is-project="true" :security-scanner="getSecurityScanner(value)" />
+        <tool-coverage-details :is-project="true" :security-scanner="getRelevantStatuses(value)" />
       </gl-popover>
     </div>
   </div>

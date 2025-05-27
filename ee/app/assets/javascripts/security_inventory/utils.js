@@ -22,19 +22,16 @@ export const isSubGroup = (item) => {
 };
 
 /**
- * Filter security scanners based on scanner type
- * @param {Array} scanners - Array of scanner types to filter
- * @param {Object} securityScanners - Object containing enabled and pipelineRun scanners, and the relevant scanner
- * @returns {Object} Filtered security scanners object
+ * Validator function for securityScanner prop
+ * @param {Array<Object>} value - Array of security scanner objects
+ * @returns {Boolean} True if all items have valid structure, false otherwise
  */
-export const filterSecurityScanners = (
-  scanners = [],
-  securityScanners = { enabled: [], pipelineRun: [] },
-) => {
-  return {
-    scannerTypes: scanners,
-    enabled: securityScanners.enabled?.filter((scanner) => scanners.includes(scanner)) || [],
-    pipelineRun:
-      securityScanners.pipelineRun?.filter((scanner) => scanners.includes(scanner)) || [],
-  };
+export const securityScannerValidator = (value) => {
+  return value.every(
+    (item) =>
+      typeof item === 'object' &&
+      'analyzerType' in item &&
+      typeof item.analyzerType === 'string' &&
+      (!('status' in item) || typeof item.status === 'string'),
+  );
 };

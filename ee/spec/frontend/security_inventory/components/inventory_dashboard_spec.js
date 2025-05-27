@@ -211,7 +211,14 @@ describe('InventoryDashboard', () => {
         findNthTableRow(projectIndex)
           .findComponent(ProjectToolCoverageIndicator)
           .props('securityScanners'),
-      ).toMatchObject({ enabled: ['SAST', 'SAST_ADVANCED'], pipelineRun: ['SAST'] });
+      ).toEqual([
+        {
+          analyzerType: 'SAST',
+          buildId: 472,
+          lastCall: '2025-01-01T10:20:14Z',
+          status: 'SUCCESS',
+        },
+      ]);
       expect(findNthTableRow(groupIndex).findComponent(GroupToolCoverageIndicator).exists()).toBe(
         true,
       );
