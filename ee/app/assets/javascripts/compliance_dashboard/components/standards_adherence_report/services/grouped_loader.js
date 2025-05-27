@@ -1,4 +1,5 @@
 import groupComplianceRequirementsStatusesQuery from '../graphql/queries/group_compliance_requirements_statuses.query.graphql';
+import projectComplianceRequirementsStatusesQuery from '../graphql/queries/project_compliance_requirements_statuses.query.graphql';
 
 const DEFAULT_PAGESIZE = 20;
 
@@ -11,6 +12,7 @@ const defaultPageInfo = () => ({
 
 export class GroupedLoader {
   constructor(options = {}) {
+    this.mode = options.mode || 'group';
     this.groupBy = options.groupBy || null;
     this.apollo = options.apollo;
     this.pageSize = options.pageSize || DEFAULT_PAGESIZE;
@@ -25,7 +27,10 @@ export class GroupedLoader {
 
   async loadPage(options = {}) {
     const result = await this.apollo.query({
-      query: groupComplianceRequirementsStatusesQuery,
+      query:
+        this.mode === 'group'
+          ? groupComplianceRequirementsStatusesQuery
+          : projectComplianceRequirementsStatusesQuery,
       variables: {
         fullPath: this.fullPath,
         filters: this.filters,
@@ -34,7 +39,7 @@ export class GroupedLoader {
       },
     });
 
-    const statuses = result.data.group.projectComplianceRequirementsStatus;
+    const statuses = result.data.container.complianceRequirementStatuses;
     this.pageInfo = statuses.pageInfo;
 
     return {

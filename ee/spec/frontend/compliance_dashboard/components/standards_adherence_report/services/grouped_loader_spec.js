@@ -65,10 +65,10 @@ describe('GroupedLoader', () => {
         data: [
           {
             group: null,
-            children: mockQueryResponse.data.group.projectComplianceRequirementsStatus.nodes,
+            children: mockQueryResponse.data.container.complianceRequirementStatuses.nodes,
           },
         ],
-        pageInfo: mockQueryResponse.data.group.projectComplianceRequirementsStatus.pageInfo,
+        pageInfo: mockQueryResponse.data.container.complianceRequirementStatuses.pageInfo,
       });
     });
 
@@ -76,7 +76,7 @@ describe('GroupedLoader', () => {
       await loader.loadPage();
 
       expect(loader.pageInfo).toEqual(
-        mockQueryResponse.data.group.projectComplianceRequirementsStatus.pageInfo,
+        mockQueryResponse.data.container.complianceRequirementStatuses.pageInfo,
       );
     });
   });
