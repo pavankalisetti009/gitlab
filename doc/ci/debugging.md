@@ -37,7 +37,7 @@ for that feature:
   [merged results pipelines](pipelines/merged_results_pipelines.md#troubleshooting),
   and [merge trains](pipelines/merge_trains.md#troubleshooting).
 - [Pipeline editor](pipeline_editor/_index.md#troubleshooting).
-- [Variables](variables/_index.md#troubleshooting).
+- [Variables](variables/variables_troubleshooting.md).
 - [YAML `includes` keyword](yaml/includes.md#troubleshooting).
 - [YAML `script` keyword](yaml/script.md#troubleshooting).
 
@@ -122,7 +122,7 @@ pipeline, and what their values are. A lot of pipeline configuration is dependen
 on variables, and verifying them is one of the fastest ways to find the source of
 a problem.
 
-[Export the full list of variables](variables/_index.md#list-all-variables)
+[Export the full list of variables](variables/variables_troubleshooting.md#list-all-variables)
 available in each problematic job. Check if the variables you expect are present,
 and check if their values are what you expect.
 
