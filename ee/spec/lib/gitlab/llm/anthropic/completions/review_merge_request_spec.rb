@@ -965,7 +965,10 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
             total_comments: 0,
             p1_comments: 0,
             p2_comments: 0,
-            p3_comments: 0
+            p3_comments: 0,
+            comments_with_valid_path: 0,
+            comments_with_valid_line: 0,
+            created_draft_notes: 0
           }
         end
 
@@ -978,23 +981,27 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           let(:combined_review_answer) do
             <<~RESPONSE
               <review>
-              <comment file="UPDATED.md" priority="3" old_line="" new_line="3">first comment</comment>
-              <comment file="UPDATED.md" priority="2" old_line="" new_line="4">second comment</comment>
+              <comment file="UPDATED.md" priority="3" old_line="1" new_line="1">first comment</comment>
+              <comment file="UPDATED.md" priority="2" old_line="" new_line="2">second comment</comment>
               <comment file="NEW.md" priority="1" old_line="" new_line="1">third comment</comment>
-              <comment file="NEW.md" priority="2" old_line="" new_line="2">fourth comment</comment>
-              <comment file="NEW.md" priority="3" old_line="" new_line="3">fifth comment</comment>
+              <comment file="NEW.md" priority="4" old_line="" new_line="2">comment with unknown priority</comment>
+              <comment file="NEW.md" priority="2" old_line="" new_line="3">comment with unknown line</comment>
+              <comment file="SOMETHINGRANDOM" priority="3" old_line="" new_line="3">comment with unknown filename</comment>
               </review>
             RESPONSE
           end
 
-          it 'logs comment metrics' do
+          it 'logs expected comment metrics' do
             expect(Gitlab::AppLogger).to receive(:info).with(
               hash_including(
                 expected_hash.merge(
-                  total_comments: 5,
+                  total_comments: 6,
                   p1_comments: 1,
                   p2_comments: 2,
-                  p3_comments: 2
+                  p3_comments: 2,
+                  comments_with_valid_path: 5,
+                  comments_with_valid_line: 4,
+                  created_draft_notes: 4
                 )
               )
             )
