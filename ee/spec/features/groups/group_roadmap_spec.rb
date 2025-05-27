@@ -370,12 +370,12 @@ RSpec.describe 'group epic roadmap', :js, feature_category: :portfolio_managemen
 
     describe 'roadmap page with sort order applied' do
       let_it_be(:parent_epic1) { create(:epic, title: 'Parent Epic 1', group: group, start_date: end_of_quarter - 19.days, end_date: end_of_quarter - 9.days) }
-      let_it_be(:child_epic1) { create(:epic, title: 'Child Epic 1', group: group, parent_id: parent_epic1.id, start_date: end_of_quarter - 18.days, end_date: end_of_quarter - 4.days) }
-      let_it_be(:child_epic2) { create(:epic, title: 'Child Epic 2', group: group, parent_id: parent_epic1.id, start_date: end_of_quarter - 17.days, end_date: end_of_quarter - 6.days) }
+      let_it_be(:child_epic1) { create(:epic, title: 'Child Epic 1', group: group, parent: parent_epic1, start_date: end_of_quarter - 18.days, end_date: end_of_quarter - 4.days) }
+      let_it_be(:child_epic2) { create(:epic, title: 'Child Epic 2', group: group, parent: parent_epic1, start_date: end_of_quarter - 17.days, end_date: end_of_quarter - 6.days) }
 
       let_it_be(:parent_epic2) { create(:epic, title: 'Parent Epic 2', group: group, start_date: end_of_quarter - 14.days, end_date: end_of_quarter - 4.days) }
-      let_it_be(:child_epic3) { create(:epic, title: 'Child Epic 3', group: group, parent_id: parent_epic2.id, end_date: end_of_quarter - 4.days) }
-      let_it_be(:child_epic4) { create(:epic, title: 'Child Epic 4', group: group, parent_id: parent_epic2.id, end_date: end_of_quarter - 6.days) }
+      let_it_be(:child_epic3) { create(:epic, title: 'Child Epic 3', group: group, parent: parent_epic2, end_date: end_of_quarter - 4.days) }
+      let_it_be(:child_epic4) { create(:epic, title: 'Child Epic 4', group: group, parent: parent_epic2, end_date: end_of_quarter - 6.days) }
 
       before do
         visit group_roadmap_path(group)

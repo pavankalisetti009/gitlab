@@ -896,7 +896,6 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
 
                 before do
                   child_epic.work_item.update!(start_date: child_epic.start_date, due_date: child_epic.end_date)
-                  create(:parent_link, work_item_parent: epic.work_item, work_item: child_epic.work_item)
                 end
 
                 it 'sets rolledup dated for the work item', :aggregate_failures do

@@ -222,6 +222,37 @@ RSpec.describe Epic, feature_category: :portfolio_management do
     it { is_expected.to validate_presence_of(:title) }
     it { is_expected.to validate_presence_of(:work_item) }
 
+    context 'when parent is set' do
+      subject { build(:epic, parent: build(:epic)) }
+
+      it { is_expected.to validate_presence_of(:work_item_parent_link) }
+
+      context 'when epic parent is not the same as the work item parent' do
+        let_it_be(:parent_epic) { create(:epic) }
+        let_it_be(:other_epic) { create(:epic) }
+        let_it_be(:child_epic) { build(:epic, parent: parent_epic) }
+
+        before do
+          child_epic.work_item_parent_link.work_item_parent = other_epic.work_item
+        end
+
+        it 'errors' do
+          expect(::Gitlab::EpicWorkItemSync::Logger).to receive(:error).with({
+            message: 'Work item epic parent mismatch',
+            work_item_parent_link_id: child_epic.work_item_parent_link.id,
+            epic_parent_id: parent_epic.id
+          })
+
+          expect(child_epic.save).to be(false)
+          expect(child_epic.errors[:parent]).to include("Epic and its work item parent must be the same")
+        end
+      end
+    end
+
+    context 'when parent is not set' do
+      it { is_expected.not_to validate_presence_of(:work_item_parent_link) }
+    end
+
     it { is_expected.to validate_presence_of(:total_opened_issue_weight) }
     it { is_expected.to validate_presence_of(:total_closed_issue_weight) }
     it { is_expected.to validate_presence_of(:total_opened_issue_count) }

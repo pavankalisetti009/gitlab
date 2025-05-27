@@ -119,10 +119,6 @@ RSpec.describe Epics::EpicLinks::DestroyService, feature_category: :portfolio_ma
               )
             end
 
-            let_it_be(:other_child_parent_link) do
-              create(:parent_link, work_item_parent: parent_epic.work_item, work_item: other_child.work_item)
-            end
-
             let_it_be(:other_child_dates_source) do
               create(
                 :work_items_dates_source, work_item: other_child.work_item,
@@ -154,7 +150,6 @@ RSpec.describe Epics::EpicLinks::DestroyService, feature_category: :portfolio_ma
                 start_date_sourcing_work_item_id: child_epic.issue_id,
                 due_date_sourcing_work_item_id: child_epic.issue_id
               )
-              create(:parent_link, work_item_parent: parent_epic.work_item, work_item: child_epic.work_item)
             end
 
             it 'updates parent dates to match existing children' do

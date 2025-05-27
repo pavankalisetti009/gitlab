@@ -29,9 +29,12 @@ RSpec.describe Groups::Epics::EpicLinksController, feature_category: :portfolio_
 
   describe 'GET #index' do
     let(:features_when_forbidden) { { epics: false } }
+    let_it_be_with_reload(:parent_link) do
+      create(:parent_link, work_item: epic1.work_item, work_item_parent: parent_epic.work_item)
+    end
 
     before do
-      epic1.update!(parent: parent_epic)
+      epic1.update!(parent: parent_epic, work_item_parent_link: parent_link)
     end
 
     subject { get group_epic_links_path(group_id: group, epic_id: parent_epic.to_param) }
