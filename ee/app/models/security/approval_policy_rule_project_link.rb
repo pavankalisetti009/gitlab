@@ -2,6 +2,8 @@
 
 module Security
   class ApprovalPolicyRuleProjectLink < ApplicationRecord
+    include EachBatch
+
     self.table_name = 'approval_policy_rule_project_links'
 
     belongs_to :project
