@@ -70,7 +70,7 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
     end
   end
 
-  context 'when simulating GitLabCom: passing target group as an argument', :saas do
+  context 'when simulating GitLabCom', :saas do
     let(:args) { {} }
 
     before do
@@ -86,7 +86,9 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
     end
 
     context 'when group does not exist' do
-      let!(:group) { create(:group, :with_organization, path: 'other-group') }
+      before do
+        group.destroy!
+      end
 
       it 'creates a new group and adds user to group' do
         expect { setup }.to change { ::Group.count }.by(1)
@@ -123,6 +125,16 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
       expect(::GitlabSubscriptions::AddOnPurchase.by_namespace(nil).count).to eq(0)
     end
 
+    it 'adds an ultimate license with 100 seats' do
+      setup
+
+      subscription = ::GitlabSubscription.find_by(namespace: group)
+
+      expect(subscription).to be_present
+      expect(subscription.hosted_plan.name).to eq('ultimate')
+      expect(subscription.seats).to eq(100)
+    end
+
     context 'when updating application setting' do
       it 'changes application settings' do
         expect { setup }.to change {
@@ -136,7 +148,7 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
     end
   end
 
-  context 'when simulating SelfManaged: applying for entire instance, no group argument expected' do
+  context 'when simulating SelfManaged: applying for entire instance' do
     before do
       allow(Rake::Task).to receive(:[]).with(any_args).and_return(rake_task)
 
