@@ -63,105 +63,27 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
   end
 
   describe 'security policy project', feature_category: :security_policy_management do
-    context 'when project has policy project' do
-      let!(:configuration) { create(:security_orchestration_policy_configuration, project: project) }
-
-      it 'unassigns the policy project', :sidekiq_inline do
-        subject.execute(group)
-
-        expect { configuration.reload }.to raise_exception(ActiveRecord::RecordNotFound)
+    context 'when project has licensed feature' do
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
       end
 
-      it 'does not create a security policy bot' do
-        expect(::Security::Orchestration::CreateBotService).not_to receive(:new)
+      it 'delegates transfer to Security::Policies::ProjectTransferWorker' do
+        expect(::Security::Policies::ProjectTransferWorker).to receive(:perform_async).with(project.id, user.id, project.namespace.id, group.id).once
 
         subject.execute(group)
       end
     end
 
-    context 'when project has inherited policy project' do
-      let_it_be(:group, reload: true) { create(:group) }
-      let_it_be(:sub_group, reload: true) { create(:group, parent: group) }
-      let_it_be(:group_configuration, reload: true) { create(:security_orchestration_policy_configuration, project: nil, namespace: group) }
-      let_it_be(:sub_group_configuration, reload: true) { create(:security_orchestration_policy_configuration, project: nil, namespace: sub_group) }
-
-      let!(:group_approval_rule) { create(:approval_project_rule, :scan_finding, :requires_approval, project: project, security_orchestration_policy_configuration: group_configuration) }
-      let!(:sub_group_approval_rule) { create(:approval_project_rule, :scan_finding, :requires_approval, project: project, security_orchestration_policy_configuration: sub_group_configuration) }
-
+    context 'when project does not have licensed feature' do
       before do
-        stub_licensed_features(security_orchestration_policies: true)
-        allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |configuration|
-          allow(configuration).to receive(:policy_configuration_valid?).and_return(true)
-        end
+        stub_licensed_features(security_orchestration_policies: false)
       end
 
-      context 'when transferring the project within the same hierarchy' do
-        before do
-          sub_group.add_owner(user)
-        end
+      it 'does not delegate transfer to Security::Policies::ProjectTransferWorker' do
+        expect(::Security::Policies::ProjectTransferWorker).not_to receive(:perform_async)
 
-        it 'deletes scan_finding_rules for inherited policy project' do
-          subject.execute(sub_group)
-
-          expect(project.approval_rules).to be_empty
-          expect { group_approval_rule.reload }.to raise_exception(ActiveRecord::RecordNotFound)
-          expect { sub_group_approval_rule.reload }.to raise_exception(ActiveRecord::RecordNotFound)
-        end
-
-        it 'triggers Security::SyncProjectPoliciesWorker for all configurations' do
-          expect(Security::SyncProjectPoliciesWorker).to receive(:perform_async).once.with(project.id, group_configuration.id)
-          expect(Security::SyncProjectPoliciesWorker).to receive(:perform_async).once.with(project.id, sub_group_configuration.id)
-
-          subject.execute(sub_group)
-        end
-
-        it 'creates a security policy bot' do
-          expect_next_instance_of(::Security::Orchestration::CreateBotService) do |service|
-            expect(service).to receive(:execute).and_call_original
-          end
-
-          subject.execute(sub_group)
-        end
-      end
-
-      context 'when transferring the project from one hierarchy to another' do
-        let_it_be(:other_group, reload: true) { create(:group) }
-
-        before do
-          project.update!(group: sub_group)
-          other_group.add_owner(user)
-        end
-
-        it 'deletes scan_finding_rules for inherited policy project' do
-          subject.execute(other_group)
-
-          expect(project.approval_rules).to be_empty
-          expect { group_approval_rule.reload }.to raise_exception(ActiveRecord::RecordNotFound)
-        end
-
-        it 'triggers Security::ScanResultPolicies::SyncProjectWorker to sync new group policies' do
-          expect(Security::ScanResultPolicies::SyncProjectWorker).to receive(:perform_async).with(project.id)
-
-          subject.execute(other_group)
-        end
-
-        it 'does not create a security policy bot' do
-          expect(::Security::Orchestration::CreateBotService).not_to receive(:new)
-
-          subject.execute(other_group)
-        end
-
-        context 'and the new group has a security policy' do
-          let_it_be(:other_group_configuration, reload: true) { create(:security_orchestration_policy_configuration, project: nil, namespace: other_group) }
-
-          it 'creates a security policy bot' do
-            expect_next_instance_of(::Security::Orchestration::CreateBotService) do |service|
-              expect(service).to receive(:execute).and_call_original
-            end
-
-            subject.execute(other_group)
-          end
-        end
+        subject.execute(group)
       end
     end
   end

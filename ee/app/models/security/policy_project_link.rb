@@ -2,6 +2,8 @@
 
 module Security
   class PolicyProjectLink < ApplicationRecord
+    include EachBatch
+
     self.table_name = 'security_policy_project_links'
 
     belongs_to :project

@@ -28,13 +28,10 @@ module EE
         ::Elastic::ProjectTransferWorker.perform_async(project.id, old_namespace.id, new_namespace.id)
         ::Search::Zoekt::ProjectTransferWorker.perform_async(project.id, old_namespace.id)
 
-        delete_scan_result_policies(old_group)
-        unassign_policy_project
-        sync_new_group_policies
-        create_security_policy_bot
         delete_compliance_framework_setting(old_group)
         update_compliance_standards_adherence
         delete_compliance_statuses
+        sync_security_policies
       end
 
       override :remove_paid_features
@@ -42,40 +39,12 @@ module EE
         ::EE::Projects::RemovePaidFeaturesService.new(project).execute(new_namespace)
       end
 
-      def unassign_policy_project
-        return unless project.security_orchestration_policy_configuration
-
-        ::Security::Orchestration::UnassignService.new(container: project, current_user: current_user).execute
-      end
-
-      def delete_scan_result_policies(old_group)
-        project.all_security_orchestration_policy_configurations.each do |configuration|
-          configuration.delete_scan_finding_rules_for_project(project.id)
-          configuration.delete_merge_request_rules_for_project(project.id)
-        end
-        return unless old_group
-
-        old_group.all_security_orchestration_policy_configurations.each do |configuration|
-          configuration.delete_scan_finding_rules_for_project(project.id)
-          configuration.delete_merge_request_rules_for_project(project.id)
-        end
-      end
-
-      def sync_new_group_policies
+      def sync_security_policies
         return unless project.licensed_feature_available?(:security_orchestration_policies)
 
-        ::Security::ScanResultPolicies::SyncProjectWorker.perform_async(project.id)
-
-        project.all_security_orchestration_policy_configurations.each do |configuration|
-          ::Security::SyncProjectPoliciesWorker.perform_async(project.id, configuration.id)
-        end
-      end
-
-      def create_security_policy_bot
-        return unless project.licensed_feature_available?(:security_orchestration_policies)
-        return unless project.all_security_orchestration_policy_configurations(include_invalid: true).any?
-
-        ::Security::Orchestration::CreateBotService.new(project, current_user).execute
+        ::Security::Policies::ProjectTransferWorker.perform_async(
+          project.id, current_user.id, old_namespace.id, new_namespace.id
+        )
       end
 
       def delete_compliance_framework_setting(old_group)
