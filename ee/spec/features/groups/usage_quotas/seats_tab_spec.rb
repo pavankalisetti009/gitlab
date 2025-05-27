@@ -205,8 +205,6 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
 
   context 'when adding seats' do
     before do
-      stub_feature_flags(limited_access_modal: false)
-
       visit group_seat_usage_path(group)
       wait_for_requests
 
@@ -217,9 +215,15 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
       expect(page).not_to have_selector('[data-testid="limited-access-modal-id"]')
     end
 
-    context 'with limited_access_modal FF enabled' do
+    context 'when user is allowed to add seats' do
+      it 'does not open modal', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/424582' do
+        expect(page).not_to have_selector('[data-testid="limited-access-modal-id"]')
+      end
+    end
+
+    context 'when user is not allowed to add seats' do
       before do
-        stub_feature_flags(limited_access_modal: true)
+        stub_subscription_permissions_data(group.id, can_add_seats: false, can_renew: false)
 
         visit group_seat_usage_path(group)
         wait_for_requests
@@ -227,26 +231,9 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
         click_button 'Add seats'
       end
 
-      context 'when user is allowed to add seats' do
-        it 'does not open modal', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/424582' do
-          expect(page).not_to have_selector('[data-testid="limited-access-modal-id"]')
-        end
-      end
-
-      context 'when user is not allowed to add seats' do
-        before do
-          stub_subscription_permissions_data(group.id, can_add_seats: false, can_renew: false)
-
-          visit group_seat_usage_path(group)
-          wait_for_requests
-
-          click_button 'Add seats'
-        end
-
-        it 'opens limited access modal' do
-          expect(page).to have_selector('[data-testid="limited-access-modal-id"]')
-          expect(page).to have_content('Your subscription is in read-only mode')
-        end
+      it 'opens limited access modal' do
+        expect(page).to have_selector('[data-testid="limited-access-modal-id"]')
+        expect(page).to have_content('Your subscription is in read-only mode')
       end
     end
   end

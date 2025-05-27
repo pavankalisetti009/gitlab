@@ -69,9 +69,7 @@ export default {
   },
   computed: {
     hasLimitedAccess() {
-      return (
-        gon.features?.limitedAccessModal && LIMITED_ACCESS_KEYS.includes(this.permissionReason)
-      );
+      return LIMITED_ACCESS_KEYS.includes(this.permissionReason);
     },
     shouldRenderSeatsUsedBlock() {
       return this.seatsUsed !== null;

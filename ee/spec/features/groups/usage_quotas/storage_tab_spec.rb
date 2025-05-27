@@ -17,7 +17,6 @@ RSpec.describe 'Groups > Usage Quotas > Storage tab', :js, :saas, feature_catego
     stub_signing_key
     stub_subscription_permissions_data(group.id)
 
-    stub_feature_flags(limited_access_modal: false)
     stub_application_setting(check_namespace_plan: true)
     create(:callout, user: user, feature_name: :duo_chat_callout, dismissed_at: Time.current)
 
@@ -106,9 +105,8 @@ RSpec.describe 'Groups > Usage Quotas > Storage tab', :js, :saas, feature_catego
     end
   end
 
-  context 'with limited_access_modal FF enabled' do
+  context 'when user has limited access to subscription' do
     before do
-      stub_feature_flags(limited_access_modal: true)
       stub_subscription_permissions_data(group.id, can_add_seats: false)
       enforce_namespace_storage_limit(group)
       set_enforcement_limit(group, megabytes: 100)

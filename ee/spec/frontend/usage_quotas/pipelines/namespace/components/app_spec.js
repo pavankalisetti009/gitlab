@@ -263,7 +263,7 @@ describe('PipelineUsageApp', () => {
     });
 
     it('logs the error message', () => {
-      expect(logError).toHaveBeenCalledTimes(2);
+      expect(logError).toHaveBeenCalledTimes(3);
       expect(logError).toHaveBeenCalledWith(expect.any(String), gqlRejectResponse);
     });
 
@@ -273,7 +273,7 @@ describe('PipelineUsageApp', () => {
 
     it('captures the exception in Sentry', async () => {
       await Vue.nextTick();
-      expect(captureException).toHaveBeenCalledTimes(2);
+      expect(captureException).toHaveBeenCalledTimes(3);
     });
   });
 

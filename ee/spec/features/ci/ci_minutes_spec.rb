@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Compute minutes', :js, time_travel_to: '2022-06-05', feature_category: :continuous_integration do
+  include UsageQuotasHelpers
+
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, name: 'Project 1', namespace: user.namespace) }
 
@@ -15,6 +17,7 @@ RSpec.describe 'Compute minutes', :js, time_travel_to: '2022-06-05', feature_cat
     create_ci_minutes_usage(50, Date.new(Time.zone.now.year, 5, 1))
     create_ci_minutes_usage(60, Date.new(Time.zone.now.year, 6, 1))
 
+    setup_usage_quotas_env(user.namespace.id)
     sign_in(user)
 
     visit profile_usage_quotas_path

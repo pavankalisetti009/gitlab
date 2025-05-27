@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Profile > Usage Quota', :js, feature_category: :consumables_cost_management do
   include ::Ci::MinutesHelpers
+  include UsageQuotasHelpers
 
   using RSpec::Parameterized::TableSyntax
 
@@ -13,6 +14,7 @@ RSpec.describe 'Profile > Usage Quota', :js, feature_category: :consumables_cost
   let_it_be_with_reload(:project) { create(:project, namespace: namespace) }
 
   before do
+    setup_usage_quotas_env(namespace.id)
     stub_ee_application_setting(should_check_namespace_plan: true)
     sign_in(user)
   end

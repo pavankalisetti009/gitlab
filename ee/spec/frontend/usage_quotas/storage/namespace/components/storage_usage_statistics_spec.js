@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlButton, GlSprintf, GlProgressBar } from '@gitlab/ui';
+import { GlSprintf, GlProgressBar } from '@gitlab/ui';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import StorageUsageOverviewCard from '~/usage_quotas/storage/namespace/components/storage_usage_overview_card.vue';
 import NamespaceLimitsStorageUsageOverviewCard from 'ee/usage_quotas/storage/namespace/components/namespace_limits_storage_usage_overview_card.vue';
@@ -62,7 +62,6 @@ describe('StorageUsageStatistics', () => {
         StorageUsageOverviewCard,
         NumberToHumanSize,
         GlSprintf,
-        GlButton,
         HelpPageLink,
         GlProgressBar,
       },
@@ -79,7 +78,7 @@ describe('StorageUsageStatistics', () => {
   const findNoLimitsPurchasedStorageBreakdownCard = () =>
     wrapper.findComponent(NoLimitsPurchasedStorageBreakdownCard);
   const findOverviewSubtitle = () => wrapper.findByTestId('overview-subtitle');
-  const findPurchaseButton = () => wrapper.findComponent(GlButton);
+  const findPurchaseButton = () => wrapper.findByTestId('purchase-more-storage');
   const findLimitedAccessModal = () => wrapper.findComponent(LimitedAccessModal);
 
   describe('namespace overview section', () => {
@@ -104,13 +103,23 @@ describe('StorageUsageStatistics', () => {
     });
 
     describe('purchase more storage button when namespace is NOT using project enforcement', () => {
-      describe('when purchaseStorageUrl is provided', () => {
-        beforeEach(() => {
+      describe('when user has permission to purchase storage', () => {
+        beforeEach(async () => {
           createComponent({
             provide: {
               isUsingNamespaceEnforcement: true,
             },
+            apolloData: {
+              ...defaultApolloData,
+              subscription: {
+                ...defaultApolloData.subscription,
+                canAddSeats: true,
+              },
+              userActionAccess: { limitedAccessReason: null },
+            },
           });
+
+          await waitForPromises();
         });
 
         it('renders purchase button with the correct attributes', () => {
@@ -127,9 +136,8 @@ describe('StorageUsageStatistics', () => {
         });
       });
 
-      describe('when purchaseStorageUrl is provided and limitedAccessModal FF is on', () => {
+      describe('when user has limited access', () => {
         beforeEach(async () => {
-          gon.features = { limitedAccessModal: true };
           createComponent({
             provide: {
               isUsingNamespaceEnforcement: true,
@@ -142,7 +150,7 @@ describe('StorageUsageStatistics', () => {
           await nextTick();
         });
 
-        it('shows modal', () => {
+        it('shows modal when button is clicked', () => {
           expect(findLimitedAccessModal().isVisible()).toBe(true);
         });
       });
