@@ -2,7 +2,7 @@
   - group = identity.saml_provider.group
   - if unlink_provider_allowed?(identity.saml_provider)
     - button_text = s_('Profiles|Disconnect SAML for %{group_name}') % { group_name: group.name }
-    - confirm_message = s_('Profiles|Disconnecting your SAML provider will remove your access from groups, subgroups and projects which require SAML authentication. Are your sure?') % { group_name: group.name }
+    - confirm_message = s_('Profiles|Disconnecting your SAML provider will remove your access from groups, subgroups and projects which require SAML authentication. Are you sure?') % { group_name: group.name }
     = render Pajamas::ButtonComponent.new(href: unlink_group_saml_providers_path(group),
       method: :delete,
       variant: :danger,
