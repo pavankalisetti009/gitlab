@@ -1698,7 +1698,7 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
 
               expect(response).to have_gitlab_http_status(:ok)
               expect(json_response.size).to eq(2)
-              expect(json_response.map(&:keys).flatten).not_to include('group_saml_identity')
+              expect(json_response.flat_map(&:keys)).not_to include('group_saml_identity')
             end
 
             it 'ignores filter by linked identity presence' do
@@ -1716,7 +1716,7 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
             get api("/groups/#{group.to_param}/members", maintainer)
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response.map(&:keys).flatten).not_to include('group_saml_identity')
+            expect(json_response.flat_map(&:keys)).not_to include('group_saml_identity')
           end
 
           it 'ignores filter by linked identity presence' do

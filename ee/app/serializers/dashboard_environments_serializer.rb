@@ -25,7 +25,7 @@ class DashboardEnvironmentsSerializer < BaseSerializer
       ]
     ).call
 
-    environments = projects.map(&:environments_for_dashboard).flatten
+    environments = projects.flat_map(&:environments_for_dashboard)
 
     Preloaders::Environments::DeploymentPreloader.new(environments)
       .execute_with_union(:last_visible_deployment, deployment_associations)

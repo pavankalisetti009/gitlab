@@ -44,9 +44,9 @@ class GeoNodeStatus < ApplicationRecord
 
   # Why are disabled classes included? See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/38959#note_402656534
   def self.replicator_class_status_fields
-    Gitlab::Geo::REPLICATOR_CLASSES.map do |replicable_class|
+    Gitlab::Geo::REPLICATOR_CLASSES.flat_map do |replicable_class|
       status_fields_for(replicable_class).keys
-    end.flatten.map(&:to_s)
+    end.map(&:to_s)
   end
 
   def self.usage_data_fields
