@@ -32,17 +32,15 @@ class Burndown
   private
 
   def burndown_events
-    issues
-      .map { |issue| burndown_events_for(issue) }
-      .flatten
+    issues.flat_map { |issue| burndown_events_for(issue) }
   end
 
   def burndown_events_for(issue)
     [
-      transformed_create_event_for(issue),
-      transformed_action_events_for(issue),
-      transformed_legacy_closed_event_for(issue)
-    ].compact
+      transformed_create_event_for(issue)
+    ] +
+      Array.wrap(transformed_action_events_for(issue)) +
+      Array.wrap(transformed_legacy_closed_event_for(issue))
   end
 
   def milestone_events_per_issue

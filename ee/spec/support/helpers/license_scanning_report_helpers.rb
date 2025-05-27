@@ -2,7 +2,7 @@
 
 module LicenseScanningReportHelpers
   def all_dependency_paths(report)
-    report.licenses.map { |license| license.dependencies.map(&:path) }.flatten.compact
+    report.licenses.flat_map { |license| license.dependencies.map(&:path) }.compact
   end
 
   def dependency_by_name(license, name)
