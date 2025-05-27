@@ -26,7 +26,7 @@ for that feature:
 - [Caching](caching/_index.md#troubleshooting).
 - [CI/CD job tokens](jobs/ci_job_token.md#troubleshooting).
 - [Container registry](../user/packages/container_registry/troubleshoot_container_registry.md).
-- [Docker](docker/using_docker_build.md#troubleshooting).
+- [Docker](docker/docker_build_troubleshooting.md).
 - [Downstream pipelines](pipelines/downstream_pipelines_troubleshooting.md).
 - [Environments](environments/_index.md#troubleshooting).
 - [GitLab Runner](https://docs.gitlab.com/runner/faq/).
@@ -39,7 +39,7 @@ for that feature:
 - [Pipeline editor](pipeline_editor/_index.md#troubleshooting).
 - [Variables](variables/variables_troubleshooting.md).
 - [YAML `includes` keyword](yaml/includes.md#troubleshooting).
-- [YAML `script` keyword](yaml/script.md#troubleshooting).
+- [YAML `script` keyword](yaml/script_troubleshooting.md).
 
 ## Debugging techniques
 
