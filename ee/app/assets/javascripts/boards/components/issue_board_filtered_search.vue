@@ -2,6 +2,7 @@
 import { orderBy } from 'lodash';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import IssueBoardFilteredSearchFoss from '~/boards/components/issue_board_filtered_search.vue';
 import {
   OPERATORS_IS,
@@ -9,6 +10,7 @@ import {
   TOKEN_TYPE_HEALTH,
   TOKEN_TYPE_ITERATION,
   TOKEN_TYPE_WEIGHT,
+  TOKEN_TYPE_STATUS,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import { TYPENAME_ISSUE } from '~/graphql_shared/constants';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -22,6 +24,7 @@ import {
   TOKEN_TITLE_HEALTH,
   TOKEN_TITLE_ITERATION,
   TOKEN_TITLE_WEIGHT,
+  TOKEN_TITLE_STATUS,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import namespaceCustomFieldsQuery from 'ee/vue_shared/components/filtered_search_bar/queries/custom_field_names.query.graphql';
 import EpicToken from 'ee/vue_shared/components/filtered_search_bar/tokens/epic_token.vue';
@@ -29,6 +32,7 @@ import HealthToken from 'ee/vue_shared/components/filtered_search_bar/tokens/hea
 import IterationToken from 'ee/vue_shared/components/filtered_search_bar/tokens/iteration_token.vue';
 import WeightToken from 'ee/vue_shared/components/filtered_search_bar/tokens/weight_token.vue';
 import CustomFieldToken from 'ee/vue_shared/components/filtered_search_bar/tokens/custom_field_token.vue';
+import WorkItemStatusToken from 'ee/vue_shared/components/filtered_search_bar/tokens/work_item_status_token.vue';
 import issueBoardFilters from '../issue_board_filters';
 
 // This is a false violation of @gitlab/no-runtime-template-compiler, since it
@@ -39,12 +43,15 @@ export default {
   i18n: {
     ...IssueBoardFilteredSearchFoss.i18n,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: [
     'epicFeatureAvailable',
     'iterationFeatureAvailable',
     'hasCustomFieldsFeature',
     'healthStatusFeatureAvailable',
     'isGroupBoard',
+    'statusListsAvailable',
+    'workItemStatusAvailable',
   ],
   data() {
     return {
@@ -90,6 +97,13 @@ export default {
       return this.isGroupBoard
         ? this.fullPath
         : this.fullPath.slice(0, this.fullPath.lastIndexOf('/'));
+    },
+    showCustomStatusFilter() {
+      return (
+        this.statusListsAvailable &&
+        this.workItemStatusAvailable &&
+        this.glFeatures.workItemStatusFeatureFlag
+      );
     },
     tokens() {
       const { fetchIterations } = issueBoardFilters(this.$apollo, this.fullPath, this.isGroupBoard);
@@ -156,6 +170,20 @@ export default {
                 unique: true,
               };
             })
+          : []),
+
+        ...(this.showCustomStatusFilter
+          ? [
+              {
+                type: TOKEN_TYPE_STATUS,
+                title: TOKEN_TITLE_STATUS,
+                icon: 'status',
+                token: WorkItemStatusToken,
+                fullPath: this.fullPath,
+                unique: true,
+                operators: OPERATORS_IS,
+              },
+            ]
           : []),
       ];
 
