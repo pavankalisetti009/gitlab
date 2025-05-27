@@ -11,32 +11,33 @@ export default {
   EXTENSIONS: [
     {
       name: __('VS Code'),
-      path: helpPagePath('editor_extensions/visual_studio_code/_index.md'),
+      path: helpPagePath('editor_extensions/visual_studio_code/setup.md'),
       trackingLabel: 'vs_code',
     },
     {
       name: __('Jetbrains'),
-      path: helpPagePath('editor_extensions/jetbrains_ide/_index.md'),
+      path: helpPagePath('editor_extensions/jetbrains_ide/setup.md'),
       trackingLabel: 'jetbrains',
     },
     {
       name: __('Visual Studio'),
-      path: helpPagePath('editor_extensions/visual_studio/_index.md'),
+      path: helpPagePath('editor_extensions/visual_studio/setup.md'),
       trackingLabel: 'visual_studio',
     },
     {
       name: __('Eclipse'),
-      path: helpPagePath('editor_extensions/eclipse/_index.md'),
+      path: helpPagePath('editor_extensions/eclipse/setup.md'),
       trackingLabel: 'eclipse',
     },
     {
       name: __('Neovim'),
-      path: helpPagePath('editor_extensions/neovim/_index.md'),
+      path: helpPagePath('editor_extensions/neovim/setup.md'),
       trackingLabel: 'neovim',
     },
     {
       name: __('GitLab CLI'),
       path: helpPagePath('editor_extensions/gitlab_cli/_index.md'),
+
       trackingLabel: 'gitlab_cli',
     },
   ],
