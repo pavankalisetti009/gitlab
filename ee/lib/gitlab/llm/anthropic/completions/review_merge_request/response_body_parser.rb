@@ -56,7 +56,20 @@ module Gitlab
             end
             strong_memoize_attr :comments
 
+            def review_description
+              review_description_matches = response.match(review_description_regex)
+
+              return unless review_description_matches && review_description_matches[1].present?
+
+              review_description_matches[1].strip
+            end
+            strong_memoize_attr :review_description
+
             private
+
+            def review_description_regex
+              %r{<review>\s*(.*?)(?=\s*<comment|\s*</review>)}m
+            end
 
             def review_wrapper_regex
               %r{^<review>(.+)</review>$}m
