@@ -11,7 +11,9 @@ RSpec.describe Security::SyncProjectPolicyWorker, feature_category: :security_po
   let(:policy_changes) { { 'some_key' => 'some_value' } }
 
   describe '#perform' do
-    subject(:perform) { described_class.new.perform(project_id, security_policy_id, policy_changes) }
+    subject(:perform) { described_class.new.perform(project_id, security_policy_id, policy_changes, params) }
+
+    let(:params) { {} }
 
     context 'when project and security policy exist' do
       it 'calls the SyncProjectService with correct parameters' do
@@ -22,6 +24,76 @@ RSpec.describe Security::SyncProjectPolicyWorker, feature_category: :security_po
         expect(sync_service).to receive(:execute)
 
         perform
+      end
+    end
+
+    context 'when params[:event] is present' do
+      let(:event_type) { 'Repositories::ProtectedBranchCreatedEvent' }
+      let(:event_data) do
+        {
+          protected_branch_id: non_existing_record_id,
+          parent_id: non_existing_record_id,
+          parent_type: 'project'
+        }
+      end
+
+      let(:params) { { event: { event_type: event_type, data: event_data } } }
+
+      it 'calls the SyncPolicyEventService for supported event' do
+        event_instance = instance_double(Repositories::ProtectedBranchCreatedEvent)
+        allow(Repositories::ProtectedBranchCreatedEvent)
+          .to receive(:new).with(data: event_data).and_return(event_instance)
+
+        expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService).to receive(:new)
+          .with(project: project, security_policy: security_policy, event: event_instance)
+          .and_call_original
+
+        perform
+      end
+
+      context 'when event_type is not supported' do
+        let(:event_type) { 'UnsupportedEventType' }
+        let(:params) { { event: { event_type: event_type, data: event_data } } }
+
+        it 'does not call the SyncPolicyEventService and logs an error' do
+          expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService).not_to receive(:new)
+          expect(Gitlab::AppJsonLogger).to receive(:error).with(hash_including(
+            message: 'Invalid event type or data',
+            event_type: event_type,
+            event_data: event_data,
+            project_id: project.id,
+            security_policy_id: security_policy.id
+          ))
+
+          perform
+        end
+      end
+
+      context 'when event_data is blank' do
+        let(:event_data) { nil }
+        let(:params) { { event: { event_type: event_type, data: event_data } } }
+
+        it 'does not call the SyncPolicyEventService and logs an error' do
+          expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService).not_to receive(:new)
+          expect(Gitlab::AppJsonLogger).to receive(:error).with(hash_including(
+            message: 'Invalid event type or data',
+            event_type: event_type,
+            event_data: nil,
+            project_id: project.id,
+            security_policy_id: security_policy.id
+          ))
+
+          perform
+        end
+      end
+
+      context 'when event_data is not a Hash' do
+        let(:event_data) { 'not_a_hash' }
+        let(:params) { { event: { event_type: event_type, data: event_data } } }
+
+        it 'raises Gitlab::EventStore::InvalidEvent' do
+          expect { perform }.to raise_error(Gitlab::EventStore::InvalidEvent, /Event data must be a Hash/)
+        end
       end
     end
 

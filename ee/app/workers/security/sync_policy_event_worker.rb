@@ -72,12 +72,8 @@ module Security
         .find_each do |config|
           Security::ProcessScanResultPolicyWorker.perform_async(project.id, config.id)
 
-          config.security_policies.undeleted.find_each do |security_policy|
-            Security::SecurityOrchestrationPolicies::SyncPolicyEventService.new(
-              project: project,
-              security_policy: security_policy,
-              event: event
-            ).execute
+          config.security_policies.undeleted.pluck_primary_key.each do |security_policy_id|
+            sync_project_policy(project, security_policy_id, event)
           end
         end
     end
@@ -111,12 +107,8 @@ module Security
       # A project can have multiple inherited security policy project. But we want to
       # sync from read only once as we already store inherited security policies.
       strong_memoize_with(:sync_rules_for_project_from_read_model, project, event) do
-        project.approval_policies.undeleted.find_each do |security_policy|
-          Security::SecurityOrchestrationPolicies::SyncPolicyEventService.new(
-            project: project,
-            security_policy: security_policy,
-            event: event
-          ).execute
+        project.approval_policies.undeleted.pluck_primary_key.each do |security_policy_id|
+          sync_project_policy(project, security_policy_id, event)
         end
       end
     end
@@ -134,6 +126,13 @@ module Security
       else
         Group.find_by_id(parent_id)
       end
+    end
+
+    def sync_project_policy(project, security_policy_id, event)
+      Security::SyncProjectPolicyWorker.perform_async(
+        project.id, security_policy_id, {},
+        { event: { event_type: event.class.name, data: event.data } }
+      )
     end
   end
 end
