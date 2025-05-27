@@ -92,7 +92,7 @@ RSpec.describe Resolvers::Vulnerabilities::IdentifierSearchResolver, feature_cat
       it_behaves_like 'when the current user does not have access'
     end
 
-    context 'when filtering records from Elasticsearch', :elastic_clean do
+    context 'when filtering records from Elasticsearch', :elastic do
       let_it_be(:vulnerability_read_1) do
         create(:vulnerability_read, identifier_names: ['CWE-23'], project: project)
       end

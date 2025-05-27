@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Search::Elastic::Relation, :elastic_helpers, :sidekiq_inline, :elastic_clean, feature_category: :global_search do
+RSpec.describe ::Search::Elastic::Relation, :elastic_helpers, :sidekiq_inline, :elastic_delete_by_query, feature_category: :global_search do
   include_context 'with filters shared context'
 
   let(:sort_order) { :asc }
