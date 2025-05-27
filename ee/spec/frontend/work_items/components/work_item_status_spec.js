@@ -202,6 +202,22 @@ describe('WorkItemStatus component', () => {
       expect(findSidebarDropdownWidget().props('itemValue')).toBe(firstStatus.id);
     });
 
+    it('emits the `statusUpdated` to the parent to make sure the board lists are updated', async () => {
+      createComponent();
+      await waitForPromises();
+
+      showDropdown();
+      await waitForPromises();
+
+      const firstStatus = allowedStatus[0];
+
+      findSidebarDropdownWidget().vm.$emit('updateValue', firstStatus.id);
+      await nextTick();
+      await waitForPromises();
+
+      expect(wrapper.emitted('statusUpdated')).toEqual([[firstStatus.id]]);
+    });
+
     it('calls error handler when there is an error in updating', async () => {
       createComponent({ mutationHandler: workItemUpdateErrorHandler });
       await waitForPromises();

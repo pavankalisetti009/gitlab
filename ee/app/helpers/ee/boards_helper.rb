@@ -36,7 +36,9 @@ module EE
         milestone_lists_available: current_board_parent.feature_available?(:board_milestone_lists).to_s,
         assignee_lists_available: current_board_parent.feature_available?(:board_assignee_lists).to_s,
         scoped_labels: current_board_parent.feature_available?(:scoped_labels)&.to_s,
-        scoped_issue_board_feature_enabled: current_board_parent.feature_available?(:scoped_issue_board).to_s
+        scoped_issue_board_feature_enabled: current_board_parent.feature_available?(:scoped_issue_board).to_s,
+        status_lists_available: current_board_parent.feature_available?(:board_status_lists).to_s,
+        work_item_status_available: current_board_parent.feature_available?(:work_item_status).to_s
       }
     end
 

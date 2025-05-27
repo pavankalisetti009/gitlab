@@ -16,7 +16,12 @@ jest.mock('ee/boards/issue_board_filters');
 describe('IssueBoardFilter', () => {
   let wrapper;
 
-  const createComponent = ({ hasCustomFieldsFeature = false } = {}) => {
+  const createComponent = ({
+    hasCustomFieldsFeature = false,
+    statusListsAvailable = false,
+    workItemStatusAvailable = false,
+    workItemStatusFeatureFlagEnabled = false,
+  } = {}) => {
     const customFieldsQueryHandler = jest.fn().mockResolvedValue({
       data: {
         namespace: {
@@ -56,6 +61,11 @@ describe('IssueBoardFilter', () => {
         iterationFeatureAvailable: true,
         healthStatusFeatureAvailable: true,
         hasCustomFieldsFeature,
+        statusListsAvailable,
+        workItemStatusAvailable,
+        glFeatures: {
+          workItemStatusFeatureFlag: workItemStatusFeatureFlagEnabled,
+        },
       },
     });
   };
@@ -106,6 +116,46 @@ describe('IssueBoardFilter', () => {
       expect(wrapper.findComponent(BoardFilteredSearch).props('tokens')).toEqual(
         orderBy(tokens, ['title']),
       );
+    });
+
+    describe('status token', () => {
+      it('passes Work item status token to BoardFilteredSearch when enabled', async () => {
+        const tokens = mockTokens({
+          fetchLabels: fetchLabelsSpy,
+          fetchIterations: fetchIterationsSpy,
+          showCustomStatusToken: true,
+        });
+        createComponent({
+          statusListsAvailable: true,
+          workItemStatusFeatureFlagEnabled: true,
+          workItemStatusAvailable: true,
+        });
+
+        await waitForPromises();
+
+        expect(wrapper.findComponent(BoardFilteredSearch).props('tokens')).toEqual(
+          orderBy(tokens, ['title']),
+        );
+      });
+
+      it('does not pass Work item status token to BoardFilteredSearch when feature disabled', async () => {
+        const tokens = mockTokens({
+          fetchLabels: fetchLabelsSpy,
+          fetchIterations: fetchIterationsSpy,
+          showCustomStatusToken: true,
+        });
+        createComponent({
+          statusListsAvailable: false,
+          workItemStatusFeatureFlagEnabled: false,
+          workItemStatusAvailable: false,
+        });
+
+        await waitForPromises();
+
+        expect(wrapper.findComponent(BoardFilteredSearch).props('tokens')).not.toEqual(
+          orderBy(tokens, ['title']),
+        );
+      });
     });
   });
 });

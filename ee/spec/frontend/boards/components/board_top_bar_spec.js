@@ -58,6 +58,8 @@ describe('BoardTopBar', () => {
         isIssueBoard: true,
         isEpicBoard: false,
         isGroupBoard: true,
+        statusListsAvailable: true,
+        workItemStatusAvailable: true,
         ...provide,
       },
       stubs: { IssueBoardFilteredSearch, EpicBoardFilteredSearch },

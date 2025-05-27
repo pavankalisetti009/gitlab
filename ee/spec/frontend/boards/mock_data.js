@@ -22,6 +22,7 @@ import {
   TOKEN_TYPE_RELEASE,
   TOKEN_TYPE_TYPE,
   TOKEN_TYPE_WEIGHT,
+  TOKEN_TYPE_STATUS,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import UserToken from '~/vue_shared/components/filtered_search_bar/tokens/user_token.vue';
 import EmojiToken from '~/vue_shared/components/filtered_search_bar/tokens/emoji_token.vue';
@@ -32,6 +33,7 @@ import {
   TOKEN_TITLE_HEALTH,
   TOKEN_TITLE_ITERATION,
   TOKEN_TITLE_WEIGHT,
+  TOKEN_TITLE_STATUS,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import CustomFieldToken from 'ee/vue_shared/components/filtered_search_bar/tokens/custom_field_token.vue';
 import EpicToken from 'ee/vue_shared/components/filtered_search_bar/tokens/epic_token.vue';
@@ -39,6 +41,7 @@ import IterationToken from 'ee/vue_shared/components/filtered_search_bar/tokens/
 import ReleaseToken from '~/vue_shared/components/filtered_search_bar/tokens/release_token.vue';
 import WeightToken from 'ee/vue_shared/components/filtered_search_bar/tokens/weight_token.vue';
 import HealthToken from 'ee/vue_shared/components/filtered_search_bar/tokens/health_token.vue';
+import WorkItemStatusToken from 'ee/vue_shared/components/filtered_search_bar/tokens/work_item_status_token.vue';
 import { mockLabelList } from 'jest/boards/mock_data';
 
 export const mockEpicBoard = {
@@ -807,7 +810,12 @@ export const mockGroupsResponse = (subGroups = [mockGroup1, mockGroup2]) => ({
   },
 });
 
-export const mockTokens = ({ fetchLabels, fetchIterations, hasCustomFieldsFeature }) => [
+export const mockTokens = ({
+  fetchLabels,
+  fetchIterations,
+  hasCustomFieldsFeature,
+  showCustomStatusToken,
+}) => [
   {
     icon: 'user',
     title: TOKEN_TITLE_ASSIGNEE,
@@ -949,6 +957,19 @@ export const mockTokens = ({ fetchLabels, fetchIterations, hasCustomFieldsFeatur
           token: CustomFieldToken,
           operators: OPERATORS_IS,
           unique: true,
+        },
+      ]
+    : []),
+  ...(showCustomStatusToken
+    ? [
+        {
+          type: TOKEN_TYPE_STATUS,
+          title: TOKEN_TITLE_STATUS,
+          icon: 'status',
+          token: WorkItemStatusToken,
+          fullPath: 'gitlab-org',
+          unique: true,
+          operators: OPERATORS_IS,
         },
       ]
     : []),
