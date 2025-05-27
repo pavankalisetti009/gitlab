@@ -7,6 +7,10 @@ module Projects
       include SecurityDashboardsPermissions
       include GovernUsageProjectTracking
 
+      before_action do
+        push_frontend_feature_flag(:vulnerabilities_pdf_export, project)
+      end
+
       alias_method :vulnerable, :project
 
       feature_category :vulnerability_management
