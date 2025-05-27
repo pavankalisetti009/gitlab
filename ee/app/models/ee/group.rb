@@ -311,6 +311,11 @@ module EE
       ::Feature.enabled?(:work_item_epics_ssot, root_ancestor)
     end
 
+    def allow_group_items_in_project_autocompletion?
+      ::Feature.enabled?(:allow_group_items_in_project_autocompletion, self, type: :gitlab_com_derisk) &&
+        licensed_feature_available?(:epics)
+    end
+
     def ai_review_merge_request_allowed?(user)
       Ability.allowed?(user, :access_ai_review_mr, self) &&
         ::Gitlab::Llm::FeatureAuthorizer.new(

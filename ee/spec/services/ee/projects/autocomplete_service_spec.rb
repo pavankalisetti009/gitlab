@@ -16,6 +16,68 @@ RSpec.describe Projects::AutocompleteService, feature_category: :groups_and_proj
     group.add_developer(user)
   end
 
+  describe "#issues" do
+    context "when epics license is not available" do
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      it 'returns only project issues' do
+        service = described_class.new(project, user)
+        items = service.issues.map(&:title)
+
+        expect(items).to include(issue.title)
+        expect(items).not_to include(epic.title)
+      end
+    end
+
+    context "when epics license is available" do
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      it 'returns both project issues and group epics' do
+        service = described_class.new(project, user)
+        items = service.issues.map(&:title)
+
+        expect(items).to include(issue.title)
+        expect(items).to include(epic.title)
+      end
+
+      it 'respects the search limit when fetching group issues' do
+        create_list(:issue, described_class::SEARCH_LIMIT - 2, project: project)
+        service = described_class.new(project, user)
+        issues = service.issues.to_a
+
+        expect(issues.count).to eq(described_class::SEARCH_LIMIT)
+        expect(issues.map(&:title)).to include(epic.title)
+      end
+
+      it 'does not include group items if the project has enough items already' do
+        create_list(:issue, described_class::SEARCH_LIMIT - 1, project: project)
+        service = described_class.new(project, user)
+        issues = service.issues.to_a
+
+        expect(issues.count).to eq(described_class::SEARCH_LIMIT)
+        expect(issues.map(&:title)).not_to include(epic.title)
+      end
+
+      context 'when allow_group_items_in_project_autocompletion is disabled' do
+        before do
+          stub_feature_flags(allow_group_items_in_project_autocompletion: false)
+        end
+
+        it 'returns only project issues' do
+          service = described_class.new(project, user)
+          items = service.issues.map(&:title)
+
+          expect(items).to include(issue.title)
+          expect(items).not_to include(epic.title)
+        end
+      end
+    end
+  end
+
   describe '#epics' do
     let(:expected_attributes) { [:iid, :title, :group_id, :group] }
 
