@@ -154,6 +154,8 @@ module Security
     end
 
     def all_policies_with_type
+      return [] if policy_hash.blank?
+
       policy_hash.flat_map do |type, policies|
         policies.map { |policy| policy.merge(type: type.to_s) }
       end.compact_blank

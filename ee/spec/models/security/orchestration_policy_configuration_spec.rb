@@ -2904,6 +2904,12 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         end
       end
     end
+
+    context "without policies" do
+      let(:policy_yaml) { nil }
+
+      it { is_expected.to be_empty }
+    end
   end
 
   describe '#delete_scan_finding_rules' do
