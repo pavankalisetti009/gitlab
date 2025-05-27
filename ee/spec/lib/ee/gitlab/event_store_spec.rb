@@ -39,6 +39,7 @@ RSpec.describe Gitlab::EventStore, feature_category: :shared do
         ::ContainerRegistry::ImagePushedEvent,
         Projects::ProjectTransferedEvent,
         Groups::GroupTransferedEvent,
+        Groups::GroupDeletedEvent,
         Projects::ProjectArchivedEvent,
         ::Pages::Domains::PagesDomainDeletedEvent,
         Epics::EpicUpdatedEvent,

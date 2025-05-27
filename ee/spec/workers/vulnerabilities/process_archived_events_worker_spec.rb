@@ -45,23 +45,23 @@ RSpec.describe Vulnerabilities::ProcessArchivedEventsWorker, feature_category: :
     end
 
     it 'calls the namespace statistics remove project update service' do
-      expect(Group).to receive(:by_id).with(group.id).and_return(Group.where(id: group.id))
+      expect(Group).to receive(:find_by_id).with(group.id).and_return(group)
       expect(Vulnerabilities::NamespaceStatistics::RecalculateService)
-        .to receive(:execute).with(project.id, group)
+        .to receive(:execute).with(group)
 
       use_event
     end
 
     context 'when the group does not exist' do
       it 'does not call the namespace statistics remove project update service when no group is found' do
-        expect(Group).to receive(:by_id).with(group.id).and_return(Group.none)
+        expect(Group).to receive(:find_by_id).with(group.id).and_return(nil)
         expect(Vulnerabilities::NamespaceStatistics::RecalculateService).not_to receive(:execute)
 
         use_event
       end
 
       it 'still calls the vulnerability update services when no group is found' do
-        expect(Group).to receive(:by_id).with(group.id).and_return(Group.none)
+        expect(Group).to receive(:find_by_id).with(group.id).and_return(nil)
         expect(Vulnerabilities::UpdateArchivedOfVulnerabilityReadsService).to receive(:execute).with(project.id)
         expect(Vulnerabilities::UpdateArchivedOfVulnerabilityStatisticsService).to receive(:execute).with(project.id)
 

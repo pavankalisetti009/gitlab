@@ -128,6 +128,8 @@ module EE
 
           store.subscribe ::Vulnerabilities::NamespaceStatistics::ProcessProjectDeleteEventsWorker,
             to: ::Projects::ProjectDeletedEvent
+          store.subscribe ::Vulnerabilities::NamespaceStatistics::ProcessGroupDeleteEventsWorker,
+            to: ::Groups::GroupDeletedEvent
 
           store.subscribe ::Security::AnalyzersStatus::ProcessArchivedEventsWorker, to: ::Projects::ProjectArchivedEvent
         end

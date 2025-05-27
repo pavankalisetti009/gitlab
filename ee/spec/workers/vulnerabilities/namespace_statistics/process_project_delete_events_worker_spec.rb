@@ -7,47 +7,55 @@ RSpec.describe Vulnerabilities::NamespaceStatistics::ProcessProjectDeleteEventsW
 
   describe '#handle_event' do
     let_it_be(:group) { create(:group) }
-    let(:project_id) { 123 }
+    let_it_be(:project) { create(:project, namespace: group) }
+    let_it_be(:statistics) { create(:vulnerability_statistic, project: project) }
+
+    let(:recalculate_service) { Vulnerabilities::NamespaceStatistics::RecalculateService }
 
     let(:event) do
       Projects::ProjectDeletedEvent.new(data: {
-        project_id: project_id,
+        project_id: project.id,
         namespace_id: namespace_id
       })
     end
 
-    let(:remove_project_service) { Vulnerabilities::NamespaceStatistics::RecalculateService }
-
     subject(:handle_event) { worker.handle_event(event) }
 
     before do
-      allow(Group).to receive(:by_id).with(namespace_id).and_return(class_double(Group, first: group_result))
-      allow(remove_project_service).to receive(:execute)
+      allow(recalculate_service).to receive(:execute)
     end
 
     context 'when there is no group associated with the event' do
       let(:namespace_id) { non_existing_record_id }
-      let(:group_result) { nil }
 
-      it 'does not call the service layer logic' do
-        handle_event
-
-        expect(remove_project_service).not_to have_received(:execute)
+      it 'does not call the delete statistics or service layer logic' do
+        expect { handle_event }.not_to change { Vulnerabilities::Statistic.count }
+        expect(recalculate_service).not_to have_received(:execute)
       end
     end
 
     context 'when there is a group and project_id associated with the event' do
       let(:namespace_id) { group.id }
-      let(:group_result) { group }
 
-      it 'calls the service layer logic with the correct parameters' do
+      it 'deletes the statistics for the project' do
+        expect { handle_event }.to change { Vulnerabilities::Statistic.count }.to(0)
+      end
+
+      it 'calls the recalculate service with the group' do
         handle_event
 
-        expect(remove_project_service).to have_received(:execute).with(
-          project_id,
-          group,
-          deleted_project: true
-        )
+        expect(recalculate_service).to have_received(:execute).with(group)
+      end
+
+      it 'deletes statistics before calling the recalculate service' do
+        statistic_relation = instance_double(ActiveRecord::Relation)
+
+        expect(Vulnerabilities::Statistic).to receive(:by_projects).with(project.id)
+           .and_return(statistic_relation).ordered
+        expect(statistic_relation).to receive(:delete_all).ordered
+        expect(recalculate_service).to receive(:execute).with(group).ordered
+
+        handle_event
       end
     end
   end
