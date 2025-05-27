@@ -60,6 +60,16 @@ RSpec.describe Search::Elastic::Types::WorkItem, feature_category: :global_searc
   end
 
   describe '#opensearch_knn_field' do
+    let(:helper) { Gitlab::Elastic::Helper.default }
+    let(:version) { '1.0.0' }
+    let(:distribution) { 'opensearch' }
+    let(:info) { { version: version, distribution: distribution } }
+
+    before do
+      allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
+      allow(helper).to receive(:server_info).and_return(info)
+    end
+
     it 'returns a properly configured knn_vector field' do
       expected_field = {
         type: 'knn_vector',
@@ -76,6 +86,25 @@ RSpec.describe Search::Elastic::Types::WorkItem, feature_category: :global_searc
       }
 
       expect(described_class.opensearch_knn_field).to eq(expected_field)
+    end
+
+    describe 'engine' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:distribution, :version, :engine) do
+        'opensearch'    | '1.0.0'   | 'nmslib'
+        'opensearch'    | '2.1.0'   | 'nmslib'
+        'opensearch'    | '2.2.1'   | 'lucene'
+        'opensearch'    | '3.0.0'   | 'lucene'
+        'elasticsearch' | '7.17.28⁠' | 'nmslib'
+        'elasticsearch' | '8.18.1⁠2⁠' | 'nmslib'
+      end
+
+      with_them do
+        it 'sets the right engine' do
+          expect(described_class.opensearch_knn_field[:method][:engine]).to eq(engine)
+        end
+      end
     end
   end
 

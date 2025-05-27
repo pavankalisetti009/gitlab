@@ -412,13 +412,16 @@ module Gitlab
       # Examples:
       #   matching_distribution?(:opensearch)
       #   matching_distribution?(:elasticsearch, min_version: '7.10.0')
-      def matching_distribution?(distribution, min_version: nil)
+      def matching_distribution?(distribution, min_version: nil, inclusive: true)
         info = server_info
         return false if info.empty?
         return false unless info[:distribution] == distribution.to_s
         return true unless min_version
 
-        Gitlab::VersionInfo.parse(info[:version]) >= Gitlab::VersionInfo.parse(min_version)
+        parsed_version = Gitlab::VersionInfo.parse(info[:version])
+        parsed_min_version = Gitlab::VersionInfo.parse(min_version)
+
+        inclusive ? parsed_version >= parsed_min_version : parsed_version > parsed_min_version
       end
 
       def vectors_supported?(distribution)
