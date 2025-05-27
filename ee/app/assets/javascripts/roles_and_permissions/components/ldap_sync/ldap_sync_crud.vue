@@ -1,8 +1,6 @@
 <script>
 import { GlButton, GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
-import { getTimeago } from '~/lib/utils/datetime_utility';
-import { __ } from '~/locale';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
 import { createAlert } from '~/alert';
 import ldapAdminRoleLinksQuery from '../../graphql/ldap_sync/ldap_admin_role_links.query.graphql';
@@ -10,6 +8,7 @@ import ldapAdminRoleLinkCreateMutation from '../../graphql/ldap_sync/ldap_admin_
 import ldapAdminRoleLinkDestroyMutation from '../../graphql/ldap_sync/ldap_admin_role_link_destroy.mutation.graphql';
 import CreateSyncForm from './create_sync_form.vue';
 import SyncAllButton from './sync_all_button.vue';
+import LdapSyncItem from './ldap_sync_item.vue';
 
 export default {
   components: {
@@ -21,6 +20,7 @@ export default {
     ConfirmActionModal,
     CreateSyncForm,
     SyncAllButton,
+    LdapSyncItem,
   },
   inject: ['ldapUsersPath'],
   data() {
@@ -51,9 +51,6 @@ export default {
     },
   },
   methods: {
-    getTimeAgo(timestamp) {
-      return timestamp ? getTimeago().format(timestamp) : __('Never');
-    },
     async createLink(data, hideFormFn) {
       try {
         this.alert?.dismiss();
@@ -153,44 +150,12 @@ export default {
     </template>
 
     <ul v-if="ldapAdminRoleLinks.length" class="content-list">
-      <li v-for="link in ldapAdminRoleLinks" :key="link.id" class="!gl-py-5">
-        <div class="gl-flex gl-flex-wrap gl-items-center gl-justify-end gl-gap-5">
-          <dl
-            class="gl-mb-0 gl-grid gl-flex-1 gl-grid-cols-[auto_1fr] gl-gap-x-5 gl-whitespace-nowrap"
-          >
-            <dt>{{ s__('MemberRole|Server:') }}</dt>
-            <dd class="gl-text-subtle">{{ link.provider.label }}</dd>
-
-            <template v-if="link.filter">
-              <dt>{{ s__('MemberRole|User filter:') }}</dt>
-              <dd class="gl-text-subtle">{{ link.filter }}</dd>
-            </template>
-
-            <template v-else-if="link.cn">
-              <dt>{{ s__('MemberRole|Group cn:') }}</dt>
-              <dd class="gl-text-subtle">{{ link.cn }}</dd>
-            </template>
-
-            <dt>{{ s__('MemberRole|Custom admin role:') }}</dt>
-            <dd class="gl-mb-0 gl-text-subtle">{{ link.adminMemberRole.name }}</dd>
-          </dl>
-
-          <div class="gl-flex gl-flex-col gl-items-end gl-gap-3">
-            <gl-button
-              variant="danger"
-              category="secondary"
-              icon="remove"
-              :aria-label="s__('MemberRole|Remove sync')"
-              @click="linkToDelete = link"
-            />
-            <span class="gl-text-subtle">
-              <gl-sprintf :message="s__('Geo|Last synced: %{timeAgo}')">
-                <template #timeAgo>{{ getTimeAgo(link.lastSyncedAt) }}</template>
-              </gl-sprintf>
-            </span>
-          </div>
-        </div>
-      </li>
+      <ldap-sync-item
+        v-for="link in ldapAdminRoleLinks"
+        :key="link.id"
+        :role-link="link"
+        @delete="linkToDelete = link"
+      />
     </ul>
 
     <div v-else class="gl-text-center gl-text-sm gl-text-subtle">
