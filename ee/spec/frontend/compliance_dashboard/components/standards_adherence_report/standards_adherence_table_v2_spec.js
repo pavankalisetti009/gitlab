@@ -74,14 +74,29 @@ describe('StandardsAdherenceTableV2', () => {
       expect(findGroupedTable().exists()).toBe(false);
     });
 
-    it('initializes GroupedLoader with correct parameters', () => {
-      createComponent();
+    describe('initializes GroupedLoader with correct parameters', () => {
+      it('for group', () => {
+        createComponent();
 
-      expect(GroupedLoader).toHaveBeenCalledWith({
-        fullPath: groupPath,
-        apollo: expect.any(Object),
+        expect(GroupedLoader).toHaveBeenCalledWith({
+          fullPath: groupPath,
+          apollo: expect.any(Object),
+          mode: 'group',
+        });
+        expect(GroupedLoader.mock.instances.at(-1).loadPage).toHaveBeenCalled();
       });
-      expect(GroupedLoader.mock.instances.at(-1).loadPage).toHaveBeenCalled();
+
+      it('for project', () => {
+        const projectPath = 'project/path';
+        createComponent({ projectPath });
+
+        expect(GroupedLoader).toHaveBeenCalledWith({
+          fullPath: projectPath,
+          apollo: expect.any(Object),
+          mode: 'project',
+        });
+        expect(GroupedLoader.mock.instances.at(-1).loadPage).toHaveBeenCalled();
+      });
     });
   });
 
@@ -231,10 +246,8 @@ describe('StandardsAdherenceTableV2', () => {
   });
 
   describe('filters', () => {
-    let mockLoader;
-
-    beforeEach(() => {
-      mockLoader = {
+    it('passes the filters to the GroupedLoader when they change', async () => {
+      const mockLoader = {
         loadPage: jest.fn().mockResolvedValue(mockItems),
         setFilters: jest.fn(),
         setPageSize: jest.fn(),
@@ -243,10 +256,7 @@ describe('StandardsAdherenceTableV2', () => {
       GroupedLoader.mockImplementation(() => mockLoader);
 
       createComponent();
-      return nextTick();
-    });
-
-    it('passes the filters to the GroupedLoader when they change', async () => {
+      await nextTick();
       const newFilters = { projectId: 123 };
 
       // Find the filters bar component and emit the updated filters
@@ -256,6 +266,24 @@ describe('StandardsAdherenceTableV2', () => {
 
       expect(mockLoader.setFilters).toHaveBeenCalledWith(newFilters);
       expect(mockLoader.loadPage).toHaveBeenCalled();
+    });
+
+    describe('correctly sets with-projects', () => {
+      it('for group', async () => {
+        createComponent();
+        await nextTick();
+
+        const filtersBar = wrapper.findComponent(FiltersBar);
+        expect(filtersBar.props('withProjects')).toBe(true);
+      });
+
+      it('for project', async () => {
+        createComponent({ projectPath: 'test-project' });
+        await nextTick();
+
+        const filtersBar = wrapper.findComponent(FiltersBar);
+        expect(filtersBar.props('withProjects')).toBe(false);
+      });
     });
   });
 });

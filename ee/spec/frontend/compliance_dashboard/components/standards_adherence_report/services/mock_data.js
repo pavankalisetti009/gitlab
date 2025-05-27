@@ -1,8 +1,8 @@
 export const createMockGroupComplianceRequirementsStatusesData = () => ({
   data: {
-    group: {
+    container: {
       id: 'gid://gitlab/Group/123',
-      projectComplianceRequirementsStatus: {
+      complianceRequirementStatuses: {
         nodes: [
           {
             id: 'gid://gitlab/ProjectComplianceRequirementStatus/1',

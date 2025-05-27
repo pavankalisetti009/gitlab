@@ -25,6 +25,11 @@ export default {
     GroupedTable,
   },
   props: {
+    projectPath: {
+      type: String,
+      required: false,
+      default: null,
+    },
     groupPath: {
       type: String,
       required: false,
@@ -59,8 +64,10 @@ export default {
     },
   },
   mounted() {
+    const mode = this.projectPath ? 'project' : 'group';
     this.groupedLoader = new GroupedLoader({
-      fullPath: this.groupPath,
+      mode,
+      fullPath: this.projectPath || this.groupPath,
       apollo: this.$apollo,
     });
     this.loadFirstPage();
@@ -126,7 +133,7 @@ export default {
       :group-path="groupPath"
       :filters.sync="filters"
       :group-by.sync="groupBy"
-      with-projects
+      :with-projects="!projectPath"
       @load="isInitiallyLoading = false"
     />
     <template v-if="isInitiallyLoading">

@@ -1,14 +1,14 @@
-query groupComplianceRequirementsStatuses(
+query projectComplianceRequirementsStatuses(
   $fullPath: ID!
   $first: Int
   $last: Int
   $before: String
   $after: String
-  $filters: GroupProjectRequirementComplianceStatusInput
+  $filters: ProjectRequirementComplianceStatusInput
 ) {
-  container: group(fullPath: $fullPath) {
+  container: project(fullPath: $fullPath) {
     id
-    complianceRequirementStatuses: projectComplianceRequirementsStatus(
+    complianceRequirementStatuses(
       first: $first
       last: $last
       before: $before
