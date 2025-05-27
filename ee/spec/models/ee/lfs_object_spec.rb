@@ -63,16 +63,6 @@ RSpec.describe ::LfsObject, feature_category: :geo_replication do
     end
   end
 
-  it_behaves_like 'object storable' do
-    let(:create_local) do
-      create(:lfs_object, described_class::STORE_COLUMN => ObjectStorage::Store::LOCAL)
-    end
-
-    let(:create_remote) do
-      create_local.update_column(described_class::STORE_COLUMN, ObjectStorage::Store::REMOTE)
-    end
-  end
-
   describe '.replicables_for_current_secondary' do
     using RSpec::Parameterized::TableSyntax
 

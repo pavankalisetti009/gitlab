@@ -113,16 +113,6 @@ RSpec.describe MergeRequestDiff, feature_category: :geo_replication do
     end
   end
 
-  it_behaves_like 'object storable' do
-    let(:create_local) do
-      create(:external_merge_request_diff, described_class::STORE_COLUMN => ObjectStorage::Store::LOCAL)
-    end
-
-    let(:create_remote) do
-      create_local.update_column(described_class::STORE_COLUMN, ObjectStorage::Store::REMOTE)
-    end
-  end
-
   describe '.has_external_diffs' do
     it 'only includes diffs with files' do
       diff_with_files = create(:merge_request).merge_request_diff

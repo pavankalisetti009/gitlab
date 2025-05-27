@@ -6,12 +6,9 @@ module EE
 
     prepended do
       include ::Geo::ReplicableModel
-      include ObjectStorable
       include ::Geo::VerifiableModel
 
       delegate(*::Geo::VerificationState::VERIFICATION_METHODS, to: :merge_request_diff_detail)
-
-      STORE_COLUMN = :external_diff_store
 
       with_replicator ::Geo::MergeRequestDiffReplicator
 
