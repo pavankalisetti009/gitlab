@@ -20,10 +20,10 @@ RSpec.describe Security::SyncProjectPoliciesWorker, feature_category: :security_
     subject(:perform) { described_class.new.perform(project_id, policy_configuration_id) }
 
     context 'when project and policy configuration exist' do
-      it 'calls SyncProjectService for each undeleted security policy' do
-        expect(Security::SecurityOrchestrationPolicies::SyncProjectService).to receive(:new).with(
-          project: project, security_policy: security_policy, policy_changes: {}
-        ).and_call_original
+      it 'calls SyncProjectPolicyWorker for each undeleted security policy' do
+        expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+          project.id, security_policy.id
+        ).once
 
         perform
       end
@@ -32,8 +32,8 @@ RSpec.describe Security::SyncProjectPoliciesWorker, feature_category: :security_
     context 'when project does not exist' do
       let(:project_id) { non_existing_record_id }
 
-      it 'does not call SyncProjectService' do
-        expect(Security::SecurityOrchestrationPolicies::SyncProjectService).not_to receive(:new)
+      it 'does not call SyncProjectPolicyWorker' do
+        expect(Security::SyncProjectPolicyWorker).not_to receive(:perform_async)
 
         perform
       end
@@ -42,8 +42,8 @@ RSpec.describe Security::SyncProjectPoliciesWorker, feature_category: :security_
     context 'when policy configuration does not exist' do
       let(:policy_configuration_id) { non_existing_record_id }
 
-      it 'does not call SyncProjectService' do
-        expect(Security::SecurityOrchestrationPolicies::SyncProjectService).not_to receive(:new)
+      it 'does not call SyncProjectPolicyWorker' do
+        expect(Security::SyncProjectPolicyWorker).not_to receive(:perform_async)
 
         perform
       end
@@ -52,8 +52,8 @@ RSpec.describe Security::SyncProjectPoliciesWorker, feature_category: :security_
     context 'when there are no security policies' do
       let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration) }
 
-      it 'does not call SyncProjectService' do
-        expect(Security::SecurityOrchestrationPolicies::SyncProjectService).not_to receive(:new)
+      it 'does not call SyncProjectPolicyWorker' do
+        expect(Security::SyncProjectPolicyWorker).not_to receive(:perform_async)
 
         perform
       end

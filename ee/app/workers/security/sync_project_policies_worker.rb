@@ -18,10 +18,8 @@ module Security
 
       return unless project && policy_configuration
 
-      policy_configuration.security_policies.undeleted.find_each do |security_policy|
-        Security::SecurityOrchestrationPolicies::SyncProjectService.new(
-          security_policy: security_policy, project: project, policy_changes: {}
-        ).execute
+      policy_configuration.security_policies.undeleted.pluck_primary_key.each do |security_policy_id|
+        Security::SyncProjectPolicyWorker.perform_async(project.id, security_policy_id)
       end
     end
   end

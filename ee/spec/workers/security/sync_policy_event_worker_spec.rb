@@ -39,7 +39,7 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
 
         it 'does not sync rules' do
           expect(Security::SecurityOrchestrationPolicies::SyncScanResultPoliciesProjectService).not_to receive(:new)
-          expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService).not_to receive(:new)
+          expect(Security::SyncProjectPolicyWorker).not_to receive(:perform_async)
 
           handle_event
         end
@@ -78,10 +78,10 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
         end
 
         it 'executes the sync service for each security policy' do
-          expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService)
-            .to receive(:new)
-            .with(hash_including(project: project, security_policy: security_policy))
-            .and_return(instance_double(Security::SecurityOrchestrationPolicies::SyncPolicyEventService, execute: true))
+          expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+            project.id, security_policy.id, {},
+            { event: { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }
+          )
 
           handle_event
         end
@@ -149,18 +149,15 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
         end
 
         it 'executes the sync service for each security policy' do
-          expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService)
-            .to receive(:new)
-            .with(hash_including(project: project_1, security_policy: security_policy))
-            .and_return(instance_double(Security::SecurityOrchestrationPolicies::SyncPolicyEventService, execute: true))
-          expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService)
-            .to receive(:new)
-            .with(hash_including(project: project_2, security_policy: security_policy))
-            .and_return(instance_double(Security::SecurityOrchestrationPolicies::SyncPolicyEventService, execute: true))
-          expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService)
-            .to receive(:new)
-            .with(hash_including(project: project_3, security_policy: security_policy))
-            .and_return(instance_double(Security::SecurityOrchestrationPolicies::SyncPolicyEventService, execute: true))
+          expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+            project_1.id, security_policy.id, {},
+            { event: { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } })
+          expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+            project_2.id, security_policy.id, {},
+            { event: { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } })
+          expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+            project_3.id, security_policy.id, {},
+            { event: { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } })
 
           handle_event
         end
@@ -193,7 +190,7 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
 
       shared_examples_for 'does not sync rules' do
         it 'does not sync rules' do
-          expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService).not_to receive(:new)
+          expect(Security::SyncProjectPolicyWorker).not_to receive(:perform_async)
 
           handle_event
         end
@@ -234,10 +231,8 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
 
       context 'when all conditions are met' do
         it 'executes the sync service for each security policy' do
-          expect(Security::SecurityOrchestrationPolicies::SyncPolicyEventService)
-            .to receive(:new)
-            .with(hash_including(project: project, security_policy: security_policy))
-            .and_return(instance_double(Security::SecurityOrchestrationPolicies::SyncPolicyEventService, execute: true))
+          expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(project.id, security_policy.id, {},
+            { event: { event_type: 'Repositories::DefaultBranchChangedEvent', data: event.data } })
 
           handle_event
         end
@@ -337,23 +332,17 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
           )
         end
 
-        it 'invokes Security::SecurityOrchestrationPolicies::SyncPolicyEventService for undeleted policies' do
-          expect_next_instance_of(
-            Security::SecurityOrchestrationPolicies::SyncPolicyEventService,
-            project: project,
-            security_policy: security_policy,
-            event: an_instance_of(::Projects::ComplianceFrameworkChangedEvent)
-          ) do |instance|
-            expect(instance).to receive(:execute)
-          end
-          expect_next_instance_of(
-            Security::SecurityOrchestrationPolicies::SyncPolicyEventService,
-            project: project,
-            security_policy: project_security_policy,
-            event: an_instance_of(::Projects::ComplianceFrameworkChangedEvent)
-          ) do |instance|
-            expect(instance).to receive(:execute)
-          end
+        it 'invokes Security::SyncProjectPolicyWorker for undeleted policies' do
+          expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+            project.id, security_policy.id, {}, { event: {
+              event_type: 'Projects::ComplianceFrameworkChangedEvent', data: compliance_framework_changed_event.data
+            } }
+          )
+          expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
+            project.id, project_security_policy.id, {}, { event: {
+              event_type: 'Projects::ComplianceFrameworkChangedEvent', data: compliance_framework_changed_event.data
+            } }
+          )
 
           consume_event(subscriber: described_class, event: compliance_framework_changed_event)
         end
