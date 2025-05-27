@@ -8,6 +8,7 @@ import ldapAdminRoleLinksQuery from 'ee/roles_and_permissions/graphql/ldap_sync/
 import ldapAdminRoleLinkCreateMutation from 'ee/roles_and_permissions/graphql/ldap_sync/ldap_admin_role_link_create.mutation.graphql';
 import ldapAdminRoleLinkDestroyMutation from 'ee/roles_and_permissions/graphql/ldap_sync/ldap_admin_role_link_destroy.mutation.graphql';
 import LdapSyncCrud from 'ee/roles_and_permissions/components/ldap_sync/ldap_sync_crud.vue';
+import LdapSyncItem from 'ee/roles_and_permissions/components/ldap_sync/ldap_sync_item.vue';
 import SyncAllButton from 'ee/roles_and_permissions/components/ldap_sync/sync_all_button.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
@@ -69,12 +70,12 @@ describe('LdapSyncCrud component', () => {
   const findAddSyncButton = () => findCrudActions().findComponent(GlButton);
   const findSyncAllButton = () => wrapper.findComponent(SyncAllButton);
   const findRoleLinksList = () => findCrudBody().find('ul');
-  const findRoleLinkItems = () => findRoleLinksList().findAll('li');
+  const findRoleLinkItems = () => findRoleLinksList().findAllComponents(LdapSyncItem);
   const findDeleteModal = () => wrapper.findComponent(ConfirmActionModal);
   const findCreateSyncForm = () => wrapper.findComponent(CreateSyncForm);
 
   const openDeleteModal = () => {
-    findRoleLinkItems().at(0).findComponent(GlButton).vm.$emit('click');
+    findRoleLinkItems().at(0).vm.$emit('delete');
     return nextTick();
   };
 
@@ -225,72 +226,10 @@ describe('LdapSyncCrud component', () => {
       expect(findRoleLinkItems()).toHaveLength(2);
     });
 
-    describe.each`
-      index | server        | filterLabel       | filterValue                                | role
-      ${0}  | ${'LDAP'}     | ${'User filter:'} | ${'cn=group1,ou=groups,dc=example,dc=com'} | ${'Custom admin role 1'}
-      ${1}  | ${'LDAP alt'} | ${'Group cn:'}    | ${'group2'}                                | ${'Custom admin role 2'}
-    `('for role link item $index', ({ index, server, filterLabel, filterValue, role }) => {
-      let listItem;
-      let dtList;
-      let ddList;
+    it.each(ldapAdminRoleLinks)('shows ldap sync item for role link $id', (roleLink) => {
+      const index = ldapAdminRoleLinks.indexOf(roleLink);
 
-      beforeEach(() => {
-        listItem = findRoleLinkItems().at(index);
-        dtList = listItem.findAll('dt');
-        ddList = listItem.findAll('dd');
-      });
-
-      describe('server name', () => {
-        it('shows label', () => {
-          expect(dtList.at(0).text()).toBe('Server:');
-        });
-
-        it('shows name', () => {
-          expect(ddList.at(0).text()).toBe(server);
-        });
-      });
-
-      describe('filter', () => {
-        it('shows label', () => {
-          expect(dtList.at(1).text()).toBe(filterLabel);
-        });
-
-        it('shows value', () => {
-          expect(ddList.at(1).text()).toBe(filterValue);
-        });
-      });
-
-      describe('custom role name', () => {
-        it('shows label', () => {
-          expect(dtList.at(2).text()).toBe('Custom admin role:');
-        });
-
-        it('shows value', () => {
-          expect(ddList.at(2).text()).toBe(role);
-        });
-      });
-
-      describe('actions', () => {
-        let actionsDiv;
-
-        beforeEach(() => {
-          actionsDiv = listItem.find('div');
-        });
-
-        it('shows delete button', () => {
-          const button = actionsDiv.findComponent(GlButton);
-          expect(button.attributes('aria-label')).toBe('Remove sync');
-          expect(button.props()).toMatchObject({
-            variant: 'danger',
-            icon: 'remove',
-            category: 'secondary',
-          });
-        });
-
-        it('shows last synced text', () => {
-          expect(actionsDiv.find('span').text()).toBe('Last synced: Never');
-        });
-      });
+      expect(findRoleLinkItems().at(index).props('roleLink')).toEqual(roleLink);
     });
   });
 
@@ -298,7 +237,7 @@ describe('LdapSyncCrud component', () => {
     describe('common behavior', () => {
       beforeEach(async () => {
         await createWrapper();
-        return openDeleteModal();
+        openDeleteModal();
       });
 
       it('shows modal', () => {
