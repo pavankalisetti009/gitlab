@@ -34,8 +34,8 @@ module RemoteDevelopment
       read_file("workspace_operations/reconcile/output/kubernetes_poststart_hook_command.sh")
     MAIN_COMPONENT_UPDATER_CONTAINER_ARGS =
       read_file("workspace_operations/create/main_component_updater_container_args.sh")
-    MAIN_COMPONENT_UPDATER_INIT_TOOLS_SCRIPT =
-      read_file("workspace_operations/create/main_component_updater_init_tools.sh")
+    MAIN_COMPONENT_UPDATER_START_VSCODE_SCRIPT =
+      read_file("workspace_operations/create/main_component_updater_start_vscode.sh")
     MAIN_COMPONENT_UPDATER_SLEEP_UNTIL_CONTAINER_IS_RUNNING_SCRIPT =
       read_file("workspace_operations/create/main_component_updater_sleep_until_workspace_is_running.sh")
     MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT =

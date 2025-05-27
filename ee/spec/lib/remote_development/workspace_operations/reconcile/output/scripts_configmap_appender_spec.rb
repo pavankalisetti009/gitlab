@@ -69,7 +69,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Script
     expect(api_version).to eq("v1")
     expect(configmap_name).to eq(name)
     expect(data).to eq(
-      "gl-init-tools-command": files::MAIN_COMPONENT_UPDATER_INIT_TOOLS_SCRIPT,
+      "gl-init-tools-command": files::MAIN_COMPONENT_UPDATER_START_VSCODE_SCRIPT,
       reconcile_constants_module::RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
         expected_postart_commands_script,
       "gl-sleep-until-container-is-running-command":

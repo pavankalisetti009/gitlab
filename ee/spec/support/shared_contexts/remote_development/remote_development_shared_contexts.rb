@@ -648,11 +648,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
                       "#{create_constants_module::TOOLS_DIR_NAME}"
                   },
                   {
-                    name: "GL_EDITOR_LOG_LEVEL",
+                    name: "GL_VSCODE_LOG_LEVEL",
                     value: "info"
                   },
                   {
-                    name: "GL_EDITOR_PORT",
+                    name: "GL_VSCODE_PORT",
                     value: create_constants_module::WORKSPACE_EDITOR_PORT.to_s
                   },
                   {
@@ -660,7 +660,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
                     value: create_constants_module::WORKSPACE_SSH_PORT.to_s
                   },
                   {
-                    name: "GL_EDITOR_ENABLE_MARKETPLACE",
+                    name: "GL_VSCODE_ENABLE_MARKETPLACE",
                     value: "false"
                   },
                   {
@@ -928,7 +928,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
       deployment[:spec][:template][:spec][:containers][0][:args][0] =
         <<~YAML.chomp
           #{files_module::MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT}
-          #{files_module::MAIN_COMPONENT_UPDATER_INIT_TOOLS_SCRIPT}
+          #{files_module::MAIN_COMPONENT_UPDATER_START_VSCODE_SCRIPT}
         YAML
     end
 
@@ -1157,7 +1157,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
         namespace: workspace_namespace
       },
       data: {
-        "gl-init-tools-command": files_module::MAIN_COMPONENT_UPDATER_INIT_TOOLS_SCRIPT,
+        "gl-init-tools-command": files_module::MAIN_COMPONENT_UPDATER_START_VSCODE_SCRIPT,
         reconcile_constants_module::RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym => postart_commands_script,
         "gl-sleep-until-container-is-running-command": sleep_until_container_is_running_script,
         "gl-start-sshd-command": files_module::MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT

@@ -140,9 +140,9 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       { key: "GIT_CONFIG_VALUE_0", type: :environment, value: git_credential_store_script_file_path },
       { key: "GIT_CONFIG_VALUE_1", type: :environment, value: "Workspaces User" },
       { key: "GIT_CONFIG_VALUE_2", type: :environment, value: "workspaces-user@example.org" },
-      { key: "GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
-      { key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{versionRaw}/{path}" },
-      { key: "GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },
+      { key: "GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
+      { key: "GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{versionRaw}/{path}" },
+      { key: "GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },
       { key: "GL_WORKSPACE_DOMAIN_TEMPLATE", type: :environment, value: "${PORT}-workspace-#{agent.id}-#{user.id}-#{random_string}.#{dns_zone}" },
       { key: "GITLAB_WORKFLOW_INSTANCE_URL", type: :environment, value: Gitlab::Routing.url_helpers.root_url },
       { key: "GITLAB_WORKFLOW_TOKEN_FILE", type: :environment, value: token_file_path }
