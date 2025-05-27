@@ -132,7 +132,7 @@ module Gitlab
 
             def ai_request
               ::Gitlab::Llm::Chain::Requests::AiGateway.new(context.current_user, service_name: :troubleshoot_job,
-                tracking_context: tracking_context)
+                tracking_context: tracking_context, root_namespace: job.project.root_ancestor)
             end
 
             def tracking_context
