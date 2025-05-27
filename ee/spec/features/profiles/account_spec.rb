@@ -35,7 +35,7 @@ RSpec.describe 'Profile > Account', feature_category: :user_profile do
 
       within_modal do
         modal_message = s_('Profiles|Disconnecting your SAML provider will remove your access from groups, ' \
-          'subgroups and projects which require SAML authentication. Are your sure?')
+          'subgroups and projects which require SAML authentication. Are you sure?')
         expect(page).to have_content(modal_message)
         click_button "Disconnect SAML for Test Group"
       end
