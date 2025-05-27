@@ -99,7 +99,7 @@ module Gitlab
             end
 
             if @draft_notes_by_priority.empty?
-              update_progress_note(self.class.no_comment_msg, with_todo: true)
+              update_progress_note(review_summary, with_todo: true)
 
               log_duo_code_review_internal_event('find_no_issues_duo_code_review_after_review')
             else
@@ -126,6 +126,7 @@ module Gitlab
 
             parsed_body = ResponseBodyParser.new(response.response_body)
             comments_by_file = parsed_body.comments.group_by(&:file)
+            @review_description = parsed_body.review_description
 
             log_comment_metrics(parsed_body.comments)
 
@@ -382,6 +383,10 @@ module Gitlab
           end
           # rubocop: enable CodeReuse/ActiveRecord
 
+          def review_summary
+            [self.class.no_comment_msg, @review_description].compact.join("\n\n")
+          end
+
           def publish_draft_notes
             return unless Ability.allowed?(user, :create_note, merge_request)
 
@@ -390,7 +395,7 @@ module Gitlab
             end
 
             if draft_notes.empty?
-              update_progress_note(self.class.no_comment_msg, with_todo: true)
+              update_progress_note(review_summary, with_todo: true)
 
               log_duo_code_review_internal_event('find_no_issues_duo_code_review_after_review')
 

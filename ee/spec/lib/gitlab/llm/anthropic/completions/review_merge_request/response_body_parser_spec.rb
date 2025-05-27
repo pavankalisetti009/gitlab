@@ -499,6 +499,114 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::Response
           end
         end
       end
+
+      context 'when review has a description' do
+        let(:body) do
+          <<~RESPONSE
+          <review>
+          The changes in this MR update the security e2e test metadata by:
+
+          1. Renaming the test category from "Govern" to "Software Supply Chain Security" across multiple test files
+
+          <comment file="example.rb" priority="3" old_line="1" new_line="2">
+          First comment with suggestions
+          <from>
+              first offending line
+          </from>
+          <to>
+              first improved line
+          </to>
+          Some more comments
+          </comment>
+          </review>
+          RESPONSE
+        end
+
+        it 'returns the expected review description' do
+          review_description = parser.review_description
+          expect(review_description).to eq <<~REVIEW_DESCRIPTION.chomp
+          The changes in this MR update the security e2e test metadata by:
+
+          1. Renaming the test category from "Govern" to "Software Supply Chain Security" across multiple test files
+          REVIEW_DESCRIPTION
+        end
+      end
+
+      context 'when review is in a single line' do
+        let(:body) do
+          <<~RESPONSE
+          <review>Some text</review>
+          RESPONSE
+        end
+
+        it 'returns the expected review description' do
+          review_description = parser.review_description
+          expect(review_description).to eq "Some text"
+        end
+      end
+
+      context 'when review does not have content' do
+        let(:body) do
+          <<~RESPONSE
+          <review>
+          </review>
+          RESPONSE
+        end
+
+        it 'returns the expected review description' do
+          review_description = parser.review_description
+          expect(review_description).to be_nil
+        end
+      end
+
+      context 'when response does not have review tag' do
+        let(:body) do
+          <<~RESPONSE
+          RESPONSE
+        end
+
+        it 'returns the expected review description' do
+          review_description = parser.review_description
+          expect(review_description).to be_nil
+        end
+      end
+
+      context 'when response have content outside of review tag' do
+        let(:body) do
+          <<~RESPONSE
+          this is text without <review> tag
+          RESPONSE
+        end
+
+        it 'returns the expected review description' do
+          review_description = parser.review_description
+          expect(review_description).to be_nil
+        end
+      end
+
+      context 'when review does not have a description' do
+        let(:body) do
+          <<~RESPONSE
+          <review>
+          <comment file="example.rb" priority="3" old_line="1" new_line="2">
+          First comment with suggestions
+          <from>
+              first offending line
+          </from>
+          <to>
+              first improved line
+          </to>
+          Some more comments
+          </comment>
+          </review>
+          RESPONSE
+        end
+
+        it 'returns the expected review description' do
+          review_description = parser.review_description
+          expect(review_description).to be_nil
+        end
+      end
     end
 
     context 'when the review content is empty' do
