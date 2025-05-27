@@ -10,12 +10,12 @@ module Geo
 
     # @return [String] human-readable title.
     def self.replicable_title
-      s_('Geo|Lfs Object')
+      s_('Geo|LFS Object')
     end
 
     # @return [String] pluralized human-readable title.
     def self.replicable_title_plural
-      s_('Geo|Lfs Objects')
+      s_('Geo|LFS Objects')
     end
 
     def self.model

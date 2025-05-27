@@ -27422,6 +27422,18 @@ msgstr ""
 msgid "Geo|Allowed Geo IP should contain valid IP addresses"
 msgstr ""
 
+msgid "Geo|CI Job Artifact"
+msgstr ""
+
+msgid "Geo|CI Job Artifacts"
+msgstr ""
+
+msgid "Geo|CI Secure File"
+msgstr ""
+
+msgid "Geo|CI Secure Files"
+msgstr ""
+
 msgid "Geo|Checksum: %{verificationChecksum}"
 msgstr ""
 
@@ -27429,12 +27441,6 @@ msgid "Geo|Checksummed"
 msgstr ""
 
 msgid "Geo|Choose specific groups or storage shards"
-msgstr ""
-
-msgid "Geo|Ci Secure File"
-msgstr ""
-
-msgid "Geo|Ci Secure Files"
 msgstr ""
 
 msgid "Geo|Comma-separated, e.g. '1.1.1.1, 2.2.2.0/24'"
@@ -27596,10 +27602,10 @@ msgstr ""
 msgid "Geo|Internal URL (optional)"
 msgstr ""
 
-msgid "Geo|Job Artifact"
+msgid "Geo|LFS Object"
 msgstr ""
 
-msgid "Geo|Job Artifacts"
+msgid "Geo|LFS Objects"
 msgstr ""
 
 msgid "Geo|Last event ID"
@@ -27624,12 +27630,6 @@ msgid "Geo|Learn more about Geo"
 msgstr ""
 
 msgid "Geo|Learn more about Geo site statuses"
-msgstr ""
-
-msgid "Geo|Lfs Object"
-msgstr ""
-
-msgid "Geo|Lfs Objects"
 msgstr ""
 
 msgid "Geo|Limit the number of concurrent operations this secondary site can run in the background."

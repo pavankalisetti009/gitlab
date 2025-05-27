@@ -10,12 +10,12 @@ module Geo
 
     # @return [String] human-readable title.
     def self.replicable_title
-      s_('Geo|Job Artifact')
+      s_('Geo|CI Job Artifact')
     end
 
     # @return [String] pluralized human-readable title.
     def self.replicable_title_plural
-      s_('Geo|Job Artifacts')
+      s_('Geo|CI Job Artifacts')
     end
 
     def carrierwave_uploader

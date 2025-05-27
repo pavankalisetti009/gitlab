@@ -10,12 +10,12 @@ module Geo
 
     # @return [String] human-readable title.
     def self.replicable_title
-      s_('Geo|Ci Secure File')
+      s_('Geo|CI Secure File')
     end
 
     # @return [String] pluralized human-readable title.
     def self.replicable_title_plural
-      s_('Geo|Ci Secure Files')
+      s_('Geo|CI Secure Files')
     end
 
     def carrierwave_uploader
