@@ -2,6 +2,14 @@
 import { GlButton, GlIcon } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { SCANNER_POPOVER_LABELS } from 'ee/security_inventory/constants';
+import { securityScannerValidator } from 'ee/security_inventory/utils';
+
+// These statuses represent the situations that can be displayed in the icon
+const STATUS_CONFIG = {
+  SUCCESS: { name: 'check-circle-filled', variant: 'success', text: __('Enabled') },
+  FAILED: { name: 'status-failed', variant: 'danger', text: __('Failed') },
+  DEFAULT: { name: 'clear', variant: 'disabled', text: __('Not enabled') },
+};
 
 export default {
   name: 'ToolCoverageDetails',
@@ -11,13 +19,10 @@ export default {
   },
   props: {
     securityScanner: {
-      type: Object,
+      type: Array,
       required: false,
-      default: () => ({
-        scannerTypes: [],
-        enabled: [],
-        pipelineRun: [],
-      }),
+      default: () => [],
+      validator: (value) => securityScannerValidator(value),
     },
     isProject: {
       type: Boolean,
@@ -25,10 +30,12 @@ export default {
     },
   },
   computed: {
-    scannerTitles() {
-      return this.securityScanner.scannerTypes.map(
-        (scannerType) => SCANNER_POPOVER_LABELS[scannerType] || __('Status'),
-      );
+    scannerItems() {
+      return this.securityScanner.map((scanner) => ({
+        title: SCANNER_POPOVER_LABELS[scanner.analyzerType] || __('Status'),
+        status: scanner.status,
+        analyzerType: scanner.analyzerType,
+      }));
     },
     // TODO: to expose when we got the relevant data from the API
     // lastScan() {
@@ -37,9 +44,8 @@ export default {
     // },
   },
   methods: {
-    enabledStatus(title) {
-      const index = this.scannerTitles.indexOf(title);
-      return Boolean(this.securityScanner.enabled[index]);
+    getStatusConfig(status) {
+      return STATUS_CONFIG[status] || STATUS_CONFIG.DEFAULT;
     },
   },
   i18n: {
@@ -50,17 +56,16 @@ export default {
 
 <template>
   <div>
-    <div>
-      <div v-for="(title, index) in scannerTitles" :key="index" class="gl-my-2">
-        <span class="gl-font-bold" :data-testid="`scanner-title-${index}`">{{ title }}:</span>
+    <div class="gl-m-2">
+      <div v-for="(item, index) in scannerItems" :key="index" class="gl-my-2">
+        <span class="gl-font-bold" :data-testid="`scanner-title-${index}`">{{ item.title }}:</span>
         <gl-icon
-          :name="enabledStatus(title) ? 'check-circle-filled' : 'clear'"
-          :class="enabledStatus(title) ? 'enabled' : 'disabled'"
-          :variant="enabledStatus(title) ? 'success' : 'disabled'"
+          :name="getStatusConfig(item.status).name"
+          :variant="getStatusConfig(item.status).variant"
           :size="12"
         />
         <span :data-testid="`scanner-status-${index}`">
-          {{ enabledStatus(title) ? __('Enabled') : __('Not enabled') }}
+          {{ getStatusConfig(item.status).text }}
         </span>
       </div>
 

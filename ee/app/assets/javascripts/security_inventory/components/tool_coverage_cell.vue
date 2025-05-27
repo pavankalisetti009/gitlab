@@ -25,7 +25,7 @@ export default {
     <group-tool-coverage-indicator v-if="isSubGroup(item)" />
     <project-tool-coverage-indicator
       v-else
-      :security-scanners="item.securityScanners"
+      :security-scanners="item.analyzerStatuses"
       :project-name="item.name"
     />
   </div>

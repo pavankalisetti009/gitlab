@@ -66,9 +66,11 @@ query SubgroupsAndProjects(
           medium
           unknown
         }
-        securityScanners {
-          enabled
-          pipelineRun
+        analyzerStatuses {
+          status
+          analyzerType
+          lastCall
+          buildId
         }
       }
     }
