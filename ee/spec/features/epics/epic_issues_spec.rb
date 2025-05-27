@@ -24,8 +24,8 @@ RSpec.describe 'Epic Issues', :js, feature_category: :portfolio_management do
 
   let_it_be(:nested_epics) do
     [
-      create(:epic, group: group, parent_id: epic.id, relative_position: 1),
-      create(:epic, group: group, parent_id: epic.id, relative_position: 2)
+      create(:epic, group: group, parent: epic, relative_position: 1),
+      create(:epic, group: group, parent: epic, relative_position: 2)
     ]
   end
 

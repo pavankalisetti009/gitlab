@@ -38,7 +38,7 @@ module EE
       validates :color, color: true, presence: true
 
       belongs_to :closed_by, class_name: 'User'
-      belongs_to :work_item_parent_link, class_name: 'WorkItems::ParentLink', inverse_of: :epic, optional: true
+      belongs_to :work_item_parent_link, class_name: 'WorkItems::ParentLink', inverse_of: :epic
 
       state_machine :state_id, initial: :opened, initialize: false do
         event :close do
@@ -99,6 +99,9 @@ module EE
         numericality: { only_integer: true }
 
       validates :work_item, presence: true
+
+      validates :work_item_parent_link, presence: true, on: :create, if: -> { parent.present? }
+      validate :validate_same_work_item_parent_link, on: :create, if: -> { parent.present? }
 
       alias_attribute :parent_ids, :parent_id
       alias_attribute :issuing_parent_id, :group_id
@@ -557,6 +560,20 @@ module EE
       return unless parent
 
       validate_parent_epic
+    end
+
+    def validate_same_work_item_parent_link
+      return unless parent_id
+      return unless work_item_parent_link
+
+      return if work_item_parent_link.work_item_parent_id == parent.issue_id
+
+      ::Gitlab::EpicWorkItemSync::Logger.error(
+        message: 'Work item epic parent mismatch',
+        work_item_parent_link_id: work_item_parent_link.id,
+        epic_parent_id: parent.id
+      )
+      errors.add :parent, _("Epic and its work item parent must be the same")
     end
 
     def use_elasticsearch?

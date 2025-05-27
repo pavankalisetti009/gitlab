@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 FactoryBot.define do
-  factory :epic, traits: [:has_internal_id, :with_synced_work_item] do
+  factory :epic, traits: [:has_internal_id, :with_synced_work_item, :with_work_item_parent] do
     title { generate(:title) }
     group
     author
@@ -40,7 +40,10 @@ FactoryBot.define do
 
     trait :with_work_item_parent do
       work_item_parent_link do
-        association(:parent_link, work_item: work_item, work_item_parent: parent.work_item) if parent
+        if parent
+          association(:parent_link, work_item: work_item, work_item_parent: parent.work_item,
+            relative_position: relative_position)
+        end
       end
     end
 

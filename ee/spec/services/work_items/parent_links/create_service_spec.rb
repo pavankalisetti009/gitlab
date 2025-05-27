@@ -257,10 +257,6 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
         context 'when legacy epic already has a parent epic' do
           let(:child_work_item) { other_child_epic.work_item }
 
-          before do
-            create(:parent_link, work_item_parent: other_parent_epic.work_item, work_item: child_work_item)
-          end
-
           it_behaves_like 'creates parent link and deletes legacy link' do
             let(:legacy_child) { other_child_epic }
             let(:relationship) { :parent }

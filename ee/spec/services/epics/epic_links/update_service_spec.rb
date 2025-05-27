@@ -29,15 +29,7 @@ RSpec.describe Epics::EpicLinks::UpdateService, feature_category: :portfolio_man
   end
 
   def create_child_epic(relative_position)
-    child = create(:epic, group: group, parent: parent_epic, relative_position: relative_position)
-    create(
-      :parent_link,
-      work_item: child.work_item,
-      work_item_parent: parent_epic.work_item,
-      relative_position: relative_position
-    )
-
-    child
+    create(:epic, group: group, parent: parent_epic, relative_position: relative_position)
   end
 
   describe '#execute' do

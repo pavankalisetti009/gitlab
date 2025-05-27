@@ -98,7 +98,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
               expect { reorder }.to change { tree_object_2.reload.epic }.from(epic1).to(epic)
             end
 
-            it 'creates system notes', :sidekiq_inline do
+            it 'creates system notes' do
               expect { reorder }.to change { Note.system.count }.by(2)
             end
           end
@@ -236,7 +236,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                 expect(tree_object_1.reload.relative_position).to be > tree_object_2.reload.relative_position
               end
 
-              it 'creates system notes', :sidekiq_inline do
+              it 'creates system notes' do
                 expect { reorder }.to change { Note.system.count }.by(2)
               end
             end
@@ -507,7 +507,9 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                 before do
                   other_group.add_developer(user)
                   epic.update!(group: other_group)
+                  epic.work_item.update!(namespace: other_group)
                   epic2.update!(parent: epic1)
+                  epic2.work_item_parent_link.update!(work_item_parent: epic1.work_item)
                 end
 
                 it_behaves_like 'new parent not in an ancestor group'
@@ -529,7 +531,9 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                 before do
                   descendant_group.add_developer(user)
                   epic.update!(group: descendant_group)
+                  epic.work_item.update!(namespace: descendant_group)
                   epic2.update!(parent: epic1)
+                  epic2.work_item_parent_link.update!(work_item_parent: epic1.work_item)
                 end
 
                 it_behaves_like 'new parent not in an ancestor group'
@@ -603,15 +607,11 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                   let(:adjacent_reference_id) { nil }
                   let(:moving_object_id) { GitlabSchema.id_from_object(moving_epic) }
 
-                  let_it_be(:old_parent) { create(:epic, :with_synced_work_item, group: group) }
+                  let_it_be_with_reload(:old_parent) { create(:epic, :with_synced_work_item, group: group) }
                   let_it_be(:new_parent) { create(:epic, :with_synced_work_item, group: group) }
 
-                  let_it_be_with_reload(:moving_epic) do
+                  let_it_be_with_refind(:moving_epic) do
                     create(:epic, :with_synced_work_item, group: group, parent: old_parent, relative_position: 20)
-                  end
-
-                  let_it_be_with_reload(:new_parent_parent_link) do
-                    create(:parent_link, work_item_parent: old_parent.work_item, work_item: new_parent.work_item)
                   end
 
                   let(:params) do
@@ -655,14 +655,17 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                     context 'when moving object does not have parent link relationship' do
                       let_it_be_with_reload(:moving_object_parent_link) { nil }
 
+                      before do
+                        link = moving_epic.work_item_parent_link
+                        moving_epic.update!(work_item_parent_link: nil)
+                        link.destroy!
+                      end
+
                       it_behaves_like 'moves to a parent without children'
                     end
 
                     context 'when moving object has parent link relationship' do
-                      let_it_be_with_reload(:moving_object_parent_link) do
-                        create(:parent_link, work_item_parent: old_parent.work_item, work_item: moving_epic.work_item,
-                          relative_position: 20)
-                      end
+                      let_it_be_with_refind(:moving_object_parent_link) { moving_epic.work_item_parent_link }
 
                       it_behaves_like 'moves to a parent without children'
                     end
@@ -673,10 +676,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                       create(:epic, :with_synced_work_item, parent: new_parent, group: group, relative_position: 10)
                     end
 
-                    let_it_be_with_reload(:moving_object_parent_link) do
-                      create(:parent_link, work_item_parent: old_parent.work_item, work_item: moving_epic.work_item,
-                        relative_position: 20)
-                    end
+                    let_it_be_with_reload(:moving_object_parent_link) { moving_epic.work_item_parent_link }
 
                     shared_examples 'moves epic to a parent with children' do
                       let(:adjacent_reference_id) { GitlabSchema.id_from_object(adjacent_epic) }
@@ -725,13 +725,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                     end
 
                     context 'when adjacent epic work item has a parent link relationship' do
-                      let_it_be(:adjacent_parent_link) do
-                        create(:parent_link,
-                          work_item_parent: new_parent.work_item,
-                          work_item: adjacent_epic.work_item,
-                          relative_position: adjacent_epic.relative_position
-                        )
-                      end
+                      let_it_be(:adjacent_parent_link) { adjacent_epic.work_item_parent_link }
 
                       it_behaves_like 'moves epic to a parent with children'
                     end
@@ -749,19 +743,13 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                     create(:epic, :with_synced_work_item, parent: parent, group: group, relative_position: 10)
                   end
 
-                  let_it_be_with_reload(:adjacent_parent_link) do
-                    create(:parent_link, work_item_parent: parent.work_item, work_item: adjacent_epic.work_item,
-                      relative_position: 10)
-                  end
+                  let_it_be_with_reload(:adjacent_parent_link) { adjacent_epic.work_item_parent_link }
 
                   let_it_be_with_reload(:moving_epic) do
                     create(:epic, :with_synced_work_item, group: group, parent: parent, relative_position: 20)
                   end
 
-                  let_it_be_with_reload(:moving_object_parent_link) do
-                    create(:parent_link, work_item_parent: parent.work_item, work_item: moving_epic.work_item,
-                      relative_position: 20)
-                  end
+                  let_it_be_with_reload(:moving_object_parent_link) { moving_epic.work_item_parent_link }
 
                   let(:params) do
                     {
@@ -810,7 +798,11 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                       create(:epic, group: group, parent: parent, relative_position: 20)
                     end
 
-                    let_it_be_with_reload(:moving_object_parent_link) { nil }
+                    before do
+                      link = moving_epic.work_item_parent_link
+                      moving_epic.update!(work_item_parent_link: nil)
+                      link.destroy!
+                    end
 
                     it 'successfully changes the position of the epic' do
                       expect(WorkItems::ParentLinks::ReorderService).not_to receive(:new)

@@ -7,18 +7,18 @@ RSpec.describe 'Updating an epic tree', feature_category: :portfolio_management 
 
   let_it_be(:private_group) { create(:group, :private) }
   let_it_be(:private_project) { create(:project, :private, group: private_group) }
-  let(:group) { create(:group) }
-  let(:current_user) { create(:user) }
-  let(:project) { create(:project, group: group) }
-  let(:base_epic) { create(:epic, group: group) }
-  let(:epic1) { create(:epic, group: group, parent: base_epic, relative_position: 10) }
-  let(:epic2) { create(:epic, group: group, parent: base_epic, relative_position: 20) }
-  let(:issue1) { create(:issue, project: project) }
-  let(:issue2) { create(:issue, project: project) }
-  let(:private_issue) { create(:issue, project: private_project) }
-  let(:epic_issue1) { create(:epic_issue, epic: base_epic, issue: issue1, relative_position: 10) }
-  let(:epic_issue2) { create(:epic_issue, epic: base_epic, issue: issue2, relative_position: 20) }
-  let(:epic_issue3) { create(:epic_issue, epic: base_epic, issue: private_issue, relative_position: 30) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:current_user) { create(:user) }
+  let_it_be(:project) { create(:project, group: group) }
+  let_it_be(:base_epic) { create(:epic, group: group) }
+  let_it_be(:epic1) { create(:epic, group: group, parent: base_epic, relative_position: 10) }
+  let_it_be(:epic2) { create(:epic, group: group, parent: base_epic, relative_position: 20) }
+  let_it_be(:issue1) { create(:issue, project: project) }
+  let_it_be(:issue2) { create(:issue, project: project) }
+  let_it_be(:private_issue) { create(:issue, project: private_project) }
+  let_it_be(:epic_issue1) { create(:epic_issue, epic: base_epic, issue: issue1, relative_position: 10) }
+  let_it_be(:epic_issue2) { create(:epic_issue, epic: base_epic, issue: issue2, relative_position: 20) }
+  let_it_be(:epic_issue3) { create(:epic_issue, epic: base_epic, issue: private_issue, relative_position: 30) }
 
   let(:mutation) do
     graphql_mutation(:epic_tree_reorder, variables)
@@ -121,11 +121,8 @@ RSpec.describe 'Updating an epic tree', feature_category: :portfolio_management 
 
           context 'when a new_parent_id is provided' do
             let(:new_parent_id) { GitlabSchema.id_from_object(base_epic).to_s }
-
-            before do
-              other_epic = create(:epic, group: group)
-              epic2.update!(parent: other_epic)
-            end
+            let_it_be(:other_epic) { create(:epic, group: group) }
+            let_it_be(:epic2) { create(:epic, group: group, parent: other_epic, relative_position: 20) }
 
             it 'updates the epics relative positions and updates the parent' do
               post_graphql_mutation(mutation, current_user: current_user)

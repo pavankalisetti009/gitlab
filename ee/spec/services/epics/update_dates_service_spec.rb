@@ -364,10 +364,8 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
               create(:work_items_dates_source, work_item: top_level_parent_epic.work_item)
               create(:work_items_dates_source, work_item: parent_epic.work_item)
 
-              epic.update_columns(parent_id: parent_epic.id)
-
-              create(:parent_link, work_item_parent: top_level_parent_epic.work_item, work_item: parent_epic.work_item)
-              create(:parent_link, work_item_parent: parent_epic.work_item, work_item: epic.work_item)
+              parent_link = create(:parent_link, work_item_parent: parent_epic.work_item, work_item: epic.work_item)
+              epic.update_columns(parent_id: parent_epic.id, work_item_parent_link_id: parent_link.id)
             end
 
             it "propagates date changes to parent epics" do

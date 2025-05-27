@@ -106,7 +106,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
         subgroup_1 = create(:group, parent: group)
         subgroup_2 = create(:group, parent: subgroup_1)
         epic1 = create(:epic, group: subgroup_1)
-        epic2 = create(:epic, group: subgroup_2, parent_id: epic.id)
+        epic2 = create(:epic, group: subgroup_2, parent: epic)
 
         control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
           get api(url, personal_access_token: pat), params: params
@@ -114,8 +114,8 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
 
         label_2 = create(:group_label)
         create_list(:labeled_epic, 2, group: group, labels: [label_2])
-        create_list(:epic, 2, group: subgroup_1, parent_id: epic1.id)
-        create_list(:epic, 2, group: subgroup_2, parent_id: epic2.id)
+        create_list(:epic, 2, group: subgroup_1, parent: epic1)
+        create_list(:epic, 2, group: subgroup_2, parent: epic2)
 
         expect { get api(url, personal_access_token: pat), params: params }.not_to exceed_all_query_limit(control)
         expect(response).to have_gitlab_http_status(:ok)
@@ -175,7 +175,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
 
     context 'with a parent epic' do
       let_it_be(:epic) { create(:epic, group: group) }
-      let_it_be(:epic2) { create(:epic, group: group, parent_id: epic.id) }
+      let_it_be(:epic2) { create(:epic, group: group, parent: epic) }
 
       before do
         stub_licensed_features(epics: true)
@@ -643,7 +643,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
       end
 
       context 'with a parent epic' do
-        let!(:epic2) { create(:epic, group: group, parent_id: epic.id) }
+        let!(:epic2) { create(:epic, group: group, parent: epic) }
         let(:url) { "/groups/#{group.path}/epics/#{epic2.iid}" }
 
         it 'exposes parent link' do
