@@ -6,7 +6,7 @@ module Search
       attr_reader :max_batch_size
 
       ResourcePool = Struct.new(:enabled_namespaces, :nodes)
-      MAX_PROJECTS_PER_NAMESPACE = 30_000
+      MAX_PROJECTS_PER_NAMESPACE = 40_000
 
       def self.execute(**kwargs)
         new(**kwargs).execute
