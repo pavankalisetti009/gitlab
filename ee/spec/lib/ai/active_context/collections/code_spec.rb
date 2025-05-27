@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Context::Collections::Code, feature_category: :code_suggestions do
+RSpec.describe Ai::ActiveContext::Collections::Code, feature_category: :code_suggestions do
   let_it_be(:collection) { create(:ai_active_context_collection, name: described_class.collection_name) }
 
   before do
@@ -31,7 +31,7 @@ RSpec.describe Ai::Context::Collections::Code, feature_category: :code_suggestio
 
       queued_items = ActiveContext::Queues.all_queued_items.values.flatten
       expect(queued_items.count).to eq(1)
-      expect(queued_items.first).to eq("Ai::Context::References::Code|#{collection.reload.id}|#{routing}|#{id}")
+      expect(queued_items.first).to eq("Ai::ActiveContext::References::Code|#{collection.reload.id}|#{routing}|#{id}")
     end
 
     context 'when collection record is not found' do

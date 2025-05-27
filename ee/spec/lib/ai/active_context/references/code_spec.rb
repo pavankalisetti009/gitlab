@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Context::References::Code, feature_category: :code_suggestions do
+RSpec.describe Ai::ActiveContext::References::Code, feature_category: :code_suggestions do
   let(:identifier) { 'hash1' }
   let(:unit_primitive) { described_class::UNIT_PRIMITIVE }
   let(:routing) { 1 }
@@ -15,7 +15,7 @@ RSpec.describe Ai::Context::References::Code, feature_category: :code_suggestion
 
   describe '#serialize' do
     it 'serializes correctly' do
-      expect(reference.serialize).to eq("Ai::Context::References::Code|#{collection.id}|#{routing}|#{identifier}")
+      expect(reference.serialize).to eq("#{described_class}|#{collection.id}|#{routing}|#{identifier}")
     end
   end
 

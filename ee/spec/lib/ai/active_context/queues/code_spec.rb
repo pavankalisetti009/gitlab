@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Context::Queues::Code, feature_category: :code_suggestions do
+RSpec.describe Ai::ActiveContext::Queues::Code, feature_category: :code_suggestions do
   describe '.number_of_shards' do
     it 'returns 1' do
       expect(described_class.number_of_shards).to eq(1)
@@ -11,7 +11,7 @@ RSpec.describe Ai::Context::Queues::Code, feature_category: :code_suggestions do
 
   describe '.queues' do
     it 'includes the code queue' do
-      expect(ActiveContext::Queues.queues).to include('ai_context_queues:{code}')
+      expect(ActiveContext::Queues.queues).to include('ai_activecontext_queues:{code}')
     end
   end
 

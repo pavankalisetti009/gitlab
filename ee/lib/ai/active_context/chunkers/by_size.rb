@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Ai
-  module Context
+  module ActiveContext
     module Chunkers
       class BySize
         include ::ActiveContext::Concerns::Chunker

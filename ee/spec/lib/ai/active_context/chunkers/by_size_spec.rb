@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Context::Chunkers::BySize, feature_category: :global_search do
+RSpec.describe Ai::ActiveContext::Chunkers::BySize, feature_category: :global_search do
   let(:chunk_size) { 10 }
   let(:overlap) { 2 }
   let(:content) { "This is a test string that needs to be chunked properly" }
