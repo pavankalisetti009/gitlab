@@ -9,9 +9,98 @@ RSpec.describe Projects::AutocompleteSourcesController, feature_category: :text_
   let_it_be(:epic) { create(:epic, group: group) }
   let_it_be(:epic2) { create(:epic, group: group2) }
   let_it_be(:vulnerability) { create(:vulnerability, :with_read, project: project) }
+  let_it_be(:issue) { create(:issue, project: project, title: 'Project Issue') }
 
   before do
     sign_in(user)
+  end
+
+  describe "issues" do
+    context 'with standard functionality' do
+      it 'returns the correct response', :aggregate_failures do
+        issue_json_response = {
+          'iid' => issue.iid,
+          'title' => issue.title
+        }
+
+        get :issues, params: { namespace_id: project.namespace, project_id: project }
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to be_an(Array)
+        expect(json_response.first).to include(issue_json_response)
+      end
+    end
+
+    context 'with group-level issues' do
+      let_it_be(:group_issue) { create(:work_item, :issue, namespace: group, title: 'Group Issue') }
+
+      before do
+        group.add_developer(user)
+      end
+
+      context 'when epics license is not available' do
+        before do
+          stub_licensed_features(epics: false)
+        end
+
+        it 'returns only project issues', :aggregate_failures do
+          get :issues, params: { namespace_id: project.namespace, project_id: project }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).to be_an(Array)
+          expect(json_response.pluck('title')).to include(issue.title)
+          expect(json_response.pluck('title')).not_to include(group_issue.title)
+        end
+      end
+
+      context 'when epics license is available' do
+        before do
+          stub_licensed_features(epics: true)
+        end
+
+        context 'when allow_group_items_in_project_autocompletion is disabled' do
+          before do
+            stub_feature_flags(allow_group_items_in_project_autocompletion: false)
+          end
+
+          it 'returns only project issues', :aggregate_failures do
+            get :issues, params: { namespace_id: project.namespace, project_id: project }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to be_an(Array)
+            expect(json_response.pluck('title')).to include(issue.title)
+            expect(json_response.pluck('title')).not_to include(group_issue.title)
+          end
+        end
+
+        context 'when allow_group_items_in_project_autocompletion is enabled' do
+          before do
+            stub_feature_flags(allow_group_items_in_project_autocompletion: true)
+          end
+
+          it 'returns both project and group issues', :aggregate_failures do
+            get :issues, params: { namespace_id: project.namespace, project_id: project }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to be_an(Array)
+            expect(json_response.pluck('title')).to include(issue.title)
+            expect(json_response.pluck('title')).to include(group_issue.title)
+          end
+
+          it 'filters issues with search parameter', :aggregate_failures do
+            searchable_issue = create(:issue, project: project, title: 'Searchable Issue')
+            get :issues, params: {
+              namespace_id: project.namespace,
+              project_id: project,
+              search: 'Searchable'
+            }
+
+            expect(json_response.pluck('title')).to include(searchable_issue.title)
+            expect(json_response.pluck('title')).not_to include(issue.title)
+          end
+        end
+      end
+    end
   end
 
   describe '#epics', feature_category: :portfolio_management do
@@ -33,7 +122,7 @@ RSpec.describe Projects::AutocompleteSourcesController, feature_category: :text_
           epic_json_response = {
             'iid' => epic.iid,
             'title' => epic.title,
-            'reference' => epic.to_reference(epic)
+            'reference' => epic.to_reference
           }
 
           get :epics, params: { namespace_id: project.namespace, project_id: project }

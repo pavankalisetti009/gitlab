@@ -4,6 +4,7 @@ module EE
   module Projects
     module AutocompleteSourcesController
       extend ActiveSupport::Concern
+      extend ::Gitlab::Utils::Override
 
       prepended do
         feature_category :portfolio_management, [:epics]
@@ -13,12 +14,24 @@ module EE
         urgency :low, [:vulnerabilities]
       end
 
+      override :issues
+      def issues
+        if project.group&.allow_group_items_in_project_autocompletion?
+          render json: issuable_serializer.represent(
+            autocomplete_service.issues,
+            parent: project
+          )
+        else
+          super
+        end
+      end
+
       def epics
         return render_404 unless project.group.licensed_feature_available?(:epics)
 
         render json: issuable_serializer.represent(
           autocomplete_service.epics,
-          parent_group: project.group&.id
+          parent: project.group
         )
       end
 
@@ -41,7 +54,7 @@ module EE
       end
 
       def issuable_serializer
-        GroupIssuableAutocompleteSerializer.new
+        ::Autocomplete::IssuableSerializer.new
       end
     end
   end
