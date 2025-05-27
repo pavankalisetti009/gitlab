@@ -19,6 +19,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       },
       {
         name: "external_control",
+        external_control_name: 'external_name',
         external_url: 'https://www.compliance-url.com',
         secret_token: 'token123',
         control_type: "external"
@@ -224,6 +225,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         end
 
         compliance_requirements_controls.last.tap do |external_control|
+          expect(external_control.external_control_name).to eq "external_name"
           expect(external_control.external_url).to eq "https://www.compliance-url.com"
           expect(external_control.secret_token).to eq('token123')
           expect(external_control.control_type).to eq("external")

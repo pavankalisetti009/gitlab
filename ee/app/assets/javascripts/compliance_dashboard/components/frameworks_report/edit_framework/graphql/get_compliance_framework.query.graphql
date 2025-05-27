@@ -47,6 +47,7 @@ query getComplianceFrameworkWithPolicies(
                 id
                 name
                 controlType
+                externalControlName
                 externalUrl
                 expression
               }

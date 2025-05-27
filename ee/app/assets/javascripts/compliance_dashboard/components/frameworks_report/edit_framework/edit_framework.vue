@@ -340,6 +340,7 @@ export default {
       ).map((control) => ({
         name: control.name,
         controlType: control.controlType || 'internal',
+        externalControlName: control.externalControlName || '',
         externalUrl: control.externalUrl || '',
         expression: control.expression || '',
         ...(control.secretToken && { secretToken: control.secretToken }),
@@ -404,6 +405,7 @@ export default {
       const controls = (requirement.stagedControls || []).map((control) => ({
         name: control.name,
         controlType: control.controlType || 'internal',
+        externalControlName: control.externalControlName || '',
         externalUrl: control.externalUrl || '',
         expression: control.expression || '',
         ...(control.secretToken && { secretToken: control.secretToken }),

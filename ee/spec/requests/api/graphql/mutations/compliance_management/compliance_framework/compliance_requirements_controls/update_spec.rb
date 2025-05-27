@@ -129,6 +129,7 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
             params: {
               name: 'external_control',
               control_type: 'external',
+              external_control_name: 'external_name',
               external_url: 'https://example.com',
               secret_token: 'secret_token',
               expression: ""
@@ -143,6 +144,9 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
           .and change {
             control.reload.secret_token
           }.to('secret_token')
+          .and change {
+            control.reload.external_control_name
+          }.to('external_name')
         end
 
         it 'returns the updated requirement control', :aggregate_failures do
@@ -151,6 +155,7 @@ RSpec.describe 'Update a compliance requirement control', feature_category: :com
           expect(mutation_response['requirementsControl']['name']).to eq 'external_control'
           expect(mutation_response['requirementsControl']['expression']).to be_empty
           expect(mutation_response['requirementsControl']['controlType']).to eq 'external'
+          expect(mutation_response['requirementsControl']['externalControlName']).to eq 'external_name'
           expect(mutation_response['requirementsControl']['externalUrl']).to eq 'https://example.com'
           expect(mutation_response['requirementsControl']['secretToken']).to be_nil
         end

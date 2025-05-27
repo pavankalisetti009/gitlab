@@ -152,6 +152,7 @@ export default {
           if (control.controlType === 'external') {
             return {
               ...baseControl,
+              externalControlName: control.externalControlName,
               externalUrl: control.externalUrl,
               secretToken: control.secretToken,
             };
@@ -175,6 +176,10 @@ export default {
         control.secretToken?.trim()
       );
     },
+    isValidExternalName(control) {
+      const name = control.externalControlName?.trim() || '';
+      return name.length <= MAX_NAME_LENGTH;
+    },
     validateControl(control) {
       if (!control) return true;
 
@@ -184,7 +189,13 @@ export default {
           const urlValid =
             this.showExternalControlSummary(control) || isValidURL(control.externalUrl);
           const secretValid = this.isValidSecretToken(control);
-          return { isValid: urlValid && secretValid, urlValid, secretValid };
+          const nameValid = this.isValidExternalName(control);
+          return {
+            isValid: urlValid && secretValid && nameValid,
+            urlValid,
+            secretValid,
+            nameValid,
+          };
         },
       };
 
@@ -198,6 +209,7 @@ export default {
 
       const validation = this.validateControl(control);
       this.controlValidation[index] = {
+        externalControlName: validation.nameValid,
         externalUrl: validation.urlValid,
         secretToken: validation.secretValid,
       };
@@ -222,6 +234,7 @@ export default {
         const validation = this.validateControl(control);
         if (typeof validation === 'object') {
           this.controlValidation[index] = {
+            externalControlName: validation.nameValid,
             externalUrl: validation.urlValid,
             secretToken: validation.secretValid,
           };
@@ -321,12 +334,14 @@ export default {
         const newIndex = this.controls.length;
         this.controls.push({
           controlType: type,
+          externalControlName: '',
           externalUrl: '',
           secretToken: '',
           name: type === 'external' ? 'external_control' : '',
         });
         if (type === 'external') {
           this.controlValidation[newIndex] = {
+            externalControlName: false,
             externalUrl: false,
             secretToken: false,
           };
@@ -430,11 +445,13 @@ export default {
     toggleText: s__('ComplianceFrameworks|Choose a GitLab control'),
     externalControl: s__('ComplianceFrameworks|External control'),
     removeControl: s__('ComplianceFrameworks|Remove control'),
+    externalControlName: s__('ComplianceFrameworks|External Control Name'),
     externalUrlLabel: s__('ComplianceFrameworks|External URL'),
     secretLabel: s__('ComplianceFrameworks|HMAC shared secret'),
     secretDescription: s__(
       'ComplianceFrameworks|Provide a shared secret to be used when sending a request for an external check to authenticate request using HMAC.',
     ),
+    invalidControlNameError: s__('ComplianceFrameworks|Please enter a valid name'),
     invalidUrlError: s__('ComplianceFrameworks|Please enter a valid URL'),
     secretTokenRequired: s__('ComplianceFrameworks|Secret token is required'),
     EXTERNAL_CONTROL_LABEL,
@@ -507,6 +524,28 @@ export default {
             </div>
           </template>
           <template v-else>
+            <gl-form-group
+              :label="$options.i18n.externalControlName"
+              label-sr-only
+              :invalid-feedback="$options.i18n.invalidControlNameError"
+              :state="controlInputState(index, 'externalControlName')"
+              :data-testid="`external-name-input-group-${index}`"
+            >
+              <gl-form-input-group>
+                <template #prepend>
+                  <gl-input-group-text>
+                    <gl-truncate :text="$options.i18n.externalControlName" position="middle" />
+                  </gl-input-group-text>
+                </template>
+                <gl-form-input
+                  v-model="control.externalControlName"
+                  type="text"
+                  :data-testid="`external-name-input-${index}`"
+                  class="gl-w-full"
+                />
+              </gl-form-input-group>
+            </gl-form-group>
+
             <gl-form-group
               :label="$options.i18n.externalUrlLabel"
               :label-sr-only="true"

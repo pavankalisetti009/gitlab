@@ -239,6 +239,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
                 name: control_params[:name],
                 expression: control_params[:expression],
                 control_type: control_params[:control_type],
+                external_control_name: control_params[:external_control_name],
                 external_url: control_params[:external_url],
                 secret_token: control_params[:secret_token]
               )
@@ -262,6 +263,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
               {
                 name: 'external_control',
                 control_type: 'external',
+                external_control_name: 'new_external_name',
                 external_url: external_url,
                 secret_token: 'updated_token'
               }
@@ -278,6 +280,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
             updated_control = requirement.compliance_requirements_controls.reload.find_by(external_url: external_url)
             expect(updated_control.secret_token).to eq('updated_token')
+            expect(updated_control.external_control_name).to eq('new_external_name')
           end
         end
 

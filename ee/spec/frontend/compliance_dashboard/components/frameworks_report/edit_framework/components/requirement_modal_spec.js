@@ -305,6 +305,7 @@ describe('RequirementModal', () => {
     });
 
     const findAddExternalControlButton = () => wrapper.findByTestId('add-external-control-button');
+    const findExternalNameInput = (index) => wrapper.findByTestId(`external-name-input-${index}`);
     const findExternalUrlInput = (index) => wrapper.findByTestId(`external-url-input-${index}`);
     const findExternalControlEditButton = (index) =>
       wrapper.findByTestId(`external-control-edit-button-${index}`);
@@ -318,6 +319,7 @@ describe('RequirementModal', () => {
     it('renders external control form when adding external control', async () => {
       await findAddExternalControlButton().vm.$emit('click');
       await nextTick();
+      expect(findExternalNameInput(1).exists()).toBe(true);
       expect(findExternalUrlInput(1).exists()).toBe(true);
       expect(findExternalSecretInput(1).exists()).toBe(true);
     });
@@ -326,9 +328,11 @@ describe('RequirementModal', () => {
       await findAddExternalControlButton().vm.$emit('click');
       await nextTick();
 
+      const externalControlName = 'external_name';
       const externalUrl = 'https://api.example.com';
       const secretToken = 'secret123';
 
+      await findExternalNameInput(1).vm.$emit('input', externalControlName);
       await findExternalUrlInput(1).vm.$emit('input', externalUrl);
       await findExternalSecretInput(1).vm.$emit('input', secretToken);
       await fillForm('Test Name', 'Test Description');
@@ -339,6 +343,7 @@ describe('RequirementModal', () => {
       expect(wrapper.emitted(requirementEvents.create)[0][0].requirement.stagedControls).toEqual([
         {
           controlType: 'external',
+          externalControlName,
           externalUrl,
           secretToken,
           name: 'external_control',
@@ -356,6 +361,7 @@ describe('RequirementModal', () => {
               id: '1',
               name: 'external_control',
               controlType: 'external',
+              externalControlName: 'external_name',
               externalUrl: 'https://api.example.com',
               secretToken: 'secret123',
             },
@@ -373,6 +379,7 @@ describe('RequirementModal', () => {
       await editButton.vm.$emit('click');
       await nextTick();
 
+      expect(findExternalNameInput(0).attributes('value')).toBe('external_name');
       expect(findExternalUrlInput(0).attributes('value')).toBe('https://api.example.com');
       expect(findExternalSecretInput(0).exists()).toBe(true);
 
@@ -404,6 +411,7 @@ describe('RequirementModal', () => {
               id: '1',
               name: 'external_control',
               controlType: 'external',
+              externalControlName: 'external_name',
               externalUrl: 'https://api.example.com',
               secretToken: 'secret123',
             },
@@ -438,6 +446,7 @@ describe('RequirementModal', () => {
       await addControl('scanner_sast_running', 1);
       await nextTick();
 
+      expect(findExternalNameInput(1).exists()).toBe(true);
       expect(findExternalUrlInput(1).exists()).toBe(true);
       expect(findControlAtIndex(2).exists()).toBe(true);
     });
@@ -516,14 +525,35 @@ describe('RequirementModal', () => {
         expect(findExternalSecretInputGroup(1).attributes('state')).toBe('true');
       });
 
+      it('validates external control name length', async () => {
+        await findAddExternalControlButton().vm.$emit('click');
+        await nextTick();
+
+        const longName = 'a'.repeat(256);
+        await findExternalNameInput(1).vm.$emit('input', longName);
+
+        await findExternalUrlInput(1).vm.$emit('input', 'https://api.example.com');
+        await findExternalSecretInput(1).vm.$emit('input', '123456789');
+        await fillForm('Test Name', 'Test Description');
+
+        submitModalForm();
+        await waitForPromises();
+        await nextTick();
+
+        expect(findExternalNameInput(1).attributes('state')).toBeUndefined();
+        expect(wrapper.emitted(requirementEvents.create)).toBeUndefined();
+      });
+
       it('flags multiple external controls as invalid if any are invalid', async () => {
         await findAddExternalControlButton().vm.$emit('click');
         await findAddExternalControlButton().vm.$emit('click');
         await nextTick();
 
+        await findExternalNameInput(1).vm.$emit('input', 'external_name');
         await findExternalUrlInput(1).vm.$emit('input', 'https://api1.example.com');
         await findExternalSecretInput(1).vm.$emit('input', 'secret1');
 
+        await findExternalNameInput(1).vm.$emit('input', 'external_name');
         await findExternalUrlInput(2).vm.$emit('input', 'not-a-url');
         await findExternalSecretInput(2).vm.$emit('input', 'secret2');
 
@@ -542,9 +572,11 @@ describe('RequirementModal', () => {
         await findAddExternalControlButton().vm.$emit('click');
         await nextTick();
 
+        await findExternalNameInput(1).vm.$emit('input', 'external_name');
         await findExternalUrlInput(1).vm.$emit('input', 'https://api1.example.com');
         await findExternalSecretInput(1).vm.$emit('input', 'secret1');
 
+        await findExternalNameInput(1).vm.$emit('input', 'external_name');
         await findExternalUrlInput(2).vm.$emit('input', 'https://api2.example.com');
         await findExternalSecretInput(2).vm.$emit('input', 'secret2');
 
