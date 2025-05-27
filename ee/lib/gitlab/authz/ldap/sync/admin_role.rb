@@ -58,8 +58,7 @@ module Gitlab
 
               logger.debug(message: 'Finished LDAP admin role sync for provider.', provider: provider)
 
-            rescue ::Gitlab::Auth::Ldap::LdapConnectionError => e
-
+            rescue StandardError => e
               ldap_admin_role_links.mark_syncs_as_failed(e.message)
 
               logger.error(message: 'Error during LDAP admin role sync for provider.', provider: provider)
