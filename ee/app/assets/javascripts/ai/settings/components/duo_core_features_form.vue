@@ -1,8 +1,8 @@
 <script>
 import { GlSprintf, GlFormCheckbox, GlFormGroup, GlLink } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
-import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import { DOCS_URL } from 'jh_else_ce/lib/utils/url_utility';
+import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 
 export default {
   name: 'DuoCoreFeaturesForm',
@@ -73,14 +73,12 @@ export default {
               <br />
             </template>
             <template #termsLink="{ content }">
-              <promo-page-link :path="$options.termsPath" target="_blank">
-                {{ content }}
-              </promo-page-link>
+              <promo-page-link :path="$options.termsPath" target="_blank">{{
+                content
+              }}</promo-page-link>
             </template>
             <template #requirementsLink="{ content }">
-              <gl-link :href="$options.requirementsPath" target="_blank">
-                {{ content }}
-              </gl-link>
+              <gl-link :href="$options.requirementsPath" target="_blank">{{ content }}</gl-link>
             </template>
           </gl-sprintf>
         </template>
