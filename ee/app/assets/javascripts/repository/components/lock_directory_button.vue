@@ -8,6 +8,7 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import currentUserQuery from '~/graphql_shared/queries/current_user.query.graphql';
 import projectInfoQuery from 'ee_else_ce/repository/queries/project_info.query.graphql';
 import lockPathMutation from '~/repository/mutations/lock_path.mutation.graphql';
+import { DEFAULT_BLOB_INFO } from '~/repository/constants';
 
 export default {
   name: 'LockDirectoryButton',
@@ -54,13 +55,16 @@ export default {
         };
       },
       update({ project }) {
-        const allPathLocks = project.pathLocks?.nodes?.map((lock) => this.mapPathLocks(lock));
+        const allPathLocks = project?.pathLocks?.nodes?.map((lock) => this.mapPathLocks(lock));
         this.pathLock =
-          allPathLocks.find(
+          allPathLocks?.find(
             (lock) =>
               this.isDownstreamLock(lock) || this.isUpstreamLock(lock) || this.isExactLock(lock),
           ) || {};
-        this.projectUserPermissions = project.userPermissions;
+        this.projectUserPermissions = project?.userPermissions || {
+          ...DEFAULT_BLOB_INFO.userPermissions,
+          createPathLock: false,
+        };
       },
       result() {
         this.$emit('lockedDirectory', {
