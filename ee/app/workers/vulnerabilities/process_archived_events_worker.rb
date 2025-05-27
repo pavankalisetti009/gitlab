@@ -23,7 +23,7 @@ module Vulnerabilities
 
       handle_project_records(project_setting.project_id)
       # Handle namespace-level records after project records to ensure calculations use updated data.
-      handle_namespace_records(project_setting.project_id, event.data[:namespace_id])
+      handle_namespace_records(event.data[:namespace_id])
     end
 
     def handle_project_records(project_id)
@@ -31,11 +31,11 @@ module Vulnerabilities
       Vulnerabilities::UpdateArchivedOfVulnerabilityStatisticsService.execute(project_id)
     end
 
-    def handle_namespace_records(project_id, namespace_id)
-      group = Group.by_id(namespace_id).first
+    def handle_namespace_records(namespace_id)
+      group = Group.find_by_id(namespace_id)
       return unless group
 
-      NamespaceStatistics::RecalculateService.execute(project_id, group)
+      NamespaceStatistics::RecalculateService.execute(group)
     end
   end
 end
