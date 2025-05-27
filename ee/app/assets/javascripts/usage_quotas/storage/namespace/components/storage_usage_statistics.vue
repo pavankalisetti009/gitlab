@@ -52,9 +52,6 @@ export default {
           namespaceId: parseInt(this.namespaceId, 10),
         };
       },
-      skip() {
-        return !gon.features?.limitedAccessModal;
-      },
       update: (data) => ({
         ...data.subscription,
         reason: data.userActionAccess?.limitedAccessReason,
@@ -87,7 +84,8 @@ export default {
     isPurchaseButtonShown() {
       return (
         this.purchaseStorageUrl &&
-        (this.isUsingProjectEnforcementWithNoLimits || this.isUsingNamespaceEnforcement)
+        (this.isUsingProjectEnforcementWithNoLimits || this.isUsingNamespaceEnforcement) &&
+        !this.$apollo.queries.subscriptionPermissions.loading
       );
     },
     shouldShowLimitedAccessModal() {
@@ -95,11 +93,7 @@ export default {
       // whether the storage is expandable.
       const canAddStorage = this.subscriptionPermissions?.canAddSeats ?? true;
 
-      return (
-        !canAddStorage &&
-        gon.features?.limitedAccessModal &&
-        LIMITED_ACCESS_KEYS.includes(this.subscriptionPermissions.reason)
-      );
+      return !canAddStorage && LIMITED_ACCESS_KEYS.includes(this.subscriptionPermissions.reason);
     },
     shouldShowLimitUI() {
       return !this.subjectToHighLimit || this.aboveSizeLimit;

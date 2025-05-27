@@ -18,7 +18,6 @@ RSpec.describe 'Groups > Usage Quotas > Pipelines tab', :js, feature_category: :
   shared_context 'when user is allowed to see usage quotas' do
     before do
       stub_signing_key
-      stub_feature_flags(limited_access_modal: false)
       stub_ee_application_setting(should_check_namespace_plan: gitlab_dot_com)
       stub_subscription_permissions_data(group.id)
 
@@ -254,10 +253,9 @@ RSpec.describe 'Groups > Usage Quotas > Pipelines tab', :js, feature_category: :
     end
   end
 
-  context 'with limited_access_modal FF enabled' do
+  context 'when user has limited access to subscription' do
     before do
       stub_signing_key
-      stub_feature_flags(limited_access_modal: true)
       stub_subscription_permissions_data(group.id, can_add_seats: false)
       stub_ee_application_setting(should_check_namespace_plan: gitlab_dot_com)
 

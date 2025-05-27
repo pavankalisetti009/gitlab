@@ -335,16 +335,9 @@ describe('StatisticsSeatsCard', () => {
   });
 
   describe('limited access modal', () => {
-    describe('when limitedAccessModal FF is on', () => {
-      beforeEach(() => {
-        gon.features = { limitedAccessModal: true };
-      });
-
-      describe.each([
-        null,
-        { limitedAccessReason: null },
-        { limitedAccessReason: 'INVALID_REASON' },
-      ])('with userActionAccess = %s', (userActionAccess) => {
+    describe.each([null, { limitedAccessReason: null }, { limitedAccessReason: 'INVALID_REASON' }])(
+      'with userActionAccess = %s',
+      (userActionAccess) => {
         beforeEach(async () => {
           subscriptionPermissionsQueryHandlerMock = jest.fn().mockResolvedValue({
             data: {
@@ -369,112 +362,92 @@ describe('StatisticsSeatsCard', () => {
         it('does not render the modal', () => {
           expect(findLimitedAccessModal().exists()).toBe(false);
         });
-      });
+      },
+    );
 
-      describe.each`
-        canAddSeats | limitedAccessReason
-        ${false}    | ${'MANAGED_BY_RESELLER'}
-        ${false}    | ${'RAMP_SUBSCRIPTION'}
-      `(
-        'when canAddSeats=$canAddSeats and limitedAccessReason=$limitedAccessReason',
-        ({ canAddSeats, limitedAccessReason }) => {
-          beforeEach(async () => {
-            subscriptionPermissionsQueryHandlerMock = jest.fn().mockResolvedValue({
-              data: {
-                subscription: {
-                  canAddSeats,
-                  canRenew: true,
-                  communityPlan: false,
-                  canAddDuoProSeats: true,
-                },
-                userActionAccess: { limitedAccessReason },
+    describe.each`
+      canAddSeats | limitedAccessReason
+      ${false}    | ${'MANAGED_BY_RESELLER'}
+      ${false}    | ${'RAMP_SUBSCRIPTION'}
+    `(
+      'when canAddSeats=$canAddSeats and limitedAccessReason=$limitedAccessReason',
+      ({ canAddSeats, limitedAccessReason }) => {
+        beforeEach(async () => {
+          subscriptionPermissionsQueryHandlerMock = jest.fn().mockResolvedValue({
+            data: {
+              subscription: {
+                canAddSeats,
+                canRenew: true,
+                communityPlan: false,
+                canAddDuoProSeats: true,
               },
-            });
-            createComponent();
-            await waitForPromises();
-
-            findPurchaseButton().vm.$emit('click');
-
-            await nextTick();
+              userActionAccess: { limitedAccessReason },
+            },
           });
+          createComponent();
+          await waitForPromises();
 
-          it('shows modal', () => {
-            expect(findLimitedAccessModal().isVisible()).toBe(true);
-          });
+          findPurchaseButton().vm.$emit('click');
 
-          it('sends correct props', () => {
-            expect(findLimitedAccessModal().props('limitedAccessReason')).toBe(limitedAccessReason);
-          });
+          await nextTick();
+        });
 
-          it('does not navigate to URL', () => {
-            expect(visitUrl).not.toHaveBeenCalled();
-          });
+        it('shows modal', () => {
+          expect(findLimitedAccessModal().isVisible()).toBe(true);
+        });
 
-          it('does not show the `Explore plans` button', () => {
-            expect(findExplorePlansButton().exists()).toBe(false);
-          });
-        },
-      );
+        it('sends correct props', () => {
+          expect(findLimitedAccessModal().props('limitedAccessReason')).toBe(limitedAccessReason);
+        });
 
-      describe.each`
-        canAddSeats | limitedAccessReason
-        ${true}     | ${'MANAGED_BY_RESELLER'}
-        ${true}     | ${'RAMP_SUBSCRIPTION'}
-      `(
-        'when canAddSeats=$canAddSeats and limitedAccessReason=$limitedAccessReason',
-        ({ canAddSeats, limitedAccessReason }) => {
-          beforeEach(async () => {
-            subscriptionPermissionsQueryHandlerMock = jest.fn().mockResolvedValue({
-              data: {
-                subscription: {
-                  canAddSeats,
-                  canRenew: true,
-                  communityPlan: false,
-                  canAddDuoProSeats: true,
-                },
-                userActionAccess: { limitedAccessReason },
+        it('does not navigate to URL', () => {
+          expect(visitUrl).not.toHaveBeenCalled();
+        });
+
+        it('does not show the `Explore plans` button', () => {
+          expect(findExplorePlansButton().exists()).toBe(false);
+        });
+      },
+    );
+
+    describe.each`
+      canAddSeats | limitedAccessReason
+      ${true}     | ${'MANAGED_BY_RESELLER'}
+      ${true}     | ${'RAMP_SUBSCRIPTION'}
+    `(
+      'when canAddSeats=$canAddSeats and limitedAccessReason=$limitedAccessReason',
+      ({ canAddSeats, limitedAccessReason }) => {
+        beforeEach(async () => {
+          subscriptionPermissionsQueryHandlerMock = jest.fn().mockResolvedValue({
+            data: {
+              subscription: {
+                canAddSeats,
+                canRenew: true,
+                communityPlan: false,
+                canAddDuoProSeats: true,
               },
-            });
-            createComponent();
-            await waitForPromises();
-
-            findPurchaseButton().vm.$emit('click');
-            await nextTick();
+              userActionAccess: { limitedAccessReason },
+            },
           });
+          createComponent();
+          await waitForPromises();
 
-          it('does not show modal', () => {
-            expect(findLimitedAccessModal().exists()).toBe(false);
-          });
+          findPurchaseButton().vm.$emit('click');
+          await nextTick();
+        });
 
-          it('navigates to URL', () => {
-            expect(visitUrl).toHaveBeenCalledWith(purchaseButtonLink);
-          });
+        it('does not show modal', () => {
+          expect(findLimitedAccessModal().exists()).toBe(false);
+        });
 
-          it('does not show the `Explore plans` button', () => {
-            expect(findExplorePlansButton().exists()).toBe(false);
-          });
-        },
-      );
-    });
+        it('navigates to URL', () => {
+          expect(visitUrl).toHaveBeenCalledWith(purchaseButtonLink);
+        });
 
-    describe('when limitedAccessModal FF is off', () => {
-      beforeEach(async () => {
-        gon.features = { limitedAccessModal: false };
-        createComponent();
-
-        await waitForPromises();
-
-        findPurchaseButton().vm.$emit('click');
-        await nextTick();
-      });
-
-      it('does not show modal', () => {
-        expect(findLimitedAccessModal().exists()).toBe(false);
-      });
-
-      it('navigates to URL', () => {
-        expect(visitUrl).toHaveBeenCalledWith('https://gitlab.com/purchase-more-seats');
-      });
-    });
+        it('does not show the `Explore plans` button', () => {
+          expect(findExplorePlansButton().exists()).toBe(false);
+        });
+      },
+    );
   });
 });

@@ -132,13 +132,14 @@ export default {
           namespaceId: this.namespaceId,
         };
       },
-      skip() {
-        return !gon.features?.limitedAccessModal;
-      },
       update: (data) => ({
         ...data.subscription,
         reason: data.userActionAccess?.limitedAccessReason,
       }),
+      error(error) {
+        captureException({ error, component: this.$options.name });
+        logError('PipelineUsageApp: error fetching subscriptionPermissions query.', error);
+      },
     },
   },
   computed: {
@@ -159,7 +160,11 @@ export default {
       return this.selectedMonthProjectData?.projects?.pageInfo ?? {};
     },
     shouldShowBuyAdditionalMinutes() {
-      return this.buyAdditionalMinutesPath && this.buyAdditionalMinutesTarget;
+      return (
+        this.buyAdditionalMinutesPath &&
+        this.buyAdditionalMinutesTarget &&
+        !this.$apollo.queries.subscriptionPermissions.loading
+      );
     },
     isLoadingYearUsageData() {
       return this.$apollo.queries.ciMinutesUsage.loading;
@@ -198,11 +203,7 @@ export default {
       // whether the additional minutes are expandable.
       const canAddMinutes = this.subscriptionPermissions?.canAddSeats ?? true;
 
-      return (
-        !canAddMinutes &&
-        gon.features?.limitedAccessModal &&
-        LIMITED_ACCESS_KEYS.includes(this.subscriptionPermissions.reason)
-      );
+      return !canAddMinutes && LIMITED_ACCESS_KEYS.includes(this.subscriptionPermissions.reason);
     },
   },
   methods: {
