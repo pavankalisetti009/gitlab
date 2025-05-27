@@ -7,6 +7,7 @@ module Search
         VERTEX_TEXT_EMBEDDING_DIMENSION = 768
         OPENSEARCH_EF_CONSTRUCTION = 100
         OPENSEARCH_M = 16
+        LUCENE_MIN_VERSION = '2.1.0'
 
         class << self
           def index_name
@@ -66,7 +67,7 @@ module Search
               dimension: VERTEX_TEXT_EMBEDDING_DIMENSION,
               method: {
                 name: 'hnsw',
-                engine: 'nmslib',
+                engine: opensearch_engine,
                 space_type: 'cosinesimil',
                 parameters: {
                   ef_construction: OPENSEARCH_EF_CONSTRUCTION,
@@ -126,6 +127,15 @@ module Search
 
           def helper
             @helper ||= Gitlab::Elastic::Helper.default
+          end
+
+          def opensearch_engine
+            helper = Gitlab::Elastic::Helper.default
+            if helper.matching_distribution?(:opensearch, min_version: LUCENE_MIN_VERSION, inclusive: false)
+              'lucene'
+            else
+              'nmslib'
+            end
           end
         end
       end
