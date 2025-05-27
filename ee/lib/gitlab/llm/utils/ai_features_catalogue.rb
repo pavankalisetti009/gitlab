@@ -117,6 +117,7 @@ module Gitlab
           },
           review_merge_request: {
             service_class: ::Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest,
+            aigw_service_class: ::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest,
             prompt_class: ::Gitlab::Llm::Templates::ReviewMergeRequest,
             feature_category: :code_review_workflow,
             execute_method: ::Llm::ReviewMergeRequestService,

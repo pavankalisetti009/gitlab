@@ -199,6 +199,11 @@ module Gitlab
           }
         end
 
+        def to_prompt_inputs
+          # Only include variables for multi file since that should be a default soon
+          variables.slice(:mr_title, :mr_description, :diff_lines, :full_file_intro, :full_content_section)
+        end
+
         def model_version
           ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_7_SONNET
         end
