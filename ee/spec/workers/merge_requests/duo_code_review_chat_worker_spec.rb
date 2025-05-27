@@ -312,6 +312,29 @@ RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_r
 
       it_behaves_like 'performing a Duo Code Review chat request'
     end
+
+    describe 'event tracking' do
+      it 'tracks mention event when a note mentions GitLab Duo' do
+        note_with_mention = create(
+          :note,
+          project: project,
+          noteable: merge_request,
+          note: "@#{::Users::Internal.duo_code_review_bot.username} can you review this?"
+        )
+
+        allow(worker).to receive_messages(
+          create_progress_note: instance_double(Note, destroy: true),
+          prepare_prompt_message: instance_double(Note, destroy: true),
+          execute_chat_request: instance_double(Gitlab::Llm::Chain::ResponseModifier, response_body: 'response'),
+          create_note_on: nil
+        )
+
+        expect { worker.perform(note_with_mention.id) }
+          .to trigger_internal_events('mention_gitlabduo_in_mr_comment')
+          .with(user: note_with_mention.author, project: note_with_mention.project)
+          .and increment_usage_metrics('counts.count_total_mention_gitlabduo_in_mr_comment')
+      end
+    end
   end
 
   def chat_message_params(role, resource, content)

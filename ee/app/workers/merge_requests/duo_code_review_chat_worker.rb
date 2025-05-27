@@ -4,6 +4,7 @@ module MergeRequests
   class DuoCodeReviewChatWorker # rubocop:disable Scalability/IdempotentWorker -- Running worker twice will create duplicate notes
     include ApplicationWorker
     include ::Gitlab::Utils::StrongMemoize
+    include Gitlab::InternalEventsTracking
 
     feature_category :code_review_workflow
     urgency :low
@@ -19,6 +20,8 @@ module MergeRequests
       return unless note.duo_bot_mentioned?
 
       progress_note = create_progress_note(note)
+
+      track_internal_event('mention_gitlabduo_in_mr_comment', user: note.author, project: note.project)
 
       prompt_message = prepare_prompt_message(note)
       response = execute_chat_request(prompt_message, note)
