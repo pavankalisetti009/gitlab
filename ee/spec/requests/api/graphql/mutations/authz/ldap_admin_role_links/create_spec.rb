@@ -35,6 +35,10 @@ RSpec.describe 'creating LDAP admin role link', feature_category: :permissions d
 
   let(:mutation) { graphql_mutation(:ldap_admin_role_link_create, input, fields) }
 
+  before do
+    allow(::Gitlab::Auth::Ldap::Config).to receive_messages(providers: ['ldap'])
+  end
+
   subject(:create_admin_link) { graphql_mutation_response(:ldap_admin_role_link_create) }
 
   context 'without the custom roles feature' do

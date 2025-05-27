@@ -13,10 +13,16 @@ RSpec.describe Authz::Ldap::AdminRolesSyncService, feature_category: :permission
     end
 
     context 'with sync statuses' do
-      let_it_be(:ready_sync) { create(:ldap_admin_role_link, cn: 'group1', sync_status: 'never_synced') }
-      let_it_be(:running_sync) { create(:ldap_admin_role_link, cn: 'group2', sync_status: 'running') }
-      let_it_be(:successful_sync) { create(:ldap_admin_role_link, cn: 'group3', sync_status: 'successful') }
-      let_it_be(:failed_sync) { create(:ldap_admin_role_link, cn: 'group4', sync_status: 'failed') }
+      let_it_be(:ready_sync) do
+        create(:ldap_admin_role_link, :skip_validate, cn: 'group1', sync_status: 'never_synced')
+      end
+
+      let_it_be(:running_sync) { create(:ldap_admin_role_link, :skip_validate, cn: 'group2', sync_status: 'running') }
+      let_it_be(:successful_sync) do
+        create(:ldap_admin_role_link, :skip_validate, cn: 'group3', sync_status: 'successful')
+      end
+
+      let_it_be(:failed_sync) { create(:ldap_admin_role_link, :skip_validate, cn: 'group4', sync_status: 'failed') }
 
       it 'marks syncs that are not running as queued' do
         enqueue_sync

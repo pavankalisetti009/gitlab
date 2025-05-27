@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Authz::LdapAdminRoleLinks::DestroyService, :enable_admin_mode, feature_category: :permissions do
   describe '#execute' do
-    let_it_be(:ldap_admin_role_link) { create(:ldap_admin_role_link) }
+    let_it_be(:ldap_admin_role_link) { create(:ldap_admin_role_link, :skip_validate) }
     let_it_be(:user) { create(:admin) }
 
     let(:params) { { id: ldap_admin_role_link.id } }
