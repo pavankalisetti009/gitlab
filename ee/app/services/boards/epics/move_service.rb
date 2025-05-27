@@ -8,6 +8,10 @@ module Boards
       private
 
       def update(epic, epic_modification_params)
+        RepositionService.new(epic: epic, current_user: current_user, params: epic_modification_params).execute
+
+        return unless requires_update_service?(epic_modification_params)
+
         ::Epics::UpdateService.new(group: epic.group, current_user: current_user, params: epic_modification_params).execute(epic)
       end
 
@@ -27,6 +31,12 @@ module Boards
       override :reposition_params
       def reposition_params(reposition_ids)
         super.merge(list_id: params[:to_list_id], board_id: board.id, board_group: parent)
+      end
+
+      def requires_update_service?(params)
+        params.key?(:add_label_ids) ||
+          params.key?(:remove_label_ids) ||
+          params.key?(:state_event)
       end
     end
   end
