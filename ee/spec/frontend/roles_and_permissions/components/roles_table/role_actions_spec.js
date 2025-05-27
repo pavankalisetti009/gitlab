@@ -1,7 +1,8 @@
-import { GlDisclosureDropdown, GlIcon, GlPopover, GlTooltip } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlIcon, GlPopover } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import RoleActions from 'ee/roles_and_permissions/components/roles_table/role_actions.vue';
+import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import { mockMemberRole, adminRoles } from '../../mock_data';
 
 describe('Role actions', () => {
@@ -26,6 +27,9 @@ describe('Role actions', () => {
     wrapper = mountExtended(RoleActions, {
       propsData: { role },
       mocks: { $toast: { show: mockToastShow } },
+      directives: {
+        GlTooltip: createMockDirective('gl-tooltip'),
+      },
     });
   };
 
@@ -34,7 +38,7 @@ describe('Role actions', () => {
   const findViewDetailsItem = () => wrapper.findByTestId('view-details-item');
   const findEditRoleItem = () => wrapper.findByTestId('edit-role-item');
   const findDeleteRoleItem = () => wrapper.findByTestId('delete-role-item');
-  const findDeleteRoleItemTooltip = () => wrapper.findComponent(GlTooltip);
+  const findDeleteRoleItemTooltip = () => getBinding(findDeleteRoleItem().element, 'gl-tooltip');
   const findPopover = () => wrapper.findComponent(GlPopover);
   const findPolicyName = () => wrapper.findByTestId('policy-name');
 
@@ -118,8 +122,8 @@ describe('Role actions', () => {
           });
         });
 
-        it('does not have tooltip', () => {
-          expect(findDeleteRoleItemTooltip().exists()).toBe(false);
+        it('does not have a tooltip', () => {
+          expect(findDeleteRoleItemTooltip().value).toBe('');
         });
 
         it('emits delete event when clicked', async () => {
@@ -140,16 +144,10 @@ describe('Role actions', () => {
         });
 
         it('has expected tooltip', () => {
-          expect(findDeleteRoleItemTooltip().exists()).toBe(true);
-          expect(findDeleteRoleItemTooltip().props()).toEqual(
-            expect.objectContaining({
-              placement: 'left',
-              boundary: 'viewport',
-            }),
-          );
-          expect(findDeleteRoleItemTooltip().text()).toBe(
-            "You can't delete this custom role until you remove it from all group members.",
-          );
+          expect(getBinding(findDeleteRoleItem().element, 'gl-tooltip')).toMatchObject({
+            value: "You can't delete this custom role until you remove it from all group members.",
+            modifiers: { d0: true, left: true, viewport: true },
+          });
         });
       });
 
@@ -163,7 +161,7 @@ describe('Role actions', () => {
         });
 
         it('does not render the tooltip', () => {
-          expect(findDeleteRoleItemTooltip().exists()).toBe(false);
+          expect(findDeleteRoleItemTooltip().value).toBe('');
         });
 
         it('renders the popover', () => {

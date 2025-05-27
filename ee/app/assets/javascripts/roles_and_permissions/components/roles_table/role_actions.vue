@@ -6,7 +6,7 @@ import {
   GlLink,
   GlPopover,
   GlSprintf,
-  GlTooltip,
+  GlTooltipDirective,
 } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -36,7 +36,9 @@ export default {
     GlLink,
     GlPopover,
     GlSprintf,
-    GlTooltip,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     role: {
@@ -117,19 +119,11 @@ export default {
       <gl-disclosure-dropdown-item data-testid="edit-role-item" :item="editRoleItem" />
       <gl-disclosure-dropdown-item
         :id="deleteActionId"
+        v-gl-tooltip.left.viewport.d0="deleteTooltip"
         data-testid="delete-role-item"
         :item="deleteRoleItem"
         @action="$emit('delete')"
       />
-
-      <gl-tooltip
-        v-if="deleteTooltip"
-        :target="deleteActionId"
-        placement="left"
-        boundary="viewport"
-      >
-        {{ deleteTooltip }}
-      </gl-tooltip>
 
       <gl-popover
         v-if="hasDependentSecurityPolicies"
@@ -137,7 +131,6 @@ export default {
         placement="left"
         boundary="viewport"
         :title="$options.i18n.deletePopoverTitle"
-        show-close-button
       >
         {{ $options.i18n.deletePopoverText }}
         <ul class="gl-pl-5">

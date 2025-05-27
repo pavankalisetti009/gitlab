@@ -5,18 +5,17 @@ import { isCustomRole, isAdminRole } from '../../utils';
 import RoleActions from './role_actions.vue';
 
 export const TABLE_FIELDS = [
-  { key: 'name', label: s__('MemberRole|Name') },
+  { key: 'name', label: s__('MemberRole|Name'), tdClass: 'md:gl-w-3/10' },
   { key: 'description', label: s__('MemberRole|Description') },
   {
     key: 'usersCount',
     label: s__('MemberRole|Direct users assigned'),
-    thClass: 'gl-w-12 gl-whitespace-nowrap',
+    thClass: 'gl-whitespace-nowrap',
     tdClass: 'gl-text-right',
   },
   {
     key: 'actions',
     label: s__('MemberRole|Actions'),
-    thClass: 'gl-w-12',
     tdClass: 'gl-text-right',
   },
 ];

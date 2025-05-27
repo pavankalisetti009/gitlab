@@ -1,6 +1,7 @@
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import LdapSyncItem from 'ee/roles_and_permissions/components/ldap_sync/ldap_sync_item.vue';
+import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import { ldapAdminRoleLinks } from '../../mock_data';
 
 describe('LdapSyncItem component', () => {
@@ -9,12 +10,17 @@ describe('LdapSyncItem component', () => {
   const createWrapper = ({ roleLink = ldapAdminRoleLinks[0] } = {}) => {
     wrapper = shallowMountExtended(LdapSyncItem, {
       propsData: { roleLink },
+      directives: {
+        GlTooltip: createMockDirective('gl-tooltip'),
+      },
     });
   };
 
   const findDts = () => wrapper.findAll('dt');
   const findDds = () => wrapper.findAll('dd');
+  const findServerName = () => findDds().at(0);
   const findDeleteButton = () => wrapper.findComponent(GlButton);
+  const getUnknownServerIcon = () => findServerName().findComponent(GlIcon);
 
   describe.each`
     roleLink                 | syncMethodLabel   | syncMethodValue                            | expectedServer | expectedRole
@@ -30,7 +36,7 @@ describe('LdapSyncItem component', () => {
       });
 
       it('shows server name', () => {
-        expect(findDds().at(0).text()).toBe(expectedServer);
+        expect(findServerName().text()).toBe(expectedServer);
       });
 
       it('shows sync method label', () => {
@@ -67,4 +73,30 @@ describe('LdapSyncItem component', () => {
       });
     },
   );
+
+  describe('when LDAP server is unknown', () => {
+    beforeEach(() => {
+      ldapAdminRoleLinks[0].provider.label = null;
+      createWrapper();
+    });
+
+    it('shows server id in orange', () => {
+      expect(findServerName().text()).toBe('ldapmain');
+      expect(findServerName().classes('gl-text-warning')).toBe(true);
+    });
+
+    it('shows unknown server icon', () => {
+      expect(getUnknownServerIcon().props()).toMatchObject({
+        name: 'warning-solid',
+        variant: 'warning',
+      });
+    });
+
+    it('shows unknown icon tooltip', () => {
+      expect(getBinding(getUnknownServerIcon().element, 'gl-tooltip')).toMatchObject({
+        value: 'Unknown LDAP server. Please check your server settings.',
+        modifiers: { d0: true },
+      });
+    });
+  });
 });

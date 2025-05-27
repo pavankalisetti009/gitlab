@@ -93,7 +93,7 @@ describe('LdapSyncCrud component', () => {
 
     it('shows description', () => {
       expect(findCrudComponent().props('description')).toBe(
-        'Automatically sync your LDAP directory to custom admin roles.',
+        'Automatically sync your LDAP directory to custom admin roles. For users matched to multiple LDAP syncs, the oldest sync entry will be used.',
       );
     });
   });
@@ -251,7 +251,7 @@ describe('LdapSyncCrud component', () => {
 
       it('shows message in modal body', () => {
         expect(findDeleteModal().text()).toBe(
-          'This removes automatic syncing with your LDAP server. Users will keep their current role but future changes will require manual updates. Are you sure you want to remove LDAP synchronization?',
+          'This removes automatic syncing with your LDAP server. Users will have their current role unassigned on the next sync. Are you sure you want to remove LDAP synchronization?',
         );
       });
 

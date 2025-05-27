@@ -100,17 +100,24 @@ export default {
   <crud-component
     v-else
     :title="s__('LDAP|Active synchronizations')"
-    :description="s__('MemberRole|Automatically sync your LDAP directory to custom admin roles.')"
+    :description="
+      s__(
+        'MemberRole|Automatically sync your LDAP directory to custom admin roles. For users matched to multiple LDAP syncs, the oldest sync entry will be used.',
+      )
+    "
     :count="roleLinksCount"
     :is-loading="isRoleLinksLoading"
   >
     <template #actions="{ showForm }">
-      <div v-if="!isRoleLinksLoading" class="gl-flex gl-flex-wrap">
-        <gl-link v-if="roleLinksCount" :href="ldapUsersPath" class="gl-my-3 gl-mr-4">
+      <div
+        v-if="!isRoleLinksLoading"
+        class="gl-flex gl-flex-wrap gl-gap-2 gl-whitespace-nowrap md:gl-justify-end lg:gl-flex-nowrap"
+      >
+        <gl-link v-if="roleLinksCount" :href="ldapUsersPath" class="gl-my-3 gl-mr-3">
           {{ s__('MemberRole|View LDAP synced users') }}
         </gl-link>
 
-        <div class="gl-flex gl-flex-wrap gl-gap-3">
+        <div class="gl-flex gl-flex-wrap gl-gap-3 md:gl-flex-nowrap">
           <sync-all-button v-if="roleLinksCount" />
           <gl-button variant="confirm" @click="showForm">
             {{ s__('LDAP|Add synchronization') }}
@@ -130,7 +137,7 @@ export default {
         <gl-sprintf
           :message="
             s__(
-              'MemberRole|This removes automatic syncing with your LDAP server. Users will keep their current role but future changes will require manual updates. %{confirmStart}Are you sure you want to remove LDAP synchronization?%{confirmEnd}',
+              'MemberRole|This removes automatic syncing with your LDAP server. Users will have their current role unassigned on the next sync. %{confirmStart}Are you sure you want to remove LDAP synchronization?%{confirmEnd}',
             )
           "
         >

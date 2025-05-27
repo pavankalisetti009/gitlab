@@ -218,7 +218,7 @@ export const ldapAdminRoleLinks = [
   {
     id: 'gid://gitlab/Authz::LdapAdminRoleLink/1',
     provider: {
-      id: 'ldap',
+      id: 'ldapmain',
       label: 'LDAP',
     },
     cn: null,
