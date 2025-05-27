@@ -22786,7 +22786,8 @@ CREATE TABLE security_orchestration_policy_rule_schedules (
     project_id bigint,
     namespace_id bigint,
     policy_type smallint DEFAULT 0 NOT NULL,
-    CONSTRAINT check_915825a76e CHECK ((char_length(cron) <= 255))
+    CONSTRAINT check_915825a76e CHECK ((char_length(cron) <= 255)),
+    CONSTRAINT check_b2b0883c5c CHECK ((num_nonnulls(namespace_id, project_id) = 1))
 );
 
 COMMENT ON TABLE security_orchestration_policy_rule_schedules IS '{"owner":"group::container security","description":"Schedules used to store relationship between project and security policy repository"}';
