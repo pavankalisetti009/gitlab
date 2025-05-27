@@ -14,12 +14,16 @@ export default {
   },
   data() {
     return {
-      selectedItem: null,
+      selectedItems: [],
     };
   },
   methods: {
     toggleDetails(item) {
-      this.selectedItem = this.selectedItem === item ? null : item;
+      if (this.selectedItems.includes(item)) {
+        this.selectedItems = this.selectedItems.filter((i) => i !== item);
+      } else {
+        this.selectedItems.push(item);
+      }
     },
   },
 };
@@ -35,9 +39,12 @@ export default {
         <div>
           <slot name="header" :item="item"></slot>
         </div>
-        <gl-animated-chevron-lg-right-down-icon class="gl-ml-auto" :is-on="selectedItem === item" />
+        <gl-animated-chevron-lg-right-down-icon
+          class="gl-ml-auto"
+          :is-on="selectedItems.includes(item)"
+        />
       </div>
-      <gl-collapse :visible="selectedItem === item" class="gl-p-3">
+      <gl-collapse :visible="selectedItems.includes(item)" class="gl-p-3 gl-pl-5">
         <slot :item="item"></slot>
       </gl-collapse>
     </div>

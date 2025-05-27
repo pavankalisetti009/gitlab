@@ -220,6 +220,7 @@ export default {
     policies: s__('ComplianceFrameworksReport|Policies'),
     complianceRequirements: s__('ComplianceFrameworksReport|Requirements'),
     controls: s__('ComplianceFrameworksReport|Controls'),
+    noControlsText: s__('ComplianceFrameworksReport|No controls'),
   },
 };
 </script>
@@ -345,29 +346,34 @@ export default {
                 <h4 class="gl-heading-4 gl-mb-3">{{ requirement.name }}</h4>
               </template>
               <template #default="{ item: requirement }">
-                <h4 class="gl-text-base gl-font-bold">{{ $options.i18n.controls }}:</h4>
-                <ul class="-gl-mx-6">
-                  <li
-                    v-for="control in controlsForRequirement(
-                      requirement.complianceRequirementsControls.nodes,
-                    )"
-                    :key="control.id"
-                  >
-                    {{ control.displayValue }}
-                    <gl-badge v-if="isExternalControl(control)">
-                      {{ $options.EXTERNAL_CONTROL_LABEL }}
-                    </gl-badge>
-                    <gl-button
-                      v-if="isExternalControl(control)"
-                      class="gl-ml-3"
-                      variant="link"
-                      data-testid="copy-control-id-button"
-                      @click="copyControlIdToClipboard(control)"
+                <template v-if="requirement.complianceRequirementsControls.nodes.length">
+                  <h4 class="gl-text-base gl-font-bold">{{ $options.i18n.controls }}:</h4>
+                  <ul class="-gl-ml-6">
+                    <li
+                      v-for="control in controlsForRequirement(
+                        requirement.complianceRequirementsControls.nodes,
+                      )"
+                      :key="control.id"
                     >
-                      {{ $options.i18n.copyIdButtonText }}
-                    </gl-button>
-                  </li>
-                </ul>
+                      {{ control.displayValue }}
+                      <gl-badge v-if="isExternalControl(control)">
+                        {{ $options.EXTERNAL_CONTROL_LABEL }}
+                      </gl-badge>
+                      <gl-button
+                        v-if="isExternalControl(control)"
+                        class="gl-ml-3"
+                        variant="link"
+                        data-testid="copy-control-id-button"
+                        @click="copyControlIdToClipboard(control)"
+                      >
+                        {{ $options.i18n.copyIdButtonText }}
+                      </gl-button>
+                    </li>
+                  </ul>
+                </template>
+                <template v-else>
+                  <p class="gl-mt-3 gl-text-gray-500">{{ $options.i18n.noControlsText }}</p>
+                </template>
               </template>
             </drawer-accordion>
           </div>
