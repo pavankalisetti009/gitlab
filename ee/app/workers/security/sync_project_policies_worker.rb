@@ -12,7 +12,7 @@ module Security
 
     concurrency_limit -> { 200 }
 
-    def perform(project_id, policy_configuration_id)
+    def perform(project_id, policy_configuration_id, _params = {})
       project = Project.find_by_id(project_id)
       policy_configuration = Security::OrchestrationPolicyConfiguration.find_by_id(policy_configuration_id)
 
