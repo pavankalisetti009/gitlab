@@ -5,6 +5,7 @@ import { GlTable } from '@gitlab/ui';
 import Pagination from 'ee/compliance_dashboard/components/shared/pagination.vue';
 import Filters from 'ee/compliance_dashboard/components/shared/filters.vue';
 
+import EditSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/edit_section.vue';
 import ProjectsSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/projects_section.vue';
 import VisibilityIconButton from '~/vue_shared/components/visibility_icon_button.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -108,6 +109,8 @@ describe('Projects section', () => {
     return createMockApollo(requestHandlers);
   };
 
+  const expandSection = () =>
+    wrapper.findComponent(EditSection).find('[role="button"]').trigger('click');
   const findTable = () => wrapper.findComponent(GlTable);
   const findTableRow = (idx) => findTable().findAll('tbody > tr').at(idx);
   const findTableRowData = (idx) => findTableRow(idx).findAll('td');
@@ -122,6 +125,7 @@ describe('Projects section', () => {
     createProject({ id, groupPath: 'foo' }),
   );
 
+  let dataMock;
   const createComponent = ({
     resolverMock = jest.fn().mockResolvedValue({
       data: {
@@ -143,6 +147,7 @@ describe('Projects section', () => {
     }),
   } = {}) => {
     apolloProvider = createMockApolloProvider(resolverMock);
+    dataMock = resolverMock;
 
     wrapper = mountExtended(ProjectsSection, {
       apolloProvider,
@@ -153,10 +158,18 @@ describe('Projects section', () => {
     });
   };
 
+  it('does not trigger load when created', async () => {
+    createComponent();
+    await waitForPromises();
+    await nextTick();
+    expect(dataMock).not.toHaveBeenCalled();
+  });
+
   describe('when loaded', () => {
     beforeEach(async () => {
       createComponent();
-      await nextTick();
+      await expandSection();
+      await waitForPromises();
     });
 
     it('renders title', () => {
@@ -305,6 +318,7 @@ describe('Projects section', () => {
 
       it('correctly handles indeterminate state of select all checkbox', async () => {
         createComponent();
+        await expandSection();
         await waitForPromises();
 
         await findCheckbox(1).setChecked(true);
@@ -319,6 +333,7 @@ describe('Projects section', () => {
 
       it('correctly selects all when some projects are already selected', async () => {
         createComponent();
+        await expandSection();
         await waitForPromises();
 
         await findCheckbox(1).setChecked(true);
@@ -336,6 +351,7 @@ describe('Projects section', () => {
 
       it('correctly handles toggling selection multiple times', async () => {
         createComponent();
+        await expandSection();
         await waitForPromises();
 
         await findCheckbox(1).setChecked(false);
@@ -379,6 +395,7 @@ describe('Projects section', () => {
         createComponent({
           resolverMock: jest.fn().mockResolvedValue(initialResponse),
         });
+        await expandSection();
         await waitForPromises();
         await nextTick();
 
@@ -468,6 +485,7 @@ describe('Projects section', () => {
               },
             }),
           });
+          await expandSection();
           await waitForPromises();
           await nextTick();
 
@@ -477,6 +495,7 @@ describe('Projects section', () => {
 
         it('returns false when projectList has items', async () => {
           createComponent();
+          await expandSection();
           await waitForPromises();
           await nextTick();
 
@@ -515,6 +534,7 @@ describe('Projects section', () => {
       describe('noProjectsText', () => {
         it('returns noProjectsSelected when selected only toggle is active', async () => {
           createComponent();
+          await expandSection();
           await waitForPromises();
           await findShowOnlySelectedToggle().vm.$emit('change', true);
           await nextTick();
@@ -572,6 +592,7 @@ describe('Projects section', () => {
       const findSelectedCount = () => wrapper.findByTestId('selected-count');
       beforeEach(async () => {
         createComponent();
+        await expandSection();
         await waitForPromises();
       });
 
@@ -639,6 +660,7 @@ describe('Projects section', () => {
       beforeEach(async () => {
         createComponent();
         await waitForPromises();
+        await expandSection();
       });
 
       it('renders the toggle with correct initial state', () => {
@@ -717,6 +739,7 @@ describe('Projects section', () => {
         resolverMock: jest.fn().mockRejectedValue(error),
       });
 
+      await expandSection();
       await waitForPromises();
       await nextTick();
 
@@ -757,6 +780,7 @@ describe('Projects section', () => {
           }),
         });
 
+        await expandSection();
         await waitForPromises();
         await nextTick();
       });
@@ -842,11 +866,11 @@ describe('Projects section', () => {
             },
           }),
         });
+        await expandSection();
         await waitForPromises();
         await nextTick();
 
         const fetchMoreSpy = jest.spyOn(wrapper.vm.$apollo.queries.projectList, 'fetchMore');
-        wrapper.vm.isLoading = true;
         await nextTick();
 
         await findPagination().vm.$emit('next', 'end123');
@@ -918,6 +942,7 @@ describe('Projects section', () => {
 
     beforeEach(async () => {
       createComponent();
+      await expandSection();
       await waitForPromises();
     });
 
