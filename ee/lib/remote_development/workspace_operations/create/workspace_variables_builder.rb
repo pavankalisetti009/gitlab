@@ -122,24 +122,22 @@ module RemoteDevelopment
             #-------------------------------------------------------------------
 
             #-------------------------------------------------------------------
-            # Variables with prefix `GL_EDITOR_EXTENSIONS_GALLERY` are used for configuring the
+            # Variables with prefix `GL_VSCODE_EXTENSION_MARKETPLACE` are used for configuring the
             # GitLab fork of VS Code which is injected into the workspace.
-            # TODO: Rename these to be `GL_VSCODE_EXTENSION_MARKETPLACE_*` to be consistent with the new naming standard
-            #       See https://gitlab.com/gitlab-org/gitlab/-/issues/520884
             {
-              key: "GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL",
+              key: "GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL",
               value: vscode_extension_marketplace_service_url,
               variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
             },
             {
-              key: "GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL",
+              key: "GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL",
               value: vscode_extension_marketplace_item_url,
               variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id
             },
             {
-              key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE",
+              key: "GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE",
               value: vscode_extension_marketplace_resource_url_template,
               variable_type: ENVIRONMENT_TYPE,
               workspace_id: workspace_id

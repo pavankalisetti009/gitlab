@@ -74,11 +74,11 @@ module RemoteDevelopment
               value: tools_dir
             },
             {
-              name: "GL_EDITOR_LOG_LEVEL",
+              name: "GL_VSCODE_LOG_LEVEL",
               value: "info"
             },
             {
-              name: "GL_EDITOR_PORT",
+              name: "GL_VSCODE_PORT",
               value: editor_port.to_s
             },
             {
@@ -86,7 +86,7 @@ module RemoteDevelopment
               value: ssh_port.to_s
             },
             {
-              name: "GL_EDITOR_ENABLE_MARKETPLACE",
+              name: "GL_VSCODE_ENABLE_MARKETPLACE",
               value: enable_marketplace.to_s
             }
           )
@@ -142,16 +142,16 @@ module RemoteDevelopment
           }
           poststart_events << start_sshd_command_id
 
-          # Add the init_tools event
-          init_tools_command_id = "gl-init-tools-command"
+          # Add the start_vscode event
+          start_vscode_command_id = "gl-init-tools-command"
           commands << {
-            id: init_tools_command_id,
+            id: start_vscode_command_id,
             exec: {
-              commandLine: MAIN_COMPONENT_UPDATER_INIT_TOOLS_SCRIPT,
+              commandLine: MAIN_COMPONENT_UPDATER_START_VSCODE_SCRIPT,
               component: main_component_name
             }
           }
-          poststart_events << init_tools_command_id
+          poststart_events << start_vscode_command_id
 
           # Add the sleep_until_container_is_running event
           sleep_until_container_is_running_command_id = "gl-sleep-until-container-is-running-command"

@@ -90,19 +90,19 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
         workspace_id: workspace_id
       },
       {
-        key: "GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL",
+        key: "GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL",
         value: vscode_extensions_gallery_service_url,
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
         workspace_id: workspace_id
       },
       {
-        key: "GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL",
+        key: "GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL",
         value: vscode_extensions_gallery_item_url,
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
         workspace_id: workspace_id
       },
       {
-        key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE",
+        key: "GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE",
         value: vscode_extensions_gallery_resource_url_template,
         variable_type: RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE,
         workspace_id: workspace_id
