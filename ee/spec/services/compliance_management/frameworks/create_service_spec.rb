@@ -169,20 +169,136 @@ RSpec.describe ComplianceManagement::Frameworks::CreateService, feature_category
         let(:project) { create :project, namespace: namespace }
         let(:project_two) { create :project, namespace: namespace }
 
-        before do
-          params[:projects] = {
-            add_projects: [project.id, project_two.id]
-          }
+        context 'with valid projects from the same namespace' do
+          before do
+            params[:projects] = {
+              add_projects: [project.id, project_two.id]
+            }
+          end
+
+          it 'applies the framework to the selected projects' do
+            framework = subject.execute.payload[:framework]
+            project_ids = ComplianceManagement::ComplianceFramework::ProjectSettings
+              .where(framework_id: framework.id)
+              .pluck(:project_id)
+
+            expect(project_ids).to include(project.id)
+            expect(project_ids).to include(project_two.id)
+          end
         end
 
-        it 'applies the framework to the selected projects' do
-          framework = subject.execute.payload[:framework]
-          project_ids = ComplianceManagement::ComplianceFramework::ProjectSettings
-            .where(framework_id: framework.id)
-            .pluck(:project_id)
+        context 'when trying to add projects from different groups' do
+          let(:other_group) { create(:group) }
+          let(:external_project) { create(:project, namespace: other_group) }
 
-          expect(project_ids).to include(project.id)
-          expect(project_ids).to include(project_two.id)
+          before do
+            params[:projects] = {
+              add_projects: [external_project.id]
+            }
+          end
+
+          it 'does not add the external project' do
+            framework = subject.execute.payload[:framework]
+
+            project_ids = ComplianceManagement::ComplianceFramework::ProjectSettings
+              .where(framework_id: framework.id)
+              .pluck(:project_id)
+
+            expect(project_ids).not_to include(external_project.id)
+          end
+
+          it 'returns an error message about the project not belonging to the namespace' do
+            result = subject.execute
+
+            expect(result.message)
+              .to include(format(_("Project %{project_name} and framework are not from same namespace."),
+                project_name: external_project.name))
+          end
+        end
+
+        context 'when trying to add projects from subgroups' do
+          let(:subgroup) { create(:group, parent: namespace) }
+          let(:subgroup_project) { create(:project, namespace: subgroup) }
+
+          before do
+            params[:projects] = {
+              add_projects: [subgroup_project.id]
+            }
+          end
+
+          it 'successfully adds the subgroup project' do
+            framework = subject.execute.payload[:framework]
+
+            project_ids = ComplianceManagement::ComplianceFramework::ProjectSettings
+              .where(framework_id: framework.id)
+              .pluck(:project_id)
+
+            expect(project_ids).to include(subgroup_project.id)
+          end
+        end
+
+        context 'when trying to add non-existent projects' do
+          let(:non_existent_id) { 999999 }
+
+          before do
+            params[:projects] = {
+              add_projects: [non_existent_id, project.id]
+            }
+          end
+
+          it 'creates the framework and handles the error gracefully' do
+            expect { subject.execute }.to change { ComplianceManagement::Framework.count }.by(1)
+
+            framework = subject.execute.payload[:framework]
+            project_ids = ComplianceManagement::ComplianceFramework::ProjectSettings
+              .where(framework_id: framework.id)
+              .pluck(:project_id)
+
+            expect(project_ids).to include(project.id)
+            expect(project_ids).not_to include(non_existent_id)
+          end
+
+          it 'returns an error message about the non-existent project' do
+            result = subject.execute
+
+            expect(result.message).to include(format(_("Project with ID %{project_id} not found"),
+              project_id: non_existent_id))
+          end
+        end
+
+        context 'when mixing valid and invalid projects' do
+          let(:other_group) { create(:group) }
+          let(:external_project) { create(:project, namespace: other_group) }
+          let(:non_existent_id) { 999999 }
+
+          before do
+            params[:projects] = {
+              add_projects: [project.id, external_project.id, non_existent_id, project_two.id]
+            }
+          end
+
+          it 'creates the framework but only adds valid projects from the same group' do
+            expect { subject.execute }.to change { ComplianceManagement::Framework.count }.by(1)
+
+            framework = subject.execute.payload[:framework]
+            project_ids = ComplianceManagement::ComplianceFramework::ProjectSettings
+              .where(framework_id: framework.id)
+              .pluck(:project_id)
+
+            expect(project_ids).to include(project.id, project_two.id)
+            expect(project_ids).not_to include(external_project.id, non_existent_id)
+          end
+
+          it 'returns multiple error messages' do
+            result = subject.execute
+
+            expect(result.success?).to be true # Framework is still created
+            expect(result.message)
+              .to include(format(_("Project %{project_name} and framework are not from same namespace."),
+                project_name: external_project.name))
+            expect(result.message).to include(format(_("Project with ID %{project_id} not found"),
+              project_id: non_existent_id))
+          end
         end
       end
     end
