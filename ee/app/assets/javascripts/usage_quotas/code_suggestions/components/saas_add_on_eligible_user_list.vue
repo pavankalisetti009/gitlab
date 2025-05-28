@@ -17,11 +17,8 @@ import {
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import ErrorAlert from 'ee/vue_shared/components/error_alert/error_alert.vue';
 import AddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/add_on_eligible_user_list.vue';
-import {
-  DUO_IDENTIFIERS,
-  SORT_OPTIONS,
-  DEFAULT_SORT_OPTION,
-} from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_IDENTIFIERS } from 'ee/constants/duo';
+import { SORT_OPTIONS, DEFAULT_SORT_OPTION } from 'ee/usage_quotas/code_suggestions/constants';
 import SearchAndSortBar from 'ee/usage_quotas/code_suggestions/components/search_and_sort_bar.vue';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
 

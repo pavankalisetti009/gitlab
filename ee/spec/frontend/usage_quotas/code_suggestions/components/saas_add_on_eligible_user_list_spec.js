@@ -19,12 +19,8 @@ import {
   ADD_ON_ERROR_DICTIONARY,
 } from 'ee/usage_quotas/error_constants';
 import SearchAndSortBar from 'ee/usage_quotas/code_suggestions/components/search_and_sort_bar.vue';
-import {
-  DUO_PRO,
-  DUO_ENTERPRISE,
-  SORT_OPTIONS,
-  DEFAULT_SORT_OPTION,
-} from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE } from 'ee/constants/duo';
+import { SORT_OPTIONS, DEFAULT_SORT_OPTION } from 'ee/usage_quotas/code_suggestions/constants';
 import {
   OPERATORS_IS,
   TOKEN_TITLE_ASSIGNED_SEAT,

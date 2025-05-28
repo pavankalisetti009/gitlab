@@ -3,7 +3,7 @@ import { GlFormRadio } from '@gitlab/ui';
 import DuoAvailabilityForm from 'ee/ai/settings/components/duo_availability_form.vue';
 import CascadingLockIcon from '~/namespaces/cascading_settings/components/cascading_lock_icon.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
-import { DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE } from 'ee/constants/duo';
 
 describe('DuoAvailabilityForm', () => {
   let wrapper;

@@ -8,14 +8,8 @@ import { isInFuture } from '~/lib/utils/datetime/date_calculation_utility';
 import getAddOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchases.query.graphql';
 import getCurrentLicense from 'ee/admin/subscriptions/show/graphql/queries/get_current_license.query.graphql';
 
-import {
-  DUO_CORE,
-  DUO_PRO,
-  DUO_ENTERPRISE,
-  DUO_AMAZON_Q,
-  DUO_TITLES,
-  DUO_BADGE_TITLES,
-} from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_CORE, DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q, DUO_TITLES } from 'ee/constants/duo';
+import { DUO_BADGE_TITLES } from 'ee/usage_quotas/code_suggestions/constants';
 
 import {
   currentSubscriptionsEntryName,

@@ -15,7 +15,7 @@ import getGitlabSubscriptionQuery from 'ee/fulfillment/shared_queries/gitlab_sub
 import { getMockSubscriptionData } from 'ee_jest/usage_quotas/seats/mock_data';
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
-import { DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q } from 'ee/constants/duo';
 
 Vue.use(VueApollo);
 

@@ -3,7 +3,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 import DuoConfigurationSettingsInfoCard from 'ee/ai/settings/components/duo_configuration_settings_info_card.vue';
 import DuoConfigurationSettingsRow from 'ee/ai/settings/components/duo_configuration_settings_row.vue';
-import { DUO_CORE, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_CORE, DUO_ENTERPRISE } from 'ee/constants/duo';
 
 jest.mock('~/lib/utils/url_utility');
 

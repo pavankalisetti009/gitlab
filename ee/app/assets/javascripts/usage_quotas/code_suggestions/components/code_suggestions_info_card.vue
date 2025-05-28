@@ -11,11 +11,9 @@ import {
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, __ } from '~/locale';
 import UsageStatistics from 'ee/usage_quotas/components/usage_statistics.vue';
+import { DUO_IDENTIFIERS, DUO_ENTERPRISE, DUO_PRO } from 'ee/constants/duo';
 import {
   DUO_CSS_IDENTIFIERS,
-  DUO_IDENTIFIERS,
-  DUO_ENTERPRISE,
-  DUO_PRO,
   codeSuggestionsLearnMoreLink,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';

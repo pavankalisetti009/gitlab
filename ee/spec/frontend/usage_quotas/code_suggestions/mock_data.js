@@ -1,11 +1,6 @@
 import { subscriptionTypes } from 'ee/admin/subscriptions/show/constants';
 
-import {
-  DUO_CORE,
-  DUO_PRO,
-  DUO_ENTERPRISE,
-  DUO_AMAZON_Q,
-} from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_CORE, DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q } from 'ee/constants/duo';
 
 export const noAssignedDuoCoreAddOnData = {
   data: {

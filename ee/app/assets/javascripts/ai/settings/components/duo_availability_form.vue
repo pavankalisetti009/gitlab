@@ -1,7 +1,7 @@
 <script>
 import { GlSprintf, GlFormRadioGroup, GlFormRadio } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { DUO_PRO, DUO_ENTERPRISE } from 'ee/usage_quotas/code_suggestions/constants';
+import { DUO_PRO, DUO_ENTERPRISE } from 'ee/constants/duo';
 import CascadingLockIcon from '~/namespaces/cascading_settings/components/cascading_lock_icon.vue';
 import { AVAILABILITY_OPTIONS } from '../constants';
 
