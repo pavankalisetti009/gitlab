@@ -6,6 +6,7 @@ module RemoteDevelopment
   class Workspace < ApplicationRecord
     include Sortable
     include RemoteDevelopment::WorkspaceOperations::States
+    include ::Gitlab::InternalEventsTracking
     include ::Gitlab::Utils::StrongMemoize
     include SafelyChangeColumnDefault
 
@@ -99,6 +100,10 @@ module RemoteDevelopment
     before_save :touch_actual_state_updated_at, if: ->(workspace) do
       workspace.new_record? || workspace.actual_state_changed?
     end
+
+    after_save :track_started_workspace, if: -> {
+      saved_change_to_desired_state? && desired_state == "Running"
+    }
 
     # @return [RemoteDevelopment::WorkspacesAgentConfig]
     def workspaces_agent_config
@@ -316,6 +321,19 @@ module RemoteDevelopment
     def touch_actual_state_updated_at
       # noinspection RubyMismatchedArgumentType - RBS type for #utc is Time, but db field is 'timestamp with time zone'
       self.actual_state_updated_at = Time.current.utc
+    end
+
+    # @return [void]
+    def track_started_workspace
+      track_internal_event(
+        "track_started_workspaces",
+        user: user,
+        project: project,
+        additional_properties: {
+          label: previously_new_record? ? "new" : "existing"
+        }
+      )
+      nil
     end
   end
 end
