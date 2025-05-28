@@ -41,6 +41,7 @@ module Gitlab
         billable_users_count: billable_users_count,
         hostname: Gitlab.config.gitlab.host,
         instance_id: Gitlab::CurrentSettings.uuid,
+        unique_instance_id: Gitlab::GlobalAnonymousId.instance_uuid,
         add_on_metrics: add_on_metrics
       }
     end
