@@ -354,7 +354,6 @@ module EE
         enable :read_runner_usage
         enable :admin_push_rules
         enable :admin_security_testing
-        enable :read_vulnerability_statistics
       end
 
       rule { (admin | maintainer) & group_analytics_dashboards_available & ~has_parent }.policy do
@@ -574,6 +573,7 @@ module EE
         enable :create_wiki
         enable :admin_merge_request
         enable :read_group_audit_events
+        enable :read_vulnerability_statistics
       end
 
       rule { security_orchestration_policies_enabled & can?(:developer_access) }.policy do
@@ -761,6 +761,7 @@ module EE
         enable :read_group_security_dashboard
         enable :create_vulnerability_export
         enable :read_security_resource
+        enable :read_vulnerability_statistics
       end
 
       rule { can?(:read_security_resource) & resolve_vulnerability_allowed }.policy do
@@ -777,7 +778,6 @@ module EE
 
       rule { can?(:admin_vulnerability) }.policy do
         enable :read_vulnerability
-        enable :read_vulnerability_statistics
       end
 
       rule { can?(:read_dependency) }.policy do

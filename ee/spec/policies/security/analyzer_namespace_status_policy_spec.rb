@@ -31,7 +31,7 @@ RSpec.describe Security::AnalyzerNamespaceStatusPolicy, feature_category: :secur
         group.add_developer(user)
       end
 
-      it { is_expected.to be_disallowed(:read_security_inventory) }
+      it { is_expected.to be_allowed(:read_security_inventory) }
     end
 
     context 'when the current user does not have developer access to the group' do
