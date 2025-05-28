@@ -2,6 +2,8 @@
 
 module Llm
   class ReviewMergeRequestService < ::Llm::BaseService
+    include Gitlab::InternalEventsTracking
+
     private
 
     def ai_action
@@ -10,6 +12,17 @@ module Llm
 
     def perform
       progress_note = create_note
+
+      event_name = get_event_name
+
+      track_internal_event(
+        event_name,
+        user: user,
+        project: resource.project,
+        additional_properties: {
+          property: resource.id.to_s
+        }
+      )
 
       schedule_completion_worker(progress_note_id: progress_note.id)
     end
@@ -28,6 +41,14 @@ module Llm
 
     def review_bot
       Users::Internal.duo_code_review_bot
+    end
+
+    def get_event_name
+      if user.id == resource.author_id
+        'request_review_duo_code_review_on_mr_by_author'
+      else
+        'request_review_duo_code_review_on_mr_by_non_author'
+      end
     end
   end
 end
