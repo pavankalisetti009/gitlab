@@ -323,16 +323,6 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
-- :name: cronjob:compliance_management_queue_refresh_of_broken_adherence_groups
-  :worker_name: ComplianceManagement::QueueRefreshOfBrokenAdherenceGroupsWorker
-  :feature_category: :compliance_management
-  :has_external_dependencies: false
-  :urgency: :throttled
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-  :queue_namespace: :cronjob
 - :name: cronjob:compliance_management_timeout_pending_status_check_responses
   :worker_name: ComplianceManagement::TimeoutPendingStatusCheckResponsesWorker
   :feature_category: :compliance_management
