@@ -63,11 +63,11 @@ describe('GeoSiteReplicationDetailsResponsive', () => {
       });
 
       describe.each`
-        description                    | replicationItems                                                                                                                                          | renderSyncProgress | renderVerifProgress
-        ${'with no data'}              | ${[{ dataTypeTitle: 'Test Title', component: 'Test Component', syncValues: null, verificationValues: null }]}                                             | ${false}           | ${false}
-        ${'with no verification data'} | ${[{ dataTypeTitle: 'Test Title', component: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: null }]}                       | ${true}            | ${false}
-        ${'with no sync data'}         | ${[{ dataTypeTitle: 'Test Title', component: 'Test Component', syncValues: null, verificationValues: { total: 50, success: 50 } }]}                       | ${false}           | ${true}
-        ${'with all data'}             | ${[{ dataTypeTitle: 'Test Title', component: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: { total: 50, success: 50 } }]} | ${true}            | ${true}
+        description                    | replicationItems                                                                                                                                                                           | renderSyncProgress | renderVerifProgress
+        ${'with no data'}              | ${[{ dataTypeTitle: 'Test Title', namePlural: 'test_components', titlePlural: 'Test Component', syncValues: null, verificationValues: null }]}                                             | ${false}           | ${false}
+        ${'with no verification data'} | ${[{ dataTypeTitle: 'Test Title', namePlural: 'test_components', titlePlural: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: null }]}                       | ${true}            | ${false}
+        ${'with no sync data'}         | ${[{ dataTypeTitle: 'Test Title', namePlural: 'test_components', titlePlural: 'Test Component', syncValues: null, verificationValues: { total: 50, success: 50 } }]}                       | ${false}           | ${true}
+        ${'with all data'}             | ${[{ dataTypeTitle: 'Test Title', namePlural: 'test_components', titlePlural: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: { total: 50, success: 50 } }]} | ${true}            | ${true}
       `('$description', ({ replicationItems, renderSyncProgress, renderVerifProgress }) => {
         beforeEach(() => {
           createComponent({ replicationItems, siteId: 42 });
@@ -88,7 +88,7 @@ describe('GeoSiteReplicationDetailsResponsive', () => {
               findFirstReplicationDetailsItemSyncStatus()
                 .findComponent(GeoSiteProgressBar)
                 .props('target'),
-            ).toBe('sync-progress-42-Test Component');
+            ).toBe('sync-progress-42-test_components');
           }
         });
 
@@ -107,7 +107,7 @@ describe('GeoSiteReplicationDetailsResponsive', () => {
               findFirstReplicationDetailsItemVerifStatus()
                 .findComponent(GeoSiteProgressBar)
                 .props('target'),
-            ).toBe('verification-progress-42-Test Component');
+            ).toBe('verification-progress-42-test_components');
           }
         });
       });
@@ -115,7 +115,7 @@ describe('GeoSiteReplicationDetailsResponsive', () => {
       describe('component links', () => {
         describe('with replicationView', () => {
           const MOCK_REPLICATION_ITEM = {
-            component: 'Test Component',
+            titlePlural: 'Test Component',
             replicationView: 'https://test.domain/path',
           };
 
@@ -124,7 +124,7 @@ describe('GeoSiteReplicationDetailsResponsive', () => {
           });
 
           it('renders replicable component title', () => {
-            expect(findReplicableComponent().text()).toBe(MOCK_REPLICATION_ITEM.component);
+            expect(findReplicableComponent().text()).toBe(MOCK_REPLICATION_ITEM.titlePlural);
           });
 
           it(`renders GlLink to secondary replication view`, () => {
@@ -136,14 +136,14 @@ describe('GeoSiteReplicationDetailsResponsive', () => {
         });
 
         describe('without replicationView', () => {
-          const MOCK_REPLICATION_ITEM = { component: 'Test Component', replicationView: null };
+          const MOCK_REPLICATION_ITEM = { titlePlural: 'Test Component', replicationView: null };
 
           beforeEach(() => {
             createComponent({ replicationItems: [MOCK_REPLICATION_ITEM] });
           });
 
           it('renders replicable component title', () => {
-            expect(findReplicableComponent().text()).toBe(MOCK_REPLICATION_ITEM.component);
+            expect(findReplicableComponent().text()).toBe(MOCK_REPLICATION_ITEM.titlePlural);
           });
 
           it(`does not render GlLink to secondary replication view`, () => {
@@ -172,9 +172,9 @@ describe('GeoSiteReplicationDetailsResponsive', () => {
     describe('with custom default slot', () => {
       beforeEach(() => {
         const defaultSlot =
-          '<template #default="{ item, translations }"><span>{{ item.component }} {{ item.dataTypeTitle }} {{ translations.status }}</span></template>';
+          '<template #default="{ item, translations }"><span>{{ item.titlePlural }} {{ item.dataTypeTitle }} {{ translations.status }}</span></template>';
         createComponent(
-          { replicationItems: [{ component: 'Test Component', dataTypeTitle: 'Test Title' }] },
+          { replicationItems: [{ titlePlural: 'Test Component', dataTypeTitle: 'Test Title' }] },
           { default: defaultSlot },
         );
       });
