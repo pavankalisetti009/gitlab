@@ -21581,9 +21581,11 @@ Counts for each analyzer status in the group and subgroups.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="analyzergroupstatustypeanalyzertype"></a>`analyzerType` | [`AnalyzerTypeEnum!`](#analyzertypeenum) | Analyzer type. |
-| <a id="analyzergroupstatustypefailure"></a>`failure` | [`Int!`](#int) | Number of analyzers failed. |
+| <a id="analyzergroupstatustypefailure"></a>`failure` | [`Int!`](#int) | Number of projects where `analyzer_type` failed to execute. |
 | <a id="analyzergroupstatustypenamespaceid"></a>`namespaceId` | [`Int!`](#int) | Namespace ID. |
-| <a id="analyzergroupstatustypesuccess"></a>`success` | [`Int!`](#int) | Number of analyzers succeeded. |
+| <a id="analyzergroupstatustypenotconfigured"></a>`notConfigured` | [`Int!`](#int) | Number of projects where `analyzer_type` is not configured. |
+| <a id="analyzergroupstatustypesuccess"></a>`success` | [`Int!`](#int) | Number of projects where `analyzer_type` completed successfully. |
+| <a id="analyzergroupstatustypetotalprojectscount"></a>`totalProjectsCount` | [`Int!`](#int) | Total number of projects descending from the group. |
 | <a id="analyzergroupstatustypeupdatedat"></a>`updatedAt` | [`ISO8601DateTime!`](#iso8601datetime) | Timestamp of when the status was last updated. |
 
 ### `AnalyzerProjectStatusType`

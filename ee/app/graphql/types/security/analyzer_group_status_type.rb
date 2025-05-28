@@ -20,12 +20,22 @@ module Types
       field :success,
         type: GraphQL::Types::Int,
         null: false,
-        description: 'Number of analyzers succeeded.'
+        description: 'Number of projects where `analyzer_type` completed successfully.'
 
       field :failure,
         type: GraphQL::Types::Int,
         null: false,
-        description: 'Number of analyzers failed.'
+        description: 'Number of projects where `analyzer_type` failed to execute.'
+
+      field :not_configured,
+        type: GraphQL::Types::Int,
+        null: false,
+        description: 'Number of projects where `analyzer_type` is not configured.'
+
+      field :total_projects_count,
+        type: GraphQL::Types::Int,
+        null: false,
+        description: 'Total number of projects descending from the group.'
 
       field :updated_at,
         type: GraphQL::Types::ISO8601DateTime,

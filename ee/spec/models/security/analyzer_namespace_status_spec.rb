@@ -25,4 +25,29 @@ RSpec.describe Security::AnalyzerNamespaceStatus, feature_category: :security_as
       let_it_be(:model) { create(:analyzer_namespace_status, namespace: parent) }
     end
   end
+
+  describe '#not_configured' do
+    let(:group) { create(:group) }
+    let(:analyzer_namespace_status) { create(:analyzer_namespace_status, group: group, success: 1, failure: 2) }
+
+    context 'when the not_configured is greater than zero' do
+      before do
+        allow(group).to receive(:all_project_ids).and_return([1, 2, 3, 4, 5])
+      end
+
+      it 'returns the count of projects which are not configured for that analyzer type' do
+        expect(analyzer_namespace_status.not_configured).to eq(2)
+      end
+    end
+
+    context 'when the not_configured is lesser than zero' do
+      before do
+        allow(group).to receive(:all_project_ids).and_return([1])
+      end
+
+      it 'returns 0' do
+        expect(analyzer_namespace_status.not_configured).to eq(0)
+      end
+    end
+  end
 end
