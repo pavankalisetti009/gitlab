@@ -16,6 +16,7 @@ RSpec.describe 'Query.group(fullPath).dependencyAggregations', feature_category:
   let_it_be(:fields) do
     <<~FIELDS
       name
+      version
       componentVersion {
         id
         version
@@ -53,6 +54,7 @@ RSpec.describe 'Query.group(fullPath).dependencyAggregations', feature_category:
     expect(graphql_data_at(:group, :dependencyAggregations, :nodes)).to include(
       a_hash_including(
         'name' => component.name,
+        'version' => occurrence.version,
         'componentVersion' => {
           'id' => occurrence.component_version.to_gid.to_s,
           'version' => occurrence.component_version.version

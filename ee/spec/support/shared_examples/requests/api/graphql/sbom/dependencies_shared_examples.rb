@@ -150,8 +150,10 @@ RSpec.shared_examples 'when dependencies graphql query filtered by component ver
       post_graphql(dependencies_query, current_user: current_user)
 
       result_nodes = graphql_data_at(*nodes_path)
-      versions_in_result = result_nodes.map { |node| node.dig('componentVersion', 'version') }
+      versions_in_result = result_nodes.pluck('version')
+      component_versions_in_result = result_nodes.map { |node| node.dig('componentVersion', 'version') }
 
+      expect(component_versions_in_result).to contain_exactly(matching_component_version)
       expect(versions_in_result).to contain_exactly(matching_component_version)
       expect(result_nodes.size).to eq(1)
     end
@@ -166,7 +168,10 @@ RSpec.shared_examples 'when dependencies graphql query filtered by component ver
       post_graphql(dependencies_query, current_user: current_user)
 
       result_nodes = graphql_data_at(*nodes_path)
+      versions_in_result = result_nodes.pluck('version')
+
       component_versions_in_result = result_nodes.map { |node| node.dig('componentVersion', 'version') }
+      expect(versions_in_result).to include(matching_component_version, other_component_version)
 
       expect(component_versions_in_result).to include(matching_component_version, other_component_version)
       expect(result_nodes.size).to eq(project.sbom_occurrences.count)

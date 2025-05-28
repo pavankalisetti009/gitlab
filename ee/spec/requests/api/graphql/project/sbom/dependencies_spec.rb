@@ -13,6 +13,7 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
     <<~FIELDS
       id
       name
+      version
       componentVersion {
         id
         version
@@ -55,6 +56,7 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
       {
         'id' => occurrence.to_gid.to_s,
         'name' => occurrence.name,
+        'version' => occurrence.version,
         'componentVersion' => {
           'id' => occurrence.component_version.to_gid.to_s,
           'version' => occurrence.version
@@ -84,6 +86,7 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
         {
           'id' => occurrence.to_gid.to_s,
           'name' => occurrence.name,
+          'version' => occurrence.version,
           'componentVersion' => {
             'id' => occurrence.component_version.to_gid.to_s,
             'version' => occurrence.version
@@ -111,6 +114,7 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
         {
           'id' => occurrence.to_gid.to_s,
           'name' => occurrence.name,
+          'version' => nil,
           'componentVersion' => nil,
           'packager' => package_manager_enum(occurrence.packager),
           'location' => {

@@ -26,6 +26,7 @@ query getProjectDependencies(
       nodes {
         id
         name
+        version
         componentVersion {
           id
           version

@@ -25739,6 +25739,7 @@ A software dependency used by a project.
 | <a id="dependencyname"></a>`name` | [`String!`](#string) | Name of the dependency. |
 | <a id="dependencypackager"></a>`packager` | [`PackageManager`](#packagemanager) | Description of the tool used to manage the dependency. |
 | <a id="dependencyreachability"></a>`reachability` | [`ReachabilityType`](#reachabilitytype) | Information about reachability of a dependency. |
+| <a id="dependencyversion"></a>`version` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 18.1. Replaced by component_version. |
 | <a id="dependencyvulnerabilitycount"></a>`vulnerabilityCount` | [`Int!`](#int) | Number of vulnerabilities within the dependency. |
 
 ### `DependencyAggregation`
@@ -25757,6 +25758,7 @@ A software dependency aggregation used by a group.
 | <a id="dependencyaggregationoccurrencecount"></a>`occurrenceCount` | [`Int!`](#int) | Number of occurrences of the dependency across projects. |
 | <a id="dependencyaggregationpackager"></a>`packager` | [`PackageManager`](#packagemanager) | Description of the tool used to manage the dependency. |
 | <a id="dependencyaggregationreachability"></a>`reachability` | [`ReachabilityType`](#reachabilitytype) | Information about reachability of a dependency. |
+| <a id="dependencyaggregationversion"></a>`version` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 18.1. Replaced by component_version. |
 | <a id="dependencyaggregationvulnerabilitycount"></a>`vulnerabilityCount` | [`Int!`](#int) | Number of vulnerabilities within the dependency. |
 
 ### `DependencyPath`
@@ -48692,6 +48694,7 @@ Implementations:
 | <a id="dependencyinterfacename"></a>`name` | [`String!`](#string) | Name of the dependency. |
 | <a id="dependencyinterfacepackager"></a>`packager` | [`PackageManager`](#packagemanager) | Description of the tool used to manage the dependency. |
 | <a id="dependencyinterfacereachability"></a>`reachability` | [`ReachabilityType`](#reachabilitytype) | Information about reachability of a dependency. |
+| <a id="dependencyinterfaceversion"></a>`version` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 18.1. Replaced by component_version. |
 | <a id="dependencyinterfacevulnerabilitycount"></a>`vulnerabilityCount` | [`Int!`](#int) | Number of vulnerabilities within the dependency. |
 
 #### `DesignFields`
