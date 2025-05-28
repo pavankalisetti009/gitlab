@@ -68,5 +68,41 @@ RSpec.describe Llm::ReviewMergeRequestService, :saas, feature_category: :code_re
 
       it { is_expected.to be_error.and have_attributes(message: eq(described_class::INVALID_MESSAGE)) }
     end
+
+    context 'when the current user is the MR author' do
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'request_review_duo_code_review_on_mr_by_author' }
+        let(:category) { described_class.name }
+        let(:namespace) { nil }
+        let(:project) { resource.project }
+
+        subject(:track_event) { described_class.new(user, resource, options).execute }
+      end
+    end
+
+    context 'when the current user is not the MR author' do
+      let_it_be(:non_author_user) { create(:user) }
+      let(:progress_note) { instance_double(Note, id: 123) }
+      let(:service) { described_class.new(non_author_user, resource, options) }
+
+      before_all do
+        group.add_guest(non_author_user)
+      end
+
+      before do
+        allow(non_author_user).to receive(:allowed_to_use?).with(:review_merge_request).and_return(true)
+        allow(resource)
+          .to receive(:ai_review_merge_request_allowed?)
+          .with(non_author_user)
+          .and_return(true)
+      end
+
+      it 'tracks the non-author event' do
+        expect { service.execute }
+          .to trigger_internal_events('request_review_duo_code_review_on_mr_by_non_author')
+          .with(user: non_author_user, project: resource.project)
+          .and increment_usage_metrics('counts.count_total_request_review_duo_code_review_on_mr_by_non_author')
+      end
+    end
   end
 end
