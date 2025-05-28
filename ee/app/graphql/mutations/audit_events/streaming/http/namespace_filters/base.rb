@@ -7,6 +7,7 @@ module Mutations
         module NamespaceFilters
           class Base < BaseMutation
             authorize :admin_external_audit_events
+            include ::AuditEvents::NamespaceFilterSyncHelper
 
             private
 

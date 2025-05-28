@@ -35,7 +35,11 @@ module Mutations
                          .new(external_audit_event_destination: destination,
                            namespace: namespace)
 
-              audit(filter, action: :create) if filter.save
+              if filter.save
+                sync_stream_namespace_filter(destination, namespace)
+
+                audit(filter, action: :create)
+              end
 
               { namespace_filter: (filter if filter.persisted?), errors: Array(filter.errors) }
             end

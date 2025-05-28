@@ -72,6 +72,28 @@ RSpec.describe 'Create a namespace filter for group level external audit event d
               .to eq(destination.name)
           end
 
+          context 'with sync functionality' do
+            let_it_be(:legacy_destination) { create(:external_audit_event_destination, group: group) }
+
+            context 'when streaming destination has corresponding legacy destination' do
+              before do
+                destination.update_column(:legacy_destination_ref, legacy_destination.id)
+                legacy_destination.update_column(:stream_destination_id, destination.id)
+                stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
+              end
+
+              it 'calls sync method after successful operation' do
+                expect_next_instance_of(Mutations::AuditEvents::Group::NamespaceFilters::Create) do |instance|
+                  expect(instance).to receive(:sync_legacy_namespace_filter)
+                                  .with(destination, namespace)
+                end
+
+                subject
+                expect_graphql_errors_to_be_empty
+              end
+            end
+          end
+
           context 'when namespace filter for the given namespace already exists' do
             before do
               create(:audit_events_streaming_group_namespace_filters,

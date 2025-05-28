@@ -23,10 +23,17 @@ module Mutations
             destination = authorized_find!(args[:destination_id])
 
             namespace = namespace(args[:namespace_path])
-            filter = ::AuditEvents::Group::NamespaceFilter.new(external_streaming_destination: destination,
-              namespace: namespace)
 
-            audit(filter, action: :created) if filter.save
+            filter = ::AuditEvents::Group::NamespaceFilter.new(
+              external_streaming_destination: destination,
+              namespace: namespace
+            )
+
+            if filter.save
+              sync_legacy_namespace_filter(destination, namespace)
+              audit(filter, action: :created)
+            end
+
             { namespace_filter: (filter if filter.persisted?), errors: Array(filter.errors) }
           end
 

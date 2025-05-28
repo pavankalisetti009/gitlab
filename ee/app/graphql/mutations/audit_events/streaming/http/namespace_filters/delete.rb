@@ -11,10 +11,17 @@ module Mutations
             argument :namespace_filter_id, ::Types::GlobalIDType[::AuditEvents::Streaming::HTTP::NamespaceFilter],
               required: true,
               description: 'Namespace filter ID.'
+
             def resolve(namespace_filter_id:)
               filter = authorized_find!(id: namespace_filter_id)
 
-              audit(filter, action: :delete) if filter.destroy
+              destination = filter.external_audit_event_destination
+              should_sync = destination.stream_destination_id.present?
+
+              if filter.destroy
+                sync_delete_stream_namespace_filter(destination) if should_sync
+                audit(filter, action: :delete)
+              end
 
               { namespace_filter: nil, errors: [] }
             end

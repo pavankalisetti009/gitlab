@@ -26,7 +26,11 @@ module Mutations
             filter = ::AuditEvents::Instance::NamespaceFilter.new(external_streaming_destination: destination,
               namespace: namespace)
 
-            audit(filter, action: :created) if filter.save
+            if filter.save
+              sync_legacy_namespace_filter(destination, namespace)
+              audit(filter, action: :created)
+            end
+
             { namespace_filter: (filter if filter.persisted?), errors: Array(filter.errors) }
           end
 

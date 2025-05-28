@@ -7,6 +7,7 @@ module Mutations
         # rubocop:disable GraphQL/GraphqlName -- This is a base mutation so name is not needed here
         class Base < BaseMutation
           authorize :admin_instance_external_audit_events
+          include ::AuditEvents::NamespaceFilterSyncHelper
 
           private
 

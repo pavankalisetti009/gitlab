@@ -12,8 +12,12 @@ module Mutations
             description: 'Namespace filter ID.'
           def resolve(namespace_filter_id:)
             filter = authorized_find!(id: namespace_filter_id)
+            destination = filter.external_streaming_destination
 
-            audit(filter, action: :deleted) if filter.destroy
+            if filter.destroy
+              sync_delete_legacy_namespace_filter(destination)
+              audit(filter, action: :deleted)
+            end
 
             { namespace_filter: nil, errors: filter.errors }
           end

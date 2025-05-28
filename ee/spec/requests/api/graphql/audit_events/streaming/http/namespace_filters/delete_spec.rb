@@ -58,6 +58,64 @@ RSpec.describe 'Delete a namespace filter for group level external audit event d
         expect(mutation_response['errors']).to be_empty
         expect(mutation_response['namespaceFilter']).to be_nil
       end
+
+      context 'with sync functionality' do
+        let(:input) do
+          { namespaceFilterId: filter.to_gid }
+        end
+
+        let(:stream_destination) { create(:audit_events_group_external_streaming_destination, group: group) }
+
+        context 'when legacy destination has corresponding streaming destination' do
+          before do
+            destination.update_column(:stream_destination_id, stream_destination.id)
+            stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
+          end
+
+          it 'calls sync method after successful deletion' do
+            allow_next_instance_of(Mutations::AuditEvents::Streaming::HTTP::NamespaceFilters::Delete) do |instance|
+              allow(instance).to receive(:sync_delete_stream_namespace_filter).and_return(nil)
+            end
+
+            mutate
+
+            expect_graphql_errors_to_be_empty
+            expect(mutation_response['errors']).to be_empty
+            expect(mutation_response['namespaceFilter']).to be_nil
+          end
+        end
+
+        context 'when legacy destination has no streaming destination' do
+          it 'still calls sync method but it does nothing' do
+            allow_next_instance_of(Mutations::AuditEvents::Streaming::HTTP::NamespaceFilters::Delete) do |instance|
+              allow(instance).to receive(:sync_delete_stream_namespace_filter).and_return(nil)
+            end
+
+            mutate
+
+            expect_graphql_errors_to_be_empty
+            expect(mutation_response['errors']).to be_empty
+          end
+        end
+
+        context 'when sync functionality is disabled' do
+          before do
+            destination.update_column(:stream_destination_id, stream_destination.id)
+            stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
+          end
+
+          it 'still calls sync method but it does nothing due to feature flag' do
+            allow_next_instance_of(Mutations::AuditEvents::Streaming::HTTP::NamespaceFilters::Delete) do |instance|
+              allow(instance).to receive(:sync_delete_stream_namespace_filter).and_return(nil)
+            end
+
+            mutate
+
+            expect_graphql_errors_to_be_empty
+            expect(mutation_response['errors']).to be_empty
+          end
+        end
+      end
     end
 
     context 'when current user is a group maintainer' do
