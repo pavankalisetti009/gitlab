@@ -105,7 +105,7 @@ module Gitlab
             process_files(diff_files, mr_diff_refs)
 
             if @draft_notes_by_priority.empty?
-              update_progress_note(self.class.no_comment_msg, with_todo: true)
+              update_progress_note(review_summary, with_todo: true)
             else
               publish_draft_notes
             end
@@ -132,6 +132,7 @@ module Gitlab
             parsed_body = ::Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest::ResponseBodyParser
               .new(response.response_body)
             comments_by_file = parsed_body.comments.group_by(&:file)
+            @review_description = parsed_body.review_description
 
             diff_files.each do |diff_file|
               file_comments = comments_by_file[diff_file.new_path]
@@ -327,6 +328,10 @@ module Gitlab
           end
           # rubocop: enable CodeReuse/ActiveRecord
 
+          def review_summary
+            [self.class.no_comment_msg, @review_description].compact.join("\n\n")
+          end
+
           def publish_draft_notes
             return unless Ability.allowed?(user, :create_note, merge_request)
 
@@ -335,7 +340,7 @@ module Gitlab
             end
 
             if draft_notes.empty?
-              update_progress_note(self.class.no_comment_msg, with_todo: true)
+              update_progress_note(review_summary, with_todo: true)
 
               return
             end
