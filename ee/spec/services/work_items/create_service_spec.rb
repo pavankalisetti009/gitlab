@@ -135,6 +135,19 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
               )
               expect(service_result[:status]).to be(:success)
             end
+
+            context "when state and status params are both present" do
+              before do
+                opts[:state_event] = "close"
+              end
+
+              it 'returns an error' do
+                expect { service_result }.not_to change { WorkItems::Statuses::CurrentStatus.count }
+                expect(service_result[:status]).to eq(:error)
+                expect(service_result[:message])
+                  .to eq('State event and status widget cannot be changed at the same time')
+              end
+            end
           end
 
           context "without status widget params" do

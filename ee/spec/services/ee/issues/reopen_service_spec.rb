@@ -143,5 +143,49 @@ RSpec.describe Issues::ReopenService, feature_category: :team_planning do
         end
       end
     end
+
+    context "when current_status" do
+      let_it_be(:current_user) { create(:user) }
+      let_it_be(:group) { create(:group) }
+      let_it_be_with_reload(:work_item) { create(:work_item, :task, :closed, namespace: group) }
+
+      let(:status_update_service) { instance_double(::WorkItems::Widgets::Statuses::UpdateService) }
+      let(:opened_status) { build(:work_item_system_defined_status, :to_do) }
+      let(:in_progress_status) { build(:work_item_system_defined_status, :in_progress) }
+
+      subject(:execute) do
+        described_class.new(container: group, current_user: current_user).execute(work_item, status: status)
+      end
+
+      before_all do
+        group.add_maintainer(current_user)
+      end
+
+      context "when argument status is nil" do
+        let(:status) { nil }
+
+        it "calls the status update service with the default open status" do
+          expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
+            .with(work_item, current_user, opened_status)
+            .and_return(status_update_service)
+          expect(status_update_service).to receive(:execute)
+
+          execute
+        end
+      end
+
+      context "when argument status is not nil" do
+        let(:status) { in_progress_status }
+
+        it "calls the status update service with the default open status" do
+          expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
+            .with(work_item, current_user, in_progress_status)
+            .and_return(status_update_service)
+          expect(status_update_service).to receive(:execute)
+
+          execute
+        end
+      end
+    end
   end
 end

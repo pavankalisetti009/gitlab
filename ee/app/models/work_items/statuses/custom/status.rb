@@ -51,6 +51,10 @@ module WorkItems
           0
         end
 
+        def state
+          CATEGORIES_STATE.find { |state, categories| state if categories.include?(category.to_sym) }&.first
+        end
+
         private
 
         def validate_statuses_per_namespace_limit

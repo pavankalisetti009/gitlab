@@ -3,6 +3,8 @@
 module WorkItems
   module Callbacks
     class Status < Base
+      include Gitlab::Utils::StrongMemoize
+
       ALLOWED_PARAMS = [:status].freeze
 
       def self.execute_without_params?
@@ -15,74 +17,48 @@ module WorkItems
 
         target_status = find_target_status
 
-        return if work_item.current_status&.status == target_status
-
-        update_work_item_status(target_status)
-        create_system_note
+        update_current_status(target_status)
       end
 
       private
 
+      def update_current_status(status)
+        return unless status
+
+        case status.state
+        when :open
+          if work_item.closed?
+            Issues::ReopenService.new(container: work_item.namespace, current_user: current_user)
+              .execute(work_item, status: status)
+          else
+            ::WorkItems::Widgets::Statuses::UpdateService.new(work_item, current_user, status).execute
+          end
+        when :closed
+          if work_item.open?
+            Issues::CloseService.new(container: work_item.namespace, current_user: current_user)
+              .execute(work_item, status: status)
+          else
+            ::WorkItems::Widgets::Statuses::UpdateService.new(work_item, current_user, status).execute
+          end
+        end
+      end
+
       def find_target_status
-        return params[:status] if params[:status].present? && feature_available? && has_correct_type?(params[:status])
-        return unless transitions_enabled?
+        return params[:status] if params[:status].present?
 
         # Ensure any supported item has a valid status upon creation
-        default_open_status unless work_item.current_status
+        lifecycle&.default_open_status unless work_item.current_status
       end
 
-      # TODO: Handle custom statuses
-      # https://gitlab.com/gitlab-org/gitlab/-/work_items/524078
-      def default_open_status
-        # Only returns a default open status if there's a lifecycle attached to this type
-        ::WorkItems::Statuses::SystemDefined::Lifecycle
-          .of_work_item_base_type(work_item.work_item_type.base_type)
-          &.default_open_status
+      def lifecycle
+        work_item.work_item_type.status_lifecycle_for(root_ancestor)
       end
-
-      # TODO: Handle custom statuses
-      # https://gitlab.com/gitlab-org/gitlab/-/work_items/524078
-      def has_correct_type?(status)
-        status.is_a?(::WorkItems::Statuses::SystemDefined::Status)
-      end
-
-      def update_work_item_status(target_status)
-        current_status = work_item.current_status || work_item.build_current_status
-        current_status.status = target_status
-
-        current_status.save!
-      end
-
-      def feature_available?
-        root_ancestor&.try(:work_item_status_feature_available?)
-      end
-
-      # Short-lived feature flag to guard adding current_status rows for each supported type
-      def transitions_enabled?
-        root_ancestor&.try(:work_item_status_transitions_enabled?)
-      end
+      strong_memoize_attr :lifecycle
 
       def root_ancestor
         work_item.resource_parent&.root_ancestor
       end
-
-      # TODO: Handle custom statuses
-      # https://gitlab.com/gitlab-org/gitlab/-/work_items/524078
-      def create_system_note
-        return unless feature_available?
-        # Status cannot be updated intentionally by the user from any of the issue services.
-        # It's only supported by the new work item services,
-        # so we can skip note creation if it's a legacy issue object
-        return if work_item.instance_of?(Issue)
-        return unless work_item.get_widget(:status)
-        return unless work_item.current_status&.system_defined_status_id_previously_changed?
-
-        ::SystemNotes::IssuablesService.new(
-          noteable: work_item,
-          container: work_item.namespace,
-          author: current_user
-        ).change_work_item_status(work_item.current_status.status)
-      end
+      strong_memoize_attr :root_ancestor
     end
   end
 end

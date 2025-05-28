@@ -46,6 +46,10 @@ module WorkItems
           WorkItems::Statuses::Custom::Status.ordered_for_lifecycle(id)
         end
 
+        def has_status_id?(status_id)
+          statuses.exists?(id: status_id)
+        end
+
         private
 
         def default_statuses

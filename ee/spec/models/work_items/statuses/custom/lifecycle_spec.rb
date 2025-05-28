@@ -7,6 +7,9 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
   let_it_be(:open_status) { create(:work_item_custom_status, :open, namespace: namespace) }
   let_it_be(:closed_status) { create(:work_item_custom_status, :closed, namespace: namespace) }
   let_it_be(:duplicate_status) { create(:work_item_custom_status, :duplicate, namespace: namespace) }
+  let_it_be(:in_dev_status) do
+    create(:work_item_custom_status, category: :in_progress, name: 'In dev', namespace: namespace)
+  end
 
   subject(:custom_lifecycle) do
     build(:work_item_custom_lifecycle,
@@ -175,10 +178,6 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
       create(:work_item_custom_status, category: :in_progress, name: 'In review', namespace: namespace)
     end
 
-    let_it_be(:in_dev_status) do
-      create(:work_item_custom_status, category: :in_progress, name: 'In dev', namespace: namespace)
-    end
-
     subject(:custom_lifecycle) do
       create(:work_item_custom_lifecycle,
         namespace: namespace,
@@ -203,6 +202,20 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
       ])
 
       expect(ordered_statuses.map(&:category)).to eq(%w[to_do in_progress in_progress done cancelled])
+    end
+  end
+
+  describe '#has_status_id?' do
+    before do
+      custom_lifecycle.save!
+    end
+
+    it "returns true if the status exist in the lifecycle" do
+      expect(custom_lifecycle.has_status_id?(open_status.id)).to be true
+    end
+
+    it "returns false if the statuts does not exists in the lifecycle" do
+      expect(custom_lifecycle.has_status_id?(in_dev_status.id)).to be false
     end
   end
 end
