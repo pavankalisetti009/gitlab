@@ -18,6 +18,7 @@ query getGroupDependencies(
       nodes {
         id
         name
+        version
         componentVersion {
           id
           version

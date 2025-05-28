@@ -11,6 +11,11 @@ module Types
       field :name, GraphQL::Types::String,
         null: false, description: 'Name of the dependency.'
 
+      field :version, GraphQL::Types::String,
+        null: true,
+        description: 'Version of the dependency.',
+        deprecated: { reason: 'Replaced by component_version', milestone: '18.1' }
+
       field :component_version, Types::Sbom::ComponentVersionType,
         null: true, description: 'Version of the dependency.'
 
