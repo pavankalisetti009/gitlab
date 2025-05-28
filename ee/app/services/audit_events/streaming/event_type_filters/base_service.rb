@@ -4,6 +4,8 @@ module AuditEvents
   module Streaming
     module EventTypeFilters
       class BaseService
+        include ::AuditEvents::EventFilterSyncHelper
+
         attr_reader :destination, :event_type_filters, :current_user, :model
 
         def initialize(destination:, event_type_filters:, current_user:)
