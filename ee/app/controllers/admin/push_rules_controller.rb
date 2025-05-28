@@ -2,7 +2,7 @@
 
 class Admin::PushRulesController < Admin::ApplicationController
   before_action :check_push_rules_available!
-  before_action :push_rule
+  before_action :set_push_rule
   before_action :set_application_setting
 
   respond_to :html
@@ -12,7 +12,7 @@ class Admin::PushRulesController < Admin::ApplicationController
   def show; end
 
   def update
-    @push_rule.update(push_rule_params.merge(organization_id: Organizations::Organization.first.id))
+    @push_rule.update(push_rule_params)
 
     if @push_rule.valid?
       link_push_rule_to_application_settings
@@ -53,8 +53,10 @@ class Admin::PushRulesController < Admin::ApplicationController
   end
 
   # rubocop: disable CodeReuse/ActiveRecord
-  def push_rule
-    @push_rule ||= PushRule.find_or_initialize_by(is_sample: true)
+  def set_push_rule
+    @push_rule ||= PushRule.find_or_initialize_by(is_sample: true) do |push_rule|
+      push_rule.assign_attributes(organization: Current.organization)
+    end
   end
   # rubocop: enable CodeReuse/ActiveRecord
 

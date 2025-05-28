@@ -2,11 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe Admin::PushRulesController, feature_category: :source_code_management do
+RSpec.describe Admin::PushRulesController, :with_current_organization, feature_category: :source_code_management do
   include StubENV
 
-  let!(:organization) { create(:organization) }
-  let(:admin) { create(:admin) }
+  let_it_be(:admin) { create(:admin) }
 
   before do
     sign_in(admin)
@@ -31,18 +30,38 @@ RSpec.describe Admin::PushRulesController, feature_category: :source_code_manage
         commit_committer_name_check: true)
     end
 
-    it 'updates sample push rule' do
-      expect_next_instance_of(PushRule) do |instance|
-        expect(instance).to receive(:update).with(
-          ActionController::Parameters.new(
-            params.merge(organization_id: Organizations::Organization.first.id)
-          ).permit!
-        ).and_call_original
+    shared_examples 'successful push rule update' do |count_change: 0|
+      it 'updates sample push rule' do
+        expect { patch :update, params: { push_rule: params } }.to change { PushRule.count }.by(count_change)
+
+        expect(response).to redirect_to(admin_push_rule_path)
       end
+    end
 
-      patch :update, params: { push_rule: params }
+    context 'when a sample rule does not exist' do
+      it_behaves_like 'successful push rule update', count_change: 1
+      it 'assigns correct organization' do
+        patch :update, params: { push_rule: params }
 
-      expect(response).to redirect_to(admin_push_rule_path)
+        expect(PushRule.global.organization).to eq(current_organization)
+      end
+    end
+
+    context 'when a sample rule exists' do
+      let_it_be(:push_rule) { create(:push_rule_sample, organization: current_organization) }
+
+      it_behaves_like 'successful push rule update', count_change: 0
+    end
+
+    context 'when a sample rule exists but with a different org' do
+      let_it_be(:organization) { create(:organization) }
+      let_it_be(:push_rule) { create(:push_rule_sample, organization: organization) }
+
+      it_behaves_like 'successful push rule update', count_change: 0
+
+      it 'does not change organization' do
+        expect { patch :update, params: { push_rule: params } }.not_to change { push_rule.reload.organization }
+      end
     end
 
     it 'links push rule with application settings' do
