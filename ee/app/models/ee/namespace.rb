@@ -81,6 +81,7 @@ module EE
       has_many :instance_runner_monthly_usages,
         class_name: 'Ci::Minutes::InstanceRunnerMonthlyUsage',
         inverse_of: :root_namespace
+      has_many :custom_lifecycles, class_name: 'WorkItems::Statuses::Custom::Lifecycle'
 
       scope :include_gitlab_subscription, -> { includes(:gitlab_subscription) }
       scope :include_gitlab_subscription_with_hosted_plan, -> { includes(gitlab_subscription: :hosted_plan) }
@@ -687,6 +688,10 @@ module EE
 
     def duo_core_features_enabled?
       !!root_ancestor.duo_core_features_enabled
+    end
+
+    def lifecycles
+      custom_lifecycles.exists? ? custom_lifecycles : ::WorkItems::Statuses::SystemDefined::Lifecycle.all
     end
 
     private

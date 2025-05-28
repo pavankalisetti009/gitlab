@@ -30,6 +30,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
   it { is_expected.to have_many(:work_items_colors) }
   it { is_expected.to have_many(:audit_events_streaming_group_namespace_filters).class_name('AuditEvents::Group::NamespaceFilter') }
   it { is_expected.to have_many(:audit_events_streaming_instance_namespace_filters).class_name('AuditEvents::Instance::NamespaceFilter') }
+  it { is_expected.to have_many(:custom_lifecycles).class_name('WorkItems::Statuses::Custom::Lifecycle') }
 
   it { is_expected.to delegate_method(:trial?).to(:gitlab_subscription) }
   it { is_expected.to delegate_method(:trial_ends_on).to(:gitlab_subscription) }
@@ -2774,6 +2775,26 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         it 'checks the namespace_settings of root_namespace' do
           expect(sub_group.duo_core_features_enabled?).to eq(false)
         end
+      end
+    end
+  end
+
+  describe '#lifecycles' do
+    context 'with system-defined lifecycles' do
+      let_it_be(:system_defined_lifecycles_names) do
+        ::WorkItems::Statuses::SystemDefined::Lifecycle.all.map(&:name)
+      end
+
+      it 'returns system-defined lifecycles' do
+        expect(namespace.lifecycles.map(&:name)).to eq(system_defined_lifecycles_names)
+      end
+    end
+
+    context 'with custom lifecycles' do
+      let!(:custom_lifecycle) { create(:work_item_custom_lifecycle, namespace: namespace) }
+
+      it 'returns custom lifecycles' do
+        expect(namespace.lifecycles).to contain_exactly(custom_lifecycle)
       end
     end
   end

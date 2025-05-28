@@ -19,6 +19,7 @@ module EE
       condition(:iterations_available, scope: :subject) { @subject.feature_available?(:iterations) }
       condition(:subepics_available, scope: :subject) { @subject.feature_available?(:subepics) }
       condition(:custom_fields_available, scope: :subject) { @subject.feature_available?(:custom_fields) }
+      condition(:work_item_statuses_available, scope: :subject) { @subject.feature_available?(:work_item_status) }
       condition(:external_audit_events_available, scope: :subject) do
         @subject.feature_available?(:external_audit_events)
       end
@@ -509,6 +510,10 @@ module EE
 
       rule { maintainer & custom_fields_available }.policy do
         enable :admin_custom_field
+      end
+
+      rule { can?(:read_work_item) & work_item_statuses_available }.policy do
+        enable :read_lifecycle
       end
 
       rule { ~can?(:read_cross_project) }.policy do
