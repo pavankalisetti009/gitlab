@@ -4,6 +4,7 @@ import PreScanVerificationAlert from 'ee/security_configuration/dast_pre_scan_ve
 import PreScanVerificationSidebar from 'ee/security_configuration/dast_pre_scan_verification/components/pre_scan_verification_sidebar.vue';
 import PreScanVerificationSummary from 'ee/security_configuration/dast_pre_scan_verification/components/pre_scan_verification_summary.vue';
 import { PRE_SCAN_VERIFICATION_STATUS } from 'ee/security_configuration/dast_pre_scan_verification/constants';
+import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 
 describe('PreScanVerificationSidebar', () => {
   let wrapper;
@@ -32,7 +33,7 @@ describe('PreScanVerificationSidebar', () => {
   });
 
   it('should render drawer with proper z index', () => {
-    expect(findDrawer().props('zIndex')).toBe(1001);
+    expect(findDrawer().props('zIndex')).toBe(DRAWER_Z_INDEX);
   });
 
   it('should close drawer', () => {
