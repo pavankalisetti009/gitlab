@@ -88,6 +88,13 @@ module EE
         super
       end
 
+      override :check_protocol!
+      def check_protocol!
+        return if geo?
+
+        super
+      end
+
       override :check_change_access!
       def check_change_access!
         check_free_user_cap_over_limit! # order matters here, this needs to come before size check for storage limits

@@ -614,6 +614,18 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
 
           it { expect { pull_changes }.not_to raise_error }
         end
+
+        context 'when Git over HTTP protocol is disabled and the request is signed by a Geo site' do
+          let(:actor) { :geo }
+          let(:protocol) { 'http' }
+          let(:enabled_protocol) { 'ssh' }
+
+          before do
+            stub_application_setting(enabled_git_access_protocol: enabled_protocol)
+          end
+
+          it { expect { pull_changes }.not_to raise_error }
+        end
       end
 
       context 'for a secondary' do
