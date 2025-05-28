@@ -48,7 +48,7 @@ export default {
   <settings-block
     id="js-merge-request-approval-settings"
     :title="$options.i18n.groupSettingsHeader"
-    :default-expanded="defaultExpanded"
+    :expanded="defaultExpanded"
     data-testid="merge-request-approval-settings"
   >
     <template #description>
