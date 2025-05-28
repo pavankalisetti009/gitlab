@@ -43,6 +43,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
 
     it 'makes an HTTP POST request with passed params' do
       allow(Gitlab::CurrentSettings).to receive(:uuid).and_return('one-two-three')
+      allow(Gitlab::GlobalAnonymousId).to receive(:instance_uuid).and_return('three-two-one')
 
       sync_seat_link
 
@@ -55,6 +56,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
           billable_users_count: 4,
           hostname: Gitlab.config.gitlab.host,
           instance_id: 'one-two-three',
+          unique_instance_id: 'three-two-one',
           add_on_metrics: []
         }.to_json
       )

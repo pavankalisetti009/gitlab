@@ -92,6 +92,7 @@ RSpec.describe Gitlab::SeatLinkData do
           billable_users_count: billable_users_count,
           hostname: Gitlab.config.gitlab.host,
           instance_id: instance_id,
+          unique_instance_id: Gitlab::GlobalAnonymousId.instance_uuid,
           add_on_metrics: []
         }.to_json
       )
@@ -110,6 +111,7 @@ RSpec.describe Gitlab::SeatLinkData do
             billable_users_count: billable_users_count,
             hostname: Gitlab.config.gitlab.host,
             instance_id: instance_id,
+            unique_instance_id: Gitlab::GlobalAnonymousId.instance_uuid,
             add_on_metrics: []
           }.to_json
         )
