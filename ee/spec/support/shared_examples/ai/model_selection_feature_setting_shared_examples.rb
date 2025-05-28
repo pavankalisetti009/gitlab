@@ -137,6 +137,69 @@ RSpec.shared_examples 'model selection feature setting' do |scope_class_name:|
         expect(ai_feature_setting.main_feature).to eq(ai_feature_setting.metadata.main_feature)
       end
     end
+
+    describe '.enabled_features_for' do
+      let(:base_features) do
+        { code_generations: 0, code_completions: 1, summarize_review: 2, review_merge_request: 3 }
+      end
+
+      let(:features_under_flags) do
+        {
+          summarize_review: 'summarize_my_code_review',
+          review_merge_request: 'add_ai_summary_for_new_mr'
+        }
+      end
+
+      before do
+        stub_const('::Ai::ModelSelection::FeaturesConfigurable::FEATURES', base_features)
+        stub_const('::Ai::ModelSelection::FeaturesConfigurable::FEATURES_UNDER_FLAGS', features_under_flags)
+      end
+
+      context 'when no features are disabled' do
+        before do
+          features_under_flags.each_value do |flag|
+            stub_feature_flags(flag.to_sym => true)
+          end
+        end
+
+        it 'returns all base features' do
+          enabled_features = described_class.enabled_features_for(ai_feature_setting.model_selection_scope)
+          expect(enabled_features).to eq(base_features)
+        end
+      end
+
+      context 'when a feature flag is disabled' do
+        let(:expected_enabled_features) do
+          { code_generations: 0, code_completions: 1, review_merge_request: 3 }
+        end
+
+        before do
+          stub_feature_flags(summarize_my_code_review: false)
+        end
+
+        it 'does not return the disabled feature' do
+          enabled_features = described_class.enabled_features_for(ai_feature_setting.model_selection_scope)
+          expect(enabled_features).to eq(expected_enabled_features)
+        end
+      end
+
+      context 'when all feature flag are disabled' do
+        let(:expected_enabled_features) do
+          { code_generations: 0, code_completions: 1 }
+        end
+
+        before do
+          features_under_flags.each_value do |flag|
+            stub_feature_flags(flag.to_sym => false)
+          end
+        end
+
+        it 'returns the expected enabled features' do
+          enabled_features = described_class.enabled_features_for(ai_feature_setting.model_selection_scope)
+          expect(enabled_features).to eq(expected_enabled_features)
+        end
+      end
+    end
   end
 end
 

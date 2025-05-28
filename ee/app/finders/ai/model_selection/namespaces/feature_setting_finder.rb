@@ -21,7 +21,7 @@ module Ai
         def scope_for_group
           feature_settings_by_name = group.ai_feature_settings.index_by(&:feature)
 
-          ::Ai::ModelSelection::NamespaceFeatureSetting::FEATURES.keys.map do |feature|
+          ::Ai::ModelSelection::NamespaceFeatureSetting.enabled_features_for(group).keys.map do |feature|
             feature_settings_by_name[feature.to_s] || build_feature_setting(feature)
           end
         end

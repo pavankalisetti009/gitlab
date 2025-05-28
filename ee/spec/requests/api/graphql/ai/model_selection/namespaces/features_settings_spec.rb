@@ -70,7 +70,11 @@ RSpec.describe 'List of configurable namespace Model Selection feature settings.
   end
 
   before do
-    stub_const('::Ai::ModelSelection::NamespaceFeatureSetting::FEATURES', test_ai_feature_enum)
+    allow(::Ai::ModelSelection::NamespaceFeatureSetting).to(
+      receive(:enabled_features_for)
+        .with(group)
+        .and_return(test_ai_feature_enum)
+    )
 
     stub_feature_flags(ai_model_switching: feature_flags_enabled)
 
