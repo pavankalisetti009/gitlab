@@ -136,7 +136,10 @@ module Resolvers
         state_transitions: :state_transitions,
         false_positive: { findings: :vulnerability_flags },
         representation_information: :representation_information,
-        location: { findings: :latest_finding_pipeline }
+        location: { findings: :latest_finding_pipeline },
+        links: { findings: :finding_links },
+        external_issue_links: :external_issue_links,
+        primary_identifier: { findings: :primary_identifier }
       }
 
       return base_associations if using_elasticsearch # With ES we directly return Vulnerability records

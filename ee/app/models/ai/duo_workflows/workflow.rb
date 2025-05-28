@@ -17,7 +17,7 @@ module Ai
       has_many :workloads, through: :workflows_workloads, disable_joins: true
 
       validates :status, presence: true
-      validates :goal, length: { maximum: 4096 }
+      validates :goal, length: { maximum: 16_384 }
 
       validate :only_known_agent_priviliges
       validate :only_known_pre_approved_agent_privileges

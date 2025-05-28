@@ -42,7 +42,7 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
 
   describe 'validations' do
     it { is_expected.to validate_presence_of(:status) }
-    it { is_expected.to validate_length_of(:goal).is_at_most(4096) }
+    it { is_expected.to validate_length_of(:goal).is_at_most(16_384) }
 
     describe '#only_known_agent_priviliges' do
       it 'is valid with a valid privilege' do
