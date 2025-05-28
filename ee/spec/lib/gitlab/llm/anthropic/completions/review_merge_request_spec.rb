@@ -671,58 +671,6 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
         completion.execute
       end
 
-      context 'with duo_code_review_multi_file disabled and multiple files' do
-        let(:client) { instance_double(Gitlab::Llm::Anthropic::Client) }
-        let(:first_file_prompt) { { messages: ['First file prompt'] } }
-        let(:second_file_prompt) { { messages: ['Second file prompt'] } }
-        let(:first_response) do
-          { content: [{ text: '<review><comment file="UPDATED.md" priority="3" old_line="" new_line="2">' \
-                          'First file comment</comment></review>' }] }
-        end
-
-        let(:second_response) do
-          { content: [{ text: '<review><comment file="NEW.md" priority="3" old_line="" new_line="1">' \
-                          'Second file comment</comment></review>' }] }
-        end
-
-        before do
-          stub_feature_flags(duo_code_review_multi_file: false)
-
-          # Set up client and responses
-          allow(Gitlab::Llm::Anthropic::Client).to receive(:new).and_return(client)
-
-          # Set up individual file prompts
-          allow_next_instance_of(review_prompt_class) do |template|
-            path = template.instance_variable_get(:@diffs_and_paths)&.keys&.first
-
-            case path
-            when 'UPDATED.md'
-              allow(template).to receive(:to_prompt).and_return(first_file_prompt)
-              allow(client).to receive(:messages_complete).with(first_file_prompt).and_return(first_response)
-            when 'NEW.md'
-              allow(template).to receive(:to_prompt).and_return(second_file_prompt)
-              allow(client).to receive(:messages_complete).with(second_file_prompt).and_return(second_response)
-            end
-          end
-
-          allow(client).to receive(:messages_complete).with(summary_prompt).and_return(summary_response&.to_json)
-        end
-
-        it 'makes separate requests for each file and creates notes' do
-          # Set expectations for separate requests
-          expect(client).to receive(:messages_complete).with(first_file_prompt).once
-          expect(client).to receive(:messages_complete).with(second_file_prompt).once
-
-          completion.execute
-
-          # Verify notes were created for both files
-          diff_notes = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).reorder(:id)
-          expect(diff_notes.count).to eq 2
-          expect(diff_notes.pluck(:note)).to match_array(['First file comment', 'Second file comment'])
-          expect(diff_notes.map { |n| n.position.new_path }).to contain_exactly('UPDATED.md', 'NEW.md')
-        end
-      end
-
       context 'when logging LLM response metrics' do
         before do
           # Ignore other logs
