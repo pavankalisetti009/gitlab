@@ -170,6 +170,12 @@ module EE
           resolver: ::Resolvers::Issuables::CustomFieldsResolver,
           experiment: { milestone: '17.10' }
 
+        field :lifecycles, ::Types::WorkItems::LifecycleType.connection_type,
+          null: true,
+          description: 'Lifecycles of work items available to the namespace.',
+          experiment: { milestone: '18.1' },
+          resolver: ::Resolvers::WorkItems::LifecyclesResolver
+
         def product_analytics_stored_events_limit
           object.root_ancestor.product_analytics_stored_events_limit
         end

@@ -219,6 +219,40 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     it { is_expected.to be_disallowed(:read_custom_field, :admin_custom_field) }
   end
 
+  context 'when work item statuses are available' do
+    before do
+      stub_licensed_features(work_item_status: true)
+    end
+
+    context 'when user is a guest' do
+      let(:current_user) { guest }
+
+      it { is_expected.to be_allowed(:read_lifecycle) }
+    end
+
+    context 'when user is a maintainer' do
+      let(:current_user) { maintainer }
+
+      it { is_expected.to be_allowed(:read_lifecycle) }
+    end
+
+    context 'when user is logged out' do
+      let(:current_user) { nil }
+
+      it { is_expected.to be_disallowed(:read_lifecycle) }
+    end
+  end
+
+  context 'when work item statuses are not available' do
+    let(:current_user) { guest }
+
+    before do
+      stub_licensed_features(work_item_status: false)
+    end
+
+    it { is_expected.to be_disallowed(:read_lifecycle) }
+  end
+
   context 'when cluster deployments is available' do
     let(:current_user) { maintainer }
 
