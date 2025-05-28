@@ -4,7 +4,7 @@ module Security
   class AnalyzerNamespaceStatusPolicy < BasePolicy
     delegate { @subject.group }
 
-    rule { can?(:maintainer_access) }.policy do
+    rule { can?(:developer_access) }.policy do
       enable :read_security_inventory
     end
 

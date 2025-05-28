@@ -30,7 +30,7 @@ RSpec.describe Security::AnalyzerProjectStatusPolicy, feature_category: :securit
         project.add_developer(user)
       end
 
-      it { is_expected.to be_disallowed(:read_security_inventory) }
+      it { is_expected.to be_allowed(:read_security_inventory) }
     end
 
     context 'when the current user does not have developer access to the project' do

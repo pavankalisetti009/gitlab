@@ -465,7 +465,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
       :guest      | false | false
       :guest      | true  | false
       :developer  | false | false
-      :developer  | true  | false
+      :developer  | true  | true
       :reporter   | false | false
       :reporter   | true  | false
       :maintainer | false | false

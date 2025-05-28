@@ -4818,6 +4818,31 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
+    describe 'read_vulnerability_statistics' do
+      let(:policy) { :read_vulnerability_statistics }
+
+      where(:role, :allowed) do
+        :guest      | false
+        :planner    | false
+        :reporter   | false
+        :developer  | true
+        :maintainer | true
+        :auditor    | false
+        :owner      | true
+        :admin      | true
+      end
+
+      with_them do
+        let(:current_user) { public_send(role) }
+
+        before do
+          enable_admin_mode!(current_user) if role == :admin
+        end
+
+        it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+      end
+    end
+
     describe 'access_security_scans_api' do
       context 'when feature is disabled' do
         let(:current_user) { owner }

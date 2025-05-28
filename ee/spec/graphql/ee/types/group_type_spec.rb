@@ -316,7 +316,7 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
       :guest      | false | false
       :guest      | true  | false
       :developer  | false | false
-      :developer  | true  | false
+      :developer  | true  | true
       :reporter   | false | false
       :reporter   | true  | false
       :maintainer | false | false

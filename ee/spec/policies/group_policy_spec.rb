@@ -1889,6 +1889,31 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  describe ':read_vulnerability_statistics' do
+    let(:policy) { :read_vulnerability_statistics }
+
+    where(:role, :admin_mode, :allowed) do
+      :guest      | nil   | false
+      :planner    | nil   | false
+      :reporter   | nil   | false
+      :developer  | nil   | true
+      :maintainer | nil   | true
+      :owner      | nil   | true
+      :admin      | true  | true
+      :admin      | false | false
+    end
+
+    with_them do
+      let(:current_user) { public_send(role) }
+
+      before do
+        enable_admin_mode!(current_user) if admin_mode
+      end
+
+      it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+    end
+  end
+
   describe 'resolve_vulnerability_with_ai' do
     before do
       stub_licensed_features(

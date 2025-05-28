@@ -457,6 +457,7 @@ module EE
         enable :enable_continuous_vulnerability_scans
         enable :read_project_security_exclusions
         enable :read_security_settings
+        enable :read_vulnerability_statistics
       end
 
       rule { can?(:push_code) }.policy do
@@ -623,6 +624,7 @@ module EE
         enable :read_vulnerability_feedback
         enable :read_vulnerability_scanner
         enable :read_vulnerability_representation_information
+        enable :read_vulnerability_statistics
       end
 
       condition(:resolve_vulnerability_allowed) do
@@ -694,7 +696,6 @@ module EE
         enable :manage_project_security_exclusions
         enable :read_project_security_exclusions
         enable :manage_security_settings
-        enable :read_vulnerability_statistics
       end
 
       rule { ~runner_performance_insights_available }.prevent :read_runner_usage
