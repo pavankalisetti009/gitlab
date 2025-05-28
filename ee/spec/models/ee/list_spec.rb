@@ -3,12 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe List do
-  let(:board) { create(:board) }
+  let_it_be(:board) { create(:board) }
 
   describe 'relationships' do
     it { is_expected.to belong_to(:user) }
     it { is_expected.to belong_to(:milestone) }
     it { is_expected.to belong_to(:iteration) }
+    it { is_expected.to belong_to(:custom_status).class_name('WorkItems::Statuses::Custom::Status').optional }
   end
 
   describe 'validations' do
@@ -86,6 +87,115 @@ RSpec.describe List do
     describe '#title' do
       it 'returns the iteration cadence and period as title' do
         expect(subject.title).to eq(iteration.display_text)
+      end
+    end
+  end
+
+  context 'when it is a status type' do
+    let_it_be(:system_defined_status) { build(:work_item_system_defined_status) }
+    let_it_be(:custom_status) { build(:work_item_custom_status) }
+
+    subject do
+      build(:list, list_type: :status, system_defined_status: system_defined_status, board: board, position: 2)
+    end
+
+    before do
+      stub_licensed_features(board_status_lists: true)
+    end
+
+    context 'with system defined status' do
+      it { is_expected.to be_destroyable }
+      it { is_expected.to be_movable }
+
+      describe 'validations' do
+        it { is_expected.to be_valid }
+
+        it 'is invalid when feature is not available' do
+          stub_licensed_features(board_status_lists: false)
+
+          expect(subject).to be_invalid
+          expect(subject.errors[:list_type])
+            .to contain_exactly('Status lists not available with your current license')
+        end
+      end
+
+      describe '#title' do
+        it 'returns the status name' do
+          expect(subject.title).to eq(system_defined_status.name)
+        end
+      end
+    end
+
+    context 'with duplicate system defined status' do
+      it 'is invalid' do
+        create(:list, list_type: :status, system_defined_status: system_defined_status, board: board, position: 2)
+
+        expect(subject).to be_invalid
+        expect(subject.errors[:base]).to contain_exactly('A list for this status already exists on the board')
+      end
+    end
+
+    context 'with custom status' do
+      subject do
+        build(:list, list_type: :status, custom_status: custom_status, board: board, position: 2)
+      end
+
+      it { is_expected.to be_destroyable }
+      it { is_expected.to be_movable }
+
+      describe 'validations' do
+        it { is_expected.to be_valid }
+
+        it 'is invalid when feature is not available' do
+          stub_licensed_features(board_status_lists: false)
+
+          expect(subject).to be_invalid
+          expect(subject.errors[:list_type])
+            .to contain_exactly('Status lists not available with your current license')
+        end
+      end
+
+      describe '#title' do
+        it 'returns the status name' do
+          expect(subject.title).to eq(custom_status.name)
+        end
+      end
+    end
+
+    context 'with duplicate custom status' do
+      subject do
+        build(:list, list_type: :status, custom_status: custom_status, board: board, position: 2)
+      end
+
+      it 'is invalid' do
+        create(:list, list_type: :status, custom_status: custom_status, board: board, position: 2)
+
+        expect(subject).to be_invalid
+        expect(subject.errors[:base]).to contain_exactly('A list for this status already exists on the board')
+      end
+    end
+
+    context 'with system defined and custom_status' do
+      subject do
+        build(:list, list_type: :status, system_defined_status: system_defined_status, custom_status: custom_status,
+          board: board, position: 2)
+      end
+
+      it 'is invalid' do
+        expect(subject).to be_invalid
+        expect(subject.errors[:base]).to contain_exactly('Cannot set both system defined status and custom status')
+      end
+    end
+
+    context 'without any status' do
+      subject do
+        build(:list, list_type: :status, board: board, position: 2)
+      end
+
+      it 'is invalid' do
+        expect(subject).to be_invalid
+        expect(subject.errors[:base])
+          .to contain_exactly('Status list requires either a system defined status or custom status')
       end
     end
   end

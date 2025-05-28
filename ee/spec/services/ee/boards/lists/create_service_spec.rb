@@ -9,6 +9,48 @@ RSpec.describe Boards::Lists::CreateService, feature_category: :portfolio_manage
     let_it_be(:board, refind: true) { create(:board, project: project) }
     let_it_be(:user) { create(:user) }
 
+    shared_examples 'creates a status list' do
+      it 'creates status list' do
+        response = service.execute(board)
+
+        expect(response.success?).to eq(true)
+        expect(response.payload[:list].list_type).to eq('status')
+      end
+    end
+
+    shared_examples 'returns error when status not found' do
+      it 'returns an error' do
+        response = service.execute(board)
+
+        expect(response.success?).to eq(false)
+        expect(response.errors).to include('Status not found')
+      end
+    end
+
+    shared_examples 'returns error when status list license unavailable' do
+      it 'returns an error' do
+        stub_licensed_features(board_status_lists: false)
+
+        response = service.execute(board)
+
+        expect(response.success?).to eq(false)
+        expect(response.errors).to include('Status lists not available with your current license')
+      end
+    end
+
+    shared_examples 'returns error when status feature unavailable' do
+      before do
+        stub_feature_flags(work_item_status_feature_flag: false)
+      end
+
+      it 'returns an error' do
+        response = service.execute(board)
+
+        expect(response.success?).to eq(false)
+        expect(response.errors).to include('Status feature not available')
+      end
+    end
+
     context 'when assignee_id param is sent' do
       let_it_be(:other_user) { create(:user) }
 
@@ -104,6 +146,57 @@ RSpec.describe Boards::Lists::CreateService, feature_category: :portfolio_manage
 
         expect(response.success?).to eq(false)
         expect(response.errors).to include('Iteration lists not available with your current license')
+      end
+    end
+
+    context 'when system_defined_status_identifier param is sent' do
+      let(:system_defined_status_identifier) { 1 }
+
+      before_all do
+        group.add_developer(user)
+      end
+
+      subject(:service) do
+        described_class.new(project, user, 'system_defined_status_identifier' => system_defined_status_identifier)
+      end
+
+      before do
+        stub_licensed_features(board_status_lists: true, work_item_status: true)
+      end
+
+      it_behaves_like 'creates a status list'
+      it_behaves_like 'returns error when status list license unavailable'
+      it_behaves_like 'returns error when status feature unavailable'
+
+      context 'when status is not found' do
+        let(:system_defined_status_identifier) { 10 }
+
+        it_behaves_like 'returns error when status not found'
+      end
+    end
+
+    context 'when custom_status_id param is sent' do
+      let(:custom_status) { create(:work_item_custom_status, namespace: group) }
+      let(:custom_status_id) { custom_status.id }
+
+      before_all do
+        group.add_developer(user)
+      end
+
+      subject(:service) { described_class.new(project, user, 'custom_status_id' => custom_status_id) }
+
+      before do
+        stub_licensed_features(board_status_lists: true, work_item_status: true)
+      end
+
+      it_behaves_like 'creates a status list'
+      it_behaves_like 'returns error when status list license unavailable'
+      it_behaves_like 'returns error when status feature unavailable'
+
+      context 'when status is not found' do
+        let(:custom_status_id) { 10 }
+
+        it_behaves_like 'returns error when status not found'
       end
     end
 

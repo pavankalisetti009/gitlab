@@ -134,35 +134,81 @@ RSpec.describe Mutations::Boards::Lists::Create do
       end
 
       describe 'status list' do
-        let_it_be(:status_id) { ::WorkItems::Statuses::SystemDefined::Status.find(1).to_global_id }
-        let(:list_create_params) { { status_id: status_id } }
+        let(:status) { build(:work_item_system_defined_status) }
+        let(:status_gid) { status.to_global_id }
+        let(:list_create_params) { { status_id: status_gid } }
 
-        context 'when feature unavailable' do
-          it 'returns an error' do
-            stub_licensed_features(board_status_lists: false)
+        before do
+          stub_licensed_features(board_status_lists: true, work_item_status: true)
+        end
 
-            expect(subject[:errors]).to include 'Status lists not available with your current license'
+        shared_examples 'creates a status list' do |status_id_field|
+          it 'creates a new issue board list for the status' do
+            expect { subject }.to change { board.lists.count }.by(1)
+
+            new_list = subject[:list]
+            field_accessor = if status_id_field == 'system_defined_status'
+                               :system_defined_status_identifier
+                             else
+                               :"#{status_id_field}_id"
+                             end
+
+            expect(new_list.title).to eq(status.name)
+            expect(new_list.send(field_accessor)).to eq(status.id)
+            expect(new_list.position).to eq(0)
           end
         end
 
-        # Prevent list creation until board lists support statuses
-        # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/532474
-        it 'does not create a new issue board list' do
-          expect { subject }.not_to change { board.lists.count }
-
-          list = subject[:list]
-          expect(list).to be_nil
-
-          expect(subject[:errors]).to be_empty
+        shared_examples 'returns error when status not found' do
+          it 'returns an error' do
+            expect(subject[:errors]).to include('Status not found')
+          end
         end
 
-        context 'when status not found' do
-          let_it_be(:status_id) { "gid://gitlab/WorkItems::Statuses::SystemDefined::Status/10" }
+        shared_examples 'returns error when status list license unavailable' do
+          it 'returns an error' do
+            stub_licensed_features(board_status_lists: false)
 
-          # Prevent raising errors until board lists support statuses
-          # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/532474
-          it 'does not raise an error' do
-            expect(subject[:errors]).to be_empty
+            expect(subject[:errors]).to include('Status lists not available with your current license')
+          end
+        end
+
+        shared_examples 'returns error when status feature unavailable' do
+          before do
+            stub_feature_flags(work_item_status_feature_flag: false)
+          end
+
+          it 'returns an error about status lists being unavailable' do
+            expect { subject }.not_to change { board.lists.count }
+
+            expect(subject[:list]).to be_nil
+            expect(subject[:errors]).to include('Status feature not available')
+          end
+        end
+
+        context 'with system-defined status' do
+          it_behaves_like 'creates a status list', 'system_defined_status'
+          it_behaves_like 'returns error when status list license unavailable'
+          it_behaves_like 'returns error when status feature unavailable'
+
+          context 'when status not found' do
+            let(:status_gid) { "gid://gitlab/WorkItems::Statuses::SystemDefined::Status/10" }
+
+            it_behaves_like 'returns error when status not found'
+          end
+        end
+
+        context 'with custom status' do
+          let(:status) { create(:work_item_custom_status, namespace: group) }
+
+          it_behaves_like 'creates a status list', 'custom_status'
+          it_behaves_like 'returns error when status list license unavailable'
+          it_behaves_like 'returns error when status feature unavailable'
+
+          context 'when status not found' do
+            let(:status_gid) { "gid://gitlab/WorkItems::Statuses::Custom::Status/10" }
+
+            it_behaves_like 'returns error when status not found'
           end
         end
       end
