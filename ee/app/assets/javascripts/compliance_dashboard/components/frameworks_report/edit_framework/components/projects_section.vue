@@ -42,6 +42,7 @@ export default {
   },
   data() {
     return {
+      isExpanded: false,
       projectList: [],
       associatedProjects: this.complianceFramework?.projects?.nodes || [],
       projectIdsToAdd: new Set(),
@@ -51,12 +52,14 @@ export default {
       originalProjectsLength: this.complianceFramework?.projects?.nodes?.length || 0,
       pageInfo: {},
       perPage: 20,
-      isLoading: false,
       filters: [],
       showOnlySelected: false,
     };
   },
   computed: {
+    isLoading() {
+      return this.$apollo.queries.projectList.loading;
+    },
     filteredProjects() {
       if (!this.showOnlySelected) {
         return this.projectList;
@@ -151,7 +154,9 @@ export default {
         this.errorMessage = i18n.fetchProjectsError;
         Sentry.captureException(error);
       },
-      loadingKey: 'isLoading',
+      skip() {
+        return !this.isExpanded;
+      },
     },
   },
   methods: {
@@ -273,6 +278,7 @@ export default {
     :title="$options.i18n.projects"
     :description="$options.i18n.projectsDescription"
     :items-count="originalProjectsLength"
+    @toggle="isExpanded = $event"
   >
     <div v-if="errorMessage" class="gl-p-5 gl-text-center">
       {{ errorMessage }}

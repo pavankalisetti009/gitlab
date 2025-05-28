@@ -59,10 +59,14 @@ export default {
           error: e,
         });
       },
+      skip() {
+        return !this.isExpanded;
+      },
     },
   },
   data() {
     return {
+      isExpanded: false,
       requirementToEdit: {},
       complianceRequirementControls: [],
       currentPage: 1,
@@ -165,6 +169,7 @@ export default {
     :description="$options.i18n.requirementsDescription"
     :items-count="requirements.length"
     :initially-expanded="isNewFramework"
+    @toggle="isExpanded = $event"
   >
     <gl-table
       v-if="requirements.length"
