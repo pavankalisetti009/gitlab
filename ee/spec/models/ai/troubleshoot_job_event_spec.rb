@@ -13,11 +13,14 @@ RSpec.describe Ai::TroubleshootJobEvent, feature_category: :duo_chat do
 
   let(:attributes) { { event: 'troubleshoot_job', user: user, job: job } }
 
-  it { is_expected.to belong_to(:user).required }
-  it { is_expected.to belong_to(:job).required }
+  it { is_expected.to belong_to(:job) }
   it { is_expected.to belong_to(:project) }
 
   it_behaves_like 'common ai_usage_event'
+
+  describe 'validations' do
+    it { is_expected.to validate_presence_of(:job_id) }
+  end
 
   describe '.payload_attributes' do
     it 'has list of payload attributes' do
@@ -25,32 +28,10 @@ RSpec.describe Ai::TroubleshootJobEvent, feature_category: :duo_chat do
     end
   end
 
-  describe 'validations' do
-    it { is_expected.to validate_presence_of(:timestamp) }
-
-    it 'allows 3 month old data at the most' do
-      is_expected.not_to allow_value(5.months.ago).for(:timestamp).with_message(_('must be 3 months old at the most'))
-    end
-  end
-
-  describe '#timestamp', :freeze_time do
-    it 'defaults to current time' do
-      expect(event.timestamp).to eq(DateTime.current)
-    end
-
-    it 'properly converts from string' do
-      expect(described_class.new(timestamp: DateTime.current.to_s).timestamp).to eq(DateTime.current)
-    end
-  end
-
   describe 'populating sharding key project_id' do
     let(:event) { described_class.new(job: job) }
 
-    it 'is filled from job' do
-      expect do
-        event.validate
-      end.to change { event.project_id }.from(nil).to(job.project_id)
-    end
+    it { is_expected.to populate_sharding_key(:project_id).with(job.project_id) }
   end
 
   describe '#store_to_pg', :freeze_time do
