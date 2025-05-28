@@ -1,8 +1,9 @@
 <script>
 import { GlIcon, GlLink, GlPopover } from '@gitlab/ui';
 import { InternalEvents } from '~/tracking';
+import glFeaturesMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { joinPaths, mergeUrlParams } from '~/lib/utils/url_utility';
-import { VALUE_STREAM_METRIC_METADATA } from '~/analytics/shared/constants';
+import { VALUE_STREAM_METRIC_METADATA, DORA_METRICS } from '~/analytics/shared/constants';
 import { s__ } from '~/locale';
 import { EVENT_LABEL_CLICK_METRIC_IN_DASHBOARD_TABLE } from 'ee/analytics/analytics_dashboards/constants';
 import { TABLE_METRICS } from '../constants';
@@ -15,7 +16,7 @@ export default {
     GlLink,
     GlPopover,
   },
-  mixins: [InternalEvents.mixin()],
+  mixins: [InternalEvents.mixin(), glFeaturesMixin()],
   props: {
     identifier: {
       type: String,
@@ -44,7 +45,18 @@ export default {
     metric() {
       return TABLE_METRICS[this.identifier] || AI_IMPACT_TABLE_METRICS[this.identifier];
     },
+    isDoraMetric() {
+      return Object.values(DORA_METRICS).includes(this.identifier);
+    },
     tooltip() {
+      if (this.glFeatures.doraMetricsDashboard && this.isDoraMetric) {
+        return {
+          ...VALUE_STREAM_METRIC_METADATA[this.identifier],
+          groupLink: '-/analytics/dashboards/dora_metrics',
+          projectLink: '-/analytics/dashboards/dora_metrics',
+        };
+      }
+
       return VALUE_STREAM_METRIC_METADATA[this.identifier];
     },
     link() {
