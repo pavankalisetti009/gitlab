@@ -16,6 +16,7 @@ import ZenMode from '~/zen_mode';
 
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { TITLE_LENGTH_MAX } from '~/issues/constants';
+import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import {
   I18N_LEGACY_REFERENCE_DEPRECATION_NOTE_TITLE,
   I18N_LEGACY_REFERENCE_DEPRECATION_NOTE_DETAIL,
@@ -227,6 +228,7 @@ export default {
       );
     },
   },
+  DRAWER_Z_INDEX,
 };
 </script>
 
@@ -236,7 +238,7 @@ export default {
     :open="drawerOpen"
     :header-height="getDrawerHeaderHeight()"
     :class="{ 'zen-mode gl-absolute': zenModeEnabled }"
-    :z-index="211"
+    :z-index="$options.DRAWER_Z_INDEX"
     class="requirement-form-drawer gl-drawer-responsive"
     @close="handleDrawerClose"
   >
