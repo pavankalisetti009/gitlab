@@ -199,6 +199,7 @@ module GitlabSubscriptions
       review_merge_request
       board_status_lists
       disable_invite_members
+      self_hosted_models
     ].freeze
 
     ULTIMATE_FEATURES = %i[

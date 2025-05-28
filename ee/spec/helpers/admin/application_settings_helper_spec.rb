@@ -64,21 +64,19 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
       where(
         :terms_accepted,
         :purchased,
-        :ultimate,
-        :premium,
+        :self_hosted_models,
         :duo_ent_purchased,
         :expected_duo_pro_visible_value,
         :expected_experiments_visible_value,
         :expected_can_manage_self_hosted_models,
         :expected_duo_core_features_enabled
       ) do
-        true  | true  | true  | false | true  | 'true'  | 'true'  | 'true'  | 'true'
-        true  | true  | false | true  | true  | 'true'  | 'true'  | 'true'  | 'true'
-        true  | true  | true  | false | false | 'true'  | 'true'  | 'false' | 'true'
-        true  | true  | false | true  | false | 'true'  | 'true'  | 'false' | 'false'
-        true  | true  | false | false | true  | 'true'  | 'true'  | 'false' | 'false'
-        false | false | false | false | false | 'false' | 'false' | 'false' | 'false'
-        true  | nil   | true  | false | false | ''      | 'false' | 'false' | 'false'
+        true  | true  | true  | true  | 'true'  | 'true'  | 'true'  | 'true'
+        true  | true  | false | false | 'true'  | 'true'  | 'false' | 'true'
+        true  | true  | false | false | 'true'  | 'true'  | 'false' | 'false'
+        true  | true  | false | true  | 'true'  | 'true'  | 'false' | 'false'
+        false | false | false | false | 'false' | 'false' | 'false' | 'false'
+        true  | nil   | false | false | ''      | 'false' | 'false' | 'false'
       end
 
       with_them do
@@ -124,8 +122,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
           allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(terms_accepted)
 
-          allow(License).to receive_message_chain(:current, :ultimate?).and_return(ultimate)
-          allow(License).to receive_message_chain(:current, :premium?).and_return(premium)
+          allow(License).to receive(:feature_available?).with(:self_hosted_models).and_return(self_hosted_models)
 
           allow(::GitlabSubscriptions::AddOnPurchase)
             .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?)
@@ -263,7 +260,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
     before do
       allow(License).to receive(:current).and_return(license)
-      allow(license).to receive(:ultimate?).and_return(true)
+      allow(License).to receive(:feature_available?).with(:self_hosted_models).and_return(true)
       allow(::Ai::AmazonQ).to receive(:feature_available?).and_return(amazon_q_available)
       allow(license).to receive_messages(
         subscription_name: subscription_name,
@@ -427,7 +424,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :ai_abstracti
 
       before do
         allow(helper).to receive(:duo_workflow_service_account).and_call_original
-        allow(license).to receive(:feature_available?).and_return(false)
+        allow(License).to receive(:feature_available?).with(:password_complexity).and_return(false)
 
         allow(Ai::Setting).to receive(:instance).and_return(ai_setting)
         allow(ai_setting).to receive(:duo_workflow_service_account_user).and_return(service_account)
