@@ -48,6 +48,7 @@ module EE
         foreign_key: :group_id,
         inverse_of: :group
       has_one :onboarding_progress, class_name: 'Onboarding::Progress'
+      has_one :ai_settings, inverse_of: :namespace, class_name: 'Ai::NamespaceSetting', autosave: true
 
       has_many :gitlab_subscription_histories, class_name: "GitlabSubscriptions::SubscriptionHistory"
       has_many :ci_minutes_additional_packs, class_name: "Ci::Minutes::AdditionalPack"
