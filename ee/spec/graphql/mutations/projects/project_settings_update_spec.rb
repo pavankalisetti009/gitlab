@@ -16,12 +16,15 @@ RSpec.describe Mutations::Projects::ProjectSettingsUpdate, feature_category: :co
 
   describe '#resolve' do
     subject(:resolve) do
-      mutation.resolve(
-        full_path: project.full_path,
-        duo_features_enabled: duo_features_enabled)
+      args = { full_path: project.full_path }
+      args[:duo_features_enabled] = duo_features_enabled if defined?(duo_features_enabled)
+      args[:duo_context_exclusion_settings] = duo_context_exclusion_settings if defined?(duo_context_exclusion_settings)
+
+      mutation.resolve(**args)
     end
 
     let(:duo_features_enabled) { true }
+    let(:duo_context_exclusion_settings) { nil }
 
     it 'raises an error if the resource is not accessible to the user' do
       expect { resolve }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
@@ -80,6 +83,41 @@ RSpec.describe Mutations::Projects::ProjectSettingsUpdate, feature_category: :co
 
         it 'updates the setting' do
           expect(resolve[:project_settings]).to have_attributes(duo_features_enabled: duo_features_enabled)
+        end
+      end
+
+      context 'when updating duo context exclusion settings' do
+        let(:duo_context_exclusion_settings) { { exclusion_rules: ['*.txt', 'node_modules/'] } }
+
+        before do
+          stub_saas_features(duo_chat_on_saas: true)
+        end
+
+        it 'updates the duo context exclusion settings' do
+          expect(::Projects::UpdateService).to receive(:new).with(
+            anything,
+            anything,
+            hash_including(project_setting_attributes:
+              hash_including(duo_context_exclusion_settings: duo_context_exclusion_settings)
+                          )).and_call_original
+
+          resolve
+        end
+      end
+
+      context 'when not providing any parameters' do
+        subject(:resolve_without_params) do
+          mutation.resolve(full_path: project.full_path)
+        end
+
+        before do
+          stub_saas_features(duo_chat_on_saas: true)
+        end
+
+        it 'raise an error' do
+          expect do
+            resolve_without_params
+          end.to raise_error(Gitlab::Graphql::Errors::ArgumentError, 'Must provide at least one argument')
         end
       end
     end
