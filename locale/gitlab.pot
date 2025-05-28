@@ -42065,6 +42065,9 @@ msgstr ""
 msgid "Observability|Last 7 days"
 msgstr ""
 
+msgid "Observability|Observability Dashboard"
+msgstr ""
+
 msgid "Observability|Related issues"
 msgstr ""
 
