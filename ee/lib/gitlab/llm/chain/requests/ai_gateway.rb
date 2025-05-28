@@ -155,7 +155,7 @@ module Gitlab
 
           def namespace_feature_setting(unit_primitive)
             feature = unit_primitive ? "duo_chat_#{unit_primitive}" : "duo_chat"
-            ::Ai::ModelSelection::NamespaceFeatureSetting.find_by_feature(root_namespace, feature)
+            ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(root_namespace, feature)
           end
 
           def model_params(options, unit_primitive = nil)

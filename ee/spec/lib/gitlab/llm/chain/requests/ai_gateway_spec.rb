@@ -385,18 +385,8 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
         end
       end
 
-      context 'when model switching is enabled and model is selected' do
-        let(:unit_primitive) { :explain_code }
-        let(:model_ref) { 'claude-3-7-sonnet-20250219' }
-        let(:prompt) { { prompt: user_prompt, options: {} } }
-
-        before do
-          stub_feature_flags(ai_model_switching: true)
-          create(:ai_namespace_feature_setting, namespace: root_namespace,
-            feature: :"duo_chat_#{unit_primitive}", offered_model_ref: model_ref)
-        end
-
-        it 'sends identifier and feature_setting' do
+      shared_examples_for 'sends a request with identifier and feature_setting' do
+        specify do
           url = "#{::Gitlab::AiGateway.url}#{described_class::BASE_ENDPOINT}/#{unit_primitive}"
 
           expect(ai_client).to receive(:stream).with(
@@ -419,37 +409,47 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
         end
       end
 
-      context 'when model switching is enabled and model is NOT selected' do
+      context 'when model switching is enabled and model is selected' do
         let(:unit_primitive) { :explain_code }
+        let(:model_ref) { 'claude-3-7-sonnet-20250219' }
         let(:prompt) { { prompt: user_prompt, options: {} } }
 
         before do
           stub_feature_flags(ai_model_switching: true)
           create(:ai_namespace_feature_setting, namespace: root_namespace,
-            feature: :"duo_chat_#{unit_primitive}", offered_model_ref: nil)
+            feature: :"duo_chat_#{unit_primitive}", offered_model_ref: model_ref)
         end
 
-        it 'sends only feature_setting (identifier is nil)' do
-          url = "#{::Gitlab::AiGateway.url}#{described_class::BASE_ENDPOINT}/#{unit_primitive}"
+        it_behaves_like 'sends a request with identifier and feature_setting'
+      end
 
-          expect(ai_client).to receive(:stream).with(
-            hash_including(
-              url: url,
-              body: hash_including(
-                prompt_components: array_including(
-                  hash_including(payload: hash_including(
-                    provider: "gitlab",
-                    feature_setting: 'duo_chat_explain_code',
-                    identifier: nil
-                  ))
-                )
-              )
-            )
-          ).and_return(response)
+      context 'when model switching is enabled and a model is explicitly selected as `GitLab Default`' do
+        let(:unit_primitive) { :explain_code }
+        let(:prompt) { { prompt: user_prompt, options: {} } }
+        let(:model_ref) { nil }
 
-          gateway = described_class.new(user, root_namespace: root_namespace, tracking_context: tracking_context)
-          expect(gateway.request(prompt, unit_primitive: unit_primitive)).to eq(response)
+        before do
+          stub_feature_flags(ai_model_switching: true)
+          # When `offered_model_ref` is set to nil, it is considered by AI Gateway as the
+          # GitLab default model.
+          create(:ai_namespace_feature_setting, namespace: root_namespace,
+            feature: :"duo_chat_#{unit_primitive}", offered_model_ref: model_ref)
         end
+
+        it_behaves_like 'sends a request with identifier and feature_setting'
+      end
+
+      context 'when model switching is enabled, but a model is explicitly not selected ' \
+        '(ie, it should behave like the default GitLab model is selected)' do
+        let(:unit_primitive) { :explain_code }
+        let(:prompt) { { prompt: user_prompt, options: {} } }
+        let(:model_ref) { nil }
+
+        before do
+          stub_feature_flags(ai_model_switching: true)
+        end
+
+        it_behaves_like 'sends a request with identifier and feature_setting'
       end
 
       context 'when using agent prompt with model switching' do

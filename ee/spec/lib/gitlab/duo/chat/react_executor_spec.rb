@@ -572,7 +572,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
       end
     end
 
-    context 'when Duo chat model is selected at namespace level' do
+    context 'for model selection at the namespace level' do
       let_it_be(:root_namespace) { create(:group) }
       let(:ai_request) { instance_double(::Gitlab::Llm::Chain::Requests::AiGateway, root_namespace: root_namespace) }
       let(:context) do
@@ -589,27 +589,54 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
         )
       end
 
-      let_it_be(:feature_setting) do
-        create(:ai_namespace_feature_setting,
-          namespace: root_namespace,
-          feature: :duo_chat,
-          offered_model_ref: 'claude-3-7-sonnet-20250219')
+      shared_examples_for 'sends a request with identifier and feature_setting' do
+        specify do
+          params = step_params
+          params[:model_metadata] = {
+            provider: 'gitlab',
+            identifier: model_ref,
+            feature_setting: 'duo_chat'
+          }
+
+          expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
+            expect(react_agent).to receive(:step).with(params)
+              .and_yield(action_event).and_return([action_event])
+          end
+
+          agent.execute
+        end
       end
 
-      it 'sends the namespace model metadata' do
-        params = step_params
-        params[:model_metadata] = {
-          provider: 'gitlab',
-          identifier: 'claude-3-7-sonnet-20250219',
-          feature_setting: 'duo_chat'
-        }
+      context 'when a model is explicitly selected' do
+        let(:model_ref) { 'claude-3-7-sonnet-20250219' }
 
-        expect_next_instance_of(Gitlab::Duo::Chat::StepExecutor) do |react_agent|
-          expect(react_agent).to receive(:step).with(params)
-            .and_yield(action_event).and_return([action_event])
+        before do
+          create(:ai_namespace_feature_setting,
+            namespace: root_namespace,
+            feature: :duo_chat,
+            offered_model_ref: model_ref)
         end
 
-        agent.execute
+        it_behaves_like 'sends a request with identifier and feature_setting'
+      end
+
+      context 'when the model is explicitly set to GitLab Default' do
+        let(:model_ref) { nil }
+
+        before do
+          create(:ai_namespace_feature_setting,
+            namespace: root_namespace,
+            feature: :duo_chat,
+            offered_model_ref: model_ref)
+        end
+
+        it_behaves_like 'sends a request with identifier and feature_setting'
+      end
+
+      context 'when no model is explicitly set, and hence the feature should fallback to GitLab Default' do
+        let(:model_ref) { nil }
+
+        it_behaves_like 'sends a request with identifier and feature_setting'
       end
     end
 

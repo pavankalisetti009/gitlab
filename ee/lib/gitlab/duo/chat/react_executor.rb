@@ -342,7 +342,7 @@ module Gitlab
           root_namespace = context.ai_request&.root_namespace
 
           if Feature.enabled?(:ai_model_switching, root_namespace)
-            ::Ai::ModelSelection::NamespaceFeatureSetting.find_by_feature(root_namespace, :duo_chat)
+            ::Ai::ModelSelection::NamespaceFeatureSetting.find_or_initialize_by_feature(root_namespace, :duo_chat)
           else
             ::Ai::FeatureSetting.find_by_feature(:duo_chat)
           end

@@ -62,60 +62,6 @@ RSpec.describe Ai::ModelSelection::NamespaceFeatureSetting, feature_category: :"
     end
   end
 
-  describe '.find_by_feature' do
-    let(:feature_name) { "duo_chat" }
-    let(:offered_model_ref) { "claude-3-7-sonnet-20250219" }
-
-    subject(:ai_feature_setting) do
-      create(:ai_namespace_feature_setting,
-        namespace: group,
-        feature: feature_name,
-        offered_model_ref: offered_model_ref)
-    end
-
-    before do
-      ai_feature_setting
-    end
-
-    context 'when namespace is nil' do
-      it 'returns nil' do
-        result = described_class.find_by_feature(nil, feature_name)
-        expect(result).to be_nil
-      end
-    end
-
-    context 'when namespace is not a root namespace' do
-      let(:subgroup) { create(:group, parent: group) }
-
-      it 'returns nil' do
-        result = described_class.find_by_feature(subgroup, feature_name)
-        expect(result).to be_nil
-      end
-    end
-
-    it 'returns existing setting when one exists for the feature' do
-      result = described_class.find_by_feature(group, feature_name)
-      expect(result).to eq(ai_feature_setting)
-    end
-
-    it 'returns nil when no setting exists for the feature' do
-      non_existent_feature = 'code_generations'
-      result = described_class.find_by_feature(group, non_existent_feature)
-      expect(result).to be_nil
-    end
-
-    context 'when the feature is not enabled' do
-      let(:ff_enabled) { false }
-
-      subject(:ai_feature_setting) { build(:ai_namespace_feature_setting) }
-
-      it 'returns nil' do
-        result = described_class.find_by_feature(group, feature_name)
-        expect(result).to be_nil
-      end
-    end
-  end
-
   it_behaves_like 'model selection feature setting', scope_class_name: 'Group'
 
   describe 'validations' do
