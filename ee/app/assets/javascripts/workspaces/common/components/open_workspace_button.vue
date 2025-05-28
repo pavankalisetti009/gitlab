@@ -1,6 +1,9 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
+import { InternalEvents } from '~/tracking';
 import { WORKSPACE_STATES } from '../constants';
+
+const trackingMixin = InternalEvents.mixin();
 
 export default {
   components: {
@@ -9,6 +12,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [trackingMixin],
   props: {
     workspaceDisplayState: {
       type: String,
@@ -41,6 +45,7 @@ export default {
       class="gl-w-full sm:gl-w-auto"
       data-testid="workspace-open-button"
       target="_blank"
+      @click="trackEvent('click_open_workspace_button')"
     >
       {{ s__('Workspaces|Open workspace') }}
     </gl-button>
