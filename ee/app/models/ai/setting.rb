@@ -63,7 +63,7 @@ module Ai
           outbound_local_requests_allowlist: Gitlab::CurrentSettings.outbound_local_requests_whitelist # rubocop:disable Naming/InclusiveLanguage -- existing setting
         )
       rescue Gitlab::HTTP_V2::UrlBlocker::BlockedUrlError => e
-        errors.add(:ai_gateway_url, "is not allowed: #{e.message}")
+        errors.add(:ai_gateway_url, e.message)
       end
     end
 

@@ -29,7 +29,7 @@ RSpec.describe Ai::DuoSettings::UpdateService, feature_category: :"self-hosted_m
 
         expect(service_result).to be_error
         expect(service_result.errors).to match_array(
-          ["Ai gateway url is not allowed: Only allowed schemes are http, https"]
+          ["Ai gateway url Only allowed schemes are http, https"]
         )
       end
     end

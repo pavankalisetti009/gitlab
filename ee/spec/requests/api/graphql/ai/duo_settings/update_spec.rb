@@ -81,7 +81,7 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
             result = json_response['data']['duoSettingsUpdate']
 
             expect(result['errors']).to match_array(
-              ["Ai gateway url is not allowed: Only allowed schemes are http, https"]
+              ["Ai gateway url Only allowed schemes are http, https"]
             )
 
             expect { duo_settings.reload }.not_to change { duo_settings }
