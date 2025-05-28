@@ -15,7 +15,7 @@ module QA
               # right away so a refresh may be needed.
               # https://gitlab.com/gitlab-org/gitlab/issues/119203
               # TODO: https://gitlab.com/gitlab-org/gitlab/issues/195424
-              wait_until(reload: true) do
+              wait_until(reload: true, message: "Wait for audit-log-table to contain #{text}") do
                 has_element?('audit-log-table', text: text)
               end
             end
