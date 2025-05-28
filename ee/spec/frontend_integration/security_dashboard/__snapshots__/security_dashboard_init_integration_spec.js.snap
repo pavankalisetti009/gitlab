@@ -3,11 +3,24 @@
 exports[`Security Dashboard default states sets up group-level 1`] = `
 <div>
   <div>
-    <h2
-      class="gl-mb-6"
+    <header
+      class="gl-flex gl-flex-wrap gl-gap-y-3 gl-items-center gl-justify-between gl-my-5"
     >
-      Security dashboard
-    </h2>
+      <div
+        class="gl-flex gl-flex-wrap gl-gap-x-5 gl-gap-y-3 gl-justify-between gl-w-full md:gl-flex-nowrap"
+      >
+        <h1
+          class="!gl-m-0 gl-heading-1"
+          data-testid="page-heading"
+        >
+          Security dashboard
+        </h1>
+        <div
+          class="gl-flex gl-flex-wrap gl-gap-3 gl-items-center gl-shrink-0 gl-w-full lg:gl-mt-2 md:gl-mt-1 page-heading-actions sm:gl-w-auto"
+          data-testid="page-heading-actions"
+        />
+      </div>
+    </header>
     <div
       class="gl-grid security-charts"
     >
@@ -164,11 +177,24 @@ exports[`Security Dashboard default states sets up group-level with \`groupSecur
 exports[`Security Dashboard default states sets up instance-level 1`] = `
 <div>
   <div>
-    <h2
-      class="gl-mb-6"
+    <header
+      class="gl-flex gl-flex-wrap gl-gap-y-3 gl-items-center gl-justify-between gl-my-5"
     >
-      Security dashboard
-    </h2>
+      <div
+        class="gl-flex gl-flex-wrap gl-gap-x-5 gl-gap-y-3 gl-justify-between gl-w-full md:gl-flex-nowrap"
+      >
+        <h1
+          class="!gl-m-0 gl-heading-1"
+          data-testid="page-heading"
+        >
+          Security dashboard
+        </h1>
+        <div
+          class="gl-flex gl-flex-wrap gl-gap-3 gl-items-center gl-shrink-0 gl-w-full lg:gl-mt-2 md:gl-mt-1 page-heading-actions sm:gl-w-auto"
+          data-testid="page-heading-actions"
+        />
+      </div>
+    </header>
     <div
       class="gl-grid security-charts"
     >
