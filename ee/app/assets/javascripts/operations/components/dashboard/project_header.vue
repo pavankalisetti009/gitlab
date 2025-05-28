@@ -17,16 +17,6 @@ export default {
       type: Object,
       required: true,
     },
-    hasPipelineFailed: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    hasErrors: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   computed: {
     title() {
