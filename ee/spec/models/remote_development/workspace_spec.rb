@@ -38,6 +38,9 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       dns_zone: dns_zone,
       enabled: workspaces_agent_config_enabled
     )
+    # Some tests would trigger method trigger_update_workspace_to_active_event with HTTPS call
+    stub_request(:post, "https://events-stg.gitlab.net/com.snowplowanalytics.snowplow/tp2").to_return(status: 200,
+      body: "", headers: {})
   end
 
   describe "default values" do
@@ -61,7 +64,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       it { is_expected.to belong_to(:user) }
       it { is_expected.to belong_to(:personal_access_token) }
 
-      it 'has correct relation setup' do
+      it "has correct relation setup" do
         is_expected
           .to belong_to(:agent)
                 .class_name("Clusters::Agent")
@@ -155,6 +158,52 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
             # for more details on how versioning works and why this value is 3.
             workspace.valid?
             expect(workspace.workspaces_agent_config_version).to eq(3)
+          end
+        end
+      end
+    end
+
+    describe "after_save" do
+      describe "track_started_workspace callback" do
+        context "when desired_state changes to Running" do
+          it "triggers the event" do
+            expect(workspace).to receive(:track_started_workspace)
+            workspace.update!(desired_state: "Running")
+          end
+
+          it "triggers internal event with new label on new record" do
+            expect { workspace.update!(desired_state: "Running") }
+              .to trigger_internal_events("track_started_workspaces")
+              .with(user: user, project: project, additional_properties: {
+                label: "new"
+              })
+            .and increment_usage_metrics("counts.count_total_workspaces_started")
+          end
+
+          it "triggers internal event with existing label on existing record" do
+            workspace.save!(desired_state: "Stopped")
+            expect { workspace.update!(desired_state: "Running") }
+              .to trigger_internal_events("track_started_workspaces")
+              .with(user: user, project: project, additional_properties: {
+                label: "existing"
+              })
+            .and increment_usage_metrics("counts.count_total_workspaces_started")
+          end
+        end
+
+        context "when desired_state changes to a value other than Running" do
+          it "does not trigger the event and metric" do
+            expect { workspace.update!(desired_state: "Stopped") }
+              .to not_trigger_internal_events("track_started_workspaces")
+              .and not_increment_usage_metrics('counts.count_total_workspaces_started')
+          end
+        end
+
+        context "when desired_state doesn't change" do
+          it "does not trigger the event" do
+            expect { workspace.update!(name: "workspace_new_name") }
+              .to not_trigger_internal_events("track_started_workspaces")
+              .and not_increment_usage_metrics('counts.count_total_workspaces_started')
           end
         end
       end
