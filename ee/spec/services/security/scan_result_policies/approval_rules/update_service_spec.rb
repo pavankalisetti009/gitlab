@@ -236,5 +236,27 @@ RSpec.describe Security::ScanResultPolicies::ApprovalRules::UpdateService, featu
           .and not_change { ApprovalProjectRule.count }
       end
     end
+
+    context 'when approval rule update fails' do
+      before do
+        allow_next_instance_of(::ApprovalRules::UpdateService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'failed'))
+        end
+      end
+
+      it 'logs the error with Gitlab::AppJsonLogger.debug' do
+        expect(Gitlab::AppJsonLogger).to receive(:debug).with(hash_including(
+          "event" => "approval_rule_updation_failed",
+          "project_id" => project.id,
+          "project_path" => project.full_path,
+          "scan_result_policy_read_id" => scan_result_policy_read.id,
+          "approval_policy_rule_id" => approval_policy_rule.id,
+          "action_index" => 0,
+          "errors" => ['failed']
+        ))
+
+        execute_service
+      end
+    end
   end
 end

@@ -29,19 +29,15 @@ module Security
 
           return if approval_rule.blank?
 
-          ::ApprovalRules::UpdateService.new(approval_rule, author,
+          result = ::ApprovalRules::UpdateService.new(approval_rule, author,
             rule_params(approval_policy_rule, scan_result_policy_read, action_index, approval_action)
           ).execute
-        end
 
-        def scan_result_policy_reads_map
-          project
-            .scan_result_policy_reads
-            .for_approval_policy_rules(approval_policy_rules)
-            .each_with_object({}) do |item, result|
-              result[item.approval_policy_rule_id] ||= {}
-              result[item.approval_policy_rule_id][item.action_idx] = item
-            end
+          return if result.success?
+
+          log_service_failure(
+            'approval_rule_updation_failed', approval_policy_rule, scan_result_policy_read,
+            action_index, result.errors)
         end
 
         def update_scan_result_policy_read(
