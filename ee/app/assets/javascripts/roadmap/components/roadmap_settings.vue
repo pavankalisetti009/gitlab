@@ -1,6 +1,7 @@
 <script>
 import { GlDrawer } from '@gitlab/ui';
 
+import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import updateLocalRoadmapSettingsMutation from '../queries/update_local_roadmap_settings.mutation.graphql';
 import localRoadmapSettingsQuery from '../queries/local_roadmap_settings.query.graphql';
 
@@ -71,6 +72,7 @@ export default {
       this.headerHeight = `${offsetTop + clientHeight}px`;
     },
   },
+  DRAWER_Z_INDEX,
 };
 </script>
 
@@ -78,7 +80,7 @@ export default {
   <gl-drawer
     v-bind="$attrs"
     :open="isOpen"
-    :z-index="20"
+    :z-index="$options.DRAWER_Z_INDEX"
     :header-height="headerHeight"
     @close="$emit('toggleSettings', $event)"
   >

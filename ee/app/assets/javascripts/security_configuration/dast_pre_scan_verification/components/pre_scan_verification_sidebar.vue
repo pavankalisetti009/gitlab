@@ -2,6 +2,7 @@
 import { GlDrawer } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
+import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { PRE_SCAN_VERIFICATION_STATUS } from '../constants';
 import PreScanVerificationAlert from './pre_scan_verification_alert.vue';
 import PreScanVerificationList from './pre_scan_verification_list.vue';
@@ -46,6 +47,7 @@ export default {
       return getContentWrapperHeight();
     },
   },
+  DRAWER_Z_INDEX,
 };
 </script>
 
@@ -54,7 +56,7 @@ export default {
     :header-height="getDrawerHeaderHeight"
     :header-sticky="true"
     :open="open"
-    :z-index="1001"
+    :z-index="$options.DRAWER_Z_INDEX"
     @close="$emit('close')"
   >
     <template #title>
