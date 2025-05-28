@@ -290,13 +290,7 @@ module EE
         Ability.allowed?(@user, :access_duo_chat)
       end
 
-      condition(:duo_core_available_for_user, scope: :user) do
-        @user.any_root_namespace_with_duo_core_add_on?
-      end
-
       condition(:duo_features_enabled, scope: :subject) { @subject.namespace_settings&.duo_features_enabled }
-
-      condition(:duo_core_features_enabled, scope: :subject) { @subject.duo_core_features_enabled? }
 
       condition(:runner_performance_insights_available, scope: :subject) do
         @subject.licensed_feature_available?(:runner_performance_insights_for_namespace)
@@ -927,8 +921,6 @@ module EE
       rule { can?(:read_group) & chat_allowed_for_group & chat_available_for_user & duo_features_enabled }.enable :access_duo_chat
 
       rule { can?(:read_group) & duo_features_enabled }.enable :access_duo_features
-
-      rule { can?(:read_group) & duo_core_features_enabled & duo_core_available_for_user }.enable :access_duo_core_features
 
       rule { can?(:admin_group_member) & sso_enforced }.policy do
         enable :read_saml_user
