@@ -79,9 +79,23 @@ module ComplianceManagement
 
       def apply_projects
         params[:projects][:add_projects].each do |project_id|
-          result = ComplianceManagement::ComplianceFramework::ProjectSetting::AddFrameworkService.new(project_id: project_id, current_user: current_user,
-            framework: framework).execute
+          project = Project.find(project_id)
+
+          # Check if project belongs to the same group as the framework
+          unless project_framework_same_namespace?(project, framework)
+            @project_errors << (format(_("Project %{project_name} and framework are not from same namespace."), project_name: project.name))
+            next
+          end
+
+          result = ComplianceManagement::ComplianceFramework::ProjectSetting::AddFrameworkService.new(
+            project_id: project_id,
+            current_user: current_user,
+            framework: framework
+          ).execute
+
           @project_errors << result.message if result.error?
+        rescue ActiveRecord::RecordNotFound
+          @project_errors << (format(_("Project with ID %{project_id} not found"), project_id: project_id))
         end
       end
     end
