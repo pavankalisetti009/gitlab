@@ -65,7 +65,7 @@ describe('EE Approvals Group Settings App', () => {
     createWrapper();
 
     expect(findSettingsBlock().exists()).toBe(true);
-    expect(findSettingsBlock().props('defaultExpanded')).toBe(true);
+    expect(findSettingsBlock().props('expanded')).toBe(true);
   });
 
   it.each`
