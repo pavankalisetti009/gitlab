@@ -3,249 +3,185 @@
 require 'spec_helper'
 
 RSpec.describe WorkItems::Callbacks::Status, feature_category: :team_planning do
-  let_it_be(:user) { create(:user) }
-  let_it_be(:reporter) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be_with_reload(:work_item) { create(:work_item, :task, project: project) }
   let_it_be_with_reload(:unsupported_work_item) { create(:work_item, :ticket, project: project) }
 
-  let(:target_status) { build(:work_item_system_defined_status, :in_progress) }
-  let(:default_open_status) { item.work_item_type.status_lifecycle_for(group.id).default_open_status }
-
-  let(:current_user) { reporter }
-  let(:params) { {} }
+  let(:in_progress_status) { build(:work_item_system_defined_status, :in_progress) }
+  let(:done_status) { build(:work_item_system_defined_status, :done) }
+  let(:default_open_status) { build(:work_item_system_defined_status, :to_do) }
   let(:item) { work_item }
+  let(:params) { {} }
+  let(:status_update_service) { instance_double(WorkItems::Widgets::Statuses::UpdateService) }
 
-  let(:callback) { described_class.new(issuable: item, current_user: current_user, params: params) }
+  subject(:callback) { described_class.new(issuable: item, current_user: current_user, params: params) }
 
   before_all do
-    project.add_reporter(reporter)
+    project.add_reporter(current_user)
+  end
+
+  before do
+    stub_licensed_features(work_item_status: true)
   end
 
   def work_item_status
     item.reload.current_status&.status
   end
 
-  shared_examples 'applies target status' do
-    it { expect { after_save_callback }.to change { work_item_status }.to(target_status) }
-  end
+  shared_examples 'does not call services to create current status record' do
+    it 'does not update the status' do
+      expect(Issues::ReopenService).not_to receive(:new)
+      expect(Issues::CloseService).not_to receive(:new)
+      expect(::WorkItems::Widgets::Statuses::UpdateService).not_to receive(:new)
 
-  shared_examples 'preserves work item status' do
-    it 'does not change work item status value' do
-      expect { after_save_callback }
-        .to not_change { work_item_status }
-        .and not_change { item.updated_at }
-    end
-
-    it_behaves_like 'does not create the system note'
-  end
-
-  shared_examples 'creates the system note' do
-    it 'creates system note' do
-      expect { after_save_callback }.to change { item.notes.count }.by(1)
-
-      note = item.notes.first
-      expect(note.note).to eq(format("set status to **%{status_name}**", status_name: target_status.name))
-      expect(note.system_note_metadata.action).to eq('work_item_status')
+      after_save_callback
     end
   end
 
-  shared_examples 'does not create the system note' do
-    it { expect { after_save_callback }.to not_change { item.notes.count } }
-  end
+  shared_examples 'handle status for open state' do
+    context "when work items state is open" do
+      it "calls the status update service with a status with open state" do
+        expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
+          .with(item, current_user, status)
+          .and_return(status_update_service)
+        expect(status_update_service).to receive(:execute)
+        expect(status.state).to eq(:open)
 
-  shared_examples 'raises error' do
-    it { expect { after_save_callback }.to raise_error(ActiveRecord::RecordInvalid, error_message) }
-  end
-
-  shared_examples 'applies default status with system note' do
-    let(:target_status) { default_open_status }
-
-    it_behaves_like 'applies target status'
-    it_behaves_like 'creates the system note'
-  end
-
-  shared_examples 'applies default status without system note' do
-    let(:target_status) { default_open_status }
-
-    it_behaves_like 'applies target status'
-    it_behaves_like 'does not create the system note'
-  end
-
-  shared_examples 'applies target status with system note' do
-    it_behaves_like 'applies target status'
-    it_behaves_like 'creates the system note'
-  end
-
-  shared_examples 'preserves status when work_item_status_transitions flag is disabled' do
-    before do
-      stub_feature_flags(work_item_status_transitions: false)
+        after_save_callback
+      end
     end
 
-    it_behaves_like 'preserves work item status'
-  end
+    context "when work items state is closed" do
+      before do
+        item.close(current_user)
+      end
 
-  shared_examples 'preserves currently set status' do
-    let_it_be(:current_status) { create(:work_item_current_status, work_item: work_item, system_defined_status_id: 2) }
+      it "calls the reopen with a status with open state" do
+        expect(Issues::ReopenService).to receive_message_chain(:new, :execute).with(item, status: status)
+        expect(status.state).to eq(:open)
 
-    it_behaves_like 'preserves work item status'
-  end
-
-  shared_examples 'overwrites currently set status with target status' do
-    let_it_be(:current_status) { create(:work_item_current_status, work_item: work_item, system_defined_status_id: 1) }
-
-    it_behaves_like 'applies target status with system note'
-  end
-
-  shared_examples 'preserves status when item is not supported' do
-    let(:item) { unsupported_work_item }
-
-    it_behaves_like 'preserves work item status'
-    it_behaves_like 'preserves status when work_item_status_transitions flag is disabled'
-  end
-
-  shared_examples 'unlicensed feature' do
-    # Because unlicensed we ignore the given status param and apply the
-    # default instead because supported items should have a status.
-    # No system note because the feature is not visible to the user (license).
-    it_behaves_like 'applies default status without system note'
-    it_behaves_like 'preserves status when work_item_status_transitions flag is disabled'
-    it_behaves_like 'preserves currently set status'
-    it_behaves_like 'preserves status when item is not supported'
-  end
-
-  shared_examples 'when feature is unlicensed' do
-    context 'without params' do
-      it_behaves_like 'unlicensed feature'
-    end
-
-    context 'with params' do
-      let(:params) { { status: target_status } }
-
-      it_behaves_like 'unlicensed feature'
+        after_save_callback
+      end
     end
   end
 
-  # We're only testing paths that make a difference
-  # and not paths that behave like already tested ones with different setup.
-  # This should keep the test suite more compact while ensuring good coverage.
+  shared_examples 'handle status for closed state' do
+    context "when work items state is closed" do
+      before do
+        item.close(current_user)
+      end
+
+      it "calls the status update service with a status with closed state" do
+        expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
+          .with(item, current_user, status)
+          .and_return(status_update_service)
+        expect(status_update_service).to receive(:execute)
+        expect(status.state).to eq(:closed)
+
+        after_save_callback
+      end
+    end
+
+    context "when work items state is open" do
+      it "calls the close with an status with closed state" do
+        expect(Issues::CloseService).to receive_message_chain(:new, :execute).with(item, status: status)
+        expect(status.state).to eq(:closed)
+
+        after_save_callback
+      end
+    end
+  end
+
+  describe '.execute_without_params?' do
+    it 'returns true' do
+      expect(described_class.execute_without_params?).to be true
+    end
+  end
+
   describe '#after_save' do
     subject(:after_save_callback) { callback.after_save }
 
-    context "when the feature is not licensed" do
-      context "when issuable is work_item" do
-        it_behaves_like 'when feature is unlicensed'
+    context 'when user does not have permission' do
+      before do
+        allow(callback).to receive(:has_permission?).and_return(false)
       end
 
-      context "when issuable is an issue" do
-        let(:item) { Issue.find_by_id(work_item) }
+      it_behaves_like 'does not call services to create current status record'
+    end
 
-        it_behaves_like 'when feature is unlicensed'
+    context 'when work item is excluded in new type' do
+      before do
+        allow(callback).to receive(:excluded_in_new_type?).and_return(true)
+      end
+
+      it_behaves_like 'does not call services to create current status record'
+    end
+
+    context "when current stautus exist and params are empty" do
+      let!(:current_status) { create(:work_item_current_status, work_item: item) }
+
+      it_behaves_like 'does not call services to create current status record'
+    end
+
+    context "for system defined lifecycle" do
+      context "when params are empty" do
+        it_behaves_like 'handle status for open state' do
+          let(:status) { default_open_status }
+        end
+      end
+
+      context "when params are present" do
+        context "when status category has open state" do
+          let(:params) { { status: in_progress_status } }
+
+          it_behaves_like 'handle status for open state' do
+            let(:status) { in_progress_status }
+          end
+        end
+
+        context "when status category has closed state" do
+          let(:params) { { status: done_status } }
+
+          it_behaves_like 'handle status for closed state' do
+            let(:status) { done_status }
+          end
+        end
       end
     end
 
-    context 'when feature is licensed' do
-      before do
-        stub_licensed_features(work_item_status: true)
-      end
-
-      context "when passing issue as issuable" do
-        let(:item) { Issue.find_by_id(work_item) }
-
-        context "without params" do
-          it_behaves_like 'applies default status without system note'
-          it_behaves_like 'preserves status when work_item_status_transitions flag is disabled'
-          it_behaves_like 'preserves currently set status'
-          it_behaves_like 'preserves status when item is not supported'
-        end
-
-        context "with params" do
-          let(:params) { { status: target_status } }
-
-          it_behaves_like 'applies default status without system note'
-
-          context 'with wrong status param type' do
-            let(:params) { { status: 4 } }
-
-            it_behaves_like 'applies default status without system note'
-          end
+    context "for custom lifecycle" do
+      let!(:status_lifecycle) do
+        create(:work_item_custom_lifecycle, namespace: group).tap do |lifecycle|
+          create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item.work_item_type)
         end
       end
 
-      context 'without params' do
-        # Show system note because status feature is visible for licensed namespaces with FF on
-        it_behaves_like 'applies default status with system note'
-        it_behaves_like 'preserves status when work_item_status_transitions flag is disabled'
-        it_behaves_like 'preserves currently set status'
-        it_behaves_like 'preserves status when item is not supported'
+      let(:open_status) { status_lifecycle.default_open_status }
+      let(:closed_status) { status_lifecycle.default_closed_status }
+
+      context "when params are empty" do
+        it_behaves_like 'handle status for open state' do
+          let(:status) { open_status }
+        end
       end
 
-      context 'with params' do
-        let(:params) { { status: target_status } }
+      context "when params are present" do
+        context "when status category has open state" do
+          let(:params) { { status: open_status } }
 
-        it_behaves_like 'applies target status with system note'
-        it_behaves_like 'overwrites currently set status with target status'
-
-        context 'with invalid status param' do
-          let(:params) { { status: ::WorkItems::Statuses::SystemDefined::Status.new(id: 99, name: 'Invalid') } }
-
-          let(:error_message) do
-            "Validation failed: System defined status not provided or references non-existent system defined status"
-          end
-
-          it_behaves_like 'raises error'
-        end
-
-        context 'with wrong status param type' do
-          let(:params) { { status: 4 } }
-
-          it_behaves_like 'applies default status with system note'
-        end
-
-        context 'when item is not supported' do
-          let(:item) { unsupported_work_item }
-
-          let(:error_message) do
-            "Validation failed: System defined status not allowed for this work item type"
-          end
-
-          it_behaves_like 'raises error'
-
-          context 'when work_item_status_transitions feature flag is disabled' do
-            before do
-              stub_feature_flags(work_item_status_transitions: false)
-            end
-
-            it_behaves_like 'raises error'
+          it_behaves_like 'handle status for open state' do
+            let(:status) { open_status }
           end
         end
 
-        context 'when work_item_status_transitions feature flag is disabled' do
-          before do
-            stub_feature_flags(work_item_status_transitions: false)
+        context "when status category has closed state" do
+          let(:params) { { status: closed_status } }
+
+          it_behaves_like 'handle status for closed state' do
+            let(:status) { closed_status }
           end
-
-          it_behaves_like 'applies target status with system note'
-          it_behaves_like 'overwrites currently set status with target status'
-        end
-
-        context 'when work_item_status_feature_flag feature flag is disabled' do
-          before do
-            stub_feature_flags(work_item_status_feature_flag: false)
-          end
-
-          it_behaves_like 'applies default status without system note'
-          it_behaves_like 'preserves currently set status'
-        end
-
-        context 'when status related feature flags are disabled' do
-          before do
-            stub_feature_flags(work_item_status_transitions: false, work_item_status_feature_flag: false)
-          end
-
-          it_behaves_like 'preserves work item status'
-          it_behaves_like 'preserves currently set status'
         end
       end
     end

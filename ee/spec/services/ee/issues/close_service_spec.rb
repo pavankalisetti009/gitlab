@@ -148,5 +148,68 @@ RSpec.describe Issues::CloseService, feature_category: :team_planning do
         end
       end
     end
+
+    context "for current_status" do
+      let_it_be(:current_user) { create(:user) }
+      let_it_be(:group) { create(:group) }
+      let_it_be_with_reload(:work_item) { create(:work_item, :task, namespace: group) }
+
+      let(:closed_status) { build(:work_item_system_defined_status, :done) }
+      let(:duplicated_status) { build(:work_item_system_defined_status, :duplicate) }
+      let(:status_update_service) { instance_double(::WorkItems::Widgets::Statuses::UpdateService) }
+
+      subject(:execute) do
+        described_class.new(container: group, current_user: current_user).execute(work_item, status: status)
+      end
+
+      before_all do
+        group.add_developer(current_user)
+      end
+
+      context "when status is present" do
+        let(:status) { closed_status }
+
+        it "calls the status update service" do
+          expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
+            .with(work_item, current_user, closed_status)
+            .and_return(status_update_service)
+          expect(status_update_service).to receive(:execute)
+
+          execute
+        end
+      end
+
+      context "when the status is nil" do
+        let(:status) { nil }
+
+        context "when the issues is not duplicated" do
+          it "calls the status update service" do
+            expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
+              .with(work_item, current_user, closed_status)
+              .and_return(status_update_service)
+            expect(status_update_service).to receive(:execute)
+
+            execute
+          end
+        end
+
+        context "when the issue is duplicated" do
+          let(:duplicated_work_item) { create(:work_item, :task, namespace: group) }
+
+          before do
+            work_item.update!(duplicated_to_id: duplicated_work_item.id)
+          end
+
+          it "calls the status update service" do
+            expect(::WorkItems::Widgets::Statuses::UpdateService).to receive(:new)
+              .with(work_item, current_user, duplicated_status)
+              .and_return(status_update_service)
+            expect(status_update_service).to receive(:execute)
+
+            execute
+          end
+        end
+      end
+    end
   end
 end

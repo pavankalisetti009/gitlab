@@ -38,7 +38,7 @@ module EE
       end
 
       override :after_close
-      def after_close(issue, closed_via: nil, notifications: true, system_note: true)
+      def after_close(issue, status, closed_via: nil, notifications: true, system_note: true)
         ::Gitlab::EventStore.publish(
           ::WorkItems::WorkItemClosedEvent.new(data: {
             id: issue.id,
@@ -46,11 +46,29 @@ module EE
           })
         )
 
+        update_status_to_closed(issue, status)
+
         return super unless issue.synced_epic
 
         super
         # Creating a system note changes `updated_at` for the issue
         issue.synced_epic.update_column(:updated_at, issue.updated_at)
+      end
+
+      def update_status_to_closed(issue, status)
+        status = find_target_status(issue) if status.nil?
+
+        ::WorkItems::Widgets::Statuses::UpdateService.new(issue, current_user, status).execute
+      end
+
+      def find_target_status(issue)
+        lifecycle = issue.work_item_type.status_lifecycle_for(issue.resource_parent.root_ancestor)
+
+        if issue.duplicated?
+          lifecycle&.default_duplicate_status
+        else
+          lifecycle&.default_closed_status
+        end
       end
     end
   end

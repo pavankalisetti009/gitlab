@@ -84,6 +84,10 @@ module WorkItems
         def matches_name?(other_name)
           name.casecmp(other_name) == 0
         end
+
+        def state
+          CATEGORIES_STATE.find { |state, categories| state if categories.include?(category.to_sym) }&.first
+        end
       end
     end
   end

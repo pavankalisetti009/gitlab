@@ -61,6 +61,7 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
 
       before do
         project.add_developer(user)
+        stub_licensed_features(work_item_status: true)
       end
 
       context "without status params" do

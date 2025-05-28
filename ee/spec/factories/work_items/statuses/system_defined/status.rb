@@ -11,22 +11,27 @@ FactoryBot.define do
 
     trait :to_do do
       id { 1 }
+      category { :to_do }
     end
 
     trait :in_progress do
       id { 2 }
+      category { :in_progress }
     end
 
     trait :done do
       id { 3 }
+      category { :done }
     end
 
     trait :wont_do do
       id { 4 }
+      casetegory { :cancelled }
     end
 
     trait :duplicate do
       id { 5 }
+      category { :cancelled }
     end
   end
 end

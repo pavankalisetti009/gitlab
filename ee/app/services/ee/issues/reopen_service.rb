@@ -46,19 +46,29 @@ module EE
       end
       # rubocop:enable Gitlab/ModuleWithInstanceVariables
 
-      def after_reopen(issue)
+      def after_reopen(issue, status)
         ::Gitlab::EventStore.publish(
           ::WorkItems::WorkItemReopenedEvent.new(data: {
             id: issue.id,
             namespace_id: issue.namespace_id
           })
         )
+        update_status_to_open(status)
 
         return super unless work_item.synced_epic
 
         super
         # Creating a system note changes `updated_at` for the issue
         work_item.synced_epic.update_column(:updated_at, issue.updated_at)
+      end
+
+      def update_status_to_open(status)
+        if status.nil?
+          lifecycle = work_item.work_item_type.status_lifecycle_for(work_item.resource_parent.root_ancestor)
+          status = lifecycle&.default_open_status
+        end
+
+        ::WorkItems::Widgets::Statuses::UpdateService.new(work_item, current_user, status).execute
       end
     end
   end

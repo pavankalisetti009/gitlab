@@ -380,6 +380,18 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
           it 'creates a new current status record' do
             expect { update_work_item }.to change { WorkItems::Statuses::CurrentStatus.count }.by(1)
           end
+
+          context "when state and status params are both present" do
+            before do
+              params[:state_event] = "close"
+            end
+
+            it 'returns an error' do
+              expect(update_work_item[:status]).to eq(:error)
+              expect(update_work_item[:message])
+                .to eq('State event and status widget cannot be changed at the same time')
+            end
+          end
         end
 
         context "without status widget params" do
