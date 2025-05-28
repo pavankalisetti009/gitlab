@@ -14019,8 +14019,8 @@ CREATE TABLE duo_workflows_events (
     event_status smallint NOT NULL,
     message text,
     correlation_id_value text,
-    CONSTRAINT check_5e35596b00 CHECK ((char_length(correlation_id_value) <= 128)),
-    CONSTRAINT check_9422e6deb0 CHECK ((char_length(message) <= 4096))
+    CONSTRAINT check_125840165c CHECK ((char_length(message) <= 16384)),
+    CONSTRAINT check_5e35596b00 CHECK ((char_length(correlation_id_value) <= 128))
 );
 
 CREATE SEQUENCE duo_workflows_events_id_seq
@@ -14044,7 +14044,7 @@ CREATE TABLE duo_workflows_workflows (
     workflow_definition text DEFAULT 'software_development'::text NOT NULL,
     allow_agent_to_request_user boolean DEFAULT true NOT NULL,
     pre_approved_agent_privileges smallint[] DEFAULT '{1,2}'::smallint[] NOT NULL,
-    CONSTRAINT check_5aedde451d CHECK ((char_length(goal) <= 4096)),
+    CONSTRAINT check_30ca07a4ef CHECK ((char_length(goal) <= 16384)),
     CONSTRAINT check_ec723e2a1a CHECK ((char_length(workflow_definition) <= 255))
 );
 
