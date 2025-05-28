@@ -39,8 +39,8 @@ export default {
     CascadingLockIcon,
   },
   inject: {
-    areDuoSettingsLocked: { required: true },
-    cascadingSettingsData: { required: true },
+    areDuoSettingsLocked: 'areDuoSettingsLocked',
+    cascadingSettingsData: 'cascadingSettingsData',
     duoProOrDuoEnterpriseTier: { default: null },
   },
   props: {

@@ -9,9 +9,7 @@ export default {
     GlButton,
     GlCard,
   },
-  inject: {
-    addDuoProHref: { default: '' },
-  },
+  inject: ['addDuoProHref'],
   TANUNKI_AI_ICON,
   SUPPORT_URL,
 };
