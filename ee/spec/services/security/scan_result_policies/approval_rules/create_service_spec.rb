@@ -121,5 +121,44 @@ RSpec.describe Security::ScanResultPolicies::ApprovalRules::CreateService, featu
           .and not_change { project.approval_rules.count }
       end
     end
+
+    context 'when scan_result_policy_read was already created' do
+      before do
+        create(:scan_result_policy_read,
+          project: project,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration,
+          approval_policy_rule_id: approval_policy_rule.id,
+          action_idx: 0
+        )
+      end
+
+      it 'does not create duplicate scan result policy read or approval rule' do
+        expect { execute_service }
+          .to not_change { project.scan_result_policy_reads.count }
+          .and not_change { project.approval_rules.count }
+      end
+    end
+
+    context 'when approval rule creation fails' do
+      before do
+        allow_next_instance_of(::ApprovalRules::CreateService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'failed'))
+        end
+      end
+
+      it 'logs the error with Gitlab::AppJsonLogger.debug' do
+        expect(Gitlab::AppJsonLogger).to receive(:debug).with(hash_including(
+          "event" => "approval_rule_creation_failed",
+          "project_id" => project.id,
+          "project_path" => project.full_path,
+          "scan_result_policy_read_id" => an_instance_of(Integer),
+          "approval_policy_rule_id" => approval_policy_rule.id,
+          "action_index" => 0,
+          "errors" => ['failed']
+        ))
+
+        execute_service
+      end
+    end
   end
 end

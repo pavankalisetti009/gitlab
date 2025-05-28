@@ -34,6 +34,7 @@ module Security
           # This is temporary as Security::ProcessScanResultPolicyRulesWorker will also create the approval rules
           # when the feature flag is rolled out for percentage samples of projects.
           return if approval_rule.present?
+          return if scan_result_policy_reads_map.dig(approval_policy_rule.id, action_index).present?
 
           scan_result_policy_read = create_scan_result_policy(approval_policy_rule, action_index, approval_action)
 
@@ -41,9 +42,15 @@ module Security
 
           sync_license_scanning_rule(approval_policy_rule, scan_result_policy_read)
 
-          ::ApprovalRules::CreateService.new(
+          result = ::ApprovalRules::CreateService.new(
             project, author, rule_params(approval_policy_rule, scan_result_policy_read, action_index, approval_action)
           ).execute
+
+          return if result.success?
+
+          log_service_failure(
+            'approval_rule_creation_failed', approval_policy_rule, scan_result_policy_read,
+            action_index, result.errors)
         end
 
         def create_scan_result_policy(approval_policy_rule, action_index = 0, approval_action = nil)

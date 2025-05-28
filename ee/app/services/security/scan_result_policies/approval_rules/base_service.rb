@@ -5,6 +5,7 @@ module Security
     module ApprovalRules
       class BaseService
         include Gitlab::Utils::StrongMemoize
+        include Gitlab::Loggable
 
         def initialize(project:, security_policy:, approval_policy_rules:, author:)
           @project = project
@@ -71,6 +72,30 @@ module Security
               result[item.approval_policy_rule_id] ||= {}
               result[item.approval_policy_rule_id][item.approval_policy_action_idx] = item
             end
+        end
+
+        def scan_result_policy_reads_map
+          project
+            .scan_result_policy_reads
+            .for_approval_policy_rules(approval_policy_rules)
+            .each_with_object({}) do |item, result|
+              result[item.approval_policy_rule_id] ||= {}
+              result[item.approval_policy_rule_id][item.action_idx] = item
+            end
+        end
+
+        def log_service_failure(event, approval_policy_rule, scan_result_policy_read, action_index, errors)
+          Gitlab::AppJsonLogger.debug(
+            build_structured_payload(
+              event: event,
+              project_id: project.id,
+              project_path: project.full_path,
+              scan_result_policy_read_id: scan_result_policy_read.id,
+              approval_policy_rule_id: approval_policy_rule.id,
+              action_index: action_index,
+              errors: errors
+            )
+          )
         end
 
         def approval_actions
