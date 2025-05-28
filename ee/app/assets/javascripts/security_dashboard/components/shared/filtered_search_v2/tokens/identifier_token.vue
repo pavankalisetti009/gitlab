@@ -5,8 +5,6 @@ import { createAlert } from '~/alert';
 import projectIdentifiersQuery from 'ee/security_dashboard/graphql/queries/project_identifiers.query.graphql';
 import groupIdentifiersQuery from 'ee/security_dashboard/graphql/queries/group_identifiers.query.graphql';
 import SearchSuggestion from '../components/search_suggestion.vue';
-import QuerystringSync from '../../filters/querystring_sync.vue';
-import eventHub from '../event_hub';
 
 const MIN_CHARS = 3;
 
@@ -14,7 +12,6 @@ export default {
   components: {
     GlFilteredSearchToken,
     GlLoadingIcon,
-    QuerystringSync,
     SearchSuggestion,
   },
   inject: {
@@ -24,6 +21,16 @@ export default {
     groupFullPath: {
       default: '',
     },
+  },
+  transformFilters: (filters) => {
+    const identifierName = Array.isArray(filters) ? filters[0] : filters;
+
+    return {
+      identifierName: identifierName?.replace(/^"|"$/g, ''),
+    };
+  },
+  transformQueryParams: (params) => {
+    return params;
   },
   props: {
     config: {
@@ -99,9 +106,6 @@ export default {
 
       return queryTypes[namespaceType];
     },
-    queryStringValue() {
-      return this.selectedIdentifier ? [this.selectedIdentifier] : [];
-    },
     tokenValue() {
       return {
         ...this.value,
@@ -115,25 +119,16 @@ export default {
       return this.searchTerm.length < 3 && !this.identifiers.length;
     },
   },
-  created() {
-    if (this.queryStringValue.length) {
-      this.emitFiltersChanged();
-    }
-  },
   methods: {
-    resetSearchTerm({ emit = true } = {}) {
+    resetSearchTerm() {
       this.identifiers = [];
       this.searchTerm = '';
       this.selectedIdentifier = '';
-
-      if (emit) {
-        this.emitFiltersChanged();
-      }
     },
     setSearchTerm({ data }) {
       // User deletes identifier using backspace
       if (!data) {
-        this.resetSearchTerm({ emit: false });
+        this.resetSearchTerm();
         return;
       }
 
@@ -141,11 +136,6 @@ export default {
         this.searchTerm = data;
         this.isLoadingIdentifiers = data.length >= MIN_CHARS;
       }
-    },
-    emitFiltersChanged() {
-      eventHub.$emit('filters-changed', {
-        identifierName: this.selectedIdentifier.replace(/^"|"$/g, ''),
-      });
     },
     isIdentifierSelected(identifier) {
       return this.selectedIdentifier === identifier;
@@ -166,43 +156,36 @@ export default {
 </script>
 
 <template>
-  <querystring-sync
-    querystring-key="identifier"
-    :value="queryStringValue"
-    data-testid="identifier-token"
+  <gl-filtered-search-token
+    :config="config"
+    v-bind="{ ...$props, ...$attrs }"
+    :value="tokenValue"
+    v-on="$listeners"
+    @destroy="resetSearchTerm"
+    @select="toggleSelectedIdentifier"
+    @input="setSearchTerm"
   >
-    <gl-filtered-search-token
-      :config="config"
-      v-bind="{ ...$props, ...$attrs }"
-      :value="tokenValue"
-      v-on="$listeners"
-      @destroy="resetSearchTerm"
-      @complete="emitFiltersChanged"
-      @select="toggleSelectedIdentifier"
-      @input="setSearchTerm"
-    >
-      <template #view>
-        {{ selectedIdentifier }}
+    <template #view>
+      {{ selectedIdentifier }}
+    </template>
+    <template #suggestions>
+      <gl-loading-icon v-if="isLoadingIdentifiers" size="sm" />
+      <template v-else>
+        <search-suggestion
+          v-for="identifier in identifiers"
+          :key="identifier"
+          :value="identifier"
+          :text="identifier"
+          :selected="isIdentifierSelected(identifier)"
+          :data-testid="`suggestion-${identifier}`"
+        />
+        <div v-if="shouldShowPlaceholder" class="gl-p-2 gl-text-secondary">
+          {{ $options.i18n.placeholder }}
+        </div>
+        <div v-else-if="!identifiers.length" class="gl-p-2 gl-text-secondary">
+          {{ $options.i18n.noResult }}
+        </div>
       </template>
-      <template #suggestions>
-        <gl-loading-icon v-if="isLoadingIdentifiers" size="sm" />
-        <template v-else>
-          <search-suggestion
-            v-for="identifier in identifiers"
-            :key="identifier"
-            :value="identifier"
-            :text="identifier"
-            :selected="isIdentifierSelected(identifier)"
-            :data-testid="`suggestion-${identifier}`"
-          />
-          <div v-if="shouldShowPlaceholder" class="gl-p-2 gl-text-secondary">
-            {{ $options.i18n.placeholder }}
-          </div>
-          <div v-else-if="!identifiers.length" class="gl-p-2 gl-text-secondary">
-            {{ $options.i18n.noResult }}
-          </div>
-        </template>
-      </template>
-    </gl-filtered-search-token>
-  </querystring-sync>
+    </template>
+  </gl-filtered-search-token>
 </template>
