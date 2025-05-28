@@ -23,19 +23,74 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
         expect(setting).to be_valid
       end
 
+      context 'when ai_gateway_url is a private IP or internal hostname' do
+        before do
+          allow(Rails.env).to receive_messages(development?: false, test?: false)
+          allow(Gitlab::CurrentSettings).to receive_messages(outbound_local_requests_whitelist: [],
+            deny_all_requests_except_allowed?: true)
+        end
+
+        it 'rejects private IP addresses' do
+          setting.ai_gateway_url = 'http://169.254.169.254'
+          expect { setting.valid? }.to change { setting.errors[:ai_gateway_url] }.from([])
+          expect(setting.errors[:ai_gateway_url].first).to match(/allow list|denied/i)
+        end
+
+        it 'rejects AWS internal hostnames' do
+          setting.ai_gateway_url = 'http://ip-172-31-1-1.ec2.internal'
+          expect { setting.valid? }.to change { setting.errors[:ai_gateway_url] }.from([])
+          expect(setting.errors[:ai_gateway_url].first).to match(/allow list|denied/i)
+        end
+
+        it 'shows the actual error message from UrlBlocker' do
+          setting.ai_gateway_url = 'http://10.0.0.1'
+          setting.valid?
+
+          error_message = setting.errors[:ai_gateway_url].first
+          expect(error_message).to be_present
+          expect(error_message).to include(/denied|blocked|not allowed/i)
+        end
+      end
+
+      context 'when ai_gateway_url is permit' do
+        before do
+          allow(Rails.env).to receive_messages(development?: false, test?: false)
+          allow(Gitlab::CurrentSettings).to receive_messages(deny_all_requests_except_allowed?: true,
+            outbound_local_requests_whitelist: ['ip-172-31-1-1.ec2.internal', '10.0.0.1'])
+        end
+
+        it 'allows permit AWS internal hostnames' do
+          setting.ai_gateway_url = 'http://ip-172-31-1-1.ec2.internal'
+          expect(setting).to be_valid
+          expect(setting.errors[:ai_gateway_url]).to be_empty
+        end
+
+        it 'allows permit private IPs' do
+          setting.ai_gateway_url = 'http://10.0.0.1'
+          expect(setting).to be_valid
+          expect(setting.errors[:ai_gateway_url]).to be_empty
+        end
+
+        it 'still blocks non-permit URLs' do
+          setting.ai_gateway_url = 'http://192.168.1.1'
+          expect(setting).not_to be_valid
+          expect(setting.errors[:ai_gateway_url].first).to match(/allow list|denied/i)
+        end
+      end
+
       it 'is invalid with a blocked URL' do
         allow(Gitlab::HTTP_V2::UrlBlocker).to receive(:validate!)
           .and_raise(Gitlab::HTTP_V2::UrlBlocker::BlockedUrlError.new("URL is blocked"))
 
         setting.ai_gateway_url = 'https://blocked-url.com'
         expect(setting).not_to be_valid
-        expect(setting.errors[:ai_gateway_url]).to include("is not allowed: URL is blocked")
+        expect(setting.errors[:ai_gateway_url]).to include("URL is blocked")
       end
 
       it 'is invalid with a malformed URL' do
         setting.ai_gateway_url = 'not-a-url'
         expect(setting).not_to be_valid
-        expect(setting.errors[:ai_gateway_url]).to include("is not allowed: Only allowed schemes are http, https")
+        expect(setting.errors[:ai_gateway_url]).to include("Only allowed schemes are http, https")
       end
 
       context 'when test env' do

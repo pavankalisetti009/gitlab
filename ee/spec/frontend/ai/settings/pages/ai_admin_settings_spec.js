@@ -206,15 +206,18 @@ describe('AiAdminSettings', () => {
     it('shows error message on failed update', async () => {
       const error = new Error('Update failed');
       updateApplicationSettings.mockRejectedValue(error);
+
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
         experimentFeaturesEnabled: false,
         duoCoreFeaturesEnabled: false,
       });
+
       await waitForPromises();
+
       expect(createAlert).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: 'An error occurred while updating your settings. Reload the page to try again.',
+          message: error.message,
           error,
         }),
       );

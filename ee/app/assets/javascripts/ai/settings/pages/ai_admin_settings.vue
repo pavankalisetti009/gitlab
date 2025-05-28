@@ -181,7 +181,7 @@ export default {
     },
     onError(error) {
       createAlert({
-        message: this.$options.i18n.errorMessage,
+        message: error?.message || this.$options.i18n.errorMessage,
         captureError: true,
         error,
       });
