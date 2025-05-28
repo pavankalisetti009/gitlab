@@ -12,9 +12,7 @@ module EE
         def execute(board)
           return license_validation_error unless valid_license?(board.resource_parent)
 
-          # Prevent list creation until board lists support statuses
-          # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/532474
-          return ServiceResponse.success(payload: { list: nil }) if type == :status
+          return ServiceResponse.error(message: _('Status feature not available')) if status_feature_unavailable?(board)
 
           super
         end
@@ -42,15 +40,13 @@ module EE
 
         override :type
         def type
-          # We don't ever expect to have more than one list
-          # type param at once.
           if params.key?('assignee_id')
             :assignee
           elsif params.key?('milestone_id')
             :milestone
           elsif params.key?('iteration_id')
             :iteration
-          elsif params.key?('status_id')
+          elsif params.key?('system_defined_status_identifier') || params.key?('custom_status_id')
             :status
           else
             super
@@ -68,8 +64,7 @@ module EE
             when :iteration
               find_iteration(board)
             when :status
-              # Return nil until board lists support statuses
-              # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/532474
+              find_status(board)
             else
               super
             end
@@ -78,9 +73,21 @@ module EE
 
         override :create_list_attributes
         def create_list_attributes(type, target, position)
-          return super unless wip_limits_available?
+          attributes = if type == :status
+                         status_key = if params.key?('system_defined_status_identifier')
+                                        :system_defined_status
+                                      else
+                                        :custom_status
+                                      end
 
-          super.merge(
+                         { status_key => target, list_type: type, position: position }
+                       else
+                         super
+                       end
+
+          return attributes unless wip_limits_available?
+
+          attributes.merge(
             max_issue_count: max_issue_count_by_params,
             max_issue_weight: max_issue_weight_by_params,
             limit_metric: limit_metric_by_params
@@ -97,6 +104,11 @@ module EE
           ::IterationsFinder.new(current_user, parent_params).find_by(id: params['iteration_id']) # rubocop: disable CodeReuse/ActiveRecord
         end
 
+        def find_status(board)
+          namespace = board.resource_parent.root_ancestor
+          ::WorkItems::Statuses::Finder.new(namespace, params).execute
+        end
+
         def milestone_finder(board)
           @milestone_finder ||= ::Boards::MilestonesFinder.new(board, current_user)
         end
@@ -107,6 +119,10 @@ module EE
 
         def limit_metric_by_params
           params[:limit_metric]
+        end
+
+        def status_feature_unavailable?(board)
+          type == :status && !board.resource_parent.root_ancestor.try(:work_item_status_feature_available?)
         end
       end
     end

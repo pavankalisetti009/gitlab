@@ -16,6 +16,7 @@ module EE
     # so we cannot call `super` if we use it.
     def self.prepended(base)
       base.include(UsageStatistics)
+      base.include(ActiveRecord::FixedItemsModel::HasOne)
 
       class << base
         prepend ClassMethods
@@ -24,6 +25,8 @@ module EE
       base.belongs_to :user
       base.belongs_to :milestone
       base.belongs_to :iteration
+      base.belongs_to_fixed_items :system_defined_status, fixed_items_class: ::WorkItems::Statuses::SystemDefined::Status, foreign_key: 'system_defined_status_identifier'
+      base.belongs_to :custom_status, class_name: '::WorkItems::Statuses::Custom::Status', optional: true
 
       base.validates :user, presence: true, if: :assignee?
       base.validates :milestone, presence: true, if: :milestone?
@@ -47,10 +50,38 @@ module EE
       base.validates :list_type,
         exclusion: { in: %w[iteration], message: ->(_object, _data) { _('Iteration lists not available with your current license') } },
         unless: -> { board&.resource_parent&.feature_available?(:board_iteration_lists) }
+      base.validates :list_type,
+        exclusion: { in: %w[status], message: ->(_object, _data) { _('Status lists not available with your current license') } },
+        unless: -> { board&.resource_parent&.feature_available?(:board_status_lists) }
+
+      base.validate :validate_status_presence, if: :status?
+      base.validate :validate_status_uniqueness, if: :status?
     end
 
     def assignee=(user)
       self.user = user
+    end
+
+    def validate_status_presence
+      if system_defined_status.present? && custom_status.present?
+        errors.add(:base, _('Cannot set both system defined status and custom status'))
+      elsif !system_defined_status.present? && !custom_status.present?
+        errors.add(:base, _('Status list requires either a system defined status or custom status'))
+      end
+    end
+
+    def validate_status_uniqueness
+      return unless board
+
+      status_id = system_defined_status_identifier || custom_status_id
+      status_column = system_defined_status.present? ? :system_defined_status_identifier : :custom_status_id
+
+      existing_list = board.lists.status
+                           .where(status_column => status_id)
+                           .where.not(id: id)
+                           .exists?
+
+      errors.add(:base, _('A list for this status already exists on the board')) if existing_list
     end
 
     def wip_limits_available?
@@ -68,6 +99,8 @@ module EE
         milestone.title
       when 'iteration'
         iteration.display_text
+      when 'status'
+        system_defined_status&.name || custom_status&.name
       else
         super
       end
@@ -92,11 +125,11 @@ module EE
 
     module ClassMethods
       def destroyable_types
-        super + [:assignee, :milestone, :iteration]
+        super + [:assignee, :milestone, :iteration, :status]
       end
 
       def movable_types
-        super + [:assignee, :milestone, :iteration]
+        super + [:assignee, :milestone, :iteration, :status]
       end
     end
   end

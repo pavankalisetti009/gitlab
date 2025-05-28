@@ -33,7 +33,17 @@ module EE
             params[:milestone_id] &&= ::GitlabSchema.parse_gid(params[:milestone_id], expected_type: ::Milestone).model_id
             params[:iteration_id] &&= ::GitlabSchema.parse_gid(params[:iteration_id], expected_type: ::Iteration).model_id
             params[:assignee_id] &&= ::GitlabSchema.parse_gid(params[:assignee_id], expected_type: ::User).model_id
-            params[:status_id] &&= ::GitlabSchema.parse_gid(params[:status_id], expected_type: ::WorkItems::Statuses::Status).model_id
+
+            if args[:status_id]
+              gid = ::GitlabSchema.parse_gid(args[:status_id], expected_type: ::WorkItems::Statuses::Status)
+              model_class = gid.model_class
+
+              if model_class <= ::WorkItems::Statuses::SystemDefined::Status
+                params[:system_defined_status_identifier] = gid.model_id
+              else
+                params[:custom_status_id] = gid.model_id
+              end
+            end
 
             params
           end
