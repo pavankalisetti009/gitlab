@@ -1,4 +1,5 @@
 import '~/pages/admin/application_settings/general/index';
+import { initWorkspacesAgentAvailabilityApp } from 'ee/workspaces/admin_settings/init_admin_settings_app';
 import { initPrivateProfileRestrictions } from 'ee/admin/application_settings/user_restrictions';
 import initAddLicenseApp from 'ee/admin/application_settings/general/add_license';
 import { initScimTokenApp } from 'ee/saml_sso';
@@ -14,3 +15,4 @@ initScimTokenApp();
 initPrivateProfileRestrictions();
 initInputCopyToggleVisibility();
 initAllowedIntegrations();
+initWorkspacesAgentAvailabilityApp();
