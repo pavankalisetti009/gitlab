@@ -5,9 +5,15 @@ module EE
     extend ActiveSupport::Concern
 
     EMAIL_EVENTS_MAPPING = {
-      ::Group => [:new_epic],
+      ::Group => [:new_epic,
+        :service_account_failed_pipeline,
+        :service_account_success_pipeline,
+        :service_account_fixed_pipeline],
       ::User => [:approver],
-      ::Project => [:approver]
+      ::Project => [:approver,
+        :service_account_failed_pipeline,
+        :service_account_success_pipeline,
+        :service_account_fixed_pipeline]
     }.freeze
     FULL_EMAIL_EVENTS = EMAIL_EVENTS_MAPPING.values.flatten.freeze
 

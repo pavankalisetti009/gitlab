@@ -104,6 +104,21 @@ module EE
       end
     end
 
+    def pipeline_finished(pipeline, ref_status: nil, recipients: nil)
+      return if super.nil? || !pipeline.user&.service_account? || recipients.present?
+
+      status = pipeline_notification_status(ref_status, pipeline)
+      email_template = email_template_name(status)
+
+      recipients = NotificationRecipients::BuildService
+        .build_service_account_recipients(pipeline.project, pipeline.user, status)
+
+      recipients.uniq.map do |user|
+        recipient = user.notification_email_for(pipeline.project.group)
+        mailer.public_send(email_template, pipeline, recipient).deliver_later # rubocop:disable GitlabSecurity/PublicSend -- not a security issue
+      end
+    end
+
     private
 
     def oncall_user_removed_recipients(rotation, removed_user)
