@@ -25,9 +25,14 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
     let(:user) { create(:user) }
     let(:user2) { create(:user) }
     let(:reviewer) { create(:user) }
-    let(:merge_request) { create(:merge_request, source_project: project, assignees: [user, user2], author: create(:user)) }
+    let(:merge_request) do
+      create(:merge_request, source_project: project, assignees: [user, user2], author: create(:user))
+    end
+
     let(:review) { create(:review, merge_request: merge_request, project: project, author: reviewer) }
-    let(:note) { create(:diff_note_on_merge_request, project: project, noteable: merge_request, author: reviewer, review: review) }
+    let(:note) do
+      create(:diff_note_on_merge_request, project: project, noteable: merge_request, author: reviewer, review: review)
+    end
 
     before do
       build_team(review.project, merge_request)
@@ -85,7 +90,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
       @subscriber = create :user
       @unsubscriber = create :user
       @unsubscribed_mentioned = create(:user, username: 'unsubscribed_mentioned')
-      @subscribed_participant = create_global_setting_for(create(:user, username: 'subscribed_participant'), :participating)
+      @subscribed_participant = create_global_setting_for(create(:user, username: 'subscribed_participant'),
+        :participating)
       @watcher_and_subscriber = create_global_setting_for(create(:user), :watch)
 
       # User to be participant by default
@@ -127,7 +133,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
       let!(:project_member) { create(:project_member, :invited, project: project) }
 
       it 'sends email' do
-        expect(Notify).to receive(:mirror_was_hard_failed_email).with(project.id, project.first_owner.id).and_call_original
+        expect(Notify).to receive(:mirror_was_hard_failed_email).with(project.id,
+          project.first_owner.id).and_call_original
 
         subject.mirror_was_hard_failed(project)
       end
@@ -146,7 +153,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
       let(:project) { create(:project, :mirror, :import_hard_failed) }
 
       it 'sends email' do
-        expect(Notify).to receive(:mirror_was_hard_failed_email).with(project.id, project.first_owner.id).and_call_original
+        expect(Notify).to receive(:mirror_was_hard_failed_email).with(project.id,
+          project.first_owner.id).and_call_original
 
         subject.mirror_was_hard_failed(project)
       end
@@ -179,7 +187,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
 
             project = create(:project, :mirror, :import_hard_failed, namespace: group)
 
-            expect(Notify).not_to receive(:mirror_was_hard_failed_email).with(project.id, blocked_user.id).and_call_original
+            expect(Notify).not_to receive(:mirror_was_hard_failed_email).with(project.id,
+              blocked_user.id).and_call_original
             expect(Notify).to receive(:mirror_was_hard_failed_email).with(project.id, user.id).and_call_original
 
             subject.mirror_was_hard_failed(project)
@@ -193,7 +202,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
         project = create(:project, :mirror, :import_hard_failed)
         project.add_maintainer(user)
 
-        expect(Notify).to receive(:mirror_was_hard_failed_email).with(project.id, project.first_owner.id).and_call_original
+        expect(Notify).to receive(:mirror_was_hard_failed_email).with(project.id,
+          project.first_owner.id).and_call_original
         expect(Notify).to receive(:mirror_was_hard_failed_email).with(project.id, user.id).and_call_original
 
         subject.mirror_was_hard_failed(project)
@@ -251,7 +261,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
       let!(:project_member) { create(:project_member, :invited, project: project) }
 
       it 'sends email' do
-        expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, project.first_owner.id, deleted_username).and_call_original
+        expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, project.first_owner.id,
+          deleted_username).and_call_original
 
         subject.mirror_was_disabled(project, deleted_username)
       end
@@ -268,7 +279,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
 
     context 'when user is owner' do
       it 'sends email' do
-        expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, project.first_owner.id, deleted_username).and_call_original
+        expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, project.first_owner.id,
+          deleted_username).and_call_original
 
         subject.mirror_was_disabled(project, deleted_username)
       end
@@ -301,8 +313,10 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
 
             project = create(:project, namespace: group)
 
-            expect(Notify).not_to receive(:mirror_was_disabled_email).with(project.id, blocked_user.id, deleted_username).and_call_original
-            expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, user.id, deleted_username).and_call_original
+            expect(Notify).not_to receive(:mirror_was_disabled_email).with(project.id, blocked_user.id,
+              deleted_username).and_call_original
+            expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, user.id,
+              deleted_username).and_call_original
 
             subject.mirror_was_disabled(project, deleted_username)
           end
@@ -314,8 +328,10 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
       it 'sends email' do
         project.add_maintainer(user)
 
-        expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, project.first_owner.id, deleted_username).and_call_original
-        expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, user.id, deleted_username).and_call_original
+        expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, project.first_owner.id,
+          deleted_username).and_call_original
+        expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, user.id,
+          deleted_username).and_call_original
 
         subject.mirror_was_disabled(project, deleted_username)
       end
@@ -325,8 +341,10 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
       it 'does not send email' do
         project.add_developer(user)
 
-        expect(Notify).not_to receive(:mirror_was_disabled_email).with(project.id, user.id, deleted_username).and_call_original
-        expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, project.creator.id, deleted_username).and_call_original
+        expect(Notify).not_to receive(:mirror_was_disabled_email).with(project.id, user.id,
+          deleted_username).and_call_original
+        expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, project.creator.id,
+          deleted_username).and_call_original
 
         subject.mirror_was_disabled(project, deleted_username)
       end
@@ -339,7 +357,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
 
           project = create(:project, namespace: group)
 
-          expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, user.id, deleted_username).and_call_original
+          expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, user.id,
+            deleted_username).and_call_original
 
           subject.mirror_was_disabled(project, deleted_username)
         end
@@ -353,7 +372,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
 
           project = create(:project, namespace: group)
 
-          expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, user.id, deleted_username).and_call_original
+          expect(Notify).to receive(:mirror_was_disabled_email).with(project.id, user.id,
+            deleted_username).and_call_original
 
           subject.mirror_was_disabled(project, deleted_username)
         end
@@ -366,7 +386,9 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
     let(:project) { create(:project, :public, namespace: group) }
     let(:assignee) { create(:user) }
 
-    let(:issue) { create :issue, project: project, assignees: [assignee], description: 'cc @participant @unsubscribed_mentioned' }
+    let(:issue) do
+      create :issue, project: project, assignees: [assignee], description: 'cc @participant @unsubscribed_mentioned'
+    end
 
     let(:notification) { NotificationService.new }
 
@@ -409,7 +431,10 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
       let(:mailer_method) { :removed_iteration_issue_email }
 
       context do
-        let(:iteration) { create(:iteration, iterations_cadence: create(:iterations_cadence, group: group), issues: [issue]) }
+        let(:iteration) do
+          create(:iteration, iterations_cadence: create(:iterations_cadence, group: group), issues: [issue])
+        end
+
         let!(:subscriber_to_new_iteration) { create(:user) { |u| issue.toggle_subscription(u, project) } }
 
         it_behaves_like 'altered iteration notification on issue' do
@@ -431,7 +456,11 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
         let(:member) { create(:user) }
         let(:guest) { create(:user) }
         let(:admin) { create(:admin) }
-        let(:confidential_issue) { create(:issue, :confidential, project: project, title: 'Confidential issue', author: author, assignees: [assignee]) }
+        let(:confidential_issue) do
+          create(:issue, :confidential, project: project, title: 'Confidential issue', author: author,
+            assignees: [assignee])
+        end
+
         let(:iteration) { create(:iteration, issues: [confidential_issue]) }
 
         it "emails subscribers of the issue's iteration that can read the issue" do
@@ -485,7 +514,11 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
         let(:member) { create(:user) }
         let(:guest) { create(:user) }
         let(:admin) { create(:admin) }
-        let(:confidential_issue) { create(:issue, :confidential, project: project, title: 'Confidential issue', author: author, assignees: [assignee]) }
+        let(:confidential_issue) do
+          create(:issue, :confidential, project: project, title: 'Confidential issue', author: author,
+            assignees: [assignee])
+        end
+
         let(:new_iteration) { create(:iteration, issues: [confidential_issue]) }
 
         it "emails subscribers of the issue's iteration that can read the issue" do
@@ -530,7 +563,10 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
     end
 
     context 'epic notes' do
-      let(:note) { create(:note, project: nil, noteable: epic, note: '@mention referenced, @unsubscribed_mentioned and @outsider also') }
+      let(:note) do
+        create(:note, project: nil, noteable: epic,
+          note: '@mention referenced, @unsubscribed_mentioned and @outsider also')
+      end
 
       before do
         build_group_members(group)
@@ -648,7 +684,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
 
       shared_examples 'is not able to send notifications' do
         it 'does not send any notification' do
-          expect(Gitlab::AppLogger).to receive(:warn).with(message: 'Skipping sending notifications', user: current_user.id, klass: epic.class.to_s, object_id: epic.id)
+          expect(Gitlab::AppLogger).to receive(:warn).with(message: 'Skipping sending notifications',
+            user: current_user.id, klass: epic.class.to_s, object_id: epic.id)
 
           execute
 
@@ -712,7 +749,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
     @subscriber = create :user
     @unsubscriber = create :user
     @unsubscribed_mentioned = create :user, username: 'unsubscribed_mentioned'
-    @subscribed_participant = create_global_setting_for(create(:user, username: 'subscribed_participant'), :participating)
+    @subscribed_participant = create_global_setting_for(create(:user, username: 'subscribed_participant'),
+      :participating)
     @watcher_and_subscriber = create_global_setting_for(create(:user), :watch)
 
     create(:group_member, group: group, user: @subscribed_participant)
@@ -736,7 +774,9 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
     let(:group) { create(:group) }
     let(:project) { create(:project, :public, :repository, namespace: group) }
     let(:another_project) { create(:project, :public, namespace: group) }
-    let(:merge_request) { create :merge_request, source_project: project, assignees: [assignee, assignee2], description: 'cc @participant' }
+    let(:merge_request) do
+      create :merge_request, source_project: project, assignees: [assignee, assignee2], description: 'cc @participant'
+    end
 
     around do |example|
       perform_enqueued_jobs do
@@ -768,7 +808,9 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
 
       context 'when the target project has approvers set' do
         let(:project_approvers) { create_list(:user, 3) }
-        let!(:rule) { create(:approval_project_rule, project: project, users: project_approvers, approvals_required: 1) }
+        let!(:rule) do
+          create(:approval_project_rule, project: project, users: project_approvers, approvals_required: 1)
+        end
 
         before do
           reset_delivered_emails!
@@ -794,7 +836,10 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
 
         context 'when the merge request has approvers set' do
           let(:mr_approvers) { create_list(:user, 3) }
-          let!(:mr_rule) { create(:approval_merge_request_rule, merge_request: merge_request, users: mr_approvers, approvals_required: 1) }
+          let!(:mr_rule) do
+            create(:approval_merge_request_rule, merge_request: merge_request, users: mr_approvers,
+              approvals_required: 1)
+          end
 
           before do
             reset_delivered_emails!
@@ -839,7 +884,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
       @u_guest_watcher = create_user_with_notification(:watch, 'guest_watching')
       @u_guest_custom = create_user_with_notification(:custom, 'guest_custom')
 
-      [@u_watcher, @u_participating, @u_participant_mentioned, @u_disabled, @u_mentioned, @u_committer, @u_not_mentioned, @u_lazy_participant, @u_custom_global].each do |user|
+      [@u_watcher, @u_participating, @u_participant_mentioned, @u_disabled, @u_mentioned, @u_committer,
+        @u_not_mentioned, @u_lazy_participant, @u_custom_global].each do |user|
         project.add_maintainer(user)
       end
     end
@@ -848,10 +894,12 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
       @subscriber = create :user
       @unsubscriber = create :user
       @unsubscribed_mentioned = create :user, username: 'unsubscribed_mentioned'
-      @subscribed_participant = create_global_setting_for(create(:user, username: 'subscribed_participant'), :participating)
+      @subscribed_participant = create_global_setting_for(create(:user, username: 'subscribed_participant'),
+        :participating)
       @watcher_and_subscriber = create_global_setting_for(create(:user), :watch)
 
-      [@subscribed_participant, @subscriber, @unsubscriber, @watcher_and_subscriber, @unsubscribed_mentioned].each do |user|
+      [@subscribed_participant, @subscriber, @unsubscriber, @watcher_and_subscriber,
+        @unsubscribed_mentioned].each do |user|
         project.add_maintainer(user)
       end
 
@@ -898,14 +946,18 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
       let_it_be(:participant) { create(:incident_management_oncall_participant, rotation: rotation) }
 
       it 'sends an email to the owner and participants' do
-        expect(Notify).to receive(:user_removed_from_rotation_email).with(user, rotation, [schedule.project.first_owner]).once.and_call_original
-        expect(Notify).to receive(:user_removed_from_rotation_email).with(user, rotation, [participant.user]).once.and_call_original
+        expect(Notify).to receive(:user_removed_from_rotation_email).with(user, rotation,
+          [schedule.project.first_owner]).once.and_call_original
+        expect(Notify).to receive(:user_removed_from_rotation_email).with(user, rotation,
+          [participant.user]).once.and_call_original
 
         subject.oncall_user_removed(rotation, user)
       end
 
       it 'sends the email inline when async = false' do
-        expect { subject.oncall_user_removed(rotation, user, false) }.to change(ActionMailer::Base.deliveries, :size).by(2)
+        expect do
+          subject.oncall_user_removed(rotation, user, false)
+        end.to change(ActionMailer::Base.deliveries, :size).by(2)
       end
     end
 
@@ -914,13 +966,18 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
       let(:user) { create(:user) }
       let(:rules) { [rule_1, rule_2] }
       let!(:rule_1) { create(:incident_management_escalation_rule, :with_user, project: project, user: user) }
-      let!(:rule_2) { create(:incident_management_escalation_rule, :with_user, :resolved, project: project, user: user) }
+      let!(:rule_2) do
+        create(:incident_management_escalation_rule, :with_user, :resolved, project: project, user: user)
+      end
 
       it 'immediately sends an email to the project owner' do
-        expect(Notify).to receive(:user_escalation_rule_deleted_email).with(user, project, rules, project.first_owner).once.and_call_original
+        expect(Notify).to receive(:user_escalation_rule_deleted_email).with(user, project, rules,
+          project.first_owner).once.and_call_original
         expect(Notify).not_to receive(:user_escalation_rule_deleted_email).with(user, project, rules, user)
 
-        expect { subject.user_escalation_rule_deleted(project, user, rules) }.to change(ActionMailer::Base.deliveries, :size).by(1)
+        expect do
+          subject.user_escalation_rule_deleted(project, user, rules)
+        end.to change(ActionMailer::Base.deliveries, :size).by(1)
       end
 
       context 'when project owner is the removed user' do
@@ -946,11 +1003,14 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
         end
 
         it 'immediately sends an email to the eligable project owners' do
-          expect(Notify).to receive(:user_escalation_rule_deleted_email).with(user, project, rules, owner).once.and_call_original
+          expect(Notify).to receive(:user_escalation_rule_deleted_email).with(user, project, rules,
+            owner).once.and_call_original
           expect(Notify).not_to receive(:user_escalation_rule_deleted_email).with(user, project, rules, blocked_owner)
           expect(Notify).not_to receive(:user_escalation_rule_deleted_email).with(user, project, rules, user)
 
-          expect { subject.user_escalation_rule_deleted(project, user, rules) }.to change(ActionMailer::Base.deliveries, :size).by(1)
+          expect do
+            subject.user_escalation_rule_deleted(project, user, rules)
+          end.to change(ActionMailer::Base.deliveries, :size).by(1)
         end
       end
     end
@@ -981,6 +1041,52 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
     end
   end
 
+  context 'when user subscribed to service account pipeline notifications' do
+    around do |example|
+      perform_enqueued_jobs { example.run }
+    end
+
+    let_it_be(:project) { create(:project, :repository) }
+    let_it_be(:service_account) { create(:user, :service_account) }
+    let_it_be(:u_custom_notification_enabled) do
+      user = create_user_with_notification(:custom, 'custom_enabled')
+      update_custom_notification(:service_account_success_pipeline, user, resource: project)
+      update_custom_notification(:service_account_failed_pipeline, user, resource: project)
+      update_custom_notification(:service_account_fixed_pipeline, user, resource: project)
+      user
+    end
+
+    let_it_be(:u_custom_notification_disabled) do
+      user = create_user_with_notification(:custom, 'custom_disabled')
+      update_custom_notification(:service_account_success_pipeline, user, resource: project, value: false)
+      update_custom_notification(:service_account_failed_pipeline, user, resource: project, value: false)
+      update_custom_notification(:service_account_fixed_pipeline, user, resource: project, value: false)
+      user
+    end
+
+    def create_pipeline(service_account, status)
+      create(
+        :ci_pipeline, status,
+        project: project,
+        user: service_account
+      )
+    end
+
+    before do
+      project.add_developer(u_custom_notification_enabled)
+      project.add_developer(u_custom_notification_disabled)
+      reset_delivered_emails!
+      project.update!(service_desk_enabled: false)
+      pipeline = create_pipeline(service_account, :failed)
+      subject.pipeline_finished(pipeline, ref_status: 'failed')
+    end
+
+    it 'emails the user' do
+      should_email(u_custom_notification_enabled)
+      should_not_email(u_custom_notification_disabled)
+    end
+  end
+
   describe '#no_more_seats' do
     let_it_be(:namespace) { create(:namespace) }
     let_it_be(:namespace_limit) { create(:namespace_limit, namespace: namespace) }
@@ -991,7 +1097,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
     subject(:execute) { NotificationService.new.no_more_seats(namespace, [recipient], user, required_members) }
 
     it 'sends emails and update the last_at value' do
-      expect(Notify).to receive(:no_more_seats).with(recipient.id, user.id, namespace, required_members).and_return(mailer)
+      expect(Notify).to receive(:no_more_seats).with(recipient.id, user.id, namespace,
+        required_members).and_return(mailer)
 
       expect(mailer).to receive(:deliver_later)
 
@@ -1015,7 +1122,8 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
         let_it_be(:notification_at) { 2.days.ago }
 
         it 'sends emails and update the last_at value' do
-          expect(Notify).to receive(:no_more_seats).with(recipient.id, user.id, namespace, required_members).and_return(mailer)
+          expect(Notify).to receive(:no_more_seats).with(recipient.id, user.id, namespace,
+            required_members).and_return(mailer)
 
           expect(mailer).to receive(:deliver_later)
 

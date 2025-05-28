@@ -41361,6 +41361,15 @@ msgstr ""
 msgid "NotificationEvent|New release"
 msgstr ""
 
+msgid "NotificationEvent|Pipeline by Service Account fails"
+msgstr ""
+
+msgid "NotificationEvent|Pipeline by Service Account is fixed"
+msgstr ""
+
+msgid "NotificationEvent|Pipeline by Service Account is successful"
+msgstr ""
+
 msgid "NotificationEvent|Pipeline fails"
 msgstr ""
 
