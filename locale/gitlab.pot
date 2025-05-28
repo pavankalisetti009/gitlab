@@ -68421,9 +68421,6 @@ msgstr ""
 msgid "We're sorry, your GitLab Duo Enterprise trial could not be created because our system did not respond successfully."
 msgstr ""
 
-msgid "We're sorry, your GitLab Duo Pro trial could not be created because our system did not respond successfully."
-msgstr ""
-
 msgid "We're sorry, your trial could not be created because our system did not respond successfully."
 msgstr ""
 
