@@ -13,5 +13,13 @@ module Security
     validates :failure, presence: true, numericality: { greater_than_or_equal_to: 0 }
     validates :analyzer_type, presence: true
     validates :traversal_ids, presence: true
+
+    def total_projects_count
+      @total_projects_count ||= group.all_project_ids.size
+    end
+
+    def not_configured
+      [total_projects_count - success - failure, 0].max
+    end
   end
 end
