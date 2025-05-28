@@ -18,6 +18,14 @@ module AuditEvents
           { key => value }
         end
 
+        def destination
+          if respond_to?(:external_audit_event_destination)
+            external_audit_event_destination
+          elsif respond_to?(:instance_external_audit_event_destination)
+            instance_external_audit_event_destination
+          end
+        end
+
         private
 
         def ensure_protected_header_not_modified

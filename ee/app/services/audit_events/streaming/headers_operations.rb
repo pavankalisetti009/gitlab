@@ -3,12 +3,16 @@
 module AuditEvents
   module Streaming
     module HeadersOperations
+      include ::AuditEvents::HeadersSyncHelper
+
       def create_header(destination, key, value, active)
         header = destination.headers.new(key: key, value: value, active: active)
 
         if header.save
           audit_message = "Created custom HTTP header with key #{key}."
           audit(action: :create, header: header, message: audit_message)
+
+          sync_header_to_streaming_destination(destination, header)
 
           ServiceResponse.success(payload: { header: header, errors: [] })
         else
@@ -18,9 +22,14 @@ module AuditEvents
 
       def update_header(header, params)
         update_params = params.slice(:key, :value, :active).compact
+        old_key = header.key
+        destination = header.destination
 
         if header.update(update_params)
           log_update_audit_event(header)
+
+          sync_header_to_streaming_destination(destination, header, old_key)
+
           ServiceResponse.success(payload: { header: header, errors: [] })
         else
           ServiceResponse.error(message: Array(header.errors))
@@ -28,9 +37,13 @@ module AuditEvents
       end
 
       def destroy_header(header)
+        destination = header.destination
+
         if header.destroy
           audit_message = "Destroyed a custom HTTP header with key #{header.key}."
           audit(action: :destroy, header: header, message: audit_message)
+
+          sync_header_deletion_to_streaming_destination(destination, header.key)
 
           ServiceResponse.success
         else

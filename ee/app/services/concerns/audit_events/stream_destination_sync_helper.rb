@@ -2,7 +2,7 @@
 
 module AuditEvents
   module StreamDestinationSyncHelper
-    include AuditEvents::DestinationSyncValidator
+    include ::AuditEvents::HeadersSyncHelper
 
     CreateError = Class.new(StandardError)
     UpdateError = Class.new(StandardError)
@@ -29,6 +29,8 @@ module AuditEvents
 
         destination.save!
 
+        sync_legacy_headers(stream_destination_model, destination) if stream_destination_model.http?
+
         stream_destination_model.update_column(:legacy_destination_ref, destination.id)
 
         destination
@@ -50,6 +52,8 @@ module AuditEvents
           name: stream_destination_model.name,
           **extract_legacy_attributes(stream_destination_model)
         )
+
+        sync_legacy_headers(stream_destination_model, destination) if stream_destination_model.http?
 
         destination
       end
