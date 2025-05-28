@@ -1,0 +1,9 @@
+- return unless ::License.feature_available?(:remote_development) && ::Feature.enabled?(:workspaces_agents_availability_admin, current_user)
+
+= render ::Layouts::SettingsBlockComponent.new(s_('Workspaces|Workspaces Agent Availability'),
+  id: 'js-workspaces-agent-availability-settings',
+  expanded: expanded_by_default?) do |setting|
+  - setting.with_description do
+    = s_('Workspaces|Configure which Kubernetes agents are available for new workspaces. These settings do not affect existing workspaces.')
+  - setting.with_body do
+    #js-workspaces-agent-availability-settings-body

@@ -70262,10 +70262,19 @@ msgstr ""
 msgid "Workspaces|Allowed agents"
 msgstr ""
 
+msgid "Workspaces|Availability"
+msgstr ""
+
+msgid "Workspaces|Available"
+msgstr ""
+
 msgid "Workspaces|Block agent"
 msgstr ""
 
 msgid "Workspaces|Block this agent for all group members?"
+msgstr ""
+
+msgid "Workspaces|Blocked"
 msgstr ""
 
 msgid "Workspaces|Blocking an agent doesn't delete it. Agents can only be deleted in the project where they were created."
@@ -70275,6 +70284,12 @@ msgid "Workspaces|Cancel"
 msgstr ""
 
 msgid "Workspaces|Cluster agent"
+msgstr ""
+
+msgid "Workspaces|Configure which Kubernetes agents are available for new workspaces. These settings do not affect existing workspaces."
+msgstr ""
+
+msgid "Workspaces|Connected"
 msgstr ""
 
 msgid "Workspaces|Could not load available agents. Refresh the page to try again."
@@ -70334,6 +70349,9 @@ msgstr ""
 msgid "Workspaces|GitLab devfile"
 msgstr ""
 
+msgid "Workspaces|Group"
+msgstr ""
+
 msgid "Workspaces|Group agents"
 msgstr ""
 
@@ -70352,16 +70370,25 @@ msgstr ""
 msgid "Workspaces|Learn more."
 msgstr ""
 
+msgid "Workspaces|Name"
+msgstr ""
+
 msgid "Workspaces|New workspace"
 msgstr ""
 
 msgid "Workspaces|No active workspaces"
 msgstr ""
 
+msgid "Workspaces|No agents available"
+msgstr ""
+
 msgid "Workspaces|No agents available to create workspaces. Please consult %{linkStart}Workspaces documentation%{linkEnd} for troubleshooting."
 msgstr ""
 
 msgid "Workspaces|No terminated workspaces"
+msgstr ""
+
+msgid "Workspaces|Not connected"
 msgstr ""
 
 msgid "Workspaces|Open workspace"
@@ -70392,6 +70419,9 @@ msgid "Workspaces|Starting"
 msgstr ""
 
 msgid "Workspaces|Starting workspace"
+msgstr ""
+
+msgid "Workspaces|Status"
 msgstr ""
 
 msgid "Workspaces|Stop"
@@ -70452,6 +70482,9 @@ msgid "Workspaces|When no devfile is provided, the GitLab default devfile will b
 msgstr ""
 
 msgid "Workspaces|Workspaces"
+msgstr ""
+
+msgid "Workspaces|Workspaces Agent Availability"
 msgstr ""
 
 msgid "Workspaces|Workspaces Settings"
