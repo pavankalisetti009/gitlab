@@ -225,7 +225,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
           it 'renders the select namespace form again with trial creation errors only' do
             expect(post_create).to render_select_namespace_duo
 
-            expect(response.body).to include(_('your GitLab Duo Pro trial could not be created'))
+            expect(response.body).to include(_('your trial could not be created'))
           end
         end
 
