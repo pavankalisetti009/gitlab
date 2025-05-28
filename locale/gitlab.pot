@@ -49885,6 +49885,9 @@ msgstr ""
 msgid "Provider ID"
 msgstr ""
 
+msgid "Provider is invalid"
+msgstr ""
+
 msgid "Provision instructions"
 msgstr ""
 
