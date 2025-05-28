@@ -25,10 +25,20 @@ RSpec.describe Ai::ModelSelection::Namespaces::FeatureSettingFinder, feature_cat
   subject(:execute_finder) { described_class.new(group: group).execute }
 
   before do
-    stub_const('::Ai::ModelSelection::NamespaceFeatureSetting::FEATURES', test_ai_feature_enum)
+    stub_const('::Ai::ModelSelection::FeaturesConfigurable::FEATURES', test_ai_feature_enum)
   end
 
   describe '#execute' do
+    it 'calls ::Ai::ModelSelection::NamespaceFeatureSetting.enabled_features_for' do
+      expect(::Ai::ModelSelection::NamespaceFeatureSetting).to(
+        receive(:enabled_features_for)
+          .with(group)
+          .and_call_original
+      )
+
+      execute_finder
+    end
+
     context 'when group is nil' do
       let(:group) { nil }
 

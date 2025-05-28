@@ -20,15 +20,21 @@ module Ai
         summarize_new_merge_request: 9,
         duo_chat_explain_vulnerability: 10,
         resolve_vulnerability: 11,
-        summarize_review: 12
+        summarize_review: 12,
+        duo_chat_summarize_comments: 14
       }.freeze
       # Duo CLI should be number 13
       # But it has been disabled here because its context not namespaced
       # See full feature list at ee/app/models/ai/feature_setting.rb
       # For more context see https://gitlab.com/groups/gitlab-org/-/epics/17570#note_2487671188
 
-      # duo_chat_summarize_comments: 14 commented out for this iteration.
-      # See https://gitlab.com/gitlab-org/gitlab/-/issues/537651#note_2489453634 for more context
+      FEATURES_UNDER_FLAGS = {
+        summarize_review: :summarize_my_code_review,
+        summarize_new_merge_request: :add_ai_summary_for_new_mr
+      }.freeze
+      # Keys are :feature enum values
+      # Values are the names of the Feature Flags used to enable the features
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/543087 for more context
 
       included do
         enum :feature, FEATURES, validate: true
@@ -47,6 +53,16 @@ module Ai
           raise NotImplementedError,
             '.find_or_initialize_by_feature method must be implemented for Model Selection logic'
         end
+
+        # rubocop: disable Gitlab/FeatureFlagKeyDynamic -- The whole goal of this method is to dynamically filter out disabled features
+        def self.enabled_features_for(feature_flag_scope)
+          disabled_features = FEATURES_UNDER_FLAGS.filter_map do |feature, flag|
+            feature if ::Feature.disabled?(flag, feature_flag_scope)
+          end
+
+          FEATURES.except(*disabled_features)
+        end
+        # rubocop: enable Gitlab/FeatureFlagKeyDynamic
 
         def model_selection_scope
           raise NotImplementedError, '#model_selection_scope method must be implemented for Model Selection logic'
