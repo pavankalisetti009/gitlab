@@ -18,6 +18,9 @@ RSpec.describe 'Query.workItemsByReference (EE)', feature_category: :portfolio_m
   let_it_be(:legacy_epic2) { create(:epic, group: public_group) }
   let_it_be(:legacy_issue1) { create(:issue, project: public_project) }
   let_it_be(:legacy_issue2) { create(:issue, project: public_project) }
+  # Ensure support bot user is created so creation doesn't count towards query limit
+  # See https://gitlab.com/gitlab-org/gitlab/-/issues/509629
+  let_it_be(:support_bot) { Users::Internal.support_bot }
 
   let(:references) do
     [
