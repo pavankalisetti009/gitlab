@@ -418,17 +418,15 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
     end
 
     it 'allows user to traverse cards forward and backward across board columns' do
-      click_button 'Epic3'
-
-      expect(page).to have_selector('button.board-card-button[data-col-index="0"]', focused: true)
+      find('a.board-card-button[aria-label="Epic3"]').click
 
       send_keys :right
 
-      expect(page).to have_selector('button.board-card-button[data-col-index="1"]', focused: true)
+      expect(page).to have_selector('.board-card-button[data-col-index="1"]', focused: true)
 
       send_keys :left
 
-      expect(page).to have_selector('button.board-card-button[data-col-index="0"]', focused: true)
+      expect(page).to have_selector('.board-card-button[data-col-index="0"]', focused: true)
     end
   end
 
