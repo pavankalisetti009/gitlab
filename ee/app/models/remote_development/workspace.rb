@@ -33,9 +33,9 @@ module RemoteDevelopment
     validates :agent, presence: true
     validates :personal_access_token, presence: true
     validates :desired_config_generator_version, presence: true
-    validates :workspaces_agent_config_version, presence: true, if: -> {
+    validates :workspaces_agent_config_version, presence: true, if: -> do
       agent&.unversioned_latest_workspaces_agent_config
-    }
+    end
 
     # See https://gitlab.com/gitlab-org/remote-development/gitlab-remote-development-docs/blob/main/doc/architecture.md?plain=0#workspace-states
     # for state validation rules
@@ -101,9 +101,9 @@ module RemoteDevelopment
       workspace.new_record? || workspace.actual_state_changed?
     end
 
-    after_save :track_started_workspace, if: -> {
+    after_save :track_started_workspace, if: -> do
       saved_change_to_desired_state? && desired_state == "Running"
-    }
+    end
 
     # @return [RemoteDevelopment::WorkspacesAgentConfig]
     def workspaces_agent_config
