@@ -34722,7 +34722,7 @@ CREATE INDEX index_ci_trigger_requests_on_trigger_id_and_id ON ci_trigger_reques
 
 CREATE INDEX index_ci_triggers_on_owner_id ON ci_triggers USING btree (owner_id);
 
-CREATE INDEX index_ci_triggers_on_project_id ON ci_triggers USING btree (project_id);
+CREATE INDEX index_ci_triggers_on_project_id_and_id ON ci_triggers USING btree (project_id, id);
 
 CREATE UNIQUE INDEX index_ci_triggers_on_token ON ci_triggers USING btree (token);
 
