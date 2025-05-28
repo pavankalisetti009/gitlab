@@ -129,9 +129,6 @@ export default {
       'setSearchQuery',
       'setProjects',
     ]),
-    addProjects() {
-      this.addProjectsToDashboard();
-    },
     onCancel() {
       this.clearSearchResults();
     },

@@ -97,9 +97,6 @@ export default {
         this.lastPipeline && this.lastPipeline.details && this.lastPipeline.details.finished_at
       );
     },
-    finishedTimeTitle() {
-      return this.tooltipTitle(this.finishedTime);
-    },
     shouldShowTimeAgo() {
       return (
         this.lastPipeline &&
