@@ -20,7 +20,7 @@ module Types
 
         field :duo_core_features_enabled, Boolean,
           null: true, # has to allow null in case authorization fails
-          method: :duo_nano_features_enabled?,
+          method: :duo_core_features_enabled?,
           description: 'Indicates whether GitLab Duo Core features are enabled.',
           authorize: :read_duo_core_settings,
           experiment: { milestone: '18.0' }

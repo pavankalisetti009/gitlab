@@ -78,7 +78,7 @@ RSpec.describe Users::GroupCalloutsHelper, :saas, feature_category: :groups_and_
       end
     end
 
-    context 'when namespace settings `duo_nano_features_enabled` is not nil' do
+    context 'when namespace settings `duo_core_features_enabled` is not nil' do
       before do
         allow(group).to receive_message_chain(:namespace_settings, :duo_core_features_enabled).and_return(true)
       end

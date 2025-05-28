@@ -42,7 +42,9 @@ module EE
         if: :unique_project_download_limit_alertlist_changed?
       validates :experiment_features_enabled, inclusion: { in: [true, false] }
 
-      with_options if: :will_save_change_to_duo_nano_features_enabled? do
+      alias_attribute :duo_core_features_enabled, :duo_nano_features_enabled
+
+      with_options if: :will_save_change_to_duo_core_features_enabled? do
         validates :duo_core_features_enabled, inclusion: { in: [true, false] }
         validate :valid_namespace_for_duo_core_features
       end
@@ -73,7 +75,7 @@ module EE
       before_save :set_prevent_sharing_groups_outside_hierarchy
       after_save :disable_project_sharing!, if: -> { user_cap_enabled? || seat_control_block_overages? }
 
-      after_commit :trigger_todo_creation, on: :update, if: :saved_change_to_duo_nano_features_enabled?
+      after_commit :trigger_todo_creation, on: :update, if: :saved_change_to_duo_core_features_enabled?
 
       delegate :root_ancestor, to: :namespace
 
@@ -161,23 +163,11 @@ module EE
         end
       end
 
-      # Define duo_core_features_enabled as an alias to duo_nano_features_enabled
-      # More info: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/187565#note_2450475141
-      def duo_core_features_enabled
-        duo_nano_features_enabled
-      end
-
-      # Define duo_core_features_enabled as an alias to duo_nano_features_enabled
-      # More info: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/187565#note_2450475141
-      def duo_core_features_enabled=(value)
-        self.duo_nano_features_enabled = value
-      end
-
       private
 
       def trigger_todo_creation
         return unless ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
-        return unless duo_nano_features_enabled
+        return unless duo_core_features_enabled
 
         GitlabSubscriptions::GitlabCom::DuoCoreTodoNotificationWorker
           .perform_in(GitlabSubscriptions::DuoCore::DELAY_TODO_NOTIFICATION, namespace_id)

@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Ai::SettingPolicy, :enable_admin_mode, feature_category: :"self-hosted_models" do
   subject(:policy) { described_class.new(current_user, duo_settings) }
 
-  let_it_be(:duo_settings) { create(:ai_settings, duo_nano_features_enabled: true) }
+  let_it_be(:duo_settings) { create(:ai_settings, duo_core_features_enabled: true) }
   let_it_be_with_reload(:current_user) { create(:admin) }
 
   let_it_be(:license) { create(:license, plan: License::ULTIMATE_PLAN) }

@@ -99,12 +99,12 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
       end
     end
 
-    context 'when validating the duo_nano_features_enabled value' do
+    context 'when validating the duo_core_features_enabled value' do
       describe 'new record' do
         it 'returns nil as the default value' do
           setting = described_class.new
 
-          expect(setting.duo_nano_features_enabled).to be_nil
+          expect(setting.duo_core_features_enabled).to be_nil
         end
       end
 
@@ -112,13 +112,13 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
         it 'accepts only boolean values for the update' do
           setting = create(:ai_settings)
 
-          setting.update!(duo_nano_features_enabled: true)
+          setting.update!(duo_core_features_enabled: true)
           expect(setting).to be_valid
 
-          setting.update!(duo_nano_features_enabled: false)
+          setting.update!(duo_core_features_enabled: false)
           expect(setting).to be_valid
 
-          setting.duo_nano_features_enabled = nil
+          setting.duo_core_features_enabled = nil
           expect(setting).to be_invalid
         end
       end
@@ -145,25 +145,25 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
         it 'triggers the todo creation' do
           expect(GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker).to receive(:perform_in).with(7.days)
 
-          setting.update!(duo_nano_features_enabled: true)
+          setting.update!(duo_core_features_enabled: true)
         end
 
         context 'when duo core features are disabled' do
           it 'does not trigger the todo creation for nil update' do
             expect(GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
 
-            setting.update!(duo_nano_features_enabled: false)
+            setting.update!(duo_core_features_enabled: false)
           end
 
           context 'when changed from true to false' do
             before do
-              setting.update!(duo_nano_features_enabled: true)
+              setting.update!(duo_core_features_enabled: true)
             end
 
             it 'does not trigger the todo creation' do
               expect(GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
 
-              setting.update!(duo_nano_features_enabled: false)
+              setting.update!(duo_core_features_enabled: false)
             end
           end
         end
@@ -176,7 +176,7 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
           it 'does not trigger the todo creation' do
             expect(GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
 
-            setting.update!(duo_nano_features_enabled: true)
+            setting.update!(duo_core_features_enabled: true)
           end
         end
 
@@ -193,7 +193,7 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
         it 'does not trigger the todo creation' do
           expect(GitlabSubscriptions::SelfManaged::DuoCoreTodoNotificationWorker).not_to receive(:perform_in)
 
-          create(:ai_settings, duo_nano_features_enabled: true)
+          create(:ai_settings, duo_core_features_enabled: true)
         end
       end
     end
@@ -217,22 +217,6 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
     it 'updates defaults enabled_instance_verbose_ai_logs default' do
       stub_feature_flags(expanded_ai_logging: true)
       expect(described_class.instance.enabled_instance_verbose_ai_logs).to be true
-    end
-  end
-
-  describe "#duo_core_features_enabled?" do
-    subject(:settings) { described_class.new(duo_nano_features_enabled: duo_nano_features_enabled) }
-
-    context 'with truthy duo_nano_features_enabled' do
-      let(:duo_nano_features_enabled) { true }
-
-      it { expect(settings).to be_duo_core_features_enabled }
-    end
-
-    context 'with falsy duo_nano_features_enabled' do
-      let(:duo_nano_features_enabled) { false }
-
-      it { expect(settings).not_to be_duo_core_features_enabled }
     end
   end
 

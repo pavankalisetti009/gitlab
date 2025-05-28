@@ -65,11 +65,11 @@ module GitlabSubscriptions
           return unless ::Feature.enabled?(:auto_enable_duo_core_settings, namespace)
 
           # respect customer's previous decision on this namespace
-          return unless namespace.namespace_settings.duo_nano_features_enabled.nil?
+          return unless namespace.namespace_settings.duo_core_features_enabled.nil?
 
           return unless duo_core_from_new_subscription?(name, product)
 
-          namespace.namespace_settings.update!(duo_nano_features_enabled: true)
+          namespace.namespace_settings.update!(duo_core_features_enabled: true)
         end
 
         def duo_core_from_new_subscription?(name, product)

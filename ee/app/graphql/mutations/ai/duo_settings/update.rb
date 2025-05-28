@@ -62,13 +62,6 @@ module Mutations
           params = args.dup
           params[:ai_gateway_url] = params[:ai_gateway_url]&.chomp('/').presence if params.key?(:ai_gateway_url)
 
-          # Customer facing name has changed since the feature development started. The customer facing name will be
-          # different from the internal name until a complete rename will be done. See this thread for more info:
-          # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/187565#note_2448050894
-          if params.key?(:duo_core_features_enabled)
-            params[:duo_nano_features_enabled] = params.delete(:duo_core_features_enabled)
-          end
-
           params
         end
       end
