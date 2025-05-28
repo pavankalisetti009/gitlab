@@ -68,12 +68,16 @@ module Authz
       )
     end
 
-    def self.mark_syncs_as_failed(error_message)
-      update_all(
+    def self.mark_syncs_as_failed(error_message, sync_started_at: nil)
+      attrs = {
         sync_status: :failed,
         sync_ended_at: DateTime.current,
         sync_error: error_message.truncate(MAX_ERROR_LENGTH)
-      )
+      }
+
+      attrs[:sync_started_at] = sync_started_at if sync_started_at
+
+      update_all(attrs)
     end
 
     private
