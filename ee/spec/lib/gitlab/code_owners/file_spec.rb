@@ -474,9 +474,9 @@ RSpec.describe Gitlab::CodeOwners::File, feature_category: :source_code_manageme
       end
 
       before_all do
-        group_x = create(:group, name: 'group-x')
+        group_x = create(:group, name: 'group-x', developers: create(:user))
         create(:project_group_link, project: project, group: group_x)
-        ruby_devs = create(:group, name: 'ruby-devs')
+        ruby_devs = create(:group, name: 'ruby-devs', developers: create(:user))
         create(:project_group_link, project: project, group: ruby_devs)
       end
 
