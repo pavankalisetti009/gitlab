@@ -4,6 +4,13 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 describe('ToolCoverageDetails', () => {
   let wrapper;
+  const webUrl = '/group1/project1';
+
+  const moreProps = {
+    lastCall: '2025-01-01T00:00:00Z',
+    buildId: 'gid://git/path/123',
+    updatedAt: '2025-01-01T00:00:00Z',
+  };
 
   const emptyAnalyzerStatus = [
     {
@@ -15,6 +22,15 @@ describe('ToolCoverageDetails', () => {
     {
       analyzerType: 'DEPENDENCY_SCANNING',
       status: 'SUCCESS',
+      ...moreProps,
+    },
+  ];
+
+  const disabledAnalyzerStatus = [
+    {
+      analyzerType: 'DEPENDENCY_SCANNING',
+      status: 'NOT_CONFIGURED',
+      ...moreProps,
     },
   ];
 
@@ -22,10 +38,12 @@ describe('ToolCoverageDetails', () => {
     {
       analyzerType: 'SAST',
       status: 'SUCCESS',
+      ...moreProps,
     },
     {
       analyzerType: 'SAST_ADVANCED',
       status: 'SUCCESS',
+      ...moreProps,
     },
   ];
 
@@ -33,10 +51,12 @@ describe('ToolCoverageDetails', () => {
     {
       analyzerType: 'SAST',
       status: 'FAILED',
+      ...moreProps,
     },
     {
       analyzerType: 'SAST_ADVANCED',
       status: 'SUCCESS',
+      ...moreProps,
     },
   ];
 
@@ -45,6 +65,7 @@ describe('ToolCoverageDetails', () => {
       propsData: {
         securityScanner: multipleAnalyzerStatuses,
         isProject: true,
+        webUrl,
         ...propsData,
       },
     });
@@ -73,7 +94,7 @@ describe('ToolCoverageDetails', () => {
 
   describe('multiple scanners types', () => {
     it('renders multiple status labels when the scanners are enabled', () => {
-      createComponent({ securityScanner: multipleAnalyzerStatuses });
+      createComponent();
 
       const expectedTitles = ['Basic SAST:', 'GitLab Advanced SAST:'];
       expectedTitles.forEach((expectedTitle, index) => {
@@ -111,44 +132,86 @@ describe('ToolCoverageDetails', () => {
   });
 
   describe('icons', () => {
-    it('displays correct icon for enabled status', () => {
-      createComponent({ securityScanner: singleAnalyzerStatus });
-      expect(findGlIcon().exists()).toBe(true);
-      expect(findGlIcon().props('name')).toBe('check-circle-filled');
-      expect(findGlIcon().props('variant')).toBe('success');
-    });
-
-    it('displays correct icon for failed status', () => {
-      createComponent({
-        securityScanner: [{ analyzerType: 'SAST', status: 'FAILED' }],
-      });
-      expect(findGlIcon().exists()).toBe(true);
-      expect(findGlIcon().props('name')).toBe('status-failed');
-      expect(findGlIcon().props('variant')).toBe('danger');
-    });
-
-    it('displays correct icon for disabled status', () => {
-      createComponent({ securityScanner: emptyAnalyzerStatus });
-      expect(findGlIcon().exists()).toBe(true);
-      expect(findGlIcon().props('name')).toBe('clear');
-      expect(findGlIcon().props('variant')).toBe('disabled');
-    });
+    it.each`
+      name               | securityScanner           | expectedIconName         | expectedIconVariant
+      ${'enabled'}       | ${singleAnalyzerStatus}   | ${'check-circle-filled'} | ${'success'}
+      ${'disabled'}      | ${disabledAnalyzerStatus} | ${'clear'}               | ${'disabled'}
+      ${'failed'}        | ${failedAnalyzerStatuses} | ${'status-failed'}       | ${'danger'}
+      ${'never enabled'} | ${emptyAnalyzerStatus}    | ${'clear'}               | ${'disabled'}
+    `(
+      'renders correct icon when the scanner is $name',
+      ({ securityScanner, expectedIconName, expectedIconVariant }) => {
+        createComponent({ securityScanner });
+        expect(findGlIcon().exists()).toBe(true);
+        expect(findGlIcon().props('name')).toBe(expectedIconName);
+        expect(findGlIcon().props('variant')).toBe(expectedIconVariant);
+      },
+    );
 
     it('displays correct number of icons for multiple scanners', () => {
-      createComponent({ securityScanner: multipleAnalyzerStatuses });
+      createComponent();
       expect(findAllGlIcons()).toHaveLength(2);
     });
   });
 
-  // TODO: to expose when we got the relevant data from the API
-  // eslint-disable-next-line jest/no-disabled-tests
-  it.skip('renders "Last scan" label with placeholder when no scan exists', () => {
-    createComponent();
-    expect(findByTestId('last-scan').exists()).toBe(true);
-    expect(findByTestId('last-scan').text()).toContain('Last scan:');
-    const scanIcon = findByTestId('last-scan').findComponent(GlIcon);
-    expect(scanIcon.exists()).toBe(true);
-    expect(scanIcon.props('name')).toBe('dash');
+  describe('last scan', () => {
+    it.each`
+      name               | securityScanner           | expectedIconExists | expectedIconName
+      ${'enabled'}       | ${singleAnalyzerStatus}   | ${false}           | ${null}
+      ${'disabled'}      | ${disabledAnalyzerStatus} | ${false}           | ${null}
+      ${'failed'}        | ${failedAnalyzerStatuses} | ${false}           | ${null}
+      ${'never enabled'} | ${emptyAnalyzerStatus}    | ${true}            | ${'dash'}
+    `(
+      'renders last scan when the scanner is $name',
+      ({ securityScanner, expectedIconExists, expectedIconName }) => {
+        createComponent({ securityScanner });
+        expect(findByTestId('last-scan-0').exists()).toBe(true);
+        expect(findByTestId('last-scan-0').text()).toContain('Last scan:');
+        const scanIcon = findByTestId('last-scan-0').findComponent(GlIcon);
+        expect(scanIcon.exists()).toBe(expectedIconExists);
+        if (expectedIconExists && expectedIconName) {
+          expect(scanIcon.props('name')).toBe(expectedIconName);
+        }
+      },
+    );
+  });
+
+  describe('data updated', () => {
+    it.each`
+      name               | securityScanner           | expectedTextExists
+      ${'enabled'}       | ${singleAnalyzerStatus}   | ${true}
+      ${'disabled'}      | ${disabledAnalyzerStatus} | ${true}
+      ${'failed'}        | ${failedAnalyzerStatuses} | ${true}
+      ${'never enabled'} | ${emptyAnalyzerStatus}    | ${false}
+    `(
+      'renders data updated when the scanner is $name',
+      ({ securityScanner, expectedTextExists }) => {
+        createComponent({ securityScanner });
+        expect(findByTestId('date-updated').exists()).toBe(expectedTextExists);
+      },
+    );
+  });
+
+  describe('pipeline job path', () => {
+    it.each`
+      name               | securityScanner           | expectedTextContains | expectedIconExists | expectedIconName
+      ${'enabled'}       | ${singleAnalyzerStatus}   | ${'Pipeline job: #'} | ${false}           | ${null}
+      ${'disabled'}      | ${disabledAnalyzerStatus} | ${'Pipeline job: #'} | ${false}           | ${null}
+      ${'failed'}        | ${failedAnalyzerStatuses} | ${'Pipeline job: #'} | ${false}           | ${null}
+      ${'never enabled'} | ${emptyAnalyzerStatus}    | ${'Pipeline job:'}   | ${true}            | ${'dash'}
+    `(
+      'renders pipeline job path when the scanner is $name',
+      ({ securityScanner, expectedTextContains, expectedIconExists, expectedIconName }) => {
+        createComponent({ securityScanner });
+        expect(findByTestId('pipeline-job-0').exists()).toBe(true);
+        expect(findByTestId('pipeline-job-0').text()).toContain(expectedTextContains);
+        const scanIcon = findByTestId('pipeline-job-0').findComponent(GlIcon);
+        expect(scanIcon.exists()).toBe(expectedIconExists);
+        if (expectedIconExists && expectedIconName) {
+          expect(scanIcon.props('name')).toBe(expectedIconName);
+        }
+      },
+    );
   });
 
   describe('manage configuration button', () => {
@@ -156,8 +219,7 @@ describe('ToolCoverageDetails', () => {
       createComponent();
       expect(findButton().exists()).toBe(true);
       expect(findButton().text()).toBe('Manage configuration');
-      // TODO: to expose when we got the relevant data from the API
-      // expect(findButton().attributes('href')).toBe(`${webUrl}/-/security/configuration`);
+      expect(findButton().attributes('href')).toBe(`${webUrl}/-/security/configuration`);
       expect(findButton().props('category')).toBe('secondary');
       expect(findButton().props('variant')).toBe('confirm');
       expect(findButton().props('size')).toBe('small');

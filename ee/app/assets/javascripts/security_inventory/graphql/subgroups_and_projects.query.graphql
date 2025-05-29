@@ -71,6 +71,7 @@ query SubgroupsAndProjects(
           analyzerType
           lastCall
           buildId
+          updatedAt
         }
       }
     }

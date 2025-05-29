@@ -206,17 +206,16 @@ describe('InventoryDashboard', () => {
 
     it('renders tool coverage indicators for projects and subgroups', async () => {
       await createFullComponent();
-
       expect(
-        findNthTableRow(projectIndex)
-          .findComponent(ProjectToolCoverageIndicator)
-          .props('securityScanners'),
+        findNthTableRow(projectIndex).findComponent(ProjectToolCoverageIndicator).props('item')
+          .analyzerStatuses,
       ).toEqual([
         {
           analyzerType: 'SAST',
-          buildId: 472,
-          lastCall: '2025-01-01T10:20:14Z',
+          buildId: 'gid://git/path/123',
+          lastCall: '2025-01-01T00:00:00Z',
           status: 'SUCCESS',
+          updatedAt: '2025-01-01T00:00:00Z',
         },
       ]);
       expect(findNthTableRow(groupIndex).findComponent(GroupToolCoverageIndicator).exists()).toBe(
