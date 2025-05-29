@@ -159,6 +159,34 @@ RSpec.describe Vulnerabilities::NamespaceHistoricalStatistics::AdjustmentService
           expect(statistics).to eq(expected_statistics)
         end
       end
+
+      context 'when project and namespace CTE has missing project entries compared to vulnerability_statistics' do
+        let_it_be(:project_1) { create(:project, namespace: sub_group) }
+        let_it_be(:project_2) { create(:project, namespace: sub_group) }
+
+        let!(:vulnerability_statistic_1) do
+          create(:vulnerability_statistic, project: project_1, total: 2, critical: 1, high: 1)
+        end
+
+        let!(:vulnerability_statistic_2) do
+          create(:vulnerability_statistic, project: project_2, total: 3, critical: 1, high: 2)
+        end
+
+        let(:project_ids) { [project_1.id, project_2.id] }
+
+        it 'only processes projects that have valid namespace_id' do
+          allow_next_instance_of(described_class) do |instance|
+            allow(instance).to receive(:with_values).and_return("VALUES (#{project_1.id}, #{sub_group.id})")
+          end
+
+          expect { adjust_statistics }.to change { Vulnerabilities::NamespaceHistoricalStatistic.count }.by(1)
+
+          expect(statistics['total']).to eq(2)
+          expect(statistics['critical']).to eq(1)
+          expect(statistics['high']).to eq(1)
+          expect(statistics['namespace_id']).to eq(sub_group.id)
+        end
+      end
     end
   end
 end
