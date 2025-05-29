@@ -315,7 +315,6 @@ module EE
         field :pending_member_approvals,
           EE::Types::GitlabSubscriptions::MemberManagement::MemberApprovalType.connection_type,
           null: true,
-          experiment: { milestone: '17.3' },
           resolver: ::Resolvers::GitlabSubscriptions::MemberManagement::MemberApprovalResolver,
           description: 'Pending member promotions of the group.'
 
