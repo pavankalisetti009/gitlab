@@ -134,6 +134,7 @@ describe('compliance report utils', () => {
       ];
       expect(utils.mapFiltersToUrlParams(filters)).toEqual({
         project: 'my-project',
+        group: 'my-group',
         'framework[]': ['my-framework1', 'my-framework2'],
       });
     });
@@ -329,8 +330,8 @@ describe('compliance report utils', () => {
     });
 
     it('returns true when group filter has changed', () => {
-      const currentFilters = { group: 'old-group' };
-      const newFilters = { group: 'new-group' };
+      const currentFilters = { groupPath: 'old-group' };
+      const newFilters = { groupPath: 'new-group' };
       expect(utils.checkGraphQLFilterForChange({ currentFilters, newFilters })).toBe(true);
     });
 
