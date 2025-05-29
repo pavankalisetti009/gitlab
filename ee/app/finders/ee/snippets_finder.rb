@@ -23,17 +23,12 @@ module EE
 
     override :filter_snippets
     def filter_snippets
-      if ::Feature.enabled?(:snippet_ip_restrictions, current_user)
-        valid_snippets = filter_unauthorized_snippets(super)
-        by_repository_storage(valid_snippets)
-      else
-        by_repository_storage(super)
-      end
+      valid_snippets = filter_unauthorized_snippets(super)
+      by_repository_storage(valid_snippets)
     end
 
     def filter_unauthorized_snippets(snippets)
       current_ip = ::Gitlab::IpAddressState.current
-
       snippets.allowed_for_ip(current_ip)
     end
 
