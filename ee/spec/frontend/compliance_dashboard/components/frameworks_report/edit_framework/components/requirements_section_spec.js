@@ -66,6 +66,19 @@ describe('Requirements section', () => {
     await waitForPromises();
   };
 
+  it('does not load requirements for existing framework on load', async () => {
+    controlsQueryHandler = jest.fn().mockResolvedValue({
+      data: {
+        complianceRequirementControls: {
+          controlExpressions: mockGitLabStandardControls,
+        },
+      },
+    });
+    await createComponent({ isNewFramework: false });
+    await waitForPromises();
+    expect(controlsQueryHandler).not.toHaveBeenCalled();
+  });
+
   describe('Rendering', () => {
     controlsQueryHandler = jest.fn().mockResolvedValue({
       data: {
