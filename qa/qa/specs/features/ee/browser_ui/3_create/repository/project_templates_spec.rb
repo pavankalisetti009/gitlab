@@ -109,10 +109,6 @@ module QA
         # Bug: https://gitlab.com/gitlab-org/gitlab/-/issues/421143
         # TODO: enable in airgapped job when bug is resolved
         it 'successfully imports the project using template', :external_api_calls,
-          quarantine: {
-            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/460321',
-            type: :flaky
-          },
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347875' do
           Page::Project::New.perform do |new_page|
             # Reload page in case template isn't available immediately
