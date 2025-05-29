@@ -1,11 +1,11 @@
 import { GlCollapsibleListbox, GlSearchBoxByType } from '@gitlab/ui';
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoReplicableFilterBar from 'ee/geo_replicable/components/geo_replicable_filter_bar.vue';
-import GeoReplicableBulkActions from 'ee/geo_replicable/components/geo_replicable_bulk_actions.vue';
-import { FILTER_OPTIONS, FILTER_STATES } from 'ee/geo_replicable/constants';
+import GeoListBulkActions from 'ee/geo_shared/list/components/geo_list_bulk_actions.vue';
+import { FILTER_OPTIONS, FILTER_STATES, BULK_ACTIONS } from 'ee/geo_replicable/constants';
 import { MOCK_REPLICABLE_TYPE, MOCK_BASIC_GRAPHQL_DATA } from '../mock_data';
 
 Vue.use(Vuex);
@@ -41,7 +41,7 @@ describe('GeoReplicableFilterBar', () => {
   const findNavContainer = () => wrapper.find('nav');
   const findGlCollapsibleListbox = () => findNavContainer().findComponent(GlCollapsibleListbox);
   const findGlSearchBox = () => findNavContainer().findComponent(GlSearchBoxByType);
-  const findBulkActions = () => wrapper.findComponent(GeoReplicableBulkActions);
+  const findBulkActions = () => wrapper.findComponent(GeoListBulkActions);
 
   const getFilterItems = (filters) => {
     return filters.map((filter) => {
@@ -77,16 +77,33 @@ describe('GeoReplicableFilterBar', () => {
     });
 
     describe.each`
-      replicableItems            | showBulkActions
+      replicableItems            | bulkActions
       ${[]}                      | ${false}
-      ${MOCK_BASIC_GRAPHQL_DATA} | ${true}
-    `('Bulk Actions', ({ replicableItems, showBulkActions }) => {
+      ${MOCK_BASIC_GRAPHQL_DATA} | ${BULK_ACTIONS}
+    `('Bulk Actions', ({ replicableItems, bulkActions }) => {
       beforeEach(() => {
         createComponent({ replicableItems });
       });
 
-      it(`does ${showBulkActions ? '' : 'not '}render Bulk Actions`, () => {
-        expect(findBulkActions().exists()).toBe(showBulkActions);
+      it(`does ${bulkActions ? '' : 'not '}render Bulk Actions with correct actions`, () => {
+        expect(findBulkActions().exists() && findBulkActions().props('bulkActions')).toBe(
+          bulkActions,
+        );
+      });
+    });
+  });
+
+  describe('onBulkAction', () => {
+    beforeEach(() => {
+      createComponent({ replicableItems: MOCK_BASIC_GRAPHQL_DATA });
+    });
+
+    it('calls initiateAllReplicableAction with correct action', async () => {
+      findBulkActions().vm.$emit('bulkAction', BULK_ACTIONS[0].action);
+      await nextTick();
+
+      expect(actionSpies.initiateAllReplicableAction).toHaveBeenCalledWith(expect.any(Object), {
+        action: BULK_ACTIONS[0].action,
       });
     });
   });

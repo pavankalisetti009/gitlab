@@ -2,9 +2,9 @@
 import { GlSearchBoxByType, GlCollapsibleListbox, GlModalDirective } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
+import GeoListBulkActions from 'ee/geo_shared/list/components/geo_list_bulk_actions.vue';
 import { s__ } from '~/locale';
-import { DEFAULT_SEARCH_DELAY, FILTER_STATES, FILTER_OPTIONS } from '../constants';
-import GeoReplicableBulkActions from './geo_replicable_bulk_actions.vue';
+import { DEFAULT_SEARCH_DELAY, FILTER_STATES, FILTER_OPTIONS, BULK_ACTIONS } from '../constants';
 
 export default {
   name: 'GeoReplicableFilterBar',
@@ -14,7 +14,7 @@ export default {
   components: {
     GlSearchBoxByType,
     GlCollapsibleListbox,
-    GeoReplicableBulkActions,
+    GeoListBulkActions,
   },
   directives: {
     GlModalDirective,
@@ -51,12 +51,21 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['setStatusFilter', 'setSearch', 'fetchReplicableItems']),
+    ...mapActions([
+      'setStatusFilter',
+      'setSearch',
+      'fetchReplicableItems',
+      'initiateAllReplicableAction',
+    ]),
     filterChange(filter) {
       this.setStatusFilter(filter);
       this.fetchReplicableItems();
     },
+    onBulkAction(action) {
+      this.initiateAllReplicableAction({ action });
+    },
   },
+  BULK_ACTIONS,
   debounce: DEFAULT_SEARCH_DELAY,
 };
 </script>
@@ -80,7 +89,12 @@ export default {
           :placeholder="$options.i18n.searchPlaceholder"
         />
       </div>
-      <geo-replicable-bulk-actions v-if="showBulkActions" class="gl-ml-auto" />
+      <geo-list-bulk-actions
+        v-if="showBulkActions"
+        :bulk-actions="$options.BULK_ACTIONS"
+        class="gl-ml-auto"
+        @bulkAction="onBulkAction"
+      />
     </div>
   </nav>
 </template>
