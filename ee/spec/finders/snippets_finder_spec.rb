@@ -283,15 +283,5 @@ RSpec.describe SnippetsFinder do
         expect(subject).to contain_exactly(snippet_without_ip_restriction)
       end
     end
-
-    context 'when feature flag "snippet_ip_restrictions" is disabled' do
-      before do
-        stub_feature_flags(snippet_ip_restrictions: false)
-      end
-
-      it 'returns all snippets' do
-        expect(subject).to contain_exactly(snippet_with_ip_restriction, snippet_without_ip_restriction)
-      end
-    end
   end
 end
