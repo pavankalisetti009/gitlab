@@ -25,9 +25,6 @@ export default {
   },
   computed: {
     ...mapGetters(['propsSource']),
-    projectId() {
-      return this.propsSource.projectId;
-    },
     googleCloudProjectId() {
       return this.id || "'<your_google_cloud_project_id>'";
     },

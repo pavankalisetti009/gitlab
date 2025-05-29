@@ -24,13 +24,9 @@ export default {
       // Zentao issues have at most 1 assignee
       return (this.issue.assignees || [])[0];
     },
-    reference() {
-      return this.issue.references?.relative;
-    },
   },
   i18n: {
     statusTitle: __('Status'),
-    referenceName: __('Reference'),
     avatarSubLabel: s__('ZenTaoIntegration|ZenTao user'),
   },
 };
