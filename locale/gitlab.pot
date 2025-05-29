@@ -60011,12 +60011,6 @@ msgstr ""
 msgid "SubscriptionGroupsNew|Your group will only be displayed in the list above if:"
 msgstr ""
 
-msgid "SubscriptionMangement|If you'd like to add more seats, upgrade your plan, or purchase additional products, contact your GitLab sales representative."
-msgstr ""
-
-msgid "SubscriptionMangement|This is a custom subscription managed by the GitLab Sales team"
-msgstr ""
-
 msgid "SubscriptionMangement|To make changes to a read-only subscription or purchase additional products, contact your GitLab Partner."
 msgstr ""
 
@@ -73291,7 +73285,7 @@ msgstr ""
 msgid "mrWidget|%{boldStart}Merge blocked:%{boldEnd} denied licenses must be removed."
 msgstr ""
 
-msgid "mrWidget|%{boldStart}Merge blocked:%{boldEnd} new changes were just added."
+msgid "mrWidget|%{boldStart}Merge blocked:%{boldEnd} to see new changes and rerun this merge check, refresh this page."
 msgstr ""
 
 msgid "mrWidget|%{boldStart}Merge unavailable:%{boldEnd} merge requests are read-only in a secondary Geo node."

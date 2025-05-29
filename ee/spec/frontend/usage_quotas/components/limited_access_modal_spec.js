@@ -13,7 +13,7 @@ describe('LimitedAccessModal', () => {
   const findModal = () => wrapper.findComponent(GlModal);
 
   it('has correct button', () => {
-    createComponent({ limitedAccessReason: 'RAMP_SUBSCRIPTION' });
+    createComponent({ limitedAccessReason: 'MANAGED_BY_RESELLER' });
 
     expect(findModal().props('actionPrimary')).toStrictEqual({
       text: 'Close',
@@ -30,18 +30,6 @@ describe('LimitedAccessModal', () => {
       const modal = findModal();
 
       expect(modal.text()).toContain('GitLab Partner');
-    });
-  });
-
-  describe('with ramp', () => {
-    beforeEach(() => {
-      createComponent({ limitedAccessReason: 'RAMP_SUBSCRIPTION' });
-    });
-
-    it('shows correct content', () => {
-      const modal = findModal();
-
-      expect(modal.text()).toContain('GitLab sales representative');
     });
   });
 });

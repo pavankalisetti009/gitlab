@@ -513,77 +513,63 @@ describe('CodeSuggestionsInfoCard', () => {
               });
             });
 
-            describe('limited access modal', () => {
-              describe.each`
-                canAddDuoProSeats | limitedAccessReason
-                ${false}          | ${'MANAGED_BY_RESELLER'}
-                ${false}          | ${'RAMP_SUBSCRIPTION'}
-              `(
-                'when canAddDuoProSeats=$canAddDuoProSeats and limitedAccessReason=$limitedAccessReason',
-                ({ canAddDuoProSeats, limitedAccessReason }) => {
-                  beforeEach(async () => {
-                    queryHandlerMock = jest.fn().mockResolvedValue({
-                      data: {
-                        subscription: {
-                          canAddSeats: false,
-                          canRenew: false,
-                          communityPlan: false,
-                          canAddDuoProSeats,
-                        },
-                        userActionAccess: { limitedAccessReason },
+            describe('limited access modal when subscription is managed by reseller', () => {
+              describe('when user cannot add Duo Pro seats', () => {
+                beforeEach(async () => {
+                  queryHandlerMock = jest.fn().mockResolvedValue({
+                    data: {
+                      subscription: {
+                        canAddSeats: false,
+                        canRenew: false,
+                        communityPlan: false,
+                        canAddDuoProSeats: false,
                       },
-                    });
-                    createComponent({ props: { duoTier: DUO_ENTERPRISE } });
-                    await waitForPromises();
-
-                    findContactSalesButton().vm.$emit('click');
-
-                    await nextTick();
+                      userActionAccess: { limitedAccessReason: 'MANAGED_BY_RESELLER' },
+                    },
                   });
+                  createComponent({ props: { duoTier: DUO_ENTERPRISE } });
+                  await waitForPromises();
 
-                  it('shows modal', () => {
-                    expect(findLimitedAccessModal().isVisible()).toBe(true);
-                  });
+                  findContactSalesButton().vm.$emit('click');
 
-                  it('sends correct props', () => {
-                    expect(findLimitedAccessModal().props('limitedAccessReason')).toBe(
-                      limitedAccessReason,
-                    );
-                  });
-                },
-              );
+                  await nextTick();
+                });
 
-              describe.each`
-                canAddDuoProSeats | limitedAccessReason
-                ${true}           | ${'MANAGED_BY_RESELLER'}
-                ${true}           | ${'RAMP_SUBSCRIPTION'}
-              `(
-                'when canAddDuoProSeats=$canAddDuoProSeats and limitedAccessReason=$limitedAccessReason',
-                ({ canAddDuoProSeats, limitedAccessReason }) => {
-                  beforeEach(async () => {
-                    queryHandlerMock = jest.fn().mockResolvedValue({
-                      data: {
-                        subscription: {
-                          canAddSeats: false,
-                          canRenew: false,
-                          communityPlan: false,
-                          canAddDuoProSeats,
-                        },
-                        userActionAccess: { limitedAccessReason },
+                it('displays the limited access modal', () => {
+                  expect(findLimitedAccessModal().isVisible()).toBe(true);
+                });
+
+                it('passes the correct limitedAccessReason to the modal', () => {
+                  expect(findLimitedAccessModal().props('limitedAccessReason')).toBe(
+                    'MANAGED_BY_RESELLER',
+                  );
+                });
+              });
+
+              describe('when user can add Duo Pro seats', () => {
+                beforeEach(async () => {
+                  queryHandlerMock = jest.fn().mockResolvedValue({
+                    data: {
+                      subscription: {
+                        canAddSeats: false,
+                        canRenew: false,
+                        communityPlan: false,
+                        canAddDuoProSeats: true,
                       },
-                    });
-                    createComponent({ props: { duoTier: DUO_ENTERPRISE } });
-                    await waitForPromises();
-
-                    findContactSalesButton().vm.$emit('click');
-                    await nextTick();
+                      userActionAccess: { limitedAccessReason: 'MANAGED_BY_RESELLER' },
+                    },
                   });
+                  createComponent({ props: { duoTier: DUO_ENTERPRISE } });
+                  await waitForPromises();
 
-                  it('does not show modal', () => {
-                    expect(findLimitedAccessModal().exists()).toBe(false);
-                  });
-                },
-              );
+                  findContactSalesButton().vm.$emit('click');
+                  await nextTick();
+                });
+
+                it('does not show modal', () => {
+                  expect(findLimitedAccessModal().exists()).toBe(false);
+                });
+              });
             });
           });
         });
@@ -662,85 +648,71 @@ describe('CodeSuggestionsInfoCard', () => {
               });
             });
 
-            describe('limited access modal', () => {
-              describe.each`
-                canAddDuoProSeats | limitedAccessReason
-                ${false}          | ${'MANAGED_BY_RESELLER'}
-                ${false}          | ${'RAMP_SUBSCRIPTION'}
-              `(
-                'when canAddDuoProSeats=$canAddDuoProSeats and limitedAccessReason=$limitedAccessReason',
-                ({ canAddDuoProSeats, limitedAccessReason }) => {
-                  beforeEach(async () => {
-                    queryHandlerMock = jest.fn().mockResolvedValue({
-                      data: {
-                        subscription: {
-                          canAddSeats: false,
-                          canRenew: false,
-                          communityPlan: false,
-                          canAddDuoProSeats,
-                        },
-                        userActionAccess: { limitedAccessReason },
+            describe('limited access modal when subscription is managed by reseller', () => {
+              describe('when user cannot add Duo Pro seats', () => {
+                beforeEach(async () => {
+                  queryHandlerMock = jest.fn().mockResolvedValue({
+                    data: {
+                      subscription: {
+                        canAddSeats: false,
+                        canRenew: false,
+                        communityPlan: false,
+                        canAddDuoProSeats: false,
                       },
-                    });
-                    createComponent({ props: { duoTier: DUO_PRO } });
-                    await waitForPromises();
-
-                    findAddSeatsButton().vm.$emit('click');
-
-                    await nextTick();
+                      userActionAccess: { limitedAccessReason: 'MANAGED_BY_RESELLER' },
+                    },
                   });
+                  createComponent({ props: { duoTier: DUO_PRO } });
+                  await waitForPromises();
 
-                  it('shows modal', () => {
-                    expect(findLimitedAccessModal().isVisible()).toBe(true);
-                  });
+                  findAddSeatsButton().vm.$emit('click');
 
-                  it('sends correct props', () => {
-                    expect(findLimitedAccessModal().props('limitedAccessReason')).toBe(
-                      limitedAccessReason,
-                    );
-                  });
+                  await nextTick();
+                });
 
-                  it('does not navigate to URL', () => {
-                    expect(visitUrl).not.toHaveBeenCalled();
-                  });
-                },
-              );
+                it('displays the limited access modal', () => {
+                  expect(findLimitedAccessModal().isVisible()).toBe(true);
+                });
 
-              describe.each`
-                canAddDuoProSeats | limitedAccessReason
-                ${true}           | ${'MANAGED_BY_RESELLER'}
-                ${true}           | ${'RAMP_SUBSCRIPTION'}
-              `(
-                'when canAddDuoProSeats=$canAddDuoProSeats and limitedAccessReason=$limitedAccessReason',
-                ({ canAddDuoProSeats, limitedAccessReason }) => {
-                  beforeEach(async () => {
-                    queryHandlerMock = jest.fn().mockResolvedValue({
-                      data: {
-                        subscription: {
-                          canAddSeats: false,
-                          canRenew: false,
-                          communityPlan: false,
-                          canAddDuoProSeats,
-                        },
-                        userActionAccess: { limitedAccessReason },
+                it('passes the correct limitedAccessReason to the modal', () => {
+                  expect(findLimitedAccessModal().props('limitedAccessReason')).toBe(
+                    'MANAGED_BY_RESELLER',
+                  );
+                });
+
+                it('does not navigate to URL', () => {
+                  expect(visitUrl).not.toHaveBeenCalled();
+                });
+              });
+
+              describe('when user can add Duo Pro seats', () => {
+                beforeEach(async () => {
+                  queryHandlerMock = jest.fn().mockResolvedValue({
+                    data: {
+                      subscription: {
+                        canAddSeats: false,
+                        canRenew: false,
+                        communityPlan: false,
+                        canAddDuoProSeats: true,
                       },
-                    });
-                    createComponent({ props: { duoTier: DUO_PRO } });
-                    await waitForPromises();
-
-                    findAddSeatsButton().vm.$emit('click');
-                    await nextTick();
+                      userActionAccess: { limitedAccessReason: 'MANAGED_BY_RESELLER' },
+                    },
                   });
+                  createComponent({ props: { duoTier: DUO_PRO } });
+                  await waitForPromises();
 
-                  it('does not show modal', () => {
-                    expect(findLimitedAccessModal().exists()).toBe(false);
-                  });
+                  findAddSeatsButton().vm.$emit('click');
+                  await nextTick();
+                });
 
-                  it('navigates to URL', () => {
-                    expect(visitUrl).toHaveBeenCalledWith(defaultProvide.addDuoProHref);
-                  });
-                },
-              );
+                it('does not show modal', () => {
+                  expect(findLimitedAccessModal().exists()).toBe(false);
+                });
+
+                it('navigates to URL', () => {
+                  expect(visitUrl).toHaveBeenCalledWith(defaultProvide.addDuoProHref);
+                });
+              });
             });
           });
         });

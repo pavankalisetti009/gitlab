@@ -61,7 +61,7 @@ describe('PipelineUsageApp', () => {
       canAddSeats: false,
       canRenew: false,
     },
-    userActionAccess: { limitedAccessReason: 'RAMP_SUBSCRIPTION' },
+    userActionAccess: { limitedAccessReason: 'MANAGED_BY_RESELLER' },
   };
 
   const queryHandlerMock = (apolloData) => jest.fn().mockResolvedValue({ data: apolloData });
