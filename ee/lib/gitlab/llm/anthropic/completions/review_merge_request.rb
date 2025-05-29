@@ -102,11 +102,7 @@ module Gitlab
 
             mr_diff_refs = merge_request.diff_refs
 
-            if Feature.enabled?(:duo_code_review_multi_file, user)
-              process_all_files_together(diff_files, mr_diff_refs)
-            else
-              process_files_individually(diff_files, mr_diff_refs)
-            end
+            process_files(diff_files, mr_diff_refs)
 
             if @draft_notes_by_priority.empty?
               update_progress_note(review_summary, with_todo: true)
@@ -119,7 +115,7 @@ module Gitlab
             log_comment_metrics
           end
 
-          def process_all_files_together(diff_files, mr_diff_refs)
+          def process_files(diff_files, mr_diff_refs)
             diffs_and_paths = {}
             files_content = {}
 
@@ -151,29 +147,6 @@ module Gitlab
               next if file_comments.blank?
 
               @comment_metrics[:comments_with_valid_path] += file_comments.count
-
-              process_comments(file_comments, diff_file, mr_diff_refs)
-            end
-          end
-
-          def process_files_individually(diff_files, mr_diff_refs)
-            diff_files.each do |diff_file|
-              single_file_diff = { diff_file.new_path => diff_file.raw_diff }
-              single_file_content = {}
-
-              if !diff_file.new_file? && include_file_content?
-                content = diff_file.old_blob&.data
-                single_file_content[diff_file.new_path] = content if content.present?
-              end
-
-              review_prompt = generate_review_prompt(single_file_diff, single_file_content)
-              next unless review_prompt.present?
-
-              response = review_response_for(review_prompt)
-              next if note_not_required?(response)
-
-              parsed_body = ResponseBodyParser.new(response.response_body)
-              file_comments = parsed_body.comments.select { |comment| comment.file == diff_file.new_path }
 
               process_comments(file_comments, diff_file, mr_diff_refs)
             end
