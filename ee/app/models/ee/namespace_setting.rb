@@ -249,6 +249,8 @@ module EE
         duo_features_enabled
         lock_duo_features_enabled
         enterprise_users_extensions_marketplace_opt_in_status
+        web_based_commit_signing_enabled
+        lock_web_based_commit_signing_enabled
       ].freeze
 
       override :allowed_namespace_settings_params
