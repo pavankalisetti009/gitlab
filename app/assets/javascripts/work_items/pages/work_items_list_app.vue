@@ -638,6 +638,7 @@ export default {
       if (!this.hasAnyIssues) {
         this.isInitialLoadComplete = false;
       }
+      this.$apollo.queries.workItemStateCounts.refetch();
       this.$apollo.queries.workItemsFull.refetch();
       this.$apollo.queries.workItemsSlim.refetch();
     },

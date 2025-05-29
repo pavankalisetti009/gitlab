@@ -399,10 +399,12 @@ describeSkipVue3(skipReason, () => {
         await waitForPromises();
 
         expect(defaultQueryHandler).toHaveBeenCalledTimes(1);
+        expect(defaultCountsQueryHandler).toHaveBeenCalledTimes(1);
 
         await wrapper.setProps({ eeWorkItemUpdateCount: 1 });
 
         expect(defaultQueryHandler).toHaveBeenCalledTimes(2);
+        expect(defaultCountsQueryHandler).toHaveBeenCalledTimes(2);
       });
     });
   });
