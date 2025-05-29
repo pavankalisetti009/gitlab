@@ -452,6 +452,7 @@ module EE
         enable :read_project_security_exclusions
         enable :read_security_settings
         enable :read_vulnerability_statistics
+        enable :read_secret_detection_validity_checks_status
       end
 
       rule { can?(:push_code) }.policy do
@@ -530,6 +531,8 @@ module EE
 
       rule { custom_role_enables_admin_security_testing }.policy do
         enable :admin_security_testing
+        enable :configure_secret_detection_validity_checks
+        enable :read_secret_detection_validity_checks_status
       end
 
       rule { security_dashboard_enabled & can?(:admin_security_testing) }.policy do
@@ -549,6 +552,11 @@ module EE
         enable :read_secret_push_protection_info
         enable :enable_secret_push_protection
         enable :read_project_security_exclusions
+      end
+
+      rule { ~validity_checks_available }.policy do
+        prevent :read_secret_detection_validity_checks_status
+        prevent :configure_secret_detection_validity_checks
       end
 
       rule { container_scanning_for_registry_available & can?(:admin_security_testing) }.policy do
@@ -690,6 +698,7 @@ module EE
         enable :manage_project_security_exclusions
         enable :read_project_security_exclusions
         enable :manage_security_settings
+        enable :configure_secret_detection_validity_checks
       end
 
       rule { ~runner_performance_insights_available }.prevent :read_runner_usage
@@ -1169,6 +1178,10 @@ module EE
 
       rule { secret_push_protection_available & can?(:maintainer_access) }.policy do
         enable :enable_secret_push_protection
+      end
+
+      condition(:validity_checks_available) do
+        ::Feature.enabled?(:validity_checks, @subject)
       end
 
       condition(:container_scanning_for_registry_available) do
