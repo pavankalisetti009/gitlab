@@ -37,6 +37,7 @@ export default () => {
       replicableBasePath,
       replicableTypes,
       graphqlRegistryClass,
+      itemTitle: titlePlural,
     },
 
     render(createElement) {
