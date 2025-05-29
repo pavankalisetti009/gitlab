@@ -144,28 +144,9 @@ module EE
 
       # rubocop: disable CodeReuse/ActiveRecord
       def create_predefined_push_rule
-        return unless project.feature_available?(:push_rules)
-        return unless predefined_push_rule.present?
-
-        log_info(predefined_push_rule)
-        push_rule = predefined_push_rule.dup.tap { |predefined_rule| predefined_rule.is_sample = false }
-        override_push_rule(push_rule) if security_policy_target.present?
-        project.push_rule = push_rule
-        project.project_setting.update(push_rule: push_rule)
-      end
-
-      def predefined_push_rule
-        if project.group
-          project.group.predefined_push_rule
-        else
-          PushRule.global
-        end
-      end
-
-      def override_push_rule(push_rule)
-        push_rule.commit_message_regex = nil
-        push_rule.commit_message_negative_regex = nil
-        push_rule.branch_name_regex = nil
+        PushRules::CreatePredefinedRuleService
+          .new(container: project)
+          .execute(override_push_rule: security_policy_target.present?)
       end
 
       def set_default_compliance_framework
