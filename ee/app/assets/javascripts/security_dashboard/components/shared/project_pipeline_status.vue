@@ -54,21 +54,19 @@ export default {
 </script>
 
 <template>
-  <div class="gl-items-center gl-border-1 gl-border-solid gl-border-default gl-p-6 lg:gl-flex">
+  <div class="gl-border-b gl-bg-subtle gl-p-5 lg:gl-flex">
     <div class="gl-flex gl-items-center" data-testid="pipeline">
-      <div class="gl-mr-3">
-        <span class="gl-mr-3 gl-font-bold">{{ $options.i18n.lastUpdated }}</span
-        ><span class="gl-whitespace-nowrap">
-          <time-ago-tooltip class="gl-pr-3" :time="pipeline.createdAt" /><gl-link
-            :href="pipeline.path"
-            >#{{ pipeline.id }}</gl-link
-          >
-          <pipeline-status-badge :pipeline="pipeline" class="gl-ml-3" />
-        </span>
-      </div>
+      <span class="gl-mr-3 gl-font-bold">{{ $options.i18n.lastUpdated }}</span
+      ><span class="gl-whitespace-nowrap">
+        <time-ago-tooltip class="gl-pr-3" :time="pipeline.createdAt" /><gl-link
+          :href="pipeline.path"
+          >#{{ pipeline.id }}</gl-link
+        >
+        <pipeline-status-badge :pipeline="pipeline" class="gl-ml-3" />
+      </span>
       <div
         v-if="parsingStatusMessage"
-        class="gl-ml-2 gl-font-bold gl-text-orange-400"
+        class="gl-ml-3 gl-font-bold gl-text-orange-400"
         data-testid="parsing-status-notice"
       >
         <gl-icon name="warning" class="gl-mr-3" />{{ parsingStatusMessage }}
