@@ -60,7 +60,6 @@ module EE
         end
 
         def use_plan_limit?
-          return true unless ::Feature.enabled?(:push_rule_file_size_limit, project)
           return true if push_rule_limit == 0
           return false if plan_limit.nil?
 

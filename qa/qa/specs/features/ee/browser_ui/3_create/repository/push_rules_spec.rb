@@ -32,8 +32,7 @@ module QA
         end
       end
 
-      context 'when using non signed commits',
-        feature_flag: { name: :push_rule_file_size_limit } do
+      context 'when using non signed commits' do
         it 'allows an unrestricted push',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347790' do
           expect_no_error_on_push(file: standard_file)
@@ -52,13 +51,7 @@ module QA
           # on Staging where the tests are run in parallel).
           # See: https://gitlab.com/gitlab-org/gitlab/-/issues/218620#note_361634705
 
-          ff_enabled = Runtime::Feature.enabled?(:push_rule_file_size_limit)
-
-          expected_error = if ff_enabled
-                             'You are attempting to check in one or more blobs which exceed the 1MiB limit'
-                           else
-                             'File "file" is larger than the allowed size of 1 MiB'
-                           end
+          expected_error = 'You are attempting to check in one or more blobs which exceed the 1MiB limit'
 
           expect_error_on_push(
             file: {

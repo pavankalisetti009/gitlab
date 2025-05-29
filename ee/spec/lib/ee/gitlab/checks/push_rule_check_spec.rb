@@ -16,8 +16,6 @@ RSpec.describe EE::Gitlab::Checks::PushRuleCheck, feature_category: :source_code
 
   shared_examples "push checks" do
     before do
-      allow_any_instance_of(EE::Gitlab::Checks::PushRules::FileSizeCheck)
-        .to receive(:validate!).and_return(nil)
       allow_any_instance_of(EE::Gitlab::Checks::PushRules::TagCheck)
         .to receive(:validate!).and_return(nil)
       allow_any_instance_of(EE::Gitlab::Checks::PushRules::BranchCheck)
@@ -92,36 +90,6 @@ RSpec.describe EE::Gitlab::Checks::PushRuleCheck, feature_category: :source_code
           .to receive(:validate!)
 
         subject.validate!
-      end
-    end
-
-    context "when :push_rule_file_size_limit is enabled" do
-      before do
-        stub_feature_flags(push_rule_file_size_limit: true)
-      end
-
-      it "does not run check_file_size!" do
-        expect(subject).not_to receive(:check_file_size!)
-        subject.validate!
-      end
-    end
-
-    context "when :push_rule_file_size_limit is disabled" do
-      before do
-        stub_feature_flags(push_rule_file_size_limit: false)
-      end
-
-      it_behaves_like 'use predefined push rules'
-
-      it "runs check_file_size!" do
-        expect(subject).to receive(:check_file_size!).and_call_original
-        subject.validate!
-      end
-
-      it "raises an error on failure" do
-        expect_any_instance_of(EE::Gitlab::Checks::PushRules::FileSizeCheck).to receive(:validate!).and_raise(Gitlab::GitAccess::ForbiddenError)
-
-        expect { subject.validate! }.to raise_error(Gitlab::GitAccess::ForbiddenError)
       end
     end
   end
