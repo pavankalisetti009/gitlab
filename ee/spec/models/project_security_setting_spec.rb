@@ -65,6 +65,24 @@ RSpec.describe ProjectSecuritySetting, feature_category: :software_composition_a
     end
   end
 
+  describe '#set_validity_checks' do
+    where(:value_before, :enabled, :value_after) do
+      true  | false | false
+      true  | true  | true
+      false | true  | true
+      false | false | false
+    end
+
+    with_them do
+      let(:setting) { create(:project_security_setting, validity_checks_enabled: value_before) }
+
+      it 'updates the attribute and returns the new value' do
+        expect(setting.set_validity_checks!(enabled: enabled)).to eq(value_after)
+        expect(setting.reload.validity_checks_enabled).to eq(value_after)
+      end
+    end
+  end
+
   describe 'scopes' do
     describe '.for_projects' do
       let_it_be(:project_1) { create(:project) }

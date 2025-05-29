@@ -10822,6 +10822,28 @@ Input type: `SetSecretPushProtectionInput`
 | <a id="mutationsetsecretpushprotectionprereceivesecretdetectionenabled"></a>`preReceiveSecretDetectionEnabled` | [`Boolean`](#boolean) | Whether the feature is enabled. |
 | <a id="mutationsetsecretpushprotectionsecretpushprotectionenabled"></a>`secretPushProtectionEnabled` | [`Boolean`](#boolean) | Whether the feature is enabled. |
 
+### `Mutation.setValidityChecks`
+
+Enable/disable secret detection validity checks for the given project.
+
+Input type: `SetValidityChecksInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetvaliditychecksclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetvaliditychecksenable"></a>`enable` | [`Boolean!`](#boolean) | Desired status for validity checks feature. |
+| <a id="mutationsetvaliditychecksnamespacepath"></a>`namespacePath` | [`ID!`](#id) | Full path of the namespace (project). |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsetvaliditychecksclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsetvaliditycheckserrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationsetvaliditychecksvaliditychecksenabled"></a>`validityChecksEnabled` | [`Boolean`](#boolean) | Whether the feature is enabled. |
+
 ### `Mutation.starProject`
 
 {{< details >}}

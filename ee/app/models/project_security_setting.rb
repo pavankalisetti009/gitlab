@@ -20,4 +20,8 @@ class ProjectSecuritySetting < ApplicationRecord
   def set_secret_push_protection!(enabled:)
     enabled if update!(secret_push_protection_enabled: enabled)
   end
+
+  def set_validity_checks!(enabled:)
+    enabled if update!(validity_checks_enabled: enabled)
+  end
 end

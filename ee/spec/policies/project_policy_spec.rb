@@ -3212,6 +3212,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             :create_on_demand_dast_scan,
             :edit_on_demand_dast_scan,
             :enable_secret_push_protection,
+            :configure_secret_detection_validity_checks,
             :read_project_security_dashboard,
             :read_project_security_exclusions,
             :read_coverage_fuzzing,
@@ -3224,7 +3225,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
             :read_merge_request,
             :download_code,
             :read_project_runners,
-            :read_secret_push_protection_info
+            :read_secret_push_protection_info,
+            :read_secret_detection_validity_checks_status
           ]
         end
 
@@ -4529,6 +4531,25 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         let(:current_user) { owner }
 
         it { is_expected.to be_disallowed(:enable_secret_push_protection) }
+      end
+    end
+
+    describe 'configure_secret_detection_validity_checks' do
+      where(:current_user, :feature_available, :match_expected_result) do
+        ref(:owner)      | true  | be_allowed(:configure_secret_detection_validity_checks)
+        ref(:maintainer) | true  | be_allowed(:configure_secret_detection_validity_checks)
+        ref(:developer)  | true  | be_disallowed(:configure_secret_detection_validity_checks)
+        ref(:owner)      | false | be_disallowed(:configure_secret_detection_validity_checks)
+        ref(:maintainer) | false | be_disallowed(:configure_secret_detection_validity_checks)
+        ref(:developer)  | false | be_disallowed(:configure_secret_detection_validity_checks)
+      end
+
+      with_them do
+        before do
+          stub_feature_flags(validity_checks: feature_available)
+        end
+
+        it { is_expected.to match_expected_result }
       end
     end
 
