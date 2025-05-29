@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe EE::NamespaceSettings::AssignAttributesService, feature_category: :groups_and_projects do
-  let_it_be_with_reload(:group) { create(:group) }
+  let_it_be_with_reload(:nested_group) { create(:group, :nested) }
+  let_it_be_with_reload(:group) { nested_group.parent }
   let_it_be_with_reload(:user) { create(:user) }
 
   subject(:update_settings) { NamespaceSettings::AssignAttributesService.new(user, group, params).execute }
@@ -47,10 +48,7 @@ RSpec.describe EE::NamespaceSettings::AssignAttributesService, feature_category:
       end
 
       context 'when not top-level group' do
-        before do
-          group.parent = create(:group)
-          group.save!
-        end
+        let(:group) { nested_group }
 
         it 'does not change settings' do
           expect { update_settings }
@@ -146,12 +144,7 @@ RSpec.describe EE::NamespaceSettings::AssignAttributesService, feature_category:
         end
 
         context 'when group is not top level group' do
-          let(:parent_group) { create(:group) }
-
-          before do
-            group.parent = parent_group
-            group.save!
-          end
+          let(:group) { nested_group }
 
           it 'registers an error' do
             update_settings
@@ -161,6 +154,80 @@ RSpec.describe EE::NamespaceSettings::AssignAttributesService, feature_category:
           end
         end
       end
+    end
+
+    shared_examples 'ignores web-based commit signing parameters' do
+      it 'does not change settings' do
+        expect { update_settings }
+          .not_to(
+            change do
+              group.namespace_settings.slice(
+                :web_based_commit_signing_enabled,
+                :lock_web_based_commit_signing_enabled
+              )
+            end
+          )
+      end
+    end
+
+    shared_examples 'adds web-based commit signing error' do |expected_error|
+      it 'adds an error to namespace_settings' do
+        update_settings
+
+        expect(group.namespace_settings.errors[:web_based_commit_signing_enabled])
+          .to include(expected_error)
+      end
+    end
+
+    context 'when web_based_commit_signing_enabled param is present' do
+      before_all do
+        group.add_owner(user)
+      end
+      let(:params) { { web_based_commit_signing_enabled: true } }
+
+      context 'when set to true' do
+        it 'sets web_based_commit_signing_enabled and locks it' do
+          update_settings
+
+          expect(group.namespace_settings.web_based_commit_signing_enabled).to eq(true)
+          expect(group.namespace_settings.lock_web_based_commit_signing_enabled).to eq(true)
+        end
+      end
+
+      context 'when set to false' do
+        let(:params) { { web_based_commit_signing_enabled: false } }
+
+        it 'sets web_based_commit_signing_enabled and unlocks it' do
+          update_settings
+
+          expect(group.namespace_settings.web_based_commit_signing_enabled).to eq(false)
+          expect(group.namespace_settings.lock_web_based_commit_signing_enabled).to eq(false)
+        end
+      end
+
+      context 'when group is not root' do
+        let(:group) { nested_group }
+
+        it_behaves_like 'ignores web-based commit signing parameters'
+
+        it_behaves_like 'adds web-based commit signing error', 'only available on top-level groups.'
+      end
+
+      context 'when user is not admin' do
+        before_all do
+          group.add_guest(user)
+        end
+
+        it_behaves_like 'ignores web-based commit signing parameters'
+
+        it_behaves_like 'adds web-based commit signing error', 'can only be changed by a group admin.'
+      end
+    end
+
+    context 'when web_based_commit_signing_enabled param is not present' do
+      let(:params) { {} }
+
+      it_behaves_like 'ignores web-based commit signing parameters'
     end
   end
 end
