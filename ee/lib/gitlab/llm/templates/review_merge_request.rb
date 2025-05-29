@@ -16,90 +16,6 @@ module Gitlab
           PROMPT
         )
 
-        SINGLE_FILE_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_user(
-          <<~PROMPT.chomp
-            First, you will be given the merge request title and description to understand the purpose of these changes, followed by a filename and a structured representation of the git diff for that file. This structured diff contains the changes made in the MR that you need to review.%{full_file_intro}
-            Merge Request Title:
-            <mr_title>
-            %{mr_title}
-            </mr_title>
-
-            Merge Request Description:
-            <mr_description>
-            %{mr_description}
-            </mr_description>
-
-            Here is the filename of the git diff:
-
-            <filename>
-            %{new_path}
-            </filename>
-
-            Here is the git diff you need to review:
-
-            <git_diff>
-            %{diff_lines}
-            </git_diff>
-
-            %{full_content_section}
-
-            To properly review this MR, follow these steps:
-
-            1. Parse the git diff:
-               - Each `<line>` tag inside of the `<git_diff>` tag represents a line in git diff
-               - The `type` attribute in `<line>` tag specifies whether the line is "context" (unchanged), "added", or "deleted"
-               - `old_line` attribute in `<line>` tag represents the old line number before the change
-               - `old_line` will be empty if the line is a newly added line
-               - `new_line` attribute in `<line>` tag represents the new line number after the change
-               - `new_line` will be empty if the line is a deleted line
-               - Context (unchanged) lines will have both `old_line` and `new_line`, but the line number may have changed if any changes were made above the line
-               - `<chunk_header>` tags may be present to indicate the location of changes in the file (e.g., "@@ -13,6 +16,7 @@")
-
-            2. Analyze the changes carefully, strictly focus on the following criteria:
-               - Code correctness and functionality
-               - Code efficiency and performance impact
-               - Potential security vulnerabilities like SQL injection, XSS, etc.
-               - Potential bugs or edge cases that may have been missed
-               - Do not comment on documentations
-
-            3. Formulate your comments:
-               - Determine the most appropriate line for your comment
-               - When you notice multiple issues on the same line, leave only one comment on that line and list your issues together. List comments from highest in priority to the lowest.
-               - Assign each comment a priority from 1 to 3:
-                 - Priority 1: Not important
-                 - Priority 2: Helpful but can be ignored
-                 - Priority 3: Important, helpful and required
-
-            4. Format your comments:
-               - Wrap each comment in a <comment> element
-               - Include a `file` attribute with the filename "%{new_path}"
-               - Include a `priority` attribute with the assigned priority (1, 2, or 3)
-               - Include the `old_line` and `new_line` attributes exactly as they appear in the chosen `<line>` tag for the comment
-               - When suggesting a change, use the following format:
-                 <from>
-                   [existing lines that you are suggesting to change]
-                 </from>
-                 <to>
-                   [your suggestion]
-                 </to>
-                 - <from> tag must be identical to the lines as they appear in the diff, including any leading spaces or tabs
-                 - <to> tag must contain your suggestion
-                 - Opening and closing `<from>` and `<to>` tags should not be on the same line as the content
-                 - When making suggestions, always maintain the exact indentation as shown in the original diff. The suggestion should match the indentation of the line you are commenting on precisely, as it will be applied directly in place of the existing line.
-                 - Your suggestion must only include the lines that are actually changing from the existing lines
-
-               - Do not include any code suggestions when you are commenting on a deleted line since suggestions cannot be applied on deleted lines
-               - Wrap your entire response in `<review></review>` tag.
-               - Just return `<review></review>` as your entire response, if the change is acceptable
-
-            Pay careful attention to the Merge Request title and description to understand the purpose of the changes. Some changes may involve intentional removals or modifications that align with the MR's stated goals. Note that in some cases, the MR description may not be provided.
-
-            Remember to only focus on substantive feedback that will genuinely improve the code or prevent potential issues. Do not nitpick or comment on trivial matters.
-
-            Begin your review now.
-          PROMPT
-        )
-
         MULTI_FILE_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_user(
           <<~PROMPT.chomp
             First, you will be given the merge request title and description to understand the purpose of these changes, followed by a structured representation of the git diffs for all changed files in this merge request. These structured diffs contain the changes that you need to review.%{full_file_intro}
@@ -200,7 +116,6 @@ module Gitlab
         end
 
         def to_prompt_inputs
-          # Only include variables for multi file since that should be a default soon
           variables.slice(:mr_title, :mr_description, :diff_lines, :full_file_intro, :full_content_section)
         end
 
@@ -210,40 +125,23 @@ module Gitlab
 
         private
 
-        def multi_file?
-          Feature.enabled?(:duo_code_review_multi_file, user)
-        end
-        strong_memoize_attr :multi_file?
-
         def full_file?
           Feature.enabled?(:duo_code_review_full_file, user)
         end
         strong_memoize_attr :full_file?
 
         def user_message
-          multi_file? ? MULTI_FILE_MESSAGE : SINGLE_FILE_MESSAGE
+          MULTI_FILE_MESSAGE
         end
 
         def variables
-          template_variables = if multi_file?
-                                 {
-                                   mr_title: mr_title,
-                                   mr_description: mr_description,
-                                   diff_lines: all_diffs_formatted,
-                                   full_file_intro: "",
-                                   full_content_section: ""
-                                 }
-                               else
-                                 path, raw_diff = diffs_and_paths.first
-                                 {
-                                   mr_title: mr_title,
-                                   mr_description: mr_description,
-                                   new_path: path,
-                                   diff_lines: format_diff(raw_diff),
-                                   full_file_intro: "",
-                                   full_content_section: ""
-                                 }
-                               end
+          template_variables = {
+            mr_title: mr_title,
+            mr_description: mr_description,
+            diff_lines: all_diffs_formatted,
+            full_file_intro: "",
+            full_content_section: ""
+          }
 
           # Add full file content if the feature flag is enabled
           add_full_file_content(template_variables) if full_file? && files_content.present?
