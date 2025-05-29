@@ -75,6 +75,11 @@ module EE
       super.merge(banzai_epic_context_params)
     end
 
+    override :store_mentions?
+    def store_mentions?
+      noteable_type != 'ComplianceManagement::Projects::ComplianceViolation'
+    end
+
     override :store_mentions_after_commit?
     def store_mentions_after_commit?
       user_mention_class == VulnerabilityUserMention

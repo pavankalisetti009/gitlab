@@ -3,6 +3,10 @@
 module ComplianceManagement
   module Projects
     class ComplianceViolation < ApplicationRecord
+      include ::Noteable
+      include ::Mentionable
+      include ::Awardable
+
       self.table_name = 'project_compliance_violations'
       belongs_to :project
       belongs_to :namespace
@@ -13,6 +17,7 @@ module ComplianceManagement
       has_many :compliance_violation_issues, class_name: 'ComplianceManagement::Projects::ComplianceViolationIssue',
         foreign_key: 'project_compliance_violation_id', inverse_of: :project_compliance_violation
       has_many :issues, through: :compliance_violation_issues
+      has_many :notes, as: :noteable
 
       validates_presence_of :project, :namespace, :compliance_control, :status, :audit_event
 

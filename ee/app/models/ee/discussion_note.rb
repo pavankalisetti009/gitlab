@@ -9,7 +9,7 @@ module EE
 
       override :noteable_types
       def noteable_types
-        super + %w[Epic Vulnerability]
+        super + %w[Epic Vulnerability ComplianceManagement::Projects::ComplianceViolation]
       end
     end
   end
