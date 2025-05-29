@@ -106,7 +106,7 @@ module Sbom
       all_ids = id_paths.flatten.uniq
       occurrence_map = {}
 
-      Sbom::Occurrence.id_in(all_ids).each_batch(of: 1000) do |batch|
+      Sbom::Occurrence.id_in(all_ids).with_version.each_batch(of: 1000) do |batch|
         batch.each do |occurrence|
           occurrence_map[occurrence.id] = occurrence
         end
