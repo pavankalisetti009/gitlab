@@ -39914,7 +39914,7 @@ msgstr ""
 msgid "My reaction"
 msgstr ""
 
-msgid "My reviews and assigned"
+msgid "My reviews and merge requests"
 msgstr ""
 
 msgid "My topic"
