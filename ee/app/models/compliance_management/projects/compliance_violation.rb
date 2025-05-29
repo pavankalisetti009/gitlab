@@ -29,6 +29,8 @@ module ComplianceManagement
 
       enum :status, { detected: 0, in_review: 1, resolved: 2, dismissed: 3 }
 
+      scope :order_by_created_at_and_id, ->(direction = :asc) { order(created_at: direction, id: direction) }
+
       private
 
       def project_belongs_to_namespace
