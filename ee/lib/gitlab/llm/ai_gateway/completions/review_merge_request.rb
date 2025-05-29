@@ -176,10 +176,7 @@ module Gitlab
 
           def process_comments(comments, diff_file, diff_refs)
             comments.each do |comment|
-              # NOTE: LLM may return invalid line numbers sometimes so we should double check the existence of the line.
-              line = diff_file.diff_lines.find do |line|
-                line.old_line == comment.old_line && line.new_line == comment.new_line
-              end
+              line = match_comment_to_diff_line(comment, diff_file.diff_lines)
 
               next unless line.present?
 
@@ -188,6 +185,23 @@ module Gitlab
 
               @draft_notes_by_priority << [comment.priority, draft_note_params]
             end
+          end
+
+          def match_comment_to_diff_line(comment, diff_lines)
+            # NOTE: LLM may return invalid line numbers sometimes so we should double check the existence of the line.
+            #   Also, LLM sometimes sets old_line to the same value as new_line when it should be empty
+            #   for some unknown reason. We should fallback to new_line to find a match as much as possible.
+            #
+
+            # First try to match both old_line and new_line for precision
+            exact_match = diff_lines.find do |line|
+              line.old_line == comment.old_line && line.new_line == comment.new_line
+            end
+
+            return exact_match if exact_match
+
+            # Fall back to matching only new_line
+            diff_lines.find { |line| comment.new_line.present? && line.new_line == comment.new_line }
           end
 
           def tracking_context
