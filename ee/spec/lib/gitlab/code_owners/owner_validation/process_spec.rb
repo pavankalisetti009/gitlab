@@ -56,6 +56,9 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::Process, feature_category: :
       let(:owner_without_permission_name) { "@#{reporter.username}" }
       let(:owner_without_permission_email) { reporter.email }
       let(:unqualified_group_name) { "@#{create(:project_group_link, :reporter, project: project).group.full_path}" }
+      let(:group_without_eligible_approvers_name) do
+        "@#{create(:project_group_link, :developer, project: project).group.full_path}"
+      end
 
       let(:file_content) do
         <<~CODEOWNERS
@@ -82,6 +85,7 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::Process, feature_category: :
 
           [Section 6]
           path/eleven.rb #{unqualified_group_name}
+          path/twelve.rb #{group_without_eligible_approvers_name}
         CODEOWNERS
       end
 
@@ -97,7 +101,11 @@ RSpec.describe Gitlab::CodeOwners::OwnerValidation::Process, feature_category: :
           Gitlab::CodeOwners::Error.new(:owner_without_permission, line_number)
         end
         unqualified_group_errors = [Gitlab::CodeOwners::Error.new(:unqualified_group, 23)]
-        expected_errors = inaccessible_owner_errors + owner_without_permission_errors + unqualified_group_errors
+        group_without_eligible_approvers_errors = [Gitlab::CodeOwners::Error.new(:group_without_eligible_approvers, 24)]
+        expected_errors = inaccessible_owner_errors +
+          owner_without_permission_errors +
+          unqualified_group_errors +
+          group_without_eligible_approvers_errors
         expect(file.errors).to match_array(expected_errors)
       end
     end

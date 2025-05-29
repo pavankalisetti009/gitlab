@@ -203,7 +203,8 @@ RSpec.describe 'Validate code owner file', feature_category: :source_code_manage
   context 'when code owners file is correct' do
     let_it_be(:ref) { 'good-branch' }
     let_it_be(:documentation_owner) { create(:user, developer_of: project) }
-    let_it_be(:nested_group) { create(:group, :nested) }
+    let_it_be(:nested_group) { create(:group, :nested, developers: create(:user)) }
+    let_it_be(:developer) { create(:user, developer_of: nested_group.parent) }
     let_it_be(:test_owner) { create(:user, developer_of: project) }
     let_it_be(:owner) { create(:user, developer_of: project) }
     let_it_be(:owner2) { create(:user, developer_of: project) }
