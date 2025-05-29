@@ -97,3 +97,4 @@ export const VULNERABILITY_REPORT_PATHS = {
 };
 
 export const PROJECT_SECURITY_CONFIGURATION_PATH = '/-/security/configuration';
+export const PROJECT_PIPELINE_JOB_PATH = '/-/jobs';

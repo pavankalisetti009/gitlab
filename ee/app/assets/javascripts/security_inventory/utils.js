@@ -32,6 +32,32 @@ export const securityScannerValidator = (value) => {
       typeof item === 'object' &&
       'analyzerType' in item &&
       typeof item.analyzerType === 'string' &&
-      (!('status' in item) || typeof item.status === 'string'),
+      (!('status' in item) || typeof item.status === 'string') &&
+      (!('buildId' in item) || typeof item.buildId === 'string') &&
+      (!('lastCall' in item) || typeof item.lastCall === 'string') &&
+      (!('updatedAt' in item) || typeof item.updatedAt === 'string'),
   );
+};
+
+/**
+ * Validator function for item prop
+ * @param {Object} value - Object item of project tool coverage
+ * @returns {Boolean} True if all items have valid structure, false otherwise
+ */
+export const itemValidator = (value) => {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false;
+  }
+  if ('analyzerStatuses' in value) {
+    if (
+      !Array.isArray(value.analyzerStatuses) ||
+      !securityScannerValidator(value.analyzerStatuses)
+    ) {
+      return false;
+    }
+  }
+  if ('path' in value && typeof value.path !== 'string') {
+    return false;
+  }
+  return !('webUrl' in value && typeof value.webUrl !== 'string');
 };

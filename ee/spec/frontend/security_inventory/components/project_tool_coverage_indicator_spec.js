@@ -2,18 +2,22 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ProjectToolCoverageIndicator from 'ee/security_inventory/components/project_tool_coverage_indicator.vue';
 import { SCANNER_POPOVER_GROUPS, SCANNER_TYPES } from 'ee/security_inventory/constants';
 import ToolCoverageDetails from 'ee/security_inventory/components/tool_coverage_details.vue';
+import { subgroupsAndProjects } from 'ee_jest/security_inventory/mock_data';
 
 describe('ProjectToolCoverageIndicator', () => {
   let wrapper;
 
-  const projectName = 'my-project';
+  const mockProject = subgroupsAndProjects.data.group.projects.nodes[0];
+  const projectName = mockProject.name;
 
   const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMountExtended(ProjectToolCoverageIndicator, {
       propsData: {
-        projectName,
-        securityScanners: [],
-        ...props,
+        item: {
+          ...props,
+          ...mockProject,
+          analyzerStatuses: props.analyzerStatuses || mockProject.analyzerStatuses,
+        },
       },
     });
   };
@@ -59,9 +63,8 @@ describe('ProjectToolCoverageIndicator', () => {
         analyzerType: type,
         status: 'SUCCESS',
       }));
-
       createComponent({
-        props: { securityScanners: successfulScanners },
+        props: { analyzerStatuses: successfulScanners },
       });
       expect(findBadge(key).props('variant')).toBe('success');
       expect(findBadge(key).classes()).toContain('gl-border-transparent');
@@ -75,7 +78,7 @@ describe('ProjectToolCoverageIndicator', () => {
       }));
 
       createComponent({
-        props: { securityScanners: failedScanners },
+        props: { analyzerStatuses: failedScanners },
       });
       expect(findBadge(key).props('variant')).toBe('danger');
       expect(findBadge(key).classes()).toContain('gl-border-red-600');
@@ -84,7 +87,7 @@ describe('ProjectToolCoverageIndicator', () => {
 
     it('shows disabled styling when no scanners are present', () => {
       createComponent({
-        props: { securityScanners: [] },
+        props: { analyzerStatuses: [] },
       });
 
       expect(findBadge(key).props('variant')).toBe('muted');
@@ -98,7 +101,7 @@ describe('ProjectToolCoverageIndicator', () => {
       }));
 
       createComponent({
-        props: { securityScanners: disabledScanners },
+        props: { analyzerStatuses: disabledScanners },
       });
       expect(findBadge(key).props('variant')).toBe('muted');
       expect(findBadge(key).classes()).toContain('gl-border-dashed');
@@ -115,16 +118,15 @@ describe('ProjectToolCoverageIndicator', () => {
     it('passes correct data to tool coverage details component', () => {
       const testScanners = scannerTypes.map((type) => ({
         analyzerType: type,
-        status: 'SUCCESS',
       }));
       createComponent({
-        props: { securityScanners: testScanners },
+        props: { analyzerStatuses: testScanners },
       });
       expect(findToolCoverageDetails().props('isProject')).toBe(true);
     });
   });
 
-  describe('getRelevantStatuses method', () => {
+  describe('getRelevantScannerData method', () => {
     it('returns existing statuses when available', () => {
       const testScanners = [
         { analyzerType: 'SAST', status: 'SUCCESS' },
@@ -132,9 +134,9 @@ describe('ProjectToolCoverageIndicator', () => {
       ];
 
       createComponent({
-        props: { securityScanners: testScanners },
+        props: { analyzerStatuses: testScanners },
       });
-      const result = wrapper.vm.getRelevantStatuses(['SAST', 'DAST']);
+      const result = wrapper.vm.getRelevantScannerData(['SAST', 'DAST']);
       expect(result).toEqual([
         { analyzerType: 'SAST', status: 'SUCCESS' },
         { analyzerType: 'DAST', status: 'FAILED' },
@@ -143,9 +145,9 @@ describe('ProjectToolCoverageIndicator', () => {
 
     it('returns analyzer type only when status is not available', () => {
       createComponent({
-        props: { securityScanners: [] },
+        props: { analyzerStatuses: [] },
       });
-      const result = wrapper.vm.getRelevantStatuses(['SAST', 'DAST']);
+      const result = wrapper.vm.getRelevantScannerData(['SAST', 'DAST']);
       expect(result).toEqual([{ analyzerType: 'SAST' }, { analyzerType: 'DAST' }]);
     });
 
@@ -153,9 +155,9 @@ describe('ProjectToolCoverageIndicator', () => {
       const testScanners = [{ analyzerType: 'SAST', status: 'SUCCESS' }];
 
       createComponent({
-        props: { securityScanners: testScanners },
+        props: { analyzerStatuses: testScanners },
       });
-      const result = wrapper.vm.getRelevantStatuses(['SAST', 'DAST']);
+      const result = wrapper.vm.getRelevantScannerData(['SAST', 'DAST']);
       expect(result).toEqual([
         { analyzerType: 'SAST', status: 'SUCCESS' },
         { analyzerType: 'DAST' },
