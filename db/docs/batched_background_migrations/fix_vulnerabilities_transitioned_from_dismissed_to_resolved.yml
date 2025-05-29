@@ -7,5 +7,5 @@ description: >
 feature_category: vulnerability_management
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/190859
 milestone: '18.1'
-queued_migration_version: 00000000000000 # This migration was enqueued via rake task and can't be finalized.
-finalized_by: # version of the migration that finalized this BBM
+queued_migration_version: 20250509154604
+finalized_by: 00000000000000 # This migration was enqueued via rake task and can't be finalized.
