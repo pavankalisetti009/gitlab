@@ -496,6 +496,25 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
           expect(diff_note.note).to eq 'Second comment with suggestions'
           expect(diff_note.position.new_line).to eq(2)
         end
+
+        context 'when the exact line could not be found' do
+          let(:combined_review_answer) do
+            <<~RESPONSE
+            <review>
+            <comment file="UPDATED.md" priority="3" old_line="2" new_line="2">Second comment with suggestions</comment>
+            </review>
+            RESPONSE
+          end
+
+          it 'matches it using new_line only' do
+            completion.execute
+
+            diff_note = merge_request.notes.diff_notes.authored_by(duo_code_review_bot).sole
+
+            expect(diff_note.note).to eq 'Second comment with suggestions'
+            expect(diff_note.position.new_line).to eq(2)
+          end
+        end
       end
 
       context 'when the chat client decides to return contents outside of <review> tag' do
