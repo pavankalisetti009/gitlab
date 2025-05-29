@@ -9,7 +9,7 @@ export default {
   props: {
     limitedAccessReason: {
       type: String,
-      validator: (prop) => ['MANAGED_BY_RESELLER', 'RAMP_SUBSCRIPTION'].includes(prop),
+      validator: (prop) => ['MANAGED_BY_RESELLER'].includes(prop),
       required: true,
     },
   },

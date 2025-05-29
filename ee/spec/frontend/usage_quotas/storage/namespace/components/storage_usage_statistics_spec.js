@@ -26,7 +26,7 @@ const defaultApolloData = {
     communityPlan: false,
     canAddDuoProSeats: true,
   },
-  userActionAccess: { limitedAccessReason: 'RAMP_SUBSCRIPTION' },
+  userActionAccess: { limitedAccessReason: 'MANAGED_BY_RESELLER' },
 };
 
 describe('StorageUsageStatistics', () => {

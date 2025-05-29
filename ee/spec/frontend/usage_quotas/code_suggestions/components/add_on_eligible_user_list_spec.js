@@ -1128,50 +1128,13 @@ describe('Add On Eligible User List', () => {
 
         describe('when subscriptionPermissions succeeds', () => {
           describe.each`
-            canAddDuoProSeats | limitedAccessReason
-            ${false}          | ${'MANAGED_BY_RESELLER'}
-            ${false}          | ${'RAMP_SUBSCRIPTION'}
+            canAddDuoProSeats | limitedAccessReason           | primaryButtonText
+            ${true}           | ${'MANAGED_BY_RESELLER'}      | ${'Add seats'}
+            ${false}          | ${'MANAGED_BY_RESELLER'}      | ${''}
+            ${false}          | ${'SOME_OTHER_ACCESS_REASON'} | ${'Add seats'}
           `(
             'when canAddDuoProSeats=$canAddDuoProSeats and limitedAccessReason=$limitedAccessReason',
-            ({ canAddDuoProSeats, limitedAccessReason }) => {
-              beforeEach(async () => {
-                mockHandlerGetSubscriptionPermissionData = jest.fn().mockResolvedValue({
-                  data: {
-                    subscription: {
-                      canAddSeats: false,
-                      canRenew: false,
-                      communityPlan: false,
-                      canAddDuoProSeats,
-                    },
-                    userActionAccess: { limitedAccessReason },
-                  },
-                });
-
-                await triggerErrorAlertNoSeatsAvailable();
-              });
-
-              it('shows error, sales button and no add seats button', () => {
-                expect(findErrorAlert().props()).toMatchObject({
-                  dismissible: true,
-                  error: 'NO_SEATS_AVAILABLE',
-                  errorDictionary: ADD_ON_ERROR_DICTIONARY,
-                  primaryButtonLink: addDuoProHref,
-                  primaryButtonText: '',
-                  secondaryButtonLink: `${PROMO_URL}/solutions/code-suggestions/sales/`,
-                  secondaryButtonText: 'Contact sales',
-                });
-              });
-            },
-          );
-
-          describe.each`
-            canAddDuoProSeats | limitedAccessReason
-            ${true}           | ${'MANAGED_BY_RESELLER'}
-            ${true}           | ${'RAMP_SUBSCRIPTION'}
-            ${false}          | ${'SOME_OTHER_ACCESS_REASON'}
-          `(
-            'when canAddDuoProSeats=$canAddDuoProSeats and limitedAccessReason=$limitedAccessReason',
-            ({ canAddDuoProSeats, limitedAccessReason }) => {
+            ({ canAddDuoProSeats, limitedAccessReason, primaryButtonText }) => {
               beforeEach(async () => {
                 mockHandlerGetSubscriptionPermissionData = jest.fn().mockResolvedValue({
                   data: {
@@ -1194,7 +1157,7 @@ describe('Add On Eligible User List', () => {
                   error: 'NO_SEATS_AVAILABLE',
                   errorDictionary: ADD_ON_ERROR_DICTIONARY,
                   primaryButtonLink: addDuoProHref,
-                  primaryButtonText: 'Add seats',
+                  primaryButtonText,
                   secondaryButtonLink: `${PROMO_URL}/solutions/code-suggestions/sales/`,
                   secondaryButtonText: 'Contact sales',
                 });
