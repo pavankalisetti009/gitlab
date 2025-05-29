@@ -35634,6 +35634,7 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="projectalertmanagementhttpintegrationsid"></a>`id` | [`AlertManagementHttpIntegrationID`](#alertmanagementhttpintegrationid) | ID of the integration. |
+| <a id="projectalertmanagementhttpintegrationstypes"></a>`types` | [`[AlertManagementIntegrationType!]`](#alertmanagementintegrationtype) | Types of integrations to return. Default is `[HTTP]`. |
 
 ##### `Project.alertManagementIntegrations`
 
