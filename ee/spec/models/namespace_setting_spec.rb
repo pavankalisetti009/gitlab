@@ -746,6 +746,8 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
           duo_core_features_enabled
           duo_features_enabled
           lock_duo_features_enabled
+          web_based_commit_signing_enabled
+          lock_web_based_commit_signing_enabled
         ])
     end
   end

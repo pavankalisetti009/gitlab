@@ -35,6 +35,13 @@ module EE
           param_key: :disable_invite_members,
           user_policy: :owner_access
         )
+        validate_settings_param_for_root_group(
+          param_key: :web_based_commit_signing_enabled,
+          user_policy: :admin_group
+        )
+
+        handle_web_based_commit_signing_lock
+
         super
       end
 
@@ -59,6 +66,13 @@ module EE
 
         settings_params.delete(:service_access_tokens_expiration_enforced)
         false
+      end
+
+      def handle_web_based_commit_signing_lock
+        return unless settings_params.key?(:web_based_commit_signing_enabled)
+
+        settings_params[:lock_web_based_commit_signing_enabled] =
+          !!settings_params[:web_based_commit_signing_enabled]
       end
     end
   end
