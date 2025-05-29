@@ -13,7 +13,6 @@ import {
 // eslint-disable-next-line no-restricted-imports
 import { mapGetters, mapState } from 'vuex';
 import { s__ } from '~/locale';
-import { billingPlans, billingPlanNames } from '~/integrations/constants';
 import { defaultJiraIssueTypeId } from '../constants';
 
 export const i18n = {
@@ -129,9 +128,6 @@ export default {
         return projectKeyWarnings.changed;
       }
       return '';
-    },
-    ultimateBadgeText() {
-      return billingPlanNames[billingPlans.ULTIMATE];
     },
     initialJiraIssueType() {
       return this.jiraIssueTypes?.find(({ id }) => {
