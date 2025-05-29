@@ -25,6 +25,8 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
     it { is_expected.to belong_to(:default_open_status).class_name('WorkItems::Statuses::Custom::Status') }
     it { is_expected.to belong_to(:default_closed_status).class_name('WorkItems::Statuses::Custom::Status') }
     it { is_expected.to belong_to(:default_duplicate_status).class_name('WorkItems::Statuses::Custom::Status') }
+    it { is_expected.to belong_to(:created_by) }
+    it { is_expected.to belong_to(:updated_by) }
     it { is_expected.to have_many(:lifecycle_statuses) }
     it { is_expected.to have_many(:statuses).through(:lifecycle_statuses) }
     it { is_expected.to have_many(:type_custom_lifecycles) }
