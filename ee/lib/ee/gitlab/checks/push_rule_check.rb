@@ -10,7 +10,7 @@ module EE
           if ::Feature.enabled?(:parallel_push_checks, project, type: :ops)
             run_checks_in_parallel!
           else
-            run_checks_in_sequence!
+            check_tag_or_branch!
           end
         end
 
@@ -30,26 +30,6 @@ module EE
           nil
         end
 
-        # @return [Nil] returns nil unless an error is raised
-        # @raise [Gitlab::GitAccess::ForbiddenError] if check fails
-        def check_file_size!
-          PushRules::FileSizeCheck.new(changes_access).validate!
-
-          nil
-        end
-
-        # Run the checks one after the other.
-        #
-        # @return [Nil] returns nil unless an error is raised
-        # @raise [Gitlab::GitAccess::ForbiddenError] if any check fails
-        def run_checks_in_sequence!
-          check_tag_or_branch!
-
-          return if ::Feature.enabled?(:push_rule_file_size_limit, project)
-
-          check_file_size!
-        end
-
         # Run the checks in separate threads for performance benefits.
         #
         # The git hook environment is currently set in the current thread
@@ -64,12 +44,6 @@ module EE
 
           parallelize(git_env) do
             check_tag_or_branch!
-          end
-
-          unless ::Feature.enabled?(:push_rule_file_size_limit, project)
-            parallelize(git_env) do
-              check_file_size!
-            end
           end
 
           # Block whilst waiting for threads, however if one errors
