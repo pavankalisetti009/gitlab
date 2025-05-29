@@ -249,4 +249,46 @@ RSpec.describe ComplianceManagement::Projects::ComplianceViolation, type: :model
   describe 'enums' do
     it { is_expected.to define_enum_for(:status).with_values(detected: 0, in_review: 1, resolved: 2, dismissed: 3) }
   end
+
+  describe '.order_by_created_at_and_id' do
+    let_it_be(:violation1) { create(:project_compliance_violation, created_at: 1.day.ago) }
+    let_it_be(:violation2) { create(:project_compliance_violation, created_at: 2.days.ago) }
+    let_it_be(:violation3) { create(:project_compliance_violation) }
+
+    it 'returns an ActiveRecord::Relation' do
+      expect(described_class.order_by_created_at_and_id).to be_a(ActiveRecord::Relation)
+    end
+
+    context 'when direction is not provided' do
+      it 'sorts by updated_at in ascending order by default' do
+        expect(described_class.order_by_created_at_and_id).to eq(
+          [
+            violation2,
+            violation1,
+            violation3
+          ]
+        )
+      end
+    end
+
+    context 'when direction is desc' do
+      it 'sorts in descending order' do
+        expect(described_class.order_by_created_at_and_id(:desc)).to eq(
+          [
+            violation3,
+            violation1,
+            violation2
+          ]
+        )
+      end
+    end
+
+    context 'when direction is invalid' do
+      it 'raises error' do
+        expect do
+          described_class.order_by_created_at_and_id(:invalid)
+        end.to raise_error(ArgumentError, /Direction "invalid" is invalid/)
+      end
+    end
+  end
 end
