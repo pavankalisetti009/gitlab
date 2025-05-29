@@ -60,7 +60,8 @@ module Gitlab
           [
             accessible_owners_filter,
             eligible_approvers_filter,
-            qualified_groups_filter
+            qualified_groups_filter,
+            eligible_approver_groups_filter
           ]
         end
         strong_memoize_attr :funnel
@@ -95,6 +96,15 @@ module Gitlab
           )
         end
         strong_memoize_attr :qualified_groups_filter
+
+        def eligible_approver_groups_filter
+          upstream = qualified_groups_filter
+          EligibleApproverGroupsFilter.new(
+            project,
+            groups: upstream.output_groups,
+            group_names: upstream.valid_group_names
+          )
+        end
 
         def bubble_errors_for(line_number, references, filter)
           return if filter.valid_entry?(references)
