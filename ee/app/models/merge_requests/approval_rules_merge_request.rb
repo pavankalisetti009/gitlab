@@ -10,10 +10,19 @@ module MergeRequests
     validates :merge_request_id, uniqueness: { scope: :approval_rule_id }
     before_create :set_project_id
 
+    after_destroy :destroy_merge_request_approval_rule
+
     private
 
     def set_project_id
       self.project_id = merge_request.source_project.id
+    end
+
+    def destroy_merge_request_approval_rule
+      return unless approval_rule&.originates_from_merge_request? &&
+        approval_rule.merge_requests.empty?
+
+      approval_rule.destroy
     end
   end
 end
