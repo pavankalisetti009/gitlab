@@ -1,8 +1,13 @@
 <script>
-import { GlButton, GlIcon } from '@gitlab/ui';
+import { GlButton, GlIcon, GlLink } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
-import { SCANNER_POPOVER_LABELS } from 'ee/security_inventory/constants';
+import {
+  PROJECT_PIPELINE_JOB_PATH,
+  PROJECT_SECURITY_CONFIGURATION_PATH,
+  SCANNER_POPOVER_LABELS,
+} from 'ee/security_inventory/constants';
 import { securityScannerValidator } from 'ee/security_inventory/utils';
+import timeagoMixin from '~/vue_shared/mixins/timeago';
 
 // These statuses represent the situations that can be displayed in the icon
 const STATUS_CONFIG = {
@@ -16,7 +21,9 @@ export default {
   components: {
     GlButton,
     GlIcon,
+    GlLink,
   },
+  mixins: [timeagoMixin],
   props: {
     securityScanner: {
       type: Array,
@@ -28,24 +35,40 @@ export default {
       type: Boolean,
       required: true,
     },
+    webUrl: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   computed: {
     scannerItems() {
       return this.securityScanner.map((scanner) => ({
         title: SCANNER_POPOVER_LABELS[scanner.analyzerType] || __('Status'),
-        status: scanner.status,
-        analyzerType: scanner.analyzerType,
+        ...scanner,
       }));
     },
-    // TODO: to expose when we got the relevant data from the API
-    // lastScan() {
-    //   // TODO: Implement last scan logic here
-    //   return false;
-    // },
+    manageConfigurationPath() {
+      return this.webUrl ? `${this.webUrl}${PROJECT_SECURITY_CONFIGURATION_PATH}` : '#';
+    },
   },
   methods: {
     getStatusConfig(status) {
       return STATUS_CONFIG[status] || STATUS_CONFIG.DEFAULT;
+    },
+    pipelineJobPath(buildIdPath) {
+      let buildId = buildIdPath;
+      if (typeof buildIdPath === 'string') {
+        const lastIndexOf = buildIdPath.lastIndexOf('/');
+        buildId = buildIdPath.substring(lastIndexOf + 1);
+      }
+      return this.webUrl ? `${this.webUrl}${PROJECT_PIPELINE_JOB_PATH}/${buildId}` : '#';
+    },
+    getLastScan(lastCall) {
+      return this.timeFormatted(lastCall);
+    },
+    getDateUpdated(updatedAt) {
+      return updatedAt ? `${__('Date updated')} ${this.timeFormatted(updatedAt)}` : '';
     },
   },
   i18n: {
@@ -57,7 +80,12 @@ export default {
 <template>
   <div>
     <div class="gl-m-2">
-      <div v-for="(item, index) in scannerItems" :key="index" class="gl-my-2">
+      <div
+        v-for="(item, index) in scannerItems"
+        :key="index"
+        class="gl-my-2"
+        :class="{ 'gl-mt-4': index > 0 }"
+      >
         <span class="gl-font-bold" :data-testid="`scanner-title-${index}`">{{ item.title }}:</span>
         <gl-icon
           :name="getStatusConfig(item.status).name"
@@ -67,14 +95,23 @@ export default {
         <span :data-testid="`scanner-status-${index}`">
           {{ getStatusConfig(item.status).text }}
         </span>
-      </div>
 
-      <!--      TODO: to expose when we got the relevant data from the API-->
-      <!--      <div class="gl-my-2" data-testid="last-scan">-->
-      <!--        <span class="gl-font-bold">{{ __('Last scan:') }}</span>-->
-      <!--        <span v-if="lastScan">{{ lastScan }}</span>-->
-      <!--        <gl-icon v-else name="dash" />-->
-      <!--      </div>-->
+        <div class="gl-my-2" :data-testid="`last-scan-${index}`">
+          <span class="gl-font-bold">{{ __('Last scan') }}:</span>
+          <span v-if="item.lastCall">{{ getLastScan(item.lastCall) }}</span>
+          <gl-icon v-else name="dash" variant="default" :size="12" />
+        </div>
+
+        <div class="gl-my-2" :data-testid="`pipeline-job-${index}`">
+          <span class="gl-font-bold" :data-testid="`pipeline-job-title-${index}`"
+            >{{ __('Pipeline job') }}:</span
+          >
+          <gl-link v-if="item.buildId" :href="pipelineJobPath(item.buildId)"
+            >#{{ item.buildId }}</gl-link
+          >
+          <gl-icon v-else name="dash" variant="default" :size="12" />
+        </div>
+      </div>
     </div>
 
     <gl-button
@@ -83,7 +120,12 @@ export default {
       variant="confirm"
       class="gl-my-3 gl-w-full"
       size="small"
+      :href="manageConfigurationPath"
       >{{ $options.i18n.vulnerabilityReportButton }}</gl-button
     >
+
+    <div v-if="scannerItems[0].updatedAt" class="gl-my-2" data-testid="date-updated">
+      {{ getDateUpdated(scannerItems[0].updatedAt) }}
+    </div>
   </div>
 </template>

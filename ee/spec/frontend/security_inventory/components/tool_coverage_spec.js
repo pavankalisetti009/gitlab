@@ -41,7 +41,6 @@ describe('ToolCoverageCell', () => {
     wrapper = createComponent({ item: mockProject });
 
     const indicator = findProjectToolCoverageIndicator();
-    expect(indicator.props('securityScanners')).toBe(mockProject.analyzerStatuses);
-    expect(indicator.props('projectName')).toBe(mockProject.name);
+    expect(indicator.props('item')).toBe(mockProject);
   });
 });
