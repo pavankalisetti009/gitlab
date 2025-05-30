@@ -109,6 +109,7 @@ export const getMockSubscriptionData = ({
   seatsInUse = 0,
   maxSeatsUsed = 0,
   seatsOwed = 0,
+  trial = false,
   trialEndsOn = null,
 } = {}) => ({
   subscription: {
@@ -120,7 +121,7 @@ export const getMockSubscriptionData = ({
       __typename: 'Plan',
       code,
       name,
-      trial: false,
+      trial,
       auto_renew: false,
       upgradable: false,
       exclude_guests: false,
