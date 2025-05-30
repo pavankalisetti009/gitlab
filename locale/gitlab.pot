@@ -29197,6 +29197,9 @@ msgstr ""
 msgid "Go to definition"
 msgstr ""
 
+msgid "Go to docs"
+msgstr ""
+
 msgid "Go to environments"
 msgstr ""
 
