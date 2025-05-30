@@ -108,6 +108,20 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
           expect(service.message).to eq(_('Compliance requirement status successfully refreshed.'))
         end
 
+        context 'when the status counts are same as previous ones' do
+          before do
+            requirement_status.update!(pass_count: 1, fail_count: 1, pending_count: 0)
+          end
+
+          it 'updates the updated_at timestamp' do
+            expect { described_class.new(requirement_status).execute }
+              .to change { requirement_status.reload.updated_at }
+              .and not_change { requirement_status.reload.pass_count }
+                     .and not_change { requirement_status.reload.fail_count }
+                            .and not_change { requirement_status.reload.pending_count }
+          end
+        end
+
         context 'when update fails' do
           before do
             allow(requirement_status).to receive(:update).and_return(false)

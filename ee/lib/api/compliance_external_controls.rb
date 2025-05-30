@@ -115,7 +115,8 @@ module API
           current_user: user,
           control: control,
           project: project,
-          status_value: params[:status]
+          status_value: params[:status],
+          params: { refresh_requirement_status: true }
         ).execute
 
         if status.success?

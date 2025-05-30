@@ -76,24 +76,6 @@ module ComplianceManagement
         end
       end
 
-      def update_status_count(control_old_status, control_new_status)
-        return unless ["pass", "pending", "fail", nil].include?(control_old_status)
-        return unless %w[pass pending fail].include?(control_new_status)
-
-        return if control_old_status == control_new_status
-
-        new_count_field = "#{control_new_status}_count"
-
-        if control_old_status.present?
-          old_count_field = "#{control_old_status}_count"
-          old_field_decrement = self[old_count_field] > 0 ? -1 : 0
-
-          update_counters({ new_count_field => 1, old_count_field => old_field_decrement })
-        else
-          update_counters({ new_count_field => 1 })
-        end
-      end
-
       def control_status_values
         control_statuses
           .limit(ComplianceManagement::ComplianceFramework::ComplianceRequirementsControl::
