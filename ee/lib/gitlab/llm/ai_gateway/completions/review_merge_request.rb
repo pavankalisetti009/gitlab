@@ -81,7 +81,13 @@ module Gitlab
 
           override :prompt_version
           def prompt_version
-            '1.0.0' # Claude 3.7 Sonnet
+            version = '1.0.0' # Claude 3.7 Sonnet
+
+            if Feature.enabled?(:duo_code_review_claude_4_0_rollout, user)
+              version = '1.1.0' # Claude 4.0 Sonnet
+            end
+
+            version
           end
 
           def user
