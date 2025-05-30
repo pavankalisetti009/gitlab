@@ -4,6 +4,7 @@ import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { __ } from '~/locale';
 import AiCommonSettings from '../components/ai_common_settings.vue';
+import DuoWorkflowSettingsForm from '../components/duo_workflow_settings_form.vue';
 
 const EarlyAccessProgramBanner = () => import('../components/early_access_program_banner.vue');
 
@@ -12,6 +13,7 @@ export default {
   components: {
     AiCommonSettings,
     EarlyAccessProgramBanner,
+    DuoWorkflowSettingsForm,
   },
   i18n: {
     successMessage: __('Group was successfully updated.'),
@@ -19,7 +21,12 @@ export default {
       'An error occurred while retrieving your settings. Reload the page to try again.',
     ),
   },
-  inject: ['showEarlyAccessBanner', 'onGeneralSettingsPage'],
+  inject: [
+    'showEarlyAccessBanner',
+    'onGeneralSettingsPage',
+    'duoWorkflowAvailable',
+    'duoWorkflowMcpEnabled',
+  ],
   provide: {
     isSaaS: true,
   },
@@ -34,7 +41,16 @@ export default {
       required: true,
     },
   },
-  data: () => ({ isLoading: false }),
+  data() {
+    return {
+      duoWorkflowMcp: this.duoWorkflowMcpEnabled,
+    };
+  },
+  computed: {
+    hasFormChanged() {
+      return this.duoWorkflowMcpEnabled !== this.duoWorkflowMcp;
+    },
+  },
   methods: {
     async updateSettings({
       duoAvailability,
@@ -43,12 +59,13 @@ export default {
       promptCacheEnabled,
     }) {
       try {
-        this.isLoading = true;
-
         const input = {
           duo_availability: duoAvailability,
           experiment_features_enabled: experimentFeaturesEnabled,
           model_prompt_cache_enabled: promptCacheEnabled,
+          ai_settings_attributes: {
+            duo_workflow_mcp_enabled: this.duoWorkflowMcp,
+          },
         };
 
         if (!this.onGeneralSettingsPage) {
@@ -70,17 +87,26 @@ export default {
           captureError: true,
           error,
         });
-      } finally {
-        this.isLoading = false;
       }
+    },
+    onDuoWorkflowFormChanged(value) {
+      this.duoWorkflowMcp = value;
     },
   },
 };
 </script>
 <template>
-  <ai-common-settings @submit="updateSettings">
+  <ai-common-settings :has-parent-form-changed="hasFormChanged" @submit="updateSettings">
     <template #ai-common-settings-top>
       <early-access-program-banner v-if="showEarlyAccessBanner" />
+    </template>
+
+    <template #ai-common-settings-bottom>
+      <duo-workflow-settings-form
+        v-if="duoWorkflowAvailable"
+        :is-mcp-enabled="duoWorkflowMcp"
+        @change="onDuoWorkflowFormChanged"
+      />
     </template>
   </ai-common-settings>
 </template>
