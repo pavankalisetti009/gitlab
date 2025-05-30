@@ -10,7 +10,8 @@ module EE
 
           prepended do
             field :feature_flags, ::Types::FeatureFlagType.connection_type, null: true,
-              description: 'Feature flags associated with the work item.'
+              description: 'Feature flags associated with the work item.',
+              complexity: 10
           end
 
           def feature_flags
