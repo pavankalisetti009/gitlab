@@ -877,13 +877,13 @@ export const statusesInfo = {
   },
   project_user_defined_variables_restricted_to_maintainers: {
     description: s__(
-      'ComplianceStandardsAdherence|Restricts creation of project variables to maintainers only.',
+      'ComplianceStandardsAdherence|User-defined CI/CD variables restricted to maintainers.',
     ),
     fixes: [
       {
         title: s__('ComplianceStandardsAdherence|Restrict variable creation'),
         description: s__(
-          'ComplianceStandardsAdherence|Configure project settings to allow only maintainers to create CI/CD variables.',
+          'ComplianceStandardsAdherence|Configure settings to ensures that only users with the maintainer role or higher can pass user-defined variables when triggering pipelines.',
         ),
         linkTitle: __('Project CI/CD variables'),
         ultimate: false,

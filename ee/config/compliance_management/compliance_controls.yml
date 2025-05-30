@@ -411,7 +411,7 @@ controls:
     field_method: merge_requests_approval_rules_prevent_editing?
     enum_value: 53
   project_user_defined_variables_restricted_to_maintainers:
-    name: Project user defined variables restricted to maintainers
+    name: User-defined CI/CD variables restricted to maintainers
     type: boolean
     compliant_value: true
     compliant_operator: '='
