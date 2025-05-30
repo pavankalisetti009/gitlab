@@ -165,52 +165,56 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusWorker, feature_categ
       end
 
       context 'when there are multiple kinds of token' do
-        let(:personal_access_token) { create(:personal_access_token) }
-        let(:personal_access_token_routable) { create(:personal_access_token) }
-        let(:deploy_token) { create(:deploy_token) }
-
-        let_it_be(:personal_access_token_routable_finding) do
-          create(:vulnerabilities_finding, :with_secret_detection, pipeline: pipeline)
+        let(:token_test_cases) do
+          [
+            {
+              factory: [:personal_access_token],
+              identifier: 'gitlab_personal_access_token'
+            },
+            {
+              factory: [:personal_access_token],
+              identifier: 'gitlab_personal_access_token_routable'
+            },
+            {
+              factory: [:deploy_token],
+              identifier: 'gitlab_deploy_token'
+            },
+            {
+              factory: [:ci_runner],
+              identifier: 'gitlab_runner_auth_token'
+            },
+            {
+              factory: [:ci_runner, :project, { projects: [project] }],
+              identifier: 'gitlab_runner_auth_token_routable'
+            }
+          ]
         end
 
-        let_it_be(:deploy_token_finding) do
-          create(:vulnerabilities_finding, :with_secret_detection, pipeline: pipeline)
+        let(:tokens_and_findings) do
+          token_test_cases.map do |test_case|
+            {
+              token: create(*test_case[:factory]), # rubocop:disable Rails/SaveBang -- Splat operator causes false positive
+              finding: create(:vulnerabilities_finding, :with_secret_detection, pipeline: pipeline),
+              identifier: test_case[:identifier]
+            }
+          end
         end
 
         before do
-          # Update PAT finding
-          raw_personal_access_token = personal_access_token.token
-          metadata = ::Gitlab::Json.parse(finding.raw_metadata)
-          metadata['raw_source_code_extract'] = raw_personal_access_token
-          metadata['identifiers'].first['value'] = "gitlab_personal_access_token"
-          finding.update!(raw_metadata: metadata.to_json)
-
-          # Update PAT Routable finding
-          raw_personal_access_token_routable = personal_access_token_routable.token
-          metadata = ::Gitlab::Json.parse(personal_access_token_routable_finding.raw_metadata)
-          metadata['raw_source_code_extract'] = raw_personal_access_token_routable
-          metadata['identifiers'].first['value'] = "gitlab_personal_access_token_routable"
-          personal_access_token_routable_finding.update!(raw_metadata: metadata.to_json)
-
-          # Update deploy token finding
-          raw_deploy_token = deploy_token.token
-          metadata = ::Gitlab::Json.parse(deploy_token_finding.raw_metadata)
-          metadata['raw_source_code_extract'] = raw_deploy_token
-          metadata['identifiers'].first['value'] = "gitlab_deploy_token"
-          deploy_token_finding.update!(raw_metadata: metadata.to_json)
+          tokens_and_findings.each do |item|
+            metadata = ::Gitlab::Json.parse(item[:finding].raw_metadata)
+            metadata['raw_source_code_extract'] = item[:token].token
+            metadata['identifiers'].first['value'] = item[:identifier]
+            item[:finding].update!(raw_metadata: metadata.to_json)
+          end
         end
 
         it 'updates each token with the appropriate status' do
           worker.perform(pipeline.id)
-          expect(Vulnerabilities::FindingTokenStatus.count).to eq(3)
 
-          finding.reload
-          personal_access_token_routable_finding.reload
-          deploy_token_finding.reload
-
-          expect(finding.finding_token_status.status).to eq('active')
-          expect(personal_access_token_routable_finding.finding_token_status.status).to eq('active')
-          expect(deploy_token_finding.finding_token_status.status).to eq('active')
+          tokens_and_findings.each do |item|
+            expect(item[:finding].reload.finding_token_status.status).to eq('active')
+          end
         end
       end
 
