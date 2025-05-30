@@ -6,9 +6,9 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
 
-  let_it_be(:task_work_item) { create(:work_item, :task, project: project, namespace: group) }
-  let_it_be(:issue_work_item) { create(:work_item, :issue, project: project, namespace: group) }
-  let_it_be(:epic_work_item) { create(:work_item, :epic, project: project, namespace: group) }
+  let_it_be(:task_work_item) { create(:work_item, :task, project: project) }
+  let_it_be(:issue_work_item) { create(:work_item, :issue, project: project) }
+  let_it_be(:epic_work_item) { create(:work_item, :epic, project: project) }
 
   let(:work_item) { task_work_item }
 
@@ -233,35 +233,33 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
         let_it_be(:expected_error_key) { :custom_status }
         let_it_be(:expected_error_message) { 'is not allowed for this lifecycle' }
 
-        subject(:current_status) do
-          build_stubbed(:work_item_current_status, :custom, work_item: work_item)
+        let_it_be(:lifecycle) do
+          create(:work_item_custom_lifecycle, namespace: group, default_open_status: custom_status)
         end
 
         before do
+          create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item_type,
+            namespace: namespace)
+
           allow(current_status).to receive(:custom_status_enabled?).and_call_original
         end
 
         context 'when custom status is allowed for lifecycle' do
-          let_it_be(:lifecycle) do
-            create(:work_item_custom_lifecycle, namespace: group, default_open_status: custom_status)
-          end
-
           subject(:current_status) do
             build_stubbed(:work_item_current_status, :custom, custom_status: custom_status, work_item: work_item)
           end
 
           it 'is valid' do
-            create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item_type,
-              namespace: namespace)
-
             expect(current_status).to be_valid
           end
         end
 
         context 'when custom status is not allowed for lifecycle' do
-          it 'is invalid' do
-            create(:work_item_type_custom_lifecycle, work_item_type: work_item_type, namespace: namespace)
+          subject(:current_status) do
+            build_stubbed(:work_item_current_status, :custom, work_item: work_item)
+          end
 
+          it 'is invalid' do
             expect(current_status).to be_invalid
             expect(current_status.errors[expected_error_key]).to include(expected_error_message)
           end
@@ -330,6 +328,22 @@ RSpec.describe WorkItems::Statuses::CurrentStatus, feature_category: :team_plann
     context 'with system-defined status' do
       it 'returns system-defined status' do
         expect(current_status.status).to eq(current_status.system_defined_status)
+      end
+
+      context 'when custom lifecycle is present' do
+        let!(:lifecycle) do
+          create(:work_item_custom_lifecycle, namespace: group, work_item_types: [work_item.work_item_type])
+        end
+
+        let!(:mapped_custom_status) do
+          lifecycle.statuses.find_by(
+            converted_from_system_defined_status_identifier: current_status.system_defined_status_id
+          )
+        end
+
+        it 'returns the custom status mapped to the system-defined status' do
+          expect(current_status.status).to eq(mapped_custom_status)
+        end
       end
     end
 

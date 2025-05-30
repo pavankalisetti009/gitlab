@@ -80,23 +80,22 @@ module EE
       def custom_lifecycle_for(namespace_id)
         return unless namespace_id
 
-        lifecycle = ::WorkItems::TypeCustomLifecycle.find_by(
-          work_item_type_id: id,
-          namespace_id: namespace_id
-        )&.lifecycle
-
-        return unless lifecycle
-
-        ::WorkItems::Statuses::Custom::Lifecycle
-          .includes(lifecycle_statuses: :status)
-          .find_by(id: lifecycle.id)
+        ::Gitlab::SafeRequestStore.fetch(['WorkItemTypeCustomLifecycle', id, namespace_id]) do
+          ::WorkItems::Statuses::Custom::Lifecycle
+            .includes(:statuses)
+            .joins(:type_custom_lifecycles)
+            .find_by(
+              namespace_id: namespace_id,
+              type_custom_lifecycles: { work_item_type_id: id, namespace_id: namespace_id }
+            )
+        end
       end
-
-      private
 
       def system_defined_lifecycle
         ::WorkItems::Statuses::SystemDefined::Lifecycle.of_work_item_base_type(base_type.to_sym)
       end
+
+      private
 
       def unlicensed_widget_classes(resource_parent)
         LICENSED_WIDGETS.flat_map do |licensed_feature, widget_class|

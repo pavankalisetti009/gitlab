@@ -786,4 +786,143 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       end
     end
   end
+
+  describe '#status_with_fallback' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+
+    let_it_be(:work_item, reload: true) { create(:work_item, :task, project: project) }
+
+    before do
+      stub_licensed_features(work_item_status: true)
+    end
+
+    subject(:status_with_fallback) { work_item.status_with_fallback }
+
+    context 'with system-defined lifecycle' do
+      let(:lifecycle) do
+        WorkItems::Statuses::SystemDefined::Lifecycle.of_work_item_base_type(work_item.work_item_type.base_type)
+      end
+
+      context 'when current_status exists' do
+        before do
+          create(:work_item_current_status,
+            work_item: work_item,
+            system_defined_status_id: lifecycle.default_open_status_id
+          )
+        end
+
+        it 'returns the current status' do
+          expect(status_with_fallback.class).to eq(WorkItems::Statuses::SystemDefined::Status)
+          expect(status_with_fallback.id).to eq(lifecycle.default_open_status_id)
+        end
+      end
+
+      context 'when current_status does not exist' do
+        context 'when state is open' do
+          before do
+            work_item.state = :opened
+          end
+
+          it 'returns the default open status' do
+            expect(status_with_fallback.class).to eq(WorkItems::Statuses::SystemDefined::Status)
+            expect(status_with_fallback.id).to eq(lifecycle.default_open_status_id)
+          end
+        end
+
+        context 'when state is closed' do
+          before do
+            work_item.state = :closed
+          end
+
+          it 'returns the default closed status' do
+            expect(status_with_fallback.class).to eq(WorkItems::Statuses::SystemDefined::Status)
+            expect(status_with_fallback.id).to eq(lifecycle.default_closed_status_id)
+          end
+
+          context 'when work item is a duplicate' do
+            before do
+              work_item.duplicated_to = build_stubbed(:work_item)
+            end
+
+            it 'returns the default duplicated status' do
+              expect(status_with_fallback.class).to eq(WorkItems::Statuses::SystemDefined::Status)
+              expect(status_with_fallback.id).to eq(lifecycle.default_duplicate_status_id)
+            end
+          end
+        end
+      end
+    end
+
+    context 'with custom lifecycle' do
+      let!(:lifecycle) do
+        create(:work_item_custom_lifecycle, namespace: group, work_item_types: [work_item.work_item_type])
+      end
+
+      context 'when current_status exists with custom_status_id' do
+        before do
+          create(:work_item_current_status,
+            work_item: work_item,
+            custom_status_id: lifecycle.default_open_status_id
+          )
+        end
+
+        it 'returns the current custom status' do
+          expect(status_with_fallback.class).to eq(WorkItems::Statuses::Custom::Status)
+          expect(status_with_fallback.id).to eq(lifecycle.default_open_status_id)
+        end
+      end
+
+      context 'when current_status exists with system_defined_status_id' do
+        before do
+          # Skip validations since we are simulating an old record
+          # when the namespace still used the system defined lifecycle
+          build(:work_item_current_status,
+            work_item: work_item,
+            system_defined_status_id: lifecycle.default_open_status.converted_from_system_defined_status_identifier
+          ).save!(validate: false)
+        end
+
+        it 'returns the converted custom status' do
+          expect(status_with_fallback.class).to eq(WorkItems::Statuses::Custom::Status)
+          expect(status_with_fallback.id).to eq(lifecycle.default_open_status_id)
+        end
+      end
+
+      context 'when current_status does not exist' do
+        context 'when state is open' do
+          before do
+            work_item.state = :opened
+          end
+
+          it 'returns the converted default open status' do
+            expect(status_with_fallback.class).to eq(WorkItems::Statuses::Custom::Status)
+            expect(status_with_fallback.id).to eq(lifecycle.default_open_status_id)
+          end
+        end
+
+        context 'when state is closed' do
+          before do
+            work_item.state = :closed
+          end
+
+          it 'returns the converted default closed status' do
+            expect(status_with_fallback.class).to eq(WorkItems::Statuses::Custom::Status)
+            expect(status_with_fallback.id).to eq(lifecycle.default_closed_status_id)
+          end
+
+          context 'when work item is a duplicate' do
+            before do
+              work_item.duplicated_to = build_stubbed(:work_item)
+            end
+
+            it 'returns the converted default duplicated status' do
+              expect(status_with_fallback.class).to eq(WorkItems::Statuses::Custom::Status)
+              expect(status_with_fallback.id).to eq(lifecycle.default_duplicate_status_id)
+            end
+          end
+        end
+      end
+    end
+  end
 end

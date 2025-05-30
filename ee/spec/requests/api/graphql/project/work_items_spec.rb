@@ -394,11 +394,12 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
 
         context 'with current statuses' do
           let_it_be(:work_item_type) { create(:work_item_type, :task) }
-          let_it_be(:custom_status) { create(:work_item_custom_status) }
 
           let_it_be(:lifecycle) do
-            create(:work_item_custom_lifecycle, namespace: namespace, default_open_status: custom_status)
+            create(:work_item_custom_lifecycle, namespace: namespace)
           end
+
+          let_it_be(:custom_status) { lifecycle.default_open_status }
 
           context 'with system-defined status' do
             let_it_be(:current_status) { create(:work_item_current_status, :system_defined, work_item: work_item_1) }
@@ -446,7 +447,11 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
 
           context 'with mixed statuses' do
             it 'returns correct status data for each work item' do
-              create(:work_item_current_status, :system_defined, work_item: work_item_1)
+              create(:work_item_current_status,
+                work_item: work_item_1,
+                system_defined_status_id:
+                  lifecycle.default_closed_status.converted_from_system_defined_status_identifier
+              )
 
               create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item_type,
                 namespace: namespace)
@@ -459,7 +464,7 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
               expect(widgets_data).to include(
                 hash_including(
                   'status' => hash_including(
-                    'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1'
+                    'id' => "gid://gitlab/WorkItems::Statuses::Custom::Status/#{lifecycle.default_closed_status_id}"
                   )
                 ),
                 hash_including(
@@ -468,7 +473,9 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
                   )
                 ),
                 hash_including(
-                  'status' => nil
+                  'status' => hash_including(
+                    'id' => "gid://gitlab/WorkItems::Statuses::Custom::Status/#{lifecycle.default_open_status_id}"
+                  )
                 )
               )
             end
@@ -581,12 +588,18 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
         end
 
         context 'without current statuses' do
-          it 'does not return status data' do
+          it 'returns default status data' do
             post_graphql(query, current_user: current_user)
 
             expect(widgets_data).to include(
               hash_including(
-                'status' => nil
+                'status' => {
+                  'id' => 'gid://gitlab/WorkItems::Statuses::SystemDefined::Status/1',
+                  'name' => 'To do',
+                  'iconName' => 'status-waiting',
+                  'color' => "#737278",
+                  'position' => 0
+                }
               )
             )
           end

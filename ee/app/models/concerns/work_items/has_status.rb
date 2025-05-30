@@ -13,6 +13,23 @@ module WorkItems
         # See https://gitlab.com/gitlab-org/gitlab/-/issues/520311
         joins(:current_status).where(work_item_current_statuses: { system_defined_status_id: status.id })
       }
+
+      def status_with_fallback
+        if current_status.nil?
+          lifecycle = work_item_type.system_defined_lifecycle
+          default_status = if open?
+                             lifecycle.default_open_status
+                           elsif duplicated?
+                             lifecycle.default_duplicate_status
+                           else
+                             lifecycle.default_closed_status
+                           end
+
+          build_current_status(system_defined_status: default_status)
+        end
+
+        current_status.status
+      end
     end
   end
 end
