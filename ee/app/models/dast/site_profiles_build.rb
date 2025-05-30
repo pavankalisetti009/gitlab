@@ -11,6 +11,6 @@ module Dast
 
     validates :ci_build_id, :dast_site_profile_id, presence: true
 
-    alias_attribute :profile, :dast_site_profile
+    alias_method :profile, :dast_site_profile
   end
 end
