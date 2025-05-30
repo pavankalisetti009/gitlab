@@ -7,9 +7,11 @@ module QA
         create(:project, :with_readme, name: 'secret-push-project', description: 'Secret Push Protection Project')
       end
 
-      let(:test_token) { Runtime::User::Store.test_user.create_personal_access_token!(use_for_api_client: false).token }
+      let(:test_token) { Runtime::User::Store.test_user.create_personal_access_token!(use_for_api_client: false) }
+      let(:test_token_text) { test_token.token }
 
       before do
+        test_token.revoke!
         enable_secret_protection unless Runtime::Env.running_on_dot_com?
         enable_project_secret_protection
       end
@@ -22,7 +24,7 @@ module QA
           repository.default_branch = project.default_branch
           repository.clone
           repository.use_default_identity
-          repository.commit_file("new-file", test_token, "Add token file")
+          repository.commit_file("new-file", test_token_text, "Add token file")
           result = repository.push_changes(raise_on_failure: false, max_attempts: 1)
 
           expect(result).to match(expected_error_pattern)
@@ -58,7 +60,7 @@ module QA
           # Create a new file with the test token
           Page::Project::WebIDE::VSCode.perform do |ide|
             ide.wait_for_ide_to_load
-            ide.add_text_to_a_file(file_name, "Secret token: #{test_token}")
+            ide.add_text_to_a_file(file_name, "Secret token: #{test_token_text}")
 
             expect(ide.commit_blocked_by_secret_detection(file_name)).to be true
           end
