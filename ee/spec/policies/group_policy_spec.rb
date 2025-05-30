@@ -4820,6 +4820,85 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'admin_duo_workflow' do
+    let(:policy) { :admin_duo_workflow }
+
+    context 'when the feature flag is disabled' do
+      before do
+        stub_feature_flags(duo_workflow: false)
+      end
+
+      where(:role) do
+        %i[guest planner reporter developer maintainer owner]
+      end
+
+      with_them do
+        let(:current_user) { public_send(role) }
+
+        it { is_expected.to be_disallowed(policy) }
+      end
+    end
+
+    context 'when the feature flag is enabled' do
+      context 'when duo_features is not enabled for the group' do
+        before do
+          group.namespace_settings.update!(duo_features_enabled: false)
+        end
+
+        where(:role) do
+          %i[guest planner reporter developer maintainer owner]
+        end
+
+        with_them do
+          let(:current_user) { public_send(role) }
+
+          it { is_expected.to be_disallowed(policy) }
+        end
+      end
+
+      context 'when duo_features is enabled for the group' do
+        before do
+          group.namespace_settings.update!(duo_features_enabled: true)
+
+          allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(true)
+        end
+
+        context 'when stage check says workflow is available' do
+          where(:role, :allowed) do
+            :guest      | false
+            :planner    | false
+            :reporter   | false
+            :developer  | false
+            :maintainer | false
+            :owner      | true
+          end
+
+          with_them do
+            let(:current_user) { public_send(role) }
+
+            it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+          end
+        end
+
+        context 'when stage check says workflow is not available' do
+          before do
+            allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(false)
+          end
+
+          where(:role) do
+            %i[guest planner reporter developer maintainer owner]
+          end
+
+          with_them do
+            let(:current_user) { public_send(role) }
+
+            it { is_expected.to be_disallowed(policy) }
+          end
+        end
+      end
+    end
+  end
+
   describe 'security inventory' do
     context 'when security inventory is available' do
       before do
