@@ -10,7 +10,6 @@ module EE
         EE_SUPPORTED_EVENTS = %w[vulnerability].freeze
 
         ::Integration.prop_accessor(*EE_SUPPORTED_EVENTS.map { |event| "#{event}_channel" })
-        ::Integrations::Instance::Integration.prop_accessor(*EE_SUPPORTED_EVENTS.map { |event| "#{event}_channel" })
 
         class_methods do
           extend ::Gitlab::Utils::Override

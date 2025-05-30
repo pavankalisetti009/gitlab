@@ -62,7 +62,7 @@ export default {
           icon: 'group',
           title: __('Group'),
           type: FRAMEWORKS_FILTER_TYPE_GROUP,
-          entityType: 'group',
+          entityType: 'groupPath',
           token: GroupToken,
           fullPath: this.groupPath,
           skipIdPrefix: true,

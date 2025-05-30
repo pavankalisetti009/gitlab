@@ -55,5 +55,13 @@ RSpec.describe CloudConnector::DataLoaderFactory, feature_category: :cloud_conne
 
       include_examples 'returns DatabaseDataLoader'
     end
+
+    context 'when License.current is nil' do
+      before do
+        allow(License).to receive(:current).and_return(nil)
+      end
+
+      include_examples 'returns DatabaseDataLoader'
+    end
   end
 end

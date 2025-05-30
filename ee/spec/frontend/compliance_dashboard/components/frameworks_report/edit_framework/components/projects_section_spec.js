@@ -1035,7 +1035,7 @@ describe('Projects section', () => {
     it('handles group filters correctly', async () => {
       const newFilters = [
         {
-          type: 'group',
+          type: 'groupPath',
           value: { data: 'test-group', operator: 'matches' },
         },
       ];
@@ -1066,7 +1066,7 @@ describe('Projects section', () => {
           value: { data: 'excluded-framework', operator: '!=' },
         },
         {
-          type: 'group',
+          type: 'groupPath',
           value: { data: 'test-group', operator: 'matches' },
         },
       ];

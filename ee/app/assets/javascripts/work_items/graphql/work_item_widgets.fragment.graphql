@@ -153,6 +153,7 @@ fragment WorkItemWidgets on WorkItemWidget {
     }
   }
   ... on WorkItemWidgetCrmContacts {
+    contactsAvailable
     contacts {
       nodes {
         id
