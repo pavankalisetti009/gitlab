@@ -6,7 +6,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::VolumeComponentIn
   include_context 'with remote development shared fixtures'
 
   let(:input_processed_devfile) do
-    read_devfile("example.project-cloner-inserted-devfile.yaml.erb")
+    read_devfile("example.internal-poststart-commands-inserted-devfile.yaml.erb")
   end
 
   let(:expected_processed_devfile) do

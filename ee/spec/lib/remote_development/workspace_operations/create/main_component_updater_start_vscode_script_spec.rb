@@ -7,7 +7,7 @@ require "fileutils"
 RSpec.describe "Remote Development VSCode Startup Script", feature_category: :workspaces do
   include_context "with constant modules"
 
-  let(:script_content) { RemoteDevelopment::Files::MAIN_COMPONENT_UPDATER_START_VSCODE_SCRIPT }
+  let(:script_content) { RemoteDevelopment::Files::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT }
   let(:script_file) { Tempfile.new(%w[start_vscode .sh]) }
   let(:log_dir) { Dir.mktmpdir }
   let(:tools_dir) { Dir.mktmpdir }

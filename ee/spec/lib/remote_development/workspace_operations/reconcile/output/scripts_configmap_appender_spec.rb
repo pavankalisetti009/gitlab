@@ -13,25 +13,6 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Script
   let(:processed_devfile) { example_processed_devfile }
   let(:devfile_commands) { processed_devfile.fetch(:commands) }
   let(:devfile_events) { processed_devfile.fetch(:events) }
-  let(:expected_postart_commands_script) do
-    <<~SCRIPT
-      #!/bin/sh
-      echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command..."
-      #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command || true
-      echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command..."
-      #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command || true
-      echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command..."
-      #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command || true
-    SCRIPT
-  end
-
-  let(:main_component_updater_sleep_until_container_is_running_script) do
-    format(
-      files::MAIN_COMPONENT_UPDATER_SLEEP_UNTIL_CONTAINER_IS_RUNNING_SCRIPT,
-      workspace_reconciled_actual_state_file_path:
-        workspace_operations_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH
-    )
-  end
 
   subject(:updated_desired_config) do
     # Make a fake desired config with one existing fake element, to prove we are appending
@@ -69,12 +50,13 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Script
     expect(api_version).to eq("v1")
     expect(configmap_name).to eq(name)
     expect(data).to eq(
-      "gl-init-tools-command": files::MAIN_COMPONENT_UPDATER_START_VSCODE_SCRIPT,
+      "gl-clone-project-command": clone_project_script,
+      "gl-init-tools-command": files::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
       reconcile_constants_module::RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
-        expected_postart_commands_script,
+        postart_commands_script,
       "gl-sleep-until-container-is-running-command":
-        main_component_updater_sleep_until_container_is_running_script,
-      "gl-start-sshd-command": files::MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT
+        sleep_until_container_is_running_script,
+      "gl-start-sshd-command": files::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT
     )
   end
 end

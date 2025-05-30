@@ -63,22 +63,6 @@ components:
       memoryRequest: 256Mi
       cpuLimit: 500m
       cpuRequest: 100m
-  - name: gl-project-cloner
-    container:
-      image: alpine/git:2.45.2
-      volumeMounts:
-        - name: gl-workspace-data
-          path: "/projects"
-      args:
-        - |
-          <%= indent_yaml_literal(PROJECTS_CLONER_COMPONENT_INSERTER_CONTAINER_ARGS, 10) %>
-      command:
-        - "/bin/sh"
-        - "-c"
-      memoryLimit: 1000Mi
-      memoryRequest: 500Mi
-      cpuLimit: 500m
-      cpuRequest: 100m
   - name: gl-workspace-data
     volume:
       size: 50Gi
@@ -86,35 +70,40 @@ commands:
   - id: gl-tools-injector-command
     apply:
       component: gl-tools-injector
+  - id: gl-clone-project-command
+    exec:
+      commandLine: |
+        <%=
+          script = INTERNAL_POSTSTART_COMMAND_CLONE_PROJECT_SCRIPT
+          indent_yaml_literal(script, 8)
+        %>
+      component: tooling-container
   - id: gl-start-sshd-command
     exec:
       commandLine: |
-        <%= indent_yaml_literal(MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT, 8) %>
+        <%= indent_yaml_literal(INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT, 8) %>
       component: tooling-container
   - id: gl-init-tools-command
     exec:
       commandLine: |
-        <%= indent_yaml_literal(MAIN_COMPONENT_UPDATER_START_VSCODE_SCRIPT, 8) %>
+        <%= indent_yaml_literal(INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT, 8) %>
       component: tooling-container
   - id: gl-sleep-until-container-is-running-command
     exec:
       commandLine: |
         <%=
           script = format(
-            MAIN_COMPONENT_UPDATER_SLEEP_UNTIL_CONTAINER_IS_RUNNING_SCRIPT,
+            INTERNAL_POSTSTART_COMMAND_SLEEP_UNTIL_CONTAINER_IS_RUNNING_SCRIPT,
             workspace_reconciled_actual_state_file_path: WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH
           )
           indent_yaml_literal(script, 8)
         %>
       component: tooling-container
-  - id: gl-project-cloner-command
-    apply:
-      component: gl-project-cloner
 events:
   preStart:
     - gl-tools-injector-command
-    - gl-project-cloner-command
   postStart:
+    - gl-clone-project-command
     - gl-start-sshd-command
     - gl-init-tools-command
     - gl-sleep-until-container-is-running-command

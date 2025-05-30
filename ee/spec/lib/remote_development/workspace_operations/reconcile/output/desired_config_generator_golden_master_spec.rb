@@ -235,14 +235,17 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                 protocol: https
             dedicatedPod: false
             mountSources: true
-        - name: gl-project-cloner
+        - name: sidecar-container
           container:
-            image: alpine/git:2.45.2
+            image: "sidecar-container:latest"
             volumeMounts:
               - name: gl-workspace-data
                 path: "/projects"
+            env:
+              - name: GL_ENV2_NAME
+                value: "gl-env2-value"
             args:
-              - "echo 'project cloner container args'"
+              - "echo 'sidecar container args'"
             command:
               - "/bin/sh"
               - "-c"
@@ -254,18 +257,18 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
           volume:
             size: 50Gi
       commands:
-        - id: gl-example-tooling-container-internal-command
+        - id: example-poststart-exec-command
           exec:
-            commandLine: "echo 'example tooling container internal command'"
+            commandLine: "echo 'example poststart exec command'"
             component: tooling-container
-        - id: gl-project-cloner-command
+        - id: example-prestart-apply-command
           apply:
-            component: gl-project-cloner
+            component: sidecar-container
       events:
         preStart:
-          - gl-project-cloner-command
+          - example-prestart-apply-command
         postStart:
-          - gl-example-tooling-container-internal-command
+          - example-poststart-exec-command
       variables: {}
     YAML
   end
@@ -544,13 +547,17 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                 initContainers: [
                   {
                     args: [
-                      "echo 'project cloner container args'"
+                      "echo 'sidecar container args'"
                     ],
                     command: [
                       "/bin/sh",
                       "-c"
                     ],
                     env: [
+                      {
+                        name: "GL_ENV2_NAME",
+                        value: "gl-env2-value"
+                      },
                       {
                         name: "PROJECTS_ROOT",
                         value: "/projects"
@@ -567,9 +574,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                         }
                       }
                     ],
-                    image: "alpine/git:2.45.2",
+                    image: "sidecar-container:latest",
                     imagePullPolicy: "Always",
-                    name: "gl-project-cloner-gl-project-cloner-command-1",
+                    name: "sidecar-container-example-prestart-apply-command-1",
                     resources: {
                       limits: {
                         cpu: "500m",
@@ -848,8 +855,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
           namespace: "gl-rd-ns-991-990-fedcba"
         },
         data: {
-          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-example-tooling-container-internal-command...\"\n/workspace-scripts/gl-example-tooling-container-internal-command || true\n",
-          "gl-example-tooling-container-internal-command": "echo 'example tooling container internal command'"
+          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/example-poststart-exec-command...\"\n/workspace-scripts/example-poststart-exec-command || true\n",
+          "example-poststart-exec-command": "echo 'example poststart exec command'"
         }
       },
       {
@@ -1118,13 +1125,17 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                 initContainers: [
                   {
                     args: [
-                      "echo 'project cloner container args'"
+                      "echo 'sidecar container args'"
                     ],
                     command: [
                       "/bin/sh",
                       "-c"
                     ],
                     env: [
+                      {
+                        name: "GL_ENV2_NAME",
+                        value: "gl-env2-value"
+                      },
                       {
                         name: "PROJECTS_ROOT",
                         value: "/projects"
@@ -1141,9 +1152,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                         }
                       }
                     ],
-                    image: "alpine/git:2.45.2",
+                    image: "sidecar-container:latest",
                     imagePullPolicy: "Always",
-                    name: "gl-project-cloner-gl-project-cloner-command-1",
+                    name: "sidecar-container-example-prestart-apply-command-1",
                     resources: {
                       limits: {
                         cpu: "500m",
@@ -1422,8 +1433,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
           namespace: "gl-rd-ns-991-990-fedcba"
         },
         data: {
-          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-example-tooling-container-internal-command...\"\n/workspace-scripts/gl-example-tooling-container-internal-command || true\n",
-          "gl-example-tooling-container-internal-command": "echo 'example tooling container internal command'"
+          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/example-poststart-exec-command...\"\n/workspace-scripts/example-poststart-exec-command || true\n",
+          "example-poststart-exec-command": "echo 'example poststart exec command'"
         }
       }
     ]
@@ -2168,13 +2179,17 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                 initContainers: [
                   {
                     args: [
-                      "echo 'project cloner container args'"
+                      "echo 'sidecar container args'"
                     ],
                     command: [
                       "/bin/sh",
                       "-c"
                     ],
                     env: [
+                      {
+                        name: "GL_ENV2_NAME",
+                        value: "gl-env2-value"
+                      },
                       {
                         name: "PROJECTS_ROOT",
                         value: "/projects"
@@ -2191,9 +2206,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                         }
                       }
                     ],
-                    image: "alpine/git:2.45.2",
+                    image: "sidecar-container:latest",
                     imagePullPolicy: "Always",
-                    name: "gl-project-cloner-gl-project-cloner-command-1",
+                    name: "sidecar-container-example-prestart-apply-command-1",
                     resources: {
                       limits: {
                         cpu: "500m",
@@ -2482,8 +2497,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
           namespace: "default"
         },
         data: {
-          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-example-tooling-container-internal-command...\"\n/workspace-scripts/gl-example-tooling-container-internal-command || true\n",
-          "gl-example-tooling-container-internal-command": "echo 'example tooling container internal command'"
+          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/example-poststart-exec-command...\"\n/workspace-scripts/example-poststart-exec-command || true\n",
+          "example-poststart-exec-command": "echo 'example poststart exec command'"
         }
       },
       {
@@ -2730,13 +2745,17 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                 initContainers: [
                   {
                     args: [
-                      "echo 'project cloner container args'"
+                      "echo 'sidecar container args'"
                     ],
                     command: [
                       "/bin/sh",
                       "-c"
                     ],
                     env: [
+                      {
+                        name: "GL_ENV2_NAME",
+                        value: "gl-env2-value"
+                      },
                       {
                         name: "PROJECTS_ROOT",
                         value: "/projects"
@@ -2753,9 +2772,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
                         }
                       }
                     ],
-                    image: "alpine/git:2.45.2",
+                    image: "sidecar-container:latest",
                     imagePullPolicy: "Always",
-                    name: "gl-project-cloner-gl-project-cloner-command-1",
+                    name: "sidecar-container-example-prestart-apply-command-1",
                     resources: {
                       limits: {
                         cpu: "500m",
@@ -3044,8 +3063,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
           namespace: "default"
         },
         data: {
-          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/gl-example-tooling-container-internal-command...\"\n/workspace-scripts/gl-example-tooling-container-internal-command || true\n",
-          "gl-example-tooling-container-internal-command": "echo 'example tooling container internal command'"
+          "gl-run-poststart-commands.sh": "#!/bin/sh\necho \"$(date -Iseconds): Running /workspace-scripts/example-poststart-exec-command...\"\n/workspace-scripts/example-poststart-exec-command || true\n",
+          "example-poststart-exec-command": "echo 'example poststart exec command'"
         }
       }
     ]

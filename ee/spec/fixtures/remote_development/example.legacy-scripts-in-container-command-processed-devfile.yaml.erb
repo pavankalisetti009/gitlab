@@ -9,8 +9,8 @@ components:
       image: quay.io/mloriedo/universal-developer-image:ubi8-dw-demo
       args:
         - |
-          <%= indent_yaml_literal(MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT, 10) %>
-          <%= indent_yaml_literal(MAIN_COMPONENT_UPDATER_START_VSCODE_SCRIPT, 10) %>
+          <%= indent_yaml_literal(INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT, 10) %>
+          <%= indent_yaml_literal(INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT, 10) %>
       command:
         - "/bin/sh"
         - "-c"
@@ -72,7 +72,11 @@ components:
           path: "/projects"
       args:
         - |
-          <%= indent_yaml_literal(PROJECTS_CLONER_COMPONENT_INSERTER_CONTAINER_ARGS, 10) %>
+          <%=
+            script = INTERNAL_POSTSTART_COMMAND_CLONE_PROJECT_SCRIPT.dup
+            script.gsub!("#!/bin/sh\n", "")
+            indent_yaml_literal(script, 10)
+          %>
       command:
         - "/bin/sh"
         - "-c"
