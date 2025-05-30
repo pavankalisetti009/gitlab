@@ -73,8 +73,8 @@ export function mapFiltersToUrlParams(filters) {
     urlParams.project = normalizedFilters.project;
   }
 
-  if (normalizedFilters.group) {
-    urlParams.group = normalizedFilters.group;
+  if (normalizedFilters.groupPath) {
+    urlParams.group = normalizedFilters.groupPath;
   }
 
   const projectStatusFilter = filters.find(
