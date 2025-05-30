@@ -23,7 +23,9 @@ module Security
       SECRET_TYPE_MAPPING = {
         'gitlab_personal_access_token' => 'gitlab_personal_access_token',
         'gitlab_personal_access_token_routable' => 'gitlab_personal_access_token',
-        'gitlab_deploy_token' => 'gitlab_deploy_token'
+        'gitlab_deploy_token' => 'gitlab_deploy_token',
+        'gitlab_runner_auth_token' => 'gitlab_runner_auth_token',
+        'gitlab_runner_auth_token_routable' => 'gitlab_runner_auth_token_routable'
       }.freeze
 
       # Creates or updates FindingTokenStatus records for secret detection findings in a pipeline.

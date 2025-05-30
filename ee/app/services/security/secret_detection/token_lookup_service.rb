@@ -3,6 +3,11 @@
 module Security
   module SecretDetection
     class TokenLookupService
+      RUNNER_TOKEN_CONFIG = {
+        model: Ci::Runner,
+        lookup_method: :runner_token_lookup
+      }.freeze
+
       # Maps token type IDs to their corresponding GitLab model classes
       TOKEN_TYPE_CONFIG = {
         'gitlab_personal_access_token' => {
@@ -12,7 +17,9 @@ module Security
         'gitlab_deploy_token' => {
           model: DeployToken,
           lookup_method: :deploy_token_lookup
-        }
+        },
+        'gitlab_runner_auth_token' => RUNNER_TOKEN_CONFIG,
+        'gitlab_runner_auth_token_routable' => RUNNER_TOKEN_CONFIG
       }.freeze
 
       # Find tokens in database based on token type and values
@@ -29,8 +36,8 @@ module Security
         case lookup_method
         when :token_digest_lookup
           token_digest_lookup(model_class, token_values)
-        when :deploy_token_lookup
-          token_lookup(model_class, token_values)
+        when :deploy_token_lookup, :runner_token_lookup
+          encrypted_token_lookup(model_class, token_values)
         end
       end
 
@@ -57,7 +64,7 @@ module Security
       # @param model_class [Class] The token model class
       # @param token_values [Array<String>] Array of raw token values
       # @return [Hash] Hash mapping raw token values to their corresponding token objects
-      def token_lookup(model_class, token_values)
+      def encrypted_token_lookup(model_class, token_values)
         encrypted_to_raw_token = token_values.each_with_object({}) do |raw_token_value, result|
           encrypted = Authn::TokenField::EncryptionHelper.encrypt_token(raw_token_value)
           result[encrypted] = raw_token_value
