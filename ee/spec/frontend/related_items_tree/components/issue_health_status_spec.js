@@ -34,6 +34,7 @@ describe('IssueHealthStatus', () => {
   const findBadge = () => wrapper.findComponent(GlBadge);
   const findIcon = () => wrapper.findComponent(GlIcon);
   const findStatusText = () => wrapper.findByTestId('status-text');
+  const findButton = () => wrapper.find('button');
 
   describe('badge mode', () => {
     beforeEach(() => {
@@ -55,8 +56,8 @@ describe('IssueHealthStatus', () => {
     });
 
     it('contains health status tooltip', () => {
-      expect(getBinding(findBadge().element, 'gl-tooltip')).not.toBeUndefined();
-      expect(findBadge().attributes('title')).toBe('Health status');
+      expect(getBinding(findButton().element, 'gl-tooltip')).not.toBeUndefined();
+      expect(findButton().attributes('title')).toBe('Health status');
     });
   });
 
@@ -86,8 +87,8 @@ describe('IssueHealthStatus', () => {
       });
 
       it('contains health status tooltip', () => {
-        expect(getBinding(findStatusText().element, 'gl-tooltip')).not.toBeUndefined();
-        expect(findStatusText().attributes('title')).toBe('Health status');
+        expect(getBinding(findButton().element, 'gl-tooltip')).not.toBeUndefined();
+        expect(findButton().attributes('title')).toBe('Health status');
       });
     });
 
@@ -105,7 +106,7 @@ describe('IssueHealthStatus', () => {
       });
 
       it('enables the tooltip correctly', () => {
-        const { value } = getBinding(findStatusText().element, 'gl-tooltip');
+        const { value } = getBinding(findButton().element, 'gl-tooltip');
 
         expect(value.disabled).toBe(tooltipDisabled);
       });
