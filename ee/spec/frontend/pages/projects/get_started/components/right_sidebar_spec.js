@@ -1,9 +1,6 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RightSidebar from 'ee/pages/projects/get_started/components/right_sidebar.vue';
-import {
-  GITLAB_UNIVERSITY_DUO_COURSE_ENROLL_LINK,
-  LEARN_MORE_LINKS,
-} from 'ee/pages/projects/get_started/constants';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 describe('RightSidebar', () => {
   let wrapper;
@@ -13,28 +10,46 @@ describe('RightSidebar', () => {
   };
 
   const findTitle = () => wrapper.findAll('h2');
-  const findEnrollLink = () => wrapper.findByText('Enroll');
+
+  beforeEach(() => {
+    createComponent();
+  });
 
   describe('rendering', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
     it('renders the correct titles', () => {
       expect(findTitle().at(0).text()).toBe('GitLab University');
       expect(findTitle().at(1).text()).toBe('Learn more');
     });
+  });
 
-    it('renders the gitlab university enroll link', () => {
-      expect(findEnrollLink().exists()).toBe(true);
-      expect(findEnrollLink().attributes('href')).toBe(GITLAB_UNIVERSITY_DUO_COURSE_ENROLL_LINK);
-    });
+  describe('with tracking', () => {
+    const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
-    it.each(LEARN_MORE_LINKS.map((link, i) => [link.text, i]))(
-      'renders the correct link for %s',
-      (text, index) => {
-        expect(wrapper.findByText(text).attributes('href')).toBe(LEARN_MORE_LINKS[index].url);
+    it.each(RightSidebar.LEARN_MORE_LINKS.map((link) => [link.trackingLabel]))(
+      'tracks clicking %s learn more link',
+      async (label) => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+        await wrapper.findByTestId(`${label}-learn-more-link`).vm.$emit('click');
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'click_learn_more_links_in_get_started',
+          { label },
+          undefined,
+        );
       },
     );
+
+    it('tracks clicking enroll button', async () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      await wrapper.findByTestId('gitlab-university-enroll-link').vm.$emit('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_enroll_gitlab_university_in_get_started',
+        {},
+        undefined,
+      );
+    });
   });
 });
