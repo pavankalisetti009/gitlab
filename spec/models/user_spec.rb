@@ -8662,6 +8662,14 @@ RSpec.describe User, feature_category: :user_profile do
 
       it_behaves_like 'does not require password to be present'
     end
+
+    context 'when user is a placeholder user' do
+      before do
+        user.user_type = 'placeholder'
+      end
+
+      it_behaves_like 'does not require password to be present'
+    end
   end
 
   describe 'can_trigger_notifications?' do
