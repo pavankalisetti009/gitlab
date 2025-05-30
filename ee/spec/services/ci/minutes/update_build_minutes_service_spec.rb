@@ -174,7 +174,7 @@ RSpec.describe Ci::Minutes::UpdateBuildMinutesService, feature_category: :hosted
               project_id: build.project_id,
               runner_id: build.runner_id,
               build_id: build.id
-            }
+            }.stringify_keys
           )
 
         subject
