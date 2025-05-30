@@ -30944,6 +30944,9 @@ msgstr ""
 msgid "GroupSAML|SAML group link was successfully removed."
 msgstr ""
 
+msgid "GroupSAML|SCIM Identifier"
+msgstr ""
+
 msgid "GroupSAML|SCIM Token"
 msgstr ""
 

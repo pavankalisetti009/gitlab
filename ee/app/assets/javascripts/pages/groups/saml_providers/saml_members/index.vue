@@ -25,6 +25,10 @@ export default {
       key: 'identity',
       label: s__('GroupSAML|Identifier'),
     },
+    {
+      key: 'scim_identity',
+      label: s__('GroupSAML|SCIM Identifier'),
+    },
   ],
   mounted() {
     this.fetchPage();
@@ -60,6 +64,9 @@ export default {
         </span>
       </template>
       <template #cell(identity)="{ value }">
+        <span class="font-weight-bold">{{ value }}</span>
+      </template>
+      <template #cell(scim_identity)="{ value }">
         <span class="font-weight-bold">{{ value }}</span>
       </template>
     </gl-table>
