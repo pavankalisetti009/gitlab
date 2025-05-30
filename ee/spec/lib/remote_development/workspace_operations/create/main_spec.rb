@@ -14,7 +14,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::Main, feature_cat
       [RemoteDevelopment::WorkspaceOperations::Create::VolumeDefiner, :map],
       [RemoteDevelopment::WorkspaceOperations::Create::ToolsInjectorComponentInserter, :map],
       [RemoteDevelopment::WorkspaceOperations::Create::MainComponentUpdater, :map],
-      [RemoteDevelopment::WorkspaceOperations::Create::ProjectClonerComponentInserter, :map],
+      [RemoteDevelopment::WorkspaceOperations::Create::InternalPoststartCommandsInserter, :map],
       [RemoteDevelopment::WorkspaceOperations::Create::VolumeComponentInserter, :map],
       [RemoteDevelopment::WorkspaceOperations::Create::Creator, :and_then],
       [observer_class, observer_method],

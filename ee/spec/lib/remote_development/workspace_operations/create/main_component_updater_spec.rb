@@ -38,7 +38,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::MainComponentUpda
   end
 
   context "when vscode_extension_marketplace_metadata Web IDE setting is disabled" do
-    let(:expected_processed_devfile_name) { 'example.main-container-updated-marketplace-disabled-devfile.yaml.erb' }
+    let(:expected_processed_devfile_name) { "example.main-container-updated-marketplace-disabled-devfile.yaml.erb" }
     let(:vscode_extension_marketplace_metadata_enabled) { false }
 
     it 'injects the tools injector component' do

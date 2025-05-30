@@ -605,9 +605,6 @@ RSpec.shared_context 'with remote development shared fixtures' do
       'runAsUser' => reconcile_constants_module::RUN_AS_USER
     }
 
-    project_cloner_script_content = files_module::PROJECTS_CLONER_COMPONENT_INSERTER_CONTAINER_ARGS.dup
-    format_project_cloner_script!(project_cloner_script_content)
-
     deployment = {
       apiVersion: "apps/v1",
       kind: "Deployment",
@@ -772,51 +769,6 @@ RSpec.shared_context 'with remote development shared fixtures' do
             ],
             initContainers: [
               {
-                args: [project_cloner_script_content],
-                command: %w[/bin/sh -c],
-                env: [
-                  {
-                    name: "PROJECTS_ROOT",
-                    value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
-                  },
-                  {
-                    name: "PROJECT_SOURCE",
-                    value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
-                  }
-                ],
-                image: "alpine/git:2.45.2",
-                imagePullPolicy: "Always",
-                name: "gl-project-cloner-gl-project-cloner-command-1",
-                resources: {
-                  limits: {
-                    cpu: "500m",
-                    memory: "1000Mi"
-                  },
-                  requests: {
-                    cpu: "100m",
-                    memory: "500Mi"
-                  }
-                },
-                volumeMounts: [
-                  {
-                    mountPath: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH,
-                    name: create_constants_module::WORKSPACE_DATA_VOLUME_NAME
-                  },
-                  {
-                    mountPath: workspace_operations_constants_module::VARIABLES_VOLUME_PATH,
-                    name: workspace_operations_constants_module::VARIABLES_VOLUME_NAME
-                  }
-                ],
-                securityContext: container_security_context,
-                envFrom: [
-                  {
-                    secretRef: {
-                      name: "#{workspace_name}-env-var"
-                    }
-                  }
-                ]
-              },
-              {
                 env: [
                   {
                     name: create_constants_module::TOOLS_DIR_ENV_VAR,
@@ -834,7 +786,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 ],
                 image: workspace_operations_constants_module::WORKSPACE_TOOLS_IMAGE,
                 imagePullPolicy: "Always",
-                name: "gl-tools-injector-gl-tools-injector-command-2",
+                name: "gl-tools-injector-gl-tools-injector-command-1",
                 resources: {
                   limits: {
                     cpu: "500m",
@@ -925,11 +877,65 @@ RSpec.shared_context 'with remote development shared fixtures' do
     end
 
     if legacy_scripts_in_container_command
+      # Add the container args for the container where tools are injected
       deployment[:spec][:template][:spec][:containers][0][:args][0] =
         <<~YAML.chomp
-          #{files_module::MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT}
-          #{files_module::MAIN_COMPONENT_UPDATER_START_VSCODE_SCRIPT}
+          #{files_module::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT}
+          #{files_module::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT}
         YAML
+
+      # Insert the project cloning as the first init container
+      project_cloner_script_content = files_module::INTERNAL_POSTSTART_COMMAND_CLONE_PROJECT_SCRIPT.dup
+      project_cloner_script_content.gsub!("#!/bin/sh\n", "")
+      format_clone_project_script!(project_cloner_script_content)
+
+      project_cloning_init_container = {
+        args: [project_cloner_script_content],
+        command: %w[/bin/sh -c],
+        env: [
+          {
+            name: "PROJECTS_ROOT",
+            value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
+          },
+          {
+            name: "PROJECT_SOURCE",
+            value: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
+          }
+        ],
+        image: "alpine/git:2.45.2",
+        imagePullPolicy: "Always",
+        name: "gl-project-cloner-gl-project-cloner-command-1",
+        resources: {
+          limits: {
+            cpu: "500m",
+            memory: "1000Mi"
+          },
+          requests: {
+            cpu: "100m",
+            memory: "500Mi"
+          }
+        },
+        volumeMounts: [
+          {
+            mountPath: workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH,
+            name: create_constants_module::WORKSPACE_DATA_VOLUME_NAME
+          },
+          {
+            mountPath: workspace_operations_constants_module::VARIABLES_VOLUME_PATH,
+            name: workspace_operations_constants_module::VARIABLES_VOLUME_NAME
+          }
+        ],
+        securityContext: container_security_context,
+        envFrom: [
+          {
+            secretRef: {
+              name: "#{workspace_name}-env-var"
+            }
+          }
+        ]
+      }
+      deployment[:spec][:template][:spec][:initContainers].prepend(project_cloning_init_container)
+      deployment[:spec][:template][:spec][:initContainers][1][:name] = "gl-tools-injector-gl-tools-injector-command-2"
     end
 
     deployment[:spec][:template][:spec].delete(:runtimeClassName) if default_runtime_class.empty?
@@ -1123,30 +1129,52 @@ RSpec.shared_context 'with remote development shared fixtures' do
     }
   end
 
+  # @return [String]
+  def postart_commands_script
+    <<~SCRIPT
+      #!/bin/sh
+      echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command..."
+      #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command || true
+      echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command..."
+      #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command || true
+      echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command..."
+      #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command || true
+      echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command..."
+      #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command || true
+    SCRIPT
+  end
+
+  # @return [String]
+  def clone_project_script
+    volume_path = workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
+    project_cloning_successful_file = "#{volume_path}/#{create_constants_module::PROJECT_CLONING_SUCCESSFUL_FILE_NAME}"
+    clone_dir = "#{workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH}/test-project"
+    project_ref = "master"
+    project_url = "#{root_url}test-group/test-project.git"
+    format(
+      RemoteDevelopment::Files::INTERNAL_POSTSTART_COMMAND_CLONE_PROJECT_SCRIPT,
+      project_cloning_successful_file: Shellwords.shellescape(project_cloning_successful_file),
+      clone_dir: Shellwords.shellescape(clone_dir),
+      project_ref: Shellwords.shellescape(project_ref),
+      project_url: Shellwords.shellescape(project_url)
+    )
+  end
+
+  # @return [String]
+  def sleep_until_container_is_running_script
+    format(
+      RemoteDevelopment::Files::INTERNAL_POSTSTART_COMMAND_SLEEP_UNTIL_CONTAINER_IS_RUNNING_SCRIPT,
+      workspace_reconciled_actual_state_file_path:
+        workspace_operations_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH
+    )
+  end
+
   # @param [String] workspace_name
   # @param [String] workspace_namespace
   # @param [Hash] labels
   # @param [Hash] annotations
   # @return [Hash]
   def scripts_configmap(workspace_name:, workspace_namespace:, labels:, annotations:)
-    postart_commands_script =
-      <<~SCRIPT
-        #!/bin/sh
-        echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command..."
-        #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command || true
-        echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command..."
-        #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command || true
-        echo "$(date -Iseconds): Running #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command..."
-        #{reconcile_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command || true
-      SCRIPT
-
-    sleep_until_container_is_running_script =
-      format(
-        RemoteDevelopment::Files::MAIN_COMPONENT_UPDATER_SLEEP_UNTIL_CONTAINER_IS_RUNNING_SCRIPT,
-        workspace_reconciled_actual_state_file_path:
-          workspace_operations_constants_module::WORKSPACE_RECONCILED_ACTUAL_STATE_FILE_PATH
-      )
-
     {
       apiVersion: "v1",
       kind: "ConfigMap",
@@ -1157,10 +1185,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
         namespace: workspace_namespace
       },
       data: {
-        "gl-init-tools-command": files_module::MAIN_COMPONENT_UPDATER_START_VSCODE_SCRIPT,
+        "gl-clone-project-command": clone_project_script,
+        "gl-init-tools-command": files_module::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
         reconcile_constants_module::RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym => postart_commands_script,
         "gl-sleep-until-container-is-running-command": sleep_until_container_is_running_script,
-        "gl-start-sshd-command": files_module::MAIN_COMPONENT_UPDATER_START_SSHD_SCRIPT
+        "gl-start-sshd-command": files_module::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT
       }
     }
   end
