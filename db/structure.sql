@@ -10301,7 +10301,10 @@ CREATE TABLE board_user_preferences (
     board_id bigint NOT NULL,
     hide_labels boolean,
     created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL
+    updated_at timestamp with time zone NOT NULL,
+    group_id bigint,
+    project_id bigint,
+    CONSTRAINT check_86d6706b52 CHECK ((num_nonnulls(group_id, project_id) = 1))
 );
 
 CREATE SEQUENCE board_user_preferences_id_seq
@@ -34232,6 +34235,10 @@ CREATE UNIQUE INDEX index_board_project_recent_visits_on_user_project_and_board 
 
 CREATE INDEX index_board_user_preferences_on_board_id ON board_user_preferences USING btree (board_id);
 
+CREATE INDEX index_board_user_preferences_on_group_id ON board_user_preferences USING btree (group_id);
+
+CREATE INDEX index_board_user_preferences_on_project_id ON board_user_preferences USING btree (project_id);
+
 CREATE UNIQUE INDEX index_board_user_preferences_on_user_id_and_board_id ON board_user_preferences USING btree (user_id, board_id);
 
 CREATE INDEX index_boards_epic_board_labels_on_epic_board_id ON boards_epic_board_labels USING btree (epic_board_id);
@@ -42275,6 +42282,9 @@ ALTER TABLE ONLY project_statistics
 ALTER TABLE ONLY work_item_current_statuses
     ADD CONSTRAINT fk_1bb76463e0 FOREIGN KEY (custom_status_id) REFERENCES work_item_custom_statuses(id) ON DELETE SET NULL;
 
+ALTER TABLE ONLY board_user_preferences
+    ADD CONSTRAINT fk_1c0b27016f FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY approval_policy_rule_project_links
     ADD CONSTRAINT fk_1c78796d52 FOREIGN KEY (approval_policy_rule_id) REFERENCES approval_policy_rules(id) ON DELETE CASCADE;
 
@@ -44143,6 +44153,9 @@ ALTER TABLE ONLY boards
 
 ALTER TABLE ONLY epic_user_mentions
     ADD CONSTRAINT fk_f1ab52883e FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY board_user_preferences
+    ADD CONSTRAINT fk_f1c3e9b710 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY observability_metrics_issues_connections
     ADD CONSTRAINT fk_f218d84a14 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
