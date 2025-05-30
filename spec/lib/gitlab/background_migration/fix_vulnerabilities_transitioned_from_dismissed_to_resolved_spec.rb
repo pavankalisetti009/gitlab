@@ -223,7 +223,7 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
           vulnerability_id: affected_vulnerability_flapping.id
         )
 
-        expect(Vulnerabilities::StateTransition.all).to all(be_valid)
+        expect(state_transitions.all).to all(be_valid)
       end
 
       it 'inserts notes for migrated vulnerabilities' do
@@ -242,7 +242,7 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
             author_id: security_policy_bot.id
           )
 
-          expect(Note.all).to all(be_valid)
+          expect(notes.all).to all(be_valid)
         end
       end
     end
@@ -292,7 +292,7 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
           vulnerability_id: affected_vulnerability_flapping.id
         )
 
-        expect(Vulnerabilities::StateTransition.all).to all(be_valid)
+        expect(state_transitions.all).to all(be_valid)
       end
 
       it 'inserts notes for migrated vulnerabilities' do
@@ -310,7 +310,7 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
             author_id: security_policy_bot.id
           )
 
-          expect(Note.all).to all(be_valid)
+          expect(notes.all).to all(be_valid)
         end
       end
     end
