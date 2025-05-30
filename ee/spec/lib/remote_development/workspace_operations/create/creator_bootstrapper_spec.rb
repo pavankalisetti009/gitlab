@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "fast_spec_helper"
-require_relative "../../../../support/fast_spec/remote_development/fast_spec_helper_support"
 
 # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::CreatorBootstrapper, feature_category: :workspaces do
