@@ -12,7 +12,7 @@ module CloudConnector
 
     def self.use_yaml_data_loader?
       return true if ::Gitlab::Saas.feature_available?(:cloud_connector_static_catalog)
-      return true if License.current.offline_cloud_license?
+      return true if License.current&.offline_cloud_license?
 
       Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
     end
