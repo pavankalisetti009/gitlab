@@ -7,6 +7,12 @@ module EE
         extend ::Gitlab::Utils::Override
         extend ActiveSupport::Concern
 
+        prepended do
+          before_action only: %i[index show] do
+            push_frontend_feature_flag(:container_registry_immutable_tags, project)
+          end
+        end
+
         override :destroy
         def destroy
           super
