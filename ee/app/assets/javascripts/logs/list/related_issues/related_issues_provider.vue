@@ -18,7 +18,6 @@ export default {
     return {
       relatedIssues: [],
       error: null,
-      isLoading: false,
     };
   },
   apollo: {
