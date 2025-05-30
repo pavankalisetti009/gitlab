@@ -1,6 +1,7 @@
 import { GlCard, GlButton, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GetFamiliar from 'ee/pages/projects/get_started/components/get_familiar.vue';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 describe('Get Familiar component', () => {
   let wrapper;
@@ -61,5 +62,21 @@ describe('Get Familiar component', () => {
     expect(icon.props('name')).toBe('external-link');
     expect(icon.props('size')).toBe(16);
     expect(icon.classes()).toContain('gl-ml-2');
+  });
+
+  describe('with tracking', () => {
+    const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+    it('tracks click on try walkthrough link', async () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      await wrapper.findByTestId('walkthrough-link').vm.$emit('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_duo_try_walkthrough_in_get_started',
+        {},
+        undefined,
+      );
+    });
   });
 });

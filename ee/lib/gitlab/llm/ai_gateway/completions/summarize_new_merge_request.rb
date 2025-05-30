@@ -15,6 +15,11 @@ module Gitlab
             { extracted_diff: extracted_diff }
           end
 
+          override :root_namespace
+          def root_namespace
+            resource.try(:root_ancestor)
+          end
+
           private
 
           def extracted_diff

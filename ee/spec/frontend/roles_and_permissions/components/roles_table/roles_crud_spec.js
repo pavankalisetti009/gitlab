@@ -270,4 +270,24 @@ describe('RolesCrud component', () => {
       expect(findRolesExport().exists()).toBe(true);
     });
   });
+
+  describe('when member roles is null', () => {
+    beforeEach(() =>
+      createComponent({
+        groupRolesQueryHandler: jest.fn().mockResolvedValue({
+          data: {
+            group: {
+              id: 'gid://gitlab/Group/1',
+              standardRoles: { nodes: standardRoles },
+              memberRoles: null,
+            },
+          },
+        }),
+      }),
+    );
+
+    it('renders the standard roles', () => {
+      expect(findRolesTable().props('roles').length).toBe(standardRoles.length);
+    });
+  });
 });
