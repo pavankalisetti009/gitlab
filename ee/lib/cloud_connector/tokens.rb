@@ -7,10 +7,11 @@ module CloudConnector
 
     @key_loader = CachingKeyLoader.new
 
+    # unit_primitive: Requested unit primtive, used to determine if self-signed token is needed.
     # root_group_ids: Billable root group IDs to filter by. Only relevant when issuing new tokens.
     # extra_claims: JWT claims to be included. Only relevant when issuing new tokens.
-    def get(root_group_ids: [], extra_claims: {})
-      return build_new_token(root_group_ids, extra_claims) if use_self_signed_token?
+    def get(unit_primitive:, root_group_ids: [], extra_claims: {})
+      return build_new_token(root_group_ids, extra_claims) if use_self_signed_token?(unit_primitive)
 
       load_stored_token
     end
@@ -39,9 +40,10 @@ module CloudConnector
       TokenLoader.new.token
     end
 
-    def use_self_signed_token?
+    def use_self_signed_token?(unit_primitive)
       return true if ::Gitlab::Saas.feature_available?(:cloud_connector_self_signed_tokens)
-      return true if ::Ai::Setting.self_hosted?
+
+      return true if ::Ai::FeatureSetting.feature_for_unit_primitive(unit_primitive)&.self_hosted?
 
       Gitlab::Utils.to_boolean(ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'])
     end

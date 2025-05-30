@@ -92,7 +92,8 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
         create(:project_member, sufficient_role, user: user, project: project)
         allow(CloudConnector::Tokens).to receive(:get).with(
           root_group_ids: namespace.id,
-          extra_claims: { gitlab_namespace_id: namespace.id.to_s }
+          extra_claims: { gitlab_namespace_id: namespace.id.to_s },
+          unit_primitive: :observability_all
         ).and_return(gob_token)
       end
 

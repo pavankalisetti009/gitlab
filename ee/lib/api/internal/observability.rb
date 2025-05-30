@@ -22,7 +22,8 @@ module API
           root_group_id = project.root_ancestor.id
           CloudConnector::Tokens.get(
             root_group_ids: root_group_id,
-            extra_claims: { gitlab_namespace_id: root_group_id.to_s }
+            extra_claims: { gitlab_namespace_id: root_group_id.to_s },
+            unit_primitive: :observability_all
           )
         end
         strong_memoize_attr :cc_access_token
