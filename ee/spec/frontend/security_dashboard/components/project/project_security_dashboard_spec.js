@@ -171,6 +171,28 @@ describe('Project Security Dashboard component', () => {
       createWrapper();
       expect(findExportButton().exists()).toBe(true);
     });
+
+    it('generates the report data with chart SVG and path', async () => {
+      createWrapper();
+      await waitForPromises();
+
+      const mockSvg = '<svg>mock chart data</svg>';
+      const mockChart = {
+        getDataURL: jest.fn().mockReturnValue(mockSvg),
+      };
+
+      findLineChart().vm.$emit('created', mockChart);
+
+      const getReportDataFn = findExportButton().props('getReportData');
+      const result = getReportDataFn();
+
+      expect(result).toEqual({
+        full_path: projectFullPath,
+        project_vulnerabilities_history: {
+          svg: mockSvg,
+        },
+      });
+    });
   });
 
   describe('when vulnerabilitiesPdfExport is false', () => {

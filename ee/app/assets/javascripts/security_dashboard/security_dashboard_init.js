@@ -41,6 +41,7 @@ export default (el, dashboardType) => {
     securityConfigurationPath,
     securityDashboardEmptySvgPath,
     instanceDashboardSettingsPath,
+    vulnerabilitiesPdfExportEndpoint,
   } = el.dataset;
 
   const hasProjects = parseBoolean(el.dataset.hasProjects);
@@ -53,6 +54,8 @@ export default (el, dashboardType) => {
     securityConfigurationPath,
     securityDashboardEmptySvgPath,
     instanceDashboardSettingsPath,
+    vulnerabilitiesPdfExportEndpoint,
+    dashboardType,
   };
 
   let props;

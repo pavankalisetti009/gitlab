@@ -87,8 +87,8 @@ export default {
   },
   data() {
     return {
-      chartWidth: 0,
       trendsByDay: [],
+      chart: null,
     };
   },
   computed: {
@@ -167,6 +167,28 @@ export default {
       };
     },
   },
+  methods: {
+    onChartCreated(chart) {
+      this.chart = chart;
+    },
+    getReportData() {
+      return {
+        project_vulnerabilities_history: {
+          svg: this.chart.getDataURL({
+            type: 'svg',
+            excludeComponents: ['toolbox', 'dataZoom'],
+          }),
+        },
+        full_path: this.projectFullPath,
+      };
+    },
+  },
+  i18n: {
+    title: s__('SecurityReports|Security dashboard'),
+    subtitle: s__(
+      'SecurityReports|Historical view of open vulnerabilities in the default branch. Excludes vulnerabilities that were resolved or dismissed. %{linkStart}Learn more.%{linkEnd}',
+    ),
+  },
   DOC_PATH_PROJECT_SECURITY_DASHBOARD,
 };
 </script>
@@ -192,7 +214,10 @@ export default {
         </gl-sprintf>
       </template>
       <template #actions>
-        <pdf-export-button v-if="glFeatures.vulnerabilitiesPdfExport" />
+        <pdf-export-button
+          v-if="glFeatures.vulnerabilitiesPdfExport"
+          :get-report-data="getReportData"
+        />
       </template>
     </page-heading>
 
@@ -205,6 +230,7 @@ export default {
         :option="chartOptions"
         responsive
         :include-legend-avg-max="false"
+        @created="onChartCreated"
       />
     </div>
   </div>
