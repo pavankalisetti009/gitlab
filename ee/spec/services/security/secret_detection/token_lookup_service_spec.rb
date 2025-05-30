@@ -37,12 +37,28 @@ RSpec.describe Security::SecretDetection::TokenLookupService, feature_category: 
 
       it 'finds multiple tokens by their values and type' do
         results = service.find('gitlab_deploy_token', raw_token_values)
+        expect(results).to match(raw_token_values.zip(deploy_tokens).to_h)
+      end
+    end
 
-        expect(results.size).to eq(raw_token_values.size)
-        raw_token_values.each_with_index do |token_value, i|
-          found_token = results[token_value]
-          expect(found_token).to eq(deploy_tokens[i])
-        end
+    context 'with multiple runner auth tokens' do
+      let_it_be(:runners) { create_list(:ci_runner, 4) }
+      let(:raw_token_values) { runners.map(&:token) }
+
+      it 'finds multiple tokens by their values and type' do
+        results = service.find('gitlab_runner_auth_token', raw_token_values)
+        expect(results).to match(raw_token_values.zip(runners).to_h)
+      end
+    end
+
+    context 'with multiple runner auth routable tokens' do
+      let_it_be(:project) { create(:project) }
+      let_it_be(:routable_runners) { create_list(:ci_runner, 4, :project, projects: [project]) }
+      let(:raw_token_values) { routable_runners.map(&:token) }
+
+      it 'finds multiple tokens by their values and type' do
+        results = service.find('gitlab_runner_auth_token_routable', raw_token_values)
+        expect(results).to match(raw_token_values.zip(routable_runners).to_h)
       end
     end
 
