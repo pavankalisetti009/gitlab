@@ -162,8 +162,12 @@ module Gitlab
             end
 
             def ai_request
-              ::Gitlab::Llm::Chain::Requests::AiGateway.new(context.current_user, service_name: :summarize_comments,
-                tracking_context: tracking_context)
+              ::Gitlab::Llm::Chain::Requests::AiGateway.new(
+                context.current_user,
+                service_name: :summarize_comments,
+                tracking_context: tracking_context,
+                root_namespace: resource.resource_parent.root_ancestor
+              )
             end
 
             def tracking_context
