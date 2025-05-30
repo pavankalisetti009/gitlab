@@ -96,12 +96,18 @@ module QA
                 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/439625'
             end
 
-            context 'when seat is not assigned', :ai_gateway_no_seat_assigned do
+            context 'when seat is not assigned', :ai_gateway_no_seat_assigned, quarantine: {
+              issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/546447',
+              type: :stale
+            } do
               it_behaves_like 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/451486'
             end
           end
 
-          context 'with no Duo Enterprise add-on', :ai_gateway_no_add_on do
+          context 'with no Duo Enterprise add-on', :ai_gateway_no_add_on, quarantine: {
+            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/546448',
+            type: :stale
+          } do
             it_behaves_like 'unauthorized', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/452450'
           end
         end
