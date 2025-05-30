@@ -249,6 +249,7 @@ export default {
       v-if="showParent"
       class="work-item-attributes-item"
       :can-update="canUpdateMetadata"
+      :full-path="fullPath"
       :work-item-id="workItem.id"
       :work-item-type="workItemType"
       :parent="workItemParent"
