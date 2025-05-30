@@ -16,4 +16,34 @@ RSpec.describe BoardUserPreference do
                        .with_message("should have only one board preference per user")
     end
   end
+
+  describe 'callbacks' do
+    describe 'ensure_group_or_project' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project, group: group) }
+
+      context 'when board belongs to a group' do
+        let_it_be(:board) { create(:board, group: group) }
+
+        it 'sets group_id from the parent board' do
+          board_user_preference = described_class.create!(board: board, user: user)
+
+          expect(board_user_preference.group_id).to eq(board.group_id)
+          expect(board_user_preference.project_id).to be_nil
+        end
+      end
+
+      context 'when board belongs to a project' do
+        let_it_be(:board) { create(:board, project: project) }
+
+        it 'sets project_id from the parent board' do
+          board_user_preference = described_class.create!(board: board, user: user)
+
+          expect(board_user_preference.project_id).to eq(board.project_id)
+          expect(board_user_preference.group_id).to be_nil
+        end
+      end
+    end
+  end
 end

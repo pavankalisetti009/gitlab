@@ -7,7 +7,7 @@ module Groups
         before_action :verify_read_virtual_registry!, only: [:show]
         before_action :verify_update_virtual_registry!, only: [:edit]
         before_action :set_upstream, only: [:edit, :show]
-        before_action :push_ability, only: [:edit]
+        before_action :push_ability, only: [:edit, :show]
 
         feature_category :virtual_registry
         urgency :low

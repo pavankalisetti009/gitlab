@@ -53,7 +53,7 @@ module Ai
         # Before launching this into GA, there need to be additional checks to ensure that the
         # user is actually entitled to the requested token.
         def cloud_connector_token
-          CloudConnector::Tokens.get
+          CloudConnector::Tokens.get(unit_primitive: :duo_workflow_execute_workflow)
         end
 
         def channel_credentials

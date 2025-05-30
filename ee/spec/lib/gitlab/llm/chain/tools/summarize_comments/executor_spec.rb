@@ -52,6 +52,27 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Executor, feature_c
         allow(Ability).to receive(:allowed?).and_call_original
         allow(Ability).to receive(:allowed?).with(user, :summarize_comments, resource).and_return(true)
         allow(tool).to receive(:provider_prompt_class).and_return(prompt_class)
+        allow(Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).with(user, {
+          service_name: :summarize_comments,
+          tracking_context: { request_id: nil, action: 'summarize_comments' },
+          root_namespace: resource.resource_parent.root_ancestor
+        }).and_return(ai_request_double)
+      end
+
+      it 'sends a request with `root_namespace` included' do
+        expect(ai_request_double).to receive(:request).with(
+          hash_including(options: hash_including(prompt_version: '^1.0.0')),
+          unit_primitive: 'summarize_comments'
+        )
+
+        tool.execute
+
+        expect(Gitlab::Llm::Chain::Requests::AiGateway).to have_received(:new).with(
+          user,
+          service_name: :summarize_comments,
+          tracking_context: { request_id: nil, action: 'summarize_comments' },
+          root_namespace: resource.resource_parent.root_ancestor
+        )
       end
 
       it 'calls prompt with correct params' do

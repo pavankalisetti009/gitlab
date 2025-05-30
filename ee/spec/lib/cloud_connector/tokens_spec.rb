@@ -6,6 +6,17 @@ RSpec.describe CloudConnector::Tokens, feature_category: :cloud_connector do
   describe '.get' do
     let(:token_string) { 'ABCDEF' }
     let(:token_provider) { instance_double(expected_provider_class, token: token_string) }
+    let(:unit_primitive) { nil }
+    let(:extra_claims) { {} }
+    let(:group_ids) { [] }
+
+    subject(:encoded_token) do
+      described_class.get(
+        root_group_ids: group_ids,
+        extra_claims: extra_claims,
+        unit_primitive: unit_primitive
+      )
+    end
 
     before do
       # "Defuse" all counter calls so as not to pollute the tmp folder with metric data.
@@ -23,8 +34,6 @@ RSpec.describe CloudConnector::Tokens, feature_category: :cloud_connector do
       let(:instance_uuid) { '123-ABC' }
       let(:gitlab_realm) { 'realm' }
       let(:extra_claims) { { custom_claim: 'value' } }
-
-      subject(:encoded_token) { described_class.get(root_group_ids: group_ids, extra_claims: extra_claims) }
 
       before do
         allow(CloudConnector::CachingKeyLoader).to receive(:private_jwk).and_return(jwk)
@@ -75,6 +84,25 @@ RSpec.describe CloudConnector::Tokens, feature_category: :cloud_connector do
       end
     end
 
+    shared_examples 'uses TokenLoader to obtain a token' do
+      let(:expected_provider_class) { CloudConnector::Tokens::TokenLoader }
+      let(:token_provider) { instance_double(expected_provider_class, token: token_string) }
+
+      before do
+        allow(expected_provider_class).to receive(:new).and_return(token_provider)
+      end
+
+      it 'returns the token string from TokenLoader' do
+        expect(encoded_token).to eq(token_string)
+      end
+
+      it 'does not increment the token counter metric' do
+        expect(::Gitlab::Metrics).not_to receive(:counter)
+          .with(:cloud_connector_tokens_issued_total, instance_of(String), instance_of(Hash))
+        encoded_token
+      end
+    end
+
     context 'when a self-issued token should be used' do
       context 'when on gitlab.com' do
         before do
@@ -85,11 +113,25 @@ RSpec.describe CloudConnector::Tokens, feature_category: :cloud_connector do
       end
 
       context 'when self-hosted models are configured' do
+        let(:feature_obj) { instance_double(Ai::FeatureSetting, self_hosted?: true) }
+        let(:unit_primitive) { :duo_chat }
+
         before do
-          allow(::Ai::Setting).to receive(:self_hosted?).and_return(true)
+          allow(::Ai::FeatureSetting).to receive(:feature_for_unit_primitive)
+            .with(unit_primitive).and_return(feature_obj)
         end
 
         it_behaves_like 'issues new token'
+      end
+
+      context 'when feature_for_unit_primitive returns nil' do
+        let(:unit_primitive) { :duo_chat }
+
+        before do
+          allow(::Ai::FeatureSetting).to receive(:feature_for_unit_primitive).with(unit_primitive).and_return(nil)
+        end
+
+        it_behaves_like 'uses TokenLoader to obtain a token'
       end
 
       context 'when CLOUD_CONNECTOR_SELF_SIGN_TOKENS is set' do
@@ -104,22 +146,7 @@ RSpec.describe CloudConnector::Tokens, feature_category: :cloud_connector do
     context 'when a stored token should be used' do
       let(:expected_provider_class) { CloudConnector::Tokens::TokenLoader }
 
-      subject(:encoded_token) { described_class.get }
-
-      before do
-        allow(expected_provider_class).to receive(:new).and_return(token_provider)
-      end
-
-      it 'uses TokenLoader to obtain a token' do
-        expect(encoded_token).to eq(token_string)
-      end
-
-      it 'does not increment the token counter metric' do
-        expect(::Gitlab::Metrics).not_to receive(:counter)
-          .with(:cloud_connector_tokens_issued_total, instance_of(String), instance_of(Hash))
-
-        encoded_token
-      end
+      it_behaves_like 'uses TokenLoader to obtain a token'
     end
   end
 end
