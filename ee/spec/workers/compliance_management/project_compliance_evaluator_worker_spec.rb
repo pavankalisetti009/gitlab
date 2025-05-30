@@ -55,8 +55,15 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
   let(:approval_settings_project1) { [policy_read1.project_approval_settings] }
   let(:approval_settings_project2) { [policy_read2.project_approval_settings] }
 
+  let(:requirement_status_service) do
+    instance_double(ComplianceManagement::ComplianceFramework::ComplianceRequirements::RefreshStatusService)
+  end
+
   before do
     framework.projects << [project, project2]
+    allow(ComplianceManagement::ComplianceFramework::ComplianceRequirements::RefreshStatusService)
+      .to receive(:new).and_return(requirement_status_service)
+    allow(requirement_status_service).to receive(:execute)
   end
 
   describe '#perform' do
@@ -88,6 +95,14 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
         .to receive(:new)
               .and_return(status_service)
       allow(status_service).to receive(:execute)
+    end
+
+    shared_examples 'refreshes the requirement status' do
+      it 'refreshes the requirement status' do
+        expect(requirement_status_service).to receive(:execute).twice
+
+        perform
+      end
     end
 
     it_behaves_like 'an idempotent worker' do
@@ -159,27 +174,7 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
         perform
       end
 
-      it 'collects evaluation results before updating statuses' do
-        expect(worker).to receive(:update_all_control_statuses) do |results|
-          expect(results.size).to eq(2)
-          expect(results).to contain_exactly(
-            {
-              project: project,
-              control: control,
-              status_value: 'pass'
-            },
-            {
-              project: project2,
-              control: control,
-              status_value: 'pass'
-            }
-          )
-        end
-
-        perform
-      end
-
-      it 'updates the status for each control-project pair' do
+      it 'updates the status for each control-project pair', :aggregate_failures do
         expect(ComplianceManagement::ComplianceFramework::ComplianceRequirementsControls::UpdateStatusService)
           .to receive(:new)
                 .with(
@@ -204,6 +199,8 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
 
         perform
       end
+
+      it_behaves_like 'refreshes the requirement status'
     end
 
     context 'when control evaluation returns false' do
@@ -211,16 +208,7 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
         allow(evaluator).to receive(:evaluate).and_return(false)
       end
 
-      it 'collects evaluation results with "fail" status' do
-        expect(worker).to receive(:update_all_control_statuses) do |results|
-          expect(results.size).to eq(2)
-          expect(results.pluck(:status_value)).to all(eq('fail'))
-        end
-
-        perform
-      end
-
-      it 'updates the status with "fail"' do
+      it 'updates the status with "fail"', :aggregate_failures do
         expect(ComplianceManagement::ComplianceFramework::ComplianceRequirementsControls::UpdateStatusService)
           .to receive(:new)
                 .with(
@@ -243,6 +231,8 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
 
         perform
       end
+
+      it_behaves_like 'refreshes the requirement status'
     end
 
     context 'with invalid parameters' do
@@ -280,19 +270,13 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
         perform
       end
 
-      it 'collects no evaluation results when all evaluations fail' do
-        expect(worker).to receive(:update_all_control_statuses) do |results|
-          expect(results).to be_empty
-        end
-
-        perform
-      end
-
       it 'does not call the update service when all evaluations fail' do
         expect(status_service).not_to receive(:execute)
 
         perform
       end
+
+      it_behaves_like 'refreshes the requirement status'
     end
 
     context 'when errors occur during status update' do
@@ -333,6 +317,8 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
 
         perform
       end
+
+      it_behaves_like 'refreshes the requirement status'
     end
 
     context 'when some evaluations succeed and some fail' do
@@ -368,16 +354,6 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
         perform
       end
 
-      it 'collects results only for successful evaluations' do
-        expect(worker).to receive(:update_all_control_statuses) do |results|
-          expect(results.size).to eq(1)
-          expect(results.first[:project]).to eq(project)
-          expect(results.first[:status_value]).to eq('pass')
-        end
-
-        perform
-      end
-
       it 'only updates statuses for successful evaluations' do
         expect(ComplianceManagement::ComplianceFramework::ComplianceRequirementsControls::UpdateStatusService)
           .to receive(:new)
@@ -393,6 +369,8 @@ RSpec.describe ComplianceManagement::ProjectComplianceEvaluatorWorker, feature_c
 
         perform
       end
+
+      it_behaves_like 'refreshes the requirement status'
     end
   end
 

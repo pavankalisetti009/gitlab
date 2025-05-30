@@ -86,7 +86,8 @@ RSpec.describe API::ComplianceExternalControls, feature_category: :compliance_ma
           .with(hash_including(
             control: control,
             project: project,
-            status_value: 'pass'
+            status_value: 'pass',
+            params: { refresh_requirement_status: true }
           )) do |args|
             expect(args[:current_user]).to be_a(::Gitlab::Audit::UnauthenticatedAuthor)
             service_double

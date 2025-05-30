@@ -9,11 +9,12 @@ module ComplianceManagement
 
         VALID_STATUSES = %w[pass fail].freeze
 
-        def initialize(current_user:, control:, project:, status_value:)
+        def initialize(current_user:, control:, project:, status_value:, params: {})
           @current_user = current_user
           @control = control
           @project = project
           @status_value = status_value
+          @params = params
         end
 
         def execute
@@ -23,6 +24,7 @@ module ComplianceManagement
           return error(control_status.errors.full_messages.join(', ')) unless update_control_status
 
           audit_changes
+          refresh_requirement_status
           success
         end
 
@@ -97,6 +99,17 @@ module ComplianceManagement
               error_message: error_message
             )
           )
+        end
+
+        def refresh_requirement_status
+          return unless params[:refresh_requirement_status]
+
+          requirement_status = ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus
+            .find_or_create_project_and_requirement(project, control.compliance_requirement)
+
+          ComplianceManagement::ComplianceFramework::ComplianceRequirements::RefreshStatusService
+            .new(requirement_status)
+            .execute
         end
       end
     end

@@ -12,12 +12,34 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
     create(:compliance_requirements_control, :external, compliance_requirement: requirement, namespace: group)
   end
 
+  let_it_be(:control2) do
+    create(:compliance_requirements_control, compliance_requirement: requirement, namespace: group)
+  end
+
   let_it_be(:project_control_compliance_status) do
     create(:project_control_compliance_status,
       project: project,
       compliance_requirements_control: control,
       compliance_requirement: requirement,
       status: 'pending')
+  end
+
+  let_it_be(:project_control_compliance_status2) do
+    create(:project_control_compliance_status,
+      project: project,
+      compliance_requirements_control: control2,
+      compliance_requirement: requirement,
+      status: 'fail')
+  end
+
+  let_it_be(:requirement_status) do
+    create(:project_requirement_compliance_status,
+      project: project,
+      compliance_requirement: requirement,
+      pass_count: 0,
+      fail_count: 2,
+      pending_count: 2
+    )
   end
 
   let_it_be(:user) { create(:user) }
@@ -48,6 +70,69 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       allow(::Gitlab::Audit::Auditor).to receive(:audit)
     end
 
+    shared_examples 'do not refresh requirement status' do
+      it 'does not fetches requirement status' do
+        expect(ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus)
+          .not_to receive(:find_or_create_project_and_requirement)
+
+        service.execute
+      end
+    end
+
+    shared_context 'with requirement status refresh' do
+      context 'when refresh_requirement_status is true' do
+        subject(:service) do
+          described_class.new(current_user: user, control: control, project: project, status_value: 'pass',
+            params: { refresh_requirement_status: true }
+          )
+        end
+
+        context 'when requirement status does not exist' do
+          let(:refresh_service) do
+            instance_double(ComplianceManagement::ComplianceFramework::ComplianceRequirements::RefreshStatusService)
+          end
+
+          before do
+            ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus.delete_all
+            allow(ComplianceManagement::ComplianceFramework::ComplianceRequirements::RefreshStatusService)
+              .to receive(:new).and_return(refresh_service)
+          end
+
+          it 'creates a new requirement status', :aggregate_failures do
+            expect(ComplianceManagement::ComplianceFramework::ProjectRequirementComplianceStatus)
+              .to receive(:find_or_create_project_and_requirement)
+              .and_call_original
+
+            expect(refresh_service).to receive(:execute)
+
+            service.execute
+          end
+        end
+
+        context 'when requirement status exists' do
+          it 'refreshes the requirement status' do
+            expect { service.execute }.to change { requirement_status.reload.pass_count }.from(0).to(1)
+              .and change { requirement_status.reload.fail_count }.from(2).to(1)
+              .and change { requirement_status.reload.pending_count }.from(2).to(0)
+          end
+        end
+      end
+
+      context 'when refresh_requirement_status is false' do
+        subject(:service) do
+          described_class.new(current_user: user, control: control, project: project, status_value: 'pass',
+            params: { refresh_requirement_status: false }
+          )
+        end
+
+        it_behaves_like 'do not refresh requirement status'
+      end
+
+      context 'when refresh_requirement_status is nil' do
+        it_behaves_like 'do not refresh requirement status'
+      end
+    end
+
     context 'when status is valid' do
       it 'updates the compliance requirement control status' do
         expect { service.execute }.to change { project_control_compliance_status.reload.status }.to('pass')
@@ -75,6 +160,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       it 'does not track any events when changing from pending to pass' do
         expect { service.execute }.not_to trigger_internal_events
       end
+
+      include_context 'with requirement status refresh'
 
       context 'when transitioning from pass to fail' do
         let(:fail_service) do
@@ -120,7 +207,7 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
 
       context 'when project control status does not exist' do
         before do
-          project_control_compliance_status.destroy!
+          ComplianceManagement::ComplianceFramework::ProjectControlComplianceStatus.delete_all
         end
 
         it 'creates a new project control compliance status' do
@@ -216,6 +303,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         it 'does not track any events' do
           expect { service.execute }.not_to trigger_internal_events
         end
+
+        include_context 'with requirement status refresh'
       end
     end
 
@@ -281,6 +370,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       it 'does not track any events' do
         expect { service.execute }.not_to trigger_internal_events
       end
+
+      it_behaves_like 'do not refresh requirement status'
     end
 
     context 'when an ArgumentError is raised' do
@@ -303,6 +394,8 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
       it 'does not track any events' do
         expect { service.execute }.not_to trigger_internal_events
       end
+
+      it_behaves_like 'do not refresh requirement status'
     end
   end
 end
