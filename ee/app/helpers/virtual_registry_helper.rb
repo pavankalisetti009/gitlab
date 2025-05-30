@@ -68,4 +68,16 @@ module VirtualRegistryHelper
       cacheValidityHours: maven_upstream.cache_validity_hours
     }
   end
+
+  def maven_upstream_data(upstream)
+    {
+      upstream: {
+        id: upstream.id,
+        name: upstream.name,
+        url: upstream.url,
+        description: upstream.description,
+        cacheEntriesCount: upstream.cache_entries.size
+      }
+    }.to_json
+  end
 end
