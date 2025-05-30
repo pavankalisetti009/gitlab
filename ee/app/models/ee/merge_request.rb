@@ -223,7 +223,7 @@ module EE
         super.preload(
           :blocking_merge_requests, :scan_result_policy_reads_through_violations,
           :scan_result_policy_reads_through_approval_rules,
-          :approval_rules, :running_scan_result_policy_violations,
+          :approval_rules, :running_scan_result_policy_violations, :requested_changes,
           target_project: [
             :regular_or_any_approver_approval_rules,
             :protected_branches,
