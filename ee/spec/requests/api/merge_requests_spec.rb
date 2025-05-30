@@ -561,4 +561,25 @@ RSpec.describe API::MergeRequests, feature_category: :source_code_management do
       it_behaves_like 'filter merge requests by approved_by_x'
     end
   end
+
+  describe 'GET /projects/:id/merge_requests' do
+    let(:endpoint_path) { "/projects/#{project.id}/merge_requests" }
+    let(:params) { { with_labels_details: true } } # With this param we skip caching the response
+    let(:another_mr) { create(:merge_request, source_project: project, target_project: project) }
+
+    context 'when multiple MRs have requested changes' do
+      before do
+        stub_licensed_features(requested_changes_block_merge_request: true)
+        create(:merge_request_requested_changes, merge_request: merge_request, project: project)
+      end
+
+      it 'does not have N+1 issues' do
+        control = ActiveRecord::QueryRecorder.new { get api(endpoint_path), params: params }
+
+        create(:merge_request_requested_changes, merge_request: another_mr, project: project)
+
+        expect { get api(endpoint_path), params: params }.not_to exceed_query_limit(control)
+      end
+    end
+  end
 end

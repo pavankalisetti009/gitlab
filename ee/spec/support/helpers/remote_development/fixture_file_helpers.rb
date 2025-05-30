@@ -21,7 +21,7 @@ module RemoteDevelopment
       devfile_contents.gsub!('test-project', project_name)
       devfile_contents.gsub!('test-group', namespace_path)
 
-      format_project_cloner_script!(devfile_contents, project_name: project_name, namespace_path: namespace_path)
+      format_clone_project_script!(devfile_contents, project_name: project_name, namespace_path: namespace_path)
 
       devfile_contents
     end
@@ -43,7 +43,7 @@ module RemoteDevelopment
     # @param [String] project_name
     # @param [String] namespace_path
     # @return [void]
-    def format_project_cloner_script!(
+    def format_clone_project_script!(
       content,
       project_name: "test-project",
       namespace_path: "test-group"
@@ -51,13 +51,13 @@ module RemoteDevelopment
       # NOTE: These replacements correspond to the `format` command in `project_cloner_component_inserter.rb`
       content.gsub!(
         "%<project_cloning_successful_file>s",
-        "#{WORKSPACE_DATA_VOLUME_PATH}/#{PROJECT_CLONING_SUCCESSFUL_FILE_NAME}"
+        Shellwords.shellescape("#{WORKSPACE_DATA_VOLUME_PATH}/#{PROJECT_CLONING_SUCCESSFUL_FILE_NAME}")
       )
-      content.gsub!("%<project_ref>s", "master")
-      content.gsub!("%<project_url>s", "#{root_url}#{namespace_path}/#{project_name}.git")
+      content.gsub!("%<project_ref>s", Shellwords.shellescape("master"))
+      content.gsub!("%<project_url>s", Shellwords.shellescape("#{root_url}#{namespace_path}/#{project_name}.git"))
       content.gsub!(
         "%<clone_dir>s",
-        "#{WORKSPACE_DATA_VOLUME_PATH}/#{project_name}"
+        Shellwords.shellescape("#{WORKSPACE_DATA_VOLUME_PATH}/#{project_name}")
       )
 
       nil
