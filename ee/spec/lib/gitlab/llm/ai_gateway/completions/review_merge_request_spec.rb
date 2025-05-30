@@ -351,6 +351,32 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         end
       end
 
+      context 'when draft_notes is empty after mapping DraftNote objects and no comments provided' do
+        let(:summary_response) { nil }
+        let(:combined_review_response) do
+          <<~RESPONSE
+          <review>
+          1. Renaming the test category from "Govern" to "Software Supply Chain Security" across multiple test files
+          </review>
+          RESPONSE
+        end
+
+        it 'updates progress note with no comment message and creates a todo' do
+          expect_any_instance_of(TodoService) do |service|
+            expect(service).to receive(:new_review).with(merge_request, duo_code_review_bot)
+          end
+
+          completion.execute
+
+          expected_message = <<~RESPONSE.chomp
+          #{described_class.no_comment_msg}
+
+          1. Renaming the test category from "Govern" to "Software Supply Chain Security" across multiple test files
+          RESPONSE
+          expect(merge_request.notes.non_diff_notes.last.note).to eq(expected_message)
+        end
+      end
+
       context 'when review note already exists on the same position' do
         let(:progress_note2) do
           create(
