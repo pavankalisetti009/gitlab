@@ -9,6 +9,14 @@ RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_re
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
   let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, group: group, registry: registry) }
+  let_it_be(:cache_entries) do
+    [
+      create(:virtual_registries_packages_maven_cache_entry, group: group, upstream: upstream,
+        relative_path: '/com/example/artifact-1.jar'),
+      create(:virtual_registries_packages_maven_cache_entry, group: group, upstream: upstream,
+        relative_path: '/com/example/artifact-2.jar')
+    ]
+  end
 
   before do
     stub_config(dependency_proxy: { enabled: true })
@@ -16,7 +24,7 @@ RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_re
     sign_in(user)
   end
 
-  describe 'upstream page' do
+  describe 'upstream show page' do
     subject(:url) { group_virtual_registries_maven_upstream_path(group, upstream) }
 
     context 'when user is not group member' do
@@ -29,15 +37,37 @@ RSpec.describe 'Maven virtual registry upstreams', feature_category: :virtual_re
 
     context 'when user is a group member' do
       before_all do
-        group.add_guest(user)
+        group.add_maintainer(user)
       end
 
       it_behaves_like 'virtual registry is unavailable'
 
-      it 'renders upstream show page' do
-        visit url
+      describe 'behavior', :aggregate_failures, :js do
+        it 'renders all cache entries with their details' do
+          visit url
 
-        expect(page).to have_selector('h1', text: upstream.name)
+          expect(all_by_testid('cache-entry-row').count).to eq(cache_entries.size)
+
+          cache_entries.each do |entry|
+            expect(page).to have_content(entry.relative_path)
+            expect(page).to have_content(entry.size.to_s)
+            expect(page).to have_content(entry.content_type)
+          end
+        end
+
+        it 'allows deletion of cache entries' do
+          visit url
+
+          expect(all_by_testid('cache-entry-row').count).to eq(2)
+
+          all_by_testid('delete-cache-entry-btn').first.click
+
+          within_modal do
+            click_button 'Delete'
+          end
+
+          expect(all_by_testid('cache-entry-row').count).to eq(1)
+        end
       end
     end
   end

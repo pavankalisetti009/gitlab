@@ -67476,6 +67476,9 @@ msgid_plural "VirtualRegistry|%{hours} hours cache"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "VirtualRegistry|%{size} KB"
+msgstr ""
+
 msgid "VirtualRegistry|%{size} storage used"
 msgstr ""
 
@@ -67512,6 +67515,9 @@ msgstr ""
 msgid "VirtualRegistry|Delete Maven upstream"
 msgstr ""
 
+msgid "VirtualRegistry|Delete Maven upstream cache entry?"
+msgstr ""
+
 msgid "VirtualRegistry|Delete registry"
 msgstr ""
 
@@ -67528,6 +67534,12 @@ msgid "VirtualRegistry|Edit upstream"
 msgstr ""
 
 msgid "VirtualRegistry|Enter password"
+msgstr ""
+
+msgid "VirtualRegistry|Failed to delete cache entry."
+msgstr ""
+
+msgid "VirtualRegistry|Failed to fetch cache entries."
 msgstr ""
 
 msgid "VirtualRegistry|Failed to fetch list of maven virtual registries."
@@ -67612,6 +67624,9 @@ msgid "VirtualRegistry|Username (optional)"
 msgstr ""
 
 msgid "VirtualRegistry|Virtual registry"
+msgstr ""
+
+msgid "VirtualRegistry|last checked %{date}"
 msgstr ""
 
 msgid "Visibility"
