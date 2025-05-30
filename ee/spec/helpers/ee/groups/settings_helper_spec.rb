@@ -11,7 +11,11 @@ RSpec.describe EE::Groups::SettingsHelper do
       auto_ban_user_on_excessive_projects_download: true)
   end
 
-  let(:group) { build(:group, namespace_settings: namespace_settings, id: 7) }
+  let(:ai_settings) do
+    build(:namespace_ai_settings, duo_workflow_mcp_enabled: true)
+  end
+
+  let(:group) { build(:group, namespace_settings: namespace_settings, ai_settings: ai_settings, id: 7) }
   let(:current_user) { build(:user) }
 
   before do
@@ -80,6 +84,8 @@ RSpec.describe EE::Groups::SettingsHelper do
         .to receive(:any_add_on_purchase)
         .with(root_ancestor)
         .and_return(add_on_purchase)
+
+      allow(current_user).to receive(:can?).with(:admin_duo_workflow, group).and_return(true)
     end
 
     it 'returns the expected data' do
@@ -97,9 +103,24 @@ RSpec.describe EE::Groups::SettingsHelper do
           early_access_path: group_early_access_opt_in_path(group),
           update_id: group.id,
           duo_pro_or_duo_enterprise_tier: nil,
-          should_show_duo_availability: "false"
+          should_show_duo_availability: "false",
+          duo_workflow_available: "true",
+          duo_workflow_mcp_enabled: "true"
         }
       )
+    end
+
+    context 'when duo_workflow_mcp_enabled is disabled' do
+      before do
+        stub_feature_flags(duo_workflow_mcp_support: false)
+      end
+
+      it 'return duo_workflow_available as false' do
+        is_expected.to include(
+          duo_workflow_available: "false",
+          duo_workflow_mcp_enabled: "true"
+        )
+      end
     end
 
     context 'with Duo Pro' do

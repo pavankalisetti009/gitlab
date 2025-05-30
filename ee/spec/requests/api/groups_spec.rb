@@ -671,6 +671,16 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
         expect(response).to have_gitlab_http_status(:ok)
       end
     end
+
+    context 'duo_workflow_mcp_enabled' do
+      it 'updates duo_workflow_mcp_enabled field of namespace AI settings' do
+        expect do
+          put api("/groups/#{group.id}", user), params: { ai_settings_attributes: { duo_workflow_mcp_enabled: true } }
+        end.to change { group.reload.duo_workflow_mcp_enabled }.from(nil).to(true)
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
   end
 
   describe "POST /groups" do
