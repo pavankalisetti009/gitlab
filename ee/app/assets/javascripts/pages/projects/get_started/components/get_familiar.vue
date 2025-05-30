@@ -1,5 +1,6 @@
 <script>
 import { GlCard, GlButton, GlIcon } from '@gitlab/ui';
+import { InternalEvents } from '~/tracking';
 
 export default {
   name: 'GetFamiliar',
@@ -7,6 +8,12 @@ export default {
     GlCard,
     GlButton,
     GlIcon,
+  },
+  mixins: [InternalEvents.mixin()],
+  methods: {
+    trackTryWalkthroughClick() {
+      this.trackEvent('click_duo_try_walkthrough_in_get_started');
+    },
   },
 };
 </script>
@@ -76,6 +83,7 @@ export default {
             data-testid="walkthrough-link"
             category="tertiary"
             href="https://gitlab.navattic.com/gitlab-premium-with-duo"
+            @click="trackTryWalkthroughClick"
           >
             {{ s__('LearnGitLab|Try walkthrough') }}
             <gl-icon name="external-link" class="gl-ml-2" />
