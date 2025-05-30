@@ -75,7 +75,7 @@ module QA
         end
       end
 
-      context 'when instance level', :requires_admin do
+      context 'when instance level', :requires_admin, :skip_live_env do
         before do
           Flow::Login.sign_in_as_admin
 
