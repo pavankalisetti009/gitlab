@@ -12,8 +12,8 @@ module GitlabSubscriptions
 
       def initialize(step:, lead_params:, trial_params:, user:)
         @step = step
-        @lead_params = lead_params
-        @trial_params = trial_params
+        @lead_params = lead_params.to_h.symbolize_keys
+        @trial_params = trial_params.to_h.symbolize_keys
         @user = user
       end
 

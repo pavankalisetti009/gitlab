@@ -10,7 +10,7 @@ class Admin::AuditLogReportsController < Admin::ApplicationController
   feature_category :audit_events
 
   def index
-    csv_data = AuditEvents::ExportCsvService.new(audit_event_reports_params).csv_data
+    csv_data = AuditEvents::ExportCsvService.new(audit_event_reports_params.to_h).csv_data
 
     respond_to do |format|
       format.csv do

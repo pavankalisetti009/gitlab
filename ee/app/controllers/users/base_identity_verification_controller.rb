@@ -211,7 +211,7 @@ module Users
     end
 
     def verify_phone_verification_code_params
-      required_params.permit(:verification_code)
+      required_params.permit(:verification_code).to_h
     end
 
     def arkose_labs_enabled?(user:)
