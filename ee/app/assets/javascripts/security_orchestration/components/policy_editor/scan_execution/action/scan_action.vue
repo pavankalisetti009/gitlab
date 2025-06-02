@@ -59,9 +59,11 @@ export default {
     },
   },
   data() {
+    const hasVariables = !isEmpty(this.initAction.variables);
+
     return {
       filters: {
-        [CI_VARIABLE]: false,
+        [CI_VARIABLE]: hasVariables,
       },
       selectedScanner: this.initAction.scan || DEFAULT_SCANNER,
     };
@@ -112,6 +114,15 @@ export default {
       return isScanningReport(this.selectedScanner)
         ? SCANNER_HUMANIZED_TEMPLATE_ALT
         : SCANNER_HUMANIZED_TEMPLATE;
+    },
+  },
+  watch: {
+    initAction(action) {
+      const hasVariables = !isEmpty(action.variables);
+      this.filters = {
+        ...this.filters,
+        [CI_VARIABLE]: hasVariables,
+      };
     },
   },
   methods: {

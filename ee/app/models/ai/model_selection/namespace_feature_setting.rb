@@ -23,13 +23,6 @@ module Ai
         find_or_initialize_by(namespace_id: namespace.id, feature: feature)
       end
 
-      def self.find_by_feature(namespace, feature)
-        return unless namespace.present? && ::Feature.enabled?(:ai_model_switching, namespace)
-        return unless namespace.root?
-
-        find_by(namespace: namespace, feature: feature)
-      end
-
       def model_selection_scope
         namespace
       end

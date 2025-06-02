@@ -9,8 +9,10 @@ module Gitlab
             def decorate(feature_settings, model_definitions: nil)
               return [] unless feature_settings.present?
 
-              feature_settings.map do |feature_setting|
+              feature_settings.filter_map do |feature_setting|
                 decorator = new(feature_setting, model_definitions: model_definitions)
+
+                next if decorator.feature_data.nil?
 
                 if model_definitions.present? || feature_setting.model_definitions.present?
                   decorator.decorate_default_model
@@ -30,6 +32,12 @@ module Gitlab
             @model_definitions = model_definitions || feature_setting.model_definitions
 
             super(feature_setting)
+          end
+
+          def feature_data
+            @feature_data ||= model_definitions['unit_primitives'].find do |unit|
+              unit['feature_setting'] == feature_setting.feature.to_s
+            end
           end
 
           def decorate_default_model
@@ -59,12 +67,6 @@ module Gitlab
               ref: model_data['identifier'],
               name: model_data['name']
             }
-          end
-
-          def feature_data
-            @feature_data ||= model_definitions['unit_primitives'].find do |unit|
-              unit['feature_setting'] == feature_setting.feature.to_s
-            end
           end
 
           def model_data_list

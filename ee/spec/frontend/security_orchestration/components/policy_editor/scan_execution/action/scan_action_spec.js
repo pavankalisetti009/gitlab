@@ -269,6 +269,11 @@ describe('PolicyActionBuilder', () => {
         expect(findAddVariableButton().exists()).toBe(false);
         expect(findCiVariablesSelectors().exists()).toBe(true);
       });
+
+      it('hides the ci variable filter if action has variables', () => {
+        factory({ propsData: { initAction: { ...DEFAULT_ACTION, variables: { key: 'value' } } } });
+        expect(findAddVariableButton().exists()).toBe(false);
+      });
     });
   });
 

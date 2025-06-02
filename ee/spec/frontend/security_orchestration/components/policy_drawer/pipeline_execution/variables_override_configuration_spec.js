@@ -28,7 +28,7 @@ describe('VariablesOverrideList', () => {
     it('does not render accordion when there are no exceptions', () => {
       expect(findAccordion().exists()).toBe(false);
       expect(findStatusHeader().text()).toBe(
-        'Settings from outside of the policy cannot override variables when the policy runs, except for the variables defined in the allowlist.',
+        'Settings from outside of the policy cannot override variables when the policy runs.',
       );
       expect(findToggleList().exists()).toBe(false);
     });
@@ -92,6 +92,28 @@ describe('VariablesOverrideList', () => {
     it('displays the exceptions list', () => {
       expect(findToggleList().props('items')).toHaveLength(1);
       expect(findToggleList().props('items')[0]).toBe('CI_VARIABLE_3');
+    });
+  });
+
+  describe('when in allowlist mode with no exceptions', () => {
+    beforeEach(() => {
+      createComponent({ variablesOverride: { allowed: true } });
+    });
+    it('renders the allowed message with no exceptions', () => {
+      expect(findStatusHeader().text()).toBe(
+        'Settings from outside of the policy can override variables when the policy runs.',
+      );
+    });
+  });
+
+  describe('when in denylist mode with no exceptions', () => {
+    beforeEach(() => {
+      createComponent({ variablesOverride: { allowed: false } });
+    });
+    it('renders the denied message with no exceptions', () => {
+      expect(findStatusHeader().text()).toBe(
+        'Settings from outside of the policy cannot override variables when the policy runs.',
+      );
     });
   });
 

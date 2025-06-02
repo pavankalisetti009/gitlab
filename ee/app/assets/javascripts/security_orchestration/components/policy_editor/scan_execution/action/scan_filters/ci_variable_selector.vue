@@ -41,6 +41,16 @@ export default {
       type: String,
       required: true,
     },
+    disableRemoveButton: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    disableRemoveButtonTitle: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   data() {
     let customVariable = '';
@@ -105,6 +115,8 @@ export default {
   <section-layout
     class="gl-w-full gl-bg-default gl-pb-2 gl-pr-2 gl-pt-0"
     content-classes="gl-justify-between"
+    :disable-remove-button="disableRemoveButton"
+    :disable-remove-button-title="disableRemoveButtonTitle"
     @remove="removeVariable"
   >
     <template #selector>

@@ -11,6 +11,6 @@ module Dast
 
     validates :ci_build_id, :dast_scanner_profile_id, presence: true
 
-    alias_attribute :profile, :dast_scanner_profile
+    alias_method :profile, :dast_scanner_profile
   end
 end

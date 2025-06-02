@@ -15,6 +15,9 @@ export default {
       'ScanExecutionPolicy|Customized variables will overwrite ones defined in the project CI/CD file and settings',
     ),
     tooltipText: s__('ScanExecutionPolicy|Only one variable can be added at a time.'),
+    disableRemoveButtonTitle: s__(
+      'ScanExecutionPolicy|This is a required variable for this scanner and cannot be removed.',
+    ),
   },
   components: {
     GlButton,
@@ -63,6 +66,12 @@ export default {
     variables() {
       return Object.entries(this.selected).length ? Object.entries(this.selected) : [['', '']];
     },
+    hasRequiredVariable() {
+      return 'SECURE_ENABLE_LOCAL_CONFIGURATION' in this.selected;
+    },
+    parentDisabledRemoveButtonTitle() {
+      return this.hasRequiredVariable ? this.$options.i18n.disableRemoveButtonTitle : '';
+    },
   },
   methods: {
     addVariable() {
@@ -96,6 +105,12 @@ export default {
       const variablesObject = this.reduceVariablesToObject(newVariables);
       this.$emit('input', { variables: variablesObject });
     },
+    isRequiredVariable(variable) {
+      return variable === 'SECURE_ENABLE_LOCAL_CONFIGURATION';
+    },
+    requiredVariableDisabledTitle(variable) {
+      return this.isRequiredVariable(variable) ? this.$options.i18n.disableRemoveButtonTitle : '';
+    },
   },
 };
 </script>
@@ -105,6 +120,8 @@ export default {
     <section-layout
       class="gl-mb-2 gl-bg-default gl-pb-0 gl-pr-2"
       content-classes="gl-gap-y-2"
+      :disable-remove-button="hasRequiredVariable"
+      :disable-remove-button-title="parentDisabledRemoveButtonTitle"
       @remove="remove"
     >
       <template #selector>
@@ -122,6 +139,8 @@ export default {
       :value="value"
       :scan-type="scanType"
       :selected="selected"
+      :disable-remove-button="isRequiredVariable(key)"
+      :disable-remove-button-title="requiredVariableDisabledTitle(key)"
       :is-error-source="isErrorSource"
       class="gl-mb-2"
       @input="updateVariable($event, index)"

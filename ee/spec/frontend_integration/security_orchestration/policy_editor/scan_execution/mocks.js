@@ -11,6 +11,8 @@ export const mockScanExecutionManifest = `scan_execution_policy:
           - '*'
     actions:
       - scan: secret_detection
+        variables:
+          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
     skip_ci:
       allowed: true
 `;
@@ -25,6 +27,8 @@ const mockScanExecutionManifestParsed = `scan_execution_policy:
           - '*'
     actions:
       - scan: secret_detection
+        variables:
+          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
     skip_ci:
       allowed: true
 `;
@@ -75,6 +79,7 @@ export const mockActionsVariablesScanExecutionManifest = `scan_execution_policy:
     actions:
       - scan: secret_detection
         variables:
+          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
           '': ''
     skip_ci:
       allowed: true
@@ -95,6 +100,8 @@ export const mockScheduleScanExecutionManifest = `scan_execution_policy:
         cadence: 0 0 * * *
     actions:
       - scan: secret_detection
+        variables:
+          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
     skip_ci:
       allowed: true
 `;
@@ -109,6 +116,8 @@ export const mockSkipCiScanExecutionManifest = `scan_execution_policy:
           - '*'
     actions:
       - scan: secret_detection
+        variables:
+          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
     skip_ci:
       allowed: false
 `;

@@ -8,19 +8,19 @@ FactoryBot.define do
     open
 
     trait :open do
-      name { 'Custom to do' }
+      name { FFaker::Name.unique.name }
       color { '#737278' }
       category { :to_do }
     end
 
     trait :closed do
-      name { 'Custom done' }
+      name { FFaker::Name.unique.name }
       color { '#108548' }
       category { :done }
     end
 
     trait :duplicate do
-      name { 'Custom duplicate' }
+      name { FFaker::Name.unique.name }
       color { '#DD2B0E' }
       category { :cancelled }
     end

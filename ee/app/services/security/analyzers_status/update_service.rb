@@ -106,7 +106,7 @@ module Security
           end
 
           AnalyzerProjectStatus.by_projects(project).without_types(processed_types)
-                               .update_all(status: :not_configured)
+            .update_all(status: :not_configured, updated_at: Time.zone.now)
         end
       end
 

@@ -26,7 +26,7 @@ module QA
           end
 
           def create_workspace(agent, project)
-            existing_workspaces = get_workspaces_list
+            existing_workspaces = get_workspaces_list(tab: :active)
 
             if has_empty_workspace?
               click_element('new-workspace-button', skip_finished_loading_check: true)
@@ -42,10 +42,10 @@ module QA
             end
 
             Support::Waiter.wait_until(max_duration: 5, raise_on_failure: false) do
-              get_workspaces_list.length > existing_workspaces.length
+              get_workspaces_list(tab: :active).length > existing_workspaces.length
             end
 
-            updated_workspaces = get_workspaces_list
+            updated_workspaces = get_workspaces_list(tab: :active)
 
             workspace_name = (updated_workspaces - existing_workspaces).fetch(0, '').to_s
 
@@ -58,9 +58,11 @@ module QA
             find('a[role="tab"]', text: "Terminated", exact_text: true).click
           end
 
-          def get_workspaces_list
-            all_elements('workspace-list-item', minimum: 0, skip_finished_loading_check: true)
-              .flat_map { |element| element.text.scan(/(^workspace[^.\n]*)/) }.flatten
+          def get_workspaces_list(tab:)
+            within_element("workspace-tab-#{tab}".to_sym, skip_finished_loading_check: true) do
+              all_elements('workspace-list-item', minimum: 0, skip_finished_loading_check: true)
+                .flat_map { |element| element.text.scan(/(^workspace[^.\n]*)/) }.flatten
+            end
           end
 
           def wait_for_workspaces_creation(workspace)

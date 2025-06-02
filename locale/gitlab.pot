@@ -3363,7 +3363,10 @@ msgstr ""
 msgid "Account: %{account}"
 msgstr ""
 
-msgid "AccountTokens|Service Account/Tokens"
+msgid "AccountTokens|Personal Access Token"
+msgstr ""
+
+msgid "AccountTokens|Service Account"
 msgstr ""
 
 msgid "Achievements"
@@ -12809,6 +12812,9 @@ msgid "CiCatalog|How do I publish a component?"
 msgstr ""
 
 msgid "CiCatalog|Learn more about designated creators"
+msgstr ""
+
+msgid "CiCatalog|Learn more about verified creators on GitLab Self-Managed or GitLab Dedicated."
 msgstr ""
 
 msgid "CiCatalog|No component available"
@@ -25539,6 +25545,9 @@ msgid "Exactly one of %{attributes} is required"
 msgstr ""
 
 msgid "Example"
+msgstr ""
+
+msgid "Example:"
 msgstr ""
 
 msgid "Example: (feature|hotfix)\\/.*"
@@ -53685,6 +53694,9 @@ msgstr ""
 msgid "ScanExecutionPolicy|The file path can't be empty"
 msgstr ""
 
+msgid "ScanExecutionPolicy|This is a required variable for this scanner and cannot be removed."
+msgstr ""
+
 msgid "ScanExecutionPolicy|This scan execution policy will generate a large number of pipelines, which can have a significant performance impact. To reduce potential performance issues, consider creating separate policies for smaller subsets of projects."
 msgstr ""
 
@@ -53751,6 +53763,15 @@ msgstr ""
 msgid "ScanResultPolicy|All licenses have been selected"
 msgstr ""
 
+msgid "ScanResultPolicy|Allow entire teams or departments to bypass policies for their specialized workflows."
+msgstr ""
+
+msgid "ScanResultPolicy|Allow specific automation tokens to bypass policies when service accounts aren't available."
+msgstr ""
+
+msgid "ScanResultPolicy|Allow specific types of branches to bypass policies based on naming conventions."
+msgstr ""
+
 msgid "ScanResultPolicy|Allow the merge request to proceed, even if not all criteria are met"
 msgstr ""
 
@@ -53808,6 +53829,9 @@ msgstr ""
 msgid "ScanResultPolicy|Edit denylist"
 msgstr ""
 
+msgid "ScanResultPolicy|Enable automated systems and bots to bypass policies for approved workflows."
+msgstr ""
+
 msgid "ScanResultPolicy|Except"
 msgstr ""
 
@@ -53850,6 +53874,9 @@ msgstr ""
 msgid "ScanResultPolicy|For scanners that require builds, when a project does not have a build pipeline."
 msgstr ""
 
+msgid "ScanResultPolicy|Grant bypass permissions to users based on their organizational role or custom role assignments."
+msgstr ""
+
 msgid "ScanResultPolicy|Groups"
 msgstr ""
 
@@ -53857,6 +53884,21 @@ msgid "ScanResultPolicy|If selected, the following choices will overwrite %{link
 msgstr ""
 
 msgid "ScanResultPolicy|If selected, the following choices will overwrite %{linkStart}project settings%{linkEnd} for approval rules created by this policy."
+msgstr ""
+
+msgid "ScanResultPolicy|If you want to allow all hotfix branches to bypass approval requirements during production incidents, use “hotfix/*” to match branches like hotfix/payment-bug and hotfix/security-patch."
+msgstr ""
+
+msgid "ScanResultPolicy|If your CI/CD Pipeline Token needs to push automated version updates directly to main branch during release deployments, bypassing the normal merge request approval process."
+msgstr ""
+
+msgid "ScanResultPolicy|If your DevOps Team frequently needs to push infrastructure configuration changes that trigger policy violations but are pre-approved through your change management process, add the DevOps Team group to bypass infrastructure policies."
+msgstr ""
+
+msgid "ScanResultPolicy|If your Security Engineer role needs to dismiss false positive findings from security scanners without requiring additional approvals, add the Security Engineer role to bypass security scan policies."
+msgstr ""
+
+msgid "ScanResultPolicy|If your dependabot@company.com service account automatically creates pull requests for dependency updates that may contain license compliance violations requiring manual review."
 msgstr ""
 
 msgid "ScanResultPolicy|Invalid fallback value detected. Please update your selection."
@@ -53917,6 +53959,9 @@ msgid "ScanResultPolicy|Only 1 age criteria is allowed"
 msgstr ""
 
 msgid "ScanResultPolicy|Override project approval settings"
+msgstr ""
+
+msgid "ScanResultPolicy|Personal Access Token"
 msgstr ""
 
 msgid "ScanResultPolicy|Policy Exception settings"
@@ -55983,7 +56028,13 @@ msgstr ""
 msgid "SecurityOrchestration|Settings from outside of the policy can override variables when the policy runs, except the variables defined in the denylist."
 msgstr ""
 
+msgid "SecurityOrchestration|Settings from outside of the policy can override variables when the policy runs."
+msgstr ""
+
 msgid "SecurityOrchestration|Settings from outside of the policy cannot override variables when the policy runs, except for the variables defined in the allowlist."
+msgstr ""
+
+msgid "SecurityOrchestration|Settings from outside of the policy cannot override variables when the policy runs."
 msgstr ""
 
 msgid "SecurityOrchestration|Several merge request approval policy criteria have been deprecated. Policies using these criteria will not work after GitLab 18.0 (May 10, 2025). You must edit these policies to replace or remove the deprecated criteria."
@@ -56178,7 +56229,7 @@ msgstr ""
 msgid "SecurityOrchestration|Variable option"
 msgstr ""
 
-msgid "SecurityOrchestration|Variables override configuration"
+msgid "SecurityOrchestration|Variable precedence"
 msgstr ""
 
 msgid "SecurityOrchestration|Variables override configuration has invalid structure."
@@ -59274,7 +59325,7 @@ msgstr ""
 msgid "Source-Branch"
 msgstr ""
 
-msgid "SourceBranchPattern|Source branch patterns"
+msgid "SourceBranchPattern|Source Branch Patterns"
 msgstr ""
 
 msgid "SourceEditor|\"el\" parameter is required for createInstance()"

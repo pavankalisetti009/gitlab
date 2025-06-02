@@ -2,10 +2,6 @@
 
 module Ci
   module Catalog
-    # Service used for changing badge for organizations.
-    # Run the service with a root level namespace and the verification level that you would change to.
-    # Service will result in changing verification level on all
-    # catalog resources in that namespace, including those in subgroups.
     class VerifyNamespaceService
       def initialize(namespace, verification_level)
         @namespace = namespace
@@ -32,7 +28,7 @@ module Ci
       def verify_namespace_is_a_root
         return if namespace.root?
 
-        errors << 'Please pass in the root namespace.'
+        errors << 'Input the root namespace.'
       end
 
       def verify_verification_level
@@ -40,7 +36,13 @@ module Ci
 
         return if levels.key?(verification_level.to_sym)
 
-        errors << "Please pass in a valid verification level: #{levels.keys.join(', ')}."
+        allowed_levels = if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+                           levels.excluding(:verified_creator_self_managed).keys.join(', ')
+                         else
+                           'verified_creator_self_managed'
+                         end
+
+        errors << "Input a valid verification level: #{allowed_levels}."
       end
 
       def create_or_update_verified_namespace

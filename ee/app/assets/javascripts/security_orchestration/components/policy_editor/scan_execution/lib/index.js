@@ -68,6 +68,25 @@ export const DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE = `scan_execution_policy:
       allowed: true
 `;
 
+export const DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_WITH_DEFAULT_VARIABLES = `scan_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    policy_scope:
+      projects:
+        excluding: []
+    rules:
+      - type: pipeline
+        branches:
+          - '*'
+    actions:
+      - scan: secret_detection
+        variables:
+          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
+    skip_ci:
+      allowed: true
+`;
+
 export const getPolicyYaml = ({ isGroup }) => {
   const { flexibleScanExecutionPolicy } = window.gon?.features || {};
 

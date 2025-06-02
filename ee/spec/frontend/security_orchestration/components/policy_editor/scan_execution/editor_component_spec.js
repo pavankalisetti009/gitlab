@@ -21,6 +21,7 @@ import {
   DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
   buildScannerAction,
   buildDefaultScheduleRule,
+  DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_WITH_DEFAULT_VARIABLES,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
 import {
   DEFAULT_ASSIGNED_POLICY_PROJECT,
@@ -182,7 +183,7 @@ describe('EditorComponent', () => {
   describe('modifying a policy', () => {
     it.each`
       status                           | action                            | event              | factoryFn                    | yamlEditorValue
-      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${policyBodyToYaml(fromYaml({ manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE, type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter }))}
+      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${policyBodyToYaml(fromYaml({ manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_WITH_DEFAULT_VARIABLES, type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter }))}
       ${'updating an existing policy'} | ${undefined}                      | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}
       ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE} | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}
     `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {
@@ -218,7 +219,7 @@ enabled: true`;
           manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
           type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
         }),
-        yamlEditorValue: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
+        yamlEditorValue: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_WITH_DEFAULT_VARIABLES,
       });
       findPolicyEditorLayout().vm.$emit('update-yaml', newManifest);
       await nextTick();
@@ -276,6 +277,7 @@ enabled: true`;
 
     it('should add new rule', async () => {
       factory();
+
       const initialValue = [RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE]()];
       expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(initialValue);
       expect(
@@ -419,7 +421,11 @@ enabled: true`;
           enabled: true,
         });
         const finalValue = [
-          buildScannerAction({ scanner: DEFAULT_SCANNER, isOptimized: true }),
+          buildScannerAction({
+            scanner: DEFAULT_SCANNER,
+            isOptimized: true,
+            withDefaultVariables: true,
+          }),
           buildScannerAction({ scanner: 'sast', isOptimized: true }),
         ];
         expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
@@ -463,7 +469,10 @@ enabled: true`;
         factory({ provide: { glFeatures: { flexibleScanExecutionPolicy: true } } });
         await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
 
-        const initialValue = [buildScannerAction({ scanner: DEFAULT_SCANNER })];
+        const initialValue = [
+          buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
+        ];
+
         expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
         expect(
           fromYaml({
@@ -476,7 +485,7 @@ enabled: true`;
         await nextTick();
 
         const finalValue = [
-          buildScannerAction({ scanner: DEFAULT_SCANNER }),
+          buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
           buildScannerAction({ scanner: DEFAULT_SCANNER }),
         ];
         expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
@@ -508,7 +517,9 @@ enabled: true`;
         factory({ provide: { glFeatures: { flexibleScanExecutionPolicy: true } } });
         await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
 
-        const initialValue = [buildScannerAction({ scanner: DEFAULT_SCANNER })];
+        const initialValue = [
+          buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
+        ];
         expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
         expect(
           fromYaml({
@@ -517,7 +528,7 @@ enabled: true`;
           }).actions,
         ).toStrictEqual(initialValue);
 
-        const finalValue = [buildScannerAction({ scanner: 'sast' })];
+        const finalValue = [buildScannerAction({ scanner: 'sast', withDefaultVariables: true })];
         findActionBuilder().vm.$emit('changed', finalValue[0]);
         await nextTick();
 
@@ -596,7 +607,9 @@ enabled: true`;
 
     it('should add new action', async () => {
       factory();
-      const initialValue = [buildScannerAction({ scanner: DEFAULT_SCANNER })];
+      const initialValue = [
+        buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
+      ];
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
       expect(
         fromYaml({
@@ -609,9 +622,10 @@ enabled: true`;
       await nextTick();
 
       const finalValue = [
-        buildScannerAction({ scanner: DEFAULT_SCANNER }),
+        buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
         buildScannerAction({ scanner: DEFAULT_SCANNER }),
       ];
+
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
       expect(
         fromYaml({
@@ -632,7 +646,9 @@ enabled: true`;
 
     it('should update action', async () => {
       factory();
-      const initialValue = [buildScannerAction({ scanner: DEFAULT_SCANNER })];
+      const initialValue = [
+        buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
+      ];
       expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
       expect(
         fromYaml({
@@ -641,7 +657,7 @@ enabled: true`;
         }).actions,
       ).toStrictEqual(initialValue);
 
-      const finalValue = [buildScannerAction({ scanner: 'sast' })];
+      const finalValue = [buildScannerAction({ scanner: 'sast', withDefaultVariables: true })];
       findActionBuilder().vm.$emit('changed', finalValue[0]);
       await nextTick();
 
@@ -967,7 +983,7 @@ enabled: true`;
 
     it('renders default yaml in new format', () => {
       expect(findPolicyEditorLayout().props('yamlEditorValue')).toBe(
-        DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
+        DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_WITH_DEFAULT_VARIABLES,
       );
     });
 
@@ -991,6 +1007,8 @@ rules:
       - '*'
 actions:
   - scan: secret_detection
+    variables:
+      SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
 skip_ci:
   allowed: true
 type: scan_execution_policy
