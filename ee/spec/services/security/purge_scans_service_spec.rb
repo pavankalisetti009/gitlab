@@ -7,7 +7,7 @@ RSpec.describe Security::PurgeScansService, feature_category: :vulnerability_man
     describe '.purge_stale_records', :clean_gitlab_redis_shared_state do
       let!(:stale_scan) { create(:security_scan, created_at: 92.days.ago) }
       let(:stale_scan_tuple_cache) do
-        { "created_at" => Security::Scan.connection.quote(stale_scan.created_at), "id" => stale_scan.id.to_s }
+        { "created_at" => Security::Scan.connection.quote(stale_scan.created_at), "id" => stale_scan.id }
       end
 
       let!(:fresh_scan) { create(:security_scan) }
@@ -20,16 +20,18 @@ RSpec.describe Security::PurgeScansService, feature_category: :vulnerability_man
       end
 
       describe 'dead tuple optimisation' do
+        let(:redis_key) { "CursorStore:#{described_class::LAST_PURGED_SCAN_TUPLE}" }
+
         def cached_tuple
-          Gitlab::Redis::SharedState.with do |redis|
-            redis.hgetall(described_class::LAST_PURGED_SCAN_TUPLE)
-          end
+          data_on_redis = Gitlab::Redis::SharedState.with { |redis| redis.get(redis_key) }
+
+          Gitlab::Json.parse(data_on_redis)
         end
 
         it 'caches a previous purged tuple' do
           expect { purge_stale_records }.to change {
             cached_tuple
-          }.from({}).to(stale_scan_tuple_cache.merge("ex" => described_class::LAST_PURGED_SCAN_TUPLE_TTL.to_s))
+          }.from(nil).to(stale_scan_tuple_cache)
         end
 
         context 'when a previous purged tuple is cached' do
@@ -37,8 +39,7 @@ RSpec.describe Security::PurgeScansService, feature_category: :vulnerability_man
 
           before do
             Gitlab::Redis::SharedState.with do |redis|
-              redis.hset(described_class::LAST_PURGED_SCAN_TUPLE, stale_scan_tuple_cache,
-                ex: described_class::LAST_PURGED_SCAN_TUPLE_TTL.to_i)
+              redis.set(redis_key, stale_scan_tuple_cache.to_json)
             end
           end
 

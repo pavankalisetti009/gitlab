@@ -15,14 +15,18 @@ module Sbom
       end
 
       def execute
-        occurrence_map_collection.each_slice(BATCH_SIZE).map do |slice|
+        results = occurrence_map_collection.each_slice(BATCH_SIZE).map do |slice|
           ingest_slice(slice)
         end
+        build_dependency_graph
+        results
       end
 
       private
 
       attr_reader :pipeline, :sbom_report
+
+      delegate :project, to: :pipeline, private: true
 
       def occurrence_map_collection
         @occurrence_map_collection ||= OccurrenceMapCollection.new(sbom_report)
@@ -30,6 +34,12 @@ module Sbom
 
       def ingest_slice(slice)
         IngestReportSliceService.execute(pipeline, slice)
+      end
+
+      def build_dependency_graph
+        return unless Feature.enabled?(:dependency_paths, project.group)
+
+        ::Sbom::BuildDependencyGraphWorker.perform_async(project.id)
       end
     end
   end

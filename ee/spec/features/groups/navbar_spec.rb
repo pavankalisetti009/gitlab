@@ -20,7 +20,7 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
       sign_in(user)
 
       create_package_nav(_('Operate'))
-      insert_after_nav_item(_('Analyze'), new_nav_item: settings_for_maintainer_nav_item)
+      insert_after_nav_item(_('Observability'), new_nav_item: settings_for_maintainer_nav_item)
       insert_infrastructure_registry_nav(_('Kubernetes'))
     end
 
@@ -213,7 +213,7 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
 
     describe 'structure' do
       before do
-        insert_after_nav_item(_('Analyze'), new_nav_item: settings_nav_item)
+        insert_after_nav_item(_('Observability'), new_nav_item: settings_nav_item)
 
         visit group_path(group)
       end
@@ -225,7 +225,7 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
       before do
         stub_licensed_features(group_saml: true, domain_verification: true)
 
-        insert_after_nav_item(_('Analyze'), new_nav_item: settings_nav_item)
+        insert_after_nav_item(_('Observability'), new_nav_item: settings_nav_item)
         insert_after_sub_nav_item(
           s_('UsageQuota|Usage Quotas'),
           within: _('Settings'),
@@ -261,7 +261,7 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
           security_inventory: true
         )
 
-        insert_after_nav_item(_('Analyze'), new_nav_item: settings_nav_item)
+        insert_after_nav_item(_('Observability'), new_nav_item: settings_nav_item)
 
         visit group_path(group)
       end

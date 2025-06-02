@@ -49,6 +49,7 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         due_date: object.due_date,
         traversal_ids: "#{object.namespace.id}-",
         schema_version: described_class::SCHEMA_VERSION,
+        routing: object.es_parent,
         type: 'work_item',
         milestone_title: object.milestone&.title,
         milestone_id: object.milestone_id

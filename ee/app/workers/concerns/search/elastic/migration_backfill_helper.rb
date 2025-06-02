@@ -112,14 +112,22 @@ module Search
           # es_parent attribute is used for routing but is nil for some records, e.g., projects, users
           es_parent = hit['_routing']
 
-          Search::Elastic::Reference.init(self.class::DOCUMENT_TYPE, id, es_id, es_parent)
+          build_reference(self.class::DOCUMENT_TYPE, id, es_id, es_parent)
         end
 
         document_references.each_slice(update_batch_size) do |refs|
-          ::Elastic::ProcessInitialBookkeepingService.track!(*refs)
+          bookkeeping_service.track!(*refs)
         end
 
         document_references
+      end
+
+      def build_reference(document_type, id, es_id, es_parent)
+        Search::Elastic::Reference.init(document_type, id, es_id, es_parent)
+      end
+
+      def bookkeeping_service
+        ::Elastic::ProcessInitialBookkeepingService
       end
 
       def query_batch_size

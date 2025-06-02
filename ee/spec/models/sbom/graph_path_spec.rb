@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Sbom::GraphPath, type: :model, feature_category: :dependency_management do
+  let_it_be(:project) { create(:project) }
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:path_length) }
   end

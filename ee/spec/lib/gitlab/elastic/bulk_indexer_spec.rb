@@ -11,7 +11,7 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
   let(:logger) { ::Gitlab::Elasticsearch::Logger.build }
   let(:es_client) { indexer.client }
   let(:work_item_as_ref) { ref(work_item) }
-  let(:work_item_as_json_with_times) { work_item.__elasticsearch__.as_indexed_json }
+  let(:work_item_as_json_with_times) { work_item_as_ref.as_indexed_json }
   let(:work_item_as_json) { work_item_as_json_with_times.except('created_at', 'updated_at') }
   let(:other_work_item_as_ref) { ref(other_work_item) }
 
@@ -91,7 +91,7 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
       expect(indexer.failures).to be_empty
     end
 
-    it 'calls bulk with an index request' do
+    it 'calls bulk with an upsert request' do
       set_bulk_limit(indexer, 1)
       indexer.process(work_item_as_ref)
       allow(es_client).to receive(:bulk).and_return({})
@@ -99,23 +99,57 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
       indexer.process(work_item_as_ref)
 
       expected_op_hash = {
-        index: {
+        update: {
           _index: work_item_as_ref.index_name,
           _type: nil,
-          _id: work_item.id.to_s,
+          _id: work_item.id,
           routing: work_item.es_parent
         }
       }.with_indifferent_access
 
-      expect(es_client).to have_received(:bulk).with(valid_request(:index, expected_op_hash, work_item_as_json))
+      expect(es_client).to have_received(:bulk).with(valid_request(:update, expected_op_hash, work_item_as_json))
     end
 
-    context 'when ref operation is upsert' do
+    context 'when routing is not set in as_indexed_json' do
       before do
-        allow(work_item_as_ref).to receive(:operation).and_return(:upsert)
+        original_as_indexed_json = work_item_as_ref.as_indexed_json
+        allow(work_item_as_ref).to receive(:as_indexed_json).and_return(original_as_indexed_json.except('routing'))
       end
 
-      it 'calls bulk with an update request' do
+      it 'tracks an exception' do
+        expect(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception)
+          .with(Gitlab::Elastic::BulkIndexer::RoutingMissingError, ref: work_item_as_ref.serialize)
+
+        indexer.process(work_item_as_ref)
+      end
+
+      context 'when reference does not have routing' do
+        it 'does not track an exception' do
+          allow(work_item_as_ref).to receive(:routing).and_return(nil)
+
+          expect(Gitlab::ErrorTracking).not_to receive(:track_and_raise_for_dev_exception)
+
+          indexer.process(work_item_as_ref)
+        end
+      end
+    end
+
+    it 'returns 0 and adds ref to failures if ReferenceFailure is raised' do
+      work_item_as_ref.database_record
+      allow(work_item_as_ref)
+        .to receive(:as_indexed_json)
+        .and_raise ::Search::Elastic::Reference::ReferenceFailure
+
+      expect(indexer.process(work_item_as_ref)).to eq(0)
+      expect(indexer.failures).to contain_exactly(work_item_as_ref)
+    end
+
+    context 'when ref operation is index' do
+      before do
+        allow(work_item_as_ref).to receive(:operation).and_return(:index)
+      end
+
+      it 'calls bulk with an index request' do
         set_bulk_limit(indexer, 1)
 
         indexer.process(work_item_as_ref)
@@ -124,15 +158,15 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
         indexer.process(work_item_as_ref)
 
         expected_op_hash = {
-          update: {
+          index: {
             _index: work_item_as_ref.index_name,
             _type: nil,
-            _id: work_item.id.to_s,
+            _id: work_item.id,
             routing: work_item.es_parent
           }
         }.with_indifferent_access
 
-        expect(es_client).to have_received(:bulk).with(valid_request(:update, expected_op_hash, work_item_as_json))
+        expect(es_client).to have_received(:bulk).with(valid_request(:index, expected_op_hash, work_item_as_json))
       end
 
       it 'returns bytesize when DocumentShouldBeDeletedFromIndexException is raised' do
@@ -160,40 +194,6 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
 
           indexer.process(work_item_as_ref)
         end
-      end
-
-      context 'when routing is not set in as_indexed_json' do
-        before do
-          original_as_indexed_json = work_item_as_ref.as_indexed_json
-          allow(work_item_as_ref).to receive(:as_indexed_json).and_return(original_as_indexed_json.except('routing'))
-        end
-
-        it 'tracks an exception' do
-          expect(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception)
-            .with(Gitlab::Elastic::BulkIndexer::RoutingMissingError, ref: work_item_as_ref.serialize)
-
-          indexer.process(work_item_as_ref)
-        end
-
-        context 'when reference does not have routing' do
-          it 'does not track an exception' do
-            allow(work_item_as_ref).to receive(:routing).and_return(nil)
-
-            expect(Gitlab::ErrorTracking).not_to receive(:track_and_raise_for_dev_exception)
-
-            indexer.process(work_item_as_ref)
-          end
-        end
-      end
-
-      it 'returns 0 and adds ref to failures if ReferenceFailure is raised' do
-        rec = work_item_as_ref.database_record
-        allow(rec.__elasticsearch__)
-          .to receive(:as_indexed_json)
-          .and_raise ::Search::Elastic::Reference::ReferenceFailure
-
-        expect(indexer.process(work_item_as_ref)).to eq(0)
-        expect(indexer.failures).to contain_exactly(work_item_as_ref)
       end
     end
 
@@ -256,7 +256,9 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
 
     it 'fails documents that elasticsearch refuses to accept' do
       # Indexes with uppercase characters are invalid
-      allow(other_work_item_as_ref.proxy)
+      ensure_elasticsearch_index!
+
+      allow(other_work_item_as_ref)
         .to receive(:index_name)
         .and_return('Invalid')
 
@@ -268,7 +270,7 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
 
       refresh_index!
 
-      expect(search_one(Issue)).to have_attributes(work_item_as_json)
+      expect(search_one(work_item_as_ref.index_name)).to include(work_item_as_json)
     end
 
     context 'when indexing an work_item' do
@@ -279,7 +281,7 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
 
         refresh_index!
 
-        expect(search_one(WorkItem)).to have_attributes(work_item_as_json)
+        expect(search_one(work_item_as_ref.index_name)).to include(work_item_as_json)
       end
 
       it 'reindexes an unchanged work_item' do
@@ -304,12 +306,12 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
 
         refresh_index!
 
-        expect(search_one(WorkItem)).to have_attributes(work_item_as_json)
+        expect(search_one(work_item_as_ref.index_name)).to include(work_item_as_json)
       end
 
       it 'deletes the work_item from the index if DocumentShouldBeDeletedFromIndexException is raised' do
         db_record = work_item_as_ref.database_record
-        allow(db_record.__elasticsearch__)
+        allow(work_item_as_ref)
           .to receive(:as_indexed_json)
             .and_raise(::Elastic::Latest::DocumentShouldBeDeletedFromIndexError.new(db_record.class.name, db_record.id))
 
@@ -319,7 +321,7 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
 
         refresh_index!
 
-        expect(search(Issue, '*').size).to eq(0)
+        expect(search(work_item_as_ref.index_name, '*').size).to eq(0)
       end
 
       context 'when there has not been a alias rollover yet' do
@@ -364,7 +366,7 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
 
         refresh_index!
 
-        expect(search(WorkItem, '*').size).to eq(0)
+        expect(search(work_item_as_ref.index_name, '*').size).to eq(0)
       end
 
       it 'succeeds even if the work_item is not present' do
@@ -376,13 +378,13 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
 
         refresh_index!
 
-        expect(search(Issue, '*').size).to eq(0)
+        expect(search(work_item_as_ref.index_name, '*').size).to eq(0)
       end
     end
   end
 
   def ref(record)
-    ::Search::Elastic::Reference.build(record)
+    ::Search::Elastic::Reference.build(record, ::Search::Elastic::References::WorkItem)
   end
 
   def stub_es_client(indexer, client)
@@ -393,15 +395,15 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
     allow(indexer).to receive(:bulk_limit_bytes) { bytes }
   end
 
-  def search(klass, text)
-    klass.__elasticsearch__.search(text)
+  def search(index_name, _text)
+    items_in_index(index_name, source: true)
   end
 
-  def search_one(klass)
-    results = search(klass, '*')
+  def search_one(index_name)
+    results = search(index_name, '*')
 
     expect(results.size).to eq(1)
 
-    results.first._source
+    results.first
   end
 end

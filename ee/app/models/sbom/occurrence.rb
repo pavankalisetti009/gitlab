@@ -235,6 +235,15 @@ module Sbom
       }
     end
 
+    # rubocop:disable Performance/AncestorsInclude -- ancestors here isn't hierarchy related but a model attribute
+    def top_level?
+      # This solution is to avoid adding a new column to sbom_occurrences.
+      # See https://gitlab.com/gitlab-org/security-products/analyzers/dependency-scanning/-/merge_requests/134#note_2369125306
+      # for more details.
+      ancestors.include?({})
+    end
+    # rubocop:enable Performance/AncestorsInclude
+
     private
 
     def dependency_paths
@@ -263,14 +272,5 @@ module Sbom
                 .then { |serialized_array| self.class.connection.quote(serialized_array) }
                 .then { |quoted_array| Arel::Nodes::SqlLiteral.new(quoted_array) }
     end
-
-    # rubocop:disable Performance/AncestorsInclude -- ancestors here isn't hierarchy related but a model attribute
-    def top_level?
-      # This solution is to avoid adding a new column to sbom_occurrences.
-      # See https://gitlab.com/gitlab-org/security-products/analyzers/dependency-scanning/-/merge_requests/134#note_2369125306
-      # for more details.
-      ancestors.include?({})
-    end
-    # rubocop:enable Performance/AncestorsInclude
   end
 end
