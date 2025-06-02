@@ -1,0 +1,10 @@
+---
+name: duo_chat_react_agent_claude_4_0
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/545491
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/192856
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/546256
+milestone: '18.1'
+group: group::duo chat
+type: gitlab_com_derisk
+default_enabled: false
