@@ -10,6 +10,14 @@ module API
             expose :registry_upstream,
               if: ->(_upstream, options) { options[:with_registry_upstream] },
               using: RegistryUpstream
+
+            private
+
+            # When with_registry_upstream option is true, it's guaranteed
+            # that the object.registry_upstreams is a one-element array.
+            def registry_upstream
+              object.registry_upstreams.first
+            end
           end
         end
       end

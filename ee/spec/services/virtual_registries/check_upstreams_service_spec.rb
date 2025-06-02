@@ -6,9 +6,9 @@ RSpec.describe VirtualRegistries::CheckUpstreamsService, :aggregate_failures, fe
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:registry) { create(:virtual_registries_packages_maven_registry) }
-  let_it_be(:upstream1) { create(:virtual_registries_packages_maven_upstream, registry:) }
-  let_it_be(:upstream2) { create(:virtual_registries_packages_maven_upstream, registry:) }
-  let_it_be(:upstream3) { create(:virtual_registries_packages_maven_upstream, registry:) }
+  let_it_be(:upstream1) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
+  let_it_be(:upstream2) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
+  let_it_be(:upstream3) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
 
   let(:path) { 'com/test/package/1.2.3/package-1.2.3.pom' }
   let(:params) { { path: } }

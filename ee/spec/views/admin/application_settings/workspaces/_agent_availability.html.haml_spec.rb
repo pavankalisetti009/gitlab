@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'admin/application_settings/_workspaces_agent_availability', feature_category: :workspaces do
+  let_it_be(:organization) { build_stubbed(:organization) }
   let_it_be(:user) { build_stubbed(:admin) }
   let_it_be(:app_settings) { build(:application_setting) }
 
@@ -12,7 +13,11 @@ RSpec.describe 'admin/application_settings/_workspaces_agent_availability', feat
 
   before do
     assign(:application_setting, app_settings)
-    allow(view).to receive(:current_user).and_return(user)
+    allow(view).to receive_messages(
+      current_user: user,
+      expanded_by_default?: true
+    )
+    ::Current.organization = organization
   end
 
   [true, false].each do |license_enabled|
@@ -33,5 +38,15 @@ RSpec.describe 'admin/application_settings/_workspaces_agent_availability', feat
         end
       end
     end
+  end
+
+  context 'when settings is rendered' do
+    before do
+      stub_licensed_features(remote_development: true)
+      stub_feature_flags(workspaces_agents_availability_admin: true)
+    end
+
+    it { is_expected.to have_selector("[data-organization-id='#{organization.id}']") }
+    it { is_expected.to have_selector("[data-default-expanded='true']") }
   end
 end

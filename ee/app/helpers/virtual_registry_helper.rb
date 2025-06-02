@@ -51,7 +51,7 @@ module VirtualRegistryHelper
   def edit_upstream_template_data(maven_upstream)
     {
       upstream: maven_upstream_attributes(maven_upstream),
-      registryPath: group_virtual_registries_maven_registry_path(maven_upstream.group, maven_upstream.registry),
+      registryPath: group_virtual_registries_maven_registry_path(maven_upstream.group, maven_upstream.registries.first),
       upstreamPath: group_virtual_registries_maven_upstream_path(maven_upstream.group, maven_upstream)
     }.to_json
   end

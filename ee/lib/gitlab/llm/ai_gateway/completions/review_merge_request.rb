@@ -12,10 +12,6 @@ module Gitlab
           PRIORITY_THRESHOLD = 3
 
           class << self
-            def review_queued_msg
-              s_("DuoCodeReview|is reviewing your merge request and will let you know when it's finished")
-            end
-
             def resource_not_found_msg
               s_("DuoCodeReview|Can't access the merge request. When SAML single sign-on is enabled " \
                 "on a group or its parent, Duo Code Reviews can't be requested from the API. Request a " \
@@ -229,6 +225,7 @@ module Gitlab
           def review_bot
             Users::Internal.duo_code_review_bot
           end
+          strong_memoize_attr :review_bot
 
           def merge_request
             # Fallback is needed to handle review state change as much as possible
@@ -303,13 +300,11 @@ module Gitlab
           def create_progress_note
             return unless merge_request.present?
 
-            ::Notes::CreateService.new(
-              merge_request.project,
-              review_bot,
+            ::SystemNotes::MergeRequestsService.new(
               noteable: merge_request,
-              note: self.class.review_queued_msg,
-              system: true
-            ).execute
+              container: merge_request.project,
+              author: review_bot
+            ).duo_code_review_started
           end
 
           def update_progress_note(note, with_todo: false)

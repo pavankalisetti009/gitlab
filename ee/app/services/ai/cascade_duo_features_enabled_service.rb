@@ -16,7 +16,7 @@ module Ai
         batch.update_all(duo_features_enabled: @duo_features_enabled)
       end
 
-      NamespaceSetting.each_batch(of: 25000) do |batch|
+      ::NamespaceSetting.each_batch(of: 25000) do |batch|
         batch.update_all(duo_features_enabled: @duo_features_enabled)
       end
     end
@@ -26,7 +26,7 @@ module Ai
     def update_subgroups(group)
       group.self_and_descendants.each_batch do |batch|
         namespace_ids = batch.pluck_primary_key
-        NamespaceSetting.for_namespaces(namespace_ids)
+        ::NamespaceSetting.for_namespaces(namespace_ids)
           .update_all(duo_features_enabled: @duo_features_enabled)
       end
     end

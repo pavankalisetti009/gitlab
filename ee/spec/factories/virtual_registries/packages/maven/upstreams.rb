@@ -7,12 +7,12 @@ FactoryBot.define do
     sequence(:url) { |n| "https://gitlab.com/maven/#{n}" }
     username { 'user' }
     password { 'password' }
-    registry { association(:virtual_registries_packages_maven_registry) }
-    group { registry.group }
+    registries { [association(:virtual_registries_packages_maven_registry)] }
+    group { registries.first.group }
     cache_validity_hours { 24 }
 
     after(:build) do |entry, _|
-      entry.registry_upstream.group = entry.group if entry.registry_upstream
+      entry.registry_upstreams.each { |registry_upstream| registry_upstream.group = entry.group }
     end
   end
 end

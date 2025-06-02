@@ -17,7 +17,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
     it 'belongs to an upstream' do
       is_expected.to belong_to(:upstream)
         .class_name('VirtualRegistries::Packages::Maven::Upstream')
-        .inverse_of(:registry_upstream)
+        .inverse_of(:registry_upstreams)
     end
   end
 
@@ -26,7 +26,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
 
     it { is_expected.to validate_presence_of(:group) }
     it { is_expected.to validate_presence_of(:position) }
-    it { is_expected.to validate_uniqueness_of(:upstream_id) }
+    it { is_expected.to validate_uniqueness_of(:upstream_id).scoped_to(:registry_id) }
 
     it 'validates position' do
       is_expected.to validate_numericality_of(:position)
@@ -147,10 +147,10 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
     end
   end
 
-  describe '#sync_higher_positions' do
+  describe '.sync_higher_positions' do
     let_it_be(:registry) { create(:virtual_registries_packages_maven_registry) }
 
-    let_it_be(:registry_upstreams) do
+    let_it_be_with_refind(:registry_upstreams) do
       create_list(:virtual_registries_packages_maven_registry_upstream, 4, registry:)
     end
 
@@ -162,8 +162,8 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
         registry_upstreams[3].id => 4
       })
 
+      described_class.sync_higher_positions(registry_upstreams[1].upstream.registry_upstreams)
       registry_upstreams[1].destroy!
-      registry_upstreams[1].sync_higher_positions
 
       expect(reload_positions).to eq({
         registry_upstreams[0].id => 1,
@@ -171,9 +171,55 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
         registry_upstreams[3].id => 3
       })
     end
+
+    context 'when there are shared upstreams' do
+      let_it_be(:other_registry) do
+        create(:virtual_registries_packages_maven_registry, group: registry.group, name: 'other')
+      end
+
+      let_it_be(:registry_upstream_1) do
+        create(:virtual_registries_packages_maven_registry_upstream, registry: other_registry,
+          upstream: registry_upstreams[0].upstream)
+      end
+
+      let_it_be(:registry_upstream_2) do
+        create(:virtual_registries_packages_maven_registry_upstream, registry: other_registry,
+          upstream: registry_upstreams[1].upstream)
+      end
+
+      it 'correctly updates positions in all registries' do
+        expect(reload_positions).to eq({
+          registry_upstreams[0].id => 1,
+          registry_upstreams[1].id => 2,
+          registry_upstreams[2].id => 3,
+          registry_upstreams[3].id => 4
+        })
+
+        expect(reload_positions(other_registry)).to eq({
+          registry_upstream_1.id => 1,
+          registry_upstream_2.id => 2
+        })
+
+        described_class.sync_higher_positions(
+          described_class.where(upstream_id: [registry_upstreams[1].upstream_id, registry_upstream_1.upstream_id])
+        )
+        registry_upstreams[1].destroy!
+        registry_upstream_1.destroy!
+
+        expect(reload_positions).to eq({
+          registry_upstreams[0].id => 1,
+          registry_upstreams[2].id => 2,
+          registry_upstreams[3].id => 3
+        })
+
+        expect(reload_positions(other_registry)).to eq({
+          registry_upstream_2.id => 1
+        })
+      end
+    end
   end
 
-  def reload_positions
+  def reload_positions(registry = registry_upstreams[0].registry)
     described_class.where(registry:).pluck(:id, :position).to_h
   end
 end

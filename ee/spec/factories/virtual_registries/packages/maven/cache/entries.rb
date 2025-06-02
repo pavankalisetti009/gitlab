@@ -18,7 +18,7 @@ FactoryBot.define do
     end
 
     after(:build) do |entry, evaluator|
-      entry.upstream.registry_upstream.group = entry.group
+      entry.upstream.registry_upstreams.each { |registry_upstream| registry_upstream.group = entry.group }
       entry.file = fixture_file_upload(evaluator.file_fixture)
     end
 

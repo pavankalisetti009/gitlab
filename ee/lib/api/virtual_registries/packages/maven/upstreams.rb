@@ -81,11 +81,9 @@ module API
                   post do
                     authorize! :create_virtual_registry, registry
 
-                    new_registry_upstream = registry.registry_upstreams.build(group:)
-                    new_upstream = new_registry_upstream
-                      .build_upstream(declared_params(include_missing: false).merge(group:))
+                    new_upstream = registry.upstreams.create(declared_params(include_missing: false).merge(group:))
 
-                    render_validation_error!(new_upstream) unless new_upstream.save
+                    render_validation_error!(new_upstream) unless new_upstream.persisted?
 
                     present new_upstream, with: Entities::VirtualRegistries::Packages::Maven::Upstream,
                       with_registry_upstream: true
@@ -167,14 +165,11 @@ module API
                 delete do
                   authorize! :destroy_virtual_registry, upstream
 
-                  # Revisit when implementing shareable upstreams
-                  # https://gitlab.com/gitlab-org/gitlab/-/issues/541117
-                  registry_upstream = upstream.registry_upstream
-
                   destroy_conditionally!(upstream) do
                     upstream.transaction do
+                      ::VirtualRegistries::Packages::Maven::RegistryUpstream
+                        .sync_higher_positions(upstream.registry_upstreams)
                       upstream.destroy
-                      registry_upstream.sync_higher_positions
                     end
                   end
                 end

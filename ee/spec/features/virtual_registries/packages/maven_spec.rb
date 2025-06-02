@@ -10,7 +10,7 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
   let_it_be(:user) { create(:user, owner_of: group) }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
   let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
-  let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registry: registry) }
+  let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
 
   let_it_be(:external_server) do
     handler = ->(env) do
@@ -46,7 +46,7 @@ RSpec.describe 'Virtual Registries Packages Maven', :api, :js, feature_category:
     end
 
     context 'with multiple upstreams' do
-      let_it_be(:upstream2) { create(:virtual_registries_packages_maven_upstream, registry: registry) }
+      let_it_be(:upstream2) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
       let_it_be(:external_server2) do
         handler = ->(env) do
           if env['REQUEST_PATH'] == '/file2' # rubocop:disable RSpec/AvoidConditionalStatements -- This is a lambda for the external server
