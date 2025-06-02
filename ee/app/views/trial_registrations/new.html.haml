@@ -13,15 +13,10 @@
 
 .row.marketing-styling
   .col-md-8.gl-flex.gl-flex-col
-    - upper_tag = tag.span(class: 'gl-text-size-h2-xl')
-    - lower_tag = tag.span(class: 'gl-block gl-mt-3')
     %h1.gl-mt-0.gl-max-w-75
-      - last_tag = tag.span(class: 'gl-heading-3 gl-font-normal')
-      = safe_format(s_('InProductMarketing|%{upper_start}Free 60-day trial%{upper_end} %{lower_start}GitLab Ultimate & GitLab Duo Enterprise%{lower_end} %{last_start}Sign up for a free trial of the most comprehensive AI-native DevSecOps Platform%{last_end}'),
-        tag_pair(upper_tag, :upper_start, :upper_end),
-        tag_pair(lower_tag, :lower_start, :lower_end),
-        tag_pair(last_tag, :last_start, :last_end))
-
+      = s_('InProductMarketing|Get Started with GitLab')
+    %p.gl-text-lg.gl-max-w-75.gl-mb-6
+      = s_("InProductMarketing|Enjoy 60 days of full access to our best plan, after which you'll have access to our free tier forever. Upgrade to the best plan that suits you at any point - Premium or Ultimate.")
     .signup-box.gl-max-w-75
       .gl-mb-3.gl-p-6.gl-border-default.gl-border-1.gl-border-solid.gl-rounded-base.gl-bg-default
         = render 'signup_box_form',
