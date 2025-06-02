@@ -64,7 +64,8 @@ module Security
           new_values.failure - COALESCE(old_values.failure, 0) AS failure
         FROM new_values
         LEFT JOIN old_values
-          ON new_values.namespace_id = old_values.namespace_id
+          ON new_values.namespace_id = old_values.namespace_id AND
+             new_values.analyzer_type = old_values.analyzer_type
         WHERE EXISTS (
           SELECT 1
           FROM upserted

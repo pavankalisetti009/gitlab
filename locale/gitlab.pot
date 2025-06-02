@@ -6065,9 +6065,6 @@ msgstr ""
 msgid "AiPowered|When turned on, all billable users can access GitLab Duo Chat and Code Suggestions in supported IDEs."
 msgstr ""
 
-msgid "AiPowered|When you save, GitLab Duo will be turned for all groups, subgroups, and projects."
-msgstr ""
-
 msgid "AiPowered|When you save, GitLab Duo will be turned off for all groups, subgroups, and projects."
 msgstr ""
 
@@ -27392,12 +27389,6 @@ msgstr[1] ""
 msgid "Geo|%{boldStart}Not applicable%{boldEnd}: Geo does not verify this component yet. See the %{linkStart}data types we plan to support%{linkEnd}."
 msgstr ""
 
-msgid "Geo|%{component} synced"
-msgstr ""
-
-msgid "Geo|%{component} verified"
-msgstr ""
-
 msgid "Geo|%{label} %{timeAgo}"
 msgstr ""
 
@@ -27416,7 +27407,13 @@ msgstr ""
 msgid "Geo|%{timeAgoStr} (%{pendingEvents} events)"
 msgstr ""
 
-msgid "Geo|%{title} checksum progress"
+msgid "Geo|%{titlePlural} checksum progress"
+msgstr ""
+
+msgid "Geo|%{titlePlural} synced"
+msgstr ""
+
+msgid "Geo|%{titlePlural} verified"
 msgstr ""
 
 msgid "Geo|Add New Site"
@@ -67642,6 +67639,9 @@ msgid "VirtualRegistry|Failed to fetch cache entries."
 msgstr ""
 
 msgid "VirtualRegistry|Failed to fetch list of maven virtual registries."
+msgstr ""
+
+msgid "VirtualRegistry|Failed to search cache entries."
 msgstr ""
 
 msgid "VirtualRegistry|Get started with virtual registries"

@@ -2,8 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shared_state,
-  feature_category: :global_search do
+RSpec.describe Elastic::DataMigrationService, :clean_gitlab_redis_shared_state, feature_category: :global_search do
   describe '.migrations' do
     it 'all migration names are unique' do
       expect(described_class.migrations.count).to eq(described_class.migrations.map(&:name).uniq.count)
@@ -114,7 +113,7 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
     end
   end
 
-  describe '.migration_has_finished_uncached?' do
+  describe '.migration_has_finished_uncached?', :elastic do
     let(:migration) { described_class.migrations.first }
     let(:migration_name) { migration.name.underscore }
 
@@ -151,9 +150,9 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
     end
   end
 
-  describe '.mark_all_as_completed!' do
+  describe '.mark_all_as_completed!', :elastic do
     before do
-      # Clear out the migrations index since it is setup initially with
+      # Clear out the migrations index since it is set up initially with
       # everything finished migrating
       es_helper.delete_migrations_index
       es_helper.create_migrations_index
@@ -168,7 +167,7 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
       expect(Elastic::MigrationRecord.load_versions(completed: true).count).to eq(described_class.migrations.count)
     end
 
-    it 'drops all cache keys' do
+    it 'drops all cache keys for finished and halted migrations' do
       allow(described_class).to receive(:migrations).and_return(
         [
           Elastic::MigrationRecord.new(version: 100, name: 'SomeMigration', filename: nil),
@@ -178,9 +177,28 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
 
       described_class.migrations.each do |migration|
         expect(described_class).to receive(:drop_migration_has_finished_cache!).with(migration)
+        expect(described_class).to receive(:drop_migration_halted_cache!).with(migration)
       end
 
       described_class.mark_all_as_completed!
+    end
+
+    context 'when a migration exists in the index and is halted' do
+      let(:migration) { described_class.migrations.first }
+
+      before do
+        migration.halt
+        refresh_index!
+      end
+
+      it 'un-halts the migration' do
+        expect(described_class.halted_migrations?).to be(true)
+
+        described_class.mark_all_as_completed!
+        refresh_index!
+
+        expect(described_class.halted_migrations?).to be(false)
+      end
     end
   end
 
@@ -221,7 +239,7 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
     end
   end
 
-  describe '.migration_halted_uncached?' do
+  describe '.migration_halted_uncached?', :elastic do
     let(:migration) { described_class.migrations.last }
     let(:halted_response) { { _source: { state: { halted: true } } }.with_indifferent_access }
     let(:not_halted_response) { { _source: { state: { halted: false } } }.with_indifferent_access }
@@ -254,7 +272,7 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
     end
   end
 
-  describe '.halted_migration' do
+  describe '.halted_migration', :elastic do
     let(:migration) { described_class.migrations.last }
     let(:halted_response) { { _source: { state: { halted: true } } }.with_indifferent_access }
 
@@ -276,7 +294,7 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
     end
   end
 
-  describe 'pending_migrations?' do
+  describe 'pending_migrations?', :elastic do
     context 'when there are pending migrations' do
       let(:migration) { described_class.migrations.first }
 
@@ -316,7 +334,7 @@ RSpec.describe Elastic::DataMigrationService, :elastic, :clean_gitlab_redis_shar
     end
   end
 
-  describe 'pending_migrations' do
+  describe 'pending_migrations', :elastic do
     let_it_be(:pending_migration1) { described_class.migrations[1] }
     let_it_be(:pending_migration2) { described_class.migrations[2] }
 

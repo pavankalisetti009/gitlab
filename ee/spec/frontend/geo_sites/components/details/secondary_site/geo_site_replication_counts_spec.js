@@ -46,7 +46,7 @@ describe('GeoSiteReplicationCounts', () => {
     it('renders a replication type section for each entry in the replication counts array', () => {
       expect(findReplicationTypeSections()).toHaveLength(MOCK_REPLICATION_COUNTS.length);
       expect(findReplicationTypeSectionTitles()).toStrictEqual(
-        MOCK_REPLICATION_COUNTS.map(({ title }) => title),
+        MOCK_REPLICATION_COUNTS.map(({ dataTypeTitle }) => dataTypeTitle),
       );
     });
 

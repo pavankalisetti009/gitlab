@@ -3,9 +3,7 @@
 module Gitlab
   module Checks
     module SecretPushProtection
-      class PayloadProcessor
-        include ::Gitlab::Loggable
-
+      class PayloadProcessor < ::Gitlab::Checks::SecretPushProtection::Base
         PAYLOAD_BYTES_LIMIT = 1.megabyte # https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/secret_detection/#target-types
         PATHS_BATCH_SIZE = 50 # number of paths per Gitaly diff_blobs batch
 
@@ -23,11 +21,6 @@ module Gitlab
         LOG_MESSAGES = {
           invalid_encoding: "Could not convert data to UTF-8 from %{encoding}"
         }.freeze
-
-        def initialize(project:, changes_access:)
-          @project = project
-          @changes_access = changes_access
-        end
 
         # The `standardize_payloads` method gets payloads containing git diffs
         # and converts them into a standardized format. Each payload is processed to include
@@ -186,8 +179,6 @@ module Gitlab
 
         private
 
-        attr_reader :project, :changes_access
-
         def get_diffs
           diffs = []
           # Get new commits
@@ -232,19 +223,8 @@ module Gitlab
         def exclusions_manager
           @exclusions_manager ||= ::Gitlab::Checks::SecretPushProtection::ExclusionsManager.new(
             project: project,
-            audit_logger: audit_logger
-          )
-        end
-
-        def audit_logger
-          @audit_logger ||= Gitlab::Checks::SecretPushProtection::AuditLogger.new(
-            project: project,
             changes_access: changes_access
           )
-        end
-
-        def secret_detection_logger
-          @secret_detection_logger ||= ::Gitlab::SecretDetectionLogger.build
         end
       end
     end

@@ -10,11 +10,20 @@ RSpec.describe Security::AnalyzerNamespaceStatuses::AdjustmentService, feature_c
   let(:sub_group_project) { create(:project, namespace: sub_group) }
 
   def group_statuses(group)
-    status = Security::AnalyzerNamespaceStatus
-                  .find_by(namespace_id: group.id)
-    return unless status
+    statuses = Security::AnalyzerNamespaceStatus
+      .where(namespace_id: group.id)
+    return unless statuses.exists? && statuses.any?
 
-    status.reload.as_json(except: [:id, :created_at, :updated_at])
+    statuses.reload.as_json(except: [:id, :created_at, :updated_at])
+  end
+
+  def merge_statuses_with_group_info(statuses, group)
+    statuses.map do |single_status|
+      single_status.merge({
+        'namespace_id' => group.id,
+        'traversal_ids' => group.traversal_ids
+      })
+    end
   end
 
   describe '.execute' do
@@ -75,71 +84,94 @@ RSpec.describe Security::AnalyzerNamespaceStatuses::AdjustmentService, feature_c
     end
 
     context 'when there are analyzer_project_status records for the groups projects' do
-      let!(:group_project_statistics) do
+      let!(:group_project_status) do
         create(:analyzer_project_status, project: group_project, analyzer_type: "sast_iac", status: 1)
       end
 
-      let!(:sub_group_project_statuses) do
+      let!(:sub_group_project_status_1) do
+        create(:analyzer_project_status, project: sub_group_project, analyzer_type: "dast", status: 1)
+      end
+
+      let!(:sub_group_project_status_2) do
         create(:analyzer_project_status, project: sub_group_project, analyzer_type: "sast_iac", status: 1)
       end
 
-      let(:expected_single_project_statistics) do
-        {
-          'analyzer_type' => "sast_iac",
-          'success' => 1,
-          'failure' => 0
-        }
+      let(:expected_subgroup_statuses) do
+        [
+          {
+            'analyzer_type' => "sast_iac",
+            'success' => 1,
+            'failure' => 0
+          },
+          {
+            'analyzer_type' => "dast",
+            'success' => 1,
+            'failure' => 0
+          }
+        ]
       end
 
-      let(:expected_ancestor_statistics) do
-        {
-          'analyzer_type' => "sast_iac",
-          'success' => 2,
-          'failure' => 0
-        }
+      let(:expected_ancestor_statuses) do
+        [
+          {
+            'analyzer_type' => "sast_iac",
+            'success' => 2,
+            'failure' => 0
+          },
+          {
+            'analyzer_type' => "dast",
+            'success' => 1,
+            'failure' => 0
+          }
+        ]
+      end
+
+      let(:expected_group_without_subgroup_statuses) do
+        [
+          {
+            'analyzer_type' => "sast_iac",
+            'success' => 1,
+            'failure' => 0
+          }
+        ]
       end
 
       context 'when there is no analyzer_namespace_status record for a group' do
-        it 'creates a new record for each namespace' do
-          expect { adjust_statuses }.to change { Security::AnalyzerNamespaceStatus.count }.by(3)
+        it 'creates a new record for each namespace for each analyzer_type' do
+          expect { adjust_statuses }.to change { Security::AnalyzerNamespaceStatus.count }.by(6)
         end
 
         it 'sets the correct values for the parent group' do
           adjust_statuses
 
-          expect(group_statuses(sub_group)).to eq(expected_single_project_statistics.merge({
-            'namespace_id' => sub_group.id,
-            'traversal_ids' => sub_group.traversal_ids
-          }))
+          expect(group_statuses(sub_group)).to match_array(
+            merge_statuses_with_group_info(expected_subgroup_statuses, sub_group))
         end
 
         it 'sets the correct values for the ancestor groups' do
           adjust_statuses
 
-          expect(group_statuses(group)).to eq(expected_ancestor_statistics.merge({
-            'namespace_id' => group.id,
-            'traversal_ids' => group.traversal_ids
-          }))
+          expect(group_statuses(group)).to match_array(
+            merge_statuses_with_group_info(expected_ancestor_statuses, group))
 
-          expect(group_statuses(root_group)).to eq(expected_ancestor_statistics.merge({
-            'namespace_id' => root_group.id,
-            'traversal_ids' => root_group.traversal_ids
-          }))
+          expect(group_statuses(root_group)).to match_array(
+            merge_statuses_with_group_info(expected_ancestor_statuses, root_group))
         end
       end
 
       context 'when there is already a analyzer_namespace_status record for a group' do
         let!(:root_group_statuses) do
           create(:analyzer_namespace_status, namespace: root_group, analyzer_type: "sast_iac", success: 2, failure: 0)
+
+          # This will be updated by the adjustment service to success: 1
+          create(:analyzer_namespace_status, namespace: root_group, analyzer_type: "dast", success: 2, failure: 0)
         end
 
         it 'sets the correct values for the group' do
           adjust_statuses
 
-          expect(group_statuses(root_group)).to eq(expected_ancestor_statistics.merge({
-            'namespace_id' => root_group.id,
-            'traversal_ids' => root_group.traversal_ids
-          }))
+          expect(group_statuses(root_group)).to match_array(
+            merge_statuses_with_group_info(expected_ancestor_statuses, root_group))
         end
 
         context 'when a group traversal_ids is outdated' do
@@ -150,10 +182,12 @@ RSpec.describe Security::AnalyzerNamespaceStatuses::AdjustmentService, feature_c
           it 'sets the correct namespace_ids for the group' do
             adjust_statuses
 
-            expect(group_statuses(root_group)).to eq(expected_ancestor_statistics.merge({
-              'namespace_id' => root_group.id,
-              'traversal_ids' => root_group.traversal_ids
-            }))
+            expect(group_statuses(root_group)).to match_array(
+              merge_statuses_with_group_info(expected_ancestor_statuses, root_group))
+          end
+
+          it 'returns correct number of diff rows' do
+            expect(adjust_statuses.length).to eq(5)
           end
         end
       end
@@ -161,23 +195,20 @@ RSpec.describe Security::AnalyzerNamespaceStatuses::AdjustmentService, feature_c
       context 'when there are analyzer_project_status for an archived project' do
         before do
           sub_group_project.update!(archived: true)
-          sub_group_project_statuses.update!(archived: true)
+          sub_group_project_status_1.update!(archived: true)
+          sub_group_project_status_2.update!(archived: true)
         end
 
-        it 'excludes the statistics from archived projects' do
+        it 'excludes the statuses from archived projects' do
           adjust_statuses
 
           expect(group_statuses(sub_group)).to be_nil
 
-          expect(group_statuses(group)).to eq(expected_single_project_statistics.merge({
-            'namespace_id' => group.id,
-            'traversal_ids' => group.traversal_ids
-          }))
+          expect(group_statuses(group)).to match_array(
+            merge_statuses_with_group_info(expected_group_without_subgroup_statuses, group))
 
-          expect(group_statuses(root_group)).to eq(expected_single_project_statistics.merge({
-            'namespace_id' => root_group.id,
-            'traversal_ids' => root_group.traversal_ids
-          }))
+          expect(group_statuses(root_group)).to match_array(
+            merge_statuses_with_group_info(expected_group_without_subgroup_statuses, root_group))
         end
       end
     end

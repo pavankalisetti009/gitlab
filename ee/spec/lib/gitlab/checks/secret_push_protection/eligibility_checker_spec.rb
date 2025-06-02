@@ -5,16 +5,10 @@ require 'spec_helper'
 RSpec.describe Gitlab::Checks::SecretPushProtection::EligibilityChecker, feature_category: :secret_detection do
   include_context 'secrets check context'
 
-  let(:audit_logger) do
-    instance_double(Gitlab::Checks::SecretPushProtection::AuditLogger, log_skip_secret_push_protection: nil,
-      track_spp_skipped: nil)
-  end
-
   let(:validator) do
     described_class.new(
       project: project,
-      changes_access: changes_access,
-      audit_logger: audit_logger
+      changes_access: changes_access
     )
   end
 

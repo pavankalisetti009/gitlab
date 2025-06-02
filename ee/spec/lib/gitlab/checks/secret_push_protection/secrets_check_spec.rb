@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection do
+RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_category: :secret_detection do
   include_context 'secrets check context'
 
   subject(:secrets_check) { described_class.new(changes_access) }

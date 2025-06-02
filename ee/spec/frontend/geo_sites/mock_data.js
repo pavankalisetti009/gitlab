@@ -30,7 +30,6 @@ export const MOCK_UNSORTED_REPLICABLE_TYPES = [
     titlePlural: 'Container repositories',
     name: 'container_repository',
     namePlural: 'container_repositories',
-    noReplicationView: true,
   },
   {
     dataType: 'repository',
@@ -40,7 +39,6 @@ export const MOCK_UNSORTED_REPLICABLE_TYPES = [
     titlePlural: 'Wikis',
     name: 'wiki',
     namePlural: 'wikis',
-    noReplicationView: true,
   },
   {
     dataType: 'blob',
@@ -81,7 +79,6 @@ export const MOCK_SORTED_REPLICABLE_TYPES = [
     titlePlural: 'Wikis',
     name: 'wiki',
     namePlural: 'wikis',
-    noReplicationView: true,
   },
   {
     dataType: 'blob',
@@ -100,7 +97,6 @@ export const MOCK_SORTED_REPLICABLE_TYPES = [
     titlePlural: 'Container repositories',
     name: 'container_repository',
     namePlural: 'container_repositories',
-    noReplicationView: true,
   },
 ];
 
@@ -125,7 +121,8 @@ export const MOCK_PRIMARY_VERIFICATION_INFO = [
   {
     dataType: 'repository',
     dataTypeTitle: 'Git',
-    title: 'Repositories',
+    namePlural: 'repositories',
+    titlePlural: 'Repositories',
     values: {
       total: 12,
       success: 12,
@@ -140,7 +137,8 @@ export const MOCK_SECONDARY_VERIFICATION_INFO = [
   {
     dataType: 'repository',
     dataTypeTitle: 'Git',
-    title: 'Repositories',
+    namePlural: 'repositories',
+    titlePlural: 'Repositories',
     values: {
       total: 12,
       success: 0,
@@ -155,7 +153,8 @@ export const MOCK_SECONDARY_SYNC_INFO = [
   {
     dataType: 'repository',
     dataTypeTitle: 'Git',
-    title: 'Designs',
+    namePlural: 'designs',
+    titlePlural: 'Designs',
     values: {
       total: 12,
       success: 0,
@@ -165,7 +164,8 @@ export const MOCK_SECONDARY_SYNC_INFO = [
   {
     dataType: 'repository',
     dataTypeTitle: 'Git',
-    title: 'Repositories',
+    namePlural: 'repositories',
+    titlePlural: 'Repositories',
     values: {
       total: 12,
       success: 12,
@@ -175,7 +175,8 @@ export const MOCK_SECONDARY_SYNC_INFO = [
   {
     dataType: 'repository',
     dataTypeTitle: 'Git',
-    title: 'Wikis',
+    namePlural: 'wikis',
+    titlePlural: 'Wikis',
     values: {
       total: 12,
       success: 6,
@@ -185,7 +186,8 @@ export const MOCK_SECONDARY_SYNC_INFO = [
   {
     dataType: 'blob',
     dataTypeTitle: 'File',
-    title: 'Package Files',
+    namePlural: 'package_files',
+    titlePlural: 'Package Files',
     values: {
       total: 25,
       success: 25,
@@ -195,7 +197,8 @@ export const MOCK_SECONDARY_SYNC_INFO = [
   {
     dataType: 'container_repository',
     dataTypeTitle: 'Container repository',
-    title: 'Container repositories',
+    namePlural: 'container_repositories',
+    titlePlural: 'Container repositories',
     values: {
       total: 15,
       success: 10,
@@ -390,12 +393,14 @@ export const MOCK_NO_RESULTS_EMPTY_STATE = {
 
 export const MOCK_REPLICATION_COUNTS = [
   {
-    title: 'Type 1',
+    dataType: 'type_1',
+    dataTypeTitle: 'Type 1',
     sync: [{ total: 100, success: 100 }],
     verification: [{ total: 100, success: 100 }],
   },
   {
-    title: 'Type 2',
+    dataType: 'type_2',
+    dataTypeTitle: 'Type 2',
     sync: [{ total: 100, success: 0 }],
     verification: [{ total: 100, success: 0 }],
   },

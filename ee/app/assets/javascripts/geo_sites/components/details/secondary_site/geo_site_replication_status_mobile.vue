@@ -28,10 +28,10 @@ export default {
         :title="
           /* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */
           sprintf(translations.progressBarSyncTitle, {
-            component: item.component,
+            titlePlural: item.titlePlural,
           }) /* eslint-enable @gitlab/vue-no-new-non-primitive-in-template */
         "
-        :target="`mobile-sync-progress-${item.component}`"
+        :target="`mobile-sync-progress-${item.namePlural}`"
         :values="item.syncValues"
       />
       <span v-else class="gl-text-sm gl-text-subtle">{{ translations.nA }}</span>
@@ -43,10 +43,10 @@ export default {
         :title="
           /* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */
           sprintf(translations.progressBarVerifTitle, {
-            component: item.component,
+            titlePlural: item.titlePlural,
           }) /* eslint-enable @gitlab/vue-no-new-non-primitive-in-template */
         "
-        :target="`mobile-verification-progress-${item.component}`"
+        :target="`mobile-verification-progress-${item.namePlural}`"
         :values="item.verificationValues"
         :success-label="translations.verified"
         :unavailable-label="translations.nothingToVerify"

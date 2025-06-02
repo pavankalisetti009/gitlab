@@ -30,11 +30,11 @@ module Ci
         ::Ci::Minutes::UpdateGitlabHostedRunnerMonthlyUsageWorker.perform_async(
           namespace.id,
           {
-            project_id: build.project_id,
-            runner_id: build.runner_id,
-            build_id: build.id,
-            compute_minutes: dedicated_compute_minutes_consumption,
-            duration: build.duration
+            'project_id' => build.project_id,
+            'runner_id' => build.runner_id,
+            'build_id' => build.id,
+            'compute_minutes' => dedicated_compute_minutes_consumption,
+            'duration' => build.duration
           }
         )
       end
@@ -50,7 +50,7 @@ module Ci
             project.id,
             namespace.id,
             build.id,
-            { duration: build.duration }
+            { 'duration' => build.duration }
           )
       end
 

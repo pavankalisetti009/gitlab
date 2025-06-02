@@ -88,6 +88,11 @@ module EE
     def detect_and_notify_for_compromised_password
       user = find_user
 
+      ::Gitlab::AppJsonLogger.info(
+        message: 'Checking for compromised password',
+        exposed_credential_check_header: request.headers['HTTP_EXPOSED_CREDENTIAL_CHECK'],
+        user_id: user&.id)
+
       return unless user.present?
 
       ::Users::CompromisedPasswords::DetectAndNotifyService.new(user, user_params[:password], request).execute

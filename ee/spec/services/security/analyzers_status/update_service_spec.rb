@@ -11,7 +11,7 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
 
   let(:service) { described_class.new(pipeline) }
   let(:diff_service) { instance_double(Security::AnalyzersStatus::DiffService) }
-  let(:ancestors_update_service) { class_double(Security::AnalyzersStatus::AncestorsUpdateService) }
+  let(:ancestors_update_service) { class_double(Security::AnalyzerNamespaceStatuses::AncestorsUpdateService) }
   let(:status_diff) do
     {
       namespace_id: group.id,
@@ -24,7 +24,7 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
     allow(Security::AnalyzersStatus::DiffService).to receive(:new).and_return(diff_service)
     allow(diff_service).to receive(:execute).and_return(status_diff)
 
-    stub_const('Security::AnalyzersStatus::AncestorsUpdateService', ancestors_update_service)
+    stub_const('Security::AnalyzerNamespaceStatuses::AncestorsUpdateService', ancestors_update_service)
     allow(ancestors_update_service).to receive(:execute)
   end
 

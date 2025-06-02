@@ -108,19 +108,22 @@ describe('GeoSiteReplicationDetails', () => {
 
     const mockSync = {
       dataTypeTitle: MOCK_SORTED_REPLICABLE_TYPES[1].dataTypeTitle,
-      title: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
+      namePlural: MOCK_SORTED_REPLICABLE_TYPES[1].namePlural,
+      titlePlural: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
       values: { total: 100, success: 0 },
     };
 
     const mockVerif = {
       dataTypeTitle: MOCK_SORTED_REPLICABLE_TYPES[1].dataTypeTitle,
-      title: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
+      namePlural: MOCK_SORTED_REPLICABLE_TYPES[1].namePlural,
+      titlePlural: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
       values: { total: 50, success: 50 },
     };
 
     const mockExpectedNoValues = {
       dataTypeTitle: MOCK_SORTED_REPLICABLE_TYPES[1].dataTypeTitle,
-      component: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
+      namePlural: MOCK_SORTED_REPLICABLE_TYPES[1].namePlural,
+      titlePlural: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
       replicationView: replicationUrl,
       syncValues: null,
       verificationValues: null,
@@ -128,7 +131,8 @@ describe('GeoSiteReplicationDetails', () => {
 
     const mockExpectedOnlySync = {
       dataTypeTitle: MOCK_SORTED_REPLICABLE_TYPES[1].dataTypeTitle,
-      component: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
+      namePlural: MOCK_SORTED_REPLICABLE_TYPES[1].namePlural,
+      titlePlural: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
       replicationView: replicationUrl,
       syncValues: { total: 100, success: 0 },
       verificationValues: null,
@@ -136,7 +140,8 @@ describe('GeoSiteReplicationDetails', () => {
 
     const mockExpectedOnlyVerif = {
       dataTypeTitle: MOCK_SORTED_REPLICABLE_TYPES[1].dataTypeTitle,
-      component: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
+      namePlural: MOCK_SORTED_REPLICABLE_TYPES[1].namePlural,
+      titlePlural: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
       replicationView: replicationUrl,
       syncValues: null,
       verificationValues: { total: 50, success: 50 },
@@ -144,7 +149,8 @@ describe('GeoSiteReplicationDetails', () => {
 
     const mockExpectedBothTypes = {
       dataTypeTitle: MOCK_SORTED_REPLICABLE_TYPES[1].dataTypeTitle,
-      component: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
+      namePlural: MOCK_SORTED_REPLICABLE_TYPES[1].namePlural,
+      titlePlural: MOCK_SORTED_REPLICABLE_TYPES[1].titlePlural,
       replicationView: replicationUrl,
       syncValues: { total: 100, success: 0 },
       verificationValues: { total: 50, success: 50 },
@@ -188,24 +194,6 @@ describe('GeoSiteReplicationDetails', () => {
         });
       },
     );
-
-    describe('component links', () => {
-      describe('with noReplicationView', () => {
-        beforeEach(() => {
-          createComponent(null, { sortedReplicableTypes: () => [MOCK_SORTED_REPLICABLE_TYPES[2]] });
-        });
-
-        it('renders replicable component title', () => {
-          expect(findReplicableComponent().text()).toBe(
-            MOCK_SORTED_REPLICABLE_TYPES[2].titlePlural,
-          );
-        });
-
-        it(`does not render GlLink to secondary replication view`, () => {
-          expect(findReplicableComponentLink().exists()).toBe(false);
-        });
-      });
-    });
 
     describe.each`
       description              | relativeUrl  | expectedUrl

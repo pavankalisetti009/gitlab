@@ -40,19 +40,20 @@ export default {
       const syncInfoData = this.syncInfo(this.site.id);
       const verificationInfoData = this.verificationInfo(this.site.id);
 
-      return this.sortedReplicableTypes.map((replicable) => {
-        const replicableSyncInfo = syncInfoData.find((r) => r.title === replicable.titlePlural);
+      return this.sortedReplicableTypes.map(({ namePlural, titlePlural, dataTypeTitle }) => {
+        const replicableSyncInfo = syncInfoData.find((r) => r.namePlural === namePlural);
 
         const replicableVerificationInfo = verificationInfoData.find(
-          (r) => r.title === replicable.titlePlural,
+          (r) => r.namePlural === namePlural,
         );
 
         return {
-          dataTypeTitle: replicable.dataTypeTitle,
-          component: replicable.titlePlural,
+          namePlural,
+          dataTypeTitle,
+          titlePlural,
           syncValues: replicableSyncInfo ? replicableSyncInfo.values : null,
           verificationValues: replicableVerificationInfo ? replicableVerificationInfo.values : null,
-          replicationView: this.getReplicationView(replicable),
+          replicationView: this.getReplicationView(namePlural),
         };
       });
     },
@@ -67,14 +68,10 @@ export default {
     collapseSection() {
       this.collapsed = !this.collapsed;
     },
-    getReplicationView(replicable) {
-      if (replicable.noReplicationView) {
-        return null;
-      }
-
+    getReplicationView(namePlural) {
       return joinPaths(
         gon.relative_url_root || '/',
-        `/admin/geo/sites/${this.site.id}/replication/${replicable.namePlural}`,
+        `/admin/geo/sites/${this.site.id}/replication/${namePlural}`,
       );
     },
   },
@@ -115,9 +112,9 @@ export default {
         <template #default="{ item, translations }">
           <div class="gl-mr-5" data-testid="replicable-component">
             <gl-link v-if="item.replicationView" :href="item.replicationView">{{
-              item.component
+              item.titlePlural
             }}</gl-link>
-            <span v-else>{{ item.component }}</span>
+            <span v-else>{{ item.titlePlural }}</span>
           </div>
           <geo-site-replication-status-mobile :item="item" :translations="translations" />
         </template>

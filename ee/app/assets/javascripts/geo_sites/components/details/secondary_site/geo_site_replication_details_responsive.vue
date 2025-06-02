@@ -16,8 +16,8 @@ export default {
     ),
     learnMore: __('Learn more'),
     nA: __('Not applicable.'),
-    progressBarSyncTitle: s__('Geo|%{component} synced'),
-    progressBarVerifTitle: s__('Geo|%{component} verified'),
+    progressBarSyncTitle: s__('Geo|%{titlePlural} synced'),
+    progressBarVerifTitle: s__('Geo|%{titlePlural} verified'),
     verified: s__('Geo|Verified'),
     nothingToVerify: s__('Geo|Nothing to verify'),
   },
@@ -55,7 +55,7 @@ export default {
     </div>
     <div
       v-for="item in replicationItems"
-      :key="item.component"
+      :key="item.namePlural"
       class="geo-site-replication-details-grid-columns gl-grid gl-border-b-1 gl-border-b-default gl-p-5 gl-border-b-solid"
       data-testid="replication-details-item"
     >
@@ -63,9 +63,9 @@ export default {
         <span class="gl-mr-5">{{ item.dataTypeTitle }}</span>
         <div class="gl-mr-5" data-testid="replicable-component">
           <gl-link v-if="item.replicationView" :href="item.replicationView">{{
-            item.component
+            item.titlePlural
           }}</gl-link>
-          <span v-else>{{ item.component }}</span>
+          <span v-else>{{ item.titlePlural }}</span>
         </div>
         <div class="gl-mr-5" data-testid="sync-status">
           <geo-site-progress-bar
@@ -73,10 +73,10 @@ export default {
             :title="
               /* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */ sprintf(
                 $options.i18n.progressBarSyncTitle,
-                { component: item.component },
+                { titlePlural: item.titlePlural },
               ) /* eslint-enable @gitlab/vue-no-new-non-primitive-in-template */
             "
-            :target="`sync-progress-${siteId}-${item.component}`"
+            :target="`sync-progress-${siteId}-${item.namePlural}`"
             :values="item.syncValues"
           />
           <span v-else class="gl-text-sm gl-text-subtle">{{ $options.i18n.nA }}</span>
@@ -87,10 +87,10 @@ export default {
             :title="
               /* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */ sprintf(
                 $options.i18n.progressBarVerifTitle,
-                { component: item.component },
+                { titlePlural: item.titlePlural },
               ) /* eslint-enable @gitlab/vue-no-new-non-primitive-in-template */
             "
-            :target="`verification-progress-${siteId}-${item.component}`"
+            :target="`verification-progress-${siteId}-${item.namePlural}`"
             :values="item.verificationValues"
             :success-label="$options.i18n.verified"
             :unavailable-label="$options.i18n.nothingToVerify"

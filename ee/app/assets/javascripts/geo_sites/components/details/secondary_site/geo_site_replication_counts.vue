@@ -38,11 +38,11 @@ export default {
     </div>
     <div
       v-for="type in replicationOverview"
-      :key="type.title"
+      :key="type.dataType"
       class="geo-site-replication-counts-grid gl-mb-3 gl-grid gl-items-center"
       data-testid="replication-type"
     >
-      <span>{{ type.title }}</span>
+      <span>{{ type.dataTypeTitle }}</span>
       <geo-site-replication-sync-percentage :values="type.sync" />
       <geo-site-replication-sync-percentage :values="type.verification" />
     </div>

@@ -99,7 +99,7 @@ describe('AiCommonSettingsForm', () => {
       await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.NEVER_ON);
       expect(findDuoSettingsWarningAlert().exists()).toBe(true);
       expect(findDuoSettingsWarningAlert().text()).toContain(
-        'When you save, GitLab Duo will be turned for all groups, subgroups, and projects.',
+        'When you save, GitLab Duo will be turned off for all groups, subgroups, and projects.',
       );
     });
 
