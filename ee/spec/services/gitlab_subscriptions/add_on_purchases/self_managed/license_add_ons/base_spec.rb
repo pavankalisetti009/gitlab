@@ -46,6 +46,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
     describe "#quantity" do
       it { expect { add_on_license_base.quantity }.to raise_error described_class::MethodNotImplementedError }
 
+      it { expect(add_on_license.quantity).to eq quantity }
+    end
+
+    describe "license add-on behaviour" do
       include_examples "license add-on attributes", add_on_name: "duo_pro"
     end
 
