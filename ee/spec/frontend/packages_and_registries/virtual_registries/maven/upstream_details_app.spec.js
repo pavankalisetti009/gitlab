@@ -1,4 +1,5 @@
 import { GlFilteredSearch, GlLoadingIcon } from '@gitlab/ui';
+import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
@@ -9,6 +10,8 @@ import UpstreamDetailsApp from 'ee/packages_and_registries/virtual_registries/ma
 import UpstreamDetailsHeader from 'ee/packages_and_registries/virtual_registries/components/upstream_details_header.vue';
 import CacheEntriesTable from 'ee/packages_and_registries/virtual_registries/components/cache_entries_table.vue';
 import { createAlert } from '~/alert';
+import * as urlUtils from '~/lib/utils/url_utility';
+import { TEST_HOST } from 'spec/test_constants';
 import { mockCacheEntries } from '../mock_data';
 
 jest.mock('~/alert');
@@ -22,12 +25,11 @@ describe('UpstreamDetailsApp', () => {
 
   const defaultProvide = {
     upstream: {
+      id: 5,
       name: 'Test Maven Upstream',
       url: 'https://maven.example.com',
       description: 'This is a test maven upstream',
-      cacheEntries: {
-        count: 2,
-      },
+      cacheEntriesCount: 2,
     },
   };
 
@@ -73,17 +75,12 @@ describe('UpstreamDetailsApp', () => {
 
     it('renders details header', () => {
       expect(findHeader().props('upstream')).toEqual({
+        id: 5,
         name: 'Test Maven Upstream',
         url: 'https://maven.example.com',
         description: 'This is a test maven upstream',
-        cacheEntries: {
-          count: 2,
-        },
+        cacheEntriesCount: 2,
       });
-    });
-
-    it('renders filter search', () => {
-      expect(findFilteredSearch().exists()).toBe(true);
     });
 
     it('renders cache entries table', () => {
@@ -103,6 +100,41 @@ describe('UpstreamDetailsApp', () => {
           updated_at: '2025-05-19T14:22:23.050Z',
         },
       ]);
+    });
+  });
+
+  describe('filtered search', () => {
+    beforeEach(async () => {
+      getMavenUpstreamCacheEntries.mockResolvedValue({ data: mockCacheEntries });
+
+      createComponent();
+
+      await waitForPromises();
+    });
+
+    it('renders filter search', () => {
+      expect(findFilteredSearch().exists()).toBe(true);
+    });
+
+    it('searches for artifact relative path', async () => {
+      jest.spyOn(urlUtils, 'updateHistory');
+
+      findFilteredSearch().vm.$emit('submit', ['foo']);
+
+      await nextTick();
+
+      expect(findLoadingIcon().exists()).toBe(true);
+
+      await waitForPromises();
+
+      expect(findLoadingIcon().exists()).toBe(false);
+      expect(getMavenUpstreamCacheEntries).toHaveBeenCalledWith({
+        id: 5,
+        params: { search: 'foo' },
+      });
+      expect(urlUtils.updateHistory).toHaveBeenCalledWith({
+        url: `${TEST_HOST}/?search=foo`,
+      });
     });
   });
 
@@ -132,6 +164,26 @@ describe('UpstreamDetailsApp', () => {
 
       expect(createAlert).toHaveBeenCalledWith({
         message: 'Failed to fetch cache entries.',
+        error,
+        captureError: true,
+      });
+    });
+
+    it('shows error message on failed attempt to search cached entries', async () => {
+      const error = new Error('API Error');
+
+      getMavenUpstreamCacheEntries.mockRejectedValue(error);
+
+      createComponent();
+
+      await waitForPromises();
+
+      findFilteredSearch().vm.$emit('submit', ['foo']);
+
+      await waitForPromises();
+
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'Failed to search cache entries.',
         error,
         captureError: true,
       });
