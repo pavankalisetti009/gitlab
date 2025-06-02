@@ -3,22 +3,21 @@
 module Gitlab
   module Checks
     module SecretPushProtection
-      class ExclusionsManager
+      class ExclusionsManager < ::Gitlab::Checks::SecretPushProtection::Base
         MAX_PATH_EXCLUSIONS_DEPTH = 20
         EXCLUSION_TYPE_MAP = {
           rule: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RULE,
           path: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_PATH,
           raw_value: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RAW_VALUE,
           unknown: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_UNSPECIFIED
-        }.freeze
+        }.with_indifferent_access.freeze
 
-        def initialize(project:, audit_logger:)
-          @project = project
-          @audit_logger = audit_logger
+        def self.exclusion_type(exclusion_type_key)
+          EXCLUSION_TYPE_MAP.fetch(exclusion_type_key, EXCLUSION_TYPE_MAP[:unknown])
         end
 
         def active_exclusions
-          @active_exclusions ||= @project
+          @active_exclusions ||= project
             .security_exclusions
             .by_scanner(:secret_push_protection)
             .active
@@ -40,7 +39,7 @@ module Gitlab
                 File::FNM_DOTMATCH | File::FNM_EXTGLOB | File::FNM_PATHNAME
               )
 
-              @audit_logger.log_exclusion_audit_event(exclusion) if matches
+              audit_logger.log_exclusion_audit_event(exclusion) if matches
               matches
             end
         end

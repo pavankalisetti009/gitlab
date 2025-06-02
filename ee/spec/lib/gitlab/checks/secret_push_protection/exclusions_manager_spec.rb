@@ -6,9 +6,10 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::ExclusionsManager, feature_
   include_context 'secrets check context'
 
   let(:audit_logger) { instance_double(Gitlab::Checks::SecretPushProtection::AuditLogger) }
-  let(:exclusions_manager) { described_class.new(project: project, audit_logger: audit_logger) }
+  let(:exclusions_manager) { described_class.new(project: project, changes_access: changes_access) }
 
   before do
+    allow(exclusions_manager).to receive(:audit_logger).and_return(audit_logger)
     allow(audit_logger).to receive(:log_exclusion_audit_event)
   end
 
@@ -121,6 +122,23 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::ExclusionsManager, feature_
         expect(exclusions_manager.matches_excluded_path?('README.md')).to be(false)
         expect(audit_logger).not_to have_received(:log_exclusion_audit_event)
       end
+    end
+  end
+
+  describe '.exclusion_type' do
+    it 'maps known keys to their GRPC enum' do
+      expect(described_class.exclusion_type('path')).to eq(
+        ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_PATH
+      )
+      expect(described_class.exclusion_type(:rule)).to eq(
+        ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RULE
+      )
+    end
+
+    it 'returns unknown enum for unrecognized keys' do
+      expect(described_class.exclusion_type('bogus')).to eq(
+        ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_UNSPECIFIED
+      )
     end
   end
 end

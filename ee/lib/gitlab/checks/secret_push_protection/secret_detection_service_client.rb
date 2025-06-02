@@ -3,7 +3,7 @@
 module Gitlab
   module Checks
     module SecretPushProtection
-      class SecretDetectionServiceClient
+      class SecretDetectionServiceClient < ::Gitlab::Checks::SecretPushProtection::Base
         include ::Gitlab::Loggable
 
         LOG_MESSAGES = {
@@ -11,34 +11,49 @@ module Gitlab
             "Non-Dedicated: %{is_not_dedicated}"
         }.freeze
 
-        def initialize(project:)
-          @project = project
-          @sds_client = nil
+        attr_accessor :should_use_sds, :sds_client, :settings, :sds_host, :sds_auth_token
 
-          settings = ::Gitlab::CurrentSettings.current_application_settings
+        def initialize(project:)
+          super(project: project, changes_access: nil)
+          @should_use_sds = nil
+          @sds_client = nil
+          @settings = ::Gitlab::CurrentSettings.current_application_settings
           @sds_host = settings.secret_detection_service_url
           @sds_auth_token = settings.secret_detection_service_auth_token
-
-          @is_dedicated = settings.gitlab_dedicated_instance
-          @should_use_sds = nil
         end
 
         # Determines if SDS should be used (feature flags + instance checks).
         def use_secret_detection_service?
-          return @should_use_sds unless @should_use_sds.nil?
+          return should_use_sds unless should_use_sds.nil?
 
           sds_ff_enabled = Feature.enabled?(:use_secret_detection_service, project)
           saas_feature_enabled = ::Gitlab::Saas.feature_available?(:secret_detection_service)
-          is_not_dedicated = !@is_dedicated
+          is_not_dedicated = !settings.gitlab_dedicated_instance
 
-          @should_use_sds = sds_ff_enabled && saas_feature_enabled && is_not_dedicated
+          should_use_sds = sds_ff_enabled && saas_feature_enabled && is_not_dedicated && sds_host.present?
 
-          unless @should_use_sds
+          unless should_use_sds
             msg = format(LOG_MESSAGES[:sds_disabled], { sds_ff_enabled:, saas_feature_enabled:, is_not_dedicated: })
             secret_detection_logger.info(build_structured_payload(message: msg))
           end
 
-          @should_use_sds
+          should_use_sds
+        end
+
+        def setup_sds_client
+          return unless use_secret_detection_service?
+          return if sds_client.present?
+
+          begin
+            @sds_client = ::Gitlab::SecretDetection::GRPC::Client.new(
+              sds_host,
+              secure: sds_auth_token.present?,
+              logger: secret_detection_logger
+            )
+          rescue StandardError => e
+            ::Gitlab::ErrorTracking.track_exception(e)
+            @sds_client = nil
+          end
         end
 
         # Send payloads to SDS asynchronously or directly (ignores response).
@@ -56,36 +71,13 @@ module Gitlab
 
         private
 
-        attr_accessor :sds_client, :sds_auth_token, :sds_host, :is_dedicated, :project
-
-        def setup_sds_client
-          return unless use_secret_detection_service?
-          return if sds_client.present?
-          return if sds_host.blank?
-
-          begin
-            @sds_client = ::Gitlab::SecretDetection::GRPC::Client.new(
-              sds_host,
-              secure: sds_auth_token.present?,
-              logger: secret_detection_logger
-            )
-          rescue StandardError => e
-            ::Gitlab::ErrorTracking.track_exception(e)
-            @sds_client = nil
-          end
-        end
-
         # Build an array of gRPC Exclusion messages from our exclusion hashes.
         def build_exclusions(exclusions: {})
-          exclusions.flat_map do |_, exclusions_for_type|
-            exclusions_for_type.map do |exclusion|
-              type = ::Gitlab::Checks::SecretPushProtection::ExclusionsManager::EXCLUSION_TYPE_MAP.fetch(
-                exclusion.type.to_sym,
-                ::Gitlab::Checks::SecretPushProtection::ExclusionsManager::EXCLUSION_TYPE_MAP[:unknown]
-              )
-
+          exclusions.flat_map do |_type_key, exclusion_list|
+            exclusion_list.map do |exclusion|
               ::Gitlab::SecretDetection::GRPC::Exclusion.new(
-                exclusion_type: type,
+                exclusion_type: ::Gitlab::Checks::SecretPushProtection::ExclusionsManager
+                                  .exclusion_type(exclusion.type),
                 value: exclusion.value
               )
             end
@@ -99,10 +91,6 @@ module Gitlab
             exclusions: build_exclusions(exclusions: exclusions),
             tags: tags
           )
-        end
-
-        def secret_detection_logger
-          @secret_detection_logger ||= ::Gitlab::SecretDetectionLogger.build
         end
       end
     end

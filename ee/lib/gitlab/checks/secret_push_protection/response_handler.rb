@@ -3,9 +3,7 @@
 module Gitlab
   module Checks
     module SecretPushProtection
-      class ResponseHandler
-        include ::Gitlab::Loggable
-
+      class ResponseHandler < ::Gitlab::Checks::SecretPushProtection::Base
         ERROR_MESSAGES = {
           failed_to_scan_regex_error: "\n    - Failed to scan blob(id: %{payload_id}) due to regex error.",
           blob_timed_out_error: "\n    - Scanning blob(id: %{payload_id}) timed out.",
@@ -33,11 +31,6 @@ module Gitlab
           found_secrets_footer: "\n--------------------------------------------------\n\n",
           invalid_log_level: "Unknown log level %{log_level} for message: %{message}"
         }.freeze
-
-        def initialize(project:, changes_access:)
-          @project = project
-          @changes_access = changes_access
-        end
 
         def format_response(response)
           # Try to retrieve file path and commit sha for the diffs found.
@@ -102,7 +95,7 @@ module Gitlab
         private
 
         def commits
-          @commit ||= @changes_access.commits.map(&:valid_full_sha)
+          @commit ||= changes_access.commits.map(&:valid_full_sha)
         end
 
         # rubocop:disable Metrics/CyclomaticComplexity -- Not easy to move complexity away into other methods,
@@ -122,7 +115,7 @@ module Gitlab
             # We could try to handle pagination, but it is likely to timeout way earlier given the
             # huge default limit (100000) of entries, so we log an error if we get too many results.
             entries, cursor = ::Gitlab::Git::Tree.tree_entries(
-              repository: @project.repository,
+              repository: project.repository,
               sha: revision,
               recursive: true,
               rescue_not_found: false
@@ -258,20 +251,9 @@ module Gitlab
 
         def exclusions_manager
           @exclusions_manager ||= ::Gitlab::Checks::SecretPushProtection::ExclusionsManager.new(
-            project: @project,
-            audit_logger: audit_logger
+            project: project,
+            changes_access: changes_access
           )
-        end
-
-        def audit_logger
-          @audit_logger ||= ::Gitlab::Checks::SecretPushProtection::AuditLogger.new(
-            project: @project,
-            changes_access: @changes_access
-          )
-        end
-
-        def secret_detection_logger
-          @secret_detection_logger ||= ::Gitlab::SecretDetectionLogger.build
         end
       end
     end

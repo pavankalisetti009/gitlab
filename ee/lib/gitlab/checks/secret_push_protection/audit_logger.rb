@@ -3,12 +3,11 @@
 module Gitlab
   module Checks
     module SecretPushProtection
-      class AuditLogger
+      class AuditLogger < ::Gitlab::Checks::SecretPushProtection::Base
         include ::Gitlab::InternalEventsTracking
 
         def initialize(project:, changes_access:)
-          @project = project
-          @changes_access = changes_access
+          super
           @user = changes_access.user_access.user
         end
 
@@ -72,8 +71,6 @@ module Gitlab
         end
 
         private
-
-        attr_reader :project, :changes_access
 
         def generate_target_details
           changes = changes_access.changes

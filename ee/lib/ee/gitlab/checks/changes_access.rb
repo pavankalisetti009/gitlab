@@ -12,7 +12,7 @@ module EE
           super
 
           PushRuleCheck.new(self).validate!
-          ::Gitlab::Checks::SecretsCheck.new(self).validate!
+          ::Gitlab::Checks::SecretPushProtection::SecretsCheck.new(self).validate!
         end
       end
     end
