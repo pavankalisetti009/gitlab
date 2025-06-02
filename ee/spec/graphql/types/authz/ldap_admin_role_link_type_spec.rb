@@ -8,7 +8,7 @@ RSpec.describe GitlabSchema.types['LdapAdminRoleLink'], feature_category: :permi
   describe 'fields' do
     let(:fields) do
       %i[
-        id admin_member_role provider filter cn
+        id created_at admin_member_role provider filter cn
         sync_status sync_started_at sync_ended_at last_successful_sync_at
         sync_error
       ]
