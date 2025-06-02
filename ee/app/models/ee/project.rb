@@ -567,6 +567,12 @@ module EE
 
         ::Feature.enabled?(:project_work_item_epics, self, type: :beta)
       end
+
+      def has_linked_configurations?
+        assoc = association(:security_policy_management_project_linked_configurations)
+
+        assoc.loaded? ? assoc.target.any? : assoc.scope.exists?
+      end
     end
 
     def self.cascading_with_parent_namespace(attribute)
@@ -577,7 +583,7 @@ module EE
       define_method("#{attribute}?") do |inherit_group_setting: false|
         if attribute == :only_allow_merge_if_pipeline_succeeds &&
             licensed_feature_available?(:security_orchestration_policies) &&
-            security_policy_management_project_linked_configurations.exists?
+            has_linked_configurations?
           return false
         end
 

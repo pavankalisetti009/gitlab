@@ -5380,4 +5380,45 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       expect(project.container_registry_protection_tag_rules).to have_received(:immutable).once
     end
   end
+
+  describe '#has_linked_configurations?' do
+    let(:project) { build_stubbed(:project) }
+    let(:assoc) { instance_double(ActiveRecord::Associations::Association) }
+    let(:target) { double('target') }
+    let(:scope) { double('scope') }
+    let(:loaded) { true }
+
+    before do
+      allow(project)
+        .to receive(:association)
+        .with(:security_policy_management_project_linked_configurations)
+        .and_return(assoc)
+
+      allow(assoc).to receive(:loaded?).and_return(loaded)
+      allow(assoc).to receive(:target).and_return(target)
+      allow(assoc).to receive(:scope).and_return(scope)
+      allow(scope).to receive(:exists?).and_return(true)
+      allow(target).to receive(:any?).and_return(true)
+    end
+
+    context 'when the association is already loaded' do
+      it 'calls #any? on the target' do
+        expect(target).to receive(:any?)
+        expect(scope).not_to receive(:exists?)
+
+        project.has_linked_configurations?
+      end
+    end
+
+    context 'when the association is not loaded' do
+      let(:loaded) { false }
+
+      it 'calls #exists? on the scope' do
+        expect(scope).to receive(:exists?)
+        expect(target).not_to receive(:any?)
+
+        project.has_linked_configurations?
+      end
+    end
+  end
 end
