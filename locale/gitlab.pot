@@ -54414,6 +54414,9 @@ msgstr ""
 msgid "ScanResultPolicy|Access tokens"
 msgstr ""
 
+msgid "ScanResultPolicy|Add another account"
+msgstr ""
+
 msgid "ScanResultPolicy|Add exception"
 msgstr ""
 
@@ -54516,7 +54519,7 @@ msgstr ""
 msgid "ScanResultPolicy|Enable automated systems and bots to bypass policies for approved workflows."
 msgstr ""
 
-msgid "ScanResultPolicy|Error occurred while fetching access tokens."
+msgid "ScanResultPolicy|Error while fetching"
 msgstr ""
 
 msgid "ScanResultPolicy|Except"
@@ -54639,10 +54642,16 @@ msgstr ""
 msgid "ScanResultPolicy|No settings available for this policy"
 msgstr ""
 
+msgid "ScanResultPolicy|No tokens available"
+msgstr ""
+
 msgid "ScanResultPolicy|Only 1 age criteria is allowed"
 msgstr ""
 
 msgid "ScanResultPolicy|Override project approval settings"
+msgstr ""
+
+msgid "ScanResultPolicy|Personal access token"
 msgstr ""
 
 msgid "ScanResultPolicy|Policy Exception settings"
@@ -54702,10 +54711,10 @@ msgstr ""
 msgid "ScanResultPolicy|Save denylist"
 msgstr ""
 
-msgid "ScanResultPolicy|Security team project"
+msgid "ScanResultPolicy|Select a scan type before adding criteria"
 msgstr ""
 
-msgid "ScanResultPolicy|Select a scan type before adding criteria"
+msgid "ScanResultPolicy|Select access tokens"
 msgstr ""
 
 msgid "ScanResultPolicy|Select all"
@@ -54729,10 +54738,19 @@ msgstr ""
 msgid "ScanResultPolicy|Select role exceptions. Choose which roles can bypass this policy."
 msgstr ""
 
+msgid "ScanResultPolicy|Select service account"
+msgstr ""
+
+msgid "ScanResultPolicy|Select service account or create a token"
+msgstr ""
+
+msgid "ScanResultPolicy|Select service accounts"
+msgstr ""
+
 msgid "ScanResultPolicy|Select token exceptions"
 msgstr ""
 
-msgid "ScanResultPolicy|Select tokens"
+msgid "ScanResultPolicy|Service accounts"
 msgstr ""
 
 msgid "ScanResultPolicy|Severity is:"
@@ -54742,9 +54760,6 @@ msgid "ScanResultPolicy|Specify the packages where this license requires approva
 msgstr ""
 
 msgid "ScanResultPolicy|Status is:"
-msgstr ""
-
-msgid "ScanResultPolicy|Target project documentation"
 msgstr ""
 
 msgid "ScanResultPolicy|The product %{verb} use the selected licenses"
@@ -54837,7 +54852,13 @@ msgstr ""
 msgid "ScanResultPolicy|scanners"
 msgstr ""
 
+msgid "ScanResultPolicy|service account"
+msgstr ""
+
 msgid "ScanResultPolicy|severity levels"
+msgstr ""
+
+msgid "ScanResultPolicy|token"
 msgstr ""
 
 msgid "ScanResultPolicy|vulnerabilities allowed"

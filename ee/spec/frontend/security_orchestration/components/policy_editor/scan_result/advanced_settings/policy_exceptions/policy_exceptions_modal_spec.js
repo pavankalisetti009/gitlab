@@ -3,13 +3,16 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent, RENDER_ALL_SLOTS_TEMPLATE } from 'helpers/stub_component';
 import BranchPatternSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/branch_pattern_selector.vue';
 import TokensSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/tokens_selector.vue';
+import ServiceAccountsSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/service_accounts_selector.vue';
 import PolicyExceptionsModal from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/policy_exceptions_modal.vue';
 import PolicyExceptionsSelector from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/policy_exceptions_selector.vue';
 import {
+  ACCOUNTS,
   SOURCE_BRANCH_PATTERNS,
   TOKENS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 import {
+  mockAccounts,
   mockBranchPatterns,
   mockTokens,
 } from 'ee_jest/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/mocks';
@@ -35,6 +38,7 @@ describe('PolicyExceptionsModal', () => {
   const findSaveButton = () => wrapper.findByTestId('save-button');
   const findModalTitle = () => wrapper.findByTestId('modal-title');
   const findModalSubtitle = () => wrapper.findByTestId('modal-subtitle');
+  const findServiceAccountsSelector = () => wrapper.findComponent(ServiceAccountsSelector);
 
   beforeEach(() => {
     createComponent();
@@ -96,7 +100,7 @@ describe('PolicyExceptionsModal', () => {
   });
 
   describe('tokens', () => {
-    it('renders branch pattern selector', () => {
+    it('renders tokens selector', () => {
       createComponent({
         propsData: {
           exceptions: {
@@ -107,7 +111,7 @@ describe('PolicyExceptionsModal', () => {
       });
 
       expect(findTokensSelector().exists()).toBe(true);
-      expect(findTokensSelector().props('tokens')).toEqual(mockTokens);
+      expect(findTokensSelector().props('selectedTokens')).toEqual(mockTokens);
 
       expect(findModalTitle().text()).toBe('Access Token');
       expect(findModalSubtitle().text()).toBe(
@@ -115,7 +119,7 @@ describe('PolicyExceptionsModal', () => {
       );
     });
 
-    it('saves selected branch patterns', async () => {
+    it('saves selected tokens', async () => {
       createComponent({
         propsData: {
           selectedTab: TOKENS,
@@ -132,6 +136,49 @@ describe('PolicyExceptionsModal', () => {
         [
           {
             tokens: mockTokens,
+          },
+        ],
+      ]);
+    });
+  });
+
+  describe('service accounts', () => {
+    it('renders service accounts selector', () => {
+      createComponent({
+        propsData: {
+          exceptions: {
+            accounts: mockAccounts,
+          },
+          selectedTab: ACCOUNTS,
+        },
+      });
+
+      expect(findServiceAccountsSelector().exists()).toBe(true);
+      expect(findServiceAccountsSelector().props('selectedAccounts')).toEqual(mockAccounts);
+
+      expect(findModalTitle().text()).toBe('Service Account');
+      expect(findModalSubtitle().text()).toBe(
+        'Choose which service accounts can bypass this policy.',
+      );
+    });
+
+    it('saves selected service accounts', async () => {
+      createComponent({
+        propsData: {
+          selectedTab: ACCOUNTS,
+        },
+      });
+
+      await findServiceAccountsSelector().vm.$emit('set-accounts', mockAccounts);
+
+      expect(wrapper.emitted('changed')).toBeUndefined();
+
+      await findSaveButton().vm.$emit('click');
+
+      expect(wrapper.emitted('changed')).toEqual([
+        [
+          {
+            accounts: mockAccounts,
           },
         ],
       ]);
