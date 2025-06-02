@@ -16,11 +16,13 @@ module EE
 
         before_action :disable_query_limiting_ee, only: [:update, :bulk_update]
 
-        before_action only: [:new, :create] do
+        before_action only: [:new, :create, :show] do
           if can?(current_user, :generate_description, project)
             push_licensed_feature(:generate_description, project)
           end
+        end
 
+        before_action only: [:new, :create] do
           populate_vulnerability_id
         end
 
