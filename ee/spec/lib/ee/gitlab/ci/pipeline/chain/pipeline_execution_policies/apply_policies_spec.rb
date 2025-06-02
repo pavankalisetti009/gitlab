@@ -55,12 +55,15 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
       expect(test_stage.statuses.map(&:name)).to contain_exactly('rake', 'rspec')
     end
 
-    it_behaves_like 'internal event tracking' do
-      let(:event) { 'enforce_pipeline_execution_policy_in_project' }
-      let(:category) { described_class.name }
-      let_it_be(:project) { project }
-      let_it_be(:user) { nil }
-      let_it_be(:namespace) { group }
+    describe 'tracking' do
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
+        let(:category) { Security::PipelineExecutionPolicy::UsageTracking.name }
+        let_it_be(:project) { project }
+        let_it_be(:user) { nil }
+        let_it_be(:namespace) { group }
+        let(:additional_properties) { { label: 'inject_ci', property: 'highest_precedence', value: 2 } }
+      end
     end
 
     context 'with conflicting jobs' do
@@ -242,7 +245,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
 
         it_behaves_like 'internal event tracking' do
           let(:event) { 'execute_job_pipeline_execution_policy' }
-          let(:category) { described_class.name }
+          let(:category) { Security::PipelineExecutionPolicy::UsageTracking.name }
           let_it_be(:project) { project }
           let_it_be(:user) { nil }
           let_it_be(:namespace) { project.group }
@@ -256,7 +259,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
 
           it 'triggers one event per job' do
             expect { run_chain }.to trigger_internal_events('execute_job_pipeline_execution_policy')
-                                    .with(category: described_class.name,
+                                    .with(category: Security::PipelineExecutionPolicy::UsageTracking.name,
                                       project: project,
                                       namespace:  project.group)
                                     .exactly(2).times
@@ -343,10 +346,11 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
 
       it_behaves_like 'internal event tracking' do
         let(:event) { 'enforce_pipeline_execution_policy_in_project' }
-        let(:category) { described_class.name }
+        let(:category) { Security::PipelineExecutionPolicy::UsageTracking.name }
         let_it_be(:project) { project }
         let_it_be(:user) { nil }
         let_it_be(:namespace) { group }
+        let(:additional_properties) { { label: 'inject_ci', property: 'highest_precedence', value: 2 } }
       end
     end
 
@@ -399,10 +403,11 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::ApplyPoli
 
       it_behaves_like 'internal event tracking' do
         let(:event) { 'enforce_pipeline_execution_policy_in_project' }
-        let(:category) { described_class.name }
+        let(:category) { Security::PipelineExecutionPolicy::UsageTracking.name }
         let_it_be(:project) { project }
         let_it_be(:user) { nil }
         let_it_be(:namespace) { group }
+        let(:additional_properties) { { label: 'override_project_ci', property: 'highest_precedence', value: 1 } }
       end
     end
 
