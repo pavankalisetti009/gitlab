@@ -32262,9 +32262,6 @@ msgstr ""
 msgid "In use"
 msgstr ""
 
-msgid "InProductMarketing|%{upper_start}Free 60-day trial%{upper_end} %{lower_start}GitLab Ultimate & GitLab Duo Enterprise%{lower_end} %{last_start}Sign up for a free trial of the most comprehensive AI-native DevSecOps Platform%{last_end}"
-msgstr ""
-
 msgid "InProductMarketing|60-day trial period"
 msgstr ""
 
@@ -32277,6 +32274,9 @@ msgstr ""
 msgid "InProductMarketing|End-to-end security and compliance"
 msgstr ""
 
+msgid "InProductMarketing|Enjoy 60 days of full access to our best plan, after which you'll have access to our free tier forever. Upgrade to the best plan that suits you at any point - Premium or Ultimate."
+msgstr ""
+
 msgid "InProductMarketing|Ensure compliance"
 msgstr ""
 
@@ -32284,6 +32284,9 @@ msgid "InProductMarketing|Experience the power of Ultimate + GitLab Duo Enterpri
 msgstr ""
 
 msgid "InProductMarketing|Free guest users"
+msgstr ""
+
+msgid "InProductMarketing|Get Started with GitLab"
 msgstr ""
 
 msgid "InProductMarketing|GitLab Duo Enterprise: AI across the software development lifecycle"
