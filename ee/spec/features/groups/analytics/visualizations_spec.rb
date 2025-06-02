@@ -26,7 +26,7 @@ RSpec.describe 'Analytics Dashboard Visualizations', :js, feature_category: :val
     end
 
     context 'when ClickHouse is enabled for analytics', :saas,
-      quarantine: 'https://gitlab.com/gitlab-org/release/tasks/-/issues/19697' do
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/532963' do
       before do
         allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
 
@@ -41,7 +41,7 @@ RSpec.describe 'Analytics Dashboard Visualizations', :js, feature_category: :val
     end
 
     context 'when ClickHouse is disabled for analytics', :saas,
-      quarantine: 'https://gitlab.com/gitlab-org/release/tasks/-/issues/19697' do
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/516903' do
       before do
         allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(false)
 

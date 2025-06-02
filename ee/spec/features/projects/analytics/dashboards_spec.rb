@@ -108,7 +108,8 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
             create_mock_dora_chart_metrics(environment)
           end
 
-          context 'when ClickHouse is enabled for analytics', :saas do
+          context 'when ClickHouse is enabled for analytics', :saas,
+            quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/538319' do
             before do
               allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
               Analytics::CycleAnalytics::DataLoaderService.new(namespace: group, model: Issue).execute
@@ -123,7 +124,8 @@ RSpec.describe 'Analytics Dashboards', :js, feature_category: :value_stream_mana
             it_behaves_like 'renders contributor count'
           end
 
-          context 'when ClickHouse is disabled for analytics', :saas do
+          context 'when ClickHouse is disabled for analytics', :saas,
+            quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/546755' do
             before do
               allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(false)
               Analytics::CycleAnalytics::DataLoaderService.new(namespace: group, model: Issue).execute
