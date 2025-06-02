@@ -224,6 +224,12 @@ export const ldapAdminRoleLinks = [
     cn: null,
     filter: 'cn=group1,ou=groups,dc=example,dc=com',
     adminMemberRole: { id: 'gid://gitlab/MemberRole/1', name: 'Custom admin role 1' },
+    createdAt: '2020-07-04T21:14:54Z',
+    syncStatus: 'NEVER_SYNCED',
+    syncStartedAt: null,
+    syncEndedAt: null,
+    syncError: null,
+    lastSuccessfulSyncAt: null,
   },
   {
     id: 'gid://gitlab/Authz::LdapAdminRoleLink/2',
@@ -234,6 +240,12 @@ export const ldapAdminRoleLinks = [
     cn: 'group2',
     filter: null,
     adminMemberRole: { id: 'gid://gitlab/MemberRole/2', name: 'Custom admin role 2' },
+    createdAt: '2020-07-04T21:14:54Z',
+    syncStatus: 'SUCCESSFUL',
+    syncStartedAt: '2020-07-05T23:55:24Z',
+    syncEndedAt: '2020-07-05T23:57:31Z',
+    syncError: null,
+    lastSuccessfulSyncAt: '2020-07-04T21:14:54Z',
   },
 ];
 
@@ -241,3 +253,28 @@ export const ldapServers = [
   { value: 'ldapmain', text: 'LDAP' },
   { value: 'ldapalt', text: 'LDAP-alt' },
 ];
+
+export const ROLE_LINK_NEVER_SYNCED = {
+  ...ldapAdminRoleLinks[0],
+  syncStatus: 'NEVER_SYNCED',
+};
+export const ROLE_LINK_QUEUED = {
+  ...ROLE_LINK_NEVER_SYNCED,
+  syncStatus: 'QUEUED',
+  lastSuccessfulSyncAt: '2020-07-04T12:55:19Z',
+};
+export const ROLE_LINK_RUNNING = {
+  ...ROLE_LINK_QUEUED,
+  syncStatus: 'RUNNING',
+  syncStartedAt: '2020-07-05T23:55:24Z',
+};
+export const ROLE_LINK_SUCCESSFUL = {
+  ...ROLE_LINK_RUNNING,
+  syncStatus: 'SUCCESSFUL',
+  syncEndedAt: '2020-07-05T23:57:31Z',
+};
+export const ROLE_LINK_FAILED = {
+  ...ROLE_LINK_SUCCESSFUL,
+  syncStatus: 'FAILED',
+  syncError: 'oh no',
+};
