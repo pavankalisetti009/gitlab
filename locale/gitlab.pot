@@ -37212,6 +37212,12 @@ msgstr ""
 msgid "MarkdownEditor|Find and replace"
 msgstr ""
 
+msgid "MarkdownEditor|Find next"
+msgstr ""
+
+msgid "MarkdownEditor|Find previous"
+msgstr ""
+
 msgid "MarkdownEditor|Indent line (%{modifierKey}])"
 msgstr ""
 
