@@ -4,6 +4,7 @@ RSpec.shared_examples 'migration backfills fields' do
   let(:migration) { described_class.new(version) }
   let(:klass) { objects.first.class }
   let(:index_name) { migration.index_name }
+  let(:bookkeeping_service) { ::Elastic::ProcessInitialBookkeepingService }
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
@@ -28,7 +29,7 @@ RSpec.shared_examples 'migration backfills fields' do
 
     context 'when migration is already completed' do
       it 'does not modify data' do
-        expect(::Elastic::ProcessInitialBookkeepingService).not_to receive(:track!)
+        expect(bookkeeping_service).not_to receive(:track!)
 
         subject
       end
@@ -41,7 +42,7 @@ RSpec.shared_examples 'migration backfills fields' do
 
       it 'updates all documents' do
         # track calls are batched in groups of 100
-        expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!)
+        expect(bookkeeping_service).to receive(:track!)
           .once.and_call_original do |*tracked_refs|
           expect(tracked_refs.count).to eq(objects.size)
         end
@@ -57,7 +58,7 @@ RSpec.shared_examples 'migration backfills fields' do
         object = objects.first
         add_field_for_objects(objects[1..])
 
-        expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!)
+        expect(bookkeeping_service).to receive(:track!)
           .once.and_call_original do |*tracked_refs|
           expect(tracked_refs.count).to eq(1)
           expect(::Search::Elastic::Reference.deserialize(tracked_refs.first).identifier).to eq(object.id)
@@ -76,7 +77,7 @@ RSpec.shared_examples 'migration backfills fields' do
         # the migration is run two times, so expect at most 4 calls to track!
         expected_track_calls = [objects.size, 4].min
 
-        expect(::Elastic::ProcessInitialBookkeepingService)
+        expect(bookkeeping_service)
           .to receive(:track!).exactly(expected_track_calls).times.and_call_original
 
         # cannot use subject in spec because it is memoized

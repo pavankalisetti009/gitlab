@@ -18,10 +18,10 @@ RSpec.describe ::Search::Elastic::Reference, feature_category: :global_search do
     end
 
     context 'when item is a Search::Elastic::Reference' do
-      let(:item) { Search::Elastic::Reference.build(issue) }
+      let(:item) { Search::Elastic::Reference.build(issue, ::Search::Elastic::References::WorkItem) }
 
       it 'returns the serialized reference' do
-        expect(described_class.serialize(item)).to eq(serialized_issue)
+        expect(described_class.serialize(item)).to eq(serialized_work_item)
       end
     end
 
