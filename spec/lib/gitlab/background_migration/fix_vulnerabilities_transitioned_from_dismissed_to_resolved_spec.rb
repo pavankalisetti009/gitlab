@@ -168,17 +168,15 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
       batch_table: :vulnerability_reads,
       batch_column: :vulnerability_id,
       sub_batch_size: vulnerability_reads.count,
-      job_arguments: [namespace_id, instance],
+      job_arguments: [namespace_id],
       pause_ms: 0,
       connection: SecApplicationRecord.connection
     ).perform
   end
 
   describe 'migration' do
-    # rubocop:disable RSpec/MultipleMemoizedHelpers -- Favor readability over conciseness
     context 'when performing an instance migration' do
-      let(:namespace_id) { nil }
-      let(:instance) { true }
+      let(:namespace_id) { 'instance' }
 
       it 'migrates all affected vulnerabilities' do
         expect { perform_migration }.to(
@@ -249,7 +247,6 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
 
     context 'when migrating a namespace' do
       let(:namespace_id) { namespace.id }
-      let(:instance) { false }
 
       it 'only migrates records inside the namespace' do
         expect { perform_migration }.to(
@@ -314,7 +311,6 @@ RSpec.describe Gitlab::BackgroundMigration::FixVulnerabilitiesTransitionedFromDi
         end
       end
     end
-    # rubocop:enable RSpec/MultipleMemoizedHelpers
   end
 
   def latest_transition(vulnerability)
