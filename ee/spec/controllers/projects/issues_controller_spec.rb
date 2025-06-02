@@ -29,6 +29,96 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
         stub_licensed_features(issue_weights: true, epics: true, security_dashboard: true, issuable_default_templates: true)
       end
 
+      context 'when user can generate description' do
+        before do
+          allow(controller).to receive(:push_licensed_feature)
+          allow(controller).to receive(:can?).and_call_original
+          allow(controller).to receive(:can?).with(anything, :generate_description, anything).and_return(true)
+        end
+
+        describe 'generate_description feature' do
+          describe 'GET #new' do
+            context 'when generate_description is licensed' do
+              before do
+                stub_licensed_features(generate_description: true)
+              end
+
+              it 'pushes generate_description licensed feature' do
+                get :new, params: { namespace_id: project.namespace, project_id: project }
+
+                expect(controller).to have_received(:push_licensed_feature).with(:generate_description, project)
+              end
+            end
+
+            context 'when generate_description is not licensed' do
+              before do
+                stub_licensed_features(generate_description: false)
+              end
+
+              it 'pushes generate_description licensed feature when user has permission regardless of license status' do
+                get :new, params: { namespace_id: project.namespace, project_id: project }
+
+                expect(controller).to have_received(:push_licensed_feature).with(:generate_description, project)
+              end
+            end
+          end
+
+          describe 'GET #show' do
+            let(:issue) { create(:issue, project: project) }
+
+            context 'when generate_description is licensed' do
+              before do
+                stub_licensed_features(generate_description: true)
+              end
+
+              it 'pushes generate_description licensed feature' do
+                get :show, params: { namespace_id: project.namespace, project_id: project, id: issue.iid }
+
+                expect(controller).to have_received(:push_licensed_feature).with(:generate_description, project)
+              end
+            end
+
+            context 'when generate_description is not licensed' do
+              before do
+                stub_licensed_features(generate_description: false)
+              end
+
+              it 'pushes generate_description licensed feature when user has permission regardless of license status' do
+                get :show, params: { namespace_id: project.namespace, project_id: project, id: issue.iid }
+
+                expect(controller).to have_received(:push_licensed_feature).with(:generate_description, project)
+              end
+            end
+          end
+
+          context 'when user cannot generate description' do
+            before do
+              allow(controller).to receive(:can?).and_call_original
+              allow(controller).to receive(:can?).with(user, :generate_description, project).and_return(false)
+              stub_licensed_features(generate_description: true)
+            end
+
+            describe 'GET #new' do
+              it 'does not push generate_description licensed feature' do
+                get :new, params: { namespace_id: project.namespace, project_id: project }
+
+                expect(controller).not_to have_received(:push_licensed_feature).with(:generate_description, project)
+              end
+            end
+
+            describe 'GET #show' do
+              let(:issue) { create(:issue, project: project) }
+
+              it 'does not push generate_description licensed feature' do
+                get :show, params: { namespace_id: project.namespace, project_id: project, id: issue.iid }
+
+                expect(controller).not_to have_received(:push_licensed_feature).with(:generate_description, project)
+              end
+            end
+          end
+        end
+      end
+
       describe '#update' do
         it 'sets issue weight and epic' do
           perform :put, :update, id: issue.to_param, issue: { weight: 6, epic_id: epic.id }, format: :json
