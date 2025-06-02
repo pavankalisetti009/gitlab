@@ -8,8 +8,14 @@ export default {
   i18n: {
     allowListHeader: s__('SecurityOrchestration|Allowlist details'),
     denyListHeader: s__('SecurityOrchestration|Denylist details'),
+    deniedMessageNoExceptions: s__(
+      'SecurityOrchestration|Settings from outside of the policy cannot override variables when the policy runs.',
+    ),
     deniedMessage: s__(
       'SecurityOrchestration|Settings from outside of the policy cannot override variables when the policy runs, except for the variables defined in the allowlist.',
+    ),
+    allowMessageNoExceptions: s__(
+      'SecurityOrchestration|Settings from outside of the policy can override variables when the policy runs.',
     ),
     allowMessage: s__(
       'SecurityOrchestration|Settings from outside of the policy can override variables when the policy runs, except the variables defined in the denylist.',
@@ -44,9 +50,14 @@ export default {
         : this.$options.i18n.allowListHeader;
     },
     header() {
-      return this.isVariablesOverrideAllowed
+      const allowMessage = this.hasExceptions
         ? this.$options.i18n.allowMessage
-        : this.$options.i18n.deniedMessage;
+        : this.$options.i18n.allowMessageNoExceptions;
+      const deniedMessage = this.hasExceptions
+        ? this.$options.i18n.deniedMessage
+        : this.$options.i18n.deniedMessageNoExceptions;
+
+      return this.isVariablesOverrideAllowed ? allowMessage : deniedMessage;
     },
   },
 };
