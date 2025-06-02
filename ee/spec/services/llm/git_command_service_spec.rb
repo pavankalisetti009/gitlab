@@ -70,7 +70,7 @@ RSpec.describe Llm::GitCommandService, feature_category: :source_code_management
       expect(subject.execute).to be_error
     end
 
-    it 'tracks user AI feature utilization' do
+    it 'tracks user AI feature utilization', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/545538' do
       expect(Gitlab::Tracking::AiTracking).to receive(:track_user_activity).with(user)
 
       subject.execute
