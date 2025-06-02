@@ -96,7 +96,13 @@ export const SCAN_EXECUTION_DEFAULT_POLICY = {
   description: '',
   enabled: true,
   rules: [{ type: 'pipeline', branches: ['*'], id: 'rule_0' }],
-  actions: [{ scan: 'secret_detection', id: 'action_0' }],
+  actions: [
+    {
+      scan: 'secret_detection',
+      id: 'action_0',
+      variables: { SECURE_ENABLE_LOCAL_CONFIGURATION: 'false' },
+    },
+  ],
   skip_ci: DEFAULT_SKIP_SI_CONFIGURATION,
 };
 

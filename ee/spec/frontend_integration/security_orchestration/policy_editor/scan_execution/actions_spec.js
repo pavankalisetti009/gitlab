@@ -14,8 +14,6 @@ import {
   REPORT_TYPE_SAST_IAC,
   REPORT_TYPE_DAST,
   REPORT_TYPE_SECRET_DETECTION,
-  REPORT_TYPE_DEPENDENCY_SCANNING,
-  REPORT_TYPE_CONTAINER_SCANNING,
 } from '~/vue_shared/security_reports/constants';
 import { DEFAULT_PROVIDE } from '../mocks/mocks';
 import { verify } from '../utils';
@@ -91,8 +89,7 @@ describe('Scan execution policy actions', () => {
       scanType
       ${REPORT_TYPE_SAST}
       ${REPORT_TYPE_SAST_IAC}
-      ${REPORT_TYPE_CONTAINER_SCANNING}
-      ${REPORT_TYPE_DEPENDENCY_SCANNING}
+      ${REPORT_TYPE_SECRET_DETECTION}
     `(`selects $scanType as action`, async ({ scanType }) => {
       const verifyRuleMode = () => {
         expect(findScanTypeSelector().exists()).toBe(true);

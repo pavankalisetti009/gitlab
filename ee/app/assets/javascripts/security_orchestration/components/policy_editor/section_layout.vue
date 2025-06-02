@@ -1,10 +1,13 @@
 <script>
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 
 export default {
   name: 'SectionLayout',
   components: {
     GlButton,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     contentClasses: {
@@ -21,6 +24,16 @@ export default {
       type: Boolean,
       required: false,
       default: true,
+    },
+    disableRemoveButton: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    disableRemoveButtonTitle: {
+      type: String,
+      required: false,
+      default: '',
     },
     labelClasses: {
       type: String,
@@ -55,8 +68,15 @@ export default {
       <slot name="content"></slot>
     </div>
 
-    <div v-if="showRemoveButton" class="gl-min-w-7">
+    <div
+      v-if="showRemoveButton"
+      v-gl-tooltip.hover
+      class="gl-min-w-7"
+      :title="disableRemoveButtonTitle"
+    >
       <gl-button
+        :disabled="disableRemoveButton"
+        :class="{ '!gl-border-0': disableRemoveButton }"
         icon="remove"
         category="tertiary"
         :aria-label="__('Remove')"

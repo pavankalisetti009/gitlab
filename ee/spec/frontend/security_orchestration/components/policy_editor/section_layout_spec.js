@@ -62,5 +62,10 @@ describe('SectionLayout', () => {
       createComponent({ showRemoveButton: false });
       expect(findRemoveButton().exists()).toBe(false);
     });
+
+    it('disables the remove button', () => {
+      createComponent({ disableRemoveButton: true });
+      expect(findRemoveButton().props('disabled')).toBe(true);
+    });
   });
 });
