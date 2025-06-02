@@ -137,7 +137,7 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
       expect(json_data).to include(
         'upstream' => maven_upstream_attributes,
         'registryPath' =>
-          group_virtual_registries_maven_registry_path(maven_upstream.group, maven_upstream.registry),
+          group_virtual_registries_maven_registry_path(maven_upstream.group, maven_upstream.registries.first),
         'upstreamPath' =>
           group_virtual_registries_maven_upstream_path(maven_upstream.group, maven_upstream)
       )

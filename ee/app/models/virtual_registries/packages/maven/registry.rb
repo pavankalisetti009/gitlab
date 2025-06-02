@@ -38,8 +38,13 @@ module VirtualRegistries
         end
 
         def delete_upstreams
-          VirtualRegistries::Packages::Maven::Upstream
-            .primary_key_in(registry_upstreams.select(:upstream_id))
+          subquery = RegistryUpstream
+            .where(RegistryUpstream.arel_table[:upstream_id].eq(Upstream.arel_table[:id]))
+            .where.not(registry_id: id)
+
+          Upstream
+            .primary_key_in(registry_upstreams.select(:upstream_id).unscope(:order))
+            .where_not_exists(subquery)
             .delete_all
         end
       end

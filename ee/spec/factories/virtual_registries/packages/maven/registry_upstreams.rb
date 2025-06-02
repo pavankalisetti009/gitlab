@@ -8,9 +8,9 @@ FactoryBot.define do
     upstream do
       association(
         :virtual_registries_packages_maven_upstream,
-        group: registry.group,
-        registry: registry,
-        registry_upstream: nil
+        group: group,
+        registries: [],
+        registry_upstreams: []
       )
     end
     sequence(:position) { |n| (n % 20) + 1 }

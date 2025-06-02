@@ -10,7 +10,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     let(:registry_id) { registry.id }
     let(:url) { "/virtual_registries/packages/maven/registries/#{registry_id}/upstreams" }
     let(:upstream_as_json) do
-      upstream.as_json.merge(registry_upstream: upstream.registry_upstream.slice(:id, :position)).as_json
+      upstream.as_json.merge(registry_upstream: upstream.registry_upstreams.take.slice(:id, :position)).as_json
     end
 
     subject(:api_request) { get api(url), headers: headers }
@@ -86,7 +86,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     let(:params) { { url: 'http://example.com', name: 'foo', username: 'user', password: 'test' } }
     let(:upstream_as_json) do
       upstream_model.last.as_json.merge(
-        registry_upstream: upstream_model.last.registry_upstream.slice(:id, :position)
+        registry_upstream: upstream_model.last.registry_upstreams.take.slice(:id, :position)
       ).as_json
     end
 
@@ -190,7 +190,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
 
       it_behaves_like 'returning response status with message',
         status: :bad_request,
-        message: { 'registry_upstream.position' => ['must be less than or equal to 20'] }
+        message: { 'registry_upstreams.position' => ['must be less than or equal to 20'] }
     end
 
     context 'for authentication' do
@@ -426,14 +426,14 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
     end
 
     context 'for position sync' do
-      let_it_be(:upstream_2) { create(:virtual_registries_packages_maven_upstream, registry:) }
+      let_it_be_with_refind(:upstream_2) { create(:virtual_registries_packages_maven_upstream, registries: [registry]) }
 
       before_all do
         group.add_maintainer(user)
       end
 
       it 'syncs the position' do
-        expect { api_request }.to change { upstream_2.registry_upstream.reset.position }.by(-1)
+        expect { api_request }.to change { upstream_2.registry_upstreams.take.position }.by(-1)
       end
     end
   end

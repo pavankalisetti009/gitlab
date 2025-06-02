@@ -7,17 +7,11 @@ RSpec.describe VirtualRegistries::Packages::Maven::UpstreamPolicy, feature_categ
 
   let(:user) { upstream.group.first_owner }
 
-  subject(:policy) { described_class.new(user, upstream) }
+  let(:policy) { described_class.new(user, upstream) }
 
   describe 'delegation' do
-    let(:delegations) { policy.delegated_policies }
+    subject { policy.delegated_policies.values }
 
-    it 'delegates to the registry policy' do
-      expect(delegations.size).to eq(1)
-
-      delegations.each_value do |delegated_policy|
-        expect(delegated_policy).to be_instance_of(::VirtualRegistries::Packages::Maven::RegistryPolicy)
-      end
-    end
+    it { is_expected.to have_attributes(size: 1).and be_all(::VirtualRegistries::Packages::Policies::GroupPolicy) }
   end
 end
