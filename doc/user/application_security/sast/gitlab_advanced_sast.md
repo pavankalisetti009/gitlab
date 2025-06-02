@@ -159,7 +159,8 @@ You can set this variable in different ways depending on how you manage your CI/
 
 #### Edit the CI/CD pipeline definition manually
 
-If you've already enabled GitLab SAST scanning in your project, add a new CI/CD variable to enable GitLab SAST.
+If you've already enabled GitLab SAST scanning in your project, add a CI/CD variable to enable
+GitLab Advanced SAST.
 
 This minimal YAML file includes the [stable SAST template](_index.md#stable-vs-latest-sast-templates) and enables GitLab Advanced SAST:
 
