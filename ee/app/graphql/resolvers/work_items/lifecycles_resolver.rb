@@ -3,15 +3,21 @@
 module Resolvers
   module WorkItems
     class LifecyclesResolver < Resolvers::WorkItems::BaseResolver
+      include ::WorkItems::Lifecycles::LookAheadPreloads
+
       type Types::WorkItems::LifecycleType.connection_type, null: true
+      authorize :read_lifecycle
 
       alias_method :namespace, :object
 
-      def resolve
+      # Only apply preloading to custom lifecycles (ActiveRecord model)
+      # Return system-defined lifecycles (Fixed model) as is
+      def resolve_with_lookahead
         return unless work_item_status_feature_available?
-        return unless Ability.allowed?(current_user, :read_lifecycle, namespace)
 
-        namespace.lifecycles
+        lifecycles = namespace.lifecycles
+
+        lifecycles.is_a?(ActiveRecord::Relation) ? apply_lookahead(lifecycles) : lifecycles
       end
 
       private
