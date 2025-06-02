@@ -1012,7 +1012,7 @@ RSpec.shared_examples 'scan failed to initialize' do
       ),
       hash_including(
         "message" => msg,
-        "class" => "Gitlab::Checks::SecretsCheck"
+        "class" => "Gitlab::Checks::SecretPushProtection::SecretsCheck"
       )
     )
   end
