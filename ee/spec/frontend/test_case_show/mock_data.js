@@ -5,8 +5,14 @@ import {
 } from 'jest/vue_shared/issuable/list/mock_data';
 
 // Remove attributes that are not used for test cases
-const { assignees, iid, taskCompletionStatus, userDiscussionsCount, ...mockIssuableAttributes } =
-  mockIssuable;
+const {
+  assignees,
+  iid,
+  taskCompletionStatus,
+  userDiscussionsCount,
+  namespace,
+  ...mockIssuableAttributes
+} = mockIssuable;
 
 export const mockTestCase = {
   ...mockIssuableAttributes,
