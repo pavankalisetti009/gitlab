@@ -1233,6 +1233,16 @@
   :idempotent: false
   :tags: []
   :queue_namespace: :pipeline_default
+- :name: sbom_graphs:sbom_build_dependency_graph
+  :worker_name: Sbom::BuildDependencyGraphWorker
+  :feature_category: :dependency_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :cpu
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :sbom_graphs
 - :name: sbom_reports:sbom_ingest_reports
   :worker_name: Sbom::IngestReportsWorker
   :feature_category: :dependency_management
