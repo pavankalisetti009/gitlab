@@ -44,6 +44,7 @@ describe('CiVariableSelector', () => {
 
       it('displays the dropdown with the correct props based on scan type', () => {
         expect(findDropdown().props('toggleText')).toBe('Select or Create a Key');
+        expect(findSectionLayout().props('disableRemoveButton')).toBe(false);
         expect(findDropdown().props('items')).toContainEqual({
           text: VARIABLE_EXAMPLE,
           value: VARIABLE_EXAMPLE,
@@ -167,6 +168,20 @@ describe('CiVariableSelector', () => {
       const NEW_CUSTOM_VARIABLE = 'test';
       findCustomVariableInput().vm.$emit('input', NEW_CUSTOM_VARIABLE);
       expect(wrapper.emitted('input')).toEqual([[[NEW_CUSTOM_VARIABLE, VALUE]]]);
+    });
+  });
+
+  describe('default variable', () => {
+    it('disables remove button for a default variable', () => {
+      createComponent({
+        propsData: {
+          disableRemoveButton: true,
+          disableRemoveButtonTitle: 'disable title',
+        },
+      });
+
+      expect(findSectionLayout().props('disableRemoveButton')).toBe(true);
+      expect(findSectionLayout().props('disableRemoveButtonTitle')).toBe('disable title');
     });
   });
 });

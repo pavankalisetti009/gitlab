@@ -84,12 +84,14 @@ export const validatePolicy = (policy) => {
 /**
  * Converts a security policy from yaml to an object
  * @param {String} manifest a security policy in yaml form
+ * @param {Boolean} addIds
  * @returns {Object} security policy object and any errors
  */
-export const createPolicyObject = (manifest) => {
+export const createPolicyObject = (manifest, addIds = true) => {
   const policy = fromYaml({
     manifest,
     type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+    addIds,
   });
   const parsingError = validatePolicy(policy);
 

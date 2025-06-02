@@ -64,6 +64,8 @@ describe('CiVariablesSelectors', () => {
       createComponent({ propsData: { selected: { [VARIABLES.key]: VARIABLES.value, '': '' } } });
       findCiVariableSelector().vm.$emit('remove', VARIABLES.key);
       expect(wrapper.emitted('input')).toEqual([[{ variables: { '': '' } }]]);
+      expect(findSectionLayout().props('disableRemoveButton')).toBe(false);
+      expect(findSectionLayout().props('disableRemoveButtonTitle')).toBe('');
     });
 
     it('emits "remove" when the last ci variable is removed', () => {
@@ -77,6 +79,17 @@ describe('CiVariablesSelectors', () => {
     it('emits "input" with the updated variable when a variable is updated', () => {
       createComponent({ propsData: { errorSources: [['actions', '0', 'variables']] } });
       expect(findCiVariableSelector().props('isErrorSource')).toEqual(true);
+    });
+  });
+
+  describe('default required variables', () => {
+    it('disables remove button when selector has required varaibles', () => {
+      createComponent({ propsData: { selected: { SECURE_ENABLE_LOCAL_CONFIGURATION: 'false' } } });
+
+      expect(findSectionLayout().props('disableRemoveButton')).toBe(true);
+      expect(findSectionLayout().props('disableRemoveButtonTitle')).toBe(
+        'This is a required variable for this scanner and cannot be removed.',
+      );
     });
   });
 });

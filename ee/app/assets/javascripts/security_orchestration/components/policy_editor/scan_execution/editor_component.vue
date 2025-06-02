@@ -32,6 +32,8 @@ import RuleSection from './rule/rule_section.vue';
 import OptimizedScanSelector from './action/optimized_scan_selector.vue';
 import ScanAction from './action/scan_action.vue';
 import {
+  addDefaultVariablesToPolicy,
+  addDefaultVariablesToManifest,
   buildScannerAction,
   buildDefaultPipeLineRule,
   createPolicyObject,
@@ -158,7 +160,10 @@ export default {
       ? policyToYaml(this.existingPolicy, this.selectedPolicyType)
       : getPolicyYaml({ isGroup: isGroup(this.namespaceType) });
 
-    const { policy, parsingError } = createPolicyObject(yamlEditorValue);
+    const yamlEditorValueWithVariables = addDefaultVariablesToManifest({
+      manifest: yamlEditorValue,
+    });
+    const { policy, parsingError } = createPolicyObject(yamlEditorValueWithVariables);
 
     return {
       configType: SELECTION_CONFIG.DEFAULT,
@@ -168,7 +173,7 @@ export default {
       dismissPerformanceWarningModal: false,
       policy,
       policyModificationAction: null,
-      yamlEditorValue,
+      yamlEditorValue: yamlEditorValueWithVariables,
       mode: EDITOR_MODE_RULE,
       documentationPath: setUrlFragment(
         this.scanPolicyDocumentationPath,
@@ -262,10 +267,18 @@ export default {
     },
     updateActionOrRule(type, index, values) {
       this.policy[type].splice(index, 1, values);
+      if (type === 'actions') {
+        this.policy = addDefaultVariablesToPolicy({ policy: this.policy });
+      }
       this.updateYamlEditorValue(this.policy);
     },
     changeEditorMode(mode) {
       this.mode = mode;
+
+      if (mode === EDITOR_MODE_RULE) {
+        this.policy = addDefaultVariablesToPolicy({ policy: this.policy });
+        this.updateYamlEditorValue(this.policy);
+      }
     },
     handleActionBuilderParsingError(key) {
       this.parsingError = { ...this.parsingError, actions: true };
