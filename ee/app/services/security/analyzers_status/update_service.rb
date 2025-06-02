@@ -123,7 +123,7 @@ module Security
       end
 
       def update_ancestors(status_diff)
-        AncestorsUpdateService.execute(status_diff)
+        Security::AnalyzerNamespaceStatuses::AncestorsUpdateService.execute(status_diff)
       end
     end
   end

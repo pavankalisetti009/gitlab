@@ -12,10 +12,25 @@ module Security
       feature_category :security_asset_inventories
 
       def handle_event(event)
-        project = Project.find_by_id(event.data[:project_id])
+        project_id = event.data[:project_id]
+        namespace_id = event.data[:namespace_id]
+
+        handle_project_related_records(project_id)
+        handle_namespace_related_records(project_id, namespace_id)
+      end
+
+      def handle_project_related_records(project_id)
+        project = Project.find_by_id(project_id)
         return unless project
 
         UpdateArchivedService.execute(project)
+      end
+
+      def handle_namespace_related_records(project_id, namespace_id)
+        group = Group.find_by_id(namespace_id)
+        return unless project_id && group.present?
+
+        Security::AnalyzerNamespaceStatuses::RecalculateService.execute(project_id, group, deleted_project: false)
       end
     end
   end

@@ -2,12 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::AnalyzersStatus::ProcessArchivedEventsWorker, feature_category: :security_asset_inventories, type: :job do
+RSpec.describe Security::AnalyzersStatus::ProcessDeletedEventsWorker, feature_category: :security_asset_inventories, type: :job do
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
 
   let(:event) do
-    ::Projects::ProjectArchivedEvent.new(data: {
+    ::Projects::ProjectDeletedEvent.new(data: {
       project_id: project.id,
       namespace_id: group.id,
       root_namespace_id: group.id
@@ -20,15 +20,9 @@ RSpec.describe Security::AnalyzersStatus::ProcessArchivedEventsWorker, feature_c
   subject(:use_event) { consume_event(subscriber: described_class, event: event) }
 
   context 'when the project exists' do
-    it 'calls the UpdateArchivedService with the project' do
-      expect(Security::AnalyzersStatus::UpdateArchivedService).to receive(:execute).with(project)
-
-      use_event
-    end
-
     it 'calls the RecalculateService with the project' do
       expect(Security::AnalyzerNamespaceStatuses::RecalculateService).to receive(:execute)
-        .with(project.id, group, deleted_project: false)
+        .with(project.id, group, deleted_project: true)
 
       use_event
     end
@@ -38,12 +32,6 @@ RSpec.describe Security::AnalyzersStatus::ProcessArchivedEventsWorker, feature_c
     before do
       allow(Project).to receive(:find_by_id).and_return(nil)
       allow(Group).to receive(:find_by_id).and_return(nil)
-    end
-
-    it 'does not call the UpdateArchivedService' do
-      expect(Security::AnalyzersStatus::UpdateArchivedService).not_to receive(:execute)
-
-      use_event
     end
 
     it 'does not call the RecalculateService' do
