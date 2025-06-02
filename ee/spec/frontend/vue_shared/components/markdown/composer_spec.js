@@ -103,6 +103,7 @@ describe('Markdown composer component', () => {
             targetBranch: 'main',
             title: '',
             userPrompt: '',
+            previousResponse: '',
           },
         },
       });
@@ -124,6 +125,40 @@ describe('Markdown composer component', () => {
       await nextTick();
 
       expect(wrapper.text()).toContain('AI generated content');
+    });
+
+    it('calls AI mutation with the previous response', async () => {
+      createComponent();
+
+      eventHub.$emit('SHOW_COMPOSER');
+
+      composerHandler.next({
+        data: {
+          aiCompletionResponse,
+        },
+      });
+
+      await nextTick();
+
+      findComposerSubmitButton().trigger('click');
+
+      await nextTick();
+
+      expect(aiActionMutationHandler).toHaveBeenCalledWith({
+        input: {
+          clientSubscriptionId: expect.anything(),
+          descriptionComposer: {
+            description: '<selected-text></selected-text>',
+            resourceId: 'gid://gitlab/Project/1',
+            sourceBranch: 'feature',
+            sourceProjectId: 1,
+            targetBranch: 'main',
+            title: '',
+            userPrompt: '',
+            previousResponse: 'AI generated content',
+          },
+        },
+      });
     });
 
     it('inserts AI generated content into textarea when clicking insert button', async () => {

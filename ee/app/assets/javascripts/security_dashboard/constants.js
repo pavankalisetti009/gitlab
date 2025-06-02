@@ -130,3 +130,7 @@ export const SEVERITY_GROUPS = [
 ];
 
 export const VULNERABILITY_DETAIL_CODE_FLOWS = 'VulnerabilityDetailCodeFlows';
+
+export const EXPORT_ALERT_SUCCESS_MESSAGE = s__(
+  'SecurityReports|Report export in progress. After the report is generated, an email will be sent with the download link.',
+);

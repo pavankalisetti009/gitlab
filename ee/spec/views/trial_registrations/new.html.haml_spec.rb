@@ -20,7 +20,8 @@ RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
 
   subject { render && rendered }
 
-  it { is_expected.to have_content(s_('InProductMarketing|Free 60-day trial GitLab Ultimate & GitLab Duo Enterprise')) }
+  it { is_expected.to have_content(s_('InProductMarketing|Get Started with GitLab')) }
+
   it { is_expected.to have_content(s_('InProductMarketing|No credit card required.')) }
   it { is_expected.to have_content(s_('InProductMarketing|One platform for Dev, Sec, and Ops teams')) }
 
