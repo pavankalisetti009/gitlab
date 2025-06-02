@@ -61,7 +61,7 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
 
     let(:task) do
       create(:elastic_reindexing_task).tap do |task|
-        allow(task).to receive_messages(in_progress?: false, error_message: nil, state: :in_progress)
+        allow(task).to receive_messages(in_progress?: false, error_message: nil, state: "indexing_paused")
       end
     end
 
