@@ -7,7 +7,7 @@ module Gitlab
         class TextEmbeddings < Base
           extend ::Gitlab::Utils::Override
 
-          NAME = 'textembedding-gecko@003'
+          NAME = 'text-embedding-005'
 
           def payload(content)
             {
