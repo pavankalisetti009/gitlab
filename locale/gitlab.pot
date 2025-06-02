@@ -6065,9 +6065,6 @@ msgstr ""
 msgid "AiPowered|When turned on, all billable users can access GitLab Duo Chat and Code Suggestions in supported IDEs."
 msgstr ""
 
-msgid "AiPowered|When you save, GitLab Duo will be turned for all groups, subgroups, and projects."
-msgstr ""
-
 msgid "AiPowered|When you save, GitLab Duo will be turned off for all groups, subgroups, and projects."
 msgstr ""
 
