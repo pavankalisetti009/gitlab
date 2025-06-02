@@ -6,6 +6,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { DEFAULT_PER_PAGE } from '~/api';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getAddOnEligibleUsers from 'ee/usage_quotas/add_on/graphql/saas_add_on_eligible_users.query.graphql';
+import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
 import {
   ADD_ON_ELIGIBLE_USERS_FETCH_ERROR_CODE,
   ADD_ON_ERROR_DICTIONARY,
@@ -15,6 +16,7 @@ import {
   TOKEN_TITLE_ASSIGNED_SEAT,
   TOKEN_TYPE_ASSIGNED_SEAT,
 } from '~/vue_shared/components/filtered_search_bar/constants';
+import { LIMITED_ACCESS_KEYS } from 'ee/usage_quotas/components/constants';
 import ErrorAlert from 'ee/vue_shared/components/error_alert/error_alert.vue';
 import AddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/add_on_eligible_user_list.vue';
 import { DUO_IDENTIFIERS } from 'ee/constants/duo';
@@ -34,7 +36,11 @@ export default {
     SearchAndSortBar,
   },
   mixins: [glFeatureFlagMixin()],
-  inject: ['fullPath'],
+  inject: {
+    fullPath: { default: null },
+    groupId: { default: null },
+    subscriptionName: { default: null },
+  },
   props: {
     addOnPurchaseId: {
       type: String,
@@ -61,6 +67,7 @@ export default {
       },
       filterOptions: {},
       sort: DEFAULT_SORT_OPTION,
+      subscriptionPermissions: undefined,
     };
   },
   apollo: {
@@ -69,7 +76,7 @@ export default {
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
       nextFetchPolicy: fetchPolicies.CACHE_FIRST,
       variables() {
-        return this.queryVariables;
+        return this.addOnEligibleUsersQueryVariables;
       },
       update({ namespace }) {
         this.pageInfo = namespace?.addOnEligibleUsers?.pageInfo;
@@ -77,6 +84,26 @@ export default {
       },
       error(error) {
         this.handleAddOnUsersFetchError(error);
+      },
+    },
+    subscriptionPermissions: {
+      query: getSubscriptionPermissionsData,
+      client: 'customersDotClient',
+      variables() {
+        return this.subscriptionPermissionsQueryVariables;
+      },
+      skip() {
+        return this.hasNoRequestInformation;
+      },
+      update: (data) => ({
+        canAddDuoProSeats: data.subscription?.canAddDuoProSeats,
+        limitedAccessReason: data.userActionAccess?.limitedAccessReason,
+      }),
+      error(error) {
+        // NOTE: this error handling is ported from moving this request out of add_on_eligible_user_list.vue.
+        // Error handling was broken, where errors were emitted up to this component, but never handled.
+        // This is being fixed in https://gitlab.com/gitlab-org/gitlab/-/issues/537674.
+        Sentry.captureException(error, { tags: { vue_component: this.$options.name } });
       },
     },
   },
@@ -105,7 +132,7 @@ export default {
       if (!this.isFilteringEnabled) return [];
       return SORT_OPTIONS;
     },
-    queryVariables() {
+    addOnEligibleUsersQueryVariables() {
       return {
         fullPath: this.fullPath,
         addOnType: this.duoTier,
@@ -114,6 +141,23 @@ export default {
         ...this.filterOptions,
         ...this.pagination,
       };
+    },
+    subscriptionPermissionsQueryVariables() {
+      return this.groupId
+        ? { namespaceId: parseInt(this.groupId, 10) }
+        : { subscriptionName: this.subscriptionName };
+    },
+    hasNoRequestInformation() {
+      return !(this.groupId || this.subscriptionName);
+    },
+    hasLimitedDuoAccess() {
+      return LIMITED_ACCESS_KEYS.includes(this.subscriptionPermissions?.limitedAccessReason);
+    },
+    canAddDuoSeats() {
+      return this.subscriptionPermissions?.canAddDuoProSeats ?? false;
+    },
+    hideAddButtonSeatOnErrorMessage() {
+      return !this.canAddDuoSeats && this.hasLimitedDuoAccess;
     },
   },
   methods: {
@@ -181,6 +225,7 @@ export default {
     :page-size="pageSize"
     :search="filterOptions.search"
     :duo-tier="duoTier"
+    :hide-add-button-seat-on-error-message="hideAddButtonSeatOnErrorMessage"
     @next="handleNext"
     @prev="handlePrev"
     @page-size-change="handlePageSizeChange"

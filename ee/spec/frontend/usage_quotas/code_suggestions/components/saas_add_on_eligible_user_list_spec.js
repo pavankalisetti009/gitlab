@@ -70,12 +70,25 @@ describe('Add On Eligible User List', () => {
   const addOnEligibleUsersWithMembershipTypeDataHandler = jest
     .fn()
     .mockResolvedValue(mockPaginatedAddOnEligibleUsersWithMembershipType);
-  const addOnEligibleUsersErrorHandler = jest.fn().mockRejectedValue(error);
+  const subscriptionPermissionsDataHandler = jest.fn().mockResolvedValue({
+    data: {
+      subscription: {
+        canAddSeats: false,
+        canRenew: false,
+        communityPlan: false,
+        canAddDuoProSeats: true,
+      },
+      userActionAccess: { limitedAccessReason: 'INVALID_REASON' },
+    },
+  });
 
-  const createMockApolloProvider = (handler) => {
-    const mockClient = createMockClient([[getAddOnEligibleUsers, handler]]);
+  const addOnEligibleUsersErrorHandler = jest.fn().mockRejectedValue(error);
+  const subscriptionPermissionErrorHandler = jest.fn().mockRejectedValue(error);
+
+  const createMockApolloProvider = (addOnEligibleUsersHandler, subscriptionPermissionsHandler) => {
+    const mockClient = createMockClient([[getAddOnEligibleUsers, addOnEligibleUsersHandler]]);
     const mockClientCustomersDot = createMockClient([
-      [getSubscriptionPermissionsData, jest.fn().mockResolvedValue({})],
+      [getSubscriptionPermissionsData, subscriptionPermissionsHandler],
     ]);
     return new VueApollo({
       defaultClient: mockClient,
@@ -85,11 +98,15 @@ describe('Add On Eligible User List', () => {
 
   const createComponent = ({
     props = {},
-    handler = addOnEligibleUsersDataHandler,
+    addOnEligibleUsersHandler = addOnEligibleUsersDataHandler,
+    subscriptionPermissionsHandler = subscriptionPermissionsDataHandler,
     mountFn = shallowMountExtended,
   } = {}) => {
     wrapper = mountFn(SaasAddOnEligibleUserList, {
-      apolloProvider: createMockApolloProvider(handler),
+      apolloProvider: createMockApolloProvider(
+        addOnEligibleUsersHandler,
+        subscriptionPermissionsHandler,
+      ),
       propsData: {
         addOnPurchaseId: duoProAddOnPurchaseId,
         duoTier,
@@ -165,7 +182,7 @@ describe('Add On Eligible User List', () => {
     describe('with group invited users', () => {
       it('shows the membership type badge', async () => {
         await createComponent({
-          handler: addOnEligibleUsersWithMembershipTypeDataHandler,
+          addOnEligibleUsersHandler: addOnEligibleUsersWithMembershipTypeDataHandler,
           mountFn: mountExtended,
         });
 
@@ -203,7 +220,7 @@ describe('Add On Eligible User List', () => {
 
     describe('when there is an error fetching add on eligible users', () => {
       beforeEach(() => {
-        return createComponent({ handler: addOnEligibleUsersErrorHandler });
+        return createComponent({ addOnEligibleUsersHandler: addOnEligibleUsersErrorHandler });
       });
 
       it('does not display loading state for add-on eligible user list', () => {
@@ -233,6 +250,33 @@ describe('Add On Eligible User List', () => {
         await nextTick();
 
         expect(findAddOnEligibleUsersFetchError().exists()).toBe(false);
+      });
+    });
+
+    describe('subscription permissions', () => {
+      beforeEach(() => {
+        return createComponent({
+          subscriptionPermissionsHandler: subscriptionPermissionErrorHandler,
+        });
+      });
+
+      describe('when user has sufficient permissions to add seats', () => {
+        it('shows Add Button seat on error messages in AddOnEligibleUserList', () => {
+          const expectedProps = {
+            hideAddButtonSeatOnErrorMessage: false,
+          };
+
+          expect(findAddOnEligibleUserList().props()).toEqual(
+            expect.objectContaining(expectedProps),
+          );
+        });
+      });
+
+      describe('when there is an error fetching subscription permissions', () => {
+        it('sends the error to Sentry', () => {
+          expect(Sentry.captureException).toHaveBeenCalledTimes(1);
+          expect(Sentry.captureException.mock.calls[0][0]).toEqual(error);
+        });
       });
     });
   });

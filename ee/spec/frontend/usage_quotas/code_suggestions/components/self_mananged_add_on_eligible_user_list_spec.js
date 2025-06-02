@@ -119,6 +119,7 @@ describe('Add On Eligible User List', () => {
         pageSize: DEFAULT_PER_PAGE,
         search: '',
         users: eligibleSMUsers,
+        hideAddButtonSeatOnErrorMessage: true,
       };
 
       expect(findAddOnEligibleUserList().props()).toEqual(expectedProps);
@@ -208,6 +209,7 @@ describe('Add On Eligible User List', () => {
           pageSize: DEFAULT_PER_PAGE,
           search: '',
           users: [],
+          hideAddButtonSeatOnErrorMessage: true,
         };
 
         expect(findAddOnEligibleUserList().props()).toEqual(expectedProps);
