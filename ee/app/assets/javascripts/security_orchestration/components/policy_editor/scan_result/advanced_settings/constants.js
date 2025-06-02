@@ -24,6 +24,9 @@ export const SOURCE_BRANCH_PATTERNS = 'branches';
 export const EXCEPTIONS_FULL_OPTIONS_MAP = {
   [ROLES]: {
     header: s__('ScanResultPolicy|Roles'),
+    subHeader: s__(
+      'ScanResultPolicy|Select role exceptions. Choose which roles can bypass this policy.',
+    ),
     description: s__(
       'ScanResultPolicy|Grant bypass permissions to users based on their organizational role or custom role assignments.',
     ),
@@ -33,6 +36,9 @@ export const EXCEPTIONS_FULL_OPTIONS_MAP = {
   },
   [GROUPS]: {
     header: s__('ScanResultPolicy|Groups'),
+    subHeader: s__(
+      'ScanResultPolicy|Select group exceptions. Choose which groups can bypass this policy.',
+    ),
     description: s__(
       'ScanResultPolicy|Allow entire teams or departments to bypass policies for their specialized workflows.',
     ),
@@ -42,6 +48,7 @@ export const EXCEPTIONS_FULL_OPTIONS_MAP = {
   },
   [ACCOUNTS]: {
     header: s__('AccountTokens|Service Account'),
+    subHeader: s__('ScanResultPolicy|Choose which service accounts can bypass this policy.'),
     description: s__(
       'ScanResultPolicy|Enable automated systems and bots to bypass policies for approved workflows.',
     ),
@@ -50,7 +57,10 @@ export const EXCEPTIONS_FULL_OPTIONS_MAP = {
     ),
   },
   [TOKENS]: {
-    header: s__('ScanResultPolicy|Personal Access Token'),
+    header: s__('ScanResultPolicy|Access Token'),
+    subHeader: s__(
+      'ScanResultPolicy|Select instance group or project level access tokens that can bypass this policy.',
+    ),
     description: s__(
       "ScanResultPolicy|Allow specific automation tokens to bypass policies when service accounts aren't available.",
     ),
@@ -60,6 +70,9 @@ export const EXCEPTIONS_FULL_OPTIONS_MAP = {
   },
   [SOURCE_BRANCH_PATTERNS]: {
     header: s__('SourceBranchPattern|Source Branch Patterns'),
+    subHeader: s__(
+      'ScanResultPolicy|Define branch patterns that can bypass policy requirements using wildcards and regex patterns. Use * for simple wildcards or regex patterns for advanced matching.',
+    ),
     description: s__(
       'ScanResultPolicy|Allow specific types of branches to bypass policies based on naming conventions.',
     ),

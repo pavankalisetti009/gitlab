@@ -59,8 +59,14 @@ export default {
     modalTitle() {
       return EXCEPTIONS_FULL_OPTIONS_MAP[this.selectedTab]?.header || this.$options.i18n.modalTitle;
     },
+    modalSubtitle() {
+      return EXCEPTIONS_FULL_OPTIONS_MAP[this.selectedTab]?.subHeader || '';
+    },
     branches() {
-      return this.exceptions?.branches || [];
+      return this.selectedExceptions?.branches || [];
+    },
+    tokens() {
+      return this.selectedExceptions?.tokens || [];
     },
   },
   methods: {
@@ -86,6 +92,12 @@ export default {
         branches,
       };
     },
+    setTokens(tokens) {
+      this.selectedExceptions = {
+        ...this.selectedExceptions,
+        tokens,
+      };
+    },
     saveChanges() {
       this.$emit('changed', this.selectedExceptions);
       this.hideModalWindow();
@@ -99,20 +111,32 @@ export default {
     ref="modal"
     :action-cancel="$options.ACTION_CANCEL"
     :action-primary="$options.PRIMARY_ACTION"
-    :title="modalTitle"
     scrollable
     size="md"
     content-class="security-policies-variables-modal-min-height"
     modal-id="deny-allow-list-modal"
     @canceled="hideModalWindow"
   >
+    <template #modal-header>
+      <div>
+        <h4 data-testid="modal-title" class="gl-mb-2">{{ modalTitle }}</h4>
+        <p v-if="modalSubtitle" data-testid="modal-subtitle" class="gl-mb-0 gl-text-secondary">
+          {{ modalSubtitle }}
+        </p>
+      </div>
+    </template>
+
     <div
       v-if="selectedTab"
       class="security-policies-exceptions-modal-height gl-border-t gl-flex gl-w-full gl-flex-col md:gl-flex-row"
     >
       <roles-selector v-if="tabSelected($options.ROLES)" />
       <groups-selector v-if="tabSelected($options.GROUPS)" />
-      <tokens-selector v-if="tabSelected($options.TOKENS)" />
+      <tokens-selector
+        v-if="tabSelected($options.TOKENS)"
+        :tokens="tokens"
+        @set-tokens="setTokens"
+      />
       <branch-pattern-selector
         v-if="tabSelected($options.SOURCE_BRANCH_PATTERNS)"
         :branches="branches"
