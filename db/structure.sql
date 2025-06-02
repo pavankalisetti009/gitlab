@@ -16283,7 +16283,8 @@ CREATE TABLE issue_metrics (
     first_added_to_board_at timestamp without time zone,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_ed784787ee CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE SEQUENCE issue_metrics_id_seq
