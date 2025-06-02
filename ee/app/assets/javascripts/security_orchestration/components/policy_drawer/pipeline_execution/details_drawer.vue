@@ -27,7 +27,7 @@ export default {
     ),
     summary: SUMMARY_TITLE,
     configuration: CONFIGURATION_TITLE,
-    variablesOverride: s__('SecurityOrchestration|Variables override configuration'),
+    variablesOverride: s__('SecurityOrchestration|Variable precedence'),
   },
   name: 'PipelineExecutionDrawer',
   components: {
