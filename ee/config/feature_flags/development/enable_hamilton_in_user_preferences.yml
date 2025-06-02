@@ -4,5 +4,5 @@ introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/127881
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/419821
 milestone: '16.3'
 type: development
-group: group::subscription management
+group: group::provision
 default_enabled: false
