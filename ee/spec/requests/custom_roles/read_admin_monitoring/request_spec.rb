@@ -67,4 +67,15 @@ RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_ca
       expect(response).to have_gitlab_http_status(:ok)
     end
   end
+
+  describe Admin::DashboardController do
+    describe "#index" do
+      it 'user has access via a custom role' do
+        get admin_root_path
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(response).to render_template(:index)
+      end
+    end
+  end
 end
