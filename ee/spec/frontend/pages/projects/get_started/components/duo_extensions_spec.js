@@ -23,7 +23,7 @@ describe('DuoExtensions component', () => {
   it('extensions link to doc url', () => {
     expect(wrapper.findComponent(GlButton).text()).toContain('VS Code');
     expect(wrapper.findComponent(GlButton).attributes('href')).toBe(
-      '/help/editor_extensions/visual_studio_code/_index.md',
+      '/help/editor_extensions/visual_studio_code/setup.md',
     );
   });
 

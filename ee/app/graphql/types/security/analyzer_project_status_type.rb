@@ -28,7 +28,7 @@ module Types
         description: 'Last time analyzer was called.'
 
       field :build_id,
-        type: GraphQL::Types::Int,
+        type: ::Types::GlobalIDType[::CommitStatus],
         null: true,
         description: 'Build ID.'
 
