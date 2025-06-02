@@ -27389,12 +27389,6 @@ msgstr[1] ""
 msgid "Geo|%{boldStart}Not applicable%{boldEnd}: Geo does not verify this component yet. See the %{linkStart}data types we plan to support%{linkEnd}."
 msgstr ""
 
-msgid "Geo|%{component} synced"
-msgstr ""
-
-msgid "Geo|%{component} verified"
-msgstr ""
-
 msgid "Geo|%{label} %{timeAgo}"
 msgstr ""
 
@@ -27413,7 +27407,13 @@ msgstr ""
 msgid "Geo|%{timeAgoStr} (%{pendingEvents} events)"
 msgstr ""
 
-msgid "Geo|%{title} checksum progress"
+msgid "Geo|%{titlePlural} checksum progress"
+msgstr ""
+
+msgid "Geo|%{titlePlural} synced"
+msgstr ""
+
+msgid "Geo|%{titlePlural} verified"
 msgstr ""
 
 msgid "Geo|Add New Site"

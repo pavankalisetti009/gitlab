@@ -32,11 +32,11 @@ describe('GeoSiteReplicationStatusMobile', () => {
 
   describe('template', () => {
     describe.each`
-      description                    | item                                                                                                                       | renderSyncProgress | renderVerifProgress
-      ${'with no data'}              | ${{ component: 'Test Component', syncValues: null, verificationValues: null }}                                             | ${false}           | ${false}
-      ${'with no verification data'} | ${{ component: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: null }}                       | ${true}            | ${false}
-      ${'with no sync data'}         | ${{ component: 'Test Component', syncValues: null, verificationValues: { total: 50, success: 50 } }}                       | ${false}           | ${true}
-      ${'with all data'}             | ${{ component: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: { total: 50, success: 50 } }} | ${true}            | ${true}
+      description                    | item                                                                                                                                                        | renderSyncProgress | renderVerifProgress
+      ${'with no data'}              | ${{ namePlural: 'test_components', titlePlural: 'Test Component', syncValues: null, verificationValues: null }}                                             | ${false}           | ${false}
+      ${'with no verification data'} | ${{ namePlural: 'test_components', titlePlural: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: null }}                       | ${true}            | ${false}
+      ${'with no sync data'}         | ${{ namePlural: 'test_components', titlePlural: 'Test Component', syncValues: null, verificationValues: { total: 50, success: 50 } }}                       | ${false}           | ${true}
+      ${'with all data'}             | ${{ namePlural: 'test_components', titlePlural: 'Test Component', syncValues: { total: 100, success: 0 }, verificationValues: { total: 50, success: 50 } }} | ${true}            | ${true}
     `('$description', ({ item, renderSyncProgress, renderVerifProgress }) => {
       beforeEach(() => {
         createComponent({ item });

@@ -72,7 +72,7 @@ describe('GeoSiteVerificationInfo', () => {
 
       it('renders progress bar titles correctly', () => {
         expect(findGeoSiteProgressBarTitles().wrappers.map((w) => w.text())).toStrictEqual(
-          MOCK_PRIMARY_VERIFICATION_INFO.map((vI) => `${vI.title} checksum progress`),
+          MOCK_PRIMARY_VERIFICATION_INFO.map((vI) => `${vI.titlePlural} checksum progress`),
         );
       });
     });

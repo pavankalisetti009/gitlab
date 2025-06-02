@@ -15,7 +15,7 @@ export default {
       'Geo|Replicated data is verified with the secondary site(s) using checksums.',
     ),
     learnMore: __('Learn more'),
-    progressBarTitle: s__('Geo|%{title} checksum progress'),
+    progressBarTitle: s__('Geo|%{titlePlural} checksum progress'),
     checksummed: s__('Geo|Checksummed'),
     nothingToChecksum: s__('Geo|Nothing to checksum'),
   },
@@ -60,16 +60,16 @@ export default {
         }}</gl-link>
       </gl-popover>
     </template>
-    <div v-for="bar in verificationInfoBars" :key="bar.title" class="gl-mb-5">
+    <div v-for="bar in verificationInfoBars" :key="bar.namePlural" class="gl-mb-5">
       <span data-testid="verification-bar-title">{{
-        sprintf($options.i18n.progressBarTitle, { title: bar.title })
+        sprintf($options.i18n.progressBarTitle, { titlePlural: bar.titlePlural })
       }}</span>
       <geo-site-progress-bar
         class="gl-mt-3"
         :title="
           /* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */
           sprintf($options.i18n.progressBarTitle, {
-            title: bar.title,
+            titlePlural: bar.titlePlural,
           }) /* eslint-enable @gitlab/vue-no-new-non-primitive-in-template */
         "
         :values="bar.values"

@@ -30,13 +30,14 @@ export const verificationInfo = (state, getters) => (id) => {
 
   return getters.sortedReplicableTypes
     .filter(({ verificationEnabled }) => verificationEnabled)
-    .map((replicable) => {
-      const camelCaseName = convertToCamelCase(replicable.namePlural);
+    .map(({ namePlural, dataType, dataTypeTitle, titlePlural }) => {
+      const camelCaseName = convertToCamelCase(namePlural);
 
       return {
-        dataType: replicable.dataType,
-        dataTypeTitle: replicable.dataTypeTitle,
-        title: replicable.titlePlural,
+        dataType,
+        dataTypeTitle,
+        namePlural,
+        titlePlural,
         values: {
           total: site[`${camelCaseName}${variables.total}`],
           success: site[`${camelCaseName}${variables.success}`],
@@ -49,20 +50,23 @@ export const verificationInfo = (state, getters) => (id) => {
 export const syncInfo = (state, getters) => (id) => {
   const site = state.sites.find((n) => n.id === id);
 
-  return getters.sortedReplicableTypes.map((replicable) => {
-    const camelCaseName = convertToCamelCase(replicable.namePlural);
+  return getters.sortedReplicableTypes.map(
+    ({ namePlural, dataType, dataTypeTitle, titlePlural }) => {
+      const camelCaseName = convertToCamelCase(namePlural);
 
-    return {
-      dataType: replicable.dataType,
-      dataTypeTitle: replicable.dataTypeTitle,
-      title: replicable.titlePlural,
-      values: {
-        total: site[`${camelCaseName}Count`],
-        success: site[`${camelCaseName}SyncedCount`],
-        failed: site[`${camelCaseName}FailedCount`],
-      },
-    };
-  });
+      return {
+        dataType,
+        dataTypeTitle,
+        namePlural,
+        titlePlural,
+        values: {
+          total: site[`${camelCaseName}Count`],
+          success: site[`${camelCaseName}SyncedCount`],
+          failed: site[`${camelCaseName}FailedCount`],
+        },
+      };
+    },
+  );
 };
 
 export const dataTypes = (_, getters) => {
@@ -87,7 +91,8 @@ export const replicationCountsByDataTypeForSite = (_, getters) => (id) => {
 
   return getters.dataTypes.map(({ dataType, dataTypeTitle }) => {
     return {
-      title: dataTypeTitle,
+      dataType,
+      dataTypeTitle,
       sync: syncInfoData
         .filter((replicable) => replicable.dataType === dataType)
         .map((d) => d.values),
