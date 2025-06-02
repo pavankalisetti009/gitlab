@@ -82,7 +82,7 @@ RSpec.describe 'New project', :js, feature_category: :importers do
     end
 
     shared_examples 'CI/CD for GitHub' do
-      it 'creates CI/CD project from GitHub', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/455603' do
+      it 'creates CI/CD project from GitHub' do
         visit new_project_path
         click_link 'Run CI/CD for external repository'
 
@@ -133,6 +133,8 @@ RSpec.describe 'New project', :js, feature_category: :importers do
         # frontend polls the import status constantly.
         find(:button, 'Connect').click
 
+        click_button 'Continue import'
+
         expect(page).to have_text('Complete')
 
         created_project = Project.last
@@ -141,8 +143,7 @@ RSpec.describe 'New project', :js, feature_category: :importers do
         expect(created_project.project_feature).not_to be_issues_enabled
       end
 
-      it 'stays on GitHub import page after access token failure',
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/455603' do
+      it 'stays on GitHub import page after access token failure' do
         visit new_project_path
         click_link 'Run CI/CD for external repository'
 
