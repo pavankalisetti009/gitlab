@@ -1,15 +1,30 @@
 <script>
-import { GlBadge, GlTableLite, GlToggle } from '@gitlab/ui';
+import { GlBadge, GlTableLite, GlToggle, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 
 import { AVAILABILITY_TEXT, CONNECTION_STATUS_TEXT, CONNECTION_STATUS } from '../constants';
+import AvailabilityPopover from '../components/availability_popover.vue';
 
 export default {
   name: 'WorkspacesAgentAvailabilityApp',
   components: {
+    SettingsBlock,
+    AvailabilityPopover,
     GlTableLite,
     GlBadge,
     GlToggle,
+    GlLink,
+  },
+  inject: {
+    organizationId: {
+      type: String,
+      default: '',
+    },
+    defaultExpanded: {
+      type: Boolean,
+      default: false,
+    },
   },
   methods: {
     getBadgeVariant(status) {
@@ -33,8 +48,9 @@ export default {
       name: 'remotedev',
       group: 'GitLab.com',
       project: 'GitLab Shell',
-      status: 'connected',
       availability: 'available',
+      status: 'connected',
+      url: '',
     },
     {
       name: 'ws-agent',
@@ -42,6 +58,7 @@ export default {
       project: 'GitLab Shell',
       status: 'not_connected',
       availability: 'blocked',
+      url: '',
     },
   ],
   fields: [
@@ -66,34 +83,60 @@ export default {
       label: s__('Workspaces|Availability'),
     },
   ],
+  SETTINGS_TITLE: s__('Workspaces|Workspaces Agent Availability'),
+  SETTINGS_DESCRIPTION: s__(
+    'Workspaces|Configure which Kubernetes agents are available for new workspaces. These settings do not affect existing workspaces.',
+  ),
 };
 </script>
 <template>
-  <div>
-    <gl-table-lite
-      v-if="$options.mockData.length"
-      responsive
-      :items="$options.mockData"
-      :fields="$options.fields"
-    >
-      <template #cell(status)="{ item }">
-        <gl-badge v-if="item.status" :variant="getBadgeVariant(item.status)">{{
-          getStatusText(item.status)
-        }}</gl-badge>
-      </template>
-      <template #cell(availability)="{ item }">
-        <div class="gl-flex gl-flex-row gl-items-center gl-gap-3">
-          <gl-toggle
-            :value="item.availability === 'available'"
-            :label="getAvailabilityText(item.availability)"
-            label-position="hidden"
-          />
-          <p class="gl-mb-0">{{ getAvailabilityText(item.availability) }}</p>
+  <settings-block :title="$options.SETTINGS_TITLE" :default-expanded="defaultExpanded">
+    <template #description>
+      {{ $options.SETTINGS_DESCRIPTION }}
+    </template>
+    <template #default>
+      <div>
+        <gl-table-lite
+          v-if="$options.mockData.length"
+          responsive
+          :items="$options.mockData"
+          :fields="$options.fields"
+        >
+          <template #head(availability)="{ label }">
+            <div class="gl-flex gl-items-center gl-gap-3">
+              <span>{{ label }}</span>
+              <availability-popover />
+            </div>
+          </template>
+          <template #cell(name)="{ item }">
+            <gl-link
+              class="gl-font-bold"
+              data-test-id="agent-name"
+              :href="item.url"
+              target="_blank"
+              >{{ item.name }}</gl-link
+            >
+          </template>
+          <template #cell(status)="{ item }">
+            <gl-badge v-if="item.status" :variant="getBadgeVariant(item.status)">{{
+              getStatusText(item.status)
+            }}</gl-badge>
+          </template>
+          <template #cell(availability)="{ item }">
+            <div class="gl-flex gl-flex-row gl-items-center gl-gap-3">
+              <gl-toggle
+                :value="item.availability === 'available'"
+                :label="getAvailabilityText(item.availability)"
+                label-position="hidden"
+              />
+              <p class="gl-mb-0">{{ getAvailabilityText(item.availability) }}</p>
+            </div>
+          </template>
+        </gl-table-lite>
+        <div v-else data-testid="workspaces-agent-availability-empty-state">
+          {{ s__('Workspaces|No agents available') }}
         </div>
-      </template>
-    </gl-table-lite>
-    <div v-else data-testid="workspaces-agent-availability-empty-state">
-      {{ s__('Workspaces|No agents available') }}
-    </div>
-  </div>
+      </div>
+    </template>
+  </settings-block>
 </template>
