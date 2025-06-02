@@ -8,7 +8,9 @@ module Boards
     belongs_to :epic_board, optional: false, inverse_of: :epic_board_positions
     belongs_to :epic, optional: false
 
-    alias_attribute :parent, :epic_board
+    alias_method :parent, :epic_board
+    alias_method :parent=, :epic_board=
+
     validates :epic, uniqueness: { scope: :epic_board_id }
 
     scope :order_relative_position, -> do
