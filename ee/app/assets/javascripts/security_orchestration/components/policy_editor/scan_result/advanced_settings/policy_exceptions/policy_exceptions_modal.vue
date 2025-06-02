@@ -5,18 +5,19 @@ import {
   EXCEPTION_OPTIONS,
   ROLES,
   GROUPS,
-  ACCOUNT_TOKENS,
+  ACCOUNTS,
   SOURCE_BRANCH_PATTERNS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 import RolesSelector from './roles_selector.vue';
 import GroupsSelector from './groups_selector.vue';
 import TokensSelector from './tokens_selector.vue';
 import BranchPatternSelector from './branch_pattern_selector.vue';
+import PolicyExceptionsSelector from './policy_exceptions_selector.vue';
 
 export default {
   ROLES,
   GROUPS,
-  ACCOUNT_TOKENS,
+  ACCOUNTS,
   SOURCE_BRANCH_PATTERNS,
   EXCEPTION_OPTIONS,
   i18n: {
@@ -37,10 +38,12 @@ export default {
     GroupsSelector,
     TokensSelector,
     RolesSelector,
+    PolicyExceptionsSelector,
   },
   data() {
     return {
       selectedTab: ROLES,
+      selectedException: null,
     };
   },
   methods: {
@@ -77,6 +80,7 @@ export default {
     @canceled="hideModalWindow"
   >
     <div
+      v-if="selectedException"
       class="security-policies-exceptions-modal-height gl-border-t gl-flex gl-w-full gl-flex-col md:gl-flex-row"
     >
       <div class="gl-flex gl-w-full gl-flex-col gl-items-start gl-pt-3 md:gl-border-r md:gl-w-2/6">
@@ -95,9 +99,14 @@ export default {
       <div class="gl-w-full gl-p-3 md:gl-w-4/6">
         <roles-selector v-if="tabSelected($options.ROLES)" />
         <groups-selector v-if="tabSelected($options.GROUPS)" />
-        <tokens-selector v-if="tabSelected($options.ACCOUNT_TOKENS)" />
+        <tokens-selector v-if="tabSelected($options.ACCOUNTS)" />
         <branch-pattern-selector v-if="tabSelected($options.SOURCE_BRANCH_PATTERNS)" />
       </div>
     </div>
+    <policy-exceptions-selector v-else />
+
+    <template #modal-footer>
+      <div v-if="!selectedException"></div>
+    </template>
   </gl-modal>
 </template>
