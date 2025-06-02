@@ -53177,6 +53177,9 @@ msgstr ""
 msgid "Runners|Register runner"
 msgstr ""
 
+msgid "Runners|Register your new runner"
+msgstr ""
+
 msgid "Runners|Registration token"
 msgstr ""
 
