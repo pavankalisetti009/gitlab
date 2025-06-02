@@ -2515,6 +2515,9 @@ msgstr ""
 msgid "API Help"
 msgstr ""
 
+msgid "API Monitoring"
+msgstr ""
+
 msgid "API authentication token from Campfire. To get the token, sign in to Campfire and select **My info**."
 msgstr ""
 
@@ -32685,6 +32688,9 @@ msgstr ""
 msgid "Infrastructure"
 msgstr ""
 
+msgid "Infrastructure Monitoring"
+msgstr ""
+
 msgid "Infrastructure as Code (IaC) Scanning"
 msgstr ""
 
@@ -36786,6 +36792,9 @@ msgstr ""
 msgid "Logs"
 msgstr ""
 
+msgid "Logs Explorer"
+msgstr ""
+
 msgid "LogsViewer|Enter full screen"
 msgstr ""
 
@@ -38667,6 +38676,9 @@ msgstr ""
 msgid "Messages"
 msgstr ""
 
+msgid "Messaging Queues"
+msgstr ""
+
 msgid "Method"
 msgstr ""
 
@@ -38716,6 +38728,9 @@ msgid "Metrics Dashboard YAML definition is invalid:"
 msgstr ""
 
 msgid "Metrics Dashboard YAML definition is valid."
+msgstr ""
+
+msgid "Metrics Explorer"
 msgstr ""
 
 msgid "Metrics and profiling"
@@ -40309,6 +40324,9 @@ msgid "Navigation|Monitor"
 msgstr ""
 
 msgid "Navigation|Monitor settings"
+msgstr ""
+
+msgid "Navigation|Observability"
 msgstr ""
 
 msgid "Navigation|Operate"
@@ -57407,6 +57425,9 @@ msgstr ""
 msgid "Service Desk allows people to create issues in your GitLab instance without their own user account. It provides a unique email address for end users to create issues in a project. Replies can be sent either through the GitLab interface or by email. End users only see threads through email."
 msgstr ""
 
+msgid "Service Map"
+msgstr ""
+
 msgid "Service account"
 msgstr ""
 
@@ -57774,6 +57795,9 @@ msgid "ServicePing|Turn on service ping"
 msgstr ""
 
 msgid "ServicePing|Turn on service ping to review instance-level analytics."
+msgstr ""
+
+msgid "Services"
 msgstr ""
 
 msgid "Session ID"
@@ -64372,6 +64396,9 @@ msgid "TotalRefCountIndicator|1000+"
 msgstr ""
 
 msgid "Trace Details"
+msgstr ""
+
+msgid "Traces Explorer"
 msgstr ""
 
 msgid "Tracing"
