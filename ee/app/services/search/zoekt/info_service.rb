@@ -122,6 +122,7 @@ module Search
         log_header("Nodes")
         log_node_counts
         log_last_seen
+        log('Max schema_version', value: Search::Zoekt::Node.maximum(:schema_version))
         log_indexed_data
         log_node_watermark_levels
         display_entries
@@ -171,6 +172,7 @@ module Search
         end
       end
 
+      # rubocop: disable Metrics/AbcSize -- This method is quite straightforward.
       def log_node_details
         log_header("Node Details")
 
@@ -178,6 +180,8 @@ module Search
         nodes = Search::Zoekt::Node.order(:id).to_a
         # rubocop: enable CodeReuse/ActiveRecord
         return if nodes.empty?
+
+        max_schema_version = nodes.map(&:schema_version).max
 
         nodes.each do |node|
           # Get hostname from metadata
@@ -200,6 +204,11 @@ module Search
                                    Rainbow(disk_percent_str).green
                                  end
 
+          schema_version_colored = if node.schema_version != max_schema_version
+                                     Rainbow(node.schema_version).yellow
+                                   else
+                                     node.schema_version
+                                   end
           # Format unclaimed storage bytes
           unclaimed_bytes = number_to_human_size(node.unclaimed_storage_bytes)
 
@@ -215,10 +224,12 @@ module Search
           log("  Disk utilization", value: disk_percent_colored)
           log("  Unclaimed storage", value: unclaimed_bytes)
           log("  Zoekt version", value: version)
+          log("  Schema version", value: schema_version_colored)
         end
 
         display_entries
       end
+      # rubocop: enable Metrics/AbcSize
 
       def log_indexed_data
         usable_bytes = Search::Zoekt::Node.sum(:usable_storage_bytes)

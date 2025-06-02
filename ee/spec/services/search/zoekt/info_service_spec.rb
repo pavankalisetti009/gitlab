@@ -188,7 +188,8 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
           unclaimed_storage_bytes: 22_000_000_000, # 22 GB
           watermark_exceeded_critical?: true,
           watermark_exceeded_high?: true,
-          watermark_exceeded_low?: true
+          watermark_exceeded_low?: true,
+          schema_version: 0
         )
       end
 
@@ -201,7 +202,8 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
           unclaimed_storage_bytes: 19_000_000_000, # 19 GB
           watermark_exceeded_critical?: false,
           watermark_exceeded_high?: true,
-          watermark_exceeded_low?: true
+          watermark_exceeded_low?: true,
+          schema_version: 2401
         )
       end
 
@@ -214,7 +216,8 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
           unclaimed_storage_bytes: 45_000_000_000, # 45 GB
           watermark_exceeded_critical?: false,
           watermark_exceeded_high?: false,
-          watermark_exceeded_low?: true
+          watermark_exceeded_low?: true,
+          schema_version: 2413
         )
       end
 
@@ -227,7 +230,8 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
           unclaimed_storage_bytes: 70_000_000_000, # 70 GB
           watermark_exceeded_critical?: false,
           watermark_exceeded_high?: false,
-          watermark_exceeded_low?: false
+          watermark_exceeded_low?: false,
+          schema_version: 2450
         )
       end
 
@@ -277,6 +281,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
           expect(logger).to have_received(:info).with(/  Disk utilization:.+#{Rainbow('95.3%').red.bright}/)
           expect(logger).to have_received(:info).with(/  Unclaimed storage:.+22.0 GB/)
           expect(logger).to have_received(:info).with(/  Zoekt version:.+v1.2.1/)
+          expect(logger).to have_received(:info).with(/  Schema version:\s*0$/)
 
           # Node 2 - High watermark, Online
           expect(logger).to have_received(:info).with("Node 2 - zoekt-node-02:   ")
@@ -285,6 +290,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
           expect(logger).to have_received(:info).with(/  Disk utilization:.+#{Rainbow('82.1%').red}/)
           expect(logger).to have_received(:info).with(/  Unclaimed storage:.+19.0 GB/)
           expect(logger).to have_received(:info).with(/  Zoekt version:.+v1.2.2/)
+          expect(logger).to have_received(:info).with(/  Schema version:\s*2401$/)
 
           # Node 3 - Low watermark, Online
           expect(logger).to have_received(:info).with("Node 3 - zoekt-node-03:   ")
@@ -293,6 +299,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
           expect(logger).to have_received(:info).with(/  Disk utilization:.+#{Rainbow('68.0%').yellow}/)
           expect(logger).to have_received(:info).with(/  Unclaimed storage:.+45.0 GB/)
           expect(logger).to have_received(:info).with(/  Zoekt version:.+v1.2.3/)
+          expect(logger).to have_received(:info).with(/  Schema version:\s*2413$/)
 
           # Node 4 - Normal watermark, Offline
           expect(logger).to have_received(:info).with("Node 4 - zoekt-node-04:   ")
@@ -301,6 +308,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
           expect(logger).to have_received(:info).with(/  Disk utilization:.+#{Rainbow('45.0%').green}/)
           expect(logger).to have_received(:info).with(/  Unclaimed storage:.+70.0 GB/)
           expect(logger).to have_received(:info).with(/  Zoekt version:.+v1.2.5/)
+          expect(logger).to have_received(:info).with(/  Schema version:\s*2450$/)
         end
       end
     end
