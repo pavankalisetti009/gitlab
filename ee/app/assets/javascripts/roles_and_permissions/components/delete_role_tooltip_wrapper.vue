@@ -35,6 +35,11 @@ export default {
               'MemberRole|To delete custom member role, remove role from all group and project members.',
             );
       }
+      if (this.role.ldapAdminRoleLinks?.nodes?.length > 0) {
+        return s__(
+          "MemberRole|You can't delete this admin custom role until you delete all LDAP syncs that use it.",
+        );
+      }
 
       return '';
     },

@@ -20,5 +20,9 @@ export const isPermissionPreselected = (
 
 // Whether the role is used or not, which also determines if it's deletable or not.
 export const isRoleInUse = (role) => {
-  return role.usersCount > 0 || role.dependentSecurityPolicies?.length > 0;
+  return (
+    role.usersCount > 0 ||
+    role.dependentSecurityPolicies?.length > 0 ||
+    role.ldapAdminRoleLinks?.nodes?.length > 0
+  );
 };

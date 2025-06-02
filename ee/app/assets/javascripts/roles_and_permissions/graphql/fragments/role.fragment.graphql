@@ -20,5 +20,10 @@ fragment Role on RoleInterface {
   ... on AdminMemberRole {
     editPath
     usersCount
+    ldapAdminRoleLinks {
+      nodes {
+        id
+      }
+    }
   }
 }
