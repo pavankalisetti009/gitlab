@@ -48,7 +48,7 @@ RSpec.describe Gitlab::Llm::VertexAi::ModelConfigurations::TextEmbeddings, featu
   describe '#url' do
     it 'returns correct url replacing default value' do
       expect(subject.url).to eq(
-        'https://cloud.gitlab.com/ai/v1/proxy/vertex-ai/v1/projects/PROJECT/locations/LOCATION/publishers/google/models/textembedding-gecko@003:predict'
+        'https://cloud.gitlab.com/ai/v1/proxy/vertex-ai/v1/projects/PROJECT/locations/LOCATION/publishers/google/models/text-embedding-005:predict'
       )
     end
 
