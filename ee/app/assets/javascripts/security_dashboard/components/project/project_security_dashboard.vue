@@ -1,11 +1,15 @@
 <script>
-import { GlLoadingIcon, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlLoadingIcon, GlSprintf, GlLink, GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { GlLineChart } from '@gitlab/ui/dist/charts';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import projectsHistoryQuery from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_by_day_and_count.query.graphql';
 import severitiesCountQuery from 'ee/security_dashboard/graphql/queries/vulnerability_severities_count.query.graphql';
 import SecurityTrainingPromoBanner from 'ee/security_dashboard/components/project/security_training_promo_banner.vue';
 import { PROJECT_LOADING_ERROR_MESSAGE } from 'ee/security_dashboard/helpers';
-import { DOC_PATH_PROJECT_SECURITY_DASHBOARD } from 'ee/security_dashboard/constants';
+import {
+  DOC_PATH_PROJECT_SECURITY_DASHBOARD,
+  EXPORT_ALERT_SUCCESS_MESSAGE,
+} from 'ee/security_dashboard/constants';
 import { createAlert } from '~/alert';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
@@ -31,7 +35,12 @@ export default {
     GlSprintf,
     GlLink,
     PageHeading,
+    GlButton,
   },
+  directives: {
+    GlTooltip: GlTooltipDirective,
+  },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     projectFullPath: {
       type: String,
@@ -163,6 +172,18 @@ export default {
       };
     },
   },
+  methods: {
+    onClickExport() {
+      this.notifyUserReportWillBeEmailed();
+    },
+    notifyUserReportWillBeEmailed() {
+      createAlert({
+        message: EXPORT_ALERT_SUCCESS_MESSAGE,
+        variant: 'info',
+        dismissible: true,
+      });
+    },
+  },
   i18n: {
     title: s__('SecurityReports|Security dashboard'),
     subtitle: s__(
@@ -186,6 +207,18 @@ export default {
             }}</gl-link>
           </template>
         </gl-sprintf>
+      </template>
+      <template v-if="glFeatures.vulnerabilitiesPdfExport" #actions>
+        <gl-button
+          v-gl-tooltip
+          :title="s__('SecurityReports|Export as PDF')"
+          category="secondary"
+          class="gl-ml-2"
+          icon="export"
+          @click="onClickExport"
+        >
+          {{ s__('SecurityReports|Export') }}
+        </gl-button>
       </template>
     </page-heading>
 

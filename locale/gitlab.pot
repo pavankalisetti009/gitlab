@@ -56736,6 +56736,9 @@ msgstr ""
 msgid "SecurityReports|Export"
 msgstr ""
 
+msgid "SecurityReports|Export as PDF"
+msgstr ""
+
 msgid "SecurityReports|Failed to get security report information. Please reload the page or try again later."
 msgstr ""
 
