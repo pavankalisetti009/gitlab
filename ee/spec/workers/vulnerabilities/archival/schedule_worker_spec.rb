@@ -46,12 +46,14 @@ RSpec.describe Vulnerabilities::Archival::ScheduleWorker, feature_category: :vul
     end
 
     describe 'progressive working' do
+      let(:redis_key) { "CursorStore:#{described_class::REDIS_CURSOR_KEY}" }
+
       describe 'running from the previous checkpoint' do
         before do
-          latest_iteration_information = { project_id: project_with_vulnerabilities_2.id, index: 2 }
+          latest_iteration_information = { project_id: project_with_vulnerabilities_2.id, index: 2 }.to_json
 
           Gitlab::Redis::SharedState.with do |redis|
-            redis.hset(described_class::REDIS_CURSOR_KEY, latest_iteration_information)
+            redis.set(redis_key, latest_iteration_information)
           end
         end
 
@@ -67,7 +69,9 @@ RSpec.describe Vulnerabilities::Archival::ScheduleWorker, feature_category: :vul
 
       describe 'storing the latest iteration information on redis' do
         def data_on_redis
-          Gitlab::Redis::SharedState.with { |redis| redis.hgetall(described_class::REDIS_CURSOR_KEY) }.except('ex')
+          redis_data = Gitlab::Redis::SharedState.with { |redis| redis.get(redis_key) }
+
+          Gitlab::Json.parse(redis_data)
         end
 
         context 'when there was a scheduling of a job' do
@@ -75,7 +79,7 @@ RSpec.describe Vulnerabilities::Archival::ScheduleWorker, feature_category: :vul
             schedule
 
             expect(Vulnerabilities::Archival::ArchiveWorker).to have_received(:bulk_perform_in).twice
-            expect(data_on_redis).to match({ 'project_id' => project_with_vulnerabilities_3.id.to_s, 'index' => '3' })
+            expect(data_on_redis).to match({ 'project_id' => project_with_vulnerabilities_3.id, 'index' => 3 })
           end
         end
 
@@ -85,10 +89,10 @@ RSpec.describe Vulnerabilities::Archival::ScheduleWorker, feature_category: :vul
           before do
             last_project_with_group.project_setting.update!(has_vulnerabilities: true)
 
-            latest_iteration_information = { project_id: project_with_vulnerabilities_3.id, index: 3 }
+            latest_iteration_information = { project_id: project_with_vulnerabilities_3.id, index: 3 }.to_json
 
             Gitlab::Redis::SharedState.with do |redis|
-              redis.hset(described_class::REDIS_CURSOR_KEY, latest_iteration_information)
+              redis.set(redis_key, latest_iteration_information)
             end
           end
 
@@ -96,7 +100,7 @@ RSpec.describe Vulnerabilities::Archival::ScheduleWorker, feature_category: :vul
             schedule
 
             expect(Vulnerabilities::Archival::ArchiveWorker).not_to have_received(:bulk_perform_in)
-            expect(data_on_redis).to match({ 'project_id' => last_project_with_group.id.to_s, 'index' => '3' })
+            expect(data_on_redis).to match({ 'project_id' => last_project_with_group.id, 'index' => 3 })
           end
         end
       end
