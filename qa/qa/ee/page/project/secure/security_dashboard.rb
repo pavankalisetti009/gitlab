@@ -58,8 +58,9 @@ module QA
             def change_state(status, dismissal_reason = "not_applicable")
               retry_until(max_attempts: 3, sleep_interval: 2, message: "Setting status and comment") do
                 if has_element?('select-action-listbox')
-                  click_element('select-action-listbox', wait: 2)
-                  click_element('listbox-item-status')
+                  click_element('select-action-listbox', wait: 5)
+                  click_element('listbox-item-status', wait: 5)
+                  has_element?('status-listbox', wait: 5)
                 end
 
                 click_element('status-listbox', wait: 5)
