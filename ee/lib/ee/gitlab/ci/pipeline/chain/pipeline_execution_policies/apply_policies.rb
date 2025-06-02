@@ -19,7 +19,6 @@ module EE
           module PipelineExecutionPolicies
             module ApplyPolicies
               include ::Gitlab::Ci::Pipeline::Chain::Helpers
-              include ::Gitlab::InternalEventsTracking
 
               def perform!
                 policy_context = command.pipeline_policy_context
@@ -29,11 +28,7 @@ module EE
                 elsif policy_context.has_execution_policy_pipelines?
                   clear_project_pipeline
                   merge_policy_jobs
-                  track_internal_event(
-                    'enforce_pipeline_execution_policy_in_project',
-                    namespace: project.namespace,
-                    project: project
-                  )
+                  usage_tracking.track_enforcement
                 end
               rescue ::Gitlab::Ci::Pipeline::JobsInjector::DuplicateJobNameError => e
                 error("Pipeline execution policy error: #{e.message}", failure_reason: :config_error)
@@ -75,10 +70,7 @@ module EE
                     on_conflict: on_conflict)
                   policy.pipeline.stages.each do |stage|
                     job_injector.inject_jobs(jobs: stage.statuses, stage: stage) do |_job|
-                      track_internal_event(
-                        'execute_job_pipeline_execution_policy',
-                        project: project,
-                        namespace: project.namespace)
+                      usage_tracking.track_job_execution
                     end
                   rescue ::Gitlab::Ci::Pipeline::JobsInjector::DuplicateJobNameError
                     command.increment_duplicate_job_name_errors_counter(policy.suffix_strategy)
@@ -89,6 +81,13 @@ module EE
 
               def declared_stages
                 command.yaml_processor_result.stages
+              end
+
+              def usage_tracking
+                @usage_tracking ||= ::Security::PipelineExecutionPolicy::UsageTracking.new(
+                  project: project,
+                  policy_pipelines: command.pipeline_policy_context.policy_pipelines
+                )
               end
             end
           end
