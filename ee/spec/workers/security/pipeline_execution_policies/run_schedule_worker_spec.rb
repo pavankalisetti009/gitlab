@@ -55,6 +55,8 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, feature_c
 
     let(:spp_repository_pipeline_access?) { true }
     let(:spp_linked?) { true }
+    let(:options) { {} }
+    let(:schedule_id) { non_existing_record_id }
 
     before_all do
       project.add_guest(security_bot)
@@ -86,7 +88,7 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, feature_c
       end
     end
 
-    subject(:perform) { described_class.new.perform(schedule_id) }
+    subject(:perform) { described_class.new.perform(schedule_id, options) }
 
     context 'when schedule exists' do
       let(:schedule_id) { schedule.id }
@@ -164,6 +166,53 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, feature_c
             expect(pipeline.builds.map(&:name)).to match_array(%w[scheduled_pep_job_pre scheduled_pep_job_test
               scheduled_pep_job_post])
           end
+
+          context 'with branch option' do
+            let(:options) { { branch: 'feature-branch' } }
+
+            context 'when the branch does not exist on the project' do
+              let_it_be(:expected_log) do
+                {
+                  "branch" => 'feature-branch',
+                  "class" => described_class.name,
+                  "event" => described_class::EVENT_KEY,
+                  "message" => "Reference not found",
+                  "reason" => nil,
+                  "project_id" => schedule.project_id,
+                  "schedule_id" => schedule.id,
+                  "policy_id" => schedule.security_policy.id
+                }
+              end
+
+              specify do
+                expect(Gitlab::AppJsonLogger).to receive(:error).with(expected_log)
+
+                perform
+              end
+
+              it 'tracks the execution event with error status', :clean_gitlab_redis_shared_state do
+                expect { perform }
+                  .to trigger_internal_events('execute_job_scheduled_pipeline_execution_policy')
+                  .with(
+                    project: schedule.project,
+                    additional_properties: { label: 'error' },
+                    category: 'InternalEventTracking'
+                  ).and increment_usage_metrics(
+                    'counts.count_total_errors_in_pipelines_created_from_scheduled_pipeline_execution_policy'
+                  )
+              end
+            end
+
+            context 'when the branch exists on the project' do
+              before do
+                project.repository.add_branch(project.owner, 'feature-branch', project.default_branch_or_main)
+              end
+
+              it 'creates a pipeline on the specified branch' do
+                expect(pipeline.ref).to eq('feature-branch')
+              end
+            end
+          end
         end
 
         it "doesn't log" do
@@ -175,6 +224,7 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, feature_c
         context 'when pipeline creation fails' do
           let_it_be(:expected_log) do
             {
+              "branch" => 'master',
               "class" => described_class.name,
               "event" => described_class::EVENT_KEY,
               "message" => a_string_including("Project `#{ci_config_project.full_path}` not found or access denied"),
@@ -251,6 +301,22 @@ RSpec.describe Security::PipelineExecutionPolicies::RunScheduleWorker, feature_c
 
       it 'does not create a pipeline' do
         expect { perform }.not_to change { project.all_pipelines.count }.from(0)
+      end
+    end
+
+    context 'when options is not a hash' do
+      let(:options) { 1 }
+
+      it 'raises an error' do
+        expect { perform }.to raise_error(ArgumentError, 'options must be of type Hash')
+      end
+
+      context 'and it is nil' do
+        let(:options) { nil }
+
+        it 'does not raise an error' do
+          expect { perform }.not_to raise_error
+        end
       end
     end
   end
