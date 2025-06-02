@@ -347,7 +347,7 @@ export default {
               </template>
               <template #default="{ item: requirement }">
                 <template v-if="requirement.complianceRequirementsControls.nodes.length">
-                  <h4 class="gl-text-base gl-font-bold">{{ $options.i18n.controls }}:</h4>
+                  <h4 class="gl-font-bold gl-text-default">{{ $options.i18n.controls }}:</h4>
                   <ul class="-gl-ml-6">
                     <li
                       v-for="control in controlsForRequirement(
@@ -372,7 +372,7 @@ export default {
                   </ul>
                 </template>
                 <template v-else>
-                  <p class="gl-mt-3 gl-text-gray-500">{{ $options.i18n.noControlsText }}</p>
+                  <p class="gl-mt-3 gl-text-subtle">{{ $options.i18n.noControlsText }}</p>
                 </template>
               </template>
             </drawer-accordion>
