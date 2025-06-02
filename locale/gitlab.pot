@@ -23325,6 +23325,9 @@ msgstr ""
 msgid "Duo Workflow|Something went wrong saving Duo Workflow settings"
 msgstr ""
 
+msgid "DuoAgenticChat|GitLab Duo Agentic Chat"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Agents"
 msgstr ""
 

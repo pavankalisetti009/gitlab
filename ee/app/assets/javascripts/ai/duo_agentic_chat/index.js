@@ -2,8 +2,8 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
-import TanukiBotChatApp from './components/app.vue';
-import store from './store';
+import store from '../tanuki_bot/store';
+import DuoAgenticChatApp from './components/app.vue';
 
 Vue.use(VueApollo);
 
@@ -11,36 +11,32 @@ const apolloProvider = new VueApollo({
   defaultClient: createDefaultClient(),
 });
 
-export const initTanukiBotChatDrawer = () => {
-  const el = document.getElementById('js-tanuki-bot-chat-app');
+export const initDuoAgenticChat = () => {
+  const el = document.getElementById('js-duo-agentic-chat-app');
 
   if (!el) {
     return false;
   }
 
-  const toggleEls = document.querySelectorAll('.js-tanuki-bot-chat-toggle');
+  const toggleEls = document.querySelectorAll('.js-duo-agentic-chat-toggle');
   if (toggleEls.length) {
     toggleEls.forEach((toggleEl) => {
       toggleEl.addEventListener('click', () => {
-        duoChatGlobalState.isShown = !duoChatGlobalState.isShown;
+        duoChatGlobalState.isAgenticChatShown = !duoChatGlobalState.isAgenticChatShown;
       });
     });
   }
 
-  const { userId, resourceId, projectId, chatTitle, rootNamespaceId } = el.dataset;
+  const { projectId } = el.dataset;
 
   return new Vue({
     el,
     store: store(),
     apolloProvider,
     render(createElement) {
-      return createElement(TanukiBotChatApp, {
+      return createElement(DuoAgenticChatApp, {
         props: {
-          userId,
-          resourceId,
           projectId,
-          chatTitle,
-          rootNamespaceId,
         },
       });
     },
