@@ -1,8 +1,18 @@
-import { GlButton, GlIcon } from '@gitlab/ui';
+import { GlButton, GlIcon, GlBadge } from '@gitlab/ui';
+import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import LdapSyncItem from 'ee/roles_and_permissions/components/ldap_sync/ldap_sync_item.vue';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
-import { ldapAdminRoleLinks } from '../../mock_data';
+import {
+  ldapAdminRoleLinks,
+  ROLE_LINK_NEVER_SYNCED,
+  ROLE_LINK_QUEUED,
+  ROLE_LINK_RUNNING,
+  ROLE_LINK_SUCCESSFUL,
+  ROLE_LINK_FAILED,
+} from '../../mock_data';
+
+const ALWAYS_SHOWN_FIELDS_COUNT = 4;
 
 describe('LdapSyncItem component', () => {
   let wrapper;
@@ -21,6 +31,45 @@ describe('LdapSyncItem component', () => {
   const findServerName = () => findDds().at(0);
   const findDeleteButton = () => wrapper.findComponent(GlButton);
   const getUnknownServerIcon = () => findServerName().findComponent(GlIcon);
+  const findStatusBadge = () => findDds().at(3).findComponent(GlBadge);
+  const findMoreDetailsButton = () => findDds().at(3).findComponent(GlButton);
+  const findDetailLabelAt = (index) => findDts().at(index + ALWAYS_SHOWN_FIELDS_COUNT);
+  const findDetailValueAt = (index) => findDds().at(index + ALWAYS_SHOWN_FIELDS_COUNT);
+
+  const expectLabelIconAndText = (index, icon, text) => {
+    expect(findDetailLabelAt(index).findComponent(GlIcon).props('name')).toBe(icon);
+    expect(findDetailLabelAt(index).text()).toBe(text);
+  };
+
+  const expectSyncCreated = (index) => {
+    expectLabelIconAndText(index, 'file-addition', 'Sync created at:');
+    expect(findDetailValueAt(index).text()).toBe('7/4/2020, 9:14:54 PM GMT (1 day ago)');
+  };
+
+  const expectSyncStarted = (index) => {
+    expectLabelIconAndText(index, 'play', 'Started at:');
+    expect(findDetailValueAt(index).text()).toBe('7/5/2020, 11:55:24 PM GMT (4 minutes ago)');
+  };
+
+  const expectSyncEnded = (index) => {
+    expectLabelIconAndText(index, 'stop', 'Ended at:');
+    expect(findDetailValueAt(index).text()).toBe('7/5/2020, 11:57:31 PM GMT (2 minutes ago)');
+  };
+
+  const expectTotalRuntime = (index) => {
+    expectLabelIconAndText(index, 'timer', 'Total runtime:');
+    expect(findDetailValueAt(index).text()).toBe('2.1 minutes');
+  };
+
+  const expectSyncError = (index) => {
+    expectLabelIconAndText(index, 'error', 'Sync error:');
+    expect(findDetailValueAt(index).text()).toBe('oh no');
+  };
+
+  const expectLastSuccessfulSync = (index) => {
+    expectLabelIconAndText(index, 'check', 'Last successful sync:');
+    expect(findDetailValueAt(index).text()).toBe('7/4/2020, 12:55:19 PM GMT (1 day ago)');
+  };
 
   describe.each`
     roleLink                 | syncMethodLabel   | syncMethodValue                            | expectedServer | expectedRole
@@ -96,6 +145,74 @@ describe('LdapSyncItem component', () => {
       expect(getBinding(getUnknownServerIcon().element, 'gl-tooltip')).toMatchObject({
         value: 'Unknown LDAP server. Please check your server settings.',
         modifiers: { d0: true },
+      });
+    });
+  });
+
+  describe('sync status', () => {
+    describe.each`
+      roleLink                  | icon                      | variant      | text              | moreDetails
+      ${ROLE_LINK_NEVER_SYNCED} | ${null}                   | ${'neutral'} | ${'Never synced'} | ${'More details'}
+      ${ROLE_LINK_QUEUED}       | ${'status_pending'}       | ${'warning'} | ${'Queued'}       | ${'More details'}
+      ${ROLE_LINK_RUNNING}      | ${'status_running'}       | ${'info'}    | ${'Running'}      | ${'4 minutes ago'}
+      ${ROLE_LINK_SUCCESSFUL}   | ${'status_success_solid'} | ${'success'} | ${'Success'}      | ${'2 minutes ago'}
+      ${ROLE_LINK_FAILED}       | ${'status_failed'}        | ${'danger'}  | ${'Failed'}       | ${'2 minutes ago'}
+    `('for sync status $roleLink.syncStatus', ({ roleLink, icon, variant, text, moreDetails }) => {
+      beforeEach(() => {
+        createWrapper({ roleLink });
+      });
+
+      it('shows sync status label', () => {
+        expect(findDts().at(3).text()).toBe('Sync status:');
+      });
+
+      it('shows sync status badge', () => {
+        expect(findStatusBadge().text()).toBe(text);
+        expect(findStatusBadge().props()).toMatchObject({ icon, variant });
+      });
+
+      it('shows more details button', () => {
+        expect(findMoreDetailsButton().text()).toBe(moreDetails);
+        expect(findMoreDetailsButton().props()).toMatchObject({ variant: 'link' });
+        expect(findMoreDetailsButton().findComponent(GlIcon).props('name')).toBe('chevron-down');
+      });
+
+      it('does not show sync details', () => {
+        expect(findDts()).toHaveLength(4);
+        expect(findDds()).toHaveLength(4);
+      });
+
+      it('shows chevron up icon when more details button is clicked', async () => {
+        findMoreDetailsButton().vm.$emit('click');
+        await nextTick();
+
+        expect(findMoreDetailsButton().findComponent(GlIcon).props('name')).toBe('chevron-up');
+      });
+    });
+
+    describe('sync status details', () => {
+      describe.each`
+        roleLink                  | expectFns
+        ${ROLE_LINK_NEVER_SYNCED} | ${[expectSyncCreated]}
+        ${ROLE_LINK_QUEUED}       | ${[expectLastSuccessfulSync, expectSyncCreated]}
+        ${ROLE_LINK_RUNNING}      | ${[expectSyncStarted, expectSyncCreated]}
+        ${ROLE_LINK_SUCCESSFUL}   | ${[expectSyncStarted, expectSyncEnded, expectTotalRuntime, expectSyncCreated]}
+        ${ROLE_LINK_FAILED}       | ${[expectSyncStarted, expectSyncEnded, expectTotalRuntime, expectSyncError, expectLastSuccessfulSync, expectSyncCreated]}
+      `('for status $roleLink.syncStatus', ({ roleLink, expectFns }) => {
+        beforeEach(() => {
+          createWrapper({ roleLink });
+          findMoreDetailsButton().vm.$emit('click');
+        });
+
+        it('has expected details count', () => {
+          // The first 4 fields are for the other sync info, so we need to add on those.
+          expect(findDts()).toHaveLength(expectFns.length + ALWAYS_SHOWN_FIELDS_COUNT);
+          expect(findDds()).toHaveLength(expectFns.length + ALWAYS_SHOWN_FIELDS_COUNT);
+        });
+
+        it('has expected details', () => {
+          expectFns.forEach((expectFn, index) => expectFn(index));
+        });
       });
     });
   });

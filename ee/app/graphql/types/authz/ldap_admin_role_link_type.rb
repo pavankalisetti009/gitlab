@@ -10,6 +10,9 @@ module Types
       field :id, GraphQL::Types::ID,
         null: false, description: 'ID of the LDAP link.'
 
+      field :created_at, Types::TimeType,
+        null: false, description: 'Timestamp of when the role link was created.'
+
       field :admin_member_role, ::Types::Members::AdminMemberRoleType,
         null: false, description: 'Custom admin member role.', method: :member_role
 

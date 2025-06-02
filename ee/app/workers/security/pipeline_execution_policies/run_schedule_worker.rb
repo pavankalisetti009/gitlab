@@ -15,7 +15,9 @@ module Security
       PIPELINE_SOURCE = :pipeline_execution_policy_schedule
       EVENT_KEY = 'scheduled_pipeline_execution_policy_failure'
 
-      def perform(schedule_id)
+      def perform(schedule_id, options = {})
+        raise(ArgumentError, 'options must be of type Hash') unless options.is_a?(Hash) || options.nil?
+
         schedule = Security::PipelineExecutionProjectSchedule.find_by_id(schedule_id) || return
 
         return if Feature.disabled?(:scheduled_pipeline_execution_policies, schedule.project)
@@ -28,20 +30,22 @@ module Security
           return
         end
 
-        result = execute(schedule)
+        branch = options.fetch(:branch, schedule.project.default_branch_or_main)
 
-        log_pipeline_creation_failure(result, schedule) if result.error?
+        result = execute(schedule, branch)
+
+        log_pipeline_creation_failure(result, schedule, branch) if result.error?
       end
 
       private
 
-      def execute(schedule)
+      def execute(schedule, branch)
         ci_content = schedule.ci_content.deep_stringify_keys.to_yaml
 
         result = Ci::CreatePipelineService.new(
           schedule.project,
           schedule.project.security_policy_bot,
-          ref: schedule.project.default_branch_or_main
+          ref: branch
         ).execute(PIPELINE_SOURCE, content: ci_content, ignore_skip_ci: true)
 
         ::Gitlab::InternalEvents.track_event(
@@ -55,7 +59,7 @@ module Security
         result
       end
 
-      def log_pipeline_creation_failure(result, schedule)
+      def log_pipeline_creation_failure(result, schedule, branch)
         Gitlab::AppJsonLogger.error(
           build_structured_payload(
             event: EVENT_KEY,
@@ -63,7 +67,10 @@ module Security
             reason: result.reason,
             project_id: schedule.project_id,
             schedule_id: schedule.id,
-            policy_id: schedule.security_policy.id))
+            policy_id: schedule.security_policy.id,
+            branch: branch
+          )
+        )
       end
 
       def experiment_enabled?(schedule)
