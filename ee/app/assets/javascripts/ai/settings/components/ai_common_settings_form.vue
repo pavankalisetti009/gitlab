@@ -22,9 +22,6 @@ export default {
     defaultOffWarning: s__(
       'AiPowered|When you save, GitLab Duo will be turned off for all groups, subgroups, and projects.',
     ),
-    neverOnWarning: s__(
-      'AiPowered|When you save, GitLab Duo will be turned for all groups, subgroups, and projects.',
-    ),
     confirmButtonText: __('Save changes'),
   },
   inject: ['onGeneralSettingsPage', 'shouldShowDuoAvailability'],
@@ -92,14 +89,10 @@ export default {
       );
     },
     warningMessage() {
-      switch (this.availability) {
-        case AVAILABILITY_OPTIONS.DEFAULT_OFF:
-          return this.$options.i18n.defaultOffWarning;
-        case AVAILABILITY_OPTIONS.NEVER_ON:
-          return this.$options.i18n.neverOnWarning;
-        default:
-          return '';
-      }
+      const optsWithWarning = [AVAILABILITY_OPTIONS.DEFAULT_OFF, AVAILABILITY_OPTIONS.NEVER_ON];
+      return optsWithWarning.includes(this.availability)
+        ? this.$options.i18n.defaultOffWarning
+        : '';
     },
     disableConfigCheckboxes() {
       return this.availability === AVAILABILITY_OPTIONS.NEVER_ON;
