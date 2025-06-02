@@ -148,8 +148,17 @@ module Elastic
         .find { |migration| completed_migrations.exclude?(migration.version) }
     end
 
-    def to_h(completed:)
-      { completed: completed, state: load_state, name: name }.merge(timestamps(completed: completed))
+    def to_h(completed:, halted: nil)
+      state = load_state.tap do |hash|
+        hash[:halted] = halted unless halted.nil?
+      end
+
+      {
+        completed: completed,
+        name: name,
+        state: state,
+        **timestamps(completed: completed)
+      }
     end
 
     private

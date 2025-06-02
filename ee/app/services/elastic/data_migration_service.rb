@@ -108,10 +108,11 @@ module Elastic
       def mark_all_as_completed!
         bulk_request = migrations.flat_map do |migration|
           drop_migration_has_finished_cache!(migration)
+          drop_migration_halted_cache!(migration)
 
           [
             { index: { _id: migration.version } },
-            migration.to_h(completed: true)
+            migration.to_h(completed: true, halted: false)
           ]
         end
 

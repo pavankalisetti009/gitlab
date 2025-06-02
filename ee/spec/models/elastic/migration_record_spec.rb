@@ -120,10 +120,15 @@ RSpec.describe Elastic::MigrationRecord, :elastic_delete_by_query, feature_categ
     end
 
     it 'raises an exception if no index present' do
-      allow(Gitlab::Elastic::Helper.default.client).to receive(:search).and_raise(Elasticsearch::Transport::Transport::Errors::NotFound)
+      allow(Gitlab::Elastic::Helper.default.client)
+        .to receive(:search).and_raise(Elasticsearch::Transport::Transport::Errors::NotFound)
 
-      expect { described_class.load_versions(completed: true) }.to raise_exception(Elasticsearch::Transport::Transport::Errors::NotFound)
-      expect { described_class.load_versions(completed: false) }.to raise_exception(Elasticsearch::Transport::Transport::Errors::NotFound)
+      expect do
+        described_class.load_versions(completed: true)
+      end.to raise_exception(Elasticsearch::Transport::Transport::Errors::NotFound)
+      expect do
+        described_class.load_versions(completed: false)
+      end.to raise_exception(Elasticsearch::Transport::Transport::Errors::NotFound)
     end
 
     it 'raises an exception when exception is raised' do
@@ -168,9 +173,7 @@ RSpec.describe Elastic::MigrationRecord, :elastic_delete_by_query, feature_categ
 
   describe '#running?' do
     before do
-      allow(record).to receive(:halted?).and_return(halted)
-      allow(record).to receive(:started?).and_return(started)
-      allow(record).to receive(:completed?).and_return(completed)
+      allow(record).to receive_messages(halted?: halted, started?: started, completed?: completed)
     end
 
     where(:started, :halted, :completed, :expected) do
@@ -190,8 +193,7 @@ RSpec.describe Elastic::MigrationRecord, :elastic_delete_by_query, feature_categ
 
   describe '#stopped?' do
     before do
-      allow(record).to receive(:halted?).and_return(halted)
-      allow(record).to receive(:completed?).and_return(completed)
+      allow(record).to receive_messages(halted?: halted, completed?: completed)
     end
 
     where(:halted, :completed, :expected) do
@@ -221,9 +223,7 @@ RSpec.describe Elastic::MigrationRecord, :elastic_delete_by_query, feature_categ
 
     context 'when the migration is skippable' do
       before do
-        allow(record).to receive(:skippable?).and_return(true)
-        allow(record).to receive(:obsolete?).and_return(obsolete)
-        allow(record).to receive(:skip_migration?).and_return(skip_migration)
+        allow(record).to receive_messages(skippable?: true, obsolete?: obsolete, skip_migration?: skip_migration)
       end
 
       where(:obsolete, :skip_migration, :expected) do
@@ -310,11 +310,10 @@ RSpec.describe Elastic::MigrationRecord, :elastic_delete_by_query, feature_categ
 
     context 'when completed exists in the indexed document' do
       before do
-        allow(record).to receive(:load_from_index).and_return({ '_source' => { 'completed' => true } })
-        allow(record).to receive(:completed?).and_return(false)
+        allow(record).to receive_messages(load_from_index: { '_source' => { 'completed' => true } }, completed?: false)
       end
 
-      it { is_expected.to eq(true) }
+      it { is_expected.to be(true) }
     end
   end
 
@@ -352,6 +351,25 @@ RSpec.describe Elastic::MigrationRecord, :elastic_delete_by_query, feature_categ
       source.delete('state')
       source.each_key do |key|
         expect(source[key]).to eq(original_source[key])
+      end
+    end
+  end
+
+  describe '#to_h' do
+    it 'returns a hash with completed, name, state, and timestamps', :freeze_time do
+      record.save!(completed: false)
+      original_source = record.load_from_index['_source']
+      expected_hash = original_source.merge('completed' => true, 'completed_at' => Time.now.utc).with_indifferent_access
+
+      result = record.to_h(completed: true).stringify_keys
+      expect(result).to eq(expected_hash)
+    end
+
+    [true, false].each do |value|
+      context "when halted is #{value}" do
+        it 'sets halted in the state' do
+          expect(record.to_h(completed: true, halted: value)[:state][:halted]).to be(value)
+        end
       end
     end
   end
