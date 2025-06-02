@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::AnalyzersStatus::AncestorsUpdateService, feature_category: :vulnerability_management do
+RSpec.describe Security::AnalyzerNamespaceStatuses::AncestorsUpdateService, feature_category: :vulnerability_management do
   let_it_be(:root_group) { create(:group) }
   let_it_be(:subgroup1) { create(:group, parent: root_group) }
   let_it_be(:subgroup2) { create(:group, parent: subgroup1) }

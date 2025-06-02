@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Security
-  module AnalyzersStatus
+  module AnalyzerNamespaceStatuses
     class AncestorsUpdateService
       # This expands the traversal ids.
       # For each project's diff, we should update entries for all parent groups in the hierarchy
@@ -76,7 +76,7 @@ module Security
 
       attr_reader :diffs_with_metadata
 
-      delegate :connection, to: AnalyzerProjectStatus, private: true
+      delegate :connection, to: AnalyzerNamespaceStatus, private: true
 
       def filtered_diffs
         @filtered_diffs ||= (diffs_with_metadata&.dig(:diff) || {}).select { |_, stats| valid_stats?(stats) }

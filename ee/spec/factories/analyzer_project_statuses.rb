@@ -7,6 +7,7 @@ FactoryBot.define do
     status { :success }
     analyzer_type { :sast }
     last_call { Time.current }
+    archived { false }
 
     after(:build) do |status, _|
       status.traversal_ids = status.project&.namespace&.traversal_ids

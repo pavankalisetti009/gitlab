@@ -132,6 +132,7 @@ module EE
             to: ::Groups::GroupDeletedEvent
 
           store.subscribe ::Security::AnalyzersStatus::ProcessArchivedEventsWorker, to: ::Projects::ProjectArchivedEvent
+          store.subscribe ::Security::AnalyzersStatus::ProcessDeletedEventsWorker, to: ::Projects::ProjectDeletedEvent
         end
 
         def subscribe_to_epic_events(store)
