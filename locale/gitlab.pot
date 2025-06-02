@@ -12814,6 +12814,9 @@ msgstr ""
 msgid "CiCatalog|Learn more about designated creators"
 msgstr ""
 
+msgid "CiCatalog|Learn more about verified creators on GitLab Self-Managed or GitLab Dedicated."
+msgstr ""
+
 msgid "CiCatalog|No component available"
 msgstr ""
 

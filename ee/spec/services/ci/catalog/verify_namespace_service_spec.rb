@@ -33,34 +33,73 @@ RSpec.describe Ci::Catalog::VerifyNamespaceService, feature_category: :pipeline_
   end
 
   describe '#execute' do
-    context 'when namespace passed in is not a root namespace' do
-      it 'is not valid' do
+    context 'when namespace is not a root namespace' do
+      it 'returns error' do
         response = described_class.new(subgroup, 'gitlab_maintained').execute
 
-        expect(response.message).to eq('Please pass in the root namespace.')
+        expect(response.message).to eq('Input the root namespace.')
       end
 
       context 'when unknown verification level is being set' do
-        it 'is not valid' do
-          response = described_class.new(subgroup, 'unknown').execute
+        context 'when on self-managed' do
+          before do
+            allow(Gitlab).to receive(:com?).and_return(false)
+          end
 
-          expected_string =
-            'Please pass in the root namespace., ' \
-              'Please pass in a valid verification level: gitlab_maintained, ' \
-              'gitlab_partner_maintained, verified_creator_maintained, unverified.'
+          it 'is not valid and returns an error' do
+            response = described_class.new(subgroup, 'unknown').execute
 
-          expect(response.message).to eq(expected_string)
+            expected_string =
+              'Input the root namespace., Input a valid verification level: verified_creator_self_managed.'
+
+            expect(response.message).to eq(expected_string)
+          end
+        end
+
+        context 'when on gitlab.com' do
+          before do
+            allow(Gitlab).to receive(:com?).and_return(true)
+          end
+
+          it 'is not valid and returns an error' do
+            response = described_class.new(subgroup, 'unknown').execute
+
+            expected_string =
+              'Input the root namespace., ' \
+                'Input a valid verification level: gitlab_maintained, ' \
+                'gitlab_partner_maintained, verified_creator_maintained, unverified.'
+
+            expect(response.message).to eq(expected_string)
+          end
         end
       end
     end
 
-    context 'when root namespace is passed' do
-      context 'when unknown verification level is being set' do
-        it 'is not valid' do
-          response = described_class.new(group, 'unknown').execute
+    context 'when a root namespace is given' do
+      context 'when an unknown verification level is given' do
+        context 'when on self-managed' do
+          before do
+            allow(Gitlab).to receive(:com?).and_return(false)
+          end
 
-          expect(response.message).to eq('Please pass in a valid verification level: gitlab_maintained, ' \
-            'gitlab_partner_maintained, verified_creator_maintained, unverified.')
+          it 'returns an error' do
+            response = described_class.new(group, 'unknown').execute
+
+            expect(response.message).to eq('Input a valid verification level: verified_creator_self_managed.')
+          end
+        end
+
+        context 'when on gitlab.com' do
+          before do
+            allow(Gitlab).to receive(:com?).and_return(true)
+          end
+
+          it 'returns an error' do
+            response = described_class.new(group, 'unknown').execute
+
+            expect(response.message).to eq('Input a valid verification level: gitlab_maintained, ' \
+              'gitlab_partner_maintained, verified_creator_maintained, unverified.')
+          end
         end
       end
 
@@ -89,41 +128,79 @@ RSpec.describe Ci::Catalog::VerifyNamespaceService, feature_category: :pipeline_
       end
     end
 
-    context 'when updating existing verified namespace' do
-      let(:new_verification_level) { 'gitlab_partner_maintained' }
+    context 'when updating an existing verified namespace' do
+      context 'when on self-managed' do
+        before do
+          allow(Gitlab).to receive(:com?).and_return(false)
+        end
 
-      it 'does not create a new instance of VerifiedNamespace' do
-        ::Ci::Catalog::VerifiedNamespace.find_or_create_by!(namespace: group,
-          verification_level: 'gitlab_maintained')
+        let(:verification_level) { 'verified_creator_self_managed' }
 
-        expect do
-          described_class.new(group, new_verification_level).execute
-        end.not_to change { ::Ci::Catalog::VerifiedNamespace.count }
+        it 'does not change the verified namespace' do
+          ::Ci::Catalog::VerifiedNamespace.find_or_create_by!(namespace: group,
+            verification_level: 'verified_creator_self_managed')
+
+          expect do
+            described_class.new(group, verification_level).execute
+          end.not_to change { ::Ci::Catalog::VerifiedNamespace.count }
+        end
+
+        it 'cascades the verification level to the catalog resources' do
+          ::Ci::Catalog::VerifiedNamespace.find_or_create_by!(namespace: group,
+            verification_level: 'verified_creator_self_managed')
+
+          response = described_class.new(group, verification_level).execute
+
+          expect(response).to be_success
+
+          expect(group_project_resource.reload.verification_level).to eq(verification_level)
+          expect(subgroup_project_published_resource.reload.verification_level).to eq(verification_level)
+          expect(subgroup_public_project_resource.reload.verification_level).to eq(verification_level)
+
+          expect(another_group_published_project_resource.reload.verification_level).to eq('unverified')
+        end
       end
 
-      it 'updates verification level on the existing verified namespace' do
-        verified_namespace =
+      context 'when on gitlab.com' do
+        before do
+          allow(Gitlab).to receive(:com?).and_return(true)
+        end
+
+        let(:new_verification_level) { 'gitlab_partner_maintained' }
+
+        it 'does not change the verified namespace' do
           ::Ci::Catalog::VerifiedNamespace.find_or_create_by!(namespace: group,
             verification_level: 'gitlab_maintained')
 
-        described_class.new(group, new_verification_level).execute
+          expect do
+            described_class.new(group, new_verification_level).execute
+          end.not_to change { ::Ci::Catalog::VerifiedNamespace.count }
+        end
 
-        expect(verified_namespace.reload.verification_level).to eq(new_verification_level)
-      end
+        it 'updates verification level on the existing verified namespace' do
+          verified_namespace =
+            ::Ci::Catalog::VerifiedNamespace.find_or_create_by!(namespace: group,
+              verification_level: 'gitlab_maintained')
 
-      it 'updates the verification level on catalog resources' do
-        ::Ci::Catalog::VerifiedNamespace.find_or_create_by!(namespace: group,
-          verification_level: 'gitlab_maintained')
+          described_class.new(group, new_verification_level).execute
 
-        response = described_class.new(group, new_verification_level).execute
+          expect(verified_namespace.reload.verification_level).to eq(new_verification_level)
+        end
 
-        expect(response).to be_success
+        it 'cascades the verification level to the catalog resources' do
+          ::Ci::Catalog::VerifiedNamespace.find_or_create_by!(namespace: group,
+            verification_level: 'gitlab_maintained')
 
-        expect(group_project_resource.reload.verification_level).to eq(new_verification_level)
-        expect(subgroup_project_published_resource.reload.verification_level).to eq(new_verification_level)
-        expect(subgroup_public_project_resource.reload.verification_level).to eq(new_verification_level)
+          response = described_class.new(group, new_verification_level).execute
 
-        expect(another_group_published_project_resource.reload.verification_level).to eq('unverified')
+          expect(response).to be_success
+
+          expect(group_project_resource.reload.verification_level).to eq(new_verification_level)
+          expect(subgroup_project_published_resource.reload.verification_level).to eq(new_verification_level)
+          expect(subgroup_public_project_resource.reload.verification_level).to eq(new_verification_level)
+
+          expect(another_group_published_project_resource.reload.verification_level).to eq('unverified')
+        end
       end
     end
   end
