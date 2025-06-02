@@ -23,13 +23,13 @@ RSpec.describe WorkItems::LifecyclePolicy, feature_category: :team_planning do
     end
 
     it { is_expected.to be_allowed(:read_lifecycle) }
-  end
 
-  context 'when feature is not available' do
-    before do
-      stub_licensed_features(work_item_status: false)
+    context 'when feature is not available' do
+      before do
+        stub_licensed_features(work_item_status: false)
+      end
+
+      it { is_expected.to be_disallowed(:read_lifecycle) }
     end
-
-    it { is_expected.to be_disallowed(:read_lifecycle) }
   end
 end
