@@ -22,7 +22,6 @@ import {
   NO_ASSIGNMENTS_FOUND_ERROR_CODE,
   NO_SEATS_AVAILABLE_ERROR_CODE,
   NOT_ENOUGH_SEATS_ERROR_CODE,
-  ADD_ON_PURCHASE_FETCH_ERROR_CODE,
 } from 'ee/usage_quotas/error_constants';
 import PageSizeSelector from '~/vue_shared/components/page_size_selector.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -44,8 +43,6 @@ import userAddOnAssignmentBulkCreateMutation from 'ee/usage_quotas/add_on/graphq
 import userAddOnAssignmentBulkRemoveMutation from 'ee/usage_quotas/add_on/graphql/user_add_on_assignment_bulk_remove.mutation.graphql';
 import { PROMO_URL } from '~/constants';
 import { addSeatsText } from 'ee/usage_quotas/seats/constants';
-import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
-import { LIMITED_ACCESS_KEYS } from 'ee/usage_quotas/components/constants';
 
 const trackingMixin = InternalEvents.mixin();
 
@@ -78,7 +75,6 @@ export default {
     addDuoProHref: { default: null },
     groupId: { default: null },
     isBulkAddOnAssignmentEnabled: { default: false },
-    subscriptionName: { default: null },
   },
   props: {
     addOnPurchaseId: {
@@ -115,6 +111,11 @@ export default {
       required: true,
       validator: (val) => DUO_IDENTIFIERS.includes(val),
     },
+    hideAddButtonSeatOnErrorMessage: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   i18n: {
     addSeatsText,
@@ -134,26 +135,6 @@ export default {
   assignSeatsBulkAction: ASSIGN_SEATS_BULK_ACTION,
   unassignSeatsBulkAction: UNASSIGN_SEATS_BULK_ACTION,
   avatarSize: 32,
-  apollo: {
-    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
-    subscriptionPermissions: {
-      query: getSubscriptionPermissionsData,
-      client: 'customersDotClient',
-      variables() {
-        return this.subscriptionPermissionsVariables;
-      },
-      skip() {
-        return this.hasNoRequestInformation;
-      },
-      update: (data) => ({
-        canAddDuoProSeats: data.subscription?.canAddDuoProSeats,
-        reason: data.userActionAccess?.limitedAccessReason,
-      }),
-      error(error) {
-        this.forwardException(Object.assign(error, { cause: ADD_ON_PURCHASE_FETCH_ERROR_CODE }));
-      },
-    },
-  },
   computed: {
     hasMaxRoleField() {
       return this.tableItems?.some(({ maxRole }) => maxRole);
@@ -244,31 +225,11 @@ export default {
       const isErrorKnown =
         this.error === NO_SEATS_AVAILABLE_ERROR_CODE || this.error === NOT_ENOUGH_SEATS_ERROR_CODE;
 
-      if (this.hideAddSeatsButton || !isErrorKnown) {
+      if (this.hideAddButtonSeatOnErrorMessage || !isErrorKnown) {
         return '';
       }
 
       return this.$options.i18n.addSeatsText;
-    },
-    hideAddSeatsButton() {
-      return !this.subscriptionPermissions?.canAddDuoProSeats && this.hasLimitedAccess;
-    },
-    subscriptionPermissionsVariables() {
-      return this.groupId
-        ? { namespaceId: this.parsedGroupId }
-        : { subscriptionName: this.subscriptionName };
-    },
-    hasLimitedAccess() {
-      return LIMITED_ACCESS_KEYS.includes(this.permissionReason);
-    },
-    permissionReason() {
-      return this.subscriptionPermissions?.reason;
-    },
-    hasNoRequestInformation() {
-      return !(this.groupId || this.subscriptionName);
-    },
-    parsedGroupId() {
-      return parseInt(this.groupId, 10);
     },
   },
   methods: {
@@ -428,11 +389,6 @@ export default {
       this.bulkAction = undefined;
       this.isBulkActionInProgress = false;
       this.isConfirmationModalVisible = false;
-    },
-    forwardException(error) {
-      this.$emit('error', error);
-
-      Sentry.captureException(error, { tags: { vue_component: this.$options.name } });
     },
   },
 };
