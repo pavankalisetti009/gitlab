@@ -372,6 +372,13 @@ module EE
           description: 'Status for all analyzers in the group.',
           experiment: { milestone: '18.0' }
 
+        field :maven_virtual_registries,
+          EE::Types::VirtualRegistries::Packages::Maven::MavenVirtualRegistryType.connection_type,
+          null: true,
+          description: 'Maven virtual registries registered to the group.',
+          resolver: ::Resolvers::VirtualRegistries::Packages::Maven::MavenVirtualRegistryResolver,
+          experiment: { milestone: '18.1' }
+
         def epics_enabled
           object.licensed_feature_available?(:epics)
         end
