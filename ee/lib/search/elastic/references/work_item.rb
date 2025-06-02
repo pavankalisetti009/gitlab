@@ -6,7 +6,7 @@ module Search
       class WorkItem < Reference
         include Search::Elastic::Concerns::DatabaseReference
 
-        SCHEMA_VERSION = 25_21
+        SCHEMA_VERSION = 25_22
         DEFAULT_INDEX_ATTRIBUTES = %i[
           id
           iid
@@ -64,6 +64,11 @@ module Search
           self.class.join_delimited([klass, identifier, routing].compact)
         end
 
+        override :operation
+        def operation
+          database_record ? :upsert : :delete
+        end
+
         override :as_indexed_json
         def as_indexed_json
           build_indexed_json(database_record)
@@ -108,6 +113,7 @@ module Search
             # Schema version. The format is Date.today.strftime('%y_%w')
             # Please update if you're changing the schema of the document
             schema_version: SCHEMA_VERSION,
+            routing: routing,
             type: model_klass.es_type
           }
         end
