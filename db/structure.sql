@@ -17881,6 +17881,11 @@ CREATE TABLE namespace_aggregation_schedules (
     namespace_id bigint NOT NULL
 );
 
+CREATE TABLE namespace_ai_settings (
+    namespace_id bigint NOT NULL,
+    duo_workflow_mcp_enabled boolean DEFAULT false NOT NULL
+);
+
 CREATE TABLE namespace_bans (
     id bigint NOT NULL,
     namespace_id bigint NOT NULL,
@@ -30376,6 +30381,9 @@ ALTER TABLE ONLY namespace_admin_notes
 ALTER TABLE ONLY namespace_aggregation_schedules
     ADD CONSTRAINT namespace_aggregation_schedules_pkey PRIMARY KEY (namespace_id);
 
+ALTER TABLE ONLY namespace_ai_settings
+    ADD CONSTRAINT namespace_ai_settings_pkey PRIMARY KEY (namespace_id);
+
 ALTER TABLE ONLY namespace_bans
     ADD CONSTRAINT namespace_bans_pkey PRIMARY KEY (id);
 
@@ -36330,6 +36338,8 @@ CREATE UNIQUE INDEX index_mrs_ars_users_on_ar_id_and_user_id ON merge_requests_a
 CREATE INDEX index_namespace_admin_notes_on_namespace_id ON namespace_admin_notes USING btree (namespace_id);
 
 CREATE UNIQUE INDEX index_namespace_aggregation_schedules_on_namespace_id ON namespace_aggregation_schedules USING btree (namespace_id);
+
+CREATE UNIQUE INDEX index_namespace_ai_settings_on_namespace_id ON namespace_ai_settings USING btree (namespace_id);
 
 CREATE UNIQUE INDEX index_namespace_bans_on_namespace_id_and_user_id ON namespace_bans USING btree (namespace_id, user_id);
 
@@ -46018,6 +46028,9 @@ ALTER TABLE ONLY note_metadata
 
 ALTER TABLE ONLY ml_model_metadata
     ADD CONSTRAINT fk_rails_d907835e01 FOREIGN KEY (model_id) REFERENCES ml_models(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY namespace_ai_settings
+    ADD CONSTRAINT fk_rails_d93015e2ed FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY merge_request_reviewers
     ADD CONSTRAINT fk_rails_d9fec24b9d FOREIGN KEY (merge_request_id) REFERENCES merge_requests(id) ON DELETE CASCADE;
