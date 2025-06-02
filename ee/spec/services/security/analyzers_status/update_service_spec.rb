@@ -6,7 +6,7 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
   let_it_be(:root_group) { create(:group) }
   let_it_be(:group) { create(:group, parent: root_group) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
+  let_it_be(:pipeline) { create(:ci_empty_pipeline, project: project) }
   let_it_be(:traversal_ids) { group.traversal_ids }
 
   let(:service) { described_class.new(pipeline) }
@@ -136,6 +136,15 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :vuln
               status: :success, archived: true)
 
             expect { execute }.to change { archived_status.reload.archived }.from(true).to(false)
+          end
+
+          it 'updates the updated_at column' do
+            freeze_time do
+              old_status = create(:analyzer_project_status, project: project, analyzer_type: :cluster_image_scanning,
+                status: :failed, updated_at: 1.week.ago)
+
+              expect { execute }.to change { old_status.reload.updated_at }.to(Time.zone.now)
+            end
           end
 
           include_examples 'calls namespace related services'
